@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum RsvpStatus {
+  PENDING
+  CONFIRMED
+  DECLINED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  FAILED
+  REFUNDED
+}
+
+enum ExpenseStatus {
+  PENDING
+  PAID
+  OVERDUE
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+// ==========================================
+// MODELS
+// ==========================================
+
+model Guest {
+  id                 String        @id @default(uuid())
+  name               String
+  phone              String?       
+  email              String?
+  rsvpStatus         RsvpStatus    @default(PENDING)
+  allowedCompanions  Int           @default(0)
+  hasReceivedMessage Boolean       @default(false) 
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  transactions       Transaction[] 
+
+  @@map("guests")
+}
+
+model Gift {
+  id          String        @id @default(uuid())
+  title       String
+  description String?
+  amount      Int           
+  imageUrl    String?
+  isPurchased Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+
+  transactions Transaction[]
+
+  @@map("gifts")
+}
+
+model Transaction {
+  id              String        @id @default(uuid())
+  gatewayId       String?       
+  amount          Int           
+  netAmount       Int?          
+  paymentMethod   String        
+  status          PaymentStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+
+  giftId          String
+  gift            Gift          @relation(fields: [giftId], references: [id])
+  guestId         String?       
+  guest           Guest?        @relation(fields: [guestId], references: [id])
+
+  @@map("transactions")
+}
+
+model Vendor {
+  id          String    @id @default(uuid())
+  name        String
+  category    String    
+  contact     String?
+  contractUrl String?   
+  notes       String?   @db.Text
+  createdAt   DateTime  @default(now())
+
+  expenses    Expense[]
+
+  @@map("vendors")
+}
+
+model Expense {
+  id          String        @id @default(uuid())
+  description String
+  amount      Int           
+  dueDate     DateTime
+  status      ExpenseStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+
+  vendorId    String
+  vendor      Vendor        @relation(fields: [vendorId], references: [id])
+
+  @@map("expenses")
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?    @db.Text
+  dueDate     DateTime?
+  assignee    String?    
+  status      TaskStatus @default(TODO)
+  position    Int        
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("tasks")
+}
+
+model HoneymoonItem {
+  id          String   @id @default(uuid())
+  title       String
+  category    String   
+  amount      Int      
+  isPaid      Boolean  @default(false)
+  plannedDate DateTime?
+  createdAt   DateTime @default(now())
+
+  @@map("honeymoon_items")
+}
