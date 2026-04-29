@@ -21,6 +21,12 @@ enum PaymentStatus {
   APPROVED
   FAILED
   REFUNDED
+  REJECTED
+}
+
+enum PaymentMethod {
+  PIX
+  CREDIT_CARD
 }
 
 enum ExpenseStatus {
@@ -70,18 +76,20 @@ model Gift {
 }
 
 model Transaction {
-  id              String        @id @default(uuid())
-  gatewayId       String?       
-  amount          Int           
-  netAmount       Int?          
-  paymentMethod   String        
-  status          PaymentStatus @default(PENDING)
-  createdAt       DateTime      @default(now())
+  id                String        @id @default(uuid())
+  gatewayId         String?       
+  amount            Int           
+  netAmount         Int?          
+  fee               Int?          @default(0)
+  paymentMethod     PaymentMethod 
+  status            PaymentStatus @default(PENDING)
+  externalReference String?       
+  createdAt         DateTime      @default(now())
 
-  giftId          String
-  gift            Gift          @relation(fields: [giftId], references: [id])
-  guestId         String?       
-  guest           Guest?        @relation(fields: [guestId], references: [id])
+  giftId            String
+  gift              Gift          @relation(fields: [giftId], references: [id])
+  guestId           String?       
+  guest             Guest?        @relation(fields: [guestId], references: [id])
 
   @@map("transactions")
 }

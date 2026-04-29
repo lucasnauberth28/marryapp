@@ -1,47 +1,82 @@
-// src/actions/gift-actions.ts
 'use server'
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { z } from "zod"
+import { uploadGiftImage } from "@/lib/supabase"
 
-// Função para buscar todos os presentes cadastrados
+const GiftSchema = z.object({
+  title: z.string().min(2, "O título deve ter ao menos 2 caracteres.").trim(),
+  description: z.string().optional(),
+  amount: z.coerce.number().min(100, "O valor mínimo é R$ 1,00."), // em centavos
+})
+
 export async function getGifts() {
   try {
     const gifts = await prisma.gift.findMany({
       orderBy: { createdAt: 'desc' }
     })
-    return gifts
+    return { success: true, data: gifts }
   } catch (error) {
     console.error("Erro ao buscar presentes:", error)
-    return []
+    return { success: false, error: "Falha ao carregar presentes." }
   }
 }
 
-// Função para criar um novo presente
-export async function createGift(formData: FormData) {
-  const title = formData.get('title') as string
-  const amountString = formData.get('amount') as string
-  
-  if (!title || !amountString) return { error: "Preencha todos os campos" }
+export async function createGiftAction(formData: FormData) {
+  const raw = {
+    title: formData.get('title'),
+    description: formData.get('description'),
+    amount: formData.get('amount'), // digitado em reais, convertido no client ou aqui? Vamos converter aqui se vier com ponto
+  }
 
-  // Converte o valor digitado (ex: 200.50) para centavos (20050) para o banco
-  const amountInCents = Math.round(parseFloat(amountString) * 100)
+  // Se o amount veio como string de reais (ex: "150.50"), convertemos para centavos
+  const amountStr = formData.get('amount') as string
+  let amountInCents = 0
+  if (amountStr) {
+    amountInCents = Math.round(parseFloat(amountStr.replace(',', '.')) * 100)
+  }
+
+  const parsed = GiftSchema.safeParse({ ...raw, amount: amountInCents })
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message }
+  }
+
+  // Upload da Imagem
+  const imageFile = formData.get('image') as File
+  let imageUrl: string | null = null
+
+  if (imageFile && imageFile.size > 0) {
+    imageUrl = await uploadGiftImage(imageFile)
+  }
 
   try {
-    await prisma.gift.create({
+    const gift = await prisma.gift.create({
       data: {
-        title,
+        title: parsed.data.title,
+        description: parsed.data.description || null,
         amount: amountInCents,
-        description: formData.get('description') as string,
-        // imageUrl: aqui depois integraremos o upload do Supabase
+        imageUrl,
       }
     })
 
-    // Limpa o cache da página para mostrar o novo presente instantaneamente
     revalidatePath('/presentes')
-    return { success: true }
+    revalidatePath('/presentes-admin')
+    return { success: true, data: gift }
   } catch (error) {
     console.error("Erro ao criar presente:", error)
-    return { error: "Falha ao salvar no banco" }
+    return { success: false, error: "Falha ao salvar no banco" }
   }
 }
+
+export async function deleteGift(id: string) {
+  try {
+    await prisma.gift.delete({ where: { id } })
+    revalidatePath('/presentes')
+    revalidatePath('/presentes-admin')
+    return { success: true }
+  } catch (error) {
+    console.error("Erro ao deletar presente:", error)
+    return { success: false, error: "Falha ao excluir presente." }
+  }
+}

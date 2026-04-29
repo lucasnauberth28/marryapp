@@ -14,6 +14,7 @@ export async function createHoneymoonItem(formData: FormData) {
   const title = formData.get('title') as string
   const category = formData.get('category') as string
   const amountString = formData.get('amount') as string
+  const isPaid = formData.get('isPaid') === 'on' || formData.get('isPaid') === 'true'
   
   // Conversão segura para centavos (estilo fintech)
   const amountInCents = Math.round(parseFloat(amountString) * 100)
@@ -23,10 +24,18 @@ export async function createHoneymoonItem(formData: FormData) {
       title,
       category,
       amount: amountInCents,
-      isPaid: false
+      isPaid
     }
   })
 
+  revalidatePath('/lua-de-mel')
+}
+
+export async function toggleHoneymoonItemStatus(id: string, isPaid: boolean) {
+  await prisma.honeymoonItem.update({
+    where: { id },
+    data: { isPaid }
+  })
   revalidatePath('/lua-de-mel')
 }
 

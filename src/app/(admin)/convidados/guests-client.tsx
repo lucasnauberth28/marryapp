@@ -1,0 +1,288 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { Guest } from "@prisma/client";
+import { deleteGuest, sendInvite, sendBulkReminders } from "@/actions/guest-actions";
+import { GuestModal } from "./guest-modal";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Trash2,
+  Pencil,
+  Send,
+  MessageSquare,
+  Bell,
+  BellOff,
+  Users,
+} from "lucide-react";
+
+interface GuestsClientProps {
+  initialGuests: Guest[];
+}
+
+const rsvpConfig = {
+  PENDING: {
+    label: "Pendente",
+    className: "bg-amber-50 text-amber-700 border-amber-200",
+  },
+  CONFIRMED: {
+    label: "Confirmado",
+    className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  },
+  DECLINED: {
+    label: "Recusado",
+    className: "bg-red-50 text-red-700 border-red-200",
+  },
+};
+
+export function GuestsClient({ initialGuests }: GuestsClientProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
+  const [bulkStatus, setBulkStatus] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function openAdd() {
+    setEditingGuest(null);
+    setIsModalOpen(true);
+  }
+
+  function openEdit(guest: Guest) {
+    setEditingGuest(guest);
+    setIsModalOpen(true);
+  }
+
+  function handleDelete(id: string) {
+    if (!confirm("Tem certeza que deseja remover este convidado?")) return;
+    startTransition(async () => {
+      await deleteGuest(id);
+    });
+  }
+
+  async function handleSendInvite(id: string) {
+    startTransition(async () => {
+      const result = await sendInvite(id);
+      if (!result.success) alert(`Erro: ${result.error}`);
+    });
+  }
+
+  async function handleBulkReminder(filter: "PENDING" | "CONFIRMED_CLOSE") {
+    setBulkStatus("Disparando mensagens...");
+    startTransition(async () => {
+      const result = await sendBulkReminders(filter);
+      if (result.success) {
+        setBulkStatus(`✅ ${result.sent} de ${result.total ?? result.sent} mensagens enviadas.`);
+      } else {
+        setBulkStatus("❌ Erro no disparo em massa.");
+      }
+      setTimeout(() => setBulkStatus(null), 5000);
+    });
+  }
+
+  const confirmed = initialGuests.filter((g) => g.rsvpStatus === "CONFIRMED").length;
+  const pending = initialGuests.filter((g) => g.rsvpStatus === "PENDING").length;
+  const declined = initialGuests.filter((g) => g.rsvpStatus === "DECLINED").length;
+  const totalWithCompanions = initialGuests.reduce(
+    (acc, g) => acc + 1 + g.allowedCompanions,
+    0
+  );
+
+  return (
+    <div className="flex flex-col gap-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
+            <Users className="w-8 h-8 text-zinc-400" />
+            Convidados
+          </h2>
+          <p className="text-zinc-500 mt-1">
+            Gerencie sua lista e automatize a comunicação via WhatsApp.
+          </p>
+        </div>
+        <Button
+          onClick={openAdd}
+          className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm flex items-center gap-2"
+        >
+          <span className="text-lg leading-none">+</span> Novo Convidado
+        </Button>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: "Total", value: initialGuests.length, color: "text-zinc-900" },
+          { label: "Confirmados", value: confirmed, color: "text-emerald-600" },
+          { label: "Pendentes", value: pending, color: "text-amber-600" },
+          { label: "Total c/ Acomp.", value: totalWithCompanions, color: "text-blue-600" },
+        ].map((s) => (
+          <div
+            key={s.label}
+            className="bg-white rounded-xl border border-zinc-200/80 shadow-sm p-5"
+          >
+            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+              {s.label}
+            </p>
+            <p className={`text-3xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Bulk Actions */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 bg-zinc-50 rounded-xl border border-zinc-200">
+        <div className="flex items-center gap-2 text-zinc-700">
+          <MessageSquare className="w-4 h-4" />
+          <span className="text-sm font-semibold">Disparos em Massa</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleBulkReminder("PENDING")}
+            disabled={isPending || pending === 0}
+            className="text-amber-700 border-amber-200 hover:bg-amber-50 gap-1.5"
+          >
+            <Bell className="w-3.5 h-3.5" />
+            Lembrar Pendentes ({pending})
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleBulkReminder("CONFIRMED_CLOSE")}
+            disabled={isPending || confirmed === 0}
+            className="text-emerald-700 border-emerald-200 hover:bg-emerald-50 gap-1.5"
+          >
+            <BellOff className="w-3.5 h-3.5" />
+            Reconfirmar Próximos ({confirmed})
+          </Button>
+        </div>
+        {bulkStatus && (
+          <span className="text-sm text-zinc-600 ml-auto">{bulkStatus}</span>
+        )}
+      </div>
+
+      {/* Guests Table */}
+      <div className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden">
+        {initialGuests.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-zinc-400">
+            <Users className="w-10 h-10 mb-3 text-zinc-200" />
+            <p className="font-medium text-zinc-500">Nenhum convidado cadastrado</p>
+            <p className="text-sm mt-1">Clique em "Novo Convidado" para começar.</p>
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead className="bg-zinc-50/80 border-b border-zinc-100">
+              <tr>
+                <th className="text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider px-5 py-3">
+                  Nome
+                </th>
+                <th className="text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider px-5 py-3 hidden md:table-cell">
+                  WhatsApp
+                </th>
+                <th className="text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider px-5 py-3 hidden lg:table-cell">
+                  Acomp.
+                </th>
+                <th className="text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider px-5 py-3">
+                  Status
+                </th>
+                <th className="text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider px-5 py-3 hidden md:table-cell">
+                  Convite
+                </th>
+                <th className="w-16 px-5 py-3" />
+              </tr>
+            </thead>
+            <tbody>
+              {initialGuests.map((guest) => {
+                const rsvp = rsvpConfig[guest.rsvpStatus];
+                return (
+                  <tr
+                    key={guest.id}
+                    className="group border-b border-zinc-100 last:border-0 hover:bg-zinc-50/50 transition-colors"
+                  >
+                    <td className="px-5 py-3.5">
+                      <span className="font-medium text-zinc-900">{guest.name}</span>
+                      {guest.email && (
+                        <p className="text-xs text-zinc-400 mt-0.5">{guest.email}</p>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5 hidden md:table-cell">
+                      {guest.phone ? (
+                        <span className="text-sm text-zinc-600 font-mono">
+                          +{guest.phone}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-zinc-400 italic">Não informado</span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5 hidden lg:table-cell">
+                      <span className="text-sm text-zinc-600">{guest.allowedCompanions}</span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <Badge
+                        variant="outline"
+                        className={`font-medium text-xs ${rsvp.className}`}
+                      >
+                        {rsvp.label}
+                      </Badge>
+                    </td>
+                    <td className="px-5 py-3.5 hidden md:table-cell">
+                      {guest.hasReceivedMessage ? (
+                        <Badge
+                          variant="outline"
+                          className="text-xs font-normal text-zinc-400 border-zinc-200"
+                        >
+                          Enviado
+                        </Badge>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={!guest.phone || isPending}
+                          onClick={() => handleSendInvite(guest.id)}
+                          className="text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 gap-1.5 h-7 px-2.5 text-xs"
+                        >
+                          <Send className="w-3 h-3" />
+                          Enviar
+                        </Button>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-zinc-400 hover:text-zinc-900"
+                          onClick={() => openEdit(guest)}
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-zinc-400 hover:text-red-600 hover:bg-red-50"
+                          onClick={() => handleDelete(guest.id)}
+                          disabled={isPending}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Modal */}
+      <GuestModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingGuest(null);
+        }}
+        guest={editingGuest}
+      />
+    </div>
+  );
+}
