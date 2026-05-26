@@ -78,6 +78,7 @@ model Gift {
 model Transaction {
   id                String        @id @default(uuid())
   gatewayId         String?       
+  guestName         String?
   amount            Int           
   netAmount         Int?          
   fee               Int?          @default(0)
@@ -85,6 +86,7 @@ model Transaction {
   status            PaymentStatus @default(PENDING)
   externalReference String?       
   createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @default(now()) @updatedAt
 
   giftId            String
   gift              Gift          @relation(fields: [giftId], references: [id])
@@ -146,4 +148,16 @@ model HoneymoonItem {
   createdAt   DateTime @default(now())
 
   @@map("honeymoon_items")
+}
+
+model MessageTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  content   String   @db.Text
+  mediaUrl  String?
+  mediaType String?  // Ex: image, document, audio
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("message_templates")
 }

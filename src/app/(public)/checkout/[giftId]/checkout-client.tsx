@@ -627,7 +627,7 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
                 Obrigado pelo carinho!
               </h2>
               <p className="text-zinc-500 text-base max-w-sm">
-                Seu presente foi confirmado e os noivos foram notificados.
+                Seu presente foi confirmado e Lucas & Giovanna foram notificados. Muito obrigado pelo carinho!
               </p>
             </div>
 

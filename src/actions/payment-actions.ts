@@ -47,9 +47,9 @@ export async function createPixTransactionAction({
     // 2. Registra a Transação no banco
     const transaction = await prisma.transaction.create({
       data: {
+        guestName,
         amount: gift.amount,
         netAmount: gift.amount,
-        // @ts-ignore
         fee: 0,
         paymentMethod: "PIX",
         status: PaymentStatus.PENDING,
@@ -115,9 +115,9 @@ export async function processCardPaymentAction({
     // 2. Cria a Transação no banco como PENDING
     const transaction = await prisma.transaction.create({
       data: {
+        guestName,
         amount: finalAmount,
         netAmount: gift.amount,
-        // @ts-ignore
         fee: fee,
         paymentMethod: "CREDIT_CARD",
         status: PaymentStatus.PENDING,

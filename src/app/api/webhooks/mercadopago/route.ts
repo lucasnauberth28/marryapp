@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { mpPayment } from "@/lib/mercadopago";
 import { PaymentStatus } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 export async function POST(req: Request) {
   try {
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No payment ID found" }, { status: 400 });
     }
 
-    // Busca os dados atualizados do pagamento diretamente no Mercado Pago
+    // Busca os dados atualizados do pagamento diretamente no Mercado Pago (evita spoofing)
     const mpResponse = await mpPayment.get({ id: paymentId });
 
     const status = mpResponse.status;
@@ -37,30 +38,46 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Transaction not found in database" }, { status: 404 });
     }
 
-    // Se já estiver aprovado, não faz nada
-    if (transaction.status === PaymentStatus.APPROVED) {
-      return NextResponse.json({ success: true, alreadyApproved: true });
-    }
+    let updatedStatus: PaymentStatus | null = null;
 
     if (status === "approved") {
-      // Executa a transação no banco de forma atômica
-      await prisma.$transaction([
-        prisma.transaction.update({
-          where: { id: internalTxId },
-          data: { status: PaymentStatus.APPROVED, gatewayId: String(paymentId) },
-        }),
-        prisma.gift.update({
-          where: { id: transaction.giftId },
-          data: { isPurchased: true },
-        }),
-      ]);
-
-      console.log(`[Webhook MP] Transação ${internalTxId} aprovada.`);
+      updatedStatus = PaymentStatus.APPROVED;
     } else if (status === "rejected") {
-      await prisma.transaction.update({
-        where: { id: internalTxId },
-        data: { status: PaymentStatus.FAILED, gatewayId: String(paymentId) },
-      });
+      updatedStatus = PaymentStatus.REJECTED;
+    } else if (status === "cancelled") {
+      updatedStatus = PaymentStatus.FAILED;
+    } else if (status === "refunded" || status === "charged_back") {
+      updatedStatus = PaymentStatus.REFUNDED;
+    }
+
+    if (updatedStatus && transaction.status !== updatedStatus) {
+      if (updatedStatus === PaymentStatus.APPROVED) {
+        // Se aprovado, atualizamos a transação e marcamos o presente como comprado
+        await prisma.$transaction([
+          prisma.transaction.update({
+            where: { id: internalTxId },
+            data: { status: PaymentStatus.APPROVED, gatewayId: String(paymentId) },
+          }),
+          prisma.gift.update({
+            where: { id: transaction.giftId },
+            data: { isPurchased: true },
+          }),
+        ]);
+        console.log(`[Webhook MP] Transação ${internalTxId} APROVADA com sucesso.`);
+      } else {
+        // Para outros status, apenas atualizamos a transação
+        await prisma.transaction.update({
+          where: { id: internalTxId },
+          data: { status: updatedStatus, gatewayId: String(paymentId) },
+        });
+        console.log(`[Webhook MP] Transação ${internalTxId} atualizada para ${updatedStatus}.`);
+      }
+
+      // Invalidação agressiva de cache para atualizar as telas administrativas e públicas
+      revalidatePath("/dashboard");
+      revalidatePath("/financas");
+      revalidatePath("/presentes");
+      revalidatePath("/presentes-admin");
     }
 
     return NextResponse.json({ success: true });

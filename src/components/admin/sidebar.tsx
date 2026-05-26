@@ -10,12 +10,14 @@ import {
   Gift,
   CheckSquare,
   Plane,
+  MessageSquare
 } from "lucide-react";
 
 // Array com as rotas para facilitar a manutenção
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Convidados", href: "/convidados", icon: Users },
+  { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
   { name: "Finanças", href: "/financas", icon: Wallet },
   { name: "Presentes", href: "/presentes-admin", icon: Gift },
   { name: "Pendências", href: "/pendencias", icon: CheckSquare },
@@ -30,10 +32,10 @@ export function Sidebar() {
       <div className="h-16 flex items-center px-6 border-b border-zinc-200">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xl leading-none">M</span>
+            <span className="text-white font-bold text-sm leading-none">L&G</span>
           </div>
           <h1 className="font-bold text-xl text-zinc-900 tracking-tight">
-            MarryApp
+            Lucas & Giovanna
           </h1>
         </div>
       </div>

@@ -24,10 +24,10 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
           <Heart className="w-5 h-5 fill-pink-600" />
         </div>
         <h1 className="text-4xl font-extrabold text-zinc-900 tracking-tight sm:text-5xl">
-          Nossa Lista de Presentes
+          Lista de Presentes
         </h1>
         <p className="text-lg text-zinc-500">
-          Queridos amigos e familiares, sua presença é o nosso maior presente! Se desejar nos ajudar a começar nossa nova vida, escolha um dos itens abaixo.
+          Queridos amigos e familiares, a presença de vocês é o nosso maior presente! Se desejarem nos ajudar a começar essa nova jornada juntos, escolham um dos itens abaixo. Com amor, Lucas & Giovanna ❤️
         </p>
       </div>
 
