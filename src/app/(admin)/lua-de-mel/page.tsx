@@ -7,9 +7,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Trash2, Plane, MapPin, DollarSign, Palmtree } from "lucide-react"
 import { NewHoneymoonItemModal } from "./new-item-modal"
+import { verifyAdminSession } from "@/actions/auth-actions"
 
 export default async function HoneymoonPage() {
+  await verifyAdminSession()
+  
   const items = await getHoneymoonItems()
+
   const totalCents = items.reduce((acc, item) => acc + item.amount, 0)
   const paidCents = items.filter(i => i.isPaid).reduce((acc, item) => acc + item.amount, 0)
 

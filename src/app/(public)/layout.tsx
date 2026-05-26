@@ -10,14 +10,14 @@ export default function PublicLayout({
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-zinc-900 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg leading-none">M</span>
+              <span className="text-white font-bold text-sm leading-none">L&G</span>
             </div>
             <span className="font-bold text-xl text-zinc-900 tracking-tight">
-              MarryApp
+              Lucas & Giovanna
             </span>
           </div>
           <span className="text-sm font-medium text-zinc-400 italic">
-            Lista de Presentes Virtual
+            Nosso Casamento ❤️
           </span>
         </div>
       </header>
@@ -30,7 +30,7 @@ export default function PublicLayout({
       {/* Footer minimalista */}
       <footer className="border-t border-zinc-200/50 bg-white py-6">
         <div className="max-w-6xl mx-auto px-6 text-center text-xs text-zinc-400">
-          MarryApp © 2026 — Plataforma de Gerenciamento de Casamentos
+          Lucas & Giovanna © 2026 — Feito com ❤️ para o nosso grande dia
         </div>
       </footer>
     </div>

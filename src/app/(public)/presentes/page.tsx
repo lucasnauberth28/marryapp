@@ -3,8 +3,8 @@ import { getGifts } from "@/actions/gift-actions"
 import { PublicGiftsClient } from "./public-gifts-client"
 
 export const metadata: Metadata = {
-  title: "Lista de Presentes | MarryApp",
-  description: "Escolha um presente para os noivos",
+  title: "Lista de Presentes | Lucas & Giovanna",
+  description: "Escolha um presente para Lucas e Giovanna",
 }
 
 export default async function ListaPresentesPublicPage() {

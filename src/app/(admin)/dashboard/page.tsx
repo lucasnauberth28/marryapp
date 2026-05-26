@@ -1,16 +1,28 @@
 // src/app/(admin)/dashboard/page.tsx
 import prisma from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, Users, CheckSquare, TrendingDown } from "lucide-react";
+import { Wallet, Users, CheckSquare, TrendingDown, ArrowUpRight, ArrowDownRight, CreditCard } from "lucide-react";
+import { verifyAdminSession } from "@/actions/auth-actions";
 
 export default async function DashboardPage() {
+  await verifyAdminSession();
+
   // 1. Buscando o Total Arrecadado (Presentes Comprados ou Transações Aprovadas)
-  // Vamos usar a soma das transações aprovadas (se existirem)
-  const transacoes = await prisma.transaction.aggregate({
-    _sum: { netAmount: true },
+  const transacoesAprovadas = await prisma.transaction.findMany({
     where: { status: "APPROVED" },
+    include: { guest: true },
   });
-  const totalArrecadado = transacoes._sum.netAmount || 0;
+
+  const totalArrecadado = transacoesAprovadas.reduce((acc, t) => acc + (t.netAmount || 0), 0);
+
+  // Totais por método
+  const totalPix = transacoesAprovadas
+    .filter(t => t.paymentMethod === "PIX")
+    .reduce((acc, t) => acc + (t.netAmount || 0), 0);
+
+  const totalCartao = transacoesAprovadas
+    .filter(t => t.paymentMethod === "CREDIT_CARD")
+    .reduce((acc, t) => acc + (t.netAmount || 0), 0);
 
   // 2. Buscando Total de Despesas Pendentes (Para controle financeiro)
   const despesas = await prisma.expense.aggregate({
@@ -29,64 +41,91 @@ export default async function DashboardPage() {
     where: { status: { not: "DONE" } },
   });
 
+  // 5. Últimas 5 Transações
+  const ultimasTransacoes = await prisma.transaction.findMany({
+    where: { status: "APPROVED" },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+    include: { guest: true },
+  });
+
+  // Cálculo de porcentagem de métodos (Gráfico em Barras)
+  const totalMetodos = totalPix + totalCartao;
+  const pctPix = totalMetodos > 0 ? (totalPix / totalMetodos) * 100 : 0;
+  const pctCartao = totalMetodos > 0 ? (totalCartao / totalMetodos) * 100 : 100;
+
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-zinc-900">Visão Geral</h2>
-        <p className="text-zinc-500 mt-2">Acompanhe os números do seu casamento em tempo real.</p>
+        <h2 className="text-3xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
+          Visão Geral
+        </h2>
+        <p className="text-zinc-500 mt-2">Acompanhe os números do casamento de Lucas & Giovanna em tempo real.</p>
       </div>
       
       {/* Cards de Métricas Principais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        <Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="shadow-sm border-zinc-200/60 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-600">Total Arrecadado</CardTitle>
-            <Wallet className="h-4 w-4 text-emerald-600" />
+            <CardTitle className="text-sm font-medium text-zinc-500">Total Arrecadado</CardTitle>
+            <div className="h-8 w-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+              <Wallet className="h-4 w-4 text-emerald-600" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-zinc-900">
               {(totalArrecadado / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
             </div>
-            <p className="text-xs text-zinc-500 mt-1">Líquido de taxas</p>
+            <p className="text-xs text-zinc-500 mt-1 flex items-center gap-1">
+              <ArrowUpRight className="w-3.5 h-3.5 text-emerald-600" /> 
+              Líquido de taxas
+            </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-sm border-zinc-200/60 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-600">Despesas Pendentes</CardTitle>
-            <TrendingDown className="h-4 w-4 text-red-600" />
+            <CardTitle className="text-sm font-medium text-zinc-500">Despesas Pendentes</CardTitle>
+            <div className="h-8 w-8 rounded-xl bg-red-50 flex items-center justify-center">
+              <TrendingDown className="h-4 w-4 text-red-600" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-zinc-900">
               {(totalDespesas / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
             </div>
-            <p className="text-xs text-zinc-500 mt-1">Contas a pagar</p>
+            <p className="text-xs text-zinc-500 mt-1 flex items-center gap-1">
+              <ArrowDownRight className="w-3.5 h-3.5 text-red-500" />
+              Contas a pagar
+            </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-sm border-zinc-200/60 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-600">Confirmados</CardTitle>
-            <Users className="h-4 w-4 text-blue-600" />
+            <CardTitle className="text-sm font-medium text-zinc-500">Confirmados</CardTitle>
+            <div className="h-8 w-8 rounded-xl bg-blue-50 flex items-center justify-center">
+              <Users className="h-4 w-4 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-zinc-900">{convidadosConfirmados}</div>
-            <p className="text-xs text-zinc-500 mt-1">Pessoas com presença confirmada</p>
+            <p className="text-xs text-zinc-500 mt-1">Pessoas na lista</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-sm border-zinc-200/60 rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-600">Tarefas Pendentes</CardTitle>
-            <CheckSquare className="h-4 w-4 text-amber-600" />
+            <CardTitle className="text-sm font-medium text-zinc-500">Tarefas Pendentes</CardTitle>
+            <div className="h-8 w-8 rounded-xl bg-amber-50 flex items-center justify-center">
+              <CheckSquare className="h-4 w-4 text-amber-600" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-zinc-900">{tarefasPendentes}</div>
-            <p className="text-xs text-zinc-500 mt-1">Noivos trabalhando...</p>
+            <p className="text-xs text-zinc-500 mt-1">Checklist ativo</p>
           </CardContent>
         </Card>
-
       </div>
 
       {/* Barra de Progresso Financeira (Substitui os placeholders Em breve) */}
@@ -124,6 +163,7 @@ export default async function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+
       </div>
     </div>
   );
