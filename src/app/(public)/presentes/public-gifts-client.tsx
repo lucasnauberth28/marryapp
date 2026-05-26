@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Gift } from "@prisma/client"
+import { GiftLocal as Gift } from "@/types/local"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Gift as GiftIcon, Heart, ImageOff } from "lucide-react"

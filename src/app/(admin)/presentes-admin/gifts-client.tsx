@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
-import { Gift } from "@prisma/client"
+import { GiftLocal as Gift } from "@/types/local"
 import { deleteGift } from "@/actions/gift-actions"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"

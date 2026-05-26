@@ -2,7 +2,7 @@
 
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { TaskStatus } from "@prisma/client";
+import { TaskStatus } from "@/types/kanban";
 import { KanbanTask } from "./kanban-task";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";

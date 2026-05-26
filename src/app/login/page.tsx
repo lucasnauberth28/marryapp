@@ -1,100 +1,84 @@
 "use client";
 
-import { useActionState } from "react";
-import { login } from "@/actions/auth-actions";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Heart, Loader2, Lock } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { login } from "@/actions/auth-actions";
+import { Lock, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
-  const [state, formAction, isPending] = useActionState(login, null);
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const res = await login(password);
+      if (res.success) {
+        router.push("/dashboard");
+      } else {
+        setError(res.error || "Erro ao fazer login.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Erro de servidor.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col items-center justify-center px-6 antialiased">
-      {/* Decorative background gradients */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-100/30 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-zinc-200/40 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="w-full max-w-md space-y-8 relative z-10 animate-in fade-in zoom-in-95 duration-500">
-        {/* Logo/Branding */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl border border-zinc-200 shadow-sm">
-            <Heart className="w-8 h-8 text-pink-500 fill-pink-500" />
+    <div className="min-h-screen flex items-center justify-center bg-zinc-50 p-4">
+      <Card className="w-full max-w-md shadow-xl border-zinc-200/60">
+        <CardHeader className="space-y-2 text-center pb-6">
+          <div className="w-12 h-12 bg-zinc-900 rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-sm">
+            <Lock className="text-white w-6 h-6" />
           </div>
-          <h1 className="text-3xl font-black text-zinc-900 tracking-tight">
-            Lucas & Giovanna
-          </h1>
-          <p className="text-zinc-500 text-sm font-medium">
-            Acesso Restrito aos Noivos
-          </p>
-        </div>
-
-        {/* Card do Formulário */}
-        <div className="bg-white p-8 rounded-[32px] border border-zinc-200/60 shadow-xl shadow-zinc-100/50">
-          <form action={formAction} className="space-y-6">
+          <CardTitle className="text-2xl font-bold tracking-tight">Área Restrita</CardTitle>
+          <CardDescription>
+            Digite a senha mestra para acessar o painel do casamento.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label
-                htmlFor="email"
-                className="text-xs font-bold uppercase tracking-wider text-zinc-500"
-              >
-                E-mail
-              </label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                required
-                placeholder="seu-email@exemplo.com"
-                className="h-12 rounded-xl bg-zinc-50/50 border-zinc-200 focus-visible:ring-zinc-900 focus-visible:bg-white transition-all text-sm"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="text-xs font-bold uppercase tracking-wider text-zinc-500"
-              >
-                Senha
-              </label>
-              <Input
-                id="password"
-                name="password"
                 type="password"
+                placeholder="Senha de acesso..."
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-12 text-center text-lg tracking-widest"
                 required
-                placeholder="••••••••"
-                className="h-12 rounded-xl bg-zinc-50/50 border-zinc-200 focus-visible:ring-zinc-900 focus-visible:bg-white transition-all text-sm"
               />
             </div>
-
-            {/* Error Message */}
-            {state?.error && (
-              <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-xs font-medium text-red-600 animate-in shake duration-300">
-                {state.error}
-              </div>
+            
+            {error && (
+              <p className="text-sm text-red-500 text-center font-medium">{error}</p>
             )}
 
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="w-full h-12 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-bold tracking-wide shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+            <Button 
+              type="submit" 
+              className="w-full h-12 text-base font-semibold"
+              disabled={isLoading}
             >
-              {isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
+              {isLoading ? (
                 <>
-                  <Lock className="w-4 h-4 mr-2" />
-                  Entrar no Painel
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Verificando...
                 </>
+              ) : (
+                "Entrar"
               )}
             </Button>
           </form>
-        </div>
-
-        {/* Minimal Footer */}
-        <p className="text-center text-xs text-zinc-400">
-          Esqueceu sua senha? Solicite via painel do Supabase.
-        </p>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

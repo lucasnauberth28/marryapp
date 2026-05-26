@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Guest } from "@prisma/client";
-import { deleteGuest, sendInvite, sendBulkReminders } from "@/actions/guest-actions";
+import { GuestLocal as Guest } from "@/types/local";
+import { deleteGuest, sendInvite } from "@/actions/guest-actions";
+import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-actions";
 import { GuestModal } from "./guest-modal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import {
   Bell,
   BellOff,
   Users,
+  Mail,
 } from "lucide-react";
 
 interface GuestsClientProps {
@@ -65,22 +67,29 @@ export function GuestsClient({ initialGuests }: GuestsClientProps) {
     });
   }
 
-  async function handleBulkReminder(filter: "PENDING" | "CONFIRMED_CLOSE") {
-    setBulkStatus("Disparando mensagens...");
+  async function handleBulkReminder() {
+    setBulkStatus("⏳ Disparando lembretes...");
     startTransition(async () => {
-      const result = await sendBulkReminders(filter);
-      if (result.success) {
-        setBulkStatus(`✅ ${result.sent} de ${result.total ?? result.sent} mensagens enviadas.`);
-      } else {
-        setBulkStatus("❌ Erro no disparo em massa.");
-      }
-      setTimeout(() => setBulkStatus(null), 5000);
+      const result = await sendRsvpReminders();
+      setBulkStatus(`✅ ${result.message}`);
+      setTimeout(() => setBulkStatus(null), 6000);
+    });
+  }
+
+  async function handleSendInitialInvites() {
+    if (!confirm(`Enviar convites para todos os convidados que ainda não receberam? (${notInvited} pessoas)`)) return;
+    setBulkStatus("⏳ Enviando convites iniciais...");
+    startTransition(async () => {
+      const result = await sendInitialInvites();
+      setBulkStatus(`✅ ${result.message}`);
+      setTimeout(() => setBulkStatus(null), 6000);
     });
   }
 
   const confirmed = initialGuests.filter((g) => g.rsvpStatus === "CONFIRMED").length;
   const pending = initialGuests.filter((g) => g.rsvpStatus === "PENDING").length;
   const declined = initialGuests.filter((g) => g.rsvpStatus === "DECLINED").length;
+  const notInvited = initialGuests.filter((g) => !g.hasReceivedMessage && g.phone).length;
   const totalWithCompanions = initialGuests.reduce(
     (acc, g) => acc + 1 + g.allowedCompanions,
     0
@@ -128,36 +137,36 @@ export function GuestsClient({ initialGuests }: GuestsClientProps) {
       </div>
 
       {/* Bulk Actions */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-4 bg-zinc-50 rounded-xl border border-zinc-200">
+      <div className="flex flex-col gap-3 p-4 bg-zinc-50 rounded-xl border border-zinc-200">
         <div className="flex items-center gap-2 text-zinc-700">
           <MessageSquare className="w-4 h-4" />
-          <span className="text-sm font-semibold">Disparos em Massa</span>
+          <span className="text-sm font-semibold">Automação WhatsApp</span>
+          {bulkStatus && (
+            <span className="text-sm text-zinc-600 ml-auto font-normal">{bulkStatus}</span>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleBulkReminder("PENDING")}
+            onClick={handleSendInitialInvites}
+            disabled={isPending || notInvited === 0}
+            className="text-blue-700 border-blue-200 hover:bg-blue-50 gap-1.5"
+          >
+            <Mail className="w-3.5 h-3.5" />
+            Enviar Convites ({notInvited} sem convite)
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBulkReminder}
             disabled={isPending || pending === 0}
             className="text-amber-700 border-amber-200 hover:bg-amber-50 gap-1.5"
           >
             <Bell className="w-3.5 h-3.5" />
             Lembrar Pendentes ({pending})
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleBulkReminder("CONFIRMED_CLOSE")}
-            disabled={isPending || confirmed === 0}
-            className="text-emerald-700 border-emerald-200 hover:bg-emerald-50 gap-1.5"
-          >
-            <BellOff className="w-3.5 h-3.5" />
-            Reconfirmar Próximos ({confirmed})
-          </Button>
         </div>
-        {bulkStatus && (
-          <span className="text-sm text-zinc-600 ml-auto">{bulkStatus}</span>
-        )}
       </div>
 
       {/* Guests Table */}

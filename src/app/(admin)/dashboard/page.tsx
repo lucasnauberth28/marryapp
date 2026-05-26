@@ -128,94 +128,40 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Seção de Gráficos Nativos e Listagem Real */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Gráfico de Arrecadação por Método */}
-        <Card className="shadow-sm border-zinc-200/60 rounded-2xl p-6 flex flex-col justify-between">
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400 mb-6">
-              Arrecadação por Método
-            </h3>
-            
-            <div className="space-y-6">
-              {/* PIX */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="font-semibold text-zinc-700 flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
-                    Pix (Sem Taxas)
-                  </span>
-                  <span className="font-bold text-zinc-900">
-                    {(totalPix / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </span>
-                </div>
-                <div className="w-full bg-zinc-100 rounded-full h-3 overflow-hidden">
-                  <div 
-                    className="bg-emerald-500 h-full rounded-full transition-all duration-1000" 
-                    style={{ width: `${totalMetodos > 0 ? pctPix : 0}%` }}
-                  />
-                </div>
+      {/* Barra de Progresso Financeira (Substitui os placeholders Em breve) */}
+      <div className="mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-bold text-zinc-900">Saúde Financeira do Casamento</CardTitle>
+            <p className="text-sm text-zinc-500">Comparativo entre o total arrecadado com presentes e as despesas cadastradas.</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between text-sm font-medium">
+                <span className="text-emerald-600">Arrecadado: {(totalArrecadado / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                <span className="text-red-600">Despesas: {(totalDespesas / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+              </div>
+              
+              {/* Barra de progresso visual */}
+              <div className="h-4 w-full bg-zinc-100 rounded-full overflow-hidden flex">
+                <div 
+                  className="bg-emerald-500 h-full" 
+                  style={{ width: `${totalArrecadado === 0 && totalDespesas === 0 ? 50 : Math.min(100, (totalArrecadado / (totalArrecadado + totalDespesas || 1)) * 100)}%` }}
+                />
+                <div 
+                  className="bg-red-500 h-full" 
+                  style={{ width: `${totalArrecadado === 0 && totalDespesas === 0 ? 50 : Math.min(100, (totalDespesas / (totalArrecadado + totalDespesas || 1)) * 100)}%` }}
+                />
               </div>
 
-              {/* Cartão de Crédito */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="font-semibold text-zinc-700 flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-violet-500 inline-block" />
-                    Cartão de Crédito
-                  </span>
-                  <span className="font-bold text-zinc-900">
-                    {(totalCartao / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </span>
-                </div>
-                <div className="w-full bg-zinc-100 rounded-full h-3 overflow-hidden">
-                  <div 
-                    className="bg-violet-500 h-full rounded-full transition-all duration-1000" 
-                    style={{ width: `${totalMetodos > 0 ? pctCartao : 0}%` }}
-                  />
-                </div>
+              <div className="pt-4 border-t border-zinc-100 mt-4 flex justify-between items-center">
+                <span className="text-sm text-zinc-500">Saldo Atual (Líquido)</span>
+                <span className={`text-lg font-bold ${totalArrecadado - totalDespesas >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                  {((totalArrecadado - totalDespesas) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </span>
               </div>
             </div>
-          </div>
-
-          <div className="mt-6 text-center text-xs text-zinc-400 border-t border-zinc-100/80 pt-4">
-            Proporção de pagamentos aprovados.
-          </div>
-        </Card>
-
-        {/* Últimos Pagamentos */}
-        <Card className="shadow-sm border-zinc-200/60 rounded-2xl p-6">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400 mb-4">
-            Últimos Pagamentos
-          </h3>
-
-          <div className="space-y-4">
-            {ultimasTransacoes.length === 0 ? (
-              <div className="text-center py-12 text-zinc-400 text-sm">
-                Nenhum pagamento aprovado ainda.
-              </div>
-            ) : (
-              ultimasTransacoes.map((tx) => (
-                <div key={tx.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-zinc-50/80 transition-all border border-zinc-100/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-zinc-700 text-sm">
-                      {tx.guest?.name ? tx.guest.name.substring(0, 2).toUpperCase() : "CO"}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-zinc-900">{tx.guest?.name || "Convidado"}</p>
-                      <p className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
-                        {tx.paymentMethod === "PIX" ? "Pix" : "Cartão"} • {new Date(tx.createdAt).toLocaleDateString('pt-BR')}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="font-extrabold text-zinc-900 text-sm">
-                    {((tx.netAmount || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          </CardContent>
         </Card>
 
       </div>

@@ -51,14 +51,28 @@ model Guest {
   phone              String?       
   email              String?
   rsvpStatus         RsvpStatus    @default(PENDING)
-  allowedCompanions  Int           @default(0)
+  allowedCompanions Int           @default(0)
   hasReceivedMessage Boolean       @default(false) 
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
+  tableId            String?
+  table              Table?        @relation(fields: [tableId], references: [id])
+
   transactions       Transaction[] 
 
   @@map("guests")
+}
+
+model Table {
+  id          String   @id @default(uuid())
+  name        String
+  capacity    Int      @default(10)
+  createdAt   DateTime @default(now())
+
+  guests      Guest[]
+
+  @@map("tables")
 }
 
 model Gift {
