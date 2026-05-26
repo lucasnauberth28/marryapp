@@ -204,3 +204,47 @@ export async function sendBulkReminders(
 
   return { success: true, sent: sentCount, total: guests.length };
 }
+
+// ==========================================
+// RSVP PÚBLICO
+// ==========================================
+
+export async function findGuestByPhone(phone: string) {
+  // Limpa tudo que não for número para comparar
+  const cleanPhone = phone.replace(/\D/g, "");
+  
+  if (cleanPhone.length < 10) return null;
+
+  // Busca convidado ignorando formatação do telefone
+  const guests = await prisma.guest.findMany();
+  const guest = guests.find(g => g.phone && g.phone.replace(/\D/g, "") === cleanPhone);
+
+  return guest || null;
+}
+
+export async function publicConfirmRsvp(id: string, status: RsvpStatus, confirmedCompanions: number) {
+  try {
+    const guest = await prisma.guest.findUnique({ where: { id } });
+    if (!guest) return { success: false, error: "Convidado não encontrado." };
+
+    if (confirmedCompanions > guest.allowedCompanions) {
+      return { success: false, error: `Você só pode levar até ${guest.allowedCompanions} acompanhante(s).` };
+    }
+
+    await prisma.guest.update({
+      where: { id },
+      data: {
+        rsvpStatus: status,
+        // Optional: you could save the confirmed number somewhere if the schema supported it, 
+        // for now we just validate they aren't bringing more than allowed.
+        // Wait, the schema just has allowedCompanions. If they bring less, we don't have a field for 'confirmedCompanions'. 
+        // We'll just update the status.
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("[publicConfirmRsvp]", error);
+    return { success: false, error: "Erro ao confirmar presença." };
+  }
+}

@@ -89,13 +89,40 @@ export default async function DashboardPage() {
 
       </div>
 
-      {/* Espaço reservado para futuros gráficos ou tabelas de atalho */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-        <Card className="h-64 flex items-center justify-center bg-zinc-50/50 border-dashed">
-          <p className="text-zinc-500 text-sm">Gráfico de Arrecadação (Em breve)</p>
-        </Card>
-        <Card className="h-64 flex items-center justify-center bg-zinc-50/50 border-dashed">
-          <p className="text-zinc-500 text-sm">Últimos Pagamentos (Em breve)</p>
+      {/* Barra de Progresso Financeira (Substitui os placeholders Em breve) */}
+      <div className="mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-bold text-zinc-900">Saúde Financeira do Casamento</CardTitle>
+            <p className="text-sm text-zinc-500">Comparativo entre o total arrecadado com presentes e as despesas cadastradas.</p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between text-sm font-medium">
+                <span className="text-emerald-600">Arrecadado: {(totalArrecadado / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                <span className="text-red-600">Despesas: {(totalDespesas / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+              </div>
+              
+              {/* Barra de progresso visual */}
+              <div className="h-4 w-full bg-zinc-100 rounded-full overflow-hidden flex">
+                <div 
+                  className="bg-emerald-500 h-full" 
+                  style={{ width: `${totalArrecadado === 0 && totalDespesas === 0 ? 50 : Math.min(100, (totalArrecadado / (totalArrecadado + totalDespesas || 1)) * 100)}%` }}
+                />
+                <div 
+                  className="bg-red-500 h-full" 
+                  style={{ width: `${totalArrecadado === 0 && totalDespesas === 0 ? 50 : Math.min(100, (totalDespesas / (totalArrecadado + totalDespesas || 1)) * 100)}%` }}
+                />
+              </div>
+
+              <div className="pt-4 border-t border-zinc-100 mt-4 flex justify-between items-center">
+                <span className="text-sm text-zinc-500">Saldo Atual (Líquido)</span>
+                <span className={`text-lg font-bold ${totalArrecadado - totalDespesas >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                  {((totalArrecadado - totalDespesas) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </span>
+              </div>
+            </div>
+          </CardContent>
         </Card>
       </div>
     </div>

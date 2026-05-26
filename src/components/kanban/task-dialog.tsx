@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TaskStatus } from "@prisma/client";
+import { TaskStatus } from "@/types/kanban";
 import {
   Dialog,
   DialogContent,

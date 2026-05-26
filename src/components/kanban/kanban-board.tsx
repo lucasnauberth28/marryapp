@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Task, TaskStatus } from "@prisma/client";
+import { BoardItem, TaskStatus } from "@/types/kanban";
 import {
   DndContext,
   DragOverlay,

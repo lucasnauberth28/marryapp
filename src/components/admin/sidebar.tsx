@@ -16,7 +16,9 @@ import {
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Convidados", href: "/convidados", icon: Users },
-  { name: "Finanças", href: "/financas", icon: Wallet },
+  { name: "Fornecedores", href: "/fornecedores", icon: Users }, // Using Users for now or another icon
+  { name: "Despesas", href: "/despesas", icon: Wallet },
+  { name: "Mesas", href: "/mesas", icon: Users }, // Using Users for now
   { name: "Presentes", href: "/presentes-admin", icon: Gift },
   { name: "Pendências", href: "/pendencias", icon: CheckSquare },
   { name: "Lua de Mel", href: "/lua-de-mel", icon: Plane },
