@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MarryApp | Gestão",
-  description: "Gerenciando meu casamento",
+  title: "Lucas & Giovanna | Casamento",
+  description: "Plataforma de gestão do casamento de Lucas e Giovanna",
 };
 
 export default function RootLayout({

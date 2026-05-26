@@ -103,18 +103,86 @@ export async function sendInteractiveMessage({
   return { success: true };
 }
 
+interface SendMediaOptions {
+  phone: string;
+  mediaUrl: string;
+  mediaType: string; 
+  caption?: string;
+  fileName?: string;
+}
+
+/**
+ * Envia imagem, PDF, áudio ou outro arquivo via WhatsApp.
+ */
+export async function sendMediaMessage({ 
+  phone, 
+  mediaUrl, 
+  mediaType, 
+  caption, 
+  fileName 
+}: SendMediaOptions) {
+  if (!isConfigured()) {
+    console.warn("[Evolution API] Serviço não configurado. Mídia não enviada.");
+    return { success: false, error: "Evolution API não configurada." };
+  }
+
+  const response = await fetch(
+    `${EVOLUTION_URL}/message/sendMedia/${EVOLUTION_INSTANCE}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: EVOLUTION_KEY!,
+      },
+      body: JSON.stringify({
+        number: phone,
+        mediatype: mediaType,
+        media: mediaUrl,
+        fileName: fileName || `arquivo`,
+        caption: caption || "",
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.text();
+    console.error("[Evolution API] Erro ao enviar mídia:", err);
+    return { success: false, error: err };
+  }
+
+  return { success: true };
+}
+
 /**
  * Dispara mensagens para uma lista de convidados com rate limiting.
- * Aguarda 300ms entre cada envio para respeitar os limites da API.
+ * Suporta mensagens de texto puro OU mensagens com mídia.
  */
 export async function sendBulkMessages(
-  recipients: Array<{ phone: string; message: string }>,
+  recipients: Array<{ 
+    phone: string; 
+    message: string; 
+    mediaUrl?: string | null; 
+    mediaType?: string | null; 
+  }>,
   delayMs = 300
 ) {
   const results = [];
 
   for (const r of recipients) {
-    const result = await sendTextMessage({ phone: r.phone, text: r.message });
+    let result;
+    if (r.mediaUrl && r.mediaType) {
+      // Dispara arquivo de mídia com legenda
+      result = await sendMediaMessage({ 
+        phone: r.phone, 
+        mediaUrl: r.mediaUrl, 
+        mediaType: r.mediaType, 
+        caption: r.message 
+      });
+    } else {
+      // Dispara texto puro
+      result = await sendTextMessage({ phone: r.phone, text: r.message });
+    }
+
     results.push({ phone: r.phone, ...result });
     // Rate limiting: aguarda antes do próximo envio
     await new Promise((resolve) => setTimeout(resolve, delayMs));

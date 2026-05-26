@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { mpPayment } from "@/lib/mercadopago";
 import { sendTextMessage } from "@/lib/evolution";
 import { PaymentStatus } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://seuapp.vercel.app";
 
@@ -55,13 +56,10 @@ export async function POST(req: Request) {
       await prisma.$transaction([
         prisma.transaction.update({
           where: { id: internalTxId },
-          data: { status: PaymentStatus.APPROVED, gatewayId: String(paymentId) },
-        }),
-        prisma.gift.update({
-          where: { id: transaction.giftId },
-          data: { isPurchased: true },
-        }),
-      ]);
+          data: { status: updatedStatus, gatewayId: String(paymentId) },
+        });
+        console.log(`[Webhook MP] Transação ${internalTxId} atualizada para ${updatedStatus}.`);
+      }
 
       console.log(`[Webhook MP] ✅ Transação ${internalTxId} aprovada.`);
 

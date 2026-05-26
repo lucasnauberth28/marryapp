@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 import { CheckoutClient } from "./checkout-client";
 
 export const metadata: Metadata = {
-  title: "Checkout de Presente | MarryApp",
-  description: "Escolha a melhor forma de presentear os noivos",
+  title: "Checkout de Presente | Lucas & Giovanna",
+  description: "Escolha a melhor forma de presentear Lucas e Giovanna",
 };
 
 interface CheckoutPageProps {

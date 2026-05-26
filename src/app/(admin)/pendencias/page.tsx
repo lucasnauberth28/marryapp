@@ -1,14 +1,18 @@
 import { Metadata } from "next";
 import { getTasks } from "@/actions/tasks";
 import { KanbanBoard } from "@/components/kanban/kanban-board";
+import { verifyAdminSession } from "@/actions/auth-actions";
 
 export const metadata: Metadata = {
-  title: "Pendências | MarryApp",
-  description: "Gerencie as tarefas do seu casamento",
+  title: "Pendências | Lucas & Giovanna",
+  description: "Gerencie as tarefas do casamento",
 };
 
 export default async function PendenciasPage() {
+  await verifyAdminSession();
+  
   const { data: tasks, success } = await getTasks();
+
 
   if (!success) {
     return (
