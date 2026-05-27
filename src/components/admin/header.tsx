@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { 
   LayoutDashboard, Users as UsersIcon, LayoutGrid, 
-  Wallet, GiftIcon, Settings as SettingsIcon, CheckSquare, MessageSquare, Plane,
+  Wallet, Gift as GiftIcon, Settings as SettingsIcon, CheckSquare, MessageSquare, Plane,
   Shield, KeyRound, LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
