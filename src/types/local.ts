@@ -1,10 +1,34 @@
 // Tipos locais para uso em Client Components.
 // NÃO importar de @prisma/client em "use client" — quebra o build (bundle do browser).
 
-export type RsvpStatus = "PENDING" | "CONFIRMED" | "DECLINED";
-export type ExpenseStatus = "PENDING" | "PAID" | "OVERDUE";
-export type PaymentStatus = "PENDING" | "APPROVED" | "FAILED" | "REFUNDED" | "REJECTED";
-export type PaymentMethod = "PIX" | "CREDIT_CARD";
+export const RsvpStatus = {
+  PENDING: "PENDING",
+  CONFIRMED: "CONFIRMED",
+  DECLINED: "DECLINED",
+} as const;
+export type RsvpStatus = (typeof RsvpStatus)[keyof typeof RsvpStatus];
+
+export const ExpenseStatus = {
+  PENDING: "PENDING",
+  PAID: "PAID",
+  OVERDUE: "OVERDUE",
+} as const;
+export type ExpenseStatus = (typeof ExpenseStatus)[keyof typeof ExpenseStatus];
+
+export const PaymentStatus = {
+  PENDING: "PENDING",
+  APPROVED: "APPROVED",
+  FAILED: "FAILED",
+  REFUNDED: "REFUNDED",
+  REJECTED: "REJECTED",
+} as const;
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus];
+
+export const PaymentMethod = {
+  PIX: "PIX",
+  CREDIT_CARD: "CREDIT_CARD",
+} as const;
+export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod];
 
 export interface GuestLocal {
   id: string;

@@ -56,12 +56,15 @@ export async function POST(req: Request) {
       await prisma.$transaction([
         prisma.transaction.update({
           where: { id: internalTxId },
-          data: { status: updatedStatus, gatewayId: String(paymentId) },
-        });
-        console.log(`[Webhook MP] Transação ${internalTxId} atualizada para ${updatedStatus}.`);
-      }
+          data: { status: PaymentStatus.APPROVED, gatewayId: String(paymentId) },
+        }),
+        prisma.gift.update({
+          where: { id: transaction.giftId },
+          data: { isPurchased: true },
+        }),
+      ]);
 
-      console.log(`[Webhook MP] ✅ Transação ${internalTxId} aprovada.`);
+      console.log(`[Webhook MP] ✅ Transação ${internalTxId} aprovada e presente atualizado.`);
 
       // 5. Dispara WhatsApp de agradecimento se o convidado tiver telefone
       const guest = transaction.guest;
