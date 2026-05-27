@@ -24,7 +24,6 @@ import {
   updateTask,
   updateTaskStatus,
 } from "@/actions/tasks";
-import { BoardItem } from "@/types/kanban";
 
 interface KanbanBoardProps {
   initialTasks: BoardItem[];
