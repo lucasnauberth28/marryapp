@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { logout } from "@/actions/auth-actions";
 import {
   Users as UsersIcon,
   LayoutDashboard,
@@ -33,7 +34,7 @@ const navItems = [
   { name: "Configurações", href: "/configuracoes", icon: SettingsIcon },
   { name: "Usuários", href: "/usuarios", icon: KeyRound },
   { name: "Perfis", href: "/perfis", icon: Shield },
-import { logout } from "@/actions/auth-actions";
+];
 
 export function Sidebar({ role = "Admin", allowedPaths = ["*"] }: { role?: string, allowedPaths?: string[] }) {
   const pathname = usePathname();
