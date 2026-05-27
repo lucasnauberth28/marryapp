@@ -28,10 +28,11 @@ import {
 import { 
   LayoutDashboard, Users as UsersIcon, LayoutGrid, 
   Wallet, GiftIcon, Settings as SettingsIcon, CheckSquare, MessageSquare, Plane,
-  Shield, KeyRound
+  Shield, KeyRound, LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { logout } from "@/actions/auth-actions";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -116,7 +117,7 @@ export function Header({ role = "Admin", allowedPaths = ["*"] }: { role?: string
               )}
               <DropdownMenuItem>Suporte</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => window.location.href = "/login"} className="text-red-600 focus:text-red-600">
+              <DropdownMenuItem onClick={() => logout()} className="text-red-600 focus:text-red-600">
                 Sair
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -178,6 +179,16 @@ export function Header({ role = "Admin", allowedPaths = ["*"] }: { role?: string
                 );
               })}
             </nav>
+            
+            <div className="pt-2 pb-4">
+              <button 
+                onClick={() => logout()}
+                className="flex w-full items-center gap-3 px-4 py-3 rounded-xl transition-colors text-red-600 hover:bg-red-50 font-medium"
+              >
+                <LogOut className="w-5 h-5" />
+                <span>Sair</span>
+              </button>
+            </div>
 
             <div className="pt-6 border-t border-zinc-100 text-center text-xs text-zinc-400">
               Casamento Lucas & Giovanna © 2026
