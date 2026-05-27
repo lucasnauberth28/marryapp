@@ -8,13 +8,18 @@ import {
   Menu, 
   X, 
   LayoutDashboard, 
-  Users, 
+  Users as UsersIcon, 
   Wallet, 
-  Gift, 
+  Gift as GiftIcon, 
   CheckSquare, 
   Plane,
   Heart,
-  MessageSquare
+  MessageSquare,
+  LayoutGrid,
+  Settings as SettingsIcon,
+  Shield, 
+  KeyRound, 
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,15 +31,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { logout } from "@/actions/auth-actions";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Convidados", href: "/convidados", icon: Users },
-  { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
+  { name: "Convidados", href: "/convidados", icon: UsersIcon },
+  { name: "Mesas", href: "/mesas", icon: LayoutGrid },
   { name: "Finanças", href: "/financas", icon: Wallet },
-  { name: "Presentes", href: "/presentes-admin", icon: Gift },
+  { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },
   { name: "Pendências", href: "/pendencias", icon: CheckSquare },
+  { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
   { name: "Lua de Mel", href: "/lua-de-mel", icon: Plane },
+  { name: "Configurações", href: "/configuracoes", icon: SettingsIcon },
+  { name: "Usuários", href: "/usuarios", icon: KeyRound },
+  { name: "Perfis", href: "/perfis", icon: Shield },
 ];
 
 export function Header({ role = "Admin", allowedPaths = ["*"] }: { role?: string, allowedPaths?: string[] }) {
@@ -106,7 +116,7 @@ export function Header({ role = "Admin", allowedPaths = ["*"] }: { role?: string
               )}
               <DropdownMenuItem>Suporte</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => window.location.href = "/login"} className="text-red-600 focus:text-red-600">
+              <DropdownMenuItem onClick={() => logout()} className="text-red-600 focus:text-red-600">
                 Sair
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -168,6 +178,16 @@ export function Header({ role = "Admin", allowedPaths = ["*"] }: { role?: string
                 );
               })}
             </nav>
+            
+            <div className="pt-2 pb-4">
+              <button 
+                onClick={() => logout()}
+                className="flex w-full items-center gap-3 px-4 py-3 rounded-xl transition-colors text-red-600 hover:bg-red-50 font-medium"
+              >
+                <LogOut className="w-5 h-5" />
+                <span>Sair</span>
+              </button>
+            </div>
 
             <div className="pt-6 border-t border-zinc-100 text-center text-xs text-zinc-400">
               Casamento Lucas & Giovanna © 2026
