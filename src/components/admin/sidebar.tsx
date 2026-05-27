@@ -4,29 +4,34 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Users,
+  Users as UsersIcon,
   LayoutDashboard,
   Wallet,
-  Gift,
+  Gift as GiftIcon,
   CheckSquare,
   Plane,
   MessageSquare,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  LayoutGrid,
+  Shield,
+  KeyRound
 } from "lucide-react";
 
 // Array com as rotas para facilitar a manutenção
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Convidados", href: "/convidados", icon: Users },
-  { name: "Fornecedores", href: "/fornecedores", icon: Users }, // Using Users for now or another icon
+  { name: "Convidados", href: "/convidados", icon: UsersIcon },
+  { name: "Fornecedores", href: "/fornecedores", icon: UsersIcon },
   { name: "Despesas", href: "/despesas", icon: Wallet },
-  { name: "Mesas", href: "/mesas", icon: Users }, // Using Users for now
+  { name: "Mesas", href: "/mesas", icon: LayoutGrid },
   { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
   { name: "Finanças", href: "/financas", icon: Wallet },
-  { name: "Presentes", href: "/presentes-admin", icon: Gift },
+  { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },
   { name: "Pendências", href: "/pendencias", icon: CheckSquare },
   { name: "Lua de Mel", href: "/lua-de-mel", icon: Plane },
   { name: "Configurações", href: "/configuracoes", icon: SettingsIcon },
+  { name: "Usuários", href: "/usuarios", icon: KeyRound },
+  { name: "Perfis", href: "/perfis", icon: Shield },
 ];
 
 export function Sidebar({ role = "Admin", allowedPaths = ["*"] }: { role?: string, allowedPaths?: string[] }) {

@@ -25,16 +25,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { 
+  LayoutDashboard, Users as UsersIcon, LayoutGrid, 
+  Wallet, GiftIcon, Settings as SettingsIcon, CheckSquare, MessageSquare, Plane,
+  Shield, KeyRound
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Convidados", href: "/convidados", icon: Users },
-  { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
+  { name: "Convidados", href: "/convidados", icon: UsersIcon },
+  { name: "Mesas", href: "/mesas", icon: LayoutGrid },
   { name: "Finanças", href: "/financas", icon: Wallet },
-  { name: "Presentes", href: "/presentes-admin", icon: Gift },
+  { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },
   { name: "Pendências", href: "/pendencias", icon: CheckSquare },
+  { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
   { name: "Lua de Mel", href: "/lua-de-mel", icon: Plane },
+  { name: "Configurações", href: "/configuracoes", icon: SettingsIcon },
+  { name: "Usuários", href: "/usuarios", icon: KeyRound },
+  { name: "Perfis", href: "/perfis", icon: Shield },
 ];
 
 export function Header({ role = "Admin", allowedPaths = ["*"] }: { role?: string, allowedPaths?: string[] }) {
