@@ -37,9 +37,13 @@ const navItems = [
   { name: "Lua de Mel", href: "/lua-de-mel", icon: Plane },
 ];
 
-export function Header() {
+export function Header({ role = "Admin", allowedPaths = ["*"] }: { role?: string, allowedPaths?: string[] }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
+
+  const filteredNavItems = allowedPaths.includes("*")
+    ? navItems
+    : navItems.filter((item) => allowedPaths.some(p => item.href.startsWith(p)));
 
   return (
     <>
@@ -84,17 +88,25 @@ export function Header() {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">Lucas & Giovanna</p>
+                  <p className="text-sm font-medium leading-none">
+                    Lucas & Giovanna
+                  </p>
                   <p className="text-xs leading-none text-zinc-500">
-                    lucas.giovanna@casamento.com
+                    {role}
                   </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Configurações</DropdownMenuItem>
+              {(allowedPaths.includes("*") || allowedPaths.includes("/configuracoes")) && (
+                <>
+                  <DropdownMenuItem onClick={() => window.location.href = "/perfis"}>Perfis (Roles)</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.location.href = "/usuarios"}>Usuários</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.location.href = "/configuracoes"}>Configurações Gerais</DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuItem>Suporte</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600 focus:text-red-600">
+              <DropdownMenuItem onClick={() => window.location.href = "/login"} className="text-red-600 focus:text-red-600">
                 Sair
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -133,7 +145,7 @@ export function Header() {
             </div>
 
             <nav className="flex-1 space-y-2">
-              {navItems.map((item) => {
+              {filteredNavItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
 

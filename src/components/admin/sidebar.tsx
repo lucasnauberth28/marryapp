@@ -10,7 +10,8 @@ import {
   Gift,
   CheckSquare,
   Plane,
-  MessageSquare
+  MessageSquare,
+  Settings as SettingsIcon
 } from "lucide-react";
 
 // Array com as rotas para facilitar a manutenção
@@ -25,10 +26,15 @@ const navItems = [
   { name: "Presentes", href: "/presentes-admin", icon: Gift },
   { name: "Pendências", href: "/pendencias", icon: CheckSquare },
   { name: "Lua de Mel", href: "/lua-de-mel", icon: Plane },
+  { name: "Configurações", href: "/configuracoes", icon: SettingsIcon },
 ];
 
-export function Sidebar() {
+export function Sidebar({ role = "Admin", allowedPaths = ["*"] }: { role?: string, allowedPaths?: string[] }) {
   const pathname = usePathname();
+
+  const filteredNavItems = allowedPaths.includes("*")
+    ? navItems
+    : navItems.filter((item) => allowedPaths.some(p => item.href.startsWith(p)));
 
   return (
     <aside className="w-64 bg-white border-r border-zinc-200 flex flex-col hidden md:flex">
@@ -44,7 +50,7 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const Icon = item.icon;
           // Verifica se a rota atual é a rota do item para dar o highlight
           const isActive = pathname.startsWith(item.href);

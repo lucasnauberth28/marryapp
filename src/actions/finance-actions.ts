@@ -22,7 +22,7 @@ const transactionQueryArgs = {
   orderBy: { createdAt: "desc" as const },
   include: {
     gift: { select: { id: true, title: true } },
-    guest: { select: { id: true, name: true } },
+    guest: { select: { id: true, name: true, phone: true } },
   },
 } satisfies Prisma.TransactionFindManyArgs;
 
@@ -118,6 +118,32 @@ export async function approvePixTransaction(
     return {
       success: false,
       error: "Erro ao confirmar recebimento do Pix.",
+    };
+  }
+}
+
+/**
+ * Alterna o status do envio do agradecimento (Thank You Note)
+ */
+export async function toggleThankYouSent(
+  transactionId: string,
+  currentStatus: boolean
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await prisma.transaction.update({
+      where: { id: transactionId },
+      data: { thankYouSent: !currentStatus },
+    });
+
+    revalidatePath("/financas");
+    revalidatePath("/dashboard");
+
+    return { success: true };
+  } catch (error) {
+    console.error("[toggleThankYouSent Error]:", error);
+    return {
+      success: false,
+      error: "Erro ao atualizar status do agradecimento.",
     };
   }
 }

@@ -9,6 +9,7 @@ import { login } from "@/actions/auth-actions";
 import { Lock, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -20,9 +21,12 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const res = await login(password);
+      // login agora aceita password e opcionalmente username
+      const res = await login(password, username);
       if (res.success) {
-        router.push("/dashboard");
+        // Redirecionamento é tratado pelo middleware na próxima navegação 
+        // ou recarregamos para forçar a avaliação das novas permissões
+        window.location.href = "/dashboard";
       } else {
         setError(res.error || "Erro ao fazer login.");
       }
@@ -40,17 +44,25 @@ export default function LoginPage() {
           <div className="w-12 h-12 bg-zinc-900 rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-sm">
             <Lock className="text-white w-6 h-6" />
           </div>
-          <CardTitle className="text-2xl font-bold tracking-tight">Área Restrita</CardTitle>
+          <CardTitle className="text-2xl font-bold tracking-tight">Acesso ao Sistema</CardTitle>
           <CardDescription>
-            Digite a senha mestra para acessar o painel do casamento.
+            Entre com suas credenciais para gerenciar o casamento.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-3">
+              <Input
+                type="text"
+                placeholder="Login de usuário"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                className="h-12 text-center text-lg tracking-wide"
+                required
+              />
               <Input
                 type="password"
-                placeholder="Senha de acesso..."
+                placeholder="Senha"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="h-12 text-center text-lg tracking-widest"
@@ -64,7 +76,7 @@ export default function LoginPage() {
 
             <Button 
               type="submit" 
-              className="w-full h-12 text-base font-semibold"
+              className="w-full h-12 text-base font-semibold bg-zinc-900 text-white hover:bg-zinc-800"
               disabled={isLoading}
             >
               {isLoading ? (

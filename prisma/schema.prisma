@@ -99,6 +99,7 @@ model Transaction {
   paymentMethod     PaymentMethod 
   status            PaymentStatus @default(PENDING)
   externalReference String?       
+  thankYouSent      Boolean       @default(false)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @default(now()) @updatedAt
 
@@ -174,4 +175,40 @@ model MessageTemplate {
   updatedAt DateTime @updatedAt
 
   @@map("message_templates")
+}
+
+model SystemSettings {
+  id             String    @id @default("global")
+  rsvpDeadline   DateTime?
+  themeColor     String    @default("#18181b")
+  heroImageUrl   String?
+  welcomeText    String?   @db.Text
+  updatedAt      DateTime  @updatedAt
+
+  @@map("system_settings")
+}
+
+model Role {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  allowedPaths Json     // JSON string array de paths permitidos
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  users        User[]
+
+  @@map("roles")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  username  String   @unique
+  password  String
+  roleId    String
+  role      Role     @relation(fields: [roleId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
 }
