@@ -34,3 +34,14 @@ export async function logout() {
   cookieStore.delete(COOKIE_NAME);
   redirect("/login");
 }
+
+export async function verifyAdminSession() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE_NAME)?.value;
+
+  if (!token) {
+    redirect("/login");
+  }
+
+  return true;
+}
