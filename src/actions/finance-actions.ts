@@ -22,7 +22,7 @@ const transactionQueryArgs = {
   orderBy: { createdAt: "desc" as const },
   include: {
     gift: { select: { id: true, title: true } },
-    guest: { select: { id: true, name: true } },
+    guest: { select: { id: true, name: true, phone: true } },
   },
 } satisfies Prisma.TransactionFindManyArgs;
 
