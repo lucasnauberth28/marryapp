@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       await prisma.$transaction([
         prisma.transaction.update({
           where: { id: internalTxId },
-          data: { status: updatedStatus, gatewayId: String(paymentId) },
+          data: { status: PaymentStatus.APPROVED, gatewayId: String(paymentId) },
         }),
         prisma.gift.update({
           where: { id: transaction.giftId },
