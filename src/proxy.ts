@@ -18,9 +18,10 @@ export default async function proxy(request: NextRequest) {
     const payload = await verifyToken(sessionCookie.value);
     
     if (!payload) {
-      // Token inválido
-      request.cookies.delete("marryapp_admin_session");
-      return NextResponse.redirect(new URL("/login", request.url));
+      // Token inválido: limpa o cookie corretamente na resposta
+      const response = NextResponse.redirect(new URL("/login", request.url));
+      response.cookies.delete("marryapp_admin_session");
+      return response;
     }
 
     // Se está no login mas já tem token, redireciona
