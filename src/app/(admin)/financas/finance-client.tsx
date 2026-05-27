@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { TransactionWithGift } from "@/actions/finance-actions";
-import { approvePixTransaction } from "@/actions/finance-actions";
+import { approvePixTransaction, toggleThankYouSent } from "@/actions/finance-actions";
 import {
   Table,
   TableBody,
@@ -21,6 +21,7 @@ import {
   ArrowUpDown,
   Search,
   X,
+  Heart,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
@@ -161,6 +162,7 @@ type SortDir = "asc" | "desc";
 export function FinanceTable({ transactions }: FinanceTableProps) {
   const [isPending, startTransition] = useTransition();
   const [approvingId, setApprovingId] = useState<string | null>(null);
+  const [thankingId, setThankingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
@@ -222,7 +224,37 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
         });
       }
       setApprovingId(null);
-      // Auto-dismiss toast
+      setTimeout(() => setToast(null), 4000);
+    });
+  }
+
+  function handleThankYou(transactionId: string, currentStatus: boolean, phone?: string | null, guestName?: string | null, giftName?: string | null) {
+    setThankingId(transactionId);
+    startTransition(async () => {
+      const result = await toggleThankYouSent(transactionId, currentStatus);
+      if (result.success && !currentStatus && phone) {
+        // Se acabou de marcar como enviado e tem telefone, abre o WhatsApp
+        const cleanPhone = phone.replace(/\D/g, "");
+        const firstName = guestName ? guestName.split(" ")[0] : "Querido(a)";
+        const text = encodeURIComponent(`Oii ${firstName}! Passando para agradecer imensamente pelo presente maravilhoso (${giftName}). Amamos demais! ❤️`);
+        window.open(`https://wa.me/55${cleanPhone}?text=${text}`, "_blank");
+        
+        setToast({
+          message: "Status atualizado e WhatsApp aberto!",
+          type: "success",
+        });
+      } else if (result.success) {
+        setToast({
+          message: "Status de agradecimento atualizado!",
+          type: "success",
+        });
+      } else {
+        setToast({
+          message: result.error || "Erro ao atualizar agradecimento.",
+          type: "error",
+        });
+      }
+      setThankingId(null);
       setTimeout(() => setToast(null), 4000);
     });
   }
@@ -334,7 +366,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
                   <TableCell className="text-center">
                     <StatusBadge status={tx.status} />
                   </TableCell>
-                  <TableCell className="text-center pr-4">
+                  <TableCell className="text-center pr-4 flex items-center justify-end gap-2">
                     {tx.status === "PENDING" && tx.paymentMethod === "PIX" ? (
                       <Button
                         size="sm"
@@ -348,6 +380,27 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
                           <>
                             <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                             Confirmar
+                          </>
+                        )}
+                      </Button>
+                    ) : tx.status === "APPROVED" ? (
+                      <Button
+                        size="sm"
+                        variant={tx.thankYouSent ? "secondary" : "outline"}
+                        onClick={() => handleThankYou(tx.id, tx.thankYouSent, tx.guest?.phone, tx.guest?.name, tx.gift.title)}
+                        disabled={isPending && thankingId === tx.id}
+                        className={`h-8 px-3 text-xs font-semibold rounded-lg shadow-sm transition-all duration-200 hover:shadow-md disabled:opacity-50 ${
+                          tx.thankYouSent 
+                            ? "bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100" 
+                            : "text-zinc-600 hover:text-pink-600 hover:border-pink-200"
+                        }`}
+                      >
+                        {isPending && thankingId === tx.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <>
+                            <Heart className={`w-3.5 h-3.5 mr-1 ${tx.thankYouSent ? "fill-pink-500 text-pink-500" : ""}`} />
+                            {tx.thankYouSent ? "Agradecido" : "Agradecer"}
                           </>
                         )}
                       </Button>

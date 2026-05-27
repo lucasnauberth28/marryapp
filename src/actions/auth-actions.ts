@@ -6,16 +6,23 @@ import { redirect } from "next/navigation";
 const COOKIE_NAME = "marryapp_admin_session";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
-export async function login(password: string) {
+import prisma from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+import { signToken } from "@/lib/auth";
+
+export async function login(password: string, username?: string) {
   const adminPassword = process.env.ADMIN_PASSWORD;
 
-  if (!adminPassword) {
-    throw new Error("ADMIN_PASSWORD não configurado nas variáveis de ambiente.");
-  }
+  // Fallback de emergência (Super Admin)
+  if (adminPassword && password === adminPassword && (!username || username === "admin")) {
+    const token = await signToken({
+      userId: "super-admin",
+      role: "Super Admin",
+      allowedPaths: ["*"] // acesso a tudo
+    });
 
-  if (password === adminPassword) {
     const cookieStore = await cookies();
-    cookieStore.set(COOKIE_NAME, "authenticated", {
+    cookieStore.set(COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -24,9 +31,40 @@ export async function login(password: string) {
     });
     
     return { success: true };
-  } else {
-    return { success: false, error: "Senha incorreta." };
   }
+
+  // Validação real via Banco de Dados
+  if (username) {
+    const user = await prisma.user.findUnique({
+      where: { username },
+      include: { role: true },
+    });
+
+    if (user && bcrypt.compareSync(password, user.password)) {
+      const allowedPaths = Array.isArray(user.role.allowedPaths) 
+        ? user.role.allowedPaths as string[] 
+        : [];
+
+      const token = await signToken({
+        userId: user.id,
+        role: user.role.name,
+        allowedPaths,
+      });
+
+      const cookieStore = await cookies();
+      cookieStore.set(COOKIE_NAME, token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: SESSION_MAX_AGE,
+        path: "/",
+      });
+
+      return { success: true };
+    }
+  }
+
+  return { success: false, error: "Usuário ou senha incorretos." };
 }
 
 export async function logout() {

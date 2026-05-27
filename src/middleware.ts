@@ -1,31 +1,45 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { verifyToken } from "@/lib/auth";
 
-export function middleware(request: NextRequest) {
-  // Pega o path atual
+export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
-
-  // Verifica se é uma rota protegida. Tudo que seria do admin (ex: dashboard, convidados, etc).
-  // No seu projeto, as rotas do admin estão espalhadas (ex: /dashboard, /convidados).
-  // Vamos definir um array de rotas protegidas ou checar se não é uma rota pública.
   
-  // Rotas públicas conhecidas
   const publicPaths = ["/login", "/presentes", "/checkout", "/api", "/rsvp"];
-  
-  // Verifica se o path começa com algum dos publicPaths
   const isPublicPath = publicPaths.some(publicPath => path.startsWith(publicPath) || path === "/");
   
-  // O cookie que definimos
   const sessionCookie = request.cookies.get("marryapp_admin_session");
 
-  // Se não é uma rota pública e não tem cookie, redireciona para login
   if (!isPublicPath && !sessionCookie) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Se o usuário está logado e tenta ir pro login, manda pro dashboard
-  if (path === "/login" && sessionCookie) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (sessionCookie) {
+    const payload = await verifyToken(sessionCookie.value);
+    
+    if (!payload) {
+      // Token inválido
+      request.cookies.delete("marryapp_admin_session");
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    // Se está no login mas já tem token, redireciona
+    if (path === "/login") {
+      const dest = payload.allowedPaths.includes("/dashboard") || payload.allowedPaths.includes("*") ? "/dashboard" : "/convidados";
+      return NextResponse.redirect(new URL(dest, request.url));
+    }
+
+    // Validação de acesso à rota para rotas não públicas
+    if (!isPublicPath) {
+      const isAllowed = payload.allowedPaths.includes("*") || 
+        payload.allowedPaths.some((p: string) => path.startsWith(p));
+      
+      if (!isAllowed) {
+        // Fallback de segurança se tentar acessar rota proibida
+        const dest = payload.allowedPaths[0] && payload.allowedPaths[0] !== "*" ? payload.allowedPaths[0] : "/login";
+        return NextResponse.redirect(new URL(dest, request.url));
+      }
+    }
   }
 
   return NextResponse.next();

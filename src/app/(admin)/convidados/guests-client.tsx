@@ -16,6 +16,7 @@ import {
   BellOff,
   Users,
   Mail,
+  Download,
 } from "lucide-react";
 
 interface GuestsClientProps {
@@ -108,12 +109,24 @@ export function GuestsClient({ initialGuests }: GuestsClientProps) {
             Gerencie sua lista e automatize a comunicação via WhatsApp.
           </p>
         </div>
-        <Button
-          onClick={openAdd}
-          className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm flex items-center gap-2"
-        >
-          <span className="text-lg leading-none">+</span> Novo Convidado
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            asChild
+            variant="outline"
+            className="shadow-sm flex items-center gap-2 text-zinc-700"
+          >
+            <a href="/api/export/guests" download="convidados.csv">
+              <Download className="w-4 h-4" />
+              Exportar (CSV)
+            </a>
+          </Button>
+          <Button
+            onClick={openAdd}
+            className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm flex items-center gap-2"
+          >
+            <span className="text-lg leading-none">+</span> Novo Convidado
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
