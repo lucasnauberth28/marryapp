@@ -8,13 +8,18 @@ import {
   Menu, 
   X, 
   LayoutDashboard, 
-  Users, 
+  Users as UsersIcon, 
   Wallet, 
-  Gift, 
+  Gift as GiftIcon, 
   CheckSquare, 
   Plane,
   Heart,
-  MessageSquare
+  MessageSquare,
+  LayoutGrid,
+  Settings as SettingsIcon,
+  Shield, 
+  KeyRound, 
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,12 +30,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
-  LayoutDashboard, Users as UsersIcon, LayoutGrid, 
-  Wallet, Gift as GiftIcon, Settings as SettingsIcon, CheckSquare, MessageSquare, Plane,
-  Shield, KeyRound, LogOut
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { logout } from "@/actions/auth-actions";
 
