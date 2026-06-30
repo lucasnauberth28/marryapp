@@ -24,7 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <Sidebar role={role} allowedPaths={allowedPaths} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header role={role} allowedPaths={allowedPaths} />
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="max-w-6xl mx-auto">
             {children}
           </div>
