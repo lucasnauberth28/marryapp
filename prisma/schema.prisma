@@ -51,8 +51,14 @@ model Guest {
   phone              String?       
   email              String?
   rsvpStatus         RsvpStatus    @default(PENDING)
-  allowedCompanions Int           @default(0)
+  allowedCompanions  Int           @default(0)
   hasReceivedMessage Boolean       @default(false) 
+  
+  // Novos campos: Credenciamento e Restrições
+  isPresent          Boolean       @default(false)
+  checkInTime        DateTime?
+  dietaryRestrictions String?      @db.Text
+
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
@@ -62,6 +68,19 @@ model Guest {
   transactions       Transaction[] 
 
   @@map("guests")
+}
+
+model TimelineEvent {
+  id          String   @id @default(uuid())
+  title       String
+  time        String   // Ex: "18:00"
+  description String?  @db.Text
+  icon        String   @default("Clock") // Nome do ícone no Lucide
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("timeline_events")
 }
 
 model Table {

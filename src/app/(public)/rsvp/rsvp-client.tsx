@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, Search, CheckCircle2, XCircle } from "lucide-react";
 
+import { QRCodeSVG } from "qrcode.react";
+
 export function RsvpClient() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
@@ -14,8 +16,9 @@ export function RsvpClient() {
   const [guest, setGuest] = useState<any>(null);
   
   const [companions, setCompanions] = useState(0);
+  const [dietary, setDietary] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [successMsg, setSuccessMsg] = useState("");
+  const [successStatus, setSuccessStatus] = useState<"CONFIRMED" | "DECLINED" | null>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,6 +31,7 @@ export function RsvpClient() {
       if (found) {
         setGuest(found);
         setCompanions(found.allowedCompanions);
+        setDietary(found.dietaryRestrictions || "");
       } else {
         setError("Não encontramos um convite para este número. Verifique se digitou corretamente (com DDD).");
       }
@@ -43,11 +47,9 @@ export function RsvpClient() {
     setError("");
     
     try {
-      const res = await publicConfirmRsvp(guest.id, status, companions);
+      const res = await publicConfirmRsvp(guest.id, status, companions, dietary);
       if (res.success) {
-        setSuccessMsg(status === "CONFIRMED" 
-          ? "Presença confirmada com sucesso! Estamos muito felizes que você vem." 
-          : "Que pena! Sentiremos muito sua falta, mas agradecemos por avisar.");
+        setSuccessStatus(status);
       } else {
         setError(res.error || "Erro ao salvar a resposta.");
       }
@@ -58,13 +60,35 @@ export function RsvpClient() {
     }
   };
 
-  if (successMsg) {
+  if (successStatus) {
     return (
       <Card className="w-full max-w-md shadow-lg border-zinc-200">
-        <CardContent className="pt-6 flex flex-col items-center text-center space-y-4">
+        <CardContent className="pt-8 flex flex-col items-center text-center space-y-6">
           <CheckCircle2 className="w-16 h-16 text-emerald-500" />
-          <h2 className="text-2xl font-bold text-zinc-900">Obrigado!</h2>
-          <p className="text-zinc-600">{successMsg}</p>
+          
+          {successStatus === "CONFIRMED" ? (
+            <>
+              <div>
+                <h2 className="text-2xl font-bold text-zinc-900">Presença Confirmada!</h2>
+                <p className="text-zinc-600 mt-2">Estamos muito felizes que você vem celebrar conosco.</p>
+              </div>
+              
+              <div className="bg-zinc-50 p-6 rounded-xl border border-zinc-200 w-full flex flex-col items-center">
+                <p className="text-sm font-semibold text-zinc-800 mb-4 uppercase tracking-wider">Seu Ingresso (QR Code)</p>
+                <div className="bg-white p-3 rounded-lg shadow-sm">
+                  <QRCodeSVG value={`GUEST:${guest.id}`} size={180} />
+                </div>
+                <p className="text-xs text-zinc-500 mt-4 px-4">
+                  Apresente este QR Code na entrada do evento para liberar seu acesso rapidamente.
+                </p>
+              </div>
+            </>
+          ) : (
+            <div>
+              <h2 className="text-2xl font-bold text-zinc-900">Que pena!</h2>
+              <p className="text-zinc-600 mt-2">Sentiremos muito sua falta, mas agradecemos por nos avisar.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -110,26 +134,39 @@ export function RsvpClient() {
             </div>
 
             <div className="space-y-4">
-              <p className="text-center font-medium text-zinc-900">Você poderá comparecer?</p>
-              
-              {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">
+                  Você ou seus acompanhantes possuem alguma restrição alimentar?
+                </label>
+                <Input 
+                  placeholder="Ex: Vegano, Intolerante a lactose, Alergia a amendoim..."
+                  value={dietary}
+                  onChange={(e) => setDietary(e.target.value)}
+                />
+              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Button 
-                  onClick={() => handleConfirm("CONFIRMED")} 
-                  disabled={submitLoading}
-                  className="bg-emerald-600 hover:bg-emerald-700"
-                >
-                  {submitLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sim, eu vou!"}
-                </Button>
-                <Button 
-                  onClick={() => handleConfirm("DECLINED")}
-                  disabled={submitLoading}
-                  variant="outline"
-                  className="border-red-200 text-red-600 hover:bg-red-50"
-                >
-                  Não poderei ir
-                </Button>
+              <div className="pt-4 border-t border-zinc-100">
+                <p className="text-center font-medium text-zinc-900 mb-4">Você poderá comparecer?</p>
+                
+                {error && <p className="text-sm text-red-500 text-center mb-4">{error}</p>}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Button 
+                    onClick={() => handleConfirm("CONFIRMED")} 
+                    disabled={submitLoading}
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    {submitLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sim, eu vou!"}
+                  </Button>
+                  <Button 
+                    onClick={() => handleConfirm("DECLINED")}
+                    disabled={submitLoading}
+                    variant="outline"
+                    className="border-red-200 text-red-600 hover:bg-red-50"
+                  >
+                    Não poderei ir
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

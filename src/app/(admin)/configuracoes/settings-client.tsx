@@ -114,15 +114,39 @@ export function SettingsClient({ initialSettings }: { initialSettings: any }) {
                 onChange={(e) => setFormData({ ...formData, welcomeText: e.target.value })}
               />
             </div>
+
+            <div className="flex justify-end">
+              <Button onClick={handleSave} disabled={isPending} className="bg-zinc-900 hover:bg-zinc-800 text-white w-full">
+                {isPending ? "Salvando..." : "Salvar Configurações"}
+                <Save className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
-        <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={isPending} className="bg-zinc-900 text-white hover:bg-zinc-800 flex items-center gap-2">
-            <Save className="w-4 h-4" />
-            {isPending ? "Salvando..." : "Salvar Configurações"}
-          </Button>
-        </div>
+        {/* Módulo de Integrações */}
+        <Card className="shadow-sm border-zinc-200/60">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Settings className="w-5 h-5 text-zinc-500" />
+              Integrações & Comunicação
+            </CardTitle>
+            <CardDescription>Gerencie a conexão de disparo de mensagens do seu celular.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col md:flex-row items-center justify-between p-4 bg-zinc-50 rounded-lg border border-zinc-200 gap-4">
+              <div>
+                <h4 className="font-medium text-zinc-900">WhatsApp Automático</h4>
+                <p className="text-sm text-zinc-500">
+                  Gerencie a conexão com o número que dispara convites e lembretes para os convidados.
+                </p>
+              </div>
+              <Button asChild variant="outline">
+                <a href="/configuracoes/whatsapp">Gerenciar Conexão</a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

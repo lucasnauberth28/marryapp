@@ -19,7 +19,9 @@ import {
   Settings as SettingsIcon,
   Shield, 
   KeyRound, 
-  LogOut
+  LogOut,
+  QrCode,
+  Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +37,9 @@ import { logout } from "@/actions/auth-actions";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Credenciamento", href: "/credenciamento", icon: QrCode },
   { name: "Convidados", href: "/convidados", icon: UsersIcon },
+  { name: "Cronograma", href: "/cronograma", icon: Calendar },
   { name: "Mesas", href: "/mesas", icon: LayoutGrid },
   { name: "Finanças", href: "/financas", icon: Wallet },
   { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },

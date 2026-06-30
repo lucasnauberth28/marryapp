@@ -16,13 +16,17 @@ import {
   LayoutGrid,
   Shield,
   KeyRound,
-  LogOut
+  LogOut,
+  QrCode,
+  Calendar
 } from "lucide-react";
 
 // Array com as rotas para facilitar a manutenção
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Credenciamento", href: "/credenciamento", icon: QrCode },
   { name: "Convidados", href: "/convidados", icon: UsersIcon },
+  { name: "Cronograma", href: "/cronograma", icon: Calendar },
   { name: "Fornecedores", href: "/fornecedores", icon: UsersIcon },
   { name: "Despesas", href: "/despesas", icon: Wallet },
   { name: "Mesas", href: "/mesas", icon: LayoutGrid },

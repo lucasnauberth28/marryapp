@@ -222,7 +222,7 @@ export async function findGuestByPhone(phone: string) {
   return guest || null;
 }
 
-export async function publicConfirmRsvp(id: string, status: RsvpStatus, confirmedCompanions: number) {
+export async function publicConfirmRsvp(id: string, status: RsvpStatus, confirmedCompanions: number, dietaryRestrictions?: string) {
   try {
     const guest = await prisma.guest.findUnique({ where: { id } });
     if (!guest) return { success: false, error: "Convidado não encontrado." };
@@ -235,10 +235,7 @@ export async function publicConfirmRsvp(id: string, status: RsvpStatus, confirme
       where: { id },
       data: {
         rsvpStatus: status,
-        // Optional: you could save the confirmed number somewhere if the schema supported it, 
-        // for now we just validate they aren't bringing more than allowed.
-        // Wait, the schema just has allowedCompanions. If they bring less, we don't have a field for 'confirmedCompanions'. 
-        // We'll just update the status.
+        dietaryRestrictions: dietaryRestrictions || null,
       },
     });
 
@@ -246,5 +243,31 @@ export async function publicConfirmRsvp(id: string, status: RsvpStatus, confirme
   } catch (error) {
     console.error("[publicConfirmRsvp]", error);
     return { success: false, error: "Erro ao confirmar presença." };
+  }
+}
+
+export async function checkInGuest(guestId: string) {
+  try {
+    const guest = await prisma.guest.findUnique({ where: { id: guestId } });
+    if (!guest) return { success: false, error: "Convidado não encontrado." };
+
+    if (guest.isPresent) {
+      return { success: false, error: "Atenção: Este convidado já realizou o check-in anteriormente!" };
+    }
+
+    await prisma.guest.update({
+      where: { id: guestId },
+      data: {
+        isPresent: true,
+        checkInTime: new Date(),
+      },
+    });
+
+    revalidatePath("/convidados");
+    revalidatePath("/dashboard");
+    return { success: true, guestName: guest.name };
+  } catch (error) {
+    console.error("[checkInGuest]", error);
+    return { success: false, error: "Erro ao realizar o check-in." };
   }
 }
