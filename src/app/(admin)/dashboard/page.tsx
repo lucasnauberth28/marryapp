@@ -35,10 +35,12 @@ export default async function DashboardPage() {
   });
   const totalDespesas = despesas._sum.amount || 0;
 
-  // 3. Contando Convidados Confirmados
-  const convidadosConfirmados = await prisma.guest.count({
+  // 3. Contando Convidados Confirmados (Titular + Acompanhantes de fato confirmados)
+  const confirmedGuests = await prisma.guest.findMany({
     where: { rsvpStatus: "CONFIRMED" },
+    select: { confirmedCompanions: true }
   });
+  const convidadosConfirmados = confirmedGuests.reduce((acc, g) => acc + 1 + (g.confirmedCompanions || 0), 0);
 
   // 4. Contando Tarefas Pendentes
   const tarefasPendentes = await prisma.task.count({

@@ -1,9 +1,15 @@
 import Link from "next/link";
 import { Heart, Gift, Calendar, MapPin } from "lucide-react";
 import { getSettings } from "@/actions/settings-actions";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default async function Home() {
   const settings = await getSettings();
+
+  const formattedWeddingDate = settings.weddingDate
+    ? format(new Date(settings.weddingDate), "d 'de' MMMM 'de' yyyy", { locale: ptBR })
+    : "Em breve";
 
   return (
     <div className="min-h-screen bg-zinc-50 flex flex-col font-sans antialiased text-zinc-900" style={{ '--theme-color': settings.themeColor } as React.CSSProperties}>
@@ -40,16 +46,29 @@ export default async function Home() {
               <span style={{ color: settings.themeColor }}>&</span>{" "}
               Giovanna
             </h1>
-            <div className="flex items-center justify-center gap-6 text-zinc-500 text-sm font-medium pt-2">
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-zinc-500 text-sm font-medium pt-2">
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4 text-zinc-400" />
-                Em breve
+                {formattedWeddingDate}
               </span>
-              <span className="w-1 h-1 bg-zinc-300 rounded-full" />
-              <span className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-zinc-400" />
-                Local a definir
-              </span>
+              <span className="w-1 h-1 bg-zinc-300 rounded-full hidden sm:inline" />
+              {settings.weddingLocationUrl ? (
+                <a 
+                  href={settings.weddingLocationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:underline"
+                  style={{ color: settings.themeColor }}
+                >
+                  <MapPin className="w-4 h-4 shrink-0" />
+                  {settings.weddingLocation || "Ver Local no Mapa"}
+                </a>
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-zinc-400" />
+                  {settings.weddingLocation || "Local a definir"}
+                </span>
+              )}
             </div>
           </div>
 

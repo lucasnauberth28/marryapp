@@ -7,16 +7,17 @@ import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-action
 import { GuestModal } from "./guest-modal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { toast } from "sonner";
 import {
   Trash2,
   Pencil,
   Send,
   MessageSquare,
   Bell,
-  BellOff,
-  Users,
   Mail,
   Download,
+  Users,
 } from "lucide-react";
 
 interface GuestsClientProps {
@@ -44,6 +45,19 @@ export function GuestsClient({ initialGuests }: GuestsClientProps) {
   const [bulkStatus, setBulkStatus] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // Estados para Confirmações Customizadas
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmData, setConfirmData] = useState<{
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  } | null>(null);
+
+  const triggerConfirm = (title: string, description: string, onConfirm: () => void) => {
+    setConfirmData({ title, description, onConfirm });
+    setConfirmOpen(true);
+  };
+
   function openAdd() {
     setEditingGuest(null);
     setIsModalOpen(true);
@@ -55,46 +69,78 @@ export function GuestsClient({ initialGuests }: GuestsClientProps) {
   }
 
   function handleDelete(id: string) {
-    if (!confirm("Tem certeza que deseja remover este convidado?")) return;
-    startTransition(async () => {
-      await deleteGuest(id);
-    });
+    triggerConfirm(
+      "Remover Convidado",
+      "Tem certeza que deseja remover este convidado da lista? Esta ação não pode ser desfeita.",
+      async () => {
+        startTransition(async () => {
+          const res = await deleteGuest(id);
+          if (res.success) {
+            toast.success("Convidado removido com sucesso!");
+          } else {
+            toast.error(res.error || "Erro ao remover convidado.");
+          }
+        });
+      }
+    );
   }
 
   async function handleSendInvite(id: string) {
     startTransition(async () => {
       const result = await sendInvite(id);
-      if (!result.success) alert(`Erro: ${result.error}`);
+      if (result.success) {
+        toast.success("Convite enviado com sucesso via WhatsApp!");
+      } else {
+        toast.error(`Erro ao enviar convite: ${result.error}`);
+      }
     });
   }
 
   async function handleBulkReminder() {
     setBulkStatus("⏳ Disparando lembretes...");
     startTransition(async () => {
-      const result = await sendRsvpReminders();
-      setBulkStatus(`✅ ${result.message}`);
-      setTimeout(() => setBulkStatus(null), 6000);
+      try {
+        const result = await sendRsvpReminders();
+        setBulkStatus(`✅ ${result.message}`);
+        toast.success(result.message);
+        setTimeout(() => setBulkStatus(null), 6000);
+      } catch (err) {
+        setBulkStatus("❌ Erro ao disparar");
+        toast.error("Erro de comunicação ao disparar lembretes.");
+      }
     });
   }
 
   async function handleSendInitialInvites() {
-    if (!confirm(`Enviar convites para todos os convidados que ainda não receberam? (${notInvited} pessoas)`)) return;
-    setBulkStatus("⏳ Enviando convites iniciais...");
-    startTransition(async () => {
-      const result = await sendInitialInvites();
-      setBulkStatus(`✅ ${result.message}`);
-      setTimeout(() => setBulkStatus(null), 6000);
-    });
+    triggerConfirm(
+      "Disparar Convites Iniciais",
+      `Deseja realmente enviar os convites no WhatsApp para todas as ${notInvited} pessoas que ainda não receberam?`,
+      async () => {
+        setBulkStatus("⏳ Enviando convites iniciais...");
+        startTransition(async () => {
+          try {
+            const result = await sendInitialInvites();
+            setBulkStatus(`✅ ${result.message}`);
+            toast.success(result.message);
+            setTimeout(() => setBulkStatus(null), 6000);
+          } catch (err) {
+            setBulkStatus("❌ Erro ao disparar");
+            toast.error("Erro ao enviar convites iniciais.");
+          }
+        });
+      }
+    );
   }
 
-  const confirmed = initialGuests.filter((g) => g.rsvpStatus === "CONFIRMED").length;
+  // Estatísticas corrigidas refletindo acompanhantes de fato confirmados
+  const confirmedMain = initialGuests.filter((g) => g.rsvpStatus === "CONFIRMED").length;
+  const confirmedCompanions = initialGuests
+    .filter((g) => g.rsvpStatus === "CONFIRMED")
+    .reduce((acc, g) => acc + (g.confirmedCompanions || 0), 0);
+  const totalPeopleConfirmed = confirmedMain + confirmedCompanions;
+
   const pending = initialGuests.filter((g) => g.rsvpStatus === "PENDING").length;
-  const declined = initialGuests.filter((g) => g.rsvpStatus === "DECLINED").length;
   const notInvited = initialGuests.filter((g) => !g.hasReceivedMessage && g.phone).length;
-  const totalWithCompanions = initialGuests.reduce(
-    (acc, g) => acc + 1 + g.allowedCompanions,
-    0
-  );
 
   return (
     <div className="flex flex-col gap-8">
@@ -132,10 +178,10 @@ export function GuestsClient({ initialGuests }: GuestsClientProps) {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total", value: initialGuests.length, color: "text-zinc-900" },
-          { label: "Confirmados", value: confirmed, color: "text-emerald-600" },
+          { label: "Total Convites", value: initialGuests.length, color: "text-zinc-900" },
+          { label: "Titulares Confirmados", value: confirmedMain, color: "text-zinc-700" },
+          { label: "Confirmados (Total)", value: totalPeopleConfirmed, color: "text-emerald-600" },
           { label: "Pendentes", value: pending, color: "text-amber-600" },
-          { label: "Total c/ Acomp.", value: totalWithCompanions, color: "text-blue-600" },
         ].map((s) => (
           <div
             key={s.label}
@@ -183,7 +229,7 @@ export function GuestsClient({ initialGuests }: GuestsClientProps) {
       </div>
 
       {/* Guests Table */}
-      <div className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden animate-in fade-in duration-300">
         {initialGuests.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-zinc-400">
             <Users className="w-10 h-10 mb-3 text-zinc-200" />
@@ -201,7 +247,7 @@ export function GuestsClient({ initialGuests }: GuestsClientProps) {
                   WhatsApp
                 </th>
                 <th className="text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider px-5 py-3 hidden lg:table-cell">
-                  Acomp.
+                  Acomp. Confirmados
                 </th>
                 <th className="text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider px-5 py-3">
                   Status
@@ -221,10 +267,22 @@ export function GuestsClient({ initialGuests }: GuestsClientProps) {
                     className="group border-b border-zinc-100 last:border-0 hover:bg-zinc-50/50 transition-colors"
                   >
                     <td className="px-5 py-3.5">
-                      <span className="font-medium text-zinc-900">{guest.name}</span>
-                      {guest.email && (
-                        <p className="text-xs text-zinc-400 mt-0.5">{guest.email}</p>
-                      )}
+                      <div className="flex flex-col">
+                        <span className="font-medium text-zinc-900">{guest.name}</span>
+                        {guest.email && (
+                          <span className="text-xs text-zinc-400 mt-0.5">{guest.email}</span>
+                        )}
+                        {guest.companionsNames && (
+                          <span className="text-xs text-zinc-500 mt-1 font-normal">
+                            Acomp: <span className="italic text-zinc-700">{guest.companionsNames}</span>
+                          </span>
+                        )}
+                        {guest.dietaryRestrictions && (
+                          <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 rounded px-1.5 py-0.5 w-fit mt-1.5 font-medium">
+                            Restrição: {guest.dietaryRestrictions}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-5 py-3.5 hidden md:table-cell">
                       {guest.phone ? (
@@ -236,7 +294,11 @@ export function GuestsClient({ initialGuests }: GuestsClientProps) {
                       )}
                     </td>
                     <td className="px-5 py-3.5 hidden lg:table-cell">
-                      <span className="text-sm text-zinc-600">{guest.allowedCompanions}</span>
+                      <span className="text-sm text-zinc-600">
+                        {guest.rsvpStatus === "CONFIRMED" 
+                          ? `${guest.confirmedCompanions || 0} / ${guest.allowedCompanions}`
+                          : `0 / ${guest.allowedCompanions}`}
+                      </span>
                     </td>
                     <td className="px-5 py-3.5">
                       <Badge
@@ -305,6 +367,21 @@ export function GuestsClient({ initialGuests }: GuestsClientProps) {
         }}
         guest={editingGuest}
       />
+
+      {/* Modal de Confirmação Customizado */}
+      {confirmData && (
+        <ConfirmModal
+          isOpen={confirmOpen}
+          onClose={() => setConfirmOpen(false)}
+          onConfirm={() => {
+            setConfirmOpen(false);
+            confirmData.onConfirm();
+          }}
+          title={confirmData.title}
+          description={confirmData.description}
+          isLoading={isPending}
+        />
+      )}
     </div>
   );
 }

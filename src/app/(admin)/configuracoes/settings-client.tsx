@@ -7,12 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Save, Settings, Palette, CalendarClock } from "lucide-react";
+import { Save, Settings, Palette, CalendarClock, MapPin } from "lucide-react";
+import { toast } from "sonner";
 
 export function SettingsClient({ initialSettings }: { initialSettings: any }) {
   const [isPending, startTransition] = useTransition();
   const [formData, setFormData] = useState({
     rsvpDeadline: initialSettings.rsvpDeadline ? new Date(initialSettings.rsvpDeadline).toISOString().split('T')[0] : "",
+    weddingDate: initialSettings.weddingDate ? new Date(initialSettings.weddingDate).toISOString().split('T')[0] : "",
+    weddingLocation: initialSettings.weddingLocation || "",
+    weddingLocationUrl: initialSettings.weddingLocationUrl || "",
     themeColor: initialSettings.themeColor || "#18181b",
     heroImageUrl: initialSettings.heroImageUrl || "",
     welcomeText: initialSettings.welcomeText || "",
@@ -20,13 +24,20 @@ export function SettingsClient({ initialSettings }: { initialSettings: any }) {
 
   async function handleSave() {
     startTransition(async () => {
-      await updateSettings({
+      const res = await updateSettings({
         rsvpDeadline: formData.rsvpDeadline ? new Date(formData.rsvpDeadline) : null,
+        weddingDate: formData.weddingDate ? new Date(formData.weddingDate) : null,
+        weddingLocation: formData.weddingLocation || null,
+        weddingLocationUrl: formData.weddingLocationUrl || null,
         themeColor: formData.themeColor,
         heroImageUrl: formData.heroImageUrl || null,
         welcomeText: formData.welcomeText || null,
       });
-      alert("Configurações salvas com sucesso!");
+      if (res.success) {
+        toast.success("Configurações salvas com sucesso!");
+      } else {
+        toast.error("Erro ao salvar configurações.");
+      }
     });
   }
 
@@ -43,24 +54,62 @@ export function SettingsClient({ initialSettings }: { initialSettings: any }) {
       </div>
 
       <div className="grid gap-6">
+        {/* Regras do Casamento */}
         <Card className="shadow-sm border-zinc-200/60">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <CalendarClock className="w-5 h-5 text-zinc-500" />
-              Regras do Casamento
+              Informações & Regras do Casamento
             </CardTitle>
-            <CardDescription>Defina os prazos importantes para os convidados.</CardDescription>
+            <CardDescription>Defina as datas e locais principais para exibição e controle.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="rsvpDeadline">Data Limite para RSVP (Confirmação de Presença)</Label>
-              <Input
-                id="rsvpDeadline"
-                type="date"
-                value={formData.rsvpDeadline}
-                onChange={(e) => setFormData({ ...formData, rsvpDeadline: e.target.value })}
-              />
-              <p className="text-xs text-zinc-500">Após esta data, o formulário de RSVP será bloqueado automaticamente.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="rsvpDeadline">Data Limite para RSVP (Confirmação de Presença)</Label>
+                <Input
+                  id="rsvpDeadline"
+                  type="date"
+                  value={formData.rsvpDeadline}
+                  onChange={(e) => setFormData({ ...formData, rsvpDeadline: e.target.value })}
+                />
+                <p className="text-xs text-zinc-500">Após esta data, o formulário de RSVP será bloqueado automaticamente.</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="weddingDate">Data do Casamento</Label>
+                <Input
+                  id="weddingDate"
+                  type="date"
+                  value={formData.weddingDate}
+                  onChange={(e) => setFormData({ ...formData, weddingDate: e.target.value })}
+                />
+                <p className="text-xs text-zinc-500">Será exibida de forma elegante na tela pública principal.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="weddingLocation">Local do Casamento (Nome do Espaço)</Label>
+                <Input
+                  id="weddingLocation"
+                  type="text"
+                  placeholder="Ex: Mansão das Flores"
+                  value={formData.weddingLocation}
+                  onChange={(e) => setFormData({ ...formData, weddingLocation: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="weddingLocationUrl">Link do Google Maps do Local</Label>
+                <Input
+                  id="weddingLocationUrl"
+                  type="url"
+                  placeholder="https://maps.google.com/..."
+                  value={formData.weddingLocationUrl}
+                  onChange={(e) => setFormData({ ...formData, weddingLocationUrl: e.target.value })}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>

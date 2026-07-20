@@ -37,6 +37,9 @@ export interface GuestLocal {
   email?: string | null;
   rsvpStatus: RsvpStatus;
   allowedCompanions: number;
+  confirmedCompanions?: number;
+  companionsNames?: string | null;
+  dietaryRestrictions?: string | null;
   hasReceivedMessage: boolean;
   createdAt: Date;
   updatedAt: Date;

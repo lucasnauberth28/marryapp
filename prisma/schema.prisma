@@ -52,6 +52,8 @@ model Guest {
   email              String?
   rsvpStatus         RsvpStatus    @default(PENDING)
   allowedCompanions  Int           @default(0)
+  confirmedCompanions Int          @default(0)
+  companionsNames    String?       @db.Text
   hasReceivedMessage Boolean       @default(false) 
   
   // Novos campos: Credenciamento e Restrições
@@ -197,12 +199,15 @@ model MessageTemplate {
 }
 
 model SystemSettings {
-  id             String    @id @default("global")
-  rsvpDeadline   DateTime?
-  themeColor     String    @default("#18181b")
-  heroImageUrl   String?
-  welcomeText    String?   @db.Text
-  updatedAt      DateTime  @updatedAt
+  id                 String    @id @default("global")
+  rsvpDeadline       DateTime?
+  weddingDate        DateTime?
+  weddingLocation    String?   @db.Text
+  weddingLocationUrl String?   @db.Text
+  themeColor         String    @default("#18181b")
+  heroImageUrl       String?
+  welcomeText        String?   @db.Text
+  updatedAt          DateTime  @updatedAt
 
   @@map("system_settings")
 }

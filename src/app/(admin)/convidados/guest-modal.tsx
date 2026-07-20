@@ -106,10 +106,9 @@ export function GuestModal({ isOpen, onClose, guest }: GuestModalProps) {
             name="phone"
             placeholder="5511999998888"
             defaultValue={guest?.phone ?? ""}
-            required
           />
           <Field
-            label="Acompanhantes"
+            label="Limite de Acompanhantes"
             name="allowedCompanions"
             type="number"
             placeholder="0"
@@ -125,24 +124,56 @@ export function GuestModal({ isOpen, onClose, guest }: GuestModalProps) {
             />
           </div>
           {isEditing && (
-            <div className="col-span-2 space-y-1.5">
-              <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                Status RSVP
-              </label>
-              <Select
-                value={rsvpStatus}
-                onValueChange={(v) => setRsvpStatus(v as RsvpStatus)}
-              >
-                <SelectTrigger className="bg-white border-zinc-200">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={RsvpStatus.PENDING}>⏳ Pendente</SelectItem>
-                  <SelectItem value={RsvpStatus.CONFIRMED}>✅ Confirmado</SelectItem>
-                  <SelectItem value={RsvpStatus.DECLINED}>❌ Recusado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <>
+              <div className="col-span-2 space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                  Status RSVP
+                </label>
+                <Select
+                  value={rsvpStatus}
+                  onValueChange={(v) => setRsvpStatus(v as RsvpStatus)}
+                >
+                  <SelectTrigger className="bg-white border-zinc-200">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={RsvpStatus.PENDING}>⏳ Pendente</SelectItem>
+                    <SelectItem value={RsvpStatus.CONFIRMED}>✅ Confirmado</SelectItem>
+                    <SelectItem value={RsvpStatus.DECLINED}>❌ Recusado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {rsvpStatus === RsvpStatus.CONFIRMED && (
+                <>
+                  <div>
+                    <Field
+                      label="Acomp. Confirmados"
+                      name="confirmedCompanions"
+                      type="number"
+                      placeholder="0"
+                      defaultValue={guest?.confirmedCompanions ?? 0}
+                    />
+                  </div>
+                  <div>
+                    <Field
+                      label="Restrições Alimentares"
+                      name="dietaryRestrictions"
+                      placeholder="Sem glúten, vegano..."
+                      defaultValue={guest?.dietaryRestrictions ?? ""}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Field
+                      label="Nomes dos Acompanhantes"
+                      name="companionsNames"
+                      placeholder="Nome 1, Nome 2..."
+                      defaultValue={guest?.companionsNames ?? ""}
+                    />
+                  </div>
+                </>
+              )}
+            </>
           )}
         </div>
 

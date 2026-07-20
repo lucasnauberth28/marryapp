@@ -16,11 +16,21 @@ const GuestSchema = z.object({
   name: z.string().min(2, "Nome deve ter ao menos 2 caracteres.").trim(),
   phone: z
     .string()
-    .min(10, "Telefone inválido.")
-    .regex(PhoneRegex, "Use o formato internacional, ex: 5511999998888")
-    .transform((v) => v.replace(/\D/g, "")), // Remove não-dígitos
+    .optional()
+    .or(z.literal(""))
+    .transform((v) => {
+      if (!v) return null;
+      const clean = v.replace(/\D/g, "");
+      return clean || null;
+    })
+    .refine((val) => !val || val.length >= 10, {
+      message: "Telefone inválido (mínimo de 10 dígitos com DDD).",
+    }),
   email: z.string().email("E-mail inválido.").optional().or(z.literal("")),
   allowedCompanions: z.coerce.number().min(0).max(10).default(0),
+  confirmedCompanions: z.coerce.number().min(0).max(10).default(0).optional(),
+  companionsNames: z.string().optional().or(z.literal("")),
+  dietaryRestrictions: z.string().optional().or(z.literal("")),
   rsvpStatus: z.nativeEnum(RsvpStatus).optional(),
 });
 
@@ -63,6 +73,7 @@ export async function createGuest(formData: FormData) {
         phone: parsed.data.phone,
         email: parsed.data.email || null,
         allowedCompanions: parsed.data.allowedCompanions,
+        confirmedCompanions: 0,
       },
     });
 
@@ -81,6 +92,9 @@ export async function updateGuest(id: string, formData: FormData) {
     email: formData.get("email"),
     allowedCompanions: formData.get("allowedCompanions"),
     rsvpStatus: formData.get("rsvpStatus"),
+    confirmedCompanions: formData.get("confirmedCompanions"),
+    companionsNames: formData.get("companionsNames"),
+    dietaryRestrictions: formData.get("dietaryRestrictions"),
   };
 
   const parsed = GuestSchema.safeParse(raw);
@@ -97,6 +111,9 @@ export async function updateGuest(id: string, formData: FormData) {
         email: parsed.data.email || null,
         allowedCompanions: parsed.data.allowedCompanions,
         rsvpStatus: parsed.data.rsvpStatus,
+        confirmedCompanions: parsed.data.confirmedCompanions || 0,
+        companionsNames: parsed.data.companionsNames || null,
+        dietaryRestrictions: parsed.data.dietaryRestrictions || null,
       },
     });
 
@@ -215,19 +232,30 @@ export async function findGuestByPhone(phone: string) {
   
   if (cleanPhone.length < 10) return null;
 
-  // Busca convidado ignorando formatação do telefone
-  const guests = await prisma.guest.findMany();
-  const guest = guests.find(g => g.phone && g.phone.replace(/\D/g, "") === cleanPhone);
+  // Busca convidado no banco cuja coluna 'phone' termine com o número digitado
+  const guest = await prisma.guest.findFirst({
+    where: {
+      phone: {
+        endsWith: cleanPhone,
+      },
+    },
+  });
 
-  return guest || null;
+  return guest;
 }
 
-export async function publicConfirmRsvp(id: string, status: RsvpStatus, confirmedCompanions: number, dietaryRestrictions?: string) {
+export async function publicConfirmRsvp(
+  id: string, 
+  status: RsvpStatus, 
+  confirmedCompanions: number, 
+  companionsNames: string,
+  dietaryRestrictions?: string
+) {
   try {
     const guest = await prisma.guest.findUnique({ where: { id } });
     if (!guest) return { success: false, error: "Convidado não encontrado." };
 
-    if (confirmedCompanions > guest.allowedCompanions) {
+    if (status === "CONFIRMED" && confirmedCompanions > guest.allowedCompanions) {
       return { success: false, error: `Você só pode levar até ${guest.allowedCompanions} acompanhante(s).` };
     }
 
@@ -235,6 +263,8 @@ export async function publicConfirmRsvp(id: string, status: RsvpStatus, confirme
       where: { id },
       data: {
         rsvpStatus: status,
+        confirmedCompanions: status === "CONFIRMED" ? confirmedCompanions : 0,
+        companionsNames: status === "CONFIRMED" ? (companionsNames || null) : null,
         dietaryRestrictions: dietaryRestrictions || null,
       },
     });

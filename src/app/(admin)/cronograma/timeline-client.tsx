@@ -9,6 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Clock, Plus, Trash2, CalendarHeart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { toast } from "sonner";
 
 export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
   const [events, setEvents] = useState(initialEvents);
@@ -20,6 +22,9 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
     time: "",
     description: "",
   });
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,16 +40,24 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
         setEvents([...events, { id: Math.random().toString(), ...payload }]);
         setIsModalOpen(false);
         setFormData({ title: "", time: "", description: "" });
+        toast.success("Evento criado com sucesso!");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Excluir este evento?")) return;
-    setEvents(events.filter(e => e.id !== id));
-    await deleteTimelineEvent(id);
+  const handleDelete = (id: string) => {
+    setConfirmId(id);
+    setConfirmOpen(true);
+  };
+
+  const executeDelete = async () => {
+    if (!confirmId) return;
+    setEvents(events.filter(e => e.id !== confirmId));
+    await deleteTimelineEvent(confirmId);
+    toast.success("Evento excluído do cronograma!");
+    setConfirmId(null);
   };
 
   return (
@@ -144,6 +157,16 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
           )}
         </AnimatePresence>
       </div>
+
+      {confirmOpen && (
+        <ConfirmModal
+          isOpen={confirmOpen}
+          onClose={() => setConfirmOpen(false)}
+          onConfirm={executeDelete}
+          title="Excluir Evento"
+          description="Deseja realmente remover este evento do cronograma do casamento?"
+        />
+      )}
     </div>
   );
 }

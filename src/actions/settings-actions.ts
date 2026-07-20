@@ -22,6 +22,9 @@ export async function getSettings() {
 
 export async function updateSettings(data: {
   rsvpDeadline?: Date | null;
+  weddingDate?: Date | null;
+  weddingLocation?: string | null;
+  weddingLocationUrl?: string | null;
   themeColor?: string;
   heroImageUrl?: string | null;
   welcomeText?: string | null;
