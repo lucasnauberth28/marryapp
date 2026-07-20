@@ -16,7 +16,7 @@ export default async function PresentesAdminPage() {
   const gifts = result.success ? result.data : []
 
   return (
-    <div className="flex-1 p-8 pt-6 w-full max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="flex-1 p-8 pt-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <GiftsClient initialGifts={gifts || []} />
     </div>
   )

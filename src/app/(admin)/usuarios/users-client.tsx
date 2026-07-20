@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { createUser, updateUser, deleteUser } from "@/actions/rbac-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +31,8 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
   });
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
   function openNewForm() {
     setEditingUser(null);
@@ -49,10 +53,10 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
 
   async function handleSave() {
     if (!formData.name || !formData.username || !formData.roleId) {
-      return alert("Preencha todos os campos obrigatórios.");
+      return toast.error("Preencha todos os campos obrigatórios.");
     }
     if (!editingUser && !formData.password) {
-      return alert("A senha é obrigatória para novos usuários.");
+      return toast.error("A senha é obrigatória para novos usuários.");
     }
 
     startTransition(async () => {
@@ -66,22 +70,23 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
       if (result.success) {
         window.location.reload();
       } else {
-        alert(result.error);
+        toast.error(result.error);
       }
     });
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Tem certeza que deseja excluir este usuário? O acesso dele será revogado imediatamente.")) return;
-    
-    startTransition(async () => {
-      const result = await deleteUser(id);
-      if (result.success) {
-        window.location.reload();
-      } else {
-        alert(result.error);
-      }
+    setConfirmAction(() => () => {
+      startTransition(async () => {
+        const result = await deleteUser(id);
+        if (result.success) {
+          window.location.reload();
+        } else {
+          toast.error(result.error);
+        }
+      });
     });
+    setConfirmOpen(true);
   }
 
   return (
@@ -219,6 +224,16 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
           </Table>
         </div>
       )}
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          confirmAction?.();
+        }}
+        title="Excluir Usuário"
+        description="Tem certeza que deseja excluir este usuário? O acesso dele será revogado imediatamente."
+      />
     </div>
   );
 }

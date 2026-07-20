@@ -13,7 +13,7 @@ export default async function SettingsPage() {
   const settings = await getSettings();
 
   return (
-    <div className="flex-1 p-8 pt-6 w-full max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="flex-1 p-8 pt-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <SettingsClient initialSettings={settings} />
     </div>
   );

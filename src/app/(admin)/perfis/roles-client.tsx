@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { createRole, updateRole, deleteRole } from "@/actions/rbac-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +34,8 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
   });
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
   function openNewForm() {
     setEditingRole(null);
@@ -64,8 +68,8 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
   }
 
   async function handleSave() {
-    if (!formData.name) return alert("O nome do perfil é obrigatório.");
-    if (formData.allowedPaths.length === 0) return alert("Selecione ao menos um módulo.");
+    if (!formData.name) return toast.error("O nome do perfil é obrigatório.");
+    if (formData.allowedPaths.length === 0) return toast.error("Selecione ao menos um módulo.");
 
     startTransition(async () => {
       let result;
@@ -79,22 +83,23 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
         // Recarregar a página para pegar os dados frescos do servidor
         window.location.reload();
       } else {
-        alert(result.error);
+        toast.error(result.error);
       }
     });
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Tem certeza que deseja excluir este perfil? Usuários vinculados podem perder acesso.")) return;
-    
-    startTransition(async () => {
-      const result = await deleteRole(id);
-      if (result.success) {
-        window.location.reload();
-      } else {
-        alert(result.error);
-      }
+    setConfirmAction(() => () => {
+      startTransition(async () => {
+        const result = await deleteRole(id);
+        if (result.success) {
+          window.location.reload();
+        } else {
+          toast.error(result.error);
+        }
+      });
     });
+    setConfirmOpen(true);
   }
 
   return (
@@ -212,6 +217,16 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
           )}
         </div>
       )}
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          confirmAction?.();
+        }}
+        title="Excluir Perfil"
+        description="Tem certeza que deseja excluir este perfil? Usuários vinculados podem perder acesso."
+      />
     </div>
   );
 }

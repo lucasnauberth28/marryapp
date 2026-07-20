@@ -45,7 +45,6 @@ const navItems = [
   { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },
   { name: "Pendências", href: "/pendencias", icon: CheckSquare },
   { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
-  { name: "Lua de Mel", href: "/lua-de-mel", icon: Plane },
   { name: "Configurações", href: "/configuracoes", icon: SettingsIcon },
   { name: "Usuários", href: "/usuarios", icon: KeyRound },
   { name: "Perfis", href: "/perfis", icon: Shield },

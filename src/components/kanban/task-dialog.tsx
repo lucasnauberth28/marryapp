@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { TaskStatus } from "@/types/kanban";
 import {
   Dialog,
@@ -38,6 +40,8 @@ export function TaskDialog({
   const [status, setStatus] = useState<TaskStatus>(defaultStatus);
   const [assignee, setAssignee] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -75,19 +79,22 @@ export function TaskDialog({
 
   const handleDelete = async () => {
     if (!task || !onDelete) return;
-    if (confirm("Tem certeza que deseja excluir esta tarefa?")) {
+    setConfirmAction(() => async () => {
       setIsLoading(true);
       try {
         await onDelete(task.id);
         onOpenChange(false);
+        toast.success("Tarefa excluída");
       } finally {
         setIsLoading(false);
       }
-    }
+    });
+    setConfirmOpen(true);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{task ? "Editar Tarefa" : "Nova Tarefa"}</DialogTitle>
@@ -173,5 +180,16 @@ export function TaskDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    <ConfirmModal
+      isOpen={confirmOpen}
+      onClose={() => setConfirmOpen(false)}
+      onConfirm={() => {
+        setConfirmOpen(false);
+        confirmAction?.();
+      }}
+      title="Excluir Tarefa"
+      description="Tem certeza que deseja excluir esta tarefa?"
+    />
+    </>
   );
 }

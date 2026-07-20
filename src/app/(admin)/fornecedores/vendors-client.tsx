@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { VendorLocal as Vendor } from "@/types/local";
 import { createVendor, deleteVendor } from "@/actions/vendor-actions";
 import { Button } from "@/components/ui/button";
@@ -13,6 +15,8 @@ export function VendorsClient({ initialVendors }: { initialVendors: any[] }) {
   const [vendors, setVendors] = useState<any[]>(initialVendors);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,19 +28,22 @@ export function VendorsClient({ initialVendors }: { initialVendors: any[] }) {
       setOpen(false);
       window.location.reload(); // Simple reload to get updated server data
     } else {
-      alert(res.error);
+      toast.error(res.error);
     }
     setLoading(false);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir?")) return;
-    const res = await deleteVendor(id);
-    if (res.success) {
-      setVendors(vendors.filter(v => v.id !== id));
-    } else {
-      alert(res.error);
-    }
+    setConfirmAction(() => async () => {
+      const res = await deleteVendor(id);
+      if (res.success) {
+        setVendors(vendors.filter(v => v.id !== id));
+        toast.success("Fornecedor excluído");
+      } else {
+        toast.error(res.error);
+      }
+    });
+    setConfirmOpen(true);
   };
 
   return (
@@ -111,6 +118,16 @@ export function VendorsClient({ initialVendors }: { initialVendors: any[] }) {
           </TableBody>
         </Table>
       </div>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          confirmAction?.();
+        }}
+        title="Excluir Fornecedor"
+        description="Tem certeza de que deseja excluir este fornecedor?"
+      />
     </div>
   );
 }

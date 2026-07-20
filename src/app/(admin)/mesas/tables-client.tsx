@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { DndContext, useDraggable, useDroppable, DragEndEvent } from "@dnd-kit/core";
 import { createTable, deleteTable, assignGuestToTable } from "@/actions/table-actions";
 import { Button } from "@/components/ui/button";
@@ -78,6 +80,8 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
   const [newTableName, setNewTableName] = useState("");
   const [newTableCap, setNewTableCap] = useState(10);
   const [loading, setLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
@@ -128,11 +132,15 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
   };
 
   const handleDeleteTable = async (id: string) => {
-    if (!confirm("Excluir mesa? Os convidados voltarão para a lista de não alocados.")) return;
-    const res = await deleteTable(id);
-    if (res.success) {
-      window.location.reload();
-    }
+    setConfirmAction(() => async () => {
+      const res = await deleteTable(id);
+      if (res.success) {
+        window.location.reload();
+      } else {
+        toast.error("Erro ao excluir a mesa");
+      }
+    });
+    setConfirmOpen(true);
   };
 
   return (
@@ -187,6 +195,16 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
 
         </div>
       </div>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          confirmAction?.();
+        }}
+        title="Excluir Mesa"
+        description="Excluir mesa? Os convidados voltarão para a lista de não alocados."
+      />
     </DndContext>
   );
 }

@@ -86,10 +86,6 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
     const newStatus = isOverColumn
       ? (overId as TaskStatus)
       : over.data.current?.task?.status;
-    if (activeTaskData.type === "HONEYMOON" && newStatus === "IN_PROGRESS") {
-      return; // Do not allow dropping HONEYMOON in IN_PROGRESS
-    }
-
     // Dropping a Task over another Task
     if (isActiveTask && isOverTask) {
       setTasks((tasks) => {
@@ -135,10 +131,6 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
       : over.data.current?.task?.status;
 
     if (!newStatus) return;
-
-    if (activeTaskData.type === "HONEYMOON" && newStatus === "IN_PROGRESS") {
-      return; // Block save if somehow reached here
-    }
 
     // Optimistic reorder already happened in DragOver, now save to DB
     // Calculate new position based on neighbors

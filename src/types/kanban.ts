@@ -8,7 +8,7 @@ export const TaskStatus = {
 
 export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
 
-export type BoardItemType = "MANUAL" | "HONEYMOON";
+export type BoardItemType = "MANUAL";
 
 export interface BoardItem {
   id: string;
@@ -19,7 +19,4 @@ export interface BoardItem {
   assignee?: string | null;
   status: TaskStatus;
   position: number;
-  // Extras
-  category?: string; // used by HONEYMOON
-  amount?: number;   // used by HONEYMOON
 }

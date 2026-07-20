@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { ExpenseStatus } from "@/types/local";
 import { createExpense, deleteExpense, updateExpenseStatus } from "@/actions/expense-actions";
 import { Button } from "@/components/ui/button";
@@ -13,6 +15,8 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
   const [expenses, setExpenses] = useState<any[]>(initialExpenses);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
   const formatCurrency = (amount: number) => {
     return (amount / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -34,19 +38,22 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
       setOpen(false);
       window.location.reload();
     } else {
-      alert(res.error);
+      toast.error(res.error);
     }
     setLoading(false);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Excluir esta despesa?")) return;
-    const res = await deleteExpense(id);
-    if (res.success) {
-      setExpenses(expenses.filter(e => e.id !== id));
-    } else {
-      alert(res.error);
-    }
+    setConfirmAction(() => async () => {
+      const res = await deleteExpense(id);
+      if (res.success) {
+        setExpenses(expenses.filter(e => e.id !== id));
+        toast.success("Despesa excluída com sucesso");
+      } else {
+        toast.error(res.error);
+      }
+    });
+    setConfirmOpen(true);
   };
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
@@ -153,6 +160,16 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
           </TableBody>
         </Table>
       </div>
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          confirmAction?.();
+        }}
+        title="Excluir Despesa"
+        description="Tem certeza de que deseja excluir esta despesa?"
+      />
     </div>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { Guest } from "@prisma/client";
 
 export interface MessageTemplate {
@@ -78,6 +80,8 @@ export function MensagensClient({
     success?: boolean;
     error?: string;
   } | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
   // Manipular CRUD de templates
   const handleSaveTemplate = async (e: React.FormEvent) => {
@@ -118,12 +122,15 @@ export function MensagensClient({
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir esse template?")) return;
-    const res = await deleteMessageTemplate(id);
-    if (res.success) {
-      setTemplates(templates.filter((t) => t.id !== id));
-      if (selectedTemplate?.id === id) resetForm();
-    }
+    setConfirmAction(() => async () => {
+      const res = await deleteMessageTemplate(id);
+      if (res.success) {
+        setTemplates(templates.filter((t) => t.id !== id));
+        if (selectedTemplate?.id === id) resetForm();
+        toast.success("Template excluído");
+      }
+    });
+    setConfirmOpen(true);
   };
 
   const resetForm = () => {
@@ -150,9 +157,9 @@ export function MensagensClient({
   };
 
   const handleSendMessages = async () => {
-    if (!chosenTemplateId) return alert("Selecione um template!");
+    if (!chosenTemplateId) return toast.error("Selecione um template!");
     if (selectedGuests.length === 0)
-      return alert("Selecione pelo menos 1 convidado!");
+      return toast.error("Selecione pelo menos 1 convidado!");
 
     setIsSending(true);
     setSendStatus(null);
@@ -534,6 +541,16 @@ export function MensagensClient({
           </Card>
         </div>
       )}
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          confirmAction?.();
+        }}
+        title="Excluir Template"
+        description="Tem certeza de que deseja excluir esse template?"
+      />
     </div>
   );
 }

@@ -14,32 +14,16 @@ export async function getTasks() {
       },
     });
 
-    const honeymoonItems = await prisma.honeymoonItem.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-
-    const boardItems: BoardItem[] = [
-      ...tasks.map(t => ({
-        id: t.id,
-        type: "MANUAL" as const,
-        title: t.title,
-        description: t.description,
-        dueDate: t.dueDate,
-        assignee: t.assignee,
-        status: t.status,
-        position: t.position,
-      })),
-      ...honeymoonItems.map((h, index) => ({
-        id: h.id,
-        type: "HONEYMOON" as const,
-        title: h.title,
-        description: `Categoria: ${h.category}`,
-        status: (h.isPaid ? "DONE" : "TODO") as TaskStatus,
-        position: (index + 1) * 1024, // arbitrary position for virtual tasks
-        amount: h.amount,
-        category: h.category,
-      }))
-    ];
+    const boardItems: BoardItem[] = tasks.map(t => ({
+      id: t.id,
+      type: "MANUAL" as const,
+      title: t.title,
+      description: t.description,
+      dueDate: t.dueDate,
+      assignee: t.assignee,
+      status: t.status,
+      position: t.position,
+    }));
 
     return { success: true, data: boardItems };
   } catch (error) {
@@ -87,27 +71,15 @@ export async function updateTaskStatus(
   type: BoardItemType = "MANUAL"
 ) {
   try {
-    if (type === "HONEYMOON") {
-      // For honeymoon, only DONE (paid) and TODO (not paid) makes sense.
-      // If user drags to IN_PROGRESS, we might want to reject or just handle it gracefully.
-      const isPaid = newStatus === "DONE";
-      await prisma.honeymoonItem.update({
-        where: { id: taskId },
-        data: { isPaid },
-      });
-    } else {
-      await prisma.task.update({
-        where: { id: taskId },
-        data: {
-          status: newStatus,
-          position: newPosition,
-        },
-      });
-    }
+    await prisma.task.update({
+      where: { id: taskId },
+      data: {
+        status: newStatus,
+        position: newPosition,
+      },
+    });
 
     revalidatePath("/pendencias");
-    // Also revalidate honeymoon if we changed a honeymoon item
-    if (type === "HONEYMOON") revalidatePath("/lua-de-mel");
     
     return { success: true };
   } catch (error) {

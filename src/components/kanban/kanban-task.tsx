@@ -45,7 +45,6 @@ export function KanbanTask({ task, onEdit }: KanbanTaskProps) {
   }
 
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "DONE";
-  const isHoneymoon = task.type === "HONEYMOON";
 
   return (
     <div
@@ -54,25 +53,19 @@ export function KanbanTask({ task, onEdit }: KanbanTaskProps) {
       className="group relative flex w-full"
     >
       <Card
-        className={`w-full ${isHoneymoon ? 'cursor-default' : 'cursor-grab active:cursor-grabbing hover:border-zinc-300'} transition-all shadow-sm bg-white hover:shadow-md ${
+        className={`w-full cursor-grab active:cursor-grabbing hover:border-zinc-300 transition-all shadow-sm bg-white hover:shadow-md ${
           isOverdue ? "border-red-300 bg-red-50/10" : ""
-        } ${isHoneymoon ? "border-emerald-200/50" : ""}`}
+        }`}
         onClick={() => {
-          if (!isHoneymoon) onEdit?.(task);
+          onEdit?.(task);
         }}
       >
         <CardContent className="p-4 flex flex-col gap-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-start gap-2">
-              {isHoneymoon ? (
-                <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-md shrink-0">
-                  <Palmtree className="w-3.5 h-3.5" />
-                </div>
-              ) : (
-                <div className="p-1.5 bg-zinc-50 text-zinc-500 rounded-md shrink-0 border border-zinc-100">
-                  <StickyNote className="w-3.5 h-3.5" />
-                </div>
-              )}
+              <div className="p-1.5 bg-zinc-50 text-zinc-500 rounded-md shrink-0 border border-zinc-100">
+                <StickyNote className="w-3.5 h-3.5" />
+              </div>
               <h4 className="font-medium text-sm text-zinc-900 leading-tight mt-1">
                 {task.title}
               </h4>
@@ -89,13 +82,8 @@ export function KanbanTask({ task, onEdit }: KanbanTaskProps) {
             </Button>
           </div>
           
-          {(task.dueDate || task.assignee || isHoneymoon) && (
+          {(task.dueDate || task.assignee) && (
             <div className="flex items-center gap-3 text-xs text-zinc-500 mt-1 flex-wrap">
-              {isHoneymoon && task.amount && (
-                <div className="flex items-center gap-1 bg-emerald-50/50 text-emerald-700 px-2 py-1 rounded-md border border-emerald-100 font-medium">
-                  {(task.amount / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                </div>
-              )}
               {task.dueDate && (
                 <div className={`flex items-center gap-1 px-2 py-1 rounded-md border ${isOverdue ? 'bg-red-50 border-red-200 text-red-600' : 'bg-zinc-50 border-zinc-100'}`}>
                   <CalendarIcon className="h-3.5 w-3.5" />

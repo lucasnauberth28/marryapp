@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { toast } from "sonner"
+import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { GiftLocal as Gift } from "@/types/local"
 import { deleteGift } from "@/actions/gift-actions"
 import { Button } from "@/components/ui/button"
@@ -15,14 +17,18 @@ interface GiftsClientProps {
 export function GiftsClient({ initialGifts }: GiftsClientProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null)
 
   function handleDelete(id: string) {
-    if (!confirm("Deseja realmente excluir este item da vitrine?")) return
-
-    startTransition(async () => {
-      const result = await deleteGift(id)
-      if (!result.success) alert(result.error)
+    setConfirmAction(() => () => {
+      startTransition(async () => {
+        const result = await deleteGift(id)
+        if (!result.success) toast.error(result.error)
+        else toast.success("Presente excluído com sucesso!")
+      })
     })
+    setConfirmOpen(true)
   }
 
   // Conversão de centavos para Real
@@ -161,6 +167,16 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
       <GiftModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={() => {
+          setConfirmOpen(false)
+          confirmAction?.()
+        }}
+        title="Excluir Presente"
+        description="Deseja realmente excluir este item da vitrine?"
       />
     </div>
   )

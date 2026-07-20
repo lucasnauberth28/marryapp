@@ -11,7 +11,7 @@ export default async function RolesPage() {
   const roles = await getRoles();
 
   return (
-    <div className="flex-1 p-8 pt-6 w-full max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="flex-1 p-8 pt-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <RolesClient initialRoles={roles} />
     </div>
   );

@@ -28,6 +28,7 @@
   --radius-xl: calc(var(--radius) + 4px);
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
+  --color-white: #FCFBF9;
 }
 
 :root {
