@@ -105,7 +105,7 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
                   onChange={e => setFormData({ ...formData, description: e.target.value })} 
                 />
               </div>
-              <Button type="submit" disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button type="submit" disabled={loading} className="w-full bg-[#8C6D45] hover:bg-[#755630] text-white">
                 {loading ? "Salvando..." : "Salvar Evento"}
               </Button>
             </form>
@@ -113,12 +113,14 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
         </Dialog>
       </div>
 
-      <div className="relative pl-4 border-l-2 border-zinc-200 ml-4 space-y-8 py-4">
+      <div className="relative pl-4 border-l-2 border-[#E8E2D9] ml-4 space-y-8 py-4">
         <AnimatePresence>
           {events.length === 0 ? (
             <p className="text-zinc-400 text-center py-8">Nenhum evento cadastrado no cronograma.</p>
           ) : (
-            events.map((event, i) => (
+            [...events]
+              .sort((a, b) => a.time.localeCompare(b.time))
+              .map((event, i) => (
               <motion.div 
                 key={event.id}
                 initial={{ opacity: 0, x: -20 }}
@@ -127,14 +129,14 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
                 className="relative pl-6"
               >
                 {/* Timeline Dot */}
-                <span className="absolute -left-[35px] top-1 w-6 h-6 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center">
-                  <Clock className="w-3 h-3 text-emerald-600" />
+                <span className="absolute -left-[35px] top-1 w-6 h-6 rounded-full bg-[#F3ECE3] border-2 border-[#8C6D45] flex items-center justify-center">
+                  <Clock className="w-3 h-3 text-[#8C6D45]" />
                 </span>
 
-                <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-4 flex justify-between items-start group hover:border-emerald-200 transition-colors">
+                <div className="bg-[#FCFBF9] border border-[#E8E2D9] rounded-lg p-4 flex justify-between items-start group hover:border-[#C5A880]/50 transition-colors shadow-sm">
                   <div>
-                    <h3 className="font-bold text-lg text-zinc-900 flex items-center gap-2">
-                      <span className="text-emerald-600 font-mono bg-emerald-50 px-2 py-0.5 rounded text-sm">
+                    <h3 className="font-semibold text-base text-zinc-900 flex items-center gap-2">
+                      <span className="text-[#8C6D45] font-mono bg-[#F3ECE3] px-2 py-0.5 rounded text-sm font-semibold">
                         {event.time}
                       </span> 
                       {event.title}

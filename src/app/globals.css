@@ -29,6 +29,9 @@
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
   --color-white: #FCFBF9;
+  --color-zinc-800: #755630;
+  --color-zinc-900: #8C6D45;
+  --color-zinc-950: #8C6D45;
 }
 
 :root {
@@ -51,5 +54,5 @@
   --border: #E8E2D9; /* Borda Champanhe */
   --input: #E8E2D9;
   --ring: #C5A880;
-  --radius: 0.85rem; /* Bordas um pouco mais suaves */
+  --radius: 0.45rem; /* Bordas modernas e estruturadas */
 }
