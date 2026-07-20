@@ -26,27 +26,29 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #3f3f46; /* zinc-700 - softer black */
+  --background: #FAF8F5; /* Marfim Claro */
+  --foreground: #4A3E3D; /* Bronze/Grafite Quente */
   --card: #ffffff;
-  --card-foreground: #3f3f46;
+  --card-foreground: #4A3E3D;
   --popover: #ffffff;
-  --popover-foreground: #3f3f46;
-  --primary: #18181b; /* zinc-900 */
-  --primary-foreground: #fafafa; /* zinc-50 */
-  --secondary: #f4f4f5; /* zinc-100 */
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a; /* zinc-500 */
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
-  --destructive: #ef4444; /* red-500 */
-  --destructive-foreground: #fafafa;
-  --border: #e4e4e7; /* zinc-200 - light gray borders */
-  --input: #e4e4e7;
-  --ring: #d4d4d8; /* zinc-300 */
-  --radius: 0.75rem;
+  --popover-foreground: #4A3E3D;
+  --primary: #8C6D45; /* Dourado Champanhe / Bronze */
+  --primary-foreground: #FAF8F5;
+  --secondary: #F5EFEB; /* Creme */
+  --secondary-foreground: #8C6D45;
+  --muted: #F5EFEB;
+  --muted-foreground: #A69280;
+  --accent: #F5EFEB;
+  --accent-foreground: #8C6D45;
+  --destructive: #dc2626; /* Vermelho mais sutil */
+  --destructive-foreground: #FAF8F5;
+  --border: #E8E2D9; /* Borda Champanhe */
+  --input: #E8E2D9;
+  --ring: #C5A880;
+  --radius: 0.85rem; /* Bordas um pouco mais suaves */
 }

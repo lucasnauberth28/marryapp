@@ -52,22 +52,22 @@ export function Sidebar({ role = "Admin", allowedPaths = ["*"] }: { role?: strin
 
   return (
     <aside 
-      className={`${isCollapsed ? "w-20" : "w-64"} bg-white border-r border-zinc-200 hidden md:flex flex-col transition-all duration-300 relative`}
+      className={`${isCollapsed ? "w-20" : "w-64"} bg-[#FCFBF9] border-r border-stone-200/60 hidden md:flex flex-col transition-all duration-300 relative`}
     >
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-6 bg-white border border-zinc-200 rounded-full p-1 z-50 hover:bg-zinc-50 shadow-sm"
+        className="absolute -right-3 top-6 bg-white border border-stone-200 rounded-full p-1 z-50 hover:bg-stone-50 shadow-sm transition-colors cursor-pointer"
       >
-        {isCollapsed ? <ChevronRight className="w-4 h-4 text-zinc-600" /> : <ChevronLeft className="w-4 h-4 text-zinc-600" />}
+        {isCollapsed ? <ChevronRight className="w-4 h-4 text-stone-600" /> : <ChevronLeft className="w-4 h-4 text-stone-600" />}
       </button>
 
-      <div className="h-16 flex items-center px-4 border-b border-zinc-200 overflow-hidden">
-        <div className="flex items-center gap-2 min-w-max">
-          <div className="w-10 h-10 bg-zinc-900 rounded-lg flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-sm leading-none">L&G</span>
+      <div className="h-16 flex items-center px-4 border-b border-stone-200/50 overflow-hidden">
+        <div className="flex items-center gap-2.5 min-w-max">
+          <div className="w-9 h-9 bg-gradient-to-br from-[#C5A880] to-[#A3855E] rounded-xl flex items-center justify-center shrink-0 shadow-sm shadow-amber-900/10">
+            <span className="text-white font-bold text-xs leading-none tracking-wider">L&G</span>
           </div>
           {!isCollapsed && (
-            <h1 className="font-bold text-lg text-zinc-900 tracking-tight transition-opacity duration-300">
+            <h1 className="font-semibold text-base text-stone-800 tracking-wide font-serif italic">
               Lucas & Giovanna
             </h1>
           )}
@@ -84,26 +84,26 @@ export function Sidebar({ role = "Admin", allowedPaths = ["*"] }: { role?: strin
               key={item.name}
               href={item.href}
               title={isCollapsed ? item.name : undefined}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-md transition-all ${
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
                 isActive
-                  ? "bg-zinc-100 text-zinc-900 font-semibold"
-                  : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900 font-medium"
+                  ? "bg-[#F3ECE3] text-[#8C6D45] font-semibold border-r-2 border-[#8C6D45]"
+                  : "text-stone-500 hover:bg-stone-50 hover:text-stone-900 font-medium"
               } ${isCollapsed ? "justify-center" : "justify-start"}`}
             >
-              <Icon className={`w-5 h-5 shrink-0 ${isActive ? "text-zinc-900" : "text-zinc-400"}`} />
-              {!isCollapsed && <span className="truncate">{item.name}</span>}
+              <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-[#8C6D45]" : "text-stone-400"}`} />
+              {!isCollapsed && <span className="truncate text-xs tracking-wide">{item.name}</span>}
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-3 mt-auto border-t border-zinc-200 overflow-hidden">
+      <div className="p-3 mt-auto border-t border-stone-200/50 overflow-hidden">
         <button 
           onClick={() => logout()}
           title={isCollapsed ? "Sair" : undefined}
-          className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-md transition-colors text-red-600 hover:bg-red-50 font-medium ${isCollapsed ? "justify-center" : "justify-start"}`}
+          className={`flex w-full items-center gap-3 px-3 py-2 rounded-lg transition-colors text-red-600 hover:bg-red-50 font-semibold text-xs tracking-wide cursor-pointer ${isCollapsed ? "justify-center" : "justify-start"}`}
         >
-          <LogOut className="w-5 h-5 shrink-0" />
+          <LogOut className="w-4 h-4 shrink-0" />
           {!isCollapsed && <span className="truncate">Sair</span>}
         </button>
       </div>
