@@ -205,7 +205,7 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
     }
   };
 
-  const [filter, setFilter] = useState<"ALL" | "MANUAL" | "HONEYMOON">("ALL");
+  const [filter, setFilter] = useState<"ALL" | "MANUAL">("ALL");
 
   const filteredTasks = useMemo(() => {
     if (filter === "ALL") return tasks;
@@ -216,11 +216,11 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
     <div className="flex flex-col h-full overflow-hidden w-full">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+          <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
             Pendências
           </h1>
-          <p className="text-zinc-500 text-sm mt-1">
-            Gerencie tarefas e integre pendências de outros módulos.
+          <p className="text-zinc-500 mt-1">
+            Gerencie tarefas e acompanhe o andamento das atividades.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -237,16 +237,10 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
             >
               Tarefas Manuais
             </button>
-            <button
-              onClick={() => setFilter("HONEYMOON")}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${filter === "HONEYMOON" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
-            >
-              Lua de Mel
-            </button>
           </div>
           <button
             onClick={() => handleAddTask(TaskStatus.TODO)}
-            className="bg-zinc-900 text-zinc-50 hover:bg-zinc-800 px-4 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm"
+            className="bg-[#8C6D45] text-white hover:bg-[#755630] px-4 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm"
           >
             Nova Tarefa
           </button>

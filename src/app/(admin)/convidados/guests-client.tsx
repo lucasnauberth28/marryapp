@@ -147,10 +147,9 @@ export function GuestsClient({ initialGuests }: GuestsClientProps) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
-            <Users className="w-8 h-8 text-zinc-400" />
+          <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
             Convidados
-          </h2>
+          </h1>
           <p className="text-zinc-500 mt-1">
             Gerencie sua lista e automatize a comunicação via WhatsApp.
           </p>

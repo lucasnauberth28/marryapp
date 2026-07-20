@@ -186,9 +186,9 @@ export function MensagensClient({
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-zinc-900">
+          <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
             Painel de Mensageria
-          </h2>
+          </h1>
           <p className="text-zinc-500 mt-1">
             Configure templates automáticos e envie via WhatsApp.
           </p>

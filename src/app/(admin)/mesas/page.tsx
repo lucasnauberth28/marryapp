@@ -10,8 +10,8 @@ export default async function TablesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-zinc-900">Mapa de Mesas</h2>
-        <p className="text-zinc-500 mt-2">Organize os lugares dos seus convidados confirmados.</p>
+        <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">Mapa de Mesas</h1>
+        <p className="text-zinc-500 mt-1">Organize os lugares dos seus convidados confirmados.</p>
       </div>
       
       <TablesClient initialTables={tables} initialUnassigned={unassignedGuests} />

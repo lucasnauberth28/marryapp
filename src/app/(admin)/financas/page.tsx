@@ -47,10 +47,10 @@ export default async function FinancasPage() {
     <div className="space-y-8">
       {/* Page Header */}
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-zinc-900">
+        <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
           Finanças
-        </h2>
-        <p className="text-zinc-500 mt-2">
+        </h1>
+        <p className="text-zinc-500 mt-1">
           Conciliação de pagamentos e visão financeira do casamento.
         </p>
       </div>

@@ -9,8 +9,8 @@ export default async function VendorsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-zinc-900">Fornecedores</h2>
-        <p className="text-zinc-500 mt-2">Gerencie os contatos e contratos do casamento.</p>
+        <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">Fornecedores</h1>
+        <p className="text-zinc-500 mt-1">Gerencie os contatos e contratos do casamento.</p>
       </div>
       
       <VendorsClient initialVendors={vendors} />

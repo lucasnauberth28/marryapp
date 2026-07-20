@@ -65,10 +65,10 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
           Visão Geral
-        </h2>
-        <p className="text-zinc-500 mt-2">Acompanhe os números do casamento em tempo real.</p>
+        </h1>
+        <p className="text-zinc-500 mt-1">Acompanhe os números do casamento em tempo real.</p>
       </div>
       
       {/* Cards de Métricas Principais */}
