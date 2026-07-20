@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { login } from "@/actions/auth-actions";
-import { Lock, User, Loader2, Sparkles, CheckCircle, Heart, ArrowRight } from "lucide-react";
+import { Lock, User, Loader2, Sparkles, CheckCircle, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function LoginPage() {
       if (res.success) {
         window.location.href = "/dashboard";
       } else {
-        setError(res.error || "Credenciais inválidas. Tente novamente.");
+        setError(res.error || "Credenciais incorretas. Verifique e tente novamente.");
       }
     } catch (err: any) {
       setError(err.message || "Erro de servidor.");
@@ -35,62 +36,76 @@ export default function LoginPage() {
   };
 
   const saasFeatures = [
-    { title: "RSVP Inteligente", desc: "Confirmação ativa, acompanhantes com nome e restrições alimentares." },
-    { title: "QR Code Check-In", desc: "Credenciamento de convidados via câmera do celular na entrada." },
-    { title: "Gestão Financeira", desc: "Controle de despesas e arrecadação de presentes integrados." },
-    { title: "Automação WhatsApp", desc: "Disparos inteligentes de lembretes e convites com sistema anti-ban." }
+    { title: "Confirmação de Presença Elegante", desc: "Fluxo de RSVP otimizado com acompanhantes individuais e restrições alimentares." },
+    { title: "Credenciamento por QR Code", desc: "Check-in digital rápido na recepção do evento através do celular da assessoria." },
+    { title: "Planejamento Financeiro", desc: "Controle de despesas, cronograma de pagamentos e mural de presentes integrados." },
+    { title: "Comunicação via WhatsApp", desc: "Disparos inteligentes e automatizados de lembretes e convites oficiais." }
   ];
 
   return (
-    <div className="min-h-screen flex bg-zinc-950 font-sans antialiased text-zinc-200 overflow-hidden">
+    <div className="min-h-screen flex bg-[#FAF8F5] font-sans antialiased text-stone-800 overflow-hidden relative">
       
-      {/* Lado Esquerdo: Painel Comercial / SaaS (Oculto no mobile) */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-gradient-to-br from-emerald-950 via-zinc-950 to-zinc-900 flex-col justify-between p-16 border-r border-zinc-800/50">
-        
-        {/* Background blobs decorativos */}
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-emerald-700/5 blur-[100px] pointer-events-none" />
+      {/* Injeção dinâmica de fontes elegantes de Casamento (Google Fonts) */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
+        .font-serif-wedding {
+          font-family: 'Cormorant Garamond', Georgia, serif;
+        }
+        .font-sans-wedding {
+          font-family: 'Outfit', sans-serif;
+        }
+      `}} />
 
-        {/* Logo */}
-        <div className="relative z-10 flex items-center gap-2">
-          <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Heart className="w-5 h-5 text-zinc-950 fill-zinc-950" />
+      {/* Lado Esquerdo: Painel de Apresentação e Marketing (62% da tela) */}
+      <div className="hidden lg:flex lg:w-[62%] relative overflow-hidden bg-gradient-to-br from-[#FCFBF9] via-[#FAF6F0] to-[#F3EDE2] flex-col justify-between p-16 border-r border-stone-200/50">
+        
+        {/* Blobs de Luz Champanhe/Dourados para criar profundidade */}
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#C5A880]/10 blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-[#E5D5C0]/15 blur-[90px] pointer-events-none" />
+
+        {/* Logo Superior */}
+        <div className="relative z-10 flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#C5A880] to-[#A3855E] flex items-center justify-center shadow-md shadow-amber-900/10">
+            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.5 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor" />
+            </svg>
           </div>
-          <span className="text-xl font-bold tracking-tight text-white bg-clip-text">
-            Marry<span className="text-emerald-400">App</span>
+          <span className="text-lg font-bold tracking-wider text-stone-800 font-sans-wedding">
+            MARRY<span className="text-[#C5A880]">APP</span>
           </span>
         </div>
 
-        {/* Hero Copy */}
-        <div className="relative z-10 space-y-12 max-w-lg my-auto">
+        {/* Hero Section */}
+        <div className="relative z-10 space-y-10 max-w-xl my-auto">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5" /> Versão Comercial 2.0
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C5A880]/10 border border-[#C5A880]/20 text-[#A3855E] text-xs font-semibold font-sans-wedding tracking-wider uppercase">
+              <Sparkles className="w-3 h-3 text-[#C5A880]" /> Gestão de Casamentos Premium
             </div>
-            <h1 className="text-4xl xl:text-5xl font-extrabold tracking-tight text-white leading-tight">
-              A plataforma definitiva para organizar o grande dia.
+            <h1 className="text-4xl xl:text-5xl font-normal leading-tight text-stone-900 font-serif-wedding">
+              Gerencie cada detalhe da celebração <br />
+              <span className="italic text-[#C5A880] font-light">do seu felizes para sempre.</span>
             </h1>
-            <p className="text-zinc-400 text-base leading-relaxed">
-              O MarryApp simplifica a comunicação com convidados, automatiza cobranças e dá controle financeiro total em um painel integrado e profissional.
+            <p className="text-stone-500 text-sm font-sans-wedding leading-relaxed max-w-lg">
+              Simplifique o relacionamento com seus convidados, acompanhe a saúde financeira do evento e integre todas as etapas organizacionais em um único produto SaaS comercial de alta costura.
             </p>
           </div>
 
-          {/* SaaS Pillars list */}
-          <div className="grid grid-cols-1 gap-6">
+          {/* SaaS Features */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
             {saasFeatures.map((f, i) => (
               <motion.div 
                 key={f.title}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1, duration: 0.4 }}
-                className="flex items-start gap-4"
+                className="flex gap-3"
               >
-                <div className="w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0 mt-0.5">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="w-5 h-5 rounded-full bg-[#C5A880]/15 flex items-center justify-center shrink-0 mt-0.5 border border-[#C5A880]/30">
+                  <CheckCircle className="w-3 h-3 text-[#A3855E]" />
                 </div>
-                <div>
-                  <h4 className="font-bold text-white text-sm">{f.title}</h4>
-                  <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">{f.desc}</p>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-stone-800 text-xs font-sans-wedding tracking-wide">{f.title}</h4>
+                  <p className="text-[11px] text-stone-400 leading-relaxed font-sans-wedding">{f.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -98,71 +113,87 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <div className="relative z-10 text-xs text-zinc-600 font-medium">
-          MarryApp © {new Date().getFullYear()} — Pronto para o seu casamento e para o mercado.
+        <div className="relative z-10 text-[11px] text-stone-400 font-sans-wedding font-medium">
+          MarryApp © {new Date().getFullYear()} — Tecnologia e sofisticação para assessoria de grandes eventos.
         </div>
       </div>
 
-      {/* Lado Direito: Formulário Glassmorphism (Centro no Mobile) */}
-      <div className="w-full lg:w-[45%] flex flex-col justify-center items-center p-8 bg-zinc-950 relative">
-        <div className="absolute top-[10%] right-[10%] w-[300px] h-[300px] rounded-full bg-emerald-500/5 blur-[80px] pointer-events-none block lg:hidden" />
+      {/* Lado Direito: Formulário Minimalista & Estético (38% da tela) */}
+      <div className="w-full lg:w-[38%] flex flex-col justify-center items-center p-8 bg-[#FAF8F5] relative">
+        {/* Glow dourado de fundo no mobile */}
+        <div className="absolute top-[10%] right-[10%] w-[250px] h-[250px] rounded-full bg-[#C5A880]/5 blur-[70px] pointer-events-none block lg:hidden" />
         
         <motion.div 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-md space-y-8"
+          className="w-full max-w-[340px] space-y-6"
         >
-          {/* Mobile Logo & Header */}
-          <div className="text-center space-y-3">
-            <div className="lg:hidden inline-flex w-12 h-12 bg-emerald-500 rounded-2xl items-center justify-center mb-2 shadow-lg shadow-emerald-500/20">
-              <Heart className="w-6 h-6 text-zinc-950 fill-zinc-950" />
+          {/* Cabeçalho e Logo de Alianças */}
+          <div className="text-center space-y-2.5">
+            {/* Logo Alianças de Casamento Entrelaçadas */}
+            <div className="inline-flex items-center justify-center text-[#C5A880] mb-1">
+              <svg className="w-10 h-10 drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+                <circle cx="8.5" cy="12" r="4.5" />
+                <circle cx="15.5" cy="12" r="4.5" />
+              </svg>
             </div>
-            <h2 className="text-3xl font-extrabold text-white tracking-tight">Fazer Acesso</h2>
-            <p className="text-sm text-zinc-500">
-              Digite seu login e senha para gerenciar o painel.
+            <h2 className="text-2xl font-medium tracking-wide text-stone-900 font-serif-wedding">Acesso ao Painel</h2>
+            <p className="text-xs text-stone-400 font-sans-wedding">
+              Insira suas credenciais de acesso comercial.
             </p>
           </div>
 
-          {/* Form Card (Glassmorphic) */}
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-3xl p-8 backdrop-blur-md shadow-2xl relative">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Form Card */}
+          <div className="bg-white border border-stone-200/60 rounded-3xl p-7 shadow-lg shadow-stone-200/30">
+            <form onSubmit={handleSubmit} className="space-y-5">
               
               <div className="space-y-4">
                 
                 {/* Username Input */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Usuário</label>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest font-sans-wedding">Usuário</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
-                      <User className="w-4 h-4" />
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-stone-400">
+                      <User className="w-3.5 h-3.5" />
                     </span>
                     <Input
                       type="text"
-                      placeholder="seu_usuario"
+                      placeholder="admin"
                       value={username}
                       onChange={(e) => setUsername(e.target.value.toLowerCase())}
-                      className="h-12 pl-11 bg-zinc-900/60 border-zinc-800 rounded-xl focus:border-emerald-500 focus:bg-zinc-900 text-white text-base shadow-inner transition-all duration-300"
+                      className="h-11 pl-9 bg-stone-50 border-stone-200 rounded-xl focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880]/15 text-stone-800 text-sm font-sans-wedding transition-all duration-300"
                       required
                     />
                   </div>
                 </div>
 
                 {/* Password Input */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Senha</label>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest font-sans-wedding">Senha</label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
-                      <Lock className="w-4 h-4" />
+                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-stone-400">
+                      <Lock className="w-3.5 h-3.5" />
                     </span>
                     <Input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="h-12 pl-11 bg-zinc-900/60 border-zinc-800 rounded-xl focus:border-emerald-500 focus:bg-zinc-900 text-white text-base shadow-inner tracking-widest transition-all duration-300"
+                      className="h-11 pl-9 pr-10 bg-stone-50 border-stone-200 rounded-xl focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880]/15 text-stone-800 text-sm font-sans-wedding tracking-widest transition-all duration-300"
                       required
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600 focus:outline-none"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -174,9 +205,9 @@ export default function LoginPage() {
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
-                    className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 py-3 px-4 rounded-xl flex items-center gap-2"
+                    className="text-[11px] text-red-700 bg-red-50 border border-red-100 py-2.5 px-3 rounded-xl flex items-center gap-2 font-sans-wedding"
                   >
-                    <XCircle className="w-4 h-4 shrink-0 text-red-500" />
+                    <XCircle className="w-3.5 h-3.5 shrink-0 text-red-500" />
                     <span className="font-medium">{error}</span>
                   </motion.div>
                 )}
@@ -185,18 +216,18 @@ export default function LoginPage() {
               {/* Submit Button */}
               <Button 
                 type="submit" 
-                className="w-full h-12 text-sm font-bold bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl shadow-lg shadow-emerald-500/15 flex items-center justify-center gap-2 hover:-translate-y-0.5 transition-all duration-300"
+                className="w-full h-11 text-xs font-bold tracking-wider bg-gradient-to-r from-[#C5A880] to-[#A3855E] hover:from-[#B4946B] hover:to-[#8F714B] text-white rounded-xl shadow-md shadow-amber-900/10 flex items-center justify-center gap-1.5 hover:-translate-y-0.5 transition-all duration-300 font-sans-wedding uppercase"
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    Autenticando acesso...
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Validando acesso...
                   </>
                 ) : (
                   <>
                     Acessar Plataforma
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </>
                 )}
               </Button>
@@ -204,8 +235,8 @@ export default function LoginPage() {
           </div>
 
           {/* Hint */}
-          <p className="text-center text-xs text-zinc-600">
-            Acesso reservado aos noivos e assessores autorizados.
+          <p className="text-center text-[10px] text-stone-400 font-sans-wedding">
+            Ambiente comercial protegido e criptografado.
           </p>
         </motion.div>
       </div>
@@ -213,7 +244,7 @@ export default function LoginPage() {
   );
 }
 
-// Pequeno ícone de erro importado condicionalmente
+// Ícone de erro em SVG
 function XCircle(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
