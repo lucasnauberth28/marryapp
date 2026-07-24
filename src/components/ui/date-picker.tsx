@@ -12,16 +12,17 @@ const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
     const internalRef = React.useRef<HTMLInputElement>(null);
     React.useImperativeHandle(ref, () => internalRef.current!);
 
-    const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-      if (internalRef.current) {
-        if ("showPicker" in internalRef.current) {
+    const handleClick = () => {
+      const inputEl = internalRef.current;
+      if (inputEl) {
+        if ("showPicker" in inputEl && typeof (inputEl as any).showPicker === "function") {
           try {
-            internalRef.current.showPicker();
+            (inputEl as any).showPicker();
           } catch {
-            internalRef.current.focus();
+            inputEl.focus();
           }
         } else {
-          internalRef.current.focus();
+          inputEl.focus();
         }
       }
     };
