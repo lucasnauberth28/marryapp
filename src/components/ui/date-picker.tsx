@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useState, useRef, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -47,7 +48,10 @@ export function DatePicker({
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [internalValue, setInternalValue] = useState<string>(controlledValue ?? defaultValue);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
 
   // Data selecionada válida ou null
   const selectedDate = useMemo(() => {
@@ -71,16 +75,72 @@ export function DatePicker({
     }
   }, [controlledValue]);
 
+  const updateCoords = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const popoverWidth = 300;
+      const popoverHeight = 310;
+
+      let top = rect.bottom + 6;
+      let left = rect.left;
+
+      // Ajusta se estiver saindo da tela à direita
+      if (left + popoverWidth > window.innerWidth - 12) {
+        left = Math.max(12, window.innerWidth - popoverWidth - 12);
+      }
+
+      // Ajusta se estiver saindo da tela abaixo (abre para cima)
+      if (top + popoverHeight > window.innerHeight - 12) {
+        top = Math.max(12, rect.top - popoverHeight - 6);
+      }
+
+      setCoords({ top, left });
+    }
+  };
+
+  const handleToggle = () => {
+    if (disabled) return;
+    if (!isOpen) {
+      updateCoords();
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  };
+
+  // Atualiza coordenadas em scroll/resize
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleScrollOrResize = () => {
+      updateCoords();
+    };
+
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
+
+    return () => {
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
+    };
+  }, [isOpen]);
+
   // Fechar popover ao clicar fora
   useEffect(() => {
+    if (!isOpen) return;
+
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        triggerRef.current && !triggerRef.current.contains(target) &&
+        popoverRef.current && !popoverRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   const handleDateSelect = (date: Date) => {
     const formatted = format(date, "yyyy-MM-dd");
@@ -111,13 +171,14 @@ export function DatePicker({
     : "";
 
   return (
-    <div ref={containerRef} className="relative w-full">
+    <div className="relative w-full">
       {/* Campo oculto para formulários HTML nativos */}
       {name && <input type="hidden" name={name} value={controlledValue !== undefined ? controlledValue : internalValue} required={required} />}
 
       {/* Input Display (Estilo PrimeVue) */}
       <div
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        ref={triggerRef}
+        onClick={handleToggle}
         className={cn(
           "h-10 w-full min-w-0 rounded-lg border border-input bg-background px-3 py-2 pr-10 text-sm transition-all outline-none flex items-center justify-between shadow-sm cursor-pointer select-none",
           isOpen && "ring-2 ring-[#8C6D45]/30 border-[#8C6D45]",
@@ -135,27 +196,36 @@ export function DatePicker({
         </div>
       </div>
 
-      {/* Floating PrimeVue Style Popover */}
-      {isOpen && (
-        <div className="absolute z-50 mt-1.5 w-[300px] rounded-xl border border-zinc-200 bg-white p-4 shadow-xl animate-in fade-in zoom-in-95 duration-150 right-0 sm:left-0">
+      {/* Floating Portal Popover (Livre de estourar containers ou scrollbars de modais) */}
+      {isOpen && coords && typeof window !== "undefined" && createPortal(
+        <div
+          ref={popoverRef}
+          style={{
+            position: "fixed",
+            top: `${coords.top}px`,
+            left: `${coords.left}px`,
+            zIndex: 999999,
+          }}
+          className="w-[300px] rounded-xl border border-zinc-200 bg-white p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150 font-sans"
+        >
           {/* Header Navigation */}
           <div className="flex items-center justify-between mb-3 px-1">
             <button
               type="button"
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-600 transition"
+              className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-600 transition cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             
-            <span className="font-bold text-sm text-zinc-800 capitalize font-sans">
+            <span className="font-bold text-sm text-zinc-800 capitalize">
               {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
             </span>
 
             <button
               type="button"
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-600 transition"
+              className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-600 transition cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -182,7 +252,7 @@ export function DatePicker({
                   type="button"
                   onClick={() => handleDateSelect(day)}
                   className={cn(
-                    "h-8 w-8 mx-auto rounded-full text-xs flex items-center justify-center transition-all cursor-pointer font-sans",
+                    "h-8 w-8 mx-auto rounded-full text-xs flex items-center justify-center transition-all cursor-pointer",
                     !isCurrentMonth && "text-zinc-300 font-normal",
                     isCurrentMonth && !isSelected && "text-zinc-700 font-medium hover:bg-zinc-100",
                     isSelected && "bg-[#8C6D45] text-white font-bold shadow-sm hover:bg-[#755630]"
@@ -195,11 +265,11 @@ export function DatePicker({
           </div>
 
           {/* Footer controls */}
-          <div className="flex items-center justify-between pt-3 mt-3 border-t border-zinc-100 text-xs font-sans">
+          <div className="flex items-center justify-between pt-3 mt-3 border-t border-zinc-100 text-xs">
             <button
               type="button"
               onClick={() => handleDateSelect(new Date())}
-              className="text-[#8C6D45] hover:underline font-bold"
+              className="text-[#8C6D45] hover:underline font-bold cursor-pointer"
             >
               Hoje
             </button>
@@ -207,13 +277,14 @@ export function DatePicker({
               <button
                 type="button"
                 onClick={handleClear}
-                className="text-zinc-400 hover:text-zinc-600 font-medium"
+                className="text-zinc-400 hover:text-zinc-600 font-medium cursor-pointer"
               >
                 Limpar
               </button>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
