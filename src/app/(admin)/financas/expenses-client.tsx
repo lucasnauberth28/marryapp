@@ -1,15 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { ExpenseStatus } from "@/types/local";
-import { createExpense, deleteExpense, updateExpenseStatus } from "@/actions/expense-actions";
+import { createExpense, createBatchExpenses, deleteExpense, updateExpenseStatus } from "@/actions/expense-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Loader2, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Loader2, CheckCircle, Clock, CalendarRange, Layers } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+interface InstallmentBlock {
+  id: number;
+  count: number;
+  amount: string; // Ex: "300.00"
+  startDate: string; // Ex: "2026-08-10"
+}
 
 export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: any[], vendors: any[] }) {
   const [expenses, setExpenses] = useState<any[]>(initialExpenses);
@@ -18,27 +25,130 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
+  // Modo de cadastro: única vs parcelada
+  const [mode, setMode] = useState<"single" | "installment">("single");
+  const [description, setDescription] = useState("");
+  const [vendorId, setVendorId] = useState("");
+
+  // Estado para parcelamento em blocos
+  const [blocks, setBlocks] = useState<InstallmentBlock[]>([
+    { id: 1, count: 3, amount: "300", startDate: new Date().toISOString().split("T")[0] }
+  ]);
+
   const formatCurrency = (amount: number) => {
     return (amount / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
+  // Manipulação de blocos de parcelas
+  const addBlock = () => {
+    const lastBlock = blocks[blocks.length - 1];
+    let nextDate = new Date();
+    if (lastBlock?.startDate) {
+      const d = new Date(lastBlock.startDate);
+      d.setMonth(d.getMonth() + (lastBlock.count || 1));
+      nextDate = d;
+    }
+    setBlocks([
+      ...blocks,
+      {
+        id: Date.now(),
+        count: 3,
+        amount: "500",
+        startDate: nextDate.toISOString().split("T")[0],
+      }
+    ]);
+  };
+
+  const removeBlock = (id: number) => {
+    if (blocks.length === 1) {
+      toast.error("O parcelamento precisa ter ao menos um bloco.");
+      return;
+    }
+    setBlocks(blocks.filter(b => b.id !== id));
+  };
+
+  const updateBlock = (id: number, field: keyof InstallmentBlock, value: any) => {
+    setBlocks(blocks.map(b => b.id === id ? { ...b, [field]: value } : b));
+  };
+
+  // Cálculo das parcelas geradas em tempo real
+  const generatedInstallments = useMemo(() => {
+    if (mode !== "installment") return [];
+
+    const totalCount = blocks.reduce((sum, b) => sum + (Number(b.count) || 0), 0);
+    if (totalCount === 0) return [];
+
+    const items: Array<{ description: string; amount: number; dueDate: string; vendorId: string }> = [];
+    let currentIdx = 1;
+
+    for (const block of blocks) {
+      const count = Number(block.count) || 0;
+      const amountInCents = Math.round(parseFloat((block.amount || "0").replace(',', '.')) * 100);
+      const baseDate = block.startDate ? new Date(block.startDate) : new Date();
+
+      for (let i = 0; i < count; i++) {
+        const dueDate = new Date(baseDate);
+        dueDate.setMonth(dueDate.getMonth() + i);
+
+        items.push({
+          description: `${description || "Despesa"} (${currentIdx}/${totalCount})`,
+          amount: isNaN(amountInCents) ? 0 : amountInCents,
+          dueDate: dueDate.toISOString().split("T")[0],
+          vendorId,
+        });
+        currentIdx++;
+      }
+    }
+
+    return items;
+  }, [mode, description, vendorId, blocks]);
+
+  const totalInstallmentsAmount = useMemo(() => {
+    return generatedInstallments.reduce((sum, item) => sum + item.amount, 0);
+  }, [generatedInstallments]);
+
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    const formData = new FormData(e.currentTarget);
-    
-    // Converte o valor digitado (ex: 150.00) para centavos
-    const amountVal = formData.get("amount") as string;
-    const amountInCents = Math.round(parseFloat(amountVal.replace(',', '.')) * 100);
-    formData.set("amount", amountInCents.toString());
 
-    const res = await createExpense(formData);
-    
-    if (res.success) {
-      setOpen(false);
-      window.location.reload();
+    if (mode === "single") {
+      const formData = new FormData(e.currentTarget);
+      const amountVal = formData.get("amount") as string;
+      const amountInCents = Math.round(parseFloat(amountVal.replace(',', '.')) * 100);
+      formData.set("amount", amountInCents.toString());
+
+      const res = await createExpense(formData);
+      if (res.success) {
+        setOpen(false);
+        window.location.reload();
+      } else {
+        toast.error(res.error);
+      }
     } else {
-      toast.error(res.error);
+      // Modo Parcelamento
+      if (!vendorId) {
+        toast.error("Selecione um fornecedor.");
+        setLoading(false);
+        return;
+      }
+      if (!description) {
+        toast.error("Informe a descrição principal da despesa.");
+        setLoading(false);
+        return;
+      }
+      if (generatedInstallments.length === 0) {
+        toast.error("Configure ao menos uma parcela válida.");
+        setLoading(false);
+        return;
+      }
+
+      const res = await createBatchExpenses(generatedInstallments);
+      if (res.success) {
+        setOpen(false);
+        window.location.reload();
+      } else {
+        toast.error(res.error);
+      }
     }
     setLoading(false);
   };
@@ -72,27 +182,164 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
           <DialogTrigger asChild>
             <Button><Plus className="w-4 h-4 mr-2" /> Nova Despesa</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Adicionar Despesa</DialogTitle>
+              <DialogTitle className="flex items-center gap-2">
+                <CalendarRange className="w-5 h-5 text-[#8C6D45]" />
+                Cadastrar Despesa
+              </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleCreate} className="space-y-4 mt-4">
-              <Input name="description" placeholder="Descrição (ex: Sinal do Buffet)" required />
-              
-              <select name="vendorId" required className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                <option value="">Selecione o Fornecedor...</option>
-                {vendors.map(v => (
-                  <option key={v.id} value={v.id}>{v.name}</option>
-                ))}
-              </select>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Input name="amount" placeholder="Valor (ex: 1500.00)" type="number" step="0.01" required />
-                <Input name="dueDate" type="date" required />
-              </div>
+            {/* Seletor de Modo */}
+            <div className="flex bg-zinc-100 p-1 rounded-lg border border-zinc-200 mt-2">
+              <button
+                type="button"
+                onClick={() => setMode("single")}
+                className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition ${mode === "single" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-900"}`}
+              >
+                Despesa Única
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("installment")}
+                className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition ${mode === "installment" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-900"}`}
+              >
+                Parcelamento Flexível
+              </button>
+            </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar"}
+            <form onSubmit={handleCreate} className="space-y-4 mt-2">
+              {mode === "single" ? (
+                <>
+                  <Input name="description" placeholder="Descrição (ex: Sinal do Buffet)" required />
+                  
+                  <select name="vendorId" required className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                    <option value="">Selecione o Fornecedor...</option>
+                    {vendors.map(v => (
+                      <option key={v.id} value={v.id}>{v.name}</option>
+                    ))}
+                  </select>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input name="amount" placeholder="Valor (ex: 1500.00)" type="number" step="0.01" required />
+                    <Input name="dueDate" type="date" required />
+                  </div>
+                </>
+              ) : (
+                /* Modo Parcelado Flexível */
+                <div className="space-y-4">
+                  <Input
+                    placeholder="Descrição da Despesa (ex: Buffet da Festa)"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    required
+                  />
+
+                  <select
+                    value={vendorId}
+                    onChange={(e) => setVendorId(e.target.value)}
+                    required
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  >
+                    <option value="">Selecione o Fornecedor...</option>
+                    {vendors.map(v => (
+                      <option key={v.id} value={v.id}>{v.name}</option>
+                    ))}
+                  </select>
+
+                  <div className="space-y-3 pt-2">
+                    <div className="flex justify-between items-center">
+                      <label className="text-xs font-bold text-zinc-700 uppercase tracking-wider flex items-center gap-1">
+                        <Layers className="w-3.5 h-3.5 text-[#8C6D45]" />
+                        Blocos de Parcelas
+                      </label>
+                      <Button type="button" variant="outline" size="sm" onClick={addBlock} className="text-xs h-7">
+                        + Adicionar Bloco
+                      </Button>
+                    </div>
+
+                    {blocks.map((block, idx) => (
+                      <div key={block.id} className="p-3 bg-zinc-50 border border-zinc-200 rounded-lg space-y-2">
+                        <div className="flex justify-between items-center text-xs font-semibold text-zinc-600">
+                          <span>Bloco #{idx + 1}</span>
+                          {blocks.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeBlock(block.id)}
+                              className="text-red-500 hover:text-red-700 text-xs"
+                            >
+                              Remover Bloco
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2">
+                          <div>
+                            <label className="text-[10px] text-zinc-500">Nº de Parcelas</label>
+                            <Input
+                              type="number"
+                              min={1}
+                              max={60}
+                              value={block.count}
+                              onChange={(e) => updateBlock(block.id, "count", Number(e.target.value))}
+                              placeholder="Ex: 3"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] text-zinc-500">Valor da Parcela (R$)</label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={block.amount}
+                              onChange={(e) => updateBlock(block.id, "amount", e.target.value)}
+                              placeholder="Ex: 300.00"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] text-zinc-500">1º Vencimento</label>
+                            <Input
+                              type="date"
+                              value={block.startDate}
+                              onChange={(e) => updateBlock(block.id, "startDate", e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Pré-visualização ao vivo */}
+                  {generatedInstallments.length > 0 && (
+                    <div className="border border-zinc-200 rounded-lg p-3 bg-white space-y-2">
+                      <div className="flex justify-between items-center text-xs border-b border-zinc-100 pb-2">
+                        <span className="font-bold text-zinc-700">
+                          Pré-visualização ({generatedInstallments.length} parcelas)
+                        </span>
+                        <span className="font-bold text-[#8C6D45]">
+                          Total: {formatCurrency(totalInstallmentsAmount)}
+                        </span>
+                      </div>
+
+                      <div className="max-h-36 overflow-y-auto space-y-1 pr-1">
+                        {generatedInstallments.map((inst, i) => (
+                          <div key={i} className="flex justify-between items-center text-xs py-1 px-2 hover:bg-zinc-50 rounded">
+                            <span className="text-zinc-700 font-medium">{inst.description}</span>
+                            <div className="flex items-center gap-3">
+                              <span className="text-zinc-500">{new Date(inst.dueDate).toLocaleDateString('pt-BR')}</span>
+                              <span className="font-bold text-zinc-900">{formatCurrency(inst.amount)}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <Button type="submit" className="w-full bg-[#8C6D45] hover:bg-[#755630] text-white" disabled={loading}>
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : mode === "single" ? "Salvar Despesa" : `Gerar ${generatedInstallments.length} Parcelas`}
               </Button>
             </form>
           </DialogContent>

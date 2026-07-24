@@ -142,22 +142,8 @@ export default async function FinancasPage() {
         </Card>
       </div>
 
-      {/* Conciliation Table */}
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-lg font-semibold text-zinc-900">
-            Conciliação de Pagamentos
-          </h3>
-          <p className="text-sm text-zinc-500 mt-0.5">
-            Confira e aprove manualmente os pagamentos via Pix.
-          </p>
-        </div>
-
-        <FinanceTable transactions={transactions} />
-      </div>
-
       {/* Control of Expenses */}
-      <div className="space-y-4 pt-6 border-t border-zinc-200">
+      <div className="space-y-4 pt-2">
         <div>
           <h3 className="text-lg font-semibold text-zinc-900">
             Controle de Despesas
@@ -168,6 +154,20 @@ export default async function FinancasPage() {
         </div>
 
         <ExpensesClient initialExpenses={expenses} vendors={vendors} />
+      </div>
+
+      {/* Conciliation Table */}
+      <div className="space-y-4 pt-6 border-t border-zinc-200">
+        <div>
+          <h3 className="text-lg font-semibold text-zinc-900">
+            Conciliação de Pagamentos
+          </h3>
+          <p className="text-sm text-zinc-500 mt-0.5">
+            Confira e aprove manualmente os pagamentos via Pix.
+          </p>
+        </div>
+
+        <FinanceTable transactions={transactions} />
       </div>
     </div>
   );

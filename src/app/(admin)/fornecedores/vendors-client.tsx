@@ -8,7 +8,7 @@ import { createVendor, deleteVendor } from "@/actions/vendor-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Loader2, Link as LinkIcon } from "lucide-react";
+import { Plus, Trash2, Loader2, Link as LinkIcon, FileText, Upload } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export function VendorsClient({ initialVendors }: { initialVendors: any[] }) {
@@ -17,16 +17,42 @@ export function VendorsClient({ initialVendors }: { initialVendors: any[] }) {
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
+  
+  const [contractMode, setContractMode] = useState<"file" | "url">("file");
+  const [fileBase64, setFileBase64] = useState<string>("");
+  const [fileName, setFileName] = useState<string>("");
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) { // max 8MB
+      toast.error("O arquivo deve ter no máximo 8MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setFileBase64(event.target?.result as string);
+      setFileName(file.name);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
+
+    if (contractMode === "file" && fileBase64) {
+      formData.set("contractUrl", fileBase64);
+    }
+
     const res = await createVendor(formData);
     
     if (res.success) {
       setOpen(false);
-      window.location.reload(); // Simple reload to get updated server data
+      setFileBase64("");
+      setFileName("");
+      window.location.reload();
     } else {
       toast.error(res.error);
     }
@@ -54,7 +80,7 @@ export function VendorsClient({ initialVendors }: { initialVendors: any[] }) {
           <DialogTrigger asChild>
             <Button><Plus className="w-4 h-4 mr-2" /> Novo Fornecedor</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Adicionar Fornecedor</DialogTitle>
             </DialogHeader>
@@ -62,7 +88,46 @@ export function VendorsClient({ initialVendors }: { initialVendors: any[] }) {
               <Input name="name" placeholder="Nome da Empresa / Profissional" required />
               <Input name="category" placeholder="Categoria (ex: Buffet, Foto)" required />
               <Input name="contact" placeholder="Contato (Telefone/Email)" />
-              <Input name="contractUrl" placeholder="Link do Contrato (opcional)" type="url" />
+              
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-semibold text-zinc-600">Contrato</label>
+                  <div className="flex gap-2 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setContractMode("file")}
+                      className={`px-2 py-0.5 rounded ${contractMode === "file" ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-600"}`}
+                    >
+                      Anexar PDF / Arquivo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setContractMode("url")}
+                      className={`px-2 py-0.5 rounded ${contractMode === "url" ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-600"}`}
+                    >
+                      Link Web (URL)
+                    </button>
+                  </div>
+                </div>
+
+                {contractMode === "file" ? (
+                  <div className="border-2 border-dashed border-zinc-200 rounded-lg p-3 text-center relative hover:bg-zinc-50 transition">
+                    <input
+                      type="file"
+                      accept="application/pdf,image/*,.doc,.docx"
+                      onChange={handleFileChange}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    />
+                    <div className="flex items-center justify-center gap-2 text-zinc-500 text-sm">
+                      <Upload className="w-4 h-4 text-zinc-400" />
+                      <span>{fileName ? fileName : "Clique para escolher PDF ou Imagem"}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <Input name="contractUrl" placeholder="https://exemplo.com/contrato.pdf" type="url" />
+                )}
+              </div>
+
               <Input name="notes" placeholder="Observações" />
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar"}
@@ -102,9 +167,26 @@ export function VendorsClient({ initialVendors }: { initialVendors: any[] }) {
                   <TableCell>{vendor.contact || "-"}</TableCell>
                   <TableCell>
                     {vendor.contractUrl ? (
-                      <a href={vendor.contractUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline inline-flex items-center">
-                        <LinkIcon className="w-3 h-3 mr-1" /> Ver
-                      </a>
+                      vendor.contractUrl.startsWith("data:") ? (
+                        <a
+                          href={vendor.contractUrl}
+                          download={`contrato_${vendor.name.replace(/\s+/g, "_")}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-emerald-700 hover:text-emerald-800 font-medium text-xs bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 inline-flex items-center gap-1"
+                        >
+                          <FileText className="w-3.5 h-3.5" /> Ver PDF
+                        </a>
+                      ) : (
+                        <a
+                          href={vendor.contractUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 hover:underline text-xs inline-flex items-center gap-1 font-medium"
+                        >
+                          <LinkIcon className="w-3.5 h-3.5" /> Abrir Link
+                        </a>
+                      )
                     ) : "-"}
                   </TableCell>
                   <TableCell className="text-right">

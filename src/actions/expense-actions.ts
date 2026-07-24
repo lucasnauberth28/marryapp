@@ -79,3 +79,31 @@ export async function deleteExpense(id: string) {
     return { success: false, error: "Erro ao excluir despesa." };
   }
 }
+
+export async function createBatchExpenses(items: Array<{
+  description: string;
+  amount: number;
+  dueDate: string;
+  vendorId: string;
+}>) {
+  if (!items || items.length === 0) {
+    return { success: false, error: "Nenhuma parcela informada." };
+  }
+
+  try {
+    await prisma.expense.createMany({
+      data: items.map((item) => ({
+        description: item.description,
+        amount: item.amount,
+        dueDate: new Date(item.dueDate),
+        vendorId: item.vendorId,
+      })),
+    });
+    revalidatePath("/(admin)/financas", "page");
+    revalidatePath("/(admin)/dashboard", "page");
+    return { success: true };
+  } catch (error) {
+    console.error("[createBatchExpenses]", error);
+    return { success: false, error: "Erro ao criar parcelas de despesas." };
+  }
+}
