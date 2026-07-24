@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,9 +22,9 @@ import { BoardItem } from "@/types/kanban";
 interface TaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  task: BoardItem | null;
+  task?: BoardItem | null;
   defaultStatus?: TaskStatus;
-  onSave: (data: any) => Promise<void>;
+  onSave: (data: Partial<BoardItem>) => Promise<void>;
   onDelete?: (taskId: string) => Promise<void>;
 }
 
@@ -39,6 +40,7 @@ export function TaskDialog({
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<TaskStatus>(defaultStatus);
   const [assignee, setAssignee] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
@@ -50,11 +52,13 @@ export function TaskDialog({
         setDescription(task.description || "");
         setStatus(task.status);
         setAssignee(task.assignee || "");
+        setDueDate(task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : "");
       } else {
         setTitle("");
         setDescription("");
         setStatus(defaultStatus);
         setAssignee("");
+        setDueDate("");
       }
     }
   }, [open, task, defaultStatus]);
@@ -69,7 +73,7 @@ export function TaskDialog({
         description: description || null,
         status,
         assignee: assignee || null,
-        // dueDate can be added later with a date picker
+        dueDate: dueDate ? (new Date(dueDate) as any) : null,
       });
       onOpenChange(false);
     } finally {
@@ -149,6 +153,15 @@ export function TaskDialog({
                 disabled={isLoading}
               />
             </div>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="dueDate">Data de Vencimento</Label>
+            <DatePicker
+              id="dueDate"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              disabled={isLoading}
+            />
           </div>
         </div>
         <DialogFooter className="flex items-center sm:justify-between">

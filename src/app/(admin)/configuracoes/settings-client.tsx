@@ -5,6 +5,7 @@ import { updateSettings } from "@/actions/settings-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Save, Settings, Palette, CalendarClock, MapPin } from "lucide-react";
@@ -66,9 +67,8 @@ export function SettingsClient({ initialSettings }: { initialSettings: any }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="rsvpDeadline">Data Limite para RSVP (Confirmação de Presença)</Label>
-                <Input
+                <DatePicker
                   id="rsvpDeadline"
-                  type="date"
                   value={formData.rsvpDeadline}
                   onChange={(e) => setFormData({ ...formData, rsvpDeadline: e.target.value })}
                 />
@@ -77,9 +77,8 @@ export function SettingsClient({ initialSettings }: { initialSettings: any }) {
 
               <div className="space-y-2">
                 <Label htmlFor="weddingDate">Data do Casamento</Label>
-                <Input
+                <DatePicker
                   id="weddingDate"
-                  type="date"
                   value={formData.weddingDate}
                   onChange={(e) => setFormData({ ...formData, weddingDate: e.target.value })}
                 />

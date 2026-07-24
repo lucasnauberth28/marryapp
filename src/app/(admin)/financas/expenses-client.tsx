@@ -7,6 +7,7 @@ import { ExpenseStatus } from "@/types/local";
 import { createExpense, createBatchExpenses, deleteExpense, updateExpenseStatus } from "@/actions/expense-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Trash2, Loader2, CheckCircle, Clock, CalendarRange, Layers } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -222,7 +223,7 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
 
                   <div className="grid grid-cols-2 gap-4">
                     <Input name="amount" placeholder="Valor (ex: 1500.00)" type="number" step="0.01" required />
-                    <Input name="dueDate" type="date" required />
+                    <DatePicker name="dueDate" required />
                   </div>
                 </>
               ) : (
@@ -299,8 +300,7 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
 
                           <div>
                             <label className="text-[10px] text-zinc-500">1º Vencimento</label>
-                            <Input
-                              type="date"
+                            <DatePicker
                               value={block.startDate}
                               onChange={(e) => updateBlock(block.id, "startDate", e.target.value)}
                             />
