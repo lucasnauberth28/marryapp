@@ -98,7 +98,8 @@ export function DatePicker({
     }
   };
 
-  const handleToggle = () => {
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (disabled) return;
     if (!isOpen) {
       updateCoords();
@@ -142,7 +143,8 @@ export function DatePicker({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const handleDateSelect = (date: Date) => {
+  const handleDateSelect = (date: Date, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     const formatted = format(date, "yyyy-MM-dd");
     setInternalValue(formatted);
     if (onChange) {
@@ -196,10 +198,11 @@ export function DatePicker({
         </div>
       </div>
 
-      {/* Floating Portal Popover (Livre de estourar containers ou scrollbars de modais) */}
+      {/* Floating Portal Popover (Evita propagação para o container pai) */}
       {isOpen && coords && typeof window !== "undefined" && createPortal(
         <div
           ref={popoverRef}
+          onClick={(e) => e.stopPropagation()}
           style={{
             position: "fixed",
             top: `${coords.top}px`,
@@ -212,7 +215,10 @@ export function DatePicker({
           <div className="flex items-center justify-between mb-3 px-1">
             <button
               type="button"
-              onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrentMonth(subMonths(currentMonth, 1));
+              }}
               className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-600 transition cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -224,7 +230,10 @@ export function DatePicker({
 
             <button
               type="button"
-              onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrentMonth(addMonths(currentMonth, 1));
+              }}
               className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-600 transition cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
@@ -250,7 +259,7 @@ export function DatePicker({
                 <button
                   key={day.toString()}
                   type="button"
-                  onClick={() => handleDateSelect(day)}
+                  onClick={(e) => handleDateSelect(day, e)}
                   className={cn(
                     "h-8 w-8 mx-auto rounded-full text-xs flex items-center justify-center transition-all cursor-pointer",
                     !isCurrentMonth && "text-zinc-300 font-normal",
@@ -268,7 +277,7 @@ export function DatePicker({
           <div className="flex items-center justify-between pt-3 mt-3 border-t border-zinc-100 text-xs">
             <button
               type="button"
-              onClick={() => handleDateSelect(new Date())}
+              onClick={(e) => handleDateSelect(new Date(), e)}
               className="text-[#8C6D45] hover:underline font-bold cursor-pointer"
             >
               Hoje
