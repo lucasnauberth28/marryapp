@@ -44,7 +44,7 @@ export async function createExpense(formData: FormData) {
         vendorId: parsed.data.vendorId,
       }
     });
-    revalidatePath("/(admin)/despesas", "page");
+    revalidatePath("/(admin)/financas", "page");
     revalidatePath("/(admin)/dashboard", "page");
     return { success: true };
   } catch (error) {
@@ -59,7 +59,7 @@ export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
       where: { id },
       data: { status }
     });
-    revalidatePath("/(admin)/despesas", "page");
+    revalidatePath("/(admin)/financas", "page");
     revalidatePath("/(admin)/dashboard", "page");
     return { success: true };
   } catch (error) {
@@ -71,7 +71,7 @@ export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
 export async function deleteExpense(id: string) {
   try {
     await prisma.expense.delete({ where: { id } });
-    revalidatePath("/(admin)/despesas", "page");
+    revalidatePath("/(admin)/financas", "page");
     revalidatePath("/(admin)/dashboard", "page");
     return { success: true };
   } catch (error) {

@@ -1,5 +1,6 @@
-// src/app/(admin)/financas/page.tsx
 import { getFinancialMetrics, getTransactions } from "@/actions/finance-actions";
+import { getExpenses } from "@/actions/expense-actions";
+import { getVendors } from "@/actions/vendor-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { verifyAdminSession } from "@/actions/auth-actions";
 import {
@@ -9,6 +10,7 @@ import {
   Clock,
 } from "lucide-react";
 import { FinanceTable } from "./finance-client";
+import { ExpensesClient } from "./expenses-client";
 
 // ==========================================
 // UTILS
@@ -27,7 +29,7 @@ function formatCurrency(centavos: number): string {
 
 export const metadata = {
   title: "Finanças — Lucas & Giovanna",
-  description: "Painel de conciliação financeira do casamento.",
+  description: "Painel de conciliação financeira e controle de despesas do casamento.",
 };
 
 // ==========================================
@@ -38,9 +40,11 @@ export default async function FinancasPage() {
   await verifyAdminSession();
 
   // Fetch paralelo para otimizar carregamento
-  const [metrics, transactions] = await Promise.all([
+  const [metrics, transactions, expenses, vendors] = await Promise.all([
     getFinancialMetrics(),
     getTransactions(),
+    getExpenses(),
+    getVendors(),
   ]);
 
   return (
@@ -48,10 +52,10 @@ export default async function FinancasPage() {
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
-          Finanças
+          Finanças & Despesas
         </h1>
         <p className="text-zinc-500 mt-1">
-          Conciliação de pagamentos e visão financeira do casamento.
+          Conciliação de pagamentos, entradas e gestão de despesas do casamento.
         </p>
       </div>
 
@@ -150,6 +154,20 @@ export default async function FinancasPage() {
         </div>
 
         <FinanceTable transactions={transactions} />
+      </div>
+
+      {/* Control of Expenses */}
+      <div className="space-y-4 pt-6 border-t border-zinc-200">
+        <div>
+          <h3 className="text-lg font-semibold text-zinc-900">
+            Controle de Despesas
+          </h3>
+          <p className="text-sm text-zinc-500 mt-0.5">
+            Gerencie as despesas e pagamentos a fornecedores.
+          </p>
+        </div>
+
+        <ExpensesClient initialExpenses={expenses} vendors={vendors} />
       </div>
     </div>
   );

@@ -19,22 +19,25 @@ export function ScannerClient() {
     setScanning(true);
     setResult(null);
     try {
-      const codeReader = new BrowserQRCodeReader();
-      const videoInputDevices = await BrowserQRCodeReader.listVideoInputDevices();
-      
-      // Tenta usar a câmera traseira do celular se disponível
-      const selectedDeviceId = videoInputDevices.find(device => device.label.toLowerCase().includes("back"))?.deviceId 
-                            || videoInputDevices[0]?.deviceId;
-
-      if (!selectedDeviceId) {
-        setResult({ type: "error", message: "Nenhuma câmera encontrada." });
-        setScanning(false);
-        return;
+      if (typeof window !== "undefined" && navigator?.mediaDevices?.getUserMedia) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: "environment" } },
+          });
+          stream.getTracks().forEach((track) => track.stop());
+        } catch (permErr) {
+          console.warn("Media devices permission request:", permErr);
+        }
       }
 
-      const controls = await codeReader.decodeFromVideoDevice(
-        selectedDeviceId, 
-        videoRef.current!, 
+      const codeReader = new BrowserQRCodeReader();
+      const constraints: MediaStreamConstraints = {
+        video: { facingMode: { ideal: "environment" } },
+      };
+
+      const controls = await codeReader.decodeFromConstraints(
+        constraints,
+        videoRef.current!,
         async (res, error, controls) => {
           if (res) {
             controls.stop();
@@ -105,7 +108,7 @@ export function ScannerClient() {
             className="flex flex-col items-center w-full"
           >
             <div className="relative w-full max-w-sm rounded-xl overflow-hidden border-4 border-zinc-200 shadow-lg">
-              <video ref={videoRef} className="w-full object-cover" />
+              <video ref={videoRef} className="w-full object-cover" playsInline autoPlay muted />
               {/* Moldura do Scanner */}
               <div className="absolute inset-0 border-[40px] border-black/50 pointer-events-none">
                 <div className="w-full h-full border-2 border-emerald-400 opacity-50 relative">
