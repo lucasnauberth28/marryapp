@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { toast } from "sonner";
 import { generateTimelinePdf } from "@/lib/generate-timeline-pdf";
+import { TimePicker } from "@/components/ui/time-picker";
 
 export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
   const [events, setEvents] = useState(initialEvents);
@@ -101,25 +102,21 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
                 <DialogTitle>Adicionar ao Cronograma</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleCreate} className="space-y-4 pt-4">
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="col-span-1 space-y-2">
-                    <Label>Horário</Label>
-                    <Input 
-                      type="time" 
-                      value={formData.time} 
-                      onChange={e => setFormData({ ...formData, time: e.target.value })} 
-                      required 
-                    />
-                  </div>
-                  <div className="col-span-3 space-y-2">
-                    <Label>Título</Label>
-                    <Input 
-                      placeholder="Ex: Cerimônia" 
-                      value={formData.title} 
-                      onChange={e => setFormData({ ...formData, title: e.target.value })} 
-                      required 
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label>Título</Label>
+                  <Input 
+                    placeholder="Ex: Cerimônia, Recepção, Valsa..." 
+                    value={formData.title} 
+                    onChange={e => setFormData({ ...formData, title: e.target.value })} 
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Horário</Label>
+                  <TimePicker 
+                    value={formData.time} 
+                    onChange={e => setFormData({ ...formData, time: e.target.value })} 
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Descrição (Opcional)</Label>
