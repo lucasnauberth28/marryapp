@@ -27,6 +27,8 @@ const GuestSchema = z.object({
       message: "Telefone inválido (mínimo de 10 dígitos com DDD).",
     }),
   email: z.string().email("E-mail inválido.").optional().or(z.literal("")),
+  category: z.string().optional().or(z.literal("")),
+  parentGuestId: z.string().optional().or(z.literal("")),
   allowedCompanions: z.coerce.number().min(0).max(10).default(0),
   confirmedCompanions: z.coerce.number().min(0).max(10).default(0).optional(),
   companionsNames: z.string().optional().or(z.literal("")),
@@ -41,12 +43,20 @@ const GuestSchema = z.object({
 export async function getGuests(filter?: RsvpStatus) {
   return prisma.guest.findMany({
     where: filter ? { rsvpStatus: filter } : undefined,
+    include: {
+      parentGuest: true,
+      linkedGuests: true,
+      table: true,
+    },
     orderBy: { createdAt: "desc" },
   });
 }
 
 export async function getGuestById(id: string) {
-  return prisma.guest.findUnique({ where: { id } });
+  return prisma.guest.findUnique({
+    where: { id },
+    include: { parentGuest: true, linkedGuests: true, table: true },
+  });
 }
 
 // ==========================================
@@ -58,6 +68,8 @@ export async function createGuest(formData: FormData) {
     name: formData.get("name"),
     phone: formData.get("phone"),
     email: formData.get("email"),
+    category: formData.get("category"),
+    parentGuestId: formData.get("parentGuestId"),
     allowedCompanions: formData.get("allowedCompanions"),
   };
 
@@ -72,6 +84,8 @@ export async function createGuest(formData: FormData) {
         name: parsed.data.name,
         phone: parsed.data.phone,
         email: parsed.data.email || null,
+        category: parsed.data.category || null,
+        parentGuestId: parsed.data.parentGuestId || null,
         allowedCompanions: parsed.data.allowedCompanions,
         confirmedCompanions: 0,
       },
@@ -90,6 +104,8 @@ export async function updateGuest(id: string, formData: FormData) {
     name: formData.get("name"),
     phone: formData.get("phone"),
     email: formData.get("email"),
+    category: formData.get("category"),
+    parentGuestId: formData.get("parentGuestId"),
     allowedCompanions: formData.get("allowedCompanions"),
     rsvpStatus: formData.get("rsvpStatus"),
     confirmedCompanions: formData.get("confirmedCompanions"),
@@ -102,6 +118,9 @@ export async function updateGuest(id: string, formData: FormData) {
     return { success: false, error: parsed.error.issues[0].message };
   }
 
+  // Prevenir que um convidado seja vinculado a si próprio
+  const parentGuestId = parsed.data.parentGuestId === id ? null : (parsed.data.parentGuestId || null);
+
   try {
     await prisma.guest.update({
       where: { id },
@@ -109,6 +128,8 @@ export async function updateGuest(id: string, formData: FormData) {
         name: parsed.data.name,
         phone: parsed.data.phone,
         email: parsed.data.email || null,
+        category: parsed.data.category || null,
+        parentGuestId,
         allowedCompanions: parsed.data.allowedCompanions,
         rsvpStatus: parsed.data.rsvpStatus,
         confirmedCompanions: parsed.data.confirmedCompanions || 0,
@@ -121,7 +142,7 @@ export async function updateGuest(id: string, formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error("[updateGuest]", error);
-    return { success: false, error: "Erro ao atualizar convidado." };
+    return { success: false, error: "Erro ao atualizar no banco de dados." };
   }
 }
 

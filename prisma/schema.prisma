@@ -50,13 +50,19 @@ model Guest {
   name               String
   phone              String?       
   email              String?
+  category           String?       // Padrinho/Madrinha, Participantes de cerimônia, Pais, Família, Amigo/Colega
   rsvpStatus         RsvpStatus    @default(PENDING)
   allowedCompanions  Int           @default(0)
   confirmedCompanions Int          @default(0)
   companionsNames    String?       @db.Text
   hasReceivedMessage Boolean       @default(false) 
   
-  // Novos campos: Credenciamento e Restrições
+  // Vínculo entre convidados (Titular / Familiar vinculado)
+  parentGuestId      String?
+  parentGuest        Guest?        @relation("GuestLink", fields: [parentGuestId], references: [id], onDelete: SetNull)
+  linkedGuests       Guest[]       @relation("GuestLink")
+
+  // Credenciamento e Restrições
   isPresent          Boolean       @default(false)
   checkInTime        DateTime?
   dietaryRestrictions String?      @db.Text

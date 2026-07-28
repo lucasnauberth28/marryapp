@@ -14,10 +14,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+export const GUEST_CATEGORIES = [
+  "Padrinho/Madrinha",
+  "Participantes de cerimônia",
+  "Pais",
+  "Família",
+  "Amigo/Colega",
+] as const;
+
 interface GuestModalProps {
   isOpen: boolean;
   onClose: () => void;
-  guest?: Guest | null; // Se fornecido, entra em modo de edição
+  guest?: Guest | null;
+  allGuests?: Guest[];
 }
 
 function Field({
@@ -52,17 +61,25 @@ function Field({
   );
 }
 
-export function GuestModal({ isOpen, onClose, guest }: GuestModalProps) {
+export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModalProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [category, setCategory] = useState<string>(guest?.category ?? "");
+  const [parentGuestId, setParentGuestId] = useState<string>(guest?.parentGuestId ?? "none");
   const [rsvpStatus, setRsvpStatus] = useState<RsvpStatus>(
     guest?.rsvpStatus ?? RsvpStatus.PENDING
   );
 
   const isEditing = !!guest;
 
+  // Filtrar o próprio convidado para não se auto-vincular
+  const availableParents = allGuests.filter((g) => !guest || g.id !== guest.id);
+
   function handleSubmit(formData: FormData) {
     if (isEditing) formData.set("rsvpStatus", rsvpStatus);
+    formData.set("category", category);
+    formData.set("parentGuestId", parentGuestId === "none" ? "" : parentGuestId);
+
     setError(null);
 
     startTransition(async () => {
@@ -86,7 +103,7 @@ export function GuestModal({ isOpen, onClose, guest }: GuestModalProps) {
       description={
         isEditing
           ? "Atualize as informações do convidado."
-          : "Adicione um novo convidado à lista."
+          : "Cadastre um novo convidado no planejamento."
       }
       size="md"
     >
@@ -96,33 +113,78 @@ export function GuestModal({ isOpen, onClose, guest }: GuestModalProps) {
             <Field
               label="Nome completo"
               name="name"
-              placeholder="Ana e João Silva"
+              placeholder="Ex: João Silva"
               defaultValue={guest?.name}
               required
             />
           </div>
-          <Field
-            label="Telefone (WhatsApp)"
-            name="phone"
-            placeholder="5511999998888"
-            defaultValue={guest?.phone ?? ""}
-          />
-          <Field
-            label="Limite de Acompanhantes"
-            name="allowedCompanions"
-            type="number"
-            placeholder="0"
-            defaultValue={guest?.allowedCompanions ?? 0}
-          />
+
+          <div>
+            <Field
+              label="Telefone (WhatsApp)"
+              name="phone"
+              placeholder="5511999998888"
+              defaultValue={guest?.phone ?? ""}
+            />
+          </div>
+
+          <div>
+            <Field
+              label="Limite de Acompanhantes"
+              name="allowedCompanions"
+              type="number"
+              placeholder="0"
+              defaultValue={guest?.allowedCompanions ?? 0}
+            />
+          </div>
+
+          <div className="col-span-2 sm:col-span-1 space-y-1.5">
+            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              Tipo de Convidado
+            </label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="bg-white border-zinc-200">
+                <SelectValue placeholder="Selecione o tipo..." />
+              </SelectTrigger>
+              <SelectContent>
+                {GUEST_CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="col-span-2 sm:col-span-1 space-y-1.5">
+            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              Vincular a Convidado (Família)
+            </label>
+            <Select value={parentGuestId} onValueChange={setParentGuestId}>
+              <SelectTrigger className="bg-white border-zinc-200">
+                <SelectValue placeholder="Sem vínculo (Titular)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Nenhum (Convidado Principal)</SelectItem>
+                {availableParents.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name} {p.category ? `(${p.category})` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="col-span-2">
             <Field
               label="E-mail"
               name="email"
               type="email"
-              placeholder="ana@email.com"
+              placeholder="joao@email.com"
               defaultValue={guest?.email ?? ""}
             />
           </div>
+
           {isEditing && (
             <>
               <div className="col-span-2 space-y-1.5">

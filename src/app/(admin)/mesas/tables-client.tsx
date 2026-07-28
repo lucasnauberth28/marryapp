@@ -19,18 +19,38 @@ function DraggableGuest({ guest }: { guest: any }) {
 
   const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 50 } : undefined;
 
+  const parentName = guest.parentGuest?.name;
+  const category = guest.category;
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       {...listeners}
       {...attributes}
-      className="bg-white border border-zinc-200 p-2 mb-2 rounded-md shadow-sm text-sm font-medium cursor-grab active:cursor-grabbing hover:border-zinc-300 transition-colors flex items-center justify-between"
+      className="bg-white border border-zinc-200 p-2.5 mb-2 rounded-lg shadow-sm text-sm cursor-grab active:cursor-grabbing hover:border-amber-300 hover:shadow transition-all flex flex-col gap-1"
     >
-      <span>{guest.name}</span>
-      {guest.allowedCompanions > 0 && (
-        <span className="text-xs bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded-full">+{guest.allowedCompanions}</span>
-      )}
+      <div className="flex items-center justify-between">
+        <span className="font-medium text-zinc-900">{guest.name}</span>
+        {guest.allowedCompanions > 0 && (
+          <span className="text-[10px] font-semibold bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded-full">
+            +{guest.allowedCompanions} acomp.
+          </span>
+        )}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1">
+        {category && (
+          <span className="text-[10px] font-medium bg-amber-50 text-amber-800 border border-amber-200/80 px-1.5 py-0.2 rounded">
+            {category}
+          </span>
+        )}
+        {parentName && (
+          <span className="text-[10px] font-medium bg-purple-50 text-purple-700 border border-purple-200/80 px-1.5 py-0.2 rounded">
+            Família de: {parentName}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

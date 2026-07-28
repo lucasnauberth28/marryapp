@@ -35,12 +35,16 @@ export interface GuestLocal {
   name: string;
   phone?: string | null;
   email?: string | null;
+  category?: string | null;
   rsvpStatus: RsvpStatus;
   allowedCompanions: number;
   confirmedCompanions?: number;
   companionsNames?: string | null;
   dietaryRestrictions?: string | null;
   hasReceivedMessage: boolean;
+  parentGuestId?: string | null;
+  parentGuest?: GuestLocal | null;
+  linkedGuests?: GuestLocal[];
   createdAt: Date;
   updatedAt: Date;
   tableId?: string | null;

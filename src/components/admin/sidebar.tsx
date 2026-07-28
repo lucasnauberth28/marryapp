@@ -30,7 +30,6 @@ const navItems = [
   { name: "Convidados", href: "/convidados", icon: UsersIcon },
   { name: "Cronograma", href: "/cronograma", icon: Calendar },
   { name: "Fornecedores", href: "/fornecedores", icon: UsersIcon },
-  { name: "Mesas", href: "/mesas", icon: LayoutGrid },
   { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
   { name: "Finanças", href: "/financas", icon: Wallet },
   { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },
