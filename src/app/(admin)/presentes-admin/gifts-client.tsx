@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useEffect, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { GiftLocal as Gift } from "@/types/local"
@@ -8,24 +9,38 @@ import { deleteGift } from "@/actions/gift-actions"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { GiftModal } from "./gift-modal"
-import { Trash2, Gift as GiftIcon, DollarSign, ImageOff } from "lucide-react"
+import { Trash2, Gift as GiftIcon, DollarSign, ImageOff, Loader2 } from "lucide-react"
 
 interface GiftsClientProps {
   initialGifts: Gift[]
 }
 
 export function GiftsClient({ initialGifts }: GiftsClientProps) {
+  const router = useRouter()
+  const [gifts, setGifts] = useState<Gift[]>(initialGifts)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null)
 
+  useEffect(() => {
+    setGifts(initialGifts)
+  }, [initialGifts])
+
   function handleDelete(id: string) {
     setConfirmAction(() => () => {
+      setDeletingId(id)
       startTransition(async () => {
         const result = await deleteGift(id)
-        if (!result.success) toast.error(result.error)
-        else toast.success("Presente excluído com sucesso!")
+        if (!result.success) {
+          toast.error(result.error || "Erro ao excluir presente")
+        } else {
+          setGifts(prev => prev.filter(g => g.id !== id))
+          toast.success("Presente excluído com sucesso!")
+          router.refresh()
+        }
+        setDeletingId(null)
       })
     })
     setConfirmOpen(true)
@@ -39,9 +54,9 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
     }).format(amount / 100)
   }
 
-  const totalGifts = initialGifts.length
-  const totalAmountInCents = initialGifts.reduce((acc, g) => acc + g.amount, 0)
-  const purchasedCount = initialGifts.filter(g => g.isPurchased).length
+  const totalGifts = gifts.length
+  const totalAmountInCents = gifts.reduce((acc, g) => acc + g.amount, 0)
+  const purchasedCount = gifts.filter(g => g.isPurchased).length
 
   return (
     <div className="flex flex-col gap-8">
@@ -83,7 +98,7 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
       </div>
 
       {/* Grid de Presentes */}
-      {initialGifts.length === 0 ? (
+      {gifts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white border border-zinc-200/80 rounded-2xl text-zinc-400">
           <GiftIcon className="w-10 h-10 mb-3 text-zinc-200" />
           <p className="font-medium text-zinc-500">Nenhum presente na vitrine</p>
@@ -91,7 +106,7 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {initialGifts.map((gift) => (
+          {gifts.map((gift) => (
             <div
               key={gift.id}
               className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden flex flex-col group transition-all duration-300 hover:shadow-md hover:border-zinc-300"
@@ -150,10 +165,14 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDelete(gift.id)}
-                    disabled={isPending}
+                    disabled={isPending && deletingId === gift.id}
                     className="text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-full h-9 w-9"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    {isPending && deletingId === gift.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
                   </Button>
                 </div>
               </div>

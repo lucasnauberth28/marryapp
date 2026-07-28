@@ -71,9 +71,21 @@ export async function createGiftAction(formData: FormData) {
 
 export async function deleteGift(id: string) {
   try {
-    await prisma.gift.delete({ where: { id } })
+    // 1. Excluir transações associadas a este presente para não quebrar a chave estrangeira (FK constraint)
+    await prisma.transaction.deleteMany({
+      where: { giftId: id }
+    })
+
+    // 2. Excluir o presente
+    await prisma.gift.delete({
+      where: { id }
+    })
+
     revalidatePath('/presentes')
     revalidatePath('/presentes-admin')
+    revalidatePath('/(admin)/presentes-admin', 'page')
+    revalidatePath('/(admin)/dashboard', 'page')
+    revalidatePath('/(admin)/financas', 'page')
     return { success: true }
   } catch (error) {
     console.error("Erro ao deletar presente:", error)
