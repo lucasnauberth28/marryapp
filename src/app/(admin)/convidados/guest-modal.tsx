@@ -119,22 +119,12 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
             />
           </div>
 
-          <div>
+          <div className="col-span-2">
             <Field
               label="Telefone (WhatsApp)"
               name="phone"
               placeholder="5511999998888"
               defaultValue={guest?.phone ?? ""}
-            />
-          </div>
-
-          <div>
-            <Field
-              label="Limite de Acompanhantes"
-              name="allowedCompanions"
-              type="number"
-              placeholder="0"
-              defaultValue={guest?.allowedCompanions ?? 0}
             />
           </div>
 
@@ -173,16 +163,6 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="col-span-2">
-            <Field
-              label="E-mail"
-              name="email"
-              type="email"
-              placeholder="joao@email.com"
-              defaultValue={guest?.email ?? ""}
-            />
           </div>
 
           {isEditing && (

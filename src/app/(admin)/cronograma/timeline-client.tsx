@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Clock, Plus, Trash2, CalendarHeart } from "lucide-react";
+import { Clock, Plus, Trash2, CalendarHeart, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { toast } from "sonner";
+import { generateTimelinePdf } from "@/lib/generate-timeline-pdf";
 
 export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
   const [events, setEvents] = useState(initialEvents);
@@ -54,10 +55,23 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
 
   const executeDelete = async () => {
     if (!confirmId) return;
-    setEvents(events.filter(e => e.id !== confirmId));
-    await deleteTimelineEvent(confirmId);
-    toast.success("Evento excluído do cronograma!");
+    const targetId = confirmId;
+    setConfirmOpen(false);
     setConfirmId(null);
+    setEvents(prev => prev.filter(e => e.id !== targetId));
+    await deleteTimelineEvent(targetId);
+    toast.success("Evento excluído do cronograma!");
+  };
+
+  const handleExportPdf = () => {
+    if (events.length === 0) {
+      toast.error("Nenhum evento cadastrado para gerar o PDF.");
+      return;
+    }
+    const success = generateTimelinePdf(events);
+    if (success) {
+      toast.success("PDF do cronograma gerado com sucesso!");
+    }
   };
 
   return (
@@ -66,51 +80,62 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
         <h2 className="text-xl font-bold flex items-center gap-2">
           <CalendarHeart className="text-zinc-400" /> Eventos
         </h2>
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-zinc-900 hover:bg-zinc-800 text-white">
-              <Plus className="w-4 h-4 mr-2" /> Novo Evento
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Adicionar ao Cronograma</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleCreate} className="space-y-4 pt-4">
-              <div className="grid grid-cols-4 gap-4">
-                <div className="col-span-1 space-y-2">
-                  <Label>Horário</Label>
-                  <Input 
-                    type="time" 
-                    value={formData.time} 
-                    onChange={e => setFormData({ ...formData, time: e.target.value })} 
-                    required 
-                  />
-                </div>
-                <div className="col-span-3 space-y-2">
-                  <Label>Título</Label>
-                  <Input 
-                    placeholder="Ex: Cerimônia" 
-                    value={formData.title} 
-                    onChange={e => setFormData({ ...formData, title: e.target.value })} 
-                    required 
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Descrição (Opcional)</Label>
-                <Textarea 
-                  placeholder="Detalhes ou local do evento..." 
-                  value={formData.description} 
-                  onChange={e => setFormData({ ...formData, description: e.target.value })} 
-                />
-              </div>
-              <Button type="submit" disabled={loading} className="w-full bg-[#8C6D45] hover:bg-[#755630] text-white">
-                {loading ? "Salvando..." : "Salvar Evento"}
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={handleExportPdf}
+            disabled={events.length === 0}
+            className="border-zinc-300 text-zinc-700 hover:bg-zinc-100"
+          >
+            <Download className="w-4 h-4 mr-2 text-[#8C6D45]" /> Gerar PDF
+          </Button>
+
+          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-zinc-900 hover:bg-zinc-800 text-white">
+                <Plus className="w-4 h-4 mr-2" /> Novo Evento
               </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Adicionar ao Cronograma</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleCreate} className="space-y-4 pt-4">
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="col-span-1 space-y-2">
+                    <Label>Horário</Label>
+                    <Input 
+                      type="time" 
+                      value={formData.time} 
+                      onChange={e => setFormData({ ...formData, time: e.target.value })} 
+                      required 
+                    />
+                  </div>
+                  <div className="col-span-3 space-y-2">
+                    <Label>Título</Label>
+                    <Input 
+                      placeholder="Ex: Cerimônia" 
+                      value={formData.title} 
+                      onChange={e => setFormData({ ...formData, title: e.target.value })} 
+                      required 
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Descrição (Opcional)</Label>
+                  <Textarea 
+                    placeholder="Detalhes ou local do evento..." 
+                    value={formData.description} 
+                    onChange={e => setFormData({ ...formData, description: e.target.value })} 
+                  />
+                </div>
+                <Button type="submit" disabled={loading} className="w-full bg-[#8C6D45] hover:bg-[#755630] text-white">
+                  {loading ? "Salvando..." : "Salvar Evento"}
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="relative pl-4 border-l-2 border-[#E8E2D9] ml-4 space-y-8 py-4">
@@ -172,3 +197,4 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
     </div>
   );
 }
+
