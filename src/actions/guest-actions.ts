@@ -15,25 +15,50 @@ const PhoneRegex = /^\+?[1-9]\d{7,14}$/; // E.164 flexível
 const GuestSchema = z.object({
   name: z.string().min(2, "Nome deve ter ao menos 2 caracteres.").trim(),
   phone: z
-    .string()
-    .optional()
-    .or(z.literal(""))
+    .unknown()
     .transform((v) => {
-      if (!v) return null;
+      if (!v || typeof v !== "string") return null;
       const clean = v.replace(/\D/g, "");
       return clean || null;
     })
     .refine((val) => !val || val.length >= 10, {
       message: "Telefone inválido (mínimo de 10 dígitos com DDD).",
     }),
-  email: z.string().email("E-mail inválido.").optional().or(z.literal("")),
-  category: z.string().optional().or(z.literal("")),
-  parentGuestId: z.string().optional().or(z.literal("")),
-  allowedCompanions: z.coerce.number().min(0).max(10).default(0),
-  confirmedCompanions: z.coerce.number().min(0).max(10).default(0).optional(),
-  companionsNames: z.string().optional().or(z.literal("")),
-  dietaryRestrictions: z.string().optional().or(z.literal("")),
-  rsvpStatus: z.nativeEnum(RsvpStatus).optional(),
+  email: z
+    .unknown()
+    .transform((v) => (typeof v === "string" && v.trim() ? v.trim() : null))
+    .refine((val) => !val || z.string().email().safeParse(val).success, {
+      message: "E-mail inválido.",
+    }),
+  category: z
+    .unknown()
+    .transform((v) => (typeof v === "string" && v.trim() ? v.trim() : null)),
+  parentGuestId: z
+    .unknown()
+    .transform((v) => (typeof v === "string" && v.trim() && v !== "none" ? v.trim() : null)),
+  allowedCompanions: z
+    .unknown()
+    .transform((v) => {
+      if (v === null || v === undefined || v === "") return 0;
+      const n = Number(v);
+      return isNaN(n) ? 0 : n;
+    }),
+  confirmedCompanions: z
+    .unknown()
+    .transform((v) => {
+      if (v === null || v === undefined || v === "") return 0;
+      const n = Number(v);
+      return isNaN(n) ? 0 : n;
+    }),
+  companionsNames: z
+    .unknown()
+    .transform((v) => (typeof v === "string" && v.trim() ? v.trim() : null)),
+  dietaryRestrictions: z
+    .unknown()
+    .transform((v) => (typeof v === "string" && v.trim() ? v.trim() : null)),
+  rsvpStatus: z
+    .unknown()
+    .transform((v) => (v === "CONFIRMED" || v === "DECLINED" || v === "PENDING" ? (v as RsvpStatus) : undefined)),
 });
 
 // ==========================================
