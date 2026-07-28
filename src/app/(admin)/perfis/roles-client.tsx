@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { DataTable } from "@/components/ui/data-table";
 import { createRole, updateRole, deleteRole } from "@/actions/rbac-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -172,49 +173,82 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {roles.map((role) => (
-            <Card key={role.id} className="border-zinc-200/60 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-zinc-400" />
-                    <CardTitle className="text-lg">{role.name}</CardTitle>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-zinc-600" onClick={() => openEditForm(role)}>
-                      <Edit2 className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-red-600" onClick={() => handleDelete(role.id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+        <DataTable
+          data={roles}
+          pageSize={15}
+          keyExtractor={(r) => r.id}
+          searchPlaceholder="Buscar perfil..."
+          emptyMessage="Nenhum perfil cadastrado."
+          columns={[
+            {
+              key: "name",
+              header: "Nome do Perfil",
+              sortable: true,
+              accessor: (r) => r.name,
+              cell: (role) => (
+                <div className="flex items-center gap-2 font-medium text-zinc-900">
+                  <Shield className="w-4 h-4 text-zinc-400" />
+                  {role.name}
                 </div>
-                <CardDescription>{role._count?.users || 0} usuário(s) vinculados</CardDescription>
-              </CardHeader>
-              <CardContent>
+              ),
+            },
+            {
+              key: "usersCount",
+              header: "Usuários Vinculados",
+              sortable: true,
+              accessor: (r) => r._count?.users || 0,
+              cell: (role) => (
+                <span className="text-sm text-zinc-600">
+                  {role._count?.users || 0} usuário(s)
+                </span>
+              ),
+            },
+            {
+              key: "allowedPaths",
+              header: "Módulos Permitidos",
+              sortable: true,
+              accessor: (r) =>
+                r.allowedPaths.includes("*")
+                  ? "Acesso Total"
+                  : r.allowedPaths
+                      .map((p: string) => AVAILABLE_MODULES.find((m) => m.id === p)?.name || p)
+                      .join(", "),
+              cell: (role) => (
                 <div className="flex flex-wrap gap-1.5">
                   {role.allowedPaths.includes("*") ? (
-                    <span className="text-xs bg-zinc-100 text-zinc-600 px-2 py-1 rounded-md font-medium border border-zinc-200">
+                    <span className="text-xs bg-zinc-100 text-zinc-700 px-2 py-1 rounded-md font-medium border border-zinc-200">
                       Acesso Total
                     </span>
                   ) : (
                     role.allowedPaths.map((path: string) => (
-                      <span key={path} className="text-xs bg-zinc-50 text-zinc-500 px-2 py-1 rounded-md border border-zinc-100">
-                        {AVAILABLE_MODULES.find(m => m.id === path)?.name || path}
+                      <span key={path} className="text-xs bg-zinc-50 text-zinc-600 px-2 py-1 rounded-md border border-zinc-200">
+                        {AVAILABLE_MODULES.find((m) => m.id === path)?.name || path}
                       </span>
                     ))
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-          {roles.length === 0 && (
-             <div className="col-span-full py-12 text-center border-2 border-dashed border-zinc-200 rounded-2xl text-zinc-500">
-               Nenhum perfil cadastrado.
-             </div>
-          )}
-        </div>
+              ),
+            },
+            {
+              key: "actions",
+              header: "Ações",
+              sortable: false,
+              searchable: false,
+              className: "text-right pr-4",
+              headerClassName: "text-right pr-4",
+              cell: (role) => (
+                <div className="flex justify-end gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-zinc-600" onClick={() => openEditForm(role)}>
+                    <Edit2 className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-red-600" onClick={() => handleDelete(role.id)}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              ),
+            },
+          ]}
+        />
       )}
       <ConfirmModal
         isOpen={confirmOpen}

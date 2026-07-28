@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import type { TransactionWithGift } from "@/actions/finance-actions";
 import { approvePixTransaction, toggleThankYouSent } from "@/actions/finance-actions";
+import { DataTable } from "@/components/ui/data-table";
 import {
   Table,
   TableBody,
@@ -283,153 +284,129 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
 
   return (
     <div className="space-y-4">
-      {/* Search Bar */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-        <Input
-          placeholder="Buscar por convidado ou presente..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 h-10 rounded-xl bg-white border-zinc-200 text-sm"
-        />
-        {search && (
-          <button
-            onClick={() => setSearch("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
-
-      {/* Table */}
-      <div className="rounded-2xl border border-zinc-200 bg-white overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-zinc-50/80 hover:bg-zinc-50/80">
-              <TableHead className="text-xs font-semibold text-zinc-500 uppercase tracking-wider pl-4">
-                <SortButton field="createdAt">Data</SortButton>
-              </TableHead>
-              <TableHead className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                <SortButton field="guestName">Convidado</SortButton>
-              </TableHead>
-              <TableHead className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                Presente
-              </TableHead>
-              <TableHead className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                Método
-              </TableHead>
-              <TableHead className="text-xs font-semibold text-zinc-500 uppercase tracking-wider text-right">
-                <SortButton field="amount">Valor Líquido</SortButton>
-              </TableHead>
-              <TableHead className="text-xs font-semibold text-zinc-500 uppercase tracking-wider text-center">
-                Status
-              </TableHead>
-              <TableHead className="text-xs font-semibold text-zinc-500 uppercase tracking-wider text-center pr-4">
-                Ação
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-center py-12 text-zinc-400 text-sm"
-                >
-                  {search
-                    ? "Nenhuma transação encontrada para esta busca."
-                    : "Nenhuma transação registrada ainda."}
-                </TableCell>
-              </TableRow>
-            ) : (
-              filtered.map((tx) => (
-                <TableRow
-                  key={tx.id}
-                  className="group hover:bg-zinc-50/60 transition-colors"
-                >
-                  <TableCell className="text-sm text-zinc-600 pl-4">
-                    {formatDate(tx.createdAt)}
-                  </TableCell>
-                  <TableCell className="text-sm font-medium text-zinc-900">
-                    {tx.guest?.name || "—"}
-                  </TableCell>
-                  <TableCell className="text-sm text-zinc-600 max-w-[200px] truncate">
-                    {tx.gift.title}
-                  </TableCell>
-                  <TableCell>
-                    <MethodBadge method={tx.paymentMethod} />
-                  </TableCell>
-                  <TableCell className="text-sm font-semibold text-zinc-900 text-right tabular-nums">
-                    {formatCurrency(tx.netAmount || tx.amount)}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <StatusBadge status={tx.status} />
-                  </TableCell>
-                  <TableCell className="text-center pr-4 flex items-center justify-end gap-2">
-                    {tx.status === "PENDING" && tx.paymentMethod === "PIX" ? (
-                      <Button
-                        size="sm"
-                        onClick={() => handleApprove(tx.id, tx.gift.id)}
-                        disabled={isPending && approvingId === tx.id}
-                        className="h-8 px-3 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all duration-200 hover:shadow-md disabled:opacity-50"
-                      >
-                        {isPending && approvingId === tx.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <>
-                            <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                            Confirmar
-                          </>
-                        )}
-                      </Button>
-                    ) : tx.status === "APPROVED" ? (
-                      <Button
-                        size="sm"
-                        variant={tx.thankYouSent ? "secondary" : "outline"}
-                        onClick={() => handleThankYou(tx.id, tx.thankYouSent, tx.guest?.phone, tx.guest?.name, tx.gift.title)}
-                        disabled={isPending && thankingId === tx.id}
-                        className={`h-8 px-3 text-xs font-semibold rounded-lg shadow-sm transition-all duration-200 hover:shadow-md disabled:opacity-50 ${
-                          tx.thankYouSent 
-                            ? "bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100" 
-                            : "text-zinc-600 hover:text-pink-600 hover:border-pink-200"
-                        }`}
-                      >
-                        {isPending && thankingId === tx.id ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <>
-                            <Heart className={`w-3.5 h-3.5 mr-1 ${tx.thankYouSent ? "fill-pink-500 text-pink-500" : ""}`} />
-                            {tx.thankYouSent ? "Agradecido" : "Agradecer"}
-                          </>
-                        )}
-                      </Button>
+      <DataTable
+        data={transactions}
+        pageSize={15}
+        keyExtractor={(tx) => tx.id}
+        searchPlaceholder="Buscar por convidado ou presente..."
+        emptyMessage="Nenhuma transação encontrada."
+        columns={[
+          {
+            key: "createdAt",
+            header: "Data",
+            sortable: true,
+            accessor: (tx) => new Date(tx.createdAt).getTime(),
+            cell: (tx) => (
+              <span className="text-sm text-zinc-600 font-mono">
+                {formatDate(tx.createdAt)}
+              </span>
+            ),
+          },
+          {
+            key: "guestName",
+            header: "Convidado",
+            sortable: true,
+            accessor: (tx) => tx.guest?.name || "",
+            cell: (tx) => (
+              <span className="text-sm font-medium text-zinc-900">
+                {tx.guest?.name || "—"}
+              </span>
+            ),
+          },
+          {
+            key: "giftTitle",
+            header: "Presente",
+            sortable: true,
+            accessor: (tx) => tx.gift?.title || "",
+            cell: (tx) => (
+              <span className="text-sm text-zinc-600 max-w-[200px] truncate block">
+                {tx.gift.title}
+              </span>
+            ),
+          },
+          {
+            key: "paymentMethod",
+            header: "Método",
+            sortable: true,
+            accessor: (tx) => tx.paymentMethod,
+            cell: (tx) => <MethodBadge method={tx.paymentMethod} />,
+          },
+          {
+            key: "amount",
+            header: "Valor Líquido",
+            sortable: true,
+            className: "text-right tabular-nums",
+            headerClassName: "text-right",
+            accessor: (tx) => tx.netAmount || tx.amount,
+            cell: (tx) => (
+              <span className="text-sm font-semibold text-zinc-900">
+                {formatCurrency(tx.netAmount || tx.amount)}
+              </span>
+            ),
+          },
+          {
+            key: "status",
+            header: "Status",
+            sortable: true,
+            className: "text-center",
+            headerClassName: "text-center",
+            accessor: (tx) => tx.status,
+            cell: (tx) => <StatusBadge status={tx.status} />,
+          },
+          {
+            key: "actions",
+            header: "Ação",
+            sortable: false,
+            searchable: false,
+            className: "text-center pr-4",
+            headerClassName: "text-center pr-4",
+            cell: (tx) => (
+              <div className="flex items-center justify-center gap-2">
+                {tx.status === "PENDING" && tx.paymentMethod === "PIX" ? (
+                  <Button
+                    size="sm"
+                    onClick={() => handleApprove(tx.id, tx.gift.id)}
+                    disabled={isPending && approvingId === tx.id}
+                    className="h-8 px-3 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all duration-200 hover:shadow-md disabled:opacity-50"
+                  >
+                    {isPending && approvingId === tx.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : (
-                      <span className="text-zinc-300 text-xs">—</span>
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                        Confirmar
+                      </>
                     )}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Summary footer */}
-      <div className="flex items-center justify-between text-xs text-zinc-400 px-1">
-        <span>
-          {filtered.length} de {transactions.length} transação
-          {transactions.length !== 1 ? "ões" : ""}
-        </span>
-        {search && (
-          <button
-            onClick={() => setSearch("")}
-            className="text-zinc-500 hover:text-zinc-700 underline transition-colors"
-          >
-            Limpar filtro
-          </button>
-        )}
-      </div>
+                  </Button>
+                ) : tx.status === "APPROVED" ? (
+                  <Button
+                    size="sm"
+                    variant={tx.thankYouSent ? "secondary" : "outline"}
+                    onClick={() => handleThankYou(tx.id, tx.thankYouSent, tx.guest?.phone, tx.guest?.name, tx.gift.title)}
+                    disabled={isPending && thankingId === tx.id}
+                    className={`h-8 px-3 text-xs font-semibold rounded-lg shadow-sm transition-all duration-200 hover:shadow-md disabled:opacity-50 ${
+                      tx.thankYouSent
+                        ? "bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100"
+                        : "text-zinc-600 hover:text-pink-600 hover:border-pink-200"
+                    }`}
+                  >
+                    {isPending && thankingId === tx.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <>
+                        <Heart className={`w-3.5 h-3.5 mr-1 ${tx.thankYouSent ? "fill-pink-500 text-pink-500" : ""}`} />
+                        {tx.thankYouSent ? "Agradecido" : "Agradecer"}
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <span className="text-zinc-300 text-xs">—</span>
+                )}
+              </div>
+            ),
+          },
+        ]}
+      />
 
       {/* Toast */}
       {toast && (
