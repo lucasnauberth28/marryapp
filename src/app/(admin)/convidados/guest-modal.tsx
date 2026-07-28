@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useMemo, useTransition } from "react";
 import { GuestLocal as Guest, RsvpStatus } from "@/types/local";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CustomModal } from "@/components/ui/custom-modal";
 import { createGuest, updateGuest } from "@/actions/guest-actions";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
   Select,
   SelectContent,
@@ -74,6 +75,15 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
 
   // Filtrar o próprio convidado para não se auto-vincular
   const availableParents = allGuests.filter((g) => !guest || g.id !== guest.id);
+
+  const parentOptions = useMemo(() => [
+    { value: "none", label: "Nenhum (Convidado Principal)" },
+    ...availableParents.map((p) => ({
+      value: p.id,
+      label: p.name,
+      sublabel: p.category ? `(${p.category})` : undefined,
+    })),
+  ], [availableParents]);
 
   function handleSubmit(formData: FormData) {
     if (isEditing) formData.set("rsvpStatus", rsvpStatus);
@@ -150,19 +160,14 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
             <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
               Vincular a Convidado (Família)
             </label>
-            <Select value={parentGuestId} onValueChange={setParentGuestId}>
-              <SelectTrigger className="bg-white border-zinc-200">
-                <SelectValue placeholder="Sem vínculo (Titular)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Nenhum (Convidado Principal)</SelectItem>
-                {availableParents.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name} {p.category ? `(${p.category})` : ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              options={parentOptions}
+              value={parentGuestId}
+              onValueChange={setParentGuestId}
+              placeholder="Sem vínculo (Titular)"
+              searchPlaceholder="Buscar convidado..."
+              emptyMessage="Nenhum convidado encontrado."
+            />
           </div>
 
           {isEditing && (
