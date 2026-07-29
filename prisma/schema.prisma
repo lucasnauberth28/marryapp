@@ -35,6 +35,11 @@ enum ExpenseStatus {
   OVERDUE
 }
 
+enum ExpenseType {
+  CONTRACT
+  PURCHASE
+}
+
 enum TaskStatus {
   TODO
   IN_PROGRESS
@@ -153,15 +158,20 @@ model Vendor {
 }
 
 model Expense {
-  id          String        @id @default(uuid())
-  description String
-  amount      Int           
-  dueDate     DateTime
-  status      ExpenseStatus @default(PENDING)
-  createdAt   DateTime      @default(now())
+  id            String        @id @default(uuid())
+  description   String
+  amount        Int           
+  dueDate       DateTime
+  status        ExpenseStatus @default(PENDING)
+  type          ExpenseType   @default(CONTRACT)
+  purchaseUrl   String?       
+  paymentMethod String?       
+  imageUrl      String?       @db.Text
+  storeName     String?       
+  createdAt     DateTime      @default(now())
 
-  vendorId    String
-  vendor      Vendor        @relation(fields: [vendorId], references: [id])
+  vendorId      String?       
+  vendor        Vendor?       @relation(fields: [vendorId], references: [id], onDelete: SetNull)
 
   @@map("expenses")
 }

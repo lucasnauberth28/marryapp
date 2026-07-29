@@ -3,13 +3,18 @@
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { ExpenseStatus } from "@prisma/client";
+import { ExpenseStatus, ExpenseType } from "@prisma/client";
 
 const ExpenseSchema = z.object({
   description: z.string().min(2, "Descrição é obrigatória."),
   amount: z.coerce.number().min(1, "O valor deve ser maior que zero."),
   dueDate: z.string().min(10, "Data de vencimento inválida"),
-  vendorId: z.string().uuid("Fornecedor inválido"),
+  type: z.nativeEnum(ExpenseType).default(ExpenseType.CONTRACT),
+  vendorId: z.string().optional().or(z.literal("")),
+  purchaseUrl: z.string().optional().or(z.literal("")),
+  paymentMethod: z.string().optional().or(z.literal("")),
+  imageUrl: z.string().optional().or(z.literal("")),
+  storeName: z.string().optional().or(z.literal("")),
   status: z.nativeEnum(ExpenseStatus).default(ExpenseStatus.PENDING),
 });
 
@@ -23,11 +28,14 @@ export async function getExpenses() {
 export async function createExpense(formData: FormData) {
   const raw = {
     description: formData.get("description"),
-    // Converter valor (que geralmente vem como string "100.50") para centavos (Int no Prisma) se necessário
-    // Assumindo que o input na tela já manda em centavos ou converte, vamos fazer a coerção
     amount: formData.get("amount"),
     dueDate: formData.get("dueDate"),
-    vendorId: formData.get("vendorId"),
+    type: formData.get("type") || ExpenseType.CONTRACT,
+    vendorId: formData.get("vendorId") || undefined,
+    purchaseUrl: formData.get("purchaseUrl") || undefined,
+    paymentMethod: formData.get("paymentMethod") || undefined,
+    imageUrl: formData.get("imageUrl") || undefined,
+    storeName: formData.get("storeName") || undefined,
   };
 
   const parsed = ExpenseSchema.safeParse(raw);
@@ -41,7 +49,12 @@ export async function createExpense(formData: FormData) {
         description: parsed.data.description,
         amount: parsed.data.amount,
         dueDate: new Date(parsed.data.dueDate),
-        vendorId: parsed.data.vendorId,
+        type: parsed.data.type,
+        vendorId: parsed.data.vendorId || null,
+        purchaseUrl: parsed.data.purchaseUrl || null,
+        paymentMethod: parsed.data.paymentMethod || null,
+        imageUrl: parsed.data.imageUrl || null,
+        storeName: parsed.data.storeName || null,
       }
     });
     revalidatePath("/(admin)/financas", "page");
@@ -84,7 +97,12 @@ export async function createBatchExpenses(items: Array<{
   description: string;
   amount: number;
   dueDate: string;
-  vendorId: string;
+  type?: ExpenseType;
+  vendorId?: string | null;
+  purchaseUrl?: string | null;
+  paymentMethod?: string | null;
+  imageUrl?: string | null;
+  storeName?: string | null;
 }>) {
   if (!items || items.length === 0) {
     return { success: false, error: "Nenhuma parcela informada." };
@@ -96,7 +114,12 @@ export async function createBatchExpenses(items: Array<{
         description: item.description,
         amount: item.amount,
         dueDate: new Date(item.dueDate),
-        vendorId: item.vendorId,
+        type: item.type || ExpenseType.CONTRACT,
+        vendorId: item.vendorId || null,
+        purchaseUrl: item.purchaseUrl || null,
+        paymentMethod: item.paymentMethod || null,
+        imageUrl: item.imageUrl || null,
+        storeName: item.storeName || null,
       })),
     });
     revalidatePath("/(admin)/financas", "page");

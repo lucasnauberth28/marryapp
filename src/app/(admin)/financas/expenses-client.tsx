@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { ExpenseStatus } from "@/types/local";
@@ -32,7 +32,17 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsRight,
-  Sparkles,
+  ShoppingBag,
+  FileCheck,
+  CreditCard,
+  QrCode,
+  Link as LinkIcon,
+  Upload,
+  Image as ImageIcon,
+  ArrowRight,
+  Check,
+  ExternalLink,
+  Store,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -48,6 +58,11 @@ interface GroupedExpense {
   baseDescription: string;
   vendorName: string;
   vendorCategory: string;
+  type: "CONTRACT" | "PURCHASE";
+  storeName: string | null;
+  purchaseUrl: string | null;
+  paymentMethod: string | null;
+  imageUrl: string | null;
   totalAmount: number;
   paidAmount: number;
   pendingAmount: number;
@@ -59,6 +74,14 @@ interface GroupedExpense {
   expenses: any[];
 }
 
+const PAYMENT_METHODS = [
+  { id: "credit_card_nubank", label: "Cartão de Crédito - Nubank", icon: CreditCard },
+  { id: "credit_card_itau", label: "Cartão de Crédito - Itaú", icon: CreditCard },
+  { id: "credit_card_other", label: "Cartão de Crédito (Outro)", icon: CreditCard },
+  { id: "pix_balance", label: "Saldo em Conta / Pix", icon: QrCode },
+  { id: "boleto", label: "Boleto Bancário", icon: FileCheck },
+];
+
 export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: any[], vendors: any[] }) {
   const [expenses, setExpenses] = useState<any[]>(initialExpenses);
   const [open, setOpen] = useState(false);
@@ -68,34 +91,73 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
 
   // Modo de exibição: "grouped" (por Dívida/Contrato com progresso) ou "detailed" (tabela paginada)
   const [viewMode, setViewMode] = useState<"grouped" | "detailed">("grouped");
+  const [filterType, setFilterType] = useState<"ALL" | "CONTRACT" | "PURCHASE">("ALL");
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const [groupedPage, setGroupedPage] = useState(1);
   const [groupedSearch, setGroupedSearch] = useState("");
   const GROUP_PAGE_SIZE = 6;
 
-  // Modo de cadastro: única vs parcelada
-  const [mode, setMode] = useState<"single" | "installment">("single");
+  // ESTADOS DO WIZARD STEP-BY-STEP (Passos 1, 2, 3)
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [expenseType, setExpenseType] = useState<"CONTRACT" | "PURCHASE">("CONTRACT");
+  
+  // Passo 2: Detalhes & Origem
   const [description, setDescription] = useState("");
   const [vendorId, setVendorId] = useState("");
-  const [singleVendorId, setSingleVendorId] = useState("");
+  const [storeName, setStoreName] = useState("");
+  const [purchaseUrl, setPurchaseUrl] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("pix_balance");
+  const [customPaymentMethod, setCustomPaymentMethod] = useState("");
+  const [imageBase64, setImageBase64] = useState<string>("");
+  const [imageFileName, setImageFileName] = useState<string>("");
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
+  // Passo 3: Condição de Pagamento (Única vs Parcelada em blocos)
+  const [mode, setMode] = useState<"single" | "installment">("single");
+  const [singleAmount, setSingleAmount] = useState("");
+  const [singleDueDate, setSingleDueDate] = useState(new Date().toISOString().split("T")[0]);
   const [formKey, setFormKey] = useState(0);
 
-  // Estado para parcelamento em blocos
   const [blocks, setBlocks] = useState<InstallmentBlock[]>([
     { id: 1, count: 3, amount: "300", startDate: new Date().toISOString().split("T")[0] }
   ]);
 
   const resetForm = () => {
-    setMode("single");
+    setStep(1);
+    setExpenseType("CONTRACT");
     setDescription("");
     setVendorId("");
-    setSingleVendorId("");
+    setStoreName("");
+    setPurchaseUrl("");
+    setPaymentMethod("pix_balance");
+    setCustomPaymentMethod("");
+    setImageBase64("");
+    setImageFileName("");
+    setMode("single");
+    setSingleAmount("");
+    setSingleDueDate(new Date().toISOString().split("T")[0]);
     setBlocks([{ id: 1, count: 3, amount: "300", startDate: new Date().toISOString().split("T")[0] }]);
     setFormKey(prev => prev + 1);
+    if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
   const formatCurrency = (amount: number) => {
     return (amount / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { // max 5MB
+      toast.error("A imagem deve ter no máximo 5MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setImageBase64(event.target?.result as string);
+      setImageFileName(file.name);
+    };
+    reader.readAsDataURL(file);
   };
 
   // Manipulação de blocos de parcelas
@@ -137,8 +199,20 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
     const totalCount = blocks.reduce((sum, b) => sum + (Number(b.count) || 0), 0);
     if (totalCount === 0) return [];
 
-    const items: Array<{ description: string; amount: number; dueDate: string; vendorId: string }> = [];
+    const items: Array<{
+      description: string;
+      amount: number;
+      dueDate: string;
+      type: "CONTRACT" | "PURCHASE";
+      vendorId?: string | null;
+      purchaseUrl?: string | null;
+      paymentMethod?: string | null;
+      imageUrl?: string | null;
+      storeName?: string | null;
+    }> = [];
     let currentIdx = 1;
+
+    const finalPaymentMethod = paymentMethod === "custom" ? customPaymentMethod : PAYMENT_METHODS.find(p => p.id === paymentMethod)?.label || paymentMethod;
 
     for (const block of blocks) {
       const count = Number(block.count) || 0;
@@ -153,34 +227,50 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
           description: `${description || "Despesa"} (${currentIdx}/${totalCount})`,
           amount: isNaN(amountInCents) ? 0 : amountInCents,
           dueDate: dueDate.toISOString().split("T")[0],
-          vendorId,
+          type: expenseType,
+          vendorId: expenseType === "CONTRACT" ? vendorId : null,
+          purchaseUrl: expenseType === "PURCHASE" ? purchaseUrl : null,
+          paymentMethod: finalPaymentMethod,
+          imageUrl: imageBase64 || null,
+          storeName: expenseType === "PURCHASE" ? storeName : null,
         });
         currentIdx++;
       }
     }
 
     return items;
-  }, [mode, description, vendorId, blocks]);
+  }, [mode, description, vendorId, blocks, expenseType, purchaseUrl, paymentMethod, customPaymentMethod, imageBase64, storeName]);
 
   const totalInstallmentsAmount = useMemo(() => {
     return generatedInstallments.reduce((sum, item) => sum + item.amount, 0);
   }, [generatedInstallments]);
 
-  // Agrupamento inteligente de despesas por Dívida/Contrato
+  // Filtragem por Tipo de Despesa (Contrato vs Compra)
+  const filteredExpensesByType = useMemo(() => {
+    if (filterType === "ALL") return expenses;
+    return expenses.filter(e => (e.type || "CONTRACT") === filterType);
+  }, [expenses, filterType]);
+
+  // Agrupamento inteligente de despesas por Dívida/Contrato/Compra
   const groupedExpenses = useMemo<GroupedExpense[]>(() => {
     const map = new Map<string, GroupedExpense>();
 
-    for (const exp of expenses) {
-      // Extrai o título base removendo sufixos do tipo "(1/12)" ou "(1 de 12)"
+    for (const exp of filteredExpensesByType) {
       const baseTitle = exp.description.replace(/\s*\(\d+[\/\sde]+\d+\)\s*$/i, "").trim();
-      const key = `${exp.vendorId}_${baseTitle.toLowerCase()}`;
+      const expType = exp.type || "CONTRACT";
+      const key = `${expType}_${exp.vendorId || exp.storeName || baseTitle.toLowerCase()}_${baseTitle.toLowerCase()}`;
 
       if (!map.has(key)) {
         map.set(key, {
           id: key,
           baseDescription: baseTitle,
-          vendorName: exp.vendor?.name || "Sem Fornecedor",
-          vendorCategory: exp.vendor?.category || "",
+          vendorName: exp.vendor?.name || exp.storeName || "Compra Direta",
+          vendorCategory: exp.vendor?.category || (expType === "PURCHASE" ? "Compra Pontual" : ""),
+          type: expType,
+          storeName: exp.storeName || null,
+          purchaseUrl: exp.purchaseUrl || null,
+          paymentMethod: exp.paymentMethod || null,
+          imageUrl: exp.imageUrl || null,
           totalAmount: 0,
           paidAmount: 0,
           pendingAmount: 0,
@@ -198,12 +288,15 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
       group.totalAmount += exp.amount;
       group.totalCount += 1;
 
+      if (!group.imageUrl && exp.imageUrl) group.imageUrl = exp.imageUrl;
+      if (!group.purchaseUrl && exp.purchaseUrl) group.purchaseUrl = exp.purchaseUrl;
+      if (!group.paymentMethod && exp.paymentMethod) group.paymentMethod = exp.paymentMethod;
+
       if (exp.status === "PAID") {
         group.paidAmount += exp.amount;
         group.paidCount += 1;
       } else {
         group.pendingAmount += exp.amount;
-        // Identifica a próxima parcela pendente (menor data de vencimento)
         if (!group.nextDueDate || new Date(exp.dueDate) < new Date(group.nextDueDate)) {
           group.nextDueDate = exp.dueDate;
           group.nextDueAmount = exp.amount;
@@ -212,12 +305,10 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
       }
     }
 
-    // Ordenar parcelas dentro de cada grupo por vencimento
     for (const grp of map.values()) {
       grp.expenses.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
     }
 
-    // Ordena grupos: primeiro os com vencimento pendente mais próximo, depois quitados
     return Array.from(map.values()).sort((a, b) => {
       if (a.nextDueDate && b.nextDueDate) {
         return new Date(a.nextDueDate).getTime() - new Date(b.nextDueDate).getTime();
@@ -226,9 +317,9 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
       if (b.nextDueDate) return 1;
       return a.baseDescription.localeCompare(b.baseDescription);
     });
-  }, [expenses]);
+  }, [filteredExpensesByType]);
 
-  // Filtragem dos grupos de dívida
+  // Filtragem dos grupos
   const filteredGroupedExpenses = useMemo(() => {
     if (!groupedSearch.trim()) return groupedExpenses;
     const q = groupedSearch.toLowerCase();
@@ -255,11 +346,22 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
     e.preventDefault();
     setLoading(true);
 
+    const finalPaymentMethod = paymentMethod === "custom" ? customPaymentMethod : PAYMENT_METHODS.find(p => p.id === paymentMethod)?.label || paymentMethod;
+
     if (mode === "single") {
-      const formData = new FormData(e.currentTarget);
-      const amountVal = formData.get("amount") as string;
-      const amountInCents = Math.round(parseFloat(amountVal.replace(',', '.')) * 100);
-      formData.set("amount", amountInCents.toString());
+      const formData = new FormData();
+      formData.append("description", description);
+      const amountInCents = Math.round(parseFloat(singleAmount.replace(',', '.')) * 100);
+      formData.append("amount", amountInCents.toString());
+      formData.append("dueDate", singleDueDate);
+      formData.append("type", expenseType);
+      if (expenseType === "CONTRACT" && vendorId) formData.append("vendorId", vendorId);
+      if (expenseType === "PURCHASE") {
+        if (storeName) formData.append("storeName", storeName);
+        if (purchaseUrl) formData.append("purchaseUrl", purchaseUrl);
+      }
+      if (finalPaymentMethod) formData.append("paymentMethod", finalPaymentMethod);
+      if (imageBase64) formData.append("imageUrl", imageBase64);
 
       const res = await createExpense(formData);
       if (res.success) {
@@ -274,8 +376,8 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
       }
     } else {
       // Modo Parcelamento
-      if (!vendorId) {
-        toast.error("Selecione um fornecedor.");
+      if (expenseType === "CONTRACT" && !vendorId) {
+        toast.error("Selecione um fornecedor para contratos.");
         setLoading(false);
         return;
       }
@@ -331,37 +433,64 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
 
   return (
     <div className="space-y-4">
-      {/* Barra de Controles: Seletor de Visão + Cadastro */}
-      <div className="flex flex-col sm:flex-row gap-3 justify-between items-stretch sm:items-center">
-        {/* Toggle de Visão */}
-        <div className="flex bg-zinc-100 p-1 rounded-xl border border-zinc-200/80 shadow-inner">
-          <Button
-            type="button"
-            variant={viewMode === "grouped" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("grouped")}
-            className={`flex-1 sm:flex-none h-8 text-xs font-medium rounded-lg transition-all ${
-              viewMode === "grouped" ? "bg-white text-zinc-900 shadow-sm font-semibold" : "text-zinc-600 hover:text-zinc-900"
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5 mr-1.5 text-[#8C6D45]" />
-            Visão por Dívida ({groupedExpenses.length})
-          </Button>
-          <Button
-            type="button"
-            variant={viewMode === "detailed" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setViewMode("detailed")}
-            className={`flex-1 sm:flex-none h-8 text-xs font-medium rounded-lg transition-all ${
-              viewMode === "detailed" ? "bg-white text-zinc-900 shadow-sm font-semibold" : "text-zinc-600 hover:text-zinc-900"
-            }`}
-          >
-            <ListFilter className="w-3.5 h-3.5 mr-1.5 text-[#8C6D45]" />
-            Todas as Parcelas ({expenses.length})
-          </Button>
+      {/* Barra de Filtros & Controles: Visão, Categoria e Cadastro */}
+      <div className="flex flex-col md:flex-row gap-3 justify-between items-stretch md:items-center">
+        {/* Filtros de Tipo e Visão */}
+        <div className="flex flex-wrap gap-2 items-center">
+          {/* Filtro por Categoria (Contrato vs Compra) */}
+          <div className="flex bg-zinc-100 p-1 rounded-xl border border-zinc-200/80">
+            <button
+              onClick={() => setFilterType("ALL")}
+              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
+                filterType === "ALL" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-900"
+              }`}
+            >
+              Todas ({expenses.length})
+            </button>
+            <button
+              onClick={() => setFilterType("CONTRACT")}
+              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${
+                filterType === "CONTRACT" ? "bg-[#8C6D45] text-white shadow-xs" : "text-zinc-500 hover:text-zinc-900"
+              }`}
+            >
+              <Building2 className="w-3 h-3" />
+              Contratos
+            </button>
+            <button
+              onClick={() => setFilterType("PURCHASE")}
+              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${
+                filterType === "PURCHASE" ? "bg-purple-600 text-white shadow-xs" : "text-zinc-500 hover:text-zinc-900"
+              }`}
+            >
+              <ShoppingBag className="w-3 h-3" />
+              Compras Pontuais
+            </button>
+          </div>
+
+          {/* Toggle de Visão (Agrupada vs Detalhada) */}
+          <div className="flex bg-zinc-100 p-1 rounded-xl border border-zinc-200/80">
+            <button
+              onClick={() => setViewMode("grouped")}
+              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${
+                viewMode === "grouped" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-900"
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5 text-[#8C6D45]" />
+              Agrupado
+            </button>
+            <button
+              onClick={() => setViewMode("detailed")}
+              className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${
+                viewMode === "detailed" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-900"
+              }`}
+            >
+              <ListFilter className="w-3.5 h-3.5 text-[#8C6D45]" />
+              Detalhado
+            </button>
+          </div>
         </div>
 
-        {/* Modal de Cadastro */}
+        {/* Modal de Cadastro STEP-BY-STEP */}
         <Dialog open={open} onOpenChange={(isOpen) => {
           setOpen(isOpen);
           if (!isOpen) resetForm();
@@ -371,172 +500,383 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
               <Plus className="w-4 h-4 mr-2" /> Nova Despesa
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[88vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
+              <DialogTitle className="flex items-center gap-2 text-base">
                 <CalendarRange className="w-5 h-5 text-[#8C6D45]" />
-                Cadastrar Despesa / Contrato
+                Cadastrar Despesa / Compra
               </DialogTitle>
+              {/* Progresso dos Passos */}
+              <div className="flex items-center gap-2 pt-2">
+                <div className={`flex-1 h-1.5 rounded-full ${step >= 1 ? "bg-[#8C6D45]" : "bg-zinc-200"}`} />
+                <div className={`flex-1 h-1.5 rounded-full ${step >= 2 ? "bg-[#8C6D45]" : "bg-zinc-200"}`} />
+                <div className={`flex-1 h-1.5 rounded-full ${step >= 3 ? "bg-[#8C6D45]" : "bg-zinc-200"}`} />
+              </div>
             </DialogHeader>
 
-            {/* Seletor de Modo no Form */}
-            <div className="flex bg-zinc-100 p-1 rounded-lg border border-zinc-200 mt-2">
-              <Button
-                type="button"
-                variant={mode === "single" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setMode("single")}
-                className={`flex-1 h-8 text-xs font-semibold rounded-md ${mode === "single" ? "shadow-sm" : ""}`}
-              >
-                Despesa Única
-              </Button>
-              <Button
-                type="button"
-                variant={mode === "installment" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setMode("installment")}
-                className={`flex-1 h-8 text-xs font-semibold rounded-md ${mode === "installment" ? "shadow-sm" : ""}`}
-              >
-                Parcelamento Flexível
-              </Button>
-            </div>
-
             <form key={formKey} onSubmit={handleCreate} className="space-y-4 mt-2">
-              {mode === "single" ? (
-                <>
-                  <Input name="description" placeholder="Descrição (ex: Sinal do Buffet)" required />
-                  
-                  <input type="hidden" name="vendorId" value={singleVendorId} />
-                  <Select value={singleVendorId} onValueChange={setSingleVendorId}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecione o Fornecedor..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {vendors.map(v => (
-                        <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input name="amount" placeholder="Valor (ex: 1500.00)" type="number" step="0.01" required />
-                    <DatePicker name="dueDate" required />
+              {/* PASSO 1: TIPO DA DESPESA */}
+              {step === 1 && (
+                <div className="space-y-4 py-2 animate-in fade-in duration-200">
+                  <div className="text-center space-y-1">
+                    <h3 className="font-bold text-sm text-zinc-900">Qual o tipo desta despesa?</h3>
+                    <p className="text-xs text-zinc-500">Escolha entre contrato de prestação de serviços ou uma compra pontual.</p>
                   </div>
-                </>
-              ) : (
-                /* Modo Parcelado Flexível */
-                <div className="space-y-4">
-                  <Input
-                    placeholder="Descrição da Despesa (ex: Buffet da Festa)"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    required
-                  />
 
-                  <Select value={vendorId} onValueChange={setVendorId}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecione o Fornecedor..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {vendors.map(v => (
-                        <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <div className="space-y-3 pt-2">
-                    <div className="flex justify-between items-center">
-                      <Label className="text-xs font-bold text-zinc-700 uppercase tracking-wider flex items-center gap-1">
-                        <Layers className="w-3.5 h-3.5 text-[#8C6D45]" />
-                        Blocos de Parcelas
-                      </Label>
-                      <Button type="button" variant="outline" size="sm" onClick={addBlock} className="text-xs h-7">
-                        + Adicionar Bloco
-                      </Button>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Card Contrato */}
+                    <div
+                      onClick={() => setExpenseType("CONTRACT")}
+                      className={`p-5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between space-y-3 ${
+                        expenseType === "CONTRACT"
+                          ? "border-[#8C6D45] bg-[#F3ECE3]/30 shadow-md ring-2 ring-[#8C6D45]/20"
+                          : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/50"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="p-3 bg-[#8C6D45]/10 text-[#8C6D45] rounded-xl">
+                          <Building2 className="w-6 h-6" />
+                        </div>
+                        {expenseType === "CONTRACT" && <Check className="w-5 h-5 text-[#8C6D45]" />}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-sm text-zinc-900">Contrato com Fornecedor</h4>
+                        <p className="text-xs text-zinc-500 mt-1">
+                          Serviços contratados como Buffet, Fotografia, DJ, Espaço do evento ou Decoração.
+                        </p>
+                      </div>
                     </div>
 
-                    {blocks.map((block, idx) => (
-                      <div key={block.id} className="p-3 bg-zinc-50 border border-zinc-200 rounded-lg space-y-2">
-                        <div className="flex justify-between items-center text-xs font-semibold text-zinc-600">
-                          <span>Bloco #{idx + 1}</span>
-                          {blocks.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeBlock(block.id)}
-                              className="text-red-500 hover:text-red-700 text-xs cursor-pointer"
-                            >
-                              Remover Bloco
-                            </button>
-                          )}
+                    {/* Card Compra Pontual */}
+                    <div
+                      onClick={() => setExpenseType("PURCHASE")}
+                      className={`p-5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between space-y-3 ${
+                        expenseType === "PURCHASE"
+                          ? "border-purple-600 bg-purple-50/40 shadow-md ring-2 ring-purple-600/20"
+                          : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/50"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="p-3 bg-purple-100 text-purple-600 rounded-xl">
+                          <ShoppingBag className="w-6 h-6" />
                         </div>
-
-                        <div className="grid grid-cols-3 gap-2">
-                          <div>
-                            <Label className="text-[10px] text-zinc-500">Nº de Parcelas</Label>
-                            <Input
-                              type="number"
-                              min={1}
-                              max={60}
-                              value={block.count}
-                              onChange={(e) => updateBlock(block.id, "count", Number(e.target.value))}
-                              placeholder="Ex: 3"
-                            />
-                          </div>
-
-                          <div>
-                            <Label className="text-[10px] text-zinc-500">Valor da Parcela (R$)</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={block.amount}
-                              onChange={(e) => updateBlock(block.id, "amount", e.target.value)}
-                              placeholder="Ex: 300.00"
-                            />
-                          </div>
-
-                          <div>
-                            <Label className="text-[10px] text-zinc-500">1º Vencimento</Label>
-                            <DatePicker
-                              value={block.startDate}
-                              onChange={(e) => updateBlock(block.id, "startDate", e.target.value)}
-                            />
-                          </div>
-                        </div>
+                        {expenseType === "PURCHASE" && <Check className="w-5 h-5 text-purple-600" />}
                       </div>
-                    ))}
+                      <div>
+                        <h4 className="font-bold text-sm text-zinc-900">Compra Pontual / Mimos</h4>
+                        <p className="text-xs text-zinc-500 mt-1">
+                          Lembrancinhas, itens de papelaria, mimos para padrinhos, Shopee, Mercado Livre, etc.
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Pré-visualização ao vivo */}
-                  {generatedInstallments.length > 0 && (
-                    <div className="border border-zinc-200 rounded-lg p-3 bg-white space-y-2">
-                      <div className="flex justify-between items-center text-xs border-b border-zinc-100 pb-2">
-                        <span className="font-bold text-zinc-700">
-                          Pré-visualização ({generatedInstallments.length} parcelas)
-                        </span>
-                        <span className="font-bold text-[#8C6D45]">
-                          Total: {formatCurrency(totalInstallmentsAmount)}
-                        </span>
-                      </div>
+                  <Button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="w-full bg-[#8C6D45] hover:bg-[#755630] text-white mt-4"
+                  >
+                    Próximo: Detalhes & Origem <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              )}
 
-                      <div className="max-h-36 overflow-y-auto space-y-1 pr-1">
-                        {generatedInstallments.map((inst, i) => (
-                          <div key={i} className="flex justify-between items-center text-xs py-1 px-2 hover:bg-zinc-50 rounded">
-                            <span className="text-zinc-700 font-medium">{inst.description}</span>
-                            <div className="flex items-center gap-3">
-                              <span className="text-zinc-500">{new Date(inst.dueDate).toLocaleDateString('pt-BR')}</span>
-                              <span className="font-bold text-zinc-900">{formatCurrency(inst.amount)}</span>
+              {/* PASSO 2: DETALHES, LINK, IMAGEM & ORIGEM DO PAGAMENTO */}
+              {step === 2 && (
+                <div className="space-y-4 py-1 animate-in fade-in duration-200">
+                  <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
+                    <span className="text-xs font-bold text-zinc-700 uppercase tracking-wider">
+                      Passo 2: {expenseType === "CONTRACT" ? "Detalhes do Contrato" : "Detalhes da Compra"}
+                    </span>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setStep(1)} className="text-xs text-zinc-500">
+                      Voltar ao Tipo
+                    </Button>
+                  </div>
+
+                  {/* Descrição Principal */}
+                  <div>
+                    <Label className="text-xs font-semibold text-zinc-600 mb-1 block">Descrição da Despesa *</Label>
+                    <Input
+                      placeholder={expenseType === "CONTRACT" ? "Ex: Sinal do Buffet ou Contrato de Fotos" : "Ex: Lembrancinhas para Padrinhos"}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Fornecedor (Contrato) vs Loja/Link (Compra) */}
+                  {expenseType === "CONTRACT" ? (
+                    <div>
+                      <Label className="text-xs font-semibold text-zinc-600 mb-1 block">Fornecedor Cadastrado *</Label>
+                      <Select value={vendorId} onValueChange={setVendorId}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione o Fornecedor..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {vendors.map(v => (
+                            <SelectItem key={v.id} value={v.id}>{v.name} ({v.category})</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs font-semibold text-zinc-600 mb-1 block">Nome da Loja / Local (Opcional)</Label>
+                        <Input
+                          placeholder="Ex: Shopee, Mercado Livre, Loja X"
+                          value={storeName}
+                          onChange={(e) => setStoreName(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs font-semibold text-zinc-600 mb-1 block">Link de Compra / Produto (URL)</Label>
+                        <Input
+                          placeholder="https://shopee.com.br/produto..."
+                          value={purchaseUrl}
+                          onChange={(e) => setPurchaseUrl(e.target.value)}
+                          type="url"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Origem / Meio de Pagamento */}
+                  <div>
+                    <Label className="text-xs font-semibold text-zinc-600 mb-1.5 block">Origem do Pagamento / Meio Utilizado</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {PAYMENT_METHODS.map((pm) => {
+                        const Icon = pm.icon;
+                        const isSelected = paymentMethod === pm.id;
+                        return (
+                          <button
+                            key={pm.id}
+                            type="button"
+                            onClick={() => setPaymentMethod(pm.id)}
+                            className={`p-2.5 rounded-xl border text-left text-xs font-medium transition-all flex items-center gap-2 cursor-pointer ${
+                              isSelected
+                                ? "border-[#8C6D45] bg-[#F3ECE3]/40 text-[#8C6D45] font-bold shadow-xs"
+                                : "border-zinc-200 hover:bg-zinc-50 text-zinc-700"
+                            }`}
+                          >
+                            <Icon className="w-3.5 h-3.5 shrink-0 text-[#8C6D45]" />
+                            <span className="truncate">{pm.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Upload da Imagem da Compra / Produto */}
+                  <div>
+                    <Label className="text-xs font-semibold text-zinc-600 mb-1 block">Foto / Imagem da Compra ou Produto (Opcional)</Label>
+                    <div className="border-2 border-dashed border-zinc-200 rounded-xl p-3 text-center relative hover:bg-zinc-50 transition flex items-center justify-center gap-3">
+                      <input
+                        ref={imageInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                      />
+                      {imageBase64 ? (
+                        <div className="flex items-center gap-3">
+                          <img src={imageBase64} alt="Preview" className="w-10 h-10 object-cover rounded-lg border border-zinc-200" />
+                          <span className="text-xs font-medium text-zinc-700 truncate max-w-[200px]">{imageFileName}</span>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => setImageBase64("")} className="text-xs text-red-500 h-6 px-2">Remover</Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-zinc-500 text-xs py-1">
+                          <Upload className="w-4 h-4 text-zinc-400" />
+                          <span>Clique para anexar foto do produto ou print da compra</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <Button type="button" variant="outline" onClick={() => setStep(1)} className="w-1/3">
+                      Voltar
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        if (!description.trim()) {
+                          toast.error("Informe a descrição da despesa.");
+                          return;
+                        }
+                        if (expenseType === "CONTRACT" && !vendorId) {
+                          toast.error("Selecione um fornecedor.");
+                          return;
+                        }
+                        setStep(3);
+                      }}
+                      className="w-2/3 bg-[#8C6D45] hover:bg-[#755630] text-white"
+                    >
+                      Próximo: Condição de Pagamento <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* PASSO 3: CONDIÇÃO DE PAGAMENTO (VALOR & PARCELAS) */}
+              {step === 3 && (
+                <div className="space-y-4 py-1 animate-in fade-in duration-200">
+                  <div className="flex justify-between items-center pb-2 border-b border-zinc-100">
+                    <span className="text-xs font-bold text-zinc-700 uppercase tracking-wider">
+                      Passo 3: Condição de Pagamento
+                    </span>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setStep(2)} className="text-xs text-zinc-500">
+                      Voltar aos Detalhes
+                    </Button>
+                  </div>
+
+                  {/* Seletor de Modo: Única vs Parcelada */}
+                  <div className="flex bg-zinc-100 p-1 rounded-lg border border-zinc-200">
+                    <Button
+                      type="button"
+                      variant={mode === "single" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setMode("single")}
+                      className={`flex-1 h-8 text-xs font-semibold rounded-md ${mode === "single" ? "shadow-sm" : ""}`}
+                    >
+                      Despesa Única / À Vista
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={mode === "installment" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setMode("installment")}
+                      className={`flex-1 h-8 text-xs font-semibold rounded-md ${mode === "installment" ? "shadow-sm" : ""}`}
+                    >
+                      Parcelamento Flexível
+                    </Button>
+                  </div>
+
+                  {mode === "single" ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-xs font-semibold text-zinc-600 mb-1 block">Valor (R$) *</Label>
+                        <Input
+                          placeholder="Ex: 350.00"
+                          type="number"
+                          step="0.01"
+                          value={singleAmount}
+                          onChange={(e) => setSingleAmount(e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs font-semibold text-zinc-600 mb-1 block">Data de Vencimento *</Label>
+                        <DatePicker
+                          value={singleDueDate}
+                          onChange={(e) => setSingleDueDate(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    /* Modo Parcelado Flexível */
+                    <div className="space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <Label className="text-xs font-bold text-zinc-700 uppercase tracking-wider flex items-center gap-1">
+                            <Layers className="w-3.5 h-3.5 text-[#8C6D45]" />
+                            Blocos de Parcelas
+                          </Label>
+                          <Button type="button" variant="outline" size="sm" onClick={addBlock} className="text-xs h-7">
+                            + Adicionar Bloco
+                          </Button>
+                        </div>
+
+                        {blocks.map((block, idx) => (
+                          <div key={block.id} className="p-3 bg-zinc-50 border border-zinc-200 rounded-lg space-y-2">
+                            <div className="flex justify-between items-center text-xs font-semibold text-zinc-600">
+                              <span>Bloco #{idx + 1}</span>
+                              {blocks.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => removeBlock(block.id)}
+                                  className="text-red-500 hover:text-red-700 text-xs cursor-pointer"
+                                >
+                                  Remover Bloco
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-2">
+                              <div>
+                                <Label className="text-[10px] text-zinc-500">Nº de Parcelas</Label>
+                                <Input
+                                  type="number"
+                                  min={1}
+                                  max={60}
+                                  value={block.count}
+                                  onChange={(e) => updateBlock(block.id, "count", Number(e.target.value))}
+                                  placeholder="Ex: 3"
+                                />
+                              </div>
+
+                              <div>
+                                <Label className="text-[10px] text-zinc-500">Valor da Parcela (R$)</Label>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  value={block.amount}
+                                  onChange={(e) => updateBlock(block.id, "amount", e.target.value)}
+                                  placeholder="Ex: 300.00"
+                                />
+                              </div>
+
+                              <div>
+                                <Label className="text-[10px] text-zinc-500">1º Vencimento</Label>
+                                <DatePicker
+                                  value={block.startDate}
+                                  onChange={(e) => updateBlock(block.id, "startDate", e.target.value)}
+                                />
+                              </div>
                             </div>
                           </div>
                         ))}
                       </div>
+
+                      {/* Pré-visualização ao vivo */}
+                      {generatedInstallments.length > 0 && (
+                        <div className="border border-zinc-200 rounded-lg p-3 bg-white space-y-2">
+                          <div className="flex justify-between items-center text-xs border-b border-zinc-100 pb-2">
+                            <span className="font-bold text-zinc-700">
+                              Pré-visualização ({generatedInstallments.length} parcelas)
+                            </span>
+                            <span className="font-bold text-[#8C6D45]">
+                              Total: {formatCurrency(totalInstallmentsAmount)}
+                            </span>
+                          </div>
+
+                          <div className="max-h-36 overflow-y-auto space-y-1 pr-1">
+                            {generatedInstallments.map((inst, i) => (
+                              <div key={i} className="flex justify-between items-center text-xs py-1 px-2 hover:bg-zinc-50 rounded">
+                                <span className="text-zinc-700 font-medium">{inst.description}</span>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-zinc-500">{new Date(inst.dueDate).toLocaleDateString('pt-BR')}</span>
+                                  <span className="font-bold text-zinc-900">{formatCurrency(inst.amount)}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
+
+                  <div className="flex gap-2 pt-2">
+                    <Button type="button" variant="outline" onClick={() => setStep(2)} className="w-1/3">
+                      Voltar
+                    </Button>
+                    <Button type="submit" className="w-2/3 bg-[#8C6D45] hover:bg-[#755630] text-white font-bold" disabled={loading}>
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : mode === "single" ? "Finalizar Cadastro" : `Gerar ${generatedInstallments.length} Parcelas`}
+                    </Button>
+                  </div>
                 </div>
               )}
-
-              <Button type="submit" className="w-full bg-[#8C6D45] hover:bg-[#755630] text-white" disabled={loading}>
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : mode === "single" ? "Salvar Despesa" : `Gerar ${generatedInstallments.length} Parcelas`}
-              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -548,7 +888,7 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
           {/* Busca na visão agrupada */}
           <div className="relative max-w-xs">
             <Input
-              placeholder="Buscar dívida ou fornecedor..."
+              placeholder="Buscar por descrição ou loja..."
               value={groupedSearch}
               onChange={(e) => {
                 setGroupedSearch(e.target.value);
@@ -560,7 +900,7 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
 
           {paginatedGroupedExpenses.length === 0 ? (
             <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center text-zinc-400">
-              {groupedSearch ? "Nenhuma dívida encontrada para a busca." : "Nenhuma despesa cadastrada."}
+              {groupedSearch ? "Nenhuma despesa encontrada para a busca." : "Nenhuma despesa cadastrada para este filtro."}
             </div>
           ) : (
             <div className="space-y-4">
@@ -568,6 +908,7 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
                 const percentPaid = Math.round((group.paidCount / group.totalCount) * 100) || 0;
                 const isFullyPaid = group.paidCount === group.totalCount;
                 const isExpanded = !!expandedGroups[group.id];
+                const isPurchase = group.type === "PURCHASE";
 
                 return (
                   <div
@@ -576,48 +917,91 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
                       isFullyPaid ? "border-emerald-200/80 bg-emerald-50/10" : "border-zinc-200"
                     }`}
                   >
-                    {/* Header do Card da Dívida */}
+                    {/* Header do Card da Dívida / Compra */}
                     <div className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      {/* Info Principal */}
-                      <div className="space-y-1.5 flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-bold text-base text-zinc-900 truncate">
-                            {group.baseDescription}
-                          </h4>
-                          <Badge variant="outline" className="bg-zinc-50 font-medium text-xs text-zinc-600 border-zinc-200">
-                            <Building2 className="w-3 h-3 mr-1 text-zinc-400" />
-                            {group.vendorName} {group.vendorCategory && `(${group.vendorCategory})`}
-                          </Badge>
-                          {isFullyPaid && (
-                            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs font-semibold">
-                              <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600" /> Totalmente Pago
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* Barra de Progresso de Quitação */}
-                        <div className="space-y-1 pt-1 max-w-md">
-                          <div className="flex justify-between text-xs font-medium text-zinc-600">
-                            <span>
-                              {group.paidCount} de {group.totalCount} parcelas pagas ({percentPaid}%)
-                            </span>
-                            <span className="font-semibold text-zinc-900">
-                              {formatCurrency(group.paidAmount)} de {formatCurrency(group.totalAmount)}
-                            </span>
+                      {/* Miniatura + Info Principal */}
+                      <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                        {group.imageUrl ? (
+                          <img
+                            src={group.imageUrl}
+                            alt={group.baseDescription}
+                            className="w-14 h-14 object-cover rounded-xl border border-zinc-200 shrink-0 shadow-xs"
+                          />
+                        ) : (
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
+                            isPurchase ? "bg-purple-50 text-purple-600 border-purple-200" : "bg-[#F3ECE3] text-[#8C6D45] border-amber-200/60"
+                          }`}>
+                            {isPurchase ? <ShoppingBag className="w-6 h-6" /> : <Building2 className="w-6 h-6" />}
                           </div>
-                          <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden border border-zinc-200/50">
-                            <div
-                              className={`h-full transition-all duration-500 rounded-full ${
-                                isFullyPaid ? "bg-emerald-500" : "bg-[#8C6D45]"
+                        )}
+
+                        <div className="space-y-1.5 flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-bold text-base text-zinc-900 truncate">
+                              {group.baseDescription}
+                            </h4>
+                            <Badge
+                              variant="outline"
+                              className={`font-semibold text-[11px] ${
+                                isPurchase
+                                  ? "bg-purple-50 text-purple-700 border-purple-200"
+                                  : "bg-amber-50 text-amber-800 border-amber-200"
                               }`}
-                              style={{ width: `${percentPaid}%` }}
-                            />
+                            >
+                              {isPurchase ? <ShoppingBag className="w-3 h-3 mr-1" /> : <Building2 className="w-3 h-3 mr-1" />}
+                              {isPurchase ? `Compra: ${group.vendorName}` : group.vendorName}
+                            </Badge>
+                            {isFullyPaid && (
+                              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs font-semibold">
+                                <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600" /> Quitado
+                              </Badge>
+                            )}
+                          </div>
+
+                          {/* Origem e Link de Compra */}
+                          <div className="flex items-center gap-3 text-xs text-zinc-500 flex-wrap">
+                            {group.paymentMethod && (
+                              <span className="inline-flex items-center gap-1 text-zinc-600 font-medium bg-zinc-100 px-2 py-0.5 rounded-md">
+                                <CreditCard className="w-3 h-3 text-zinc-400" />
+                                {group.paymentMethod}
+                              </span>
+                            )}
+                            {group.purchaseUrl && (
+                              <a
+                                href={group.purchaseUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-purple-600 hover:underline inline-flex items-center gap-1 font-semibold"
+                              >
+                                <ExternalLink className="w-3 h-3" /> Ver Produto / Loja
+                              </a>
+                            )}
+                          </div>
+
+                          {/* Barra de Progresso de Quitação */}
+                          <div className="space-y-1 pt-1 max-w-md">
+                            <div className="flex justify-between text-xs font-medium text-zinc-600">
+                              <span>
+                                {group.paidCount} de {group.totalCount} parcelas pagas ({percentPaid}%)
+                              </span>
+                              <span className="font-semibold text-zinc-900">
+                                {formatCurrency(group.paidAmount)} de {formatCurrency(group.totalAmount)}
+                              </span>
+                            </div>
+                            <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden border border-zinc-200/50">
+                              <div
+                                className={`h-full transition-all duration-500 rounded-full ${
+                                  isFullyPaid ? "bg-emerald-500" : isPurchase ? "bg-purple-600" : "bg-[#8C6D45]"
+                                }`}
+                                style={{ width: `${percentPaid}%` }}
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
 
                       {/* Resumo & Próximo Vencimento */}
-                      <div className="flex items-center gap-4 border-t md:border-t-0 pt-3 md:pt-0 border-zinc-100 shrink-0">
+                      <div className="flex items-center gap-4 border-t md:border-t-0 pt-3 md:pt-0 border-zinc-100 shrink-0 justify-between md:justify-end">
                         {!isFullyPaid && group.nextDueDate && (
                           <div className="text-right text-xs space-y-0.5">
                             <span className="text-zinc-500 block">Próx. Vencimento:</span>
@@ -654,7 +1038,7 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
                             </>
                           ) : (
                             <>
-                              <ChevronDown className="w-4 h-4 mr-1 text-zinc-500" /> Ver Parcelas ({group.totalCount})
+                              <ChevronDown className="w-4 h-4 mr-1 text-zinc-500" /> Parcelas ({group.totalCount})
                             </>
                           )}
                         </Button>
@@ -670,6 +1054,7 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
                               <TableRow className="text-xs">
                                 <TableHead className="py-2.5">Parcela / Vencimento</TableHead>
                                 <TableHead className="py-2.5">Descrição</TableHead>
+                                <TableHead className="py-2.5">Origem / Meio</TableHead>
                                 <TableHead className="py-2.5">Valor</TableHead>
                                 <TableHead className="py-2.5">Status</TableHead>
                                 <TableHead className="py-2.5 text-right">Ação</TableHead>
@@ -685,6 +1070,9 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
                                     </TableCell>
                                     <TableCell className={`text-xs ${isPaid ? "text-zinc-400 line-through" : "text-zinc-900 font-medium"}`}>
                                       {expense.description}
+                                    </TableCell>
+                                    <TableCell className="text-xs text-zinc-500">
+                                      {expense.paymentMethod || "—"}
                                     </TableCell>
                                     <TableCell className={`text-xs font-bold ${isPaid ? "text-zinc-400" : "text-zinc-900"}`}>
                                       {formatCurrency(expense.amount)}
@@ -726,7 +1114,7 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
                 <div className="flex items-center justify-between px-4 py-3 bg-white border border-zinc-200 rounded-xl text-xs text-zinc-500 shadow-sm">
                   <div>
                     Mostrando página <span className="font-semibold text-zinc-900">{safeGroupPage}</span> de{" "}
-                    <span className="font-semibold text-zinc-900">{totalGroupPages}</span> ({filteredGroupedExpenses.length} contratos)
+                    <span className="font-semibold text-zinc-900">{totalGroupPages}</span> ({filteredGroupedExpenses.length} itens)
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
@@ -777,11 +1165,11 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
       ) : (
         /* VISÃO DETALHADA: TABELA COMPLETA USANDO DATATABLE COM PAGINAÇÃO DE 15 ITENS */
         <DataTable
-          data={expenses}
+          data={filteredExpensesByType}
           pageSize={15}
           keyExtractor={(exp) => exp.id}
-          searchPlaceholder="Buscar por descrição ou fornecedor..."
-          emptyMessage="Nenhuma despesa cadastrada."
+          searchPlaceholder="Buscar por descrição ou loja..."
+          emptyMessage="Nenhuma despesa cadastrada para este filtro."
           columns={[
             {
               key: "dueDate",
@@ -795,14 +1183,34 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
               ),
             },
             {
-              key: "vendor",
-              header: "Fornecedor",
+              key: "type",
+              header: "Tipo",
               sortable: true,
-              accessor: (exp) => exp.vendor?.name || "",
+              accessor: (exp) => exp.type || "CONTRACT",
+              cell: (exp) => {
+                const isPur = (exp.type || "CONTRACT") === "PURCHASE";
+                return (
+                  <Badge variant="outline" className={`text-xs font-semibold ${isPur ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-amber-50 text-amber-800 border-amber-200"}`}>
+                    {isPur ? <ShoppingBag className="w-3 h-3 mr-1" /> : <Building2 className="w-3 h-3 mr-1" />}
+                    {isPur ? "Compra" : "Contrato"}
+                  </Badge>
+                );
+              },
+            },
+            {
+              key: "vendor",
+              header: "Origem / Fornecedor",
+              sortable: true,
+              accessor: (exp) => exp.vendor?.name || exp.storeName || "",
               cell: (exp) => (
-                <span className={`text-sm font-medium ${exp.status === "PAID" ? "text-zinc-400" : "text-zinc-900"}`}>
-                  {exp.vendor?.name || "—"}
-                </span>
+                <div className="flex items-center gap-2">
+                  {exp.imageUrl && (
+                    <img src={exp.imageUrl} alt={exp.description} className="w-7 h-7 object-cover rounded-md border border-zinc-200 shrink-0" />
+                  )}
+                  <span className={`text-sm font-medium ${exp.status === "PAID" ? "text-zinc-400" : "text-zinc-900"}`}>
+                    {exp.vendor?.name || exp.storeName || "Compra Direta"}
+                  </span>
+                </div>
               ),
             },
             {
@@ -811,9 +1219,16 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
               sortable: true,
               accessor: (exp) => exp.description,
               cell: (exp) => (
-                <span className={`text-sm ${exp.status === "PAID" ? "text-zinc-400 line-through" : "text-zinc-800"}`}>
-                  {exp.description}
-                </span>
+                <div className="space-y-0.5">
+                  <span className={`text-sm block ${exp.status === "PAID" ? "text-zinc-400 line-through" : "text-zinc-800"}`}>
+                    {exp.description}
+                  </span>
+                  {exp.purchaseUrl && (
+                    <a href={exp.purchaseUrl} target="_blank" rel="noreferrer" className="text-[11px] text-purple-600 hover:underline inline-flex items-center gap-1 font-medium">
+                      <ExternalLink className="w-3 h-3" /> Ver Link da Compra
+                    </a>
+                  )}
+                </div>
               ),
             },
             {

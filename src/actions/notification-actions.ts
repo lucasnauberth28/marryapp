@@ -83,10 +83,11 @@ export async function getSystemNotifications(): Promise<{
     // Mapear Despesas Próximas do Vencimento
     for (const exp of urgentExpenses) {
       const isPast = new Date(exp.dueDate) < new Date();
+      const originName = exp.vendor?.name || exp.storeName || "Compra Direta";
       notifications.push({
         id: `exp_${exp.id}`,
         title: isPast ? "Despesa Vencida!" : "Despesa a Vencer em Breve",
-        description: `"${exp.description}" (${exp.vendor.name}) — R$ ${(exp.amount / 100).toFixed(2).replace('.', ',')} em ${new Date(exp.dueDate).toLocaleDateString('pt-BR')}`,
+        description: `"${exp.description}" (${originName}) — R$ ${(exp.amount / 100).toFixed(2).replace('.', ',')} em ${new Date(exp.dueDate).toLocaleDateString('pt-BR')}`,
         type: isPast ? "alert" : "warning",
         linkHref: "/financas",
         category: "expense",
