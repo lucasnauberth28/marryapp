@@ -96,33 +96,46 @@ export async function sendInteractiveMessage({
 
   const cleanNumber = formatPhoneNumber(phone);
 
-  const response = await fetch(
-    `${EVOLUTION_URL}/message/sendButtons/${EVOLUTION_INSTANCE}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: EVOLUTION_KEY!,
-      },
-      body: JSON.stringify({
-        number: cleanNumber,
-        title,
-        description: body,
-        buttons: buttons.map((b) => ({
-          type: "reply",
-          reply: { id: b.id, title: b.text },
-        })),
-      }),
+  const formattedButtons = buttons.map((b) => ({
+    type: "reply",
+    displayText: b.text,
+    id: b.id,
+    reply: {
+      id: b.id,
+      title: b.text,
+    },
+  }));
+
+  try {
+    const response = await fetch(
+      `${EVOLUTION_URL}/message/sendButtons/${EVOLUTION_INSTANCE}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: EVOLUTION_KEY!,
+        },
+        body: JSON.stringify({
+          number: cleanNumber,
+          title: title || "Casamento Lucas & Giovanna",
+          description: body,
+          buttons: formattedButtons,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const err = await response.text();
+      console.error("[Evolution API] Erro ao enviar botões:", response.status, err);
+      return { success: false, error: `HTTP ${response.status}: ${err}` };
     }
-  );
 
-  if (!response.ok) {
-    const err = await response.text();
-    console.error("[Evolution API] Erro ao enviar botões:", err);
-    return { success: false, error: err };
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    console.error("[Evolution API] Exceção ao enviar botões:", error);
+    return { success: false, error: error?.message || "Falha ao enviar mensagem com botões." };
   }
-
-  return { success: true };
 }
 
 /**
