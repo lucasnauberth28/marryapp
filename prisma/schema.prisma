@@ -205,9 +205,11 @@ model HoneymoonItem {
 model MessageTemplate {
   id        String   @id @default(uuid())
   name      String
+  type      String?  // "INITIAL_INVITE", "RSVP_REMINDER", "CUSTOM"
   content   String   @db.Text
   mediaUrl  String?
   mediaType String?  // Ex: image, document, audio
+  buttons   String?  @db.Text // JSON string: [{ id: "confirm", text: "✅ Confirmar Presença" }]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

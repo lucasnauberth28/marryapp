@@ -8,14 +8,16 @@ import { Guest } from "@prisma/client";
 export interface MessageTemplate {
   id: string;
   name: string;
+  type?: string | null;
   content: string;
   mediaUrl?: string | null;
   mediaType?: string | null;
+  buttons?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +43,12 @@ import {
   AlertCircle,
   Loader2,
   Bell,
+  Sparkles,
+  ExternalLink,
+  Gift,
+  Check,
+  X,
+  Smartphone
 } from "lucide-react";
 import {
   createMessageTemplate,
@@ -59,22 +67,23 @@ export function MensagensClient({
   initialTemplates,
   initialGuests,
 }: MensagensClientProps) {
-  const [templates, setTemplates] =
-    useState<MessageTemplate[]>(initialTemplates);
-  const [activeTab, setActiveTab] = useState<"templates" | "disparador">(
-    "templates",
-  );
+  const [templates, setTemplates] = useState<MessageTemplate[]>(initialTemplates);
+  const [activeTab, setActiveTab] = useState<"templates" | "disparador">("templates");
 
-  // States para Formulário de Template
-  const [selectedTemplate, setSelectedTemplate] =
-    useState<MessageTemplate | null>(null);
+  // Form states
+  const [selectedTemplate, setSelectedTemplate] = useState<MessageTemplate | null>(null);
   const [name, setName] = useState("");
   const [content, setContent] = useState("");
   const [mediaUrl, setMediaUrl] = useState("");
-  const [mediaType, setMediaType] = useState("image"); // image, document, audio
+  const [mediaType, setMediaType] = useState("image");
+  const [type, setType] = useState("CUSTOM");
+  const [buttonsList, setButtonsList] = useState<Array<{ id: string; text: string }>>([
+    { id: "confirm", text: "✅ Confirmar Presença" },
+    { id: "decline", text: "❌ Não poderei ir" }
+  ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // States para o Disparador
+  // Trigger states
   const [chosenTemplateId, setChosenTemplateId] = useState("");
   const [selectedGuests, setSelectedGuests] = useState<string[]>([]);
   const [searchGuest, setSearchGuest] = useState("");
@@ -86,7 +95,41 @@ export function MensagensClient({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
-  // Manipular CRUD de templates
+  // Button management
+  const handleAddButton = () => {
+    if (buttonsList.length >= 3) {
+      toast.error("O WhatsApp suporta no máximo 3 botões por mensagem.");
+      return;
+    }
+    setButtonsList([...buttonsList, { id: `btn_${Date.now()}`, text: "Novo Botão" }]);
+  };
+
+  const handleUpdateButton = (index: number, text: string) => {
+    const updated = [...buttonsList];
+    updated[index].text = text;
+    setButtonsList(updated);
+  };
+
+  const handleRemoveButton = (index: number) => {
+    setButtonsList(buttonsList.filter((_, i) => i !== index));
+  };
+
+  const applyRsvpPreset = () => {
+    setButtonsList([
+      { id: "confirm", text: "✅ Confirmar Presença" },
+      { id: "decline", text: "❌ Não poderei ir" }
+    ]);
+    toast.success("Botões de RSVP carregados!");
+  };
+
+  const applyGiftsPreset = () => {
+    setButtonsList([
+      { id: "gifts", text: "🎁 Ver Lista de Presentes" },
+      { id: "confirm", text: "✅ Confirmar Presença" }
+    ]);
+    toast.success("Botões de Lista de Presentes carregados!");
+  };
+
   const handleSaveTemplate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -96,21 +139,27 @@ export function MensagensClient({
     formData.append("content", content);
     formData.append("mediaUrl", mediaUrl);
     formData.append("mediaType", mediaType);
+    formData.append("type", type);
+    formData.append("buttons", JSON.stringify(buttonsList));
 
     if (selectedTemplate) {
       const res = await updateMessageTemplate(selectedTemplate.id, formData);
       if (res.success && res.data) {
-        setTemplates(
-          templates.map((t) => (t.id === selectedTemplate.id ? res.data! : t)),
-        );
+        setTemplates(templates.map((t) => (t.id === selectedTemplate.id ? (res.data as MessageTemplate) : t)));
         setSelectedTemplate(null);
         resetForm();
+        toast.success("Template atualizado com sucesso!");
+      } else {
+        toast.error(res.error || "Erro ao salvar template");
       }
     } else {
       const res = await createMessageTemplate(formData);
       if (res.success && res.data) {
-        setTemplates([res.data, ...templates]);
+        setTemplates([res.data as MessageTemplate, ...templates]);
         resetForm();
+        toast.success("Novo template criado!");
+      } else {
+        toast.error(res.error || "Erro ao criar template");
       }
     }
     setIsSubmitting(false);
@@ -122,6 +171,16 @@ export function MensagensClient({
     setContent(template.content);
     setMediaUrl(template.mediaUrl || "");
     setMediaType(template.mediaType || "image");
+    setType(template.type || "CUSTOM");
+    if (template.buttons) {
+      try {
+        setButtonsList(JSON.parse(template.buttons));
+      } catch (e) {
+        setButtonsList([]);
+      }
+    } else {
+      setButtonsList([]);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -142,12 +201,16 @@ export function MensagensClient({
     setContent("");
     setMediaUrl("");
     setMediaType("image");
+    setType("CUSTOM");
+    setButtonsList([
+      { id: "confirm", text: "✅ Confirmar Presença" },
+      { id: "decline", text: "❌ Não poderei ir" }
+    ]);
   };
 
-  // Lógica do Disparador
   const toggleGuest = (id: string) => {
     setSelectedGuests((prev) =>
-      prev.includes(id) ? prev.filter((gid) => gid !== id) : [...prev, id],
+      prev.includes(id) ? prev.filter((gid) => gid !== id) : [...prev, id]
     );
   };
 
@@ -161,8 +224,7 @@ export function MensagensClient({
 
   const handleSendMessages = async () => {
     if (!chosenTemplateId) return toast.error("Selecione um template!");
-    if (selectedGuests.length === 0)
-      return toast.error("Selecione pelo menos 1 convidado!");
+    if (selectedGuests.length === 0) return toast.error("Selecione pelo menos 1 convidado!");
 
     setIsSending(true);
     setSendStatus(null);
@@ -171,8 +233,10 @@ export function MensagensClient({
     if (res.success) {
       setSendStatus({ success: true });
       setSelectedGuests([]);
+      toast.success("Mensagens enviadas com sucesso!");
     } else {
       setSendStatus({ error: res.error || "Erro ao realizar o disparo." });
+      toast.error(res.error || "Erro no disparo");
     }
     setIsSending(false);
   };
@@ -205,7 +269,7 @@ export function MensagensClient({
   const filteredGuests = initialGuests.filter(
     (g) =>
       g.name.toLowerCase().includes(searchGuest.toLowerCase()) ||
-      (g.phone && g.phone.includes(searchGuest)),
+      (g.phone && g.phone.includes(searchGuest))
   );
 
   const activeTemplateObj = templates.find((t) => t.id === chosenTemplateId);
@@ -215,10 +279,10 @@ export function MensagensClient({
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
-            Painel de Mensageria
+            Painel de Mensageria & Templates WhatsApp
           </h1>
           <p className="text-zinc-500 mt-1">
-            Configure templates automáticos e envie via WhatsApp.
+            Configure templates automáticos com botões interativos e envie via WhatsApp.
           </p>
         </div>
 
@@ -232,7 +296,7 @@ export function MensagensClient({
                 : "text-zinc-500 hover:text-zinc-900"
             }`}
           >
-            Configurar Templates
+            Templates com Botões
           </button>
           <button
             onClick={() => setActiveTab("disparador")}
@@ -248,86 +312,168 @@ export function MensagensClient({
       </div>
 
       {activeTab === "templates" ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Formulário de Templates */}
-          <Card className="lg:col-span-1 shadow-md border-zinc-200/60 rounded-2xl p-6 h-fit">
-            <h3 className="font-bold text-lg text-zinc-800 flex items-center gap-2 mb-4">
-              <MessageSquare className="w-5 h-5 text-pink-500" />
-              {selectedTemplate ? "Editar Template" : "Novo Template"}
-            </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Formulário de Criar/Editar Template */}
+          <Card className="lg:col-span-7 shadow-md border-zinc-200/60 rounded-2xl p-6 h-fit">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg text-zinc-800 flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-amber-600" />
+                {selectedTemplate ? `Editar: ${selectedTemplate.name}` : "Novo Template com Botões"}
+              </h3>
+              {selectedTemplate && (
+                <Button variant="ghost" size="sm" onClick={resetForm} className="text-xs text-zinc-500">
+                  + Criar Novo
+                </Button>
+              )}
+            </div>
 
-            <form onSubmit={handleSaveTemplate} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Nome do Evento / Template</Label>
-                <Input
-                  id="name"
-                  placeholder="Ex: Save the Date"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="rounded-xl mt-1"
-                />
+            <form onSubmit={handleSaveTemplate} className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="name">Nome do Template</Label>
+                  <Input
+                    id="name"
+                    placeholder="Ex: Convite Inicial"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="rounded-xl mt-1"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="type">Tipo / Categoria</Label>
+                  <Select value={type} onValueChange={setType}>
+                    <SelectTrigger id="type" className="rounded-xl mt-1">
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="INITIAL_INVITE">💍 Convite Inicial (Sistema)</SelectItem>
+                      <SelectItem value="RSVP_REMINDER">🔔 Lembrete RSVP (Sistema)</SelectItem>
+                      <SelectItem value="CUSTOM">📝 Personalizado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div>
                 <Label htmlFor="content">Texto da Mensagem</Label>
                 <Textarea
                   id="content"
-                  rows={5}
-                  placeholder="Olá {nome}, temos um recado importante..."
+                  rows={4}
+                  placeholder="Olá {nome}, temos a honra de convidá-lo(a) para nosso casamento..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="rounded-xl mt-1 resize-none"
+                  className="rounded-xl mt-1 resize-none font-sans"
+                  required
                 />
                 <p className="text-xs text-zinc-400 mt-1">
-                  Use{" "}
-                  <span className="font-mono text-zinc-700">{`{nome}`}</span>{" "}
-                  para substituir pelo nome do convidado.
+                  Substituição dinâmica: <span className="font-mono font-semibold text-amber-700">{`{nome}`}</span> será trocado pelo nome do convidado.
                 </p>
               </div>
 
-              <div>
-                <Label htmlFor="mediaType">Tipo de Mídia (Opcional)</Label>
-                <Select value={mediaType} onValueChange={setMediaType}>
-                  <SelectTrigger id="mediaType" className="rounded-xl mt-1">
-                    <SelectValue placeholder="Selecione o tipo de arquivo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="image">Imagem</SelectItem>
-                    <SelectItem value="document">
-                      Documento (PDF, etc)
-                    </SelectItem>
-                    <SelectItem value="audio">Áudio</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* Botões Interativos (WhatsApp Business) */}
+              <div className="border border-amber-200/80 bg-amber-50/40 p-4 rounded-xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
+                    <Sparkles className="w-4 h-4 text-amber-600" />
+                    <span>Botões Interativos (WhatsApp Business)</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Button type="button" variant="outline" size="sm" onClick={applyRsvpPreset} className="text-xs h-7 rounded-lg bg-white">
+                      + Preset RSVP
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={applyGiftsPreset} className="text-xs h-7 rounded-lg bg-white">
+                      + Preset Presentes
+                    </Button>
+                  </div>
+                </div>
+
+                <p className="text-xs text-zinc-500">
+                  Adicione até 3 botões interativos de resposta rápida para o convidado clicar diretamente no WhatsApp.
+                </p>
+
+                <div className="space-y-2">
+                  {buttonsList.map((btn, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-zinc-400 w-5">#{idx + 1}</span>
+                      <Input
+                        value={btn.text}
+                        onChange={(e) => handleUpdateButton(idx, e.target.value)}
+                        placeholder="Texto do Botão (Ex: ✅ Confirmar)"
+                        className="rounded-lg h-9 text-sm bg-white"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveButton(idx)}
+                        className="text-red-500 hover:text-red-700 h-9 w-9 p-0 rounded-lg"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                {buttonsList.length < 3 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddButton}
+                    className="w-full text-xs rounded-lg bg-white border-dashed text-zinc-600 hover:text-zinc-900"
+                  >
+                    <Plus className="w-3.5 h-3.5 mr-1" />
+                    Adicionar Botão ({buttonsList.length}/3)
+                  </Button>
+                )}
               </div>
 
-              <div>
-                <Label htmlFor="mediaUrl">URL da Mídia (Link público)</Label>
-                <Input
-                  id="mediaUrl"
-                  type="url"
-                  placeholder="https://..."
-                  value={mediaUrl}
-                  onChange={(e) => setMediaUrl(e.target.value)}
-                  className="rounded-xl mt-1"
-                />
+              {/* Mídia Opcional */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="mediaType">Tipo de Mídia (Opcional)</Label>
+                  <Select value={mediaType} onValueChange={setMediaType}>
+                    <SelectTrigger id="mediaType" className="rounded-xl mt-1">
+                      <SelectValue placeholder="Sem mídia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="image">Imagem (JPG, PNG)</SelectItem>
+                      <SelectItem value="document">Documento (PDF)</SelectItem>
+                      <SelectItem value="audio">Áudio</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="mediaUrl">URL Pública da Mídia (HTTPS)</Label>
+                  <Input
+                    id="mediaUrl"
+                    type="url"
+                    placeholder="https://..."
+                    value={mediaUrl}
+                    onChange={(e) => setMediaUrl(e.target.value)}
+                    className="rounded-xl mt-1"
+                  />
+                </div>
               </div>
 
               <div className="flex gap-2 pt-2">
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl w-full flex items-center justify-center gap-2"
+                  className="bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl w-full flex items-center justify-center gap-2 h-11 font-medium"
                 >
                   <Save className="w-4 h-4" />
-                  {selectedTemplate ? "Atualizar" : "Salvar"}
+                  {selectedTemplate ? "Salvar Alterações" : "Criar Template"}
                 </Button>
                 {selectedTemplate && (
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     onClick={resetForm}
-                    className="rounded-xl text-zinc-500"
+                    className="rounded-xl text-zinc-600 h-11"
                   >
                     Cancelar
                   </Button>
@@ -336,71 +482,98 @@ export function MensagensClient({
             </form>
           </Card>
 
-          {/* Listagem de Templates */}
-          <Card className="lg:col-span-2 shadow-md border-zinc-200/60 rounded-2xl p-6">
-            <h3 className="font-bold text-lg text-zinc-800 mb-4">
-              Seus Templates Criados
-            </h3>
+          {/* Live WhatsApp Preview */}
+          <Card className="lg:col-span-5 shadow-md border-zinc-200/60 rounded-2xl p-6 h-fit bg-emerald-950/90 text-white relative overflow-hidden">
+            <div className="flex items-center gap-2 mb-4 text-emerald-400 font-semibold text-sm">
+              <Smartphone className="w-4 h-4" />
+              <span>Pré-visualização Interativa (WhatsApp)</span>
+            </div>
 
-            {templates.length === 0 ? (
-              <div className="text-center py-16 text-zinc-400 text-sm">
-                Nenhum template salvo. Crie o primeiro!
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {templates.map((t) => (
-                  <div
-                    key={t.id}
-                    className="border border-zinc-200 p-4 rounded-2xl hover:shadow-sm transition flex flex-col justify-between bg-zinc-50/50"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-bold text-zinc-900 text-base">
-                          {t.name}
-                        </span>
-                        {t.mediaUrl && (
-                          <span className="flex items-center gap-1 text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full font-medium">
-                            {t.mediaType === "image" && (
-                              <ImageIcon className="w-3 h-3" />
-                            )}
-                            {t.mediaType === "document" && (
-                              <FileText className="w-3 h-3" />
-                            )}
-                            {t.mediaType === "audio" && (
-                              <Music className="w-3 h-3" />
-                            )}
-                            {t.mediaType}
+            {/* Simulação de Balão de Mensagem */}
+            <div className="bg-[#0b141a] p-4 rounded-2xl border border-emerald-900/50 shadow-inner max-w-sm mx-auto space-y-3">
+              {mediaUrl && (
+                <div className="rounded-xl overflow-hidden bg-black/40 border border-emerald-900/30 flex items-center justify-center p-2 min-h-[120px]">
+                  {mediaType === "image" ? (
+                    <img src={mediaUrl} alt="Preview Mídia" className="max-h-40 object-cover rounded-lg w-full" />
+                  ) : (
+                    <div className="flex items-center gap-2 text-xs text-emerald-300">
+                      <Paperclip className="w-4 h-4" />
+                      <span>Arquivo: {mediaType}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <p className="text-sm text-zinc-100 whitespace-pre-wrap leading-relaxed">
+                {(content || "Sua mensagem pré-visualizada aparecerá aqui...").replace(/\{nome\}/gi, "Lucas")}
+              </p>
+
+              {/* Botões Interativos Renderizados no Balão */}
+              {buttonsList.length > 0 && (
+                <div className="border-t border-zinc-800 pt-2 space-y-1.5">
+                  {buttonsList.map((btn, idx) => (
+                    <div
+                      key={idx}
+                      className="w-full bg-[#1f2c34] hover:bg-[#2a3942] text-emerald-400 font-semibold text-xs py-2 px-3 rounded-lg text-center border border-emerald-900/40 transition"
+                    >
+                      {btn.text || `Botão #${idx + 1}`}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Lista de Templates Cadastrados */}
+            <div className="mt-8 border-t border-emerald-900/60 pt-6">
+              <h4 className="font-bold text-sm text-emerald-300 mb-3 flex items-center justify-between">
+                <span>Seus Templates Guardados ({templates.length})</span>
+              </h4>
+
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                {templates.map((t) => {
+                  let btnCount = 0;
+                  if (t.buttons) {
+                    try {
+                      btnCount = JSON.parse(t.buttons).length;
+                    } catch (e) {}
+                  }
+
+                  return (
+                    <div
+                      key={t.id}
+                      className="bg-emerald-900/40 border border-emerald-800/60 p-3 rounded-xl flex items-center justify-between text-xs hover:bg-emerald-900/70 transition"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-white text-sm">{t.name}</span>
+                          {t.type === "INITIAL_INVITE" && (
+                            <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] px-1.5 py-0.5 rounded font-mono">Convite Inicial</span>
+                          )}
+                          {t.type === "RSVP_REMINDER" && (
+                            <span className="bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px] px-1.5 py-0.5 rounded font-mono">Lembrete RSVP</span>
+                          )}
+                        </div>
+                        <p className="text-emerald-200/70 line-clamp-1 mt-0.5">{t.content}</p>
+                        {btnCount > 0 && (
+                          <span className="text-[10px] text-amber-300 font-medium mt-1 block">
+                            ✨ {btnCount} botão(ões) interativo(s)
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-zinc-600 line-clamp-4 whitespace-pre-wrap font-sans mb-4">
-                        {t.content}
-                      </p>
-                    </div>
 
-                    <div className="flex gap-2 border-t border-zinc-200/60 pt-3 mt-auto">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(t)}
-                        className="rounded-xl flex items-center gap-1 text-zinc-600 hover:text-zinc-900 w-full"
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(t.id)}
-                        className="rounded-xl flex items-center gap-1 text-red-500 hover:text-red-700 hover:bg-red-50 w-full"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Excluir
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleEdit(t)} className="h-7 text-xs text-emerald-300 hover:text-white">
+                          Editar
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(t.id)} className="h-7 w-7 p-0 text-red-400 hover:text-red-300">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-            )}
+            </div>
           </Card>
         </div>
       ) : (
@@ -416,7 +589,7 @@ export function MensagensClient({
                 </h3>
               </div>
               <p className="text-xs text-zinc-500 mb-4">
-                Envie notificações automáticas em lote diretamente para o WhatsApp dos convidados.
+                Envie notificações automáticas em lote diretamente para o WhatsApp dos convidados usando seus templates configurados com botões.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

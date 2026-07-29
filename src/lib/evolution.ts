@@ -338,7 +338,7 @@ export async function sendMediaMessage({
 
 /**
  * Dispara mensagens para uma lista de convidados com rate limiting.
- * Suporta mensagens de texto puro OU mensagens com mídia.
+ * Suporta mensagens de texto puro, mensagens com mídia E mensagens com botões interativos.
  */
 export async function sendBulkMessages(
   recipients: Array<{ 
@@ -346,6 +346,7 @@ export async function sendBulkMessages(
     message: string; 
     mediaUrl?: string | null; 
     mediaType?: string | null; 
+    buttons?: Array<{ id: string; text: string }> | null;
   }>,
   baseDelayMs = 2000
 ) {
@@ -355,8 +356,15 @@ export async function sendBulkMessages(
     const r = recipients[i];
     let result;
     
-    // Se houver mediaUrl (mesmo que mediaType não esteja especificado), envia via sendMediaMessage
-    if (r.mediaUrl && r.mediaUrl.trim() !== "") {
+    // Se houver botões interativos cadastrados (ex: RSVP), dispara mensagem com botões
+    if (r.buttons && r.buttons.length > 0) {
+      result = await sendInteractiveMessage({
+        phone: r.phone,
+        title: "Casamento Lucas & Giovanna",
+        body: r.message,
+        buttons: r.buttons,
+      });
+    } else if (r.mediaUrl && r.mediaUrl.trim() !== "") {
       result = await sendMediaMessage({ 
         phone: r.phone, 
         mediaUrl: r.mediaUrl.trim(), 
