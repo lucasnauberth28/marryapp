@@ -40,15 +40,18 @@ export const metadata = {
 // PAGE COMPONENT (Server)
 // ==========================================
 
+import { getWalletData } from "@/actions/wallet-actions";
+
 export default async function FinancasPage() {
   await verifyAdminSession();
 
   // Fetch paralelo para otimizar carregamento
-  const [metrics, transactions, expenses, vendors] = await Promise.all([
+  const [metrics, transactions, expenses, vendors, walletData] = await Promise.all([
     getFinancialMetrics(),
     getTransactions(),
     getExpenses(),
     getVendors(),
+    getWalletData(),
   ]);
 
   const isSaldoPositivo = metrics.saldoPrevisto >= 0;
@@ -159,7 +162,7 @@ export default async function FinancasPage() {
           </p>
         </div>
 
-        <ExpensesClient initialExpenses={expenses} vendors={vendors} />
+        <ExpensesClient initialExpenses={expenses} vendors={vendors} userCards={walletData.cards} />
       </div>
 
       {/* Conciliation Table */}

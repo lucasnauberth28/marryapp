@@ -82,7 +82,7 @@ const PAYMENT_METHODS = [
   { id: "boleto", label: "Boleto Bancário", icon: FileCheck },
 ];
 
-export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: any[], vendors: any[] }) {
+export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { initialExpenses: any[], vendors: any[], userCards?: any[] }) {
   const [expenses, setExpenses] = useState<any[]>(initialExpenses);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -159,6 +159,30 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
     };
     reader.readAsDataURL(file);
   };
+
+  const allPaymentMethods = useMemo(() => {
+    const list: Array<{ id: string; label: string; icon: any }> = [
+      { id: "pix_balance", label: "Saldo em Conta / Pix", icon: QrCode },
+    ];
+
+    if (userCards && userCards.length > 0) {
+      for (const card of userCards) {
+        list.push({
+          id: `card_${card.id}`,
+          label: `${card.bank}${card.nickname ? ` (${card.nickname})` : ""}${card.lastDigits ? ` ****${card.lastDigits}` : ""}`,
+          icon: CreditCard,
+        });
+      }
+    } else {
+      list.push(
+        { id: "credit_card_nubank", label: "Cartão Nubank", icon: CreditCard },
+        { id: "credit_card_itau", label: "Cartão Itaú", icon: CreditCard }
+      );
+    }
+
+    list.push({ id: "boleto", label: "Boleto Bancário", icon: FileCheck });
+    return list;
+  }, [userCards]);
 
   // Manipulação de blocos de parcelas
   const addBlock = () => {
@@ -500,7 +524,7 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
               <Plus className="w-4 h-4 mr-2" /> Nova Despesa
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-5xl md:max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto p-6 sm:p-8">
+          <DialogContent className="max-w-3xl sm:max-w-3xl w-full max-h-[88vh] overflow-y-auto p-6 sm:p-7">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-base">
                 <CalendarRange className="w-5 h-5 text-[#8C6D45]" />
@@ -645,14 +669,14 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
                   <div>
                     <Label className="text-xs font-semibold text-zinc-600 mb-1.5 block">Origem do Pagamento / Meio Utilizado</Label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {PAYMENT_METHODS.map((pm) => {
+                      {allPaymentMethods.map((pm) => {
                         const Icon = pm.icon;
-                        const isSelected = paymentMethod === pm.id;
+                        const isSelected = paymentMethod === pm.id || paymentMethod === pm.label;
                         return (
                           <button
                             key={pm.id}
                             type="button"
-                            onClick={() => setPaymentMethod(pm.id)}
+                            onClick={() => setPaymentMethod(pm.label)}
                             className={`p-2.5 rounded-xl border text-left text-xs font-medium transition-all flex items-center gap-2 cursor-pointer ${
                               isSelected
                                 ? "border-[#8C6D45] bg-[#F3ECE3]/40 text-[#8C6D45] font-bold shadow-xs"

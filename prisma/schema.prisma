@@ -252,3 +252,25 @@ model User {
 
   @@map("users")
 }
+
+model WalletBalance {
+  id        String   @id @default("global")
+  balance   Int      @default(0) // Valor em centavos
+  updatedAt DateTime @updatedAt
+
+  @@map("wallet_balance")
+}
+
+model CreditCard {
+  id         String   @id @default(uuid())
+  bank       String   
+  brand      String   
+  nickname   String?  
+  lastDigits String?  
+  limit      Int      @default(0) // Limite atual em centavos
+  color      String?  @default("#18181b") 
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("credit_cards")
+}

@@ -20,6 +20,7 @@ import {
   LogOut,
   QrCode,
   Calendar,
+  CreditCard as CreditCardIcon,
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
@@ -32,6 +33,7 @@ const navItems = [
   { name: "Fornecedores", href: "/fornecedores", icon: UsersIcon },
   { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
   { name: "Finanças", href: "/financas", icon: Wallet },
+  { name: "Carteira", href: "/carteira", icon: CreditCardIcon },
   { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },
   { name: "Pendências", href: "/pendencias", icon: CheckSquare },
   { name: "Configurações", href: "/configuracoes", icon: SettingsIcon },
