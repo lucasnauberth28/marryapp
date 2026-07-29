@@ -349,9 +349,33 @@ export async function sendMediaMessage({
   }
 }
 
+const APP_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://seuapp.vercel.app";
+
+function formatMessageWithButtons(message: string, buttons?: Array<{ id: string; text: string }> | null): string {
+  if (!buttons || buttons.length === 0) return message;
+
+  let text = message.trim();
+  text += "\n\n👇 *Acesse abaixo:*";
+
+  buttons.forEach((btn) => {
+    const btnText = btn.text || "";
+    const lower = btnText.toLowerCase();
+
+    if (lower.includes("presente") || btn.id === "gifts") {
+      text += `\n🎁 *${btnText}:*\n${APP_URL}/presentes`;
+    } else if (lower.includes("recusar") || lower.includes("não") || btn.id === "decline") {
+      text += `\n❌ *${btnText}:*\n${APP_URL}/rsvp`;
+    } else {
+      text += `\n✅ *${btnText}:*\n${APP_URL}/rsvp`;
+    }
+  });
+
+  return text;
+}
+
 /**
  * Dispara mensagens para uma lista de convidados com rate limiting.
- * Suporta mensagens de texto puro, mensagens com mídia E mensagens com botões interativos.
+ * Suporta mensagens de texto puro e mensagens com mídia, formatando botões como links clicáveis.
  */
 export async function sendBulkMessages(
   recipients: Array<{ 
@@ -369,30 +393,26 @@ export async function sendBulkMessages(
     const r = recipients[i];
     let result;
     
-    // Se houver botões interativos cadastrados (ex: RSVP), dispara mensagem com botões
-    if (r.buttons && r.buttons.length > 0) {
-      result = await sendInteractiveMessage({
-        phone: r.phone,
-        title: "Casamento Lucas & Giovanna",
-        body: r.message,
-        buttons: r.buttons,
-      });
-    } else if (r.mediaUrl && r.mediaUrl.trim() !== "") {
+    // Formata o texto incluindo os links formatados se houver botões cadastrados
+    const finalMessage = formatMessageWithButtons(r.message, r.buttons);
+
+    // Se houver mediaUrl, dispara mídia com legenda contendo os links
+    if (r.mediaUrl && r.mediaUrl.trim() !== "") {
       result = await sendMediaMessage({ 
         phone: r.phone, 
         mediaUrl: r.mediaUrl.trim(), 
         mediaType: r.mediaType || "image", 
-        caption: r.message 
+        caption: finalMessage 
       });
     } else {
-      result = await sendTextMessage({ phone: r.phone, text: r.message });
+      result = await sendTextMessage({ phone: r.phone, text: finalMessage });
     }
 
     results.push({ phone: r.phone, ...result });
 
-    // Anti-ban delay randômico entre mensagens
+    // Anti-ban delay randômico entre mensagens (2 a 5s)
     if (i < recipients.length - 1) {
-      const randomDelay = baseDelayMs + Math.floor(Math.random() * 3000); // 2 a 5 segundos
+      const randomDelay = baseDelayMs + Math.floor(Math.random() * 3000);
       await new Promise((resolve) => setTimeout(resolve, randomDelay));
     }
   }
