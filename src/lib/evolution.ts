@@ -6,12 +6,18 @@
  *   EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_INSTANCE
  */
 
-const EVOLUTION_URL = process.env.EVOLUTION_API_URL;
-const EVOLUTION_KEY = process.env.EVOLUTION_API_KEY;
-const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE;
+const EVOLUTION_URL = process.env.EVOLUTION_API_URL || "https://marryapp-whatsapp.onrender.com";
+const EVOLUTION_KEY = process.env.EVOLUTION_API_KEY || "marryapp123";
+const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE || "marryapp";
 
 function isConfigured() {
   return !!(EVOLUTION_URL && EVOLUTION_KEY && EVOLUTION_INSTANCE);
+}
+
+function formatQrCode(rawQr?: string | null): string | null {
+  if (!rawQr) return null;
+  if (rawQr.startsWith("data:image")) return rawQr;
+  return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(rawQr)}`;
 }
 
 interface SendMessageOptions {
@@ -189,9 +195,10 @@ export async function connectInstance() {
 
     if (response.ok) {
       const data = await response.json();
-      const qr = data?.base64 || data?.qrcode?.base64 || data?.qrcode?.code || data?.code;
-      if (qr) {
-        return { success: true, qrCode: qr };
+      const rawQr = data?.base64 || data?.qrcode?.base64 || data?.qrcode?.code || data?.code;
+      const formatted = formatQrCode(rawQr);
+      if (formatted) {
+        return { success: true, qrCode: formatted };
       }
 
       // Se a resposta veio OK mas o QR Code veio zerado ({ count: 0 }), reinicia a instância
@@ -210,8 +217,9 @@ export async function connectInstance() {
         if (retryRes.ok) {
           const retryData = await retryRes.json();
           const retryQr = retryData?.base64 || retryData?.qrcode?.base64 || retryData?.qrcode?.code || retryData?.code;
-          if (retryQr) {
-            return { success: true, qrCode: retryQr };
+          const retryFormatted = formatQrCode(retryQr);
+          if (retryFormatted) {
+            return { success: true, qrCode: retryFormatted };
           }
         }
       }
@@ -230,7 +238,8 @@ export async function connectInstance() {
     if (retryRes.ok) {
       const retryData = await retryRes.json();
       const retryQr = retryData?.base64 || retryData?.qrcode?.base64 || retryData?.qrcode?.code || retryData?.code;
-      if (retryQr) return { success: true, qrCode: retryQr };
+      const finalFormatted = formatQrCode(retryQr);
+      if (finalFormatted) return { success: true, qrCode: finalFormatted };
     }
 
     return { success: false, error: "Não foi possível obter o QR Code. Tente clicar em Reconectar em alguns instantes." };
