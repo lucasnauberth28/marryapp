@@ -45,6 +45,34 @@ export async function createVendor(formData: FormData) {
   }
 }
 
+export async function updateVendor(id: string, formData: FormData) {
+  const raw = {
+    name: formData.get("name"),
+    category: formData.get("category"),
+    contact: formData.get("contact") || undefined,
+    contractUrl: formData.get("contractUrl") || undefined,
+    notes: formData.get("notes") || undefined,
+  };
+
+  const parsed = VendorSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0].message };
+  }
+
+  try {
+    await prisma.vendor.update({
+      where: { id },
+      data: parsed.data,
+    });
+    revalidatePath("/(admin)/fornecedores", "page");
+    revalidatePath("/(admin)/financas", "page");
+    return { success: true };
+  } catch (error) {
+    console.error("[updateVendor]", error);
+    return { success: false, error: "Erro ao atualizar fornecedor." };
+  }
+}
+
 export async function deleteVendor(id: string) {
   try {
     await prisma.vendor.delete({ where: { id } });
