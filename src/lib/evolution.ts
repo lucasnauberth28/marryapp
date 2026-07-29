@@ -167,7 +167,7 @@ export async function connectInstance() {
   }
 
   try {
-    const response = await fetch(`${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`, {
+    let response = await fetch(`${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`, {
       method: "GET",
       headers: {
         apikey: EVOLUTION_KEY!,
@@ -176,34 +176,48 @@ export async function connectInstance() {
     });
 
     if (response.status === 404) {
-      const createData = await createInstance();
-      if (createData?.qrcode?.base64) {
-        return { success: true, qrCode: createData.qrcode.base64 };
+      await createInstance();
+      await new Promise(r => setTimeout(r, 1500));
+      response = await fetch(`${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`, {
+        method: "GET",
+        headers: {
+          apikey: EVOLUTION_KEY!,
+        },
+        cache: 'no-store'
+      });
+    }
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data?.base64) {
+        return { success: true, qrCode: data.base64 };
       }
-      if (createData?.base64) {
-        return { success: true, qrCode: createData.base64 };
+      if (data?.qrcode?.base64) {
+        return { success: true, qrCode: data.qrcode.base64 };
+      }
+      if (data?.code) {
+        return { success: true, qrCode: data.code };
       }
     }
 
-    const data = await response.json();
+    // Tenta uma segunda chamada se o QR Code ainda não estiver pronto
+    await new Promise(r => setTimeout(r, 2000));
+    const retryRes = await fetch(`${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`, {
+      method: "GET",
+      headers: {
+        apikey: EVOLUTION_KEY!,
+      },
+      cache: 'no-store'
+    });
 
-    if (data?.base64) {
-      return { success: true, qrCode: data.base64 };
-    }
-    if (data?.qrcode?.base64) {
-      return { success: true, qrCode: data.qrcode.base64 };
-    }
-
-    // Fallback caso a instância precise ser gerada
-    const fallbackCreate = await createInstance();
-    if (fallbackCreate?.qrcode?.base64) {
-      return { success: true, qrCode: fallbackCreate.qrcode.base64 };
-    }
-    if (fallbackCreate?.base64) {
-      return { success: true, qrCode: fallbackCreate.base64 };
+    if (retryRes.ok) {
+      const retryData = await retryRes.json();
+      if (retryData?.base64) return { success: true, qrCode: retryData.base64 };
+      if (retryData?.qrcode?.base64) return { success: true, qrCode: retryData.qrcode.base64 };
+      if (retryData?.code) return { success: true, qrCode: retryData.code };
     }
 
-    return { success: false, error: "Não foi possível obter o QR Code. Verifique se a Evolution API está online." };
+    return { success: false, error: "Não foi possível obter o QR Code. Verifique se a Evolution API está atualizada." };
   } catch (error) {
     return { success: false, error: "Erro ao comunicar com a Evolution API." };
   }
