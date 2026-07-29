@@ -24,6 +24,14 @@ function formatQrCode(rawQr?: string | null): string | null {
   return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(rawQr)}`;
 }
 
+function formatPhoneNumber(phone: string): string {
+  let clean = phone.replace(/\D/g, "");
+  if (clean.length === 10 || clean.length === 11) {
+    clean = `55${clean}`;
+  }
+  return clean;
+}
+
 interface SendMessageOptions {
   phone: string; // Formato E.164, ex: "5511999998888"
   text: string;
@@ -45,6 +53,8 @@ export async function sendTextMessage({ phone, text }: SendMessageOptions) {
     return { success: false, error: "Evolution API não configurada." };
   }
 
+  const cleanNumber = formatPhoneNumber(phone);
+
   const response = await fetch(
     `${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`,
     {
@@ -54,7 +64,7 @@ export async function sendTextMessage({ phone, text }: SendMessageOptions) {
         apikey: EVOLUTION_KEY!,
       },
       body: JSON.stringify({
-        number: phone,
+        number: cleanNumber,
         text,
       }),
     }
@@ -84,6 +94,8 @@ export async function sendInteractiveMessage({
     return { success: false, error: "Evolution API não configurada." };
   }
 
+  const cleanNumber = formatPhoneNumber(phone);
+
   const response = await fetch(
     `${EVOLUTION_URL}/message/sendButtons/${EVOLUTION_INSTANCE}`,
     {
@@ -93,7 +105,7 @@ export async function sendInteractiveMessage({
         apikey: EVOLUTION_KEY!,
       },
       body: JSON.stringify({
-        number: phone,
+        number: cleanNumber,
         title,
         description: body,
         buttons: buttons.map((b) => ({
@@ -256,7 +268,7 @@ export async function connectInstance() {
 interface SendMediaOptions {
   phone: string;
   mediaUrl: string;
-  mediaType: string; 
+  mediaType?: string | null; 
   caption?: string;
   fileName?: string;
 }
@@ -276,31 +288,52 @@ export async function sendMediaMessage({
     return { success: false, error: "Evolution API não configurada." };
   }
 
-  const response = await fetch(
-    `${EVOLUTION_URL}/message/sendMedia/${EVOLUTION_INSTANCE}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: EVOLUTION_KEY!,
-      },
-      body: JSON.stringify({
-        number: phone,
-        mediatype: mediaType,
-        media: mediaUrl,
-        fileName: fileName || `arquivo`,
-        caption: caption || "",
-      }),
-    }
-  );
+  const cleanNumber = formatPhoneNumber(phone);
 
-  if (!response.ok) {
-    const err = await response.text();
-    console.error("[Evolution API] Erro ao enviar mídia:", err);
-    return { success: false, error: err };
+  // Normaliza o mediatype para os valores aceitos pela Evolution API v2: "image" | "video" | "document" | "audio"
+  let mediatype = "image";
+  if (mediaType) {
+    const lower = mediaType.toLowerCase();
+    if (lower.includes("video")) mediatype = "video";
+    else if (lower.includes("audio")) mediatype = "audio";
+    else if (lower.includes("pdf") || lower.includes("doc") || lower.includes("document")) mediatype = "document";
+    else mediatype = "image";
   }
 
-  return { success: true };
+  const ext = mediatype === "image" ? "png" : mediatype === "document" ? "pdf" : "file";
+  const defaultFileName = fileName || `arquivo.${ext}`;
+
+  try {
+    const response = await fetch(
+      `${EVOLUTION_URL}/message/sendMedia/${EVOLUTION_INSTANCE}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: EVOLUTION_KEY!,
+        },
+        body: JSON.stringify({
+          number: cleanNumber,
+          mediatype: mediatype,
+          media: mediaUrl,
+          fileName: defaultFileName,
+          caption: caption || "",
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const err = await response.text();
+      console.error("[Evolution API] Erro ao enviar mídia:", response.status, err);
+      return { success: false, error: `HTTP ${response.status}: ${err}` };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    console.error("[Evolution API] Exceção ao enviar mídia:", error);
+    return { success: false, error: error?.message || "Erro de conexão ao enviar mídia." };
+  }
 }
 
 /**
@@ -322,11 +355,12 @@ export async function sendBulkMessages(
     const r = recipients[i];
     let result;
     
-    if (r.mediaUrl && r.mediaType) {
+    // Se houver mediaUrl (mesmo que mediaType não esteja especificado), envia via sendMediaMessage
+    if (r.mediaUrl && r.mediaUrl.trim() !== "") {
       result = await sendMediaMessage({ 
         phone: r.phone, 
-        mediaUrl: r.mediaUrl, 
-        mediaType: r.mediaType, 
+        mediaUrl: r.mediaUrl.trim(), 
+        mediaType: r.mediaType || "image", 
         caption: r.message 
       });
     } else {
@@ -335,7 +369,7 @@ export async function sendBulkMessages(
 
     results.push({ phone: r.phone, ...result });
 
-    // Anti-ban delay randômico
+    // Anti-ban delay randômico entre mensagens
     if (i < recipients.length - 1) {
       const randomDelay = baseDelayMs + Math.floor(Math.random() * 3000); // 2 a 5 segundos
       await new Promise((resolve) => setTimeout(resolve, randomDelay));
