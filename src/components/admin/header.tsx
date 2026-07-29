@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
@@ -21,9 +21,17 @@ import {
   KeyRound, 
   LogOut,
   QrCode,
-  Calendar
+  Calendar,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  ArrowRight,
+  Sparkles,
+  MessageCircle,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +42,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { logout } from "@/actions/auth-actions";
+import { getSystemNotifications, SystemNotification } from "@/actions/notification-actions";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -52,11 +61,30 @@ const navItems = [
 
 export function Header({ role = "Admin", allowedPaths = ["*"] }: { role?: string, allowedPaths?: string[] }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState<SystemNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isPending, startTransition] = useTransition();
   const pathname = usePathname();
+
+  const loadNotifications = () => {
+    startTransition(async () => {
+      const res = await getSystemNotifications();
+      setNotifications(res.notifications);
+      setUnreadCount(res.unreadCount);
+    });
+  };
+
+  useEffect(() => {
+    loadNotifications();
+  }, []);
 
   const filteredNavItems = allowedPaths.includes("*")
     ? navItems
     : navItems.filter((item) => allowedPaths.some(p => item.href.startsWith(p)));
+
+  const handleMarkAllRead = () => {
+    setUnreadCount(0);
+  };
 
   return (
     <>
@@ -84,10 +112,102 @@ export function Header({ role = "Admin", allowedPaths = ["*"] }: { role?: string
         </div>
 
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="text-stone-400 relative hover:text-[#8C6D45]">
-            <Bell className="w-4 h-4" />
-            <span className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-[#8C6D45] rounded-full"></span>
-          </Button>
+          {/* Dropdown da Central de Notificações */}
+          <DropdownMenu onOpenChange={(open) => open && loadNotifications()}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-stone-500 relative hover:text-[#8C6D45] transition-colors cursor-pointer">
+                <Bell className="w-4 h-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 bg-red-500 text-white font-bold text-[10px] rounded-full flex items-center justify-center border-2 border-white shadow-xs animate-pulse">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-80 sm:w-96 p-0 overflow-hidden shadow-2xl rounded-2xl border-stone-200 font-sans" align="end">
+              <div className="p-4 bg-[#FAF8F5] border-b border-stone-200/70 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-[#8C6D45]" />
+                  <h3 className="font-bold text-sm text-stone-800">Notificações do Sistema</h3>
+                  {unreadCount > 0 && (
+                    <Badge className="bg-[#8C6D45] text-white text-[10px] h-5 px-1.5">
+                      {unreadCount} novas
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-stone-400 hover:text-stone-600"
+                    onClick={loadNotifications}
+                    title="Atualizar notificações"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isPending ? "animate-spin" : ""}`} />
+                  </Button>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={handleMarkAllRead}
+                      className="text-[11px] font-semibold text-[#8C6D45] hover:underline px-1 cursor-pointer"
+                    >
+                      Limpar
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="max-h-80 overflow-y-auto divide-y divide-stone-100">
+                {notifications.length === 0 ? (
+                  <div className="py-8 px-4 text-center text-stone-400 text-xs flex flex-col items-center gap-2">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-500/60" />
+                    <span>Nenhum alerta pendente. Tudo em dia!</span>
+                  </div>
+                ) : (
+                  notifications.map((n) => (
+                    <Link
+                      key={n.id}
+                      href={n.linkHref}
+                      className="p-3.5 flex items-start gap-3 hover:bg-stone-50 transition-colors block group cursor-pointer"
+                    >
+                      <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${
+                        n.type === "alert"
+                          ? "bg-red-50 text-red-600 border border-red-200/60"
+                          : n.type === "warning"
+                          ? "bg-amber-50 text-amber-600 border border-amber-200/60"
+                          : "bg-blue-50 text-blue-600 border border-blue-200/60"
+                      }`}>
+                        {n.category === "finance" && <Wallet className="w-4 h-4" />}
+                        {n.category === "expense" && <Calendar className="w-4 h-4" />}
+                        {n.category === "guest" && <UsersIcon className="w-4 h-4" />}
+                        {n.category === "whatsapp" && <MessageCircle className="w-4 h-4" />}
+                      </div>
+
+                      <div className="flex-1 min-w-0 space-y-0.5">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-semibold text-xs text-stone-900 group-hover:text-[#8C6D45] transition-colors truncate">
+                            {n.title}
+                          </h4>
+                          <ArrowRight className="w-3 h-3 text-stone-300 group-hover:text-[#8C6D45] group-hover:translate-x-0.5 transition-all shrink-0 ml-1" />
+                        </div>
+                        <p className="text-[11px] text-stone-500 leading-snug line-clamp-2">
+                          {n.description}
+                        </p>
+                      </div>
+                    </Link>
+                  ))
+                )}
+              </div>
+
+              <div className="p-2.5 bg-stone-50 border-t border-stone-200/60 text-center">
+                <Link
+                  href="/mensagens"
+                  className="text-xs font-semibold text-[#8C6D45] hover:underline inline-flex items-center gap-1"
+                >
+                  Ir para Central de Mensagens <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

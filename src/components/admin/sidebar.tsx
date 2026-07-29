@@ -1,7 +1,7 @@
 // src/components/admin/sidebar.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/actions/auth-actions";
@@ -42,6 +42,25 @@ const navItems = [
 export function Sidebar({ role = "Admin", allowedPaths = ["*"] }: { role?: string, allowedPaths?: string[] }) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Carregar preferência salva no localStorage ao montar o componente
+  useEffect(() => {
+    setMounted(true);
+    const saved = localStorage.getItem("marryapp_sidebar_collapsed");
+    if (saved !== null) {
+      setIsCollapsed(saved === "true");
+    }
+  }, []);
+
+  // Função para alternar e salvar o estado no localStorage
+  const toggleSidebar = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("marryapp_sidebar_collapsed", String(next));
+      return next;
+    });
+  };
 
   const filteredNavItems = allowedPaths.includes("*")
     ? navItems
@@ -52,8 +71,9 @@ export function Sidebar({ role = "Admin", allowedPaths = ["*"] }: { role?: strin
       className={`${isCollapsed ? "w-20" : "w-64"} bg-[#FCFBF9] border-r border-stone-200/60 hidden md:flex flex-col transition-all duration-300 relative`}
     >
       <button 
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        onClick={toggleSidebar}
         className="absolute -right-3 top-6 bg-white border border-stone-200 rounded-full p-1 z-50 hover:bg-stone-50 shadow-sm transition-colors cursor-pointer"
+        title={isCollapsed ? "Expandir menu" : "Recolher menu"}
       >
         {isCollapsed ? <ChevronRight className="w-4 h-4 text-stone-600" /> : <ChevronLeft className="w-4 h-4 text-stone-600" />}
       </button>

@@ -39,6 +39,8 @@ import {
   Music,
   CheckCircle2,
   AlertCircle,
+  Loader2,
+  Bell,
 } from "lucide-react";
 import {
   createMessageTemplate,
@@ -46,6 +48,7 @@ import {
   deleteMessageTemplate,
   sendTemplateToGuests,
 } from "@/actions/message-actions";
+import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-actions";
 
 interface MensagensClientProps {
   initialTemplates: MessageTemplate[];
@@ -172,6 +175,31 @@ export function MensagensClient({
       setSendStatus({ error: res.error || "Erro ao realizar o disparo." });
     }
     setIsSending(false);
+  };
+
+  const [isTriggeringRsvp, setIsTriggeringRsvp] = useState(false);
+  const [isTriggeringInvites, setIsTriggeringInvites] = useState(false);
+
+  const handleSendInitialInvites = async () => {
+    setIsTriggeringInvites(true);
+    const res = await sendInitialInvites();
+    if (res.success) {
+      toast.success(res.message);
+    } else {
+      toast.error("Erro ao disparar convites iniciais.");
+    }
+    setIsTriggeringInvites(false);
+  };
+
+  const handleSendRsvpReminders = async () => {
+    setIsTriggeringRsvp(true);
+    const res = await sendRsvpReminders();
+    if (res.success) {
+      toast.success(res.message);
+    } else {
+      toast.error("Erro ao disparar lembretes de RSVP.");
+    }
+    setIsTriggeringRsvp(false);
   };
 
   const filteredGuests = initialGuests.filter(
@@ -376,9 +404,51 @@ export function MensagensClient({
           </Card>
         </div>
       ) : (
-        /* DISPARADOR */
+        /* DISPARADOR & AUTOMAÇÕES DE NOTIFICAÇÃO */
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 flex flex-col gap-6">
+            {/* Card de Disparos de Notificação Automática */}
+            <Card className="shadow-md border-emerald-100 bg-gradient-to-r from-emerald-50/50 to-white rounded-2xl p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-base text-zinc-900 flex items-center gap-2">
+                  <Bell className="w-5 h-5 text-emerald-600" />
+                  Notificações & Lembretes Automáticos (WhatsApp)
+                </h3>
+              </div>
+              <p className="text-xs text-zinc-500 mb-4">
+                Envie notificações automáticas em lote diretamente para o WhatsApp dos convidados.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Button
+                  onClick={handleSendInitialInvites}
+                  disabled={isTriggeringInvites}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl h-10 shadow-sm justify-start px-3"
+                >
+                  {isTriggeringInvites ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4 mr-2" />
+                  )}
+                  Disparar Convites Iniciais
+                </Button>
+
+                <Button
+                  onClick={handleSendRsvpReminders}
+                  disabled={isTriggeringRsvp}
+                  variant="outline"
+                  className="border-emerald-200 text-emerald-800 hover:bg-emerald-100 text-xs font-semibold rounded-xl h-10 shadow-sm justify-start px-3"
+                >
+                  {isTriggeringRsvp ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Bell className="w-4 h-4 mr-2 text-emerald-600" />
+                  )}
+                  Lembretes de RSVP Pendentes
+                </Button>
+              </div>
+            </Card>
+
             {/* Escolha do Template e Preview */}
             <Card className="shadow-md border-zinc-200/60 rounded-2xl p-6">
               <h3 className="font-bold text-lg text-zinc-800 mb-4">
