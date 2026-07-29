@@ -131,7 +131,35 @@ export async function getConnectionState() {
 }
 
 /**
+ * Cria a instância caso ela não exista no servidor da Evolution API.
+ */
+export async function createInstance() {
+  if (!isConfigured()) return null;
+  try {
+    const response = await fetch(`${EVOLUTION_URL}/instance/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: EVOLUTION_KEY!,
+      },
+      body: JSON.stringify({
+        instanceName: EVOLUTION_INSTANCE,
+        qrcode: true,
+        integration: "WHATSAPP-BAILEYS",
+      }),
+      cache: "no-store",
+    });
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error("[Evolution API] Erro ao criar instância:", err);
+    return null;
+  }
+}
+
+/**
  * Tenta conectar a instância e retorna o QR Code se estiver desconectado.
+ * Se a instância não existir, cria-a automaticamente.
  */
 export async function connectInstance() {
   if (!isConfigured()) {
@@ -147,15 +175,37 @@ export async function connectInstance() {
       cache: 'no-store'
     });
 
+    if (response.status === 404) {
+      const createData = await createInstance();
+      if (createData?.qrcode?.base64) {
+        return { success: true, qrCode: createData.qrcode.base64 };
+      }
+      if (createData?.base64) {
+        return { success: true, qrCode: createData.base64 };
+      }
+    }
+
     const data = await response.json();
 
     if (data?.base64) {
       return { success: true, qrCode: data.base64 };
     }
+    if (data?.qrcode?.base64) {
+      return { success: true, qrCode: data.qrcode.base64 };
+    }
 
-    return { success: false, error: "QR Code não recebido. A instância já pode estar conectada." };
+    // Fallback caso a instância precise ser gerada
+    const fallbackCreate = await createInstance();
+    if (fallbackCreate?.qrcode?.base64) {
+      return { success: true, qrCode: fallbackCreate.qrcode.base64 };
+    }
+    if (fallbackCreate?.base64) {
+      return { success: true, qrCode: fallbackCreate.base64 };
+    }
+
+    return { success: false, error: "Não foi possível obter o QR Code. Verifique se a Evolution API está online." };
   } catch (error) {
-    return { success: false, error: "Erro ao tentar conectar à instância." };
+    return { success: false, error: "Erro ao comunicar com a Evolution API." };
   }
 }
 
