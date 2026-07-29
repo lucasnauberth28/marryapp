@@ -6,9 +6,10 @@
  *   EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_INSTANCE
  */
 
-const EVOLUTION_URL = process.env.EVOLUTION_API_URL || "https://marryapp-whatsapp.onrender.com";
-const EVOLUTION_KEY = process.env.EVOLUTION_API_KEY || "marryapp123";
-const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE || "marryapp";
+const rawUrl = process.env.EVOLUTION_API_URL || "https://marryapp-whatsapp.onrender.com";
+const EVOLUTION_URL = rawUrl.trim().replace(/\/+$/, "");
+const EVOLUTION_KEY = (process.env.EVOLUTION_API_KEY || "marryapp123").trim();
+const EVOLUTION_INSTANCE = (process.env.EVOLUTION_INSTANCE || "marryapp").trim();
 
 function isConfigured() {
   return !!(EVOLUTION_URL && EVOLUTION_KEY && EVOLUTION_INSTANCE);
@@ -186,11 +187,12 @@ export async function logoutInstance() {
  */
 export async function connectInstance() {
   if (!isConfigured()) {
-    return { success: false, error: "Serviço não configurado." };
+    return { success: false, error: `Serviço não configurado: URL=${EVOLUTION_URL}, KEY=${!!EVOLUTION_KEY}, INSTANCE=${EVOLUTION_INSTANCE}` };
   }
 
   try {
-    let response = await fetch(`${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`, {
+    const fetchUrl = `${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`;
+    let response = await fetch(fetchUrl, {
       method: "GET",
       headers: {
         apikey: EVOLUTION_KEY!,
@@ -201,68 +203,50 @@ export async function connectInstance() {
     if (response.status === 404) {
       await createInstance();
       await new Promise(r => setTimeout(r, 2000));
-      response = await fetch(`${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`, {
+      response = await fetch(fetchUrl, {
         method: "GET",
-        headers: {
-          apikey: EVOLUTION_KEY!,
-        },
+        headers: { apikey: EVOLUTION_KEY! },
         cache: 'no-store'
       });
     }
 
-    if (response.ok) {
-      const data = await response.json();
-      const rawQr = data?.base64 || data?.qrcode?.base64 || data?.qrcode?.code || data?.code;
-      const formatted = formatQrCode(rawQr);
-      if (formatted) {
-        return { success: true, qrCode: formatted };
-      }
+    if (!response.ok) {
+      const errText = await response.text();
+      return { success: false, error: `HTTP ${response.status} de ${fetchUrl}: ${errText.substring(0, 150)}` };
+    }
 
-      // Se a resposta veio OK mas o QR Code veio zerado ({ count: 0 }), desloga a instância para forçar novo QR Code
-      if (data?.qrcode?.count === 0 || data?.count === 0) {
-        await logoutInstance();
-        await new Promise(r => setTimeout(r, 1500));
-        
-        const retryRes = await fetch(`${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`, {
-          method: "GET",
-          headers: {
-            apikey: EVOLUTION_KEY!,
-          },
-          cache: 'no-store'
-        });
+    const data = await response.json();
+    const rawQr = data?.base64 || data?.qrcode?.base64 || data?.qrcode?.code || data?.code;
+    const formatted = formatQrCode(rawQr);
+    if (formatted) {
+      return { success: true, qrCode: formatted };
+    }
 
-        if (retryRes.ok) {
-          const retryData = await retryRes.json();
-          const retryQr = retryData?.base64 || retryData?.qrcode?.base64 || retryData?.qrcode?.code || retryData?.code;
-          const retryFormatted = formatQrCode(retryQr);
-          if (retryFormatted) {
-            return { success: true, qrCode: retryFormatted };
-          }
+    // Se a resposta veio OK mas sem QR Code ({ count: 0 }), desloga a instância para forçar novo QR Code
+    if (data?.qrcode?.count === 0 || data?.count === 0 || !rawQr) {
+      await logoutInstance();
+      await new Promise(r => setTimeout(r, 2500));
+      
+      const retryRes = await fetch(fetchUrl, {
+        method: "GET",
+        headers: { apikey: EVOLUTION_KEY! },
+        cache: 'no-store'
+      });
+
+      if (retryRes.ok) {
+        const retryData = await retryRes.json();
+        const retryQr = retryData?.base64 || retryData?.qrcode?.base64 || retryData?.qrcode?.code || retryData?.code;
+        const retryFormatted = formatQrCode(retryQr);
+        if (retryFormatted) {
+          return { success: true, qrCode: retryFormatted };
         }
+        return { success: false, error: `Sem QR pós-logout: ${JSON.stringify(retryData).substring(0, 150)}` };
       }
     }
 
-    // Tenta deslogar para renovar o socket se nenhuma tentativa retornou QR Code válido
-    await logoutInstance();
-    await new Promise(r => setTimeout(r, 1500));
-    const retryRes = await fetch(`${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`, {
-      method: "GET",
-      headers: {
-        apikey: EVOLUTION_KEY!,
-      },
-      cache: 'no-store'
-    });
-
-    if (retryRes.ok) {
-      const retryData = await retryRes.json();
-      const retryQr = retryData?.base64 || retryData?.qrcode?.base64 || retryData?.qrcode?.code || retryData?.code;
-      const finalFormatted = formatQrCode(retryQr);
-      if (finalFormatted) return { success: true, qrCode: finalFormatted };
-    }
-
-    return { success: false, error: "Não foi possível obter o QR Code. Tente clicar em Reconectar em alguns instantes." };
-  } catch (error) {
-    return { success: false, error: "Erro ao comunicar com a Evolution API." };
+    return { success: false, error: `Sem QR Code no payload: ${JSON.stringify(data).substring(0, 150)}` };
+  } catch (error: any) {
+    return { success: false, error: `Exceção em connectInstance: ${error?.message || String(error)}` };
   }
 }
 
