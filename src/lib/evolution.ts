@@ -163,6 +163,23 @@ export async function createInstance() {
   }
 }
 
+export async function logoutInstance() {
+  if (!isConfigured()) return null;
+  try {
+    const response = await fetch(`${EVOLUTION_URL}/instance/logout/${EVOLUTION_INSTANCE}`, {
+      method: "DELETE",
+      headers: {
+        apikey: EVOLUTION_KEY!,
+      },
+      cache: "no-store",
+    });
+    return await response.json();
+  } catch (err) {
+    console.error("[Evolution API] Erro ao deslogar instância:", err);
+    return null;
+  }
+}
+
 /**
  * Tenta conectar a instância e retorna o QR Code se estiver desconectado.
  * Se a instância não existir, cria-a automaticamente.
@@ -201,10 +218,10 @@ export async function connectInstance() {
         return { success: true, qrCode: formatted };
       }
 
-      // Se a resposta veio OK mas o QR Code veio zerado ({ count: 0 }), reinicia a instância
+      // Se a resposta veio OK mas o QR Code veio zerado ({ count: 0 }), desloga a instância para forçar novo QR Code
       if (data?.qrcode?.count === 0 || data?.count === 0) {
-        await createInstance();
-        await new Promise(r => setTimeout(r, 2500));
+        await logoutInstance();
+        await new Promise(r => setTimeout(r, 1500));
         
         const retryRes = await fetch(`${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`, {
           method: "GET",
@@ -225,8 +242,9 @@ export async function connectInstance() {
       }
     }
 
-    // Tenta uma segunda chamada caso ainda esteja em inicialização
-    await new Promise(r => setTimeout(r, 2000));
+    // Tenta deslogar para renovar o socket se nenhuma tentativa retornou QR Code válido
+    await logoutInstance();
+    await new Promise(r => setTimeout(r, 1500));
     const retryRes = await fetch(`${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`, {
       method: "GET",
       headers: {
