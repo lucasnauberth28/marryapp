@@ -500,7 +500,7 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
               <Plus className="w-4 h-4 mr-2" /> Nova Despesa
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6 sm:p-8">
+          <DialogContent className="sm:max-w-5xl md:max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto p-6 sm:p-8">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-base">
                 <CalendarRange className="w-5 h-5 text-[#8C6D45]" />
