@@ -202,33 +202,14 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
               </div>
 
               {rsvpStatus === RsvpStatus.CONFIRMED && (
-                <>
-                  <div>
-                    <Field
-                      label="Acomp. Confirmados"
-                      name="confirmedCompanions"
-                      type="number"
-                      placeholder="0"
-                      defaultValue={guest?.confirmedCompanions ?? 0}
-                    />
-                  </div>
-                  <div>
-                    <Field
-                      label="Restrições Alimentares"
-                      name="dietaryRestrictions"
-                      placeholder="Sem glúten, vegano..."
-                      defaultValue={guest?.dietaryRestrictions ?? ""}
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Field
-                      label="Nomes dos Acompanhantes"
-                      name="companionsNames"
-                      placeholder="Nome 1, Nome 2..."
-                      defaultValue={guest?.companionsNames ?? ""}
-                    />
-                  </div>
-                </>
+                <div className="col-span-2">
+                  <Field
+                    label="Restrições Alimentares"
+                    name="dietaryRestrictions"
+                    placeholder="Sem glúten, vegano..."
+                    defaultValue={guest?.dietaryRestrictions ?? ""}
+                  />
+                </div>
               )}
             </>
           )}
