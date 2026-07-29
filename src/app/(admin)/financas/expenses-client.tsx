@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Loader2, CheckCircle, Clock, CalendarRange, Layers } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -30,11 +33,22 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
   const [mode, setMode] = useState<"single" | "installment">("single");
   const [description, setDescription] = useState("");
   const [vendorId, setVendorId] = useState("");
+  const [singleVendorId, setSingleVendorId] = useState("");
+  const [formKey, setFormKey] = useState(0);
 
   // Estado para parcelamento em blocos
   const [blocks, setBlocks] = useState<InstallmentBlock[]>([
     { id: 1, count: 3, amount: "300", startDate: new Date().toISOString().split("T")[0] }
   ]);
+
+  const resetForm = () => {
+    setMode("single");
+    setDescription("");
+    setVendorId("");
+    setSingleVendorId("");
+    setBlocks([{ id: 1, count: 3, amount: "300", startDate: new Date().toISOString().split("T")[0] }]);
+    setFormKey(prev => prev + 1);
+  };
 
   const formatCurrency = (amount: number) => {
     return (amount / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -120,10 +134,14 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
 
       const res = await createExpense(formData);
       if (res.success) {
+        resetForm();
         setOpen(false);
         window.location.reload();
       } else {
-        toast.error(res.error);
+        toast.error(res.error || "Erro ao realizar operação.", {
+          duration: 6000,
+          description: "Ocorreu um erro inesperado no servidor.",
+        });
       }
     } else {
       // Modo Parcelamento
@@ -145,10 +163,14 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
 
       const res = await createBatchExpenses(generatedInstallments);
       if (res.success) {
+        resetForm();
         setOpen(false);
         window.location.reload();
       } else {
-        toast.error(res.error);
+        toast.error(res.error || "Erro ao realizar operação.", {
+          duration: 6000,
+          description: "Ocorreu um erro inesperado no servidor.",
+        });
       }
     }
     setLoading(false);
@@ -161,7 +183,10 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
         setExpenses(expenses.filter(e => e.id !== id));
         toast.success("Despesa excluída com sucesso");
       } else {
-        toast.error(res.error);
+        toast.error(res.error || "Erro ao realizar operação.", {
+          duration: 6000,
+          description: "Ocorreu um erro inesperado no servidor.",
+        });
       }
     });
     setConfirmOpen(true);
@@ -179,11 +204,14 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <Input placeholder="Buscar despesa..." className="max-w-xs" />
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(isOpen) => {
+          setOpen(isOpen);
+          if (!isOpen) resetForm();
+        }}>
           <DialogTrigger asChild>
             <Button><Plus className="w-4 h-4 mr-2" /> Nova Despesa</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <CalendarRange className="w-5 h-5 text-[#8C6D45]" />
@@ -193,33 +221,42 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
 
             {/* Seletor de Modo */}
             <div className="flex bg-zinc-100 p-1 rounded-lg border border-zinc-200 mt-2">
-              <button
+              <Button
                 type="button"
+                variant={mode === "single" ? "default" : "ghost"}
+                size="sm"
                 onClick={() => setMode("single")}
-                className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition ${mode === "single" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-900"}`}
+                className={`flex-1 h-8 text-xs font-semibold rounded-md ${mode === "single" ? "shadow-sm" : ""}`}
               >
                 Despesa Única
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant={mode === "installment" ? "default" : "ghost"}
+                size="sm"
                 onClick={() => setMode("installment")}
-                className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition ${mode === "installment" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-900"}`}
+                className={`flex-1 h-8 text-xs font-semibold rounded-md ${mode === "installment" ? "shadow-sm" : ""}`}
               >
                 Parcelamento Flexível
-              </button>
+              </Button>
             </div>
 
-            <form onSubmit={handleCreate} className="space-y-4 mt-2">
+            <form key={formKey} onSubmit={handleCreate} className="space-y-4 mt-2">
               {mode === "single" ? (
                 <>
                   <Input name="description" placeholder="Descrição (ex: Sinal do Buffet)" required />
                   
-                  <select name="vendorId" required className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-                    <option value="">Selecione o Fornecedor...</option>
-                    {vendors.map(v => (
-                      <option key={v.id} value={v.id}>{v.name}</option>
-                    ))}
-                  </select>
+                  <input type="hidden" name="vendorId" value={singleVendorId} />
+                  <Select value={singleVendorId} onValueChange={setSingleVendorId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o Fornecedor..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {vendors.map(v => (
+                        <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
                   <div className="grid grid-cols-2 gap-4">
                     <Input name="amount" placeholder="Valor (ex: 1500.00)" type="number" step="0.01" required />
@@ -236,24 +273,23 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
                     required
                   />
 
-                  <select
-                    value={vendorId}
-                    onChange={(e) => setVendorId(e.target.value)}
-                    required
-                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  >
-                    <option value="">Selecione o Fornecedor...</option>
-                    {vendors.map(v => (
-                      <option key={v.id} value={v.id}>{v.name}</option>
-                    ))}
-                  </select>
+                  <Select value={vendorId} onValueChange={setVendorId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o Fornecedor..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {vendors.map(v => (
+                        <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
                   <div className="space-y-3 pt-2">
                     <div className="flex justify-between items-center">
-                      <label className="text-xs font-bold text-zinc-700 uppercase tracking-wider flex items-center gap-1">
+                      <Label className="text-xs font-bold text-zinc-700 uppercase tracking-wider flex items-center gap-1">
                         <Layers className="w-3.5 h-3.5 text-[#8C6D45]" />
                         Blocos de Parcelas
-                      </label>
+                      </Label>
                       <Button type="button" variant="outline" size="sm" onClick={addBlock} className="text-xs h-7">
                         + Adicionar Bloco
                       </Button>
@@ -276,7 +312,7 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
 
                         <div className="grid grid-cols-3 gap-2">
                           <div>
-                            <label className="text-[10px] text-zinc-500">Nº de Parcelas</label>
+                            <Label className="text-[10px] text-zinc-500">Nº de Parcelas</Label>
                             <Input
                               type="number"
                               min={1}
@@ -288,7 +324,7 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
                           </div>
 
                           <div>
-                            <label className="text-[10px] text-zinc-500">Valor da Parcela (R$)</label>
+                            <Label className="text-[10px] text-zinc-500">Valor da Parcela (R$)</Label>
                             <Input
                               type="number"
                               step="0.01"
@@ -299,7 +335,7 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
                           </div>
 
                           <div>
-                            <label className="text-[10px] text-zinc-500">1º Vencimento</label>
+                            <Label className="text-[10px] text-zinc-500">1º Vencimento</Label>
                             <DatePicker
                               value={block.startDate}
                               onChange={(e) => updateBlock(block.id, "startDate", e.target.value)}
@@ -383,16 +419,18 @@ export function ExpensesClient({ initialExpenses, vendors }: { initialExpenses: 
                       {formatCurrency(expense.amount)}
                     </TableCell>
                     <TableCell>
-                      <button 
+                      <button
                         onClick={() => handleToggleStatus(expense.id, expense.status)}
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${
-                          isPaid 
-                            ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200" 
-                            : "bg-amber-100 text-amber-800 hover:bg-amber-200"
-                        }`}
+                        className="cursor-pointer"
                       >
-                        {isPaid ? <CheckCircle className="w-3 h-3 mr-1" /> : <Clock className="w-3 h-3 mr-1" />}
-                        {isPaid ? "Pago" : "Pendente"}
+                        <Badge variant={isPaid ? "default" : "outline"} className={`text-xs cursor-pointer transition-colors ${
+                          isPaid
+                            ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-emerald-200"
+                            : "bg-amber-100 text-amber-800 hover:bg-amber-200 border-amber-200"
+                        }`}>
+                          {isPaid ? <CheckCircle className="w-3 h-3 mr-1" /> : <Clock className="w-3 h-3 mr-1" />}
+                          {isPaid ? "Pago" : "Pendente"}
+                        </Badge>
                       </button>
                     </TableCell>
                     <TableCell className="text-right">

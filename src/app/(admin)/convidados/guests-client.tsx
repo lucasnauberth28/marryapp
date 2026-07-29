@@ -84,7 +84,10 @@ export function GuestsClient({
           if (res.success) {
             toast.success("Convidado removido com sucesso!");
           } else {
-            toast.error(res.error || "Erro ao remover convidado.");
+            toast.error(res.error || "Erro ao realizar operação.", {
+              duration: 6000,
+              description: "Ocorreu um erro inesperado no servidor.",
+            });
           }
         });
       }

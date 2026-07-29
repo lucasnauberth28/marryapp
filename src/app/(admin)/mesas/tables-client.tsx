@@ -157,7 +157,10 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
       if (res.success) {
         window.location.reload();
       } else {
-        toast.error("Erro ao excluir a mesa");
+        toast.error(res.error || "Erro ao realizar operação.", {
+          duration: 6000,
+          description: "Ocorreu um erro inesperado no servidor.",
+        });
       }
     });
     setConfirmOpen(true);

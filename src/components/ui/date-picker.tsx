@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -48,6 +49,8 @@ export function DatePicker({
   const [isOpen, setIsOpen] = useState(false);
   const [internalValue, setInternalValue] = useState<string>(controlledValue ?? defaultValue);
   const containerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
   // Data selecionada válida ou null
   const selectedDate = useMemo(() => {
@@ -71,13 +74,26 @@ export function DatePicker({
     }
   }, [controlledValue]);
 
+  // Calcular posição do dropdown quando abrir
+  useEffect(() => {
+    if (!isOpen || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setDropdownPos({
+      top: rect.bottom + window.scrollY + 6,
+      left: rect.left + window.scrollX,
+    });
+  }, [isOpen]);
+
   // Fechar popover ao clicar fora
   useEffect(() => {
     if (!isOpen) return;
 
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
-      if (containerRef.current && !containerRef.current.contains(target)) {
+      if (
+        containerRef.current && !containerRef.current.contains(target) &&
+        dropdownRef.current && !dropdownRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     }
@@ -164,13 +180,14 @@ export function DatePicker({
         </div>
       </div>
 
-      {/* Dropdown Calendar - rendered inline, not via portal */}
-      {isOpen && (
+      {/* Dropdown Calendar - rendered via portal to escape modal overflow */}
+      {isOpen && createPortal(
         <div
+          ref={dropdownRef}
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
-          className="absolute top-full left-0 mt-1.5 w-[300px] rounded-xl border border-zinc-200 bg-white p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150 font-sans"
-          style={{ zIndex: 999999 }}
+          className="fixed w-[300px] rounded-xl border border-zinc-200 bg-white p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150 font-sans"
+          style={{ zIndex: 999999, top: dropdownPos.top, left: dropdownPos.left }}
         >
           {/* Header Navigation */}
           <div className="flex items-center justify-between mb-3 px-1">
@@ -252,7 +269,8 @@ export function DatePicker({
               </button>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

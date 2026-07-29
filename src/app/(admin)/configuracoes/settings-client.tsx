@@ -37,7 +37,10 @@ export function SettingsClient({ initialSettings }: { initialSettings: any }) {
       if (res.success) {
         toast.success("Configurações salvas com sucesso!");
       } else {
-        toast.error("Erro ao salvar configurações.");
+        toast.error("Erro ao salvar configurações. Tente novamente.", {
+          duration: 6000,
+          description: "Ocorreu um erro inesperado no servidor.",
+        });
       }
     });
   }

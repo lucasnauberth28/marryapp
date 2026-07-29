@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { VendorLocal as Vendor } from "@/types/local";
 import { createVendor, deleteVendor } from "@/actions/vendor-actions";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Trash2, Loader2, Link as LinkIcon, FileText, Upload } from "lucide-react";
@@ -18,9 +19,20 @@ export function VendorsClient({ initialVendors }: { initialVendors: any[] }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
   
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [formKey, setFormKey] = useState(0);
+
   const [contractMode, setContractMode] = useState<"file" | "url">("file");
   const [fileBase64, setFileBase64] = useState<string>("");
   const [fileName, setFileName] = useState<string>("");
+
+  const resetForm = () => {
+    setContractMode("file");
+    setFileBase64("");
+    setFileName("");
+    setFormKey(prev => prev + 1);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,12 +61,14 @@ export function VendorsClient({ initialVendors }: { initialVendors: any[] }) {
     const res = await createVendor(formData);
     
     if (res.success) {
+      resetForm();
       setOpen(false);
-      setFileBase64("");
-      setFileName("");
       window.location.reload();
     } else {
-      toast.error(res.error);
+      toast.error(res.error || "Erro ao criar fornecedor. Tente novamente.", {
+        duration: 6000,
+        description: "Ocorreu um erro inesperado no servidor.",
+      });
     }
     setLoading(false);
   };
@@ -66,7 +80,10 @@ export function VendorsClient({ initialVendors }: { initialVendors: any[] }) {
         setVendors(vendors.filter(v => v.id !== id));
         toast.success("Fornecedor excluído");
       } else {
-        toast.error(res.error);
+        toast.error(res.error || "Erro ao excluir fornecedor.", {
+          duration: 6000,
+          description: "Ocorreu um erro inesperado no servidor.",
+        });
       }
     });
     setConfirmOpen(true);
@@ -76,7 +93,10 @@ export function VendorsClient({ initialVendors }: { initialVendors: any[] }) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <Input placeholder="Buscar fornecedor..." className="max-w-xs" />
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(isOpen) => {
+          setOpen(isOpen);
+          if (!isOpen) resetForm();
+        }}>
           <DialogTrigger asChild>
             <Button><Plus className="w-4 h-4 mr-2" /> Novo Fornecedor</Button>
           </DialogTrigger>
@@ -84,35 +104,40 @@ export function VendorsClient({ initialVendors }: { initialVendors: any[] }) {
             <DialogHeader>
               <DialogTitle>Adicionar Fornecedor</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleCreate} className="space-y-4 mt-4">
+            <form key={formKey} onSubmit={handleCreate} className="space-y-4 mt-4">
               <Input name="name" placeholder="Nome da Empresa / Profissional" required />
               <Input name="category" placeholder="Categoria (ex: Buffet, Foto)" required />
               <Input name="contact" placeholder="Contato (Telefone/Email)" />
               
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <label className="text-xs font-semibold text-zinc-600">Contrato</label>
+                  <Label className="text-xs font-semibold text-zinc-600">Contrato</Label>
                   <div className="flex gap-2 text-xs">
-                    <button
+                    <Button
                       type="button"
+                      variant={contractMode === "file" ? "default" : "outline"}
+                      size="sm"
                       onClick={() => setContractMode("file")}
-                      className={`px-2 py-0.5 rounded ${contractMode === "file" ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-600"}`}
+                      className="h-6 px-2 text-xs rounded"
                     >
                       Anexar PDF / Arquivo
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      variant={contractMode === "url" ? "default" : "outline"}
+                      size="sm"
                       onClick={() => setContractMode("url")}
-                      className={`px-2 py-0.5 rounded ${contractMode === "url" ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-600"}`}
+                      className="h-6 px-2 text-xs rounded"
                     >
                       Link Web (URL)
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
                 {contractMode === "file" ? (
                   <div className="border-2 border-dashed border-zinc-200 rounded-lg p-3 text-center relative hover:bg-zinc-50 transition">
                     <input
+                      ref={fileInputRef}
                       type="file"
                       accept="application/pdf,image/*,.doc,.docx"
                       onChange={handleFileChange}

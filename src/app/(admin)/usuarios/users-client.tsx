@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DataTable } from "@/components/ui/data-table";
 import { createUser, updateUser, deleteUser } from "@/actions/rbac-actions";
 import { Button } from "@/components/ui/button";
@@ -71,7 +72,10 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
       if (result.success) {
         window.location.reload();
       } else {
-        toast.error(result.error);
+        toast.error(result.error || "Erro ao realizar operação.", {
+          duration: 6000,
+          description: "Ocorreu um erro inesperado no servidor.",
+        });
       }
     });
   }
@@ -83,7 +87,10 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
         if (result.success) {
           window.location.reload();
         } else {
-          toast.error(result.error);
+          toast.error(result.error || "Erro ao realizar operação.", {
+            duration: 6000,
+            description: "Ocorreu um erro inesperado no servidor.",
+          });
         }
       });
     });
@@ -148,16 +155,16 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700">Perfil de Acesso</label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  value={formData.roleId}
-                  onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
-                >
-                  <option value="" disabled>Selecione um perfil...</option>
-                  {roles.map(r => (
-                    <option key={r.id} value={r.id}>{r.name}</option>
-                  ))}
-                </select>
+                <Select value={formData.roleId} onValueChange={(value) => setFormData({ ...formData, roleId: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um perfil..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {roles.map(r => (
+                      <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

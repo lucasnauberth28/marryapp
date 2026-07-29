@@ -34,7 +34,10 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
       startTransition(async () => {
         const result = await deleteGift(id)
         if (!result.success) {
-          toast.error(result.error || "Erro ao excluir presente")
+          toast.error(result.error || "Erro ao realizar operação.", {
+            duration: 6000,
+            description: "Ocorreu um erro inesperado no servidor.",
+          })
         } else {
           setGifts(prev => prev.filter(g => g.id !== id))
           toast.success("Presente excluído com sucesso!")

@@ -84,7 +84,10 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
         // Recarregar a página para pegar os dados frescos do servidor
         window.location.reload();
       } else {
-        toast.error(result.error);
+        toast.error(result.error || "Erro ao realizar operação.", {
+          duration: 6000,
+          description: "Ocorreu um erro inesperado no servidor.",
+        });
       }
     });
   }
@@ -96,7 +99,10 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
         if (result.success) {
           window.location.reload();
         } else {
-          toast.error(result.error);
+          toast.error(result.error || "Erro ao realizar operação.", {
+            duration: 6000,
+            description: "Ocorreu um erro inesperado no servidor.",
+          });
         }
       });
     });
