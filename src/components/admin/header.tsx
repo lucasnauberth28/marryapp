@@ -29,6 +29,7 @@ import {
   Sparkles,
   MessageCircle,
   RefreshCw,
+  CreditCard as CreditCardIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,12 +49,15 @@ const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Credenciamento", href: "/credenciamento", icon: QrCode },
   { name: "Convidados", href: "/convidados", icon: UsersIcon },
-  { name: "Cronograma", href: "/cronograma", icon: Calendar },
   { name: "Mesas", href: "/mesas", icon: LayoutGrid },
-  { name: "Finanças", href: "/financas", icon: Wallet },
-  { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },
-  { name: "Pendências", href: "/pendencias", icon: CheckSquare },
+  { name: "Cronograma", href: "/cronograma", icon: Calendar },
+  { name: "Fornecedores", href: "/fornecedores", icon: UsersIcon },
   { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
+  { name: "Finanças", href: "/financas", icon: Wallet },
+  { name: "Carteira", href: "/carteira", icon: CreditCardIcon },
+  { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },
+  { name: "Lua de Mel", href: "/lua-de-mel", icon: Plane },
+  { name: "Pendências", href: "/pendencias", icon: CheckSquare },
   { name: "Configurações", href: "/configuracoes", icon: SettingsIcon },
   { name: "Usuários", href: "/usuarios", icon: KeyRound },
   { name: "Perfis", href: "/perfis", icon: Shield },

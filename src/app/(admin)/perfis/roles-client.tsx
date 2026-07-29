@@ -12,16 +12,22 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 
 const AVAILABLE_MODULES = [
   { id: "*", name: "Acesso Total (Super Admin)" },
-  { id: "/dashboard", name: "Dashboard" },
-  { id: "/convidados", name: "Convidados" },
-  { id: "/mesas", name: "Mesas" },
-  { id: "/financas", name: "Finanças" },
-  { id: "/presentes-admin", name: "Presentes" },
-  { id: "/pendencias", name: "Pendências" },
-  { id: "/mensagens", name: "Mensagens" },
-  { id: "/configuracoes", name: "Configurações Globais" },
+  { id: "/dashboard", name: "Dashboard (Visão Geral)" },
+  { id: "/credenciamento", name: "Credenciamento & Check-in (QR Code)" },
+  { id: "/convidados", name: "Convidados & Lista de Presença" },
+  { id: "/mesas", name: "Mapa & Organização de Mesas" },
+  { id: "/cronograma", name: "Cronograma do Casamento" },
+  { id: "/fornecedores", name: "Gestão de Fornecedores" },
+  { id: "/mensagens", name: "Mensagens & WhatsApp API" },
+  { id: "/financas", name: "Finanças & Orçamento" },
+  { id: "/carteira", name: "Carteira & Extrato PIX" },
+  { id: "/despesas", name: "Gestão de Despesas" },
+  { id: "/presentes-admin", name: "Lista de Presentes (Admin)" },
+  { id: "/lua-de-mel", name: "Cotas de Lua de Mel" },
+  { id: "/pendencias", name: "Tarefas & Pendências" },
+  { id: "/configuracoes", name: "Configurações Globais (WhatsApp API)" },
   { id: "/usuarios", name: "Gestão de Usuários" },
-  { id: "/perfis", name: "Gestão de Perfis" },
+  { id: "/perfis", name: "Gestão de Perfis & Permissões (RBAC)" },
 ];
 
 export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
