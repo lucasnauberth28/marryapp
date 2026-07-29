@@ -177,7 +177,7 @@ export async function connectInstance() {
 
     if (response.status === 404) {
       await createInstance();
-      await new Promise(r => setTimeout(r, 1500));
+      await new Promise(r => setTimeout(r, 2000));
       response = await fetch(`${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`, {
         method: "GET",
         headers: {
@@ -189,18 +189,35 @@ export async function connectInstance() {
 
     if (response.ok) {
       const data = await response.json();
-      if (data?.base64) {
-        return { success: true, qrCode: data.base64 };
+      const qr = data?.base64 || data?.qrcode?.base64 || data?.qrcode?.code || data?.code;
+      if (qr) {
+        return { success: true, qrCode: qr };
       }
-      if (data?.qrcode?.base64) {
-        return { success: true, qrCode: data.qrcode.base64 };
-      }
-      if (data?.code) {
-        return { success: true, qrCode: data.code };
+
+      // Se a resposta veio OK mas o QR Code veio zerado ({ count: 0 }), reinicia a instância
+      if (data?.qrcode?.count === 0 || data?.count === 0) {
+        await createInstance();
+        await new Promise(r => setTimeout(r, 2500));
+        
+        const retryRes = await fetch(`${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`, {
+          method: "GET",
+          headers: {
+            apikey: EVOLUTION_KEY!,
+          },
+          cache: 'no-store'
+        });
+
+        if (retryRes.ok) {
+          const retryData = await retryRes.json();
+          const retryQr = retryData?.base64 || retryData?.qrcode?.base64 || retryData?.qrcode?.code || retryData?.code;
+          if (retryQr) {
+            return { success: true, qrCode: retryQr };
+          }
+        }
       }
     }
 
-    // Tenta uma segunda chamada se o QR Code ainda não estiver pronto
+    // Tenta uma segunda chamada caso ainda esteja em inicialização
     await new Promise(r => setTimeout(r, 2000));
     const retryRes = await fetch(`${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`, {
       method: "GET",
@@ -212,12 +229,11 @@ export async function connectInstance() {
 
     if (retryRes.ok) {
       const retryData = await retryRes.json();
-      if (retryData?.base64) return { success: true, qrCode: retryData.base64 };
-      if (retryData?.qrcode?.base64) return { success: true, qrCode: retryData.qrcode.base64 };
-      if (retryData?.code) return { success: true, qrCode: retryData.code };
+      const retryQr = retryData?.base64 || retryData?.qrcode?.base64 || retryData?.qrcode?.code || retryData?.code;
+      if (retryQr) return { success: true, qrCode: retryQr };
     }
 
-    return { success: false, error: "Não foi possível obter o QR Code. Verifique se a Evolution API está atualizada." };
+    return { success: false, error: "Não foi possível obter o QR Code. Tente clicar em Reconectar em alguns instantes." };
   } catch (error) {
     return { success: false, error: "Erro ao comunicar com a Evolution API." };
   }
