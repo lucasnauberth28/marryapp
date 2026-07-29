@@ -167,14 +167,31 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
 
     const results = await sendBulkMessages(recipients);
 
-    await prisma.guest.updateMany({
-      where: { id: { in: guests.map((g) => g.id) } },
-      data: { hasReceivedMessage: true },
-    });
+    const sent = results.filter((r) => r.success).length;
+    const failed = results.length - sent;
 
-    return { success: true, results };
-  } catch (error) {
+    if (sent === 0 && failed > 0) {
+      const firstError = results.find((r) => r.error)?.error || "Erro desconhecido na API do WhatsApp.";
+      return { success: false, error: `Falha no envio: ${firstError}`, results };
+    }
+
+    const successPhones = results.filter((r) => r.success).map((r) => r.phone);
+    if (successPhones.length > 0) {
+      await prisma.guest.updateMany({
+        where: { phone: { in: guests.map((g) => g.id) } },
+        data: { hasReceivedMessage: true },
+      });
+    }
+
+    return {
+      success: true,
+      sent,
+      failed,
+      results,
+      message: `${sent} mensagem(ns) enviada(s) com sucesso.${failed > 0 ? ` (${failed} falha(s))` : ""}`,
+    };
+  } catch (error: any) {
     console.error("[sendTemplateToGuests Error]:", error);
-    return { success: false, error: "Falha geral no disparo das mensagens." };
+    return { success: false, error: `Falha geral: ${error?.message || String(error)}` };
   }
 }
