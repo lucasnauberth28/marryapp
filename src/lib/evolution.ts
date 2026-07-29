@@ -6,7 +6,10 @@
  *   EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_INSTANCE
  */
 
-const rawUrl = process.env.EVOLUTION_API_URL || "https://marryapp-whatsapp.onrender.com";
+let rawUrl = process.env.EVOLUTION_API_URL || "https://marryapp-whatsapp.onrender.com";
+if (rawUrl.includes("railway.app")) {
+  rawUrl = "https://marryapp-whatsapp.onrender.com";
+}
 const EVOLUTION_URL = rawUrl.trim().replace(/\/+$/, "");
 const EVOLUTION_KEY = (process.env.EVOLUTION_API_KEY || "marryapp123").trim();
 const EVOLUTION_INSTANCE = (process.env.EVOLUTION_INSTANCE || "marryapp").trim();
