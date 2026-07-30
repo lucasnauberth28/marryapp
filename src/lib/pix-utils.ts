@@ -40,14 +40,13 @@ function cleanPixKey(rawKey: string): string {
     return trimmed.toLowerCase();
   }
 
-  // Para CPF, CNPJ ou Telefone: remove parênteses, traços, pontos e espaços
-  let digitsOnly = trimmed.replace(/\D/g, "");
-
-  // Se for telefone celular brasileiro com 10 ou 11 dígitos, insere +55 se necessário
-  if (digitsOnly.length === 10 || digitsOnly.length === 11) {
-    return `+55${digitsOnly}`;
+  // Se o usuário digitou explicitamente com +, preserva o formato com +
+  if (trimmed.startsWith("+")) {
+    return "+" + trimmed.replace(/\D/g, "");
   }
 
+  // Para CPF, CNPJ ou Telefone sem +: limpa pontuações e mantém apenas os dígitos
+  const digitsOnly = trimmed.replace(/\D/g, "");
   return digitsOnly || trimmed;
 }
 
