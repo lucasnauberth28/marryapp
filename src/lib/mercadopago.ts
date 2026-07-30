@@ -1,7 +1,7 @@
 import { MercadoPagoConfig, Payment } from "mercadopago";
 
 // Inicializa o SDK do Mercado Pago
-const mpAccessToken = process.env.MP_ACCESS_TOKEN || "";
+const mpAccessToken = process.env.MERCADOPAGO_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN || "";
 
 export const mpConfig = new MercadoPagoConfig({
   accessToken: mpAccessToken,
