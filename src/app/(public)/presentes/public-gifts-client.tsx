@@ -63,27 +63,27 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
 
   return (
     <div className="flex flex-col gap-8 pb-16">
-      {/* Hero Section Compacta e Sutil (Não-Fixada) */}
-      <div className="bg-gradient-to-br from-amber-50/80 via-white to-amber-50/40 border border-amber-200/60 rounded-3xl p-8 text-center max-w-3xl mx-auto shadow-sm relative overflow-hidden">
-        <div className="w-12 h-12 rounded-2xl bg-amber-100/80 border border-amber-300/60 text-amber-800 flex items-center justify-center mx-auto mb-3 shadow-inner">
-          <Heart className="w-6 h-6 fill-amber-700 text-amber-700" />
+      {/* Hero Section Minimalista e Sem Borda */}
+      <div className="text-center max-w-xl mx-auto py-2 space-y-2">
+        <div className="w-10 h-10 rounded-2xl bg-amber-100/80 text-amber-800 flex items-center justify-center mx-auto mb-1">
+          <Heart className="w-5 h-5 fill-amber-700 text-amber-700" />
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold font-serif italic text-zinc-900 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold font-serif italic text-zinc-900 tracking-tight">
           Lista de Presentes de Casamento
         </h1>
-        <p className="text-sm sm:text-base text-zinc-600 mt-2 max-w-xl mx-auto leading-relaxed">
+        <p className="text-xs sm:text-sm text-zinc-600 max-w-md mx-auto leading-relaxed">
           Sua presença é nosso maior presente! Se desejar nos apoiar no início desta nova jornada juntos, escolha uma das lembranças abaixo.
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-4 mt-4 pt-4 border-t border-amber-200/50 text-xs font-semibold text-zinc-500">
-          <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-zinc-200 shadow-2xs">
-            <QrCode className="w-3.5 h-3.5 text-emerald-600" /> PIX Copia e Cola (Sem Taxas)
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-[11px] font-semibold text-zinc-500">
+          <span className="flex items-center gap-1 text-zinc-600 bg-white/80 px-2.5 py-1 rounded-full border border-zinc-200/60 shadow-2xs">
+            <QrCode className="w-3 h-3 text-emerald-600" /> PIX Copia e Cola (Sem Taxas)
           </span>
-          <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-zinc-200 shadow-2xs">
-            <CreditCard className="w-3.5 h-3.5 text-indigo-600" /> Cartão de Crédito em até 12x
+          <span className="flex items-center gap-1 text-zinc-600 bg-white/80 px-2.5 py-1 rounded-full border border-zinc-200/60 shadow-2xs">
+            <CreditCard className="w-3 h-3 text-indigo-600" /> Cartão de Crédito até 12x
           </span>
-          <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full border border-zinc-200 shadow-2xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-amber-600" /> Checkout Seguro
+          <span className="flex items-center gap-1 text-zinc-600 bg-white/80 px-2.5 py-1 rounded-full border border-zinc-200/60 shadow-2xs">
+            <ShieldCheck className="w-3 h-3 text-amber-600" /> Checkout Seguro
           </span>
         </div>
       </div>
@@ -232,28 +232,28 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
         </div>
       )}
 
-      {/* MODAL PREMIUM DE DETALHES E VISUALIZAÇÃO DO PRESENTE */}
+      {/* MODAL PREMIUM DE DETALHES E VISUALIZAÇÃO DO PRESENTE (PROPORÇÃO 60/40) */}
       <Dialog open={!!selectedGift} onOpenChange={(open) => !open && setSelectedGift(null)}>
-        <DialogContent className="max-w-4xl w-[92vw] p-0 overflow-hidden rounded-[32px] border-zinc-200 shadow-2xl bg-white">
+        <DialogContent className="!max-w-5xl w-[94vw] sm:w-[90vw] p-0 overflow-hidden rounded-[28px] border-zinc-200 shadow-2xl bg-white max-h-[82vh]">
           {selectedGift && (
-            <div className="flex flex-col md:flex-row min-h-[460px]">
-              {/* Lado Esquerdo: Imagem do Presente em Proporção Ampla */}
-              <div className="md:w-[48%] bg-zinc-50 border-b md:border-b-0 md:border-r border-zinc-100 relative min-h-[280px] md:min-h-[460px] flex items-center justify-center p-6 overflow-hidden">
+            <div className="flex flex-col md:flex-row min-h-[360px] md:min-h-[400px]">
+              {/* Lado Esquerdo: Imagem do Presente (60% da Largura) */}
+              <div className="md:w-[60%] bg-zinc-50 border-b md:border-b-0 md:border-r border-zinc-100 relative min-h-[220px] md:min-h-[380px] max-h-[380px] flex items-center justify-center p-4 overflow-hidden">
                 {selectedGift.imageUrl ? (
                   <img
                     src={selectedGift.imageUrl}
                     alt={selectedGift.title}
-                    className="w-full h-full max-h-[380px] object-contain rounded-2xl drop-shadow-xs transition-transform duration-500 hover:scale-105"
+                    className="w-full h-full max-h-[340px] object-contain rounded-xl drop-shadow-xs transition-transform duration-500 hover:scale-105"
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-zinc-400 p-8 text-center">
-                    <GiftIcon className="w-14 h-14 text-zinc-300 mb-3 stroke-[1.2]" />
-                    <span className="text-sm text-zinc-500 font-semibold">Lembrança Especial para o Novo Lar</span>
+                  <div className="flex flex-col items-center justify-center text-zinc-400 p-6 text-center">
+                    <GiftIcon className="w-12 h-12 text-zinc-300 mb-2 stroke-[1.2]" />
+                    <span className="text-xs text-zinc-500 font-semibold">Lembrança Especial para o Novo Lar</span>
                   </div>
                 )}
 
                 {selectedGift.isPurchased && (
-                  <div className="absolute inset-0 bg-black/45 backdrop-blur-xs flex items-center justify-center p-6 text-center">
+                  <div className="absolute inset-0 bg-black/45 backdrop-blur-xs flex items-center justify-center p-4 text-center">
                     <span className="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4" /> Este presente já foi oferecido
                     </span>
@@ -261,50 +261,50 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
                 )}
               </div>
 
-              {/* Lado Direito: Detalhes & Ação */}
-              <div className="md:w-[52%] p-8 sm:p-10 flex flex-col justify-between space-y-6 bg-white">
-                <div className="space-y-4">
+              {/* Lado Direito: Detalhes & Ação (40% da Largura) */}
+              <div className="md:w-[40%] p-5 sm:p-6 flex flex-col justify-between space-y-4 bg-white overflow-y-auto max-h-[82vh]">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-900 bg-amber-100/80 px-3 py-1 rounded-full border border-amber-200/80 inline-flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-700" /> Casamento Lucas & Giovanna
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 bg-amber-100/80 px-2.5 py-0.5 rounded-full border border-amber-200/80 inline-flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-amber-700" /> Casamento Lucas & Giovanna
                     </span>
                   </div>
 
                   <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 tracking-tight font-serif italic leading-snug">
+                    <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight font-serif italic leading-snug">
                       {selectedGift.title}
                     </h2>
 
-                    <p className="text-sm sm:text-base text-zinc-600 mt-3 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-zinc-600 mt-2 leading-relaxed">
                       {selectedGift.description ||
                         "Sua contribuição com este presente tornará a nossa nova vida juntos ainda mais especial e cheia de carinho!"}
                     </p>
                   </div>
 
                   {/* Card de Valor da Contribuição */}
-                  <div className="bg-gradient-to-br from-amber-50/80 to-amber-100/40 p-5 rounded-2xl border border-amber-200/60 space-y-1 mt-4 shadow-2xs">
-                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-900/70 block">
+                  <div className="bg-gradient-to-br from-amber-50/80 to-amber-100/40 p-3.5 rounded-xl border border-amber-200/60 space-y-0.5 mt-2 shadow-2xs">
+                    <span className="text-[9px] font-extrabold uppercase tracking-widest text-amber-900/70 block">
                       Valor da Contribuição
                     </span>
-                    <span className="text-3xl sm:text-4xl font-black text-zinc-900 tracking-tight block">
+                    <span className="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight block">
                       {formatPrice(selectedGift.amount)}
                     </span>
-                    <p className="text-xs text-zinc-500 flex items-center gap-1 pt-1 font-medium">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> PIX ou Cartão em até 12x
+                    <p className="text-[11px] text-zinc-500 flex items-center gap-1 pt-0.5 font-medium">
+                      <ShieldCheck className="w-3 h-3 text-emerald-600" /> PIX ou Cartão em até 12x
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-3 pt-2">
+                <div className="space-y-2 pt-2">
                   {selectedGift.isPurchased ? (
-                    <Button disabled className="w-full rounded-2xl py-6 text-sm font-bold bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed">
+                    <Button disabled className="w-full rounded-xl py-3 text-xs font-bold bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed">
                       Presente Já Comprado
                     </Button>
                   ) : (
                     <Link href={`/checkout/${selectedGift.id}`} className="block w-full">
-                      <Button className="w-full bg-gradient-to-r from-amber-700 via-amber-800 to-zinc-900 hover:from-amber-800 hover:to-zinc-800 text-white rounded-2xl py-6 text-base font-bold shadow-xl shadow-amber-900/10 flex items-center justify-center gap-2 transition-all">
+                      <Button className="w-full bg-gradient-to-r from-amber-700 via-amber-800 to-zinc-900 hover:from-amber-800 hover:to-zinc-800 text-white rounded-xl py-3 px-4 text-xs sm:text-sm font-bold shadow-md flex items-center justify-center gap-2 transition-all">
                         <span>Presentear Agora</span>
-                        <ArrowRight className="w-5 h-5" />
+                        <ArrowRight className="w-4 h-4" />
                       </Button>
                     </Link>
                   )}
@@ -312,7 +312,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
                   <Button
                     variant="ghost"
                     onClick={() => setSelectedGift(null)}
-                    className="w-full text-xs font-semibold text-zinc-500 hover:text-zinc-900 rounded-xl"
+                    className="w-full text-[11px] font-semibold text-zinc-500 hover:text-zinc-900 rounded-lg h-8"
                   >
                     Voltar para a lista
                   </Button>

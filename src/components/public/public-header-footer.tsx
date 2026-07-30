@@ -31,14 +31,9 @@ export function PublicHeaderFooter({ children }: { children: React.ReactNode }) 
             </span>
           </Link>
 
-          <div className="flex items-center gap-4 text-xs font-semibold text-zinc-500">
-            <span className="hidden sm:inline-block italic text-zinc-400">14 de Novembro de 2026</span>
-            <Link
-              href="/rsvp"
-              className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-3 py-1 rounded-full transition-all"
-            >
-              Confirmar Presença
-            </Link>
+          <div className="flex items-center gap-2 text-xs font-serif italic text-amber-900 bg-amber-50/80 border border-amber-200/80 px-3 py-1 rounded-full shadow-2xs">
+            <span className="font-semibold text-zinc-700">Data do Casamento:</span>
+            <span className="font-bold text-amber-900">14 de Novembro de 2026</span>
           </div>
         </div>
       </header>
