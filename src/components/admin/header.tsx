@@ -54,9 +54,7 @@ const navItems = [
   { name: "Fornecedores", href: "/fornecedores", icon: UsersIcon },
   { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
   { name: "Finanças", href: "/financas", icon: Wallet },
-  { name: "Carteira", href: "/carteira", icon: CreditCardIcon },
   { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },
-  { name: "Lua de Mel", href: "/lua-de-mel", icon: Plane },
   { name: "Pendências", href: "/pendencias", icon: CheckSquare },
   { name: "Configurações", href: "/configuracoes", icon: SettingsIcon },
   { name: "Usuários", href: "/usuarios", icon: KeyRound },
@@ -213,39 +211,109 @@ export function Header({ role = "Admin", allowedPaths = ["*"] }: { role?: string
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Menu de Usuário Repaginado & Módulo Carteira */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 ring-2 ring-stone-200 hover:ring-[#8C6D45] transition-all cursor-pointer">
+                <Avatar className="h-10 w-10">
                   <AvatarImage src="/avatars/01.png" alt="@noivos" />
-                  <AvatarFallback className="bg-gradient-to-br from-[#C5A880] to-[#A3855E] text-white text-xs">L&G</AvatarFallback>
+                  <AvatarFallback className="bg-gradient-to-br from-[#C5A880] to-[#A3855E] text-white text-xs font-bold">L&G</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
-                    Lucas & Giovanna
-                  </p>
-                  <p className="text-xs leading-none text-zinc-500">
-                    {role}
-                  </p>
+            <DropdownMenuContent className="w-80 sm:w-84 p-0 overflow-hidden shadow-2xl rounded-3xl border-stone-200 bg-white font-sans animate-in fade-in zoom-in-95 duration-200" align="end" forceMount>
+              {/* Header do Usuário */}
+              <div className="p-4 bg-gradient-to-br from-[#FAF7F2] to-[#F3ECE3] border-b border-stone-200/60 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-11 w-11 ring-2 ring-white shadow-sm">
+                    <AvatarImage src="/avatars/01.png" alt="@noivos" />
+                    <AvatarFallback className="bg-[#8C6D45] text-white font-bold text-xs">L&G</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h4 className="font-bold text-sm text-stone-900 font-serif italic">Lucas & Giovanna</h4>
+                    <span className="inline-block text-[10px] font-extrabold uppercase tracking-wider bg-[#8C6D45] text-white px-2 py-0.5 rounded-full mt-0.5">
+                      {role}
+                    </span>
+                  </div>
                 </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {(allowedPaths.includes("*") || allowedPaths.includes("/configuracoes")) && (
-                <>
-                  <DropdownMenuItem onClick={() => window.location.href = "/perfis"}>Perfis (Roles)</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.location.href = "/usuarios"}>Usuários</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.location.href = "/configuracoes"}>Configurações Gerais</DropdownMenuItem>
-                </>
-              )}
-              <DropdownMenuItem>Suporte</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => logout()} className="text-red-600 focus:text-red-600">
-                Sair
-              </DropdownMenuItem>
+              </div>
+
+              {/* CARD DE DESTAQUE: MÓDULO CARTEIRA */}
+              <div className="p-3">
+                <Link
+                  href="/carteira"
+                  className="block p-4 bg-gradient-to-br from-stone-900 via-stone-850 to-stone-950 text-white rounded-2xl shadow-md border border-stone-800 hover:border-[#8C6D45]/50 transition-all duration-300 group relative overflow-hidden"
+                >
+                  <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
+
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 bg-[#8C6D45] rounded-lg flex items-center justify-center text-white shadow-xs">
+                        <CreditCardIcon className="w-4 h-4" />
+                      </div>
+                      <span className="font-bold text-xs text-stone-200">Módulo Carteira</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
+                      Exclusivo
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-stone-400 leading-snug">
+                    Gerencie cartões de crédito, saldos e movimentações financeiras.
+                  </p>
+
+                  <div className="mt-3 pt-2.5 border-t border-stone-800/80 flex items-center justify-between text-xs font-bold text-[#C5A880] group-hover:text-white transition-colors">
+                    <span>Acessar Minha Carteira</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+              </div>
+
+              <DropdownMenuSeparator className="bg-stone-100 my-1" />
+
+              {/* Itens do Menu de Usuário */}
+              <div className="p-1 space-y-0.5">
+                {(allowedPaths.includes("*") || allowedPaths.includes("/configuracoes")) && (
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => (window.location.href = "/configuracoes")}
+                      className="px-3 py-2.5 rounded-xl text-xs font-semibold text-stone-700 hover:bg-stone-50 cursor-pointer flex items-center gap-2.5"
+                    >
+                      <SettingsIcon className="w-4 h-4 text-stone-400" />
+                      <span>Configurações Gerais</span>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() => (window.location.href = "/usuarios")}
+                      className="px-3 py-2.5 rounded-xl text-xs font-semibold text-stone-700 hover:bg-stone-50 cursor-pointer flex items-center gap-2.5"
+                    >
+                      <KeyRound className="w-4 h-4 text-stone-400" />
+                      <span>Gerenciar Usuários</span>
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() => (window.location.href = "/perfis")}
+                      className="px-3 py-2.5 rounded-xl text-xs font-semibold text-stone-700 hover:bg-stone-50 cursor-pointer flex items-center gap-2.5"
+                    >
+                      <Shield className="w-4 h-4 text-stone-400" />
+                      <span>Perfis e Acessos (Roles)</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </div>
+
+              <DropdownMenuSeparator className="bg-stone-100 my-1" />
+
+              {/* Botão de Logout */}
+              <div className="p-1.5 bg-stone-50/50">
+                <DropdownMenuItem
+                  onClick={() => logout()}
+                  className="px-3 py-2.5 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 cursor-pointer flex items-center gap-2.5"
+                >
+                  <LogOut className="w-4 h-4 text-red-500" />
+                  <span>Sair da Conta</span>
+                </DropdownMenuItem>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
