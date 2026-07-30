@@ -26,8 +26,11 @@ function formatQrCode(rawQr?: string | null): string | null {
 
 function formatPhoneNumber(phone: string): string {
   let clean = phone.replace(/\D/g, "");
+  if (clean.startsWith("55") && (clean.length === 12 || clean.length === 13)) {
+    return clean;
+  }
   if (clean.length === 10 || clean.length === 11) {
-    clean = `55${clean}`;
+    return `55${clean}`;
   }
   return clean;
 }
