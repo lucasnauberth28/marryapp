@@ -251,45 +251,6 @@ export function MensagensClient({
     }
   };
 
-  const handleSendDirect = async (g: Guest) => {
-    if (!g.phone) return toast.error("Este convidado não possui telefone cadastrado.");
-    if (!chosenTemplateId) return toast.error("Selecione um template de mensagem primeiro!");
-
-    const t = templates.find((tmp) => tmp.id === chosenTemplateId);
-    if (!t) return toast.error("Template não encontrado.");
-
-    let messageText = t.content.replace(/\{nome\}/gi, g.name);
-    if (t.buttons) {
-      try {
-        const btnList: Array<{ id: string; text: string }> = JSON.parse(t.buttons);
-        if (btnList.length > 0) {
-          const baseUrl = window.location.origin;
-          messageText += "\n\n👇 *Acesse abaixo:*";
-          btnList.forEach((b) => {
-            const label = b.text || "";
-            const lower = label.toLowerCase();
-            if (lower.includes("presente") || b.id === "gifts") {
-              messageText += `\n🎁 *${label}:*\n${baseUrl}/presentes`;
-            } else if (lower.includes("recusar") || lower.includes("não") || b.id === "decline") {
-              messageText += `\n❌ *${label}:*\n${baseUrl}/rsvp`;
-            } else {
-              messageText += `\n✅ *${label}:*\n${baseUrl}/rsvp`;
-            }
-          });
-        }
-      } catch (e) {}
-    }
-
-    const cleanPhone = g.phone.replace(/\D/g, "");
-    const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
-    const encodedText = encodeURIComponent(messageText);
-    const waUrl = `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodedText}`;
-
-    window.open(waUrl, "_blank");
-    await markGuestAsSent(g.id);
-    toast.success(`WhatsApp aberto com a mensagem pronta para ${g.name}!`);
-  };
-
   const handleSendMessages = async () => {
     if (!chosenTemplateId) return toast.error("Selecione um template!");
     if (selectedGuests.length === 0) return toast.error("Selecione pelo menos 1 convidado!");
@@ -1073,23 +1034,6 @@ export function MensagensClient({
                           <span className="text-xs text-zinc-400 bg-zinc-50 px-2.5 py-1 rounded-full border border-zinc-200">
                             Pendente
                           </span>
-                        )}
-
-                        {g.phone && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSendDirect(g);
-                            }}
-                            className="rounded-xl text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-400 h-8 flex items-center gap-1 px-2.5 shadow-sm"
-                            title="Abrir no WhatsApp Oficial com mensagem personalizada e links prontos"
-                          >
-                            <Send className="w-3 h-3 text-emerald-600" />
-                            <span>Enviar no App</span>
-                          </Button>
                         )}
                       </div>
                     </div>
