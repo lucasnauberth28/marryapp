@@ -48,6 +48,41 @@ interface SendInteractiveOptions {
 }
 
 /**
+ * Verifica se um número existe no WhatsApp e obtém o número canônico verificado.
+ */
+export async function resolveWhatsappJid(phone: string): Promise<{ exists: boolean; number: string }> {
+  const cleanNumber = formatPhoneNumber(phone);
+  try {
+    const res = await fetch(`${EVOLUTION_URL}/chat/whatsappNumbers/${EVOLUTION_INSTANCE}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: EVOLUTION_KEY!,
+      },
+      body: JSON.stringify({
+        numbers: [cleanNumber],
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data[0]) {
+        if (data[0].exists) {
+          const resolvedNum = data[0].number || data[0].jid?.split("@")[0] || cleanNumber;
+          return { exists: true, number: resolvedNum };
+        } else {
+          return { exists: false, number: cleanNumber };
+        }
+      }
+    }
+  } catch (e) {
+    console.error("[Evolution API] Erro ao consultar whatsappNumbers:", e);
+  }
+
+  return { exists: true, number: cleanNumber };
+}
+
+/**
  * Envia uma mensagem de texto simples via WhatsApp.
  */
 export async function sendTextMessage({ phone, text }: SendMessageOptions) {
@@ -56,30 +91,40 @@ export async function sendTextMessage({ phone, text }: SendMessageOptions) {
     return { success: false, error: "Evolution API não configurada." };
   }
 
-  const cleanNumber = formatPhoneNumber(phone);
+  const { exists, number: cleanNumber } = await resolveWhatsappJid(phone);
 
-  const response = await fetch(
-    `${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: EVOLUTION_KEY!,
-      },
-      body: JSON.stringify({
-        number: cleanNumber,
-        text,
-      }),
-    }
-  );
-
-  if (!response.ok) {
-    const err = await response.text();
-    console.error("[Evolution API] Erro ao enviar mensagem:", err);
-    return { success: false, error: err };
+  if (!exists) {
+    return { success: false, error: `O número ${phone} não possui conta ativa no WhatsApp.` };
   }
 
-  return { success: true };
+  try {
+    const response = await fetch(
+      `${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: EVOLUTION_KEY!,
+        },
+        body: JSON.stringify({
+          number: cleanNumber,
+          text,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const err = await response.text();
+      console.error("[Evolution API] Erro ao enviar mensagem:", response.status, err);
+      return { success: false, error: `HTTP ${response.status}: ${err}` };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error: any) {
+    console.error("[Evolution API] Exceção ao enviar texto:", error);
+    return { success: false, error: error?.message || "Falha ao enviar mensagem de texto." };
+  }
 }
 
 /**
@@ -304,7 +349,11 @@ export async function sendMediaMessage({
     return { success: false, error: "Evolution API não configurada." };
   }
 
-  const cleanNumber = formatPhoneNumber(phone);
+  const { exists, number: cleanNumber } = await resolveWhatsappJid(phone);
+
+  if (!exists) {
+    return { success: false, error: `O número ${phone} não possui conta ativa no WhatsApp.` };
+  }
 
   // Normaliza o mediatype para os valores aceitos pela Evolution API v2: "image" | "video" | "document" | "audio"
   let mediatype = "image";
