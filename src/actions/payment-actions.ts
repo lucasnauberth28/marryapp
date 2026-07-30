@@ -25,7 +25,7 @@ interface CardTransactionInput {
 }
 
 /**
- * Cria uma transação PIX (Estático - Taxa zero)
+ * Cria uma transação PIX (Dinamico via Mercado Pago ou Estático como fallback)
  */
 export async function createPixTransactionAction({
   giftId,
@@ -38,7 +38,7 @@ export async function createPixTransactionAction({
     if (!gift) return { success: false, error: "Presente não encontrado." };
     if (gift.isPurchased) return { success: false, error: "Este presente já foi comprado." };
 
-    // 1. Encontra ou Cadastra o convidado com verificação inteligente de duplicidade (DDD / Phone Match)
+    // 1. Encontra ou Cadastra o convidado sem duplicidades (DDD / Phone Match)
     const guest = await findOrCreateGuest({
       name: guestName,
       phone: guestPhone,
@@ -59,7 +59,45 @@ export async function createPixTransactionAction({
       },
     });
 
-    // 3. Gera o Payload Pix com validação de Chave
+    // 3. Se houver token do Mercado Pago configurado, gera Pix Dinâmico via API do MP
+    const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN;
+    if (mpToken) {
+      try {
+        const mpResponse = await mpPayment.create({
+          body: {
+            transaction_amount: gift.amount / 100,
+            payment_method_id: "pix",
+            description: `Presente de Casamento: ${gift.title}`,
+            payer: {
+              email: guestEmail && guestEmail.includes("@") ? guestEmail : "convidado@casamento.com",
+              first_name: guestName.split(" ")[0],
+              last_name: guestName.split(" ").slice(1).join(" ") || "Convidado",
+            },
+            external_reference: transaction.id,
+          },
+        });
+
+        const mpPixPayload = mpResponse.point_of_interaction?.transaction_data?.qr_code;
+        if (mpPixPayload) {
+          await prisma.transaction.update({
+            where: { id: transaction.id },
+            data: { gatewayId: String(mpResponse.id) },
+          });
+
+          return {
+            success: true,
+            transactionId: transaction.id,
+            pixPayload: mpPixPayload,
+            amount: gift.amount,
+            isDynamicMp: true,
+          };
+        }
+      } catch (mpErr) {
+        console.warn("[createPixTransactionAction MP Error, falling back to static Pix]:", mpErr);
+      }
+    }
+
+    // 4. Fallback Pix Estático
     const pixKey = (process.env.PIX_KEY || "11967794744").trim();
     const merchantName = (process.env.PIX_MERCHANT_NAME || "Lucas e Giovanna").trim();
     const merchantCity = (process.env.PIX_MERCHANT_CITY || "Sao Paulo").trim();
@@ -69,7 +107,7 @@ export async function createPixTransactionAction({
       merchantName,
       merchantCity,
       amount: gift.amount,
-      description: gift.title,
+      txId: `MARRY${transaction.id.replace(/-/g, "").substring(0, 10)}`,
     });
 
     return {
@@ -77,6 +115,7 @@ export async function createPixTransactionAction({
       transactionId: transaction.id,
       pixPayload,
       amount: gift.amount,
+      isDynamicMp: false,
     };
   } catch (error: any) {
     console.error("[createPixTransactionAction Error]:", error);
@@ -101,17 +140,14 @@ export async function processCardPaymentAction({
     if (!gift) return { success: false, error: "Presente não encontrado." };
     if (gift.isPurchased) return { success: false, error: "Este presente já foi comprado." };
 
-    // Calcula as taxas
     const { finalAmount, fee } = calculateCardFee(gift.amount);
 
-    // 1. Encontra ou Cadastra o Convidado sem duplicidade
     const guest = await findOrCreateGuest({
       name: guestName,
       phone: guestPhone,
       email: payerEmail,
     });
 
-    // 2. Cria a Transação no banco como PENDING
     const transaction = await prisma.transaction.create({
       data: {
         guestName,
@@ -125,9 +161,8 @@ export async function processCardPaymentAction({
       },
     });
 
-    // 3. Faz a cobrança no Mercado Pago se o SDK estiver configurado
-    if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
-      // Modo Simulação/Demonstração quando token do MP não configurado no .env
+    const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN;
+    if (!mpToken) {
       await prisma.$transaction([
         prisma.transaction.update({
           where: { id: transaction.id },
@@ -199,7 +234,7 @@ export async function processCardPaymentAction({
           gatewayId: String(mpResponse.id),
         },
       });
-      return { success: false, error: "Pagamento recuzado pelo banco emissor." };
+      return { success: false, error: "Pagamento recusado pelo banco emissor." };
     }
   } catch (error: any) {
     console.error("[processCardPaymentAction Error]:", error);

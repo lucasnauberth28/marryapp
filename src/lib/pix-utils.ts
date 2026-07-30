@@ -9,6 +9,7 @@ interface GeneratePixOptions {
   merchantCity: string;
   amount: number; // Valor em centavos
   description?: string;
+  txId?: string;
 }
 
 /**
@@ -25,33 +26,33 @@ function sanitizeEMV(text: string, maxLength: number): string {
 }
 
 /**
- * Higieniza e padroniza a Chave PIX (E-mail, CPF, Telefone, CNPJ ou Chave Aleatória EVP)
+ * Higieniza a Chave PIX conforme os padrões DICT do Banco Central
  */
 function cleanPixKey(rawKey: string): string {
   const trimmed = rawKey.trim();
-  
-  // Se for e-mail
+
+  // E-mail
   if (trimmed.includes("@")) {
     return trimmed.toLowerCase();
   }
 
-  // Se for UUID / Chave Aleatória EVP (ex: 123e4567-e89b-12d3-a456-426614174000)
+  // EVP / Chave Aleatória
   if (trimmed.length === 36 && (trimmed.match(/-/g) || []).length === 4) {
     return trimmed.toLowerCase();
   }
 
-  // Se o usuário digitou explicitamente com +, preserva o formato com +
+  // Telefone internacional explícito (+55...)
   if (trimmed.startsWith("+")) {
     return "+" + trimmed.replace(/\D/g, "");
   }
 
-  // Para CPF, CNPJ ou Telefone sem +: limpa pontuações e mantém apenas os dígitos
-  const digitsOnly = trimmed.replace(/\D/g, "");
-  return digitsOnly || trimmed;
+  // CPF, CNPJ ou Telefone sem +
+  const digits = trimmed.replace(/\D/g, "");
+  return digits || trimmed;
 }
 
 /**
- * Calcula o CRC16 CCITT (0xFFFF) exigido pelo Banco Central
+ * Calcula o CRC16 CCITT (0xFFFF, Polinômio 0x1021) conforme norma EMV / Banco Central
  */
 function calculateCRC16(payload: string): string {
   let crc = 0xffff;
@@ -86,48 +87,48 @@ export function generatePixPayload({
   merchantName,
   merchantCity,
   amount,
-  description,
+  txId = "MARRYAPP",
 }: GeneratePixOptions): string {
-  // Higienização da Chave PIX
   const sanitizedKey = cleanPixKey(pixKey);
 
-  // 00 - Payload Format Indicator (Fixo 01)
+  // 00 - Format Indicator
   let payload = formatEMVField("00", "01");
 
-  // 26 - Merchant Account Information (GUI + Chave PIX)
+  // 26 - Merchant Account Information
   const gui = formatEMVField("00", "br.gov.bcb.pix");
   const key = formatEMVField("01", sanitizedKey);
   payload += formatEMVField("26", `${gui}${key}`);
 
-  // 52 - Merchant Category Code (0000 = Geral)
+  // 52 - Merchant Category Code
   payload += formatEMVField("52", "0000");
 
-  // 53 - Transaction Currency (986 = Real Brasileiro BRL)
+  // 53 - Currency (986 = BRL)
   payload += formatEMVField("53", "986");
 
-  // 54 - Transaction Amount (Formato: 10.00)
+  // 54 - Transaction Amount (Formato: 30.00)
   const amountStr = (amount / 100).toFixed(2);
   payload += formatEMVField("54", amountStr);
 
   // 58 - Country Code (BR)
   payload += formatEMVField("58", "BR");
 
-  // 59 - Merchant Name (Nome do recebedor, max 25 chars)
+  // 59 - Merchant Name
   const name = sanitizeEMV(merchantName || "LUCAS E GIOVANNA", 25);
   payload += formatEMVField("59", name || "MARRYAPP");
 
-  // 60 - Merchant City (Cidade do recebedor, max 15 chars)
+  // 60 - Merchant City
   const city = sanitizeEMV(merchantCity || "SAO PAULO", 15);
   payload += formatEMVField("60", city || "SAO PAULO");
 
-  // 62 - Additional Data Field Template (TxID *** para Pix Estático)
-  const txId = formatEMVField("05", "***");
-  payload += formatEMVField("62", txId);
+  // 62 - Additional Data Field Template (TxID alfanumérico limpo)
+  const sanitizedTxId = sanitizeEMV(txId || "MARRYAPP", 20);
+  const txIdField = formatEMVField("05", sanitizedTxId || "MARRYAPP");
+  payload += formatEMVField("62", txIdField);
 
-  // 63 - CRC16 (Início do marcador 6304)
+  // 63 - CRC16 Marker
   payload += "6304";
 
-  // Calcula e concatena o Checksum CRC16
+  // Checksum
   const crc = calculateCRC16(payload);
 
   return payload + crc;
