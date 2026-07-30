@@ -158,6 +158,54 @@ export async function confirmPixPaymentAction(transactionId: string) {
 }
 
 /**
+ * Verifica automaticamente se o pagamento foi aprovado no Mercado Pago ou Banco (Polling)
+ */
+export async function checkTransactionStatusAction(transactionId: string) {
+  try {
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+      include: { gift: true, guest: true },
+    });
+
+    if (!transaction) return { approved: false };
+
+    if (transaction.status === PaymentStatus.APPROVED) {
+      return { approved: true };
+    }
+
+    if (transaction.gatewayId && !transaction.gatewayId.startsWith("SIM_CARD_")) {
+      try {
+        const mpResponse = await mpPayment.get({ id: transaction.gatewayId });
+        if (mpResponse.status === "approved") {
+          await prisma.$transaction([
+            prisma.transaction.update({
+              where: { id: transactionId },
+              data: { status: PaymentStatus.APPROVED },
+            }),
+            prisma.gift.update({
+              where: { id: transaction.giftId },
+              data: { isPurchased: true },
+            }),
+          ]);
+
+          revalidatePath("/presentes");
+          revalidatePath("/presentes-admin");
+          revalidatePath("/financas");
+
+          return { approved: true };
+        }
+      } catch (mpErr) {
+        // Silencioso se o gatewayId ainda não estiver disponível
+      }
+    }
+
+    return { approved: false };
+  } catch (error) {
+    return { approved: false };
+  }
+}
+
+/**
  * Processa o checkout com cartão de crédito via Mercado Pago (Checkout Transparente)
  */
 export async function processCardPaymentAction({

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useEffect } from "react";
 import { GiftLocal as Gift } from "@/types/local";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   createPixTransactionAction,
   confirmPixPaymentAction,
+  checkTransactionStatusAction,
   processCardPaymentAction,
 } from "@/actions/payment-actions";
 import { motion, AnimatePresence } from "framer-motion";
@@ -53,6 +54,21 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
   const [payerEmail, setPayerEmail] = useState("");
   const [installments, setInstallments] = useState(1);
   const [error, setError] = useState<string | null>(null);
+
+  // Polling automático em tempo real para PIX Dinâmico via Mercado Pago
+  useEffect(() => {
+    if (step !== "PAYMENT" || !transactionId) return;
+
+    const interval = setInterval(async () => {
+      const res = await checkTransactionStatusAction(transactionId);
+      if (res.approved) {
+        clearInterval(interval);
+        setStep("SUCCESS");
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [step, transactionId]);
 
   // Conversão para Real
   function formatPrice(amount: number) {
