@@ -51,7 +51,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
       </div>
 
       <div className="text-center text-xs text-zinc-400 py-4 font-sans">
-        Lucas & Giovanna © 2026 — Presenteie com Amor ❤️
+        Lucas & Giovanna © 2027 — Presenteie com Amor ❤️
       </div>
     </div>
   );

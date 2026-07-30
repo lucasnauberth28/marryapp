@@ -33,7 +33,7 @@ export function PublicHeaderFooter({ children }: { children: React.ReactNode }) 
 
           <div className="flex items-center gap-2 text-xs font-serif italic text-amber-900 bg-amber-50/80 border border-amber-200/80 px-3 py-1 rounded-full shadow-2xs">
             <span className="font-semibold text-zinc-700">Data do Casamento:</span>
-            <span className="font-bold text-amber-900">14 de Novembro de 2026</span>
+            <span className="font-bold text-amber-900">11 de Outubro de 2027</span>
           </div>
         </div>
       </header>
@@ -44,7 +44,7 @@ export function PublicHeaderFooter({ children }: { children: React.ReactNode }) 
       {/* Footer minimalista */}
       <footer className="border-t border-zinc-200/50 bg-white py-4">
         <div className="max-w-6xl mx-auto px-6 text-center text-[11px] text-zinc-400 font-sans">
-          Lucas & Giovanna © 2026 — Feito com ❤️ para o nosso grande dia
+          Lucas & Giovanna © 2027 — Feito com ❤️ para o nosso grande dia
         </div>
       </footer>
     </div>
