@@ -124,6 +124,40 @@ export async function createPixTransactionAction({
 }
 
 /**
+ * Conclui a confirmação do PIX (quando o convidado clica em "Já fiz o Pix" ou no admin)
+ */
+export async function confirmPixPaymentAction(transactionId: string) {
+  try {
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+      include: { gift: true, guest: true },
+    });
+
+    if (!transaction) return { success: false, error: "Transação não encontrada." };
+
+    await prisma.$transaction([
+      prisma.transaction.update({
+        where: { id: transactionId },
+        data: { status: PaymentStatus.APPROVED },
+      }),
+      prisma.gift.update({
+        where: { id: transaction.giftId },
+        data: { isPurchased: true },
+      }),
+    ]);
+
+    revalidatePath("/presentes");
+    revalidatePath("/presentes-admin");
+    revalidatePath("/financas");
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("[confirmPixPaymentAction Error]:", error);
+    return { success: false, error: error?.message || "Erro ao confirmar pagamento Pix." };
+  }
+}
+
+/**
  * Processa o checkout com cartão de crédito via Mercado Pago (Checkout Transparente)
  */
 export async function processCardPaymentAction({

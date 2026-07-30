@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   createPixTransactionAction,
+  confirmPixPaymentAction,
   processCardPaymentAction,
 } from "@/actions/payment-actions";
 import { motion, AnimatePresence } from "framer-motion";
@@ -40,6 +41,7 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
 
   // Dados do Pix Gerado
   const [pixPayload, setPixPayload] = useState("");
+  const [transactionId, setTransactionId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   // Dados do Cartão
@@ -140,6 +142,7 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
 
         if (result.success && result.pixPayload) {
           setPixPayload(result.pixPayload);
+          setTransactionId(result.transactionId || null);
           setStep("PAYMENT");
         } else {
           setError(result.error ?? "Erro ao gerar o Pix.");
@@ -563,14 +566,14 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="space-y-8 flex flex-col items-center text-center"
+            className="space-y-6 flex flex-col items-center text-center"
           >
-            <div className="pb-2">
+            <div className="pb-1">
               <h2 className="text-3xl font-black text-zinc-900 tracking-tight">
                 Efetue o Pix
               </h2>
               <p className="text-zinc-500 text-sm mt-1">
-                Aponte a câmera do seu banco ou copie o código EMV.
+                Aponte a câmera do seu banco ou copie o código PIX abaixo.
               </p>
             </div>
 
@@ -582,7 +585,7 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
               <Button
                 variant="outline"
                 onClick={copyToClipboard}
-                className="w-full rounded-full h-14 gap-2 text-zinc-800 font-extrabold border-2 hover:bg-zinc-50 shadow-sm"
+                className="w-full rounded-full h-14 gap-2 text-zinc-800 font-extrabold border-2 hover:bg-zinc-50 shadow-sm text-sm"
               >
                 {copied ? (
                   <CheckCircle2 className="w-5 h-5 text-emerald-600" />
@@ -594,16 +597,35 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
                   : "Copiar Código Pix Copia e Cola"}
               </Button>
 
-              <div className="flex items-center justify-center gap-2 text-zinc-400 font-medium text-xs mt-2 bg-zinc-50 py-3 px-4 rounded-2xl">
-                <Lock className="w-4 h-4 text-zinc-400" /> Transação
-                Criptografada e Segura
+              <Button
+                onClick={() => {
+                  startTransition(async () => {
+                    if (transactionId) {
+                      await confirmPixPaymentAction(transactionId);
+                    }
+                    setStep("SUCCESS");
+                  });
+                }}
+                disabled={isPending}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-full h-14 text-base font-bold gap-2 shadow-lg transition-all"
+              >
+                {isPending ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="w-5 h-5" />
+                )}
+                <span>Já fiz o Pix! Confirmar Presente</span>
+              </Button>
+
+              <div className="flex items-center justify-center gap-2 text-zinc-400 font-medium text-xs mt-2 bg-zinc-50 py-2.5 px-4 rounded-2xl">
+                <Lock className="w-4 h-4 text-zinc-400" /> Transação Criptografada e Segura
               </div>
             </div>
 
             <Button
               variant="ghost"
               onClick={() => setStep("METHOD")}
-              className="rounded-full h-12 gap-1 text-zinc-400 hover:text-zinc-600 font-bold"
+              className="rounded-full h-10 gap-1 text-zinc-400 hover:text-zinc-600 font-bold text-xs"
             >
               <ArrowLeft className="w-4 h-4" /> Alterar Forma de Pagamento
             </Button>
