@@ -25,6 +25,33 @@ function sanitizeEMV(text: string, maxLength: number): string {
 }
 
 /**
+ * Higieniza e padroniza a Chave PIX (E-mail, CPF, Telefone, CNPJ ou Chave Aleatória EVP)
+ */
+function cleanPixKey(rawKey: string): string {
+  const trimmed = rawKey.trim();
+  
+  // Se for e-mail
+  if (trimmed.includes("@")) {
+    return trimmed.toLowerCase();
+  }
+
+  // Se for UUID / Chave Aleatória EVP (ex: 123e4567-e89b-12d3-a456-426614174000)
+  if (trimmed.length === 36 && (trimmed.match(/-/g) || []).length === 4) {
+    return trimmed.toLowerCase();
+  }
+
+  // Para CPF, CNPJ ou Telefone: remove parênteses, traços, pontos e espaços
+  let digitsOnly = trimmed.replace(/\D/g, "");
+
+  // Se for telefone celular brasileiro com 10 ou 11 dígitos, insere +55 se necessário
+  if (digitsOnly.length === 10 || digitsOnly.length === 11) {
+    return `+55${digitsOnly}`;
+  }
+
+  return digitsOnly || trimmed;
+}
+
+/**
  * Calcula o CRC16 CCITT (0xFFFF) exigido pelo Banco Central
  */
 function calculateCRC16(payload: string): string {
@@ -62,17 +89,16 @@ export function generatePixPayload({
   amount,
   description,
 }: GeneratePixOptions): string {
-  // Limpa a chave PIX (se for e-mail mantém como está; se for telefone/CPF remove caracteres especiais)
-  const cleanPixKey = pixKey.includes("@") ? pixKey.trim() : pixKey.trim().replace(/\s+/g, "");
+  // Higienização da Chave PIX
+  const sanitizedKey = cleanPixKey(pixKey);
 
   // 00 - Payload Format Indicator (Fixo 01)
   let payload = formatEMVField("00", "01");
 
-  // 26 - Merchant Account Information (GUI + Chave PIX + Descrição opcional)
+  // 26 - Merchant Account Information (GUI + Chave PIX)
   const gui = formatEMVField("00", "br.gov.bcb.pix");
-  const key = formatEMVField("01", cleanPixKey);
-  const desc = description ? formatEMVField("02", sanitizeEMV(description, 20)) : "";
-  payload += formatEMVField("26", `${gui}${key}${desc}`);
+  const key = formatEMVField("01", sanitizedKey);
+  payload += formatEMVField("26", `${gui}${key}`);
 
   // 52 - Merchant Category Code (0000 = Geral)
   payload += formatEMVField("52", "0000");
