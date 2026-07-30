@@ -145,18 +145,34 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
       }
     }
 
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://marryapp.vercel.app";
+
     // Mapeia os convidados para o formato esperado pela Evolution API
     const recipients = guests
       .map((g) => {
         const cleanPhone = g.phone ? g.phone.replace(/\D/g, "") : "";
         let messageText = template.content.replace(/\{nome\}/gi, g.name);
 
+        if (parsedButtons && parsedButtons.length > 0) {
+          messageText += "\n\n👇 *Acesse abaixo:*";
+          parsedButtons.forEach((btn) => {
+            const label = btn.text || "";
+            const lower = label.toLowerCase();
+            if (lower.includes("presente") || btn.id === "gifts") {
+              messageText += `\n🎁 *${label}:*\n${baseUrl}/presentes`;
+            } else if (lower.includes("recusar") || lower.includes("não") || btn.id === "decline") {
+              messageText += `\n❌ *${label}:*\n${baseUrl}/rsvp`;
+            } else {
+              messageText += `\n✅ *${label}:*\n${baseUrl}/rsvp`;
+            }
+          });
+        }
+
         return {
           phone: cleanPhone,
           message: messageText,
           mediaUrl: template.mediaUrl,
           mediaType: template.mediaType,
-          buttons: parsedButtons,
         };
       })
       .filter((r) => r.phone.length >= 8);
@@ -175,10 +191,9 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
       return { success: false, error: `Falha no envio: ${firstError}`, results };
     }
 
-    const successPhones = results.filter((r) => r.success).map((r) => r.phone);
-    if (successPhones.length > 0) {
+    if (sent > 0) {
       await prisma.guest.updateMany({
-        where: { phone: { in: guests.map((g) => g.id) } },
+        where: { id: { in: guests.map((g) => g.id) } },
         data: { hasReceivedMessage: true },
       });
     }

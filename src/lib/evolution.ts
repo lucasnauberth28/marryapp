@@ -352,33 +352,9 @@ export async function sendMediaMessage({
   }
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://seuapp.vercel.app";
-
-function formatMessageWithButtons(message: string, buttons?: Array<{ id: string; text: string }> | null): string {
-  if (!buttons || buttons.length === 0) return message;
-
-  let text = message.trim();
-  text += "\n\n👇 *Acesse abaixo:*";
-
-  buttons.forEach((btn) => {
-    const btnText = btn.text || "";
-    const lower = btnText.toLowerCase();
-
-    if (lower.includes("presente") || btn.id === "gifts") {
-      text += `\n🎁 *${btnText}:*\n${APP_URL}/presentes`;
-    } else if (lower.includes("recusar") || lower.includes("não") || btn.id === "decline") {
-      text += `\n❌ *${btnText}:*\n${APP_URL}/rsvp`;
-    } else {
-      text += `\n✅ *${btnText}:*\n${APP_URL}/rsvp`;
-    }
-  });
-
-  return text;
-}
-
 /**
- * Dispara mensagens para uma lista de convidados com rate limiting.
- * Suporta mensagens de texto puro e mensagens com mídia, formatando botões como links clicáveis.
+ * Dispara mensagens para uma lista de convidados com rate limiting anti-ban.
+ * Suporta mensagens de texto simples e mensagens com mídia (imagens, documentos, áudios).
  */
 export async function sendBulkMessages(
   recipients: Array<{ 
@@ -386,9 +362,8 @@ export async function sendBulkMessages(
     message: string; 
     mediaUrl?: string | null; 
     mediaType?: string | null; 
-    buttons?: Array<{ id: string; text: string }> | null;
   }>,
-  baseDelayMs = 2000
+  baseDelayMs = 1500
 ) {
   const results = [];
 
@@ -396,26 +371,23 @@ export async function sendBulkMessages(
     const r = recipients[i];
     let result;
     
-    // Formata o texto incluindo os links formatados se houver botões cadastrados
-    const finalMessage = formatMessageWithButtons(r.message, r.buttons);
-
-    // Se houver mediaUrl, dispara mídia com legenda contendo os links
+    // Se houver mediaUrl válida, envia mensagem com mídia e legenda
     if (r.mediaUrl && r.mediaUrl.trim() !== "") {
       result = await sendMediaMessage({ 
         phone: r.phone, 
         mediaUrl: r.mediaUrl.trim(), 
         mediaType: r.mediaType || "image", 
-        caption: finalMessage 
+        caption: r.message 
       });
     } else {
-      result = await sendTextMessage({ phone: r.phone, text: finalMessage });
+      result = await sendTextMessage({ phone: r.phone, text: r.message });
     }
 
     results.push({ phone: r.phone, ...result });
 
-    // Anti-ban delay randômico entre mensagens (2 a 5s)
+    // Delay randômico anti-ban entre mensagens (1.5 a 3.5 segundos)
     if (i < recipients.length - 1) {
-      const randomDelay = baseDelayMs + Math.floor(Math.random() * 3000);
+      const randomDelay = baseDelayMs + Math.floor(Math.random() * 2000);
       await new Promise((resolve) => setTimeout(resolve, randomDelay));
     }
   }
