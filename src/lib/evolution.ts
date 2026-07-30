@@ -12,7 +12,7 @@ if (rawUrl.includes("railway.app")) {
 }
 const EVOLUTION_URL = rawUrl.trim().replace(/\/+$/, "");
 const EVOLUTION_KEY = (process.env.EVOLUTION_API_KEY || "marryapp123").trim();
-const EVOLUTION_INSTANCE = (process.env.EVOLUTION_INSTANCE || "marryapp").trim();
+const EVOLUTION_INSTANCE = (process.env.EVOLUTION_INSTANCE || "marryapp-oficial").trim();
 
 function isConfigured() {
   return !!(EVOLUTION_URL && EVOLUTION_KEY && EVOLUTION_INSTANCE);
