@@ -109,6 +109,8 @@ export async function sendTextMessage({ phone, text }: SendMessageOptions) {
         body: JSON.stringify({
           number: cleanNumber,
           text,
+          delay: 1200,
+          linkPreview: true,
         }),
       }
     );
