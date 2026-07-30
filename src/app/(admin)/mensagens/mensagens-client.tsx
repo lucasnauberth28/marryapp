@@ -78,6 +78,9 @@ export function MensagensClient({
   // Controls editor mode vs grid view mode
   const [isEditingMode, setIsEditingMode] = useState(false);
 
+  // iPhone 15 Plus chassis color option
+  const [iphoneColor, setIphoneColor] = useState<"blue" | "natural" | "pink" | "black">("blue");
+
   // Form states
   const [selectedTemplate, setSelectedTemplate] = useState<MessageTemplate | null>(null);
   const [name, setName] = useState("");
@@ -659,100 +662,173 @@ export function MensagensClient({
                 </form>
               </Card>
 
-              {/* Lado Direito: SIMULADOR DE APP DE MENSAGENS EM TEMPO REAL (5 Cols) */}
+              {/* Lado Direito: SIMULADOR DE APP DE MENSAGENS EM TEMPO REAL (IPHONE 15 PLUS) */}
               <div className="lg:col-span-5 sticky top-24">
-                <div className="text-center mb-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-3 py-1 rounded-full border border-amber-200">
-                    📱 Simulador WhatsApp em Tempo Real
-                  </span>
+                {/* Seletor de Cores do iPhone 15 Plus */}
+                <div className="text-center mb-3">
+                  <div className="inline-flex items-center gap-1 bg-white p-1 rounded-2xl border border-zinc-200 shadow-sm text-xs font-medium">
+                    <span className="text-[11px] text-zinc-500 font-semibold px-2 flex items-center gap-1">
+                      <Smartphone className="w-3.5 h-3.5 text-zinc-700" /> iPhone 15 Plus:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIphoneColor("blue")}
+                      className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition ${
+                        iphoneColor === "blue" ? "bg-blue-900 text-white shadow-sm" : "text-zinc-600 hover:text-zinc-900"
+                      }`}
+                    >
+                      Azul Titânio
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIphoneColor("natural")}
+                      className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition ${
+                        iphoneColor === "natural" ? "bg-stone-600 text-white shadow-sm" : "text-zinc-600 hover:text-zinc-900"
+                      }`}
+                    >
+                      Natural
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIphoneColor("pink")}
+                      className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition ${
+                        iphoneColor === "pink" ? "bg-pink-800 text-white shadow-sm" : "text-zinc-600 hover:text-zinc-900"
+                      }`}
+                    >
+                      Rosa
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIphoneColor("black")}
+                      className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition ${
+                        iphoneColor === "black" ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-600 hover:text-zinc-900"
+                      }`}
+                    >
+                      Preto
+                    </button>
+                  </div>
                 </div>
 
-                {/* Smartphone Container */}
-                <div className="bg-zinc-900 border-[6px] border-zinc-800 rounded-[42px] p-3 shadow-2xl overflow-hidden max-w-[340px] mx-auto text-zinc-100 relative">
-                  {/* Smartphone Top Notch & Status Bar */}
-                  <div className="flex justify-between items-center px-4 pt-1 pb-2 text-[10px] text-zinc-400 font-mono border-b border-zinc-800/60">
-                    <span>10:28</span>
-                    <div className="w-16 h-3 bg-zinc-800 rounded-full mx-auto" />
-                    <div className="flex items-center gap-1.5">
-                      <Wifi className="w-3 h-3" />
-                      <Battery className="w-3 h-3" />
-                    </div>
-                  </div>
+                {/* iPhone 15 Plus Physical Mockup Container */}
+                <div className="relative max-w-[340px] mx-auto py-2">
+                  {/* Left Side Buttons: Action Button + Volume Up + Volume Down */}
+                  <div className="absolute left-[-4px] top-24 w-[4px] h-6 bg-zinc-700 rounded-l-md shadow-sm" />
+                  <div className="absolute left-[-4px] top-34 w-[4px] h-11 bg-zinc-700 rounded-l-md shadow-sm" />
+                  <div className="absolute left-[-4px] top-48 w-[4px] h-11 bg-zinc-700 rounded-l-md shadow-sm" />
 
-                  {/* Chat Header Bar */}
-                  <div className="bg-[#1f2c34] px-3 py-2.5 flex items-center gap-3 border-b border-zinc-800">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 text-white flex items-center justify-center text-xs font-bold shadow-sm">
-                      <Heart className="w-4 h-4 fill-white" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-zinc-100 leading-tight">Casamento Lucas & Giovanna</h4>
-                      <p className="text-[10px] text-emerald-400">online no WhatsApp</p>
-                    </div>
-                  </div>
+                  {/* Right Side Button: Power / Lock Button */}
+                  <div className="absolute right-[-4px] top-36 w-[4px] h-16 bg-zinc-700 rounded-r-md shadow-sm" />
 
-                  {/* Chat Wall Canvas (WhatsApp Pattern Dark Wallpaper) */}
-                  <div className="bg-[#0b141a] p-3 min-h-[380px] max-h-[460px] overflow-y-auto space-y-3 font-sans relative">
-                    {/* Fake Conversation Received Bubble */}
-                    <div className="flex justify-start">
-                      <div className="bg-[#202c33] text-zinc-200 p-2.5 rounded-xl rounded-tl-none max-w-[85%] text-xs shadow-sm space-y-1">
-                        <p className="leading-relaxed text-[11px]">
-                          Olá! Vocês já lançaram os convites oficiais e a lista de presentes do casamento? 🎉
-                        </p>
-                        <span className="text-[9px] text-zinc-400 block text-right">10:27</span>
+                  {/* iPhone 15 Plus Frame Chassis */}
+                  <div
+                    className={`border-[9px] rounded-[52px] p-2 shadow-2xl overflow-hidden transition-all duration-500 relative text-zinc-100 ${
+                      iphoneColor === "blue"
+                        ? "bg-[#16222f] border-[#2c3d50] shadow-blue-950/60 ring-2 ring-[#3b516b]/50"
+                        : iphoneColor === "natural"
+                        ? "bg-[#292724] border-[#4a4742] shadow-amber-950/40 ring-2 ring-[#615e58]/50"
+                        : iphoneColor === "pink"
+                        ? "bg-[#331d24] border-[#593440] shadow-pink-950/60 ring-2 ring-[#704251]/50"
+                        : "bg-[#111214] border-[#25272a] shadow-black/90 ring-2 ring-[#34373b]/50"
+                    }`}
+                  >
+                    {/* iPhone Dynamic Island & iOS Status Bar */}
+                    <div className="relative bg-[#1f2c34] text-zinc-100 pt-2 pb-1.5 px-4 rounded-t-[42px] border-b border-zinc-800 flex items-center justify-between">
+                      {/* iOS 17 Time */}
+                      <span className="text-[11px] font-bold font-sans tracking-tight">09:41</span>
+
+                      {/* Dynamic Island Pill */}
+                      <div className="w-24 h-4.5 bg-black rounded-full flex items-center justify-between px-2 shadow-inner border border-zinc-800/80">
+                        <div className="w-2 h-2 rounded-full bg-[#0d131a] border border-zinc-800" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-950/70 border border-blue-900/60" />
+                      </div>
+
+                      {/* iOS Battery & Wifi */}
+                      <div className="flex items-center gap-1">
+                        <Wifi className="w-3 h-3 text-zinc-200" />
+                        <Battery className="w-3.5 h-3.5 text-zinc-200" />
                       </div>
                     </div>
 
-                    {/* LIVE SIMULATION BUBBLE OF CURRENT TEMPLATE */}
-                    <div className="flex justify-end">
-                      <div className="bg-[#005c4b] text-zinc-100 p-3 rounded-2xl rounded-tr-none max-w-[90%] text-xs shadow-md space-y-2 border border-emerald-600/30">
-                        {/* Media Image Preview */}
-                        {mediaUrl && (
-                          <div className="rounded-lg overflow-hidden bg-black/40 border border-emerald-700/40 p-1">
-                            {mediaType === "image" ? (
-                              <img src={mediaUrl} alt="Visualização da Mídia" className="max-h-36 object-cover rounded-md w-full" />
-                            ) : (
-                              <div className="flex items-center gap-2 p-2 text-xs text-emerald-200">
-                                <Paperclip className="w-4 h-4" />
-                                <span>Arquivo: {mediaType}</span>
-                              </div>
-                            )}
+                    {/* WhatsApp Chat Header */}
+                    <div className="bg-[#1f2c34] px-3 py-2 flex items-center gap-2.5 border-b border-zinc-800/80">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                        <Heart className="w-3.5 h-3.5 fill-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-bold text-zinc-100 truncate">Casamento Lucas & Giovanna</h4>
+                        <p className="text-[9px] text-emerald-400 font-medium">online no WhatsApp</p>
+                      </div>
+                    </div>
+
+                    {/* Chat Canvas (WhatsApp Dark Wallpaper Pattern) */}
+                    <div className="bg-[#0b141a] p-3 min-h-[380px] max-h-[460px] overflow-y-auto space-y-3 font-sans relative">
+                      {/* Fake Received Message Bubble */}
+                      <div className="flex justify-start">
+                        <div className="bg-[#202c33] text-zinc-200 p-2.5 rounded-2xl rounded-tl-none max-w-[85%] text-xs shadow-sm space-y-1">
+                          <p className="leading-relaxed text-[11px]">
+                            Olá! Vocês já lançaram os convites oficiais e a lista de presentes do casamento? 🎉
+                          </p>
+                          <span className="text-[9px] text-zinc-400 block text-right">09:40</span>
+                        </div>
+                      </div>
+
+                      {/* LIVE SIMULATION BUBBLE OF CURRENT TEMPLATE */}
+                      <div className="flex justify-end">
+                        <div className="bg-[#005c4b] text-zinc-100 p-3 rounded-2xl rounded-tr-none max-w-[90%] text-xs shadow-md space-y-2 border border-emerald-600/30">
+                          {/* Media Image Preview */}
+                          {mediaUrl && (
+                            <div className="rounded-lg overflow-hidden bg-black/40 border border-emerald-700/40 p-1">
+                              {mediaType === "image" ? (
+                                <img src={mediaUrl} alt="Visualização da Mídia" className="max-h-36 object-cover rounded-md w-full" />
+                              ) : (
+                                <div className="flex items-center gap-2 p-2 text-xs text-emerald-200">
+                                  <Paperclip className="w-4 h-4" />
+                                  <span>Arquivo: {mediaType}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Text Message Live Content */}
+                          <p className="text-xs text-zinc-100 whitespace-pre-wrap leading-relaxed">
+                            {(content || "Sua mensagem aparecerá aqui em tempo real...").replace(/\{nome\}/gi, "Giovanni Nespoli")}
+                          </p>
+
+                          {/* Interactive Buttons Live Simulation */}
+                          {buttonsList.length > 0 && (
+                            <div className="border-t border-emerald-600/50 pt-2 space-y-1.5">
+                              {buttonsList.map((btn, idx) => (
+                                <div
+                                  key={idx}
+                                  className="w-full bg-[#111b21] hover:bg-[#1f2c34] text-emerald-400 font-bold text-[11px] py-1.5 px-2.5 rounded-lg text-center border border-emerald-700/40 shadow-sm flex items-center justify-center gap-1"
+                                >
+                                  <span>{btn.text || `Botão #${idx + 1}`}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-end gap-1 text-[9px] text-emerald-200/80 pt-0.5">
+                            <span>09:41</span>
+                            <CheckCheck className="w-3 h-3 text-cyan-400" />
                           </div>
-                        )}
-
-                        {/* Text Message Live Content */}
-                        <p className="text-xs text-zinc-100 whitespace-pre-wrap leading-relaxed">
-                          {(content || "Sua mensagem aparecerá aqui em tempo real...").replace(/\{nome\}/gi, "Giovanni Nespoli")}
-                        </p>
-
-                        {/* Interactive Buttons Live Simulation */}
-                        {buttonsList.length > 0 && (
-                          <div className="border-t border-emerald-600/50 pt-2 space-y-1.5">
-                            {buttonsList.map((btn, idx) => (
-                              <div
-                                key={idx}
-                                className="w-full bg-[#111b21] hover:bg-[#1f2c34] text-emerald-400 font-bold text-[11px] py-1.5 px-2.5 rounded-lg text-center border border-emerald-700/40 shadow-sm flex items-center justify-center gap-1"
-                              >
-                                <span>{btn.text || `Botão #${idx + 1}`}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-end gap-1 text-[9px] text-emerald-200/80 pt-0.5">
-                          <span>10:28</span>
-                          <CheckCheck className="w-3 h-3 text-cyan-400" />
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Smartphone Footer Fake Input Bar */}
-                  <div className="bg-[#1f2c34] p-2 flex items-center gap-2 border-t border-zinc-800 text-xs text-zinc-500">
-                    <div className="bg-[#2a3942] px-3 py-1.5 rounded-full flex-1 text-[11px] text-zinc-400">
-                      Digite uma mensagem...
+                    {/* WhatsApp Footer Fake Input Bar */}
+                    <div className="bg-[#1f2c34] p-2 flex items-center gap-2 border-t border-zinc-800 text-xs text-zinc-500">
+                      <div className="bg-[#2a3942] px-3 py-1.5 rounded-full flex-1 text-[11px] text-zinc-400">
+                        Digite uma mensagem...
+                      </div>
+                      <div className="w-7 h-7 rounded-full bg-[#00a884] text-white flex items-center justify-center">
+                        <Send className="w-3.5 h-3.5 fill-white" />
+                      </div>
                     </div>
-                    <div className="w-7 h-7 rounded-full bg-[#00a884] text-white flex items-center justify-center">
-                      <Send className="w-3.5 h-3.5 fill-white" />
+
+                    {/* iOS Home Indicator Bar */}
+                    <div className="bg-[#1f2c34] pt-1 pb-1 flex justify-center rounded-b-[40px]">
+                      <div className="w-28 h-1 bg-white/70 rounded-full" />
                     </div>
                   </div>
                 </div>
