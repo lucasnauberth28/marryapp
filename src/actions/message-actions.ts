@@ -210,3 +210,17 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
     return { success: false, error: `Falha geral: ${error?.message || String(error)}` };
   }
 }
+
+export async function markGuestAsSent(guestId: string) {
+  try {
+    await prisma.guest.update({
+      where: { id: guestId },
+      data: { hasReceivedMessage: true },
+    });
+    revalidatePath("/(admin)/convidados", "page");
+    revalidatePath("/(admin)/mensagens", "page");
+    return { success: true };
+  } catch (e: any) {
+    return { success: false, error: e?.message || "Erro ao atualizar status." };
+  }
+}
