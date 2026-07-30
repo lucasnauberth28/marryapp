@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { generatePixPayload } from "@/lib/pix-utils";
 import { calculateCardFee, mpPayment } from "@/lib/mercadopago";
+import { findOrCreateGuest } from "@/lib/guest-matching";
 import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
@@ -10,6 +11,7 @@ interface PixTransactionInput {
   giftId: string;
   guestName: string;
   guestPhone: string;
+  guestEmail?: string;
 }
 
 interface CardTransactionInput {
@@ -29,19 +31,18 @@ export async function createPixTransactionAction({
   giftId,
   guestName,
   guestPhone,
+  guestEmail,
 }: PixTransactionInput) {
   try {
     const gift = await prisma.gift.findUnique({ where: { id: giftId } });
     if (!gift) return { success: false, error: "Presente não encontrado." };
     if (gift.isPurchased) return { success: false, error: "Este presente já foi comprado." };
 
-    // 1. Cadastra/Encontra o convidado
-    const guest = await prisma.guest.create({
-      data: {
-        name: guestName,
-        phone: guestPhone.replace(/\D/g, ""),
-        rsvpStatus: "CONFIRMED", // Assume confirmado ao presentear
-      },
+    // 1. Encontra ou Cadastra o convidado com verificação inteligente de duplicidade (DDD / Phone Match)
+    const guest = await findOrCreateGuest({
+      name: guestName,
+      phone: guestPhone,
+      email: guestEmail,
     });
 
     // 2. Registra a Transação no banco
@@ -58,17 +59,17 @@ export async function createPixTransactionAction({
       },
     });
 
-    // 3. Gera o Payload Pix
-    const pixKey = process.env.PIX_KEY || "suachavepix@email.com";
-    const merchantName = process.env.PIX_MERCHANT_NAME || "Casamento";
-    const merchantCity = process.env.PIX_MERCHANT_CITY || "Sao Paulo";
+    // 3. Gera o Payload Pix com validação de Chave
+    const pixKey = (process.env.PIX_KEY || "lucasnauberth28@gmail.com").trim();
+    const merchantName = (process.env.PIX_MERCHANT_NAME || "Lucas e Giovanna").trim();
+    const merchantCity = (process.env.PIX_MERCHANT_CITY || "Sao Paulo").trim();
 
     const pixPayload = generatePixPayload({
       pixKey,
       merchantName,
       merchantCity,
       amount: gift.amount,
-      description: `Presente: ${gift.title}`,
+      description: gift.title,
     });
 
     return {
@@ -77,9 +78,9 @@ export async function createPixTransactionAction({
       pixPayload,
       amount: gift.amount,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("[createPixTransactionAction Error]:", error);
-    return { success: false, error: "Erro ao gerar cobrança Pix." };
+    return { success: false, error: error?.message || "Erro ao gerar cobrança Pix." };
   }
 }
 
@@ -103,13 +104,11 @@ export async function processCardPaymentAction({
     // Calcula as taxas
     const { finalAmount, fee } = calculateCardFee(gift.amount);
 
-    // 1. Cria o Guest
-    const guest = await prisma.guest.create({
-      data: {
-        name: guestName,
-        phone: guestPhone.replace(/\D/g, ""),
-        rsvpStatus: "CONFIRMED",
-      },
+    // 1. Encontra ou Cadastra o Convidado sem duplicidade
+    const guest = await findOrCreateGuest({
+      name: guestName,
+      phone: guestPhone,
+      email: payerEmail,
     });
 
     // 2. Cria a Transação no banco como PENDING
@@ -126,8 +125,29 @@ export async function processCardPaymentAction({
       },
     });
 
-    // 3. Faz a cobrança no Mercado Pago
-    // Nota: O SDK do Mercado Pago espera o valor em float (ex: 150.50)
+    // 3. Faz a cobrança no Mercado Pago se o SDK estiver configurado
+    if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
+      // Modo Simulação/Demonstração quando token do MP não configurado no .env
+      await prisma.$transaction([
+        prisma.transaction.update({
+          where: { id: transaction.id },
+          data: {
+            status: PaymentStatus.APPROVED,
+            gatewayId: `SIM_CARD_${Date.now()}`,
+          },
+        }),
+        prisma.gift.update({
+          where: { id: gift.id },
+          data: { isPurchased: true },
+        }),
+      ]);
+
+      revalidatePath("/presentes");
+      revalidatePath("/presentes-admin");
+
+      return { success: true, status: "APPROVED", transactionId: transaction.id };
+    }
+
     const mpResponse = await mpPayment.create({
       body: {
         transaction_amount: finalAmount / 100,
@@ -140,12 +160,11 @@ export async function processCardPaymentAction({
           first_name: guestName.split(" ")[0],
           last_name: guestName.split(" ").slice(1).join(" ") || "Silva",
         },
-        external_reference: transaction.id, // Mapeia o ID interno
+        external_reference: transaction.id,
       },
     });
 
     if (mpResponse.status === "approved") {
-      // Atualiza banco com APPROVED e marca presente como comprado
       await prisma.$transaction([
         prisma.transaction.update({
           where: { id: transaction.id },
@@ -180,10 +199,10 @@ export async function processCardPaymentAction({
           gatewayId: String(mpResponse.id),
         },
       });
-      return { success: false, error: "Pagamento recusado pelo banco." };
+      return { success: false, error: "Pagamento recuzado pelo banco emissor." };
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("[processCardPaymentAction Error]:", error);
-    return { success: false, error: "Erro ao processar pagamento com cartão." };
+    return { success: false, error: error?.message || "Erro ao processar pagamento com cartão." };
   }
 }

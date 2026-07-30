@@ -1,6 +1,6 @@
 /**
  * Utilitários para geração de Payload Pix Estático (BR Code)
- * Baseado na especificação do Banco Central do Brasil.
+ * Baseado na especificação oficial do Banco Central do Brasil (EMV QRCPS / BR Code).
  */
 
 interface GeneratePixOptions {
@@ -12,7 +12,20 @@ interface GeneratePixOptions {
 }
 
 /**
- * Calcula o CRC16 CCITT (0xFFFF)
+ * Sanitiza texto removendo caracteres especiais e acentos para conformidade EMV
+ */
+function sanitizeEMV(text: string, maxLength: number): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+    .replace(/[^a-zA-Z0-9 ]/g, "")   // Apenas alfanuméricos
+    .trim()
+    .toUpperCase()
+    .substring(0, maxLength);
+}
+
+/**
+ * Calcula o CRC16 CCITT (0xFFFF) exigido pelo Banco Central
  */
 function calculateCRC16(payload: string): string {
   let crc = 0xffff;
@@ -35,7 +48,7 @@ function calculateCRC16(payload: string): string {
 }
 
 /**
- * Formata um campo no padrão EMV (ID + Tamanho + Valor)
+ * Formata um campo no padrão EMV (ID + Tamanho com 2 dígitos + Valor)
  */
 function formatEMVField(id: string, value: string): string {
   const len = value.length.toString().padStart(2, "0");
@@ -47,52 +60,49 @@ export function generatePixPayload({
   merchantName,
   merchantCity,
   amount,
-  description = "Presente de Casamento",
+  description,
 }: GeneratePixOptions): string {
-  // 00 - Payload Format Indicator (Fixo)
+  // Limpa a chave PIX (se for e-mail mantém como está; se for telefone/CPF remove caracteres especiais)
+  const cleanPixKey = pixKey.includes("@") ? pixKey.trim() : pixKey.trim().replace(/\s+/g, "");
+
+  // 00 - Payload Format Indicator (Fixo 01)
   let payload = formatEMVField("00", "01");
 
-  // 26 - Merchant Account Information
+  // 26 - Merchant Account Information (GUI + Chave PIX + Descrição opcional)
   const gui = formatEMVField("00", "br.gov.bcb.pix");
-  const key = formatEMVField("01", pixKey);
-  const desc = description ? formatEMVField("02", description) : "";
+  const key = formatEMVField("01", cleanPixKey);
+  const desc = description ? formatEMVField("02", sanitizeEMV(description, 20)) : "";
   payload += formatEMVField("26", `${gui}${key}${desc}`);
 
-  // 52 - Merchant Category Code
+  // 52 - Merchant Category Code (0000 = Geral)
   payload += formatEMVField("52", "0000");
 
-  // 53 - Transaction Currency (986 = Real)
+  // 53 - Transaction Currency (986 = Real Brasileiro BRL)
   payload += formatEMVField("53", "986");
 
-  // 54 - Transaction Amount (Formato: 10.00 ou 1500.50)
+  // 54 - Transaction Amount (Formato: 10.00)
   const amountStr = (amount / 100).toFixed(2);
   payload += formatEMVField("54", amountStr);
 
-  // 58 - Country Code
+  // 58 - Country Code (BR)
   payload += formatEMVField("58", "BR");
 
-  // 59 - Merchant Name (Max 25 chars)
-  const sanitizedName = merchantName
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Remove acentos
-    .substring(0, 25);
-  payload += formatEMVField("59", sanitizedName);
+  // 59 - Merchant Name (Nome do recebedor, max 25 chars)
+  const name = sanitizeEMV(merchantName || "LUCAS E GIOVANNA", 25);
+  payload += formatEMVField("59", name || "MARRYAPP");
 
-  // 60 - Merchant City (Max 15 chars)
-  const sanitizedCity = merchantCity
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .substring(0, 15);
-  payload += formatEMVField("60", sanitizedCity);
+  // 60 - Merchant City (Cidade do recebedor, max 15 chars)
+  const city = sanitizeEMV(merchantCity || "SAO PAULO", 15);
+  payload += formatEMVField("60", city || "SAO PAULO");
 
-  // 62 - Additional Data Field Template
-  const txId = formatEMVField("05", "***"); // Pix estático pode usar ***
+  // 62 - Additional Data Field Template (TxID *** para Pix Estático)
+  const txId = formatEMVField("05", "***");
   payload += formatEMVField("62", txId);
 
-  // 63 - CRC16 (Início do campo)
+  // 63 - CRC16 (Início do marcador 6304)
   payload += "6304";
 
-  // Calcula o CRC16 do payload completo até agora
+  // Calcula e concatena o Checksum CRC16
   const crc = calculateCRC16(payload);
 
   return payload + crc;
