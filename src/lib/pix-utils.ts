@@ -26,7 +26,12 @@ function sanitizeEMV(text: string, maxLength: number): string {
 }
 
 /**
- * Higieniza a Chave PIX conforme os padrões DICT do Banco Central
+ * Higieniza a Chave PIX conforme a norma oficial do Banco Central (DICT / EMV QRCPS):
+ * - Telefone Celular: Formato E.164 obrigatoriamente iniciado com +55 (ex: +5511967794744)
+ * - CPF: 11 dígitos numéricos
+ * - CNPJ: 14 dígitos numéricos
+ * - E-mail: Em minúsculas
+ * - EVP: UUID 36 caracteres com hífen
  */
 function cleanPixKey(rawKey: string): string {
   const trimmed = rawKey.trim();
@@ -36,19 +41,26 @@ function cleanPixKey(rawKey: string): string {
     return trimmed.toLowerCase();
   }
 
-  // EVP / Chave Aleatória
+  // EVP / Chave Aleatória (UUID v4 36 caracteres)
   if (trimmed.length === 36 && (trimmed.match(/-/g) || []).length === 4) {
     return trimmed.toLowerCase();
   }
 
-  // Telefone internacional explícito (+55...)
+  // Se já possui DDI + (ex: +5511967794744)
   if (trimmed.startsWith("+")) {
     return "+" + trimmed.replace(/\D/g, "");
   }
 
-  // CPF, CNPJ ou Telefone sem +
-  const digits = trimmed.replace(/\D/g, "");
-  return digits || trimmed;
+  const digitsOnly = trimmed.replace(/\D/g, "");
+
+  // Se for telefone celular brasileiro (10 ou 11 dígitos iniciados com DDD válido)
+  // No Banco Central DICT, chaves de telefone são OBRIGATORIAMENTE formatadas com +55
+  if (digitsOnly.length === 10 || digitsOnly.length === 11) {
+    return `+55${digitsOnly}`;
+  }
+
+  // Para CPF (11 dígitos não-telefone) ou CNPJ
+  return digitsOnly || trimmed;
 }
 
 /**
@@ -91,18 +103,18 @@ export function generatePixPayload({
 }: GeneratePixOptions): string {
   const sanitizedKey = cleanPixKey(pixKey);
 
-  // 00 - Format Indicator
+  // 00 - Format Indicator (Fixo 01)
   let payload = formatEMVField("00", "01");
 
-  // 26 - Merchant Account Information
+  // 26 - Merchant Account Information (GUI + Chave PIX)
   const gui = formatEMVField("00", "br.gov.bcb.pix");
   const key = formatEMVField("01", sanitizedKey);
   payload += formatEMVField("26", `${gui}${key}`);
 
-  // 52 - Merchant Category Code
+  // 52 - Merchant Category Code (0000 = Geral)
   payload += formatEMVField("52", "0000");
 
-  // 53 - Currency (986 = BRL)
+  // 53 - Currency (986 = Real BRL)
   payload += formatEMVField("53", "986");
 
   // 54 - Transaction Amount (Formato: 30.00)
@@ -112,11 +124,11 @@ export function generatePixPayload({
   // 58 - Country Code (BR)
   payload += formatEMVField("58", "BR");
 
-  // 59 - Merchant Name
+  // 59 - Merchant Name (Nome do recebedor, max 25 chars)
   const name = sanitizeEMV(merchantName || "LUCAS E GIOVANNA", 25);
   payload += formatEMVField("59", name || "MARRYAPP");
 
-  // 60 - Merchant City
+  // 60 - Merchant City (Cidade do recebedor, max 15 chars)
   const city = sanitizeEMV(merchantCity || "SAO PAULO", 15);
   payload += formatEMVField("60", city || "SAO PAULO");
 
