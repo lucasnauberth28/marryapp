@@ -60,7 +60,7 @@ export async function createPixTransactionAction({
     });
 
     // 3. Gera o Payload Pix com validação de Chave
-    const pixKey = (process.env.PIX_KEY || "lucasnauberth@gmail.com").trim();
+    const pixKey = (process.env.PIX_KEY || "11967794744").trim();
     const merchantName = (process.env.PIX_MERCHANT_NAME || "Lucas e Giovanna").trim();
     const merchantCity = (process.env.PIX_MERCHANT_CITY || "Sao Paulo").trim();
 

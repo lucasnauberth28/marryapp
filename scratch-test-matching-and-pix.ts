@@ -1,9 +1,9 @@
 import { generatePixPayload } from "./src/lib/pix-utils";
 
 function testPix() {
-  console.log("=== TESTING EMV PIX WITH KEY lucasnauberth@gmail.com ===");
+  console.log("=== TESTING EMV PIX WITH PHONE KEY 11967794744 ===");
   const payload = generatePixPayload({
-    pixKey: "lucasnauberth@gmail.com",
+    pixKey: "11967794744",
     merchantName: "Lucas e Giovanna",
     merchantCity: "Sao Paulo",
     amount: 3000, // R$ 30,00
