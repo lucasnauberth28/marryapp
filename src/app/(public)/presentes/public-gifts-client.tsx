@@ -65,8 +65,8 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
     <div className="flex flex-col gap-8 pb-16">
       {/* Hero Section Minimalista e Sem Borda */}
       <div className="text-center max-w-xl mx-auto py-2 space-y-2">
-        <div className="w-10 h-10 rounded-2xl bg-amber-100/80 text-amber-800 flex items-center justify-center mx-auto mb-1">
-          <Heart className="w-5 h-5 fill-amber-700 text-amber-700" />
+        <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-1">
+          <Heart className="w-5 h-5 fill-primary text-primary" />
         </div>
         <h1 className="text-2xl sm:text-3xl font-bold font-serif italic text-zinc-900 tracking-tight">
           Lista de Presentes de Casamento
@@ -83,7 +83,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
             <CreditCard className="w-3 h-3 text-indigo-600" /> Cartão de Crédito até 12x
           </span>
           <span className="flex items-center gap-1 text-zinc-600 bg-white/80 px-2.5 py-1 rounded-full border border-zinc-200/60 shadow-2xs">
-            <ShieldCheck className="w-3 h-3 text-amber-600" /> Checkout Seguro
+            <ShieldCheck className="w-3 h-3 text-primary" /> Checkout Seguro
           </span>
         </div>
       </div>
@@ -106,7 +106,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
             onClick={() => setSortBy("default")}
             className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
               sortBy === "default"
-                ? "bg-zinc-900 text-white shadow-xs"
+                ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
             }`}
           >
@@ -116,7 +116,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
             onClick={() => setSortBy("asc")}
             className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
               sortBy === "asc"
-                ? "bg-zinc-900 text-white shadow-xs"
+                ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
             }`}
           >
@@ -126,7 +126,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
             onClick={() => setSortBy("desc")}
             className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
               sortBy === "desc"
-                ? "bg-zinc-900 text-white shadow-xs"
+                ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
             }`}
           >
@@ -148,7 +148,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
             <div
               key={gift.id}
               onClick={() => setSelectedGift(gift)}
-              className={`bg-white rounded-3xl border border-zinc-200/80 shadow-xs hover:shadow-xl hover:-translate-y-1 hover:border-amber-300 transition-all duration-300 flex flex-col justify-between cursor-pointer group relative overflow-hidden ${
+              className={`bg-white rounded-3xl border border-zinc-200/80 shadow-xs hover:shadow-xl hover:-translate-y-1 hover:border-primary/40 transition-all duration-300 flex flex-col justify-between cursor-pointer group relative overflow-hidden ${
                 gift.isPurchased ? "opacity-75 bg-zinc-50/80" : ""
               }`}
             >
@@ -177,7 +177,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
                 ) : (
                   <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                     <span className="bg-white/90 backdrop-blur-md text-zinc-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1">
-                      <Eye className="w-3.5 h-3.5 text-amber-700" /> Ver Detalhes
+                      <Eye className="w-3.5 h-3.5 text-primary" /> Ver Detalhes
                     </span>
                   </div>
                 )}
@@ -186,7 +186,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
               {/* Informações do Presente */}
               <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                 <div>
-                  <h3 className="text-lg font-bold text-zinc-900 group-hover:text-amber-900 transition-colors line-clamp-1">
+                  <h3 className="text-lg font-bold text-zinc-900 group-hover:text-primary transition-colors line-clamp-1">
                     {gift.title}
                   </h3>
                   <p className="text-xs text-zinc-500 mt-1.5 line-clamp-2 leading-relaxed">
@@ -219,7 +219,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
                         e.stopPropagation();
                         setSelectedGift(gift);
                       }}
-                      className="rounded-xl px-4 text-xs font-bold bg-zinc-900 hover:bg-amber-900 text-white shadow-xs transition-all flex items-center gap-1.5"
+                      className="rounded-xl px-4 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-all flex items-center gap-1.5"
                     >
                       <span>Ver Presente</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -265,8 +265,8 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
               <div className="md:w-[40%] p-5 sm:p-6 flex flex-col justify-between space-y-4 bg-white overflow-y-auto max-h-[82vh]">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 bg-amber-100/80 px-2.5 py-0.5 rounded-full border border-amber-200/80 inline-flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-amber-700" /> Casamento Lucas & Giovanna
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20 inline-flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-primary" /> Casamento Lucas & Giovanna
                     </span>
                   </div>
 
@@ -282,8 +282,8 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
                   </div>
 
                   {/* Card de Valor da Contribuição */}
-                  <div className="bg-gradient-to-br from-amber-50/80 to-amber-100/40 p-3.5 rounded-xl border border-amber-200/60 space-y-0.5 mt-2 shadow-2xs">
-                    <span className="text-[9px] font-extrabold uppercase tracking-widest text-amber-900/70 block">
+                  <div className="bg-primary/5 p-3.5 rounded-xl border border-primary/20 space-y-0.5 mt-2 shadow-2xs">
+                    <span className="text-[9px] font-extrabold uppercase tracking-widest text-primary block">
                       Valor da Contribuição
                     </span>
                     <span className="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight block">
@@ -302,7 +302,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
                     </Button>
                   ) : (
                     <Link href={`/checkout/${selectedGift.id}`} className="block w-full">
-                      <Button className="w-full bg-gradient-to-r from-amber-700 via-amber-800 to-zinc-900 hover:from-amber-800 hover:to-zinc-800 text-white rounded-xl py-3 px-4 text-xs sm:text-sm font-bold shadow-md flex items-center justify-center gap-2 transition-all">
+                      <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl py-3 px-4 text-xs sm:text-sm font-bold shadow-md flex items-center justify-center gap-2 transition-all">
                         <span>Presentear Agora</span>
                         <ArrowRight className="w-4 h-4" />
                       </Button>

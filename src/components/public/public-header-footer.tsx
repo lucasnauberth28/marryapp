@@ -23,17 +23,17 @@ export function PublicHeaderFooter({ children }: { children: React.ReactNode }) 
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-7 h-7 bg-gradient-to-tr from-amber-700 to-amber-500 rounded-lg flex items-center justify-center shadow-sm">
-              <Heart className="w-3.5 h-3.5 fill-white text-white" />
+            <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center shadow-xs">
+              <Heart className="w-3.5 h-3.5 fill-primary-foreground text-primary-foreground" />
             </div>
-            <span className="font-serif italic font-bold text-base text-zinc-900 tracking-tight group-hover:text-amber-800 transition-colors">
+            <span className="font-serif italic font-bold text-base text-zinc-900 tracking-tight group-hover:text-primary transition-colors">
               Lucas & Giovanna
             </span>
           </Link>
 
-          <div className="flex items-center gap-2 text-xs font-serif italic text-amber-900 bg-amber-50/80 border border-amber-200/80 px-3 py-1 rounded-full shadow-2xs">
+          <div className="flex items-center gap-2 text-xs font-serif italic text-primary bg-primary/10 border border-primary/25 px-3 py-1 rounded-full shadow-2xs">
             <span className="font-semibold text-zinc-700">Data do Casamento:</span>
-            <span className="font-bold text-amber-900">11 de Outubro de 2027</span>
+            <span className="font-bold text-primary">11 de Outubro de 2027</span>
           </div>
         </div>
       </header>
