@@ -314,16 +314,28 @@ export async function processCardPaymentAction({
 
     const cardTokenId = tokenData.id;
 
-    // 2. Processa a cobrança usando o Card Token oficial obtido
-    const cleanMethod = (paymentMethodId || "visa").toLowerCase().replace(/[^a-z]/g, "");
+    // 2. Mapeia a bandeira para o código oficial aceito pelo Mercado Pago (ex: "master" em vez de "mastercard")
+    const mapPaymentMethodId = (rawMethod: string): string => {
+      const clean = (rawMethod || "").toLowerCase().trim();
+      if (clean.includes("master")) return "master";
+      if (clean.includes("visa")) return "visa";
+      if (clean.includes("amex") || clean.includes("american")) return "amex";
+      if (clean.includes("elo")) return "elo";
+      if (clean.includes("hiper")) return "hipercard";
+      if (clean.includes("diners")) return "diners";
+      return "master";
+    };
 
+    const mpPaymentMethodId = mapPaymentMethodId(paymentMethodId);
+
+    // 3. Processa a cobrança usando o Card Token oficial obtido
     const mpResponse = await mpPayment.create({
       body: {
         transaction_amount: finalAmount / 100,
         token: cardTokenId,
         description: `Presente de Casamento: ${gift.title}`,
         installments: Number(installments) || 1,
-        payment_method_id: cleanMethod === "desconhecido" ? "visa" : cleanMethod,
+        payment_method_id: mpPaymentMethodId,
         payer: {
           email: payerEmail && payerEmail.includes("@") ? payerEmail : "convidado@casamento.com",
           first_name: guestName.split(" ")[0],

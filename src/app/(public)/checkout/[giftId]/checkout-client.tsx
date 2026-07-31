@@ -82,18 +82,18 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
   const feePercent = 0.0499;
   const cardFinalAmount = Math.round(gift.amount / (1 - feePercent));
 
-  // Identificação de Bandeira do Cartão
+  // Identificação de Bandeira do Cartão (Padrão Mercado Pago: master, visa, amex, elo)
   const cardBrand = useMemo(() => {
     const cleanNumber = cardNumber.replace(/\s/g, "");
     if (cleanNumber.startsWith("4"))
-      return { name: "Visa", color: "from-blue-600 to-blue-800" };
+      return { name: "Visa", mpId: "visa", color: "from-blue-600 to-blue-800" };
     if (cleanNumber.startsWith("5"))
-      return { name: "Mastercard", color: "from-red-500 to-orange-600" };
+      return { name: "Mastercard", mpId: "master", color: "from-red-500 to-orange-600" };
     if (cleanNumber.startsWith("3"))
-      return { name: "Amex", color: "from-emerald-600 to-teal-800" };
+      return { name: "Amex", mpId: "amex", color: "from-emerald-600 to-teal-800" };
     if (cleanNumber.startsWith("6"))
-      return { name: "Discover", color: "from-orange-500 to-amber-600" };
-    return { name: "Desconhecido", color: "from-zinc-800 to-zinc-950" };
+      return { name: "Discover", mpId: "discover", color: "from-orange-500 to-amber-600" };
+    return { name: "Mastercard", mpId: "master", color: "from-zinc-800 to-zinc-950" };
   }, [cardNumber]);
 
   // Cor do Cartão baseada no Banco (ou na bandeira)
@@ -177,7 +177,7 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
           cardName,
           cardExpiry,
           cardCvv,
-          paymentMethodId: cardBrand.name.toLowerCase(),
+          paymentMethodId: cardBrand.mpId,
           installments: installments,
           payerEmail,
         });
