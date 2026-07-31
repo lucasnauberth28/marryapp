@@ -164,26 +164,28 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
           setError(result.error ?? "Erro ao gerar o Pix.");
         }
       } else {
-        if (!payerEmail || !cardNumber || !cardName || !cardBank) {
+        if (!payerEmail || !cardNumber || !cardName || !cardExpiry || !cardCvv) {
           setError("Preencha todos os campos do cartão.");
           return;
         }
 
-        const dummyToken = "tok_dummy_checkout_marryapp_" + Date.now();
         const result = await processCardPaymentAction({
           giftId: gift.id,
           guestName,
           guestPhone,
-          token: dummyToken,
+          cardNumber,
+          cardName,
+          cardExpiry,
+          cardCvv,
           paymentMethodId: cardBrand.name.toLowerCase(),
           installments: installments,
-          payerEmail: payerEmail,
+          payerEmail,
         });
 
         if (result.success) {
           setStep("SUCCESS");
         } else {
-          setError(result.error ?? "Erro ao processar o cartão.");
+          setError(result.error ?? "Erro ao processar o pagamento.");
         }
       }
     });

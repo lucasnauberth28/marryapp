@@ -18,7 +18,10 @@ interface CardTransactionInput {
   giftId: string;
   guestName: string;
   guestPhone: string;
-  token: string;
+  cardNumber: string;
+  cardName: string;
+  cardExpiry: string; // "MM/AA" ou "MM/YYYY"
+  cardCvv: string;
   paymentMethodId: string;
   installments: number;
   payerEmail: string;
@@ -212,7 +215,10 @@ export async function processCardPaymentAction({
   giftId,
   guestName,
   guestPhone,
-  token,
+  cardNumber,
+  cardName,
+  cardExpiry,
+  cardCvv,
   paymentMethodId,
   installments,
   payerEmail,
@@ -265,17 +271,63 @@ export async function processCardPaymentAction({
       return { success: true, status: "APPROVED", transactionId: transaction.id };
     }
 
+    // 1. Tokeniza os dados do cartão via API oficial do Mercado Pago
+    const cleanCardNum = cardNumber.replace(/\D/g, "");
+    const cleanCvv = cardCvv.replace(/\D/g, "");
+    const [expMonthStr, expYearStr] = cardExpiry.split("/");
+    const expMonth = parseInt(expMonthStr, 10);
+    let expYear = parseInt(expYearStr, 10);
+    if (expYear < 100) expYear += 2000;
+
+    const tokenResponse = await fetch("https://api.mercadopago.com/v1/card_tokens", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${mpToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        card_number: cleanCardNum,
+        expiration_month: expMonth,
+        expiration_year: expYear,
+        security_code: cleanCvv,
+        cardholder: {
+          name: cardName.trim().toUpperCase() || guestName.toUpperCase(),
+        },
+      }),
+    });
+
+    const tokenData = await tokenResponse.json();
+
+    if (!tokenResponse.ok || !tokenData.id) {
+      const errorMessage =
+        tokenData.message ||
+        tokenData.cause?.[0]?.description ||
+        "Dados do cartão recusados pelo validador do Mercado Pago.";
+      
+      await prisma.transaction.update({
+        where: { id: transaction.id },
+        data: { status: PaymentStatus.FAILED },
+      });
+
+      return { success: false, error: `Cartão recusado: ${errorMessage}` };
+    }
+
+    const cardTokenId = tokenData.id;
+
+    // 2. Processa a cobrança usando o Card Token oficial obtido
+    const cleanMethod = (paymentMethodId || "visa").toLowerCase().replace(/[^a-z]/g, "");
+
     const mpResponse = await mpPayment.create({
       body: {
         transaction_amount: finalAmount / 100,
-        token,
+        token: cardTokenId,
         description: `Presente de Casamento: ${gift.title}`,
-        installments: Number(installments),
-        payment_method_id: paymentMethodId,
+        installments: Number(installments) || 1,
+        payment_method_id: cleanMethod === "desconhecido" ? "visa" : cleanMethod,
         payer: {
-          email: payerEmail,
+          email: payerEmail && payerEmail.includes("@") ? payerEmail : "convidado@casamento.com",
           first_name: guestName.split(" ")[0],
-          last_name: guestName.split(" ").slice(1).join(" ") || "Silva",
+          last_name: guestName.split(" ").slice(1).join(" ") || "Convidado",
         },
         external_reference: transaction.id,
       },
@@ -316,7 +368,7 @@ export async function processCardPaymentAction({
           gatewayId: String(mpResponse.id),
         },
       });
-      return { success: false, error: "Pagamento recusado pelo banco emissor." };
+      return { success: false, error: "Pagamento recusado pelo banco emissor do cartão." };
     }
   } catch (error: any) {
     console.error("[processCardPaymentAction Error]:", error);
