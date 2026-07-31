@@ -432,40 +432,40 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
                   </div>
                 </motion.div>
 
-                {/* Formulário do Cartão */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5 md:col-span-2">
+                {/* FORMULÁRIO DE DADOS DO CARTÃO */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                  <div className="space-y-1.5">
                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                      E-mail para confirmação
+                      E-mail para Comprovante
                     </label>
                     <Input
+                      type="email"
                       value={payerEmail}
                       onChange={(e) => setPayerEmail(e.target.value)}
-                      placeholder="seu@email.com"
-                      type="email"
+                      placeholder="seuemail@exemplo.com"
                       className="bg-zinc-50/50 border-zinc-200 h-12 rounded-2xl font-medium"
                     />
                   </div>
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                      Banco
+                      Banco Emissor
                     </label>
                     <Input
                       value={cardBank}
                       onChange={(e) => setCardBank(e.target.value)}
-                      placeholder="Ex: Nubank, Itaú"
+                      placeholder="Ex: Nubank, Itaú, Bradesco"
                       className="bg-zinc-50/50 border-zinc-200 h-12 rounded-2xl font-medium"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 md:col-span-2">
                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                      Nome no Cartão
+                      Nome Impresso no Cartão
                     </label>
                     <Input
                       value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
+                      onChange={(e) => setCardName(e.target.value.toUpperCase())}
                       placeholder="JOAO M SILVA"
                       className="bg-zinc-50/50 border-zinc-200 h-12 rounded-2xl font-bold uppercase"
                     />
@@ -477,24 +477,30 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
                     </label>
                     <Input
                       value={cardNumber}
-                      onChange={(e) =>
-                        setCardNumber(
-                          e.target.value.replace(/\D/g, "").substring(0, 16),
-                        )
-                      }
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "").substring(0, 16);
+                        setCardNumber(raw);
+                      }}
                       placeholder="0000 0000 0000 0000"
-                      maxLength={16}
-                      className="bg-zinc-50/50 border-zinc-200 h-12 rounded-2xl font-mono text-base font-bold"
+                      maxLength={19}
+                      className="bg-zinc-50/50 border-zinc-200 h-12 rounded-2xl font-mono text-base font-bold tracking-wider"
                     />
                   </div>
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                      Validade
+                      Validade (MM/AA)
                     </label>
                     <Input
                       value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, "").substring(0, 4);
+                        if (raw.length >= 3) {
+                          setCardExpiry(`${raw.slice(0, 2)}/${raw.slice(2)}`);
+                        } else {
+                          setCardExpiry(raw);
+                        }
+                      }}
                       placeholder="MM/AA"
                       maxLength={5}
                       className="bg-zinc-50/50 border-zinc-200 h-12 rounded-2xl font-mono font-bold"
@@ -503,13 +509,14 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
 
                   <div className="space-y-1.5">
                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                      CVV
+                      Código de Segurança (CVV)
                     </label>
                     <Input
+                      type="password"
                       value={cardCvv}
                       onChange={(e) =>
                         setCardCvv(
-                          e.target.value.replace(/\D/g, "").substring(0, 4),
+                          e.target.value.replace(/\D/g, "").substring(0, 4)
                         )
                       }
                       placeholder="123"
@@ -518,7 +525,7 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
                     />
                   </div>
 
-                  {/* NOVO CAMPO: SELEÇÃO DE PARCELAS (MÁX 12X) */}
+                  {/* SELEÇÃO DE PARCELAS (MÁX 12X) */}
                   <div className="space-y-1.5 md:col-span-2">
                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
                       Opções de Parcelamento
@@ -526,12 +533,12 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
                     <select
                       value={installments}
                       onChange={(e) => setInstallments(Number(e.target.value))}
-                      className="w-full bg-zinc-50/50 border border-zinc-200 h-12 rounded-2xl px-4 font-semibold text-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                      className="w-full bg-zinc-50/50 border border-zinc-200 h-12 rounded-2xl px-4 font-semibold text-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 cursor-pointer"
                     >
                       {[...Array(12)].map((_, i) => {
                         const count = i + 1;
                         const installmentAmount = Math.round(
-                          cardFinalAmount / count,
+                          cardFinalAmount / count
                         );
                         return (
                           <option key={count} value={count}>
