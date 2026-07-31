@@ -380,7 +380,25 @@ export async function processCardPaymentAction({
           gatewayId: String(mpResponse.id),
         },
       });
-      return { success: false, error: "Pagamento recusado pelo banco emissor do cartão." };
+
+      const statusDetail = mpResponse.status_detail || "";
+      const statusDetailMessages: Record<string, string> = {
+        cc_rejected_bad_filled_card_number: "Número do cartão incorreto.",
+        cc_rejected_bad_filled_date: "Data de validade incorreta.",
+        cc_rejected_bad_filled_security_code: "Código CVV incorreto.",
+        cc_rejected_bad_filled_other: "Dados do cartão incompletos ou incorretos.",
+        cc_rejected_insufficient_amount: "Cartão sem limite ou saldo suficiente.",
+        cc_rejected_high_risk: "Recusado pelo sistema antifraude (O Mercado Pago bloqueia quando o titular da conta paga a si mesmo).",
+        cc_rejected_card_disabled: "Cartão bloqueado ou desativado pelo banco.",
+        cc_rejected_call_for_authorize: "Pagamento pendente de autorização no aplicativo do seu banco.",
+        cc_rejected_duplicated_payment: "Pagamento duplicado detectado em curto intervalo.",
+      };
+
+      const friendlyError =
+        statusDetailMessages[statusDetail] ||
+        `Recusado pelo banco (${statusDetail || "verifique os dados do cartão"}).`;
+
+      return { success: false, error: friendlyError };
     }
   } catch (error: any) {
     console.error("[processCardPaymentAction Error]:", error);
