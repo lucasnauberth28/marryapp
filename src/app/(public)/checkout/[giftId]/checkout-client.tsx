@@ -613,27 +613,12 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
                   : "Copiar Código Pix Copia e Cola"}
               </Button>
 
-              <Button
-                onClick={() => {
-                  startTransition(async () => {
-                    if (transactionId) {
-                      await confirmPixPaymentAction(transactionId);
-                    }
-                    setStep("SUCCESS");
-                  });
-                }}
-                disabled={isPending}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-full h-14 text-base font-bold gap-2 shadow-lg transition-all"
-              >
-                {isPending ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="w-5 h-5" />
-                )}
-                <span>Já fiz o Pix! Confirmar Presente</span>
-              </Button>
+              <div className="flex items-center justify-center gap-2.5 text-[#8C6D45] bg-[#FAF7F2] border border-[#8C6D45]/20 font-semibold text-xs py-3 px-4 rounded-2xl w-full shadow-xs">
+                <Loader2 className="w-4 h-4 animate-spin text-[#8C6D45]" />
+                <span>Aguardando confirmação automática do pagamento...</span>
+              </div>
 
-              <div className="flex items-center justify-center gap-2 text-zinc-400 font-medium text-xs mt-2 bg-zinc-50 py-2.5 px-4 rounded-2xl">
+              <div className="flex items-center justify-center gap-2 text-zinc-400 font-medium text-xs bg-zinc-50 py-2.5 px-4 rounded-2xl">
                 <Lock className="w-4 h-4 text-zinc-400" /> Transação Criptografada e Segura
               </div>
             </div>
