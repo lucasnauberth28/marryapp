@@ -25,6 +25,7 @@ import {
   ChevronRight,
   Sliders,
 } from "lucide-react";
+import { WeddingRingsIcon } from "@/components/icons/wedding-rings";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -84,13 +85,18 @@ export function Sidebar({ role = "Admin", allowedPaths = ["*"] }: { role?: strin
 
       <div className="h-16 flex items-center px-4 border-b border-stone-200/50 overflow-hidden">
         <div className="flex items-center gap-2.5 min-w-max">
-          <div className="w-9 h-9 bg-gradient-to-br from-[#C5A880] to-[#A3855E] rounded-xl flex items-center justify-center shrink-0 shadow-sm shadow-amber-900/10">
-            <span className="text-white font-bold text-xs leading-none tracking-wider">L&G</span>
+          <div className="w-9 h-9 bg-gradient-to-br from-[#FAF4ED] to-[#FAF8F5] border border-[#8C6D45]/30 rounded-xl flex items-center justify-center shrink-0 shadow-xs text-[#8C6D45]">
+            <WeddingRingsIcon className="w-5 h-5" />
           </div>
           {!isCollapsed && (
-            <h1 className="font-semibold text-base text-stone-800 tracking-wide font-serif italic">
-              Lucas & Giovanna
-            </h1>
+            <div className="flex flex-col">
+              <span className="font-semibold text-sm text-stone-800 tracking-wide font-serif italic leading-none">
+                Lucas & Giovanna
+              </span>
+              <span className="text-[9px] text-[#8C6D45] font-extrabold uppercase tracking-widest mt-0.5">
+                MarryApp
+              </span>
+            </div>
           )}
         </div>
       </div>
