@@ -5,6 +5,8 @@ import {
 } from "@/actions/site-builder-actions";
 import { SiteBuilderClient } from "./site-builder-client";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Construtor do Site dos Noivos | MarryApp",
   description: "Personalize todas as seções e blocos do site do casamento.",
