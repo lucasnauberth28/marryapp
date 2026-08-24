@@ -30,6 +30,7 @@ import {
   MessageCircle,
   RefreshCw,
   CreditCard as CreditCardIcon,
+  Sliders,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,7 @@ import { getSystemNotifications, SystemNotification } from "@/actions/notificati
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Site dos Noivos", href: "/site-builder", icon: Sliders },
   { name: "Credenciamento", href: "/credenciamento", icon: QrCode },
   { name: "Convidados", href: "/convidados", icon: UsersIcon },
   { name: "Mesas", href: "/mesas", icon: LayoutGrid },

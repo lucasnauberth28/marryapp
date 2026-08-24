@@ -22,11 +22,13 @@ import {
   Calendar,
   CreditCard as CreditCardIcon,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Sliders,
 } from "lucide-react";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Site dos Noivos", href: "/site-builder", icon: Sliders },
   { name: "Credenciamento", href: "/credenciamento", icon: QrCode },
   { name: "Convidados", href: "/convidados", icon: UsersIcon },
   { name: "Mesas", href: "/mesas", icon: LayoutGrid },

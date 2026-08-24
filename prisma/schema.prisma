@@ -276,3 +276,145 @@ model CreditCard {
 
   @@map("credit_cards")
 }
+
+// ==========================================
+// CONSTRUTOR DE SITE NO-CODE & STORYTELLING
+// ==========================================
+
+model SiteCustomization {
+  id                 String   @id @default("global")
+  title              String   @default("Lucas & Giovanna")
+  subtitle           String   @default("Vamos nos casar!")
+  weddingDate        DateTime?
+  ceremonyTime       String?  @default("16:30")
+  receptionTime      String?  @default("18:30")
+  locationName       String?  @default("Espaço Monte Castelo")
+  locationAddress    String?  @default("Rua das Flores, 1200 - São Paulo, SP")
+  locationMapUrl     String?  @db.Text
+  wazeUrl            String?  @db.Text
+  uberUrl            String?  @db.Text
+  themeColor         String   @default("#8C6D45")
+  fontFamily         String   @default("serif") // "serif", "sans", "playfair", "cormorant"
+  heroImageUrl       String?  @db.Text
+  couplePhotoUrl     String?  @db.Text
+  dressCodeTitle     String?  @default("Passeio Completo")
+  dressCodeDesc      String?  @db.Text
+  dressCodePalette   String?  // JSON array de cores hexadecimais
+  spotifyPlaylistUrl String?  @db.Text
+  welcomeMessage     String?  @db.Text
+
+  // Liga / Desliga de Blocos Modulares
+  showStory          Boolean  @default(true)
+  showLocation       Boolean  @default(true)
+  showDressCode      Boolean  @default(true)
+  showTips           Boolean  @default(true)
+  showGifts          Boolean  @default(true)
+  showRsvp           Boolean  @default(true)
+  showGuestbook      Boolean  @default(true)
+  showMusic          Boolean  @default(true)
+
+  updatedAt          DateTime @updatedAt
+
+  @@map("site_customization")
+}
+
+model WeddingStoryItem {
+  id          String   @id @default(uuid())
+  title       String   // Ex: "O Primeiro Encontro", "O Pedido de Casamento"
+  dateLabel   String?  // Ex: "Outubro de 2021"
+  description String   @db.Text
+  imageUrl    String?  @db.Text
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("wedding_story_items")
+}
+
+model WeddingTip {
+  id          String   @id @default(uuid())
+  category    String   // "HOTEL", "SALON", "TRANSFER", "DRESS"
+  title       String   // Ex: "Hotel Blue Tree", "Salão Studio Beauty"
+  description String?  @db.Text
+  address     String?  
+  phone       String?  
+  linkUrl     String?  @db.Text
+  discountCode String? // Ex: "CASAMENTOLUCAS10"
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@map("wedding_tips")
+}
+
+model GuestBookEntry {
+  id          String   @id @default(uuid())
+  authorName  String
+  message     String   @db.Text
+  imageUrl    String?  @db.Text
+  isApproved  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@map("guest_book_entries")
+}
+
+// ==========================================
+// MARKETPLACE DE FORNECEDORES POR REGIÃO
+// ==========================================
+
+enum VendorPlanTier {
+  FREE
+  PRO
+  MASTER
+}
+
+model PartnerVendor {
+  id               String         @id @default(uuid())
+  companyName      String
+  category         String         // "Espaço", "Buffet", "Fotografia", "Decoração", "DJ & Som", "Vestidos", "Doces & Bolo"
+  description      String?        @db.Text
+  logoUrl          String?        @db.Text
+  coverUrl         String?        @db.Text
+  galleryImages    String?        @db.Text // JSON string array de URLs
+  startingPrice    Int?           // Valor inicial em centavos
+  
+  // Regiões e Atendimento
+  serviceRegions   String?        @db.Text // JSON array: ["São Paulo - Capital", "Grande SP", "Litoral", "Campinas"]
+  hasPhysicalSpace Boolean        @default(false)
+  address          String?        @db.Text
+  offersOnlineMeet Boolean        @default(true)
+  
+  // Contato & Redes
+  phone            String?
+  whatsapp         String?
+  instagram        String?
+  website          String?
+
+  // Assinatura & Reputação
+  planTier         VendorPlanTier @default(FREE)
+  isVerified       Boolean        @default(false)
+  rating           Float          @default(5.0)
+  reviewCount      Int            @default(12)
+
+  leads            VendorLead[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@map("partner_vendors")
+}
+
+model VendorLead {
+  id              String         @id @default(uuid())
+  vendorId        String
+  vendor          PartnerVendor  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  coupleName      String
+  couplePhone     String
+  coupleEmail     String?
+  weddingDate     DateTime?
+  guestCount      Int?
+  message         String?        @db.Text
+  meetingType     String?        @default("ONLINE") // "ONLINE", "PRESENTIAL"
+  status          String         @default("NEW") // "NEW", "CONTACTED", "PROPOSAL_SENT", "CLOSED"
+  createdAt       DateTime       @default(now())
+
+  @@map("vendor_leads")
+}
