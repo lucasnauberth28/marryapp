@@ -43,7 +43,6 @@ export function PlanCalculator() {
   ]);
 
   const toggleModule = (id: string) => {
-    if (id === "site") return; // O site base sempre fica ativo
     setSelectedModuleIds((prev) =>
       prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]
     );
