@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -120,13 +120,34 @@ const PLANS_CONFIG = {
   },
 };
 
+import { COUPLE_MODULES, calculateCustomPlanPrice } from "@/lib/pricing-modules";
+
 export function AssinarClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const isCustom = searchParams.get("custom") === "true";
+  const modulesParam = searchParams.get("modules")?.split(",").filter(Boolean) || ["site"];
+  const customAmountParam = searchParams.get("amount");
+
+  const customCalc = useMemo(() => {
+    return calculateCustomPlanPrice(modulesParam);
+  }, [modulesParam]);
+
   const planParam = searchParams.get("plano") || "classic";
   const selectedKey = (planParam.toLowerCase() in PLANS_CONFIG ? planParam.toLowerCase() : "classic") as keyof typeof PLANS_CONFIG;
-  const currentPlan = PLANS_CONFIG[selectedKey];
+  
+  const currentPlan = isCustom
+    ? {
+        type: "COUPLE" as const,
+        name: "Plano Adaptado",
+        price: customAmountParam ? parseInt(customAmountParam, 10) : customCalc.total,
+        period: "Taxa única",
+        badge: "Personalizado",
+        isPopular: true,
+        features: customCalc.selectedModules.map((m) => m.name),
+      }
+    : PLANS_CONFIG[selectedKey];
 
   const [step, setStep] = useState<"FORM" | "PAYMENT" | "SUCCESS">("FORM");
   const [paymentMethod, setPaymentMethod] = useState<"PIX" | "CARD">("PIX");
