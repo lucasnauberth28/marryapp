@@ -79,10 +79,6 @@ export function CustomPlanClient() {
           </Link>
 
           <div className="max-w-3xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#FAF4ED] border border-[#8C6D45]/30 text-[#8C6D45] text-xs font-bold uppercase tracking-wider">
-              <Sliders className="w-3.5 h-3.5" />
-              <span>Calculadora de Módulos Avulsos</span>
-            </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-serif text-stone-900">
               Monte o Plano Perfeito para o seu Casamento
             </h1>
@@ -138,9 +134,9 @@ export function CustomPlanClient() {
                             {mod.name}
                           </h3>
                           {mod.highlightBadge && (
-                            <Badge className="bg-[#FAF4ED] text-[#8C6D45] border-[#8C6D45]/30 text-[10px] font-bold">
-                              {mod.highlightBadge}
-                            </Badge>
+                            <span className="text-[11px] font-bold text-[#8C6D45] uppercase tracking-wider">
+                              • {mod.highlightBadge}
+                            </span>
                           )}
                         </div>
                         <p className="text-xs text-stone-600 leading-relaxed max-w-xl">
@@ -181,9 +177,9 @@ export function CustomPlanClient() {
           {/* Painel Lateral Sticky: Resumo do Investimento */}
           <div className="lg:col-span-4 sticky top-28 bg-gradient-to-b from-[#FAF4ED] to-white p-7 rounded-3xl border-2 border-[#8C6D45]/40 shadow-2xl space-y-6">
             <div className="flex items-center justify-between">
-              <Badge className="bg-[#8C6D45] text-white font-extrabold text-[10px] uppercase tracking-wider">
-                Plano Personalizado
-              </Badge>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-[#8C6D45]">
+                Resumo da Seleção
+              </span>
               <span className="text-xs text-stone-500 font-bold">
                 {selectedCount} módulos ativos
               </span>

@@ -66,7 +66,6 @@ export function PlanCalculator() {
               <span className="text-xs text-stone-400 font-bold">R$ </span>
               <span className="text-3xl font-extrabold text-stone-900">149</span>
               <span className="text-xs text-stone-400 font-medium"> / taxa única</span>
-              <Badge className="ml-2 bg-emerald-100 text-emerald-800 text-[10px] font-bold">0% Taxa Pix</Badge>
             </div>
 
             <ul className="space-y-2.5 text-xs text-stone-700 font-medium">
