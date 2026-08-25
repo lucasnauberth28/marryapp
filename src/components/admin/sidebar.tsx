@@ -24,6 +24,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Sliders,
+  Compass,
 } from "lucide-react";
 import { WeddingRingsIcon } from "@/components/icons/wedding-rings";
 
@@ -34,7 +35,8 @@ const navItems = [
   { name: "Convidados", href: "/convidados", icon: UsersIcon },
   { name: "Mesas", href: "/mesas", icon: LayoutGrid },
   { name: "Cronograma", href: "/cronograma", icon: Calendar },
-  { name: "Fornecedores", href: "/fornecedores", icon: UsersIcon },
+  { name: "Meus Fornecedores", href: "/meus-fornecedores", icon: UsersIcon },
+  { name: "Marketplace Parceiros", href: "/fornecedores", icon: Compass },
   { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
   { name: "Finanças", href: "/financas", icon: Wallet },
   { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },

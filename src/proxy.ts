@@ -9,6 +9,7 @@ export default async function proxy(request: NextRequest) {
     "/login",
     "/assinar",
     "/casamento",
+    "/fornecedores",
     "/presentes",
     "/checkout",
     "/api",

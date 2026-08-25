@@ -5,11 +5,11 @@ import { VendorsClient } from "./vendors-client";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Fornecedores & Marketplace Parceiro | MarryApp",
+  title: "Meus Fornecedores & Contratos | MarryApp",
   description: "Gerencie seus contratos e explore fornecedores homologados por região.",
 };
 
-export default async function VendorsPage() {
+export default async function AdminVendorsPage() {
   const [vendors, partnerVendors] = await Promise.all([
     getVendors(),
     getPartnerVendors(),

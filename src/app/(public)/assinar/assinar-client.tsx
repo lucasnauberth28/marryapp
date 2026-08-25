@@ -175,6 +175,63 @@ export function AssinarClient() {
     setSlug(autoSlug);
   };
 
+  const handleFillTestData = () => {
+    if (currentPlan.type === "COUPLE") {
+      setName("Lucas & Giovanna");
+      setSlug("lucas-e-giovanna");
+      setEmail("teste.noivos@marryapp.com.br");
+      setPhone("11999998888");
+      setPassword("teste123");
+      setWeddingDate("2027-10-15");
+    } else {
+      setCompanyName("Lumière Fotografia & Filmes");
+      setName("Studio Lumière");
+      setEmail("contato@lumiere.com.br");
+      setPhone("11988887777");
+      setPassword("teste123");
+      setVendorCategory("Fotografia");
+      setVendorRegion("São Paulo - Capital");
+    }
+    toast.info("Dados de demonstração preenchidos!");
+  };
+
+  const handleSimulateTestPayment = () => {
+    const testName = name || (currentPlan.type === "COUPLE" ? "Lucas & Giovanna (Teste)" : "Fornecedor Teste");
+    const testEmail = email || `teste-${Date.now()}@marryapp.com.br`;
+    const testPhone = phone || "11999998888";
+
+    startTransition(async () => {
+      const payload: PlanRegistrationData = {
+        planType: currentPlan.type,
+        planId: selectedKey,
+        planName: currentPlan.name,
+        amount: currentPlan.price,
+        name: testName,
+        slug: slug || "casamento-teste",
+        email: testEmail,
+        phone: testPhone,
+        password: password || "teste123",
+        weddingDate: weddingDate ? new Date(weddingDate) : new Date("2027-10-15"),
+        companyName: companyName || testName,
+        vendorCategory,
+        vendorRegion,
+        isTestSimulation: true,
+      };
+
+      const res = await registerPlanAccount(payload);
+
+      if (res.success) {
+        toast.success("🧪 Pagamento de teste aprovado com sucesso! Bem-vindo ao MarryApp ✨");
+        setStep("SUCCESS");
+        setTimeout(() => {
+          router.push(currentPlan.type === "COUPLE" ? "/site-builder" : "/fornecedores");
+        }, 1500);
+      } else {
+        toast.error(res.error || "Erro ao simular aprovação de teste.");
+      }
+    });
+  };
+
   // Dados de simulação Pix
   const [pixCopied, setPixCopied] = useState(false);
   const mockPixPayload = "00020126580014br.gov.bcb.pix0136119677947445204000053039865802BR5915MarryApp Pagamentos6009Sao Paulo62070503***6304ABCD";
@@ -268,6 +325,35 @@ export function AssinarClient() {
                   <p className="text-xs text-stone-500 mt-1">
                     Crie seu acesso para gerenciar o seu plano no MarryApp.
                   </p>
+                </div>
+
+                {/* 🧪 Box de Simulação de Testes */}
+                <div className="bg-amber-50/70 border border-amber-200/80 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl">🧪</span>
+                    <div>
+                      <span className="text-xs font-bold text-amber-900 block">Ambiente de Demonstração & Testes</span>
+                      <span className="text-[11px] text-amber-700">Preencha rapidamente ou simule a ativação imediata sem cobrança real.</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleFillTestData}
+                      className="h-8 text-[11px] font-bold border-amber-300 bg-white text-amber-900 hover:bg-amber-100/50 rounded-xl cursor-pointer"
+                    >
+                      ⚡ Auto-preencher
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleSimulateTestPayment}
+                      disabled={isPending}
+                      className="h-8 text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-xs cursor-pointer"
+                    >
+                      {isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : "Ativar Plano Teste"}
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
@@ -438,6 +524,25 @@ export function AssinarClient() {
                   <p className="text-xs text-stone-500 mt-1">
                     Escolha a forma de pagamento para ativar seu plano imediatamente.
                   </p>
+                </div>
+
+                {/* 🧪 Box de Simulação em Pagamento */}
+                <div className="bg-amber-50/70 border border-amber-200 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl">🧪</span>
+                    <div>
+                      <span className="text-xs font-bold text-amber-900 block">Modo de Testes / Sandbox</span>
+                      <span className="text-[11px] text-amber-700">Simule a aprovação do Pix ou Cartão para testar o sistema.</span>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleConfirmPaid}
+                    disabled={isPending}
+                    className="h-9 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-xs gap-1.5 cursor-pointer shrink-0"
+                  >
+                    {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><span>⚡ Simular Aprovação Instantânea</span><Check className="w-3.5 h-3.5 stroke-[3]" /></>}
+                  </Button>
                 </div>
 
                 {/* Seletor de Método de Pagamento */}
