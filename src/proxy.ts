@@ -5,7 +5,16 @@ import { verifyToken } from "@/lib/auth";
 export default async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   
-  const publicPaths = ["/login", "/presentes", "/checkout", "/api", "/rsvp"];
+  const publicPaths = [
+    "/login",
+    "/assinar",
+    "/casamento",
+    "/presentes",
+    "/checkout",
+    "/api",
+    "/rsvp",
+    "/dia-do-evento",
+  ];
   const isPublicPath = publicPaths.some(publicPath => path.startsWith(publicPath) || path === "/");
   
   const sessionCookie = request.cookies.get("marryapp_admin_session");
