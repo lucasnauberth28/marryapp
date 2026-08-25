@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { WeddingRingsIcon } from "@/components/icons/wedding-rings";
-import { ShieldCheck, Heart } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 export function LandingFooter() {
   return (
     <footer className="border-t border-stone-200 bg-white py-12 px-6 font-sans">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-stone-500">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-[#FAF4ED] border border-[#8C6D45]/30 flex items-center justify-center text-[#8C6D45]">
+          <div className="w-8 h-8 rounded-xl bg-[#FAF4ED] flex items-center justify-center text-[#8C6D45]">
             <WeddingRingsIcon className="w-4 h-4" />
           </div>
           <div>
@@ -21,8 +21,8 @@ export function LandingFooter() {
         </div>
 
         <div className="flex items-center gap-6 font-bold">
-          <Link href="/casamento" className="hover:text-stone-900 transition-colors">
-            Site Modelo
+          <Link href="/fornecedores" className="hover:text-stone-900 transition-colors">
+            Fornecedores
           </Link>
           <Link href="/assinar" className="hover:text-stone-900 transition-colors">
             Planos & Preços

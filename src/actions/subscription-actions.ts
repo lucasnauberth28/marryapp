@@ -6,7 +6,7 @@ import { signToken } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { mpPayment, calculateCardFee } from "@/lib/mercadopago";
 import { generatePixPayload } from "@/lib/pix-utils";
-import { PaymentMethod, PaymentStatus } from "@prisma/client";
+import { PaymentMethod, PaymentStatus, VendorPlanTier } from "@prisma/client";
 
 const COOKIE_NAME = "marryapp_admin_session";
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
@@ -21,12 +21,35 @@ export interface PlanRegistrationData {
   email: string;
   phone: string;
   password?: string;
-  // Extras
+  // Extras Casal
   slug?: string;
   weddingDate?: Date | null;
+  // Extras Fornecedor
   companyName?: string;
   vendorCategory?: string;
   vendorRegion?: string;
+  logoUrl?: string;
+  coverUrl?: string;
+  galleryImages?: string[];
+  startingPrice?: number; // em centavos
+  averageTicket?: number; // em centavos
+  priceRange?: string; // "$", "$$", "$$$", "$$$$"
+  documentType?: string; // "CNPJ" | "CPF"
+  documentNumber?: string;
+  instagram?: string;
+  tiktok?: string;
+  website?: string;
+}
+
+/**
+ * Calcula a faixa de preço ($ / $$ / $$$ / $$$$) baseado no ticket médio / valor inicial
+ */
+function calculatePriceRange(avgTicketInCents?: number, startingPriceInCents?: number): string {
+  const value = (avgTicketInCents || startingPriceInCents || 0) / 100;
+  if (value <= 3000) return "$";
+  if (value <= 8000) return "$$";
+  if (value <= 20000) return "$$$";
+  return "$$$$";
 }
 
 /**
@@ -142,8 +165,16 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
       });
     }
 
-    // Se for Fornecedor, cadastra o PartnerVendor
+    // Se for Fornecedor, cadastra o PartnerVendor com processo de curadoria
     if (data.planType === "VENDOR") {
+      const calculatedRange = calculatePriceRange(data.averageTicket, data.startingPrice);
+      const tier =
+        data.planId === "master"
+          ? VendorPlanTier.MASTER
+          : data.planId === "pro"
+          ? VendorPlanTier.PRO
+          : VendorPlanTier.FREE;
+
       const existingVendor = await prisma.partnerVendor.findFirst({
         where: { phone: data.phone },
       });
@@ -153,10 +184,24 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
           data: {
             companyName: data.companyName || data.name,
             category: data.vendorCategory || "Outros",
+            description: `Profissional de excelência em ${data.vendorCategory || "serviços de casamento"}.`,
             phone: data.phone,
             whatsapp: data.phone,
+            logoUrl: data.logoUrl || null,
+            coverUrl: data.coverUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80",
+            galleryImages: data.galleryImages ? JSON.stringify(data.galleryImages) : null,
+            startingPrice: data.startingPrice || null,
+            averageTicket: data.averageTicket || null,
+            priceRange: data.priceRange || calculatedRange,
+            documentType: data.documentType || "CNPJ",
+            documentNumber: data.documentNumber || null,
+            instagram: data.instagram || null,
+            tiktok: data.tiktok || null,
+            website: data.website || null,
             serviceRegions: JSON.stringify([data.vendorRegion || "São Paulo - Capital"]),
-            isVerified: data.planId !== "start",
+            planTier: tier,
+            isVerified: false, // Fica false até aprovação na curadoria
+            curationStatus: "PENDING_APPROVAL", // Entra na fila de curadoria por segurança
           },
         });
       }
@@ -207,6 +252,7 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
       success: true,
       userId: user.id,
       isFree: data.amount === 0,
+      isVendor: data.planType === "VENDOR",
     };
   } catch (error: any) {
     console.error("[registerPlanAccount Error]:", error);

@@ -478,12 +478,12 @@ export function HomeLandingClient() {
         {/* SELETOR COM IMAGENS E CORTE DIAGONAL ("VOU ME CASAR" vs "FORNEÇO SERVIÇOS") */}
         {/* ========================================================================= */}
         <div className="max-w-4xl mx-auto mb-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 rounded-3xl overflow-hidden shadow-xl bg-stone-900 relative border border-stone-200/80">
+          <div className="grid grid-cols-1 md:grid-cols-2 rounded-3xl overflow-hidden shadow-xl bg-stone-950 relative border border-stone-800">
             {/* Lado 1: Vou me casar (Corte Diagonal Esquerda) */}
             <button
               type="button"
               onClick={() => setPricingType("COUPLE")}
-              className={`group relative h-48 md:h-60 flex flex-col justify-end p-8 text-left transition-all duration-300 overflow-hidden cursor-pointer ${
+              className={`group relative h-48 md:h-56 flex flex-col justify-end p-8 text-left transition-all duration-300 overflow-hidden cursor-pointer ${
                 pricingType === "COUPLE"
                   ? "ring-2 ring-inset ring-[#8C6D45] md:z-10 opacity-100"
                   : "opacity-60 hover:opacity-85"
@@ -493,25 +493,22 @@ export function HomeLandingClient() {
               }}
             >
               <img
-                src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1000&q=80"
+                src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80"
                 alt="Vou me casar"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10 opacity-40"
               />
               <div
                 className={`absolute inset-0 transition-opacity duration-300 -z-10 ${
                   pricingType === "COUPLE"
-                    ? "bg-gradient-to-t from-stone-950/95 via-stone-950/60 to-stone-950/20"
-                    : "bg-stone-950/80 group-hover:bg-stone-950/65"
+                    ? "bg-gradient-to-t from-stone-950 via-stone-950/75 to-stone-950/30"
+                    : "bg-stone-950/85 group-hover:bg-stone-950/70"
                 }`}
               />
-              <div className="relative z-10 text-white space-y-1">
-                <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#C5A880] block">
-                  Para Noivos & Casais
-                </span>
-                <h3 className="text-2xl sm:text-3xl font-serif font-bold">
+              <div className="relative z-10 text-white space-y-1.5">
+                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-stone-100">
                   💍 Vou me casar
                 </h3>
-                <p className="text-xs text-stone-300">
+                <p className="text-xs text-stone-300/90 leading-relaxed max-w-sm">
                   Site personalizado, lista com Pix taxa zero e convites no WhatsApp.
                 </p>
               </div>
@@ -521,7 +518,7 @@ export function HomeLandingClient() {
             <button
               type="button"
               onClick={() => setPricingType("VENDOR")}
-              className={`group relative h-48 md:h-60 flex flex-col justify-end p-8 text-left transition-all duration-300 overflow-hidden cursor-pointer ${
+              className={`group relative h-48 md:h-56 flex flex-col justify-end p-8 text-left transition-all duration-300 overflow-hidden cursor-pointer ${
                 pricingType === "VENDOR"
                   ? "ring-2 ring-inset ring-[#8C6D45] md:z-10 opacity-100"
                   : "opacity-60 hover:opacity-85"
@@ -531,25 +528,22 @@ export function HomeLandingClient() {
               }}
             >
               <img
-                src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=1000&q=80"
+                src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80"
                 alt="Forneço serviços"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10 opacity-30"
               />
               <div
                 className={`absolute inset-0 transition-opacity duration-300 -z-10 ${
                   pricingType === "VENDOR"
-                    ? "bg-gradient-to-t from-stone-950/95 via-stone-950/60 to-stone-950/20"
-                    : "bg-stone-950/80 group-hover:bg-stone-950/65"
+                    ? "bg-gradient-to-t from-stone-950 via-stone-950/80 to-stone-950/40"
+                    : "bg-stone-950/90 group-hover:bg-stone-950/75"
                 }`}
               />
-              <div className="relative z-10 text-white space-y-1">
-                <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#C5A880] block">
-                  B2B Para Empresas de Eventos
-                </span>
-                <h3 className="text-2xl sm:text-3xl font-serif font-bold">
+              <div className="relative z-10 text-white space-y-1.5">
+                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-stone-100">
                   🤝 Forneço serviços
                 </h3>
-                <p className="text-xs text-stone-300">
+                <p className="text-xs text-stone-300/90 leading-relaxed max-w-sm">
                   Receba pedidos de orçamentos e agendamentos de reuniões com noivos.
                 </p>
               </div>

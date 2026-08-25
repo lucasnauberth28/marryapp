@@ -15,10 +15,10 @@ import {
   ExternalLink,
   ShieldCheck,
   Search,
-  Sparkles,
   ArrowRight,
   Loader2,
   Users,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,9 +43,8 @@ const CATEGORIES = [
   "Fotografia",
   "Buffet",
   "Decoração",
-  "DJ & Iluminação",
-  "Vestidos & Trajes",
-  "Cerimonial & Assessoria",
+  "DJ & Som",
+  "Vestidos",
   "Doces & Bolo",
 ];
 
@@ -147,19 +146,14 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
       <LandingHeader />
 
       <main className="flex-1 py-12 px-6 max-w-7xl mx-auto w-full space-y-10">
-        {/* Banner Superior do Marketplace */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FAF4ED] border border-[#8C6D45]/30 text-[#8C6D45] text-xs font-extrabold uppercase tracking-widest shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Marketplace Homologado MarryApp</span>
-          </div>
-
+        {/* Banner Superior do Marketplace (Sem badge descasada) */}
+        <div className="text-center max-w-3xl mx-auto space-y-3">
           <h1 className="text-4xl sm:text-5xl font-extrabold font-serif text-stone-900 leading-tight">
             Os Melhores Fornecedores para o seu <span className="italic text-[#8C6D45]">Grande Dia</span>
           </h1>
 
           <p className="text-stone-600 text-sm sm:text-base leading-relaxed">
-            Profissionais verificados, com portfólio auditado e disponibilidade para reuniões online ou presenciais na sua região.
+            Profissionais verificados pela curadoria MarryApp, com portfólio auditado, avaliações reais de casais e agenda aberta na sua região.
           </p>
         </div>
 
@@ -196,7 +190,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
             </div>
           </div>
 
-          {/* Categorias em Badges Roláveis */}
+          {/* Categorias em Botões Roláveis */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide pt-2 border-t border-stone-100">
             {CATEGORIES.map((cat) => {
               const isSelected = selectedCategory === cat;
@@ -259,8 +253,8 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                   }`}
                 >
                   <div>
-                    {/* Imagem de Capa */}
-                    <div className="relative h-48 w-full bg-stone-100 overflow-hidden">
+                    {/* Imagem de Capa com Link para Perfil */}
+                    <Link href={`/fornecedores/${partner.id}`} className="block relative h-52 w-full bg-stone-100 overflow-hidden">
                       {partner.coverUrl ? (
                         <img
                           src={partner.coverUrl}
@@ -276,37 +270,47 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                       {/* Badge Verificado / Master */}
                       <div className="absolute top-3 left-3 flex items-center gap-1.5">
                         {partner.isVerified && (
-                          <Badge className="bg-[#FAF4ED]/95 backdrop-blur-md text-[#8C6D45] border border-[#8C6D45]/30 font-bold text-[10px] gap-1 shadow-xs">
-                            <ShieldCheck className="w-3 h-3 text-[#8C6D45]" />
-                            <span>Verificado</span>
-                          </Badge>
+                          <span className="bg-[#FAF4ED]/95 backdrop-blur-md text-[#8C6D45] border border-[#8C6D45]/30 font-bold text-[10px] px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1">
+                            <ShieldCheck className="w-3.5 h-3.5 text-[#8C6D45]" />
+                            <span>Curadoria Aprovada</span>
+                          </span>
                         )}
                         {isMaster && (
-                          <Badge className="bg-amber-600 text-white font-extrabold text-[10px] shadow-xs">
+                          <span className="bg-amber-700 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-xs">
                             ⭐ Destaque
-                          </Badge>
+                          </span>
                         )}
                       </div>
 
-                      {/* Categoria */}
-                      <div className="absolute top-3 right-3">
-                        <Badge className="bg-stone-900/80 backdrop-blur-md text-white text-[10px] font-bold">
+                      {/* Faixa de Preço & Categoria */}
+                      <div className="absolute top-3 right-3 flex items-center gap-1">
+                        {partner.priceRange && (
+                          <span className="bg-black/60 backdrop-blur-md text-amber-300 text-[10px] font-mono font-bold px-2 py-1 rounded-full">
+                            {partner.priceRange}
+                          </span>
+                        )}
+                        <span className="bg-stone-900/80 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
                           {partner.category}
-                        </Badge>
+                        </span>
                       </div>
-                    </div>
+                    </Link>
 
                     {/* Conteúdo */}
                     <div className="p-6 space-y-4">
                       <div>
                         <div className="flex items-center justify-between gap-2">
-                          <h3 className="font-serif font-bold text-xl text-stone-900 group-hover:text-[#8C6D45] transition-colors">
-                            {partner.companyName}
-                          </h3>
+                          <Link href={`/fornecedores/${partner.id}`}>
+                            <h3 className="font-serif font-bold text-xl text-stone-900 group-hover:text-[#8C6D45] transition-colors line-clamp-1">
+                              {partner.companyName}
+                            </h3>
+                          </Link>
                           {partner.rating && (
-                            <div className="flex items-center gap-1 text-xs font-bold text-stone-700 bg-stone-50 px-2 py-1 rounded-lg border border-stone-200/60 shrink-0">
+                            <div className="flex items-center gap-1 text-xs font-bold text-stone-700 bg-stone-50 px-2.5 py-1 rounded-xl border border-stone-200/60 shrink-0">
                               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                               <span>{partner.rating.toFixed(1)}</span>
+                              <span className="text-[10px] text-stone-400 font-normal">
+                                ({partner.reviewCount || 0})
+                              </span>
                             </div>
                           )}
                         </div>
@@ -340,13 +344,13 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                       {/* Recursos de Atendimento */}
                       <div className="flex items-center gap-4 text-xs text-stone-600 pt-2 border-t border-stone-100">
                         {partner.offersOnlineMeet && (
-                          <div className="flex items-center gap-1 text-emerald-700 font-bold">
+                          <div className="flex items-center gap-1 text-emerald-700 font-bold text-[11px]">
                             <Video className="w-3.5 h-3.5" />
                             <span>Reunião Online</span>
                           </div>
                         )}
                         {partner.hasPhysicalSpace && (
-                          <div className="flex items-center gap-1 text-stone-600">
+                          <div className="flex items-center gap-1 text-stone-600 text-[11px]">
                             <Building2 className="w-3.5 h-3.5" />
                             <span>Showroom Presencial</span>
                           </div>
@@ -368,6 +372,17 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                         </span>
                       </div>
                     )}
+
+                    {/* Botão Ver Perfil Completo */}
+                    <Link href={`/fornecedores/${partner.id}`} className="block">
+                      <Button
+                        variant="outline"
+                        className="w-full rounded-2xl h-11 text-xs font-bold border-stone-300 hover:bg-[#FAF4ED] hover:text-[#8C6D45] hover:border-[#8C6D45]/40 transition-colors gap-1.5"
+                      >
+                        <ImageIcon className="w-4 h-4" />
+                        <span>Ver Perfil & Portfólio</span>
+                      </Button>
+                    </Link>
 
                     <div className="grid grid-cols-2 gap-2">
                       {partner.whatsapp && (
@@ -406,22 +421,19 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
           </div>
         )}
 
-        {/* Banner CTA para Novos Fornecedores */}
-        <section className="mt-16 bg-gradient-to-r from-stone-900 to-stone-800 text-white rounded-3xl p-8 sm:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="space-y-3 max-w-2xl text-center md:text-left">
-            <Badge className="bg-[#8C6D45] text-white font-extrabold text-[10px] uppercase tracking-wider">
-              B2B Para Empresas de Eventos
-            </Badge>
-            <h2 className="text-2xl sm:text-3xl font-extrabold font-serif">
+        {/* Banner CTA para Novos Fornecedores (Sem badge descasada) */}
+        <section className="mt-16 bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 text-white rounded-3xl p-8 sm:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-8 border border-stone-800">
+          <div className="space-y-2 max-w-2xl text-center md:text-left">
+            <h2 className="text-2xl sm:text-3xl font-extrabold font-serif text-stone-100">
               Você é Fornecedor de Casamento?
             </h2>
-            <p className="text-xs sm:text-sm text-stone-300 leading-relaxed">
-              Destaque seu negócio para casais com data marcada e orçamento definido na sua região. Receba solicitações de orçamento e agendamentos diretos.
+            <p className="text-xs sm:text-sm text-stone-300/90 leading-relaxed">
+              Destaque seu negócio para casais com data marcada e orçamento definido na sua região. Receba solicitações de orçamento e agendamentos diretos após nossa curadoria de qualidade.
             </p>
           </div>
 
           <Link href="/assinar?tipo=fornecedor&plano=pro" className="shrink-0">
-            <Button className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 px-8 text-sm shadow-md gap-2">
+            <Button className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 px-8 text-sm shadow-md gap-2 cursor-pointer">
               <span>Cadastrar Minha Empresa</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
@@ -441,13 +453,13 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
             </p>
           </DialogHeader>
 
-          <form onSubmit={handleSubmitLead} className="space-y-4 mt-4">
+          <form onSubmit={handleSubmitLead} className="space-y-4 pt-4">
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-stone-700 uppercase">Seu Nome / Casal</Label>
               <Input
                 value={coupleName}
                 onChange={(e) => setCoupleName(e.target.value)}
-                placeholder="Ex: Lucas & Giovanna"
+                placeholder="Ex: Giovanna & Lucas"
                 required
                 className="rounded-2xl h-11 text-xs bg-stone-50"
               />
@@ -466,6 +478,30 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
               </div>
 
               <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-stone-700 uppercase">E-mail</Label>
+                <Input
+                  type="email"
+                  value={coupleEmail}
+                  onChange={(e) => setCoupleEmail(e.target.value)}
+                  placeholder="noivos@email.com"
+                  className="rounded-2xl h-11 text-xs bg-stone-50"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-stone-700 uppercase">Qtd. Convidados</Label>
+                <Input
+                  type="number"
+                  value={guestCount}
+                  onChange={(e) => setGuestCount(e.target.value)}
+                  placeholder="Ex: 150"
+                  className="rounded-2xl h-11 text-xs bg-stone-50 font-mono"
+                />
+              </div>
+
+              <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-stone-700 uppercase">Data Prevista</Label>
                 <DatePicker
                   value={weddingDate}
@@ -477,25 +513,25 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-stone-700 uppercase">Tipo de Reunião Desejada</Label>
+              <Label className="text-xs font-bold text-stone-700 uppercase">Preferência de Reunião</Label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setMeetingType("ONLINE")}
-                  className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer ${
                     meetingType === "ONLINE"
                       ? "bg-[#FAF4ED] border-[#8C6D45] text-[#8C6D45]"
                       : "bg-stone-50 border-stone-200 text-stone-600"
                   }`}
                 >
                   <Video className="w-3.5 h-3.5" />
-                  <span>Online (Meet/Zoom)</span>
+                  <span>Google Meet</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setMeetingType("PRESENTIAL")}
-                  className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer ${
                     meetingType === "PRESENTIAL"
                       ? "bg-[#FAF4ED] border-[#8C6D45] text-[#8C6D45]"
                       : "bg-stone-50 border-stone-200 text-stone-600"
@@ -508,22 +544,28 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-stone-700 uppercase">Mensagem ou Dúvidas</Label>
+              <Label className="text-xs font-bold text-stone-700 uppercase">Mensagem Adicional</Label>
               <Textarea
                 value={leadMessage}
                 onChange={(e) => setLeadMessage(e.target.value)}
-                placeholder="Conte um pouco sobre o estilo do seu casamento, local ou dúvidas sobre pacotes..."
-                rows={3}
-                className="rounded-2xl text-xs bg-stone-50"
+                placeholder="Conte um pouco sobre o estilo do casamento ou dúvidas específicas..."
+                className="rounded-2xl text-xs bg-stone-50 resize-none h-20"
               />
             </div>
 
             <Button
               type="submit"
               disabled={isPendingLead}
-              className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-12 text-xs shadow-md gap-2"
+              className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-12 text-xs shadow-md gap-2 mt-2"
             >
-              {isPendingLead ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enviar Solicitação"}
+              {isPendingLead ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <Calendar className="w-4 h-4" />
+                  <span>Enviar Solicitação de Reunião</span>
+                </>
+              )}
             </Button>
           </form>
         </DialogContent>

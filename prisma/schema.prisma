@@ -377,31 +377,55 @@ model PartnerVendor {
   logoUrl          String?        @db.Text
   coverUrl         String?        @db.Text
   galleryImages    String?        @db.Text // JSON string array de URLs
-  startingPrice    Int?           // Valor inicial em centavos
+  startingPrice    Int?           // Valor inicial em centavos (ex: 250000 = R$ 2.500)
+  averageTicket    Int?           // Ticket médio em centavos
+  priceRange       String?        @default("$$") // "$", "$$", "$$$", "$$$$"
   
+  // Documento e Curadoria de Segurança
+  documentType     String?        @default("CNPJ") // "CNPJ" ou "CPF"
+  documentNumber   String?        
+  curationStatus   String         @default("APPROVED") // "PENDING_APPROVAL", "APPROVED", "REJECTED"
+  curationNotes    String?        @db.Text
+
   // Regiões e Atendimento
   serviceRegions   String?        @db.Text // JSON array: ["São Paulo - Capital", "Grande SP", "Litoral", "Campinas"]
   hasPhysicalSpace Boolean        @default(false)
   address          String?        @db.Text
   offersOnlineMeet Boolean        @default(true)
   
-  // Contato & Redes
+  // Contato & Redes Sociais
   phone            String?
   whatsapp         String?
   instagram        String?
+  tiktok           String?
   website          String?
 
   // Assinatura & Reputação
   planTier         VendorPlanTier @default(FREE)
   isVerified       Boolean        @default(false)
   rating           Float          @default(5.0)
-  reviewCount      Int            @default(12)
+  reviewCount      Int            @default(0)
 
   leads            VendorLead[]
+  reviews          VendorReview[]
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
   @@map("partner_vendors")
+}
+
+model VendorReview {
+  id          String        @id @default(uuid())
+  vendorId    String
+  vendor      PartnerVendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  coupleNames String        // "Lucas & Giovanna"
+  weddingDate DateTime?     // Data do casamento
+  rating      Int           @default(5) // 1 a 5 estrelas
+  comment     String        @db.Text
+  isVerified  Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+
+  @@map("vendor_reviews")
 }
 
 model VendorLead {

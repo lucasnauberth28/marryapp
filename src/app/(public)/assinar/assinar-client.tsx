@@ -24,6 +24,10 @@ import {
   Clock,
   RefreshCw,
   AlertTriangle,
+  Globe,
+  Camera,
+  FileText,
+  DollarSign,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,7 +101,7 @@ const PLANS_CONFIG = {
     period: "Gratuito",
     badge: "Iniciante",
     features: [
-      "Perfil no marketplace público",
+      "Perfil no marketplace após curadoria",
       "1 região de atendimento",
       "Até 3 solicitações de orçamento/mês",
     ],
@@ -110,7 +114,7 @@ const PLANS_CONFIG = {
     badge: "Mais Popular",
     isPopular: true,
     features: [
-      "Selo de Fornecedor Verificado",
+      "Selo de Fornecedor Verificado pela Curadoria",
       "Múltiplas regiões e cidades de atendimento",
       "Orçamentos e leads ilimitados",
       "Agendamento de reuniões online e presenciais",
@@ -170,9 +174,19 @@ export function AssinarClient() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [weddingDate, setWeddingDate] = useState("");
+
+  // Dados Completos de Fornecedor
   const [companyName, setCompanyName] = useState("");
   const [vendorCategory, setVendorCategory] = useState("Espaço");
   const [vendorRegion, setVendorRegion] = useState("São Paulo - Capital");
+  const [documentType, setDocumentType] = useState("CNPJ");
+  const [documentNumber, setDocumentNumber] = useState("");
+  const [startingPriceStr, setStartingPriceStr] = useState("");
+  const [averageTicketStr, setAverageTicketStr] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [tiktok, setTiktok] = useState("");
+  const [website, setWebsite] = useState("");
 
   // Dados de Cobrança Pix e Contador de 10 minutos
   const [pixPayload, setPixPayload] = useState("");
@@ -218,6 +232,14 @@ export function AssinarClient() {
       return;
     }
 
+    const startingPriceCents = startingPriceStr
+      ? Math.round(parseFloat(startingPriceStr.replace(/\D/g, "")) * 100)
+      : undefined;
+
+    const averageTicketCents = averageTicketStr
+      ? Math.round(parseFloat(averageTicketStr.replace(/\D/g, "")) * 100)
+      : undefined;
+
     startTransition(async () => {
       const payload: PlanRegistrationData = {
         planType: currentPlan.type,
@@ -233,13 +255,25 @@ export function AssinarClient() {
         companyName,
         vendorCategory,
         vendorRegion,
+        documentType,
+        documentNumber,
+        startingPrice: startingPriceCents,
+        averageTicket: averageTicketCents,
+        logoUrl: logoUrl || undefined,
+        instagram: instagram || undefined,
+        tiktok: tiktok || undefined,
+        website: website || undefined,
       };
 
       const res = await registerPlanAccount(payload);
 
       if (res.success) {
         if (res.isFree) {
-          toast.success("Conta criada com sucesso! Bem-vindo ao MarryApp ✨");
+          if (currentPlan.type === "VENDOR") {
+            toast.success("Cadastro recebido! Seu perfil está em análise pela curadoria MarryApp ✨");
+          } else {
+            toast.success("Conta criada com sucesso! Bem-vindo ao MarryApp ✨");
+          }
           router.push(currentPlan.type === "COUPLE" ? "/site-builder" : "/fornecedores");
         } else {
           // Gera a transação Pix com expiração exata de 10 minutos
@@ -261,6 +295,14 @@ export function AssinarClient() {
 
   const handleRegeneratePix = () => {
     startTransition(async () => {
+      const startingPriceCents = startingPriceStr
+        ? Math.round(parseFloat(startingPriceStr.replace(/\D/g, "")) * 100)
+        : undefined;
+
+      const averageTicketCents = averageTicketStr
+        ? Math.round(parseFloat(averageTicketStr.replace(/\D/g, "")) * 100)
+        : undefined;
+
       const payload: PlanRegistrationData = {
         planType: currentPlan.type,
         planId: selectedKey,
@@ -275,6 +317,14 @@ export function AssinarClient() {
         companyName,
         vendorCategory,
         vendorRegion,
+        documentType,
+        documentNumber,
+        startingPrice: startingPriceCents,
+        averageTicket: averageTicketCents,
+        logoUrl: logoUrl || undefined,
+        instagram: instagram || undefined,
+        tiktok: tiktok || undefined,
+        website: website || undefined,
       };
 
       const pixRes = await generateSubscriptionPix(payload);
@@ -302,20 +352,15 @@ export function AssinarClient() {
   return (
     <div className="min-h-screen bg-[#FCFBF9] text-stone-900 font-sans antialiased py-12 px-6">
       <div className="max-w-5xl mx-auto space-y-8">
-        {/* Header com Logotipo Oficial de Alianças */}
+        {/* Header com Logotipo Oficial Sutil */}
         <div className="flex items-center justify-between border-b border-stone-200/80 pb-6">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FAF4ED] to-[#FAF8F5] border border-[#8C6D45]/30 flex items-center justify-center text-[#8C6D45] shadow-xs group-hover:scale-105 transition-transform">
-              <WeddingRingsIcon className="w-6 h-6" />
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-[#FAF4ED] flex items-center justify-center text-[#8C6D45] group-hover:scale-105 transition-transform">
+              <WeddingRingsIcon className="w-5 h-5" />
             </div>
-            <div className="flex flex-col">
-              <span className="font-serif italic font-bold text-2xl text-stone-900 leading-none">
-                MarryApp
-              </span>
-              <span className="text-[10px] text-stone-400 font-sans tracking-widest uppercase">
-                Checkout Seguro
-              </span>
-            </div>
+            <span className="font-serif italic font-bold text-2xl text-stone-900 leading-none">
+              MarryApp
+            </span>
           </Link>
 
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 px-3.5 py-1.5 rounded-full border border-emerald-200">
@@ -335,12 +380,27 @@ export function AssinarClient() {
                   <h1 className="text-2xl sm:text-3xl font-extrabold font-serif text-stone-900">
                     {currentPlan.type === "COUPLE"
                       ? "1. Crie a Conta do Casal"
-                      : "1. Cadastre sua Empresa"}
+                      : "1. Cadastre sua Empresa de Eventos"}
                   </h1>
                   <p className="text-xs sm:text-sm text-stone-500 mt-1">
-                    Preencha os dados básicos para configurar seu painel administrativo.
+                    {currentPlan.type === "COUPLE"
+                      ? "Preencha os dados básicos para configurar seu painel e site de casamento."
+                      : "Preencha os dados do seu negócio para verificação de curadoria e publicação no marketplace."}
                   </p>
                 </div>
+
+                {/* Banner de Curadoria de Segurança para Fornecedores */}
+                {currentPlan.type === "VENDOR" && (
+                  <div className="bg-[#FAF8F5] border border-[#8C6D45]/30 rounded-2xl p-4 flex items-start gap-3">
+                    <ShieldCheck className="w-5 h-5 text-[#8C6D45] shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-bold text-stone-900">Curadoria & Segurança MarryApp</p>
+                      <p className="text-[11px] text-stone-600 leading-relaxed">
+                        Para proteger os noivos e garantir a alta qualidade do marketplace, todo cadastro passa por auditoria prévia de documentos antes da ativação pública.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-4">
                   {currentPlan.type === "COUPLE" ? (
@@ -383,9 +443,10 @@ export function AssinarClient() {
                       </div>
                     </>
                   ) : (
+                    /* FORMULÁRIO COMPLETO DE FORNECEDOR COM TODOS OS DADOS SOLICITADOS */
                     <>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-bold text-stone-700 uppercase">Nome da Empresa / Ateliê</Label>
+                        <Label className="text-xs font-bold text-stone-700 uppercase">Nome Comercial / Ateliê</Label>
                         <Input
                           value={companyName}
                           onChange={(e) => setCompanyName(e.target.value)}
@@ -395,7 +456,7 @@ export function AssinarClient() {
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <Label className="text-xs font-bold text-stone-700 uppercase">Categoria</Label>
                           <Select value={vendorCategory} onValueChange={setVendorCategory}>
@@ -432,8 +493,113 @@ export function AssinarClient() {
                         </div>
                       </div>
 
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-bold text-stone-700 uppercase">Nome do Responsável</Label>
+                      {/* Documento para Curadoria de Segurança */}
+                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2">
+                        <div className="sm:col-span-4 space-y-1.5">
+                          <Label className="text-xs font-bold text-stone-700 uppercase">Tipo Documento</Label>
+                          <Select value={documentType} onValueChange={setDocumentType}>
+                            <SelectTrigger className="rounded-2xl h-12 bg-stone-50/50 border-stone-200 text-xs font-bold">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="CNPJ">CNPJ (Empresa)</SelectItem>
+                              <SelectItem value="CPF">CPF (Autônomo)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="sm:col-span-8 space-y-1.5">
+                          <Label className="text-xs font-bold text-stone-700 uppercase">
+                            Número do {documentType}
+                          </Label>
+                          <Input
+                            value={documentNumber}
+                            onChange={(e) => setDocumentNumber(e.target.value)}
+                            placeholder={documentType === "CNPJ" ? "00.000.000/0001-00" : "000.000.000-00"}
+                            required
+                            className="rounded-2xl h-12 text-sm bg-stone-50/50 font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Valores e Ticket Médio */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-bold text-stone-700 uppercase">Valor Inicial (A partir de)</Label>
+                          <div className="relative">
+                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400 text-xs font-bold">
+                              R$
+                            </span>
+                            <Input
+                              value={startingPriceStr}
+                              onChange={(e) => setStartingPriceStr(e.target.value)}
+                              placeholder="2.500,00"
+                              className="rounded-2xl h-12 pl-10 text-sm bg-stone-50/50 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-bold text-stone-700 uppercase">Ticket Médio de Contrato</Label>
+                          <div className="relative">
+                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400 text-xs font-bold">
+                              R$
+                            </span>
+                            <Input
+                              value={averageTicketStr}
+                              onChange={(e) => setAverageTicketStr(e.target.value)}
+                              placeholder="5.000,00"
+                              className="rounded-2xl h-12 pl-10 text-sm bg-stone-50/50 font-mono"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Logotipo e Redes Sociais */}
+                      <div className="space-y-1.5 pt-2">
+                        <Label className="text-xs font-bold text-stone-700 uppercase">Link do Logotipo / Foto de Perfil</Label>
+                        <Input
+                          value={logoUrl}
+                          onChange={(e) => setLogoUrl(e.target.value)}
+                          placeholder="https://suaempresa.com.br/logo.png"
+                          className="rounded-2xl h-12 text-xs bg-stone-50/50 font-mono"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-bold text-stone-700 uppercase">Instagram</Label>
+                          <Input
+                            value={instagram}
+                            onChange={(e) => setInstagram(e.target.value)}
+                            placeholder="@empresa"
+                            className="rounded-2xl h-12 text-xs bg-stone-50/50"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-bold text-stone-700 uppercase">TikTok</Label>
+                          <Input
+                            value={tiktok}
+                            onChange={(e) => setTiktok(e.target.value)}
+                            placeholder="@empresa"
+                            className="rounded-2xl h-12 text-xs bg-stone-50/50"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-bold text-stone-700 uppercase">Site Próprio</Label>
+                          <Input
+                            value={website}
+                            onChange={(e) => setWebsite(e.target.value)}
+                            placeholder="empresa.com.br"
+                            className="rounded-2xl h-12 text-xs bg-stone-50/50"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5 pt-2">
+                        <Label className="text-xs font-bold text-stone-700 uppercase">Nome do Responsável Legal</Label>
                         <Input
                           value={name}
                           onChange={(e) => setName(e.target.value)}
@@ -445,7 +611,7 @@ export function AssinarClient() {
                     </>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-bold text-stone-700 uppercase">E-mail de Acesso</Label>
                       <Input
@@ -459,7 +625,7 @@ export function AssinarClient() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-stone-700 uppercase">WhatsApp</Label>
+                      <Label className="text-xs font-bold text-stone-700 uppercase">WhatsApp de Contato</Label>
                       <Input
                         type="tel"
                         value={phone}
@@ -487,7 +653,7 @@ export function AssinarClient() {
                 <Button
                   type="submit"
                   disabled={isPending}
-                  className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-base shadow-md gap-2"
+                  className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-base shadow-md gap-2 cursor-pointer"
                 >
                   {isPending ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -717,7 +883,9 @@ export function AssinarClient() {
                   Assinatura Ativada com Sucesso!
                 </h2>
                 <p className="text-xs sm:text-sm text-stone-500">
-                  Seu painel está sendo liberado e preparado para você. Redirecionando...
+                  {currentPlan.type === "VENDOR"
+                    ? "Seu cadastro foi recebido com sucesso e seu painel de parceiro está liberado. Seus dados foram enviados para a curadoria."
+                    : "Seu painel está sendo liberado e preparado para você. Redirecionando..."}
                 </p>
                 <Loader2 className="w-5 h-5 animate-spin text-[#8C6D45] mx-auto mt-4" />
               </div>
