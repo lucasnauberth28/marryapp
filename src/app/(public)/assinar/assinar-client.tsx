@@ -134,6 +134,7 @@ export function AssinarClient() {
 
   // Dados do formulário
   const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -141,6 +142,17 @@ export function AssinarClient() {
   const [companyName, setCompanyName] = useState("");
   const [vendorCategory, setVendorCategory] = useState("Espaço");
   const [vendorRegion, setVendorRegion] = useState("São Paulo - Capital");
+
+  const handleNameChange = (val: string) => {
+    setName(val);
+    const autoSlug = val
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    setSlug(autoSlug);
+  };
 
   // Dados de simulação Pix
   const [pixCopied, setPixCopied] = useState(false);
@@ -160,6 +172,7 @@ export function AssinarClient() {
         planName: currentPlan.name,
         amount: currentPlan.price,
         name,
+        slug,
         email,
         phone,
         password: password || "marryapp123",
@@ -243,11 +256,25 @@ export function AssinarClient() {
                         <Label className="text-xs font-bold text-stone-700 uppercase">Nomes dos Noivos</Label>
                         <Input
                           value={name}
-                          onChange={(e) => setName(e.target.value)}
+                          onChange={(e) => handleNameChange(e.target.value)}
                           placeholder="Ex: Lucas & Giovanna"
                           required
                           className="rounded-2xl h-12 text-sm bg-stone-50/50"
                         />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold text-stone-700 uppercase">Link Personalizado do Casamento</Label>
+                        <div className="flex items-center rounded-2xl border border-stone-200 bg-stone-50/50 px-3.5 h-12">
+                          <span className="text-xs text-stone-400 font-mono">marryapp.com.br/casamento/</span>
+                          <input
+                            value={slug}
+                            onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                            placeholder="lucas-e-giovanna"
+                            className="flex-1 bg-transparent text-xs font-mono font-bold text-[#8C6D45] outline-none"
+                          />
+                        </div>
+                        <p className="text-[10px] text-stone-400">Esse será o link exclusivo que seus convidados irão acessar.</p>
                       </div>
 
                       <div className="space-y-1.5">

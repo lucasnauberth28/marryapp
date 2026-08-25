@@ -21,6 +21,7 @@ export interface PlanRegistrationData {
   phone: string;
   password?: string;
   // Extras
+  slug?: string;
   weddingDate?: Date | null;
   companyName?: string;
   vendorCategory?: string;
@@ -87,17 +88,26 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
       }
     }
 
-    // Se for Casal, atualiza o SiteCustomization com os nomes
+    // Se for Casal, atualiza o SiteCustomization com os nomes e slug
     if (data.planType === "COUPLE") {
+      const formattedSlug = (data.slug || data.name)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
       await prisma.siteCustomization.upsert({
         where: { id: "global" },
         update: {
           title: data.name,
+          slug: formattedSlug || "lucas-e-giovanna",
           weddingDate: data.weddingDate || undefined,
         },
         create: {
           id: "global",
           title: data.name,
+          slug: formattedSlug || "lucas-e-giovanna",
           weddingDate: data.weddingDate || undefined,
         },
       });

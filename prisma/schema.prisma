@@ -283,6 +283,8 @@ model CreditCard {
 
 model SiteCustomization {
   id                 String   @id @default("global")
+  slug               String   @default("lucas-e-giovanna")
+  customDomain       String?  
   title              String   @default("Lucas & Giovanna")
   subtitle           String   @default("Vamos nos casar!")
   weddingDate        DateTime?
