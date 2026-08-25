@@ -302,10 +302,10 @@ export function HomeLandingClient() {
             </p>
           </div>
 
-          {/* Grid de Imagens de Casamento & Mockups Vivos */}
+          {/* Grid de Imagens de Casamento & Mockups Vivos (SEM BORDAS PRETAS) */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
             {/* Foto 1: Casal / Altar Principal */}
-            <div className="md:col-span-7 relative isolate rounded-3xl overflow-hidden shadow-xl group min-h-[420px] flex flex-col justify-end p-8 bg-stone-900 border border-stone-800">
+            <div className="md:col-span-7 relative isolate rounded-3xl overflow-hidden shadow-xl group min-h-[420px] flex flex-col justify-end p-8 bg-stone-900">
               <img
                 src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80"
                 alt="Casamento dos Sonhos"
@@ -334,7 +334,7 @@ export function HomeLandingClient() {
             {/* Coluna Direita: 2 Cards Visuais Menores */}
             <div className="md:col-span-5 grid grid-cols-1 gap-6">
               {/* Foto 2: Recepção & Mesas */}
-              <div className="relative isolate rounded-3xl overflow-hidden shadow-lg group min-h-[200px] flex flex-col justify-end p-6 bg-stone-900 border border-stone-800">
+              <div className="relative isolate rounded-3xl overflow-hidden shadow-lg group min-h-[200px] flex flex-col justify-end p-6 bg-stone-900">
                 <img
                   src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80"
                   alt="Decoração e Recepção"
@@ -357,7 +357,7 @@ export function HomeLandingClient() {
               </div>
 
               {/* Foto 3: Brinde & Alianças */}
-              <div className="relative isolate rounded-3xl overflow-hidden shadow-lg group min-h-[200px] flex flex-col justify-end p-6 bg-stone-900 border border-stone-800">
+              <div className="relative isolate rounded-3xl overflow-hidden shadow-lg group min-h-[200px] flex flex-col justify-end p-6 bg-stone-900">
                 <img
                   src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=800&q=80"
                   alt="Celebração e Presentes"
@@ -459,46 +459,105 @@ export function HomeLandingClient() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 5. SELEÇÃO DE PLANOS NO FINAL DA PÁGINA (ÚNICO PONTO DE PRICING) */}
+      {/* 5. SELEÇÃO DE PLANOS COM CORTE DIAGONAL INTERATIVO */}
       {/* ========================================================================= */}
       <section className="py-24 max-w-7xl mx-auto px-6" id="planos">
-        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-12">
-          <Badge className="bg-[#8C6D45]/10 text-[#8C6D45] border-[#8C6D45]/20 font-bold uppercase tracking-wider mb-3">
-            Transparência Total
-          </Badge>
-          <div className="inline-flex bg-stone-100 p-1.5 rounded-full border border-stone-200 shadow-xs mb-4">
-            <button
-              onClick={() => setPricingType("COUPLE")}
-              className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                pricingType === "COUPLE"
-                  ? "bg-white text-[#8C6D45] shadow-xs"
-                  : "text-stone-600 hover:text-stone-900"
-              }`}
-            >
-              💍 Planos para Casais
-            </button>
-            <button
-              onClick={() => setPricingType("VENDOR")}
-              className={`px-6 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                pricingType === "VENDOR"
-                  ? "bg-white text-[#8C6D45] shadow-xs"
-                  : "text-stone-600 hover:text-stone-900"
-              }`}
-            >
-              🤝 Planos para Fornecedores
-            </button>
-          </div>
+        {/* Cabeçalho Limpo (Sem a badge de transparência total) */}
+        <div className="text-center max-w-2xl mx-auto mb-10">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-900 font-serif">
-            {pricingType === "COUPLE" ? "Escolha ou Monte seu Plano" : "Impulsione sua Empresa de Eventos"}
+            {pricingType === "COUPLE" ? "Planos para o seu Casamento" : "Planos para Empresas de Eventos"}
           </h2>
           <p className="text-xs sm:text-sm text-stone-500 mt-2">
             {pricingType === "COUPLE"
-              ? "Opte por pacotes recomendados ou monte seu plano personalizado escolhendo apenas os recursos que for usar."
-              : "Conecte-se com casais qualificados com data e local marcados na sua região de atendimento."}
+              ? "Escolha o pacote ideal para o seu grande dia ou monte uma combinação personalizada."
+              : "Destaque sua empresa e receba pedidos de noivos qualificados na sua região de atendimento."}
           </p>
         </div>
 
-        {/* 💍 SELEÇÃO DE PLANOS PARA CASAIS (CALCULADORA MODULAR & PACOTES) */}
+        {/* ========================================================================= */}
+        {/* SELETOR COM IMAGENS E CORTE DIAGONAL ("VOU ME CASAR" vs "FORNEÇO SERVIÇOS") */}
+        {/* ========================================================================= */}
+        <div className="max-w-4xl mx-auto mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0 rounded-3xl overflow-hidden shadow-xl bg-stone-950 relative border border-stone-200/60">
+            {/* Lado 1: Vou me casar (Corte Diagonal Esquerda) */}
+            <button
+              type="button"
+              onClick={() => setPricingType("COUPLE")}
+              className={`group relative h-48 md:h-60 flex flex-col justify-end p-8 text-left transition-all duration-500 overflow-hidden cursor-pointer ${
+                pricingType === "COUPLE"
+                  ? "ring-2 ring-[#8C6D45] md:z-10 opacity-100"
+                  : "opacity-60 hover:opacity-90"
+              }`}
+              style={{
+                clipPath: "polygon(0 0, 100% 0, 92% 100%, 0% 100%)",
+              }}
+            >
+              <img
+                src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80"
+                alt="Vou me casar"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10"
+              />
+              <div
+                className={`absolute inset-0 transition-opacity duration-500 -z-10 ${
+                  pricingType === "COUPLE"
+                    ? "bg-gradient-to-t from-stone-950/95 via-stone-950/60 to-stone-950/20"
+                    : "bg-stone-950/80 group-hover:bg-stone-950/60"
+                }`}
+              />
+              <div className="relative z-10 text-white space-y-1">
+                <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#C5A880] block">
+                  Para Noivos & Casais
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-serif font-bold">
+                  💍 Vou me casar
+                </h3>
+                <p className="text-xs text-stone-300">
+                  Site personalizado, lista com Pix taxa zero e convites no WhatsApp.
+                </p>
+              </div>
+            </button>
+
+            {/* Lado 2: Forneço serviços (Corte Diagonal Direita) */}
+            <button
+              type="button"
+              onClick={() => setPricingType("VENDOR")}
+              className={`group relative h-48 md:h-60 flex flex-col justify-end p-8 text-left transition-all duration-500 overflow-hidden cursor-pointer ${
+                pricingType === "VENDOR"
+                  ? "ring-2 ring-[#8C6D45] md:z-10 opacity-100"
+                  : "opacity-60 hover:opacity-90"
+              }`}
+              style={{
+                clipPath: "polygon(8% 0, 100% 0, 100% 100%, 0% 100%)",
+              }}
+            >
+              <img
+                src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80"
+                alt="Forneço serviços"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10"
+              />
+              <div
+                className={`absolute inset-0 transition-opacity duration-500 -z-10 ${
+                  pricingType === "VENDOR"
+                    ? "bg-gradient-to-t from-stone-950/95 via-stone-950/60 to-stone-950/20"
+                    : "bg-stone-950/80 group-hover:bg-stone-950/60"
+                }`}
+              />
+              <div className="relative z-10 text-white space-y-1">
+                <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#C5A880] block">
+                  B2B Para Empresas de Eventos
+                </span>
+                <h3 className="text-2xl sm:text-3xl font-serif font-bold">
+                  🤝 Forneço serviços
+                </h3>
+                <p className="text-xs text-stone-300">
+                  Receba pedidos de orçamentos e agendamentos de reuniões com noivos.
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* 💍 SELEÇÃO DE PLANOS PARA CASAIS (3 CARDS + LINK PARA MONTAR PLANO) */}
         {pricingType === "COUPLE" && (
           <PlanCalculator />
         )}
@@ -633,20 +692,23 @@ export function HomeLandingClient() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 6. BANNER CTA LUXUOSO EM TOM ESCURO (CHAMPAGNE GOLD & CHARCOAL) */}
+      {/* 6. BANNER CTA LUXUOSO COM IMAGEM DE FUNDO SUAVIZADA NO TOM ESCURO */}
       {/* ========================================================================= */}
       <section className="py-20 px-6 max-w-7xl mx-auto">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-stone-950 via-stone-900 to-[#1A1612] text-white p-10 sm:p-16 border border-amber-900/30 shadow-2xl">
-          {/* Brilhos de Luz de Fundo */}
-          <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-[#8C6D45]/15 blur-3xl -z-0 pointer-events-none rounded-full" />
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#C5A880]/10 blur-3xl -z-0 pointer-events-none rounded-full" />
+        <div className="relative isolate overflow-hidden rounded-3xl bg-stone-950 text-white p-10 sm:p-16 border border-stone-800 shadow-2xl">
+          {/* Imagem de Fundo Suavizada Horizontalmente */}
+          <img
+            src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1600&q=80"
+            alt="Celebração Inesquecível"
+            className="absolute inset-0 w-full h-full object-cover z-0 opacity-25"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-stone-950 via-stone-950/85 to-stone-950 z-10" />
 
-          <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FAF4ED]/10 border border-[#C5A880]/30 text-[#C5A880] text-xs font-bold uppercase tracking-widest">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Celebre com Perfeição</span>
-            </div>
+          {/* Brilhos Sutis Dourados */}
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#8C6D45]/15 blur-3xl z-10 pointer-events-none rounded-full" />
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#C5A880]/10 blur-3xl z-10 pointer-events-none rounded-full" />
 
+          <div className="relative z-20 max-w-3xl mx-auto text-center space-y-6">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-serif leading-tight">
               Pronto para viver o casamento mais <span className="italic text-[#C5A880]">inesquecível</span> da sua vida?
             </h2>
@@ -673,7 +735,7 @@ export function HomeLandingClient() {
               </Link>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-6 pt-6 text-xs text-stone-400 border-t border-stone-800">
+            <div className="flex flex-wrap items-center justify-center gap-6 pt-6 text-xs text-stone-400 border-t border-stone-800/80">
               <span className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 <span>Ativação Instantânea</span>
