@@ -5,7 +5,13 @@ const getSecretKey = () => {
   return new TextEncoder().encode(secret);
 };
 
-export async function signToken(payload: { userId: string; role: string; allowedPaths: string[] }) {
+export interface TokenPayload {
+  userId: string;
+  role: string;
+  allowedPaths: string[];
+}
+
+export async function signToken(payload: TokenPayload) {
   const iat = Math.floor(Date.now() / 1000);
   const exp = iat + 60 * 60 * 24 * 7; // 7 dias
 

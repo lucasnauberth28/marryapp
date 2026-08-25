@@ -6,6 +6,9 @@ import { calculateCardFee, mpPayment } from "@/lib/mercadopago";
 import { findOrCreateGuest } from "@/lib/guest-matching";
 import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { checkRateLimit, SecurityLimits } from "@/lib/security/rate-limiter";
+import { sanitizeHtmlText } from "@/lib/security/sanitize";
+import { maskCardNumber, maskPhone } from "@/lib/security/masking";
 
 interface PixTransactionInput {
   giftId: string;
@@ -37,15 +40,32 @@ export async function createPixTransactionAction({
   guestEmail,
 }: PixTransactionInput) {
   try {
+    // 🛡️ Proteção Rate Limit Anti-Spam (Max 10 / 5 minutos por telefone)
+    const clientKey = `pix_${guestPhone.replace(/\D/g, "") || "anon"}`;
+    const rateLimit = checkRateLimit({
+      key: clientKey,
+      ...SecurityLimits.CHECKOUT,
+    });
+
+    if (!rateLimit.success) {
+      return {
+        success: false,
+        error: "Muitas tentativas de geração de pagamento. Aguarde alguns minutos.",
+      };
+    }
+
+    const cleanGuestName = sanitizeHtmlText(guestName);
+    const cleanGuestPhone = guestPhone.replace(/\D/g, "");
+
     const gift = await prisma.gift.findUnique({ where: { id: giftId } });
     if (!gift) return { success: false, error: "Presente não encontrado." };
     if (gift.isPurchased) return { success: false, error: "Este presente já foi comprado." };
 
     // 1. Encontra ou Cadastra o convidado sem duplicidades (DDD / Phone Match)
     const guest = await findOrCreateGuest({
-      name: guestName,
-      phone: guestPhone,
-      email: guestEmail,
+      name: cleanGuestName,
+      phone: cleanGuestPhone,
+      email: guestEmail?.trim() || null,
     });
 
     // 2. Registra a Transação no banco
@@ -224,6 +244,24 @@ export async function processCardPaymentAction({
   payerEmail,
 }: CardTransactionInput) {
   try {
+    // 🛡️ Proteção Anti-Card Testing (Max 10 tentativas / 5 minutos)
+    const clientKey = `card_${guestPhone.replace(/\D/g, "") || payerEmail?.toLowerCase().trim() || "anon"}`;
+    const rateLimit = checkRateLimit({
+      key: clientKey,
+      ...SecurityLimits.CHECKOUT,
+    });
+
+    if (!rateLimit.success) {
+      return {
+        success: false,
+        error: "Muitas tentativas consecutivas de pagamento com cartão. Por segurança, aguarde alguns minutos.",
+      };
+    }
+
+    const cleanGuestName = sanitizeHtmlText(guestName);
+    const cleanGuestPhone = guestPhone.replace(/\D/g, "");
+    const cleanEmail = payerEmail?.toLowerCase().trim() || "";
+
     const gift = await prisma.gift.findUnique({ where: { id: giftId } });
     if (!gift) return { success: false, error: "Presente não encontrado." };
     if (gift.isPurchased) return { success: false, error: "Este presente já foi comprado." };
@@ -231,9 +269,9 @@ export async function processCardPaymentAction({
     const { finalAmount, fee } = calculateCardFee(gift.amount);
 
     const guest = await findOrCreateGuest({
-      name: guestName,
-      phone: guestPhone,
-      email: payerEmail,
+      name: cleanGuestName,
+      phone: cleanGuestPhone,
+      email: cleanEmail,
     });
 
     const transaction = await prisma.transaction.create({

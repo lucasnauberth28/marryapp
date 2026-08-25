@@ -9,8 +9,23 @@ const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { signToken } from "@/lib/auth";
+import { checkRateLimit, SecurityLimits } from "@/lib/security/rate-limiter";
 
 export async function login(password: string, username?: string) {
+  // Proteção contra Força Bruta (Max 5 tentativas / minuto)
+  const clientKey = `login_${username?.toLowerCase().trim() || "admin"}`;
+  const rateLimit = checkRateLimit({
+    key: clientKey,
+    ...SecurityLimits.LOGIN,
+  });
+
+  if (!rateLimit.success) {
+    return {
+      success: false,
+      error: "Muitas tentativas de login consecutivas. Por segurança, aguarde 1 minuto para tentar novamente.",
+    };
+  }
+
   const adminPassword = process.env.ADMIN_PASSWORD;
 
   // Fallback de emergência (Super Admin)
