@@ -478,30 +478,30 @@ export function HomeLandingClient() {
         {/* SELETOR COM IMAGENS E CORTE DIAGONAL ("VOU ME CASAR" vs "FORNEÇO SERVIÇOS") */}
         {/* ========================================================================= */}
         <div className="max-w-4xl mx-auto mb-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0 rounded-3xl overflow-hidden shadow-xl bg-stone-950 relative border border-stone-200/60">
+          <div className="grid grid-cols-1 md:grid-cols-2 rounded-3xl overflow-hidden shadow-xl bg-stone-900 relative border border-stone-200/80">
             {/* Lado 1: Vou me casar (Corte Diagonal Esquerda) */}
             <button
               type="button"
               onClick={() => setPricingType("COUPLE")}
-              className={`group relative h-48 md:h-60 flex flex-col justify-end p-8 text-left transition-all duration-500 overflow-hidden cursor-pointer ${
+              className={`group relative h-48 md:h-60 flex flex-col justify-end p-8 text-left transition-all duration-300 overflow-hidden cursor-pointer ${
                 pricingType === "COUPLE"
-                  ? "ring-2 ring-[#8C6D45] md:z-10 opacity-100"
-                  : "opacity-60 hover:opacity-90"
+                  ? "ring-2 ring-inset ring-[#8C6D45] md:z-10 opacity-100"
+                  : "opacity-60 hover:opacity-85"
               }`}
               style={{
-                clipPath: "polygon(0 0, 100% 0, 92% 100%, 0% 100%)",
+                clipPath: "polygon(0 0, 100% 0, 96% 100%, 0% 100%)",
               }}
             >
               <img
-                src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80"
+                src="https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1000&q=80"
                 alt="Vou me casar"
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10"
               />
               <div
-                className={`absolute inset-0 transition-opacity duration-500 -z-10 ${
+                className={`absolute inset-0 transition-opacity duration-300 -z-10 ${
                   pricingType === "COUPLE"
                     ? "bg-gradient-to-t from-stone-950/95 via-stone-950/60 to-stone-950/20"
-                    : "bg-stone-950/80 group-hover:bg-stone-950/60"
+                    : "bg-stone-950/80 group-hover:bg-stone-950/65"
                 }`}
               />
               <div className="relative z-10 text-white space-y-1">
@@ -521,25 +521,25 @@ export function HomeLandingClient() {
             <button
               type="button"
               onClick={() => setPricingType("VENDOR")}
-              className={`group relative h-48 md:h-60 flex flex-col justify-end p-8 text-left transition-all duration-500 overflow-hidden cursor-pointer ${
+              className={`group relative h-48 md:h-60 flex flex-col justify-end p-8 text-left transition-all duration-300 overflow-hidden cursor-pointer ${
                 pricingType === "VENDOR"
-                  ? "ring-2 ring-[#8C6D45] md:z-10 opacity-100"
-                  : "opacity-60 hover:opacity-90"
+                  ? "ring-2 ring-inset ring-[#8C6D45] md:z-10 opacity-100"
+                  : "opacity-60 hover:opacity-85"
               }`}
               style={{
-                clipPath: "polygon(8% 0, 100% 0, 100% 100%, 0% 100%)",
+                clipPath: "polygon(4% 0, 100% 0, 100% 100%, 0% 100%)",
               }}
             >
               <img
-                src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80"
+                src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=1000&q=80"
                 alt="Forneço serviços"
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10"
               />
               <div
-                className={`absolute inset-0 transition-opacity duration-500 -z-10 ${
+                className={`absolute inset-0 transition-opacity duration-300 -z-10 ${
                   pricingType === "VENDOR"
                     ? "bg-gradient-to-t from-stone-950/95 via-stone-950/60 to-stone-950/20"
-                    : "bg-stone-950/80 group-hover:bg-stone-950/60"
+                    : "bg-stone-950/80 group-hover:bg-stone-950/65"
                 }`}
               />
               <div className="relative z-10 text-white space-y-1">
@@ -600,9 +600,9 @@ export function HomeLandingClient() {
               </Link>
             </div>
 
-            {/* 2. Fornecedor Pro (DESTAQUE) */}
+            {/* 2. Fornecedor Pro (DESTAQUE COM BADGE CENTRALIZADA) */}
             <div className="bg-gradient-to-b from-emerald-50/50 to-white p-7 rounded-3xl border-2 border-emerald-600 shadow-lg flex flex-col justify-between relative hover:shadow-xl transition-all">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-[10px] font-extrabold uppercase tracking-wider px-4 py-1 rounded-full shadow-xs">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-max bg-emerald-600 text-white text-[10px] font-extrabold uppercase tracking-wider px-4 py-1 rounded-full shadow-xs text-center">
                 Mais Popular para Empresas
               </div>
 
@@ -698,11 +698,11 @@ export function HomeLandingClient() {
         <div className="relative isolate overflow-hidden rounded-3xl bg-stone-950 text-white p-10 sm:p-16 border border-stone-800 shadow-2xl">
           {/* Imagem de Fundo Suavizada Horizontalmente */}
           <img
-            src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1600&q=80"
+            src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1600&q=80"
             alt="Celebração Inesquecível"
-            className="absolute inset-0 w-full h-full object-cover z-0 opacity-25"
+            className="absolute inset-0 w-full h-full object-cover z-0 opacity-30"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-stone-950 via-stone-950/85 to-stone-950 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-stone-950/95 via-stone-950/75 to-stone-950/95 z-10" />
 
           {/* Brilhos Sutis Dourados */}
           <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#8C6D45]/15 blur-3xl z-10 pointer-events-none rounded-full" />
