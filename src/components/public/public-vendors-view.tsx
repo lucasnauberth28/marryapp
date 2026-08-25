@@ -26,6 +26,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import { createVendorLead } from "@/actions/partner-vendor-actions";
 import { toast } from "sonner";
 
@@ -170,20 +178,21 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
             </div>
 
             <div className="md:col-span-4">
-              <div className="flex items-center rounded-2xl border border-stone-200 bg-stone-50/60 px-3 h-12">
-                <MapPin className="w-4 h-4 text-[#8C6D45] mr-2 shrink-0" />
-                <select
-                  value={selectedRegion}
-                  onChange={(e) => setSelectedRegion(e.target.value)}
-                  className="w-full bg-transparent text-xs font-bold text-stone-800 outline-none cursor-pointer"
-                >
+              <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                <SelectTrigger className="rounded-2xl h-12 bg-stone-50/60 border-stone-200 text-xs font-bold text-stone-800">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-[#8C6D45] shrink-0" />
+                    <SelectValue placeholder="Selecione a Região" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
                   {REGIONS.map((reg) => (
-                    <option key={reg} value={reg}>
+                    <SelectItem key={reg} value={reg} className="text-xs font-medium">
                       📍 {reg === "TODAS" ? "Todas as Regiões" : reg}
-                    </option>
+                    </SelectItem>
                   ))}
-                </select>
-              </div>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -458,11 +467,11 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-bold text-stone-700 uppercase">Data Prevista</Label>
-                <Input
-                  type="date"
+                <DatePicker
                   value={weddingDate}
                   onChange={(e) => setWeddingDate(e.target.value)}
-                  className="rounded-2xl h-11 text-xs bg-stone-50 font-mono"
+                  placeholder="Selecione a data"
+                  className="rounded-2xl h-11 text-xs bg-stone-50"
                 />
               </div>
             </div>

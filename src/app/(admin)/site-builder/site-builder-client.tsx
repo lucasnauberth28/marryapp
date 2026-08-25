@@ -27,6 +27,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   updateSiteCustomization,
   createStoryItem,
   deleteStoryItem,
@@ -488,16 +495,17 @@ export function SiteBuilderClient({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-xs font-bold text-stone-600 uppercase">Categoria</label>
-                <select
-                  value={tipCategory}
-                  onChange={(e) => setTipCategory(e.target.value)}
-                  className="w-full bg-stone-50/50 border border-stone-200 rounded-2xl h-12 px-4 text-xs font-bold"
-                >
-                  <option value="HOTEL">Hotel / Hospedagem</option>
-                  <option value="SALON">Salão de Beleza / Maquiagem</option>
-                  <option value="TRANSFER">Transporte / Van</option>
-                  <option value="DRESS">Aluguel de Trajes</option>
-                </select>
+                <Select value={tipCategory} onValueChange={setTipCategory}>
+                  <SelectTrigger className="w-full bg-stone-50/50 border border-stone-200 rounded-2xl h-12 px-4 text-xs font-bold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="HOTEL">Hotel / Hospedagem</SelectItem>
+                    <SelectItem value="SALON">Salão de Beleza / Maquiagem</SelectItem>
+                    <SelectItem value="TRANSFER">Transporte / Van</SelectItem>
+                    <SelectItem value="DRESS">Aluguel de Trajes</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-1">

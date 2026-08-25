@@ -4,6 +4,13 @@ import { useState, useRef } from "react";
 import { findGuestByPhone, publicConfirmRsvp } from "@/actions/guest-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, Search, CheckCircle2, XCircle, Gift, Download, MapPin, Calendar, Users, Heart } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
@@ -256,17 +263,21 @@ export function RsvpClient() {
                     <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">
                       Quantos acompanhantes você trará?
                     </label>
-                    <select
-                      value={companionsCount}
-                      onChange={(e) => setCompanionsCount(Number(e.target.value))}
-                      className="w-full h-11 px-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:border-zinc-500 focus:bg-white text-zinc-800 text-sm font-medium transition-all shadow-sm outline-none"
+                    <Select
+                      value={String(companionsCount)}
+                      onValueChange={(val) => setCompanionsCount(Number(val))}
                     >
-                      {Array.from({ length: guest.allowedCompanions + 1 }).map((_, i) => (
-                        <option key={i} value={i}>
-                          {i === 0 ? "Nenhum acompanhante" : `${i} acompanhante(s)`}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full h-11 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-800 text-sm font-medium">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: guest.allowedCompanions + 1 }).map((_, i) => (
+                          <SelectItem key={i} value={String(i)} className="text-sm font-medium">
+                            {i === 0 ? "Nenhum acompanhante" : `${i} acompanhante(s)`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 )}
 

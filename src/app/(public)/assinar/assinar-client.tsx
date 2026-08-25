@@ -25,6 +25,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import { WeddingRingsIcon } from "@/components/icons/wedding-rings";
 import { registerPlanAccount, PlanRegistrationData } from "@/actions/subscription-actions";
 import { toast } from "sonner";
@@ -300,11 +308,11 @@ export function AssinarClient() {
 
                       <div className="space-y-1.5">
                         <Label className="text-xs font-bold text-stone-700 uppercase">Data Prevista do Casamento</Label>
-                        <Input
-                          type="date"
+                        <DatePicker
                           value={weddingDate}
                           onChange={(e) => setWeddingDate(e.target.value)}
-                          className="rounded-2xl h-12 text-sm bg-stone-50/50 font-mono"
+                          placeholder="Selecione a data prevista"
+                          className="rounded-2xl h-12 text-sm bg-stone-50/50"
                         />
                       </div>
                     </>
@@ -324,35 +332,37 @@ export function AssinarClient() {
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <Label className="text-xs font-bold text-stone-700 uppercase">Categoria</Label>
-                          <select
-                            value={vendorCategory}
-                            onChange={(e) => setVendorCategory(e.target.value)}
-                            className="w-full bg-stone-50/50 border border-stone-200 rounded-2xl h-12 px-4 text-xs font-bold"
-                          >
-                            <option value="Espaço">Espaço</option>
-                            <option value="Buffet">Buffet</option>
-                            <option value="Fotografia">Fotografia</option>
-                            <option value="Decoração">Decoração</option>
-                            <option value="DJ & Som">DJ & Som</option>
-                            <option value="Vestidos">Vestidos</option>
-                            <option value="Doces & Bolo">Doces & Bolo</option>
-                          </select>
+                          <Select value={vendorCategory} onValueChange={setVendorCategory}>
+                            <SelectTrigger className="rounded-2xl h-12 bg-stone-50/50 border-stone-200 text-xs font-bold">
+                              <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Espaço">Espaço</SelectItem>
+                              <SelectItem value="Buffet">Buffet</SelectItem>
+                              <SelectItem value="Fotografia">Fotografia</SelectItem>
+                              <SelectItem value="Decoração">Decoração</SelectItem>
+                              <SelectItem value="DJ & Som">DJ & Som</SelectItem>
+                              <SelectItem value="Vestidos">Vestidos</SelectItem>
+                              <SelectItem value="Doces & Bolo">Doces & Bolo</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
 
                         <div className="space-y-1.5">
                           <Label className="text-xs font-bold text-stone-700 uppercase">Região Principal</Label>
-                          <select
-                            value={vendorRegion}
-                            onChange={(e) => setVendorRegion(e.target.value)}
-                            className="w-full bg-stone-50/50 border border-stone-200 rounded-2xl h-12 px-4 text-xs font-bold"
-                          >
-                            <option value="São Paulo - Capital">São Paulo - Capital</option>
-                            <option value="Grande SP">Grande SP</option>
-                            <option value="Litoral Norte">Litoral Norte</option>
-                            <option value="Campinas e Região">Campinas e Região</option>
-                            <option value="Vale do Paraíba">Vale do Paraíba</option>
-                            <option value="Brasil Todo">Atende Brasil Todo</option>
-                          </select>
+                          <Select value={vendorRegion} onValueChange={setVendorRegion}>
+                            <SelectTrigger className="rounded-2xl h-12 bg-stone-50/50 border-stone-200 text-xs font-bold">
+                              <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="São Paulo - Capital">São Paulo - Capital</SelectItem>
+                              <SelectItem value="Grande SP">Grande SP</SelectItem>
+                              <SelectItem value="Litoral Norte">Litoral Norte</SelectItem>
+                              <SelectItem value="Campinas e Região">Campinas e Região</SelectItem>
+                              <SelectItem value="Vale do Paraíba">Vale do Paraíba</SelectItem>
+                              <SelectItem value="Brasil Todo">Atende Brasil Todo</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
 

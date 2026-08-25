@@ -5,6 +5,13 @@ import { GiftLocal as Gift } from "@/types/local";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   createPixTransactionAction,
   confirmPixPaymentAction,
   checkTransactionStatusAction,
@@ -532,23 +539,27 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
                     <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
                       Opções de Parcelamento
                     </label>
-                    <select
-                      value={installments}
-                      onChange={(e) => setInstallments(Number(e.target.value))}
-                      className="w-full bg-zinc-50/50 border border-zinc-200 h-12 rounded-2xl px-4 font-semibold text-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 cursor-pointer"
+                    <Select
+                      value={String(installments)}
+                      onValueChange={(val) => setInstallments(Number(val))}
                     >
-                      {[...Array(12)].map((_, i) => {
-                        const count = i + 1;
-                        const installmentAmount = Math.round(
-                          cardFinalAmount / count
-                        );
-                        return (
-                          <option key={count} value={count}>
-                            {count}x de {formatPrice(installmentAmount)}
-                          </option>
-                        );
-                      })}
-                    </select>
+                      <SelectTrigger className="w-full bg-zinc-50/50 border border-zinc-200 h-12 rounded-2xl px-4 font-semibold text-zinc-800">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[...Array(12)].map((_, i) => {
+                          const count = i + 1;
+                          const installmentAmount = Math.round(
+                            cardFinalAmount / count
+                          );
+                          return (
+                            <SelectItem key={count} value={String(count)} className="font-medium">
+                              {count}x de {formatPrice(installmentAmount)}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
