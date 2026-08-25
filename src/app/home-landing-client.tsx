@@ -288,7 +288,7 @@ export function HomeLandingClient() {
       {/* ========================================================================= */}
       {/* 3. GALERIA VISUAL LUXUOSA DE CASAMENTOS & EXPERIÊNCIA DO SISTEMA */}
       {/* ========================================================================= */}
-      <section className="py-16 bg-gradient-to-b from-[#FCFBF9] via-[#F7F4EF] to-[#FCFBF9] border-y border-stone-200/60">
+      <section className="py-16 bg-[#F7F5F0] border-y border-stone-200/60">
         <div className="max-w-7xl mx-auto px-6 space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="text-xs font-bold uppercase tracking-widest text-[#8C6D45]">
@@ -305,23 +305,28 @@ export function HomeLandingClient() {
           {/* Grid de Imagens de Casamento & Mockups Vivos */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
             {/* Foto 1: Casal / Altar Principal */}
-            <div className="md:col-span-7 relative rounded-3xl overflow-hidden shadow-lg group min-h-[380px] flex flex-col justify-end p-8">
+            <div className="md:col-span-7 relative isolate rounded-3xl overflow-hidden shadow-xl group min-h-[420px] flex flex-col justify-end p-8 bg-stone-900 border border-stone-800">
               <img
                 src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80"
                 alt="Casamento dos Sonhos"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 z-0 opacity-90"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/30 to-transparent -z-10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/95 via-stone-950/50 to-stone-950/10 z-10" />
 
-              <div className="space-y-2 text-white">
-                <Badge className="bg-[#8C6D45] text-white font-bold text-[10px] uppercase tracking-wider">
-                  Site dos Noivos No-Code
-                </Badge>
-                <h3 className="text-2xl sm:text-3xl font-serif font-bold">
+              <div className="relative z-20 space-y-3 text-white">
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-[#8C6D45] text-white font-bold text-[10px] uppercase tracking-wider shadow-xs">
+                    Site dos Noivos No-Code
+                  </Badge>
+                  <span className="text-[11px] font-mono text-stone-300 bg-black/40 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/10">
+                    marryapp.com.br/casamento/...
+                  </span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-serif font-bold leading-tight">
                   Sua história contada com elegância cinematográfica
                 </h3>
-                <p className="text-xs sm:text-sm text-stone-300 max-w-lg">
-                  Compartilhe capítulos do casal, localização com link para Waze e Uber, guia de trajes com paleta de cores recomendada e mural de recados interativo.
+                <p className="text-xs sm:text-sm text-stone-300 max-w-lg leading-relaxed">
+                  Compartilhe capítulos do casal, mapa integrado com Waze/Uber, guia de trajes com paleta de cores recomendada e mural de recados interativo com fotos.
                 </p>
               </div>
             </div>
@@ -329,40 +334,48 @@ export function HomeLandingClient() {
             {/* Coluna Direita: 2 Cards Visuais Menores */}
             <div className="md:col-span-5 grid grid-cols-1 gap-6">
               {/* Foto 2: Recepção & Mesas */}
-              <div className="relative rounded-3xl overflow-hidden shadow-md group min-h-[180px] flex flex-col justify-end p-6">
+              <div className="relative isolate rounded-3xl overflow-hidden shadow-lg group min-h-[200px] flex flex-col justify-end p-6 bg-stone-900 border border-stone-800">
                 <img
                   src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80"
                   alt="Decoração e Recepção"
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 z-0 opacity-90"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/20 to-transparent -z-10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/40 to-transparent z-10" />
 
-                <div className="text-white space-y-1">
-                  <span className="text-[10px] uppercase tracking-wider text-amber-300 font-bold">
-                    Recepção & Mesas
+                <div className="relative z-20 text-white space-y-1.5">
+                  <span className="text-[10px] uppercase tracking-wider text-amber-300 font-extrabold flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3" />
+                    <span>Recepção & Mesas</span>
                   </span>
-                  <h4 className="text-lg font-serif font-bold">
+                  <h4 className="text-lg font-serif font-bold leading-snug">
                     Gestão visual de assentos e restrições de buffet
                   </h4>
+                  <p className="text-[11px] text-stone-300">
+                    Organize convidados por setor com exportação instantânea para cerimonialistas.
+                  </p>
                 </div>
               </div>
 
               {/* Foto 3: Brinde & Alianças */}
-              <div className="relative rounded-3xl overflow-hidden shadow-md group min-h-[180px] flex flex-col justify-end p-6">
+              <div className="relative isolate rounded-3xl overflow-hidden shadow-lg group min-h-[200px] flex flex-col justify-end p-6 bg-stone-900 border border-stone-800">
                 <img
                   src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=800&q=80"
                   alt="Celebração e Presentes"
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 z-0 opacity-90"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/20 to-transparent -z-10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/40 to-transparent z-10" />
 
-                <div className="text-white space-y-1">
-                  <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-bold">
-                    Lista de Presentes Pix
+                <div className="relative z-20 text-white space-y-1.5">
+                  <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-extrabold flex items-center gap-1.5">
+                    <Gift className="w-3 h-3" />
+                    <span>Lista de Presentes Pix</span>
                   </span>
-                  <h4 className="text-lg font-serif font-bold">
-                    Receba em dinheiro com saque 100% integral no mesmo dia
+                  <h4 className="text-lg font-serif font-bold leading-snug">
+                    Receba em dinheiro com taxa zero e resgate no mesmo dia
                   </h4>
+                  <p className="text-[11px] text-stone-300">
+                    Presentes fictícios convertidos em Pix direto na conta bancária dos noivos.
+                  </p>
                 </div>
               </div>
             </div>
