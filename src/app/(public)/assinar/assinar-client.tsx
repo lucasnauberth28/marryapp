@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition, useMemo } from "react";
+import { useState, useTransition, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { QRCodeSVG } from "qrcode.react";
 import {
   Heart,
   CheckCircle2,
@@ -20,6 +21,9 @@ import {
   Loader2,
   Copy,
   Check,
+  Clock,
+  RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +38,12 @@ import {
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { WeddingRingsIcon } from "@/components/icons/wedding-rings";
-import { registerPlanAccount, PlanRegistrationData } from "@/actions/subscription-actions";
+import {
+  registerPlanAccount,
+  generateSubscriptionPix,
+  PlanRegistrationData,
+} from "@/actions/subscription-actions";
+import { COUPLE_MODULES, calculateCustomPlanPrice } from "@/lib/pricing-modules";
 import { toast } from "sonner";
 
 const PLANS_CONFIG = {
@@ -46,11 +55,10 @@ const PLANS_CONFIG = {
     period: "Gratuito",
     badge: "Para Começar",
     features: [
-      "Site do Casal padrão com subdomínio",
+      "Site padrão dos noivos com subdomínio",
       "Lista de presentes com Pix e Cartão",
+      "RSVP padrão com controle de convidados",
       "Taxa de 2,99% por presente recebido",
-      "Confirmação de presença (RSVP) padrão",
-      "Suporte por e-mail",
     ],
   },
   classic: {
@@ -61,13 +69,11 @@ const PLANS_CONFIG = {
     badge: "Mais Escolhido",
     isPopular: true,
     features: [
-      "Construtor No-Code com todos os blocos",
-      "0% DE TAXA NO PIX (Saque 100% integral)",
-      "Disparos automáticos de convites no WhatsApp",
-      "Lembretes de RSVP com botões interativos",
-      "Credenciamento com QR Code na recepção",
-      "Mural de Recados & Guia de Trajes",
-      "Gestão de mesas e relatórios de buffet",
+      "0% de Taxa no Pix dos Noivos (Saque 100% integral)",
+      "Construtor completo No-Code com todos os blocos",
+      "Disparos automáticos no WhatsApp dos convidados",
+      "Credenciamento com QR Code na portaria",
+      "Mural de Recados interativo e Dicas de Traje",
     ],
   },
   vip: {
@@ -78,13 +84,11 @@ const PLANS_CONFIG = {
     badge: "Experiência VIP",
     features: [
       "Tudo incluído no Plano Classic",
-      "Domínio Próprio Personalizado (.com.br) por 1 ano",
-      "Álbum Coletivo ao Vivo nas Mesas com projeção",
-      "Concierge VIP dedicado via WhatsApp",
-      "Sem qualquer taxa no Pix dos Noivos",
+      "Domínio Próprio (.com.br) gratuito por 1 ano",
+      "Álbum Coletivo ao Vivo com QR Code nas mesas",
+      "Concierge VIP e suporte prioritário no WhatsApp",
     ],
   },
-
   // Fornecedores
   start: {
     type: "VENDOR" as const,
@@ -93,9 +97,9 @@ const PLANS_CONFIG = {
     period: "Gratuito",
     badge: "Iniciante",
     features: [
-      "Perfil no Marketplace de Fornecedores",
-      "1 região de atendimento cadastrada",
-      "Até 3 solicitações de orçamento por mês",
+      "Perfil no marketplace público",
+      "1 região de atendimento",
+      "Até 3 solicitações de orçamento/mês",
     ],
   },
   pro: {
@@ -127,8 +131,6 @@ const PLANS_CONFIG = {
     ],
   },
 };
-
-import { COUPLE_MODULES, calculateCustomPlanPrice } from "@/lib/pricing-modules";
 
 export function AssinarClient() {
   const router = useRouter();
@@ -172,6 +174,12 @@ export function AssinarClient() {
   const [vendorCategory, setVendorCategory] = useState("Espaço");
   const [vendorRegion, setVendorRegion] = useState("São Paulo - Capital");
 
+  // Dados de Cobrança Pix e Contador de 10 minutos
+  const [pixPayload, setPixPayload] = useState("");
+  const [pixExpiresAt, setPixExpiresAt] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number>(600); // 10 minutos = 600s
+  const [pixCopied, setPixCopied] = useState(false);
+
   const handleNameChange = (val: string) => {
     setName(val);
     const autoSlug = val
@@ -183,9 +191,25 @@ export function AssinarClient() {
     setSlug(autoSlug);
   };
 
-  // Dados de simulação Pix
-  const [pixCopied, setPixCopied] = useState(false);
-  const mockPixPayload = "00020126580014br.gov.bcb.pix0136119677947445204000053039865802BR5915MarryApp Pagamentos6009Sao Paulo62070503***6304ABCD";
+  // Atualização em tempo real do contador de 10 minutos
+  useEffect(() => {
+    if (step !== "PAYMENT" || !pixExpiresAt) return;
+
+    const updateTimer = () => {
+      const remaining = Math.max(0, Math.floor((pixExpiresAt - Date.now()) / 1000));
+      setTimeLeft(remaining);
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [step, pixExpiresAt]);
+
+  const minutes = Math.floor(timeLeft / 60).toString().padStart(2, "0");
+  const seconds = (timeLeft % 60).toString().padStart(2, "0");
+  const formattedTimer = `${minutes}:${seconds}`;
+  const isExpiringSoon = timeLeft < 120 && timeLeft > 0;
+  const isExpired = timeLeft <= 0;
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,10 +242,49 @@ export function AssinarClient() {
           toast.success("Conta criada com sucesso! Bem-vindo ao MarryApp ✨");
           router.push(currentPlan.type === "COUPLE" ? "/site-builder" : "/fornecedores");
         } else {
-          setStep("PAYMENT");
+          // Gera a transação Pix com expiração exata de 10 minutos
+          const pixRes = await generateSubscriptionPix(payload);
+          if (pixRes.success && pixRes.pixPayload) {
+            setPixPayload(pixRes.pixPayload);
+            setPixExpiresAt(pixRes.expiresAt);
+            setTimeLeft(Math.max(0, Math.floor((pixRes.expiresAt - Date.now()) / 1000)));
+            setStep("PAYMENT");
+          } else {
+            toast.error(pixRes.error || "Erro ao gerar cobrança Pix.");
+          }
         }
       } else {
         toast.error(res.error || "Erro ao registrar conta.");
+      }
+    });
+  };
+
+  const handleRegeneratePix = () => {
+    startTransition(async () => {
+      const payload: PlanRegistrationData = {
+        planType: currentPlan.type,
+        planId: selectedKey,
+        planName: currentPlan.name,
+        amount: currentPlan.price,
+        name,
+        slug,
+        email,
+        phone,
+        password: password || "marryapp123",
+        weddingDate: weddingDate ? new Date(weddingDate) : undefined,
+        companyName,
+        vendorCategory,
+        vendorRegion,
+      };
+
+      const pixRes = await generateSubscriptionPix(payload);
+      if (pixRes.success && pixRes.pixPayload) {
+        setPixPayload(pixRes.pixPayload);
+        setPixExpiresAt(pixRes.expiresAt);
+        setTimeLeft(Math.max(0, Math.floor((pixRes.expiresAt - Date.now()) / 1000)));
+        toast.success("Novo código Pix gerado com validade de 10 minutos!");
+      } else {
+        toast.error("Erro ao renovar código Pix.");
       }
     });
   };
@@ -249,32 +312,33 @@ export function AssinarClient() {
               <span className="font-serif italic font-bold text-2xl text-stone-900 leading-none">
                 MarryApp
               </span>
-              <span className="text-[9px] tracking-widest text-[#8C6D45] font-extrabold uppercase">
+              <span className="text-[10px] text-stone-400 font-sans tracking-widest uppercase">
                 Checkout Seguro
               </span>
             </div>
           </Link>
 
-          <div className="flex items-center gap-2 text-xs text-stone-500 font-bold">
-            <Lock className="w-4 h-4 text-emerald-600" />
+          <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 px-3.5 py-1.5 rounded-full border border-emerald-200">
+            <ShieldCheck className="w-4 h-4" />
             <span>Ambiente 100% Criptografado</span>
           </div>
         </div>
 
-        {/* Layout de Checkout com 2 Colunas */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* ========================================================================= */}
-          {/* COLUNA ESQUERDA: FORMULÁRIO DE CADASTRO OU PAGAMENTO */}
+          {/* COLUNA ESQUERDA: FORMULÁRIO DE CADASTRO OU CHECKOUT PIX */}
           {/* ========================================================================= */}
-          <div className="lg:col-span-7 bg-white p-8 rounded-3xl border border-stone-200/90 shadow-sm space-y-6">
+          <div className="lg:col-span-7 bg-white p-8 sm:p-10 rounded-3xl border border-stone-200/80 shadow-lg space-y-8">
             {step === "FORM" && (
               <form onSubmit={handleRegister} className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold font-serif text-stone-900">
-                    {currentPlan.type === "COUPLE" ? "1. Dados do Casal" : "1. Dados da Sua Empresa"}
-                  </h2>
-                  <p className="text-xs text-stone-500 mt-1">
-                    Crie seu acesso para gerenciar o seu plano no MarryApp.
+                  <h1 className="text-2xl sm:text-3xl font-extrabold font-serif text-stone-900">
+                    {currentPlan.type === "COUPLE"
+                      ? "1. Crie a Conta do Casal"
+                      : "1. Cadastre sua Empresa"}
+                  </h1>
+                  <p className="text-xs sm:text-sm text-stone-500 mt-1">
+                    Preencha os dados básicos para configurar seu painel administrativo.
                   </p>
                 </div>
 
@@ -293,14 +357,16 @@ export function AssinarClient() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-bold text-stone-700 uppercase">Link Personalizado do Casamento</Label>
-                        <div className="flex items-center rounded-2xl border border-stone-200 bg-stone-50/50 px-3.5 h-12">
-                          <span className="text-xs text-stone-400 font-mono">marryapp.com.br/casamento/</span>
+                        <Label className="text-xs font-bold text-stone-700 uppercase">Endereço do Site (Slug)</Label>
+                        <div className="flex items-center bg-stone-50/80 border border-stone-200 rounded-2xl px-3.5 h-12">
+                          <span className="text-xs text-stone-400 font-mono">marryapp.com.br/</span>
                           <input
+                            type="text"
                             value={slug}
-                            onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
+                            onChange={(e) => setSlug(e.target.value)}
                             placeholder="lucas-e-giovanna"
-                            className="flex-1 bg-transparent text-xs font-mono font-bold text-[#8C6D45] outline-none"
+                            required
+                            className="flex-1 bg-transparent text-xs font-mono font-bold text-[#8C6D45] outline-none ml-1"
                           />
                         </div>
                         <p className="text-[10px] text-stone-400">Esse será o link exclusivo que seus convidados irão acessar.</p>
@@ -381,7 +447,7 @@ export function AssinarClient() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-stone-700 uppercase">E-mail para Acesso</Label>
+                      <Label className="text-xs font-bold text-stone-700 uppercase">E-mail de Acesso</Label>
                       <Input
                         type="email"
                         value={email}
@@ -395,6 +461,7 @@ export function AssinarClient() {
                     <div className="space-y-1.5">
                       <Label className="text-xs font-bold text-stone-700 uppercase">WhatsApp</Label>
                       <Input
+                        type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="(11) 99999-9999"
@@ -405,12 +472,12 @@ export function AssinarClient() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-bold text-stone-700 uppercase">Criar Senha de Acesso</Label>
+                    <Label className="text-xs font-bold text-stone-700 uppercase">Defina uma Senha Segura</Label>
                     <Input
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Mínimo 6 caracteres"
+                      placeholder="Mínimo de 6 dígitos"
                       required
                       className="rounded-2xl h-12 text-sm bg-stone-50/50"
                     />
@@ -431,7 +498,7 @@ export function AssinarClient() {
                     </>
                   ) : (
                     <>
-                      <span>Continuar para Pagamento</span>
+                      <span>Continuar para Pagamento Pix</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
@@ -439,18 +506,39 @@ export function AssinarClient() {
               </form>
             )}
 
+            {/* ========================================================================= */}
+            {/* ETAPA 2: CHECKOUT PIX COM CONTADOR DE 10 MINUTOS */}
+            {/* ========================================================================= */}
             {step === "PAYMENT" && (
               <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-bold font-serif text-stone-900">
-                    2. Pagamento da Assinatura
-                  </h2>
-                  <p className="text-xs text-stone-500 mt-1">
-                    Escolha a forma de pagamento para ativar seu plano imediatamente.
-                  </p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold font-serif text-stone-900">
+                      2. Pagamento via Pix
+                    </h2>
+                    <p className="text-xs text-stone-500 mt-0.5">
+                      Escaneie ou copie o código para ativação instantânea.
+                    </p>
+                  </div>
+
+                  {/* Contador de Expiração de 10 minutos */}
+                  <div
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-mono font-bold transition-all shadow-xs ${
+                      isExpired
+                        ? "bg-red-100 text-red-800 border border-red-300"
+                        : isExpiringSoon
+                        ? "bg-amber-100 text-amber-900 border border-amber-300 animate-pulse"
+                        : "bg-[#FAF4ED] text-[#8C6D45] border border-[#8C6D45]/30"
+                    }`}
+                  >
+                    <Clock className="w-4 h-4 shrink-0" />
+                    <span>
+                      {isExpired ? "Pix Expirado" : `Expira em: ${formattedTimer}`}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Seletor de Método de Pagamento */}
+                {/* Seletor de Método */}
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
@@ -479,79 +567,140 @@ export function AssinarClient() {
                   </button>
                 </div>
 
-                {/* Detalhes Pix */}
+                {/* Bloco Pix com QR Code Real e Timer */}
                 {paymentMethod === "PIX" && (
-                  <div className="bg-[#FAF8F5] p-6 rounded-3xl border border-stone-200 text-center space-y-4">
-                    <div className="w-48 h-48 mx-auto bg-white p-3 rounded-2xl border border-stone-200 shadow-xs flex items-center justify-center">
-                      <div className="text-center space-y-2">
-                        <QrCode className="w-28 h-28 mx-auto text-stone-900" />
-                        <span className="text-[10px] text-stone-400 font-mono block">Escaneie no app do banco</span>
-                      </div>
-                    </div>
+                  <div className="bg-[#FAF8F5] p-6 sm:p-8 rounded-3xl border border-stone-200 text-center space-y-6">
+                    {!isExpired ? (
+                      <>
+                        {/* QR Code Real Renderizado com SVG de Alta Resolução */}
+                        <div className="w-56 h-56 mx-auto bg-white p-4 rounded-3xl border-2 border-[#8C6D45]/30 shadow-md flex items-center justify-center">
+                          {pixPayload ? (
+                            <QRCodeSVG
+                              value={pixPayload}
+                              size={190}
+                              level="M"
+                              includeMargin={false}
+                            />
+                          ) : (
+                            <Loader2 className="w-8 h-8 animate-spin text-[#8C6D45]" />
+                          )}
+                        </div>
 
-                    <div className="space-y-2">
-                      <p className="text-xs text-stone-600 font-medium">Ou copie o código Pix abaixo:</p>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          readOnly
-                          value={mockPixPayload}
-                          className="bg-white border-stone-200 font-mono text-[11px] h-11"
-                        />
+                        <div className="space-y-1">
+                          <p className="text-xs font-bold text-stone-800">
+                            Abra o aplicativo do seu banco e escaneie o código QR
+                          </p>
+                          <p className="text-[11px] text-stone-500">
+                            A liberação do seu plano é processada e ativada no mesmo instante.
+                          </p>
+                        </div>
+
+                        {/* Pix Copia e Cola */}
+                        <div className="space-y-2 pt-2 border-t border-stone-200/80">
+                          <p className="text-xs text-stone-600 font-medium">Ou copie o código Pix abaixo:</p>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              readOnly
+                              value={pixPayload}
+                              className="bg-white border-stone-200 font-mono text-[11px] h-12 truncate"
+                            />
+                            <Button
+                              onClick={() => {
+                                navigator.clipboard.writeText(pixPayload);
+                                setPixCopied(true);
+                                toast.success("Código Pix copiado para a área de transferência!");
+                                setTimeout(() => setPixCopied(false), 3000);
+                              }}
+                              variant="outline"
+                              className="rounded-2xl h-12 px-5 text-xs font-bold gap-1.5 border-stone-300 hover:bg-stone-100 shrink-0"
+                            >
+                              {pixCopied ? (
+                                <Check className="w-4 h-4 text-emerald-600" />
+                              ) : (
+                                <Copy className="w-4 h-4 text-stone-600" />
+                              )}
+                              <span>{pixCopied ? "Copiado!" : "Copiar Código"}</span>
+                            </Button>
+                          </div>
+                        </div>
+
                         <Button
-                          onClick={() => {
-                            navigator.clipboard.writeText(mockPixPayload);
-                            setPixCopied(true);
-                            toast.success("Código Pix copiado!");
-                            setTimeout(() => setPixCopied(false), 3000);
-                          }}
-                          variant="outline"
-                          className="rounded-2xl h-11 px-4 text-xs font-bold gap-1 border-stone-300"
+                          onClick={handleConfirmPaid}
+                          disabled={isPending}
+                          className="w-full bg-emerald-700 hover:bg-emerald-800 text-white rounded-full font-bold h-14 text-sm gap-2 shadow-lg cursor-pointer"
                         >
-                          {pixCopied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                          <span>Copiar</span>
+                          {isPending ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                          ) : (
+                            <>
+                              <CheckCircle2 className="w-5 h-5" />
+                              <span>Já Realizei o Pagamento via Pix</span>
+                            </>
+                          )}
+                        </Button>
+                      </>
+                    ) : (
+                      /* Estado de Pix Expirado após 10 minutos */
+                      <div className="py-8 space-y-4">
+                        <div className="w-16 h-16 rounded-full bg-red-100 text-red-700 flex items-center justify-center mx-auto">
+                          <AlertTriangle className="w-8 h-8" />
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="text-xl font-bold font-serif text-stone-900">
+                            Transação Pix Expirada
+                          </h3>
+                          <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                            O prazo máximo de 10 minutos deste código expirou por segurança. Clique abaixo para gerar um novo código imediatamente.
+                          </p>
+                        </div>
+
+                        <Button
+                          onClick={handleRegeneratePix}
+                          disabled={isPending}
+                          className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-12 px-6 text-xs gap-2 shadow-md"
+                        >
+                          {isPending ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <RefreshCw className="w-4 h-4" />
+                          )}
+                          <span>Gerar Novo Pix com 10 Minutos</span>
                         </Button>
                       </div>
-                    </div>
-
-                    <Button
-                      onClick={handleConfirmPaid}
-                      className="w-full bg-emerald-700 hover:bg-emerald-800 text-white rounded-full font-bold h-12 text-sm gap-2 mt-4"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Já Realizei o Pagamento via Pix</span>
-                    </Button>
+                    )}
                   </div>
                 )}
 
                 {/* Detalhes Cartão de Crédito */}
                 {paymentMethod === "CARD" && (
-                  <div className="bg-[#FAF8F5] p-6 rounded-3xl border border-stone-200 space-y-4">
+                  <div className="bg-[#FAF8F5] p-6 sm:p-8 rounded-3xl border border-stone-200 space-y-4">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-bold text-stone-700 uppercase">Número do Cartão</Label>
-                      <Input placeholder="0000 0000 0000 0000" className="bg-white rounded-2xl h-11 font-mono text-sm" />
+                      <Input placeholder="0000 0000 0000 0000" className="bg-white rounded-2xl h-12 font-mono text-sm" />
                     </div>
 
                     <div className="space-y-1.5">
                       <Label className="text-xs font-bold text-stone-700 uppercase">Nome Impresso no Cartão</Label>
-                      <Input placeholder="NOME COMO NO CARTAO" className="bg-white rounded-2xl h-11 text-sm uppercase" />
+                      <Input placeholder="NOME COMO NO CARTAO" className="bg-white rounded-2xl h-12 text-sm uppercase" />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-bold text-stone-700 uppercase">Validade (MM/AA)</Label>
-                        <Input placeholder="12/30" className="bg-white rounded-2xl h-11 font-mono text-sm" />
+                        <Input placeholder="12/30" className="bg-white rounded-2xl h-12 font-mono text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-bold text-stone-700 uppercase">CVV</Label>
-                        <Input placeholder="123" className="bg-white rounded-2xl h-11 font-mono text-sm" />
+                        <Input placeholder="123" className="bg-white rounded-2xl h-12 font-mono text-sm" />
                       </div>
                     </div>
 
                     <Button
                       onClick={handleConfirmPaid}
-                      className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-12 text-sm gap-2 mt-4"
+                      disabled={isPending}
+                      className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-sm gap-2 mt-4 cursor-pointer shadow-md"
                     >
-                      <Lock className="w-4 h-4" />
+                      {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Lock className="w-4 h-4" />}
                       <span>Pagar com Cartão com Segurança</span>
                     </Button>
                   </div>
@@ -561,16 +710,16 @@ export function AssinarClient() {
 
             {step === "SUCCESS" && (
               <div className="text-center py-12 space-y-4">
-                <div className="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto">
+                <div className="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto shadow-sm">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <h3 className="text-2xl font-bold font-serif text-stone-900">
+                <h2 className="text-2xl sm:text-3xl font-bold font-serif text-stone-900">
                   Assinatura Ativada com Sucesso!
-                </h3>
-                <p className="text-xs text-stone-500">
-                  Redirecionando para o seu painel de controle...
+                </h2>
+                <p className="text-xs sm:text-sm text-stone-500">
+                  Seu painel está sendo liberado e preparado para você. Redirecionando...
                 </p>
-                <Loader2 className="w-5 h-5 animate-spin mx-auto text-[#8C6D45]" />
+                <Loader2 className="w-5 h-5 animate-spin text-[#8C6D45] mx-auto mt-4" />
               </div>
             )}
           </div>
@@ -578,47 +727,56 @@ export function AssinarClient() {
           {/* ========================================================================= */}
           {/* COLUNA DIREITA: RESUMO DO PLANO ESCOLHIDO */}
           {/* ========================================================================= */}
-          <div className="lg:col-span-5 bg-gradient-to-b from-[#FAF4ED] to-white p-8 rounded-3xl border-2 border-[#8C6D45]/30 shadow-md space-y-6">
+          <div className="lg:col-span-5 bg-gradient-to-b from-[#FAF4ED] to-white p-8 rounded-3xl border-2 border-[#8C6D45]/30 shadow-xl space-y-6">
             <div className="flex items-center justify-between">
               <Badge className="bg-[#8C6D45] text-white font-extrabold text-[10px] uppercase tracking-wider">
                 {currentPlan.badge}
               </Badge>
-              <span className="text-xs text-stone-400 font-bold uppercase">
-                {currentPlan.type === "COUPLE" ? "Plano para Noivos" : "Plano para Fornecedores"}
+              <span className="text-xs text-stone-400 font-bold">
+                {currentPlan.type === "COUPLE" ? "Casal" : "Fornecedor"}
               </span>
             </div>
 
             <div>
-              <h3 className="text-2xl font-bold font-serif text-stone-900">{currentPlan.name}</h3>
-              <div className="mt-2 flex items-baseline gap-1.5">
-                <span className="text-4xl font-extrabold text-stone-900">
+              <h3 className="text-2xl font-bold font-serif text-stone-900">
+                {currentPlan.name}
+              </h3>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-4xl font-extrabold text-stone-900 font-serif">
                   {currentPlan.price === 0
                     ? "Grátis"
-                    : new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-                        currentPlan.price / 100
-                      )}
+                    : new Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      }).format(currentPlan.price / 100)}
                 </span>
                 <span className="text-xs text-stone-500 font-medium">{currentPlan.period}</span>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-stone-200/80 space-y-3">
+            <div className="pt-4 border-t border-stone-200/80 space-y-2.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 block">
-                O que está incluso no seu plano:
+                Itens incluídos:
               </span>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2 text-xs text-stone-700 font-medium">
                 {currentPlan.features.map((feat, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-xs text-stone-700 font-medium">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <li key={i} className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#8C6D45] shrink-0" />
                     <span>{feat}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="pt-4 border-t border-stone-200/80 flex items-center gap-3 text-xs text-stone-500">
-              <ShieldCheck className="w-5 h-5 text-[#8C6D45] shrink-0" />
-              <span>Garantia de 7 dias ou seu dinheiro de volta sem complicações.</span>
+            <div className="pt-4 border-t border-stone-200/80 space-y-2 text-stone-500 text-[11px]">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Ativação Imediata após a confirmação.</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Lock className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Sem taxas ocultas ou renovações forçadas.</span>
+              </div>
             </div>
           </div>
         </div>

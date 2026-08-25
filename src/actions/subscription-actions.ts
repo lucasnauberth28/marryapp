@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { signToken } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { mpPayment, calculateCardFee } from "@/lib/mercadopago";
+import { generatePixPayload } from "@/lib/pix-utils";
 import { PaymentMethod, PaymentStatus } from "@prisma/client";
 
 const COOKIE_NAME = "marryapp_admin_session";
@@ -26,6 +27,79 @@ export interface PlanRegistrationData {
   companyName?: string;
   vendorCategory?: string;
   vendorRegion?: string;
+}
+
+/**
+ * Gera uma cobrança Pix temporária com expiração exata de 10 minutos para a assinatura
+ */
+export async function generateSubscriptionPix(data: PlanRegistrationData) {
+  try {
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutos
+    const expirationIso = expiresAt.toISOString();
+
+    const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN;
+    if (mpToken && data.amount > 0) {
+      try {
+        const mpResponse = await mpPayment.create({
+          body: {
+            transaction_amount: data.amount / 100,
+            payment_method_id: "pix",
+            description: `Assinatura MarryApp: ${data.planName}`,
+            date_of_expiration: expirationIso,
+            payer: {
+              email: data.email && data.email.includes("@") ? data.email : "contato@marryapp.com.br",
+              first_name: data.name.split(" ")[0],
+              last_name: data.name.split(" ").slice(1).join(" ") || "Cliente",
+            },
+          },
+        });
+
+        const mpPixPayload = mpResponse.point_of_interaction?.transaction_data?.qr_code;
+        const qrCodeBase64 = mpResponse.point_of_interaction?.transaction_data?.qr_code_base64;
+
+        if (mpPixPayload) {
+          return {
+            success: true,
+            pixPayload: mpPixPayload,
+            qrCodeBase64: qrCodeBase64 || null,
+            gatewayId: String(mpResponse.id),
+            expiresAt: expiresAt.getTime(),
+            amount: data.amount,
+            isDynamic: true,
+          };
+        }
+      } catch (mpErr) {
+        console.warn("[generateSubscriptionPix MP Error, using standard EMV Pix fallback]:", mpErr);
+      }
+    }
+
+    // Fallback padrão BR Code EMV oficial (Banco Central) com CRC16 válido
+    const pixKey = (process.env.PIX_KEY || "11967794744").trim();
+    const merchantName = (process.env.PIX_MERCHANT_NAME || "MARRYAPP BRASIL").trim();
+    const merchantCity = (process.env.PIX_MERCHANT_CITY || "SAO PAULO").trim();
+    const txId = `ASSIN${Date.now().toString(36).toUpperCase()}`.substring(0, 18);
+
+    const pixPayload = generatePixPayload({
+      pixKey,
+      merchantName,
+      merchantCity,
+      amount: data.amount,
+      txId,
+    });
+
+    return {
+      success: true,
+      pixPayload,
+      qrCodeBase64: null,
+      gatewayId: txId,
+      expiresAt: expiresAt.getTime(),
+      amount: data.amount,
+      isDynamic: false,
+    };
+  } catch (error: any) {
+    console.error("[generateSubscriptionPix Error]:", error);
+    return { success: false, error: error?.message || "Erro ao gerar cobrança Pix." };
+  }
 }
 
 /**
