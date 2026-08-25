@@ -13,10 +13,10 @@ export async function uploadGiftImage(file: File): Promise<string | null> {
     }
 
     const fileExt = file.name.split('.').pop()
-    const fileName = `${Math.random()}.${fileExt}`
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`
     const filePath = `gifts/${fileName}`
 
-    const { error: uploadError, data } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('gifts')
       .upload(filePath, file)
 
@@ -30,7 +30,36 @@ export async function uploadGiftImage(file: File): Promise<string | null> {
 
     return publicUrl
   } catch (error) {
-    console.error('[Supabase Upload Error]:', error)
+    console.error('[Supabase Gift Upload Error]:', error)
+    return null
+  }
+}
+
+export async function uploadVendorMedia(file: File, folder = 'vendors'): Promise<string | null> {
+  try {
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.warn('[Supabase] Credenciais não configuradas para upload.')
+      return null
+    }
+
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('gifts')
+      .upload(fileName, file)
+
+    if (uploadError) {
+      throw uploadError
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('gifts')
+      .getPublicUrl(fileName)
+
+    return publicUrl
+  } catch (error) {
+    console.error('[Supabase Vendor Upload Error]:', error)
     return null
   }
 }

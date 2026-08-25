@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useMemo, useEffect } from "react";
+import { useState, useTransition, useMemo, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
@@ -11,6 +11,7 @@ import {
   CreditCard as CreditCardIcon,
   ShieldCheck,
   ArrowRight,
+  ArrowLeft,
   Sparkles,
   Lock,
   Calendar,
@@ -28,6 +29,12 @@ import {
   Camera,
   FileText,
   DollarSign,
+  Upload,
+  Image as ImageIcon,
+  Trash2,
+  Plus,
+  Video,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -164,10 +171,11 @@ export function AssinarClient() {
     : PLANS_CONFIG[selectedKey];
 
   const [step, setStep] = useState<"FORM" | "PAYMENT" | "SUCCESS">("FORM");
+  const [vendorStep, setVendorStep] = useState<1 | 2 | 3>(1); // Etapas do fornecedor
   const [paymentMethod, setPaymentMethod] = useState<"PIX" | "CARD">("PIX");
   const [isPending, startTransition] = useTransition();
 
-  // Dados do formulário
+  // Dados do Casal
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [email, setEmail] = useState("");
@@ -175,7 +183,7 @@ export function AssinarClient() {
   const [password, setPassword] = useState("");
   const [weddingDate, setWeddingDate] = useState("");
 
-  // Dados Completos de Fornecedor
+  // Dados Completos do Fornecedor
   const [companyName, setCompanyName] = useState("");
   const [vendorCategory, setVendorCategory] = useState("Espaço");
   const [vendorRegion, setVendorRegion] = useState("São Paulo - Capital");
@@ -184,9 +192,16 @@ export function AssinarClient() {
   const [startingPriceStr, setStartingPriceStr] = useState("");
   const [averageTicketStr, setAverageTicketStr] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
   const [instagram, setInstagram] = useState("");
   const [tiktok, setTiktok] = useState("");
   const [website, setWebsite] = useState("");
+  const [offersOnlineMeet, setOffersOnlineMeet] = useState(true);
+  const [hasPhysicalSpace, setHasPhysicalSpace] = useState(false);
+  const [address, setAddress] = useState("");
+
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   // Dados de Cobrança Pix e Contador de 10 minutos
   const [pixPayload, setPixPayload] = useState("");
@@ -203,6 +218,68 @@ export function AssinarClient() {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
     setSlug(autoSlug);
+  };
+
+  // Cálculo ao vivo de faixa de preço para o fornecedor
+  const calculatedPriceRange = useMemo(() => {
+    const rawVal = (averageTicketStr || startingPriceStr).replace(/\D/g, "");
+    if (!rawVal) return "$$";
+    const val = parseFloat(rawVal);
+    if (val <= 3000) return "$";
+    if (val <= 8000) return "$$";
+    if (val <= 20000) return "$$$";
+    return "$$$$";
+  }, [averageTicketStr, startingPriceStr]);
+
+  // Upload do Logotipo (leitura local para base64 com preview instantâneo)
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("O logotipo deve ter no máximo 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setLogoUrl(reader.result as string);
+      toast.success("Logotipo carregado com sucesso!");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Upload de Fotos do Portfólio (múltiplas)
+  const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newImages: string[] = [];
+    let processed = 0;
+
+    Array.from(files).forEach((file) => {
+      if (file.size > 8 * 1024 * 1024) {
+        toast.error(`A imagem ${file.name} ultrapassa 8MB e foi ignorada.`);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result) {
+          newImages.push(reader.result as string);
+        }
+        processed++;
+        if (processed === files.length) {
+          setGalleryImages((prev) => [...prev, ...newImages].slice(0, 8));
+          toast.success(`${newImages.length} fotos adicionadas ao seu portfólio!`);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setGalleryImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Atualização em tempo real do contador de 10 minutos
@@ -225,13 +302,27 @@ export function AssinarClient() {
   const isExpiringSoon = timeLeft < 120 && timeLeft > 0;
   const isExpired = timeLeft <= 0;
 
-  const handleRegister = (e: React.FormEvent) => {
+  // Validação de etapas do fornecedor
+  const handleNextVendorStep = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !phone) {
-      toast.error("Preencha todos os campos obrigatórios.");
+    if (vendorStep === 1) {
+      if (!companyName || !documentNumber || !name || !email || !phone || !password) {
+        toast.error("Preencha todos os campos obrigatórios da Etapa 1.");
+        return;
+      }
+      setVendorStep(2);
       return;
     }
+    if (vendorStep === 2) {
+      setVendorStep(3);
+      return;
+    }
+    if (vendorStep === 3) {
+      handleRegisterFinal();
+    }
+  };
 
+  const handleRegisterFinal = () => {
     const startingPriceCents = startingPriceStr
       ? Math.round(parseFloat(startingPriceStr.replace(/\D/g, "")) * 100)
       : undefined;
@@ -259,7 +350,9 @@ export function AssinarClient() {
         documentNumber,
         startingPrice: startingPriceCents,
         averageTicket: averageTicketCents,
+        priceRange: calculatedPriceRange,
         logoUrl: logoUrl || undefined,
+        galleryImages: galleryImages.length > 0 ? galleryImages : undefined,
         instagram: instagram || undefined,
         tiktok: tiktok || undefined,
         website: website || undefined,
@@ -321,7 +414,9 @@ export function AssinarClient() {
         documentNumber,
         startingPrice: startingPriceCents,
         averageTicket: averageTicketCents,
+        priceRange: calculatedPriceRange,
         logoUrl: logoUrl || undefined,
+        galleryImages: galleryImages.length > 0 ? galleryImages : undefined,
         instagram: instagram || undefined,
         tiktok: tiktok || undefined,
         website: website || undefined,
@@ -371,40 +466,24 @@ export function AssinarClient() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* ========================================================================= */}
-          {/* COLUNA ESQUERDA: FORMULÁRIO DE CADASTRO OU CHECKOUT PIX */}
+          {/* COLUNA ESQUERDA: FORMULÁRIO DE CADASTRO (CASAL OU WIZARD DE FORNECEDOR) */}
           {/* ========================================================================= */}
           <div className="lg:col-span-7 bg-white p-8 sm:p-10 rounded-3xl border border-stone-200/80 shadow-lg space-y-8">
             {step === "FORM" && (
-              <form onSubmit={handleRegister} className="space-y-6">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-extrabold font-serif text-stone-900">
-                    {currentPlan.type === "COUPLE"
-                      ? "1. Crie a Conta do Casal"
-                      : "1. Cadastre sua Empresa de Eventos"}
-                  </h1>
-                  <p className="text-xs sm:text-sm text-stone-500 mt-1">
-                    {currentPlan.type === "COUPLE"
-                      ? "Preencha os dados básicos para configurar seu painel e site de casamento."
-                      : "Preencha os dados do seu negócio para verificação de curadoria e publicação no marketplace."}
-                  </p>
-                </div>
-
-                {/* Banner de Curadoria de Segurança para Fornecedores */}
-                {currentPlan.type === "VENDOR" && (
-                  <div className="bg-[#FAF8F5] border border-[#8C6D45]/30 rounded-2xl p-4 flex items-start gap-3">
-                    <ShieldCheck className="w-5 h-5 text-[#8C6D45] shrink-0 mt-0.5" />
-                    <div className="space-y-0.5">
-                      <p className="text-xs font-bold text-stone-900">Curadoria & Segurança MarryApp</p>
-                      <p className="text-[11px] text-stone-600 leading-relaxed">
-                        Para proteger os noivos e garantir a alta qualidade do marketplace, todo cadastro passa por auditoria prévia de documentos antes da ativação pública.
+              <div>
+                {/* 💍 FLUXO SIMPLES PARA CASAIS */}
+                {currentPlan.type === "COUPLE" ? (
+                  <form onSubmit={handleRegisterFinal} className="space-y-6">
+                    <div>
+                      <h1 className="text-2xl sm:text-3xl font-extrabold font-serif text-stone-900">
+                        1. Crie a Conta do Casal
+                      </h1>
+                      <p className="text-xs sm:text-sm text-stone-500 mt-1">
+                        Preencha os dados básicos para configurar seu painel e site de casamento.
                       </p>
                     </div>
-                  </div>
-                )}
 
-                <div className="space-y-4">
-                  {currentPlan.type === "COUPLE" ? (
-                    <>
+                    <div className="space-y-4">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-bold text-stone-700 uppercase">Nomes dos Noivos</Label>
                         <Input
@@ -441,235 +520,617 @@ export function AssinarClient() {
                           className="rounded-2xl h-12 text-sm bg-stone-50/50"
                         />
                       </div>
-                    </>
-                  ) : (
-                    /* FORMULÁRIO COMPLETO DE FORNECEDOR COM TODOS OS DADOS SOLICITADOS */
-                    <>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-bold text-stone-700 uppercase">Nome Comercial / Ateliê</Label>
-                        <Input
-                          value={companyName}
-                          onChange={(e) => setCompanyName(e.target.value)}
-                          placeholder="Ex: Lumière Fotografia & Cinema"
-                          required
-                          className="rounded-2xl h-12 text-sm bg-stone-50/50"
-                        />
-                      </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-bold text-stone-700 uppercase">Categoria</Label>
-                          <Select value={vendorCategory} onValueChange={setVendorCategory}>
-                            <SelectTrigger className="rounded-2xl h-12 bg-stone-50/50 border-stone-200 text-xs font-bold">
-                              <SelectValue placeholder="Selecione..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Espaço">Espaço</SelectItem>
-                              <SelectItem value="Buffet">Buffet</SelectItem>
-                              <SelectItem value="Fotografia">Fotografia</SelectItem>
-                              <SelectItem value="Decoração">Decoração</SelectItem>
-                              <SelectItem value="DJ & Som">DJ & Som</SelectItem>
-                              <SelectItem value="Vestidos">Vestidos</SelectItem>
-                              <SelectItem value="Doces & Bolo">Doces & Bolo</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Label className="text-xs font-bold text-stone-700 uppercase">E-mail de Acesso</Label>
+                          <Input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="seuemail@exemplo.com"
+                            required
+                            className="rounded-2xl h-12 text-sm bg-stone-50/50"
+                          />
                         </div>
 
                         <div className="space-y-1.5">
-                          <Label className="text-xs font-bold text-stone-700 uppercase">Região Principal</Label>
-                          <Select value={vendorRegion} onValueChange={setVendorRegion}>
-                            <SelectTrigger className="rounded-2xl h-12 bg-stone-50/50 border-stone-200 text-xs font-bold">
-                              <SelectValue placeholder="Selecione..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="São Paulo - Capital">São Paulo - Capital</SelectItem>
-                              <SelectItem value="Grande SP">Grande SP</SelectItem>
-                              <SelectItem value="Litoral Norte">Litoral Norte</SelectItem>
-                              <SelectItem value="Campinas e Região">Campinas e Região</SelectItem>
-                              <SelectItem value="Vale do Paraíba">Vale do Paraíba</SelectItem>
-                              <SelectItem value="Brasil Todo">Atende Brasil Todo</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      {/* Documento para Curadoria de Segurança */}
-                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2">
-                        <div className="sm:col-span-4 space-y-1.5">
-                          <Label className="text-xs font-bold text-stone-700 uppercase">Tipo Documento</Label>
-                          <Select value={documentType} onValueChange={setDocumentType}>
-                            <SelectTrigger className="rounded-2xl h-12 bg-stone-50/50 border-stone-200 text-xs font-bold">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="CNPJ">CNPJ (Empresa)</SelectItem>
-                              <SelectItem value="CPF">CPF (Autônomo)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div className="sm:col-span-8 space-y-1.5">
-                          <Label className="text-xs font-bold text-stone-700 uppercase">
-                            Número do {documentType}
-                          </Label>
+                          <Label className="text-xs font-bold text-stone-700 uppercase">WhatsApp</Label>
                           <Input
-                            value={documentNumber}
-                            onChange={(e) => setDocumentNumber(e.target.value)}
-                            placeholder={documentType === "CNPJ" ? "00.000.000/0001-00" : "000.000.000-00"}
+                            type="tel"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            placeholder="(11) 99999-9999"
                             required
                             className="rounded-2xl h-12 text-sm bg-stone-50/50 font-mono"
                           />
                         </div>
                       </div>
 
-                      {/* Valores e Ticket Médio */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-bold text-stone-700 uppercase">Valor Inicial (A partir de)</Label>
-                          <div className="relative">
-                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400 text-xs font-bold">
-                              R$
-                            </span>
-                            <Input
-                              value={startingPriceStr}
-                              onChange={(e) => setStartingPriceStr(e.target.value)}
-                              placeholder="2.500,00"
-                              className="rounded-2xl h-12 pl-10 text-sm bg-stone-50/50 font-mono"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-bold text-stone-700 uppercase">Ticket Médio de Contrato</Label>
-                          <div className="relative">
-                            <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400 text-xs font-bold">
-                              R$
-                            </span>
-                            <Input
-                              value={averageTicketStr}
-                              onChange={(e) => setAverageTicketStr(e.target.value)}
-                              placeholder="5.000,00"
-                              className="rounded-2xl h-12 pl-10 text-sm bg-stone-50/50 font-mono"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Logotipo e Redes Sociais */}
-                      <div className="space-y-1.5 pt-2">
-                        <Label className="text-xs font-bold text-stone-700 uppercase">Link do Logotipo / Foto de Perfil</Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-bold text-stone-700 uppercase">Defina uma Senha Segura</Label>
                         <Input
-                          value={logoUrl}
-                          onChange={(e) => setLogoUrl(e.target.value)}
-                          placeholder="https://suaempresa.com.br/logo.png"
-                          className="rounded-2xl h-12 text-xs bg-stone-50/50 font-mono"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-bold text-stone-700 uppercase">Instagram</Label>
-                          <Input
-                            value={instagram}
-                            onChange={(e) => setInstagram(e.target.value)}
-                            placeholder="@empresa"
-                            className="rounded-2xl h-12 text-xs bg-stone-50/50"
-                          />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-bold text-stone-700 uppercase">TikTok</Label>
-                          <Input
-                            value={tiktok}
-                            onChange={(e) => setTiktok(e.target.value)}
-                            placeholder="@empresa"
-                            className="rounded-2xl h-12 text-xs bg-stone-50/50"
-                          />
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-bold text-stone-700 uppercase">Site Próprio</Label>
-                          <Input
-                            value={website}
-                            onChange={(e) => setWebsite(e.target.value)}
-                            placeholder="empresa.com.br"
-                            className="rounded-2xl h-12 text-xs bg-stone-50/50"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5 pt-2">
-                        <Label className="text-xs font-bold text-stone-700 uppercase">Nome do Responsável Legal</Label>
-                        <Input
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          placeholder="Seu nome completo"
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="Mínimo de 6 dígitos"
                           required
                           className="rounded-2xl h-12 text-sm bg-stone-50/50"
                         />
                       </div>
-                    </>
-                  )}
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-stone-700 uppercase">E-mail de Acesso</Label>
-                      <Input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="seuemail@exemplo.com"
-                        required
-                        className="rounded-2xl h-12 text-sm bg-stone-50/50"
-                      />
                     </div>
 
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-stone-700 uppercase">WhatsApp de Contato</Label>
-                      <Input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="(11) 99999-9999"
-                        required
-                        className="rounded-2xl h-12 text-sm bg-stone-50/50 font-mono"
-                      />
+                    <Button
+                      type="submit"
+                      disabled={isPending}
+                      className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-base shadow-md gap-2 cursor-pointer"
+                    >
+                      {isPending ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : currentPlan.price === 0 ? (
+                        <>
+                          <span>Criar Conta Gratuita</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      ) : (
+                        <>
+                          <span>Continuar para Pagamento Pix</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                ) : (
+                  /* 🤝 WIZARD COMPLETO EM ETAPAS PARA FORNECEDORES */
+                  <form onSubmit={handleNextVendorStep} className="space-y-6">
+                    {/* Barra de Progresso de Etapas do Fornecedor */}
+                    <div className="space-y-3 pb-2 border-b border-stone-100">
+                      <div className="flex items-center justify-between text-xs font-bold">
+                        <span className={vendorStep >= 1 ? "text-[#8C6D45]" : "text-stone-400"}>
+                          1. Dados & CNPJ
+                        </span>
+                        <span className={vendorStep >= 2 ? "text-[#8C6D45]" : "text-stone-400"}>
+                          2. Portfólio & Fotos
+                        </span>
+                        <span className={vendorStep >= 3 ? "text-[#8C6D45]" : "text-stone-400"}>
+                          3. Valores & Atendimento
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[#8C6D45] transition-all duration-300 rounded-full"
+                          style={{ width: `${(vendorStep / 3) * 100}%` }}
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-bold text-stone-700 uppercase">Defina uma Senha Segura</Label>
-                    <Input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Mínimo de 6 dígitos"
-                      required
-                      className="rounded-2xl h-12 text-sm bg-stone-50/50"
-                    />
-                  </div>
-                </div>
+                    {/* Banner de Curadoria */}
+                    <div className="bg-[#FAF8F5] border border-[#8C6D45]/30 rounded-2xl p-4 flex items-start gap-3">
+                      <ShieldCheck className="w-5 h-5 text-[#8C6D45] shrink-0 mt-0.5" />
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-bold text-stone-900">Curadoria & Segurança MarryApp</p>
+                        <p className="text-[11px] text-stone-600 leading-relaxed">
+                          Para proteger os noivos e valorizar fornecedores legítimos, todo perfil passa por auditoria prévia antes de ser listado publicamente.
+                        </p>
+                      </div>
+                    </div>
 
-                <Button
-                  type="submit"
-                  disabled={isPending}
-                  className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-base shadow-md gap-2 cursor-pointer"
-                >
-                  {isPending ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : currentPlan.price === 0 ? (
-                    <>
-                      <span>Criar Conta Gratuita</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  ) : (
-                    <>
-                      <span>Continuar para Pagamento Pix</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </Button>
-              </form>
+                    {/* ========================================================= */}
+                    {/* ETAPA 1 DO FORNECEDOR: DADOS DO NEGÓCIO & RESPONSÁVEL */}
+                    {/* ========================================================= */}
+                    {vendorStep === 1 && (
+                      <div className="space-y-4">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-bold text-stone-700 uppercase">
+                            Nome Comercial da Empresa / Ateliê
+                          </Label>
+                          <Input
+                            value={companyName}
+                            onChange={(e) => setCompanyName(e.target.value)}
+                            placeholder="Ex: Lumière Fotografia & Cinema"
+                            required
+                            className="rounded-2xl h-12 text-sm bg-stone-50/50"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-bold text-stone-700 uppercase">Categoria</Label>
+                            <Select value={vendorCategory} onValueChange={setVendorCategory}>
+                              <SelectTrigger className="rounded-2xl h-12 bg-stone-50/50 border-stone-200 text-xs font-bold">
+                                <SelectValue placeholder="Selecione..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Espaço">Espaço</SelectItem>
+                                <SelectItem value="Buffet">Buffet</SelectItem>
+                                <SelectItem value="Fotografia">Fotografia</SelectItem>
+                                <SelectItem value="Decoração">Decoração</SelectItem>
+                                <SelectItem value="DJ & Som">DJ & Som</SelectItem>
+                                <SelectItem value="Vestidos">Vestidos</SelectItem>
+                                <SelectItem value="Doces & Bolo">Doces & Bolo</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-bold text-stone-700 uppercase">Região Principal</Label>
+                            <Select value={vendorRegion} onValueChange={setVendorRegion}>
+                              <SelectTrigger className="rounded-2xl h-12 bg-stone-50/50 border-stone-200 text-xs font-bold">
+                                <SelectValue placeholder="Selecione..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="São Paulo - Capital">São Paulo - Capital</SelectItem>
+                                <SelectItem value="Grande SP">Grande SP</SelectItem>
+                                <SelectItem value="Litoral Norte">Litoral Norte</SelectItem>
+                                <SelectItem value="Campinas e Região">Campinas e Região</SelectItem>
+                                <SelectItem value="Vale do Paraíba">Vale do Paraíba</SelectItem>
+                                <SelectItem value="Brasil Todo">Atende Brasil Todo</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        {/* Documento Obrigatório para Curadoria */}
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-1">
+                          <div className="sm:col-span-4 space-y-1.5">
+                            <Label className="text-xs font-bold text-stone-700 uppercase">Tipo Documento</Label>
+                            <Select value={documentType} onValueChange={setDocumentType}>
+                              <SelectTrigger className="rounded-2xl h-12 bg-stone-50/50 border-stone-200 text-xs font-bold">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="CNPJ">CNPJ (Empresa)</SelectItem>
+                                <SelectItem value="CPF">CPF (Autônomo)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="sm:col-span-8 space-y-1.5">
+                            <Label className="text-xs font-bold text-stone-700 uppercase">
+                              Número do {documentType}
+                            </Label>
+                            <Input
+                              value={documentNumber}
+                              onChange={(e) => setDocumentNumber(e.target.value)}
+                              placeholder={documentType === "CNPJ" ? "00.000.000/0001-00" : "000.000.000-00"}
+                              required
+                              className="rounded-2xl h-12 text-sm bg-stone-50/50 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5 pt-1">
+                          <Label className="text-xs font-bold text-stone-700 uppercase">Nome do Responsável Legal</Label>
+                          <Input
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Seu nome completo"
+                            required
+                            className="rounded-2xl h-12 text-sm bg-stone-50/50"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-bold text-stone-700 uppercase">E-mail Comercial</Label>
+                            <Input
+                              type="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              placeholder="contato@suaempresa.com"
+                              required
+                              className="rounded-2xl h-12 text-sm bg-stone-50/50"
+                            />
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-bold text-stone-700 uppercase">WhatsApp</Label>
+                            <Input
+                              type="tel"
+                              value={phone}
+                              onChange={(e) => setPhone(e.target.value)}
+                              placeholder="(11) 99999-9999"
+                              required
+                              className="rounded-2xl h-12 text-sm bg-stone-50/50 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-bold text-stone-700 uppercase">Senha de Acesso ao Painel</Label>
+                          <Input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Mínimo de 6 dígitos"
+                            required
+                            className="rounded-2xl h-12 text-sm bg-stone-50/50"
+                          />
+                        </div>
+
+                        <Button
+                          type="submit"
+                          className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-sm shadow-md gap-2 mt-4 cursor-pointer"
+                        >
+                          <span>Avançar para Portfólio & Fotos</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* ========================================================= */}
+                    {/* ETAPA 2 DO FORNECEDOR: UPLOAD DE LOGOTIPO & FOTOS DO SERVIÇO */}
+                    {/* ========================================================= */}
+                    {vendorStep === 2 && (
+                      <div className="space-y-6">
+                        {/* 1. Logotipo de Apresentação */}
+                        <div className="space-y-3">
+                          <div>
+                            <Label className="text-xs font-bold text-stone-700 uppercase block">
+                              Logotipo Oficial / Foto de Perfil
+                            </Label>
+                            <p className="text-[11px] text-stone-500">
+                              Faça o upload do logo ou insira o link da imagem da sua marca.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            {/* Preview do Logo */}
+                            <div className="w-20 h-20 rounded-2xl bg-[#FAF4ED] border-2 border-dashed border-[#8C6D45]/40 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                              {logoUrl ? (
+                                <img
+                                  src={logoUrl}
+                                  alt="Logo Preview"
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <Building2 className="w-8 h-8 text-[#8C6D45]/60" />
+                              )}
+                            </div>
+
+                            <div className="space-y-2 flex-1">
+                              <input
+                                ref={logoInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleLogoChange}
+                                className="hidden"
+                              />
+
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => logoInputRef.current?.click()}
+                                  className="rounded-2xl h-10 px-4 text-xs font-bold border-stone-300 gap-1.5"
+                                >
+                                  <Upload className="w-3.5 h-3.5" />
+                                  <span>Fazer Upload do Logo</span>
+                                </Button>
+
+                                {logoUrl && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => setLogoUrl("")}
+                                    className="rounded-2xl h-10 px-3 text-xs text-red-600 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </Button>
+                                )}
+                              </div>
+
+                              <Input
+                                value={logoUrl}
+                                onChange={(e) => setLogoUrl(e.target.value)}
+                                placeholder="Ou cole o link direto da imagem..."
+                                className="rounded-xl h-9 text-xs bg-stone-50/50 font-mono"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 2. Upload de Fotos do Serviço Prestado (Portfólio) */}
+                        <div className="space-y-3 pt-4 border-t border-stone-100">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Label className="text-xs font-bold text-stone-700 uppercase block">
+                                Fotos dos Serviços Prestados (Portfólio)
+                              </Label>
+                              <p className="text-[11px] text-stone-500">
+                                Envie até 8 fotos reais de casamentos anteriores para encantar os noivos.
+                              </p>
+                            </div>
+
+                            <input
+                              ref={galleryInputRef}
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={handleGalleryChange}
+                              className="hidden"
+                            />
+
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => galleryInputRef.current?.click()}
+                              className="rounded-2xl h-10 px-4 text-xs font-bold border-[#8C6D45]/40 text-[#8C6D45] hover:bg-[#FAF4ED] gap-1.5 shrink-0"
+                            >
+                              <Plus className="w-4 h-4" />
+                              <span>Adicionar Fotos</span>
+                            </Button>
+                          </div>
+
+                          {/* Grid de Miniaturas de Fotos */}
+                          {galleryImages.length === 0 ? (
+                            <div
+                              onClick={() => galleryInputRef.current?.click()}
+                              className="p-8 border-2 border-dashed border-stone-200 rounded-3xl text-center space-y-2 bg-stone-50/40 hover:bg-stone-50 cursor-pointer transition-colors"
+                            >
+                              <Camera className="w-8 h-8 mx-auto text-stone-400" />
+                              <p className="text-xs font-bold text-stone-700">
+                                Clique para selecionar as fotos dos seus trabalhos
+                              </p>
+                              <p className="text-[10px] text-stone-400">
+                                Formatos aceitos: JPG, PNG, WEBP (Até 8MB por foto)
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                              {galleryImages.map((img, i) => (
+                                <div
+                                  key={i}
+                                  className="relative group rounded-2xl overflow-hidden h-24 bg-stone-100 border border-stone-200"
+                                >
+                                  <img
+                                    src={img}
+                                    alt={`Foto ${i + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeGalleryImage(i)}
+                                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-red-600/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              ))}
+
+                              {galleryImages.length < 8 && (
+                                <button
+                                  type="button"
+                                  onClick={() => galleryInputRef.current?.click()}
+                                  className="h-24 rounded-2xl border-2 border-dashed border-stone-200 hover:border-[#8C6D45]/40 flex flex-col items-center justify-center text-stone-400 hover:text-[#8C6D45] transition-colors"
+                                >
+                                  <Plus className="w-5 h-5" />
+                                  <span className="text-[10px] font-bold mt-1">Mais Foto</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 3. Redes Sociais & Website */}
+                        <div className="space-y-3 pt-4 border-t border-stone-100">
+                          <Label className="text-xs font-bold text-stone-700 uppercase block">
+                            Redes Sociais & Site Próprio
+                          </Label>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-[10px] text-stone-500 uppercase">Instagram</Label>
+                              <Input
+                                value={instagram}
+                                onChange={(e) => setInstagram(e.target.value)}
+                                placeholder="@suaempresa"
+                                className="rounded-xl h-10 text-xs bg-stone-50/50"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <Label className="text-[10px] text-stone-500 uppercase">TikTok</Label>
+                              <Input
+                                value={tiktok}
+                                onChange={(e) => setTiktok(e.target.value)}
+                                placeholder="@suaempresa"
+                                className="rounded-xl h-10 text-xs bg-stone-50/50"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <Label className="text-[10px] text-stone-500 uppercase">Site Oficial</Label>
+                              <Input
+                                value={website}
+                                onChange={(e) => setWebsite(e.target.value)}
+                                placeholder="suaempresa.com.br"
+                                className="rounded-xl h-10 text-xs bg-stone-50/50"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setVendorStep(1)}
+                            className="rounded-full h-14 px-6 text-xs font-bold border-stone-300"
+                          >
+                            <ArrowLeft className="w-4 h-4 mr-1" />
+                            <span>Voltar</span>
+                          </Button>
+
+                          <Button
+                            type="submit"
+                            className="flex-1 bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-sm shadow-md gap-2 cursor-pointer"
+                          >
+                            <span>Avançar para Valores & Atendimento</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ========================================================= */}
+                    {/* ETAPA 3 DO FORNECEDOR: VALORES, TICKET MÉDIO & ATENDIMENTO */}
+                    {/* ========================================================= */}
+                    {vendorStep === 3 && (
+                      <div className="space-y-6">
+                        <div>
+                          <Label className="text-xs font-bold text-stone-700 uppercase block">
+                            Investimento & Valores Médios
+                          </Label>
+                          <p className="text-[11px] text-stone-500">
+                            Usado para orientar os noivos e classificar a faixa de preço do seu perfil.
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-bold text-stone-700 uppercase">
+                              Valor Inicial dos Serviços (A partir de)
+                            </Label>
+                            <div className="relative">
+                              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400 text-xs font-bold">
+                                R$
+                              </span>
+                              <Input
+                                value={startingPriceStr}
+                                onChange={(e) => setStartingPriceStr(e.target.value)}
+                                placeholder="2.500,00"
+                                required
+                                className="rounded-2xl h-12 pl-10 text-sm bg-stone-50/50 font-mono"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-bold text-stone-700 uppercase">
+                              Ticket Médio dos Contratos
+                            </Label>
+                            <div className="relative">
+                              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400 text-xs font-bold">
+                                R$
+                              </span>
+                              <Input
+                                value={averageTicketStr}
+                                onChange={(e) => setAverageTicketStr(e.target.value)}
+                                placeholder="5.000,00"
+                                className="rounded-2xl h-12 pl-10 text-sm bg-stone-50/50 font-mono"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Preview da Faixa de Preço Calculada */}
+                        <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-stone-200 flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                              Classificação Automática de Faixa:
+                            </span>
+                            <p className="text-xs font-bold text-stone-900">
+                              {calculatedPriceRange === "$" && "$ — Econômico (Até R$ 3.000)"}
+                              {calculatedPriceRange === "$$" && "$$ — Moderado (R$ 3.000 a R$ 8.000)"}
+                              {calculatedPriceRange === "$$$" && "$$$ — Premium (R$ 8.000 a R$ 20.000)"}
+                              {calculatedPriceRange === "$$$$" && "$$$$ — Luxo / Alta Costura (Acima de R$ 20.000)"}
+                            </p>
+                          </div>
+                          <span className="text-lg font-mono font-black text-amber-800 bg-amber-100 px-3 py-1 rounded-xl border border-amber-200">
+                            {calculatedPriceRange}
+                          </span>
+                        </div>
+
+                        {/* Modalidades de Atendimento */}
+                        <div className="space-y-3 pt-4 border-t border-stone-100">
+                          <Label className="text-xs font-bold text-stone-700 uppercase block">
+                            Modalidades de Atendimento aos Noivos
+                          </Label>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div
+                              onClick={() => setOffersOnlineMeet(!offersOnlineMeet)}
+                              className={`p-4 rounded-2xl border flex items-center gap-3 cursor-pointer transition-all ${
+                                offersOnlineMeet
+                                  ? "bg-[#FAF4ED] border-[#8C6D45] text-[#8C6D45]"
+                                  : "bg-stone-50 border-stone-200 text-stone-600"
+                              }`}
+                            >
+                              <Video className="w-5 h-5 shrink-0" />
+                              <div className="text-xs">
+                                <p className="font-bold">Reuniões por Vídeo</p>
+                                <p className="text-[10px] text-stone-500">Google Meet & Zoom</p>
+                              </div>
+                            </div>
+
+                            <div
+                              onClick={() => setHasPhysicalSpace(!hasPhysicalSpace)}
+                              className={`p-4 rounded-2xl border flex items-center gap-3 cursor-pointer transition-all ${
+                                hasPhysicalSpace
+                                  ? "bg-[#FAF4ED] border-[#8C6D45] text-[#8C6D45]"
+                                  : "bg-stone-50 border-stone-200 text-stone-600"
+                              }`}
+                            >
+                              <Building2 className="w-5 h-5 shrink-0" />
+                              <div className="text-xs">
+                                <p className="font-bold">Showroom / Espaço Físico</p>
+                                <p className="text-[10px] text-stone-500">Atendimento presencial</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {hasPhysicalSpace && (
+                            <div className="space-y-1.5 pt-2">
+                              <Label className="text-xs font-bold text-stone-700 uppercase">
+                                Endereço do Showroom / Ateliê
+                              </Label>
+                              <Input
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                placeholder="Rua, Número, Bairro - Cidade, Estado"
+                                className="rounded-2xl h-12 text-xs bg-stone-50/50"
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-3 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setVendorStep(2)}
+                            className="rounded-full h-14 px-6 text-xs font-bold border-stone-300"
+                          >
+                            <ArrowLeft className="w-4 h-4 mr-1" />
+                            <span>Voltar</span>
+                          </Button>
+
+                          <Button
+                            type="submit"
+                            disabled={isPending}
+                            className="flex-1 bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-sm shadow-md gap-2 cursor-pointer"
+                          >
+                            {isPending ? (
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : currentPlan.price === 0 ? (
+                              <>
+                                <span>Concluir Cadastro & Enviar Curadoria</span>
+                                <ArrowRight className="w-4 h-4" />
+                              </>
+                            ) : (
+                              <>
+                                <span>Avançar para Pagamento Pix</span>
+                                <ArrowRight className="w-4 h-4" />
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </form>
+                )}
+              </div>
             )}
 
             {/* ========================================================================= */}
