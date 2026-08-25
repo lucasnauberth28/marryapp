@@ -18,20 +18,24 @@ import {
   Compass,
   Check,
   CreditCard,
-  ChevronDown,
   Building2,
-  UserCheck,
   Sliders,
   Send,
   Star,
   Zap,
   Percent,
   Lock,
+  Heart,
+  ChevronDown,
+  Camera,
+  FileSpreadsheet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { WeddingRingsIcon } from "@/components/icons/wedding-rings";
 import { PlanCalculator } from "@/components/pricing/plan-calculator";
+import { FaqSection } from "@/components/landing/faq-section";
+import { LandingFooter } from "@/components/landing/landing-footer";
 
 type AudienceType = "NOIVOS" | "ASSESSORES" | "FORNECEDORES";
 type PricingAudience = "COUPLE" | "VENDOR";
@@ -40,16 +44,11 @@ export function HomeLandingClient() {
   const [activeTab, setActiveTab] = useState<AudienceType>("NOIVOS");
   const [pricingType, setPricingType] = useState<PricingAudience>("COUPLE");
   const [detailedPricingType, setDetailedPricingType] = useState<PricingAudience>("COUPLE");
-  const [faqOpen, setFaqOpen] = useState<number | null>(null);
-
-  const toggleFaq = (idx: number) => {
-    setFaqOpen(faqOpen === idx ? null : idx);
-  };
 
   return (
     <div className="min-h-screen bg-[#FCFBF9] text-stone-900 font-sans antialiased overflow-x-hidden selection:bg-[#8C6D45]/20 selection:text-[#8C6D45]">
       {/* ========================================================================= */}
-      {/* 1. TOP NAVBAR GLOBAL COM LOGOTIPO DE ALIANÇAS */}
+      {/* 1. TOP NAVBAR GLOBAL COM LOGOTIPO DE ALIANÇAS (SEM A PALAVRA ECOSYSTEM) */}
       {/* ========================================================================= */}
       <header className="sticky top-0 z-50 bg-[#FCFBF9]/85 backdrop-blur-md border-b border-stone-200/60 transition-all">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -62,8 +61,8 @@ export function HomeLandingClient() {
               <span className="font-serif italic font-bold text-2xl text-stone-900 leading-none">
                 MarryApp
               </span>
-              <span className="text-[9px] tracking-widest text-[#8C6D45] font-extrabold uppercase">
-                Ecosystem
+              <span className="text-[9px] tracking-widest text-[#8C6D45] font-extrabold uppercase mt-0.5">
+                Plataforma Oficial
               </span>
             </div>
           </Link>
@@ -112,9 +111,9 @@ export function HomeLandingClient() {
                 Entrar
               </Button>
             </Link>
-            <Link href="/dashboard">
+            <Link href="/assinar?tipo=casal&plano=classic">
               <Button className="bg-[#8C6D45] hover:bg-[#785c39] text-white text-xs font-bold rounded-full px-5 h-10 shadow-sm hover:shadow-md transition-all gap-1.5">
-                <span>Acessar Painel</span>
+                <span>Criar Casamento</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
             </Link>
@@ -123,14 +122,13 @@ export function HomeLandingClient() {
       </header>
 
       {/* ========================================================================= */}
-      {/* 2. HERO DINÂMICO LIMPO (SEM BADGE E SEM BOTÕES NO BANNER) */}
+      {/* 2. HERO DINÂMICO COM SLOGAN OFICIAL: "O casamento dos seus sonhos, organizado e fácil!" */}
       {/* ========================================================================= */}
       <section className="relative pt-16 pb-16 md:pt-20 md:pb-20 overflow-hidden">
-        {/* Fundo com Iluminação Sutil */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[360px] bg-gradient-to-tr from-[#8C6D45]/10 via-[#C5A880]/15 to-amber-100/30 blur-3xl -z-10 pointer-events-none rounded-full" />
 
         <div className="max-w-7xl mx-auto px-6">
-          {/* Seletor Mobile */}
+          {/* Seletor Mobile de Públicos */}
           <div className="flex md:hidden justify-center mb-8">
             <div className="inline-flex bg-stone-100 p-1 rounded-full border border-stone-200">
               <button
@@ -172,12 +170,12 @@ export function HomeLandingClient() {
                 className="flex flex-col items-center text-center max-w-4xl mx-auto"
               >
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-stone-900 tracking-tight leading-[1.1] font-serif">
-                  O site dos seus sonhos, lista com{" "}
-                  <span className="italic text-[#8C6D45]">Pix instantâneo</span> e convites no WhatsApp.
+                  O casamento dos seus sonhos,{" "}
+                  <span className="italic text-[#8C6D45]">organizado e fácil!</span>
                 </h1>
 
                 <p className="mt-6 text-base sm:text-lg md:text-xl text-stone-600 max-w-2xl leading-relaxed">
-                  Crie o site do seu casamento em minutos com nosso construtor no-code, receba presentes em dinheiro direto na sua conta e automatize o RSVP dos seus convidados.
+                  Crie o site do casal em minutos com construtor no-code, receba presentes em dinheiro via Pix com taxa zero no Classic e automatize confirmações de presença pelo WhatsApp.
                 </p>
 
                 {/* Métricas Noivos */}
@@ -288,10 +286,173 @@ export function HomeLandingClient() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 3. PONTO 1 DE PLANOS (SELETOR RÁPIDO INTERATIVO MAIS ACIMA) */}
+      {/* 3. GALERIA VISUAL LUXUOSA DE CASAMENTOS & EXPERIÊNCIA DO SISTEMA */}
       {/* ========================================================================= */}
-      <section className="py-16 max-w-7xl mx-auto px-6">
-        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-10">
+      <section className="py-16 bg-gradient-to-b from-[#FCFBF9] via-[#F7F4EF] to-[#FCFBF9] border-y border-stone-200/60">
+        <div className="max-w-7xl mx-auto px-6 space-y-12">
+          <div className="text-center max-w-3xl mx-auto space-y-3">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#8C6D45]">
+              Design & Sofisticação
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-serif text-stone-900">
+              Uma Experiência Visual Inesquecível
+            </h2>
+            <p className="text-stone-600 text-sm sm:text-base leading-relaxed">
+              Do convite no WhatsApp ao brinde na festa, encante cada convidado com tecnologia fluida e estética impecável.
+            </p>
+          </div>
+
+          {/* Grid de Imagens de Casamento & Mockups Vivos */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+            {/* Foto 1: Casal / Altar Principal */}
+            <div className="md:col-span-7 relative rounded-3xl overflow-hidden shadow-lg group min-h-[380px] flex flex-col justify-end p-8">
+              <img
+                src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80"
+                alt="Casamento dos Sonhos"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/30 to-transparent -z-10" />
+
+              <div className="space-y-2 text-white">
+                <Badge className="bg-[#8C6D45] text-white font-bold text-[10px] uppercase tracking-wider">
+                  Site dos Noivos No-Code
+                </Badge>
+                <h3 className="text-2xl sm:text-3xl font-serif font-bold">
+                  Sua história contada com elegância cinematográfica
+                </h3>
+                <p className="text-xs sm:text-sm text-stone-300 max-w-lg">
+                  Compartilhe capítulos do casal, localização com link para Waze e Uber, guia de trajes com paleta de cores recomendada e mural de recados interativo.
+                </p>
+              </div>
+            </div>
+
+            {/* Coluna Direita: 2 Cards Visuais Menores */}
+            <div className="md:col-span-5 grid grid-cols-1 gap-6">
+              {/* Foto 2: Recepção & Mesas */}
+              <div className="relative rounded-3xl overflow-hidden shadow-md group min-h-[180px] flex flex-col justify-end p-6">
+                <img
+                  src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80"
+                  alt="Decoração e Recepção"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/20 to-transparent -z-10" />
+
+                <div className="text-white space-y-1">
+                  <span className="text-[10px] uppercase tracking-wider text-amber-300 font-bold">
+                    Recepção & Mesas
+                  </span>
+                  <h4 className="text-lg font-serif font-bold">
+                    Gestão visual de assentos e restrições de buffet
+                  </h4>
+                </div>
+              </div>
+
+              {/* Foto 3: Brinde & Alianças */}
+              <div className="relative rounded-3xl overflow-hidden shadow-md group min-h-[180px] flex flex-col justify-end p-6">
+                <img
+                  src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=800&q=80"
+                  alt="Celebração e Presentes"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 -z-10"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/20 to-transparent -z-10" />
+
+                <div className="text-white space-y-1">
+                  <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-bold">
+                    Lista de Presentes Pix
+                  </span>
+                  <h4 className="text-lg font-serif font-bold">
+                    Receba em dinheiro com saque 100% integral no mesmo dia
+                  </h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 4. SHOWCASE DOS PILARES (3 CARDS COM DESTAQUE DE TAXA ZERO NO PIX) */}
+      {/* ========================================================================= */}
+      <section className="py-20 bg-white border-y border-stone-200/70">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-xs font-bold text-[#8C6D45] uppercase tracking-widest">
+              Tecnologia de Ponta a Ponta
+            </h2>
+            <p className="text-3xl sm:text-4xl font-extrabold text-stone-900 font-serif mt-2">
+              Tudo o que você precisa para uma celebração impecável
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Card 1: Pix e Cartão com Taxa Zero no Classic */}
+            <div className="p-8 rounded-3xl bg-[#FAF8F5] border border-stone-200/80 hover:border-[#8C6D45]/40 transition-all duration-300 flex flex-col justify-between group">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-[#8C6D45]/10 text-[#8C6D45] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Percent className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-stone-900 font-serif mb-2">
+                  Pix & Cartão sem Taxa no Classic
+                </h3>
+                <p className="text-sm text-stone-600 leading-relaxed">
+                  No plano básico cobramos uma pequena taxa de 2,99% por presente. Já no Plano Classic e VIP, a taxa é <strong>ZERO 0% no Pix</strong> com saque direto na sua conta bancária no mesmo dia.
+                </p>
+              </div>
+              <Link href="/assinar?tipo=casal&plano=classic" className="mt-6 pt-4 border-t border-stone-200/60 flex items-center text-xs font-bold text-[#8C6D45] gap-1 group-hover:gap-2 transition-all">
+                <span>Ver Planos sem Taxa</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            {/* Card 2: WhatsApp & RSVP Inteligente */}
+            <div className="p-8 rounded-3xl bg-[#FAF8F5] border border-stone-200/80 hover:border-[#8C6D45]/40 transition-all duration-300 flex flex-col justify-between group">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <MessageCircle className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-stone-900 font-serif mb-2">
+                  Automação WhatsApp & RSVP
+                </h3>
+                <p className="text-sm text-stone-600 leading-relaxed">
+                  Envie convites oficiais e lembretes automáticos com botões interativos direto no WhatsApp do convidado. Confirmação instantânea sem estresse.
+                </p>
+              </div>
+              <Link href="/mensagens" className="mt-6 pt-4 border-t border-stone-200/60 flex items-center text-xs font-bold text-emerald-700 gap-1 group-hover:gap-2 transition-all">
+                <span>Ver Automações</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            {/* Card 3: Fornecedores por Região */}
+            <div className="p-8 rounded-3xl bg-[#FAF8F5] border border-stone-200/80 hover:border-[#8C6D45]/40 transition-all duration-300 flex flex-col justify-between group">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Compass className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-stone-900 font-serif mb-2">
+                  Marketplace de Fornecedores
+                </h3>
+                <p className="text-sm text-stone-600 leading-relaxed">
+                  Encontre e contrate fornecedores verificados que atendem exatamente a sua cidade e agende reuniões online ou presenciais com agenda integrada.
+                </p>
+              </div>
+              <Link href="/fornecedores" className="mt-6 pt-4 border-t border-stone-200/60 flex items-center text-xs font-bold text-blue-700 gap-1 group-hover:gap-2 transition-all">
+                <span>Explorar Fornecedores</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 5. SELEÇÃO DE PLANOS NO FINAL DA PÁGINA (ÚNICO PONTO DE PRICING) */}
+      {/* ========================================================================= */}
+      <section className="py-24 max-w-7xl mx-auto px-6" id="planos">
+        <div className="flex flex-col items-center text-center max-w-2xl mx-auto mb-12">
+          <Badge className="bg-[#8C6D45]/10 text-[#8C6D45] border-[#8C6D45]/20 font-bold uppercase tracking-wider mb-3">
+            Transparência Total
+          </Badge>
           <div className="inline-flex bg-stone-100 p-1.5 rounded-full border border-stone-200 shadow-xs mb-4">
             <button
               onClick={() => setPricingType("COUPLE")}
@@ -315,12 +476,12 @@ export function HomeLandingClient() {
             </button>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-900 font-serif">
-            {pricingType === "COUPLE" ? "Comece seu Casamento Hoje" : "Impulsione sua Empresa de Eventos"}
+            {pricingType === "COUPLE" ? "Escolha ou Monte seu Plano" : "Impulsione sua Empresa de Eventos"}
           </h2>
           <p className="text-xs sm:text-sm text-stone-500 mt-2">
             {pricingType === "COUPLE"
-              ? "Escolha o plano perfeito com taxa zero no Pix e liberação imediata."
-              : "Conecte-se com dezenas de noivos qualificados na sua região de atuação."}
+              ? "Opte por pacotes recomendados ou monte seu plano personalizado escolhendo apenas os recursos que for usar."
+              : "Conecte-se com casais qualificados com data e local marcados na sua região de atendimento."}
           </p>
         </div>
 
@@ -459,357 +620,69 @@ export function HomeLandingClient() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 4. SHOWCASE DOS PILARES (CARD 1: PIX/CARTÃO SEM TAXA NO CLASSIC) */}
+      {/* 6. BANNER CTA LUXUOSO EM TOM ESCURO (CHAMPAGNE GOLD & CHARCOAL) */}
       {/* ========================================================================= */}
-      <section className="py-20 bg-white border-y border-stone-200/70">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-xs font-bold text-[#8C6D45] uppercase tracking-widest">
-              Tecnologia de Ponta a Ponta
+      <section className="py-20 px-6 max-w-7xl mx-auto">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-stone-950 via-stone-900 to-[#1A1612] text-white p-10 sm:p-16 border border-amber-900/30 shadow-2xl">
+          {/* Brilhos de Luz de Fundo */}
+          <div className="absolute top-0 right-0 w-[450px] h-[450px] bg-[#8C6D45]/15 blur-3xl -z-0 pointer-events-none rounded-full" />
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#C5A880]/10 blur-3xl -z-0 pointer-events-none rounded-full" />
+
+          <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FAF4ED]/10 border border-[#C5A880]/30 text-[#C5A880] text-xs font-bold uppercase tracking-widest">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Celebre com Perfeição</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-serif leading-tight">
+              Pronto para viver o casamento mais <span className="italic text-[#C5A880]">inesquecível</span> da sua vida?
             </h2>
-            <p className="text-3xl sm:text-4xl font-extrabold text-stone-900 font-serif mt-2">
-              Tudo o que você precisa para uma celebração impecável
+
+            <p className="text-stone-300 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+              Junte-se aos casais e profissionais que já transformaram a organização do casamento em um momento leve, seguro e sofisticado.
             </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Card 1 ATUALIZADO: Pix e Cartão com Taxa Zero no Classic */}
-            <div className="p-8 rounded-3xl bg-[#FAF8F5] border border-stone-200/80 hover:border-[#8C6D45]/40 transition-all duration-300 flex flex-col justify-between group">
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-[#8C6D45]/10 text-[#8C6D45] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Percent className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-stone-900 font-serif mb-2">
-                  Pix & Cartão sem Taxa no Classic
-                </h3>
-                <p className="text-sm text-stone-600 leading-relaxed">
-                  No plano básico cobramos uma pequena taxa de 2,99% por presente. Já no Plano Classic e VIP, a taxa é <strong>ZERO 0% no Pix</strong> com saque direto na sua conta bancária no mesmo dia.
-                </p>
-              </div>
-              <Link href="/assinar?tipo=casal&plano=classic" className="mt-6 pt-4 border-t border-stone-200/60 flex items-center text-xs font-bold text-[#8C6D45] gap-1 group-hover:gap-2 transition-all">
-                <span>Ver Planos sem Taxa</span>
-                <ArrowRight className="w-4 h-4" />
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <Link href="/assinar?tipo=casal&plano=classic">
+                <Button className="w-full sm:w-auto bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 px-8 text-sm shadow-xl hover:scale-105 transition-all gap-2 cursor-pointer">
+                  <span>Criar Meu Casamento Agora</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
               </Link>
-            </div>
 
-            {/* Card 2: WhatsApp & RSVP Inteligente */}
-            <div className="p-8 rounded-3xl bg-[#FAF8F5] border border-stone-200/80 hover:border-[#8C6D45]/40 transition-all duration-300 flex flex-col justify-between group">
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <MessageCircle className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-stone-900 font-serif mb-2">
-                  Automação WhatsApp & RSVP
-                </h3>
-                <p className="text-sm text-stone-600 leading-relaxed">
-                  Envie convites oficiais e lembretes automáticos com botões interativos direto no WhatsApp do convidado. Confirmação instantânea sem estresse.
-                </p>
-              </div>
-              <Link href="/mensagens" className="mt-6 pt-4 border-t border-stone-200/60 flex items-center text-xs font-bold text-emerald-700 gap-1 group-hover:gap-2 transition-all">
-                <span>Ver Automações</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {/* Card 3: Fornecedores por Região */}
-            <div className="p-8 rounded-3xl bg-[#FAF8F5] border border-stone-200/80 hover:border-[#8C6D45]/40 transition-all duration-300 flex flex-col justify-between group">
-              <div>
-                <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Compass className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-stone-900 font-serif mb-2">
-                  Marketplace com Raio de Entrega
-                </h3>
-                <p className="text-sm text-stone-600 leading-relaxed">
-                  Encontre e contrate fornecedores verificados que atendem exatamente a sua cidade e agende reuniões online ou presenciais com agenda integrada.
-                </p>
-              </div>
-              <Link href="/fornecedores" className="mt-6 pt-4 border-t border-stone-200/60 flex items-center text-xs font-bold text-blue-700 gap-1 group-hover:gap-2 transition-all">
-                <span>Explorar Fornecedores</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 5. PONTO 2 DE PLANOS (MATRIZ COMPARATIVA DETALHADA NO FINAL) */}
-      {/* ========================================================================= */}
-      <section className="py-24 max-w-7xl mx-auto px-6">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <Badge className="bg-[#8C6D45]/10 text-[#8C6D45] border-[#8C6D45]/20 font-bold uppercase tracking-wider mb-2">
-            Comparativo Detalhado
-          </Badge>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-stone-900 font-serif">
-            Tabela de Recursos Completa
-          </h2>
-          <p className="text-sm text-stone-500 mt-2">
-            Compare cada funcionalidade e escolha com total transparência e segurança.
-          </p>
-
-          <div className="inline-flex bg-stone-100 p-1 rounded-full border border-stone-200 mt-6">
-            <button
-              onClick={() => setDetailedPricingType("COUPLE")}
-              className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                detailedPricingType === "COUPLE" ? "bg-white text-[#8C6D45] shadow-xs" : "text-stone-600"
-              }`}
-            >
-              💍 Noivos (Básico vs Classic vs VIP)
-            </button>
-            <button
-              onClick={() => setDetailedPricingType("VENDOR")}
-              className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                detailedPricingType === "VENDOR" ? "bg-white text-[#8C6D45] shadow-xs" : "text-stone-600"
-              }`}
-            >
-              🤝 Fornecedores (Start vs Pro vs Master)
-            </button>
-          </div>
-        </div>
-
-        {/* Tabela Detalhada para Noivos */}
-        {detailedPricingType === "COUPLE" && (
-          <div className="bg-white rounded-3xl border border-stone-200 shadow-sm overflow-hidden p-6 md:p-8">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-stone-200 text-stone-900 font-serif font-bold text-sm">
-                    <th className="py-4 pr-4">Recurso / Funcionalidade</th>
-                    <th className="py-4 px-4 text-center">Plano Básico (R$ 0)</th>
-                    <th className="py-4 px-4 text-center bg-[#FAF4ED] text-[#8C6D45] rounded-t-2xl">Plano Classic (R$ 149)</th>
-                    <th className="py-4 px-4 text-center">Plano VIP (R$ 299)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-100 font-medium text-stone-700">
-                  <tr>
-                    <td className="py-3.5 pr-4 font-bold text-stone-900">Taxa de Resgate no Pix dos Noivos</td>
-                    <td className="py-3.5 px-4 text-center text-amber-700">2,99% por presente</td>
-                    <td className="py-3.5 px-4 text-center bg-[#FAF4ED]/60 font-bold text-emerald-700">0% (Taxa Zero)</td>
-                    <td className="py-3.5 px-4 text-center font-bold text-emerald-700">0% (Taxa Zero)</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3.5 pr-4">Construtor de Site No-Code Completo</td>
-                    <td className="py-3.5 px-4 text-center text-stone-400">Básico</td>
-                    <td className="py-3.5 px-4 text-center bg-[#FAF4ED]/60 text-emerald-600">✓ Todos os blocos</td>
-                    <td className="py-3.5 px-4 text-center text-emerald-600">✓ Todos os blocos</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3.5 pr-4">Disparos de Convites Automáticos no WhatsApp</td>
-                    <td className="py-3.5 px-4 text-center text-stone-300">✕</td>
-                    <td className="py-3.5 px-4 text-center bg-[#FAF4ED]/60 text-emerald-600">✓ Ilimitado</td>
-                    <td className="py-3.5 px-4 text-center text-emerald-600">✓ Ilimitado</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3.5 pr-4">Lembretes de RSVP com Botões Interativos</td>
-                    <td className="py-3.5 px-4 text-center text-stone-300">✕</td>
-                    <td className="py-3.5 px-4 text-center bg-[#FAF4ED]/60 text-emerald-600">✓ Automático</td>
-                    <td className="py-3.5 px-4 text-center text-emerald-600">✓ Automático</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3.5 pr-4">Credenciamento com QR Code na Entrada</td>
-                    <td className="py-3.5 px-4 text-center text-stone-300">✕</td>
-                    <td className="py-3.5 px-4 text-center bg-[#FAF4ED]/60 text-emerald-600">✓ Incluso</td>
-                    <td className="py-3.5 px-4 text-center text-emerald-600">✓ Incluso</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3.5 pr-4">Domínio Próprio (.com.br) Incluso</td>
-                    <td className="py-3.5 px-4 text-center text-stone-300">✕</td>
-                    <td className="py-3.5 px-4 text-center bg-[#FAF4ED]/60 text-stone-300">✕</td>
-                    <td className="py-3.5 px-4 text-center text-amber-700 font-bold">✓ 1 ano grátis</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3.5 pr-4">Mural de Fotos ao Vivo nas Mesas (Telão)</td>
-                    <td className="py-3.5 px-4 text-center text-stone-300">✕</td>
-                    <td className="py-3.5 px-4 text-center bg-[#FAF4ED]/60 text-stone-300">✕</td>
-                    <td className="py-3.5 px-4 text-center text-amber-700 font-bold">✓ Incluso</td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td className="py-4 pr-4"></td>
-                    <td className="py-4 px-4 text-center">
-                      <Link href="/assinar?tipo=casal&plano=basic">
-                        <Button variant="outline" className="rounded-full h-10 px-4 text-xs font-bold">Assinar Básico</Button>
-                      </Link>
-                    </td>
-                    <td className="py-4 px-4 text-center bg-[#FAF4ED] rounded-b-2xl">
-                      <Link href="/assinar?tipo=casal&plano=classic">
-                        <Button className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full h-10 px-5 text-xs font-bold">Assinar Classic</Button>
-                      </Link>
-                    </td>
-                    <td className="py-4 px-4 text-center">
-                      <Link href="/assinar?tipo=casal&plano=vip">
-                        <Button variant="outline" className="rounded-full h-10 px-4 text-xs font-bold border-amber-600 text-amber-700">Assinar VIP</Button>
-                      </Link>
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Tabela Detalhada para Fornecedores */}
-        {detailedPricingType === "VENDOR" && (
-          <div className="bg-white rounded-3xl border border-stone-200 shadow-sm overflow-hidden p-6 md:p-8">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-stone-200 text-stone-900 font-serif font-bold text-sm">
-                    <th className="py-4 pr-4">Recurso para Empresas</th>
-                    <th className="py-4 px-4 text-center">Fornecedor Start (R$ 0)</th>
-                    <th className="py-4 px-4 text-center bg-emerald-50 text-emerald-800 rounded-t-2xl">Fornecedor Pro (R$ 99/mês)</th>
-                    <th className="py-4 px-4 text-center">Fornecedor Master (R$ 249/mês)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-100 font-medium text-stone-700">
-                  <tr>
-                    <td className="py-3.5 pr-4 font-bold text-stone-900">Selo de Fornecedor Verificado</td>
-                    <td className="py-3.5 px-4 text-center text-stone-300">✕</td>
-                    <td className="py-3.5 px-4 text-center bg-emerald-50/50 font-bold text-emerald-700">✓ Selo Pro</td>
-                    <td className="py-3.5 px-4 text-center font-bold text-blue-700">✓ Selo Master</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3.5 pr-4">Limite de Orçamentos e Leads por Mês</td>
-                    <td className="py-3.5 px-4 text-center text-stone-500">Até 3 por mês</td>
-                    <td className="py-3.5 px-4 text-center bg-emerald-50/50 font-bold text-emerald-700">Ilimitado</td>
-                    <td className="py-3.5 px-4 text-center font-bold text-blue-700">Ilimitado</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3.5 pr-4">Regiões de Atendimento Cadastradas</td>
-                    <td className="py-3.5 px-4 text-center text-stone-500">1 região</td>
-                    <td className="py-3.5 px-4 text-center bg-emerald-50/50 text-emerald-700 font-bold">Múltiplas regiões</td>
-                    <td className="py-3.5 px-4 text-center text-blue-700 font-bold">Brasil Todo</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3.5 pr-4">Agendamento de Reuniões Online/Presenciais</td>
-                    <td className="py-3.5 px-4 text-center text-stone-300">✕</td>
-                    <td className="py-3.5 px-4 text-center bg-emerald-50/50 text-emerald-700">✓ Integrado</td>
-                    <td className="py-3.5 px-4 text-center text-blue-700">✓ Integrado</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3.5 pr-4">Posição de Destaque nas Buscas</td>
-                    <td className="py-3.5 px-4 text-center text-stone-300">Padrão</td>
-                    <td className="py-3.5 px-4 text-center bg-emerald-50/50 text-emerald-700">Prioritário</td>
-                    <td className="py-3.5 px-4 text-center text-blue-700 font-bold">Topo Absoluto</td>
-                  </tr>
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td className="py-4 pr-4"></td>
-                    <td className="py-4 px-4 text-center">
-                      <Link href="/assinar?tipo=fornecedor&plano=start">
-                        <Button variant="outline" className="rounded-full h-10 px-4 text-xs font-bold">Começar Start</Button>
-                      </Link>
-                    </td>
-                    <td className="py-4 px-4 text-center bg-emerald-50 rounded-b-2xl">
-                      <Link href="/assinar?tipo=fornecedor&plano=pro">
-                        <Button className="bg-emerald-700 hover:bg-emerald-800 text-white rounded-full h-10 px-5 text-xs font-bold">Assinar Pro</Button>
-                      </Link>
-                    </td>
-                    <td className="py-4 px-4 text-center">
-                      <Link href="/assinar?tipo=fornecedor&plano=master">
-                        <Button variant="outline" className="rounded-full h-10 px-4 text-xs font-bold border-blue-600 text-blue-700">Assinar Master</Button>
-                      </Link>
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 6. FAQ INTERATIVO */}
-      {/* ========================================================================= */}
-      <section className="py-20 bg-stone-100/60 border-t border-stone-200">
-        <div className="max-w-3xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-900 font-serif">
-              Perguntas Frequentes
-            </h2>
-            <p className="text-xs text-stone-500 mt-1">Dúvidas sobre o funcionamento do MarryApp</p>
-          </div>
-
-          <div className="space-y-3">
-            {[
-              {
-                q: "Por que o Plano Classic tem 0% de taxa no Pix dos noivos?",
-                a: "No Plano Classic cobramos apenas uma taxa única de ativação. Com isso, 100% do valor que seus convidados enviarem via Pix cai diretamente na sua conta, sem descontos percentuais abusivos de outras plataformas.",
-              },
-              {
-                q: "Como os convidados pagam no cartão de crédito?",
-                a: "O convidado pode parcelar em até 12x no cartão de crédito. A pequena taxa de processamento do cartão é paga pelo convidado no checkout ou repassada, garantindo que o casal receba o valor líquido desejado.",
-              },
-              {
-                q: "Como funcionam as mensagens automáticas de WhatsApp?",
-                a: "O sistema conecta-se com a Evolution API e dispara convites, lembretes de RSVP com botões interativos e mensagens de agradecimento com nome personalizado para cada convidado.",
-              },
-              {
-                q: "Como um fornecedor define suas regiões de entrega e atendimento?",
-                a: "No portal do fornecedor, você pode selecionar suas cidades e regiões de atuação (ex: Capital, Litoral, Interior ou Brasil todo) e configurar se atende presencialmente, online ou ambos.",
-              },
-            ].map((faq, idx) => (
-              <div
-                key={idx}
-                className="bg-white rounded-2xl border border-stone-200/80 overflow-hidden transition-all"
-              >
-                <button
-                  onClick={() => toggleFaq(idx)}
-                  className="w-full p-5 text-left flex items-center justify-between font-bold text-sm text-stone-800 hover:text-[#8C6D45] transition-colors cursor-pointer"
+              <Link href="/fornecedores">
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto rounded-full font-bold h-14 px-8 text-sm border-stone-700 bg-white/5 text-stone-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
                 >
-                  <span>{faq.q}</span>
-                  <ChevronDown
-                    className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                      faqOpen === idx ? "rotate-180 text-[#8C6D45]" : ""
-                    }`}
-                  />
-                </button>
-                {faqOpen === idx && (
-                  <div className="px-5 pb-5 pt-1 text-xs text-stone-600 leading-relaxed border-t border-stone-100">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            ))}
+                  Explorar Fornecedores
+                </Button>
+              </Link>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-6 pt-6 text-xs text-stone-400 border-t border-stone-800">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Ativação Instantânea</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>0% de Taxa no Pix (Classic)</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Suporte Humanizado</span>
+              </span>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* 7. FOOTER INSTITUCIONAL */}
+      {/* 7. FAQ & FOOTER */}
       {/* ========================================================================= */}
-      <footer className="bg-white border-t border-stone-200 py-12">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#8C6D45]/10 border border-[#8C6D45]/30 flex items-center justify-center text-[#8C6D45]">
-              <WeddingRingsIcon className="w-5 h-5" />
-            </div>
-            <span className="font-serif italic font-bold text-lg text-stone-900">MarryApp</span>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-stone-500 font-medium">
-            <Link href="/casamento" className="hover:text-stone-900 transition-colors">
-              Demonstração do Casal
-            </Link>
-            <Link href="/fornecedores" className="hover:text-stone-900 transition-colors">
-              Marketplace de Fornecedores
-            </Link>
-            <Link href="/site-builder" className="hover:text-stone-900 transition-colors">
-              Construtor de Site
-            </Link>
-            <Link href="/login" className="hover:text-stone-900 transition-colors">
-              Área Administrativa
-            </Link>
-          </div>
-
-          <p className="text-xs text-stone-400">
-            © {new Date().getFullYear()} MarryApp — O Ecossistema de Casamentos.
-          </p>
-        </div>
-      </footer>
+      <FaqSection />
+      <LandingFooter />
     </div>
   );
 }
