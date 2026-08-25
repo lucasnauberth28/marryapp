@@ -15,7 +15,6 @@ export interface PlanRegistrationData {
   planId: "basic" | "classic" | "vip" | "start" | "pro" | "master";
   planName: string;
   amount: number; // em centavos (0 para gratis)
-  isTestSimulation?: boolean;
   // Dados do usuário
   name: string;
   email: string;
@@ -133,8 +132,7 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
     return {
       success: true,
       userId: user.id,
-      isFree: data.amount === 0 || !!data.isTestSimulation,
-      isTestSimulation: !!data.isTestSimulation,
+      isFree: data.amount === 0,
     };
   } catch (error: any) {
     console.error("[registerPlanAccount Error]:", error);
