@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { login } from "@/actions/auth-actions";
-import { Lock, User, Loader2, Sparkles, CheckCircle, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Lock, User, Loader2, CheckCircle2, Eye, EyeOff, ArrowRight, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { WeddingRingsIcon } from "@/components/icons/wedding-rings";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -26,167 +29,175 @@ export default function LoginPage() {
       if (res.success) {
         window.location.href = "/dashboard";
       } else {
-        setError(res.error || "Credenciais incorretas. Verifique e tente novamente.");
+        setError(res.error || "Credenciais incorretas. Verifique seu e-mail e senha.");
       }
     } catch (err: any) {
-      setError(err.message || "Erro de servidor.");
+      setError(err.message || "Erro ao conectar com o servidor.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const saasFeatures = [
-    { title: "Confirmação de Presença Elegante", desc: "Fluxo de RSVP otimizado com acompanhantes individuais e restrições alimentares." },
-    { title: "Credenciamento por QR Code", desc: "Check-in digital rápido na recepção do evento através do celular da assessoria." },
-    { title: "Planejamento Financeiro", desc: "Controle de despesas, cronograma de pagamentos e mural de presentes integrados." },
-    { title: "Comunicação via WhatsApp", desc: "Disparos inteligentes e automatizados de lembretes e convites oficiais." }
+    {
+      title: "Confirmação de Presença Inteligente",
+      desc: "Fluxo de RSVP otimizado com acompanhantes individuais e restrições alimentares.",
+    },
+    {
+      title: "Credenciamento por QR Code",
+      desc: "Check-in digital rápido na portaria através do celular dos cerimonialistas.",
+    },
+    {
+      title: "Planejamento Financeiro",
+      desc: "Controle de despesas, cronograma de pagamentos e mural de presentes com taxa zero no Pix.",
+    },
+    {
+      title: "Automações via WhatsApp",
+      desc: "Disparos inteligentes e automatizados de lembretes e convites oficiais.",
+    },
   ];
 
   return (
-    <div className="min-h-screen flex bg-[#FAF8F5] font-sans antialiased text-stone-800 overflow-hidden relative">
-      
-      {/* Injeção dinâmica de fontes elegantes de Casamento (Google Fonts) */}
-      <style dangerouslySetInnerHTML={{ __html: `
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
-        .font-serif-wedding {
-          font-family: 'Cormorant Garamond', Georgia, serif;
-        }
-        .font-sans-wedding {
-          font-family: 'Outfit', sans-serif;
-        }
-      `}} />
-
+    <div className="min-h-screen flex bg-[#FAF8F5] font-sans antialiased text-stone-900 overflow-hidden relative">
       {/* Lado Esquerdo: Painel de Apresentação e Marketing (62% da tela) */}
-      <div className="hidden lg:flex lg:w-[62%] relative overflow-hidden bg-gradient-to-br from-[#FCFBF9] via-[#FAF6F0] to-[#F3EDE2] flex-col justify-between p-16 border-r border-stone-200/50">
-        
-        {/* Blobs de Luz Champanhe/Dourados para criar profundidade */}
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#C5A880]/10 blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-[#E5D5C0]/15 blur-[90px] pointer-events-none" />
+      <div className="hidden lg:flex lg:w-[60%] relative overflow-hidden bg-gradient-to-br from-[#FCFBF9] via-[#FAF6F0] to-[#F5EFE6] flex-col justify-between p-16 border-r border-stone-200/60">
+        {/* Brilhos Sutis Dourados de Fundo */}
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#8C6D45]/10 blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-[#C5A880]/15 blur-[90px] pointer-events-none" />
 
-        {/* Logo Superior */}
-        <div className="relative z-10 flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#C5A880] to-[#A3855E] flex items-center justify-center shadow-md shadow-amber-900/10">
-            <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.5 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor" />
-            </svg>
-          </div>
-          <span className="text-lg font-bold tracking-wider text-stone-800 font-sans-wedding">
-            MARRY<span className="text-[#C5A880]">APP</span>
-          </span>
+        {/* Logo Superior com o Novo Padrão de Alianças */}
+        <div className="relative z-10">
+          <Link href="/" className="inline-flex items-center gap-3 group">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FAF4ED] to-[#FAF8F5] border border-[#8C6D45]/30 flex items-center justify-center text-[#8C6D45] shadow-xs group-hover:scale-105 transition-transform">
+              <WeddingRingsIcon className="w-6 h-6" />
+            </div>
+            <span className="font-serif italic font-bold text-2xl text-stone-900 tracking-tight leading-none">
+              MarryApp
+            </span>
+          </Link>
         </div>
 
-        {/* Hero Section */}
-        <div className="relative z-10 space-y-10 max-w-xl my-auto">
+        {/* Hero Section sem badges soltas e com a fonte serif padrão */}
+        <div className="relative z-10 space-y-8 max-w-xl my-auto">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C5A880]/10 border border-[#C5A880]/20 text-[#A3855E] text-xs font-semibold font-sans-wedding tracking-wider uppercase">
-              <Sparkles className="w-3 h-3 text-[#C5A880]" /> Gestão de Casamentos Premium
-            </div>
-            <h1 className="text-4xl xl:text-5xl font-normal leading-tight text-stone-900 font-serif-wedding">
+            <h1 className="text-4xl xl:text-5xl font-black leading-tight text-stone-900 font-serif">
               Gerencie cada detalhe da celebração <br />
-              <span className="italic text-[#C5A880] font-light">do seu felizes para sempre.</span>
+              <span className="italic text-[#8C6D45]">do seu casamento dos sonhos.</span>
             </h1>
-            <p className="text-stone-500 text-sm font-sans-wedding leading-relaxed max-w-lg">
-              Simplifique o relacionamento com seus convidados, acompanhe a saúde financeira do evento e integre todas as etapas organizacionais em um único produto SaaS comercial de alta costura.
+            <p className="text-stone-600 text-sm sm:text-base leading-relaxed max-w-lg font-sans">
+              Simplifique o relacionamento com seus convidados, acompanhe a saúde financeira do evento e integre todas as etapas organizacionais em uma plataforma completa e sofisticada.
             </p>
           </div>
 
-          {/* SaaS Features */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+          {/* Lista de Recursos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
             {saasFeatures.map((f, i) => (
-              <motion.div 
+              <motion.div
                 key={f.title}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1, duration: 0.4 }}
                 className="flex gap-3"
               >
-                <div className="w-5 h-5 rounded-full bg-[#C5A880]/15 flex items-center justify-center shrink-0 mt-0.5 border border-[#C5A880]/30">
-                  <CheckCircle className="w-3 h-3 text-[#A3855E]" />
+                <div className="w-6 h-6 rounded-full bg-[#FAF4ED] flex items-center justify-center shrink-0 mt-0.5 border border-[#8C6D45]/30 text-[#8C6D45]">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="font-bold text-stone-800 text-xs font-sans-wedding tracking-wide">{f.title}</h4>
-                  <p className="text-[11px] text-stone-400 leading-relaxed font-sans-wedding">{f.desc}</p>
+                  <h2 className="font-bold text-stone-900 text-xs font-serif tracking-wide">
+                    {f.title}
+                  </h2>
+                  <p className="text-[11px] text-stone-500 leading-relaxed font-sans">
+                    {f.desc}
+                  </p>
                 </div>
               </motion.div>
             ))}
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="relative z-10 text-[11px] text-stone-400 font-sans-wedding font-medium">
-          MarryApp © {new Date().getFullYear()} — Tecnologia e sofisticação para assessoria de grandes eventos.
+        {/* Rodapé da Coluna Esquerda */}
+        <div className="relative z-10 text-[11px] text-stone-400 font-sans font-medium flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <span>MarryApp © {new Date().getFullYear()} — Tecnologia e sofisticação para noivos e profissionais de eventos.</span>
         </div>
       </div>
 
-      {/* Lado Direito: Formulário Minimalista & Estético (38% da tela) */}
-      <div className="w-full lg:w-[38%] flex flex-col justify-center items-center p-8 bg-[#FAF8F5] relative">
+      {/* Lado Direito: Formulário de Login (40% da tela) */}
+      <div className="w-full lg:w-[40%] flex flex-col justify-center items-center p-8 bg-[#FAF8F5] relative">
         {/* Glow dourado de fundo no mobile */}
-        <div className="absolute top-[10%] right-[10%] w-[250px] h-[250px] rounded-full bg-[#C5A880]/5 blur-[70px] pointer-events-none block lg:hidden" />
-        
-        <motion.div 
+        <div className="absolute top-[10%] right-[10%] w-[250px] h-[250px] rounded-full bg-[#8C6D45]/5 blur-[70px] pointer-events-none block lg:hidden" />
+
+        <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-[340px] space-y-6"
+          className="w-full max-w-[360px] space-y-6"
         >
-          {/* Cabeçalho e Logo de Alianças */}
-          <div className="text-center space-y-2.5">
-            {/* Logo Alianças de Casamento Entrelaçadas */}
-            <div className="inline-flex items-center justify-center text-[#C5A880] mb-1">
-              <svg className="w-10 h-10 drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-                <circle cx="8.5" cy="12" r="4.5" />
-                <circle cx="15.5" cy="12" r="4.5" />
-              </svg>
+          {/* Logotipo e Título Central com a Fonte Padrão do Sistema */}
+          <div className="text-center space-y-3">
+            <Link href="/" className="inline-flex items-center justify-center">
+              <div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-[#FAF4ED] to-[#FAF8F5] border border-[#8C6D45]/30 flex items-center justify-center text-[#8C6D45] shadow-sm hover:scale-105 transition-transform">
+                <WeddingRingsIcon className="w-8 h-8" />
+              </div>
+            </Link>
+
+            <div className="space-y-1">
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900 font-serif">
+                Acesso à Plataforma
+              </h2>
+              <p className="text-xs text-stone-500 font-sans">
+                Insira seu e-mail e senha para gerenciar seu casamento.
+              </p>
             </div>
-            <h2 className="text-2xl font-medium tracking-wide text-stone-900 font-serif-wedding">Acesso ao Painel</h2>
-            <p className="text-xs text-stone-400 font-sans-wedding">
-              Insira suas credenciais de acesso comercial.
-            </p>
           </div>
 
-          {/* Form Card */}
-          <div className="bg-white border border-stone-200/60 rounded-3xl p-7 shadow-lg shadow-stone-200/30">
+          {/* Card do Formulário */}
+          <div className="bg-white border border-stone-200/80 rounded-3xl p-8 shadow-xl space-y-5">
             <form onSubmit={handleSubmit} className="space-y-5">
-              
               <div className="space-y-4">
-                
-                {/* Username Input */}
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest font-sans-wedding">Usuário</label>
+                {/* Campo Usuário / E-mail */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+                    E-mail de Acesso
+                  </Label>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-stone-400">
-                      <User className="w-3.5 h-3.5" />
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
+                      <User className="w-4 h-4" />
                     </span>
                     <Input
                       type="text"
-                      placeholder="admin"
+                      placeholder="seuemail@exemplo.com"
                       value={username}
                       onChange={(e) => setUsername(e.target.value.toLowerCase())}
-                      className="h-11 pl-9 bg-stone-50 border-stone-200 rounded-xl focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880]/15 text-stone-800 text-sm font-sans-wedding transition-all duration-300"
+                      className="h-12 pl-10 bg-stone-50/60 border-stone-200 rounded-2xl text-stone-800 text-sm font-sans"
                       required
                     />
                   </div>
                 </div>
 
-                {/* Password Input */}
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-stone-400 uppercase tracking-widest font-sans-wedding">Senha</label>
+                {/* Campo Senha */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+                      Senha
+                    </Label>
+                  </div>
                   <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-stone-400">
-                      <Lock className="w-3.5 h-3.5" />
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
+                      <Lock className="w-4 h-4" />
                     </span>
                     <Input
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="h-11 pl-9 pr-10 bg-stone-50 border-stone-200 rounded-xl focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880]/15 text-stone-800 text-sm font-sans-wedding tracking-widest transition-all duration-300"
+                      className="h-12 pl-10 pr-11 bg-stone-50/60 border-stone-200 rounded-2xl text-stone-800 text-sm font-sans tracking-wider"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600 focus:outline-none"
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-stone-400 hover:text-stone-600 focus:outline-none cursor-pointer"
                     >
                       {showPassword ? (
                         <EyeOff className="w-4 h-4" />
@@ -198,70 +209,59 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Error Display */}
+              {/* Exibição de Erro */}
               <AnimatePresence>
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
-                    className="text-[11px] text-red-700 bg-red-50 border border-red-100 py-2.5 px-3 rounded-xl flex items-center gap-2 font-sans-wedding"
+                    className="text-xs text-red-700 bg-red-50 border border-red-200 py-3 px-4 rounded-2xl flex items-center gap-2.5 font-sans"
                   >
-                    <XCircle className="w-3.5 h-3.5 shrink-0 text-red-500" />
+                    <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
                     <span className="font-medium">{error}</span>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* Submit Button */}
-              <Button 
-                type="submit" 
-                className="w-full h-11 text-xs font-bold tracking-wider bg-gradient-to-r from-[#C5A880] to-[#A3855E] hover:from-[#B4946B] hover:to-[#8F714B] text-white rounded-xl shadow-md shadow-amber-900/10 flex items-center justify-center gap-1.5 hover:-translate-y-0.5 transition-all duration-300 font-sans-wedding uppercase"
+              {/* Botão de Entrar com Padrão Visual do Sistema */}
+              <Button
+                type="submit"
                 disabled={isLoading}
+                className="w-full h-12 text-sm font-bold bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full shadow-md flex items-center justify-center gap-2 hover:scale-[1.02] transition-all cursor-pointer"
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Validando acesso...
+                    <span>Validando acesso...</span>
                   </>
                 ) : (
                   <>
-                    Acessar Plataforma
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <span>Entrar no Painel</span>
+                    <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </Button>
             </form>
           </div>
 
-          {/* Hint */}
-          <p className="text-center text-[10px] text-stone-400 font-sans-wedding">
-            Ambiente comercial protegido e criptografado.
-          </p>
+          {/* Links de Apoio */}
+          <div className="text-center space-y-2 pt-2">
+            <p className="text-xs text-stone-500 font-sans">
+              Ainda não tem uma conta?{" "}
+              <Link
+                href="/assinar"
+                className="font-bold text-[#8C6D45] hover:underline underline-offset-4"
+              >
+                Criar conta ou assinar plano
+              </Link>
+            </p>
+            <p className="text-[11px] text-stone-400 font-sans">
+              Ambiente protegido e criptografado de ponta a ponta.
+            </p>
+          </div>
         </motion.div>
       </div>
     </div>
-  );
-}
-
-// Ícone de erro em SVG
-function XCircle(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="15" y1="9" x2="9" y2="15" />
-      <line x1="9" y1="9" x2="15" y2="15" />
-    </svg>
   );
 }
