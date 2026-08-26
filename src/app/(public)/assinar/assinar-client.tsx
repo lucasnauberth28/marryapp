@@ -52,6 +52,7 @@ import { WeddingRingsIcon } from "@/components/icons/wedding-rings";
 import {
   registerPlanAccount,
   generateSubscriptionPix,
+  verifySubscriptionPaymentStatus,
   PlanRegistrationData,
 } from "@/actions/subscription-actions";
 import { COUPLE_MODULES, calculateCustomPlanPrice } from "@/lib/pricing-modules";
@@ -205,9 +206,11 @@ export function AssinarClient() {
 
   // Dados de Cobrança Pix e Contador de 10 minutos
   const [pixPayload, setPixPayload] = useState("");
+  const [gatewayId, setGatewayId] = useState("");
   const [pixExpiresAt, setPixExpiresAt] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(600); // 10 minutos = 600s
   const [pixCopied, setPixCopied] = useState(false);
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
 
   const handleNameChange = (val: string) => {
     setName(val);
@@ -373,6 +376,7 @@ export function AssinarClient() {
           const pixRes = await generateSubscriptionPix(payload);
           if (pixRes.success && pixRes.pixPayload) {
             setPixPayload(pixRes.pixPayload);
+            setGatewayId(pixRes.gatewayId || "");
             setPixExpiresAt(pixRes.expiresAt);
             setTimeLeft(Math.max(0, Math.floor((pixRes.expiresAt - Date.now()) / 1000)));
             setStep("PAYMENT");
@@ -425,6 +429,7 @@ export function AssinarClient() {
       const pixRes = await generateSubscriptionPix(payload);
       if (pixRes.success && pixRes.pixPayload) {
         setPixPayload(pixRes.pixPayload);
+        setGatewayId(pixRes.gatewayId || "");
         setPixExpiresAt(pixRes.expiresAt);
         setTimeLeft(Math.max(0, Math.floor((pixRes.expiresAt - Date.now()) / 1000)));
         toast.success("Novo código Pix gerado com validade de 10 minutos!");
@@ -434,14 +439,50 @@ export function AssinarClient() {
     });
   };
 
-  const handleConfirmPaid = () => {
-    startTransition(async () => {
-      toast.success("Pagamento confirmado com sucesso! Assinatura ativa ✨");
-      setStep("SUCCESS");
-      setTimeout(() => {
-        router.push(currentPlan.type === "COUPLE" ? "/site-builder" : "/fornecedores");
-      }, 2000);
-    });
+  // Polling automático a cada 4 segundos para detectar confirmação via Mercado Pago / Webhook
+  useEffect(() => {
+    if (step !== "PAYMENT" || !gatewayId) return;
+
+    const interval = setInterval(async () => {
+      const res = await verifySubscriptionPaymentStatus(gatewayId);
+      if (res.paid) {
+        toast.success("Pagamento identificado e aprovado pelo Mercado Pago! 🎉");
+        setStep("SUCCESS");
+        setTimeout(() => {
+          router.push(currentPlan.type === "COUPLE" ? "/site-builder" : "/fornecedores");
+        }, 2000);
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [step, gatewayId, currentPlan.type, router]);
+
+  const handleConfirmPaid = async () => {
+    if (!gatewayId) {
+      toast.error("Identificador de transação não encontrado.");
+      return;
+    }
+
+    setIsCheckingPayment(true);
+    try {
+      const res = await verifySubscriptionPaymentStatus(gatewayId);
+      if (res.paid) {
+        toast.success("Pagamento aprovado pelo Mercado Pago! ✨");
+        setStep("SUCCESS");
+        setTimeout(() => {
+          router.push(currentPlan.type === "COUPLE" ? "/site-builder" : "/fornecedores");
+        }, 2000);
+      } else {
+        toast.info(
+          res.message ||
+            "Pagamento ainda não compensado. Se você já transferiu o Pix pelo app do seu banco, aguarde alguns instantes pela confirmação bancária."
+        );
+      }
+    } catch (err) {
+      toast.error("Erro ao validar pagamento com o Mercado Pago.");
+    } finally {
+      setIsCheckingPayment(false);
+    }
   };
 
   return (
@@ -1253,15 +1294,18 @@ export function AssinarClient() {
 
                         <Button
                           onClick={handleConfirmPaid}
-                          disabled={isPending}
-                          className="w-full bg-emerald-700 hover:bg-emerald-800 text-white rounded-full font-bold h-14 text-sm gap-2 shadow-lg cursor-pointer"
+                          disabled={isCheckingPayment || isExpired}
+                          className="w-full bg-emerald-700 hover:bg-emerald-800 text-white rounded-full font-bold h-14 text-sm gap-2 shadow-lg cursor-pointer transition-all duration-200 active:scale-[0.98]"
                         >
-                          {isPending ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
+                          {isCheckingPayment ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              <span>Consultando Mercado Pago...</span>
+                            </>
                           ) : (
                             <>
                               <CheckCircle2 className="w-5 h-5" />
-                              <span>Já Realizei o Pagamento via Pix</span>
+                              <span>Verificar e Confirmar Pagamento Pix</span>
                             </>
                           )}
                         </Button>

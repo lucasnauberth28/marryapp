@@ -37,6 +37,7 @@ const navItems = [
   { name: "Cronograma", href: "/cronograma", icon: Calendar },
   { name: "Meus Fornecedores", href: "/meus-fornecedores", icon: UsersIcon },
   { name: "Marketplace Parceiros", href: "/fornecedores", icon: Compass },
+  { name: "Curadoria Parceiros", href: "/curadoria", icon: Shield },
   { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
   { name: "Finanças", href: "/financas", icon: Wallet },
   { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },

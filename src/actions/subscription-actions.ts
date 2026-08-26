@@ -126,6 +126,63 @@ export async function generateSubscriptionPix(data: PlanRegistrationData) {
 }
 
 /**
+ * Verifica se o pagamento Pix da assinatura foi confirmado no Mercado Pago (Webhook ou Consulta Direta)
+ */
+export async function verifySubscriptionPaymentStatus(gatewayId: string) {
+  try {
+    if (!gatewayId) {
+      return { success: false, paid: false, message: "Identificador de transação não informado." };
+    }
+
+    const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN;
+
+    // Consulta direta à API do Mercado Pago se houver token
+    if (mpToken && /^\d+$/.test(gatewayId)) {
+      try {
+        const mpResponse = await mpPayment.get({ id: gatewayId });
+        const status = mpResponse.status;
+
+        if (status === "approved") {
+          return {
+            success: true,
+            paid: true,
+            status: "approved",
+            message: "Pagamento identificado e aprovado pelo Mercado Pago! 🎉",
+          };
+        } else if (status === "rejected" || status === "cancelled") {
+          return {
+            success: false,
+            paid: false,
+            status,
+            message: "O pagamento via Pix foi recusado ou expirou no banco.",
+          };
+        } else {
+          return {
+            success: true,
+            paid: false,
+            status: status || "pending",
+            message: "Aguardando confirmação de compensação do Pix pelo banco...",
+          };
+        }
+      } catch (mpErr: any) {
+        console.warn("[verifySubscriptionPaymentStatus MP Error]:", mpErr?.message || mpErr);
+      }
+    }
+
+    // Se estiver rodando em ambiente sem credenciais ativas do Mercado Pago
+    return {
+      success: true,
+      paid: false,
+      status: "pending",
+      message: "Aguardando confirmação de compensação do Pix pelo banco...",
+    };
+  } catch (error: any) {
+    console.error("[verifySubscriptionPaymentStatus Error]:", error);
+    return { success: false, paid: false, message: error?.message || "Erro ao verificar pagamento." };
+  }
+}
+
+/**
  * Registra a conta do usuário (Casal ou Fornecedor) e inicializa a assinatura
  */
 export async function registerPlanAccount(data: PlanRegistrationData) {

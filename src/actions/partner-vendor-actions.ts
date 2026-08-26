@@ -1,216 +1,247 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { VendorPlanTier } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { VendorPlanTier } from "@prisma/client";
 
-/**
- * Fornecedores iniciais de demonstração com portfólio completo, fotos e avaliações
- */
+// Dados iniciais enriquecidos de parceiros homologados para bootstrapping do marketplace
 const DEFAULT_PARTNERS = [
   {
-    companyName: "Monte Castelo Eventos",
+    companyName: "Villa Sandi Eventos",
     category: "Espaço",
-    description: "Espaço cercado pela natureza com salão climatizado, capela ao ar livre, iluminação cênica e gastronomia exclusiva para casamentos memoráveis.",
+    description: "Espaço campestre com arquitetura contemporânea, lago privativo e capacidade para até 400 convidados em meio à natureza.",
+    phone: "(11) 99876-5432",
+    whatsapp: "11998765432",
+    address: "Estrada dos Nobres, 1200 - São Roque, SP",
     coverUrl: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=80",
-    logoUrl: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=300&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
     galleryImages: JSON.stringify([
-      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1200&q=80",
     ]),
-    startingPrice: 1500000, // R$ 15.000,00
-    averageTicket: 2800000, // R$ 28.000,00
+    startingPrice: 1800000, // R$ 18.000,00
+    averageTicket: 2400000, // R$ 24.000,00
     priceRange: "$$$$",
     documentType: "CNPJ",
-    documentNumber: "28.341.982/0001-44",
-    curationStatus: "APPROVED",
+    documentNumber: "45.892.120/0001-94",
+    instagram: "@villasandieventos",
+    website: "villasandi.com.br",
+    rating: 5.0,
+    reviewCount: 42,
     serviceRegions: JSON.stringify(["São Paulo - Capital", "Grande SP", "Campinas e Região"]),
-    hasPhysicalSpace: true,
-    address: "Estrada dos Nobres, 450 - São Paulo, SP",
-    offersOnlineMeet: true,
-    phone: "(11) 98765-4321",
-    whatsapp: "11987654321",
-    instagram: "@montecasteloeventos",
-    tiktok: "@montecastelo",
-    website: "https://montecastelo.com.br",
     planTier: VendorPlanTier.MASTER,
     isVerified: true,
+    curationStatus: "APPROVED",
+    offersOnlineMeet: true,
+    hasPhysicalSpace: true,
+  },
+  {
+    companyName: "Gastronomia Fasano & Co",
+    category: "Buffet",
+    description: "Alta gastronomia para casamentos inesquecíveis. Menus personalizados com cozinha internacional, ilhas temáticas e harmonização de vinhos.",
+    phone: "(11) 98765-4321",
+    whatsapp: "11987654321",
+    address: "Jardins, São Paulo - SP",
+    coverUrl: "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=200&q=80",
+    galleryImages: JSON.stringify([
+      "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80",
+    ]),
+    startingPrice: 2200000, // R$ 22.000,00
+    averageTicket: 3200000, // R$ 32.000,00
+    priceRange: "$$$$",
+    documentType: "CNPJ",
+    documentNumber: "12.345.678/0001-00",
+    instagram: "@gastronomiafasano",
+    website: "fasanogastronomia.com.br",
     rating: 4.9,
-    reviewCount: 3,
+    reviewCount: 38,
+    serviceRegions: JSON.stringify(["São Paulo - Capital", "Litoral Norte", "Campinas e Região"]),
+    planTier: VendorPlanTier.MASTER,
+    isVerified: true,
+    curationStatus: "APPROVED",
+    offersOnlineMeet: true,
+    hasPhysicalSpace: true,
   },
   {
     companyName: "Lumière Fotografia & Cinema",
     category: "Fotografia",
-    description: "Capturando a essência e a emoção do seu grande dia com lentes cinematográficas, olhar documental e acabamento de alta costura.",
+    description: "Narrativa documental e poética de casamentos reais. Capturamos a essência, a emoção e a elegância de cada instante.",
+    phone: "(11) 97654-3210",
+    whatsapp: "11976543210",
+    address: "Pinheiros, São Paulo - SP",
     coverUrl: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=1200&q=80",
-    logoUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
     galleryImages: JSON.stringify([
-      "https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=80",
     ]),
     startingPrice: 650000, // R$ 6.500,00
-    averageTicket: 1100000, // R$ 11.000,00
+    averageTicket: 950000, // R$ 9.500,00
     priceRange: "$$$",
     documentType: "CNPJ",
-    documentNumber: "35.129.804/0001-12",
-    curationStatus: "APPROVED",
-    serviceRegions: JSON.stringify(["São Paulo - Capital", "Grande SP", "Litoral Norte", "Brasil Todo"]),
-    hasPhysicalSpace: false,
-    offersOnlineMeet: true,
-    phone: "(11) 99888-7766",
-    whatsapp: "11998887766",
+    documentNumber: "33.987.654/0001-12",
     instagram: "@lumierefotoecinema",
-    tiktok: "@lumierecinema",
-    website: "https://lumierefoto.com.br",
+    rating: 5.0,
+    reviewCount: 56,
+    serviceRegions: JSON.stringify(["São Paulo - Capital", "Grande SP", "Litoral Norte", "Brasil Todo"]),
     planTier: VendorPlanTier.PRO,
     isVerified: true,
-    rating: 5.0,
-    reviewCount: 2,
-  },
-  {
-    companyName: "Le Grand Buffet Gastronomia",
-    category: "Buffet",
-    description: "Menus autorais, alta gastronomia contemporânea, estações ao vivo e ilhas de antepastos com serviço impecável e harmonização.",
-    coverUrl: "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=80",
-    logoUrl: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=300&q=80",
-    galleryImages: JSON.stringify([
-      "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1000&q=80",
-    ]),
-    startingPrice: 22000, // R$ 220/pessoa
-    averageTicket: 3500000,
-    priceRange: "$$$$",
-    documentType: "CNPJ",
-    documentNumber: "41.982.110/0001-90",
     curationStatus: "APPROVED",
-    serviceRegions: JSON.stringify(["São Paulo - Capital", "Grande SP", "Campinas e Região"]),
-    hasPhysicalSpace: true,
-    address: "Av. Europa, 780 - Jardins, São Paulo",
     offersOnlineMeet: true,
-    phone: "(11) 97777-6655",
-    whatsapp: "11977776655",
-    instagram: "@legrandbuffet",
-    tiktok: "@legrandbuffet",
-    website: "https://legrandbuffet.com.br",
-    planTier: VendorPlanTier.MASTER,
-    isVerified: true,
-    rating: 4.9,
-    reviewCount: 2,
+    hasPhysicalSpace: true,
   },
   {
-    companyName: "Atelier Flores do Campo",
+    companyName: "Atelier Floral & Décor",
     category: "Decoração",
-    description: "Projetos florais orgânicos, cenografia personalizada e identidade visual floral para casamentos requintados e aconchegantes.",
-    coverUrl: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=1200&q=80",
-    logoUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
+    description: "Cenografia exclusiva e projetos botânicos sob medida. Criamos ambientes imersivos com flores nobres e iluminação cênica.",
+    phone: "(11) 96543-2109",
+    whatsapp: "11965432109",
+    coverUrl: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=80",
+    logoUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80",
     galleryImages: JSON.stringify([
-      "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1478146896981-b80fe463b330?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1000&q=80",
+      "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=1200&q=80",
     ]),
-    startingPrice: 900000, // R$ 9.000,00
-    averageTicket: 1800000,
+    startingPrice: 1200000, // R$ 12.000,00
+    averageTicket: 1600000, // R$ 16.000,00
     priceRange: "$$$",
     documentType: "CNPJ",
-    documentNumber: "19.824.551/0001-08",
-    curationStatus: "APPROVED",
-    serviceRegions: JSON.stringify(["São Paulo - Capital", "Litoral Norte", "Vale do Paraíba"]),
-    hasPhysicalSpace: true,
-    address: "Rua Oscar Freire, 1400 - Pinheiros, São Paulo",
-    offersOnlineMeet: true,
-    phone: "(11) 96666-5544",
-    whatsapp: "11966665544",
-    instagram: "@atelierfloresdocampo",
-    tiktok: "@floresdocampo",
-    website: "https://floresdocampo.com.br",
+    documentNumber: "88.765.432/0001-55",
+    instagram: "@atelierfloraldecor",
+    rating: 4.8,
+    reviewCount: 29,
+    serviceRegions: JSON.stringify(["São Paulo - Capital", "Grande SP", "Campinas e Região"]),
     planTier: VendorPlanTier.PRO,
     isVerified: true,
-    rating: 4.8,
-    reviewCount: 2,
+    curationStatus: "APPROVED",
+    offersOnlineMeet: true,
+    hasPhysicalSpace: false,
+  },
+  {
+    companyName: "Som & Luz Live Band",
+    category: "DJ & Som",
+    description: "Pista cheia do início ao fim! DJs conceituados, músicos ao vivo, sax lounge para recepção e estrutura de som e iluminação premium.",
+    phone: "(11) 95432-1098",
+    whatsapp: "11954321098",
+    coverUrl: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1200&q=80",
+    startingPrice: 450000, // R$ 4.500,00
+    averageTicket: 680000, // R$ 6.800,00
+    priceRange: "$$",
+    documentType: "CPF",
+    documentNumber: "123.456.789-00",
+    instagram: "@someluzliveband",
+    rating: 4.9,
+    reviewCount: 45,
+    serviceRegions: JSON.stringify(["São Paulo - Capital", "Grande SP", "Litoral Norte"]),
+    planTier: VendorPlanTier.PRO,
+    isVerified: true,
+    curationStatus: "APPROVED",
+    offersOnlineMeet: true,
+    hasPhysicalSpace: false,
+  },
+  {
+    companyName: "Maison Blanche Haute Couture",
+    category: "Vestidos",
+    description: "Vestidos de noiva sob medida e coleções exclusivas europeias. Caimento perfeito, rendas francesas e atendimento privativo com estilista.",
+    phone: "(11) 94321-0987",
+    whatsapp: "11943210987",
+    address: "Itaim Bibi, São Paulo - SP",
+    coverUrl: "https://images.unsplash.com/photo-1594552072238-b8a33785b261?auto=format&fit=crop&w=1200&q=80",
+    startingPrice: 850000, // R$ 8.500,00
+    averageTicket: 1400000, // R$ 14.000,00
+    priceRange: "$$$",
+    documentType: "CNPJ",
+    documentNumber: "77.654.321/0001-33",
+    instagram: "@maisonblanchehautecouture",
+    website: "maisonblanche.com.br",
+    rating: 5.0,
+    reviewCount: 31,
+    serviceRegions: JSON.stringify(["São Paulo - Capital", "Campinas e Região", "Brasil Todo"]),
+    planTier: VendorPlanTier.PRO,
+    isVerified: true,
+    curationStatus: "APPROVED",
+    offersOnlineMeet: true,
+    hasPhysicalSpace: true,
+  },
+  {
+    companyName: "Dolce & Confeito Ateliê",
+    category: "Doces & Bolo",
+    description: "Doces finos artesanais, bem-casados premiados e bolos cenográficos e de corte com acabamento impecável e sabores inesquecíveis.",
+    phone: "(11) 93210-9876",
+    whatsapp: "11932109876",
+    address: "Moema, São Paulo - SP",
+    coverUrl: "https://images.unsplash.com/photo-1535141192574-5d4897c13136?auto=format&fit=crop&w=1200&q=80",
+    startingPrice: 220000, // R$ 2.200,00
+    averageTicket: 380000, // R$ 3.800,00
+    priceRange: "$",
+    documentType: "CNPJ",
+    documentNumber: "99.123.456/0001-77",
+    instagram: "@dolceconfeitoatelie",
+    rating: 4.9,
+    reviewCount: 52,
+    serviceRegions: JSON.stringify(["São Paulo - Capital", "Grande SP"]),
+    planTier: VendorPlanTier.PRO,
+    isVerified: true,
+    curationStatus: "APPROVED",
+    offersOnlineMeet: true,
+    hasPhysicalSpace: true,
   },
 ];
 
 /**
- * Obtém todos os fornecedores parceiros aprovados na curadoria
+ * Retorna todos os fornecedores aprovados para o Marketplace Público
  */
-export async function getPartnerVendors(filters?: {
-  region?: string;
-  category?: string;
-}) {
+export async function getPartnerVendorsAction(category?: string) {
   try {
-    let vendors = await prisma.partnerVendor.findMany({
-      where: {
-        curationStatus: "APPROVED",
-      },
-      include: {
-        reviews: true,
-      },
-      orderBy: [{ planTier: "desc" }, { rating: "desc" }],
-    });
+    const count = await prisma.partnerVendor.count();
 
-    // Se o banco estiver vazio, semeia os fornecedores padrão
-    if (vendors.length === 0) {
-      for (const p of DEFAULT_PARTNERS) {
-        const created = await prisma.partnerVendor.create({ data: p });
-        // Adiciona avaliações iniciais
-        await prisma.vendorReview.createMany({
-          data: [
-            {
-              vendorId: created.id,
-              coupleNames: "Camila & Renato",
-              weddingDate: new Date("2024-11-15"),
-              rating: 5,
-              comment: "Simplesmente impecável! A atenção aos detalhes e o profissionalismo superaram todas as nossas expectativas no dia do casamento.",
-              isVerified: true,
-            },
-            {
-              vendorId: created.id,
-              coupleNames: "Juliana & Matheus",
-              weddingDate: new Date("2024-09-20"),
-              rating: 5,
-              comment: "Todos os nossos convidados elogiaram muito. Equipe pontual, transparente e muito carinhosa conosco!",
-              isVerified: true,
-            },
-          ],
+    if (count === 0) {
+      for (const partner of DEFAULT_PARTNERS) {
+        await prisma.partnerVendor.create({
+          data: partner,
         });
       }
-
-      vendors = await prisma.partnerVendor.findMany({
-        where: { curationStatus: "APPROVED" },
-        include: { reviews: true },
-        orderBy: [{ planTier: "desc" }, { rating: "desc" }],
-      });
     }
 
-    if (filters?.category && filters.category !== "TODOS") {
-      vendors = vendors.filter((v) => v.category === filters.category);
+    const whereClause: any = {
+      curationStatus: "APPROVED", // Apenas fornecedores aprovados na curadoria aparecem publicamente
+    };
+    if (category && category !== "Todos") {
+      whereClause.category = category;
     }
 
-    if (filters?.region && filters.region !== "TODAS") {
-      vendors = vendors.filter((v) => {
-        try {
-          const regions: string[] = JSON.parse(v.serviceRegions || "[]");
-          return regions.includes(filters.region!) || regions.includes("Brasil Todo");
-        } catch {
-          return true;
-        }
-      });
-    }
+    const vendors = await prisma.partnerVendor.findMany({
+      where: whereClause,
+      include: {
+        reviews: {
+          orderBy: { createdAt: "desc" },
+          take: 5,
+        },
+      },
+      orderBy: [
+        { planTier: "desc" },
+        { isVerified: "desc" },
+        { rating: "desc" },
+      ],
+    });
 
     return vendors;
   } catch (error) {
-    console.error("[getPartnerVendors Error]:", error);
+    console.error("[getPartnerVendorsAction Error]:", error);
     return [];
   }
 }
 
+export const getPartnerVendors = getPartnerVendorsAction;
+
 /**
- * Obtém detalhes completos de um fornecedor por ID
+ * Retorna um fornecedor por ID com suas avaliações completas
  */
 export async function getPartnerVendorById(id: string) {
   try {
@@ -223,7 +254,23 @@ export async function getPartnerVendorById(id: string) {
       },
     });
 
-    return vendor;
+    if (vendor) return vendor;
+
+    // Se não encontrou no banco mas é do bootstrap, cria
+    const fallback = DEFAULT_PARTNERS.find(
+      (p) => p.companyName.toLowerCase().replace(/[^a-z0-9]+/g, "-") === id || p.companyName === id
+    );
+
+    if (fallback) {
+      return await prisma.partnerVendor.create({
+        data: fallback,
+        include: {
+          reviews: true,
+        },
+      });
+    }
+
+    return null;
   } catch (error) {
     console.error("[getPartnerVendorById Error]:", error);
     return null;
@@ -231,7 +278,7 @@ export async function getPartnerVendorById(id: string) {
 }
 
 /**
- * Cadastra uma avaliação de noivos para um fornecedor
+ * Cria uma avaliação para o fornecedor
  */
 export async function createVendorReview(data: {
   vendorId: string;
@@ -315,5 +362,112 @@ export async function createVendorLead(data: {
   } catch (error: any) {
     console.error("[createVendorLead Error]:", error);
     return { success: false, error: error?.message || "Erro ao solicitar orçamento." };
+  }
+}
+
+/**
+ * ============================================================================
+ * SERVER ACTIONS DE CURADORIA (EXCLUSIVO ADMIN / BACKOFFICE)
+ * ============================================================================
+ */
+
+/**
+ * Retorna todos os fornecedores cadastrados para auditoria da Curadoria
+ */
+export async function getAllVendorsForCurationAction(filterStatus?: string) {
+  try {
+    const count = await prisma.partnerVendor.count();
+
+    if (count === 0) {
+      for (const partner of DEFAULT_PARTNERS) {
+        await prisma.partnerVendor.create({
+          data: partner,
+        });
+      }
+    }
+
+    const whereClause: any = {};
+    if (filterStatus && filterStatus !== "ALL") {
+      whereClause.curationStatus = filterStatus;
+    }
+
+    const vendors = await prisma.partnerVendor.findMany({
+      where: whereClause,
+      include: {
+        reviews: true,
+        leads: true,
+      },
+      orderBy: [
+        { curationStatus: "asc" },
+        { createdAt: "desc" },
+      ],
+    });
+
+    const pendingCount = await prisma.partnerVendor.count({ where: { curationStatus: "PENDING_APPROVAL" } });
+    const approvedCount = await prisma.partnerVendor.count({ where: { curationStatus: "APPROVED" } });
+    const rejectedCount = await prisma.partnerVendor.count({ where: { curationStatus: "REJECTED" } });
+
+    return {
+      vendors,
+      counts: {
+        total: vendors.length,
+        pending: pendingCount,
+        approved: approvedCount,
+        rejected: rejectedCount,
+      },
+    };
+  } catch (error) {
+    console.error("[getAllVendorsForCurationAction Error]:", error);
+    return { vendors: [], counts: { total: 0, pending: 0, approved: 0, rejected: 0 } };
+  }
+}
+
+/**
+ * Aprova um fornecedor na Curadoria e o publica no Marketplace
+ */
+export async function approveVendorAction(vendorId: string) {
+  try {
+    await prisma.partnerVendor.update({
+      where: { id: vendorId },
+      data: {
+        curationStatus: "APPROVED",
+        isVerified: true,
+        curationNotes: "Aprovado pela curadoria MarryApp.",
+      },
+    });
+
+    revalidatePath("/fornecedores");
+    revalidatePath(`/fornecedores/${vendorId}`);
+    revalidatePath("/curadoria");
+
+    return { success: true, message: "Fornecedor aprovado e publicado com sucesso no marketplace! ✨" };
+  } catch (error: any) {
+    console.error("[approveVendorAction Error]:", error);
+    return { success: false, error: error?.message || "Erro ao aprovar fornecedor." };
+  }
+}
+
+/**
+ * Rejeita ou solicita ajustes para um fornecedor
+ */
+export async function rejectVendorAction(vendorId: string, reason?: string) {
+  try {
+    await prisma.partnerVendor.update({
+      where: { id: vendorId },
+      data: {
+        curationStatus: "REJECTED",
+        isVerified: false,
+        curationNotes: reason || "Documentação pendente ou inconsistente.",
+      },
+    });
+
+    revalidatePath("/fornecedores");
+    revalidatePath(`/fornecedores/${vendorId}`);
+    revalidatePath("/curadoria");
+
+    return { success: true, message: "Status de curadoria atualizado para recusado." };
+  } catch (error: any) {
+    console.error("[rejectVendorAction Error]:", error);
+    return { success: false, error: error?.message || "Erro ao recusar fornecedor." };
   }
 }
