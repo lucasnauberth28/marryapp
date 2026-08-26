@@ -86,6 +86,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
       return;
     }
 
+    const toastId = toast.loading(`Enviando solicitação para ${vendor.companyName}...`);
     startTransitionLead(async () => {
       const res = await createVendorLead({
         vendorId: vendor.id,
@@ -99,14 +100,16 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
       });
 
       if (res.success) {
-        toast.success(`Solicitação enviada com sucesso para ${vendor.companyName}! ✨`);
+        toast.success(`Solicitação enviada com sucesso para ${vendor.companyName}! ✨`, {
+          id: toastId,
+        });
         setCoupleName("");
         setCouplePhone("");
         setCoupleEmail("");
         setGuestCount("");
         setLeadMessage("");
       } else {
-        toast.error(res.error || "Erro ao solicitar orçamento.");
+        toast.error(res.error || "Erro ao solicitar orçamento.", { id: toastId });
       }
     });
   };
@@ -118,6 +121,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
       return;
     }
 
+    const toastId = toast.loading("Publicando sua avaliação...");
     startTransitionReview(async () => {
       const res = await createVendorReview({
         vendorId: vendor.id,
@@ -128,13 +132,15 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
       });
 
       if (res.success && res.review) {
-        toast.success("Avaliação publicada com sucesso! Obrigado por compartilhar sua experiência.");
+        toast.success("Avaliação publicada com sucesso! Obrigado por compartilhar sua experiência.", {
+          id: toastId,
+        });
         setReviews([res.review, ...reviews]);
         setReviewModalOpen(false);
         setReviewCoupleNames("");
         setReviewComment("");
       } else {
-        toast.error(res.error || "Erro ao publicar avaliação.");
+        toast.error(res.error || "Erro ao publicar avaliação.", { id: toastId });
       }
     });
   };

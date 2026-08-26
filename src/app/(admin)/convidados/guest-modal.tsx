@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useTransition } from "react";
+import { toast } from "sonner";
 import { GuestLocal as Guest, RsvpStatus } from "@/types/local";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -102,14 +103,19 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
 
     setError(null);
 
+    const toastId = toast.loading(isEditing ? "Atualizando dados do convidado..." : "Cadastrando novo convidado...");
     startTransition(async () => {
       const result = isEditing
         ? await updateGuest(guest.id, formData)
         : await createGuest(formData);
 
       if (result.success) {
+        toast.success(isEditing ? "Convidado atualizado com sucesso!" : "Convidado adicionado à lista!", {
+          id: toastId,
+        });
         onClose();
       } else {
+        toast.error(result.error ?? "Erro ao salvar dados do convidado.", { id: toastId });
         setError(result.error ?? "Erro desconhecido.");
       }
     });

@@ -61,6 +61,7 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
       return toast.error("A senha é obrigatória para novos usuários.");
     }
 
+    const toastId = toast.loading(editingUser ? "Atualizando usuário..." : "Cadastrando novo usuário...");
     startTransition(async () => {
       let result;
       if (editingUser) {
@@ -70,9 +71,13 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
       }
 
       if (result.success) {
+        toast.success(editingUser ? "Usuário atualizado com sucesso!" : "Usuário cadastrado com sucesso!", {
+          id: toastId,
+        });
         window.location.reload();
       } else {
         toast.error(result.error || "Erro ao realizar operação.", {
+          id: toastId,
           duration: 6000,
           description: "Ocorreu um erro inesperado no servidor.",
         });
@@ -82,12 +87,15 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
 
   async function handleDelete(id: string) {
     setConfirmAction(() => () => {
+      const toastId = toast.loading("Excluindo usuário...");
       startTransition(async () => {
         const result = await deleteUser(id);
         if (result.success) {
+          toast.success("Usuário excluído com sucesso!", { id: toastId });
           window.location.reload();
         } else {
           toast.error(result.error || "Erro ao realizar operação.", {
+            id: toastId,
             duration: 6000,
             description: "Ocorreu um erro inesperado no servidor.",
           });

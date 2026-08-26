@@ -372,6 +372,8 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
 
     const finalPaymentMethod = paymentMethod === "custom" ? customPaymentMethod : PAYMENT_METHODS.find(p => p.id === paymentMethod)?.label || paymentMethod;
 
+    const toastId = toast.loading("Salvando despesa financeira...");
+
     if (mode === "single") {
       const formData = new FormData();
       formData.append("description", description);
@@ -389,11 +391,13 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
 
       const res = await createExpense(formData);
       if (res.success) {
+        toast.success("Despesa cadastrada com sucesso! 💰", { id: toastId });
         resetForm();
         setOpen(false);
         window.location.reload();
       } else {
         toast.error(res.error || "Erro ao realizar operação.", {
+          id: toastId,
           duration: 6000,
           description: "Ocorreu um erro inesperado no servidor.",
         });
@@ -401,28 +405,30 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
     } else {
       // Modo Parcelamento
       if (expenseType === "CONTRACT" && !vendorId) {
-        toast.error("Selecione um fornecedor para contratos.");
+        toast.error("Selecione um fornecedor para contratos.", { id: toastId });
         setLoading(false);
         return;
       }
       if (!description) {
-        toast.error("Informe a descrição principal da despesa.");
+        toast.error("Informe a descrição principal da despesa.", { id: toastId });
         setLoading(false);
         return;
       }
       if (generatedInstallments.length === 0) {
-        toast.error("Configure ao menos uma parcela válida.");
+        toast.error("Configure ao menos uma parcela válida.", { id: toastId });
         setLoading(false);
         return;
       }
 
       const res = await createBatchExpenses(generatedInstallments);
       if (res.success) {
+        toast.success(`${generatedInstallments.length} parcelas registradas com sucesso! 💰`, { id: toastId });
         resetForm();
         setOpen(false);
         window.location.reload();
       } else {
         toast.error(res.error || "Erro ao realizar operação.", {
+          id: toastId,
           duration: 6000,
           description: "Ocorreu um erro inesperado no servidor.",
         });
@@ -433,12 +439,14 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
 
   const handleDelete = async (id: string) => {
     setConfirmAction(() => async () => {
+      const toastId = toast.loading("Excluindo despesa...");
       const res = await deleteExpense(id);
       if (res.success) {
         setExpenses(expenses.filter(e => e.id !== id));
-        toast.success("Despesa excluída com sucesso");
+        toast.success("Despesa excluída com sucesso", { id: toastId });
       } else {
         toast.error(res.error || "Erro ao realizar operação.", {
+          id: toastId,
           duration: 6000,
           description: "Ocorreu um erro inesperado no servidor.",
         });
@@ -452,6 +460,9 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
     const res = await updateExpenseStatus(id, newStatus as ExpenseStatus);
     if (res.success) {
       setExpenses(expenses.map(e => e.id === id ? { ...e, status: newStatus } : e));
+      toast.success(newStatus === "PAID" ? "Parcela marcada como Paga! 🎉" : "Parcela marcada como Pendente.");
+    } else {
+      toast.error(res.error || "Erro ao atualizar status da despesa.");
     }
   };
 

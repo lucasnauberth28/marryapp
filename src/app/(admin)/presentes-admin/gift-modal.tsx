@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -32,13 +33,16 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
   function handleSubmit(formData: FormData) {
     setError(null)
 
+    const toastId = toast.loading("Cadastrando presente na vitrine virtual...")
     startTransition(async () => {
       const result = await createGiftAction(formData)
 
       if (result.success) {
+        toast.success("Presente cadastrado com sucesso na vitrine! 🎁", { id: toastId })
         setImagePreview(null)
         onClose()
       } else {
+        toast.error(result.error ?? "Erro ao criar o presente.", { id: toastId })
         setError(result.error ?? "Erro ao criar o presente.")
       }
     })

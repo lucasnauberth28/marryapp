@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useMemo, useEffect } from "react";
+import { toast } from "sonner";
 import { GiftLocal as Gift } from "@/types/local";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -155,6 +156,7 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
   function handleProcessPayment() {
     setError(null);
 
+    const toastId = toast.loading(method === "PIX" ? "Gerando cobrança Pix instantânea..." : "Processando pagamento seguro...");
     startTransition(async () => {
       if (method === "PIX") {
         const result = await createPixTransactionAction({
@@ -167,12 +169,15 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
           setPixPayload(result.pixPayload);
           setTransactionId(result.transactionId || null);
           setStep("PAYMENT");
+          toast.success("Código Pix gerado com sucesso!", { id: toastId });
         } else {
           setError(result.error ?? "Erro ao gerar o Pix.");
+          toast.error(result.error ?? "Erro ao gerar o Pix.", { id: toastId });
         }
       } else {
         if (!payerEmail || !cardNumber || !cardName || !cardExpiry || !cardCvv) {
           setError("Preencha todos os campos do cartão.");
+          toast.error("Preencha todos os campos do cartão.", { id: toastId });
           return;
         }
 
@@ -190,9 +195,11 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
         });
 
         if (result.success) {
+          toast.success("Pagamento aprovado com sucesso! Muito obrigado pelo presente! 🎁", { id: toastId });
           setStep("SUCCESS");
         } else {
           setError(result.error ?? "Erro ao processar o pagamento.");
+          toast.error(result.error ?? "Erro ao processar pagamento com cartão.", { id: toastId });
         }
       }
     });
@@ -201,6 +208,7 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
   function copyToClipboard() {
     navigator.clipboard.writeText(pixPayload);
     setCopied(true);
+    toast.success("Código Copia e Cola copiado para a área de transferência! 📋");
     setTimeout(() => setCopied(false), 2000);
   }
 

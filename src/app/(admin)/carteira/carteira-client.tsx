@@ -81,15 +81,16 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
   const handleUpdateBalance = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    const toastId = toast.loading("Atualizando saldo da carteira...");
     const cents = Math.round(parseFloat(inputBalance.replace(",", ".")) * 100);
 
     const res = await updateWalletBalance(cents);
     if (res.success) {
       setBalance(cents);
       setBalanceModalOpen(false);
-      toast.success("Saldo atualizado com sucesso!");
+      toast.success("Saldo atualizado com sucesso!", { id: toastId });
     } else {
-      toast.error(res.error || "Erro ao atualizar saldo.");
+      toast.error(res.error || "Erro ao atualizar saldo.", { id: toastId });
     }
     setLoading(false);
   };
@@ -132,6 +133,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
   const handleSaveCard = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    const toastId = toast.loading(editingCard ? "Atualizando cartão..." : "Salvando novo cartão...");
 
     const formData = new FormData();
     formData.append("bank", cardForm.bank);
@@ -160,17 +162,18 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
           )
         );
         setCardModalOpen(false);
-        toast.success("Cartão de crédito atualizado!");
+        toast.success("Cartão de crédito atualizado!", { id: toastId });
       } else {
-        toast.error(res.error || "Erro ao atualizar cartão.");
+        toast.error(res.error || "Erro ao atualizar cartão.", { id: toastId });
       }
     } else {
       const res = await createCreditCard(formData);
       if (res.success) {
+        toast.success("Cartão cadastrado com sucesso!", { id: toastId });
         setCardModalOpen(false);
         window.location.reload();
       } else {
-        toast.error(res.error || "Erro ao cadastrar cartão.");
+        toast.error(res.error || "Erro ao cadastrar cartão.", { id: toastId });
       }
     }
     setLoading(false);
@@ -183,12 +186,13 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
 
   const confirmDeleteCard = async () => {
     if (!cardToDelete) return;
+    const toastId = toast.loading("Excluindo cartão...");
     const res = await deleteCreditCard(cardToDelete);
     if (res.success) {
       setCards(cards.filter((c) => c.id !== cardToDelete));
-      toast.success("Cartão excluído com sucesso.");
+      toast.success("Cartão excluído com sucesso.", { id: toastId });
     } else {
-      toast.error(res.error || "Erro ao excluir cartão.");
+      toast.error(res.error || "Erro ao excluir cartão.", { id: toastId });
     }
     setCardToDelete(null);
   };

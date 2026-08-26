@@ -24,6 +24,7 @@ export function SettingsClient({ initialSettings }: { initialSettings: any }) {
   });
 
   async function handleSave() {
+    const toastId = toast.loading("Salvando configurações gerais...");
     startTransition(async () => {
       const res = await updateSettings({
         rsvpDeadline: formData.rsvpDeadline ? new Date(formData.rsvpDeadline) : null,
@@ -35,9 +36,10 @@ export function SettingsClient({ initialSettings }: { initialSettings: any }) {
         welcomeText: formData.welcomeText || null,
       });
       if (res.success) {
-        toast.success("Configurações salvas com sucesso!");
+        toast.success("Configurações salvas com sucesso! ✨", { id: toastId });
       } else {
         toast.error("Erro ao salvar configurações. Tente novamente.", {
+          id: toastId,
           duration: 6000,
           description: "Ocorreu um erro inesperado no servidor.",
         });

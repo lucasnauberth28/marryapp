@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { toast } from "sonner";
 import { BoardItem, TaskStatus } from "@/types/kanban";
 import {
   DndContext,
@@ -168,6 +169,12 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
       newPosition,
       activeTaskData.type,
     );
+    const statusLabels: Record<string, string> = {
+      TODO: "A Fazer",
+      IN_PROGRESS: "Em Andamento",
+      DONE: "Concluído 🎉",
+    };
+    toast.success(`Tarefa movida para "${statusLabels[newStatus] || newStatus}"`);
   };
 
   // Dialog Handlers
@@ -183,25 +190,36 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
   };
 
   const handleSaveDialog = async (data: any) => {
+    const toastId = toast.loading(editingTask ? "Atualizando pendência..." : "Criando nova pendência...");
     if (editingTask) {
       const res = await updateTask(editingTask.id, data);
       if (res.success && res.data) {
         const updated: BoardItem = { ...res.data, type: "MANUAL" };
         setTasks(tasks.map((t) => (t.id === updated.id ? updated : t)));
+        toast.success("Pendência atualizada com sucesso!", { id: toastId });
+      } else {
+        toast.error("Erro ao atualizar pendência.", { id: toastId });
       }
     } else {
       const res = await createTask(data);
       if (res.success && res.data) {
         const created: BoardItem = { ...res.data, type: "MANUAL" };
         setTasks([...tasks, created]);
+        toast.success("Pendência criada com sucesso!", { id: toastId });
+      } else {
+        toast.error("Erro ao criar pendência.", { id: toastId });
       }
     }
   };
 
   const handleDeleteDialog = async (taskId: string) => {
+    const toastId = toast.loading("Removendo pendência...");
     const res = await deleteTask(taskId);
     if (res.success) {
       setTasks(tasks.filter((t) => t.id !== taskId));
+      toast.success("Pendência excluída com sucesso!", { id: toastId });
+    } else {
+      toast.error("Erro ao excluir pendência.", { id: toastId });
     }
   };
 

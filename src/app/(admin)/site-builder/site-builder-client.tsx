@@ -72,12 +72,13 @@ export function SiteBuilderClient({
   const [tipDiscount, setTipDiscount] = useState("");
 
   const handleSaveSettings = () => {
+    const toastId = toast.loading("Publicando customizações visuais do site...");
     startTransition(async () => {
       const res = await updateSiteCustomization(settings);
       if (res.success) {
-        toast.success("Configurações do site salvas com sucesso! ✨");
+        toast.success("Configurações do site salvas e publicadas! ✨", { id: toastId });
       } else {
-        toast.error("Erro ao salvar configurações.");
+        toast.error("Erro ao salvar configurações.", { id: toastId });
       }
     });
   };

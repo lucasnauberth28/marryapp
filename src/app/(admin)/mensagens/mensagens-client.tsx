@@ -185,15 +185,17 @@ export function MensagensClient({
     formData.append("type", type);
     formData.append("buttons", JSON.stringify(buttonsList));
 
+    const toastId = toast.loading(selectedTemplate ? "Atualizando template de mensagem..." : "Criando novo template...");
+
     if (selectedTemplate) {
       const res = await updateMessageTemplate(selectedTemplate.id, formData);
       if (res.success && res.data) {
         setTemplates(templates.map((t) => (t.id === selectedTemplate.id ? (res.data as MessageTemplate) : t)));
         setIsEditingMode(false);
         resetForm();
-        toast.success("Template atualizado com sucesso!");
+        toast.success("Template atualizado com sucesso!", { id: toastId });
       } else {
-        toast.error(res.error || "Erro ao salvar template");
+        toast.error(res.error || "Erro ao salvar template", { id: toastId });
       }
     } else {
       const res = await createMessageTemplate(formData);
@@ -201,9 +203,9 @@ export function MensagensClient({
         setTemplates([res.data as MessageTemplate, ...templates]);
         setIsEditingMode(false);
         resetForm();
-        toast.success("Novo template criado!");
+        toast.success("Novo template criado com sucesso!", { id: toastId });
       } else {
-        toast.error(res.error || "Erro ao criar template");
+        toast.error(res.error || "Erro ao criar template", { id: toastId });
       }
     }
     setIsSubmitting(false);
@@ -211,6 +213,7 @@ export function MensagensClient({
 
   const handleDelete = async (id: string) => {
     setConfirmAction(() => async () => {
+      const toastId = toast.loading("Excluindo template...");
       const res = await deleteMessageTemplate(id);
       if (res.success) {
         setTemplates(templates.filter((t) => t.id !== id));
@@ -218,7 +221,9 @@ export function MensagensClient({
           resetForm();
           setIsEditingMode(false);
         }
-        toast.success("Template excluído com sucesso!");
+        toast.success("Template excluído com sucesso!", { id: toastId });
+      } else {
+        toast.error(res.error || "Erro ao excluir template", { id: toastId });
       }
     });
     setConfirmOpen(true);
@@ -257,15 +262,16 @@ export function MensagensClient({
 
     setIsSending(true);
     setSendStatus(null);
+    const toastId = toast.loading(`Disparando mensagens para ${selectedGuests.length} convidados...`);
 
     const res = await sendTemplateToGuests(chosenTemplateId, selectedGuests);
     if (res.success) {
       setSendStatus({ success: true, message: res.message });
       setSelectedGuests([]);
-      toast.success(res.message || "Mensagens enviadas com sucesso!");
+      toast.success(res.message || "Mensagens enviadas com sucesso! 🚀", { id: toastId });
     } else {
       setSendStatus({ error: res.error || "Erro ao realizar o disparo." });
-      toast.error(res.error || "Erro no disparo");
+      toast.error(res.error || "Erro no disparo", { id: toastId });
     }
     setIsSending(false);
   };
@@ -275,22 +281,24 @@ export function MensagensClient({
 
   const handleSendInitialInvites = async () => {
     setIsTriggeringInvites(true);
+    const toastId = toast.loading("Disparando convites iniciais com QR Code...");
     const res = await sendInitialInvites();
     if (res.success) {
-      toast.success(res.message);
+      toast.success(res.message, { id: toastId });
     } else {
-      toast.error("Erro ao disparar convites iniciais.");
+      toast.error("Erro ao disparar convites iniciais.", { id: toastId });
     }
     setIsTriggeringInvites(false);
   };
 
   const handleSendRsvpReminders = async () => {
     setIsTriggeringRsvp(true);
+    const toastId = toast.loading("Disparando lembretes de RSVP pendentes...");
     const res = await sendRsvpReminders();
     if (res.success) {
-      toast.success(res.message);
+      toast.success(res.message, { id: toastId });
     } else {
-      toast.error("Erro ao disparar lembretes de RSVP.");
+      toast.error("Erro ao disparar lembretes de RSVP.", { id: toastId });
     }
     setIsTriggeringRsvp(false);
   };

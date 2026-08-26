@@ -139,25 +139,33 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
     // Grava no banco em background
     const targetTableId = toContainerId === "unassigned" ? null : toContainerId;
     await assignGuestToTable(guestId, targetTableId);
+    toast.success(toContainerId === "unassigned" ? "Convidado movido para a lista de espera." : "Convidado alocado na mesa com sucesso!");
   };
 
   const handleAddTable = async () => {
     if (!newTableName.trim()) return;
     setLoading(true);
+    const toastId = toast.loading("Criando nova mesa...");
     const res = await createTable(newTableName, newTableCap);
     if (res.success) {
+      toast.success("Mesa criada com sucesso!", { id: toastId });
       window.location.reload();
+    } else {
+      toast.error(res.error || "Erro ao criar mesa.", { id: toastId });
     }
     setLoading(false);
   };
 
   const handleDeleteTable = async (id: string) => {
     setConfirmAction(() => async () => {
+      const toastId = toast.loading("Removendo mesa...");
       const res = await deleteTable(id);
       if (res.success) {
+        toast.success("Mesa removida com sucesso!", { id: toastId });
         window.location.reload();
       } else {
         toast.error(res.error || "Erro ao realizar operação.", {
+          id: toastId,
           duration: 6000,
           description: "Ocorreu um erro inesperado no servidor.",
         });

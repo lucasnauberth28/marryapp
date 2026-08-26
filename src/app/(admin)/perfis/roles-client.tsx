@@ -78,6 +78,7 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
     if (!formData.name) return toast.error("O nome do perfil é obrigatório.");
     if (formData.allowedPaths.length === 0) return toast.error("Selecione ao menos um módulo.");
 
+    const toastId = toast.loading(editingRole ? "Atualizando perfil de acesso..." : "Criando novo perfil de acesso...");
     startTransition(async () => {
       let result;
       if (editingRole) {
@@ -87,10 +88,13 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
       }
 
       if (result.success) {
-        // Recarregar a página para pegar os dados frescos do servidor
+        toast.success(editingRole ? "Perfil de acesso atualizado com sucesso!" : "Perfil de acesso criado com sucesso!", {
+          id: toastId,
+        });
         window.location.reload();
       } else {
         toast.error(result.error || "Erro ao realizar operação.", {
+          id: toastId,
           duration: 6000,
           description: "Ocorreu um erro inesperado no servidor.",
         });
@@ -100,12 +104,15 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
 
   async function handleDelete(id: string) {
     setConfirmAction(() => () => {
+      const toastId = toast.loading("Excluindo perfil de acesso...");
       startTransition(async () => {
         const result = await deleteRole(id);
         if (result.success) {
+          toast.success("Perfil de acesso excluído com sucesso!", { id: toastId });
           window.location.reload();
         } else {
           toast.error(result.error || "Erro ao realizar operação.", {
+            id: toastId,
             duration: 6000,
             description: "Ocorreu um erro inesperado no servidor.",
           });

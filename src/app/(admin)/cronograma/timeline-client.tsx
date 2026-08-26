@@ -31,6 +31,7 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    const toastId = toast.loading("Adicionando evento ao cronograma...");
     try {
       const payload = {
         ...formData,
@@ -42,7 +43,9 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
         setEvents([...events, { id: Math.random().toString(), ...payload }]);
         setIsModalOpen(false);
         setFormData({ title: "", time: "", description: "" });
-        toast.success("Evento criado com sucesso!");
+        toast.success("Evento criado com sucesso!", { id: toastId });
+      } else {
+        toast.error("Erro ao salvar evento.", { id: toastId });
       }
     } finally {
       setLoading(false);
@@ -59,9 +62,10 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
     const targetId = confirmId;
     setConfirmOpen(false);
     setConfirmId(null);
+    const toastId = toast.loading("Removendo evento...");
     setEvents(prev => prev.filter(e => e.id !== targetId));
     await deleteTimelineEvent(targetId);
-    toast.success("Evento excluído do cronograma!");
+    toast.success("Evento excluído do cronograma!", { id: toastId });
   };
 
   const handleExportPdf = () => {

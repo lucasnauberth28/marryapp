@@ -30,7 +30,20 @@ export default function RootLayout({
     <html lang="pt-BR" className={`${outfit.variable} ${cormorant.variable} antialiased`}>
       <body className="min-h-screen bg-[#FAF8F5] font-sans text-stone-800">
         {children}
-        <Toaster position="top-right" richColors />
+        <Toaster 
+          position="top-right" 
+          richColors 
+          closeButton 
+          duration={4000}
+          toastOptions={{
+            style: {
+              borderRadius: "16px",
+              padding: "16px",
+              fontSize: "14px",
+              boxShadow: "0 10px 30px -10px rgba(0,0,0,0.15)",
+            },
+          }}
+        />
       </body>
     </html>
   );

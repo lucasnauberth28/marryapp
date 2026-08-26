@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { toast } from "sonner";
 import { findGuestByPhone, publicConfirmRsvp } from "@/actions/guest-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +50,7 @@ export function RsvpClient() {
     setGuest(null);
     setLoading(true);
 
+    const toastId = toast.loading("Localizando seu convite pelo WhatsApp...");
     try {
       const found = await findGuestByPhone(phone);
       if (found) {
@@ -57,11 +59,14 @@ export function RsvpClient() {
         setCompanionsCount(0);
         setCompanionsNames(Array(found.allowedCompanions).fill(""));
         setDietary(found.dietaryRestrictions || "");
+        toast.success(`Olá, ${found.name}! Convite localizado.`, { id: toastId });
       } else {
         setError("Não encontramos um convite para este número. Digite com o DDD.");
+        toast.error("Número não encontrado na lista de convidados.", { id: toastId });
       }
     } catch (err) {
       setError("Erro ao buscar convite. Tente novamente.");
+      toast.error("Erro ao buscar convite.", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -76,6 +81,12 @@ export function RsvpClient() {
   const handleConfirm = async (status: "CONFIRMED" | "DECLINED") => {
     setSubmitLoading(true);
     setError("");
+
+    const toastId = toast.loading(
+      status === "CONFIRMED"
+        ? "Registrando sua confirmação de presença..."
+        : "Registrando sua resposta..."
+    );
     
     // Une os nomes preenchidos dos acompanhantes ativos
     const activeNames = companionsNames
@@ -93,11 +104,19 @@ export function RsvpClient() {
       );
       if (res.success) {
         setSuccessStatus(status);
+        toast.success(
+          status === "CONFIRMED"
+            ? "Presença confirmada com sucesso! ✨ Seu QR Code de acesso foi gerado."
+            : "Resposta registrada com sucesso. Sentiremos sua falta!",
+          { id: toastId }
+        );
       } else {
         setError(res.error || "Erro ao salvar resposta.");
+        toast.error(res.error || "Erro ao salvar resposta.", { id: toastId });
       }
     } catch (err) {
       setError("Erro de conexão com o servidor.");
+      toast.error("Erro de conexão com o servidor.", { id: toastId });
     } finally {
       setSubmitLoading(false);
     }
@@ -110,10 +129,11 @@ export function RsvpClient() {
     const url = canvas.toDataURL("image/png");
     const link = document.createElement("a");
     link.href = url;
-    link.download = `ingresso-${guest.name.replace(/\s+/g, "-").toLowerCase()}.png`;
+    link.download = `ingresso-${guest?.name.replace(/\s+/g, "-").toLowerCase()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    toast.success("Download do seu ingresso digital iniciado! 🎟️");
   };
 
   return (

@@ -71,10 +71,13 @@ export function CuradoriaClient({
   });
 
   const handleApprove = (vendor: any) => {
+    const toastId = toast.loading(`Aprovando e homologando ${vendor.companyName}...`);
     startTransition(async () => {
       const res = await approveVendorAction(vendor.id);
       if (res.success) {
-        toast.success(`Fornecedor ${vendor.companyName} aprovado com sucesso! ✨`);
+        toast.success(`Fornecedor ${vendor.companyName} aprovado e publicado no marketplace! ✨`, {
+          id: toastId,
+        });
         setVendors((prev) =>
           prev.map((v) =>
             v.id === vendor.id
@@ -91,7 +94,7 @@ export function CuradoriaClient({
           setSelectedVendor({ ...selectedVendor, curationStatus: "APPROVED", isVerified: true });
         }
       } else {
-        toast.error(res.error || "Erro ao aprovar fornecedor.");
+        toast.error(res.error || "Erro ao aprovar fornecedor.", { id: toastId });
       }
     });
   };
@@ -105,10 +108,13 @@ export function CuradoriaClient({
   const handleConfirmReject = () => {
     if (!vendorToReject) return;
 
+    const toastId = toast.loading(`Registrando recusa de ${vendorToReject.companyName}...`);
     startTransition(async () => {
       const res = await rejectVendorAction(vendorToReject.id, rejectReason);
       if (res.success) {
-        toast.success(`Status de ${vendorToReject.companyName} atualizado para recusado.`);
+        toast.success(`Cadastro de ${vendorToReject.companyName} recusado. Justificativa registrada.`, {
+          id: toastId,
+        });
         setVendors((prev) =>
           prev.map((v) =>
             v.id === vendorToReject.id
@@ -127,7 +133,7 @@ export function CuradoriaClient({
           setSelectedVendor(null);
         }
       } else {
-        toast.error(res.error || "Erro ao recusar fornecedor.");
+        toast.error(res.error || "Erro ao recusar fornecedor.", { id: toastId });
       }
     });
   };

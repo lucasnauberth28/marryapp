@@ -79,12 +79,14 @@ export function GuestsClient({
       "Remover Convidado",
       "Tem certeza que deseja remover este convidado da lista? Esta ação não pode ser desfeita.",
       async () => {
+        const toastId = toast.loading("Removendo convidado...");
         startTransition(async () => {
           const res = await deleteGuest(id);
           if (res.success) {
-            toast.success("Convidado removido com sucesso!");
+            toast.success("Convidado removido com sucesso!", { id: toastId });
           } else {
             toast.error(res.error || "Erro ao realizar operação.", {
+              id: toastId,
               duration: 6000,
               description: "Ocorreu um erro inesperado no servidor.",
             });

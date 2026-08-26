@@ -31,16 +31,18 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
   function handleDelete(id: string) {
     setConfirmAction(() => () => {
       setDeletingId(id)
+      const toastId = toast.loading("Removendo presente da vitrine...")
       startTransition(async () => {
         const result = await deleteGift(id)
         if (!result.success) {
           toast.error(result.error || "Erro ao realizar operação.", {
+            id: toastId,
             duration: 6000,
             description: "Ocorreu um erro inesperado no servidor.",
           })
         } else {
           setGifts(prev => prev.filter(g => g.id !== id))
-          toast.success("Presente excluído com sucesso!")
+          toast.success("Presente excluído com sucesso!", { id: toastId })
           router.refresh()
         }
         setDeletingId(null)

@@ -182,17 +182,19 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    const toastId = toast.loading("Cadastrando fornecedor na sua lista...");
     const formData = new FormData(e.currentTarget);
     if (contractMode === "file" && fileBase64) {
       formData.set("contractUrl", fileBase64);
     }
     const res = await createVendor(formData);
     if (res.success) {
+      toast.success("Fornecedor cadastrado com sucesso!", { id: toastId });
       resetForm();
       setOpen(false);
       window.location.reload();
     } else {
-      toast.error(res.error || "Erro ao criar fornecedor.");
+      toast.error(res.error || "Erro ao criar fornecedor.", { id: toastId });
     }
     setLoading(false);
   };
@@ -213,28 +215,31 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
     e.preventDefault();
     if (!editingVendor) return;
     setLoading(true);
+    const toastId = toast.loading("Atualizando dados do fornecedor...");
     const formData = new FormData(e.currentTarget);
     if (editContractMode === "file" && editFileBase64) {
       formData.set("contractUrl", editFileBase64);
     }
     const res = await updateVendor(editingVendor.id, formData);
     if (res.success) {
+      toast.success("Fornecedor atualizado com sucesso!", { id: toastId });
       setEditOpen(false);
       window.location.reload();
     } else {
-      toast.error(res.error || "Erro ao atualizar fornecedor.");
+      toast.error(res.error || "Erro ao atualizar fornecedor.", { id: toastId });
     }
     setLoading(false);
   };
 
   const handleDelete = (id: string) => {
     setConfirmAction(() => async () => {
+      const toastId = toast.loading("Removendo fornecedor...");
       const res = await deleteVendor(id);
       if (res.success) {
         setVendors((prev) => prev.filter((v) => v.id !== id));
-        toast.success("Fornecedor excluído com sucesso!");
+        toast.success("Fornecedor excluído com sucesso!", { id: toastId });
       } else {
-        toast.error("Erro ao excluir fornecedor.");
+        toast.error("Erro ao excluir fornecedor.", { id: toastId });
       }
     });
     setConfirmOpen(true);

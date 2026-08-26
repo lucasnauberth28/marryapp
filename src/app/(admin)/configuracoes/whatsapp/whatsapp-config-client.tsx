@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import { getWhatsAppStatus, generateWhatsAppQRCode } from "@/actions/evolution-actions";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, QrCode, CheckCircle2, XCircle, Loader2 } from "lucide-react";
@@ -13,7 +14,11 @@ export function WhatsAppConfigClient() {
   const [loading, setLoading] = useState(true);
 
   const checkStatusAndQRCode = useCallback(async (isManualRefresh = false) => {
-    if (isManualRefresh) setLoading(true);
+    let toastId: string | number | undefined;
+    if (isManualRefresh) {
+      setLoading(true);
+      toastId = toast.loading("Verificando status da conexão com WhatsApp...");
+    }
     try {
       const statusRes = await getWhatsAppStatus();
 
@@ -21,20 +26,32 @@ export function WhatsAppConfigClient() {
         setStatus("CONNECTED");
         setQrCode(null);
         setMessage("");
+        if (isManualRefresh) {
+          toast.success("WhatsApp está conectado e pronto para envios! 📲", { id: toastId });
+        }
       } else {
         const qrRes = await generateWhatsAppQRCode();
         if (qrRes.success && qrRes.qrCode) {
           setQrCode(qrRes.qrCode);
           setStatus("QR_CODE_READY");
           setMessage("");
+          if (isManualRefresh) {
+            toast.info("Novo QR Code gerado. Aponte a câmera do seu WhatsApp!", { id: toastId });
+          }
         } else {
           setStatus(statusRes.state || "DISCONNECTED");
           if (qrRes.error) setMessage(qrRes.error);
+          if (isManualRefresh) {
+            toast.error(qrRes.error || "WhatsApp desconectado.", { id: toastId });
+          }
         }
       }
     } catch (err: any) {
       setStatus("ERROR");
       setMessage("Erro inesperado ao consultar Evolution API.");
+      if (isManualRefresh) {
+        toast.error("Erro inesperado ao consultar Evolution API.", { id: toastId });
+      }
     } finally {
       setLoading(false);
     }
