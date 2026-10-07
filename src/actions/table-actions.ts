@@ -1,9 +1,12 @@
 "use server";
 
+import { requireAuthSession, requirePathPermission } from "@/lib/security/auth-guard";
+
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 export async function getTablesWithGuests() {
+  await requireAuthSession();
   return prisma.table.findMany({
     include: {
       guests: {
@@ -18,6 +21,7 @@ export async function getTablesWithGuests() {
 }
 
 export async function getUnassignedGuests() {
+  await requireAuthSession();
   return prisma.guest.findMany({
     where: { 
       tableId: null,
@@ -32,6 +36,7 @@ export async function getUnassignedGuests() {
 }
 
 export async function createTable(name: string, capacity: number) {
+  await requirePathPermission("/mesas");
   try {
     await prisma.table.create({
       data: { name, capacity },
@@ -45,6 +50,7 @@ export async function createTable(name: string, capacity: number) {
 }
 
 export async function deleteTable(id: string) {
+  await requirePathPermission("/mesas");
   try {
     await prisma.table.delete({ where: { id } });
     revalidatePath("/convidados");
@@ -56,6 +62,7 @@ export async function deleteTable(id: string) {
 }
 
 export async function assignGuestToTable(guestId: string, tableId: string | null) {
+  await requirePathPermission("/mesas");
   try {
     await prisma.guest.update({
       where: { id: guestId },

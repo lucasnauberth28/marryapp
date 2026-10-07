@@ -1,10 +1,13 @@
 "use server";
 
+import { requirePathPermission } from "@/lib/security/auth-guard";
+
 import prisma from "@/lib/prisma";
 import { sendBulkMessages } from "@/lib/evolution";
 import { revalidatePath } from "next/cache";
 
 export async function ensureDefaultTemplates() {
+  await requirePathPermission("/mensagens");
   try {
     const existingInvite = await prisma.messageTemplate.findFirst({
       where: { type: "INITIAL_INVITE" },
@@ -47,6 +50,7 @@ export async function ensureDefaultTemplates() {
 }
 
 export async function getMessageTemplates() {
+  await requirePathPermission("/mensagens");
   try {
     await ensureDefaultTemplates();
     const templates = await prisma.messageTemplate.findMany({
@@ -60,6 +64,7 @@ export async function getMessageTemplates() {
 }
 
 export async function createMessageTemplate(formData: FormData) {
+  await requirePathPermission("/mensagens");
   try {
     const name = formData.get("name") as string;
     const content = formData.get("content") as string;
@@ -85,6 +90,7 @@ export async function createMessageTemplate(formData: FormData) {
 }
 
 export async function updateMessageTemplate(id: string, formData: FormData) {
+  await requirePathPermission("/mensagens");
   try {
     const name = formData.get("name") as string;
     const content = formData.get("content") as string;
@@ -111,6 +117,7 @@ export async function updateMessageTemplate(id: string, formData: FormData) {
 }
 
 export async function deleteMessageTemplate(id: string) {
+  await requirePathPermission("/mensagens");
   try {
     await prisma.messageTemplate.delete({ where: { id } });
     revalidatePath("/mensagens");
@@ -125,6 +132,7 @@ export async function deleteMessageTemplate(id: string) {
  * Dispara um template para vários convidados
  */
 export async function sendTemplateToGuests(templateId: string, guestIds: string[]) {
+  await requirePathPermission("/mensagens");
   try {
     const template = await prisma.messageTemplate.findUnique({ where: { id: templateId } });
     if (!template) return { success: false, error: "Template não encontrado." };
@@ -205,13 +213,14 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
       results,
       message: `${sent} mensagem(ns) enviada(s) com sucesso.${failed > 0 ? ` (${failed} falha(s))` : ""}`,
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("[sendTemplateToGuests Error]:", error);
-    return { success: false, error: `Falha geral: ${error?.message || String(error)}` };
+    return { success: false, error: `Falha geral: ${(error instanceof Error ? error.message : undefined) || String(error)}` };
   }
 }
 
 export async function markGuestAsSent(guestId: string) {
+  await requirePathPermission("/mensagens");
   try {
     await prisma.guest.update({
       where: { id: guestId },
@@ -220,7 +229,7 @@ export async function markGuestAsSent(guestId: string) {
     revalidatePath("/(admin)/convidados", "page");
     revalidatePath("/(admin)/mensagens", "page");
     return { success: true };
-  } catch (e: any) {
-    return { success: false, error: e?.message || "Erro ao atualizar status." };
+  } catch (e) {
+    return { success: false, error: (e instanceof Error ? e.message : undefined) || "Erro ao atualizar status." };
   }
 }

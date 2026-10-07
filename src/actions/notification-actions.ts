@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAuthSession } from "@/lib/security/auth-guard";
+
 import prisma from "@/lib/prisma";
 import { PaymentStatus, PaymentMethod, ExpenseStatus, RsvpStatus } from "@prisma/client";
 
@@ -17,6 +19,7 @@ export async function getSystemNotifications(): Promise<{
   notifications: SystemNotification[];
   unreadCount: number;
 }> {
+  await requireAuthSession();
   try {
     const notifications: SystemNotification[] = [];
 

@@ -6,26 +6,28 @@
  *   EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_INSTANCE
  */
 
-let rawUrl = process.env.EVOLUTION_API_URL || "https://marryapp-whatsapp.onrender.com";
-if (rawUrl.includes("railway.app")) {
-  rawUrl = "https://marryapp-whatsapp.onrender.com";
-}
-const EVOLUTION_URL = rawUrl.trim().replace(/\/+$/, "");
-const EVOLUTION_KEY = (process.env.EVOLUTION_API_KEY || "marryapp123").trim();
-const EVOLUTION_INSTANCE = (process.env.EVOLUTION_INSTANCE || "marryapp").trim();
+import "server-only";
+
+// Sem valores padrão: URL, chave e instância precisam vir do ambiente.
+const EVOLUTION_URL = (process.env.EVOLUTION_API_URL || "").trim().replace(/\/+$/, "");
+const EVOLUTION_KEY = (process.env.EVOLUTION_API_KEY || "").trim();
+const EVOLUTION_INSTANCE = (process.env.EVOLUTION_INSTANCE || "").trim();
 
 function isConfigured() {
   return !!(EVOLUTION_URL && EVOLUTION_KEY && EVOLUTION_INSTANCE);
 }
 
+/**
+ * O QR de pareamento é uma credencial: nunca enviá-lo a serviços externos para gerar imagem.
+ * Retorna a data URL da Evolution, ou o código bruto (renderizado como QR no navegador).
+ */
 function formatQrCode(rawQr?: string | null): string | null {
   if (!rawQr) return null;
-  if (rawQr.startsWith("data:image")) return rawQr;
-  return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(rawQr)}`;
+  return rawQr;
 }
 
 function formatPhoneNumber(phone: string): string {
-  let clean = phone.replace(/\D/g, "");
+  const clean = phone.replace(/\D/g, "");
   if (clean.startsWith("55") && (clean.length === 12 || clean.length === 13)) {
     return clean;
   }
@@ -123,9 +125,9 @@ export async function sendTextMessage({ phone, text }: SendMessageOptions) {
 
     const data = await response.json();
     return { success: true, data };
-  } catch (error: any) {
+  } catch (error) {
     console.error("[Evolution API] Exceção ao enviar texto:", error);
-    return { success: false, error: error?.message || "Falha ao enviar mensagem de texto." };
+    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Falha ao enviar mensagem de texto." };
   }
 }
 
@@ -182,9 +184,9 @@ export async function sendInteractiveMessage({
 
     const data = await response.json();
     return { success: true, data };
-  } catch (error: any) {
+  } catch (error) {
     console.error("[Evolution API] Exceção ao enviar botões:", error);
-    return { success: false, error: error?.message || "Falha ao enviar mensagem com botões." };
+    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Falha ao enviar mensagem com botões." };
   }
 }
 
@@ -323,8 +325,8 @@ export async function connectInstance() {
     }
 
     return { success: false, error: `Sem QR Code no payload: ${JSON.stringify(data).substring(0, 150)}` };
-  } catch (error: any) {
-    return { success: false, error: `Exceção em connectInstance: ${error?.message || String(error)}` };
+  } catch (error) {
+    return { success: false, error: `Exceção em connectInstance: ${(error instanceof Error ? error.message : undefined) || String(error)}` };
   }
 }
 
@@ -397,9 +399,9 @@ export async function sendMediaMessage({
 
     const data = await response.json();
     return { success: true, data };
-  } catch (error: any) {
+  } catch (error) {
     console.error("[Evolution API] Exceção ao enviar mídia:", error);
-    return { success: false, error: error?.message || "Erro de conexão ao enviar mídia." };
+    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Erro de conexão ao enviar mídia." };
   }
 }
 

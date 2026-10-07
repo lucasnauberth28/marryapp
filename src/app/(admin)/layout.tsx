@@ -1,23 +1,15 @@
 // src/app/(admin)/layout.tsx
 import { Sidebar } from "@/components/admin/sidebar"
 import { Header } from "@/components/admin/header"
-import { cookies } from "next/headers"
-import { verifyToken } from "@/lib/auth"
+import { redirect } from "next/navigation"
+import { getSession } from "@/lib/security/auth-guard"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("marryapp_admin_session")?.value;
-  
-  let role = "Admin";
-  let allowedPaths = ["*"];
+  // Perfil e permissões vêm do banco (não só do JWT), refletindo alterações de acesso na hora.
+  const session = await getSession();
+  if (!session) redirect("/login");
 
-  if (token) {
-    const payload = await verifyToken(token);
-    if (payload) {
-      role = payload.role;
-      allowedPaths = payload.allowedPaths;
-    }
-  }
+  const { role, allowedPaths } = session;
 
   return (
     <div className="flex min-h-screen bg-zinc-50/50">

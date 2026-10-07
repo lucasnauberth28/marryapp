@@ -1,49 +1,50 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { cookies } from "next/headers";
+import { AuthorizationError, requirePathPermission } from "@/lib/security/auth-guard";
+
+/**
+ * Escapa um valor para CSV e neutraliza injeção de fórmulas (=, +, -, @) ao abrir no Excel/Sheets.
+ */
+function csvCell(value: string | number | null | undefined) {
+  if (value === null || value === undefined) return "";
+  let str = String(value);
+  if (/^[=+\-@\t\r]/.test(str)) str = `'${str}`;
+  return `"${str.replace(/"/g, '""')}"`;
+}
 
 export async function GET() {
-  // Verifica autenticação usando cookies, similar ao verifyAdminSession
-  const cookieStore = await cookies();
-  const token = cookieStore.get("marryapp_admin_session")?.value;
-
-  if (!token) {
-    return new NextResponse("Unauthorized", { status: 401 });
+  try {
+    await requirePathPermission("/convidados");
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+    throw error;
   }
 
   try {
     const guests = await prisma.guest.findMany({
-      include: {
-        table: true,
-      },
-      orderBy: {
-        name: "asc",
-      },
+      include: { table: true },
+      orderBy: { name: "asc" },
     });
 
-    // Cabeçalhos do CSV
-    let csvContent = "Nome,Telefone,Status RSVP,Acompanhantes (Permitidos),Mesa\n";
-
-    // Linhas de dados
-    guests.forEach((guest) => {
-      const name = guest.name ? `"${guest.name.replace(/"/g, '""')}"` : "";
-      const phone = guest.phone ? `"${guest.phone}"` : "";
+    const header = ["Nome", "Telefone", "Status RSVP", "Acompanhantes (Permitidos)", "Mesa"].map(csvCell).join(",");
+    const rows = guests.map((guest) => {
       const status = guest.rsvpStatus === "CONFIRMED" ? "Confirmado" : guest.rsvpStatus === "DECLINED" ? "Declinou" : "Pendente";
-      const companions = guest.allowedCompanions || 0;
-      const table = guest.table ? `"${guest.table.name.replace(/"/g, '""')}"` : "Sem Mesa";
-
-      csvContent += `${name},${phone},${status},${companions},${table}\n`;
+      return [guest.name, guest.phone, status, guest.allowedCompanions || 0, guest.table?.name ?? "Sem Mesa"]
+        .map(csvCell)
+        .join(",");
     });
 
-    // BOM for UTF-8 (para o Excel abrir com a acentuação correta)
-    const BOM = "\uFEFF";
-    const csvWithBOM = BOM + csvContent;
+    // BOM para o Excel abrir com a acentuação correta
+    const csvWithBOM = "﻿" + [header, ...rows].join("\n") + "\n";
 
     return new NextResponse(csvWithBOM, {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
         "Content-Disposition": 'attachment; filename="lista_de_convidados.csv"',
+        "Cache-Control": "no-store",
       },
     });
   } catch (error) {

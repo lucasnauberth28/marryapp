@@ -1,10 +1,13 @@
 "use server";
 
+import { requirePathPermission } from "@/lib/security/auth-guard";
+
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { sendTextMessage, sendInteractiveMessage, sendBulkMessages } from "@/lib/evolution";
 import { RsvpStatus } from "@prisma/client";
+import { rateLimitByIp } from "@/lib/security/rate-limiter";
 
 // ==========================================
 // VALIDAÇÕES ZOD
@@ -66,6 +69,7 @@ const GuestSchema = z.object({
 // ==========================================
 
 export async function getGuests(filter?: RsvpStatus) {
+  await requirePathPermission("/convidados");
   return prisma.guest.findMany({
     where: filter ? { rsvpStatus: filter } : undefined,
     include: {
@@ -78,6 +82,7 @@ export async function getGuests(filter?: RsvpStatus) {
 }
 
 export async function getGuestById(id: string) {
+  await requirePathPermission("/convidados");
   return prisma.guest.findUnique({
     where: { id },
     include: { parentGuest: true, linkedGuests: true, table: true },
@@ -89,6 +94,7 @@ export async function getGuestById(id: string) {
 // ==========================================
 
 export async function createGuest(formData: FormData) {
+  await requirePathPermission("/convidados");
   const raw = {
     name: formData.get("name"),
     phone: formData.get("phone"),
@@ -125,6 +131,7 @@ export async function createGuest(formData: FormData) {
 }
 
 export async function updateGuest(id: string, formData: FormData) {
+  await requirePathPermission("/convidados");
   const raw = {
     name: formData.get("name"),
     phone: formData.get("phone"),
@@ -172,6 +179,7 @@ export async function updateGuest(id: string, formData: FormData) {
 }
 
 export async function deleteGuest(id: string) {
+  await requirePathPermission("/convidados");
   try {
     await prisma.guest.delete({ where: { id } });
     revalidatePath("/convidados");
@@ -193,6 +201,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://seuapp.vercel.app"
  * Inclui botões interativos para confirmar presença e ver lista de presentes.
  */
 export async function sendInvite(guestId: string) {
+  await requirePathPermission("/convidados");
   const guest = await prisma.guest.findUnique({ where: { id: guestId } });
   if (!guest?.phone) {
     return { success: false, error: "Convidado sem telefone cadastrado." };
@@ -226,6 +235,7 @@ export async function sendBulkReminders(
   filter: "PENDING" | "CONFIRMED_CLOSE",
   weddingDate?: Date
 ) {
+  await requirePathPermission("/convidados");
   let guests;
 
   if (filter === "PENDING") {
@@ -272,49 +282,74 @@ export async function sendBulkReminders(
 // RSVP PÚBLICO
 // ==========================================
 
+/**
+ * Pública: localiza o convite pelo telefone. Retorna apenas o necessário para o RSVP.
+ */
 export async function findGuestByPhone(phone: string) {
-  // Limpa tudo que não for número para comparar
+  if (typeof phone !== "string") return null;
   const cleanPhone = phone.replace(/\D/g, "");
-  
-  if (cleanPhone.length < 10) return null;
+  if (cleanPhone.length < 10 || cleanPhone.length > 13) return null;
 
-  // Busca convidado no banco cuja coluna 'phone' termine com o número digitado
+  const rateLimit = await rateLimitByIp("RSVP");
+  if (!rateLimit.success) return null;
+
   const guest = await prisma.guest.findFirst({
-    where: {
-      phone: {
-        endsWith: cleanPhone,
-      },
+    where: { phone: { endsWith: cleanPhone } },
+    select: {
+      id: true,
+      name: true,
+      allowedCompanions: true,
+      rsvpStatus: true,
+      dietaryRestrictions: true,
     },
   });
 
   return guest;
 }
 
+const PublicRsvpSchema = z.object({
+  id: z.string().uuid(),
+  status: z.enum(["CONFIRMED", "DECLINED"]),
+  confirmedCompanions: z.coerce.number().int().min(0).max(50),
+  companionsNames: z.string().max(1000).optional().default(""),
+  dietaryRestrictions: z.string().max(500).optional(),
+});
+
 export async function publicConfirmRsvp(
-  id: string, 
-  status: RsvpStatus, 
-  confirmedCompanions: number, 
+  id: string,
+  status: RsvpStatus,
+  confirmedCompanions: number,
   companionsNames: string,
   dietaryRestrictions?: string
 ) {
+  const parsed = PublicRsvpSchema.safeParse({ id, status, confirmedCompanions, companionsNames, dietaryRestrictions });
+  if (!parsed.success) return { success: false, error: "Dados de confirmação inválidos." };
+  const data = parsed.data;
+
   try {
-    const guest = await prisma.guest.findUnique({ where: { id } });
+    const rateLimit = await rateLimitByIp("RSVP");
+    if (!rateLimit.success) {
+      return { success: false, error: "Muitas tentativas. Aguarde alguns minutos e tente novamente." };
+    }
+
+    const guest = await prisma.guest.findUnique({ where: { id: data.id } });
     if (!guest) return { success: false, error: "Convidado não encontrado." };
 
-    if (status === "CONFIRMED" && confirmedCompanions > guest.allowedCompanions) {
+    if (data.status === "CONFIRMED" && data.confirmedCompanions > guest.allowedCompanions) {
       return { success: false, error: `Você só pode levar até ${guest.allowedCompanions} acompanhante(s).` };
     }
 
     await prisma.guest.update({
-      where: { id },
+      where: { id: data.id },
       data: {
-        rsvpStatus: status,
-        confirmedCompanions: status === "CONFIRMED" ? confirmedCompanions : 0,
-        companionsNames: status === "CONFIRMED" ? (companionsNames || null) : null,
-        dietaryRestrictions: dietaryRestrictions || null,
+        rsvpStatus: data.status,
+        confirmedCompanions: data.status === "CONFIRMED" ? data.confirmedCompanions : 0,
+        companionsNames: data.status === "CONFIRMED" ? (data.companionsNames.trim() || null) : null,
+        dietaryRestrictions: data.dietaryRestrictions?.trim() || null,
       },
     });
 
+    revalidatePath("/convidados");
     return { success: true };
   } catch (error) {
     console.error("[publicConfirmRsvp]", error);
@@ -323,6 +358,7 @@ export async function publicConfirmRsvp(
 }
 
 export async function checkInGuest(guestId: string) {
+  await requirePathPermission("/credenciamento");
   try {
     const guest = await prisma.guest.findUnique({ where: { id: guestId } });
     if (!guest) return { success: false, error: "Convidado não encontrado." };

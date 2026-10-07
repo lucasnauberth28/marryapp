@@ -1,5 +1,7 @@
 "use server";
 
+import { requirePathPermission } from "@/lib/security/auth-guard";
+
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -10,6 +12,7 @@ export async function getTimelineEvents() {
 }
 
 export async function createTimelineEvent(data: { title: string; time: string; description?: string; icon: string; position: number }) {
+  await requirePathPermission("/cronograma");
   try {
     await prisma.timelineEvent.create({ data });
     revalidatePath("/cronograma");
@@ -20,6 +23,7 @@ export async function createTimelineEvent(data: { title: string; time: string; d
 }
 
 export async function updateTimelineEvent(id: string, data: { title: string; time: string; description?: string; icon: string; position: number }) {
+  await requirePathPermission("/cronograma");
   try {
     await prisma.timelineEvent.update({ where: { id }, data });
     revalidatePath("/cronograma");
@@ -30,6 +34,7 @@ export async function updateTimelineEvent(id: string, data: { title: string; tim
 }
 
 export async function deleteTimelineEvent(id: string) {
+  await requirePathPermission("/cronograma");
   try {
     await prisma.timelineEvent.delete({ where: { id } });
     revalidatePath("/cronograma");

@@ -45,6 +45,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { logout } from "@/actions/auth-actions";
 import { getSystemNotifications, SystemNotification } from "@/actions/notification-actions";
+import { hasPathAccess } from "@/lib/permissions"
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -63,7 +64,7 @@ const navItems = [
   { name: "Perfis", href: "/perfis", icon: Shield },
 ];
 
-export function Header({ role = "Admin", allowedPaths = ["*"] }: { role?: string, allowedPaths?: string[] }) {
+export function Header({ role = "Admin", allowedPaths = [] }: { role?: string, allowedPaths?: string[] }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<SystemNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -84,7 +85,7 @@ export function Header({ role = "Admin", allowedPaths = ["*"] }: { role?: string
 
   const filteredNavItems = allowedPaths.includes("*")
     ? navItems
-    : navItems.filter((item) => allowedPaths.some(p => item.href.startsWith(p)));
+    : navItems.filter((item) => hasPathAccess(allowedPaths, item.href));
 
   const handleMarkAllRead = () => {
     setUnreadCount(0);

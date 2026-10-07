@@ -1,8 +1,9 @@
 "use server";
 
+import { requirePathPermission } from "@/lib/security/auth-guard";
+
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { verifyAdminSession } from "./auth-actions";
 
 export async function getSettings() {
   let settings = await prisma.systemSettings.findFirst();
@@ -29,7 +30,7 @@ export async function updateSettings(data: {
   heroImageUrl?: string | null;
   welcomeText?: string | null;
 }) {
-  await verifyAdminSession();
+  await requirePathPermission("/configuracoes");
 
   await prisma.systemSettings.update({
     where: { id: "global" },

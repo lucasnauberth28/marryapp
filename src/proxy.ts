@@ -1,56 +1,68 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { verifyToken } from "@/lib/auth";
+import { verifyToken, hasPathAccess, SESSION_COOKIE_NAME } from "@/lib/auth";
+
+// Rotas acessíveis sem login. Tudo que não estiver aqui exige sessão (deny-by-default).
+// Isto é apenas uma checagem otimista de navegação: cada Server Action e Route Handler
+// valida a sessão e as permissões novamente no servidor.
+const PUBLIC_PATHS = [
+  "/login",
+  "/assinar",
+  "/casamento",
+  "/fornecedores",
+  "/monte-seu-plano",
+  "/presentes",
+  "/checkout",
+  "/rsvp",
+  "/dia-do-evento",
+  "/api/webhooks",
+];
+
+function isPublicPath(path: string) {
+  if (path === "/") return true;
+  return PUBLIC_PATHS.some((p) => path === p || path.startsWith(`${p}/`));
+}
+
+function firstAllowedDestination(allowedPaths: string[]) {
+  if (allowedPaths.includes("*") || allowedPaths.includes("/dashboard")) return "/dashboard";
+  return allowedPaths[0] ?? "/login";
+}
 
 export default async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  
-  const publicPaths = [
-    "/login",
-    "/assinar",
-    "/casamento",
-    "/fornecedores",
-    "/monte-seu-plano",
-    "/presentes",
-    "/checkout",
-    "/api",
-    "/rsvp",
-    "/dia-do-evento",
-  ];
-  const isPublicPath = publicPaths.some(publicPath => path.startsWith(publicPath) || path === "/");
-  
-  const sessionCookie = request.cookies.get("marryapp_admin_session");
+  const isPublic = isPublicPath(path);
+  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
 
-  if (!isPublicPath && !sessionCookie) {
+  if (!isPublic && !sessionCookie) {
+    if (path.startsWith("/api/")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
   if (sessionCookie) {
     const payload = await verifyToken(sessionCookie.value);
-    
+
     if (!payload) {
-      // Token inválido: limpa o cookie corretamente na resposta
-      const response = NextResponse.redirect(new URL("/login", request.url));
-      response.cookies.delete("marryapp_admin_session");
+      // Token inválido: limpa o cookie. Em rotas públicas apenas segue sem sessão.
+      const response = isPublic
+        ? NextResponse.next()
+        : path.startsWith("/api/")
+          ? NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+          : NextResponse.redirect(new URL("/login", request.url));
+      response.cookies.delete(SESSION_COOKIE_NAME);
       return response;
     }
 
-    // Se está no login mas já tem token, redireciona
+    const dest = firstAllowedDestination(payload.allowedPaths);
+
     if (path === "/login") {
-      const dest = payload.allowedPaths.includes("/dashboard") || payload.allowedPaths.includes("*") ? "/dashboard" : "/convidados";
-      return NextResponse.redirect(new URL(dest, request.url));
+      // Perfil sem nenhum módulo liberado permanece no login (evita loop de redirecionamento)
+      return dest === "/login" ? NextResponse.next() : NextResponse.redirect(new URL(dest, request.url));
     }
 
-    // Validação de acesso à rota para rotas não públicas
-    if (!isPublicPath) {
-      const isAllowed = payload.allowedPaths.includes("*") || 
-        payload.allowedPaths.some((p: string) => path.startsWith(p));
-      
-      if (!isAllowed) {
-        // Fallback de segurança se tentar acessar rota proibida
-        const dest = payload.allowedPaths[0] && payload.allowedPaths[0] !== "*" ? payload.allowedPaths[0] : "/login";
-        return NextResponse.redirect(new URL(dest, request.url));
-      }
+    if (!isPublic && !path.startsWith("/api/") && !hasPathAccess(payload.allowedPaths, path)) {
+      return NextResponse.redirect(new URL(dest, request.url));
     }
   }
 
@@ -58,6 +70,6 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Aplica o middleware a todas as rotas exceto arquivos estáticos do Next.js
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // Ignora assets do Next e arquivos estáticos (qualquer path com extensão, ex.: /logo.png)
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.[a-zA-Z0-9]+$).*)"],
 };

@@ -2,99 +2,102 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-
-const COOKIE_NAME = "marryapp_admin_session";
-const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+import { createHash, timingSafeEqual } from "node:crypto";
 
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { signToken } from "@/lib/auth";
-import { checkRateLimit, SecurityLimits } from "@/lib/security/rate-limiter";
+import { signToken, sessionCookieOptions, SESSION_COOKIE_NAME } from "@/lib/auth";
+import { checkRateLimit, rateLimitByIp, SecurityLimits } from "@/lib/security/rate-limiter";
+import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+
+// Hash válido usado quando o usuário não existe, para que o tempo de resposta
+// não revele quais logins estão cadastrados.
+const DUMMY_HASH = "$2b$10$HdQS57clr9d1VjdlqcanTOmPx0ns8oLM8qFY5CmXwqlFneJlhHQi6";
+
+function safeEqual(a: string, b: string) {
+  const ha = createHash("sha256").update(a).digest();
+  const hb = createHash("sha256").update(b).digest();
+  return timingSafeEqual(ha, hb);
+}
+
+async function setSessionCookie(token: string) {
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_COOKIE_NAME, token, sessionCookieOptions());
+}
+
+const GENERIC_LOGIN_ERROR = "Usuário ou senha incorretos.";
 
 export async function login(password: string, username?: string) {
-  // Proteção contra Força Bruta (Max 5 tentativas / minuto)
-  const clientKey = `login_${username?.toLowerCase().trim() || "admin"}`;
-  const rateLimit = checkRateLimit({
-    key: clientKey,
-    ...SecurityLimits.LOGIN,
-  });
+  if (typeof password !== "string" || password.length === 0 || password.length > 200) {
+    return { success: false, error: GENERIC_LOGIN_ERROR };
+  }
 
-  if (!rateLimit.success) {
+  const normalizedUsername = (username || "admin").toLowerCase().trim();
+
+  // Proteção contra força bruta: por IP e por conta (protege contra ataques distribuídos)
+  const [byIp, byAccount] = await Promise.all([
+    rateLimitByIp("LOGIN"),
+    checkRateLimit({ key: `LOGIN_ACCOUNT:${normalizedUsername}`, ...SecurityLimits.LOGIN_ACCOUNT }),
+  ]);
+
+  if (!byIp.success || !byAccount.success) {
     return {
       success: false,
-      error: "Muitas tentativas de login consecutivas. Por segurança, aguarde 1 minuto para tentar novamente.",
+      error: "Muitas tentativas de login consecutivas. Por segurança, aguarde alguns minutos para tentar novamente.",
     };
   }
 
+  // Conta de emergência (Super Admin), só ativa se ADMIN_PASSWORD estiver configurada
   const adminPassword = process.env.ADMIN_PASSWORD;
-
-  // Fallback de emergência (Super Admin)
-  if (adminPassword && password === adminPassword && (!username || username === "admin")) {
+  if (adminPassword && normalizedUsername === "admin" && safeEqual(password, adminPassword)) {
     const token = await signToken({
-      userId: "super-admin",
+      userId: SUPER_ADMIN_USER_ID,
       role: "Super Admin",
-      allowedPaths: ["*"] // acesso a tudo
+      allowedPaths: ["*"],
     });
-
-    const cookieStore = await cookies();
-    cookieStore.set(COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: SESSION_MAX_AGE,
-      path: "/",
-    });
-    
+    await setSessionCookie(token);
     return { success: true };
   }
 
-  // Validação real via Banco de Dados
-  if (username) {
-    const user = await prisma.user.findUnique({
-      where: { username },
-      include: { role: true },
-    });
-
-    if (user && bcrypt.compareSync(password, user.password)) {
-      const allowedPaths = Array.isArray(user.role.allowedPaths) 
-        ? user.role.allowedPaths as string[] 
-        : [];
-
-      const token = await signToken({
-        userId: user.id,
-        role: user.role.name,
-        allowedPaths,
-      });
-
-      const cookieStore = await cookies();
-      cookieStore.set(COOKIE_NAME, token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: SESSION_MAX_AGE,
-        path: "/",
-      });
-
-      return { success: true };
-    }
+  if (!username) {
+    return { success: false, error: GENERIC_LOGIN_ERROR };
   }
 
-  return { success: false, error: "Usuário ou senha incorretos." };
+  const user = await prisma.user.findUnique({
+    where: { username: username.trim() },
+    include: { role: true },
+  });
+
+  const passwordOk = await bcrypt.compare(password, user?.password ?? DUMMY_HASH);
+  if (!user || !passwordOk) {
+    return { success: false, error: GENERIC_LOGIN_ERROR };
+  }
+
+  const allowedPaths = Array.isArray(user.role.allowedPaths) ? (user.role.allowedPaths as string[]) : [];
+
+  const token = await signToken({
+    userId: user.id,
+    role: user.role.name,
+    allowedPaths,
+  });
+  await setSessionCookie(token);
+
+  return { success: true };
 }
 
 export async function logout() {
   const cookieStore = await cookies();
-  cookieStore.delete(COOKIE_NAME);
+  cookieStore.delete(SESSION_COOKIE_NAME);
   redirect("/login");
 }
 
+/**
+ * Usado por páginas do painel: redireciona ao login se a sessão não for válida.
+ */
 export async function verifyAdminSession() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_NAME)?.value;
-
-  if (!token) {
+  const session = await getSession();
+  if (!session) {
     redirect("/login");
   }
-
   return true;
 }

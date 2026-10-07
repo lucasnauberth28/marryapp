@@ -1,5 +1,7 @@
 "use server";
 
+import { requirePathPermission } from "@/lib/security/auth-guard";
+
 import prisma from "@/lib/prisma";
 import { TaskStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -7,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { BoardItem, BoardItemType } from "@/types/kanban";
 
 export async function getTasks() {
+  await requirePathPermission("/pendencias");
   try {
     const tasks = await prisma.task.findMany({
       orderBy: {
@@ -39,6 +42,7 @@ export async function createTask(data: {
   assignee?: string;
   status: TaskStatus;
 }) {
+  await requirePathPermission("/pendencias");
   try {
     // Acha a maior posição atual para essa coluna
     const maxPositionTask = await prisma.task.findFirst({
@@ -70,6 +74,7 @@ export async function updateTaskStatus(
   newPosition: number,
   type: BoardItemType = "MANUAL"
 ) {
+  await requirePathPermission("/pendencias");
   try {
     await prisma.task.update({
       where: { id: taskId },
@@ -95,6 +100,7 @@ export async function updateTask(taskId: string, data: Partial<{
   assignee: string | null;
   status: TaskStatus;
 }>) {
+  await requirePathPermission("/pendencias");
   try {
     const task = await prisma.task.update({
       where: { id: taskId },
@@ -110,6 +116,7 @@ export async function updateTask(taskId: string, data: Partial<{
 }
 
 export async function deleteTask(taskId: string) {
+  await requirePathPermission("/pendencias");
   try {
     await prisma.task.delete({
       where: { id: taskId },

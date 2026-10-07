@@ -27,6 +27,7 @@ import {
   Compass,
 } from "lucide-react";
 import { WeddingRingsIcon } from "@/components/icons/wedding-rings";
+import { hasPathAccess } from "@/lib/permissions"
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -47,7 +48,7 @@ const navItems = [
   { name: "Perfis", href: "/perfis", icon: Shield },
 ];
 
-export function Sidebar({ role = "Admin", allowedPaths = ["*"] }: { role?: string, allowedPaths?: string[] }) {
+export function Sidebar({ role = "Admin", allowedPaths = [] }: { role?: string, allowedPaths?: string[] }) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -72,7 +73,7 @@ export function Sidebar({ role = "Admin", allowedPaths = ["*"] }: { role?: strin
 
   const filteredNavItems = allowedPaths.includes("*")
     ? navItems
-    : navItems.filter((item) => allowedPaths.some(p => item.href.startsWith(p)));
+    : navItems.filter((item) => hasPathAccess(allowedPaths, item.href));
 
   return (
     <aside 
