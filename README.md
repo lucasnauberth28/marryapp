@@ -36,11 +36,18 @@ Scripts úteis: `npm run typecheck`, `npm run lint`, `npm test`.
 
 ## Deploy e migrations
 
-O build da Vercel usa `vercel-build` (`prisma migrate deploy && next build`). O antigo
-`prisma db push --accept-data-loss` foi removido: ele podia apagar dados de produção.
+O build (`next build`) **não acessa o banco**: as páginas que leem dados são renderizadas por request.
+Migrations também não rodam no build, porque deploys de Preview (qualquer branch) apontariam para
+o banco de produção. O antigo `prisma db push --accept-data-loss` foi removido: ele podia apagar dados.
+
+Aplique migrations de forma explícita, com a `DIRECT_URL` do ambiente desejado:
+
+```bash
+npm run db:migrate             # prisma migrate deploy
+```
 
 **Banco de produção criado com `db push` (uma única vez):** marque as migrations existentes como
-aplicadas antes do primeiro deploy, para que não sejam executadas sobre tabelas que já existem:
+aplicadas, para que não sejam executadas sobre tabelas que já existem:
 
 ```bash
 npx prisma migrate resolve --applied 20260428143558_init_marry_app
@@ -48,4 +55,14 @@ npx prisma migrate resolve --applied 20261007120000_baseline_current_schema
 npx prisma migrate status      # deve indicar "Database schema is up to date"
 ```
 
-Daqui em diante, mudanças de schema são feitas com `npx prisma migrate dev --name <descricao>`.
+Daqui em diante, mudanças de schema são feitas com `npx prisma migrate dev --name <descricao>` e
+aplicadas com `npm run db:migrate` antes (ou junto) do deploy que depende delas.
+
+### Supabase: `DATABASE_URL` e `DIRECT_URL`
+
+- `DATABASE_URL`: pooler em modo transação, porta **6543** (`...pooler.supabase.com:6543/postgres?pgbouncer=true`).
+- `DIRECT_URL`: conexão de sessão, porta **5432**, usada só pelo Prisma CLI.
+- Copie as duas de *Project Settings → Database → Connection string* do próprio projeto: o host do
+  pooler inclui a região (ex.: `aws-0-sa-east-1`) e o usuário inclui o ref (`postgres.<ref>`).
+- O erro `Tenant or user not found` significa que o pooler não reconhece o projeto: região/host
+  errados, ref errado, ou projeto **pausado** (projetos gratuitos pausam após inatividade).

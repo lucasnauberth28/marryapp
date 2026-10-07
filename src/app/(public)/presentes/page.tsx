@@ -2,6 +2,9 @@ import { Metadata } from "next"
 import { getGifts } from "@/actions/gift-actions"
 import { PublicGiftsClient } from "./public-gifts-client"
 
+// Lê o banco a cada acesso: nunca pré-renderizar no build (dados congelados e build dependente do banco)
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Lista de Presentes | Lucas & Giovanna",
   description: "Escolha um presente para Lucas e Giovanna",

@@ -4,6 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Clock } from "lucide-react";
 import { isAfter, startOfDay } from "date-fns";
 
+// Lê o banco a cada acesso: nunca pré-renderizar no build (dados congelados e build dependente do banco)
+export const dynamic = "force-dynamic";
+
 export default async function RsvpPage() {
   const settings = await getSettings();
   

@@ -7,7 +7,8 @@ export const metadata: Metadata = {
   description: "Acompanhe o cronograma do dia do nosso casamento.",
 };
 
-export const revalidate = 60; // Cache de 1 minuto
+// Lê o banco a cada acesso: nunca pré-renderizar no build (dados congelados e build dependente do banco)
+export const dynamic = "force-dynamic";
 
 export default async function DiaDoEventoPage() {
   const events = await getTimelineEvents();
