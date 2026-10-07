@@ -1,4 +1,6 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { useSyncedState } from "@/hooks/use-synced-state";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -94,8 +96,9 @@ function DroppableTable({ id, title, capacity, guests, onDelete }: { id: string,
 // --- Main Client Component ---
 
 export function TablesClient({ initialTables, initialUnassigned }: { initialTables: any[], initialUnassigned: any[] }) {
-  const [tables, setTables] = useState<any[]>(initialTables);
-  const [unassigned, setUnassigned] = useState<any[]>(initialUnassigned);
+  const router = useRouter();
+  const [tables, setTables] = useSyncedState<any[]>(initialTables);
+  const [unassigned, setUnassigned] = useSyncedState<any[]>(initialUnassigned);
   
   const [newTableName, setNewTableName] = useState("");
   const [newTableCap, setNewTableCap] = useState(10);
@@ -149,7 +152,7 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
     const res = await createTable(newTableName, newTableCap);
     if (res.success) {
       toast.success("Mesa criada com sucesso!", { id: toastId });
-      window.location.reload();
+      router.refresh();
     } else {
       toast.error(res.error || "Erro ao criar mesa.", { id: toastId });
     }
@@ -162,7 +165,7 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
       const res = await deleteTable(id);
       if (res.success) {
         toast.success("Mesa removida com sucesso!", { id: toastId });
-        window.location.reload();
+        router.refresh();
       } else {
         toast.error(res.error || "Erro ao realizar operação.", {
           id: toastId,

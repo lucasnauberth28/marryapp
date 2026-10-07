@@ -45,7 +45,7 @@ export function KanbanColumn({
           aria-label={`Adicionar tarefa em ${title}`}
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-zinc-500 hover:text-zinc-900 bg-white/50 hover:bg-white"
+          className="h-8 w-8 text-zinc-600 hover:text-zinc-900 bg-white/50 hover:bg-white"
           onClick={() => onAddTask(columnId)}
         >
           <PlusIcon className="h-4 w-4" />

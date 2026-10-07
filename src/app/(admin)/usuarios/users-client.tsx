@@ -1,4 +1,6 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { useSyncedState } from "@/hooks/use-synced-state";
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -22,7 +24,8 @@ import { Badge } from "@/components/ui/badge";
 
 export function UsersClient({ initialUsers, roles }: { initialUsers: any[], roles: any[] }) {
   const [isPending, startTransition] = useTransition();
-  const [users, setUsers] = useState(initialUsers);
+  const router = useRouter();
+  const [users, setUsers] = useSyncedState(initialUsers);
   const [editingUser, setEditingUser] = useState<any | null>(null);
   
   const [formData, setFormData] = useState({
@@ -74,7 +77,7 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
         toast.success(editingUser ? "Usuário atualizado com sucesso!" : "Usuário cadastrado com sucesso!", {
           id: toastId,
         });
-        window.location.reload();
+        router.refresh();
       } else {
         toast.error(result.error || "Erro ao realizar operação.", {
           id: toastId,
@@ -92,7 +95,7 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
         const result = await deleteUser(id);
         if (result.success) {
           toast.success("Usuário excluído com sucesso!", { id: toastId });
-          window.location.reload();
+          router.refresh();
         } else {
           toast.error(result.error || "Erro ao realizar operação.", {
             id: toastId,

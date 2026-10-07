@@ -54,7 +54,8 @@ function contrast(a: [number, number, number], b: [number, number, number]) {
 const IVORY: [number, number, number] = [0xfa, 0xf8, 0xf5];
 
 /**
- * Cor de destaque legível: escurece a cor escolhida até ter contraste 4,5:1 sobre o fundo marfim.
+ * Cor de destaque legível: escurece a cor escolhida até ter contraste 5:1 sobre o fundo marfim
+ * (margem para continuar acima de 4,5:1 sobre os fundos tingidos com a própria cor).
  * Retorna a cor usada e se foi ajustada.
  */
 export function readableAccent(hex: string): { color: string; adjusted: boolean } {
@@ -62,7 +63,7 @@ export function readableAccent(hex: string): { color: string; adjusted: boolean 
   if (!rgb) return { color: "#8C6D45", adjusted: false };
   let current = rgb;
   let steps = 0;
-  while (contrast(current, IVORY) < 4.5 && steps < 40) {
+  while (contrast(current, IVORY) < 5 && steps < 40) {
     current = current.map((v) => Math.round(v * 0.95)) as [number, number, number];
     steps++;
   }

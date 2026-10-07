@@ -220,7 +220,7 @@ export function WeddingSiteView({
         )}
 
         <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center">
-          <p className={`mb-4 text-xs font-semibold uppercase tracking-[0.3em] sm:text-sm ${hasHeroImage ? "text-white/90" : "text-brand-600"}`}>
+          <p className={`mb-4 text-xs font-semibold uppercase tracking-[0.3em] sm:text-sm ${hasHeroImage ? "text-white" : "text-brand-600"}`}>
             Convidamos você para celebrar
           </p>
 
@@ -229,7 +229,7 @@ export function WeddingSiteView({
           </h1>
 
           {s.subtitle && (
-            <p className={`mt-5 text-base font-medium sm:text-xl ${hasHeroImage ? "text-white/90" : "text-stone-600"}`}>{s.subtitle}</p>
+            <p className={`mt-5 text-base font-medium sm:text-xl ${hasHeroImage ? "text-white" : "text-stone-600"}`}>{s.subtitle}</p>
           )}
 
           {(dateLabel || s.ceremonyTime || s.locationName) && (
@@ -478,7 +478,7 @@ export function WeddingSiteView({
           <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 rounded-3xl bg-brand px-6 py-12 text-center text-white shadow-lg">
             <CalendarCheck className="h-8 w-8" aria-hidden="true" />
             <h2 className="font-serif text-3xl font-semibold text-balance sm:text-4xl">Você vem?</h2>
-            <p className="max-w-md text-sm text-white/90">
+            <p className="max-w-md text-sm text-white">
               {deadlineLabel
                 ? `Confirme sua presença até ${deadlineLabel}. Leva menos de um minuto.`
                 : "Confirme sua presença para organizarmos tudo com carinho. Leva menos de um minuto."}

@@ -242,13 +242,13 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
           <div className="flex bg-zinc-100 p-1 rounded-lg border border-zinc-200 shadow-inner">
             <button
               onClick={() => setFilter("ALL")}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${filter === "ALL" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${filter === "ALL" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-600 hover:text-zinc-900"}`}
             >
               Todas
             </button>
             <button
               onClick={() => setFilter("MANUAL")}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${filter === "MANUAL" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${filter === "MANUAL" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-600 hover:text-zinc-900"}`}
             >
               Tarefas Manuais
             </button>

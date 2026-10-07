@@ -51,7 +51,8 @@ test("verifyMercadoPagoSignature valida o HMAC do manifest", () => {
 
 test("readableAccent escurece cores claras até contraste AA", async () => {
   const { readableAccent } = await import("../../wedding-format.ts");
-  assert.deepEqual(readableAccent("#8C6D45"), { color: "#8c6d45", adjusted: false });
+  assert.deepEqual(readableAccent("#5B3A6E"), { color: "#5b3a6e", adjusted: false });
+  assert.equal(readableAccent("#8C6D45").adjusted, true);
   const light = readableAccent("#F5D0A9");
   assert.equal(light.adjusted, true);
   assert.notEqual(light.color, "#f5d0a9");

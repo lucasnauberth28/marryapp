@@ -10,7 +10,6 @@ import {
   MapPin,
   Video,
   CheckCircle2,
-  MessageCircle,
   Calendar,
   ExternalLink,
   ShieldCheck,
@@ -127,7 +126,23 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
       });
 
       if (res.success) {
-        toast.success(`Solicitação enviada com sucesso para ${selectedPartner.companyName}! ✨`);
+        const whatsapp = selectedPartner.whatsapp?.replace(/\D/g, "");
+        toast.success(`Pedido enviado para ${selectedPartner.companyName}.`, {
+          description: "O fornecedor recebeu seus dados e vai entrar em contato.",
+          action: whatsapp
+            ? {
+                label: "Conversar no WhatsApp",
+                onClick: () =>
+                  window.open(
+                    `https://wa.me/${whatsapp}?text=${encodeURIComponent(
+                      `Olá! Sou ${coupleName} e acabei de pedir um orçamento pelo MarryApp${weddingDate ? ` para o casamento em ${new Date(weddingDate).toLocaleDateString("pt-BR")}` : ""}.`
+                    )}`,
+                    "_blank",
+                    "noopener,noreferrer"
+                  ),
+              }
+            : undefined,
+        });
         setLeadModalOpen(false);
         // Reseta form
         setCoupleName("");
@@ -145,7 +160,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
     <div className="min-h-screen bg-paper text-stone-900 font-sans flex flex-col justify-between">
       <LandingHeader />
 
-      <main className="flex-1 py-12 px-6 max-w-7xl mx-auto w-full space-y-10">
+      <div className="flex-1 py-12 px-6 max-w-7xl mx-auto w-full space-y-10">
         {/* Banner Superior do Marketplace (Sem badge descasada) */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
           <h1 className="text-4xl sm:text-5xl font-extrabold font-serif text-stone-900 leading-tight">
@@ -268,7 +283,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                       )}
 
                       {/* Badge Verificado / Master */}
-                      <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                      <div className="absolute top-3 left-3 right-3 flex flex-wrap items-center gap-1.5">
                         {partner.isVerified && (
                           <span className="bg-brand-50/95 backdrop-blur-md text-brand border border-brand/30 font-bold text-xs px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1">
                             <ShieldCheck className="w-3.5 h-3.5 text-brand" />
@@ -277,15 +292,15 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                         )}
                         {isMaster && (
                           <span className="bg-amber-700 text-white font-extrabold text-xs px-2.5 py-1 rounded-full shadow-xs">
-                            ⭐ Destaque
+                            Destaque
                           </span>
                         )}
                       </div>
 
-                      {/* Faixa de Preço & Categoria */}
-                      <div className="absolute top-3 right-3 flex items-center gap-1">
+                      {/* Faixa de Preço & Categoria (embaixo da foto, para não disputar espaço com os selos) */}
+                      <div className="absolute bottom-3 right-3 flex items-center gap-1">
                         {partner.priceRange && (
-                          <span className="bg-black/60 backdrop-blur-md text-amber-300 text-xs font-mono font-bold px-2 py-1 rounded-full">
+                          <span className="bg-black/60 backdrop-blur-md text-amber-300 text-xs font-semibold tracking-wider px-2 py-1 rounded-full">
                             {partner.priceRange}
                           </span>
                         )}
@@ -373,45 +388,20 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                       </div>
                     )}
 
-                    {/* Botão Ver Perfil Completo */}
-                    <Link href={`/fornecedores/${partner.id}`} className="block">
-                      <Button
-                        variant="outline"
-                        className="w-full rounded-2xl h-11 text-xs font-bold border-stone-300 hover:bg-brand-50 hover:text-brand hover:border-brand/40 transition-colors gap-1.5"
-                      >
-                        <ImageIcon className="w-4 h-4" />
-                        <span>Ver Perfil & Portfólio</span>
-                      </Button>
-                    </Link>
-
+                    {/* Ação principal: pedido de orçamento (registra o contato do casal) */}
                     <div className="grid grid-cols-2 gap-2">
-                      {partner.whatsapp && (
-                        <a
-                          href={`https://wa.me/${partner.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
-                            `Olá! Vi o perfil de vocês no MarryApp e gostaria de solicitar informações para o meu casamento.`
-                          )}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-full"
-                        >
-                          <Button
-                            variant="outline"
-                            className="w-full rounded-2xl h-11 text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 gap-1.5"
-                          >
-                            <MessageCircle className="w-4 h-4" />
-                            <span>WhatsApp</span>
-                          </Button>
-                        </a>
-                      )}
-
+                      <Button asChild variant="outline" className="w-full rounded-2xl h-11 text-sm font-semibold border-stone-300 gap-1.5">
+                        <Link href={`/fornecedores/${partner.id}`}>
+                          <ImageIcon className="w-4 h-4" aria-hidden="true" />
+                          Ver perfil
+                        </Link>
+                      </Button>
                       <Button
                         onClick={() => handleOpenLeadModal(partner)}
-                        className={`w-full rounded-2xl h-11 text-xs font-bold bg-brand hover:bg-brand-600 text-white shadow-xs gap-1.5 ${
-                          !partner.whatsapp ? "col-span-2" : ""
-                        }`}
+                        className="w-full rounded-2xl h-11 text-sm font-semibold bg-brand hover:bg-brand-600 text-white shadow-xs gap-1.5"
                       >
-                        <Calendar className="w-4 h-4" />
-                        <span>Agendar Reunião</span>
+                        <Calendar className="w-4 h-4" aria-hidden="true" />
+                        Pedir orçamento
                       </Button>
                     </div>
                   </div>
@@ -439,7 +429,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
             </Button>
           </Link>
         </section>
-      </main>
+      </div>
 
       {/* Modal de Agendamento de Reunião e Orçamento */}
       <Dialog open={leadModalOpen} onOpenChange={setLeadModalOpen}>

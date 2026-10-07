@@ -1,4 +1,6 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { useSyncedState } from "@/hooks/use-synced-state";
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -32,7 +34,8 @@ const AVAILABLE_MODULES = [
 
 export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
   const [isPending, startTransition] = useTransition();
-  const [roles, setRoles] = useState(initialRoles);
+  const router = useRouter();
+  const [roles, setRoles] = useSyncedState(initialRoles);
   const [editingRole, setEditingRole] = useState<any | null>(null);
   
   const [formData, setFormData] = useState({
@@ -91,7 +94,7 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
         toast.success(editingRole ? "Perfil de acesso atualizado com sucesso!" : "Perfil de acesso criado com sucesso!", {
           id: toastId,
         });
-        window.location.reload();
+        router.refresh();
       } else {
         toast.error(result.error || "Erro ao realizar operação.", {
           id: toastId,
@@ -109,7 +112,7 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
         const result = await deleteRole(id);
         if (result.success) {
           toast.success("Perfil de acesso excluído com sucesso!", { id: toastId });
-          window.location.reload();
+          router.refresh();
         } else {
           toast.error(result.error || "Erro ao realizar operação.", {
             id: toastId,

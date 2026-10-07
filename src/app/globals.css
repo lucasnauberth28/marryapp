@@ -31,8 +31,8 @@
   --color-white: #FCFBF9;
 
   --color-zinc-800: #755630;
-  --color-zinc-900: #8C6D45;
-  --color-zinc-950: #8C6D45;
+  --color-zinc-900: #82643D;
+  --color-zinc-950: #82643D;
 }
 
 /* Tokens da marca fora do "inline": as classes usam var(--color-brand-*), então uma seção
@@ -44,8 +44,8 @@
   --color-brand-100: #F3ECE3;
   --color-brand-300: #C5A880;
   --color-brand-400: #A3855E;
-  --color-brand: #8C6D45;
-  --color-brand-500: #8C6D45;
+  --color-brand: #82643D; /* 4,6:1 ou mais sobre todos os fundos da marca */
+  --color-brand-500: #82643D;
   --color-brand-600: #765A37;
   --color-ivory: #FAF8F5;
   --color-paper: #FCFBF9;
@@ -59,7 +59,7 @@
   --card-foreground: #4A3E3D;
   --popover: #ffffff;
   --popover-foreground: #4A3E3D;
-  --primary: #8C6D45; /* Dourado Champanhe / Bronze */
+  --primary: #82643D; /* Dourado Champanhe / Bronze */
   --primary-foreground: #FAF8F5;
   --secondary: #F5EFEB; /* Creme */
   --secondary-foreground: #8C6D45;

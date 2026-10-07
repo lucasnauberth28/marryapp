@@ -126,7 +126,7 @@ export function GuestsClient({
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
               activeTab === "guests"
                 ? "bg-white text-zinc-900 shadow-sm font-semibold"
-                : "text-zinc-500 hover:text-zinc-800"
+                : "text-zinc-600 hover:text-zinc-900"
             }`}
           >
             <Users className="w-4 h-4 text-brand" />
@@ -138,7 +138,7 @@ export function GuestsClient({
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
               activeTab === "tables"
                 ? "bg-white text-zinc-900 shadow-sm font-semibold"
-                : "text-zinc-500 hover:text-zinc-800"
+                : "text-zinc-600 hover:text-zinc-900"
             }`}
           >
             <LayoutGrid className="w-4 h-4 text-brand" />
@@ -157,6 +157,37 @@ export function GuestsClient({
             keyExtractor={(g) => g.id}
             searchPlaceholder="Buscar por nome, e-mail, telefone..."
             emptyMessage="Nenhum convidado encontrado."
+            mobileCard={(guest) => {
+              const rsvp = rsvpConfig[guest.rsvpStatus];
+              return (
+                <div className="flex items-start gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold text-zinc-900">{guest.name}</span>
+                      <Badge variant="outline" className={rsvp.className}>
+                        {rsvp.label}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-sm text-zinc-600">
+                      {[guest.category, guest.phone ? `+${guest.phone}` : null].filter(Boolean).join(" · ") || "Sem telefone"}
+                    </p>
+                    <p className="text-sm text-zinc-600">
+                      Acompanhantes:{" "}
+                      {guest.rsvpStatus === "CONFIRMED" ? `${guest.confirmedCompanions || 0} de ${guest.allowedCompanions}` : `até ${guest.allowedCompanions}`}
+                    </p>
+                    {guest.dietaryRestrictions && <p className="mt-1 text-sm text-amber-800">Restrição: {guest.dietaryRestrictions}</p>}
+                  </div>
+                  <div className="flex shrink-0 gap-1">
+                    <Button aria-label={`Editar ${guest.name}`} variant="ghost" size="icon" onClick={() => openEdit(guest)} className="h-10 w-10 text-zinc-600">
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button aria-label={`Excluir ${guest.name}`} variant="ghost" size="icon" onClick={() => handleDelete(guest.id)} className="h-10 w-10 text-zinc-600 hover:text-red-600">
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            }}
             topRightElement={
               <div className="flex items-center gap-2">
                 <Button
@@ -173,7 +204,7 @@ export function GuestsClient({
                   onClick={openAdd}
                   className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm flex items-center gap-2 h-10"
                 >
-                  <span className="text-lg leading-none">+</span> Novo Convidado
+                  <span className="text-lg leading-none" aria-hidden="true">+</span> Novo convidado
                 </Button>
               </div>
             }
@@ -252,7 +283,7 @@ export function GuestsClient({
                 accessor: (g) => g.phone || "",
                 cell: (guest) =>
                   guest.phone ? (
-                    <span className="text-sm text-zinc-600 font-mono">+{guest.phone}</span>
+                    <span className="text-sm text-zinc-600 tabular-nums">+{guest.phone}</span>
                   ) : (
                     <span className="text-xs text-zinc-500 italic">Não informado</span>
                   ),
@@ -299,7 +330,7 @@ export function GuestsClient({
                       variant="ghost"
                       size="icon"
                       onClick={() => openEdit(guest)}
-                      className="h-8 w-8 text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100"
+                      className="h-8 w-8 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100"
                     >
                       <Pencil className="w-4 h-4" />
                     </Button>

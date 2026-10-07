@@ -1,245 +1,337 @@
 // src/app/(admin)/dashboard/page.tsx
-import prisma from "@/lib/prisma";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Wallet, Users, CheckSquare, TrendingDown, ArrowUpRight, ArrowDownRight, CreditCard, Clock, Activity, Gift } from "lucide-react";
-import { verifyAdminSession } from "@/actions/auth-actions";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { formatDistanceToNow } from "date-fns";
+import Link from "next/link";
+import { format, formatDistanceToNow, isBefore, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import {
+  ArrowRight,
+  CalendarHeart,
+  CheckSquare,
+  Gift,
+  MessageCircle,
+  QrCode,
+  Receipt,
+  Users,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
+import prisma from "@/lib/prisma";
+import { verifyAdminSession } from "@/actions/auth-actions";
+import { getWeddingIdentity } from "@/lib/wedding";
+import { daysUntil } from "@/lib/wedding-format";
+import { PageHeader } from "@/components/admin/page-header";
+
+export const dynamic = "force-dynamic";
+
+export const metadata = { title: "Início" };
+
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+const money = (cents: number) => brl.format(cents / 100);
+
+interface Alert {
+  id: string;
+  text: string;
+  action: string;
+  href: string;
+  icon: LucideIcon;
+  tone: "warning" | "info";
+}
+
+function Section({ title, href, linkLabel, children }: { title: string; href?: string; linkLabel?: string; children: React.ReactNode }) {
+  return (
+    <section className="flex min-w-0 flex-col gap-4 rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm sm:p-6">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-serif text-xl font-semibold text-stone-900">{title}</h2>
+        {href && (
+          <Link href={href} className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:underline">
+            {linkLabel} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        )}
+      </div>
+      {children}
+    </section>
+  );
+}
 
 export default async function DashboardPage() {
   await verifyAdminSession();
+  const wedding = await getWeddingIdentity();
+  const today = startOfDay(new Date());
 
-  // 1. Buscando o Total Arrecadado (Presentes Comprados ou Transações Aprovadas)
-  const transacoesAprovadas = await prisma.transaction.findMany({
-    where: { status: "APPROVED" },
-    include: { guest: true },
-  });
+  const [guests, tasks, expenses, approvedGifts, pendingPix] = await Promise.all([
+    prisma.guest.findMany({
+      select: { rsvpStatus: true, allowedCompanions: true, confirmedCompanions: true, phone: true, hasReceivedMessage: true },
+    }),
+    prisma.task.findMany({
+      select: { id: true, title: true, status: true, dueDate: true },
+      orderBy: [{ dueDate: { sort: "asc", nulls: "last" } }, { position: "asc" }],
+    }),
+    prisma.expense.findMany({
+      select: { id: true, description: true, amount: true, status: true, dueDate: true },
+      orderBy: { dueDate: "asc" },
+    }),
+    prisma.transaction.findMany({
+      where: { status: "APPROVED" },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, netAmount: true, amount: true, guestName: true, createdAt: true, gift: { select: { title: true } } },
+    }),
+    prisma.transaction.count({ where: { status: "PENDING", paymentMethod: "PIX" } }),
+  ]);
 
-  const totalArrecadado = transacoesAprovadas.reduce((acc, t) => acc + (t.netAmount || 0), 0);
+  // Convidados
+  const invites = guests.length;
+  const confirmed = guests.filter((g) => g.rsvpStatus === "CONFIRMED");
+  const declined = guests.filter((g) => g.rsvpStatus === "DECLINED").length;
+  const pending = guests.filter((g) => g.rsvpStatus === "PENDING").length;
+  const peopleConfirmed = confirmed.reduce((acc, g) => acc + 1 + (g.confirmedCompanions || 0), 0);
+  const peopleInvited = guests.reduce((acc, g) => acc + 1 + (g.allowedCompanions || 0), 0);
+  const notInvitedYet = guests.filter((g) => g.phone && !g.hasReceivedMessage).length;
+  const pct = (n: number) => (invites ? Math.round((n / invites) * 100) : 0);
 
-  // Totais por método
-  const totalPix = transacoesAprovadas
-    .filter(t => t.paymentMethod === "PIX")
-    .reduce((acc, t) => acc + (t.netAmount || 0), 0);
+  // Tarefas
+  const openTasks = tasks.filter((t) => t.status !== "DONE");
+  const doneTasks = tasks.length - openTasks.length;
+  const taskProgress = tasks.length ? Math.round((doneTasks / tasks.length) * 100) : 0;
+  const nextTasks = openTasks.slice(0, 4);
 
-  const totalCartao = transacoesAprovadas
-    .filter(t => t.paymentMethod === "CREDIT_CARD")
-    .reduce((acc, t) => acc + (t.netAmount || 0), 0);
+  // Dinheiro
+  const giftsReceived = approvedGifts.reduce((acc, t) => acc + (t.netAmount ?? t.amount), 0);
+  const expensesTotal = expenses.reduce((acc, e) => acc + e.amount, 0);
+  const expensesPaid = expenses.filter((e) => e.status === "PAID").reduce((acc, e) => acc + e.amount, 0);
+  const paidProgress = expensesTotal ? Math.round((expensesPaid / expensesTotal) * 100) : 0;
+  const upcomingExpenses = expenses.filter((e) => e.status !== "PAID").slice(0, 3);
+  const overdue = expenses.filter((e) => e.status !== "PAID" && isBefore(new Date(e.dueDate), today)).length;
 
-  // 2. Buscando Total de Despesas Pendentes (Para controle financeiro)
-  const despesas = await prisma.expense.aggregate({
-    _sum: { amount: true },
-    where: { status: { not: "PAID" } },
-  });
-  const totalDespesas = despesas._sum.amount || 0;
+  const days = wedding.weddingDate ? daysUntil(wedding.weddingDate) : null;
 
-  // 3. Contando Convidados Confirmados (Titular + Acompanhantes de fato confirmados)
-  const confirmedGuests = await prisma.guest.findMany({
-    where: { rsvpStatus: "CONFIRMED" },
-    select: { confirmedCompanions: true }
-  });
-  const convidadosConfirmados = confirmedGuests.reduce((acc, g) => acc + 1 + (g.confirmedCompanions || 0), 0);
-
-  // 4. Contando Tarefas Pendentes
-  const tarefasPendentes = await prisma.task.count({
-    where: { status: { not: "DONE" } },
-  });
-
-  // 5. Últimas 5 Transações
-  const ultimasTransacoes = await prisma.transaction.findMany({
-    where: { status: "APPROVED" },
-    orderBy: { createdAt: "desc" },
-    take: 5,
-    include: { guest: true, gift: true },
-  });
-
-  // Cálculo para a barra de saúde financeira
-  const totalArrecadadoDisplay = totalArrecadado === 0 && totalDespesas === 0 ? 1 : totalArrecadado;
-  const totalDespesasDisplay = totalArrecadado === 0 && totalDespesas === 0 ? 1 : totalDespesas;
-  const healthPercent = Math.min(100, (totalArrecadadoDisplay / (totalArrecadadoDisplay + totalDespesasDisplay)) * 100);
-  const expensePercent = Math.min(100, (totalDespesasDisplay / (totalArrecadadoDisplay + totalDespesasDisplay)) * 100);
-  const saldoLiquido = totalArrecadado - totalDespesas;
+  const alerts: Alert[] = [];
+  if (!wedding.weddingDate)
+    alerts.push({ id: "date", text: "Defina a data do casamento para liberar a contagem regressiva.", action: "Definir data", href: "/site-builder", icon: CalendarHeart, tone: "info" });
+  if (pendingPix > 0)
+    alerts.push({ id: "pix", text: `${pendingPix} Pix de presente aguardando sua conferência.`, action: "Conferir", href: "/financas", icon: Gift, tone: "warning" });
+  if (overdue > 0)
+    alerts.push({ id: "overdue", text: `${overdue} despesa(s) com vencimento atrasado.`, action: "Ver despesas", href: "/financas", icon: Receipt, tone: "warning" });
+  if (notInvitedYet > 0)
+    alerts.push({ id: "invites", text: `${notInvitedYet} convidado(s) com telefone ainda não receberam o convite.`, action: "Enviar convites", href: "/mensagens", icon: MessageCircle, tone: "info" });
+  if (pending > 0 && notInvitedYet < invites)
+    alerts.push({ id: "rsvp", text: `${pending} convite(s) sem resposta de presença.`, action: "Enviar lembrete", href: "/mensagens", icon: Users, tone: "info" });
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div>
-        <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
-          Visão Geral
-        </h1>
-        <p className="mt-1 text-sm text-stone-600">Acompanhe os números do casamento em tempo real.</p>
-      </div>
-      
-      {/* Cards de Métricas Principais */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="shadow-sm border-zinc-200/60 rounded-2xl hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-500">Total Arrecadado</CardTitle>
-            <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
-              <Wallet className="h-5 w-5 text-emerald-700" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-zinc-900">
-              {(totalArrecadado / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-            </div>
-            <p className="text-xs text-zinc-500 mt-2 flex items-center gap-1 font-medium bg-emerald-50 text-emerald-700 w-fit px-2 py-0.5 rounded-full">
-              <ArrowUpRight className="w-3 h-3" /> 
-              Líquido de taxas
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title={`Olá, ${wedding.coupleNames}`}
+        description="O que está andando e o que precisa de vocês agora."
+        actions={
+          <Link
+            href="/convidados"
+            className="inline-flex h-10 items-center gap-2 rounded-full border border-stone-300 bg-white px-4 text-sm font-semibold text-stone-800 hover:bg-stone-50"
+          >
+            <Users className="h-4 w-4" aria-hidden="true" /> Convidados
+          </Link>
+        }
+      />
+
+      {/* Contagem regressiva */}
+      <section className="flex flex-col gap-6 rounded-2xl bg-brand p-6 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold uppercase tracking-wider text-white">
+            {days === null ? "Data a definir" : days > 0 ? "Faltam" : days === 0 ? "É hoje" : "Casamento realizado"}
+          </p>
+          {days !== null && days > 0 && (
+            <p className="font-serif text-6xl font-semibold leading-none tabular-nums">
+              {days} <span className="text-2xl font-normal">{days === 1 ? "dia" : "dias"}</span>
             </p>
-          </CardContent>
-        </Card>
+          )}
+          <p className="mt-2 text-sm text-white">
+            {[wedding.dateLabel, wedding.locationName].filter(Boolean).join(" · ") || "Informe a data e o local no editor do site."}
+          </p>
+        </div>
+        <div className="w-full max-w-xs">
+          <div className="mb-2 flex items-baseline justify-between text-sm">
+            <span className="font-semibold">Tarefas concluídas</span>
+            <span className="tabular-nums text-white">
+              {doneTasks} de {tasks.length}
+            </span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-white/25" role="progressbar" aria-valuenow={taskProgress} aria-valuemin={0} aria-valuemax={100} aria-label="Tarefas concluídas">
+            <div className="h-full rounded-full bg-white" style={{ width: `${taskProgress}%` }} />
+          </div>
+        </div>
+      </section>
 
-        <Card className="shadow-sm border-zinc-200/60 rounded-2xl hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-500">Despesas Pendentes</CardTitle>
-            <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-              <TrendingDown className="h-5 w-5 text-red-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-zinc-900">
-              {(totalDespesas / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-            </div>
-            <p className="text-xs text-zinc-500 mt-2 flex items-center gap-1 font-medium bg-red-50 text-red-700 w-fit px-2 py-0.5 rounded-full">
-              <ArrowDownRight className="w-3 h-3" />
-              Contas a pagar
+      {/* Alertas acionáveis */}
+      {alerts.length > 0 && (
+        <section aria-labelledby="alertas" className="flex flex-col gap-2">
+          <h2 id="alertas" className="text-sm font-semibold uppercase tracking-wider text-stone-500">
+            Precisa da atenção de vocês
+          </h2>
+          <ul className="grid gap-2 lg:grid-cols-2">
+            {alerts.map((a) => {
+              const Icon = a.icon;
+              return (
+                <li
+                  key={a.id}
+                  className={`flex items-center gap-3 rounded-xl border p-3 ${a.tone === "warning" ? "border-amber-200 bg-amber-50" : "border-stone-200 bg-white"}`}
+                >
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${a.tone === "warning" ? "bg-amber-100 text-amber-800" : "bg-brand-50 text-brand-600"}`}>
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <p className="min-w-0 flex-1 text-sm text-stone-800">{a.text}</p>
+                  <Link href={a.href} className="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold text-brand-600 hover:bg-brand-50">
+                    {a.action}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Confirmações */}
+        <Section title="Confirmações de presença" href="/convidados" linkLabel="Ver lista">
+          {invites === 0 ? (
+            <p className="text-sm text-stone-600">
+              Nenhum convidado cadastrado ainda.{" "}
+              <Link href="/convidados" className="font-semibold text-brand-600 hover:underline">
+                Adicionar convidados
+              </Link>
             </p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm border-zinc-200/60 rounded-2xl hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-500">Confirmados</CardTitle>
-            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <Users className="h-5 w-5 text-blue-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-zinc-900">{convidadosConfirmados}</div>
-            <p className="text-xs text-zinc-500 mt-2 flex items-center gap-1 font-medium bg-blue-50 text-blue-700 w-fit px-2 py-0.5 rounded-full">
-              Pessoas na lista
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm border-zinc-200/60 rounded-2xl hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-500">Tarefas Pendentes</CardTitle>
-            <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
-              <CheckSquare className="h-5 w-5 text-amber-700" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-zinc-900">{tarefasPendentes}</div>
-            <p className="text-xs text-zinc-500 mt-2 flex items-center gap-1 font-medium bg-amber-50 text-amber-700 w-fit px-2 py-0.5 rounded-full">
-              Checklist ativo
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Barra de Progresso Financeira Premium */}
-        <Card className="lg:col-span-2 shadow-sm border-zinc-200/60 rounded-2xl overflow-hidden">
-          <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 pb-4">
-            <CardTitle className="text-lg font-bold text-zinc-900 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-emerald-700" />
-              Saúde Financeira
-            </CardTitle>
-            <CardDescription>
-              Comparativo visual entre a arrecadação de presentes e os custos mapeados do casamento.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-6">
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-sm font-medium text-emerald-700 mb-1">Arrecadado</p>
-                  <p className="text-2xl font-bold text-zinc-900">
-                    {(totalArrecadado / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-red-600 mb-1">Despesas Previstas</p>
-                  <p className="text-2xl font-bold text-zinc-900">
-                    {(totalDespesas / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Barra Premium */}
-              <div className="relative h-6 w-full bg-zinc-100 rounded-full overflow-hidden shadow-inner">
-                <div 
-                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all duration-1000 ease-out" 
-                  style={{ width: `${healthPercent}%` }}
-                />
-                <div 
-                  className="absolute top-0 right-0 h-full bg-gradient-to-l from-red-400 to-red-500 transition-all duration-1000 ease-out" 
-                  style={{ width: `${expensePercent}%` }}
-                />
-              </div>
-
-              <div className="pt-4 border-t border-zinc-100 flex justify-between items-center bg-zinc-50 -mx-6 -mb-6 px-6 py-4">
-                <span className="text-sm font-medium text-zinc-500 uppercase tracking-wider">Saldo Estimado</span>
-                <span className={`text-xl font-black tracking-tight ${saldoLiquido >= 0 ? "text-emerald-700" : "text-red-600"}`}>
-                  {(saldoLiquido / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+          ) : (
+            <>
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <span className="font-serif text-4xl font-semibold tabular-nums text-stone-900">{peopleConfirmed}</span>
+                <span className="text-sm text-stone-600">
+                  pessoas confirmadas de até {peopleInvited} convidadas (com acompanhantes)
                 </span>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Últimas Transações */}
-        <Card className="shadow-sm border-zinc-200/60 rounded-2xl flex flex-col">
-          <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 pb-4">
-            <CardTitle className="text-lg font-bold text-zinc-900 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-blue-500" />
-              Últimas Entradas
-            </CardTitle>
-            <CardDescription>Presentes recentes</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0 flex-1 overflow-auto">
-            {ultimasTransacoes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-zinc-500 text-sm">
-                <Gift className="w-8 h-8 mb-2 opacity-20" />
-                <p>Nenhuma transação ainda.</p>
+              <div className="flex h-3 overflow-hidden rounded-full bg-stone-100" aria-hidden="true">
+                <div className="bg-brand" style={{ width: `${pct(confirmed.length)}%` }} />
+                <div className="bg-stone-400" style={{ width: `${pct(declined)}%` }} />
               </div>
-            ) : (
-              <ul className="divide-y divide-zinc-100">
-                {ultimasTransacoes.map((t) => (
-                  <li key={t.id} className="py-4 flex items-center justify-between group hover:bg-zinc-50 -mx-6 px-6 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10 border border-zinc-200 shadow-sm">
-                        <AvatarFallback className="bg-zinc-900 text-white text-xs">
-                          {t.guest?.name?.substring(0, 2).toUpperCase() || "??"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-zinc-900 line-clamp-1">
-                          {t.guest?.name || "Anônimo"}
-                        </span>
-                        <span className="text-xs text-zinc-500 flex items-center gap-1">
-                          {formatDistanceToNow(t.createdAt, { addSuffix: true, locale: ptBR })}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span className="text-sm font-bold text-emerald-700">
-                        +{(t.netAmount! / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                      </span>
-                      <Badge variant="outline" className={`text-xs px-1.5 py-0 rounded-sm font-semibold ${t.paymentMethod === 'PIX' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
-                        {t.paymentMethod === 'PIX' ? 'PIX' : 'CARTÃO'}
-                      </Badge>
-                    </div>
+              <dl className="grid grid-cols-3 gap-3 text-sm">
+                <div>
+                  <dt className="flex items-center gap-1.5 text-stone-600">
+                    <span className="h-2.5 w-2.5 rounded-full bg-brand" aria-hidden="true" /> Confirmaram
+                  </dt>
+                  <dd className="font-semibold tabular-nums text-stone-900">{confirmed.length} convites</dd>
+                </div>
+                <div>
+                  <dt className="flex items-center gap-1.5 text-stone-600">
+                    <span className="h-2.5 w-2.5 rounded-full bg-stone-400" aria-hidden="true" /> Não vão
+                  </dt>
+                  <dd className="font-semibold tabular-nums text-stone-900">{declined} convites</dd>
+                </div>
+                <div>
+                  <dt className="flex items-center gap-1.5 text-stone-600">
+                    <span className="h-2.5 w-2.5 rounded-full bg-stone-200 ring-1 ring-stone-300" aria-hidden="true" /> Sem resposta
+                  </dt>
+                  <dd className="font-semibold tabular-nums text-stone-900">{pending} convites</dd>
+                </div>
+              </dl>
+            </>
+          )}
+        </Section>
+
+        {/* Próximas tarefas */}
+        <Section title="Próximas tarefas" href="/pendencias" linkLabel="Todas as tarefas">
+          {nextTasks.length === 0 ? (
+            <p className="text-sm text-stone-600">Nenhuma tarefa em aberto.</p>
+          ) : (
+            <ul className="flex flex-col divide-y divide-stone-100">
+              {nextTasks.map((t) => {
+                const late = t.dueDate && isBefore(new Date(t.dueDate), today);
+                return (
+                  <li key={t.id} className="flex items-center gap-3 py-2.5">
+                    <CheckSquare className="h-4 w-4 shrink-0 text-stone-400" aria-hidden="true" />
+                    <span className="min-w-0 flex-1 truncate text-sm text-stone-800">{t.title}</span>
+                    <span className={`shrink-0 text-xs font-semibold ${late ? "text-red-600" : "text-stone-500"}`}>
+                      {t.dueDate ? format(new Date(t.dueDate), "dd/MM", { locale: ptBR }) : t.status === "IN_PROGRESS" ? "Em andamento" : "Sem prazo"}
+                    </span>
                   </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+                );
+              })}
+            </ul>
+          )}
+        </Section>
+
+        {/* Dinheiro */}
+        <Section title="Despesas" href="/financas" linkLabel="Ver finanças">
+          {expensesTotal === 0 ? (
+            <p className="text-sm text-stone-600">Nenhuma despesa registrada ainda.</p>
+          ) : (
+            <>
+              <div className="flex flex-wrap items-baseline gap-x-2">
+                <span className="font-serif text-4xl font-semibold tabular-nums text-stone-900">{money(expensesPaid)}</span>
+                <span className="text-sm text-stone-600">pagos de {money(expensesTotal)} contratados</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-stone-100" role="progressbar" aria-valuenow={paidProgress} aria-valuemin={0} aria-valuemax={100} aria-label="Despesas pagas">
+                <div className="h-full rounded-full bg-brand" style={{ width: `${paidProgress}%` }} />
+              </div>
+              {upcomingExpenses.length > 0 && (
+                <ul className="flex flex-col divide-y divide-stone-100">
+                  {upcomingExpenses.map((e) => {
+                    const late = isBefore(new Date(e.dueDate), today);
+                    return (
+                      <li key={e.id} className="flex items-center gap-3 py-2.5 text-sm">
+                        <Wallet className="h-4 w-4 shrink-0 text-stone-400" aria-hidden="true" />
+                        <span className="min-w-0 flex-1 truncate text-stone-800">{e.description}</span>
+                        <span className="shrink-0 font-semibold tabular-nums text-stone-900">{money(e.amount)}</span>
+                        <span className={`w-12 shrink-0 text-right text-xs font-semibold ${late ? "text-red-600" : "text-stone-500"}`}>
+                          {format(new Date(e.dueDate), "dd/MM", { locale: ptBR })}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </>
+          )}
+        </Section>
+
+        {/* Presentes */}
+        <Section title="Presentes recebidos" href="/presentes-admin" linkLabel="Lista de presentes">
+          <div className="flex flex-wrap items-baseline gap-x-2">
+            <span className="font-serif text-4xl font-semibold tabular-nums text-stone-900">{money(giftsReceived)}</span>
+            <span className="text-sm text-stone-600">
+              em {approvedGifts.length} {approvedGifts.length === 1 ? "presente" : "presentes"}
+            </span>
+          </div>
+          {approvedGifts.length === 0 ? (
+            <p className="text-sm text-stone-600">Quando um convidado presentear, ele aparece aqui.</p>
+          ) : (
+            <ul className="flex flex-col divide-y divide-stone-100">
+              {approvedGifts.slice(0, 4).map((t) => (
+                <li key={t.id} className="flex items-center gap-3 py-2.5 text-sm">
+                  <Gift className="h-4 w-4 shrink-0 text-stone-400" aria-hidden="true" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-stone-800">{t.gift.title}</p>
+                    <p className="truncate text-xs text-stone-500">
+                      {t.guestName || "Convidado"} · {formatDistanceToNow(new Date(t.createdAt), { addSuffix: true, locale: ptBR })}
+                    </p>
+                  </div>
+                  <span className="shrink-0 font-semibold tabular-nums text-stone-900">{money(t.netAmount ?? t.amount)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
       </div>
+
+      {days !== null && days <= 7 && days >= 0 && (
+        <Link
+          href="/credenciamento"
+          className="flex items-center justify-between gap-4 rounded-2xl border border-brand/30 bg-brand-50 p-5 text-stone-900 hover:bg-brand-100"
+        >
+          <span className="flex items-center gap-3">
+            <QrCode className="h-6 w-6 text-brand" aria-hidden="true" />
+            <span>
+              <span className="block font-semibold">Check-in no dia</span>
+              <span className="text-sm text-stone-600">Abra o leitor de QR Code na entrada do evento.</span>
+            </span>
+          </span>
+          <ArrowRight className="h-5 w-5 text-brand" aria-hidden="true" />
+        </Link>
+      )}
     </div>
   );
 }

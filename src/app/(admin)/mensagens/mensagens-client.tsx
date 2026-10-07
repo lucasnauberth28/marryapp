@@ -343,7 +343,7 @@ export function MensagensClient({
             className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
               activeTab === "templates"
                 ? "bg-white text-zinc-900 shadow-sm"
-                : "text-zinc-500 hover:text-zinc-900"
+                : "text-zinc-600 hover:text-zinc-900"
             }`}
           >
             Galeria de Templates ({templates.length})
@@ -353,7 +353,7 @@ export function MensagensClient({
             className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
               activeTab === "disparador"
                 ? "bg-white text-zinc-900 shadow-sm"
-                : "text-zinc-500 hover:text-zinc-900"
+                : "text-zinc-600 hover:text-zinc-900"
             }`}
           >
             Disparador em Massa

@@ -138,7 +138,7 @@ export function CheckoutClient({ gift, coupleNames }: CheckoutClientProps) {
       );
     }
     return (
-      <span className="text-sm font-bold tracking-wide italic text-white/90">
+      <span className="text-sm font-bold tracking-wide italic text-white">
         {cardBrand.name}
       </span>
     );
@@ -427,7 +427,7 @@ export function CheckoutClient({ gift, coupleNames }: CheckoutClientProps) {
                       <span className="text-xs uppercase font-bold text-white/60 tracking-widest">
                         {cardBank || "Banco do Usuário"}
                       </span>
-                      <CreditCard className="w-9 h-9 mt-3 text-white/90" />
+                      <CreditCard className="w-9 h-9 mt-3 text-white" />
                     </div>
                     <div className="flex items-center bg-white/10 px-3 py-1.5 rounded-xl backdrop-blur-sm">
                       <BrandLogo />

@@ -1,4 +1,6 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { useSyncedState } from "@/hooks/use-synced-state";
 
 import { useState, useRef, useTransition } from "react";
 import { toast } from "sonner";
@@ -40,8 +42,9 @@ interface VendorsClientProps {
 
 export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsClientProps) {
   const [activeTab, setActiveTab] = useState<"MY_VENDORS" | "MARKETPLACE">("MARKETPLACE");
-  const [vendors, setVendors] = useState<any[]>(initialVendors);
-  const [partners, setPartners] = useState<any[]>(initialPartners);
+  const router = useRouter();
+  const [vendors, setVendors] = useSyncedState<any[]>(initialVendors);
+  const [partners, setPartners] = useSyncedState<any[]>(initialPartners);
   
   // Filtros do Marketplace
   const [selectedRegion, setSelectedRegion] = useState("TODAS");
@@ -192,7 +195,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
       toast.success("Fornecedor cadastrado com sucesso!", { id: toastId });
       resetForm();
       setOpen(false);
-      window.location.reload();
+      router.refresh();
     } else {
       toast.error(res.error || "Erro ao criar fornecedor.", { id: toastId });
     }
@@ -224,7 +227,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
     if (res.success) {
       toast.success("Fornecedor atualizado com sucesso!", { id: toastId });
       setEditOpen(false);
-      window.location.reload();
+      router.refresh();
     } else {
       toast.error(res.error || "Erro ao atualizar fornecedor.", { id: toastId });
     }

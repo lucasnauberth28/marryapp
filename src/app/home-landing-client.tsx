@@ -37,7 +37,7 @@ import { PlanCalculator } from "@/components/pricing/plan-calculator";
 import { FaqSection } from "@/components/landing/faq-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 
-type AudienceType = "NOIVOS" | "ASSESSORES" | "FORNECEDORES";
+type AudienceType = "NOIVOS" | "FORNECEDORES";
 type PricingAudience = "COUPLE" | "VENDOR";
 
 export function HomeLandingClient() {
@@ -77,17 +77,7 @@ export function HomeLandingClient() {
                   : "text-stone-600 hover:text-stone-900"
               }`}
             >
-              💍 Para Noivos
-            </button>
-            <button
-              onClick={() => setActiveTab("ASSESSORES")}
-              className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                activeTab === "ASSESSORES"
-                  ? "bg-white text-brand shadow-xs"
-                  : "text-stone-600 hover:text-stone-900"
-              }`}
-            >
-              📋 Para Assessores
+              Para noivos
             </button>
             <button
               onClick={() => setActiveTab("FORNECEDORES")}
@@ -97,7 +87,7 @@ export function HomeLandingClient() {
                   : "text-stone-600 hover:text-stone-900"
               }`}
             >
-              🤝 Para Fornecedores
+              Para fornecedores
             </button>
           </nav>
 
@@ -138,14 +128,6 @@ export function HomeLandingClient() {
                 }`}
               >
                 Noivos
-              </button>
-              <button
-                onClick={() => setActiveTab("ASSESSORES")}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold ${
-                  activeTab === "ASSESSORES" ? "bg-white text-brand shadow-xs" : "text-stone-500"
-                }`}
-              >
-                Assessores
               </button>
               <button
                 onClick={() => setActiveTab("FORNECEDORES")}
@@ -195,47 +177,6 @@ export function HomeLandingClient() {
                   <div>
                     <p className="text-2xl sm:text-3xl font-extrabold text-stone-900">12x</p>
                     <p className="text-xs text-stone-500 font-medium mt-0.5">Parcelamento no Cartão</p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* 📋 ABA ASSESSORES */}
-            {activeTab === "ASSESSORES" && (
-              <motion.div
-                key="assessores"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col items-center text-center max-w-4xl mx-auto"
-              >
-                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-stone-900 tracking-tight leading-[1.1] font-serif">
-                  Gerencie todos os seus casamentos{" "}
-                  <span className="italic text-brand">sem planilhas perdidas</span>.
-                </h1>
-
-                <p className="mt-6 text-base sm:text-lg md:text-xl text-stone-600 max-w-2xl leading-relaxed">
-                  Controle múltiplos eventos simultâneos, checklist inteligente de 365 dias, mapa de mesas interativo e relatórios de buffet com exportação em 1 clique.
-                </p>
-
-                {/* Métricas Assessores */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12 pt-10 border-t border-stone-200/80 w-full text-left">
-                  <div>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-stone-900">Multi-Eventos</p>
-                    <p className="text-xs text-stone-500 font-medium mt-0.5">Painel único consolidado</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-stone-900">365 Dias</p>
-                    <p className="text-xs text-stone-500 font-medium mt-0.5">Checklist cronológico guiado</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-stone-900">PDF & Excel</p>
-                    <p className="text-xs text-stone-500 font-medium mt-0.5">Relatórios para o Buffet</p>
-                  </div>
-                  <div>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-stone-900">QR Check-in</p>
-                    <p className="text-xs text-stone-500 font-medium mt-0.5">Credenciamento na recepção</p>
                   </div>
                 </div>
               </motion.div>
@@ -596,7 +537,7 @@ export function HomeLandingClient() {
 
             {/* 2. Fornecedor Pro (DESTAQUE COM BADGE CENTRALIZADA) */}
             <div className="bg-gradient-to-b from-emerald-50/50 to-white p-7 rounded-3xl border-2 border-emerald-600 shadow-lg flex flex-col justify-between relative hover:shadow-xl transition-all">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-max bg-emerald-600 text-white text-xs font-extrabold uppercase tracking-wider px-4 py-1 rounded-full shadow-xs text-center">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-max bg-emerald-700 text-white text-xs font-extrabold uppercase tracking-wider px-4 py-1 rounded-full shadow-xs text-center">
                 Mais Popular para Empresas
               </div>
 

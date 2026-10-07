@@ -1,4 +1,6 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { useSyncedState } from "@/hooks/use-synced-state";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -47,8 +49,9 @@ interface CarteiraClientProps {
 }
 
 export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientProps) {
-  const [balance, setBalance] = useState<number>(initialBalance);
-  const [cards, setCards] = useState<any[]>(initialCards);
+  const router = useRouter();
+  const [balance, setBalance] = useSyncedState<number>(initialBalance);
+  const [cards, setCards] = useSyncedState<any[]>(initialCards);
 
   const [loading, setLoading] = useState(false);
   const [balanceModalOpen, setBalanceModalOpen] = useState(false);
@@ -171,7 +174,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
       if (res.success) {
         toast.success("Cartão cadastrado com sucesso!", { id: toastId });
         setCardModalOpen(false);
-        window.location.reload();
+        router.refresh();
       } else {
         toast.error(res.error || "Erro ao cadastrar cartão.", { id: toastId });
       }

@@ -170,7 +170,7 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
                 {/* Badge de "Já Presenteado" ou "Ver Detalhes" */}
                 {gift.isPurchased ? (
                   <div className="absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center">
-                    <span className="bg-emerald-600 text-white text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
+                    <span className="bg-emerald-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-md">
                       <CheckCircle2 className="w-4 h-4" /> Já Presenteado
                     </span>
                   </div>
@@ -254,7 +254,7 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
 
                 {selectedGift.isPurchased && (
                   <div className="absolute inset-0 bg-black/45 backdrop-blur-xs flex items-center justify-center p-4 text-center">
-                    <span className="bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+                    <span className="bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4" /> Este presente já foi oferecido
                     </span>
                   </div>
@@ -312,7 +312,7 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
                   <Button
                     variant="ghost"
                     onClick={() => setSelectedGift(null)}
-                    className="w-full text-xs font-semibold text-zinc-500 hover:text-zinc-900 rounded-lg h-8"
+                    className="w-full text-xs font-semibold text-zinc-600 hover:text-zinc-900 rounded-lg h-8"
                   >
                     Voltar para a lista
                   </Button>

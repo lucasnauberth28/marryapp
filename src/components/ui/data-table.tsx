@@ -37,6 +37,8 @@ export interface DataTableProps<T> {
   keyExtractor: (item: T) => string | number;
   topRightElement?: React.ReactNode;
   className?: string;
+  /** Se informado, abaixo de 768px a tabela vira uma lista de cards com este conteúdo. */
+  mobileCard?: (item: T) => React.ReactNode;
 }
 
 type SortOrder = "asc" | "desc" | null;
@@ -50,6 +52,7 @@ export function DataTable<T>({
   keyExtractor,
   topRightElement,
   className,
+  mobileCard,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -162,6 +165,7 @@ export function DataTable<T>({
           {search && (
             <button
               onClick={() => handleSearchChange("")}
+              aria-label="Limpar busca"
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-600 p-0.5 rounded-full"
             >
               <X className="w-3.5 h-3.5" />
@@ -169,12 +173,25 @@ export function DataTable<T>({
           )}
         </div>
 
-        {topRightElement && <div className="flex items-center gap-2">{topRightElement}</div>}
+        {topRightElement && <div className="flex flex-wrap items-center gap-2">{topRightElement}</div>}
       </div>
 
       {/* Table Container */}
       <div className="bg-white border border-zinc-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        {mobileCard && (
+          <ul className="divide-y divide-zinc-100 md:hidden">
+            {paginatedData.length === 0 ? (
+              <li className="px-4 py-12 text-center text-zinc-500">{emptyMessage}</li>
+            ) : (
+              paginatedData.map((item) => (
+                <li key={keyExtractor(item)} className="p-4">
+                  {mobileCard(item)}
+                </li>
+              ))
+            )}
+          </ul>
+        )}
+        <div className={cn("overflow-x-auto", mobileCard && "hidden md:block")}>
           <table className="w-full text-left text-sm border-collapse">
             <thead>
               <tr className="bg-zinc-50/80 border-b border-zinc-200 text-xs font-semibold text-zinc-500 uppercase tracking-wider">

@@ -75,7 +75,7 @@ export function KanbanTask({ task, onEdit }: KanbanTaskProps) {
               {...listeners}
               variant="ghost"
               size="icon"
-              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing shrink-0 -mr-2 -mt-2 text-zinc-500 hover:text-zinc-700"
+              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing shrink-0 -mr-2 -mt-2 text-zinc-600 hover:text-zinc-900"
               onClick={(e) => e.stopPropagation()}
             >
               <GripVertical className="h-4 w-4" />

@@ -1,4 +1,6 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { useSyncedState } from "@/hooks/use-synced-state";
 
 import { useState, useMemo, useRef } from "react";
 import { toast } from "sonner";
@@ -83,7 +85,8 @@ const PAYMENT_METHODS = [
 ];
 
 export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { initialExpenses: any[], vendors: any[], userCards?: any[] }) {
-  const [expenses, setExpenses] = useState<any[]>(initialExpenses);
+  const router = useRouter();
+  const [expenses, setExpenses] = useSyncedState<any[]>(initialExpenses);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -394,7 +397,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
         toast.success("Despesa cadastrada com sucesso! 💰", { id: toastId });
         resetForm();
         setOpen(false);
-        window.location.reload();
+        router.refresh();
       } else {
         toast.error(res.error || "Erro ao realizar operação.", {
           id: toastId,
@@ -425,7 +428,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
         toast.success(`${generatedInstallments.length} parcelas registradas com sucesso! 💰`, { id: toastId });
         resetForm();
         setOpen(false);
-        window.location.reload();
+        router.refresh();
       } else {
         toast.error(res.error || "Erro ao realizar operação.", {
           id: toastId,
@@ -477,7 +480,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
             <button
               onClick={() => setFilterType("ALL")}
               className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
-                filterType === "ALL" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-900"
+                filterType === "ALL" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-600 hover:text-zinc-900"
               }`}
             >
               Todas ({expenses.length})
@@ -485,7 +488,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
             <button
               onClick={() => setFilterType("CONTRACT")}
               className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${
-                filterType === "CONTRACT" ? "bg-brand text-white shadow-xs" : "text-zinc-500 hover:text-zinc-900"
+                filterType === "CONTRACT" ? "bg-brand text-white shadow-xs" : "text-zinc-600 hover:text-zinc-900"
               }`}
             >
               <Building2 className="w-3 h-3" />
@@ -494,7 +497,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
             <button
               onClick={() => setFilterType("PURCHASE")}
               className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${
-                filterType === "PURCHASE" ? "bg-purple-600 text-white shadow-xs" : "text-zinc-500 hover:text-zinc-900"
+                filterType === "PURCHASE" ? "bg-purple-600 text-white shadow-xs" : "text-zinc-600 hover:text-zinc-900"
               }`}
             >
               <ShoppingBag className="w-3 h-3" />
@@ -507,7 +510,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
             <button
               onClick={() => setViewMode("grouped")}
               className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${
-                viewMode === "grouped" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-900"
+                viewMode === "grouped" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-600 hover:text-zinc-900"
               }`}
             >
               <Layers className="w-3.5 h-3.5 text-brand" />
@@ -516,7 +519,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
             <button
               onClick={() => setViewMode("detailed")}
               className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${
-                viewMode === "detailed" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-900"
+                viewMode === "detailed" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-600 hover:text-zinc-900"
               }`}
             >
               <ListFilter className="w-3.5 h-3.5 text-brand" />

@@ -10,7 +10,6 @@ import {
   MapPin,
   Video,
   CheckCircle2,
-  MessageCircle,
   Calendar,
   ExternalLink,
   ShieldCheck,
@@ -20,7 +19,6 @@ import {
   Globe,
   Phone,
   FileText,
-  Clock,
   Sparkles,
   Camera,
   Loader2,
@@ -100,8 +98,23 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
       });
 
       if (res.success) {
-        toast.success(`Solicitação enviada com sucesso para ${vendor.companyName}! ✨`, {
+        const whatsapp = vendor.whatsapp?.replace(/\D/g, "");
+        toast.success(`Pedido enviado para ${vendor.companyName}.`, {
           id: toastId,
+          description: "O fornecedor recebeu seus dados e vai entrar em contato.",
+          action: whatsapp
+            ? {
+                label: "Conversar no WhatsApp",
+                onClick: () =>
+                  window.open(
+                    `https://wa.me/${whatsapp}?text=${encodeURIComponent(
+                      `Olá! Sou ${coupleName} e acabei de pedir um orçamento pelo MarryApp.`
+                    )}`,
+                    "_blank",
+                    "noopener,noreferrer"
+                  ),
+              }
+            : undefined,
         });
         setCoupleName("");
         setCouplePhone("");
@@ -154,7 +167,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
     <div className="min-h-screen bg-paper text-stone-900 font-sans flex flex-col justify-between">
       <LandingHeader />
 
-      <main className="flex-1 py-8 px-6 max-w-7xl mx-auto w-full space-y-8">
+      <div className="flex-1 py-8 px-6 max-w-7xl mx-auto w-full space-y-8">
         {/* Navegação Superior */}
         <div className="flex items-center justify-between">
           <Link
@@ -225,7 +238,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                 </span>
 
                 {vendor.priceRange && (
-                  <span className="font-mono font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                  <span className="font-semibold tracking-wider text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
                     Faixa: {vendor.priceRange}
                   </span>
                 )}
@@ -240,7 +253,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
               </div>
 
               {vendor.documentNumber && (
-                <p className="text-xs text-stone-500 font-mono">
+                <p className="text-xs text-stone-500 tabular-nums">
                   {vendor.documentType || "CNPJ"}: {vendor.documentNumber}
                 </p>
               )}
@@ -249,24 +262,12 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
 
           {/* Ações Rápidas no Topo */}
           <div className="flex items-center gap-3 w-full md:w-auto">
-            {vendor.whatsapp && (
-              <a
-                href={`https://wa.me/${vendor.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
-                  `Olá! Encontrei o perfil de vocês no MarryApp e gostaria de tirar dúvidas para o meu casamento.`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 md:flex-initial"
-              >
-                <Button
-                  variant="outline"
-                  className="w-full rounded-2xl h-12 text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 gap-1.5 shadow-xs"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>Conversar no WhatsApp</span>
-                </Button>
+            <Button asChild className="w-full rounded-2xl h-12 text-sm font-semibold gap-1.5 shadow-xs md:w-auto">
+              <a href="#orcamento">
+                <Calendar className="w-4 h-4" aria-hidden="true" />
+                Pedir orçamento
               </a>
-            )}
+            </Button>
           </div>
         </div>
 
@@ -605,9 +606,9 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                 )}
               </div>
 
-              <div className="pt-4 border-t border-stone-100">
+              <div id="orcamento" className="pt-4 border-t border-stone-100 scroll-mt-24">
                 <h3 className="text-sm font-bold font-serif text-stone-900 mb-1">
-                  Agendar Reunião ou Orçamento
+                  Pedir orçamento ou reunião
                 </h3>
                 <p className="text-xs text-stone-500 mb-4">
                   Envie seus dados e o fornecedor responderá com disponibilidade na sua data.
@@ -700,15 +701,11 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                   <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
                   <span>Profissional verificado pela curadoria.</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-stone-500 shrink-0" />
-                  <span>Tempo médio de resposta: menos de 2 horas.</span>
-                </div>
               </div>
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
       <LandingFooter />
     </div>

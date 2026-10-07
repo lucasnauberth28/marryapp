@@ -37,7 +37,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
         <div className="flex items-center justify-between pb-2 border-b border-zinc-200/60">
           <Link
             href="/presentes"
-            className="text-xs font-bold text-zinc-500 hover:text-zinc-900 flex items-center gap-1.5 transition-colors"
+            className="text-xs font-bold text-zinc-600 hover:text-zinc-900 flex items-center gap-1.5 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Voltar para Lista de Presentes</span>

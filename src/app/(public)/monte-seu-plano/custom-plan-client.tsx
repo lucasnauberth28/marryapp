@@ -67,7 +67,7 @@ export function CustomPlanClient() {
     <div className="min-h-screen bg-paper text-stone-900 font-sans flex flex-col justify-between">
       <LandingHeader />
 
-      <main className="flex-1 py-12 px-6 max-w-7xl mx-auto w-full space-y-10">
+      <div className="flex-1 py-12 px-6 max-w-7xl mx-auto w-full space-y-10">
         {/* Navegação de Volta & Cabeçalho Principal */}
         <div className="space-y-4">
           <Link
@@ -243,7 +243,7 @@ export function CustomPlanClient() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
       <LandingFooter />
     </div>
