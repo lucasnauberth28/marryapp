@@ -430,7 +430,13 @@ export function AssinarClient() {
               <div>
                 {/* 💍 FLUXO SIMPLES PARA CASAIS */}
                 {currentPlan.type === "COUPLE" ? (
-                  <form onSubmit={handleRegisterFinal} className="space-y-6">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleRegisterFinal();
+                    }}
+                    className="space-y-6"
+                  >
                     <div>
                       <h1 className="text-2xl sm:text-3xl font-extrabold font-serif text-stone-900">
                         1. Crie a Conta do Casal
@@ -510,7 +516,8 @@ export function AssinarClient() {
                           type="password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          placeholder="Mínimo de 6 dígitos"
+                          placeholder="Mínimo de 8 caracteres"
+                          minLength={8}
                           required
                           className="rounded-2xl h-12 text-sm bg-stone-50/50"
                         />
@@ -699,7 +706,8 @@ export function AssinarClient() {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Mínimo de 6 dígitos"
+                            placeholder="Mínimo de 8 caracteres"
+                            minLength={8}
                             required
                             className="rounded-2xl h-12 text-sm bg-stone-50/50"
                           />
