@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { generateTimelinePdf } from "@/lib/generate-timeline-pdf";
 import { TimePicker } from "@/components/ui/time-picker";
 
-export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
+export function TimelineClient({ initialEvents, coupleNames }: { initialEvents: any[]; coupleNames: string }) {
   const [events, setEvents] = useState(initialEvents);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -73,7 +73,7 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
       toast.error("Nenhum evento cadastrado para gerar o PDF.");
       return;
     }
-    const success = generateTimelinePdf(events);
+    const success = generateTimelinePdf(events, coupleNames);
     if (success) {
       toast.success("PDF do cronograma gerado com sucesso!");
     }
@@ -81,18 +81,18 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
 
   return (
     <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
-      <div className="flex justify-between items-center mb-6 border-b border-zinc-100 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 border-b border-zinc-100 pb-4">
         <h2 className="text-xl font-bold flex items-center gap-2">
-          <CalendarHeart className="text-zinc-400" /> Eventos
+          <CalendarHeart className="text-zinc-500" aria-hidden="true" /> Eventos
         </h2>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             variant="outline"
             onClick={handleExportPdf}
             disabled={events.length === 0}
             className="border-zinc-300 text-zinc-700 hover:bg-zinc-100"
           >
-            <Download className="w-4 h-4 mr-2 text-[#8C6D45]" /> Gerar PDF
+            <Download className="w-4 h-4 mr-2 text-brand" /> Gerar PDF
           </Button>
 
           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -130,7 +130,7 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
                     onChange={e => setFormData({ ...formData, description: e.target.value })} 
                   />
                 </div>
-                <Button type="submit" disabled={loading} className="w-full bg-[#8C6D45] hover:bg-[#755630] text-white">
+                <Button type="submit" disabled={loading} className="w-full bg-brand hover:bg-brand-600 text-white">
                   {loading ? "Salvando..." : "Salvar Evento"}
                 </Button>
               </form>
@@ -139,10 +139,10 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
         </div>
       </div>
 
-      <div className="relative pl-4 border-l-2 border-[#E8E2D9] ml-4 space-y-8 py-4">
+      <div className="relative pl-4 border-l-2 border-line ml-4 space-y-8 py-4">
         <AnimatePresence>
           {events.length === 0 ? (
-            <p className="text-zinc-400 text-center py-8">Nenhum evento cadastrado no cronograma.</p>
+            <p className="text-zinc-500 text-center py-8">Nenhum evento cadastrado no cronograma.</p>
           ) : (
             [...events]
               .sort((a, b) => a.time.localeCompare(b.time))
@@ -155,14 +155,14 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
                 className="relative pl-6"
               >
                 {/* Timeline Dot */}
-                <span className="absolute -left-[35px] top-1 w-6 h-6 rounded-full bg-[#F3ECE3] border-2 border-[#8C6D45] flex items-center justify-center">
-                  <Clock className="w-3 h-3 text-[#8C6D45]" />
+                <span className="absolute -left-[35px] top-1 w-6 h-6 rounded-full bg-brand-100 border-2 border-brand flex items-center justify-center">
+                  <Clock className="w-3 h-3 text-brand" />
                 </span>
 
-                <div className="bg-[#FCFBF9] border border-[#E8E2D9] rounded-lg p-4 flex justify-between items-start group hover:border-[#C5A880]/50 transition-colors shadow-sm">
+                <div className="bg-paper border border-line rounded-lg p-4 flex justify-between items-start group hover:border-brand-300/50 transition-colors shadow-sm">
                   <div>
                     <h3 className="font-semibold text-base text-zinc-900 flex items-center gap-2">
-                      <span className="text-[#8C6D45] font-mono bg-[#F3ECE3] px-2 py-0.5 rounded text-sm font-semibold">
+                      <span className="text-brand font-mono bg-brand-100 px-2 py-0.5 rounded text-sm font-semibold">
                         {event.time}
                       </span> 
                       {event.title}
@@ -171,7 +171,7 @@ export function TimelineClient({ initialEvents }: { initialEvents: any[] }) {
                       <p className="text-zinc-600 mt-2 text-sm">{event.description}</p>
                     )}
                   </div>
-                  <Button 
+                  <Button aria-label="Excluir" 
                     variant="ghost" 
                     size="icon" 
                     onClick={() => handleDelete(event.id)}

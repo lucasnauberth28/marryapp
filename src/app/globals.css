@@ -29,6 +29,19 @@
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
   --color-white: #FCFBF9;
+
+  /* Escala da marca (bronze champanhe). Use estes tokens em vez de hex fixos:
+     bg-brand, text-brand-600, border-brand/30, bg-brand-50 ... */
+  --color-brand-50: #FAF4ED;
+  --color-brand-100: #F3ECE3;
+  --color-brand-300: #C5A880;
+  --color-brand-400: #A3855E;
+  --color-brand: #8C6D45;
+  --color-brand-500: #8C6D45;
+  --color-brand-600: #765A37;
+  --color-ivory: #FAF8F5;
+  --color-paper: #FCFBF9;
+  --color-line: #E8E2D9;
   --color-zinc-800: #755630;
   --color-zinc-900: #8C6D45;
   --color-zinc-950: #8C6D45;
@@ -46,7 +59,7 @@
   --secondary: #F5EFEB; /* Creme */
   --secondary-foreground: #8C6D45;
   --muted: #F5EFEB;
-  --muted-foreground: #A69280;
+  --muted-foreground: #76655A; /* contraste 5,2:1 sobre o marfim (WCAG AA) */
   --accent: #F5EFEB;
   --accent-foreground: #8C6D45;
   --destructive: #dc2626; /* Vermelho mais sutil */

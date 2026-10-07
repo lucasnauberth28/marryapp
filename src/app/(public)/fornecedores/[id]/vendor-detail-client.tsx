@@ -151,7 +151,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
       : vendor.rating.toFixed(1);
 
   return (
-    <div className="min-h-screen bg-[#FCFBF9] text-stone-900 font-sans flex flex-col justify-between">
+    <div className="min-h-screen bg-paper text-stone-900 font-sans flex flex-col justify-between">
       <LandingHeader />
 
       <main className="flex-1 py-8 px-6 max-w-7xl mx-auto w-full space-y-8">
@@ -194,7 +194,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             {/* Logotipo / Avatar do Fornecedor */}
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-[#FAF4ED] border-2 border-[#8C6D45]/30 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-brand-50 border-2 border-brand/30 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
               {vendor.logoUrl ? (
                 <img
                   src={vendor.logoUrl}
@@ -202,7 +202,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <Building2 className="w-10 h-10 text-[#8C6D45]" />
+                <Building2 className="w-10 h-10 text-brand" />
               )}
             </div>
 
@@ -212,8 +212,8 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                   {vendor.companyName}
                 </h1>
                 {vendor.isVerified && (
-                  <span className="bg-[#FAF4ED] text-[#8C6D45] border border-[#8C6D45]/30 font-bold text-[10px] px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#8C6D45]" />
+                  <span className="bg-brand-50 text-brand border border-brand/30 font-bold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-brand" />
                     <span>Curadoria Aprovada</span>
                   </span>
                 )}
@@ -233,14 +233,14 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                 <div className="flex items-center gap-1 font-bold text-stone-800">
                   <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
                   <span>{averageRating}</span>
-                  <span className="text-stone-400 font-normal">
+                  <span className="text-stone-500 font-normal">
                     ({reviews.length} avaliações)
                   </span>
                 </div>
               </div>
 
               {vendor.documentNumber && (
-                <p className="text-[11px] text-stone-400 font-mono">
+                <p className="text-xs text-stone-500 font-mono">
                   {vendor.documentType || "CNPJ"}: {vendor.documentNumber}
                 </p>
               )}
@@ -280,10 +280,10 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold font-serif text-stone-900 flex items-center gap-2">
-                  <Camera className="w-5 h-5 text-[#8C6D45]" />
+                  <Camera className="w-5 h-5 text-brand" />
                   <span>Portfólio & Fotos Reais</span>
                 </h2>
-                <span className="text-xs text-stone-400 font-medium">
+                <span className="text-xs text-stone-500 font-medium">
                   {galleryImages.length} imagens disponíveis
                 </span>
               </div>
@@ -304,9 +304,11 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                     <button
                       key={i}
                       onClick={() => setActiveImage(img)}
+                      aria-label={`Ver foto ${i + 1}`}
+                      aria-pressed={activeImage === img}
                       className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
                         activeImage === img
-                          ? "border-[#8C6D45] scale-105 shadow-md"
+                          ? "border-brand scale-105 shadow-md"
                           : "border-transparent opacity-70 hover:opacity-100"
                       }`}
                     >
@@ -341,7 +343,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                   {serviceRegions.map((region, i) => (
                     <span
                       key={i}
-                      className="text-xs bg-[#FAF4ED] text-[#8C6D45] border border-[#8C6D45]/20 px-3 py-1 rounded-full font-medium flex items-center gap-1"
+                      className="text-xs bg-brand-50 text-brand border border-brand/20 px-3 py-1 rounded-full font-medium flex items-center gap-1"
                     >
                       <MapPin className="w-3.5 h-3.5" />
                       <span>{region}</span>
@@ -354,10 +356,10 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-stone-100 text-xs text-stone-600">
                 {vendor.offersOnlineMeet && (
                   <div className="flex items-center gap-2 bg-emerald-50 text-emerald-800 p-3 rounded-2xl border border-emerald-200">
-                    <Video className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <Video className="w-4 h-4 text-emerald-700 shrink-0" />
                     <div>
                       <p className="font-bold">Reuniões por Vídeo</p>
-                      <p className="text-[11px] text-emerald-700">Google Meet & Zoom disponíveis</p>
+                      <p className="text-xs text-emerald-700">Google Meet & Zoom disponíveis</p>
                     </div>
                   </div>
                 )}
@@ -367,7 +369,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                     <Building2 className="w-4 h-4 text-stone-600 shrink-0" />
                     <div>
                       <p className="font-bold">Showroom / Espaço Físico</p>
-                      <p className="text-[11px] text-stone-500 line-clamp-1">{vendor.address}</p>
+                      <p className="text-xs text-stone-500 line-clamp-1">{vendor.address}</p>
                     </div>
                   </div>
                 )}
@@ -380,7 +382,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                     href={`https://instagram.com/${vendor.instagram.replace("@", "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-[#8C6D45] transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-brand transition-colors"
                   >
                     <Camera className="w-4 h-4 text-pink-600" />
                     <span>{vendor.instagram}</span>
@@ -392,11 +394,11 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                     href={vendor.website.startsWith("http") ? vendor.website : `https://${vendor.website}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-[#8C6D45] transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-700 hover:text-brand transition-colors"
                   >
                     <Globe className="w-4 h-4 text-blue-600" />
                     <span>Website Oficial</span>
-                    <ExternalLink className="w-3 h-3 text-stone-400" />
+                    <ExternalLink className="w-3 h-3 text-stone-500" />
                   </a>
                 )}
               </div>
@@ -409,7 +411,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-4">
                 <div>
                   <h2 className="text-xl font-bold font-serif text-stone-900 flex items-center gap-2">
-                    <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+                    <Star className="w-5 h-5 text-amber-700 fill-amber-500" />
                     <span>Avaliações dos Noivos</span>
                   </h2>
                   <p className="text-xs text-stone-500 mt-0.5">
@@ -419,7 +421,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
 
                 <Dialog open={reviewModalOpen} onOpenChange={setReviewModalOpen}>
                   <DialogTrigger asChild>
-                    <Button className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full text-xs font-bold px-5 h-10 shadow-xs cursor-pointer">
+                    <Button className="bg-brand hover:bg-brand-600 text-white rounded-full text-xs font-bold px-5 h-10 shadow-xs cursor-pointer">
                       <span>Deixar Avaliação</span>
                     </Button>
                   </DialogTrigger>
@@ -463,6 +465,8 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                               key={star}
                               type="button"
                               onClick={() => setReviewRating(star)}
+                              aria-label={`${star} ${star === 1 ? "estrela" : "estrelas"}`}
+                              aria-pressed={star === reviewRating}
                               className="p-1 hover:scale-110 transition-transform cursor-pointer"
                             >
                               <Star
@@ -494,7 +498,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                       <Button
                         type="submit"
                         disabled={isPendingReview}
-                        className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-12 text-xs shadow-md gap-2 mt-2"
+                        className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-12 text-xs shadow-md gap-2 mt-2"
                       >
                         {isPendingReview ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -512,7 +516,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
 
               {/* Lista de Avaliações */}
               {reviews.length === 0 ? (
-                <div className="text-center py-8 text-stone-400 space-y-2">
+                <div className="text-center py-8 text-stone-500 space-y-2">
                   <Star className="w-8 h-8 mx-auto text-stone-300" />
                   <p className="text-xs">Seja o primeiro casal a avaliar este fornecedor!</p>
                 </div>
@@ -521,7 +525,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                   {reviews.map((rev) => (
                     <div
                       key={rev.id}
-                      className="p-5 rounded-2xl bg-[#FAF8F5] border border-stone-200/80 space-y-2"
+                      className="p-5 rounded-2xl bg-ivory border border-stone-200/80 space-y-2"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -529,8 +533,8 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                             {rev.coupleNames}
                           </span>
                           {rev.isVerified && (
-                            <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-700" />
                               <span>Casamento Verificado</span>
                             </span>
                           )}
@@ -555,7 +559,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                       </p>
 
                       {rev.weddingDate && (
-                        <p className="text-[10px] text-stone-400">
+                        <p className="text-xs text-stone-500">
                           Casamento realizado em:{" "}
                           {new Date(rev.weddingDate).toLocaleDateString("pt-BR", {
                             month: "long",
@@ -574,9 +578,9 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
           {/* LADO DIREITO: CARD STICKY DE ORÇAMENTO & AGENDAMENTO (4 COLUNAS) */}
           {/* ========================================================================= */}
           <div className="lg:col-span-4 sticky top-20 space-y-6">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-[#8C6D45]/30 shadow-xl space-y-6">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-brand/30 shadow-xl space-y-6">
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400 block">
+                <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block">
                   Investimento Estimado
                 </span>
                 <div className="mt-1 flex items-baseline gap-2">
@@ -591,7 +595,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                   </span>
                 </div>
                 {vendor.averageTicket && (
-                  <p className="text-[11px] text-stone-400 mt-1">
+                  <p className="text-xs text-stone-500 mt-1">
                     Ticket médio:{" "}
                     {new Intl.NumberFormat("pt-BR", {
                       style: "currency",
@@ -611,7 +615,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
 
                 <form onSubmit={handleSendLead} className="space-y-3.5">
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-stone-700 uppercase">Seu Nome</Label>
+                    <Label className="text-xs font-bold text-stone-700 uppercase">Seu Nome</Label>
                     <Input
                       value={coupleName}
                       onChange={(e) => setCoupleName(e.target.value)}
@@ -622,7 +626,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-stone-700 uppercase">WhatsApp</Label>
+                    <Label className="text-xs font-bold text-stone-700 uppercase">WhatsApp</Label>
                     <Input
                       value={couplePhone}
                       onChange={(e) => setCouplePhone(e.target.value)}
@@ -633,7 +637,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-stone-700 uppercase">Data do Casamento</Label>
+                    <Label className="text-xs font-bold text-stone-700 uppercase">Data do Casamento</Label>
                     <DatePicker
                       value={weddingDate}
                       onChange={(e) => setWeddingDate(e.target.value)}
@@ -643,14 +647,14 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-stone-700 uppercase">Tipo de Reunião</Label>
+                    <Label className="text-xs font-bold text-stone-700 uppercase">Tipo de Reunião</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={() => setMeetingType("ONLINE")}
                         className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1 cursor-pointer ${
                           meetingType === "ONLINE"
-                            ? "bg-[#FAF4ED] border-[#8C6D45] text-[#8C6D45]"
+                            ? "bg-brand-50 border-brand text-brand"
                             : "bg-stone-50 border-stone-200 text-stone-600"
                         }`}
                       >
@@ -663,7 +667,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                         onClick={() => setMeetingType("PRESENTIAL")}
                         className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1 cursor-pointer ${
                           meetingType === "PRESENTIAL"
-                            ? "bg-[#FAF4ED] border-[#8C6D45] text-[#8C6D45]"
+                            ? "bg-brand-50 border-brand text-brand"
                             : "bg-stone-50 border-stone-200 text-stone-600"
                         }`}
                       >
@@ -676,7 +680,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                   <Button
                     type="submit"
                     disabled={isPendingLead}
-                    className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-12 text-xs shadow-md gap-2 mt-3 cursor-pointer"
+                    className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-12 text-xs shadow-md gap-2 mt-3 cursor-pointer"
                   >
                     {isPendingLead ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -691,13 +695,13 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
               </div>
 
               {/* Garantia MarryApp */}
-              <div className="pt-4 border-t border-stone-100 text-[11px] text-stone-500 space-y-2">
+              <div className="pt-4 border-t border-stone-100 text-xs text-stone-500 space-y-2">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
                   <span>Profissional verificado pela curadoria.</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-stone-400 shrink-0" />
+                  <Clock className="w-4 h-4 text-stone-500 shrink-0" />
                   <span>Tempo médio de resposta: menos de 2 horas.</span>
                 </div>
               </div>

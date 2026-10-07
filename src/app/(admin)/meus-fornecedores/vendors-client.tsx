@@ -250,10 +250,10 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
       {/* Header com Navegação em Abas */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#8C6D45] font-serif italic tracking-tight">
-            Fornecedores & Parceiros Homologados
+          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+            Meus fornecedores
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
+          <p className="mt-1 text-sm text-stone-600">
             Encontre empresas homologadas na sua região e gerencie os contratos do seu casamento.
           </p>
         </div>
@@ -264,7 +264,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
             onClick={() => setActiveTab("MARKETPLACE")}
             className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
               activeTab === "MARKETPLACE"
-                ? "bg-white text-[#8C6D45] shadow-xs"
+                ? "bg-white text-brand shadow-xs"
                 : "text-stone-600 hover:text-stone-900"
             }`}
           >
@@ -274,7 +274,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
             onClick={() => setActiveTab("MY_VENDORS")}
             className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
               activeTab === "MY_VENDORS"
-                ? "bg-white text-[#8C6D45] shadow-xs"
+                ? "bg-white text-brand shadow-xs"
                 : "text-stone-600 hover:text-stone-900"
             }`}
           >
@@ -293,7 +293,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               {/* Campo de Busca */}
               <div className="relative w-full md:w-80">
-                <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-stone-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <Input
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -308,9 +308,9 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                   <button
                     key={r.id}
                     onClick={() => setSelectedRegion(r.id)}
-                    className={`px-3.5 py-2 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                       selectedRegion === r.id
-                        ? "bg-[#8C6D45] text-white shadow-xs"
+                        ? "bg-brand text-white shadow-xs"
                         : "bg-stone-100/80 text-stone-600 hover:bg-stone-200/70"
                     }`}
                   >
@@ -340,8 +340,8 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
 
           {/* Grid de Fornecedores Parceiros */}
           {filteredPartners.length === 0 ? (
-            <div className="bg-white p-12 text-center rounded-3xl border border-stone-200 text-stone-400 text-sm">
-              <Compass className="w-10 h-10 mx-auto mb-2 opacity-50 text-[#8C6D45]" />
+            <div className="bg-white p-12 text-center rounded-3xl border border-stone-200 text-stone-500 text-sm">
+              <Compass className="w-10 h-10 mx-auto mb-2 opacity-50 text-brand" />
               <p className="font-bold text-stone-700">Nenhum fornecedor encontrado nesta região.</p>
               <p className="text-xs text-stone-500 mt-1">Tente selecionar outra categoria ou região de atendimento.</p>
             </div>
@@ -369,7 +369,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-stone-100 text-stone-400">
+                        <div className="w-full h-full flex items-center justify-center bg-stone-100 text-stone-500">
                           <Building2 className="w-8 h-8" />
                         </div>
                       )}
@@ -377,11 +377,11 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                       {/* Badges de Destaque */}
                       <div className="absolute top-3 right-3 flex items-center gap-1.5">
                         {partner.isVerified && (
-                          <Badge className="bg-emerald-600/90 text-white font-bold text-[10px] backdrop-blur-md gap-1">
+                          <Badge className="bg-emerald-600/90 text-white font-bold text-xs backdrop-blur-md gap-1">
                             <ShieldCheck className="w-3 h-3" /> Verificado
                           </Badge>
                         )}
-                        <Badge className="bg-stone-900/80 text-white font-bold text-[10px] backdrop-blur-md">
+                        <Badge className="bg-stone-900/80 text-white font-bold text-xs backdrop-blur-md">
                           {partner.category}
                         </Badge>
                       </div>
@@ -390,7 +390,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                       <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-stone-900 flex items-center gap-1 shadow-xs">
                         <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                         <span>{partner.rating.toFixed(1)}</span>
-                        <span className="text-[10px] text-stone-400">({partner.reviewCount})</span>
+                        <span className="text-xs text-stone-500">({partner.reviewCount})</span>
                       </div>
                     </div>
 
@@ -407,14 +407,14 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
 
                       {/* Regiões de Atendimento */}
                       <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                        <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
                           Regiões de Atendimento / Entrega:
                         </span>
                         <div className="flex flex-wrap gap-1">
                           {regions.map((r, i) => (
                             <span
                               key={i}
-                              className="inline-flex items-center gap-1 text-[10px] font-bold bg-[#FAF4ED] text-[#8C6D45] px-2 py-0.5 rounded-md border border-[#8C6D45]/20"
+                              className="inline-flex items-center gap-1 text-xs font-bold bg-brand-50 text-brand px-2 py-0.5 rounded-md border border-brand/20"
                             >
                               <MapPin className="w-2.5 h-2.5" />
                               {r}
@@ -440,7 +440,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                       {/* Rodapé do Card com Valores e Ações */}
                       <div className="pt-4 border-t border-stone-100 flex items-center justify-between gap-3">
                         <div>
-                          <span className="text-[10px] uppercase font-bold text-stone-400 block">
+                          <span className="text-xs uppercase font-bold text-stone-500 block">
                             Investimento médio:
                           </span>
                           <span className="text-base font-extrabold text-stone-900">
@@ -460,10 +460,10 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              <Button
+                              <Button aria-label="Chamar no WhatsApp"
                                 size="icon"
                                 variant="outline"
-                                className="rounded-full w-10 h-10 border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                                className="rounded-full w-10 h-10 border-emerald-600 text-emerald-700 hover:bg-emerald-50"
                                 title="Chamar no WhatsApp"
                               >
                                 <MessageCircle className="w-4 h-4" />
@@ -473,7 +473,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
 
                           <Button
                             onClick={() => handleOpenLeadModal(partner)}
-                            className="bg-[#8C6D45] hover:bg-[#785c39] text-white text-xs font-bold rounded-full h-10 px-4 gap-1.5 shadow-xs"
+                            className="bg-brand hover:bg-brand-600 text-white text-xs font-bold rounded-full h-10 px-4 gap-1.5 shadow-xs"
                           >
                             <Calendar className="w-3.5 h-3.5" />
                             <span>Agendar Reunião</span>
@@ -497,13 +497,13 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
           <div className="flex justify-end">
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-[#8C6D45] hover:bg-[#755630] text-white gap-2 rounded-full font-bold text-xs h-11 px-5">
+                <Button className="bg-brand hover:bg-brand-600 text-white gap-2 rounded-full font-bold text-xs h-11 px-5">
                   <Plus className="w-4 h-4" /> Novo Contrato de Fornecedor
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md bg-white rounded-3xl">
                 <DialogHeader>
-                  <DialogTitle className="font-serif italic font-bold text-xl text-[#8C6D45]">
+                  <DialogTitle className="font-serif italic font-bold text-xl text-brand">
                     Adicionar Fornecedor Contratado
                   </DialogTitle>
                 </DialogHeader>
@@ -520,7 +520,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                     <Label className="text-xs font-semibold text-zinc-600 mb-1 block">Contato (Telefone / WhatsApp / E-mail)</Label>
                     <Input name="contact" placeholder="(11) 99999-9999" className="rounded-xl" />
                   </div>
-                  <Button type="submit" className="w-full bg-[#8C6D45] hover:bg-[#755630] text-white rounded-full font-bold h-11" disabled={loading}>
+                  <Button type="submit" className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-11" disabled={loading}>
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar Fornecedor"}
                   </Button>
                 </form>
@@ -532,32 +532,32 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
           <div className="bg-white rounded-3xl border border-stone-200 shadow-sm overflow-hidden p-6">
             <div className="divide-y divide-stone-100">
               {vendors.length === 0 ? (
-                <div className="py-12 text-center text-stone-400 text-sm">
+                <div className="py-12 text-center text-stone-500 text-sm">
                   Nenhum contrato cadastrado ainda.
                 </div>
               ) : (
                 vendors.map((v) => (
                   <div key={v.id} className="py-4 flex items-center justify-between gap-4">
                     <div>
-                      <span className="text-[10px] font-bold uppercase text-[#8C6D45]">{v.category}</span>
+                      <span className="text-xs font-bold uppercase text-brand">{v.category}</span>
                       <h4 className="font-bold text-base text-stone-900 font-serif">{v.name}</h4>
                       <p className="text-xs text-stone-500">{v.contact || "Sem contato informado"}</p>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Button
+                      <Button aria-label="Editar"
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEdit(v)}
-                        className="text-stone-400 hover:text-stone-700 rounded-full h-9 w-9"
+                        className="text-stone-500 hover:text-stone-700 rounded-full h-9 w-9"
                       >
                         <Pencil className="w-4 h-4" />
                       </Button>
-                      <Button
+                      <Button aria-label="Excluir"
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(v.id)}
-                        className="text-stone-400 hover:text-red-600 rounded-full h-9 w-9"
+                        className="text-stone-500 hover:text-red-600 rounded-full h-9 w-9"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -646,7 +646,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                       : "bg-stone-50 border-stone-200 text-stone-600"
                   }`}
                 >
-                  <Video className="w-4 h-4 text-emerald-600" />
+                  <Video className="w-4 h-4 text-emerald-700" />
                   <span>Online (Meet/Zoom)</span>
                 </button>
 
@@ -679,7 +679,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
             <Button
               type="submit"
               disabled={isPendingLead}
-              className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold text-xs h-12 gap-2 shadow-sm"
+              className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold text-xs h-12 gap-2 shadow-sm"
             >
               {isPendingLead ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
               <span>Solicitar Agendamento com Fornecedor</span>

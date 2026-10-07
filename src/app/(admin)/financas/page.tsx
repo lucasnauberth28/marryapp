@@ -32,7 +32,7 @@ function formatCurrency(centavos: number): string {
 // ==========================================
 
 export const metadata = {
-  title: "Finanças — Lucas & Giovanna",
+  title: "Finanças",
   description: "Painel de conciliação financeira e controle de despesas do casamento.",
 };
 
@@ -60,10 +60,10 @@ export default async function FinancasPage() {
     <div className="space-y-8">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
-          Finanças & Despesas
+        <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+          Finanças
         </h1>
-        <p className="text-zinc-500 mt-1">
+        <p className="mt-1 text-sm text-stone-600">
           Balanço geral do casamento: conciliação de entradas, controle de despesas e saldo previsto.
         </p>
       </div>
@@ -77,7 +77,7 @@ export default async function FinancasPage() {
               Entradas Líquidas
             </CardTitle>
             <div className="h-8 w-8 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-200">
-              <ArrowDownRight className="h-4 w-4 text-emerald-600" />
+              <ArrowDownRight className="h-4 w-4 text-emerald-700" />
             </div>
           </CardHeader>
           <CardContent>
@@ -116,12 +116,12 @@ export default async function FinancasPage() {
             <CardTitle className="text-sm font-medium text-zinc-700 font-semibold">
               Saldo Previsto
             </CardTitle>
-            <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${isSaldoPositivo ? "bg-[#F3ECE3] text-[#8C6D45]" : "bg-red-100 text-red-600"}`}>
+            <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${isSaldoPositivo ? "bg-brand-100 text-brand" : "bg-red-100 text-red-600"}`}>
               <Scale className="h-4 w-4" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${isSaldoPositivo ? "text-[#8C6D45]" : "text-red-700"}`}>
+            <div className={`text-2xl font-bold ${isSaldoPositivo ? "text-brand" : "text-red-700"}`}>
               {formatCurrency(metrics.saldoPrevisto)}
             </div>
             <p className="text-xs text-zinc-500 mt-1">
@@ -137,7 +137,7 @@ export default async function FinancasPage() {
               Contas a Pagar
             </CardTitle>
             <div className="h-8 w-8 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-200">
-              <CalendarClock className="h-4 w-4 text-amber-600" />
+              <CalendarClock className="h-4 w-4 text-amber-700" />
             </div>
           </CardHeader>
           <CardContent>

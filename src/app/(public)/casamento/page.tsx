@@ -5,14 +5,14 @@ import {
   getGuestBookEntries,
 } from "@/actions/site-builder-actions";
 import prisma from "@/lib/prisma";
+import { guestPageMetadata } from "@/lib/wedding";
 import { WeddingSiteView } from "@/components/public/wedding-site-view";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Lucas & Giovanna — Casamento 11 de Outubro de 2027",
-  description: "Celebre conosco este momento especial. Informações do local, traje, lista de presentes e confirmação de presença.",
-};
+export async function generateMetadata() {
+  return guestPageMetadata(null);
+}
 
 export default async function WeddingPublicPage() {
   const [settings, storyItems, tips, guestbookEntries, gifts] = await Promise.all([

@@ -2,6 +2,9 @@
 import prisma from "@/lib/prisma";
 import { verifyAdminSession } from "@/actions/auth-actions";
 import { MensagensClient } from "./mensagens-client";
+import { getWeddingIdentity } from "@/lib/wedding";
+
+export const metadata = { title: "Mensagens" };
 
 export default async function MensagensPage() {
   await verifyAdminSession();
@@ -16,8 +19,11 @@ export default async function MensagensPage() {
     orderBy: { name: "asc" },
   });
 
+  const { coupleNames } = await getWeddingIdentity();
+
   return (
-    <MensagensClient 
+    <MensagensClient
+      coupleNames={coupleNames}
       initialTemplates={JSON.parse(JSON.stringify(templates))} 
       initialGuests={JSON.parse(JSON.stringify(convidados))} 
     />

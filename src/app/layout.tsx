@@ -17,8 +17,8 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Lucas & Giovanna | Casamento",
-  description: "Plataforma de gestão do casamento de Lucas e Giovanna",
+  title: { default: "MarryApp", template: "%s · MarryApp" },
+  description: "Organize o casamento, receba presentes e confirme presenças em um só lugar.",
 };
 
 export default function RootLayout({
@@ -28,10 +28,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`${outfit.variable} ${cormorant.variable} antialiased`}>
-      <body className="min-h-screen bg-[#FAF8F5] font-sans text-stone-800">
+      <body className="min-h-screen bg-ivory font-sans text-stone-800">
         {children}
         <Toaster 
-          position="top-right" 
+          position="bottom-right" 
           richColors 
           closeButton 
           duration={4000}

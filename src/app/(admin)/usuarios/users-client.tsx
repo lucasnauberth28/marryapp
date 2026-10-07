@@ -107,12 +107,12 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
+          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
             Usuários
           </h1>
-          <p className="text-zinc-500 mt-1">
+          <p className="mt-1 text-sm text-stone-600">
             Gerencie quem tem acesso ao painel e defina seus perfis.
           </p>
         </div>
@@ -152,7 +152,7 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-zinc-700">
-                  Senha {editingUser && <span className="text-zinc-400 text-xs font-normal">(Deixe em branco para não alterar)</span>}
+                  Senha {editingUser && <span className="text-zinc-500 text-xs font-normal">(Deixe em branco para não alterar)</span>}
                 </label>
                 <Input
                   type="password"
@@ -202,7 +202,7 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
               cell: (user) => (
                 <div className="flex items-center gap-3 font-medium text-zinc-900">
                   <div className="w-8 h-8 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center">
-                    <KeyRound className="w-4 h-4 text-zinc-400" />
+                    <KeyRound className="w-4 h-4 text-zinc-500" />
                   </div>
                   {user.name}
                 </div>
@@ -237,10 +237,10 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
               headerClassName: "text-right pr-4",
               cell: (user) => (
                 <div className="flex justify-end gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-zinc-600" onClick={() => openEditForm(user)}>
+                  <Button aria-label="Editar" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-zinc-600" onClick={() => openEditForm(user)}>
                     <Edit2 className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-red-600" onClick={() => handleDelete(user.id)}>
+                  <Button aria-label="Excluir" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-600" onClick={() => handleDelete(user.id)}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>

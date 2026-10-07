@@ -50,10 +50,10 @@ export function SettingsClient({ initialSettings }: { initialSettings: any }) {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
+        <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
           Configurações
         </h1>
-        <p className="text-zinc-500 mt-1">
+        <p className="mt-1 text-sm text-stone-600">
           Personalize a página pública e defina regras do casamento.
         </p>
       </div>

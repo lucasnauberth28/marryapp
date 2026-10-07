@@ -5,7 +5,7 @@ import { VendorsClient } from "./vendors-client";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Meus Fornecedores & Contratos | MarryApp",
+  title: "Meus fornecedores",
   description: "Gerencie seus contratos e explore fornecedores homologados por região.",
 };
 

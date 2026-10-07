@@ -26,7 +26,13 @@ const maskPhone = (value: string) => {
   return `(${num.slice(0, 2)}) ${num.slice(2, 7)}-${num.slice(7, 11)}`;
 };
 
-export function RsvpClient() {
+interface RsvpClientProps {
+  coupleNames: string;
+  initials: string;
+  dateLabel: string | null;
+}
+
+export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps) {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -149,10 +155,10 @@ export function RsvpClient() {
             transition={{ duration: 0.4 }}
           >
             <Card className="shadow-2xl border-0 rounded-3xl overflow-hidden bg-white">
-              <div className="h-2 bg-gradient-to-r from-emerald-400 to-teal-500" />
+              <div className="h-2 bg-gradient-to-r from-brand-300 to-brand" />
               <CardContent className="pt-8 pb-8 flex flex-col items-center text-center space-y-6">
-                <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center animate-bounce">
-                  <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+                <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center">
+                  <CheckCircle2 className="w-10 h-10 text-brand" aria-hidden="true" />
                 </div>
                 
                 {successStatus === "CONFIRMED" ? (
@@ -165,7 +171,7 @@ export function RsvpClient() {
                     </div>
                     
                     <div className="bg-zinc-50 p-6 rounded-2xl border border-zinc-200/80 w-full flex flex-col items-center shadow-inner">
-                      <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">Seu Ingresso Digital</p>
+                      <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Seu Ingresso Digital</p>
                       <div ref={qrRef} className="bg-white p-4 rounded-xl shadow-md border border-zinc-100">
                         <QRCodeCanvas value={`GUEST:${guest.id}`} size={160} level="H" />
                       </div>
@@ -179,7 +185,7 @@ export function RsvpClient() {
                         <Download className="w-4 h-4 mr-2" /> Salvar Ingresso (Imagem)
                       </Button>
                       
-                      <p className="text-[11px] text-zinc-400 mt-4 px-2">
+                      <p className="text-xs text-zinc-500 mt-4 px-2">
                         Apresente a imagem deste QR Code na entrada do evento para liberar seu acesso rapidamente.
                       </p>
                     </div>
@@ -213,12 +219,15 @@ export function RsvpClient() {
           >
             <Card className="shadow-2xl border-0 rounded-3xl overflow-hidden bg-white">
               <CardHeader className="text-center pt-8 pb-4">
-                <div className="w-12 h-12 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-100">
-                  <Heart className="w-6 h-6 text-zinc-400 fill-zinc-200" />
+                <div className="w-12 h-12 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand/15">
+                  <Heart className="w-6 h-6 text-brand fill-brand/20" aria-hidden="true" />
                 </div>
-                <CardTitle className="text-2xl font-extrabold text-zinc-900 tracking-tight">Confirmar Presença</CardTitle>
-                <CardDescription className="text-zinc-500 text-sm px-2">
-                  Olá! Digite seu telefone (WhatsApp com DDD) para localizarmos seu convite.
+                <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">Casamento de</p>
+                <p className="font-serif text-3xl font-semibold text-stone-900 leading-tight">{coupleNames}</p>
+                {dateLabel && <p className="text-sm text-stone-600">{dateLabel}</p>}
+                <CardTitle className="pt-4 text-xl font-semibold text-stone-900">Confirme sua presença</CardTitle>
+                <CardDescription className="text-stone-600 text-sm px-2">
+                  Digite o seu WhatsApp com DDD para encontrarmos o seu convite.
                 </CardDescription>
               </CardHeader>
               <CardContent className="pb-8">
@@ -232,7 +241,7 @@ export function RsvpClient() {
                       className="flex-1 rounded-xl border-zinc-200 bg-zinc-50/50 focus:bg-white h-12 text-base px-4 shadow-inner"
                       required
                     />
-                    <Button type="submit" disabled={loading} className="bg-zinc-950 hover:bg-zinc-800 text-white rounded-xl w-12 h-12 shrink-0 shadow-md">
+                    <Button type="submit" disabled={loading} aria-label="Buscar convite" className="bg-brand hover:bg-brand-600 text-white rounded-xl w-12 h-12 shrink-0 shadow-md">
                       {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
                     </Button>
                   </div>
@@ -240,7 +249,7 @@ export function RsvpClient() {
                     <motion.p 
                       initial={{ opacity: 0 }} 
                       animate={{ opacity: 1 }}
-                      className="text-xs text-red-500 font-semibold text-center bg-red-50 border border-red-100 py-2.5 px-3 rounded-lg"
+                      className="text-xs text-red-600 font-semibold text-center bg-red-50 border border-red-100 py-2.5 px-3 rounded-lg"
                     >
                       {error}
                     </motion.p>
@@ -261,13 +270,13 @@ export function RsvpClient() {
             <Card className="shadow-2xl border-0 rounded-3xl overflow-hidden bg-white">
               <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-zinc-900 rounded-lg flex items-center justify-center shrink-0">
-                    <span className="text-white font-bold text-sm">L&G</span>
+                  <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center shrink-0">
+                    <span className="text-white font-bold text-sm">{initials}</span>
                   </div>
                   <div className="text-left">
                     <h3 className="font-extrabold text-zinc-900 text-base leading-tight">{guest.name}</h3>
                     <p className="text-xs text-zinc-500 font-medium mt-0.5 flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5 text-zinc-400" />
+                      <Users className="w-3.5 h-3.5 text-zinc-500" />
                       {guest.allowedCompanions > 0 
                         ? `Seu convite permite até ${guest.allowedCompanions} acompanhante(s)` 
                         : "Convite individual"}
@@ -280,7 +289,7 @@ export function RsvpClient() {
                 {/* Seletor de Acompanhantes */}
                 {guest.allowedCompanions > 0 && (
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider">
                       Quantos acompanhantes você trará?
                     </label>
                     <Select
@@ -310,7 +319,7 @@ export function RsvpClient() {
                       exit={{ opacity: 0, height: 0 }}
                       className="space-y-3 overflow-hidden border-t border-zinc-100 pt-4"
                     >
-                      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider">
                         Nomes dos acompanhantes:
                       </label>
                       {Array.from({ length: companionsCount }).map((_, i) => (
@@ -336,7 +345,7 @@ export function RsvpClient() {
 
                 {/* Restrições Alimentares */}
                 <div className="space-y-2 border-t border-zinc-100 pt-4">
-                  <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider">
                     Restrições Alimentares / Alergias?
                   </label>
                   <Input 
@@ -345,20 +354,20 @@ export function RsvpClient() {
                     onChange={(e) => setDietary(e.target.value)}
                     className="h-11 border-zinc-200 rounded-xl text-sm"
                   />
-                  <p className="text-[10px] text-zinc-400">Deixe em branco se não possuir nenhuma restrição.</p>
+                  <p className="text-xs text-zinc-500">Deixe em branco se não possuir nenhuma restrição.</p>
                 </div>
 
                 {/* Botões de Ação */}
                 <div className="pt-4 border-t border-zinc-100 space-y-4">
                   <p className="text-center font-bold text-zinc-800 text-sm">Podemos contar com sua presença?</p>
                   
-                  {error && <p className="text-xs text-red-500 font-semibold text-center bg-red-50 py-2 rounded-lg">{error}</p>}
+                  {error && <p className="text-xs text-red-600 font-semibold text-center bg-red-50 py-2 rounded-lg">{error}</p>}
 
                   <div className="grid grid-cols-2 gap-4">
                     <Button 
                       onClick={() => handleConfirm("CONFIRMED")} 
                       disabled={submitLoading}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-12 font-bold shadow-md shadow-emerald-600/10"
+                      className="bg-brand hover:bg-brand-600 text-white rounded-xl h-12 font-semibold shadow-md shadow-brand/10"
                     >
                       {submitLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sim, eu vou!"}
                     </Button>
@@ -366,7 +375,7 @@ export function RsvpClient() {
                       onClick={() => handleConfirm("DECLINED")}
                       disabled={submitLoading}
                       variant="outline"
-                      className="border-red-200 text-red-600 hover:bg-red-50 rounded-xl h-12 font-bold"
+                      className="border-stone-300 text-stone-700 hover:bg-stone-50 rounded-xl h-12 font-semibold"
                     >
                       Não poderei ir
                     </Button>

@@ -3,5 +3,5 @@ export default function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="min-h-screen bg-transparent">{children}</div>;
+  return <main id="conteudo" className="min-h-screen bg-transparent">{children}</main>;
 }

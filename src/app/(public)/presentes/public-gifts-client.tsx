@@ -32,9 +32,10 @@ import {
 
 interface PublicGiftsClientProps {
   initialGifts: Gift[];
+  coupleNames: string;
 }
 
-export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
+export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClientProps) {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"default" | "asc" | "desc">("default");
   const [selectedGift, setSelectedGift] = useState<Gift | null>(null);
@@ -75,9 +76,9 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
           Sua presença é nosso maior presente! Se desejar nos apoiar no início desta nova jornada juntos, escolha uma das lembranças abaixo.
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-[11px] font-semibold text-zinc-500">
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs font-semibold text-zinc-500">
           <span className="flex items-center gap-1 text-zinc-600 bg-white/80 px-2.5 py-1 rounded-full border border-zinc-200/60 shadow-2xs">
-            <QrCode className="w-3 h-3 text-emerald-600" /> PIX Copia e Cola (Sem Taxas)
+            <QrCode className="w-3 h-3 text-emerald-700" /> PIX Copia e Cola (Sem Taxas)
           </span>
           <span className="flex items-center gap-1 text-zinc-600 bg-white/80 px-2.5 py-1 rounded-full border border-zinc-200/60 shadow-2xs">
             <CreditCard className="w-3 h-3 text-indigo-600" /> Cartão de Crédito até 12x
@@ -91,7 +92,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
       {/* Barra de Filtros e Busca */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-6xl mx-auto w-full bg-white p-3 rounded-2xl border border-zinc-200/80 shadow-2xs">
         <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3" />
           <Input
             placeholder="Buscar presente por nome..."
             value={search}
@@ -101,7 +102,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 text-xs">
-          <span className="text-zinc-400 font-semibold text-[11px] whitespace-nowrap">Ordenar por:</span>
+          <span className="text-zinc-500 font-semibold text-xs whitespace-nowrap">Ordenar por:</span>
           <button
             onClick={() => setSortBy("default")}
             className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
@@ -137,10 +138,10 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
 
       {/* Grid de Presentes */}
       {filteredGifts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 bg-white border border-zinc-200/80 rounded-3xl text-zinc-400 max-w-6xl mx-auto w-full">
+        <div className="flex flex-col items-center justify-center py-16 bg-white border border-zinc-200/80 rounded-3xl text-zinc-500 max-w-6xl mx-auto w-full">
           <GiftIcon className="w-12 h-12 mb-3 text-zinc-300 stroke-[1.5]" />
           <p className="font-bold text-zinc-700 text-base">Nenhum presente encontrado.</p>
-          <p className="text-xs text-zinc-400 mt-1">Tente buscar por outro termo.</p>
+          <p className="text-xs text-zinc-500 mt-1">Tente buscar por outro termo.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto w-full">
@@ -161,9 +162,9 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-zinc-400">
+                  <div className="flex flex-col items-center justify-center text-zinc-500">
                     <ImageOff className="w-8 h-8 text-zinc-300 mb-2" />
-                    <span className="text-xs text-zinc-400 font-medium">Lembrança Especial</span>
+                    <span className="text-xs text-zinc-500 font-medium">Lembrança Especial</span>
                   </div>
                 )}
 
@@ -196,7 +197,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
 
                 <div className="pt-4 border-t border-zinc-100 flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-bold block">
+                    <span className="text-xs text-zinc-500 uppercase tracking-wider font-bold block">
                       Valor Sugerido
                     </span>
                     <span className="text-xl font-extrabold text-zinc-900">
@@ -208,7 +209,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
                     <Button
                       disabled
                       size="sm"
-                      className="rounded-xl px-4 text-xs font-bold bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed"
+                      className="rounded-xl px-4 text-xs font-bold bg-zinc-100 text-zinc-500 border border-zinc-200 cursor-not-allowed"
                     >
                       Presenteado
                     </Button>
@@ -246,7 +247,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
                     className="w-full h-full max-h-[340px] object-contain rounded-xl drop-shadow-xs transition-transform duration-500 hover:scale-105"
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-zinc-400 p-6 text-center">
+                  <div className="flex flex-col items-center justify-center text-zinc-500 p-6 text-center">
                     <GiftIcon className="w-12 h-12 text-zinc-300 mb-2 stroke-[1.2]" />
                     <span className="text-xs text-zinc-500 font-semibold">Lembrança Especial para o Novo Lar</span>
                   </div>
@@ -265,8 +266,8 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
               <div className="md:w-[40%] p-5 sm:p-6 flex flex-col justify-between space-y-4 bg-white overflow-y-auto max-h-[82vh]">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20 inline-flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-primary" /> Casamento Lucas & Giovanna
+                    <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20 inline-flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-primary" aria-hidden="true" /> {coupleNames}
                     </span>
                   </div>
 
@@ -283,21 +284,21 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
 
                   {/* Card de Valor da Contribuição */}
                   <div className="bg-primary/5 p-3.5 rounded-xl border border-primary/20 space-y-0.5 mt-2 shadow-2xs">
-                    <span className="text-[9px] font-extrabold uppercase tracking-widest text-primary block">
+                    <span className="text-xs font-extrabold uppercase tracking-widest text-primary block">
                       Valor da Contribuição
                     </span>
                     <span className="text-2xl sm:text-3xl font-black text-zinc-900 tracking-tight block">
                       {formatPrice(selectedGift.amount)}
                     </span>
-                    <p className="text-[11px] text-zinc-500 flex items-center gap-1 pt-0.5 font-medium">
-                      <ShieldCheck className="w-3 h-3 text-emerald-600" /> PIX ou Cartão em até 12x
+                    <p className="text-xs text-zinc-500 flex items-center gap-1 pt-0.5 font-medium">
+                      <ShieldCheck className="w-3 h-3 text-emerald-700" /> PIX ou Cartão em até 12x
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-2 pt-2">
                   {selectedGift.isPurchased ? (
-                    <Button disabled className="w-full rounded-xl py-3 text-xs font-bold bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed">
+                    <Button disabled className="w-full rounded-xl py-3 text-xs font-bold bg-zinc-100 text-zinc-500 border border-zinc-200 cursor-not-allowed">
                       Presente Já Comprado
                     </Button>
                   ) : (
@@ -312,7 +313,7 @@ export function PublicGiftsClient({ initialGifts }: PublicGiftsClientProps) {
                   <Button
                     variant="ghost"
                     onClick={() => setSelectedGift(null)}
-                    className="w-full text-[11px] font-semibold text-zinc-500 hover:text-zinc-900 rounded-lg h-8"
+                    className="w-full text-xs font-semibold text-zinc-500 hover:text-zinc-900 rounded-lg h-8"
                   >
                     Voltar para a lista
                   </Button>

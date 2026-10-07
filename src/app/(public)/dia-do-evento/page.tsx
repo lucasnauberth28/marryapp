@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 import { getTimelineEvents } from "@/actions/timeline-actions";
+import { guestPageMetadata } from "@/lib/wedding";
 import { TimelinePublicClient } from "./timeline-public-client";
 
-export const metadata: Metadata = {
-  title: "Cronograma | Lucas & Giovanna",
-  description: "Acompanhe o cronograma do dia do nosso casamento.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return guestPageMetadata("Cronograma do dia", "Acompanhe os horários do grande dia.");
+}
 
 // Lê o banco a cada acesso: nunca pré-renderizar no build (dados congelados e build dependente do banco)
 export const dynamic = "force-dynamic";

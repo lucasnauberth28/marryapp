@@ -4,7 +4,7 @@ import { KanbanBoard } from "@/components/kanban/kanban-board";
 import { verifyAdminSession } from "@/actions/auth-actions";
 
 export const metadata: Metadata = {
-  title: "Pendências | Lucas & Giovanna",
+  title: "Tarefas",
   description: "Gerencie as tarefas do casamento",
 };
 

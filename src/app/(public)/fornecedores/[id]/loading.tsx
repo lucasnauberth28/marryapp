@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function VendorDetailLoading() {
   return (
-    <div className="min-h-screen bg-[#FCFBF9] flex flex-col justify-between py-8 px-6">
+    <div className="min-h-screen bg-paper flex flex-col justify-between py-8 px-6">
       <div className="max-w-7xl mx-auto w-full space-y-8 animate-in fade-in duration-300">
         <Skeleton className="h-6 w-48 rounded-full" />
 

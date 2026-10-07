@@ -122,16 +122,16 @@ export function DatePicker({
             className={cn(
               "w-full h-10 justify-start text-left font-normal bg-white border-zinc-200 shadow-xs hover:bg-zinc-50 px-3 rounded-lg text-sm transition-colors",
               !selectedDate && "text-muted-foreground",
-              open && "ring-2 ring-[#8C6D45]/30 border-[#8C6D45]",
+              open && "ring-2 ring-brand/30 border-brand",
               className
             )}
           >
-            <CalendarIcon className="mr-2 h-4 w-4 shrink-0 text-[#8C6D45]" />
+            <CalendarIcon className="mr-2 h-4 w-4 shrink-0 text-brand" />
             <span className="flex-1 truncate">{formattedDisplay || placeholder}</span>
             {selectedDate && (
               <span
                 onClick={handleClear}
-                className="ml-auto text-zinc-400 hover:text-zinc-600 p-0.5 rounded-full"
+                className="ml-auto text-zinc-500 hover:text-zinc-600 p-0.5 rounded-full"
                 title="Limpar data"
               >
                 <X className="w-3.5 h-3.5" />
@@ -167,7 +167,7 @@ export function DatePicker({
           {/* Rótulos dos Dias da Semana */}
           <div className="grid grid-cols-7 gap-1 text-center mb-1">
             {WEEKDAYS.map((day) => (
-              <span key={day} className="text-[10px] font-semibold text-zinc-400 py-1">
+              <span key={day} className="text-xs font-semibold text-zinc-500 py-1">
                 {day}
               </span>
             ))}
@@ -188,7 +188,7 @@ export function DatePicker({
                     "h-7 w-7 mx-auto rounded-lg text-xs flex items-center justify-center transition-all cursor-pointer",
                     !isCurrentMonth && "text-zinc-300 font-normal",
                     isCurrentMonth && !isSelected && "text-zinc-700 font-medium hover:bg-zinc-100",
-                    isSelected && "bg-[#8C6D45] text-white font-bold shadow-xs hover:bg-[#755630]"
+                    isSelected && "bg-brand text-white font-bold shadow-xs hover:bg-brand-600"
                   )}
                 >
                   {format(day, "d")}
@@ -202,7 +202,7 @@ export function DatePicker({
             <button
               type="button"
               onClick={() => handleSelectDate(new Date())}
-              className="text-[#8C6D45] hover:underline font-bold text-[11px] cursor-pointer"
+              className="text-brand hover:underline font-bold text-xs cursor-pointer"
             >
               Hoje
             </button>
@@ -210,7 +210,7 @@ export function DatePicker({
               <button
                 type="button"
                 onClick={(e) => handleClear(e)}
-                className="text-zinc-400 hover:text-zinc-600 font-medium text-[11px] cursor-pointer"
+                className="text-zinc-500 hover:text-zinc-600 font-medium text-xs cursor-pointer"
               >
                 Limpar
               </button>

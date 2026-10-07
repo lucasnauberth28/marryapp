@@ -46,22 +46,22 @@ export function HomeLandingClient() {
   const [detailedPricingType, setDetailedPricingType] = useState<PricingAudience>("COUPLE");
 
   return (
-    <div className="min-h-screen bg-[#FCFBF9] text-stone-900 font-sans antialiased overflow-x-hidden selection:bg-[#8C6D45]/20 selection:text-[#8C6D45]">
+    <div className="min-h-screen bg-paper text-stone-900 font-sans antialiased overflow-x-hidden selection:bg-brand/20 selection:text-brand">
       {/* ========================================================================= */}
       {/* 1. TOP NAVBAR GLOBAL COM LOGOTIPO DE ALIANÇAS (SEM A PALAVRA ECOSYSTEM) */}
       {/* ========================================================================= */}
-      <header className="sticky top-0 z-50 bg-[#FCFBF9]/85 backdrop-blur-md border-b border-stone-200/60 transition-all">
+      <header className="sticky top-0 z-50 bg-paper/85 backdrop-blur-md border-b border-stone-200/60 transition-all">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           {/* Logo MarryApp com Alianças Juntas */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FAF4ED] to-[#FAF8F5] border border-[#8C6D45]/30 flex items-center justify-center text-[#8C6D45] shadow-xs group-hover:scale-105 transition-transform">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-brand-50 to-ivory border border-brand/30 flex items-center justify-center text-brand shadow-xs group-hover:scale-105 transition-transform">
               <WeddingRingsIcon className="w-6 h-6" />
             </div>
             <div className="flex flex-col">
               <span className="font-serif italic font-bold text-2xl text-stone-900 leading-none">
                 MarryApp
               </span>
-              <span className="text-[9px] tracking-widest text-[#8C6D45] font-extrabold uppercase mt-0.5">
+              <span className="text-xs tracking-widest text-brand font-extrabold uppercase mt-0.5">
                 Plataforma Oficial
               </span>
             </div>
@@ -73,7 +73,7 @@ export function HomeLandingClient() {
               onClick={() => setActiveTab("NOIVOS")}
               className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "NOIVOS"
-                  ? "bg-white text-[#8C6D45] shadow-xs"
+                  ? "bg-white text-brand shadow-xs"
                   : "text-stone-600 hover:text-stone-900"
               }`}
             >
@@ -83,7 +83,7 @@ export function HomeLandingClient() {
               onClick={() => setActiveTab("ASSESSORES")}
               className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "ASSESSORES"
-                  ? "bg-white text-[#8C6D45] shadow-xs"
+                  ? "bg-white text-brand shadow-xs"
                   : "text-stone-600 hover:text-stone-900"
               }`}
             >
@@ -93,7 +93,7 @@ export function HomeLandingClient() {
               onClick={() => setActiveTab("FORNECEDORES")}
               className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "FORNECEDORES"
-                  ? "bg-white text-[#8C6D45] shadow-xs"
+                  ? "bg-white text-brand shadow-xs"
                   : "text-stone-600 hover:text-stone-900"
               }`}
             >
@@ -112,7 +112,7 @@ export function HomeLandingClient() {
               </Button>
             </Link>
             <Link href="/assinar?tipo=casal&plano=classic">
-              <Button className="bg-[#8C6D45] hover:bg-[#785c39] text-white text-xs font-bold rounded-full px-5 h-10 shadow-sm hover:shadow-md transition-all gap-1.5">
+              <Button className="bg-brand hover:bg-brand-600 text-white text-xs font-bold rounded-full px-5 h-10 shadow-sm hover:shadow-md transition-all gap-1.5">
                 <span>Criar Casamento</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
@@ -125,7 +125,7 @@ export function HomeLandingClient() {
       {/* 2. HERO DINÂMICO COM SLOGAN OFICIAL: "O casamento dos seus sonhos, organizado e fácil!" */}
       {/* ========================================================================= */}
       <section className="relative pt-16 pb-16 md:pt-20 md:pb-20 overflow-hidden">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[360px] bg-gradient-to-tr from-[#8C6D45]/10 via-[#C5A880]/15 to-amber-100/30 blur-3xl -z-10 pointer-events-none rounded-full" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[360px] bg-gradient-to-tr from-brand/10 via-brand-300/15 to-amber-100/30 blur-3xl -z-10 pointer-events-none rounded-full" />
 
         <div className="max-w-7xl mx-auto px-6">
           {/* Seletor Mobile de Públicos */}
@@ -134,7 +134,7 @@ export function HomeLandingClient() {
               <button
                 onClick={() => setActiveTab("NOIVOS")}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold ${
-                  activeTab === "NOIVOS" ? "bg-white text-[#8C6D45] shadow-xs" : "text-stone-500"
+                  activeTab === "NOIVOS" ? "bg-white text-brand shadow-xs" : "text-stone-500"
                 }`}
               >
                 Noivos
@@ -142,7 +142,7 @@ export function HomeLandingClient() {
               <button
                 onClick={() => setActiveTab("ASSESSORES")}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold ${
-                  activeTab === "ASSESSORES" ? "bg-white text-[#8C6D45] shadow-xs" : "text-stone-500"
+                  activeTab === "ASSESSORES" ? "bg-white text-brand shadow-xs" : "text-stone-500"
                 }`}
               >
                 Assessores
@@ -150,7 +150,7 @@ export function HomeLandingClient() {
               <button
                 onClick={() => setActiveTab("FORNECEDORES")}
                 className={`px-3 py-1.5 rounded-full text-xs font-bold ${
-                  activeTab === "FORNECEDORES" ? "bg-white text-[#8C6D45] shadow-xs" : "text-stone-500"
+                  activeTab === "FORNECEDORES" ? "bg-white text-brand shadow-xs" : "text-stone-500"
                 }`}
               >
                 Fornecedores
@@ -171,7 +171,7 @@ export function HomeLandingClient() {
               >
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-stone-900 tracking-tight leading-[1.1] font-serif">
                   O casamento dos seus sonhos,{" "}
-                  <span className="italic text-[#8C6D45]">organizado e fácil!</span>
+                  <span className="italic text-brand">organizado e fácil!</span>
                 </h1>
 
                 <p className="mt-6 text-base sm:text-lg md:text-xl text-stone-600 max-w-2xl leading-relaxed">
@@ -212,7 +212,7 @@ export function HomeLandingClient() {
               >
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-stone-900 tracking-tight leading-[1.1] font-serif">
                   Gerencie todos os seus casamentos{" "}
-                  <span className="italic text-[#8C6D45]">sem planilhas perdidas</span>.
+                  <span className="italic text-brand">sem planilhas perdidas</span>.
                 </h1>
 
                 <p className="mt-6 text-base sm:text-lg md:text-xl text-stone-600 max-w-2xl leading-relaxed">
@@ -253,7 +253,7 @@ export function HomeLandingClient() {
               >
                 <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-stone-900 tracking-tight leading-[1.1] font-serif">
                   Conecte-se com casais reais prontos para contratar{" "}
-                  <span className="italic text-[#8C6D45]">na sua região</span>.
+                  <span className="italic text-brand">na sua região</span>.
                 </h1>
 
                 <p className="mt-6 text-base sm:text-lg md:text-xl text-stone-600 max-w-2xl leading-relaxed">
@@ -291,7 +291,7 @@ export function HomeLandingClient() {
       <section className="py-16 bg-[#F7F5F0] border-y border-stone-200/60">
         <div className="max-w-7xl mx-auto px-6 space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#8C6D45]">
+            <span className="text-xs font-bold uppercase tracking-widest text-brand">
               Design & Sofisticação
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-serif text-stone-900">
@@ -315,10 +315,10 @@ export function HomeLandingClient() {
 
               <div className="relative z-20 space-y-3 text-white">
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-[#8C6D45] text-white font-bold text-[10px] uppercase tracking-wider shadow-xs">
+                  <Badge className="bg-brand text-white font-bold text-xs uppercase tracking-wider shadow-xs">
                     Site dos Noivos No-Code
                   </Badge>
-                  <span className="text-[11px] font-mono text-stone-300 bg-black/40 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/10">
+                  <span className="text-xs font-mono text-stone-300 bg-black/40 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/10">
                     marryapp.com.br/casamento/...
                   </span>
                 </div>
@@ -343,14 +343,14 @@ export function HomeLandingClient() {
                 <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/40 to-transparent z-10" />
 
                 <div className="relative z-20 text-white space-y-1.5">
-                  <span className="text-[10px] uppercase tracking-wider text-amber-300 font-extrabold flex items-center gap-1.5">
+                  <span className="text-xs uppercase tracking-wider text-amber-300 font-extrabold flex items-center gap-1.5">
                     <Sparkles className="w-3 h-3" />
                     <span>Recepção & Mesas</span>
                   </span>
                   <h4 className="text-lg font-serif font-bold leading-snug">
                     Gestão visual de assentos e restrições de buffet
                   </h4>
-                  <p className="text-[11px] text-stone-300">
+                  <p className="text-xs text-stone-300">
                     Organize convidados por setor com exportação instantânea para cerimonialistas.
                   </p>
                 </div>
@@ -366,14 +366,14 @@ export function HomeLandingClient() {
                 <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/40 to-transparent z-10" />
 
                 <div className="relative z-20 text-white space-y-1.5">
-                  <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-extrabold flex items-center gap-1.5">
+                  <span className="text-xs uppercase tracking-wider text-emerald-300 font-extrabold flex items-center gap-1.5">
                     <Gift className="w-3 h-3" />
                     <span>Lista de Presentes Pix</span>
                   </span>
                   <h4 className="text-lg font-serif font-bold leading-snug">
                     Receba em dinheiro com taxa zero e resgate no mesmo dia
                   </h4>
-                  <p className="text-[11px] text-stone-300">
+                  <p className="text-xs text-stone-300">
                     Presentes fictícios convertidos em Pix direto na conta bancária dos noivos.
                   </p>
                 </div>
@@ -389,7 +389,7 @@ export function HomeLandingClient() {
       <section className="py-20 bg-white border-y border-stone-200/70">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-xs font-bold text-[#8C6D45] uppercase tracking-widest">
+            <h2 className="text-xs font-bold text-brand uppercase tracking-widest">
               Tecnologia de Ponta a Ponta
             </h2>
             <p className="text-3xl sm:text-4xl font-extrabold text-stone-900 font-serif mt-2">
@@ -399,9 +399,9 @@ export function HomeLandingClient() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Card 1: Pix e Cartão com Taxa Zero no Classic */}
-            <div className="p-8 rounded-3xl bg-[#FAF8F5] border border-stone-200/80 hover:border-[#8C6D45]/40 transition-all duration-300 flex flex-col justify-between group">
+            <div className="p-8 rounded-3xl bg-ivory border border-stone-200/80 hover:border-brand/40 transition-all duration-300 flex flex-col justify-between group">
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-[#8C6D45]/10 text-[#8C6D45] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-brand/10 text-brand flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Percent className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl font-bold text-stone-900 font-serif mb-2">
@@ -411,14 +411,14 @@ export function HomeLandingClient() {
                   No plano básico cobramos uma pequena taxa de 2,99% por presente. Já no Plano Classic e VIP, a taxa é <strong>ZERO 0% no Pix</strong> com saque direto na sua conta bancária no mesmo dia.
                 </p>
               </div>
-              <Link href="/assinar?tipo=casal&plano=classic" className="mt-6 pt-4 border-t border-stone-200/60 flex items-center text-xs font-bold text-[#8C6D45] gap-1 group-hover:gap-2 transition-all">
+              <Link href="/assinar?tipo=casal&plano=classic" className="mt-6 pt-4 border-t border-stone-200/60 flex items-center text-xs font-bold text-brand gap-1 group-hover:gap-2 transition-all">
                 <span>Ver Planos sem Taxa</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
 
             {/* Card 2: WhatsApp & RSVP Inteligente */}
-            <div className="p-8 rounded-3xl bg-[#FAF8F5] border border-stone-200/80 hover:border-[#8C6D45]/40 transition-all duration-300 flex flex-col justify-between group">
+            <div className="p-8 rounded-3xl bg-ivory border border-stone-200/80 hover:border-brand/40 transition-all duration-300 flex flex-col justify-between group">
               <div>
                 <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <MessageCircle className="w-6 h-6" />
@@ -437,7 +437,7 @@ export function HomeLandingClient() {
             </div>
 
             {/* Card 3: Fornecedores por Região */}
-            <div className="p-8 rounded-3xl bg-[#FAF8F5] border border-stone-200/80 hover:border-[#8C6D45]/40 transition-all duration-300 flex flex-col justify-between group">
+            <div className="p-8 rounded-3xl bg-ivory border border-stone-200/80 hover:border-brand/40 transition-all duration-300 flex flex-col justify-between group">
               <div>
                 <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Compass className="w-6 h-6" />
@@ -485,7 +485,7 @@ export function HomeLandingClient() {
               onClick={() => setPricingType("COUPLE")}
               className={`group relative h-48 md:h-56 flex flex-col justify-end p-8 text-left transition-all duration-300 overflow-hidden cursor-pointer ${
                 pricingType === "COUPLE"
-                  ? "ring-2 ring-inset ring-[#8C6D45] md:z-10 opacity-100"
+                  ? "ring-2 ring-inset ring-brand md:z-10 opacity-100"
                   : "opacity-60 hover:opacity-85"
               }`}
               style={{
@@ -520,7 +520,7 @@ export function HomeLandingClient() {
               onClick={() => setPricingType("VENDOR")}
               className={`group relative h-48 md:h-56 flex flex-col justify-end p-8 text-left transition-all duration-300 overflow-hidden cursor-pointer ${
                 pricingType === "VENDOR"
-                  ? "ring-2 ring-inset ring-[#8C6D45] md:z-10 opacity-100"
+                  ? "ring-2 ring-inset ring-brand md:z-10 opacity-100"
                   : "opacity-60 hover:opacity-85"
               }`}
               style={{
@@ -562,26 +562,26 @@ export function HomeLandingClient() {
             {/* 1. Fornecedor Start */}
             <div className="bg-white p-7 rounded-3xl border border-stone-200 shadow-xs flex flex-col justify-between hover:border-stone-300 transition-all">
               <div>
-                <span className="text-[10px] font-bold uppercase text-stone-400 tracking-wider">Iniciante</span>
+                <span className="text-xs font-bold uppercase text-stone-500 tracking-wider">Iniciante</span>
                 <h3 className="text-xl font-bold font-serif text-stone-900 mt-1">Fornecedor Start</h3>
                 <p className="text-xs text-stone-500 mt-1">Perfil básico no marketplace.</p>
 
                 <div className="my-6">
                   <span className="text-3xl font-extrabold text-stone-900">Grátis</span>
-                  <span className="text-xs text-stone-400 font-medium"> / para sempre</span>
+                  <span className="text-xs text-stone-500 font-medium"> / para sempre</span>
                 </div>
 
                 <ul className="space-y-2.5 text-xs text-stone-600">
                   <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <Check className="w-4 h-4 text-emerald-700 shrink-0" />
                     <span>Perfil no Marketplace</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <Check className="w-4 h-4 text-emerald-700 shrink-0" />
                     <span>1 região de atendimento</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <Check className="w-4 h-4 text-emerald-700 shrink-0" />
                     <span>Até 3 solicitações de orçamento/mês</span>
                   </li>
                 </ul>
@@ -596,40 +596,40 @@ export function HomeLandingClient() {
 
             {/* 2. Fornecedor Pro (DESTAQUE COM BADGE CENTRALIZADA) */}
             <div className="bg-gradient-to-b from-emerald-50/50 to-white p-7 rounded-3xl border-2 border-emerald-600 shadow-lg flex flex-col justify-between relative hover:shadow-xl transition-all">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-max bg-emerald-600 text-white text-[10px] font-extrabold uppercase tracking-wider px-4 py-1 rounded-full shadow-xs text-center">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-max bg-emerald-600 text-white text-xs font-extrabold uppercase tracking-wider px-4 py-1 rounded-full shadow-xs text-center">
                 Mais Popular para Empresas
               </div>
 
               <div>
-                <span className="text-[10px] font-bold uppercase text-emerald-700 tracking-wider">Destaque Comercial</span>
+                <span className="text-xs font-bold uppercase text-emerald-700 tracking-wider">Destaque Comercial</span>
                 <h3 className="text-xl font-bold font-serif text-stone-900 mt-1">Fornecedor Pro</h3>
                 <p className="text-xs text-stone-500 mt-1">Leads ilimitados e selo verificado.</p>
 
                 <div className="my-6">
-                  <span className="text-xs text-stone-400 font-bold">R$ </span>
+                  <span className="text-xs text-stone-500 font-bold">R$ </span>
                   <span className="text-3xl font-extrabold text-stone-900">99</span>
-                  <span className="text-xs text-stone-400 font-medium"> / mês</span>
+                  <span className="text-xs text-stone-500 font-medium"> / mês</span>
                 </div>
 
                 <ul className="space-y-2.5 text-xs text-stone-700 font-medium">
                   <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <Check className="w-4 h-4 text-emerald-700 shrink-0" />
                     <span><strong>Selo de Fornecedor Verificado</strong></span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <Check className="w-4 h-4 text-emerald-700 shrink-0" />
                     <span>Múltiplas regiões e cidades</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <Check className="w-4 h-4 text-emerald-700 shrink-0" />
                     <span>Leads e orçamentos ilimitados</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <Check className="w-4 h-4 text-emerald-700 shrink-0" />
                     <span>Agendamento de reuniões online/presencial</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <Check className="w-4 h-4 text-emerald-700 shrink-0" />
                     <span>Botão de WhatsApp direto com o casal</span>
                   </li>
                 </ul>
@@ -645,14 +645,14 @@ export function HomeLandingClient() {
             {/* 3. Fornecedor Master Elite */}
             <div className="bg-white p-7 rounded-3xl border border-stone-200 shadow-xs flex flex-col justify-between hover:border-stone-300 transition-all">
               <div>
-                <span className="text-[10px] font-bold uppercase text-blue-700 tracking-wider">Alta Performance</span>
+                <span className="text-xs font-bold uppercase text-blue-700 tracking-wider">Alta Performance</span>
                 <h3 className="text-xl font-bold font-serif text-stone-900 mt-1">Fornecedor Master</h3>
                 <p className="text-xs text-stone-500 mt-1">Topo das buscas e analytics.</p>
 
                 <div className="my-6">
-                  <span className="text-xs text-stone-400 font-bold">R$ </span>
+                  <span className="text-xs text-stone-500 font-bold">R$ </span>
                   <span className="text-3xl font-extrabold text-stone-900">249</span>
-                  <span className="text-xs text-stone-400 font-medium"> / mês</span>
+                  <span className="text-xs text-stone-500 font-medium"> / mês</span>
                 </div>
 
                 <ul className="space-y-2.5 text-xs text-stone-600">
@@ -699,12 +699,12 @@ export function HomeLandingClient() {
           <div className="absolute inset-0 bg-gradient-to-r from-stone-950/95 via-stone-950/75 to-stone-950/95 z-10" />
 
           {/* Brilhos Sutis Dourados */}
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#8C6D45]/15 blur-3xl z-10 pointer-events-none rounded-full" />
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#C5A880]/10 blur-3xl z-10 pointer-events-none rounded-full" />
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-brand/15 blur-3xl z-10 pointer-events-none rounded-full" />
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-brand-300/10 blur-3xl z-10 pointer-events-none rounded-full" />
 
           <div className="relative z-20 max-w-3xl mx-auto text-center space-y-6">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-serif leading-tight">
-              Pronto para viver o casamento mais <span className="italic text-[#C5A880]">inesquecível</span> da sua vida?
+              Pronto para viver o casamento mais <span className="italic text-brand-300">inesquecível</span> da sua vida?
             </h2>
 
             <p className="text-stone-300 text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
@@ -713,7 +713,7 @@ export function HomeLandingClient() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Link href="/assinar?tipo=casal&plano=classic">
-                <Button className="w-full sm:w-auto bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 px-8 text-sm shadow-xl hover:scale-105 transition-all gap-2 cursor-pointer">
+                <Button className="w-full sm:w-auto bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-14 px-8 text-sm shadow-xl hover:scale-105 transition-all gap-2 cursor-pointer">
                   <span>Criar Meu Casamento Agora</span>
                   <ArrowRight className="w-4 h-4" />
                 </Button>
@@ -729,7 +729,7 @@ export function HomeLandingClient() {
               </Link>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-6 pt-6 text-xs text-stone-400 border-t border-stone-800/80">
+            <div className="flex flex-wrap items-center justify-center gap-6 pt-6 text-xs text-stone-500 border-t border-stone-800/80">
               <span className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 <span>Ativação Instantânea</span>

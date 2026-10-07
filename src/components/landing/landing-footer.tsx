@@ -9,7 +9,7 @@ export function LandingFooter() {
     <footer className="border-t border-stone-200 bg-white py-12 px-6 font-sans">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-stone-500">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-[#FAF4ED] flex items-center justify-center text-[#8C6D45]">
+          <div className="w-8 h-8 rounded-xl bg-brand-50 flex items-center justify-center text-brand">
             <WeddingRingsIcon className="w-4 h-4" />
           </div>
           <div>
@@ -32,8 +32,8 @@ export function LandingFooter() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2 text-stone-400">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+        <div className="flex items-center gap-2 text-stone-500">
+          <ShieldCheck className="w-4 h-4 text-emerald-700" />
           <span>Ambiente Seguro & Conforme à LGPD</span>
         </div>
       </div>

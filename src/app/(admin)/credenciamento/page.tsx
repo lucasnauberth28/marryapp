@@ -3,7 +3,7 @@ import { verifyAdminSession } from "@/actions/auth-actions";
 import { ScannerClient } from "./scanner-client";
 
 export const metadata: Metadata = {
-  title: "Credenciamento | Lucas & Giovanna",
+  title: "Credenciamento",
   description: "Leitor de QR Code para entrada no evento",
 };
 
@@ -11,11 +11,11 @@ export default async function CredenciamentoPage() {
   await verifyAdminSession();
 
   return (
-    <div className="flex-1 p-8 pt-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#8C6D45] tracking-tight font-serif italic">Credenciamento (Check-in)</h1>
-        <p className="text-zinc-500 mt-1">
-          Aponte a câmera para o Ingresso (QR Code) do convidado para liberar a entrada.
+        <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">Check-in no dia</h1>
+        <p className="mt-1 text-sm text-stone-600">
+          Aponte a câmera para o QR Code do convite para liberar a entrada do convidado.
         </p>
       </div>
 

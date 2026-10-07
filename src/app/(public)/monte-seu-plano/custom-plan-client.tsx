@@ -64,7 +64,7 @@ export function CustomPlanClient() {
   const progressPercent = Math.round((selectedCount / totalCount) * 100);
 
   return (
-    <div className="min-h-screen bg-[#FCFBF9] text-stone-900 font-sans flex flex-col justify-between">
+    <div className="min-h-screen bg-paper text-stone-900 font-sans flex flex-col justify-between">
       <LandingHeader />
 
       <main className="flex-1 py-12 px-6 max-w-7xl mx-auto w-full space-y-10">
@@ -96,7 +96,7 @@ export function CustomPlanClient() {
               <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
                 Catálogo de Funcionalidades ({selectedCount} de {totalCount} selecionadas)
               </span>
-              <div className="flex items-center gap-2 text-xs font-bold text-[#8C6D45]">
+              <div className="flex items-center gap-2 text-xs font-bold text-brand">
                 <span>{progressPercent}% do sistema ativo</span>
               </div>
             </div>
@@ -113,15 +113,15 @@ export function CustomPlanClient() {
                     onClick={() => toggleModule(mod.id)}
                     className={`p-6 rounded-3xl border-2 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-5 ${
                       isSelected
-                        ? "bg-white border-[#8C6D45] shadow-lg ring-2 ring-[#8C6D45]/20 scale-[1.01]"
-                        : "bg-[#FAF8F5] border-stone-200/80 hover:bg-white hover:border-stone-300 opacity-75 hover:opacity-100"
+                        ? "bg-white border-brand shadow-lg ring-2 ring-brand/20 scale-[1.01]"
+                        : "bg-ivory border-stone-200/80 hover:bg-white hover:border-stone-300 opacity-75 hover:opacity-100"
                     }`}
                   >
                     <div className="flex items-start gap-4">
                       <div
                         className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors shadow-xs ${
                           isSelected
-                            ? "bg-[#8C6D45] text-white"
+                            ? "bg-brand text-white"
                             : "bg-stone-200/80 text-stone-600"
                         }`}
                       >
@@ -134,7 +134,7 @@ export function CustomPlanClient() {
                             {mod.name}
                           </h3>
                           {mod.highlightBadge && (
-                            <span className="text-[11px] font-bold text-[#8C6D45] uppercase tracking-wider">
+                            <span className="text-xs font-bold text-brand uppercase tracking-wider">
                               • {mod.highlightBadge}
                             </span>
                           )}
@@ -155,13 +155,13 @@ export function CustomPlanClient() {
                                 currency: "BRL",
                               }).format(mod.price / 100)}
                         </span>
-                        <span className="text-[10px] text-stone-400 font-medium block">taxa única</span>
+                        <span className="text-xs text-stone-500 font-medium block">taxa única</span>
                       </div>
 
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                           isSelected
-                            ? "bg-[#8C6D45] text-white shadow-xs"
+                            ? "bg-brand text-white shadow-xs"
                             : "border-2 border-stone-300 bg-white"
                         }`}
                       >
@@ -175,9 +175,9 @@ export function CustomPlanClient() {
           </div>
 
           {/* Painel Lateral Sticky: Resumo do Investimento */}
-          <div className="lg:col-span-4 sticky top-28 bg-gradient-to-b from-[#FAF4ED] to-white p-7 rounded-3xl border-2 border-[#8C6D45]/40 shadow-2xl space-y-6">
+          <div className="lg:col-span-4 sticky top-28 bg-gradient-to-b from-brand-50 to-white p-7 rounded-3xl border-2 border-brand/40 shadow-2xl space-y-6">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-[#8C6D45]">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-brand">
                 Resumo da Seleção
               </span>
               <span className="text-xs text-stone-500 font-bold">
@@ -211,17 +211,17 @@ export function CustomPlanClient() {
 
             {/* Lista dos Recursos Selecionados */}
             <div className="pt-4 border-t border-stone-200/80 space-y-3">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 block">
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block">
                 Recursos incluídos no seu pacote:
               </span>
               <ul className="space-y-2 text-xs text-stone-700 font-medium max-h-56 overflow-y-auto pr-1">
                 {calculation.selectedModules.map((m) => (
                   <li key={m.id} className="flex items-center justify-between gap-2">
                     <span className="flex items-center gap-2 truncate">
-                      <CheckCircle2 className="w-4 h-4 text-[#8C6D45] shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-brand shrink-0" />
                       <span className="truncate">{m.name}</span>
                     </span>
-                    <span className="text-[11px] font-bold text-stone-500 shrink-0">
+                    <span className="text-xs font-bold text-stone-500 shrink-0">
                       {m.price === 0 ? "Grátis" : `R$ ${m.price / 100}`}
                     </span>
                   </li>
@@ -231,14 +231,14 @@ export function CustomPlanClient() {
 
             {/* Botão de Contratação */}
             <Link href={customCheckoutUrl} className="block mt-6">
-              <Button className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-sm shadow-xl hover:scale-105 transition-all gap-2 cursor-pointer">
+              <Button className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-14 text-sm shadow-xl hover:scale-105 transition-all gap-2 cursor-pointer">
                 <span>Contratar Plano Personalizado</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
 
-            <div className="flex items-center gap-2 text-[11px] text-stone-500 pt-3 border-t border-stone-200/60">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="flex items-center gap-2 text-xs text-stone-500 pt-3 border-t border-stone-200/60">
+              <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
               <span>Sem mensalidades ou surpresas. Pagamento único com liberação imediata.</span>
             </div>
           </div>

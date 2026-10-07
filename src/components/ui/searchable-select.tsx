@@ -104,14 +104,14 @@ export function SearchableSelect({
         onMouseDown={(e) => e.stopPropagation()}
         className={cn(
           "h-10 w-full rounded-lg border border-input bg-white px-3 py-2 pr-9 text-sm transition-all outline-none flex items-center justify-between shadow-sm cursor-pointer select-none",
-          isOpen && "ring-2 ring-[#8C6D45]/30 border-[#8C6D45]",
+          isOpen && "ring-2 ring-brand/30 border-brand",
           disabled && "pointer-events-none opacity-50 bg-input/50"
         )}
       >
         <span className={cn("truncate", !selectedOption && "text-muted-foreground")}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown className={cn("absolute right-3 w-4 h-4 text-zinc-400 transition-transform", isOpen && "rotate-180")} />
+        <ChevronDown className={cn("absolute right-3 w-4 h-4 text-zinc-500 transition-transform", isOpen && "rotate-180")} />
       </div>
 
       {/* Dropdown */}
@@ -125,7 +125,7 @@ export function SearchableSelect({
           {/* Search Input */}
           <div className="p-2 border-b border-zinc-100">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <input
                 ref={inputRef}
                 type="text"
@@ -133,7 +133,7 @@ export function SearchableSelect({
                 onChange={(e) => setSearch(e.target.value)}
                 onMouseDown={(e) => e.stopPropagation()}
                 placeholder={searchPlaceholder}
-                className="w-full h-9 pl-8 pr-3 text-sm rounded-lg border border-zinc-200 bg-zinc-50 outline-none focus:ring-2 focus:ring-[#8C6D45]/20 focus:border-[#8C6D45]/50 transition-all placeholder:text-zinc-400"
+                className="w-full h-9 pl-8 pr-3 text-sm rounded-lg border border-zinc-200 bg-zinc-50 outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand/50 transition-all placeholder:text-zinc-400"
               />
             </div>
           </div>
@@ -141,7 +141,7 @@ export function SearchableSelect({
           {/* Options List */}
           <div className="max-h-[200px] overflow-y-auto overscroll-contain py-1">
             {filteredOptions.length === 0 ? (
-              <div className="px-3 py-4 text-center text-sm text-zinc-400">
+              <div className="px-3 py-4 text-center text-sm text-zinc-500">
                 {emptyMessage}
               </div>
             ) : (
@@ -156,17 +156,17 @@ export function SearchableSelect({
                     className={cn(
                       "w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors cursor-pointer",
                       isSelected
-                        ? "bg-[#F3ECE3] text-[#8C6D45] font-semibold"
+                        ? "bg-brand-100 text-brand font-semibold"
                         : "hover:bg-zinc-50 text-zinc-700"
                     )}
                   >
                     <span className="flex-1 truncate">
                       {option.label}
                       {option.sublabel && (
-                        <span className="text-xs text-zinc-400 ml-1">{option.sublabel}</span>
+                        <span className="text-xs text-zinc-500 ml-1">{option.sublabel}</span>
                       )}
                     </span>
-                    {isSelected && <Check className="w-4 h-4 shrink-0 text-[#8C6D45]" />}
+                    {isSelected && <Check className="w-4 h-4 shrink-0 text-brand" />}
                   </button>
                 );
               })

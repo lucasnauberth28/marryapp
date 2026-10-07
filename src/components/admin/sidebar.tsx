@@ -2,139 +2,84 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { logout } from "@/actions/auth-actions";
-import {
-  Users as UsersIcon,
-  LayoutDashboard,
-  Wallet,
-  Gift as GiftIcon,
-  CheckSquare,
-  Plane,
-  MessageSquare,
-  Settings as SettingsIcon,
-  LayoutGrid,
-  Shield,
-  KeyRound,
-  LogOut,
-  QrCode,
-  Calendar,
-  CreditCard as CreditCardIcon,
-  ChevronLeft,
-  ChevronRight,
-  Sliders,
-  Compass,
-} from "lucide-react";
+import { LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { WeddingRingsIcon } from "@/components/icons/wedding-rings";
-import { hasPathAccess } from "@/lib/permissions"
+import { NavList } from "@/components/admin/nav-list";
 
-const navItems = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Site dos Noivos", href: "/site-builder", icon: Sliders },
-  { name: "Credenciamento", href: "/credenciamento", icon: QrCode },
-  { name: "Convidados", href: "/convidados", icon: UsersIcon },
-  { name: "Mesas", href: "/mesas", icon: LayoutGrid },
-  { name: "Cronograma", href: "/cronograma", icon: Calendar },
-  { name: "Meus Fornecedores", href: "/meus-fornecedores", icon: UsersIcon },
-  { name: "Marketplace Parceiros", href: "/fornecedores", icon: Compass },
-  { name: "Curadoria Parceiros", href: "/curadoria", icon: Shield },
-  { name: "Mensagens", href: "/mensagens", icon: MessageSquare },
-  { name: "Finanças", href: "/financas", icon: Wallet },
-  { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },
-  { name: "Pendências", href: "/pendencias", icon: CheckSquare },
-  { name: "Configurações", href: "/configuracoes", icon: SettingsIcon },
-  { name: "Usuários", href: "/usuarios", icon: KeyRound },
-  { name: "Perfis", href: "/perfis", icon: Shield },
-];
+const COLLAPSED_KEY = "marryapp_sidebar_collapsed";
 
-export function Sidebar({ role = "Admin", allowedPaths = [] }: { role?: string, allowedPaths?: string[] }) {
-  const pathname = usePathname();
+interface SidebarProps {
+  allowedPaths?: string[];
+  coupleNames: string;
+}
+
+export function Sidebar({ allowedPaths = [], coupleNames }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  // Carregar preferência salva no localStorage ao montar o componente
+  // Preferência de menu recolhido salva no navegador
   useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem("marryapp_sidebar_collapsed");
-    if (saved !== null) {
-      setIsCollapsed(saved === "true");
+    try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- leitura única do localStorage após montar
+      setIsCollapsed(localStorage.getItem(COLLAPSED_KEY) === "true");
+    } catch {
+      // localStorage indisponível (modo privado): mantém expandido
     }
   }, []);
 
-  // Função para alternar e salvar o estado no localStorage
   const toggleSidebar = () => {
     setIsCollapsed((prev) => {
       const next = !prev;
-      localStorage.setItem("marryapp_sidebar_collapsed", String(next));
+      try {
+        localStorage.setItem(COLLAPSED_KEY, String(next));
+      } catch {
+        // ignora
+      }
       return next;
     });
   };
 
-  const filteredNavItems = allowedPaths.includes("*")
-    ? navItems
-    : navItems.filter((item) => hasPathAccess(allowedPaths, item.href));
-
   return (
-    <aside 
-      className={`${isCollapsed ? "w-20" : "w-64"} bg-[#FCFBF9] border-r border-stone-200/60 hidden md:flex flex-col transition-all duration-300 relative`}
+    <aside
+      className={`${isCollapsed ? "w-20" : "w-64"} relative hidden flex-col border-r border-stone-200/60 bg-paper transition-all duration-300 md:flex`}
     >
-      <button 
+      <button
         onClick={toggleSidebar}
-        className="absolute -right-3 top-6 bg-white border border-stone-200 rounded-full p-1 z-50 hover:bg-stone-50 shadow-sm transition-colors cursor-pointer"
+        className="absolute -right-3 top-6 z-50 cursor-pointer rounded-full border border-stone-200 bg-white p-1 shadow-sm transition-colors hover:bg-stone-50"
+        aria-label={isCollapsed ? "Expandir menu" : "Recolher menu"}
         title={isCollapsed ? "Expandir menu" : "Recolher menu"}
       >
-        {isCollapsed ? <ChevronRight className="w-4 h-4 text-stone-600" /> : <ChevronLeft className="w-4 h-4 text-stone-600" />}
+        {isCollapsed ? <ChevronRight className="h-4 w-4 text-stone-600" /> : <ChevronLeft className="h-4 w-4 text-stone-600" />}
       </button>
 
-      <div className="h-16 flex items-center px-4 border-b border-stone-200/50 overflow-hidden">
-        <div className="flex items-center gap-2.5 min-w-max">
-          <div className="w-9 h-9 bg-gradient-to-br from-[#FAF4ED] to-[#FAF8F5] border border-[#8C6D45]/30 rounded-xl flex items-center justify-center shrink-0 shadow-xs text-[#8C6D45]">
-            <WeddingRingsIcon className="w-5 h-5" />
+      <div className="flex h-16 items-center overflow-hidden border-b border-stone-200/50 px-4">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-brand/30 bg-gradient-to-br from-brand-50 to-ivory text-brand shadow-xs">
+            <WeddingRingsIcon className="h-5 w-5" />
           </div>
           {!isCollapsed && (
-            <div className="flex flex-col">
-              <span className="font-semibold text-sm text-stone-800 tracking-wide font-serif italic leading-none">
-                Lucas & Giovanna
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate font-serif text-base font-semibold italic leading-tight text-stone-800">
+                {coupleNames}
               </span>
-              <span className="text-[9px] text-[#8C6D45] font-extrabold uppercase tracking-widest mt-0.5">
-                MarryApp
-              </span>
+              <span className="text-xs font-semibold uppercase tracking-wider text-brand-600">MarryApp</span>
             </div>
           )}
         </div>
       </div>
 
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
-        {filteredNavItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname.startsWith(item.href);
-
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              title={isCollapsed ? item.name : undefined}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
-                isActive
-                  ? "bg-[#F3ECE3] text-[#8C6D45] font-semibold border-r-2 border-[#8C6D45]"
-                  : "text-stone-500 hover:bg-stone-50 hover:text-stone-900 font-medium"
-              } ${isCollapsed ? "justify-center" : "justify-start"}`}
-            >
-              <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-[#8C6D45]" : "text-stone-400"}`} />
-              {!isCollapsed && <span className="truncate text-xs tracking-wide">{item.name}</span>}
-            </Link>
-          );
-        })}
+      <nav aria-label="Menu principal" className="flex-1 overflow-y-auto overflow-x-hidden p-3 scrollbar-hide">
+        <NavList allowedPaths={allowedPaths} collapsed={isCollapsed} />
       </nav>
 
-      <div className="p-3 mt-auto border-t border-stone-200/50 overflow-hidden">
-        <button 
+      <div className="mt-auto overflow-hidden border-t border-stone-200/50 p-3">
+        <button
           onClick={() => logout()}
           title={isCollapsed ? "Sair" : undefined}
-          className={`flex w-full items-center gap-3 px-3 py-2 rounded-lg transition-colors text-red-600 hover:bg-red-50 font-semibold text-xs tracking-wide cursor-pointer ${isCollapsed ? "justify-center" : "justify-start"}`}
+          aria-label="Sair"
+          className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 ${isCollapsed ? "justify-center" : "justify-start"}`}
         >
-          <LogOut className="w-4 h-4 shrink-0" />
+          <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
           {!isCollapsed && <span className="truncate">Sair</span>}
         </button>
       </div>

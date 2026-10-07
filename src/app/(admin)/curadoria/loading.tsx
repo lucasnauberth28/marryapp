@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CuradoriaLoading() {
   return (
-    <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
       <div className="space-y-2 border-b border-stone-200/80 pb-6">
         <Skeleton className="h-8 w-72 rounded-xl" />
         <Skeleton className="h-4 w-96 rounded-lg" />

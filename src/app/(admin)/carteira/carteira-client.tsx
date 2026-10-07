@@ -202,9 +202,9 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
       {/* Header com Título & Ações */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight flex items-center gap-2">
-            <Wallet className="w-6 h-6 text-[#8C6D45]" />
-            Carteira & Meios de Pagamento
+          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+            <Wallet className="w-6 h-6 text-brand" />
+            Carteira
           </h1>
           <p className="text-zinc-500 text-xs mt-0.5">
             Gerencie o saldo disponível em conta e cadastre seus cartões de crédito para alocação real das despesas do casamento.
@@ -217,13 +217,13 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
             variant="outline"
             className="border-emerald-200 text-emerald-800 hover:bg-emerald-50 text-xs font-semibold rounded-xl"
           >
-            <DollarSign className="w-4 h-4 mr-1.5 text-emerald-600" />
+            <DollarSign className="w-4 h-4 mr-1.5 text-emerald-700" />
             Editar Saldo em Conta
           </Button>
 
           <Button
             onClick={openNewCardModal}
-            className="bg-[#8C6D45] hover:bg-[#755630] text-white text-xs font-semibold rounded-xl shadow-xs"
+            className="bg-brand hover:bg-brand-600 text-white text-xs font-semibold rounded-xl shadow-xs"
           >
             <Plus className="w-4 h-4 mr-1.5" />
             Novo Cartão de Crédito
@@ -237,10 +237,10 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
         <Card className="p-5 rounded-2xl border-emerald-100 bg-gradient-to-br from-emerald-50/60 to-white shadow-xs space-y-3 relative overflow-hidden">
           <div className="flex justify-between items-center">
             <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
-              <QrCode className="w-4 h-4 text-emerald-600" />
+              <QrCode className="w-4 h-4 text-emerald-700" />
               Saldo em Conta / Pix
             </span>
-            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px]">
+            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs">
               Disponível
             </Badge>
           </div>
@@ -248,7 +248,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
             <div className="text-2xl font-black text-emerald-950 tracking-tight">
               {formatCurrency(balance)}
             </div>
-            <p className="text-[11px] text-emerald-700 mt-1">
+            <p className="text-xs text-emerald-700 mt-1">
               Recurso fictício/real em conta para compras à vista e pagamentos Pix.
             </p>
           </div>
@@ -261,7 +261,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
               <CreditCardIcon className="w-4 h-4 text-purple-600" />
               Limites dos Cartões
             </span>
-            <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-[10px]">
+            <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs">
               {cards.length} Cartão(ões)
             </Badge>
           </div>
@@ -269,7 +269,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
             <div className="text-2xl font-black text-purple-950 tracking-tight">
               {formatCurrency(totalCardLimit)}
             </div>
-            <p className="text-[11px] text-purple-700 mt-1">
+            <p className="text-xs text-purple-700 mt-1">
               Soma do limite total cadastrado em cartões de crédito.
             </p>
           </div>
@@ -279,10 +279,10 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
         <Card className="p-5 rounded-2xl border-amber-100 bg-gradient-to-br from-amber-50/60 to-white shadow-xs space-y-3 relative overflow-hidden">
           <div className="flex justify-between items-center">
             <span className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-amber-600" />
+              <Sparkles className="w-4 h-4 text-amber-700" />
               Poder de Compra Total
             </span>
-            <Badge className="bg-amber-100 text-amber-900 border-amber-200 text-[10px]">
+            <Badge className="bg-amber-100 text-amber-900 border-amber-200 text-xs">
               Patrimônio
             </Badge>
           </div>
@@ -290,7 +290,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
             <div className="text-2xl font-black text-amber-950 tracking-tight">
               {formatCurrency(totalAssets)}
             </div>
-            <p className="text-[11px] text-amber-800 mt-1">
+            <p className="text-xs text-amber-800 mt-1">
               Capacidade financeira combinada (Saldo em Conta + Limites de Crédito).
             </p>
           </div>
@@ -301,7 +301,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
       <div className="space-y-4 pt-2">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-bold text-zinc-900 flex items-center gap-2">
-            <CreditCardIcon className="w-5 h-5 text-[#8C6D45]" />
+            <CreditCardIcon className="w-5 h-5 text-brand" />
             Cartões de Crédito Cadastrados
           </h2>
           <span className="text-xs text-zinc-500 font-medium">
@@ -310,7 +310,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
         </div>
 
         {cards.length === 0 ? (
-          <Card className="p-12 text-center text-zinc-400 border-dashed border-zinc-200 space-y-3">
+          <Card className="p-12 text-center text-zinc-500 border-dashed border-zinc-200 space-y-3">
             <CreditCardIcon className="w-10 h-10 mx-auto text-zinc-300" />
             <div>
               <h3 className="font-bold text-sm text-zinc-700">Nenhum cartão cadastrado</h3>
@@ -321,7 +321,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
             <Button
               onClick={openNewCardModal}
               size="sm"
-              className="bg-[#8C6D45] hover:bg-[#755630] text-white text-xs mt-2"
+              className="bg-brand hover:bg-brand-600 text-white text-xs mt-2"
             >
               <Plus className="w-4 h-4 mr-1" /> Adicionar Primeiro Cartão
             </Button>
@@ -346,7 +346,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
                         <span className="font-semibold text-sm block mt-0.5">{card.nickname}</span>
                       )}
                     </div>
-                    <Badge className="bg-white/20 text-white border-none text-[10px] font-bold">
+                    <Badge className="bg-white/20 text-white border-none text-xs font-bold">
                       {card.brand}
                     </Badge>
                   </div>
@@ -364,21 +364,21 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
                   {/* Rodapé do Cartão (Limite & Ações) */}
                   <div className="flex justify-between items-end pt-2 border-t border-white/15">
                     <div>
-                      <span className="text-[10px] uppercase tracking-wider opacity-70 block">
+                      <span className="text-xs uppercase tracking-wider opacity-70 block">
                         Limite Atual
                       </span>
                       <span className="font-black text-sm">{formatCurrency(card.limit)}</span>
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <button
+                      <button aria-label="Editar Cartão"
                         onClick={() => openEditCardModal(card)}
                         className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
                         title="Editar Cartão"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
-                      <button
+                      <button aria-label="Excluir Cartão"
                         onClick={() => handleDeleteCard(card.id)}
                         className="p-1.5 rounded-lg bg-white/10 hover:bg-red-500/80 text-white transition cursor-pointer"
                         title="Excluir Cartão"
@@ -399,7 +399,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-emerald-600" />
+              <DollarSign className="w-5 h-5 text-emerald-700" />
               Editar Saldo em Conta / Pix
             </DialogTitle>
           </DialogHeader>
@@ -438,7 +438,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <CreditCardIcon className="w-5 h-5 text-[#8C6D45]" />
+              <CreditCardIcon className="w-5 h-5 text-brand" />
               {editingCard ? "Editar Cartão de Crédito" : "Cadastrar Cartão de Crédito"}
             </DialogTitle>
           </DialogHeader>
@@ -537,7 +537,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
 
             <Button
               type="submit"
-              className="w-full bg-[#8C6D45] hover:bg-[#755630] text-white font-bold"
+              className="w-full bg-brand hover:bg-brand-600 text-white font-bold"
               disabled={loading}
             >
               {loading ? (

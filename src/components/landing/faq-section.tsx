@@ -29,7 +29,7 @@ export function FaqSection() {
   return (
     <section className="py-20 max-w-4xl mx-auto px-6 font-sans">
       <div className="text-center mb-12">
-        <span className="text-xs font-bold uppercase tracking-wider text-[#8C6D45]">
+        <span className="text-xs font-bold uppercase tracking-wider text-brand">
           Tire suas Dúvidas
         </span>
         <h2 className="text-3xl font-extrabold text-stone-900 font-serif mt-1">
@@ -53,7 +53,7 @@ export function FaqSection() {
                 <span>{faq.q}</span>
                 <ChevronDown
                   className={`w-4 h-4 text-stone-500 shrink-0 transition-transform duration-300 ${
-                    isOpen ? "rotate-180 text-[#8C6D45]" : ""
+                    isOpen ? "rotate-180 text-brand" : ""
                   }`}
                 />
               </button>

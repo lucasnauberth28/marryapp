@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   });
 
   return {
-    title: `${settings?.title || "Casamento"} | MarryApp`,
+    title: { absolute: settings?.title || "Casamento" },
     description: "Celebre conosco este momento especial. Informações do local, traje, lista de presentes e confirmação de presença.",
   };
 }

@@ -13,8 +13,8 @@ export default function AssinarPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#FCFBF9]">
-          <Loader2 className="w-8 h-8 animate-spin text-[#8C6D45]" />
+        <div className="min-h-screen flex items-center justify-center bg-paper">
+          <Loader2 className="w-8 h-8 animate-spin text-brand" />
         </div>
       }
     >

@@ -25,6 +25,7 @@ import {
   updateTask,
   updateTaskStatus,
 } from "@/actions/tasks";
+import { PageHeader } from "@/components/admin/page-header";
 
 interface KanbanBoardProps {
   initialTasks: BoardItem[];
@@ -232,16 +233,12 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden w-full">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
-            Pendências
-          </h1>
-          <p className="text-zinc-500 mt-1">
-            Gerencie tarefas e acompanhe o andamento das atividades.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
+      <PageHeader
+        className="mb-6"
+        title="Tarefas"
+        description="Acompanhe o que falta fazer até o grande dia. Arraste os cartões entre as colunas."
+        actions={
+        <>
           <div className="flex bg-zinc-100 p-1 rounded-lg border border-zinc-200 shadow-inner">
             <button
               onClick={() => setFilter("ALL")}
@@ -258,12 +255,13 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
           </div>
           <button
             onClick={() => handleAddTask(TaskStatus.TODO)}
-            className="bg-[#8C6D45] text-white hover:bg-[#755630] px-4 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm"
+            className="bg-brand text-white hover:bg-brand-600 px-4 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm"
           >
-            Nova Tarefa
+            Nova tarefa
           </button>
-        </div>
-      </div>
+        </>
+        }
+      />
 
       <div className="flex-1 overflow-x-auto pb-4">
         <DndContext

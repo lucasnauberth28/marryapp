@@ -71,11 +71,11 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <ImagePlus className="w-8 h-8 text-zinc-400 mb-2" />
+                  <ImagePlus className="w-8 h-8 text-zinc-500 mb-2" />
                   <p className="text-sm text-zinc-500 font-medium">
                     Clique para fazer upload
                   </p>
-                  <p className="text-xs text-zinc-400 mt-1">
+                  <p className="text-xs text-zinc-500 mt-1">
                     PNG, JPG ou WEBP
                   </p>
                 </div>

@@ -485,7 +485,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
             <button
               onClick={() => setFilterType("CONTRACT")}
               className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${
-                filterType === "CONTRACT" ? "bg-[#8C6D45] text-white shadow-xs" : "text-zinc-500 hover:text-zinc-900"
+                filterType === "CONTRACT" ? "bg-brand text-white shadow-xs" : "text-zinc-500 hover:text-zinc-900"
               }`}
             >
               <Building2 className="w-3 h-3" />
@@ -510,7 +510,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                 viewMode === "grouped" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-900"
               }`}
             >
-              <Layers className="w-3.5 h-3.5 text-[#8C6D45]" />
+              <Layers className="w-3.5 h-3.5 text-brand" />
               Agrupado
             </button>
             <button
@@ -519,7 +519,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                 viewMode === "detailed" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-500 hover:text-zinc-900"
               }`}
             >
-              <ListFilter className="w-3.5 h-3.5 text-[#8C6D45]" />
+              <ListFilter className="w-3.5 h-3.5 text-brand" />
               Detalhado
             </button>
           </div>
@@ -531,21 +531,21 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
           if (!isOpen) resetForm();
         }}>
           <DialogTrigger asChild>
-            <Button className="bg-[#8C6D45] hover:bg-[#755630] text-white font-medium shadow-sm">
+            <Button className="bg-brand hover:bg-brand-600 text-white font-medium shadow-sm">
               <Plus className="w-4 h-4 mr-2" /> Nova Despesa
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-3xl sm:max-w-3xl w-full max-h-[88vh] overflow-y-auto p-6 sm:p-7">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-base">
-                <CalendarRange className="w-5 h-5 text-[#8C6D45]" />
+                <CalendarRange className="w-5 h-5 text-brand" />
                 Cadastrar Despesa / Compra
               </DialogTitle>
               {/* Progresso dos Passos */}
               <div className="flex items-center gap-2 pt-2">
-                <div className={`flex-1 h-1.5 rounded-full ${step >= 1 ? "bg-[#8C6D45]" : "bg-zinc-200"}`} />
-                <div className={`flex-1 h-1.5 rounded-full ${step >= 2 ? "bg-[#8C6D45]" : "bg-zinc-200"}`} />
-                <div className={`flex-1 h-1.5 rounded-full ${step >= 3 ? "bg-[#8C6D45]" : "bg-zinc-200"}`} />
+                <div className={`flex-1 h-1.5 rounded-full ${step >= 1 ? "bg-brand" : "bg-zinc-200"}`} />
+                <div className={`flex-1 h-1.5 rounded-full ${step >= 2 ? "bg-brand" : "bg-zinc-200"}`} />
+                <div className={`flex-1 h-1.5 rounded-full ${step >= 3 ? "bg-brand" : "bg-zinc-200"}`} />
               </div>
             </DialogHeader>
 
@@ -564,15 +564,15 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                       onClick={() => setExpenseType("CONTRACT")}
                       className={`p-5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between space-y-3 ${
                         expenseType === "CONTRACT"
-                          ? "border-[#8C6D45] bg-[#F3ECE3]/30 shadow-md ring-2 ring-[#8C6D45]/20"
+                          ? "border-brand bg-brand-100/30 shadow-md ring-2 ring-brand/20"
                           : "border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50/50"
                       }`}
                     >
                       <div className="flex justify-between items-start">
-                        <div className="p-3 bg-[#8C6D45]/10 text-[#8C6D45] rounded-xl">
+                        <div className="p-3 bg-brand/10 text-brand rounded-xl">
                           <Building2 className="w-6 h-6" />
                         </div>
-                        {expenseType === "CONTRACT" && <Check className="w-5 h-5 text-[#8C6D45]" />}
+                        {expenseType === "CONTRACT" && <Check className="w-5 h-5 text-brand" />}
                       </div>
                       <div>
                         <h4 className="font-bold text-sm text-zinc-900">Contrato com Fornecedor</h4>
@@ -609,7 +609,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                   <Button
                     type="button"
                     onClick={() => setStep(2)}
-                    className="w-full bg-[#8C6D45] hover:bg-[#755630] text-white mt-4"
+                    className="w-full bg-brand hover:bg-brand-600 text-white mt-4"
                   >
                     Próximo: Detalhes & Origem <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -690,11 +690,11 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                             onClick={() => setPaymentMethod(pm.label)}
                             className={`p-2.5 rounded-xl border text-left text-xs font-medium transition-all flex items-center gap-2 cursor-pointer ${
                               isSelected
-                                ? "border-[#8C6D45] bg-[#F3ECE3]/40 text-[#8C6D45] font-bold shadow-xs"
+                                ? "border-brand bg-brand-100/40 text-brand font-bold shadow-xs"
                                 : "border-zinc-200 hover:bg-zinc-50 text-zinc-700"
                             }`}
                           >
-                            <Icon className="w-3.5 h-3.5 shrink-0 text-[#8C6D45]" />
+                            <Icon className="w-3.5 h-3.5 shrink-0 text-brand" />
                             <span className="truncate">{pm.label}</span>
                           </button>
                         );
@@ -717,11 +717,11 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                         <div className="flex items-center gap-3">
                           <img src={imageBase64} alt="Preview" className="w-10 h-10 object-cover rounded-lg border border-zinc-200" />
                           <span className="text-xs font-medium text-zinc-700 truncate max-w-[200px]">{imageFileName}</span>
-                          <Button type="button" variant="ghost" size="sm" onClick={() => setImageBase64("")} className="text-xs text-red-500 h-6 px-2">Remover</Button>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => setImageBase64("")} className="text-xs text-red-600 h-6 px-2">Remover</Button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 text-zinc-500 text-xs py-1">
-                          <Upload className="w-4 h-4 text-zinc-400" />
+                          <Upload className="w-4 h-4 text-zinc-500" />
                           <span>Clique para anexar foto do produto ou print da compra</span>
                         </div>
                       )}
@@ -745,7 +745,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                         }
                         setStep(3);
                       }}
-                      className="w-2/3 bg-[#8C6D45] hover:bg-[#755630] text-white"
+                      className="w-2/3 bg-brand hover:bg-brand-600 text-white"
                     >
                       Próximo: Condição de Pagamento <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
@@ -815,7 +815,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
                           <Label className="text-xs font-bold text-zinc-700 uppercase tracking-wider flex items-center gap-1">
-                            <Layers className="w-3.5 h-3.5 text-[#8C6D45]" />
+                            <Layers className="w-3.5 h-3.5 text-brand" />
                             Blocos de Parcelas
                           </Label>
                           <Button type="button" variant="outline" size="sm" onClick={addBlock} className="text-xs h-7">
@@ -831,7 +831,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                                 <button
                                   type="button"
                                   onClick={() => removeBlock(block.id)}
-                                  className="text-red-500 hover:text-red-700 text-xs cursor-pointer"
+                                  className="text-red-600 hover:text-red-700 text-xs cursor-pointer"
                                 >
                                   Remover Bloco
                                 </button>
@@ -840,7 +840,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
 
                             <div className="grid grid-cols-3 gap-2">
                               <div>
-                                <Label className="text-[10px] text-zinc-500">Nº de Parcelas</Label>
+                                <Label className="text-xs text-zinc-500">Nº de Parcelas</Label>
                                 <Input
                                   type="number"
                                   min={1}
@@ -852,7 +852,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                               </div>
 
                               <div>
-                                <Label className="text-[10px] text-zinc-500">Valor da Parcela (R$)</Label>
+                                <Label className="text-xs text-zinc-500">Valor da Parcela (R$)</Label>
                                 <Input
                                   type="number"
                                   step="0.01"
@@ -863,7 +863,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                               </div>
 
                               <div>
-                                <Label className="text-[10px] text-zinc-500">1º Vencimento</Label>
+                                <Label className="text-xs text-zinc-500">1º Vencimento</Label>
                                 <DatePicker
                                   value={block.startDate}
                                   onChange={(e) => updateBlock(block.id, "startDate", e.target.value)}
@@ -881,7 +881,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                             <span className="font-bold text-zinc-700">
                               Pré-visualização ({generatedInstallments.length} parcelas)
                             </span>
-                            <span className="font-bold text-[#8C6D45]">
+                            <span className="font-bold text-brand">
                               Total: {formatCurrency(totalInstallmentsAmount)}
                             </span>
                           </div>
@@ -906,7 +906,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                     <Button type="button" variant="outline" onClick={() => setStep(2)} className="w-1/3">
                       Voltar
                     </Button>
-                    <Button type="submit" className="w-2/3 bg-[#8C6D45] hover:bg-[#755630] text-white font-bold" disabled={loading}>
+                    <Button type="submit" className="w-2/3 bg-brand hover:bg-brand-600 text-white font-bold" disabled={loading}>
                       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : mode === "single" ? "Finalizar Cadastro" : `Gerar ${generatedInstallments.length} Parcelas`}
                     </Button>
                   </div>
@@ -934,7 +934,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
           </div>
 
           {paginatedGroupedExpenses.length === 0 ? (
-            <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center text-zinc-400">
+            <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center text-zinc-500">
               {groupedSearch ? "Nenhuma despesa encontrada para a busca." : "Nenhuma despesa cadastrada para este filtro."}
             </div>
           ) : (
@@ -964,7 +964,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                           />
                         ) : (
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
-                            isPurchase ? "bg-purple-50 text-purple-600 border-purple-200" : "bg-[#F3ECE3] text-[#8C6D45] border-amber-200/60"
+                            isPurchase ? "bg-purple-50 text-purple-600 border-purple-200" : "bg-brand-100 text-brand border-amber-200/60"
                           }`}>
                             {isPurchase ? <ShoppingBag className="w-6 h-6" /> : <Building2 className="w-6 h-6" />}
                           </div>
@@ -977,7 +977,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                             </h4>
                             <Badge
                               variant="outline"
-                              className={`font-semibold text-[11px] ${
+                              className={`font-semibold text-xs ${
                                 isPurchase
                                   ? "bg-purple-50 text-purple-700 border-purple-200"
                                   : "bg-amber-50 text-amber-800 border-amber-200"
@@ -988,7 +988,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                             </Badge>
                             {isFullyPaid && (
                               <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs font-semibold">
-                                <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600" /> Quitado
+                                <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-700" /> Quitado
                               </Badge>
                             )}
                           </div>
@@ -997,7 +997,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                           <div className="flex items-center gap-3 text-xs text-zinc-500 flex-wrap">
                             {group.paymentMethod && (
                               <span className="inline-flex items-center gap-1 text-zinc-600 font-medium bg-zinc-100 px-2 py-0.5 rounded-md">
-                                <CreditCard className="w-3 h-3 text-zinc-400" />
+                                <CreditCard className="w-3 h-3 text-zinc-500" />
                                 {group.paymentMethod}
                               </span>
                             )}
@@ -1026,7 +1026,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                             <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden border border-zinc-200/50">
                               <div
                                 className={`h-full transition-all duration-500 rounded-full ${
-                                  isFullyPaid ? "bg-emerald-500" : isPurchase ? "bg-purple-600" : "bg-[#8C6D45]"
+                                  isFullyPaid ? "bg-emerald-500" : isPurchase ? "bg-purple-600" : "bg-brand"
                                 }`}
                                 style={{ width: `${percentPaid}%` }}
                               />
@@ -1041,7 +1041,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                           <div className="text-right text-xs space-y-0.5">
                             <span className="text-zinc-500 block">Próx. Vencimento:</span>
                             <span className="font-bold text-amber-700 block flex items-center justify-end gap-1">
-                              <Calendar className="w-3.5 h-3.5 text-amber-600" />
+                              <Calendar className="w-3.5 h-3.5 text-amber-700" />
                               {new Date(group.nextDueDate).toLocaleDateString('pt-BR')} ({formatCurrency(group.nextDueAmount || 0)})
                             </span>
                           </div>
@@ -1100,16 +1100,16 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                                 const isPaid = expense.status === "PAID";
                                 return (
                                   <TableRow key={expense.id} className={isPaid ? "bg-zinc-50/50" : ""}>
-                                    <TableCell className={`text-xs ${isPaid ? "text-zinc-400" : "font-medium text-zinc-700"}`}>
+                                    <TableCell className={`text-xs ${isPaid ? "text-zinc-500" : "font-medium text-zinc-700"}`}>
                                       {new Date(expense.dueDate).toLocaleDateString('pt-BR')}
                                     </TableCell>
-                                    <TableCell className={`text-xs ${isPaid ? "text-zinc-400 line-through" : "text-zinc-900 font-medium"}`}>
+                                    <TableCell className={`text-xs ${isPaid ? "text-zinc-500 line-through" : "text-zinc-900 font-medium"}`}>
                                       {expense.description}
                                     </TableCell>
                                     <TableCell className="text-xs text-zinc-500">
                                       {expense.paymentMethod || "—"}
                                     </TableCell>
-                                    <TableCell className={`text-xs font-bold ${isPaid ? "text-zinc-400" : "text-zinc-900"}`}>
+                                    <TableCell className={`text-xs font-bold ${isPaid ? "text-zinc-500" : "text-zinc-900"}`}>
                                       {formatCurrency(expense.amount)}
                                     </TableCell>
                                     <TableCell>
@@ -1117,7 +1117,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                                         onClick={() => handleToggleStatus(expense.id, expense.status)}
                                         className="cursor-pointer"
                                       >
-                                        <Badge variant={isPaid ? "default" : "outline"} className={`text-[11px] cursor-pointer transition-colors px-2 py-0.5 ${
+                                        <Badge variant={isPaid ? "default" : "outline"} className={`text-xs cursor-pointer transition-colors px-2 py-0.5 ${
                                           isPaid
                                             ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-emerald-200"
                                             : "bg-amber-100 text-amber-800 hover:bg-amber-200 border-amber-200"
@@ -1128,8 +1128,8 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                                       </button>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(expense.id)}>
-                                        <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                                      <Button aria-label="Excluir" variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(expense.id)}>
+                                        <Trash2 className="w-3.5 h-3.5 text-red-600" />
                                       </Button>
                                     </TableCell>
                                   </TableRow>
@@ -1152,7 +1152,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                     <span className="font-semibold text-zinc-900">{totalGroupPages}</span> ({filteredGroupedExpenses.length} itens)
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button
+                    <Button aria-label="Primeira página"
                       variant="outline"
                       size="icon"
                       className="h-8 w-8 rounded-lg border-zinc-200"
@@ -1161,7 +1161,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                     >
                       <ChevronsLeft className="w-4 h-4" />
                     </Button>
-                    <Button
+                    <Button aria-label="Anterior"
                       variant="outline"
                       size="icon"
                       className="h-8 w-8 rounded-lg border-zinc-200"
@@ -1173,7 +1173,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                     <span className="px-3 font-medium text-zinc-700">
                       Página {safeGroupPage} de {totalGroupPages}
                     </span>
-                    <Button
+                    <Button aria-label="Próximo"
                       variant="outline"
                       size="icon"
                       className="h-8 w-8 rounded-lg border-zinc-200"
@@ -1182,7 +1182,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                     >
                       <ChevronRight className="w-4 h-4" />
                     </Button>
-                    <Button
+                    <Button aria-label="Última página"
                       variant="outline"
                       size="icon"
                       className="h-8 w-8 rounded-lg border-zinc-200"
@@ -1212,7 +1212,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
               sortable: true,
               accessor: (exp) => new Date(exp.dueDate).getTime(),
               cell: (exp) => (
-                <span className={exp.status === "PAID" ? "text-zinc-400 text-sm font-mono" : "text-zinc-700 text-sm font-mono font-medium"}>
+                <span className={exp.status === "PAID" ? "text-zinc-500 text-sm font-mono" : "text-zinc-700 text-sm font-mono font-medium"}>
                   {new Date(exp.dueDate).toLocaleDateString('pt-BR')}
                 </span>
               ),
@@ -1242,7 +1242,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                   {exp.imageUrl && (
                     <img src={exp.imageUrl} alt={exp.description} className="w-7 h-7 object-cover rounded-md border border-zinc-200 shrink-0" />
                   )}
-                  <span className={`text-sm font-medium ${exp.status === "PAID" ? "text-zinc-400" : "text-zinc-900"}`}>
+                  <span className={`text-sm font-medium ${exp.status === "PAID" ? "text-zinc-500" : "text-zinc-900"}`}>
                     {exp.vendor?.name || exp.storeName || "Compra Direta"}
                   </span>
                 </div>
@@ -1255,11 +1255,11 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
               accessor: (exp) => exp.description,
               cell: (exp) => (
                 <div className="space-y-0.5">
-                  <span className={`text-sm block ${exp.status === "PAID" ? "text-zinc-400 line-through" : "text-zinc-800"}`}>
+                  <span className={`text-sm block ${exp.status === "PAID" ? "text-zinc-500 line-through" : "text-zinc-800"}`}>
                     {exp.description}
                   </span>
                   {exp.purchaseUrl && (
-                    <a href={exp.purchaseUrl} target="_blank" rel="noreferrer" className="text-[11px] text-purple-600 hover:underline inline-flex items-center gap-1 font-medium">
+                    <a href={exp.purchaseUrl} target="_blank" rel="noreferrer" className="text-xs text-purple-600 hover:underline inline-flex items-center gap-1 font-medium">
                       <ExternalLink className="w-3 h-3" /> Ver Link da Compra
                     </a>
                   )}
@@ -1273,7 +1273,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
               className: "tabular-nums",
               accessor: (exp) => exp.amount,
               cell: (exp) => (
-                <span className={`text-sm font-bold ${exp.status === "PAID" ? "text-zinc-400" : "text-zinc-900"}`}>
+                <span className={`text-sm font-bold ${exp.status === "PAID" ? "text-zinc-500" : "text-zinc-900"}`}>
                   {formatCurrency(exp.amount)}
                 </span>
               ),
@@ -1311,8 +1311,8 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
               headerClassName: "text-right pr-4",
               cell: (exp) => (
                 <div className="flex justify-end gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(exp.id)}>
-                    <Trash2 className="w-4 h-4 text-red-500" />
+                  <Button aria-label="Excluir" variant="ghost" size="icon" onClick={() => handleDelete(exp.id)}>
+                    <Trash2 className="w-4 h-4 text-red-600" />
                   </Button>
                 </div>
               ),

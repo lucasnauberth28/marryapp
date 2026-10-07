@@ -94,9 +94,9 @@ export function ScannerClient() {
           <motion.div 
             key="loading"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center p-12 text-zinc-400"
+            className="flex flex-col items-center justify-center p-12 text-zinc-500"
           >
-            <Loader2 className="w-12 h-12 animate-spin mb-4 text-emerald-500" />
+            <Loader2 className="w-12 h-12 animate-spin mb-4 text-emerald-700" />
             <p>Validando ingresso...</p>
           </motion.div>
         )}
@@ -134,12 +134,12 @@ export function ScannerClient() {
           >
             {result && (
               <div className={`w-full p-6 mb-8 rounded-xl border ${result.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
-                {result.type === 'success' ? <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-emerald-500" /> : <XCircle className="w-12 h-12 mx-auto mb-3 text-red-500" />}
+                {result.type === 'success' ? <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-emerald-700" /> : <XCircle className="w-12 h-12 mx-auto mb-3 text-red-600" />}
                 <p className="font-semibold text-lg">{result.message}</p>
               </div>
             )}
 
-            <div className="bg-zinc-50 p-8 rounded-full mb-6 text-zinc-400 border border-zinc-100">
+            <div className="bg-zinc-50 p-8 rounded-full mb-6 text-zinc-500 border border-zinc-100">
               <Camera className="w-16 h-16" />
             </div>
             <h3 className="text-xl font-bold mb-2">Pronto para Ler</h3>

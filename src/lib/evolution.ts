@@ -169,7 +169,7 @@ export async function sendInteractiveMessage({
         },
         body: JSON.stringify({
           number: cleanNumber,
-          title: title || "Casamento Lucas & Giovanna",
+          title: title || "Nosso casamento",
           description: body,
           buttons: formattedButtons,
         }),

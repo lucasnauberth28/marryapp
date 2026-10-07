@@ -124,12 +124,12 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
-            Perfis de Acesso (Roles)
+          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+            Perfis de acesso
           </h1>
-          <p className="text-zinc-500 mt-1">
+          <p className="mt-1 text-sm text-stone-600">
             Crie perfis e defina quais páginas cada um pode acessar.
           </p>
         </div>
@@ -206,7 +206,7 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
               accessor: (r) => r.name,
               cell: (role) => (
                 <div className="flex items-center gap-2 font-medium text-zinc-900">
-                  <Shield className="w-4 h-4 text-zinc-400" />
+                  <Shield className="w-4 h-4 text-zinc-500" />
                   {role.name}
                 </div>
               ),
@@ -257,10 +257,10 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
               headerClassName: "text-right pr-4",
               cell: (role) => (
                 <div className="flex justify-end gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-zinc-600" onClick={() => openEditForm(role)}>
+                  <Button aria-label="Editar" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-zinc-600" onClick={() => openEditForm(role)}>
                     <Edit2 className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-red-600" onClick={() => handleDelete(role.id)}>
+                  <Button aria-label="Excluir" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-600" onClick={() => handleDelete(role.id)}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>

@@ -3,7 +3,7 @@ import { getUsers, getRoles } from "@/actions/rbac-actions";
 import { UsersClient } from "./users-client";
 
 export const metadata: Metadata = {
-  title: "Usuários | Lucas & Giovanna",
+  title: "Usuários",
   description: "Gerenciar usuários do sistema",
 };
 
@@ -14,7 +14,7 @@ export default async function UsersPage() {
   ]);
 
   return (
-    <div className="flex-1 p-8 pt-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <UsersClient initialUsers={users} roles={roles} />
     </div>
   );

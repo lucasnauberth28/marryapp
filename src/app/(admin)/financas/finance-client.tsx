@@ -69,14 +69,15 @@ function Toast({
       }`}
     >
       {type === "success" ? (
-        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        <CheckCircle2 className="w-4 h-4 text-emerald-700" />
       ) : (
         <X className="w-4 h-4 text-red-600" />
       )}
       <span>{message}</span>
       <button
         onClick={onClose}
-        className="ml-2 text-zinc-400 hover:text-zinc-600 transition-colors"
+        aria-label="Fechar aviso"
+        className="ml-2 text-zinc-500 hover:text-zinc-600 transition-colors"
       >
         <X className="w-3.5 h-3.5" />
       </button>

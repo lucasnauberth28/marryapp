@@ -402,12 +402,12 @@ export function AssinarClient() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FCFBF9] text-stone-900 font-sans antialiased py-12 px-6">
+    <div className="min-h-screen bg-paper text-stone-900 font-sans antialiased py-12 px-6">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Header com Logotipo Oficial Sutil */}
         <div className="flex items-center justify-between border-b border-stone-200/80 pb-6">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-[#FAF4ED] flex items-center justify-center text-[#8C6D45] group-hover:scale-105 transition-transform">
+            <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center text-brand group-hover:scale-105 transition-transform">
               <WeddingRingsIcon className="w-5 h-5" />
             </div>
             <span className="font-serif italic font-bold text-2xl text-stone-900 leading-none">
@@ -461,17 +461,17 @@ export function AssinarClient() {
                       <div className="space-y-1.5">
                         <Label className="text-xs font-bold text-stone-700 uppercase">Endereço do Site (Slug)</Label>
                         <div className="flex items-center bg-stone-50/80 border border-stone-200 rounded-2xl px-3.5 h-12">
-                          <span className="text-xs text-stone-400 font-mono">marryapp.com.br/</span>
+                          <span className="text-xs text-stone-500 font-mono">marryapp.com.br/</span>
                           <input
                             type="text"
                             value={slug}
                             onChange={(e) => setSlug(e.target.value)}
                             placeholder="lucas-e-giovanna"
                             required
-                            className="flex-1 bg-transparent text-xs font-mono font-bold text-[#8C6D45] outline-none ml-1"
+                            className="flex-1 bg-transparent text-xs font-mono font-bold text-brand outline-none ml-1"
                           />
                         </div>
-                        <p className="text-[10px] text-stone-400">Esse será o link exclusivo que seus convidados irão acessar.</p>
+                        <p className="text-xs text-stone-500">Esse será o link exclusivo que seus convidados irão acessar.</p>
                       </div>
 
                       <div className="space-y-1.5">
@@ -527,7 +527,7 @@ export function AssinarClient() {
                     <Button
                       type="submit"
                       disabled={isPending}
-                      className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-base shadow-md gap-2 cursor-pointer"
+                      className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-14 text-base shadow-md gap-2 cursor-pointer"
                     >
                       {isPending ? (
                         <Loader2 className="w-5 h-5 animate-spin" />
@@ -550,30 +550,30 @@ export function AssinarClient() {
                     {/* Barra de Progresso de Etapas do Fornecedor */}
                     <div className="space-y-3 pb-2 border-b border-stone-100">
                       <div className="flex items-center justify-between text-xs font-bold">
-                        <span className={vendorStep >= 1 ? "text-[#8C6D45]" : "text-stone-400"}>
+                        <span className={vendorStep >= 1 ? "text-brand" : "text-stone-500"}>
                           1. Dados & CNPJ
                         </span>
-                        <span className={vendorStep >= 2 ? "text-[#8C6D45]" : "text-stone-400"}>
+                        <span className={vendorStep >= 2 ? "text-brand" : "text-stone-500"}>
                           2. Portfólio & Fotos
                         </span>
-                        <span className={vendorStep >= 3 ? "text-[#8C6D45]" : "text-stone-400"}>
+                        <span className={vendorStep >= 3 ? "text-brand" : "text-stone-500"}>
                           3. Valores & Atendimento
                         </span>
                       </div>
                       <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-[#8C6D45] transition-all duration-300 rounded-full"
+                          className="h-full bg-brand transition-all duration-300 rounded-full"
                           style={{ width: `${(vendorStep / 3) * 100}%` }}
                         />
                       </div>
                     </div>
 
                     {/* Banner de Curadoria */}
-                    <div className="bg-[#FAF8F5] border border-[#8C6D45]/30 rounded-2xl p-4 flex items-start gap-3">
-                      <ShieldCheck className="w-5 h-5 text-[#8C6D45] shrink-0 mt-0.5" />
+                    <div className="bg-ivory border border-brand/30 rounded-2xl p-4 flex items-start gap-3">
+                      <ShieldCheck className="w-5 h-5 text-brand shrink-0 mt-0.5" />
                       <div className="space-y-0.5">
                         <p className="text-xs font-bold text-stone-900">Curadoria & Segurança MarryApp</p>
-                        <p className="text-[11px] text-stone-600 leading-relaxed">
+                        <p className="text-xs text-stone-600 leading-relaxed">
                           Para proteger os noivos e valorizar fornecedores legítimos, todo perfil passa por auditoria prévia antes de ser listado publicamente.
                         </p>
                       </div>
@@ -715,7 +715,7 @@ export function AssinarClient() {
 
                         <Button
                           type="submit"
-                          className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-sm shadow-md gap-2 mt-4 cursor-pointer"
+                          className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-14 text-sm shadow-md gap-2 mt-4 cursor-pointer"
                         >
                           <span>Avançar para Portfólio & Fotos</span>
                           <ArrowRight className="w-4 h-4" />
@@ -734,14 +734,14 @@ export function AssinarClient() {
                             <Label className="text-xs font-bold text-stone-700 uppercase block">
                               Logotipo Oficial / Foto de Perfil
                             </Label>
-                            <p className="text-[11px] text-stone-500">
+                            <p className="text-xs text-stone-500">
                               Faça o upload do logo ou insira o link da imagem da sua marca.
                             </p>
                           </div>
 
                           <div className="flex items-center gap-4">
                             {/* Preview do Logo */}
-                            <div className="w-20 h-20 rounded-2xl bg-[#FAF4ED] border-2 border-dashed border-[#8C6D45]/40 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                            <div className="w-20 h-20 rounded-2xl bg-brand-50 border-2 border-dashed border-brand/40 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
                               {logoUrl ? (
                                 <img
                                   src={logoUrl}
@@ -749,7 +749,7 @@ export function AssinarClient() {
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <Building2 className="w-8 h-8 text-[#8C6D45]/60" />
+                                <Building2 className="w-8 h-8 text-brand/60" />
                               )}
                             </div>
 
@@ -774,7 +774,7 @@ export function AssinarClient() {
                                 </Button>
 
                                 {logoUrl && (
-                                  <Button
+                                  <Button aria-label="Excluir"
                                     type="button"
                                     variant="ghost"
                                     onClick={() => setLogoUrl("")}
@@ -802,7 +802,7 @@ export function AssinarClient() {
                               <Label className="text-xs font-bold text-stone-700 uppercase block">
                                 Fotos dos Serviços Prestados (Portfólio)
                               </Label>
-                              <p className="text-[11px] text-stone-500">
+                              <p className="text-xs text-stone-500">
                                 Envie até 8 fotos reais de casamentos anteriores para encantar os noivos.
                               </p>
                             </div>
@@ -820,7 +820,7 @@ export function AssinarClient() {
                               type="button"
                               variant="outline"
                               onClick={() => galleryInputRef.current?.click()}
-                              className="rounded-2xl h-10 px-4 text-xs font-bold border-[#8C6D45]/40 text-[#8C6D45] hover:bg-[#FAF4ED] gap-1.5 shrink-0"
+                              className="rounded-2xl h-10 px-4 text-xs font-bold border-brand/40 text-brand hover:bg-brand-50 gap-1.5 shrink-0"
                             >
                               <Plus className="w-4 h-4" />
                               <span>Adicionar Fotos</span>
@@ -833,11 +833,11 @@ export function AssinarClient() {
                               onClick={() => galleryInputRef.current?.click()}
                               className="p-8 border-2 border-dashed border-stone-200 rounded-3xl text-center space-y-2 bg-stone-50/40 hover:bg-stone-50 cursor-pointer transition-colors"
                             >
-                              <Camera className="w-8 h-8 mx-auto text-stone-400" />
+                              <Camera className="w-8 h-8 mx-auto text-stone-500" />
                               <p className="text-xs font-bold text-stone-700">
                                 Clique para selecionar as fotos dos seus trabalhos
                               </p>
-                              <p className="text-[10px] text-stone-400">
+                              <p className="text-xs text-stone-500">
                                 Formatos aceitos: JPG, PNG, WEBP (Até 8MB por foto)
                               </p>
                             </div>
@@ -853,7 +853,7 @@ export function AssinarClient() {
                                     alt={`Foto ${i + 1}`}
                                     className="w-full h-full object-cover"
                                   />
-                                  <button
+                                  <button aria-label="Excluir"
                                     type="button"
                                     onClick={() => removeGalleryImage(i)}
                                     className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-red-600/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -867,10 +867,10 @@ export function AssinarClient() {
                                 <button
                                   type="button"
                                   onClick={() => galleryInputRef.current?.click()}
-                                  className="h-24 rounded-2xl border-2 border-dashed border-stone-200 hover:border-[#8C6D45]/40 flex flex-col items-center justify-center text-stone-400 hover:text-[#8C6D45] transition-colors"
+                                  className="h-24 rounded-2xl border-2 border-dashed border-stone-200 hover:border-brand/40 flex flex-col items-center justify-center text-stone-500 hover:text-brand transition-colors"
                                 >
                                   <Plus className="w-5 h-5" />
-                                  <span className="text-[10px] font-bold mt-1">Mais Foto</span>
+                                  <span className="text-xs font-bold mt-1">Mais Foto</span>
                                 </button>
                               )}
                             </div>
@@ -885,7 +885,7 @@ export function AssinarClient() {
 
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div className="space-y-1">
-                              <Label className="text-[10px] text-stone-500 uppercase">Instagram</Label>
+                              <Label className="text-xs text-stone-500 uppercase">Instagram</Label>
                               <Input
                                 value={instagram}
                                 onChange={(e) => setInstagram(e.target.value)}
@@ -895,7 +895,7 @@ export function AssinarClient() {
                             </div>
 
                             <div className="space-y-1">
-                              <Label className="text-[10px] text-stone-500 uppercase">TikTok</Label>
+                              <Label className="text-xs text-stone-500 uppercase">TikTok</Label>
                               <Input
                                 value={tiktok}
                                 onChange={(e) => setTiktok(e.target.value)}
@@ -905,7 +905,7 @@ export function AssinarClient() {
                             </div>
 
                             <div className="space-y-1">
-                              <Label className="text-[10px] text-stone-500 uppercase">Site Oficial</Label>
+                              <Label className="text-xs text-stone-500 uppercase">Site Oficial</Label>
                               <Input
                                 value={website}
                                 onChange={(e) => setWebsite(e.target.value)}
@@ -929,7 +929,7 @@ export function AssinarClient() {
 
                           <Button
                             type="submit"
-                            className="flex-1 bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-sm shadow-md gap-2 cursor-pointer"
+                            className="flex-1 bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-14 text-sm shadow-md gap-2 cursor-pointer"
                           >
                             <span>Avançar para Valores & Atendimento</span>
                             <ArrowRight className="w-4 h-4" />
@@ -947,7 +947,7 @@ export function AssinarClient() {
                           <Label className="text-xs font-bold text-stone-700 uppercase block">
                             Investimento & Valores Médios
                           </Label>
-                          <p className="text-[11px] text-stone-500">
+                          <p className="text-xs text-stone-500">
                             Usado para orientar os noivos e classificar a faixa de preço do seu perfil.
                           </p>
                         </div>
@@ -958,7 +958,7 @@ export function AssinarClient() {
                               Valor Inicial dos Serviços (A partir de)
                             </Label>
                             <div className="relative">
-                              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400 text-xs font-bold">
+                              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-500 text-xs font-bold">
                                 R$
                               </span>
                               <Input
@@ -976,7 +976,7 @@ export function AssinarClient() {
                               Ticket Médio dos Contratos
                             </Label>
                             <div className="relative">
-                              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400 text-xs font-bold">
+                              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-500 text-xs font-bold">
                                 R$
                               </span>
                               <Input
@@ -990,9 +990,9 @@ export function AssinarClient() {
                         </div>
 
                         {/* Preview da Faixa de Preço Calculada */}
-                        <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-stone-200 flex items-center justify-between">
+                        <div className="bg-ivory p-4 rounded-2xl border border-stone-200 flex items-center justify-between">
                           <div className="space-y-0.5">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+                            <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block">
                               Classificação Automática de Faixa:
                             </span>
                             <p className="text-xs font-bold text-stone-900">
@@ -1018,14 +1018,14 @@ export function AssinarClient() {
                               onClick={() => setOffersOnlineMeet(!offersOnlineMeet)}
                               className={`p-4 rounded-2xl border flex items-center gap-3 cursor-pointer transition-all ${
                                 offersOnlineMeet
-                                  ? "bg-[#FAF4ED] border-[#8C6D45] text-[#8C6D45]"
+                                  ? "bg-brand-50 border-brand text-brand"
                                   : "bg-stone-50 border-stone-200 text-stone-600"
                               }`}
                             >
                               <Video className="w-5 h-5 shrink-0" />
                               <div className="text-xs">
                                 <p className="font-bold">Reuniões por Vídeo</p>
-                                <p className="text-[10px] text-stone-500">Google Meet & Zoom</p>
+                                <p className="text-xs text-stone-500">Google Meet & Zoom</p>
                               </div>
                             </div>
 
@@ -1033,14 +1033,14 @@ export function AssinarClient() {
                               onClick={() => setHasPhysicalSpace(!hasPhysicalSpace)}
                               className={`p-4 rounded-2xl border flex items-center gap-3 cursor-pointer transition-all ${
                                 hasPhysicalSpace
-                                  ? "bg-[#FAF4ED] border-[#8C6D45] text-[#8C6D45]"
+                                  ? "bg-brand-50 border-brand text-brand"
                                   : "bg-stone-50 border-stone-200 text-stone-600"
                               }`}
                             >
                               <Building2 className="w-5 h-5 shrink-0" />
                               <div className="text-xs">
                                 <p className="font-bold">Showroom / Espaço Físico</p>
-                                <p className="text-[10px] text-stone-500">Atendimento presencial</p>
+                                <p className="text-xs text-stone-500">Atendimento presencial</p>
                               </div>
                             </div>
                           </div>
@@ -1074,7 +1074,7 @@ export function AssinarClient() {
                           <Button
                             type="submit"
                             disabled={isPending}
-                            className="flex-1 bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-sm shadow-md gap-2 cursor-pointer"
+                            className="flex-1 bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-14 text-sm shadow-md gap-2 cursor-pointer"
                           >
                             {isPending ? (
                               <Loader2 className="w-5 h-5 animate-spin" />
@@ -1120,7 +1120,7 @@ export function AssinarClient() {
                         ? "bg-red-100 text-red-800 border border-red-300"
                         : isExpiringSoon
                         ? "bg-amber-100 text-amber-900 border border-amber-300 animate-pulse"
-                        : "bg-[#FAF4ED] text-[#8C6D45] border border-[#8C6D45]/30"
+                        : "bg-brand-50 text-brand border border-brand/30"
                     }`}
                   >
                     <Clock className="w-4 h-4 shrink-0" />
@@ -1137,11 +1137,11 @@ export function AssinarClient() {
                     onClick={() => setPaymentMethod("PIX")}
                     className={`p-4 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       paymentMethod === "PIX"
-                        ? "bg-[#FAF4ED] border-[#8C6D45] text-[#8C6D45] shadow-xs"
+                        ? "bg-brand-50 border-brand text-brand shadow-xs"
                         : "bg-stone-50 border-stone-200 text-stone-600"
                     }`}
                   >
-                    <QrCode className="w-4 h-4 text-[#8C6D45]" />
+                    <QrCode className="w-4 h-4 text-brand" />
                     <span>Pix Instantâneo (0% taxa)</span>
                   </button>
 
@@ -1150,22 +1150,22 @@ export function AssinarClient() {
                     onClick={() => setPaymentMethod("CARD")}
                     className={`p-4 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       paymentMethod === "CARD"
-                        ? "bg-[#FAF4ED] border-[#8C6D45] text-[#8C6D45] shadow-xs"
+                        ? "bg-brand-50 border-brand text-brand shadow-xs"
                         : "bg-stone-50 border-stone-200 text-stone-600"
                     }`}
                   >
-                    <CreditCardIcon className="w-4 h-4 text-[#8C6D45]" />
+                    <CreditCardIcon className="w-4 h-4 text-brand" />
                     <span>Cartão de Crédito (até 12x)</span>
                   </button>
                 </div>
 
                 {/* Bloco Pix com QR Code Real e Timer */}
                 {paymentMethod === "PIX" && (
-                  <div className="bg-[#FAF8F5] p-6 sm:p-8 rounded-3xl border border-stone-200 text-center space-y-6">
+                  <div className="bg-ivory p-6 sm:p-8 rounded-3xl border border-stone-200 text-center space-y-6">
                     {!isExpired ? (
                       <>
                         {/* QR Code Real Renderizado com SVG de Alta Resolução */}
-                        <div className="w-56 h-56 mx-auto bg-white p-4 rounded-3xl border-2 border-[#8C6D45]/30 shadow-md flex items-center justify-center">
+                        <div className="w-56 h-56 mx-auto bg-white p-4 rounded-3xl border-2 border-brand/30 shadow-md flex items-center justify-center">
                           {pixPayload ? (
                             <QRCodeSVG
                               value={pixPayload}
@@ -1174,7 +1174,7 @@ export function AssinarClient() {
                               includeMargin={false}
                             />
                           ) : (
-                            <Loader2 className="w-8 h-8 animate-spin text-[#8C6D45]" />
+                            <Loader2 className="w-8 h-8 animate-spin text-brand" />
                           )}
                         </div>
 
@@ -1182,7 +1182,7 @@ export function AssinarClient() {
                           <p className="text-xs font-bold text-stone-800">
                             Abra o aplicativo do seu banco e escaneie o código QR
                           </p>
-                          <p className="text-[11px] text-stone-500">
+                          <p className="text-xs text-stone-500">
                             A liberação do seu plano é processada e ativada no mesmo instante.
                           </p>
                         </div>
@@ -1194,7 +1194,7 @@ export function AssinarClient() {
                             <Input
                               readOnly
                               value={pixPayload}
-                              className="bg-white border-stone-200 font-mono text-[11px] h-12 truncate"
+                              className="bg-white border-stone-200 font-mono text-xs h-12 truncate"
                             />
                             <Button
                               onClick={() => {
@@ -1207,7 +1207,7 @@ export function AssinarClient() {
                               className="rounded-2xl h-12 px-5 text-xs font-bold gap-1.5 border-stone-300 hover:bg-stone-100 shrink-0"
                             >
                               {pixCopied ? (
-                                <Check className="w-4 h-4 text-emerald-600" />
+                                <Check className="w-4 h-4 text-emerald-700" />
                               ) : (
                                 <Copy className="w-4 h-4 text-stone-600" />
                               )}
@@ -1252,7 +1252,7 @@ export function AssinarClient() {
                         <Button
                           onClick={handleRegeneratePix}
                           disabled={isPending}
-                          className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-12 px-6 text-xs gap-2 shadow-md"
+                          className="bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-12 px-6 text-xs gap-2 shadow-md"
                         >
                           {isPending ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -1268,7 +1268,7 @@ export function AssinarClient() {
 
                 {/* Detalhes Cartão de Crédito */}
                 {paymentMethod === "CARD" && (
-                  <div className="bg-[#FAF8F5] p-6 sm:p-8 rounded-3xl border border-stone-200 space-y-4">
+                  <div className="bg-ivory p-6 sm:p-8 rounded-3xl border border-stone-200 space-y-4">
                     <div className="space-y-1.5">
                       <Label className="text-xs font-bold text-stone-700 uppercase">Número do Cartão</Label>
                       <Input placeholder="0000 0000 0000 0000" className="bg-white rounded-2xl h-12 font-mono text-sm" />
@@ -1293,7 +1293,7 @@ export function AssinarClient() {
                     <Button
                       onClick={handleConfirmPaid}
                       disabled={isPending}
-                      className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 text-sm gap-2 mt-4 cursor-pointer shadow-md"
+                      className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-14 text-sm gap-2 mt-4 cursor-pointer shadow-md"
                     >
                       {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Lock className="w-4 h-4" />}
                       <span>Pagar com Cartão com Segurança</span>
@@ -1316,7 +1316,7 @@ export function AssinarClient() {
                     ? "Seu cadastro foi recebido com sucesso e seu painel de parceiro está liberado. Seus dados foram enviados para a curadoria."
                     : "Seu painel está sendo liberado e preparado para você. Redirecionando..."}
                 </p>
-                <Loader2 className="w-5 h-5 animate-spin text-[#8C6D45] mx-auto mt-4" />
+                <Loader2 className="w-5 h-5 animate-spin text-brand mx-auto mt-4" />
               </div>
             )}
           </div>
@@ -1324,12 +1324,12 @@ export function AssinarClient() {
           {/* ========================================================================= */}
           {/* COLUNA DIREITA: RESUMO DO PLANO ESCOLHIDO */}
           {/* ========================================================================= */}
-          <div className="lg:col-span-5 bg-gradient-to-b from-[#FAF4ED] to-white p-8 rounded-3xl border-2 border-[#8C6D45]/30 shadow-xl space-y-6">
+          <div className="lg:col-span-5 bg-gradient-to-b from-brand-50 to-white p-8 rounded-3xl border-2 border-brand/30 shadow-xl space-y-6">
             <div className="flex items-center justify-between">
-              <Badge className="bg-[#8C6D45] text-white font-extrabold text-[10px] uppercase tracking-wider">
+              <Badge className="bg-brand text-white font-extrabold text-xs uppercase tracking-wider">
                 {currentPlan.badge}
               </Badge>
-              <span className="text-xs text-stone-400 font-bold">
+              <span className="text-xs text-stone-500 font-bold">
                 {currentPlan.type === "COUPLE" ? "Casal" : "Fornecedor"}
               </span>
             </div>
@@ -1352,26 +1352,26 @@ export function AssinarClient() {
             </div>
 
             <div className="pt-4 border-t border-stone-200/80 space-y-2.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 block">
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block">
                 Itens incluídos:
               </span>
               <ul className="space-y-2 text-xs text-stone-700 font-medium">
                 {currentPlan.features.map((feat, i) => (
                   <li key={i} className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#8C6D45] shrink-0" />
+                    <Check className="w-4 h-4 text-brand shrink-0" />
                     <span>{feat}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="pt-4 border-t border-stone-200/80 space-y-2 text-stone-500 text-[11px]">
+            <div className="pt-4 border-t border-stone-200/80 space-y-2 text-stone-500 text-xs">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
                 <span>Ativação Imediata após a confirmação.</span>
               </div>
               <div className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-emerald-600 shrink-0" />
+                <Lock className="w-4 h-4 text-emerald-700 shrink-0" />
                 <span>Sem taxas ocultas ou renovações forçadas.</span>
               </div>
             </div>

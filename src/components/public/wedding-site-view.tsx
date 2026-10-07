@@ -80,7 +80,7 @@ export function WeddingSiteView({
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 font-serif antialiased selection:bg-[#8C6D45]/20 selection:text-[#8C6D45]">
+    <div className="min-h-screen bg-ivory text-stone-900 font-serif antialiased selection:bg-brand/20 selection:text-brand">
       {/* ========================================================================= */}
       {/* 1. HERO CAPA COM FOTO & CONTAGEM */}
       {/* ========================================================================= */}
@@ -88,16 +88,16 @@ export function WeddingSiteView({
         <div className="absolute inset-0 z-0 bg-[radial-gradient(#C5A880_1px,transparent_1px)] [background-size:24px_24px] opacity-25" />
 
         <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-[#8C6D45]/10 flex items-center justify-center mb-8 border border-[#8C6D45]/30">
-            <Heart className="w-8 h-8 text-[#8C6D45] fill-[#8C6D45]" />
+          <div className="w-16 h-16 rounded-full bg-brand/10 flex items-center justify-center mb-8 border border-brand/30">
+            <Heart className="w-8 h-8 text-brand fill-brand" />
           </div>
 
-          <p className="text-xs sm:text-sm uppercase tracking-[0.35em] text-[#8C6D45] font-bold font-sans mb-3">
+          <p className="text-xs sm:text-sm uppercase tracking-[0.35em] text-brand font-bold font-sans mb-3">
             Convidamos você para celebrar
           </p>
 
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-black text-stone-900 tracking-tight leading-none drop-shadow-xs">
-            {settings?.title || "Lucas & Giovanna"}
+            {settings?.title || "Nosso Casamento"}
           </h1>
 
           <p className="mt-4 text-base sm:text-xl text-stone-600 font-sans font-medium">
@@ -106,24 +106,24 @@ export function WeddingSiteView({
 
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs sm:text-sm font-sans font-bold text-stone-700 mt-6 bg-white/80 backdrop-blur-md px-8 py-3.5 rounded-full border border-stone-200/80 shadow-xs">
             <span className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#8C6D45]" />
+              <Calendar className="w-4 h-4 text-brand" />
               {formattedWeddingDate}
             </span>
             <span className="w-1 h-1 bg-stone-300 rounded-full hidden sm:inline" />
             <span className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#8C6D45]" />
+              <Clock className="w-4 h-4 text-brand" />
               Cerimônia às {settings?.ceremonyTime || "16:30"}
             </span>
             <span className="w-1 h-1 bg-stone-300 rounded-full hidden sm:inline" />
             <span className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#8C6D45]" />
+              <MapPin className="w-4 h-4 text-brand" />
               {settings?.locationName || "Espaço Monte Castelo"}
             </span>
           </div>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4 font-sans">
             <Link href="/presentes">
-              <Button className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full px-8 h-14 text-sm font-bold shadow-lg hover:shadow-xl transition-all gap-2">
+              <Button className="bg-brand hover:bg-brand-600 text-white rounded-full px-8 h-14 text-sm font-bold shadow-lg hover:shadow-xl transition-all gap-2">
                 <Gift className="w-4 h-4" />
                 Lista de Presentes
               </Button>
@@ -146,7 +146,7 @@ export function WeddingSiteView({
       {settings?.showStory && (
         <section className="py-24 max-w-5xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs uppercase tracking-widest text-[#8C6D45] font-bold font-sans">
+            <span className="text-xs uppercase tracking-widest text-brand font-bold font-sans">
               Nossa Trajetória
             </span>
             <h2 className="text-3xl sm:text-4xl font-bold text-stone-900 mt-2">
@@ -160,21 +160,21 @@ export function WeddingSiteView({
           {storyItems.length === 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 font-sans">
               <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm text-center">
-                <span className="text-xs font-bold text-[#8C6D45] uppercase">2020</span>
+                <span className="text-xs font-bold text-brand uppercase">2020</span>
                 <h3 className="text-lg font-bold font-serif text-stone-900 mt-1">O Primeiro Olhar</h3>
                 <p className="text-xs text-stone-500 mt-2 leading-relaxed">
                   Nos conhecemos despretensiosamente através de amigos em comum e ali nascia uma linda conexão.
                 </p>
               </div>
               <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm text-center">
-                <span className="text-xs font-bold text-[#8C6D45] uppercase">2022</span>
+                <span className="text-xs font-bold text-brand uppercase">2022</span>
                 <h3 className="text-lg font-bold font-serif text-stone-900 mt-1">Primeira Viagem Juntos</h3>
                 <p className="text-xs text-stone-500 mt-2 leading-relaxed">
                   Dias inesquecíveis que nos mostraram que éramos perfeitos um para o outro em qualquer lugar.
                 </p>
               </div>
               <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm text-center">
-                <span className="text-xs font-bold text-[#8C6D45] uppercase">2024</span>
+                <span className="text-xs font-bold text-brand uppercase">2024</span>
                 <h3 className="text-lg font-bold font-serif text-stone-900 mt-1">O Pedido do 'Sim'</h3>
                 <p className="text-xs text-stone-500 mt-2 leading-relaxed">
                   Sob a luz do pôr do sol, fizemos a promessa de construirmos juntos uma vida inteira.
@@ -197,7 +197,7 @@ export function WeddingSiteView({
                   )}
                   <div className="flex-1">
                     {item.dateLabel && (
-                      <span className="text-xs font-bold text-[#8C6D45] uppercase tracking-wider">
+                      <span className="text-xs font-bold text-brand uppercase tracking-wider">
                         {item.dateLabel}
                       </span>
                     )}
@@ -222,7 +222,7 @@ export function WeddingSiteView({
         <section className="py-24 bg-white border-y border-stone-200">
           <div className="max-w-5xl mx-auto px-6 font-sans">
             <div className="text-center max-w-2xl mx-auto mb-16">
-              <span className="text-xs uppercase tracking-widest text-[#8C6D45] font-bold">
+              <span className="text-xs uppercase tracking-widest text-brand font-bold">
                 Local & Horários
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold font-serif text-stone-900 mt-2">
@@ -231,9 +231,9 @@ export function WeddingSiteView({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-              <div className="bg-[#FAF8F5] p-8 rounded-3xl border border-stone-200/80 flex flex-col justify-between">
+              <div className="bg-ivory p-8 rounded-3xl border border-stone-200/80 flex flex-col justify-between">
                 <div>
-                  <div className="w-12 h-12 rounded-2xl bg-[#8C6D45]/10 text-[#8C6D45] flex items-center justify-center mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-brand/10 text-brand flex items-center justify-center mb-6">
                     <MapPin className="w-6 h-6" />
                   </div>
                   <h3 className="text-2xl font-bold font-serif text-stone-900">
@@ -288,7 +288,7 @@ export function WeddingSiteView({
               </div>
 
               {/* Informações Extras de Acesso */}
-              <div className="bg-[#FAF8F5] p-8 rounded-3xl border border-stone-200/80 flex flex-col justify-between">
+              <div className="bg-ivory p-8 rounded-3xl border border-stone-200/80 flex flex-col justify-between">
                 <div>
                   <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center mb-6">
                     <Sparkles className="w-6 h-6" />
@@ -319,7 +319,7 @@ export function WeddingSiteView({
       {settings?.showDressCode && (
         <section className="py-24 max-w-5xl mx-auto px-6 font-sans">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs uppercase tracking-widest text-[#8C6D45] font-bold">
+            <span className="text-xs uppercase tracking-widest text-brand font-bold">
               Guia de Estilo
             </span>
             <h2 className="text-3xl sm:text-4xl font-bold font-serif text-stone-900 mt-2">
@@ -331,7 +331,7 @@ export function WeddingSiteView({
 
             {/* Paleta de Cores Recomendada */}
             <div className="mt-8">
-              <p className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-3">
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3">
                 Paleta de Cores em Harmonia com o Evento
               </p>
               <div className="flex items-center justify-center gap-3">
@@ -356,7 +356,7 @@ export function WeddingSiteView({
         <section className="py-24 bg-white border-t border-stone-200 font-sans">
           <div className="max-w-5xl mx-auto px-6">
             <div className="text-center max-w-2xl mx-auto mb-16">
-              <span className="text-xs uppercase tracking-widest text-[#8C6D45] font-bold">
+              <span className="text-xs uppercase tracking-widest text-brand font-bold">
                 Carinho em Palavras
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold font-serif text-stone-900 mt-2">
@@ -371,7 +371,7 @@ export function WeddingSiteView({
               {/* Formulário de Envio */}
               <form
                 onSubmit={handleSendGuestbook}
-                className="bg-[#FAF8F5] p-8 rounded-3xl border border-stone-200 space-y-4 shadow-sm"
+                className="bg-ivory p-8 rounded-3xl border border-stone-200 space-y-4 shadow-sm"
               >
                 <h3 className="font-serif font-bold text-xl text-stone-900">
                   Escrever para os Noivos
@@ -401,7 +401,7 @@ export function WeddingSiteView({
                 <Button
                   type="submit"
                   disabled={isPending}
-                  className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full h-12 font-bold gap-2 shadow-sm"
+                  className="w-full bg-brand hover:bg-brand-600 text-white rounded-full h-12 font-bold gap-2 shadow-sm"
                 >
                   <Send className="w-4 h-4" />
                   <span>Enviar Recado com Carinho</span>
@@ -411,7 +411,7 @@ export function WeddingSiteView({
               {/* Feed de Recados */}
               <div className="space-y-4 max-h-[460px] overflow-y-auto pr-2">
                 {entries.length === 0 ? (
-                  <div className="p-8 text-center bg-[#FAF8F5] rounded-3xl border border-stone-200 text-stone-400 text-xs">
+                  <div className="p-8 text-center bg-ivory rounded-3xl border border-stone-200 text-stone-500 text-xs">
                     <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     Seja o primeiro a deixar uma mensagem no mural dos noivos!
                   </div>
@@ -419,11 +419,11 @@ export function WeddingSiteView({
                   entries.map((item) => (
                     <div
                       key={item.id}
-                      className="p-5 bg-[#FAF8F5] rounded-2xl border border-stone-200 shadow-xs"
+                      className="p-5 bg-ivory rounded-2xl border border-stone-200 shadow-xs"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-bold text-xs text-stone-900">{item.authorName}</span>
-                        <span className="text-[10px] text-stone-400">
+                        <span className="text-xs text-stone-500">
                           {format(new Date(item.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                         </span>
                       </div>
@@ -445,7 +445,7 @@ export function WeddingSiteView({
       {settings?.showGifts && gifts.length > 0 && (
         <section className="py-24 max-w-6xl mx-auto px-6 font-sans">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs uppercase tracking-widest text-[#8C6D45] font-bold">
+            <span className="text-xs uppercase tracking-widest text-brand font-bold">
               Lista dos Noivos
             </span>
             <h2 className="text-3xl sm:text-4xl font-bold font-serif text-stone-900 mt-2">
@@ -485,7 +485,7 @@ export function WeddingSiteView({
                     )}
                   </span>
                   <Link href={`/checkout/${gift.id}`}>
-                    <Button className="bg-[#8C6D45] hover:bg-[#785c39] text-white text-xs font-bold rounded-full h-9 px-4">
+                    <Button className="bg-brand hover:bg-brand-600 text-white text-xs font-bold rounded-full h-9 px-4">
                       Presentear
                     </Button>
                   </Link>
@@ -511,9 +511,9 @@ export function WeddingSiteView({
       {/* ========================================================================= */}
       {/* 7. FOOTER DO CASAMENTO */}
       {/* ========================================================================= */}
-      <footer className="bg-white border-t border-stone-200 py-10 font-sans text-center text-xs text-stone-400">
+      <footer className="bg-white border-t border-stone-200 py-10 font-sans text-center text-xs text-stone-500">
         <p className="font-serif italic text-base text-stone-700 mb-1">
-          {settings?.title || "Lucas & Giovanna"}
+          {settings?.title || "Nosso Casamento"}
         </p>
         <p>11 de Outubro de 2027 • Feito com amor com MarryApp</p>
       </footer>

@@ -2,7 +2,7 @@ import { getWalletData } from "@/actions/wallet-actions";
 import { CarteiraClient } from "./carteira-client";
 
 export const metadata = {
-  title: "Carteira & Meios de Pagamento | MarryApp",
+  title: "Carteira",
   description: "Gerencie seu saldo em conta e cartões de crédito para controle financeiro do casamento.",
 };
 

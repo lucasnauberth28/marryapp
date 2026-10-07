@@ -151,7 +151,7 @@ export function DataTable<T>({
       {/* Top Bar: Search + Custom Right Element */}
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
           <Input
             type="text"
             value={search}
@@ -162,7 +162,7 @@ export function DataTable<T>({
           {search && (
             <button
               onClick={() => handleSearchChange("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 p-0.5 rounded-full"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-600 p-0.5 rounded-full"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -195,12 +195,12 @@ export function DataTable<T>({
                       <div className="flex items-center gap-1.5">
                         <span>{col.header}</span>
                         {isSortable && (
-                          <span className="text-zinc-400">
+                          <span className="text-zinc-500">
                             {isSorted ? (
                               sortOrder === "asc" ? (
-                                <ArrowUp className="w-3.5 h-3.5 text-[#8C6D45]" />
+                                <ArrowUp className="w-3.5 h-3.5 text-brand" />
                               ) : (
-                                <ArrowDown className="w-3.5 h-3.5 text-[#8C6D45]" />
+                                <ArrowDown className="w-3.5 h-3.5 text-brand" />
                               )
                             ) : (
                               <ArrowUpDown className="w-3.5 h-3.5 opacity-40 hover:opacity-100" />
@@ -216,7 +216,7 @@ export function DataTable<T>({
             <tbody className="divide-y divide-zinc-100">
               {paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="px-4 py-12 text-center text-zinc-400">
+                  <td colSpan={columns.length} className="px-4 py-12 text-center text-zinc-500">
                     {emptyMessage}
                   </td>
                 </tr>
@@ -248,7 +248,7 @@ export function DataTable<T>({
           </div>
 
           <div className="flex items-center gap-1">
-            <Button
+            <Button aria-label="Primeira página"
               variant="outline"
               size="icon"
               className="h-8 w-8 rounded-lg border-zinc-200"
@@ -258,7 +258,7 @@ export function DataTable<T>({
             >
               <ChevronsLeft className="w-4 h-4" />
             </Button>
-            <Button
+            <Button aria-label="Anterior"
               variant="outline"
               size="icon"
               className="h-8 w-8 rounded-lg border-zinc-200"
@@ -273,7 +273,7 @@ export function DataTable<T>({
               Página {safePage} de {totalPages}
             </span>
 
-            <Button
+            <Button aria-label="Próximo"
               variant="outline"
               size="icon"
               className="h-8 w-8 rounded-lg border-zinc-200"
@@ -283,7 +283,7 @@ export function DataTable<T>({
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
-            <Button
+            <Button aria-label="Última página"
               variant="outline"
               size="icon"
               className="h-8 w-8 rounded-lg border-zinc-200"

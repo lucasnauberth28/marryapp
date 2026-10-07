@@ -3,6 +3,7 @@
 import { useState, useTransition, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { GiftLocal as Gift } from "@/types/local";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,17 +30,17 @@ import {
   Copy,
   CheckCircle2,
   Loader2,
-  Lock,
 } from "lucide-react";
 
 interface CheckoutClientProps {
   gift: Gift;
+  coupleNames: string;
 }
 
 type CheckoutStep = "IDENTIFICATION" | "METHOD" | "PAYMENT" | "SUCCESS";
 type PaymentMethod = "PIX" | "CREDIT_CARD";
 
-export function CheckoutClient({ gift }: CheckoutClientProps) {
+export function CheckoutClient({ gift, coupleNames }: CheckoutClientProps) {
   const [step, setStep] = useState<CheckoutStep>("IDENTIFICATION");
   const [method, setMethod] = useState<PaymentMethod>("PIX");
   const [isPending, startTransition] = useTransition();
@@ -269,13 +270,13 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
           </div>
         )}
         <div className="space-y-1">
-          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+          <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
             Presente Selecionado
           </span>
           <h3 className="text-2xl font-black text-zinc-900 leading-tight tracking-tight">
             {gift.title}
           </h3>
-          <span className="text-emerald-600 font-extrabold text-lg block">
+          <span className="text-emerald-700 font-extrabold text-lg block">
             {formatPrice(gift.amount)}
           </span>
         </div>
@@ -371,12 +372,12 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
                     : "border-zinc-100 hover:border-zinc-200 hover:bg-zinc-50/30"
                 }`}
               >
-                <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600">
+                <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-700">
                   <QrCode className="w-6 h-6" />
                 </div>
                 <div>
                   <h4 className="font-bold text-zinc-900 text-base">Pix</h4>
-                  <p className="text-[11px] text-zinc-400 font-medium">
+                  <p className="text-xs text-zinc-500 font-medium">
                     À vista s/ juros
                   </p>
                   <span className="text-lg font-extrabold text-zinc-900 block mt-1">
@@ -400,7 +401,7 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
                 </div>
                 <div>
                   <h4 className="font-bold text-zinc-900 text-base">Cartão</h4>
-                  <p className="text-[11px] text-zinc-400 font-medium">
+                  <p className="text-xs text-zinc-500 font-medium">
                     Em até 12x
                   </p>
                   <span className="text-lg font-extrabold text-zinc-900 block mt-1">
@@ -442,7 +443,7 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
 
                     <div className="flex justify-between items-end">
                       <div className="flex flex-col">
-                        <span className="text-[10px] uppercase text-white/50 tracking-wider font-bold">
+                        <span className="text-xs uppercase text-white/50 tracking-wider font-bold">
                           Titular do Cartão
                         </span>
                         <span className="text-base font-bold tracking-wide uppercase truncate max-w-[220px]">
@@ -450,7 +451,7 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
                         </span>
                       </div>
                       <div className="flex flex-col text-right">
-                        <span className="text-[10px] uppercase text-white/50 tracking-wider font-bold">
+                        <span className="text-xs uppercase text-white/50 tracking-wider font-bold">
                           Validade
                         </span>
                         <span className="text-base font-bold font-mono">
@@ -644,7 +645,7 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
                 className="w-full rounded-full h-14 gap-2 text-zinc-800 font-extrabold border-2 hover:bg-zinc-50 shadow-sm text-sm"
               >
                 {copied ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                  <CheckCircle2 className="w-5 h-5 text-emerald-700" />
                 ) : (
                   <Copy className="w-5 h-5" />
                 )}
@@ -653,20 +654,16 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
                   : "Copiar Código Pix Copia e Cola"}
               </Button>
 
-              <div className="flex items-center justify-center gap-2.5 text-[#8C6D45] bg-[#FAF7F2] border border-[#8C6D45]/20 font-semibold text-xs py-3 px-4 rounded-2xl w-full shadow-xs">
-                <Loader2 className="w-4 h-4 animate-spin text-[#8C6D45]" />
+              <div className="flex items-center justify-center gap-2.5 text-brand bg-brand-50 border border-brand/20 font-semibold text-xs py-3 px-4 rounded-2xl w-full shadow-xs">
+                <Loader2 className="w-4 h-4 animate-spin text-brand" />
                 <span>Aguardando confirmação automática do pagamento...</span>
-              </div>
-
-              <div className="flex items-center justify-center gap-2 text-zinc-400 font-medium text-xs bg-zinc-50 py-2.5 px-4 rounded-2xl">
-                <Lock className="w-4 h-4 text-zinc-400" /> Transação Criptografada e Segura
               </div>
             </div>
 
             <Button
               variant="ghost"
               onClick={() => setStep("METHOD")}
-              className="rounded-full h-10 gap-1 text-zinc-400 hover:text-zinc-600 font-bold text-xs"
+              className="rounded-full h-10 gap-1 text-zinc-500 hover:text-zinc-600 font-bold text-xs"
             >
               <ArrowLeft className="w-4 h-4" /> Alterar Forma de Pagamento
             </Button>
@@ -682,7 +679,7 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
             exit={{ opacity: 0 }}
             className="space-y-6 flex flex-col items-center text-center py-4"
           >
-            <Loader2 className="w-10 h-10 animate-spin text-[#8C6D45]" />
+            <Loader2 className="w-10 h-10 animate-spin text-brand" />
             <div className="space-y-2">
               <h2 className="text-3xl font-black text-zinc-900 tracking-tight">Pagamento em análise</h2>
               <p className="text-zinc-500 text-sm max-w-sm">
@@ -700,26 +697,35 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
             animate={{ opacity: 1, scale: 1 }}
             className="space-y-8 flex flex-col items-center text-center py-4"
           >
-            <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
-              <Heart className="w-12 h-12 fill-emerald-600 animate-pulse" />
+            <div className="w-24 h-24 bg-brand-50 rounded-full flex items-center justify-center text-brand shadow-sm border border-brand/20">
+              <Heart className="w-12 h-12 fill-brand" aria-hidden="true" />
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-4xl font-black text-zinc-900 tracking-tight">
+              <h2 className="text-4xl font-serif font-semibold text-stone-900 tracking-tight">
                 Obrigado pelo carinho!
               </h2>
-              <p className="text-zinc-500 text-base max-w-sm">
-                Seu presente foi confirmado e Lucas & Giovanna foram notificados. Muito obrigado pelo carinho!
+              <p className="text-stone-600 text-base max-w-sm">
+                Seu presente foi confirmado e {coupleNames} já foram avisados.
               </p>
             </div>
 
-            <div className="bg-emerald-50 text-emerald-900 border border-emerald-100/60 rounded-3xl p-6 w-full shadow-inner">
-              <span className="text-xs font-bold uppercase tracking-widest block text-emerald-600/80 mb-1">
-                Valor Total Autorizado
+            <div className="bg-brand-50 text-stone-900 border border-brand/15 rounded-3xl p-6 w-full">
+              <span className="text-xs font-semibold uppercase tracking-wider block text-brand-600 mb-1">
+                Valor do presente
               </span>
-              <span className="text-4xl font-black tracking-tight">
+              <span className="text-4xl font-semibold tracking-tight tabular-nums">
                 {formatPrice(gift.amount)}
               </span>
+            </div>
+
+            <div className="w-full grid gap-3 sm:grid-cols-2">
+              <Button asChild className="rounded-full h-12 font-semibold">
+                <Link href="/rsvp">Confirmar presença</Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-full h-12 font-semibold">
+                <Link href="/casamento">Ver o site do casal</Link>
+              </Button>
             </div>
           </motion.div>
         )}

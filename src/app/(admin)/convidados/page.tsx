@@ -5,7 +5,7 @@ import { GuestsClient } from "./guests-client";
 import { verifyAdminSession } from "@/actions/auth-actions";
 
 export const metadata: Metadata = {
-  title: "Convidados & Mesas | Lucas & Giovanna",
+  title: "Convidados",
   description: "Gerencie a lista de convidados e a organização de mesas do casamento",
 };
 
@@ -21,7 +21,7 @@ export default async function ConvidadosPage() {
   ]);
 
   return (
-    <div className="flex-1 p-8 pt-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <GuestsClient
         initialGuests={guests}
         initialTables={tables}

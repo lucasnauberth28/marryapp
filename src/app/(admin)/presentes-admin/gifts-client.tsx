@@ -68,10 +68,10 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
-            Vitrine de Presentes
+          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+            Presentes
           </h1>
-          <p className="text-zinc-500 mt-1">
+          <p className="mt-1 text-sm text-stone-600">
             Cadastre os itens que deseja ganhar. Os convidados poderão comprar via Pix ou Cartão.
           </p>
         </div>
@@ -88,13 +88,13 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
         {[
           { label: "Itens Cadastrados", value: totalGifts, color: "text-zinc-900" },
           { label: "Valor Total da Vitrine", value: formatPrice(totalAmountInCents), color: "text-zinc-900" },
-          { label: "Presentes Ganhos", value: purchasedCount, color: "text-emerald-600" },
+          { label: "Presentes Ganhos", value: purchasedCount, color: "text-emerald-700" },
         ].map((s, index) => (
           <div
             key={index}
             className="bg-white rounded-xl border border-zinc-200/80 shadow-sm p-5"
           >
-            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
               {s.label}
             </p>
             <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
@@ -104,7 +104,7 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
 
       {/* Grid de Presentes */}
       {gifts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white border border-zinc-200/80 rounded-2xl text-zinc-400">
+        <div className="flex flex-col items-center justify-center py-20 bg-white border border-zinc-200/80 rounded-2xl text-zinc-500">
           <GiftIcon className="w-10 h-10 mb-3 text-zinc-200" />
           <p className="font-medium text-zinc-500">Nenhum presente na vitrine</p>
           <p className="text-sm mt-1">Clique em "Novo Presente" para começar.</p>
@@ -125,7 +125,7 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-zinc-400">
+                  <div className="flex flex-col items-center justify-center text-zinc-500">
                     <ImageOff className="w-8 h-8 text-zinc-300 mb-2" />
                     <span className="text-xs">Sem imagem</span>
                   </div>
@@ -158,7 +158,7 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
 
                 <div className="flex items-center justify-between pt-4 border-t border-zinc-100 mt-4">
                   <div className="flex flex-col">
-                    <span className="text-xs text-zinc-400 uppercase tracking-wider font-semibold">
+                    <span className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">
                       Valor
                     </span>
                     <span className="text-xl font-bold text-zinc-900">
@@ -166,15 +166,15 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
                     </span>
                   </div>
 
-                  <Button
+                  <Button aria-label="Excluir"
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDelete(gift.id)}
                     disabled={isPending && deletingId === gift.id}
-                    className="text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-full h-9 w-9"
+                    className="text-zinc-500 hover:text-red-600 hover:bg-red-50 rounded-full h-9 w-9"
                   >
                     {isPending && deletingId === gift.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                      <Loader2 className="w-4 h-4 animate-spin text-zinc-500" />
                     ) : (
                       <Trash2 className="w-4 h-4" />
                     )}

@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PresentesPublicLoading() {
   return (
-    <div className="min-h-screen bg-[#FAF8F5] py-12 px-6">
+    <div className="min-h-screen bg-ivory py-12 px-6">
       <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in duration-300">
         <div className="text-center space-y-3 max-w-xl mx-auto">
           <Skeleton className="h-10 w-3/4 mx-auto rounded-2xl" />

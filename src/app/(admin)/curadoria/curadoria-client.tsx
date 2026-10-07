@@ -139,16 +139,16 @@ export function CuradoriaClient({
   };
 
   return (
-    <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
       {/* Cabeçalho */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-200/80 pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="bg-[#FAF4ED] text-[#8C6D45] p-2 rounded-xl border border-[#8C6D45]/30">
-              <ShieldCheck className="w-5 h-5 text-[#8C6D45]" />
+            <span className="bg-brand-50 text-brand p-2 rounded-xl border border-brand/30">
+              <ShieldCheck className="w-5 h-5 text-brand" />
             </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold font-serif text-stone-900">
-              Curadoria & Auditoria de Fornecedores
+            <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+              Curadoria de fornecedores
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-stone-500 mt-1">
@@ -182,12 +182,12 @@ export function CuradoriaClient({
             <span className="text-xs font-bold uppercase tracking-wider text-amber-800">
               Pendentes de Auditoria
             </span>
-            <Clock className="w-5 h-5 text-amber-600" />
+            <Clock className="w-5 h-5 text-amber-700" />
           </div>
           <p className="text-3xl font-black font-serif text-amber-900 mt-2">
             {counts.pending}
           </p>
-          <p className="text-[11px] text-amber-700 mt-1">
+          <p className="text-xs text-amber-700 mt-1">
             Aguardando validação de CNPJ e fotos
           </p>
         </div>
@@ -204,12 +204,12 @@ export function CuradoriaClient({
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
               Homologados & Ativos
             </span>
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-700" />
           </div>
           <p className="text-3xl font-black font-serif text-emerald-900 mt-2">
             {counts.approved}
           </p>
-          <p className="text-[11px] text-emerald-700 mt-1">
+          <p className="text-xs text-emerald-700 mt-1">
             Listados e disponíveis para os casais
           </p>
         </div>
@@ -231,7 +231,7 @@ export function CuradoriaClient({
           <p className="text-3xl font-black font-serif text-red-900 mt-2">
             {counts.rejected}
           </p>
-          <p className="text-[11px] text-red-700 mt-1">
+          <p className="text-xs text-red-700 mt-1">
             Documentação recusada por inconformidade
           </p>
         </div>
@@ -244,7 +244,7 @@ export function CuradoriaClient({
             onClick={() => setActiveTab("ALL")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === "ALL"
-                ? "bg-[#FAF4ED] text-[#8C6D45] border border-[#8C6D45]/30 shadow-xs"
+                ? "bg-brand-50 text-brand border border-brand/30 shadow-xs"
                 : "text-stone-500 hover:bg-stone-50"
             }`}
           >
@@ -283,7 +283,7 @@ export function CuradoriaClient({
         </div>
 
         <div className="relative w-full sm:w-64">
-          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-3 pointer-events-none" />
+          <Search className="w-4 h-4 text-stone-500 absolute left-3 top-3 pointer-events-none" />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -301,7 +301,7 @@ export function CuradoriaClient({
             <p className="text-sm font-bold text-stone-700">
               Nenhum fornecedor encontrado nesta categoria de curadoria.
             </p>
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-stone-500">
               Novos cadastros realizados em /assinar aparecerão aqui automaticamente.
             </p>
           </div>
@@ -321,7 +321,7 @@ export function CuradoriaClient({
               >
                 <div className="flex items-start gap-4 flex-1">
                   {/* Logo do Fornecedor */}
-                  <div className="w-16 h-16 rounded-2xl bg-[#FAF4ED] border border-[#8C6D45]/30 overflow-hidden shrink-0 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-2xl bg-brand-50 border border-brand/30 overflow-hidden shrink-0 flex items-center justify-center">
                     {vendor.logoUrl ? (
                       <img
                         src={vendor.logoUrl}
@@ -329,7 +329,7 @@ export function CuradoriaClient({
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <Building2 className="w-8 h-8 text-[#8C6D45]" />
+                      <Building2 className="w-8 h-8 text-brand" />
                     )}
                   </div>
 
@@ -340,19 +340,19 @@ export function CuradoriaClient({
                       </h2>
 
                       {vendor.curationStatus === "PENDING_APPROVAL" && (
-                        <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-amber-600" />
+                        <span className="bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-amber-700" />
                           <span>Pendente de Auditoria</span>
                         </span>
                       )}
                       {vendor.curationStatus === "APPROVED" && (
-                        <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-700" />
                           <span>Homologado no Marketplace</span>
                         </span>
                       )}
                       {vendor.curationStatus === "REJECTED" && (
-                        <span className="bg-red-100 text-red-900 border border-red-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="bg-red-100 text-red-900 border border-red-300 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
                           <XCircle className="w-3 h-3 text-red-600" />
                           <span>Recusado</span>
                         </span>
@@ -374,7 +374,7 @@ export function CuradoriaClient({
                         </span>
                       )}
                       {gallery.length > 0 && (
-                        <span className="flex items-center gap-1 text-stone-400">
+                        <span className="flex items-center gap-1 text-stone-500">
                           <Camera className="w-3.5 h-3.5" />
                           <span>{gallery.length} fotos</span>
                         </span>
@@ -382,7 +382,7 @@ export function CuradoriaClient({
                     </div>
 
                     {vendor.curationNotes && vendor.curationStatus === "REJECTED" && (
-                      <p className="text-[11px] text-red-600 italic">
+                      <p className="text-xs text-red-600 italic">
                         Motivo: {vendor.curationNotes}
                       </p>
                     )}
@@ -451,7 +451,7 @@ export function CuradoriaClient({
               {/* Informações Legais & Contatos */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-stone-50 p-4 rounded-2xl border border-stone-200 text-xs">
                 <div>
-                  <span className="font-bold text-stone-500 uppercase block text-[10px]">
+                  <span className="font-bold text-stone-500 uppercase block text-xs">
                     Documento Oficial
                   </span>
                   <p className="font-mono font-bold text-stone-900 mt-0.5">
@@ -460,7 +460,7 @@ export function CuradoriaClient({
                 </div>
 
                 <div>
-                  <span className="font-bold text-stone-500 uppercase block text-[10px]">
+                  <span className="font-bold text-stone-500 uppercase block text-xs">
                     Categoria & Faixa de Preço
                   </span>
                   <p className="font-bold text-stone-900 mt-0.5">
@@ -469,7 +469,7 @@ export function CuradoriaClient({
                 </div>
 
                 <div>
-                  <span className="font-bold text-stone-500 uppercase block text-[10px]">
+                  <span className="font-bold text-stone-500 uppercase block text-xs">
                     Telefone & WhatsApp
                   </span>
                   <p className="font-mono text-stone-900 mt-0.5">
@@ -478,7 +478,7 @@ export function CuradoriaClient({
                 </div>
 
                 <div>
-                  <span className="font-bold text-stone-500 uppercase block text-[10px]">
+                  <span className="font-bold text-stone-500 uppercase block text-xs">
                     Investimento Inicial / Ticket Médio
                   </span>
                   <p className="font-mono text-stone-900 mt-0.5">
@@ -537,7 +537,7 @@ export function CuradoriaClient({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-stone-400 italic">Nenhuma foto enviada.</p>
+                    <p className="text-xs text-stone-500 italic">Nenhuma foto enviada.</p>
                   );
                 })()}
               </div>

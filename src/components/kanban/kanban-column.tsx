@@ -42,6 +42,7 @@ export function KanbanColumn({
           </span>
         </div>
         <Button
+          aria-label={`Adicionar tarefa em ${title}`}
           variant="ghost"
           size="icon"
           className="h-8 w-8 text-zinc-500 hover:text-zinc-900 bg-white/50 hover:bg-white"
@@ -66,7 +67,7 @@ export function KanbanColumn({
             </SortableContext>
             
             {tasks.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-[100px] border-2 border-dashed border-zinc-200 rounded-xl text-zinc-400 text-sm">
+              <div className="flex flex-col items-center justify-center h-[100px] border-2 border-dashed border-zinc-200 rounded-xl text-zinc-500 text-sm">
                 Nenhuma tarefa
               </div>
             )}

@@ -110,10 +110,10 @@ export function GuestsClient({
       {/* Header com Navegação por Abas */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
-            Gestão de Convidados & Mesas
+          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+            Convidados
           </h1>
-          <p className="text-zinc-500 mt-1 text-sm">
+          <p className="mt-1 text-sm text-stone-600">
             Gerencie sua lista de convidados, tipos, vínculos de família e alocação de lugares nas mesas.
           </p>
         </div>
@@ -129,7 +129,7 @@ export function GuestsClient({
                 : "text-zinc-500 hover:text-zinc-800"
             }`}
           >
-            <Users className="w-4 h-4 text-[#8C6D45]" />
+            <Users className="w-4 h-4 text-brand" />
             Lista de Convidados ({initialGuests.length})
           </button>
           <button
@@ -141,7 +141,7 @@ export function GuestsClient({
                 : "text-zinc-500 hover:text-zinc-800"
             }`}
           >
-            <LayoutGrid className="w-4 h-4 text-[#8C6D45]" />
+            <LayoutGrid className="w-4 h-4 text-brand" />
             Organização de Mesas ({initialTables.length})
           </button>
         </div>
@@ -187,7 +187,7 @@ export function GuestsClient({
                   <div className="flex flex-col">
                     <span className="font-semibold text-zinc-900">{guest.name}</span>
                     {guest.email && (
-                      <span className="text-xs text-zinc-400 mt-0.5">{guest.email}</span>
+                      <span className="text-xs text-zinc-500 mt-0.5">{guest.email}</span>
                     )}
                     {guest.companionsNames && (
                       <span className="text-xs text-zinc-500 mt-1 font-normal">
@@ -195,7 +195,7 @@ export function GuestsClient({
                       </span>
                     )}
                     {guest.dietaryRestrictions && (
-                      <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-100 rounded px-1.5 py-0.5 w-fit mt-1.5 font-medium">
+                      <span className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded px-1.5 py-0.5 w-fit mt-1.5 font-medium">
                         Restrição: {guest.dietaryRestrictions}
                       </span>
                     )}
@@ -215,7 +215,7 @@ export function GuestsClient({
                       {guest.category}
                     </Badge>
                   ) : (
-                    <span className="text-xs text-zinc-400 italic">Não definido</span>
+                    <span className="text-xs text-zinc-500 italic">Não definido</span>
                   ),
               },
               {
@@ -239,7 +239,7 @@ export function GuestsClient({
                       Convidado Principal ({guest.linkedGuests?.length} vínc.)
                     </div>
                   ) : (
-                    <span className="text-xs text-zinc-400 italic">Titular</span>
+                    <span className="text-xs text-zinc-500 italic">Titular</span>
                   );
                 },
               },
@@ -254,7 +254,7 @@ export function GuestsClient({
                   guest.phone ? (
                     <span className="text-sm text-zinc-600 font-mono">+{guest.phone}</span>
                   ) : (
-                    <span className="text-xs text-zinc-400 italic">Não informado</span>
+                    <span className="text-xs text-zinc-500 italic">Não informado</span>
                   ),
               },
               {
@@ -295,7 +295,7 @@ export function GuestsClient({
                 headerClassName: "text-right w-20",
                 cell: (guest) => (
                   <div className="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                    <Button
+                    <Button aria-label="Editar"
                       variant="ghost"
                       size="icon"
                       onClick={() => openEdit(guest)}
@@ -303,11 +303,11 @@ export function GuestsClient({
                     >
                       <Pencil className="w-4 h-4" />
                     </Button>
-                    <Button
+                    <Button aria-label="Excluir"
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDelete(guest.id)}
-                      className="h-8 w-8 text-zinc-400 hover:text-red-600 hover:bg-red-50"
+                      className="h-8 w-8 text-zinc-500 hover:text-red-600 hover:bg-red-50"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

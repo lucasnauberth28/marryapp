@@ -3,6 +3,8 @@ import { TablesClient } from "./tables-client";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = { title: "Mesas" };
+
 export default async function TablesPage() {
   const tables = await getTablesWithGuests();
   const unassignedGuests = await getUnassignedGuests();
@@ -10,8 +12,8 @@ export default async function TablesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">Mapa de Mesas</h1>
-        <p className="text-zinc-500 mt-1">Organize os lugares dos seus convidados confirmados.</p>
+        <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">Mesas</h1>
+        <p className="mt-1 text-sm text-stone-600">Organize os lugares dos seus convidados confirmados.</p>
       </div>
       
       <TablesClient initialTables={tables} initialUnassigned={unassignedGuests} />

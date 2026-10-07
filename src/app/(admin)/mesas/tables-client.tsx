@@ -33,7 +33,7 @@ function DraggableGuest({ guest }: { guest: any }) {
       <div className="flex items-center justify-between">
         <span className="font-medium text-zinc-900">{guest.name}</span>
         {guest.allowedCompanions > 0 && (
-          <span className="text-[10px] font-semibold bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded-full">
+          <span className="text-xs font-semibold bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded-full">
             +{guest.allowedCompanions} acomp.
           </span>
         )}
@@ -41,12 +41,12 @@ function DraggableGuest({ guest }: { guest: any }) {
 
       <div className="flex flex-wrap items-center gap-1">
         {category && (
-          <span className="text-[10px] font-medium bg-amber-50 text-amber-800 border border-amber-200/80 px-1.5 py-0.2 rounded">
+          <span className="text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/80 px-1.5 py-0.2 rounded">
             {category}
           </span>
         )}
         {parentName && (
-          <span className="text-[10px] font-medium bg-purple-50 text-purple-700 border border-purple-200/80 px-1.5 py-0.2 rounded">
+          <span className="text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200/80 px-1.5 py-0.2 rounded">
             Família de: {parentName}
           </span>
         )}
@@ -72,12 +72,12 @@ function DroppableTable({ id, title, capacity, guests, onDelete }: { id: string,
       <div className="flex justify-between items-center mb-4">
         <div>
           <h3 className="font-bold text-zinc-900">{title}</h3>
-          <span className={`text-xs font-medium ${isFull ? "text-red-500" : "text-zinc-500"}`}>
+          <span className={`text-xs font-medium ${isFull ? "text-red-600" : "text-zinc-500"}`}>
             {occupied} / {capacity} lugares
           </span>
         </div>
         {onDelete && (
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-red-500" onClick={onDelete}>
+          <Button aria-label="Excluir" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-500" onClick={onDelete}>
             <Trash2 className="w-4 h-4" />
           </Button>
         )}
@@ -85,7 +85,7 @@ function DroppableTable({ id, title, capacity, guests, onDelete }: { id: string,
 
       <div className="flex-1">
         {guests.map(g => <DraggableGuest key={g.id} guest={g} />)}
-        {guests.length === 0 && <p className="text-zinc-400 text-sm text-center italic mt-4">Arraste convidados para cá</p>}
+        {guests.length === 0 && <p className="text-zinc-500 text-sm text-center italic mt-4">Arraste convidados para cá</p>}
       </div>
     </div>
   );
@@ -195,14 +195,14 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
         <div className="lg:col-span-3 space-y-6">
           
           {/* Controls */}
-          <div className="bg-white p-4 border border-zinc-200 rounded-xl flex gap-4 items-end">
-            <div className="flex-1">
-              <label className="text-xs font-medium text-zinc-500 mb-1 block">Nome da Mesa</label>
-              <Input value={newTableName} onChange={e => setNewTableName(e.target.value)} placeholder="Ex: Mesa dos Padrinhos" />
+          <div className="bg-white p-4 border border-zinc-200 rounded-xl flex flex-wrap gap-4 items-end">
+            <div className="flex-1 min-w-[12rem]">
+              <label htmlFor="new-table-name" className="text-xs font-medium text-zinc-500 mb-1 block">Nome da mesa</label>
+              <Input id="new-table-name" value={newTableName} onChange={e => setNewTableName(e.target.value)} placeholder="Ex: Mesa dos Padrinhos" />
             </div>
             <div className="w-32">
-              <label className="text-xs font-medium text-zinc-500 mb-1 block">Lugares</label>
-              <Input type="number" value={newTableCap} onChange={e => setNewTableCap(parseInt(e.target.value))} />
+              <label htmlFor="new-table-capacity" className="text-xs font-medium text-zinc-500 mb-1 block">Lugares</label>
+              <Input id="new-table-capacity" type="number" min={1} value={newTableCap} onChange={e => setNewTableCap(parseInt(e.target.value))} />
             </div>
             <Button onClick={handleAddTable} disabled={loading}>
               {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}

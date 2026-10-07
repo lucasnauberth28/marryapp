@@ -65,10 +65,10 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div>
-        <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight">
+        <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
           Visão Geral
         </h1>
-        <p className="text-zinc-500 mt-1">Acompanhe os números do casamento em tempo real.</p>
+        <p className="mt-1 text-sm text-stone-600">Acompanhe os números do casamento em tempo real.</p>
       </div>
       
       {/* Cards de Métricas Principais */}
@@ -77,7 +77,7 @@ export default async function DashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-zinc-500">Total Arrecadado</CardTitle>
             <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
-              <Wallet className="h-5 w-5 text-emerald-600" />
+              <Wallet className="h-5 w-5 text-emerald-700" />
             </div>
           </CardHeader>
           <CardContent>
@@ -128,7 +128,7 @@ export default async function DashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-zinc-500">Tarefas Pendentes</CardTitle>
             <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
-              <CheckSquare className="h-5 w-5 text-amber-600" />
+              <CheckSquare className="h-5 w-5 text-amber-700" />
             </div>
           </CardHeader>
           <CardContent>
@@ -145,7 +145,7 @@ export default async function DashboardPage() {
         <Card className="lg:col-span-2 shadow-sm border-zinc-200/60 rounded-2xl overflow-hidden">
           <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 pb-4">
             <CardTitle className="text-lg font-bold text-zinc-900 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-emerald-500" />
+              <Activity className="w-5 h-5 text-emerald-700" />
               Saúde Financeira
             </CardTitle>
             <CardDescription>
@@ -156,7 +156,7 @@ export default async function DashboardPage() {
             <div className="space-y-6">
               <div className="flex justify-between items-end">
                 <div>
-                  <p className="text-sm font-medium text-emerald-600 mb-1">Arrecadado</p>
+                  <p className="text-sm font-medium text-emerald-700 mb-1">Arrecadado</p>
                   <p className="text-2xl font-bold text-zinc-900">
                     {(totalArrecadado / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </p>
@@ -183,7 +183,7 @@ export default async function DashboardPage() {
 
               <div className="pt-4 border-t border-zinc-100 flex justify-between items-center bg-zinc-50 -mx-6 -mb-6 px-6 py-4">
                 <span className="text-sm font-medium text-zinc-500 uppercase tracking-wider">Saldo Estimado</span>
-                <span className={`text-xl font-black tracking-tight ${saldoLiquido >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                <span className={`text-xl font-black tracking-tight ${saldoLiquido >= 0 ? "text-emerald-700" : "text-red-600"}`}>
                   {(saldoLiquido / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </span>
               </div>
@@ -202,7 +202,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="pt-0 flex-1 overflow-auto">
             {ultimasTransacoes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-zinc-400 text-sm">
+              <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-zinc-500 text-sm">
                 <Gift className="w-8 h-8 mb-2 opacity-20" />
                 <p>Nenhuma transação ainda.</p>
               </div>
@@ -226,10 +226,10 @@ export default async function DashboardPage() {
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <span className="text-sm font-bold text-emerald-600">
+                      <span className="text-sm font-bold text-emerald-700">
                         +{(t.netAmount! / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </span>
-                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 rounded-sm font-semibold ${t.paymentMethod === 'PIX' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
+                      <Badge variant="outline" className={`text-xs px-1.5 py-0 rounded-sm font-semibold ${t.paymentMethod === 'PIX' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
                         {t.paymentMethod === 'PIX' ? 'PIX' : 'CARTÃO'}
                       </Badge>
                     </div>

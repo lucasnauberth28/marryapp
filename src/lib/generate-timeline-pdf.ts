@@ -7,7 +7,7 @@ export interface TimelineEventPdf {
   description?: string | null;
 }
 
-export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "Lucas & Giovanna") {
+export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "Nosso Casamento") {
   if (!events || events.length === 0) {
     return false;
   }

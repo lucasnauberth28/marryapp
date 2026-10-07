@@ -115,7 +115,7 @@ export function WhatsAppConfigClient() {
           <motion.div 
             key="loading"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center p-12 text-zinc-400"
+            className="flex flex-col items-center justify-center p-12 text-zinc-500"
           >
             <Loader2 className="w-10 h-10 animate-spin text-zinc-500 mb-3" />
             <p className="text-sm font-medium text-zinc-600">Verificando status com Evolution API...</p>
@@ -128,7 +128,7 @@ export function WhatsAppConfigClient() {
           >
             <CheckCircle2 className="w-16 h-16 mb-4 text-green-500" />
             <h3 className="text-xl font-bold mb-2">WhatsApp Conectado!</h3>
-            <p className="text-center text-green-600 max-w-md text-sm">
+            <p className="text-center text-green-700 max-w-md text-sm">
               Seu celular está corretamente pareado com a Evolution API. O disparo automático de mensagens e lembretes funcionará perfeitamente.
             </p>
           </motion.div>
@@ -139,7 +139,7 @@ export function WhatsAppConfigClient() {
             className="flex flex-col items-center justify-center p-8 border border-zinc-200 rounded-xl bg-zinc-900 text-white shadow-md"
           >
             <h3 className="text-xl font-bold mb-2 text-white">Escaneie o QR Code</h3>
-            <p className="text-center text-zinc-400 mb-6 max-w-md text-sm">
+            <p className="text-center text-zinc-500 mb-6 max-w-md text-sm">
               Abra o WhatsApp no seu celular, acesse <strong className="text-white">Aparelhos Conectados</strong> e aponte a câmera para o código abaixo.
             </p>
             
@@ -151,7 +151,7 @@ export function WhatsAppConfigClient() {
               )}
             </div>
 
-            <div className="flex items-center gap-2 mt-5 text-xs text-zinc-400">
+            <div className="flex items-center gap-2 mt-5 text-xs text-zinc-500">
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
               <span>Aguardando leitura pelo aplicativo do WhatsApp...</span>
             </div>
@@ -167,7 +167,7 @@ export function WhatsAppConfigClient() {
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center justify-center p-12 bg-red-50 border border-red-200 rounded-lg text-red-700"
           >
-            <XCircle className="w-16 h-16 mb-4 text-red-500" />
+            <XCircle className="w-16 h-16 mb-4 text-red-600" />
             <h3 className="text-xl font-bold mb-2">WhatsApp Desconectado</h3>
             <p className="text-center text-red-600 max-w-md mb-6 text-sm">
               {message || "O sistema não conseguiu se conectar à Evolution API ou o aparelho foi desconectado."}

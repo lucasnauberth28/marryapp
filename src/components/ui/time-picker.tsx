@@ -112,7 +112,7 @@ export function TimePicker({
         onMouseDown={(e) => e.stopPropagation()}
         className={cn(
           "h-10 w-full rounded-lg border border-input bg-background px-3 py-2 pr-10 text-sm transition-all outline-none flex items-center shadow-sm cursor-pointer select-none",
-          isOpen && "ring-2 ring-[#8C6D45]/30 border-[#8C6D45]",
+          isOpen && "ring-2 ring-brand/30 border-brand",
           disabled && "pointer-events-none opacity-50 bg-input/50",
         )}
         id={id}
@@ -121,7 +121,7 @@ export function TimePicker({
           {displayValue || placeholder}
         </span>
         <div className="absolute right-3 pointer-events-none">
-          <Clock className="w-4 h-4 text-zinc-400" />
+          <Clock className="w-4 h-4 text-zinc-500" />
         </div>
       </div>
 
@@ -144,8 +144,8 @@ export function TimePicker({
               >
                 <ChevronUp className="w-4 h-4" />
               </button>
-              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#F3ECE3] border border-[#E8E2D9]">
-                <span className="text-xl font-bold font-mono text-[#8C6D45] tracking-wider">
+              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-brand-100 border border-line">
+                <span className="text-xl font-bold font-mono text-brand tracking-wider">
                   {hours >= 0 ? String(hours).padStart(2, "0") : "--"}
                 </span>
               </div>
@@ -160,7 +160,7 @@ export function TimePicker({
             </div>
 
             {/* Separator */}
-            <span className="text-2xl font-bold text-[#8C6D45] select-none pb-0.5">:</span>
+            <span className="text-2xl font-bold text-brand select-none pb-0.5">:</span>
 
             {/* Minutes Column */}
             <div className="flex flex-col items-center gap-1">
@@ -172,8 +172,8 @@ export function TimePicker({
               >
                 <ChevronUp className="w-4 h-4" />
               </button>
-              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#F3ECE3] border border-[#E8E2D9]">
-                <span className="text-xl font-bold font-mono text-[#8C6D45] tracking-wider">
+              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-brand-100 border border-line">
+                <span className="text-xl font-bold font-mono text-brand tracking-wider">
                   {minutes >= 0 ? String(minutes).padStart(2, "0") : "--"}
                 </span>
               </div>
@@ -205,7 +205,7 @@ export function TimePicker({
                 className={cn(
                   "px-2 py-1 text-xs rounded-md font-medium transition cursor-pointer",
                   displayValue === preset
-                    ? "bg-[#8C6D45] text-white"
+                    ? "bg-brand text-white"
                     : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
                 )}
               >

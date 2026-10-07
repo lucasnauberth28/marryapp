@@ -142,14 +142,14 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#FCFBF9] text-stone-900 font-sans flex flex-col justify-between">
+    <div className="min-h-screen bg-paper text-stone-900 font-sans flex flex-col justify-between">
       <LandingHeader />
 
       <main className="flex-1 py-12 px-6 max-w-7xl mx-auto w-full space-y-10">
         {/* Banner Superior do Marketplace (Sem badge descasada) */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
           <h1 className="text-4xl sm:text-5xl font-extrabold font-serif text-stone-900 leading-tight">
-            Os Melhores Fornecedores para o seu <span className="italic text-[#8C6D45]">Grande Dia</span>
+            Os Melhores Fornecedores para o seu <span className="italic text-brand">Grande Dia</span>
           </h1>
 
           <p className="text-stone-600 text-sm sm:text-base leading-relaxed">
@@ -162,7 +162,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
           {/* Busca por texto e Região */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
             <div className="md:col-span-8 relative">
-              <Search className="w-4 h-4 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-stone-500 absolute left-4 top-1/2 -translate-y-1/2" />
               <Input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -173,9 +173,9 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
 
             <div className="md:col-span-4">
               <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-                <SelectTrigger className="rounded-2xl h-12 bg-stone-50/60 border-stone-200 text-xs font-bold text-stone-800">
+                <SelectTrigger aria-label="Filtrar por região" className="rounded-2xl h-12 bg-stone-50/60 border-stone-200 text-xs font-bold text-stone-800">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-[#8C6D45] shrink-0" />
+                    <MapPin className="w-4 h-4 text-brand shrink-0" />
                     <SelectValue placeholder="Selecione a Região" />
                   </div>
                 </SelectTrigger>
@@ -200,7 +200,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                   onClick={() => setSelectedCategory(cat)}
                   className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                     isSelected
-                      ? "bg-[#8C6D45] text-white shadow-xs"
+                      ? "bg-brand text-white shadow-xs"
                       : "bg-stone-100/80 text-stone-600 hover:bg-stone-200"
                   }`}
                 >
@@ -248,7 +248,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                   key={partner.id}
                   className={`bg-white rounded-3xl overflow-hidden border transition-all flex flex-col justify-between hover:shadow-xl group ${
                     isMaster
-                      ? "border-[#8C6D45]/40 ring-1 ring-[#8C6D45]/20 shadow-md"
+                      ? "border-brand/40 ring-1 ring-brand/20 shadow-md"
                       : "border-stone-200/90 shadow-xs"
                   }`}
                 >
@@ -270,13 +270,13 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                       {/* Badge Verificado / Master */}
                       <div className="absolute top-3 left-3 flex items-center gap-1.5">
                         {partner.isVerified && (
-                          <span className="bg-[#FAF4ED]/95 backdrop-blur-md text-[#8C6D45] border border-[#8C6D45]/30 font-bold text-[10px] px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1">
-                            <ShieldCheck className="w-3.5 h-3.5 text-[#8C6D45]" />
+                          <span className="bg-brand-50/95 backdrop-blur-md text-brand border border-brand/30 font-bold text-xs px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1">
+                            <ShieldCheck className="w-3.5 h-3.5 text-brand" />
                             <span>Curadoria Aprovada</span>
                           </span>
                         )}
                         {isMaster && (
-                          <span className="bg-amber-700 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-xs">
+                          <span className="bg-amber-700 text-white font-extrabold text-xs px-2.5 py-1 rounded-full shadow-xs">
                             ⭐ Destaque
                           </span>
                         )}
@@ -285,11 +285,11 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                       {/* Faixa de Preço & Categoria */}
                       <div className="absolute top-3 right-3 flex items-center gap-1">
                         {partner.priceRange && (
-                          <span className="bg-black/60 backdrop-blur-md text-amber-300 text-[10px] font-mono font-bold px-2 py-1 rounded-full">
+                          <span className="bg-black/60 backdrop-blur-md text-amber-300 text-xs font-mono font-bold px-2 py-1 rounded-full">
                             {partner.priceRange}
                           </span>
                         )}
-                        <span className="bg-stone-900/80 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
+                        <span className="bg-stone-900/80 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-full">
                           {partner.category}
                         </span>
                       </div>
@@ -300,7 +300,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                       <div>
                         <div className="flex items-center justify-between gap-2">
                           <Link href={`/fornecedores/${partner.id}`}>
-                            <h3 className="font-serif font-bold text-xl text-stone-900 group-hover:text-[#8C6D45] transition-colors line-clamp-1">
+                            <h3 className="font-serif font-bold text-xl text-stone-900 group-hover:text-brand transition-colors line-clamp-1">
                               {partner.companyName}
                             </h3>
                           </Link>
@@ -308,7 +308,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                             <div className="flex items-center gap-1 text-xs font-bold text-stone-700 bg-stone-50 px-2.5 py-1 rounded-xl border border-stone-200/60 shrink-0">
                               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                               <span>{partner.rating.toFixed(1)}</span>
-                              <span className="text-[10px] text-stone-400 font-normal">
+                              <span className="text-xs text-stone-500 font-normal">
                                 ({partner.reviewCount || 0})
                               </span>
                             </div>
@@ -321,20 +321,20 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
 
                       {/* Tags de Regiões de Atendimento */}
                       <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
+                        <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block">
                           Regiões Atendidas:
                         </span>
                         <div className="flex flex-wrap gap-1">
                           {regions.slice(0, 3).map((r, i) => (
                             <span
                               key={i}
-                              className="text-[10px] bg-stone-100 text-stone-600 px-2.5 py-0.5 rounded-full font-medium"
+                              className="text-xs bg-stone-100 text-stone-600 px-2.5 py-0.5 rounded-full font-medium"
                             >
                               📍 {r}
                             </span>
                           ))}
                           {regions.length > 3 && (
-                            <span className="text-[10px] text-stone-400 font-bold px-1 py-0.5">
+                            <span className="text-xs text-stone-500 font-bold px-1 py-0.5">
                               +{regions.length - 3}
                             </span>
                           )}
@@ -344,13 +344,13 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                       {/* Recursos de Atendimento */}
                       <div className="flex items-center gap-4 text-xs text-stone-600 pt-2 border-t border-stone-100">
                         {partner.offersOnlineMeet && (
-                          <div className="flex items-center gap-1 text-emerald-700 font-bold text-[11px]">
+                          <div className="flex items-center gap-1 text-emerald-700 font-bold text-xs">
                             <Video className="w-3.5 h-3.5" />
                             <span>Reunião Online</span>
                           </div>
                         )}
                         {partner.hasPhysicalSpace && (
-                          <div className="flex items-center gap-1 text-stone-600 text-[11px]">
+                          <div className="flex items-center gap-1 text-stone-600 text-xs">
                             <Building2 className="w-3.5 h-3.5" />
                             <span>Showroom Presencial</span>
                           </div>
@@ -363,7 +363,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                   <div className="p-6 pt-0 space-y-3">
                     {partner.startingPrice && partner.startingPrice > 0 && (
                       <div className="flex items-baseline justify-between text-xs pt-3 border-t border-stone-100">
-                        <span className="text-stone-400 font-medium">A partir de:</span>
+                        <span className="text-stone-500 font-medium">A partir de:</span>
                         <span className="font-extrabold text-base text-stone-900">
                           {new Intl.NumberFormat("pt-BR", {
                             style: "currency",
@@ -377,7 +377,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                     <Link href={`/fornecedores/${partner.id}`} className="block">
                       <Button
                         variant="outline"
-                        className="w-full rounded-2xl h-11 text-xs font-bold border-stone-300 hover:bg-[#FAF4ED] hover:text-[#8C6D45] hover:border-[#8C6D45]/40 transition-colors gap-1.5"
+                        className="w-full rounded-2xl h-11 text-xs font-bold border-stone-300 hover:bg-brand-50 hover:text-brand hover:border-brand/40 transition-colors gap-1.5"
                       >
                         <ImageIcon className="w-4 h-4" />
                         <span>Ver Perfil & Portfólio</span>
@@ -406,7 +406,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
 
                       <Button
                         onClick={() => handleOpenLeadModal(partner)}
-                        className={`w-full rounded-2xl h-11 text-xs font-bold bg-[#8C6D45] hover:bg-[#785c39] text-white shadow-xs gap-1.5 ${
+                        className={`w-full rounded-2xl h-11 text-xs font-bold bg-brand hover:bg-brand-600 text-white shadow-xs gap-1.5 ${
                           !partner.whatsapp ? "col-span-2" : ""
                         }`}
                       >
@@ -433,7 +433,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
           </div>
 
           <Link href="/assinar?tipo=fornecedor&plano=pro" className="shrink-0">
-            <Button className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-14 px-8 text-sm shadow-md gap-2 cursor-pointer">
+            <Button className="bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-14 px-8 text-sm shadow-md gap-2 cursor-pointer">
               <span>Cadastrar Minha Empresa</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
@@ -520,7 +520,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                   onClick={() => setMeetingType("ONLINE")}
                   className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer ${
                     meetingType === "ONLINE"
-                      ? "bg-[#FAF4ED] border-[#8C6D45] text-[#8C6D45]"
+                      ? "bg-brand-50 border-brand text-brand"
                       : "bg-stone-50 border-stone-200 text-stone-600"
                   }`}
                 >
@@ -533,7 +533,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                   onClick={() => setMeetingType("PRESENTIAL")}
                   className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer ${
                     meetingType === "PRESENTIAL"
-                      ? "bg-[#FAF4ED] border-[#8C6D45] text-[#8C6D45]"
+                      ? "bg-brand-50 border-brand text-brand"
                       : "bg-stone-50 border-stone-200 text-stone-600"
                   }`}
                 >
@@ -556,7 +556,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
             <Button
               type="submit"
               disabled={isPendingLead}
-              className="w-full bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold h-12 text-xs shadow-md gap-2 mt-2"
+              className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-12 text-xs shadow-md gap-2 mt-2"
             >
               {isPendingLead ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

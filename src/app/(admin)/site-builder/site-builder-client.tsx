@@ -153,14 +153,14 @@ export function SiteBuilderClient({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8C6D45]/10 text-[#8C6D45] text-xs font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand/10 text-brand text-xs font-bold uppercase tracking-wider mb-2">
             <Sliders className="w-3.5 h-3.5" />
             No-Code Website Builder
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 font-serif italic tracking-tight">
-            Construtor do Site dos Noivos
+          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+            Site do casal
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
+          <p className="mt-1 text-sm text-stone-600">
             Personalize todas as seções, textos, histórias e guias informativos do site do seu casamento.
           </p>
         </div>
@@ -179,7 +179,7 @@ export function SiteBuilderClient({
           <Button
             onClick={handleSaveSettings}
             disabled={isPending}
-            className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full h-11 px-6 text-xs font-bold gap-2 shadow-sm"
+            className="bg-brand hover:bg-brand-600 text-white rounded-full h-11 px-6 text-xs font-bold gap-2 shadow-sm"
           >
             <Save className="w-4 h-4" />
             <span>Salvar Alterações</span>
@@ -205,7 +205,7 @@ export function SiteBuilderClient({
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 isActive
-                  ? "bg-[#8C6D45] text-white shadow-xs"
+                  ? "bg-brand text-white shadow-xs"
                   : "bg-white text-stone-600 border border-stone-200/80 hover:bg-stone-50"
               }`}
             >
@@ -262,7 +262,7 @@ export function SiteBuilderClient({
             <Button
               onClick={handleSaveSettings}
               disabled={isPending}
-              className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold text-xs h-11 px-6 gap-2"
+              className="bg-brand hover:bg-brand-600 text-white rounded-full font-bold text-xs h-11 px-6 gap-2"
             >
               <Save className="w-4 h-4" />
               <span>Salvar Alterações</span>
@@ -346,7 +346,7 @@ export function SiteBuilderClient({
             <Button
               onClick={handleSaveSettings}
               disabled={isPending}
-              className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold text-xs h-11 px-6 gap-2"
+              className="bg-brand hover:bg-brand-600 text-white rounded-full font-bold text-xs h-11 px-6 gap-2"
             >
               <Save className="w-4 h-4" />
               <span>Salvar Localização</span>
@@ -389,7 +389,7 @@ export function SiteBuilderClient({
             <Button
               onClick={handleSaveSettings}
               disabled={isPending}
-              className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold text-xs h-11 px-6 gap-2"
+              className="bg-brand hover:bg-brand-600 text-white rounded-full font-bold text-xs h-11 px-6 gap-2"
             >
               <Save className="w-4 h-4" />
               <span>Salvar Dress Code</span>
@@ -445,7 +445,7 @@ export function SiteBuilderClient({
             <Button
               onClick={handleAddStory}
               disabled={isPending}
-              className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold text-xs h-11 px-6 gap-2"
+              className="bg-brand hover:bg-brand-600 text-white rounded-full font-bold text-xs h-11 px-6 gap-2"
             >
               <Plus className="w-4 h-4" />
               <span>Adicionar Momento</span>
@@ -464,16 +464,16 @@ export function SiteBuilderClient({
                 className="p-5 bg-white rounded-2xl border border-stone-200 flex items-center justify-between gap-4 shadow-xs"
               >
                 <div>
-                  <span className="text-[10px] font-bold text-[#8C6D45] uppercase">{item.dateLabel}</span>
+                  <span className="text-xs font-bold text-brand uppercase">{item.dateLabel}</span>
                   <h4 className="font-bold text-stone-900 font-serif text-base">{item.title}</h4>
                   <p className="text-xs text-stone-500 mt-1 line-clamp-2">{item.description}</p>
                 </div>
 
-                <Button
+                <Button aria-label="Excluir"
                   variant="ghost"
                   size="icon"
                   onClick={() => handleDeleteStory(item.id)}
-                  className="text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-full h-9 w-9"
+                  className="text-stone-500 hover:text-red-600 hover:bg-red-50 rounded-full h-9 w-9"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -543,7 +543,7 @@ export function SiteBuilderClient({
             <Button
               onClick={handleAddTip}
               disabled={isPending}
-              className="bg-[#8C6D45] hover:bg-[#785c39] text-white rounded-full font-bold text-xs h-11 px-6 gap-2"
+              className="bg-brand hover:bg-brand-600 text-white rounded-full font-bold text-xs h-11 px-6 gap-2"
             >
               <Plus className="w-4 h-4" />
               <span>Adicionar Dica</span>
@@ -562,22 +562,22 @@ export function SiteBuilderClient({
                 className="p-5 bg-white rounded-2xl border border-stone-200 flex items-center justify-between gap-4 shadow-xs"
               >
                 <div>
-                  <Badge className="bg-stone-100 text-stone-700 text-[10px] font-bold">
+                  <Badge className="bg-stone-100 text-stone-700 text-xs font-bold">
                     {tip.category}
                   </Badge>
                   <h4 className="font-bold text-stone-900 font-serif text-base mt-1">{tip.title}</h4>
                   {tip.discountCode && (
-                    <p className="text-xs text-[#8C6D45] font-mono font-bold mt-0.5">
+                    <p className="text-xs text-brand font-mono font-bold mt-0.5">
                       Cupom: {tip.discountCode}
                     </p>
                   )}
                 </div>
 
-                <Button
+                <Button aria-label="Excluir"
                   variant="ghost"
                   size="icon"
                   onClick={() => handleDeleteTip(tip.id)}
-                  className="text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-full h-9 w-9"
+                  className="text-stone-500 hover:text-red-600 hover:bg-red-50 rounded-full h-9 w-9"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

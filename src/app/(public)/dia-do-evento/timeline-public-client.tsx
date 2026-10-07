@@ -24,7 +24,7 @@ export function TimelinePublicClient({ events }: { events: any[] }) {
         >
           {/* Timeline Dot */}
           <span className="absolute -left-[37px] top-1 w-8 h-8 rounded-full bg-emerald-100 border-4 border-white shadow-sm flex items-center justify-center z-10">
-            <Clock className="w-4 h-4 text-emerald-600" />
+            <Clock className="w-4 h-4 text-emerald-700" />
           </span>
 
           <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">

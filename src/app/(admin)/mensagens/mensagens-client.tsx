@@ -68,11 +68,13 @@ import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-action
 interface MensagensClientProps {
   initialTemplates: MessageTemplate[];
   initialGuests: Guest[];
+  coupleNames: string;
 }
 
 export function MensagensClient({
   initialTemplates,
   initialGuests,
+  coupleNames,
 }: MensagensClientProps) {
   const [templates, setTemplates] = useState<MessageTemplate[]>(initialTemplates);
   const [activeTab, setActiveTab] = useState<"templates" | "disparador">("templates");
@@ -323,10 +325,10 @@ export function MensagensClient({
       {/* Header com Navegação por Abas */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-zinc-200/80 pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#8C6D45] font-serif italic tracking-tight flex items-center gap-2">
-            <span>Mensagens & Disparador WhatsApp</span>
+          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+            <span>Mensagens</span>
           </h1>
-          <p className="text-zinc-500 mt-1 text-sm">
+          <p className="mt-1 text-sm text-stone-600">
             Crie modelos de mensagens com badges de links clicáveis e envie convites diretamente para os convidados.
           </p>
         </div>
@@ -419,7 +421,7 @@ export function MensagensClient({
                         )}
 
                         {t.mediaUrl && (
-                          <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full flex items-center gap-1">
                             <ImageIcon className="w-3 h-3" /> Mídia
                           </span>
                         )}
@@ -437,7 +439,7 @@ export function MensagensClient({
                       {/* Badges de Links */}
                       {badgeCount > 0 && (
                         <div className="space-y-1 mb-4">
-                          <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block mb-1">
+                          <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider block mb-1">
                             Badges de Links ({badgeCount}):
                           </span>
                           <div className="flex flex-wrap gap-1.5">
@@ -446,7 +448,7 @@ export function MensagensClient({
                                 key={idx}
                                 className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-lg font-medium flex items-center gap-1"
                               >
-                                <LinkIcon className="w-3 h-3 text-emerald-600" />
+                                <LinkIcon className="w-3 h-3 text-emerald-700" />
                                 {b.text}
                               </span>
                             ))}
@@ -465,11 +467,11 @@ export function MensagensClient({
                       >
                         Editar Template
                       </Button>
-                      <Button
+                      <Button aria-label="Excluir"
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(t.id)}
-                        className="rounded-xl text-red-500 hover:text-red-700 hover:bg-red-50 h-9 w-9 p-0"
+                        className="rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 h-9 w-9 p-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -507,7 +509,7 @@ export function MensagensClient({
               <Card className="lg:col-span-7 shadow-md border-zinc-200/80 rounded-2xl p-6 space-y-6">
                 <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
                   <h3 className="font-bold text-lg text-zinc-900 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-amber-600" />
+                    <Sparkles className="w-5 h-5 text-amber-700" />
                     {selectedTemplate ? `Editar: ${selectedTemplate.name}` : "Criar Novo Template"}
                   </h3>
                   {selectedTemplate && (
@@ -550,7 +552,7 @@ export function MensagensClient({
                     <div className="flex items-center justify-between mb-1.5">
                       <Label htmlFor="content" className="font-semibold text-zinc-700">Texto da Mensagem</Label>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] text-zinc-400 font-medium">Inserir tag:</span>
+                        <span className="text-xs text-zinc-500 font-medium">Inserir tag:</span>
                         <button
                           type="button"
                           onClick={() => insertVariable("{nome}")}
@@ -575,7 +577,7 @@ export function MensagensClient({
                   <div className="border border-amber-200/80 bg-amber-50/40 p-4 rounded-xl space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
-                        <LinkIcon className="w-4 h-4 text-amber-600" />
+                        <LinkIcon className="w-4 h-4 text-amber-700" />
                         <span>Badges de Links Clicáveis no WhatsApp</span>
                       </div>
                       <div className="flex items-center gap-1.5">
@@ -595,7 +597,7 @@ export function MensagensClient({
                     <div className="space-y-2">
                       {buttonsList.map((btn, idx) => (
                         <div key={idx} className="flex items-center gap-2">
-                          <span className="text-xs font-mono text-zinc-400 w-5">#{idx + 1}</span>
+                          <span className="text-xs font-mono text-zinc-500 w-5">#{idx + 1}</span>
                           <Input
                             value={btn.text}
                             onChange={(e) => handleUpdateButton(idx, e.target.value)}
@@ -607,7 +609,8 @@ export function MensagensClient({
                             variant="ghost"
                             size="sm"
                             onClick={() => handleRemoveButton(idx)}
-                            className="text-red-500 hover:text-red-700 h-9 w-9 p-0 rounded-lg"
+                            aria-label="Remover botão"
+                            className="text-red-600 hover:text-red-700 h-9 w-9 p-0 rounded-lg"
                           >
                             <X className="w-4 h-4" />
                           </Button>
@@ -687,7 +690,7 @@ export function MensagensClient({
                 {/* Seletor de Cores do iPhone 15 Plus */}
                 <div className="text-center mb-3">
                   <div className="inline-flex items-center gap-1 bg-white p-1 rounded-2xl border border-zinc-200 shadow-sm text-xs font-medium">
-                    <span className="text-[11px] text-zinc-500 font-semibold px-2 flex items-center gap-1">
+                    <span className="text-xs text-zinc-500 font-semibold px-2 flex items-center gap-1">
                       <Smartphone className="w-3.5 h-3.5 text-zinc-700" /> iPhone 15 Plus:
                     </span>
                     <button
@@ -749,7 +752,7 @@ export function MensagensClient({
                   >
                     {/* iPhone Dynamic Island */}
                     <div className="relative bg-[#1f2c34] text-zinc-100 pt-2 pb-1.5 px-4 rounded-t-[42px] border-b border-zinc-800 flex items-center justify-between">
-                      <span className="text-[11px] font-bold font-sans tracking-tight">09:41</span>
+                      <span className="text-xs font-bold font-sans tracking-tight">09:41</span>
 
                       <div className="w-24 h-4.5 bg-black rounded-full flex items-center justify-between px-2 shadow-inner border border-zinc-800/80">
                         <div className="w-2 h-2 rounded-full bg-[#0d131a] border border-zinc-800" />
@@ -768,8 +771,8 @@ export function MensagensClient({
                         <Heart className="w-3.5 h-3.5 fill-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-xs font-bold text-zinc-100 truncate">Casamento Lucas & Giovanna</h4>
-                        <p className="text-[9px] text-emerald-400 font-medium">online no WhatsApp</p>
+                        <h4 className="text-xs font-bold text-zinc-100 truncate">{coupleNames}</h4>
+                        <p className="text-xs text-emerald-400 font-medium">online no WhatsApp</p>
                       </div>
                     </div>
 
@@ -777,10 +780,10 @@ export function MensagensClient({
                     <div className="bg-[#0b141a] p-3 min-h-[380px] max-h-[460px] overflow-y-auto space-y-3 font-sans relative">
                       <div className="flex justify-start">
                         <div className="bg-[#202c33] text-zinc-200 p-2.5 rounded-2xl rounded-tl-none max-w-[85%] text-xs shadow-sm space-y-1">
-                          <p className="leading-relaxed text-[11px]">
+                          <p className="leading-relaxed text-xs">
                             Olá! Vocês já lançaram os convites oficiais e a lista de presentes do casamento? 🎉
                           </p>
-                          <span className="text-[9px] text-zinc-400 block text-right">09:40</span>
+                          <span className="text-xs text-zinc-500 block text-right">09:40</span>
                         </div>
                       </div>
 
@@ -806,12 +809,12 @@ export function MensagensClient({
 
                           {/* Render Badges with Clickable Links Simulation */}
                           {buttonsList.length > 0 && (
-                            <div className="border-t border-emerald-600/50 pt-2 space-y-1.5 text-[11px]">
-                              <p className="text-[10px] text-emerald-200/90 font-bold uppercase tracking-wider">
+                            <div className="border-t border-emerald-600/50 pt-2 space-y-1.5 text-xs">
+                              <p className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider">
                                 👇 Acesse abaixo:
                               </p>
                               {buttonsList.map((b, idx) => (
-                                <div key={idx} className="bg-[#111b21] p-1.5 rounded-lg border border-emerald-700/40 font-mono text-[10px] text-emerald-300">
+                                <div key={idx} className="bg-[#111b21] p-1.5 rounded-lg border border-emerald-700/40 font-mono text-xs text-emerald-300">
                                   <span className="font-bold text-white block">{b.text}:</span>
                                   <span className="underline text-emerald-400 truncate block">
                                     {b.text.toLowerCase().includes("presente") ? "https://marryapp.vercel.app/presentes" : "https://marryapp.vercel.app/rsvp"}
@@ -821,7 +824,7 @@ export function MensagensClient({
                             </div>
                           )}
 
-                          <div className="flex items-center justify-end gap-1 text-[9px] text-emerald-200/80 pt-0.5">
+                          <div className="flex items-center justify-end gap-1 text-xs text-emerald-200/80 pt-0.5">
                             <span>09:41</span>
                             <CheckCheck className="w-3 h-3 text-cyan-400" />
                           </div>
@@ -830,7 +833,7 @@ export function MensagensClient({
                     </div>
 
                     <div className="bg-[#1f2c34] p-2 flex items-center gap-2 border-t border-zinc-800 text-xs text-zinc-500">
-                      <div className="bg-[#2a3942] px-3 py-1.5 rounded-full flex-1 text-[11px] text-zinc-400">
+                      <div className="bg-[#2a3942] px-3 py-1.5 rounded-full flex-1 text-xs text-zinc-500">
                         Digite uma mensagem...
                       </div>
                       <div className="w-7 h-7 rounded-full bg-[#00a884] text-white flex items-center justify-center">
@@ -858,7 +861,7 @@ export function MensagensClient({
             <Card className="shadow-md border-amber-200/80 bg-gradient-to-r from-amber-50/60 via-white to-amber-50/30 rounded-2xl p-6 relative overflow-hidden">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-bold text-base text-amber-950 flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-amber-600" />
+                  <Bell className="w-5 h-5 text-amber-700" />
                   Notificações & Lembretes Automáticos do Sistema
                 </h3>
               </div>
@@ -929,11 +932,11 @@ export function MensagensClient({
               {activeTemplateObj && (
                 <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80 space-y-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
                       Prévia do Template: {activeTemplateObj.name}
                     </p>
                     {activeTemplateObj.mediaUrl && (
-                      <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full flex items-center gap-1">
                         <ImageIcon className="w-3.5 h-3.5" /> Mídia Anexada
                       </span>
                     )}
@@ -964,7 +967,7 @@ export function MensagensClient({
               {/* Filtros em Pílula */}
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-100 pb-3 text-xs">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-400 font-semibold flex items-center gap-1 mr-1">
+                  <span className="text-zinc-500 font-semibold flex items-center gap-1 mr-1">
                     <Filter className="w-3.5 h-3.5" /> Filtrar:
                   </span>
                   <button
@@ -1020,26 +1023,26 @@ export function MensagensClient({
                           type="checkbox"
                           checked={isChecked}
                           readOnly
-                          className="rounded text-amber-600 focus:ring-amber-600 h-4 w-4 border-zinc-300 cursor-pointer"
+                          className="rounded text-amber-700 focus:ring-amber-600 h-4 w-4 border-zinc-300 cursor-pointer"
                         />
                         <div>
                           <p className="text-sm font-bold text-zinc-900">{g.name}</p>
-                          <p className="text-xs text-zinc-400">{g.phone || "Sem telefone cadastrado"}</p>
+                          <p className="text-xs text-zinc-500">{g.phone || "Sem telefone cadastrado"}</p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
                         {g.rsvpStatus === "CONFIRMED" && (
-                          <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
                             Confirmado
                           </span>
                         )}
                         {g.hasReceivedMessage ? (
-                          <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full flex items-center gap-1 border border-emerald-200">
+                          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full flex items-center gap-1 border border-emerald-200">
                             <CheckCircle2 className="w-3.5 h-3.5" /> Enviado
                           </span>
                         ) : (
-                          <span className="text-xs text-zinc-400 bg-zinc-50 px-2.5 py-1 rounded-full border border-zinc-200">
+                          <span className="text-xs text-zinc-500 bg-zinc-50 px-2.5 py-1 rounded-full border border-zinc-200">
                             Pendente
                           </span>
                         )}
@@ -1075,7 +1078,7 @@ export function MensagensClient({
 
               {sendStatus?.success && (
                 <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-900 text-sm flex items-start gap-2.5 animate-in slide-in-from-top-1">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+                  <CheckCircle2 className="w-5 h-5 text-emerald-700 mt-0.5 shrink-0" />
                   <div>
                     <p className="font-bold text-xs uppercase tracking-wider text-emerald-800">Envio Concluído!</p>
                     <p className="text-xs text-emerald-700 mt-0.5">{sendStatus.message || "Mensagens entregues com sucesso!"}</p>

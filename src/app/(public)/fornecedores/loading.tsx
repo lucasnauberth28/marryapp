@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function FornecedoresLoading() {
   return (
-    <div className="min-h-screen bg-[#FCFBF9] flex flex-col justify-between py-12 px-6">
+    <div className="min-h-screen bg-paper flex flex-col justify-between py-12 px-6">
       <div className="max-w-7xl mx-auto w-full space-y-10 animate-in fade-in duration-300">
         {/* Banner Skeleton */}
         <div className="space-y-4 text-center max-w-2xl mx-auto">
