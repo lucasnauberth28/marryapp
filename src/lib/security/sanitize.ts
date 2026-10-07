@@ -55,3 +55,14 @@ export function sanitizeSlug(slug: string | null | undefined): string {
     .replace(/^-+|-+$/g, "")
     .slice(0, 100);
 }
+
+/**
+ * Normaliza texto livre para armazenamento: remove caracteres de controle e espaços extras.
+ * Não escapa HTML: o React já escapa na renderização, e escapar antes de gravar corromperia
+ * nomes como "Lucas & Giovanna". Use sanitizeHtmlText apenas ao montar HTML manualmente.
+ */
+export function normalizeText(str: string | null | undefined): string {
+  if (!str) return "";
+   
+  return String(str).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "").replace(/\s+/g, " ").trim();
+}

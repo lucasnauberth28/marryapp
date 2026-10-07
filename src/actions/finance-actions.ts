@@ -1,7 +1,9 @@
 "use server";
 
+import { requirePathPermission } from "@/lib/security/auth-guard";
+
 import prisma from "@/lib/prisma";
-import { PaymentStatus, ExpenseStatus, Prisma } from "@prisma/client";
+import { PaymentStatus, PaymentMethod, ExpenseStatus, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 // ==========================================
@@ -47,6 +49,7 @@ export type TransactionWithGift = Prisma.TransactionGetPayload<
  * Todos os valores estão em centavos (Int).
  */
 export async function getFinancialMetrics(): Promise<FinancialMetrics> {
+  await requirePathPermission("/financas");
   const [
     approved,
     pending,
@@ -126,6 +129,7 @@ export async function getFinancialMetrics(): Promise<FinancialMetrics> {
  * incluindo o presente (Gift) e convidado (Guest) associados.
  */
 export async function getTransactions(): Promise<TransactionWithGift[]> {
+  await requirePathPermission("/financas");
   return prisma.transaction.findMany(transactionQueryArgs);
 }
 
@@ -139,14 +143,27 @@ export async function approvePixTransaction(
   transactionId: string,
   giftId: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePathPermission("/financas");
   try {
+    // O presente é sempre o da própria transação (não confiar no giftId enviado pelo cliente)
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+      select: { giftId: true, status: true, paymentMethod: true },
+    });
+    if (!transaction || transaction.giftId !== giftId) {
+      return { success: false, error: "Transação não encontrada." };
+    }
+    if (transaction.paymentMethod !== PaymentMethod.PIX || transaction.status !== PaymentStatus.PENDING) {
+      return { success: false, error: "Apenas Pix pendentes podem ser conferidos manualmente." };
+    }
+
     await prisma.$transaction([
       prisma.transaction.update({
         where: { id: transactionId },
         data: { status: PaymentStatus.APPROVED },
       }),
       prisma.gift.update({
-        where: { id: giftId },
+        where: { id: transaction.giftId },
         data: { isPurchased: true },
       }),
     ]);
@@ -173,6 +190,7 @@ export async function toggleThankYouSent(
   transactionId: string,
   currentStatus: boolean
 ): Promise<{ success: boolean; error?: string }> {
+  await requirePathPermission("/financas");
   try {
     await prisma.transaction.update({
       where: { id: transactionId },

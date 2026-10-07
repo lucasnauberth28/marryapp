@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
-import { mpPayment } from "@/lib/mercadopago";
+import { mpPayment, paidAmountMatches, verifyMercadoPagoSignature } from "@/lib/mercadopago";
 import { sendTextMessage } from "@/lib/evolution";
 import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -10,63 +9,91 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://seuapp.vercel.app"
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const headersList = await headers();
-    const paymentId = body.data?.id || body.id;
+    const url = new URL(req.url);
+    const body = await req.json().catch(() => ({}));
+    const paymentId = String(url.searchParams.get("data.id") ?? body.data?.id ?? body.id ?? "");
+
+    // 1. Autenticidade da notificação (x-signature). O status real é sempre reconsultado na API do MP.
+    const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+    if (secret) {
+      const valid = verifyMercadoPagoSignature({
+        signatureHeader: req.headers.get("x-signature"),
+        requestId: req.headers.get("x-request-id"),
+        dataId: url.searchParams.get("data.id") ?? (paymentId || null),
+        secret,
+      });
+      if (!valid) {
+        console.warn("[Webhook MP] Assinatura inválida, notificação descartada.");
+        return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+      }
+    } else if (process.env.NODE_ENV === "production") {
+      console.error("[Webhook MP] MERCADOPAGO_WEBHOOK_SECRET não configurado: assinatura não verificada.");
+    }
 
     // Só processa notificações do tipo 'payment'
-    if (body.type !== "payment" && body.topic !== "payment") {
+    const type = body.type ?? body.topic ?? url.searchParams.get("type") ?? url.searchParams.get("topic");
+    if (type !== "payment") {
       return NextResponse.json({ received: true });
     }
 
-    if (!paymentId) {
+    if (!paymentId || !/^\d+$/.test(paymentId)) {
       return NextResponse.json({ error: "No payment ID found" }, { status: 400 });
     }
 
-    // 1. Busca os dados atualizados diretamente no Mercado Pago (fonte da verdade)
+    // 2. Busca os dados atualizados diretamente no Mercado Pago (fonte da verdade)
     const mpResponse = await mpPayment.get({ id: paymentId });
     const status = mpResponse.status;
-    const internalTxId = mpResponse.external_reference; // ID da transação no nosso banco
+    const internalTxId = mpResponse.external_reference;
 
     if (!internalTxId) {
-      return NextResponse.json({ error: "Internal reference not found" }, { status: 400 });
+      return NextResponse.json({ received: true, ignored: "no external reference" });
     }
 
-    // 2. Busca transação com relacionamentos no banco
     const transaction = await prisma.transaction.findUnique({
       where: { id: internalTxId },
-      include: {
-        gift: true,
-        guest: true,
-      },
+      include: { gift: true, guest: true },
     });
 
     if (!transaction) {
-      return NextResponse.json({ error: "Transaction not found in database" }, { status: 404 });
+      return NextResponse.json({ received: true, ignored: "transaction not found" });
     }
 
-    // 3. Idempotência: se já aprovado, responde ok sem re-processar
-    if (transaction.status === PaymentStatus.APPROVED) {
-      return NextResponse.json({ success: true, alreadyApproved: true });
-    }
-
-    // 4. Processa o status recebido
     if (status === "approved") {
-      // Atualiza transação e presente de forma atômica
-      await prisma.$transaction([
-        prisma.transaction.update({
+      if (transaction.status === PaymentStatus.APPROVED) {
+        return NextResponse.json({ success: true, alreadyApproved: true });
+      }
+
+      // 3. O valor pago precisa ser exatamente o valor cobrado
+      if (!paidAmountMatches(mpResponse.transaction_amount, transaction.amount)) {
+        console.error(
+          `[Webhook MP] Valor divergente na transação ${internalTxId}: pago ${mpResponse.transaction_amount}, esperado ${transaction.amount / 100}.`
+        );
+        await prisma.transaction.update({
           where: { id: internalTxId },
-          data: { status: PaymentStatus.APPROVED, gatewayId: String(paymentId) },
-        }),
-        prisma.gift.update({
-          where: { id: transaction.giftId },
-          data: { isPurchased: true },
-        }),
-      ]);
+          data: { status: PaymentStatus.FAILED, gatewayId: paymentId },
+        });
+        return NextResponse.json({ success: false, error: "Amount mismatch" });
+      }
 
-      console.log(`[Webhook MP] ✅ Transação ${internalTxId} aprovada e presente atualizado.`);
+      // 4. Aprovação idempotente: só o primeiro processamento muda o status (evita WhatsApp duplicado)
+      const approved = await prisma.$transaction(async (tx) => {
+        const updated = await tx.transaction.updateMany({
+          where: { id: internalTxId, status: { not: PaymentStatus.APPROVED } },
+          data: { status: PaymentStatus.APPROVED, gatewayId: paymentId },
+        });
+        if (updated.count === 0) return false;
+        await tx.gift.update({ where: { id: transaction.giftId }, data: { isPurchased: true } });
+        return true;
+      });
 
-      // 5. Dispara WhatsApp de agradecimento se o convidado tiver telefone
+      if (!approved) {
+        return NextResponse.json({ success: true, alreadyApproved: true });
+      }
+
+      revalidatePath("/presentes");
+      revalidatePath("/presentes-admin");
+      revalidatePath("/financas");
+
       const guest = transaction.guest;
       if (guest?.phone) {
         const amountFormatted = ((transaction.netAmount ?? transaction.amount) / 100).toLocaleString("pt-BR", {
@@ -83,22 +110,23 @@ export async function POST(req: Request) {
           `Nos vemos no altar! 💒\n` +
           `_Não esqueça de confirmar sua presença em:_ ${BASE_URL}/rsvp`;
 
-        // Fire-and-forget: não bloqueia o retorno do webhook
-        sendTextMessage({ phone: guest.phone, text: message }).catch((err) =>
+        await sendTextMessage({ phone: guest.phone, text: message }).catch((err) =>
           console.error("[Webhook MP] Erro ao enviar WhatsApp:", err)
         );
-
-        console.log(`[Webhook MP] 💬 WhatsApp de agradecimento enfileirado para ${guest.name}.`);
-      } else {
-        console.log(`[Webhook MP] ℹ️ Transação ${internalTxId} sem convidado vinculado. Nenhum WhatsApp enviado.`);
       }
-
     } else if (status === "rejected" || status === "cancelled") {
-      await prisma.transaction.update({
-        where: { id: internalTxId },
-        data: { status: PaymentStatus.REJECTED, gatewayId: String(paymentId) },
+      await prisma.transaction.updateMany({
+        where: { id: internalTxId, status: { not: PaymentStatus.APPROVED } },
+        data: { status: PaymentStatus.REJECTED, gatewayId: paymentId },
       });
-      console.log(`[Webhook MP] ❌ Transação ${internalTxId} rejeitada.`);
+    } else if ((status === "refunded" || status === "charged_back") && transaction.status === PaymentStatus.APPROVED) {
+      await prisma.$transaction([
+        prisma.transaction.update({
+          where: { id: internalTxId },
+          data: { status: PaymentStatus.REFUNDED },
+        }),
+        prisma.gift.update({ where: { id: transaction.giftId }, data: { isPurchased: false } }),
+      ]);
     }
 
     return NextResponse.json({ success: true });

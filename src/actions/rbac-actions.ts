@@ -1,14 +1,20 @@
 "use server";
 
+import { requireAuthSession, requirePathPermission, AuthorizationError } from "@/lib/security/auth-guard";
+import { hasPathAccess } from "@/lib/auth";
+
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 // ==========================================
 // ROLES (PERFIS)
 // ==========================================
 
 export async function getRoles() {
+  await requireAuthSession();
   return prisma.role.findMany({
     orderBy: { name: "asc" },
     include: {
@@ -19,18 +25,52 @@ export async function getRoles() {
   });
 }
 
+const RoleSchema = z.object({
+  name: z.string().trim().min(2, "Informe o nome do perfil.").max(60),
+  allowedPaths: z.array(z.string().regex(/^(\*|\/[a-z0-9\-/]*)$/, "Módulo inválido.")).max(50),
+});
+
+const PASSWORD_RULE = z.string().min(8, "A senha deve ter ao menos 8 caracteres.").max(200);
+
+const UserSchema = z.object({
+  name: z.string().trim().min(2, "Informe o nome.").max(120),
+  username: z.string().trim().min(3, "Login muito curto.").max(120),
+  password: z.string().optional(),
+  roleId: z.string().uuid("Perfil inválido."),
+});
+
+function isFullAccess(paths: unknown) {
+  return Array.isArray(paths) && paths.includes("*");
+}
+
+/**
+ * Impede escalada de privilégio: só quem tem acesso total pode criar/atribuir perfis com acesso total
+ * ou conceder módulos que ele próprio não possui.
+ */
+function assertCanGrant(sessionPaths: string[], grantedPaths: unknown) {
+  if (sessionPaths.includes("*")) return;
+  const granted = Array.isArray(grantedPaths) ? (grantedPaths as string[]) : [];
+  if (granted.some((p) => !hasPathAccess(sessionPaths, p))) {
+    throw new AuthorizationError("Acesso negado: você não pode conceder permissões que não possui.");
+  }
+}
+
+function prismaErrorCode(error: unknown) {
+  return error instanceof Prisma.PrismaClientKnownRequestError ? error.code : undefined;
+}
+
 export async function createRole(data: { name: string; allowedPaths: string[] }) {
+  const session = await requirePathPermission("/perfis");
+  const parsed = RoleSchema.safeParse(data);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+  assertCanGrant(session.allowedPaths, parsed.data.allowedPaths);
+
   try {
-    const role = await prisma.role.create({
-      data: {
-        name: data.name,
-        allowedPaths: data.allowedPaths,
-      },
-    });
+    const role = await prisma.role.create({ data: parsed.data });
     revalidatePath("/perfis");
     return { success: true, role };
-  } catch (error: any) {
-    if (error.code === "P2002") {
+  } catch (error) {
+    if (prismaErrorCode(error) === "P2002") {
       return { success: false, error: "Já existe um perfil com esse nome." };
     }
     return { success: false, error: "Erro ao criar perfil." };
@@ -38,27 +78,35 @@ export async function createRole(data: { name: string; allowedPaths: string[] })
 }
 
 export async function updateRole(id: string, data: { name: string; allowedPaths: string[] }) {
+  const session = await requirePathPermission("/perfis");
+  const parsed = RoleSchema.safeParse(data);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+
+  const current = await prisma.role.findUnique({ where: { id }, select: { allowedPaths: true } });
+  if (!current) return { success: false, error: "Perfil não encontrado." };
+  assertCanGrant(session.allowedPaths, current.allowedPaths);
+  assertCanGrant(session.allowedPaths, parsed.data.allowedPaths);
+
   try {
-    const role = await prisma.role.update({
-      where: { id },
-      data: {
-        name: data.name,
-        allowedPaths: data.allowedPaths,
-      },
-    });
+    const role = await prisma.role.update({ where: { id }, data: parsed.data });
     revalidatePath("/perfis");
     return { success: true, role };
-  } catch (error) {
+  } catch {
     return { success: false, error: "Erro ao atualizar perfil." };
   }
 }
 
 export async function deleteRole(id: string) {
+  const session = await requirePathPermission("/perfis");
+  const current = await prisma.role.findUnique({ where: { id }, select: { allowedPaths: true } });
+  if (!current) return { success: false, error: "Perfil não encontrado." };
+  assertCanGrant(session.allowedPaths, current.allowedPaths);
+
   try {
     await prisma.role.delete({ where: { id } });
     revalidatePath("/perfis");
     return { success: true };
-  } catch (error) {
+  } catch {
     return { success: false, error: "Erro ao excluir perfil. Pode haver usuários vinculados." };
   }
 }
@@ -68,30 +116,52 @@ export async function deleteRole(id: string) {
 // ==========================================
 
 export async function getUsers() {
+  await requirePathPermission("/usuarios");
   return prisma.user.findMany({
     orderBy: { name: "asc" },
-    include: {
+    // Nunca selecionar o hash da senha
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      roleId: true,
+      createdAt: true,
+      updatedAt: true,
       role: true,
     },
-    // Não retornamos a senha por segurança
   });
 }
 
+async function assertRoleAssignable(sessionPaths: string[], roleId: string) {
+  const role = await prisma.role.findUnique({ where: { id: roleId }, select: { allowedPaths: true } });
+  if (!role) return false;
+  assertCanGrant(sessionPaths, role.allowedPaths);
+  return true;
+}
+
 export async function createUser(data: { name: string; username: string; password?: string; roleId: string }) {
+  const session = await requirePathPermission("/usuarios");
+  const parsed = UserSchema.safeParse(data);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+  const password = PASSWORD_RULE.safeParse(parsed.data.password ?? "");
+  if (!password.success) return { success: false, error: password.error.issues[0].message };
+  if (!(await assertRoleAssignable(session.allowedPaths, parsed.data.roleId))) {
+    return { success: false, error: "Perfil não encontrado." };
+  }
+
   try {
-    const hashedPassword = data.password ? bcrypt.hashSync(data.password, 10) : bcrypt.hashSync("123456", 10);
     const user = await prisma.user.create({
       data: {
-        name: data.name,
-        username: data.username,
-        password: hashedPassword,
-        roleId: data.roleId,
+        name: parsed.data.name,
+        username: parsed.data.username,
+        password: await bcrypt.hash(password.data, 12),
+        roleId: parsed.data.roleId,
       },
     });
     revalidatePath("/usuarios");
-    return { success: true, user: { id: user.id } }; // esconde a senha no retorno
-  } catch (error: any) {
-    if (error.code === "P2002") {
+    return { success: true, user: { id: user.id } };
+  } catch (error) {
+    if (prismaErrorCode(error) === "P2002") {
       return { success: false, error: "Já existe um usuário com este login." };
     }
     return { success: false, error: "Erro ao criar usuário." };
@@ -99,25 +169,35 @@ export async function createUser(data: { name: string; username: string; passwor
 }
 
 export async function updateUser(id: string, data: { name: string; username: string; password?: string; roleId: string }) {
+  const session = await requirePathPermission("/usuarios");
+  const parsed = UserSchema.safeParse(data);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+
+  const target = await prisma.user.findUnique({ where: { id }, select: { role: { select: { allowedPaths: true } } } });
+  if (!target) return { success: false, error: "Usuário não encontrado." };
+  assertCanGrant(session.allowedPaths, target.role.allowedPaths);
+  if (!(await assertRoleAssignable(session.allowedPaths, parsed.data.roleId))) {
+    return { success: false, error: "Perfil não encontrado." };
+  }
+
+  const updateData: Prisma.UserUncheckedUpdateInput = {
+    name: parsed.data.name,
+    username: parsed.data.username,
+    roleId: parsed.data.roleId,
+  };
+
+  if (parsed.data.password && parsed.data.password.trim() !== "") {
+    const password = PASSWORD_RULE.safeParse(parsed.data.password);
+    if (!password.success) return { success: false, error: password.error.issues[0].message };
+    updateData.password = await bcrypt.hash(password.data, 12);
+  }
+
   try {
-    const updateData: any = {
-      name: data.name,
-      username: data.username,
-      roleId: data.roleId,
-    };
-
-    if (data.password && data.password.trim() !== "") {
-      updateData.password = bcrypt.hashSync(data.password, 10);
-    }
-
-    const user = await prisma.user.update({
-      where: { id },
-      data: updateData,
-    });
+    await prisma.user.update({ where: { id }, data: updateData });
     revalidatePath("/usuarios");
     return { success: true };
-  } catch (error: any) {
-    if (error.code === "P2002") {
+  } catch (error) {
+    if (prismaErrorCode(error) === "P2002") {
       return { success: false, error: "Já existe um usuário com este login." };
     }
     return { success: false, error: "Erro ao atualizar usuário." };
@@ -125,11 +205,20 @@ export async function updateUser(id: string, data: { name: string; username: str
 }
 
 export async function deleteUser(id: string) {
+  const session = await requirePathPermission("/usuarios");
+  if (session.userId === id) {
+    return { success: false, error: "Você não pode excluir o próprio usuário." };
+  }
+
+  const target = await prisma.user.findUnique({ where: { id }, select: { role: { select: { allowedPaths: true } } } });
+  if (!target) return { success: false, error: "Usuário não encontrado." };
+  assertCanGrant(session.allowedPaths, target.role.allowedPaths);
+
   try {
     await prisma.user.delete({ where: { id } });
     revalidatePath("/usuarios");
     return { success: true };
-  } catch (error) {
+  } catch {
     return { success: false, error: "Erro ao excluir usuário." };
   }
 }

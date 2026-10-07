@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAuthSession, requirePathPermission } from "@/lib/security/auth-guard";
+
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -14,6 +16,7 @@ const CreditCardSchema = z.object({
 });
 
 export async function getWalletData() {
+  await requireAuthSession();
   let wallet = await prisma.walletBalance.findUnique({
     where: { id: "global" },
   });
@@ -35,6 +38,7 @@ export async function getWalletData() {
 }
 
 export async function updateWalletBalance(balanceInCents: number) {
+  await requirePathPermission("/carteira");
   try {
     await prisma.walletBalance.upsert({
       where: { id: "global" },
@@ -51,6 +55,7 @@ export async function updateWalletBalance(balanceInCents: number) {
 }
 
 export async function createCreditCard(formData: FormData) {
+  await requirePathPermission("/carteira");
   const limitAmount = Math.round(parseFloat((formData.get("limit") as string || "0").replace(',', '.')) * 100);
 
   const raw = {
@@ -81,6 +86,7 @@ export async function createCreditCard(formData: FormData) {
 }
 
 export async function updateCreditCard(id: string, formData: FormData) {
+  await requirePathPermission("/carteira");
   const limitAmount = Math.round(parseFloat((formData.get("limit") as string || "0").replace(',', '.')) * 100);
 
   const raw = {
@@ -112,6 +118,7 @@ export async function updateCreditCard(id: string, formData: FormData) {
 }
 
 export async function deleteCreditCard(id: string) {
+  await requirePathPermission("/carteira");
   try {
     await prisma.creditCard.delete({ where: { id } });
     revalidatePath("/(admin)/carteira", "page");

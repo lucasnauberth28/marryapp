@@ -14,10 +14,10 @@ import {
 } from "@/components/ui/select";
 import {
   createPixTransactionAction,
-  confirmPixPaymentAction,
   checkTransactionStatusAction,
   processCardPaymentAction,
 } from "@/actions/payment-actions";
+import { tokenizeCard } from "@/lib/mercadopago-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
 import {
@@ -181,20 +181,32 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
           return;
         }
 
+        // Os dados do cartão vão direto para o Mercado Pago; o servidor recebe só o token.
+        let card: { token: string; paymentMethodId: string };
+        try {
+          card = await tokenizeCard({ cardNumber, cardholderName: cardName, cardExpiry, securityCode: cardCvv });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Não foi possível validar o cartão.";
+          setError(message);
+          toast.error(message, { id: toastId });
+          return;
+        }
+
         const result = await processCardPaymentAction({
           giftId: gift.id,
           guestName,
           guestPhone,
-          cardNumber,
-          cardName,
-          cardExpiry,
-          cardCvv,
-          paymentMethodId: cardBrand.mpId,
-          installments: installments,
+          cardToken: card.token,
+          paymentMethodId: card.paymentMethodId,
+          installments,
           payerEmail,
         });
 
-        if (result.success) {
+        if (result.success && result.status === "PENDING") {
+          toast.info("Pagamento em análise pelo banco. Você será avisado assim que for aprovado.", { id: toastId });
+          setTransactionId(result.transactionId || null);
+          setStep("PAYMENT");
+        } else if (result.success) {
           toast.success("Pagamento aprovado com sucesso! Muito obrigado pelo presente! 🎁", { id: toastId });
           setStep("SUCCESS");
         } else {
@@ -658,6 +670,25 @@ export function CheckoutClient({ gift }: CheckoutClientProps) {
             >
               <ArrowLeft className="w-4 h-4" /> Alterar Forma de Pagamento
             </Button>
+          </motion.div>
+        )}
+
+        {/* PASSO 3: CARTÃO EM ANÁLISE */}
+        {step === "PAYMENT" && method === "CREDIT_CARD" && (
+          <motion.div
+            key="card-review"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-6 flex flex-col items-center text-center py-4"
+          >
+            <Loader2 className="w-10 h-10 animate-spin text-[#8C6D45]" />
+            <div className="space-y-2">
+              <h2 className="text-3xl font-black text-zinc-900 tracking-tight">Pagamento em análise</h2>
+              <p className="text-zinc-500 text-sm max-w-sm">
+                O banco está analisando o seu pagamento. Esta página será atualizada automaticamente assim que ele for aprovado.
+              </p>
+            </div>
           </motion.div>
         )}
 

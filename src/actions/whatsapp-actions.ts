@@ -1,5 +1,7 @@
 "use server";
 
+import { requirePathPermission } from "@/lib/security/auth-guard";
+
 import prisma from "@/lib/prisma";
 import { sendBulkMessages } from "@/lib/evolution";
 import { RsvpStatus } from "@prisma/client";
@@ -11,6 +13,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://seuapp.vercel.app"
  * Dispara lembretes em massa para convidados com RSVP pendente.
  */
 export async function sendRsvpReminders() {
+  await requirePathPermission("/mensagens");
   const guests = await prisma.guest.findMany({
     where: {
       rsvpStatus: RsvpStatus.PENDING,
@@ -37,7 +40,7 @@ export async function sendRsvpReminders() {
   }
 
   const messages = guests.map((g) => {
-    let text = reminderTemplate
+    const text = reminderTemplate
       ? reminderTemplate.content.replace(/\{nome\}/gi, g.name)
       : `🔔 *Lembrete de Presença*\n\n` +
         `Olá, *${g.name}*! Tudo bem? 😊\n\n` +
@@ -75,6 +78,7 @@ export async function sendRsvpReminders() {
  * Dispara convites para convidados que ainda não receberam mensagem.
  */
 export async function sendInitialInvites() {
+  await requirePathPermission("/mensagens");
   const guests = await prisma.guest.findMany({
     where: {
       hasReceivedMessage: false,
@@ -100,7 +104,7 @@ export async function sendInitialInvites() {
   }
 
   const messages = guests.map((g) => {
-    let text = inviteTemplate
+    const text = inviteTemplate
       ? inviteTemplate.content.replace(/\{nome\}/gi, g.name)
       : `💍 *Você está convidado!*\n\n` +
         `Olá, *${g.name}*! 🎉\n\n` +

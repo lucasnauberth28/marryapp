@@ -4,9 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma db push --accept-data-loss && next build",
+    "build": "next build",
+    "vercel-build": "prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types \"src/**/*.test.ts\"",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "prisma db seed",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -35,6 +40,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "satori": "^0.26.0",
+    "server-only": "^0.0.1",
     "shadcn": "^4.5.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",

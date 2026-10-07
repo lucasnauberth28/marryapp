@@ -56,93 +56,8 @@ import {
   PlanRegistrationData,
 } from "@/actions/subscription-actions";
 import { COUPLE_MODULES, calculateCustomPlanPrice } from "@/lib/pricing-modules";
+import { PLANS_CONFIG } from "@/lib/plans";
 import { toast } from "sonner";
-
-const PLANS_CONFIG = {
-  // Casais
-  basic: {
-    type: "COUPLE" as const,
-    name: "Plano Básico",
-    price: 0,
-    period: "Gratuito",
-    badge: "Para Começar",
-    features: [
-      "Site padrão dos noivos com subdomínio",
-      "Lista de presentes com Pix e Cartão",
-      "RSVP padrão com controle de convidados",
-      "Taxa de 2,99% por presente recebido",
-    ],
-  },
-  classic: {
-    type: "COUPLE" as const,
-    name: "Plano Classic",
-    price: 14900, // R$ 149,00
-    period: "Taxa única",
-    badge: "Mais Escolhido",
-    isPopular: true,
-    features: [
-      "0% de Taxa no Pix dos Noivos (Saque 100% integral)",
-      "Construtor completo No-Code com todos os blocos",
-      "Disparos automáticos no WhatsApp dos convidados",
-      "Credenciamento com QR Code na portaria",
-      "Mural de Recados interativo e Dicas de Traje",
-    ],
-  },
-  vip: {
-    type: "COUPLE" as const,
-    name: "Plano VIP Premium",
-    price: 29900, // R$ 299,00
-    period: "Taxa única",
-    badge: "Experiência VIP",
-    features: [
-      "Tudo incluído no Plano Classic",
-      "Domínio Próprio (.com.br) gratuito por 1 ano",
-      "Álbum Coletivo ao Vivo com QR Code nas mesas",
-      "Concierge VIP e suporte prioritário no WhatsApp",
-    ],
-  },
-  // Fornecedores
-  start: {
-    type: "VENDOR" as const,
-    name: "Fornecedor Start",
-    price: 0,
-    period: "Gratuito",
-    badge: "Iniciante",
-    features: [
-      "Perfil no marketplace após curadoria",
-      "1 região de atendimento",
-      "Até 3 solicitações de orçamento/mês",
-    ],
-  },
-  pro: {
-    type: "VENDOR" as const,
-    name: "Fornecedor Pro",
-    price: 9900, // R$ 99,00
-    period: "/ mês",
-    badge: "Mais Popular",
-    isPopular: true,
-    features: [
-      "Selo de Fornecedor Verificado pela Curadoria",
-      "Múltiplas regiões e cidades de atendimento",
-      "Orçamentos e leads ilimitados",
-      "Agendamento de reuniões online e presenciais",
-      "Botão de WhatsApp direto com o casal",
-    ],
-  },
-  master: {
-    type: "VENDOR" as const,
-    name: "Fornecedor Master Elite",
-    price: 24900, // R$ 249,00
-    period: "/ mês",
-    badge: "Alta Performance",
-    features: [
-      "Topo das buscas na sua categoria e região",
-      "Banner de destaque no feed dos noivos",
-      "Painel de Analytics de visualizações e propostas",
-      "Envio de propostas e contratos digitais integrados",
-    ],
-  },
-};
 
 export function AssinarClient() {
   const router = useRouter();
@@ -150,7 +65,6 @@ export function AssinarClient() {
 
   const isCustom = searchParams.get("custom") === "true";
   const modulesParam = searchParams.get("modules")?.split(",").filter(Boolean) || ["site"];
-  const customAmountParam = searchParams.get("amount");
 
   const customCalc = useMemo(() => {
     return calculateCustomPlanPrice(modulesParam);
@@ -163,7 +77,7 @@ export function AssinarClient() {
     ? {
         type: "COUPLE" as const,
         name: "Plano Adaptado",
-        price: customAmountParam ? parseInt(customAmountParam, 10) : customCalc.total,
+        price: customCalc.total,
         period: "Taxa única",
         badge: "Personalizado",
         isPopular: true,
@@ -337,14 +251,15 @@ export function AssinarClient() {
     startTransition(async () => {
       const payload: PlanRegistrationData = {
         planType: currentPlan.type,
-        planId: selectedKey,
+        planId: isCustom ? "custom" : selectedKey,
+        modules: isCustom ? modulesParam : undefined,
         planName: currentPlan.name,
         amount: currentPlan.price,
         name,
         slug,
         email,
         phone,
-        password: password || "marryapp123",
+        password,
         weddingDate: weddingDate ? new Date(weddingDate) : undefined,
         companyName,
         vendorCategory,
@@ -402,14 +317,15 @@ export function AssinarClient() {
 
       const payload: PlanRegistrationData = {
         planType: currentPlan.type,
-        planId: selectedKey,
+        planId: isCustom ? "custom" : selectedKey,
+        modules: isCustom ? modulesParam : undefined,
         planName: currentPlan.name,
         amount: currentPlan.price,
         name,
         slug,
         email,
         phone,
-        password: password || "marryapp123",
+        password,
         weddingDate: weddingDate ? new Date(weddingDate) : undefined,
         companyName,
         vendorCategory,

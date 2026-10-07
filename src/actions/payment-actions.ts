@@ -1,74 +1,67 @@
 "use server";
 
+import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { generatePixPayload } from "@/lib/pix-utils";
-import { calculateCardFee, mpPayment } from "@/lib/mercadopago";
+import { calculateCardFee, isMercadoPagoConfigured, mpPayment, paidAmountMatches } from "@/lib/mercadopago";
 import { findOrCreateGuest } from "@/lib/guest-matching";
 import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { checkRateLimit, SecurityLimits } from "@/lib/security/rate-limiter";
-import { sanitizeHtmlText } from "@/lib/security/sanitize";
-import { maskCardNumber, maskPhone } from "@/lib/security/masking";
+import { rateLimitByIp } from "@/lib/security/rate-limiter";
+import { normalizeText } from "@/lib/security/sanitize";
 
-interface PixTransactionInput {
+// Ações públicas usadas pelo checkout de presentes. Nenhuma delas pode aprovar
+// pagamento por conta própria: aprovação só vem do Mercado Pago (webhook/consulta)
+// ou da conferência manual do casal em /financas.
+
+const GuestIdentitySchema = z.object({
+  giftId: z.string().uuid("Presente inválido."),
+  guestName: z.string().trim().min(3, "Informe seu nome.").max(120),
+  guestPhone: z
+    .string()
+    .transform((v) => v.replace(/\D/g, ""))
+    .refine((v) => v.length >= 10 && v.length <= 13, "Telefone inválido."),
+  guestEmail: z.string().trim().email().max(200).optional().or(z.literal("")),
+});
+
+const CardPaymentSchema = GuestIdentitySchema.extend({
+  cardToken: z.string().min(10).max(200),
+  paymentMethodId: z.string().regex(/^[a-z_]{2,30}$/),
+  installments: z.coerce.number().int().min(1).max(12),
+  payerEmail: z.string().trim().email("Informe um e-mail válido.").max(200),
+});
+
+function splitName(name: string) {
+  const [first, ...rest] = name.split(" ");
+  return { first_name: first, last_name: rest.join(" ") || "Convidado" };
+}
+
+/**
+ * Cria uma transação PIX (dinâmico via Mercado Pago, ou estático como fallback)
+ */
+export async function createPixTransactionAction(input: {
   giftId: string;
   guestName: string;
   guestPhone: string;
   guestEmail?: string;
-}
+}) {
+  const parsed = GuestIdentitySchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+  const { giftId, guestPhone, guestEmail } = parsed.data;
+  const guestName = normalizeText(parsed.data.guestName);
 
-interface CardTransactionInput {
-  giftId: string;
-  guestName: string;
-  guestPhone: string;
-  cardNumber: string;
-  cardName: string;
-  cardExpiry: string; // "MM/AA" ou "MM/YYYY"
-  cardCvv: string;
-  paymentMethodId: string;
-  installments: number;
-  payerEmail: string;
-}
-
-/**
- * Cria uma transação PIX (Dinamico via Mercado Pago ou Estático como fallback)
- */
-export async function createPixTransactionAction({
-  giftId,
-  guestName,
-  guestPhone,
-  guestEmail,
-}: PixTransactionInput) {
   try {
-    // 🛡️ Proteção Rate Limit Anti-Spam (Max 10 / 5 minutos por telefone)
-    const clientKey = `pix_${guestPhone.replace(/\D/g, "") || "anon"}`;
-    const rateLimit = checkRateLimit({
-      key: clientKey,
-      ...SecurityLimits.CHECKOUT,
-    });
-
+    const rateLimit = await rateLimitByIp("CHECKOUT");
     if (!rateLimit.success) {
-      return {
-        success: false,
-        error: "Muitas tentativas de geração de pagamento. Aguarde alguns minutos.",
-      };
+      return { success: false, error: "Muitas tentativas de geração de pagamento. Aguarde alguns minutos." };
     }
-
-    const cleanGuestName = sanitizeHtmlText(guestName);
-    const cleanGuestPhone = guestPhone.replace(/\D/g, "");
 
     const gift = await prisma.gift.findUnique({ where: { id: giftId } });
     if (!gift) return { success: false, error: "Presente não encontrado." };
     if (gift.isPurchased) return { success: false, error: "Este presente já foi comprado." };
 
-    // 1. Encontra ou Cadastra o convidado sem duplicidades (DDD / Phone Match)
-    const guest = await findOrCreateGuest({
-      name: cleanGuestName,
-      phone: cleanGuestPhone,
-      email: guestEmail?.trim() || null,
-    });
+    const guest = await findOrCreateGuest({ name: guestName, phone: guestPhone, email: guestEmail || null });
 
-    // 2. Registra a Transação no banco
     const transaction = await prisma.transaction.create({
       data: {
         guestName,
@@ -82,9 +75,8 @@ export async function createPixTransactionAction({
       },
     });
 
-    // 3. Se houver token do Mercado Pago configurado, gera Pix Dinâmico via API do MP
-    const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN;
-    if (mpToken) {
+    // 1. Pix dinâmico via Mercado Pago (confirmação automática por webhook)
+    if (isMercadoPagoConfigured()) {
       try {
         const mpResponse = await mpPayment.create({
           body: {
@@ -92,9 +84,8 @@ export async function createPixTransactionAction({
             payment_method_id: "pix",
             description: `Presente de Casamento: ${gift.title}`,
             payer: {
-              email: guestEmail && guestEmail.includes("@") ? guestEmail : "convidado@casamento.com",
-              first_name: guestName.split(" ")[0],
-              last_name: guestName.split(" ").slice(1).join(" ") || "Convidado",
+              email: guestEmail || "convidado@casamento.com",
+              ...splitName(guestName),
             },
             external_reference: transaction.id,
           },
@@ -116,19 +107,21 @@ export async function createPixTransactionAction({
           };
         }
       } catch (mpErr) {
-        console.warn("[createPixTransactionAction MP Error, falling back to static Pix]:", mpErr);
+        console.warn("[createPixTransactionAction] Falha no Mercado Pago, usando Pix estático:", mpErr);
       }
     }
 
-    // 4. Fallback Pix Estático
-    const pixKey = (process.env.PIX_KEY || "11967794744").trim();
-    const merchantName = (process.env.PIX_MERCHANT_NAME || "Lucas e Giovanna").trim();
-    const merchantCity = (process.env.PIX_MERCHANT_CITY || "Sao Paulo").trim();
+    // 2. Pix estático: fica PENDENTE até o casal conferir o extrato e aprovar em /financas
+    const pixKey = process.env.PIX_KEY?.trim();
+    if (!pixKey) {
+      await prisma.transaction.update({ where: { id: transaction.id }, data: { status: PaymentStatus.FAILED } });
+      return { success: false, error: "Pagamento via Pix indisponível no momento." };
+    }
 
     const pixPayload = generatePixPayload({
       pixKey,
-      merchantName,
-      merchantCity,
+      merchantName: (process.env.PIX_MERCHANT_NAME || "Casamento").trim(),
+      merchantCity: (process.env.PIX_MERCHANT_CITY || "Sao Paulo").trim(),
       amount: gift.amount,
       txId: `MARRY${transaction.id.replace(/-/g, "").substring(0, 10)}`,
     });
@@ -140,76 +133,48 @@ export async function createPixTransactionAction({
       amount: gift.amount,
       isDynamicMp: false,
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("[createPixTransactionAction Error]:", error);
-    return { success: false, error: error?.message || "Erro ao gerar cobrança Pix." };
+    return { success: false, error: "Erro ao gerar cobrança Pix." };
   }
 }
 
 /**
- * Conclui a confirmação do PIX (quando o convidado clica em "Já fiz o Pix" ou no admin)
- */
-export async function confirmPixPaymentAction(transactionId: string) {
-  try {
-    const transaction = await prisma.transaction.findUnique({
-      where: { id: transactionId },
-      include: { gift: true, guest: true },
-    });
-
-    if (!transaction) return { success: false, error: "Transação não encontrada." };
-
-    await prisma.$transaction([
-      prisma.transaction.update({
-        where: { id: transactionId },
-        data: { status: PaymentStatus.APPROVED },
-      }),
-      prisma.gift.update({
-        where: { id: transaction.giftId },
-        data: { isPurchased: true },
-      }),
-    ]);
-
-    revalidatePath("/presentes");
-    revalidatePath("/presentes-admin");
-    revalidatePath("/financas");
-
-    return { success: true };
-  } catch (error: any) {
-    console.error("[confirmPixPaymentAction Error]:", error);
-    return { success: false, error: error?.message || "Erro ao confirmar pagamento Pix." };
-  }
-}
-
-/**
- * Verifica automaticamente se o pagamento foi aprovado no Mercado Pago ou Banco (Polling)
+ * Polling público do status de uma transação. Somente leitura do gateway: nunca aprova
+ * sem que o Mercado Pago confirme o pagamento com o valor exato.
  */
 export async function checkTransactionStatusAction(transactionId: string) {
   try {
+    if (!z.string().uuid().safeParse(transactionId).success) return { approved: false };
+
+    const rateLimit = await rateLimitByIp("PAYMENT_STATUS");
+    if (!rateLimit.success) return { approved: false };
+
     const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
-      include: { gift: true, guest: true },
+      select: { id: true, status: true, gatewayId: true, giftId: true, amount: true },
     });
 
     if (!transaction) return { approved: false };
+    if (transaction.status === PaymentStatus.APPROVED) return { approved: true };
 
-    if (transaction.status === PaymentStatus.APPROVED) {
-      return { approved: true };
-    }
-
-    if (transaction.gatewayId && !transaction.gatewayId.startsWith("SIM_CARD_")) {
+    if (transaction.gatewayId && /^\d+$/.test(transaction.gatewayId) && isMercadoPagoConfigured()) {
       try {
         const mpResponse = await mpPayment.get({ id: transaction.gatewayId });
-        if (mpResponse.status === "approved") {
-          await prisma.$transaction([
-            prisma.transaction.update({
-              where: { id: transactionId },
+        if (
+          mpResponse.status === "approved" &&
+          mpResponse.external_reference === transaction.id &&
+          paidAmountMatches(mpResponse.transaction_amount, transaction.amount)
+        ) {
+          await prisma.$transaction(async (tx) => {
+            const updated = await tx.transaction.updateMany({
+              where: { id: transaction.id, status: { not: PaymentStatus.APPROVED } },
               data: { status: PaymentStatus.APPROVED },
-            }),
-            prisma.gift.update({
-              where: { id: transaction.giftId },
-              data: { isPurchased: true },
-            }),
-          ]);
+            });
+            if (updated.count > 0) {
+              await tx.gift.update({ where: { id: transaction.giftId }, data: { isPurchased: true } });
+            }
+          });
 
           revalidatePath("/presentes");
           revalidatePath("/presentes-admin");
@@ -217,40 +182,39 @@ export async function checkTransactionStatusAction(transactionId: string) {
 
           return { approved: true };
         }
-      } catch (mpErr) {
-        // Silencioso se o gatewayId ainda não estiver disponível
+      } catch {
+        // gatewayId ainda não disponível no Mercado Pago
       }
     }
 
     return { approved: false };
-  } catch (error) {
+  } catch {
     return { approved: false };
   }
 }
 
 /**
- * Processa o checkout com cartão de crédito via Mercado Pago (Checkout Transparente)
+ * Processa o checkout com cartão de crédito via Mercado Pago (Checkout Transparente).
+ * Recebe apenas o token gerado no navegador pelo MercadoPago.js: os dados do cartão nunca passam por aqui.
  */
-export async function processCardPaymentAction({
-  giftId,
-  guestName,
-  guestPhone,
-  cardNumber,
-  cardName,
-  cardExpiry,
-  cardCvv,
-  paymentMethodId,
-  installments,
-  payerEmail,
-}: CardTransactionInput) {
-  try {
-    // 🛡️ Proteção Anti-Card Testing (Max 10 tentativas / 5 minutos)
-    const clientKey = `card_${guestPhone.replace(/\D/g, "") || payerEmail?.toLowerCase().trim() || "anon"}`;
-    const rateLimit = checkRateLimit({
-      key: clientKey,
-      ...SecurityLimits.CHECKOUT,
-    });
+export async function processCardPaymentAction(input: {
+  giftId: string;
+  guestName: string;
+  guestPhone: string;
+  cardToken: string;
+  paymentMethodId: string;
+  installments: number;
+  payerEmail: string;
+}) {
+  const parsed = CardPaymentSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+  const { giftId, guestPhone, cardToken, paymentMethodId, installments } = parsed.data;
+  const guestName = normalizeText(parsed.data.guestName);
+  const payerEmail = parsed.data.payerEmail.toLowerCase();
 
+  try {
+    // Proteção anti card-testing
+    const rateLimit = await rateLimitByIp("CHECKOUT");
     if (!rateLimit.success) {
       return {
         success: false,
@@ -258,9 +222,9 @@ export async function processCardPaymentAction({
       };
     }
 
-    const cleanGuestName = sanitizeHtmlText(guestName);
-    const cleanGuestPhone = guestPhone.replace(/\D/g, "");
-    const cleanEmail = payerEmail?.toLowerCase().trim() || "";
+    if (!isMercadoPagoConfigured()) {
+      return { success: false, error: "Pagamento com cartão indisponível no momento." };
+    }
 
     const gift = await prisma.gift.findUnique({ where: { id: giftId } });
     if (!gift) return { success: false, error: "Presente não encontrado." };
@@ -268,18 +232,14 @@ export async function processCardPaymentAction({
 
     const { finalAmount, fee } = calculateCardFee(gift.amount);
 
-    const guest = await findOrCreateGuest({
-      name: cleanGuestName,
-      phone: cleanGuestPhone,
-      email: cleanEmail,
-    });
+    const guest = await findOrCreateGuest({ name: guestName, phone: guestPhone, email: payerEmail });
 
     const transaction = await prisma.transaction.create({
       data: {
         guestName,
         amount: finalAmount,
         netAmount: gift.amount,
-        fee: fee,
+        fee,
         paymentMethod: "CREDIT_CARD",
         status: PaymentStatus.PENDING,
         giftId: gift.id,
@@ -287,159 +247,66 @@ export async function processCardPaymentAction({
       },
     });
 
-    const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN;
-    if (!mpToken) {
-      await prisma.$transaction([
-        prisma.transaction.update({
-          where: { id: transaction.id },
-          data: {
-            status: PaymentStatus.APPROVED,
-            gatewayId: `SIM_CARD_${Date.now()}`,
-          },
-        }),
-        prisma.gift.update({
-          where: { id: gift.id },
-          data: { isPurchased: true },
-        }),
-      ]);
-
-      revalidatePath("/presentes");
-      revalidatePath("/presentes-admin");
-
-      return { success: true, status: "APPROVED", transactionId: transaction.id };
-    }
-
-    // 1. Tokeniza os dados do cartão via API oficial do Mercado Pago
-    const cleanCardNum = cardNumber.replace(/\D/g, "");
-    const cleanCvv = cardCvv.replace(/\D/g, "");
-    const [expMonthStr, expYearStr] = cardExpiry.split("/");
-    const expMonth = parseInt(expMonthStr, 10);
-    let expYear = parseInt(expYearStr, 10);
-    if (expYear < 100) expYear += 2000;
-
-    const tokenResponse = await fetch("https://api.mercadopago.com/v1/card_tokens", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${mpToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        card_number: cleanCardNum,
-        expiration_month: expMonth,
-        expiration_year: expYear,
-        security_code: cleanCvv,
-        cardholder: {
-          name: cardName.trim().toUpperCase() || guestName.toUpperCase(),
-        },
-      }),
-    });
-
-    const tokenData = await tokenResponse.json();
-
-    if (!tokenResponse.ok || !tokenData.id) {
-      const errorMessage =
-        tokenData.message ||
-        tokenData.cause?.[0]?.description ||
-        "Dados do cartão recusados pelo validador do Mercado Pago.";
-      
-      await prisma.transaction.update({
-        where: { id: transaction.id },
-        data: { status: PaymentStatus.FAILED },
-      });
-
-      return { success: false, error: `Cartão recusado: ${errorMessage}` };
-    }
-
-    const cardTokenId = tokenData.id;
-
-    // 2. Mapeia a bandeira para o código oficial aceito pelo Mercado Pago (ex: "master" em vez de "mastercard")
-    const mapPaymentMethodId = (rawMethod: string): string => {
-      const clean = (rawMethod || "").toLowerCase().trim();
-      if (clean.includes("master")) return "master";
-      if (clean.includes("visa")) return "visa";
-      if (clean.includes("amex") || clean.includes("american")) return "amex";
-      if (clean.includes("elo")) return "elo";
-      if (clean.includes("hiper")) return "hipercard";
-      if (clean.includes("diners")) return "diners";
-      return "master";
-    };
-
-    const mpPaymentMethodId = mapPaymentMethodId(paymentMethodId);
-
-    // 3. Processa a cobrança usando o Card Token oficial obtido
     const mpResponse = await mpPayment.create({
       body: {
         transaction_amount: finalAmount / 100,
-        token: cardTokenId,
+        token: cardToken,
         description: `Presente de Casamento: ${gift.title}`,
-        installments: Number(installments) || 1,
-        payment_method_id: mpPaymentMethodId,
-        payer: {
-          email: payerEmail && payerEmail.includes("@") ? payerEmail : "convidado@casamento.com",
-          first_name: guestName.split(" ")[0],
-          last_name: guestName.split(" ").slice(1).join(" ") || "Convidado",
-        },
+        installments,
+        payment_method_id: paymentMethodId,
+        payer: { email: payerEmail, ...splitName(guestName) },
         external_reference: transaction.id,
       },
+      requestOptions: { idempotencyKey: transaction.id },
     });
 
-    if (mpResponse.status === "approved") {
+    if (mpResponse.status === "approved" && paidAmountMatches(mpResponse.transaction_amount, finalAmount)) {
       await prisma.$transaction([
         prisma.transaction.update({
           where: { id: transaction.id },
-          data: {
-            status: PaymentStatus.APPROVED,
-            gatewayId: String(mpResponse.id),
-          },
+          data: { status: PaymentStatus.APPROVED, gatewayId: String(mpResponse.id) },
         }),
-        prisma.gift.update({
-          where: { id: gift.id },
-          data: { isPurchased: true },
-        }),
+        prisma.gift.update({ where: { id: gift.id }, data: { isPurchased: true } }),
       ]);
 
       revalidatePath("/presentes");
       revalidatePath("/presentes-admin");
 
       return { success: true, status: "APPROVED", transactionId: transaction.id };
-    } else if (mpResponse.status === "in_process" || mpResponse.status === "pending") {
+    }
+
+    if (mpResponse.status === "in_process" || mpResponse.status === "pending") {
       await prisma.transaction.update({
         where: { id: transaction.id },
-        data: {
-          gatewayId: String(mpResponse.id),
-        },
+        data: { gatewayId: String(mpResponse.id) },
       });
       return { success: true, status: "PENDING", transactionId: transaction.id };
-    } else {
-      await prisma.transaction.update({
-        where: { id: transaction.id },
-        data: {
-          status: PaymentStatus.FAILED,
-          gatewayId: String(mpResponse.id),
-        },
-      });
-
-      const statusDetail = mpResponse.status_detail || "";
-      const statusDetailMessages: Record<string, string> = {
-        cc_rejected_bad_filled_card_number: "Número do cartão incorreto.",
-        cc_rejected_bad_filled_date: "Data de validade incorreta.",
-        cc_rejected_bad_filled_security_code: "Código CVV incorreto.",
-        cc_rejected_bad_filled_other: "Dados do cartão incompletos ou incorretos.",
-        cc_rejected_insufficient_amount: "Cartão sem limite ou saldo suficiente.",
-        cc_rejected_high_risk: "Recusado pelo sistema antifraude (O Mercado Pago bloqueia quando o titular da conta paga a si mesmo).",
-        cc_rejected_card_disabled: "Cartão bloqueado ou desativado pelo banco.",
-        cc_rejected_call_for_authorize: "Pagamento pendente de autorização no aplicativo do seu banco.",
-        cc_rejected_duplicated_payment: "Pagamento duplicado detectado em curto intervalo.",
-      };
-
-      const friendlyError =
-        statusDetailMessages[statusDetail] ||
-        `Recusado pelo banco (${statusDetail || "verifique os dados do cartão"}).`;
-
-      return { success: false, error: friendlyError };
     }
-  } catch (error: any) {
+
+    await prisma.transaction.update({
+      where: { id: transaction.id },
+      data: { status: PaymentStatus.FAILED, gatewayId: String(mpResponse.id) },
+    });
+
+    const statusDetail = mpResponse.status_detail || "";
+    const statusDetailMessages: Record<string, string> = {
+      cc_rejected_bad_filled_card_number: "Número do cartão incorreto.",
+      cc_rejected_bad_filled_date: "Data de validade incorreta.",
+      cc_rejected_bad_filled_security_code: "Código CVV incorreto.",
+      cc_rejected_bad_filled_other: "Dados do cartão incompletos ou incorretos.",
+      cc_rejected_insufficient_amount: "Cartão sem limite ou saldo suficiente.",
+      cc_rejected_high_risk: "Recusado pelo sistema antifraude.",
+      cc_rejected_card_disabled: "Cartão bloqueado ou desativado pelo banco.",
+      cc_rejected_call_for_authorize: "Pagamento pendente de autorização no aplicativo do seu banco.",
+      cc_rejected_duplicated_payment: "Pagamento duplicado detectado em curto intervalo.",
+    };
+
+    return {
+      success: false,
+      error: statusDetailMessages[statusDetail] || "Pagamento recusado pelo banco. Verifique os dados do cartão.",
+    };
+  } catch (error) {
     console.error("[processCardPaymentAction Error]:", error);
-    return { success: false, error: error?.message || "Erro ao processar pagamento com cartão." };
+    return { success: false, error: "Erro ao processar pagamento com cartão." };
   }
 }

@@ -1,5 +1,7 @@
 "use server";
 
+import { requirePathPermission } from "@/lib/security/auth-guard";
+
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -19,6 +21,7 @@ const ExpenseSchema = z.object({
 });
 
 export async function getExpenses() {
+  await requirePathPermission("/financas");
   return prisma.expense.findMany({
     orderBy: { dueDate: "asc" },
     include: { vendor: true }
@@ -26,6 +29,7 @@ export async function getExpenses() {
 }
 
 export async function createExpense(formData: FormData) {
+  await requirePathPermission("/financas");
   const raw = {
     description: formData.get("description"),
     amount: formData.get("amount"),
@@ -67,6 +71,7 @@ export async function createExpense(formData: FormData) {
 }
 
 export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
+  await requirePathPermission("/financas");
   try {
     await prisma.expense.update({
       where: { id },
@@ -82,6 +87,7 @@ export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
 }
 
 export async function deleteExpense(id: string) {
+  await requirePathPermission("/financas");
   try {
     await prisma.expense.delete({ where: { id } });
     revalidatePath("/(admin)/financas", "page");
@@ -104,6 +110,7 @@ export async function createBatchExpenses(items: Array<{
   imageUrl?: string | null;
   storeName?: string | null;
 }>) {
+  await requirePathPermission("/financas");
   if (!items || items.length === 0) {
     return { success: false, error: "Nenhuma parcela informada." };
   }

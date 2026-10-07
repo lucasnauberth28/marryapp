@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { Guest } from "@prisma/client";
+import { Guest, Prisma } from "@prisma/client";
 
 interface FindOrCreateGuestInput {
   name: string;
@@ -18,7 +18,7 @@ interface FindOrCreateGuestInput {
  * - "1157305051" (DDD + 8 dígitos)
  */
 export function getPhoneVariations(rawPhone: string): string[] {
-  let clean = rawPhone.replace(/\D/g, "");
+  const clean = rawPhone.replace(/\D/g, "");
   if (!clean) return [];
 
   const variations = new Set<string>();
@@ -95,7 +95,7 @@ export async function findOrCreateGuest({
 
   if (existingGuest) {
     // Se encontrou, atualiza dados que porventura estejam em branco
-    const updateData: Record<string, any> = {};
+    const updateData: Prisma.GuestUpdateInput = {};
     if (!existingGuest.email && email && email.trim() !== "") {
       updateData.email = email.trim().toLowerCase();
     }

@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAuthSession, requirePathPermission } from "@/lib/security/auth-guard";
+
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -13,6 +15,7 @@ const VendorSchema = z.object({
 });
 
 export async function getVendors() {
+  await requireAuthSession();
   return prisma.vendor.findMany({
     orderBy: { createdAt: "desc" },
     include: {
@@ -22,6 +25,7 @@ export async function getVendors() {
 }
 
 export async function createVendor(formData: FormData) {
+  await requirePathPermission("/meus-fornecedores");
   const raw = {
     name: formData.get("name"),
     category: formData.get("category"),
@@ -46,6 +50,7 @@ export async function createVendor(formData: FormData) {
 }
 
 export async function updateVendor(id: string, formData: FormData) {
+  await requirePathPermission("/meus-fornecedores");
   const raw = {
     name: formData.get("name"),
     category: formData.get("category"),
@@ -74,6 +79,7 @@ export async function updateVendor(id: string, formData: FormData) {
 }
 
 export async function deleteVendor(id: string) {
+  await requirePathPermission("/meus-fornecedores");
   try {
     await prisma.vendor.delete({ where: { id } });
     revalidatePath("/(admin)/fornecedores", "page");

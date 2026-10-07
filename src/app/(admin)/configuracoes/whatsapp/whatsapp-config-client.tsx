@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { getWhatsAppStatus, generateWhatsAppQRCode } from "@/actions/evolution-actions";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, QrCode, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function WhatsAppConfigClient() {
@@ -143,7 +144,11 @@ export function WhatsAppConfigClient() {
             </p>
             
             <div className="bg-white p-5 rounded-2xl border-4 border-black shadow-2xl relative">
-              <img src={qrCode} alt="WhatsApp QR Code" className="w-64 h-64 object-contain" />
+              {qrCode.startsWith("data:image") ? (
+                <img src={qrCode} alt="WhatsApp QR Code" className="w-64 h-64 object-contain" />
+              ) : (
+                <QRCodeSVG value={qrCode} size={256} aria-label="WhatsApp QR Code" />
+              )}
             </div>
 
             <div className="flex items-center gap-2 mt-5 text-xs text-zinc-400">

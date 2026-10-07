@@ -1,7 +1,12 @@
 "use server";
 
+import { requirePathPermission } from "@/lib/security/auth-guard";
+
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { rateLimitByIp } from "@/lib/security/rate-limiter";
+import { sanitizeUrl } from "@/lib/security/sanitize";
 
 /**
  * Obtém ou inicializa as configurações visuais e seções do site dos noivos
@@ -80,6 +85,7 @@ export async function updateSiteCustomization(data: {
   showGuestbook?: boolean;
   showMusic?: boolean;
 }) {
+  await requirePathPermission("/site-builder");
   try {
     const updated = await prisma.siteCustomization.upsert({
       where: { id: "global" },
@@ -95,9 +101,9 @@ export async function updateSiteCustomization(data: {
     revalidatePath("/site-builder");
 
     return { success: true, settings: updated };
-  } catch (error: any) {
+  } catch (error) {
     console.error("[updateSiteCustomization Error]:", error);
-    return { success: false, error: error?.message || "Erro ao salvar configurações do site." };
+    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Erro ao salvar configurações do site." };
   }
 }
 
@@ -122,6 +128,7 @@ export async function createStoryItem(data: {
   imageUrl?: string;
   position?: number;
 }) {
+  await requirePathPermission("/site-builder");
   try {
     const item = await prisma.weddingStoryItem.create({
       data: {
@@ -136,19 +143,20 @@ export async function createStoryItem(data: {
     revalidatePath("/casamento");
     revalidatePath("/site-builder");
     return { success: true, item };
-  } catch (error: any) {
-    return { success: false, error: error?.message || "Erro ao criar momento da história." };
+  } catch (error) {
+    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Erro ao criar momento da história." };
   }
 }
 
 export async function deleteStoryItem(id: string) {
+  await requirePathPermission("/site-builder");
   try {
     await prisma.weddingStoryItem.delete({ where: { id } });
     revalidatePath("/casamento");
     revalidatePath("/site-builder");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error?.message || "Erro ao excluir momento." };
+  } catch (error) {
+    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Erro ao excluir momento." };
   }
 }
 
@@ -176,6 +184,7 @@ export async function createWeddingTip(data: {
   discountCode?: string;
   position?: number;
 }) {
+  await requirePathPermission("/site-builder");
   try {
     const tip = await prisma.weddingTip.create({
       data: {
@@ -193,19 +202,20 @@ export async function createWeddingTip(data: {
     revalidatePath("/casamento");
     revalidatePath("/site-builder");
     return { success: true, tip };
-  } catch (error: any) {
-    return { success: false, error: error?.message || "Erro ao salvar dica." };
+  } catch (error) {
+    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Erro ao salvar dica." };
   }
 }
 
 export async function deleteWeddingTip(id: string) {
+  await requirePathPermission("/site-builder");
   try {
     await prisma.weddingTip.delete({ where: { id } });
     revalidatePath("/casamento");
     revalidatePath("/site-builder");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error?.message || "Erro ao excluir dica." };
+  } catch (error) {
+    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Erro ao excluir dica." };
   }
 }
 
@@ -224,24 +234,47 @@ export async function getGuestBookEntries() {
   }
 }
 
+const GuestBookSchema = z.object({
+  authorName: z.string().trim().min(2, "Informe seu nome.").max(80),
+  message: z.string().trim().min(2, "Escreva uma mensagem.").max(1000, "Mensagem muito longa (máx. 1000 caracteres)."),
+  imageUrl: z.string().trim().url().max(2000).optional().or(z.literal("")),
+});
+
+/**
+ * Pública: recado de convidado no mural do site.
+ */
 export async function createGuestBookEntry(data: {
   authorName: string;
   message: string;
   imageUrl?: string;
 }) {
+  const parsed = GuestBookSchema.safeParse(data);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+
+  const imageUrl = parsed.data.imageUrl ? sanitizeUrl(parsed.data.imageUrl) : null;
+  if (imageUrl && !imageUrl.startsWith("https://")) {
+    return { success: false, error: "Link de imagem inválido." };
+  }
+
   try {
+    const rateLimit = await rateLimitByIp("PUBLIC_FORM");
+    if (!rateLimit.success) {
+      return { success: false, error: "Você enviou muitos recados em pouco tempo. Tente novamente mais tarde." };
+    }
+
     const entry = await prisma.guestBookEntry.create({
       data: {
-        authorName: data.authorName,
-        message: data.message,
-        imageUrl: data.imageUrl,
+        authorName: parsed.data.authorName,
+        message: parsed.data.message,
+        imageUrl,
         isApproved: true,
       },
+      select: { id: true, authorName: true, message: true, imageUrl: true, createdAt: true },
     });
-
     revalidatePath("/casamento");
     return { success: true, entry };
-  } catch (error: any) {
-    return { success: false, error: error?.message || "Erro ao enviar recado." };
+  } catch (error) {
+    console.error("[createGuestBookEntry Error]:", error);
+    return { success: false, error: "Erro ao enviar recado." };
   }
 }
