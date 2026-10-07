@@ -1,202 +1,94 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { updateSettings } from "@/actions/settings-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Save, Settings, Palette, CalendarClock, MapPin } from "lucide-react";
+import { PageHeader } from "@/components/admin/page-header";
+import { Save, Settings, CalendarClock, Sliders, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
-export function SettingsClient({ initialSettings }: { initialSettings: any }) {
-  const [isPending, startTransition] = useTransition();
-  const [formData, setFormData] = useState({
-    rsvpDeadline: initialSettings.rsvpDeadline ? new Date(initialSettings.rsvpDeadline).toISOString().split('T')[0] : "",
-    weddingDate: initialSettings.weddingDate ? new Date(initialSettings.weddingDate).toISOString().split('T')[0] : "",
-    weddingLocation: initialSettings.weddingLocation || "",
-    weddingLocationUrl: initialSettings.weddingLocationUrl || "",
-    themeColor: initialSettings.themeColor || "#18181b",
-    heroImageUrl: initialSettings.heroImageUrl || "",
-    welcomeText: initialSettings.welcomeText || "",
-  });
+interface SettingsClientProps {
+  initialSettings: { rsvpDeadline: Date | string | null };
+}
 
-  async function handleSave() {
-    const toastId = toast.loading("Salvando configurações gerais...");
+export function SettingsClient({ initialSettings }: SettingsClientProps) {
+  const [isPending, startTransition] = useTransition();
+  const [rsvpDeadline, setRsvpDeadline] = useState(
+    initialSettings.rsvpDeadline ? new Date(initialSettings.rsvpDeadline).toISOString().split("T")[0] : ""
+  );
+
+  function handleSave() {
+    const toastId = toast.loading("Salvando prazo de confirmação...");
     startTransition(async () => {
-      const res = await updateSettings({
-        rsvpDeadline: formData.rsvpDeadline ? new Date(formData.rsvpDeadline) : null,
-        weddingDate: formData.weddingDate ? new Date(formData.weddingDate) : null,
-        weddingLocation: formData.weddingLocation || null,
-        weddingLocationUrl: formData.weddingLocationUrl || null,
-        themeColor: formData.themeColor,
-        heroImageUrl: formData.heroImageUrl || null,
-        welcomeText: formData.welcomeText || null,
-      });
+      const res = await updateSettings({ rsvpDeadline: rsvpDeadline ? new Date(rsvpDeadline) : null });
       if (res.success) {
-        toast.success("Configurações salvas com sucesso! ✨", { id: toastId });
+        toast.success("Prazo de confirmação salvo.", { id: toastId });
       } else {
-        toast.error("Erro ao salvar configurações. Tente novamente.", {
-          id: toastId,
-          duration: 6000,
-          description: "Ocorreu um erro inesperado no servidor.",
-        });
+        toast.error("Não foi possível salvar. Tente de novo.", { id: toastId });
       }
     });
   }
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
-          Configurações
-        </h1>
-        <p className="mt-1 text-sm text-stone-600">
-          Personalize a página pública e defina regras do casamento.
-        </p>
-      </div>
+      <PageHeader title="Configurações" description="Regras do casamento e integrações." />
 
-      <div className="grid gap-6">
-        {/* Regras do Casamento */}
+      <div className="grid gap-6 max-w-4xl">
         <Card className="shadow-sm border-zinc-200/60">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <CalendarClock className="w-5 h-5 text-zinc-500" />
-              Informações & Regras do Casamento
+              <CalendarClock className="w-5 h-5 text-zinc-500" aria-hidden="true" />
+              Confirmação de presença
             </CardTitle>
-            <CardDescription>Defina as datas e locais principais para exibição e controle.</CardDescription>
+            <CardDescription>Depois desta data, o formulário de RSVP é fechado automaticamente.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="rsvpDeadline">Data Limite para RSVP (Confirmação de Presença)</Label>
-                <DatePicker
-                  id="rsvpDeadline"
-                  value={formData.rsvpDeadline}
-                  onChange={(e) => setFormData({ ...formData, rsvpDeadline: e.target.value })}
-                />
-                <p className="text-xs text-zinc-500">Após esta data, o formulário de RSVP será bloqueado automaticamente.</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="weddingDate">Data do Casamento</Label>
-                <DatePicker
-                  id="weddingDate"
-                  value={formData.weddingDate}
-                  onChange={(e) => setFormData({ ...formData, weddingDate: e.target.value })}
-                />
-                <p className="text-xs text-zinc-500">Será exibida de forma elegante na tela pública principal.</p>
-              </div>
+          <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            <div className="space-y-2 sm:w-72">
+              <Label htmlFor="rsvpDeadline">Prazo para confirmar presença</Label>
+              <DatePicker id="rsvpDeadline" value={rsvpDeadline} onChange={(e) => setRsvpDeadline(e.target.value)} />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <div className="space-y-2">
-                <Label htmlFor="weddingLocation">Local do Casamento (Nome do Espaço)</Label>
-                <Input
-                  id="weddingLocation"
-                  type="text"
-                  placeholder="Ex: Mansão das Flores"
-                  value={formData.weddingLocation}
-                  onChange={(e) => setFormData({ ...formData, weddingLocation: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="weddingLocationUrl">Link do Google Maps do Local</Label>
-                <Input
-                  id="weddingLocationUrl"
-                  type="url"
-                  placeholder="https://maps.google.com/..."
-                  value={formData.weddingLocationUrl}
-                  onChange={(e) => setFormData({ ...formData, weddingLocationUrl: e.target.value })}
-                />
-              </div>
-            </div>
+            <Button onClick={handleSave} disabled={isPending} className="gap-2 sm:mb-0.5">
+              <Save className="w-4 h-4" aria-hidden="true" />
+              Salvar prazo
+            </Button>
           </CardContent>
         </Card>
 
         <Card className="shadow-sm border-zinc-200/60">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Palette className="w-5 h-5 text-zinc-500" />
-              Personalização da Página Pública
+              <Sliders className="w-5 h-5 text-zinc-500" aria-hidden="true" />
+              Dados do casamento e aparência do site
             </CardTitle>
-            <CardDescription>Altere a aparência do site que os convidados acessam.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="themeColor">Cor Principal do Tema (Hexadecimal)</Label>
-              <div className="flex gap-3">
-                <Input
-                  id="themeColorPicker"
-                  type="color"
-                  className="w-16 p-1 h-10"
-                  value={formData.themeColor}
-                  onChange={(e) => setFormData({ ...formData, themeColor: e.target.value })}
-                />
-                <Input
-                  id="themeColor"
-                  type="text"
-                  className="flex-1"
-                  value={formData.themeColor}
-                  onChange={(e) => setFormData({ ...formData, themeColor: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="heroImageUrl">URL da Foto Principal (Capa)</Label>
-              <Input
-                id="heroImageUrl"
-                type="url"
-                placeholder="https://..."
-                value={formData.heroImageUrl}
-                onChange={(e) => setFormData({ ...formData, heroImageUrl: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="welcomeText">Texto de Boas-vindas</Label>
-              <Textarea
-                id="welcomeText"
-                rows={4}
-                value={formData.welcomeText}
-                onChange={(e) => setFormData({ ...formData, welcomeText: e.target.value })}
-              />
-            </div>
-
-            <div className="flex justify-end">
-              <Button onClick={handleSave} disabled={isPending} className="bg-zinc-900 hover:bg-zinc-800 text-white w-full">
-                {isPending ? "Salvando..." : "Salvar Configurações"}
-                <Save className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Módulo de Integrações */}
-        <Card className="shadow-sm border-zinc-200/60">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Settings className="w-5 h-5 text-zinc-500" />
-              Integrações & Comunicação
-            </CardTitle>
-            <CardDescription>Gerencie a conexão de disparo de mensagens do seu celular.</CardDescription>
+            <CardDescription>
+              Nomes, data, local, cor do tema e fotos ficam no editor do site, com prévia ao vivo.
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col md:flex-row items-center justify-between p-4 bg-zinc-50 rounded-lg border border-zinc-200 gap-4">
-              <div>
-                <h4 className="font-medium text-zinc-900">WhatsApp Automático</h4>
-                <p className="text-sm text-zinc-500">
-                  Gerencie a conexão com o número que dispara convites e lembretes para os convidados.
-                </p>
-              </div>
-              <Button asChild variant="outline">
-                <a href="/configuracoes/whatsapp">Gerenciar Conexão</a>
-              </Button>
-            </div>
+            <Button asChild variant="outline" className="gap-2">
+              <Link href="/site-builder">
+                Abrir o editor do site <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-zinc-200/60">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Settings className="w-5 h-5 text-zinc-500" aria-hidden="true" />
+              WhatsApp
+            </CardTitle>
+            <CardDescription>Conexão do número que envia convites e lembretes aos convidados.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="outline">
+              <Link href="/configuracoes/whatsapp">Gerenciar conexão</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

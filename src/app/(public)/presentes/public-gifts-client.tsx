@@ -67,13 +67,12 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
       {/* Hero Section Minimalista e Sem Borda */}
       <div className="text-center max-w-xl mx-auto py-2 space-y-2">
         <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-1">
-          <Heart className="w-5 h-5 fill-primary text-primary" />
+          <Heart className="w-5 h-5 fill-primary text-primary" aria-hidden="true" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold font-serif italic text-zinc-900 tracking-tight">
-          Lista de Presentes de Casamento
-        </h1>
-        <p className="text-xs sm:text-sm text-zinc-600 max-w-md mx-auto leading-relaxed">
-          Sua presença é nosso maior presente! Se desejar nos apoiar no início desta nova jornada juntos, escolha uma das lembranças abaixo.
+        <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">Lista de presentes</p>
+        <h1 className="font-serif text-4xl font-semibold text-stone-900 tracking-tight text-balance">{coupleNames}</h1>
+        <p className="text-sm text-stone-600 max-w-md mx-auto leading-relaxed">
+          Sua presença é o nosso maior presente. Se quiser nos ajudar a começar essa nova fase, escolha um item abaixo.
         </p>
 
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs font-semibold text-zinc-500">

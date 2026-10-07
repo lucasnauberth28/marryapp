@@ -30,6 +30,14 @@
   --font-serif: var(--font-serif);
   --color-white: #FCFBF9;
 
+  --color-zinc-800: #755630;
+  --color-zinc-900: #8C6D45;
+  --color-zinc-950: #8C6D45;
+}
+
+/* Tokens da marca fora do "inline": as classes usam var(--color-brand-*), então uma seção
+   pode trocar a cor redefinindo as variáveis (o site do casal usa a cor escolhida pelos noivos). */
+@theme {
   /* Escala da marca (bronze champanhe). Use estes tokens em vez de hex fixos:
      bg-brand, text-brand-600, border-brand/30, bg-brand-50 ... */
   --color-brand-50: #FAF4ED;
@@ -42,9 +50,6 @@
   --color-ivory: #FAF8F5;
   --color-paper: #FCFBF9;
   --color-line: #E8E2D9;
-  --color-zinc-800: #755630;
-  --color-zinc-900: #8C6D45;
-  --color-zinc-950: #8C6D45;
 }
 
 :root {

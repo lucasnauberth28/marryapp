@@ -7,6 +7,7 @@ import {
 import prisma from "@/lib/prisma";
 import { guestPageMetadata } from "@/lib/wedding";
 import { WeddingSiteView } from "@/components/public/wedding-site-view";
+import { getSettings } from "@/actions/settings-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,12 +16,19 @@ export async function generateMetadata() {
 }
 
 export default async function WeddingPublicPage() {
-  const [settings, storyItems, tips, guestbookEntries, gifts] = await Promise.all([
+  const [settings, storyItems, tips, guestbookEntries, gifts, rules] = await Promise.all([
     getSiteCustomization(),
     getStoryItems(),
     getWeddingTips(),
     getGuestBookEntries(),
-    prisma.gift.findMany({ where: { isPurchased: false }, take: 6 }).catch(() => []),
+    prisma.gift
+      .findMany({
+        where: { isPurchased: false },
+        select: { id: true, title: true, description: true, amount: true, imageUrl: true },
+        take: 6,
+      })
+      .catch(() => []),
+    getSettings().catch(() => null),
   ]);
 
   return (
@@ -30,6 +38,7 @@ export default async function WeddingPublicPage() {
       tips={tips}
       guestbookEntries={guestbookEntries}
       gifts={gifts}
+      rsvpDeadline={rules?.rsvpDeadline ?? null}
     />
   );
 }

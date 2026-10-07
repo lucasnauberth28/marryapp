@@ -21,24 +21,26 @@ export async function getSettings() {
   return settings;
 }
 
-export async function updateSettings(data: {
-  rsvpDeadline?: Date | null;
-  weddingDate?: Date | null;
-  weddingLocation?: string | null;
-  weddingLocationUrl?: string | null;
-  themeColor?: string;
-  heroImageUrl?: string | null;
-  welcomeText?: string | null;
-}) {
+/**
+ * Regras do casamento editáveis em Configurações. Aparência e dados exibidos no site
+ * ficam em updateSiteCustomization (editor do site).
+ */
+export async function updateSettings(data: { rsvpDeadline: Date | null }) {
   await requirePathPermission("/configuracoes");
 
-  await prisma.systemSettings.update({
+  const rsvpDeadline = data.rsvpDeadline ? new Date(data.rsvpDeadline) : null;
+  if (rsvpDeadline && Number.isNaN(rsvpDeadline.getTime())) {
+    return { success: false, error: "Data inválida." };
+  }
+
+  await prisma.systemSettings.upsert({
     where: { id: "global" },
-    data,
+    update: { rsvpDeadline },
+    create: { id: "global", rsvpDeadline },
   });
 
-  revalidatePath("/");
   revalidatePath("/rsvp");
+  revalidatePath("/casamento");
   revalidatePath("/configuracoes");
 
   return { success: true };

@@ -48,3 +48,18 @@ test("verifyMercadoPagoSignature valida o HMAC do manifest", () => {
   assert.equal(verifyMercadoPagoSignature({ ...base, dataId: "999", signatureHeader: `ts=${ts},v1=${v1}` }), false);
   assert.equal(verifyMercadoPagoSignature({ ...base, signatureHeader: null }), false);
 });
+
+test("readableAccent escurece cores claras até contraste AA", async () => {
+  const { readableAccent } = await import("../../wedding-format.ts");
+  assert.deepEqual(readableAccent("#8C6D45"), { color: "#8c6d45", adjusted: false });
+  const light = readableAccent("#F5D0A9");
+  assert.equal(light.adjusted, true);
+  assert.notEqual(light.color, "#f5d0a9");
+});
+
+test("getCoupleInitials", async () => {
+  const { getCoupleInitials } = await import("../../wedding-format.ts");
+  assert.equal(getCoupleInitials("Lucas & Giovanna"), "L&G");
+  assert.equal(getCoupleInitials("Ana e Bia"), "A&B");
+  assert.equal(getCoupleInitials("Nosso Casamento"), "NC");
+});

@@ -60,9 +60,13 @@ async function uploadImageBytes(bytes: Uint8Array, folder: string): Promise<Uplo
   return { success: true, url: publicUrl }
 }
 
-export async function uploadGiftImage(file: File): Promise<UploadResult> {
+export async function uploadImageFile(file: File, folder: string): Promise<UploadResult> {
   if (file.size > MAX_IMAGE_BYTES) return { success: false, error: 'Imagem acima do limite de 5 MB.' }
-  return uploadImageBytes(new Uint8Array(await file.arrayBuffer()), 'gifts')
+  return uploadImageBytes(new Uint8Array(await file.arrayBuffer()), folder)
+}
+
+export async function uploadGiftImage(file: File): Promise<UploadResult> {
+  return uploadImageFile(file, 'gifts')
 }
 
 /**
