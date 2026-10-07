@@ -36,7 +36,7 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [guest, setGuest] = useState<any>(null);
+  const [guest, setGuest] = useState<NonNullable<Awaited<ReturnType<typeof findGuestByPhone>>> | null>(null);
   
   const [companionsCount, setCompanionsCount] = useState(0);
   const [companionsNames, setCompanionsNames] = useState<string[]>([]);
@@ -85,6 +85,7 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
   };
 
   const handleConfirm = async (status: "CONFIRMED" | "DECLINED") => {
+    if (!guest) return;
     setSubmitLoading(true);
     setError("");
 
@@ -173,7 +174,7 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
                     <div className="bg-zinc-50 p-6 rounded-2xl border border-zinc-200/80 w-full flex flex-col items-center shadow-inner">
                       <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Seu Ingresso Digital</p>
                       <div ref={qrRef} className="bg-white p-4 rounded-xl shadow-md border border-zinc-100">
-                        <QRCodeCanvas value={`GUEST:${guest.id}`} size={160} level="H" />
+                        <QRCodeCanvas value={`GUEST:${guest?.id ?? ""}`} size={160} level="H" />
                       </div>
                       
                       <Button 
