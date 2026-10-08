@@ -56,7 +56,7 @@ export function CustomPlanClient() {
 
   const customCheckoutUrl = useMemo(() => {
     const modulesParam = selectedModuleIds.join(",");
-    return `/assinar?tipo=casal&custom=true&modules=${modulesParam}&amount=${calculation.total}`;
+    return `/cadastro?tipo=casal&custom=true&modules=${modulesParam}&amount=${calculation.total}`;
   }, [selectedModuleIds, calculation.total]);
 
   const selectedCount = selectedModuleIds.length;

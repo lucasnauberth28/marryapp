@@ -139,7 +139,7 @@ export function LandingHeader() {
             <Link href="/login" className={cn(btn.quiet, "max-sm:min-h-11 max-sm:px-3 max-sm:text-sm")}>
               Entrar
             </Link>
-            <Link href="/assinar" className={cn(btn.primary, "hidden md:inline-flex")}>
+            <Link href="/cadastro" className={cn(btn.primary, "hidden md:inline-flex")}>
               Criar meu casamento
               <ArrowRight aria-hidden="true" className={btnArrow} />
             </Link>
@@ -226,7 +226,7 @@ export function LandingHeader() {
           style={{ transitionDelay: open ? "320ms" : "0ms" }}
         >
           <p className="mb-2 text-sm text-tinta-suave">Recebeu um convite? Use o link que os noivos mandaram.</p>
-          <Link href="/assinar" onClick={close} className={cn(btn.primary, btn.block)}>
+          <Link href="/cadastro" onClick={close} className={cn(btn.primary, btn.block)}>
             Criar meu casamento
           </Link>
           <Link href="/login" onClick={close} className={cn(btn.secondary, btn.block)}>

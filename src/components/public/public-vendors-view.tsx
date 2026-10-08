@@ -424,7 +424,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
             </p>
           </div>
 
-          <Link href="/assinar?tipo=fornecedor&plano=pro" className="shrink-0">
+          <Link href="/cadastro?tipo=fornecedor&plano=pro" className="shrink-0">
             <Button className="bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-14 px-8 text-sm shadow-md gap-2 cursor-pointer">
               <span>Cadastrar Minha Empresa</span>
               <ArrowRight className="w-4 h-4" />

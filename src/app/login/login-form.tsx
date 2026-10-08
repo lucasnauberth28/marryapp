@@ -1,17 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { ArrowRight, CircleAlert, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { login } from "@/actions/auth-actions";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 
-const field =
-  "peer block min-h-12 w-full rounded-[12px] border border-linha-forte bg-papel pl-11 pr-4 text-base leading-6 text-tinta transition-[border-color,box-shadow] duration-200 placeholder:text-tinta-suave/80 hover:border-tinta-suave focus:border-ameixa focus:shadow-[0_0_0_3px_var(--color-ameixa-suave)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa aria-[invalid=true]:border-2 aria-[invalid=true]:border-perigo";
+import { FormAlert, fieldClass } from "./fields";
 
-export function LoginForm() {
-  const [username, setUsername] = useState("");
+const field = cn(fieldClass, "pl-11");
+
+export function LoginForm({ initialEmail = "", onCreateAccount }: { initialEmail?: string; onCreateAccount: () => void }) {
+  const [username, setUsername] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -95,16 +95,7 @@ export function LoginForm() {
         </div>
       </div>
 
-      {error ? (
-        <p
-          id="login-erro"
-          role="alert"
-          className="flex items-start gap-2.5 rounded-[12px] border border-perigo/25 bg-perigo-suave px-4 py-3 text-sm font-semibold leading-5 text-perigo"
-        >
-          <CircleAlert aria-hidden="true" className="mt-px size-[18px] shrink-0" strokeWidth={2} />
-          <span>{error}</span>
-        </p>
-      ) : null}
+      {error ? <FormAlert id="login-erro">{error}</FormAlert> : null}
 
       <button type="submit" disabled={isLoading} className={cn(btn.primary, btn.block, "mt-1 min-h-12")}>
         {isLoading ? (
@@ -122,12 +113,13 @@ export function LoginForm() {
 
       <p className="text-center text-[15px] text-tinta-suave">
         Ainda não tem conta?{" "}
-        <Link
-          href="/assinar"
-          className="font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 transition-colors hover:decoration-ameixa"
+        <button
+          type="button"
+          onClick={onCreateAccount}
+          className="cursor-pointer font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 transition-colors hover:decoration-ameixa"
         >
-          Criar meu casamento
-        </Link>
+          Criar minha conta
+        </button>
       </p>
     </form>
   );

@@ -1,24 +1,16 @@
-import { Suspense } from "react";
-import { AssinarClient } from "./assinar-client";
-import { Loader2 } from "lucide-react";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-export const metadata = {
-  title: "Escolha seu Plano | Aceito Checkout",
-  description: "Ative seu plano no Aceito para noivos ou fornecedores.",
-};
-
-export default function AssinarPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-paper">
-          <Loader2 className="w-8 h-8 animate-spin text-brand" />
-        </div>
-      }
-    >
-      <AssinarClient />
-    </Suspense>
-  );
+/** O cadastro agora acontece na tela de acesso; links antigos para /assinar continuam valendo. */
+export default async function AssinarPage({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams;
+  const query = new URLSearchParams();
+  for (const key of ["tipo", "plano", "custom", "modules"]) {
+    const value = params[key];
+    const v = Array.isArray(value) ? value[0] : value;
+    if (v) query.set(key, v);
+  }
+  const qs = query.toString();
+  redirect(qs ? `/cadastro?${qs}` : "/cadastro");
 }

@@ -69,7 +69,7 @@ function Hero() {
             </p>
           </Reveal>
           <Reveal delay={780} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
-            <Link href="/assinar?plano=basic" className={btn.primary}>
+            <Link href="/cadastro?plano=basic" className={btn.primary}>
               Criar meu casamento grátis
               <ArrowRight aria-hidden="true" className={btnArrow} />
             </Link>
@@ -543,7 +543,7 @@ function Vendors() {
             Encontrar fornecedores
             <ArrowRight aria-hidden="true" className={btnArrow} />
           </Link>
-          <Link href="/assinar?plano=start" className={btn.secondary}>
+          <Link href="/cadastro?plano=start" className={btn.secondary}>
             Sou fornecedor
           </Link>
         </Reveal>
@@ -632,7 +632,7 @@ function Plans() {
                     ))}
                   </ul>
                   <Link
-                    href={`/assinar?plano=${key}`}
+                    href={`/cadastro?plano=${key}`}
                     className={cn(popular ? btn.primary : btn.secondary, btn.block, "mt-8")}
                     aria-label={`${cta}: plano ${plan.name.replace(/^Plano /, "")}`}
                   >
@@ -652,7 +652,7 @@ function Plans() {
             </Link>
             . É fornecedor? O plano Start é gratuito, e o Pro sai por {reais(PLANS_CONFIG.pro.price)} por mês.
           </p>
-          <Link href="/assinar" className={cn(btn.secondary, "shrink-0")}>
+          <Link href="/cadastro" className={cn(btn.secondary, "shrink-0")}>
             Comparar os planos
           </Link>
         </Reveal>
@@ -685,7 +685,7 @@ function Closing() {
             </p>
           </Reveal>
           <Reveal delay={400} className="flex flex-col gap-2 sm:flex-row sm:gap-3">
-            <Link href="/assinar?plano=basic" className={btn.primary}>
+            <Link href="/cadastro?plano=basic" className={btn.primary}>
               Criar meu casamento grátis
               <ArrowRight aria-hidden="true" className={btnArrow} />
             </Link>

@@ -302,7 +302,7 @@ export function CuradoriaClient({
               Nenhum fornecedor encontrado nesta categoria de curadoria.
             </p>
             <p className="text-xs text-tinta-suave">
-              Novos cadastros realizados em /assinar aparecerão aqui automaticamente.
+              Novos cadastros de fornecedores aparecerão aqui automaticamente.
             </p>
           </div>
         ) : (

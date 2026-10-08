@@ -12,14 +12,14 @@ const LINKS: { title: string; items: { label: string; href: string }[] }[] = [
       { label: "Como funciona", href: "/#como" },
       { label: "Planos", href: "/#planos" },
       { label: "Monte seu plano", href: "/monte-seu-plano" },
-      { label: "Criar meu casamento", href: "/assinar" },
+      { label: "Criar meu casamento", href: "/cadastro" },
     ],
   },
   {
     title: "Fornecedores",
     items: [
       { label: "Encontrar fornecedores", href: "/fornecedores" },
-      { label: "Sou fornecedor", href: "/assinar?plano=start" },
+      { label: "Sou fornecedor", href: "/cadastro?plano=start" },
     ],
   },
   {

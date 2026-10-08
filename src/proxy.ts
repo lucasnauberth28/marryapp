@@ -7,6 +7,7 @@ import { verifyToken, hasPathAccess, SESSION_COOKIE_NAME } from "@/lib/auth";
 // valida a sessão e as permissões novamente no servidor.
 const PUBLIC_PATHS = [
   "/login",
+  "/cadastro",
   "/assinar",
   "/casamento",
   "/fornecedores",

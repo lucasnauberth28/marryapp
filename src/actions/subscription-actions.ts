@@ -4,7 +4,7 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import { signToken, sessionCookieOptions, SESSION_COOKIE_NAME } from "@/lib/auth";
+import { signToken, sessionCookieOptions, hasPathAccess, SESSION_COOKIE_NAME } from "@/lib/auth";
 import { isMercadoPagoConfigured, mpPayment } from "@/lib/mercadopago";
 import { generatePixPayload } from "@/lib/pix-utils";
 import { resolvePlan } from "@/lib/plans";
@@ -12,6 +12,10 @@ import { rateLimitByIp } from "@/lib/security/rate-limiter";
 import { normalizeText, sanitizeSlug, sanitizeUrl } from "@/lib/security/sanitize";
 import { uploadImageDataUrl } from "@/lib/supabase";
 import { VendorPlanTier } from "@prisma/client";
+
+/** Perfil das contas de fornecedor (o mesmo criado pelo seed). */
+const VENDOR_ROLE_NAME = "Fornecedor";
+const VENDOR_PANEL_PATH = "/fornecedor";
 
 export interface PlanRegistrationData {
   planType: "COUPLE" | "VENDOR";
@@ -257,14 +261,15 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
       return { success: false, error: "Já existe uma conta com este e-mail. Faça login para continuar." };
     }
 
-    // Fornecedores só acessam o marketplace público até existir um portal próprio.
+    // Fornecedores entram direto no painel próprio (/fornecedor), já vinculados ao perfil criado.
     // Casais aguardam ativação: até o isolamento de dados por casamento, uma conta nova
     // não pode enxergar o painel existente.
-    const roleName = plan.type === "COUPLE" ? "Casal / Noivos (aguardando ativação)" : "Fornecedor Parceiro";
+    const isVendor = plan.type === "VENDOR";
+    const roleName = isVendor ? VENDOR_ROLE_NAME : "Casal / Noivos (aguardando ativação)";
     const role = await prisma.role.upsert({
       where: { name: roleName },
       update: {},
-      create: { name: roleName, allowedPaths: [] },
+      create: { name: roleName, allowedPaths: isVendor ? [VENDOR_PANEL_PATH] : [] },
     });
 
     let vendorData: Parameters<typeof prisma.partnerVendor.create>[0]["data"] | null = null;
@@ -310,24 +315,22 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
     const hashedPassword = await bcrypt.hash(input.password, 12);
 
     const user = await prisma.$transaction(async (tx) => {
-      const created = await tx.user.create({
+      const vendor = vendorData ? await tx.partnerVendor.create({ data: vendorData, select: { id: true } }) : null;
+      return tx.user.create({
         data: {
           name: normalizeText(input.name),
           username: input.email,
           password: hashedPassword,
           roleId: role.id,
+          // O vínculo nasce no servidor: o fornecedor só enxerga o próprio perfil no painel.
+          partnerVendorId: vendor?.id ?? null,
         },
         select: { id: true },
       });
-      if (vendorData) await tx.partnerVendor.create({ data: vendorData });
-      return created;
     });
 
-    const token = await signToken({
-      userId: user.id,
-      role: role.name,
-      allowedPaths: Array.isArray(role.allowedPaths) ? (role.allowedPaths as string[]) : [],
-    });
+    const allowedPaths = Array.isArray(role.allowedPaths) ? (role.allowedPaths as string[]) : [];
+    const token = await signToken({ userId: user.id, role: role.name, allowedPaths });
 
     const cookieStore = await cookies();
     cookieStore.set(SESSION_COOKIE_NAME, token, sessionCookieOptions());
@@ -336,7 +339,8 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
       success: true,
       userId: user.id,
       isFree: plan.price === 0,
-      isVendor: plan.type === "VENDOR",
+      isVendor,
+      redirectTo: isVendor && hasPathAccess(allowedPaths, VENDOR_PANEL_PATH) ? VENDOR_PANEL_PATH : null,
       slug: input.slug ? sanitizeSlug(input.slug) : undefined,
     };
   } catch (error) {

@@ -44,7 +44,7 @@ export function PlanCalculator() {
             </ul>
           </div>
 
-          <Link href="/assinar?tipo=casal&plano=basic" className="mt-8">
+          <Link href="/cadastro?tipo=casal&plano=basic" className="mt-8">
             <Button variant="outline" className="w-full rounded-full font-bold h-12 text-xs border-linha">
               Começar Grátis
             </Button>
@@ -92,7 +92,7 @@ export function PlanCalculator() {
             </ul>
           </div>
 
-          <Link href="/assinar?tipo=casal&plano=classic" className="mt-8">
+          <Link href="/cadastro?tipo=casal&plano=classic" className="mt-8">
             <Button className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-12 text-xs shadow-md">
               Escolher Plano Classic
             </Button>
@@ -132,7 +132,7 @@ export function PlanCalculator() {
             </ul>
           </div>
 
-          <Link href="/assinar?tipo=casal&plano=vip" className="mt-8">
+          <Link href="/cadastro?tipo=casal&plano=vip" className="mt-8">
             <Button variant="outline" className="w-full rounded-full font-bold h-12 text-xs border-amber-600 text-aviso hover:bg-aviso-suave">
               Escolher Plano VIP
             </Button>
