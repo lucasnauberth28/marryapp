@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { QRCodeSVG } from "qrcode.react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -10,7 +9,6 @@ import {
   CalendarHeart,
   Check,
   CheckCircle2,
-  Copy,
   Eye,
   EyeOff,
   FileText,
@@ -20,16 +18,11 @@ import {
   Mail,
   MapPin,
   Phone,
-  RefreshCw,
   Store,
   User,
 } from "lucide-react";
-import {
-  generateSubscriptionPix,
-  registerPlanAccount,
-  verifySubscriptionPaymentStatus,
-  type PlanRegistrationData,
-} from "@/actions/subscription-actions";
+import { registerPlanAccount, type PlanRegistrationData } from "@/actions/subscription-actions";
+import { SubscriptionPix } from "@/components/checkout/subscription-pix";
 import { VENDOR_CATEGORIES } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
@@ -77,12 +70,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
   const [isPending, startTransition] = useTransition();
   const [redirectTo, setRedirectTo] = useState<string | null>(null);
 
-  // Pix da assinatura
-  const [pix, setPix] = useState<{ payload: string; gatewayId: string; expiresAt: number; amount: number } | null>(null);
-  const [now, setNow] = useState(() => Date.now());
-  const [copied, setCopied] = useState(false);
   const [paid, setPaid] = useState(false);
-  const [checkMessage, setCheckMessage] = useState("");
 
   const headingRef = useRef<HTMLHeadingElement>(null);
   const isVendor = type === "fornecedor";
@@ -132,17 +120,6 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
     return e;
   };
 
-  const startPix = async () => {
-    const res = await generateSubscriptionPix(payload());
-    if (res.success && res.pixPayload) {
-      setPix({ payload: res.pixPayload, gatewayId: res.gatewayId ?? "", expiresAt: res.expiresAt ?? Date.now(), amount: res.amount ?? plan?.price ?? 0 });
-      setNow(Date.now());
-      return true;
-    }
-    setFormError({ message: res.error || "Não conseguimos gerar o Pix agora." });
-    return false;
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -164,7 +141,6 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
       }
       setRedirectTo(("redirectTo" in res && res.redirectTo) || null);
       if (plan && plan.price > 0) {
-        await startPix();
         onStepChange("pagamento");
       } else {
         onStepChange("pronto");
@@ -172,51 +148,10 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
     });
   };
 
-  // Contagem regressiva e conferência automática do Pix.
-  useEffect(() => {
-    if (step !== "pagamento" || !pix || paid) return;
-    const tick = setInterval(() => setNow(Date.now()), 1000);
-    const poll = setInterval(async () => {
-      const res = await verifySubscriptionPaymentStatus(pix.gatewayId);
-      if (res.paid) setPaid(true);
-    }, 5000);
-    return () => {
-      clearInterval(tick);
-      clearInterval(poll);
-    };
-  }, [step, pix, paid]);
-
-  useEffect(() => {
-    if (paid) onStepChange("pronto");
-  }, [paid, onStepChange]);
-
-  const secondsLeft = pix ? Math.max(0, Math.floor((pix.expiresAt - now) / 1000)) : 0;
-  const expired = !!pix && secondsLeft === 0;
-
-  const copyPix = async () => {
-    if (!pix) return;
-    try {
-      await navigator.clipboard.writeText(pix.payload);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      setCheckMessage("Não deu para copiar automaticamente. Selecione o código e copie.");
-    }
-  };
-
-  const checkNow = () =>
-    startTransition(async () => {
-      if (!pix) return;
-      const res = await verifySubscriptionPaymentStatus(pix.gatewayId);
-      if (res.paid) setPaid(true);
-      else setCheckMessage("Ainda não recebemos a confirmação. Se já pagou, ela costuma chegar em alguns segundos.");
-    });
-
-  const renewPix = () =>
-    startTransition(async () => {
-      setCheckMessage("");
-      await startPix();
-    });
+  const handlePaid = useCallback(() => {
+    setPaid(true);
+    onStepChange("pronto");
+  }, [onStepChange]);
 
   const firstName = name.trim().split(/\s+/)[0] || "";
 
@@ -526,49 +461,8 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
             title="Falta só o Pix"
             text="A conta já está criada. O plano é ativado assim que o pagamento for confirmado."
           />
-          {pix ? (
-            <div className="flex flex-col items-center gap-5 rounded-[16px] border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
-              <div className="flex w-full items-baseline justify-between gap-3">
-                <p className="font-semibold text-tinta">Plano {plan.name}</p>
-                <p className="font-display text-3xl text-tinta">{formatPrice(pix.amount)}</p>
-              </div>
-              <div className={cn("rounded-[12px] border border-linha bg-white p-4 transition-opacity", expired && "opacity-30")}>
-                <QRCodeSVG value={pix.payload} size={184} fgColor="#231C24" aria-label="QR Code do Pix" role="img" />
-              </div>
-              <p aria-live="polite" className={cn("text-sm font-semibold tabular-nums", expired ? "text-perigo" : "text-tinta-suave")}>
-                {expired
-                  ? "O código expirou."
-                  : `Válido por ${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`}
-              </p>
-              {expired ? (
-                <button type="button" onClick={renewPix} disabled={isPending} className={cn(btn.secondary, btn.block)}>
-                  <RefreshCw aria-hidden="true" className={cn("size-4", isPending && "animate-spin")} /> Gerar novo código
-                </button>
-              ) : (
-                <button type="button" onClick={copyPix} className={cn(btn.secondary, btn.block)}>
-                  {copied ? <Check aria-hidden="true" className="size-4 text-sucesso" /> : <Copy aria-hidden="true" className="size-4" />}
-                  {copied ? "Código copiado" : "Copiar código Pix"}
-                </button>
-              )}
-              <p className="text-center text-sm leading-5 text-tinta-suave">
-                Abra o app do banco, escolha Pix copia e cola e cole o código. Conferimos o pagamento sozinhos.
-              </p>
-            </div>
-          ) : formError ? (
-            <FormAlert>{formError.message}</FormAlert>
-          ) : null}
+          <SubscriptionPix planId={plan.id} modules={plan.id === "custom" ? customModules : undefined} planName={`Plano ${plan.name}`} onPaid={handlePaid} />
           <div className="flex flex-col gap-3">
-            {pix && !expired ? (
-              <button type="button" onClick={checkNow} disabled={isPending} className={cn(btn.primary, btn.block, "min-h-12")}>
-                {isPending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
-                Já paguei
-              </button>
-            ) : null}
-            {checkMessage ? (
-              <p role="status" className="text-center text-sm text-tinta-suave">
-                {checkMessage}
-              </p>
-            ) : null}
             <button type="button" onClick={() => onStepChange("pronto")} className={cn(btn.quiet, "self-center")}>
               Pagar depois e continuar no plano gratuito
             </button>

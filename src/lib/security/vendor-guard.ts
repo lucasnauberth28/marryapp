@@ -22,6 +22,7 @@ const VENDOR_PANEL_SELECT = {
   instagram: true,
   website: true,
   planTier: true,
+  planExpiresAt: true,
   isVerified: true,
   curationStatus: true,
   curationNotes: true,

@@ -11,7 +11,11 @@ import { resolvePlan } from "@/lib/plans";
 import { rateLimitByIp } from "@/lib/security/rate-limiter";
 import { normalizeText, sanitizeSlug, sanitizeUrl } from "@/lib/security/sanitize";
 import { uploadImageDataUrl } from "@/lib/supabase";
-import { VendorPlanTier } from "@prisma/client";
+import { PaymentStatus, VendorPlanTier } from "@prisma/client";
+import { revalidatePath } from "next/cache";
+import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { applyApprovedPayment, markPaymentFailed } from "@/lib/subscriptions";
+import { subscriptionReference } from "@/lib/subscription-period";
 
 /** Perfil das contas de fornecedor (o mesmo criado pelo seed). */
 const VENDOR_ROLE_NAME = "Fornecedor";
@@ -104,13 +108,28 @@ async function storeImage(value: string | undefined, folder: string): Promise<st
   return url && url.startsWith("https://") ? url : null;
 }
 
+/** Plano a cobrar: só a chave do catálogo (e os módulos do plano adaptado). O preço vem do servidor. */
+export interface SubscriptionCheckoutInput {
+  planId: string;
+  modules?: string[];
+}
+
+const PIX_VALIDITY_MS = 10 * 60 * 1000;
+
 /**
- * Gera uma cobrança Pix temporária (10 minutos) para a assinatura.
- * O valor é sempre o do catálogo de planos, nunca o enviado pelo navegador.
+ * Gera a cobrança Pix (10 minutos) de um plano pago para a conta logada.
+ * Cria a assinatura pendente; o plano é liberado quando o pagamento é aprovado
+ * (webhook do Mercado Pago ou conferência em verifySubscriptionPaymentStatus).
  */
-export async function generateSubscriptionPix(data: PlanRegistrationData) {
+export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) {
   try {
-    const plan = resolvePlan(data.planId, data.modules);
+    const session = await getSession();
+    if (!session || session.userId === SUPER_ADMIN_USER_ID) {
+      return { success: false, error: "Entre na sua conta para assinar um plano." };
+    }
+
+    const modules = Array.isArray(input.modules) ? input.modules.filter((m) => typeof m === "string").slice(0, 20) : undefined;
+    const plan = resolvePlan(String(input.planId ?? ""), modules);
     if (!plan) return { success: false, error: "Plano inválido." };
     if (plan.price <= 0) return { success: false, error: "Este plano é gratuito." };
 
@@ -119,9 +138,32 @@ export async function generateSubscriptionPix(data: PlanRegistrationData) {
       return { success: false, error: "Muitas tentativas de geração de pagamento. Aguarde alguns minutos." };
     }
 
-    const email = z.string().email().safeParse(data.email?.trim().toLowerCase());
-    const name = normalizeText(data.name) || "Cliente";
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    // Plano de fornecedor só para conta de fornecedor, e vice-versa.
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { name: true, username: true, partnerVendorId: true },
+    });
+    if (!user) return { success: false, error: "Conta não encontrada." };
+    if ((plan.type === "VENDOR") !== Boolean(user.partnerVendorId)) {
+      return { success: false, error: "Este plano não é para o seu tipo de conta." };
+    }
+
+    const expiresAt = new Date(Date.now() + PIX_VALIDITY_MS);
+    const subscription = await prisma.subscription.create({
+      data: {
+        userId: session.userId,
+        planId: String(input.planId),
+        planType: plan.type,
+        planName: plan.name,
+        modules: input.planId === "custom" ? modules : undefined,
+        amount: plan.price,
+        expiresAt,
+      },
+      select: { id: true },
+    });
+
+    const email = z.string().email().safeParse(user.username);
+    const name = normalizeText(user.name) || "Cliente";
 
     if (isMercadoPagoConfigured()) {
       try {
@@ -131,24 +173,26 @@ export async function generateSubscriptionPix(data: PlanRegistrationData) {
             payment_method_id: "pix",
             description: `Assinatura Aceito: ${plan.name}`,
             date_of_expiration: expiresAt.toISOString(),
+            external_reference: subscriptionReference(subscription.id),
             payer: {
               email: email.success ? email.data : "contato@aceito.com.br",
               first_name: name.split(" ")[0],
               last_name: name.split(" ").slice(1).join(" ") || "Cliente",
             },
-            metadata: { kind: "subscription", plan_id: data.planId },
+            metadata: { kind: "subscription", plan_id: input.planId },
           },
         });
 
         const mpPixPayload = mpResponse.point_of_interaction?.transaction_data?.qr_code;
         const qrCodeBase64 = mpResponse.point_of_interaction?.transaction_data?.qr_code_base64;
 
-        if (mpPixPayload) {
+        if (mpPixPayload && mpResponse.id) {
+          await prisma.subscription.update({ where: { id: subscription.id }, data: { gatewayId: String(mpResponse.id) } });
           return {
             success: true,
+            subscriptionId: subscription.id,
             pixPayload: mpPixPayload,
             qrCodeBase64: qrCodeBase64 || null,
-            gatewayId: String(mpResponse.id),
             expiresAt: expiresAt.getTime(),
             amount: plan.price,
             isDynamic: true,
@@ -159,24 +203,28 @@ export async function generateSubscriptionPix(data: PlanRegistrationData) {
       }
     }
 
-    // Fallback BR Code EMV estático: exige conferência manual do pagamento
+    // Fallback BR Code EMV estático: sem confirmação automática; a ativação fica manual.
     const pixKey = process.env.PIX_KEY?.trim();
-    if (!pixKey) return { success: false, error: "Pagamento via Pix indisponível no momento." };
+    if (!pixKey) {
+      await prisma.subscription.update({ where: { id: subscription.id }, data: { status: PaymentStatus.FAILED } });
+      return { success: false, error: "Pagamento via Pix indisponível no momento." };
+    }
 
     const txId = `ASSIN${Date.now().toString(36).toUpperCase()}`.substring(0, 18);
     const pixPayload = generatePixPayload({
       pixKey,
-      merchantName: (process.env.PIX_MERCHANT_NAME || "MARRYAPP BRASIL").trim(),
+      merchantName: (process.env.PIX_MERCHANT_NAME || "ACEITO BRASIL").trim(),
       merchantCity: (process.env.PIX_MERCHANT_CITY || "SAO PAULO").trim(),
       amount: plan.price,
       txId,
     });
+    await prisma.subscription.update({ where: { id: subscription.id }, data: { gatewayId: txId } });
 
     return {
       success: true,
+      subscriptionId: subscription.id,
       pixPayload,
       qrCodeBase64: null,
-      gatewayId: txId,
       expiresAt: expiresAt.getTime(),
       amount: plan.price,
       isDynamic: false,
@@ -188,12 +236,25 @@ export async function generateSubscriptionPix(data: PlanRegistrationData) {
 }
 
 /**
- * Verifica se o pagamento Pix da assinatura foi confirmado no Mercado Pago (somente leitura).
+ * Confere o pagamento de uma assinatura da conta logada. Se o Mercado Pago já aprovou e o
+ * webhook ainda não chegou, ativa o plano aqui mesmo (a ativação é idempotente).
  */
-export async function verifySubscriptionPaymentStatus(gatewayId: string) {
+export async function verifySubscriptionPaymentStatus(subscriptionId: string) {
   try {
-    if (!gatewayId) {
-      return { success: false, paid: false, message: "Identificador de transação não informado." };
+    const session = await getSession();
+    if (!session) return { success: false, paid: false, message: "Sessão expirada. Entre de novo." };
+    if (typeof subscriptionId !== "string" || !/^[0-9a-f-]{36}$/i.test(subscriptionId)) {
+      return { success: false, paid: false, message: "Cobrança não encontrada." };
+    }
+
+    const sub = await prisma.subscription.findFirst({
+      where: { id: subscriptionId, userId: session.userId },
+      select: { id: true, status: true, gatewayId: true },
+    });
+    if (!sub) return { success: false, paid: false, message: "Cobrança não encontrada." };
+    if (sub.status === PaymentStatus.APPROVED) return { success: true, paid: true, status: "approved" };
+    if (sub.status !== PaymentStatus.PENDING) {
+      return { success: false, paid: false, status: "rejected", message: "Este Pix foi recusado ou expirou. Gere um novo código." };
     }
 
     const rateLimit = await rateLimitByIp("PAYMENT_STATUS");
@@ -201,41 +262,39 @@ export async function verifySubscriptionPaymentStatus(gatewayId: string) {
       return { success: true, paid: false, status: "pending", message: "Aguardando confirmação..." };
     }
 
-    if (isMercadoPagoConfigured() && /^\d+$/.test(gatewayId)) {
+    if (isMercadoPagoConfigured() && sub.gatewayId && /^\d+$/.test(sub.gatewayId)) {
       try {
-        const mpResponse = await mpPayment.get({ id: gatewayId });
-        const status = mpResponse.status;
-
-        if (status === "approved") {
-          return {
-            success: true,
-            paid: true,
-            status: "approved",
-            message: "Pagamento identificado e aprovado pelo Mercado Pago! 🎉",
-          };
-        } else if (status === "rejected" || status === "cancelled") {
-          return {
-            success: false,
-            paid: false,
-            status,
-            message: "O pagamento via Pix foi recusado ou expirou no banco.",
-          };
+        const mpResponse = await mpPayment.get({ id: sub.gatewayId });
+        if (mpResponse.status === "approved") {
+          const result = await applyApprovedPayment(sub.id, {
+            id: String(mpResponse.id),
+            amountInReais: mpResponse.transaction_amount,
+          });
+          if (result === "activated" || result === "already") {
+            revalidatePlanPages();
+            return { success: true, paid: true, status: "approved" };
+          }
+          return { success: false, paid: false, status: "rejected", message: "O valor pago não confere. Fale com o suporte." };
+        }
+        if (mpResponse.status === "rejected" || mpResponse.status === "cancelled") {
+          await markPaymentFailed(sub.id);
+          return { success: false, paid: false, status: mpResponse.status, message: "O Pix foi recusado ou expirou no banco." };
         }
       } catch (mpErr) {
         console.warn("[verifySubscriptionPaymentStatus MP Error]:", mpErr);
       }
     }
 
-    return {
-      success: true,
-      paid: false,
-      status: "pending",
-      message: "Aguardando confirmação de compensação do Pix pelo banco...",
-    };
+    return { success: true, paid: false, status: "pending", message: "Aguardando a confirmação do banco..." };
   } catch (error) {
     console.error("[verifySubscriptionPaymentStatus Error]:", error);
     return { success: false, paid: false, message: "Erro ao verificar pagamento." };
   }
+}
+
+function revalidatePlanPages() {
+  revalidatePath("/fornecedor", "layout");
+  revalidatePath("/fornecedores");
 }
 
 /**

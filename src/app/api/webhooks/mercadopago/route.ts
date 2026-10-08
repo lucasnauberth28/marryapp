@@ -4,6 +4,8 @@ import { mpPayment, paidAmountMatches, verifyMercadoPagoSignature } from "@/lib/
 import { sendTextMessage } from "@/lib/evolution";
 import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { parseSubscriptionReference } from "@/lib/subscription-period";
+import { applyApprovedPayment, markPaymentFailed, refundSubscription } from "@/lib/subscriptions";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://seuapp.vercel.app";
 
@@ -44,6 +46,12 @@ export async function POST(req: Request) {
     const mpResponse = await mpPayment.get({ id: paymentId });
     const status = mpResponse.status;
     const internalTxId = mpResponse.external_reference;
+
+    // Assinaturas de plano têm referência própria ("assinatura:<id>"); o resto é presente.
+    const subscriptionId = parseSubscriptionReference(internalTxId);
+    if (subscriptionId) {
+      return handleSubscriptionPayment(subscriptionId, paymentId, status, mpResponse.transaction_amount);
+    }
 
     if (!internalTxId) {
       return NextResponse.json({ received: true, ignored: "no external reference" });
@@ -134,4 +142,31 @@ export async function POST(req: Request) {
     console.error("[Webhook Mercado Pago Error]:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
+}
+
+/** Pagamento de assinatura: libera, recusa ou estorna o plano. Repetições do webhook não mudam nada. */
+async function handleSubscriptionPayment(
+  subscriptionId: string,
+  paymentId: string,
+  status: string | undefined,
+  amountInReais: number | undefined,
+) {
+  if (status === "approved") {
+    const result = await applyApprovedPayment(subscriptionId, { id: paymentId, amountInReais });
+    if (result === "not_found") return NextResponse.json({ received: true, ignored: "subscription not found" });
+    if (result === "amount_mismatch") return NextResponse.json({ success: false, error: "Amount mismatch" });
+    if (result === "activated") {
+      revalidatePath("/fornecedor", "layout");
+      revalidatePath("/fornecedores");
+    }
+    return NextResponse.json({ success: true, alreadyApproved: result === "already" });
+  }
+  if (status === "rejected" || status === "cancelled") {
+    await markPaymentFailed(subscriptionId);
+  } else if (status === "refunded" || status === "charged_back") {
+    await refundSubscription(subscriptionId);
+    revalidatePath("/fornecedor", "layout");
+    revalidatePath("/fornecedores");
+  }
+  return NextResponse.json({ success: true });
 }

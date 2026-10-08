@@ -256,7 +256,32 @@ model User {
   partnerVendorId String?        @unique
   partnerVendor   PartnerVendor? @relation(fields: [partnerVendorId], references: [id], onDelete: SetNull)
 
+  subscriptions   Subscription[]
+
   @@map("users")
+}
+
+// Cobrança de um plano pago (Pix). O plano só é aplicado quando o pagamento é aprovado,
+// pelo webhook do Mercado Pago ou pela conferência na tela do Pix (o que chegar primeiro).
+model Subscription {
+  id          String        @id @default(uuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId      String        // chave do catálogo (lib/plans): classic, vip, pro, master ou custom
+  planType    String        // "COUPLE" | "VENDOR"
+  planName    String
+  modules     Json?         // módulos do plano adaptado
+  amount      Int           // centavos, sempre do catálogo
+  status      PaymentStatus @default(PENDING)
+  gatewayId   String?       @unique // id do pagamento no Mercado Pago (ou txid do Pix estático)
+  expiresAt   DateTime      // validade do código Pix
+  paidAt      DateTime?
+  periodEnd   DateTime?     // fim do período pago (planos mensais de fornecedor)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@map("subscriptions")
 }
 
 model WalletBalance {
@@ -406,6 +431,7 @@ model PartnerVendor {
 
   // Assinatura & Reputação
   planTier         VendorPlanTier @default(FREE)
+  planExpiresAt    DateTime?      // planos pagos são mensais: depois disso volta ao FREE
   isVerified       Boolean        @default(false)
   rating           Float          @default(5.0)
   reviewCount      Int            @default(0)

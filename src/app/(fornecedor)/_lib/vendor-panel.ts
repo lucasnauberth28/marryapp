@@ -37,8 +37,8 @@ export const VENDOR_CATEGORIES = [
 /** Plano Start (gratuito): até 3 pedidos de orçamento por mês (ver PLANS_CONFIG.start em lib/plans). */
 export const START_MONTHLY_LEAD_LIMIT = 3;
 
-/** Página de planos, já com o plano Pro de fornecedor selecionado. */
-export const PLAN_HREF = "/assinar?plano=pro";
+/** Página do plano no painel (assinar, renovar ou trocar). */
+export const PLAN_HREF = "/fornecedor/plano";
 
 export const PLAN_LABEL: Record<string, string> = {
   FREE: "Plano Start",

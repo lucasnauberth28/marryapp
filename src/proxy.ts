@@ -17,6 +17,7 @@ const PUBLIC_PATHS = [
   "/rsvp",
   "/dia-do-evento",
   "/api/webhooks",
+  "/api/cron", // autenticada pelo CRON_SECRET na própria rota
 ];
 
 function isPublicPath(path: string) {
