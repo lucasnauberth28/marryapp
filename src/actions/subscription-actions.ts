@@ -317,6 +317,7 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
           password: hashedPassword,
           roleId: role.id,
         },
+        select: { id: true },
       });
       if (vendorData) await tx.partnerVendor.create({ data: vendorData });
       return created;

@@ -157,6 +157,7 @@ export async function createUser(data: { name: string; username: string; passwor
         password: await bcrypt.hash(password.data, 12),
         roleId: parsed.data.roleId,
       },
+      select: { id: true },
     });
     revalidatePath("/usuarios");
     return { success: true, user: { id: user.id } };
@@ -193,7 +194,7 @@ export async function updateUser(id: string, data: { name: string; username: str
   }
 
   try {
-    await prisma.user.update({ where: { id }, data: updateData });
+    await prisma.user.update({ where: { id }, data: updateData, select: { id: true } });
     revalidatePath("/usuarios");
     return { success: true };
   } catch (error) {
@@ -215,7 +216,7 @@ export async function deleteUser(id: string) {
   assertCanGrant(session.allowedPaths, target.role.allowedPaths);
 
   try {
-    await prisma.user.delete({ where: { id } });
+    await prisma.user.delete({ where: { id }, select: { id: true } });
     revalidatePath("/usuarios");
     return { success: true };
   } catch {

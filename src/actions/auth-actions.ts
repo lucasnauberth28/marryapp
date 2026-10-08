@@ -72,7 +72,8 @@ export async function login(password: string, username?: string) {
 
   const user = await prisma.user.findUnique({
     where: { username: username.trim() },
-    include: { role: true },
+    // Seleção explícita: o login não deve depender de colunas novas do usuário.
+    select: { id: true, password: true, role: { select: { name: true, allowedPaths: true } } },
   });
 
   const passwordOk = await bcrypt.compare(password, user?.password ?? DUMMY_HASH);
