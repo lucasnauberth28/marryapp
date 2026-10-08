@@ -23,6 +23,8 @@ export function Reveal({ children, as: Tag = "div", variant = "up", delay = 0, c
     <Tag
       id={id}
       data-reveal={variant}
+      // O RevealObserver marca data-revealed fora do React; isso pode acontecer antes da hidratação.
+      suppressHydrationWarning
       className={className}
       style={{ ...style, ["--reveal-delay" as string]: `${delay}ms` }}
     >
@@ -53,6 +55,7 @@ export function RevealWords({
           <span aria-hidden="true" className="inline-block overflow-hidden pb-[0.12em] align-bottom">
             <span
               data-reveal="word"
+              suppressHydrationWarning
               className="inline-block"
               style={{ ["--reveal-delay" as string]: `${baseDelay + i * step}ms` }}
             >

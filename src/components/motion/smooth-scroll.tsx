@@ -21,7 +21,8 @@ export function SmoothScroll() {
       duration: 1.15,
       easing: (t) => 1 - Math.pow(1 - t, 4),
       smoothWheel: true,
-      anchors: { offset: -88 },
+      // O deslocamento do cabeçalho vem do scroll-padding-top do CSS; o Lenis já o respeita.
+      anchors: true,
     });
 
     let frame = 0;

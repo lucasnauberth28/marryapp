@@ -6,6 +6,10 @@ import "dotenv/config";
 import { PrismaClient, VendorPlanTier } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
+import bcrypt from "bcryptjs";
+
+// Perfil das contas de fornecedor: só enxergam o próprio painel (/fornecedor).
+const VENDOR_ROLE = { name: "Fornecedor", allowedPaths: ["/fornecedor"] };
 
 // Dados iniciais enriquecidos de parceiros homologados para bootstrapping do marketplace
 const DEMO_PARTNERS = [
@@ -209,6 +213,42 @@ async function main() {
       await prisma.partnerVendor.create({ data: partner });
     }
     console.log(`${DEMO_PARTNERS.length} fornecedores de demonstração criados.`);
+  }
+
+  // Perfil "Fornecedor": cria se não existir, sem sobrescrever ajustes feitos pelo admin.
+  const vendorRole = await prisma.role.upsert({
+    where: { name: VENDOR_ROLE.name },
+    update: {},
+    create: VENDOR_ROLE,
+  });
+  console.log(`Perfil "${vendorRole.name}" disponível.`);
+
+  // Login de demonstração do painel do fornecedor (opcional): só com senha definida no ambiente,
+  // para nunca criar credenciais conhecidas. Vincula ao primeiro fornecedor de demonstração.
+  const demoVendorUsername = process.env.SEED_VENDOR_USERNAME?.trim();
+  const demoVendorPassword = process.env.SEED_VENDOR_PASSWORD;
+  if (demoVendorUsername && demoVendorPassword && demoVendorPassword.length >= 8) {
+    const partner = await prisma.partnerVendor.findFirst({
+      where: { companyName: DEMO_PARTNERS[0].companyName },
+      select: { id: true, companyName: true, user: { select: { id: true } } },
+    });
+    const existing = await prisma.user.findUnique({ where: { username: demoVendorUsername }, select: { id: true } });
+    if (!partner) {
+      console.log("Fornecedor de demonstração não encontrado; login de fornecedor ignorado.");
+    } else if (existing || partner.user) {
+      console.log("Login de fornecedor de demonstração já existe; ignorado.");
+    } else {
+      await prisma.user.create({
+        data: {
+          name: partner.companyName,
+          username: demoVendorUsername,
+          password: await bcrypt.hash(demoVendorPassword, 10),
+          roleId: vendorRole.id,
+          partnerVendorId: partner.id,
+        },
+      });
+      console.log(`Login "${demoVendorUsername}" vinculado a ${partner.companyName}.`);
+    }
   }
 
   await prisma.$disconnect();

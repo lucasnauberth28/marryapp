@@ -32,8 +32,9 @@ export function Logo({
       height={height}
       priority={priority}
       unoptimized
-      className={className}
-      style={{ height, width: "auto" }}
+      // Tamanho fixo e sem encolher em flex: evita que o navegador distorça a proporção.
+      className={`shrink-0 ${className ?? ""}`}
+      style={{ height, width }}
     />
   );
 }

@@ -6,7 +6,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { signToken, sessionCookieOptions, SESSION_COOKIE_NAME } from "@/lib/auth";
+import { signToken, sessionCookieOptions, hasPathAccess, SESSION_COOKIE_NAME } from "@/lib/auth";
 import { checkRateLimit, rateLimitByIp, SecurityLimits } from "@/lib/security/rate-limiter";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 
@@ -26,6 +26,13 @@ async function setSessionCookie(token: string) {
 }
 
 const GENERIC_LOGIN_ERROR = "Usuário ou senha incorretos.";
+
+/** Destino após o login: o painel do casal, ou o painel do fornecedor quando o perfil só libera /fornecedor. */
+function landingPathFor(allowedPaths: string[]) {
+  if (hasPathAccess(allowedPaths, "/dashboard")) return "/dashboard";
+  if (hasPathAccess(allowedPaths, "/fornecedor")) return "/fornecedor";
+  return "/dashboard";
+}
 
 export async function login(password: string, username?: string) {
   if (typeof password !== "string" || password.length === 0 || password.length > 200) {
@@ -82,7 +89,7 @@ export async function login(password: string, username?: string) {
   });
   await setSessionCookie(token);
 
-  return { success: true };
+  return { success: true, redirectTo: landingPathFor(allowedPaths) };
 }
 
 export async function logout() {

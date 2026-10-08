@@ -252,6 +252,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Conta de fornecedor: vincula o login ao perfil do marketplace (painel /fornecedor)
+  partnerVendorId String?        @unique
+  partnerVendor   PartnerVendor? @relation(fields: [partnerVendorId], references: [id], onDelete: SetNull)
+
   @@map("users")
 }
 
@@ -408,6 +412,7 @@ model PartnerVendor {
 
   leads            VendorLead[]
   reviews          VendorReview[]
+  user             User?          // Login do fornecedor (painel /fornecedor)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
@@ -442,5 +447,7 @@ model VendorLead {
   status          String         @default("NEW") // "NEW", "CONTACTED", "PROPOSAL_SENT", "CLOSED"
   createdAt       DateTime       @default(now())
 
+  @@index([vendorId, status])
+  @@index([createdAt])
   @@map("vendor_leads")
 }

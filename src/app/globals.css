@@ -205,13 +205,13 @@ html.lenis body {
 .js [data-reveal="arch"] { opacity: 1; clip-path: inset(100% 0 0 0 round 999px 999px 0 0); }
 .js [data-reveal="word"] { transform: translate3d(0, 105%, 0); opacity: 1; transition-duration: 0.9s; }
 
-.js [data-reveal].is-revealed {
+.js [data-reveal][data-revealed] {
   opacity: 1;
   transform: none;
   filter: none;
   clip-path: inset(0 0 0 0 round 999px 999px 0 0);
 }
-.js [data-reveal]:not([data-reveal="arch"]).is-revealed { clip-path: none; }
+.js [data-reveal]:not([data-reveal="arch"])[data-revealed] { clip-path: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .js [data-reveal] {

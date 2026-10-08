@@ -546,7 +546,7 @@ export function WeddingSiteView({
             </SectionHeading>
 
             <div className="grid items-start gap-8 md:grid-cols-2">
-              <form onSubmit={handleSendGuestbook} data-reveal="left" className="flex flex-col gap-4 rounded-3xl border border-linha bg-ivory p-6 shadow-sm sm:p-8">
+              <form onSubmit={handleSendGuestbook} data-reveal="left" suppressHydrationWarning className="flex flex-col gap-4 rounded-3xl border border-linha bg-ivory p-6 shadow-sm sm:p-8">
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="guestbook-name" className="text-sm font-semibold text-tinta-suave">
                     Seu nome
@@ -581,7 +581,7 @@ export function WeddingSiteView({
                 </Button>
               </form>
 
-              <ul data-reveal="right" data-lenis-prevent className="flex max-h-[460px] flex-col gap-3 overflow-y-auto pr-1">
+              <ul data-reveal="right" suppressHydrationWarning data-lenis-prevent className="flex max-h-[460px] flex-col gap-3 overflow-y-auto pr-1">
                 {entries.length === 0 ? (
                   <li className="rounded-3xl border border-linha bg-ivory p-8 text-center text-sm text-tinta-suave">
                     <MessageSquare className="mx-auto mb-2 h-8 w-8 text-tinta-suave" aria-hidden="true" />
