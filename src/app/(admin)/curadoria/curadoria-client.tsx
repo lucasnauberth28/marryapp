@@ -141,17 +141,17 @@ export function CuradoriaClient({
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-300">
       {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-200/80 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-linha/80 pb-6">
         <div>
           <div className="flex items-center gap-2">
             <span className="bg-brand-50 text-brand p-2 rounded-xl border border-brand/30">
               <ShieldCheck className="w-5 h-5 text-brand" />
             </span>
-            <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+            <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
               Curadoria de fornecedores
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
+          <p className="text-xs sm:text-sm text-tinta-suave mt-1">
             Valide a legitimidade documental, portfólio e contatos antes da publicação no marketplace.
           </p>
         </div>
@@ -160,7 +160,7 @@ export function CuradoriaClient({
           <Button
             variant="outline"
             size="sm"
-            className="rounded-full text-xs font-bold gap-1.5 h-10 border-stone-300 hover:bg-stone-50"
+            className="rounded-full text-xs font-bold gap-1.5 h-10 border-linha hover:bg-linho"
           >
             <span>Ver Marketplace Público</span>
             <ExternalLink className="w-3.5 h-3.5" />
@@ -174,20 +174,20 @@ export function CuradoriaClient({
           onClick={() => setActiveTab("PENDING_APPROVAL")}
           className={`p-6 rounded-3xl border transition-all duration-200 cursor-pointer shadow-xs hover:-translate-y-0.5 ${
             activeTab === "PENDING_APPROVAL"
-              ? "bg-amber-50/80 border-amber-300 shadow-md ring-2 ring-amber-400/20"
-              : "bg-white border-stone-200 hover:border-amber-200"
+              ? "bg-aviso-suave/80 border-amber-300 shadow-md ring-2 ring-amber-400/20"
+              : "bg-papel border-linha hover:border-amber-200"
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-800">
+            <span className="text-xs font-bold uppercase tracking-wider text-aviso">
               Pendentes de Auditoria
             </span>
-            <Clock className="w-5 h-5 text-amber-700" />
+            <Clock className="w-5 h-5 text-aviso" />
           </div>
           <p className="text-3xl font-black font-serif text-amber-900 mt-2">
             {counts.pending}
           </p>
-          <p className="text-xs text-amber-700 mt-1">
+          <p className="text-xs text-aviso mt-1">
             Aguardando validação de CNPJ e fotos
           </p>
         </div>
@@ -196,20 +196,20 @@ export function CuradoriaClient({
           onClick={() => setActiveTab("APPROVED")}
           className={`p-6 rounded-3xl border transition-all duration-200 cursor-pointer shadow-xs hover:-translate-y-0.5 ${
             activeTab === "APPROVED"
-              ? "bg-emerald-50/80 border-emerald-300 shadow-md ring-2 ring-emerald-400/20"
-              : "bg-white border-stone-200 hover:border-emerald-200"
+              ? "bg-sucesso-suave/80 border-emerald-300 shadow-md ring-2 ring-emerald-400/20"
+              : "bg-papel border-linha hover:border-emerald-200"
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+            <span className="text-xs font-bold uppercase tracking-wider text-sucesso">
               Homologados & Ativos
             </span>
-            <CheckCircle2 className="w-5 h-5 text-emerald-700" />
+            <CheckCircle2 className="w-5 h-5 text-sucesso" />
           </div>
           <p className="text-3xl font-black font-serif text-emerald-900 mt-2">
             {counts.approved}
           </p>
-          <p className="text-xs text-emerald-700 mt-1">
+          <p className="text-xs text-sucesso mt-1">
             Listados e disponíveis para os casais
           </p>
         </div>
@@ -218,34 +218,34 @@ export function CuradoriaClient({
           onClick={() => setActiveTab("REJECTED")}
           className={`p-6 rounded-3xl border transition-all duration-200 cursor-pointer shadow-xs hover:-translate-y-0.5 ${
             activeTab === "REJECTED"
-              ? "bg-red-50/80 border-red-300 shadow-md ring-2 ring-red-400/20"
-              : "bg-white border-stone-200 hover:border-red-200"
+              ? "bg-perigo-suave/80 border-perigo/40 shadow-md ring-2 ring-red-400/20"
+              : "bg-papel border-linha hover:border-perigo/40"
           }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-red-800">
               Recusados / Em Revisão
             </span>
-            <XCircle className="w-5 h-5 text-red-600" />
+            <XCircle className="w-5 h-5 text-perigo" />
           </div>
           <p className="text-3xl font-black font-serif text-red-900 mt-2">
             {counts.rejected}
           </p>
-          <p className="text-xs text-red-700 mt-1">
+          <p className="text-xs text-perigo mt-1">
             Documentação recusada por inconformidade
           </p>
         </div>
       </div>
 
       {/* Barra de Filtros & Busca */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-stone-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-papel p-4 rounded-2xl border border-linha shadow-xs">
         <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
           <button
             onClick={() => setActiveTab("ALL")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === "ALL"
                 ? "bg-brand-50 text-brand border border-brand/30 shadow-xs"
-                : "text-stone-500 hover:bg-stone-50"
+                : "text-tinta-suave hover:bg-linho"
             }`}
           >
             Todos ({counts.total})
@@ -255,7 +255,7 @@ export function CuradoriaClient({
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === "PENDING_APPROVAL"
                 ? "bg-amber-100 text-amber-900 border border-amber-300 shadow-xs"
-                : "text-stone-500 hover:bg-stone-50"
+                : "text-tinta-suave hover:bg-linho"
             }`}
           >
             Pendentes ({counts.pending})
@@ -265,7 +265,7 @@ export function CuradoriaClient({
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === "APPROVED"
                 ? "bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-xs"
-                : "text-stone-500 hover:bg-stone-50"
+                : "text-tinta-suave hover:bg-linho"
             }`}
           >
             Aprovados ({counts.approved})
@@ -274,8 +274,8 @@ export function CuradoriaClient({
             onClick={() => setActiveTab("REJECTED")}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === "REJECTED"
-                ? "bg-red-100 text-red-900 border border-red-300 shadow-xs"
-                : "text-stone-500 hover:bg-stone-50"
+                ? "bg-red-100 text-red-900 border border-perigo/40 shadow-xs"
+                : "text-tinta-suave hover:bg-linho"
             }`}
           >
             Recusados ({counts.rejected})
@@ -283,12 +283,12 @@ export function CuradoriaClient({
         </div>
 
         <div className="relative w-full sm:w-64">
-          <Search className="w-4 h-4 text-stone-500 absolute left-3 top-3 pointer-events-none" />
+          <Search className="w-4 h-4 text-tinta-suave absolute left-3 top-3 pointer-events-none" />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar empresa, CNPJ..."
-            className="pl-9 h-10 text-xs rounded-xl bg-stone-50 border-stone-200"
+            className="pl-9 h-10 text-xs rounded-xl bg-linho border-linha"
           />
         </div>
       </div>
@@ -296,12 +296,12 @@ export function CuradoriaClient({
       {/* Lista de Fornecedores para Curadoria */}
       <div className="space-y-4">
         {filteredVendors.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center border border-stone-200 space-y-3">
+          <div className="bg-papel rounded-3xl p-12 text-center border border-linha space-y-3">
             <ShieldCheck className="w-10 h-10 mx-auto text-stone-300" />
-            <p className="text-sm font-bold text-stone-700">
+            <p className="text-sm font-bold text-tinta-suave">
               Nenhum fornecedor encontrado nesta categoria de curadoria.
             </p>
-            <p className="text-xs text-stone-500">
+            <p className="text-xs text-tinta-suave">
               Novos cadastros realizados em /assinar aparecerão aqui automaticamente.
             </p>
           </div>
@@ -317,7 +317,7 @@ export function CuradoriaClient({
             return (
               <div
                 key={vendor.id}
-                className="bg-white rounded-3xl p-6 sm:p-7 border border-stone-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition-all duration-200 hover:shadow-md hover:border-stone-300"
+                className="bg-papel rounded-3xl p-6 sm:p-7 border border-linha shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 transition-all duration-200 hover:shadow-md hover:border-linha"
               >
                 <div className="flex items-start gap-4 flex-1">
                   {/* Logo do Fornecedor */}
@@ -335,46 +335,46 @@ export function CuradoriaClient({
 
                   <div className="space-y-1.5 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-lg font-bold font-serif text-stone-900">
+                      <h2 className="text-lg font-bold font-serif text-tinta">
                         {vendor.companyName}
                       </h2>
 
                       {vendor.curationStatus === "PENDING_APPROVAL" && (
                         <span className="bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                          <Clock className="w-3 h-3 text-amber-700" />
+                          <Clock className="w-3 h-3 text-aviso" />
                           <span>Pendente de Auditoria</span>
                         </span>
                       )}
                       {vendor.curationStatus === "APPROVED" && (
                         <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-700" />
+                          <CheckCircle2 className="w-3 h-3 text-sucesso" />
                           <span>Homologado no Marketplace</span>
                         </span>
                       )}
                       {vendor.curationStatus === "REJECTED" && (
-                        <span className="bg-red-100 text-red-900 border border-red-300 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                          <XCircle className="w-3 h-3 text-red-600" />
+                        <span className="bg-red-100 text-red-900 border border-perigo/40 text-xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                          <XCircle className="w-3 h-3 text-perigo" />
                           <span>Recusado</span>
                         </span>
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500">
-                      <span className="font-bold text-stone-800 bg-stone-100 px-2 py-0.5 rounded-md">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-tinta-suave">
+                      <span className="font-bold text-tinta bg-areia px-2 py-0.5 rounded-md">
                         {vendor.category}
                       </span>
                       {vendor.documentNumber && (
-                        <span className="font-mono bg-stone-50 px-2 py-0.5 rounded-md border border-stone-200">
+                        <span className="font-mono bg-linho px-2 py-0.5 rounded-md border border-linha">
                           {vendor.documentType || "CNPJ"}: {vendor.documentNumber}
                         </span>
                       )}
                       {vendor.priceRange && (
-                        <span className="font-mono font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md">
+                        <span className="font-mono font-bold text-aviso bg-aviso-suave px-2 py-0.5 rounded-md">
                           Faixa: {vendor.priceRange}
                         </span>
                       )}
                       {gallery.length > 0 && (
-                        <span className="flex items-center gap-1 text-stone-500">
+                        <span className="flex items-center gap-1 text-tinta-suave">
                           <Camera className="w-3.5 h-3.5" />
                           <span>{gallery.length} fotos</span>
                         </span>
@@ -382,7 +382,7 @@ export function CuradoriaClient({
                     </div>
 
                     {vendor.curationNotes && vendor.curationStatus === "REJECTED" && (
-                      <p className="text-xs text-red-600 italic">
+                      <p className="text-xs text-perigo italic">
                         Motivo: {vendor.curationNotes}
                       </p>
                     )}
@@ -395,7 +395,7 @@ export function CuradoriaClient({
                     variant="outline"
                     size="sm"
                     onClick={() => setSelectedVendor(vendor)}
-                    className="rounded-full text-xs font-bold h-10 px-4 border-stone-300 gap-1.5 cursor-pointer"
+                    className="rounded-full text-xs font-bold h-10 px-4 border-linha gap-1.5 cursor-pointer"
                   >
                     <Eye className="w-3.5 h-3.5" />
                     <span>Inspecionar Dossiê</span>
@@ -419,7 +419,7 @@ export function CuradoriaClient({
                       size="sm"
                       onClick={() => handleOpenReject(vendor)}
                       disabled={isPending}
-                      className="text-red-700 hover:bg-red-50 rounded-full text-xs font-bold h-10 px-3 cursor-pointer"
+                      className="text-perigo hover:bg-perigo-suave rounded-full text-xs font-bold h-10 px-3 cursor-pointer"
                     >
                       <X className="w-3.5 h-3.5" />
                       <span>Recusar</span>
@@ -434,54 +434,54 @@ export function CuradoriaClient({
 
       {/* Modal de Inspeção Completa do Fornecedor */}
       <Dialog open={!!selectedVendor} onOpenChange={(open) => !open && setSelectedVendor(null)}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-3xl p-6 sm:p-8">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-papel rounded-3xl p-6 sm:p-8">
           {selectedVendor && (
             <div className="space-y-6">
               <DialogHeader>
                 <div className="flex items-center justify-between">
-                  <DialogTitle className="font-serif text-2xl font-bold text-stone-900">
+                  <DialogTitle className="font-serif text-2xl font-bold text-tinta">
                     Dossiê de Curadoria: {selectedVendor.companyName}
                   </DialogTitle>
                 </div>
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-tinta-suave">
                   Verifique os dados cadastrados e a conformidade legal para aprovação.
                 </p>
               </DialogHeader>
 
               {/* Informações Legais & Contatos */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-stone-50 p-4 rounded-2xl border border-stone-200 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-linho p-4 rounded-2xl border border-linha text-xs">
                 <div>
-                  <span className="font-bold text-stone-500 uppercase block text-xs">
+                  <span className="font-bold text-tinta-suave uppercase block text-xs">
                     Documento Oficial
                   </span>
-                  <p className="font-mono font-bold text-stone-900 mt-0.5">
+                  <p className="font-mono font-bold text-tinta mt-0.5">
                     {selectedVendor.documentType || "CNPJ"}: {selectedVendor.documentNumber || "Não informado"}
                   </p>
                 </div>
 
                 <div>
-                  <span className="font-bold text-stone-500 uppercase block text-xs">
+                  <span className="font-bold text-tinta-suave uppercase block text-xs">
                     Categoria & Faixa de Preço
                   </span>
-                  <p className="font-bold text-stone-900 mt-0.5">
+                  <p className="font-bold text-tinta mt-0.5">
                     {selectedVendor.category} — {selectedVendor.priceRange || "$$"}
                   </p>
                 </div>
 
                 <div>
-                  <span className="font-bold text-stone-500 uppercase block text-xs">
+                  <span className="font-bold text-tinta-suave uppercase block text-xs">
                     Telefone & WhatsApp
                   </span>
-                  <p className="font-mono text-stone-900 mt-0.5">
+                  <p className="font-mono text-tinta mt-0.5">
                     {selectedVendor.whatsapp || selectedVendor.phone || "Não informado"}
                   </p>
                 </div>
 
                 <div>
-                  <span className="font-bold text-stone-500 uppercase block text-xs">
+                  <span className="font-bold text-tinta-suave uppercase block text-xs">
                     Investimento Inicial / Ticket Médio
                   </span>
-                  <p className="font-mono text-stone-900 mt-0.5">
+                  <p className="font-mono text-tinta mt-0.5">
                     A partir de:{" "}
                     {selectedVendor.startingPrice
                       ? (selectedVendor.startingPrice / 100).toLocaleString("pt-BR", {
@@ -501,7 +501,7 @@ export function CuradoriaClient({
                   </span>
                 )}
                 {selectedVendor.tiktok && (
-                  <span className="bg-stone-100 text-stone-800 px-3 py-1 rounded-full font-medium border border-stone-300">
+                  <span className="bg-areia text-tinta px-3 py-1 rounded-full font-medium border border-linha">
                     TikTok: {selectedVendor.tiktok}
                   </span>
                 )}
@@ -514,7 +514,7 @@ export function CuradoriaClient({
 
               {/* Galeria de Fotos */}
               <div>
-                <span className="text-xs font-bold text-stone-700 uppercase block mb-2">
+                <span className="text-xs font-bold text-tinta-suave uppercase block mb-2">
                   Portfólio de Fotos do Trabalho
                 </span>
                 {(() => {
@@ -531,19 +531,19 @@ export function CuradoriaClient({
                   return photos.length > 0 ? (
                     <div className="grid grid-cols-3 gap-2">
                       {photos.map((url, i) => (
-                        <div key={i} className="h-24 rounded-xl overflow-hidden bg-stone-100 border">
+                        <div key={i} className="h-24 rounded-xl overflow-hidden bg-areia border">
                           <img src={url} alt={`Portfólio ${i}`} className="w-full h-full object-cover" />
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-stone-500 italic">Nenhuma foto enviada.</p>
+                    <p className="text-xs text-tinta-suave italic">Nenhuma foto enviada.</p>
                   );
                 })()}
               </div>
 
               {/* Ações dentro do Modal */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-100">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-linha">
                 <Link href={`/fornecedores/${selectedVendor.id}`} target="_blank">
                   <Button variant="outline" className="rounded-full text-xs font-bold">
                     <span>Ver Página Pública</span>
@@ -569,12 +569,12 @@ export function CuradoriaClient({
 
       {/* Modal de Rejeição / Justificativa */}
       <Dialog open={isRejectModalOpen} onOpenChange={setIsRejectModalOpen}>
-        <DialogContent className="sm:max-w-md bg-white rounded-3xl p-6">
+        <DialogContent className="sm:max-w-md bg-papel rounded-3xl p-6">
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl font-bold text-stone-900">
+            <DialogTitle className="font-serif text-xl font-bold text-tinta">
               Recusar Cadastro de {vendorToReject?.companyName}
             </DialogTitle>
-            <p className="text-xs text-stone-500 mt-1">
+            <p className="text-xs text-tinta-suave mt-1">
               Informe a justificativa da recusa para o fornecedor providenciar correções.
             </p>
           </DialogHeader>
@@ -584,7 +584,7 @@ export function CuradoriaClient({
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="Ex: CNPJ não confere com a razão social informada."
-              className="rounded-2xl text-xs h-12 bg-stone-50"
+              className="rounded-2xl text-xs h-12 bg-linho"
             />
 
             <div className="flex items-center justify-end gap-2">

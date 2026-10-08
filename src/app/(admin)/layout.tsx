@@ -1,6 +1,7 @@
 // src/app/(admin)/layout.tsx
 import { Sidebar } from "@/components/admin/sidebar"
 import { Header } from "@/components/admin/header"
+import { MobileTabBar } from "@/components/admin/mobile-tab-bar"
 import { redirect } from "next/navigation"
 import { getSession } from "@/lib/security/auth-guard"
 import { getWeddingIdentity } from "@/lib/wedding"
@@ -14,9 +15,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const wedding = await getWeddingIdentity();
 
   return (
-    <div className="flex min-h-screen bg-zinc-50/50">
-      <Sidebar allowedPaths={allowedPaths} coupleNames={wedding.coupleNames} />
-      <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex min-h-screen bg-linho">
+      <Sidebar allowedPaths={allowedPaths} coupleNames={wedding.coupleNames} dateLabel={wedding.dateLabel} />
+      <div className="flex min-w-0 flex-1 flex-col">
         <Header
           role={role}
           allowedPaths={allowedPaths}
@@ -24,12 +25,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           initials={wedding.initials}
           dateLabel={wedding.dateLabel}
         />
-        <main id="conteudo" className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="w-full">
+        <main id="conteudo" className="page-in flex-1 px-4 pb-32 pt-6 md:px-8 md:pb-12 md:pt-8">
+          <div className="mx-auto w-full max-w-[1240px]">
             {children}
           </div>
         </main>
       </div>
+      <MobileTabBar allowedPaths={allowedPaths} coupleNames={wedding.coupleNames} />
     </div>
   )
 }

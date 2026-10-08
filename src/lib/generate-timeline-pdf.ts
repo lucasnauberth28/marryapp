@@ -32,7 +32,7 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
   // Título do Casamento
   doc.setFont("helvetica", "bold");
   doc.setFontSize(22);
-  doc.setTextColor(140, 109, 69); // #8C6D45
+  doc.setTextColor(94, 43, 78); // #5E2B4E
   doc.text(coupleNames.toUpperCase(), pageWidth / 2, currentY, { align: "center" });
 
   currentY += 8;
@@ -105,7 +105,7 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
     const eventStartY = currentY;
 
     // 1. Ponto na linha vertical (Timeline Dot)
-    doc.setFillColor(140, 109, 69); // #8C6D45
+    doc.setFillColor(94, 43, 78); // #5E2B4E
     doc.circle(lineX, eventStartY + 3, 2.5, "F");
 
     // Borda clara ao redor do ponto

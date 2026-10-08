@@ -53,8 +53,8 @@ export function KanbanTask({ task, onEdit }: KanbanTaskProps) {
       className="group relative flex w-full"
     >
       <Card
-        className={`w-full cursor-grab active:cursor-grabbing hover:border-zinc-300 transition-all shadow-sm bg-white hover:shadow-md ${
-          isOverdue ? "border-red-300 bg-red-50/10" : ""
+        className={`w-full cursor-grab active:cursor-grabbing hover:border-zinc-300 transition-all shadow-sm bg-papel hover:shadow-md ${
+          isOverdue ? "border-perigo/40 bg-perigo-suave/10" : ""
         }`}
         onClick={() => {
           onEdit?.(task);
@@ -85,7 +85,7 @@ export function KanbanTask({ task, onEdit }: KanbanTaskProps) {
           {(task.dueDate || task.assignee) && (
             <div className="flex items-center gap-3 text-xs text-zinc-500 mt-1 flex-wrap">
               {task.dueDate && (
-                <div className={`flex items-center gap-1 px-2 py-1 rounded-md border ${isOverdue ? 'bg-red-50 border-red-200 text-red-600' : 'bg-zinc-50 border-zinc-100'}`}>
+                <div className={`flex items-center gap-1 px-2 py-1 rounded-md border ${isOverdue ? 'bg-perigo-suave border-perigo/40 text-perigo' : 'bg-zinc-50 border-zinc-100'}`}>
                   <CalendarIcon className="h-3.5 w-3.5" />
                   <span>
                     {new Date(task.dueDate).toLocaleDateString("pt-BR", {

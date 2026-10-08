@@ -64,14 +64,14 @@ function Toast({
     <div
       className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl px-5 py-3 shadow-xl border text-sm font-medium animate-in slide-in-from-bottom-4 fade-in duration-300 ${
         type === "success"
-          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-          : "bg-red-50 text-red-800 border-red-200"
+          ? "bg-sucesso-suave text-sucesso border-emerald-200"
+          : "bg-perigo-suave text-red-800 border-perigo/40"
       }`}
     >
       {type === "success" ? (
-        <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+        <CheckCircle2 className="w-4 h-4 text-sucesso" />
       ) : (
-        <X className="w-4 h-4 text-red-600" />
+        <X className="w-4 h-4 text-perigo" />
       )}
       <span>{message}</span>
       <button
@@ -94,16 +94,16 @@ function StatusBadge({ status }: { status: string }) {
     APPROVED: {
       label: "Aprovado",
       className:
-        "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100",
+        "bg-sucesso-suave text-sucesso border-emerald-200 hover:bg-emerald-100",
     },
     PENDING: {
       label: "Pendente",
       className:
-        "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100",
+        "bg-aviso-suave text-aviso border-amber-200 hover:bg-amber-100",
     },
     FAILED: {
       label: "Falhou",
-      className: "bg-red-50 text-red-700 border-red-200 hover:bg-red-100",
+      className: "bg-perigo-suave text-perigo border-perigo/40 hover:bg-red-100",
     },
     REFUNDED: {
       label: "Estornado",
@@ -112,7 +112,7 @@ function StatusBadge({ status }: { status: string }) {
     },
     REJECTED: {
       label: "Rejeitado",
-      className: "bg-red-50 text-red-700 border-red-200 hover:bg-red-100",
+      className: "bg-perigo-suave text-perigo border-perigo/40 hover:bg-red-100",
     },
   };
 

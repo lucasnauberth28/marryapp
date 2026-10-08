@@ -129,10 +129,10 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+          <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
             Perfis de acesso
           </h1>
-          <p className="mt-1 text-sm text-stone-600">
+          <p className="mt-1 text-sm text-tinta-suave">
             Crie perfis e defina quais páginas cada um pode acessar.
           </p>
         </div>
@@ -173,7 +173,7 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
                       className={`flex items-center justify-between p-3 rounded-xl border text-left transition-all ${
                         isSelected
                           ? "bg-zinc-900 border-zinc-900 text-white"
-                          : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-300"
+                          : "bg-papel border-zinc-200 text-zinc-600 hover:border-zinc-300"
                       }`}
                     >
                       <span className="text-sm font-medium">{mod.name}</span>
@@ -263,7 +263,7 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
                   <Button aria-label="Editar" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-zinc-600" onClick={() => openEditForm(role)}>
                     <Edit2 className="w-4 h-4" />
                   </Button>
-                  <Button aria-label="Excluir" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-600" onClick={() => handleDelete(role.id)}>
+                  <Button aria-label="Excluir" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-perigo" onClick={() => handleDelete(role.id)}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>

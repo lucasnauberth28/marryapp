@@ -31,7 +31,7 @@ export async function getSiteCustomization() {
           receptionTime: null,
           locationName: null,
           locationAddress: null,
-          themeColor: "#8C6D45",
+          themeColor: "#5E2B4E",
           fontFamily: "serif",
           dressCodeTitle: null,
           dressCodeDesc: null,

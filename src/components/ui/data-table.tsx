@@ -160,7 +160,7 @@ export function DataTable<T>({
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="pl-9 pr-8 bg-white border-zinc-200"
+            className="pl-9 pr-8 bg-papel border-zinc-200"
           />
           {search && (
             <button
@@ -177,7 +177,7 @@ export function DataTable<T>({
       </div>
 
       {/* Table Container */}
-      <div className="bg-white border border-zinc-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-papel border border-zinc-200 rounded-xl shadow-sm overflow-hidden">
         {mobileCard && (
           <ul className="divide-y divide-zinc-100 md:hidden">
             {paginatedData.length === 0 ? (

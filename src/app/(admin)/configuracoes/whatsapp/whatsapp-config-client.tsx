@@ -101,7 +101,7 @@ export function WhatsAppConfigClient() {
   }, [status, qrCode]);
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+    <div className="bg-papel border border-zinc-200 rounded-xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-zinc-900">Status da Conexão</h2>
         <Button variant="outline" size="sm" onClick={() => checkStatusAndQRCode(true)} disabled={loading}>
@@ -143,7 +143,7 @@ export function WhatsAppConfigClient() {
               Abra o WhatsApp no seu celular, acesse <strong className="text-white">Aparelhos Conectados</strong> e aponte a câmera para o código abaixo.
             </p>
             
-            <div className="bg-white p-5 rounded-2xl border-4 border-black shadow-2xl relative">
+            <div className="bg-papel p-5 rounded-2xl border-4 border-black shadow-2xl relative">
               {qrCode.startsWith("data:image") ? (
                 <img src={qrCode} alt="WhatsApp QR Code" className="w-64 h-64 object-contain" />
               ) : (
@@ -156,7 +156,7 @@ export function WhatsAppConfigClient() {
               <span>Aguardando leitura pelo aplicativo do WhatsApp...</span>
             </div>
 
-            <Button className="mt-6 bg-white text-zinc-900 hover:bg-zinc-100 font-medium" onClick={() => checkStatusAndQRCode(true)} disabled={loading}>
+            <Button className="mt-6 bg-papel text-zinc-900 hover:bg-zinc-100 font-medium" onClick={() => checkStatusAndQRCode(true)} disabled={loading}>
               {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
               Já escaneei (Verificar Status)
             </Button>
@@ -165,11 +165,11 @@ export function WhatsAppConfigClient() {
           <motion.div 
             key="disconnected"
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center p-12 bg-red-50 border border-red-200 rounded-lg text-red-700"
+            className="flex flex-col items-center justify-center p-12 bg-perigo-suave border border-perigo/40 rounded-lg text-perigo"
           >
-            <XCircle className="w-16 h-16 mb-4 text-red-600" />
+            <XCircle className="w-16 h-16 mb-4 text-perigo" />
             <h3 className="text-xl font-bold mb-2">WhatsApp Desconectado</h3>
-            <p className="text-center text-red-600 max-w-md mb-6 text-sm">
+            <p className="text-center text-perigo max-w-md mb-6 text-sm">
               {message || "O sistema não conseguiu se conectar à Evolution API ou o aparelho foi desconectado."}
             </p>
             <Button onClick={requestQRCode} disabled={loading} className="bg-red-600 hover:bg-red-700 text-white">

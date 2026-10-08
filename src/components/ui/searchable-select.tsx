@@ -103,7 +103,7 @@ export function SearchableSelect({
         onClick={handleToggle}
         onMouseDown={(e) => e.stopPropagation()}
         className={cn(
-          "h-10 w-full rounded-lg border border-input bg-white px-3 py-2 pr-9 text-sm transition-all outline-none flex items-center justify-between shadow-sm cursor-pointer select-none",
+          "h-10 w-full rounded-lg border border-input bg-papel px-3 py-2 pr-9 text-sm transition-all outline-none flex items-center justify-between shadow-sm cursor-pointer select-none",
           isOpen && "ring-2 ring-brand/30 border-brand",
           disabled && "pointer-events-none opacity-50 bg-input/50"
         )}
@@ -119,7 +119,7 @@ export function SearchableSelect({
         <div
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
-          className="absolute top-full left-0 mt-1.5 w-full rounded-xl border border-zinc-200 bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-150 overflow-hidden"
+          className="absolute top-full left-0 mt-1.5 w-full rounded-xl border border-zinc-200 bg-papel shadow-2xl animate-in fade-in zoom-in-95 duration-150 overflow-hidden"
           style={{ zIndex: 999999 }}
         >
           {/* Search Input */}

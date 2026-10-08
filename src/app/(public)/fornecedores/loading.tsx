@@ -20,7 +20,7 @@ export default function FornecedoresLoading() {
         {/* Vendors Grid Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-3xl p-6 border border-stone-200 space-y-4">
+            <div key={i} className="bg-papel rounded-3xl p-6 border border-linha space-y-4">
               <Skeleton className="h-48 w-full rounded-2xl" />
               <div className="flex items-center gap-3">
                 <Skeleton className="w-12 h-12 rounded-xl shrink-0" />

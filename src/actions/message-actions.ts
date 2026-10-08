@@ -153,7 +153,7 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
       }
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://marryapp.vercel.app";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aceito.com.br";
 
     // Mapeia os convidados para o formato esperado pela Evolution API
     const recipients = guests

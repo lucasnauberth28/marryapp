@@ -23,11 +23,11 @@ export default async function RsvpPage() {
     return (
       <div className="flex-1 w-full bg-ivory flex items-center justify-center p-4">
         <Card className="max-w-md w-full shadow-lg border-0 rounded-3xl overflow-hidden text-center p-8 animate-in fade-in zoom-in-95 duration-500">
-          <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Clock className="w-8 h-8 text-zinc-500" />
+          <div className="w-16 h-16 bg-areia rounded-full flex items-center justify-center mx-auto mb-6">
+            <Clock className="w-8 h-8 text-tinta-suave" />
           </div>
-          <h2 className="text-2xl font-semibold text-stone-900 mb-2">Confirmações encerradas</h2>
-          <p className="text-stone-600">
+          <h2 className="text-2xl font-semibold text-tinta mb-2">Confirmações encerradas</h2>
+          <p className="text-tinta-suave">
             O prazo para confirmar presença no casamento de {wedding.coupleNames} já passou.
             Se precisar de ajuda, fale diretamente com os noivos.
           </p>

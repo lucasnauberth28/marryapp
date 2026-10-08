@@ -130,7 +130,7 @@ export function TimePicker({
         <div
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
-          className="absolute top-full left-0 mt-1.5 rounded-xl border border-zinc-200 bg-white p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+          className="absolute top-full left-0 mt-1.5 rounded-xl border border-zinc-200 bg-papel p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
           style={{ zIndex: 999999 }}
         >
           <div className="flex items-center gap-3">

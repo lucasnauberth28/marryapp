@@ -120,7 +120,7 @@ export function DatePicker({
             variant="outline"
             disabled={disabled}
             className={cn(
-              "w-full h-10 justify-start text-left font-normal bg-white border-zinc-200 shadow-xs hover:bg-zinc-50 px-3 rounded-lg text-sm transition-colors",
+              "w-full h-10 justify-start text-left font-normal bg-papel border-zinc-200 shadow-xs hover:bg-zinc-50 px-3 rounded-lg text-sm transition-colors",
               !selectedDate && "text-muted-foreground",
               open && "ring-2 ring-brand/30 border-brand",
               className

@@ -2,19 +2,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { logout } from "@/actions/auth-actions";
 import { LogOut, ChevronLeft, ChevronRight } from "lucide-react";
-import { WeddingRingsIcon } from "@/components/icons/wedding-rings";
 import { NavList } from "@/components/admin/nav-list";
+import { Logo } from "@/components/brand/logo";
 
-const COLLAPSED_KEY = "marryapp_sidebar_collapsed";
+const COLLAPSED_KEY = "aceito_sidebar_collapsed";
 
 interface SidebarProps {
   allowedPaths?: string[];
   coupleNames: string;
+  dateLabel?: string | null;
 }
 
-export function Sidebar({ allowedPaths = [], coupleNames }: SidebarProps) {
+export function Sidebar({ allowedPaths = [], coupleNames, dateLabel }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Preferência de menu recolhido salva no navegador
@@ -41,45 +43,43 @@ export function Sidebar({ allowedPaths = [], coupleNames }: SidebarProps) {
 
   return (
     <aside
-      className={`${isCollapsed ? "w-20" : "w-64"} relative hidden flex-col border-r border-stone-200/60 bg-paper transition-all duration-300 md:flex`}
+      className={`${isCollapsed ? "w-20" : "w-[264px]"} sticky top-0 hidden h-screen shrink-0 flex-col border-r border-linha bg-linho transition-[width] duration-300 ease-[var(--ease-aceito)] md:flex`}
     >
       <button
         onClick={toggleSidebar}
-        className="absolute -right-3 top-6 z-50 cursor-pointer rounded-full border border-stone-200 bg-white p-1 shadow-sm transition-colors hover:bg-stone-50"
+        className="absolute -right-3 top-7 z-50 grid h-6 w-6 cursor-pointer place-items-center rounded-full border border-linha bg-papel text-tinta-suave shadow-[var(--shadow-aceito-1)] transition-colors hover:text-ameixa"
         aria-label={isCollapsed ? "Expandir menu" : "Recolher menu"}
         title={isCollapsed ? "Expandir menu" : "Recolher menu"}
       >
-        {isCollapsed ? <ChevronRight className="h-4 w-4 text-stone-600" /> : <ChevronLeft className="h-4 w-4 text-stone-600" />}
+        {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
       </button>
 
-      <div className="flex h-16 items-center overflow-hidden border-b border-stone-200/50 px-4">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-brand/30 bg-gradient-to-br from-brand-50 to-ivory text-brand shadow-xs">
-            <WeddingRingsIcon className="h-5 w-5" />
-          </div>
-          {!isCollapsed && (
-            <div className="flex min-w-0 flex-col">
-              <span className="truncate font-serif text-base font-semibold italic leading-tight text-stone-800">
-                {coupleNames}
-              </span>
-              <span className="text-xs font-semibold uppercase tracking-wider text-brand-600">MarryApp</span>
-            </div>
-          )}
-        </div>
+      <div className={`flex items-center gap-2.5 px-5 pb-4 pt-6 ${isCollapsed ? "justify-center px-3" : ""}`}>
+        <Link href="/dashboard" aria-label="Aceito, início do painel" className="flex items-center gap-2.5">
+          <Logo variant="mark" height={30} priority />
+          {!isCollapsed && <Logo variant="wordmark" height={20} />}
+        </Link>
       </div>
 
-      <nav aria-label="Menu principal" className="flex-1 overflow-y-auto overflow-x-hidden p-3 scrollbar-hide">
+      {!isCollapsed && (
+        <div className="mx-4 mb-4 rounded-2xl border border-linha bg-papel px-4 py-3">
+          <p className="truncate font-display text-lg leading-tight text-tinta">{coupleNames}</p>
+          {dateLabel && <p className="mt-0.5 text-sm text-tinta-suave">{dateLabel}</p>}
+        </div>
+      )}
+
+      <nav aria-label="Menu principal" className="flex-1 overflow-y-auto overflow-x-hidden px-3 pb-4" data-lenis-prevent>
         <NavList allowedPaths={allowedPaths} collapsed={isCollapsed} />
       </nav>
 
-      <div className="mt-auto overflow-hidden border-t border-stone-200/50 p-3">
+      <div className="mt-auto border-t border-linha p-3">
         <button
           onClick={() => logout()}
           title={isCollapsed ? "Sair" : undefined}
           aria-label="Sair"
-          className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 ${isCollapsed ? "justify-center" : "justify-start"}`}
+          className={`flex min-h-10 w-full cursor-pointer items-center gap-3 rounded-xl px-3 text-[15px] font-semibold text-perigo transition-colors hover:bg-perigo-suave ${isCollapsed ? "justify-center" : "justify-start"}`}
         >
-          <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
+          <LogOut className="h-5 w-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
           {!isCollapsed && <span className="truncate">Sair</span>}
         </button>
       </div>

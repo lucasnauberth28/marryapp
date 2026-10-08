@@ -253,22 +253,22 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
       {/* Header com Navegação em Abas */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+          <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
             Meus fornecedores
           </h1>
-          <p className="mt-1 text-sm text-stone-600">
+          <p className="mt-1 text-sm text-tinta-suave">
             Encontre empresas homologadas na sua região e gerencie os contratos do seu casamento.
           </p>
         </div>
 
         {/* Seletor de Abas */}
-        <div className="inline-flex bg-stone-100 p-1 rounded-full border border-stone-200">
+        <div className="inline-flex bg-areia p-1 rounded-full border border-linha">
           <button
             onClick={() => setActiveTab("MARKETPLACE")}
             className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
               activeTab === "MARKETPLACE"
-                ? "bg-white text-brand shadow-xs"
-                : "text-stone-600 hover:text-stone-900"
+                ? "bg-papel text-brand shadow-xs"
+                : "text-tinta-suave hover:text-tinta"
             }`}
           >
             🌟 Marketplace de Parceiros ({partners.length})
@@ -277,8 +277,8 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
             onClick={() => setActiveTab("MY_VENDORS")}
             className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
               activeTab === "MY_VENDORS"
-                ? "bg-white text-brand shadow-xs"
-                : "text-stone-600 hover:text-stone-900"
+                ? "bg-papel text-brand shadow-xs"
+                : "text-tinta-suave hover:text-tinta"
             }`}
           >
             📋 Meus Contratos ({vendors.length})
@@ -292,16 +292,16 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
       {activeTab === "MARKETPLACE" && (
         <div className="space-y-6">
           {/* Barra de Filtros por Região e Categoria */}
-          <div className="bg-white p-6 rounded-3xl border border-stone-200/80 shadow-sm space-y-4">
+          <div className="bg-papel p-6 rounded-3xl border border-linha/80 shadow-sm space-y-4">
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               {/* Campo de Busca */}
               <div className="relative w-full md:w-80">
-                <Search className="w-4 h-4 text-stone-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-tinta-suave absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <Input
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar fornecedor ou serviço..."
-                  className="pl-10 bg-stone-50/60 border-stone-200 rounded-2xl h-11 text-xs"
+                  className="pl-10 bg-linho/60 border-linha rounded-2xl h-11 text-xs"
                 />
               </div>
 
@@ -314,7 +314,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                     className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                       selectedRegion === r.id
                         ? "bg-brand text-white shadow-xs"
-                        : "bg-stone-100/80 text-stone-600 hover:bg-stone-200/70"
+                        : "bg-areia/80 text-tinta-suave hover:bg-stone-200/70"
                     }`}
                   >
                     {r.label}
@@ -324,7 +324,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
             </div>
 
             {/* Categorias */}
-            <div className="flex items-center gap-2 overflow-x-auto pt-2 border-t border-stone-100 pb-1">
+            <div className="flex items-center gap-2 overflow-x-auto pt-2 border-t border-linha pb-1">
               {categoriesList.map((c) => (
                 <button
                   key={c}
@@ -332,7 +332,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                   className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                     selectedCategory === c
                       ? "bg-stone-900 text-white shadow-xs"
-                      : "bg-white text-stone-600 border border-stone-200 hover:bg-stone-50"
+                      : "bg-papel text-tinta-suave border border-linha hover:bg-linho"
                   }`}
                 >
                   {c}
@@ -343,10 +343,10 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
 
           {/* Grid de Fornecedores Parceiros */}
           {filteredPartners.length === 0 ? (
-            <div className="bg-white p-12 text-center rounded-3xl border border-stone-200 text-stone-500 text-sm">
+            <div className="bg-papel p-12 text-center rounded-3xl border border-linha text-tinta-suave text-sm">
               <Compass className="w-10 h-10 mx-auto mb-2 opacity-50 text-brand" />
-              <p className="font-bold text-stone-700">Nenhum fornecedor encontrado nesta região.</p>
-              <p className="text-xs text-stone-500 mt-1">Tente selecionar outra categoria ou região de atendimento.</p>
+              <p className="font-bold text-tinta-suave">Nenhum fornecedor encontrado nesta região.</p>
+              <p className="text-xs text-tinta-suave mt-1">Tente selecionar outra categoria ou região de atendimento.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -361,10 +361,10 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                 return (
                   <div
                     key={partner.id}
-                    className="bg-white rounded-3xl border border-stone-200/90 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
+                    className="bg-papel rounded-3xl border border-linha/90 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
                   >
                     {/* Imagem de Capa */}
-                    <div className="h-48 relative overflow-hidden bg-stone-100">
+                    <div className="h-48 relative overflow-hidden bg-areia">
                       {partner.coverUrl ? (
                         <img
                           src={partner.coverUrl}
@@ -372,7 +372,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-stone-100 text-stone-500">
+                        <div className="w-full h-full flex items-center justify-center bg-areia text-tinta-suave">
                           <Building2 className="w-8 h-8" />
                         </div>
                       )}
@@ -390,27 +390,27 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                       </div>
 
                       {/* Avaliação */}
-                      <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-stone-900 flex items-center gap-1 shadow-xs">
+                      <div className="absolute bottom-3 left-3 bg-papel/95 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-tinta flex items-center gap-1 shadow-xs">
                         <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                         <span>{partner.rating.toFixed(1)}</span>
-                        <span className="text-xs text-stone-500">({partner.reviewCount})</span>
+                        <span className="text-xs text-tinta-suave">({partner.reviewCount})</span>
                       </div>
                     </div>
 
                     {/* Informações Comerciais */}
                     <div className="p-6 space-y-4">
                       <div>
-                        <h3 className="font-serif font-bold text-xl text-stone-900 line-clamp-1">
+                        <h3 className="font-serif font-bold text-xl text-tinta line-clamp-1">
                           {partner.companyName}
                         </h3>
-                        <p className="text-xs text-stone-600 mt-1 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-tinta-suave mt-1 line-clamp-2 leading-relaxed">
                           {partner.description}
                         </p>
                       </div>
 
                       {/* Regiões de Atendimento */}
                       <div className="space-y-1.5">
-                        <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
+                        <span className="text-xs font-bold uppercase tracking-wider text-tinta-suave">
                           Regiões de Atendimento / Entrega:
                         </span>
                         <div className="flex flex-wrap gap-1">
@@ -427,9 +427,9 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                       </div>
 
                       {/* Modalidades de Reunião */}
-                      <div className="flex items-center gap-3 pt-2 border-t border-stone-100 text-xs text-stone-600 font-semibold">
+                      <div className="flex items-center gap-3 pt-2 border-t border-linha text-xs text-tinta-suave font-semibold">
                         {partner.offersOnlineMeet && (
-                          <span className="flex items-center gap-1 text-emerald-700">
+                          <span className="flex items-center gap-1 text-sucesso">
                             <Video className="w-3.5 h-3.5" /> Reunião Online
                           </span>
                         )}
@@ -441,12 +441,12 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                       </div>
 
                       {/* Rodapé do Card com Valores e Ações */}
-                      <div className="pt-4 border-t border-stone-100 flex items-center justify-between gap-3">
+                      <div className="pt-4 border-t border-linha flex items-center justify-between gap-3">
                         <div>
-                          <span className="text-xs uppercase font-bold text-stone-500 block">
+                          <span className="text-xs uppercase font-bold text-tinta-suave block">
                             Investimento médio:
                           </span>
-                          <span className="text-base font-extrabold text-stone-900">
+                          <span className="text-base font-extrabold text-tinta">
                             {partner.startingPrice
                               ? `A partir de ${new Intl.NumberFormat("pt-BR", {
                                   style: "currency",
@@ -459,14 +459,14 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                         <div className="flex items-center gap-2">
                           {partner.whatsapp && (
                             <a
-                              href={`https://wa.me/55${partner.whatsapp.replace(/\D/g, "")}?text=Olá,%20encontrei%20sua%20empresa%20no%20MarryApp!`}
+                              href={`https://wa.me/55${partner.whatsapp.replace(/\D/g, "")}?text=Olá,%20encontrei%20sua%20empresa%20no%20Aceito!`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >
                               <Button aria-label="Chamar no WhatsApp"
                                 size="icon"
                                 variant="outline"
-                                className="rounded-full w-10 h-10 border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+                                className="rounded-full w-10 h-10 border-emerald-600 text-sucesso hover:bg-sucesso-suave"
                                 title="Chamar no WhatsApp"
                               >
                                 <MessageCircle className="w-4 h-4" />
@@ -504,7 +504,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                   <Plus className="w-4 h-4" /> Novo Contrato de Fornecedor
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md bg-white rounded-3xl">
+              <DialogContent className="max-w-md bg-papel rounded-3xl">
                 <DialogHeader>
                   <DialogTitle className="font-serif italic font-bold text-xl text-brand">
                     Adicionar Fornecedor Contratado
@@ -532,10 +532,10 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
           </div>
 
           {/* Tabela de Contratos */}
-          <div className="bg-white rounded-3xl border border-stone-200 shadow-sm overflow-hidden p-6">
-            <div className="divide-y divide-stone-100">
+          <div className="bg-papel rounded-3xl border border-linha shadow-sm overflow-hidden p-6">
+            <div className="divide-y divide-linha">
               {vendors.length === 0 ? (
-                <div className="py-12 text-center text-stone-500 text-sm">
+                <div className="py-12 text-center text-tinta-suave text-sm">
                   Nenhum contrato cadastrado ainda.
                 </div>
               ) : (
@@ -543,8 +543,8 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                   <div key={v.id} className="py-4 flex items-center justify-between gap-4">
                     <div>
                       <span className="text-xs font-bold uppercase text-brand">{v.category}</span>
-                      <h4 className="font-bold text-base text-stone-900 font-serif">{v.name}</h4>
-                      <p className="text-xs text-stone-500">{v.contact || "Sem contato informado"}</p>
+                      <h4 className="font-bold text-base text-tinta font-serif">{v.name}</h4>
+                      <p className="text-xs text-tinta-suave">{v.contact || "Sem contato informado"}</p>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -552,7 +552,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEdit(v)}
-                        className="text-stone-500 hover:text-stone-700 rounded-full h-9 w-9"
+                        className="text-tinta-suave hover:text-tinta-suave rounded-full h-9 w-9"
                       >
                         <Pencil className="w-4 h-4" />
                       </Button>
@@ -560,7 +560,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(v.id)}
-                        className="text-stone-500 hover:text-red-600 rounded-full h-9 w-9"
+                        className="text-tinta-suave hover:text-perigo rounded-full h-9 w-9"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -577,20 +577,20 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
       {/* MODAL DE SOLICITAÇÃO DE REUNIÃO / LEAD PARA O FORNECEDOR */}
       {/* ========================================================================= */}
       <Dialog open={leadModalOpen} onOpenChange={setLeadModalOpen}>
-        <DialogContent className="max-w-lg bg-white rounded-3xl p-6 font-sans">
+        <DialogContent className="max-w-lg bg-papel rounded-3xl p-6 font-sans">
           <DialogHeader>
-            <DialogTitle className="font-serif italic font-bold text-2xl text-stone-900">
+            <DialogTitle className="font-serif italic font-bold text-2xl text-tinta">
               Agendar Reunião / Orçamento
             </DialogTitle>
-            <p className="text-xs text-stone-500">
-              Solicitando contato com: <span className="font-bold text-stone-900">{selectedPartner?.companyName}</span>
+            <p className="text-xs text-tinta-suave">
+              Solicitando contato com: <span className="font-bold text-tinta">{selectedPartner?.companyName}</span>
             </p>
           </DialogHeader>
 
           <form onSubmit={handleSendLead} className="space-y-4 pt-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label className="text-xs font-bold text-stone-600 uppercase">Seu Nome / Nome dos Noivos</Label>
+                <Label className="text-xs font-bold text-tinta-suave uppercase">Seu Nome / Nome dos Noivos</Label>
                 <Input
                   value={coupleName}
                   onChange={(e) => setCoupleName(e.target.value)}
@@ -601,7 +601,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-bold text-stone-600 uppercase">Seu WhatsApp</Label>
+                <Label className="text-xs font-bold text-tinta-suave uppercase">Seu WhatsApp</Label>
                 <Input
                   value={couplePhone}
                   onChange={(e) => setCouplePhone(e.target.value)}
@@ -614,7 +614,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label className="text-xs font-bold text-stone-600 uppercase">E-mail para Retorno</Label>
+                <Label className="text-xs font-bold text-tinta-suave uppercase">E-mail para Retorno</Label>
                 <Input
                   type="email"
                   value={coupleEmail}
@@ -625,7 +625,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs font-bold text-stone-600 uppercase">Estimativa de Convidados</Label>
+                <Label className="text-xs font-bold text-tinta-suave uppercase">Estimativa de Convidados</Label>
                 <Input
                   type="number"
                   value={guestCount}
@@ -638,18 +638,18 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
 
             {/* Modalidade de Reunião */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-stone-600 uppercase">Modalidade Preferida de Reunião</Label>
+              <Label className="text-xs font-bold text-tinta-suave uppercase">Modalidade Preferida de Reunião</Label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setMeetingType("ONLINE")}
                   className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     meetingType === "ONLINE"
-                      ? "bg-emerald-50 border-emerald-600 text-emerald-800"
-                      : "bg-stone-50 border-stone-200 text-stone-600"
+                      ? "bg-sucesso-suave border-emerald-600 text-sucesso"
+                      : "bg-linho border-linha text-tinta-suave"
                   }`}
                 >
-                  <Video className="w-4 h-4 text-emerald-700" />
+                  <Video className="w-4 h-4 text-sucesso" />
                   <span>Online (Meet/Zoom)</span>
                 </button>
 
@@ -659,7 +659,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
                   className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     meetingType === "PRESENTIAL"
                       ? "bg-blue-50 border-blue-600 text-blue-800"
-                      : "bg-stone-50 border-stone-200 text-stone-600"
+                      : "bg-linho border-linha text-tinta-suave"
                   }`}
                 >
                   <MapPin className="w-4 h-4 text-blue-600" />
@@ -669,7 +669,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-bold text-stone-600 uppercase">Mensagem ou Dúvidas</Label>
+              <Label className="text-xs font-bold text-tinta-suave uppercase">Mensagem ou Dúvidas</Label>
               <Textarea
                 value={leadMessage}
                 onChange={(e) => setLeadMessage(e.target.value)}

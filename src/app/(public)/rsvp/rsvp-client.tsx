@@ -155,7 +155,7 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.4 }}
           >
-            <Card className="shadow-2xl border-0 rounded-3xl overflow-hidden bg-white">
+            <Card className="shadow-2xl border-0 rounded-3xl overflow-hidden bg-papel">
               <div className="h-2 bg-gradient-to-r from-brand-300 to-brand" />
               <CardContent className="pt-8 pb-8 flex flex-col items-center text-center space-y-6">
                 <div className="w-16 h-16 bg-brand-50 rounded-full flex items-center justify-center">
@@ -165,15 +165,15 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
                 {successStatus === "CONFIRMED" ? (
                   <>
                     <div className="space-y-2">
-                      <h2 className="text-2xl font-extrabold text-zinc-900 tracking-tight">Presença Confirmada!</h2>
-                      <p className="text-sm text-zinc-500 px-4">
+                      <h2 className="font-display text-3xl text-tinta">Presença Confirmada!</h2>
+                      <p className="text-sm text-tinta-suave px-4">
                         Tudo certo! Mal podemos esperar para viver este momento com você.
                       </p>
                     </div>
                     
-                    <div className="bg-zinc-50 p-6 rounded-2xl border border-zinc-200/80 w-full flex flex-col items-center shadow-inner">
-                      <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Seu Ingresso Digital</p>
-                      <div ref={qrRef} className="bg-white p-4 rounded-xl shadow-md border border-zinc-100">
+                    <div className="bg-linho p-6 rounded-2xl border border-linha/80 w-full flex flex-col items-center shadow-inner">
+                      <p className="text-xs font-bold text-tinta-suave uppercase tracking-widest mb-4">Seu Ingresso Digital</p>
+                      <div ref={qrRef} className="bg-papel p-4 rounded-xl shadow-md border border-linha">
                         <QRCodeCanvas value={`GUEST:${guest?.id ?? ""}`} size={160} level="H" />
                       </div>
                       
@@ -181,12 +181,12 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
                         onClick={downloadQrCode} 
                         variant="outline" 
                         size="sm" 
-                        className="mt-4 w-full border-zinc-200 text-zinc-700 hover:bg-zinc-100/50 shadow-sm"
+                        className="mt-4 w-full border-linha text-tinta-suave hover:bg-areia/50 shadow-sm"
                       >
                         <Download className="w-4 h-4 mr-2" /> Salvar Ingresso (Imagem)
                       </Button>
                       
-                      <p className="text-xs text-zinc-500 mt-4 px-2">
+                      <p className="text-xs text-tinta-suave mt-4 px-2">
                         Apresente a imagem deste QR Code na entrada do evento para liberar seu acesso rapidamente.
                       </p>
                     </div>
@@ -200,8 +200,8 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
                   </>
                 ) : (
                   <div className="py-6 space-y-4">
-                    <h2 className="text-2xl font-extrabold text-zinc-900 tracking-tight">Agradecemos por Avisar</h2>
-                    <p className="text-sm text-zinc-500 px-4">
+                    <h2 className="font-display text-3xl text-tinta">Agradecemos por Avisar</h2>
+                    <p className="text-sm text-tinta-suave px-4">
                       Sentiremos muito a sua falta no nosso grande dia, mas agradecemos por confirmar e nos ajudar na organização!
                     </p>
                   </div>
@@ -218,16 +218,16 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="shadow-2xl border-0 rounded-3xl overflow-hidden bg-white">
+            <Card className="shadow-2xl border-0 rounded-3xl overflow-hidden bg-papel">
               <CardHeader className="text-center pt-8 pb-4">
                 <div className="w-12 h-12 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand/15">
                   <Heart className="w-6 h-6 text-brand fill-brand/20" aria-hidden="true" />
                 </div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">Casamento de</p>
-                <p className="font-serif text-3xl font-semibold text-stone-900 leading-tight">{coupleNames}</p>
-                {dateLabel && <p className="text-sm text-stone-600">{dateLabel}</p>}
-                <CardTitle className="pt-4 text-xl font-semibold text-stone-900">Confirme sua presença</CardTitle>
-                <CardDescription className="text-stone-600 text-sm px-2">
+                <p className="font-display text-3xl text-tinta leading-tight">{coupleNames}</p>
+                {dateLabel && <p className="text-sm text-tinta-suave">{dateLabel}</p>}
+                <CardTitle className="pt-4 text-xl font-semibold text-tinta">Confirme sua presença</CardTitle>
+                <CardDescription className="text-tinta-suave text-sm px-2">
                   Digite o seu WhatsApp com DDD para encontrarmos o seu convite.
                 </CardDescription>
               </CardHeader>
@@ -239,7 +239,7 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
                       placeholder="Ex: (11) 99999-9999"
                       value={phone}
                       onChange={handlePhoneChange}
-                      className="flex-1 rounded-xl border-zinc-200 bg-zinc-50/50 focus:bg-white h-12 text-base px-4 shadow-inner"
+                      className="flex-1 rounded-xl border-linha bg-linho/50 focus:bg-papel h-12 text-base px-4 shadow-inner"
                       required
                     />
                     <Button type="submit" disabled={loading} aria-label="Buscar convite" className="bg-brand hover:bg-brand-600 text-white rounded-xl w-12 h-12 shrink-0 shadow-md">
@@ -250,7 +250,7 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
                     <motion.p 
                       initial={{ opacity: 0 }} 
                       animate={{ opacity: 1 }}
-                      className="text-xs text-red-600 font-semibold text-center bg-red-50 border border-red-100 py-2.5 px-3 rounded-lg"
+                      className="text-xs text-perigo font-semibold text-center bg-perigo-suave border border-perigo/20 py-2.5 px-3 rounded-lg"
                     >
                       {error}
                     </motion.p>
@@ -268,16 +268,16 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="shadow-2xl border-0 rounded-3xl overflow-hidden bg-white">
-              <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 p-6">
+            <Card className="shadow-2xl border-0 rounded-3xl overflow-hidden bg-papel">
+              <CardHeader className="bg-linho/50 border-b border-linha p-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center shrink-0">
                     <span className="text-white font-bold text-sm">{initials}</span>
                   </div>
                   <div className="text-left">
-                    <h3 className="font-extrabold text-zinc-900 text-base leading-tight">{guest.name}</h3>
-                    <p className="text-xs text-zinc-500 font-medium mt-0.5 flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5 text-zinc-500" />
+                    <h3 className="font-extrabold text-tinta text-base leading-tight">{guest.name}</h3>
+                    <p className="text-xs text-tinta-suave font-medium mt-0.5 flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5 text-tinta-suave" />
                       {guest.allowedCompanions > 0 
                         ? `Seu convite permite até ${guest.allowedCompanions} acompanhante(s)` 
                         : "Convite individual"}
@@ -290,14 +290,14 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
                 {/* Seletor de Acompanhantes */}
                 {guest.allowedCompanions > 0 && (
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                    <label className="block text-xs font-bold text-tinta-suave uppercase tracking-wider">
                       Quantos acompanhantes você trará?
                     </label>
                     <Select
                       value={String(companionsCount)}
                       onValueChange={(val) => setCompanionsCount(Number(val))}
                     >
-                      <SelectTrigger className="w-full h-11 bg-zinc-50 border border-zinc-200 rounded-xl text-zinc-800 text-sm font-medium">
+                      <SelectTrigger className="w-full h-11 bg-linho border border-linha rounded-xl text-tinta text-sm font-medium">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -318,9 +318,9 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="space-y-3 overflow-hidden border-t border-zinc-100 pt-4"
+                      className="space-y-3 overflow-hidden border-t border-linha pt-4"
                     >
-                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                      <label className="block text-xs font-bold text-tinta-suave uppercase tracking-wider">
                         Nomes dos acompanhantes:
                       </label>
                       {Array.from({ length: companionsCount }).map((_, i) => (
@@ -335,7 +335,7 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
                             placeholder={`Nome completo do Acompanhante ${i + 1}`}
                             value={companionsNames[i] || ""}
                             onChange={(e) => handleCompanionNameChange(i, e.target.value)}
-                            className="h-10 border-zinc-200 rounded-lg text-sm bg-zinc-50/30"
+                            className="h-10 border-linha rounded-lg text-sm bg-linho/30"
                             required
                           />
                         </motion.div>
@@ -345,24 +345,24 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
                 </AnimatePresence>
 
                 {/* Restrições Alimentares */}
-                <div className="space-y-2 border-t border-zinc-100 pt-4">
-                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                <div className="space-y-2 border-t border-linha pt-4">
+                  <label className="block text-xs font-bold text-tinta-suave uppercase tracking-wider">
                     Restrições Alimentares / Alergias?
                   </label>
                   <Input 
                     placeholder="Ex: Vegano, Intolerante a lactose, sem glúten..."
                     value={dietary}
                     onChange={(e) => setDietary(e.target.value)}
-                    className="h-11 border-zinc-200 rounded-xl text-sm"
+                    className="h-11 border-linha rounded-xl text-sm"
                   />
-                  <p className="text-xs text-zinc-500">Deixe em branco se não possuir nenhuma restrição.</p>
+                  <p className="text-xs text-tinta-suave">Deixe em branco se não possuir nenhuma restrição.</p>
                 </div>
 
                 {/* Botões de Ação */}
-                <div className="pt-4 border-t border-zinc-100 space-y-4">
-                  <p className="text-center font-bold text-zinc-800 text-sm">Podemos contar com sua presença?</p>
+                <div className="pt-4 border-t border-linha space-y-4">
+                  <p className="text-center font-bold text-tinta text-sm">Podemos contar com sua presença?</p>
                   
-                  {error && <p className="text-xs text-red-600 font-semibold text-center bg-red-50 py-2 rounded-lg">{error}</p>}
+                  {error && <p className="text-xs text-perigo font-semibold text-center bg-perigo-suave py-2 rounded-lg">{error}</p>}
 
                   <div className="grid grid-cols-2 gap-4">
                     <Button 
@@ -376,7 +376,7 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
                       onClick={() => handleConfirm("DECLINED")}
                       disabled={submitLoading}
                       variant="outline"
-                      className="border-stone-300 text-stone-700 hover:bg-stone-50 rounded-xl h-12 font-semibold"
+                      className="border-linha text-tinta-suave hover:bg-linho rounded-xl h-12 font-semibold"
                     >
                       Não poderei ir
                     </Button>

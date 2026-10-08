@@ -80,7 +80,7 @@ export function TimelineClient({ initialEvents, coupleNames }: { initialEvents: 
   };
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm">
+    <div className="bg-papel border border-zinc-200 rounded-xl p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6 border-b border-zinc-100 pb-4">
         <h2 className="text-xl font-bold flex items-center gap-2">
           <CalendarHeart className="text-zinc-500" aria-hidden="true" /> Eventos
@@ -175,7 +175,7 @@ export function TimelineClient({ initialEvents, coupleNames }: { initialEvents: 
                     variant="ghost" 
                     size="icon" 
                     onClick={() => handleDelete(event.id)}
-                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 hover:bg-red-50"
+                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-perigo hover:bg-perigo-suave"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

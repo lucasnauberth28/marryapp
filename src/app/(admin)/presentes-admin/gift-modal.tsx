@@ -99,7 +99,7 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
             name="title"
             placeholder="Ex: Jogo de Panelas Antiaderentes"
             required
-            className="bg-white border-zinc-200"
+            className="bg-papel border-zinc-200"
           />
         </div>
 
@@ -113,7 +113,7 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
             step="0.01"
             placeholder="0.00"
             required
-            className="bg-white border-zinc-200"
+            className="bg-papel border-zinc-200"
           />
         </div>
 
@@ -124,12 +124,12 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
           <Textarea
             name="description"
             placeholder="Uma mensagem carinhosa ou detalhes sobre o presente..."
-            className="bg-white border-zinc-200 min-h-[100px]"
+            className="bg-papel border-zinc-200 min-h-[100px]"
           />
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          <p className="text-sm text-perigo bg-perigo-suave border border-perigo/40 rounded-lg px-3 py-2">
             {error}
           </p>
         )}

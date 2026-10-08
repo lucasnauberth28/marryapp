@@ -57,7 +57,7 @@ function Field({
         placeholder={placeholder}
         defaultValue={defaultValue}
         required={required}
-        className="bg-white border-zinc-200"
+        className="bg-papel border-zinc-200"
       />
     </div>
   );
@@ -159,7 +159,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
               Tipo de Convidado
             </label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="bg-white border-zinc-200">
+              <SelectTrigger className="bg-papel border-zinc-200">
                 <SelectValue placeholder="Selecione o tipo..." />
               </SelectTrigger>
               <SelectContent>
@@ -196,7 +196,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
                   value={rsvpStatus}
                   onValueChange={(v) => setRsvpStatus(v as RsvpStatus)}
                 >
-                  <SelectTrigger className="bg-white border-zinc-200">
+                  <SelectTrigger className="bg-papel border-zinc-200">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -222,7 +222,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          <p className="text-sm text-perigo bg-perigo-suave border border-perigo/40 rounded-lg px-3 py-2">
             {error}
           </p>
         )}

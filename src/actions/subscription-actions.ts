@@ -125,10 +125,10 @@ export async function generateSubscriptionPix(data: PlanRegistrationData) {
           body: {
             transaction_amount: plan.price / 100,
             payment_method_id: "pix",
-            description: `Assinatura MarryApp: ${plan.name}`,
+            description: `Assinatura Aceito: ${plan.name}`,
             date_of_expiration: expiresAt.toISOString(),
             payer: {
-              email: email.success ? email.data : "contato@marryapp.com.br",
+              email: email.success ? email.data : "contato@aceito.com.br",
               first_name: name.split(" ")[0],
               last_name: name.split(" ").slice(1).join(" ") || "Cliente",
             },

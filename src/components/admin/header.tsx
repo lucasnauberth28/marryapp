@@ -2,51 +2,33 @@
 
 import { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
-
-import { 
-  Bell, 
-  Menu, 
-  X, 
-  LayoutDashboard, 
-  Users as UsersIcon, 
-  Wallet, 
-  Gift as GiftIcon, 
-  CheckSquare, 
-  Plane,
-  Heart,
-  MessageSquare,
-  LayoutGrid,
+import {
+  Bell,
+  Users as UsersIcon,
+  Wallet,
   Settings as SettingsIcon,
-  Shield, 
-  KeyRound, 
+  Shield,
+  KeyRound,
   LogOut,
-  QrCode,
   Calendar,
-  AlertTriangle,
   CheckCircle2,
-  Clock,
   ArrowRight,
-  Sparkles,
   MessageCircle,
   RefreshCw,
   CreditCard as CreditCardIcon,
-  Sliders,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { logout } from "@/actions/auth-actions";
 import { getSystemNotifications, SystemNotification } from "@/actions/notification-actions";
-import { NavList } from "@/components/admin/nav-list"
-
+import { hasPathAccess } from "@/lib/permissions";
+import { Logo } from "@/components/brand/logo";
 
 interface HeaderProps {
   role?: string;
@@ -56,8 +38,14 @@ interface HeaderProps {
   dateLabel?: string | null;
 }
 
+const TONE: Record<SystemNotification["type"], string> = {
+  alert: "bg-perigo-suave text-perigo",
+  warning: "bg-aviso-suave text-aviso",
+  info: "bg-ameixa-suave text-ameixa",
+  success: "bg-sucesso-suave text-sucesso",
+};
+
 export function Header({ role = "Admin", allowedPaths = [], coupleNames, initials, dateLabel }: HeaderProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState<SystemNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isPending, startTransition] = useTransition();
@@ -74,294 +62,141 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
     loadNotifications();
   }, []);
 
-  const handleMarkAllRead = () => {
-    setUnreadCount(0);
-  };
+  const can = (path: string) => hasPathAccess(allowedPaths, path);
 
   return (
-    <>
-      <header className="h-16 bg-paper/80 backdrop-blur border-b border-stone-200/50 flex items-center justify-between px-6 md:px-8 sticky top-0 z-40">
-        <div className="flex items-center gap-4">
-          {/* Menu Mobile Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden text-stone-600 w-10 h-10"
-            onClick={() => setIsMenuOpen(true)}
-            aria-label="Abrir menu"
-          >
-            <Menu className="w-8 h-8" />
-          </Button>
+    <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-linha bg-linho/85 px-4 backdrop-blur-md md:px-8">
+      <div className="flex min-w-0 items-center gap-3">
+        <Link href="/dashboard" aria-label="Aceito, início do painel" className="md:hidden">
+          <Logo variant="mark" height={28} />
+        </Link>
+        <p className="min-w-0 truncate">
+          <span className="font-display text-lg text-tinta md:text-xl">{coupleNames}</span>
+          {dateLabel && <span className="hidden text-sm text-tinta-suave md:inline"> · {dateLabel}</span>}
+        </p>
+      </div>
 
-          <div>
-            <p className="text-sm font-bold text-stone-850 md:hidden flex items-center gap-2 font-serif italic">
-              <Heart className="w-3.5 h-3.5 text-brand-300 fill-brand-300" aria-hidden="true" />
-              {coupleNames}
-            </p>
-            <p className="text-sm text-stone-600 hidden md:block">
-              <span className="font-serif italic font-semibold text-stone-800">{coupleNames}</span>
-              {dateLabel && <span className="text-stone-500"> · {dateLabel}</span>}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          {/* Dropdown da Central de Notificações */}
-          <DropdownMenu onOpenChange={(open) => open && loadNotifications()}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-stone-500 relative hover:text-brand transition-colors cursor-pointer" aria-label={unreadCount > 0 ? `Notificações (${unreadCount})` : "Notificações"}>
-                <Bell className="w-4 h-4" />
+      <div className="flex items-center gap-2 md:gap-3">
+        <DropdownMenu onOpenChange={(open) => open && loadNotifications()}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative h-11 w-11 cursor-pointer rounded-xl text-tinta-suave hover:bg-areia/70 hover:text-ameixa"
+              aria-label={unreadCount > 0 ? `Avisos (${unreadCount} novos)` : "Avisos"}
+            >
+              <Bell className="h-5 w-5" strokeWidth={1.75} />
+              {unreadCount > 0 && (
+                <span className="absolute right-2 top-2 grid h-4 min-w-4 place-items-center rounded-full border-2 border-linho bg-perigo px-1 text-[10px] font-bold text-on-ameixa">
+                  {unreadCount}
+                </span>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-[calc(100vw-32px)] max-w-96 overflow-hidden rounded-2xl border-linha bg-papel p-0 font-sans shadow-[var(--shadow-aceito-2)]" align="end">
+            <div className="flex items-center justify-between border-b border-linha px-4 py-3">
+              <p className="text-sm font-semibold text-tinta">Avisos</p>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-tinta-suave"
+                  onClick={loadNotifications}
+                  aria-label="Atualizar avisos"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
+                </Button>
                 {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 bg-red-500 text-white font-bold text-xs rounded-full flex items-center justify-center border-2 border-white shadow-xs animate-pulse">
-                    {unreadCount}
-                  </span>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-80 sm:w-96 p-0 overflow-hidden shadow-2xl rounded-2xl border-stone-200 font-sans" align="end">
-              <div className="p-4 bg-ivory border-b border-stone-200/70 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-brand" />
-                  <h3 className="font-bold text-sm text-stone-800">Notificações do Sistema</h3>
-                  {unreadCount > 0 && (
-                    <Badge className="bg-brand text-white text-xs h-5 px-1.5">
-                      {unreadCount} novas
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-stone-500 hover:text-stone-600"
-                    onClick={loadNotifications}
-                    title="Atualizar notificações"
-                    aria-label="Atualizar notificações"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isPending ? "animate-spin" : ""}`} />
-                  </Button>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={handleMarkAllRead}
-                      className="text-xs font-semibold text-brand hover:underline px-1 cursor-pointer"
-                    >
-                      Limpar
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              <div className="max-h-80 overflow-y-auto divide-y divide-stone-100">
-                {notifications.length === 0 ? (
-                  <div className="py-8 px-4 text-center text-stone-500 text-xs flex flex-col items-center gap-2">
-                    <CheckCircle2 className="w-6 h-6 text-emerald-700/60" />
-                    <span>Nenhum alerta pendente. Tudo em dia!</span>
-                  </div>
-                ) : (
-                  notifications.map((n) => (
-                    <Link
-                      key={n.id}
-                      href={n.linkHref}
-                      className="p-3.5 flex items-start gap-3 hover:bg-stone-50 transition-colors block group cursor-pointer"
-                    >
-                      <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${
-                        n.type === "alert"
-                          ? "bg-red-50 text-red-600 border border-red-200/60"
-                          : n.type === "warning"
-                          ? "bg-amber-50 text-amber-700 border border-amber-200/60"
-                          : "bg-blue-50 text-blue-600 border border-blue-200/60"
-                      }`}>
-                        {n.category === "finance" && <Wallet className="w-4 h-4" />}
-                        {n.category === "expense" && <Calendar className="w-4 h-4" />}
-                        {n.category === "guest" && <UsersIcon className="w-4 h-4" />}
-                        {n.category === "whatsapp" && <MessageCircle className="w-4 h-4" />}
-                      </div>
-
-                      <div className="flex-1 min-w-0 space-y-0.5">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-semibold text-xs text-stone-900 group-hover:text-brand transition-colors truncate">
-                            {n.title}
-                          </h4>
-                          <ArrowRight className="w-3 h-3 text-stone-300 group-hover:text-brand group-hover:translate-x-0.5 transition-all shrink-0 ml-1" />
-                        </div>
-                        <p className="text-xs text-stone-500 leading-snug line-clamp-2">
-                          {n.description}
-                        </p>
-                      </div>
-                    </Link>
-                  ))
+                  <button onClick={() => setUnreadCount(0)} className="cursor-pointer px-2 text-sm font-semibold text-ameixa hover:underline">
+                    Marcar como lidos
+                  </button>
                 )}
               </div>
+            </div>
 
-              <div className="p-2.5 bg-stone-50 border-t border-stone-200/60 text-center">
-                <Link
-                  href="/mensagens"
-                  className="text-xs font-semibold text-brand hover:underline inline-flex items-center gap-1"
-                >
-                  Ir para Central de Mensagens <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Menu de Usuário Repaginado & Módulo Carteira */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 ring-2 ring-stone-200 hover:ring-brand transition-all cursor-pointer" aria-label="Menu da conta">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src="/avatars/01.png" alt="@noivos" />
-                  <AvatarFallback className="bg-gradient-to-br from-brand-300 to-brand-400 text-white text-xs font-bold">{initials}</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-80 sm:w-84 p-0 overflow-hidden shadow-2xl rounded-3xl border-stone-200 bg-white font-sans animate-in fade-in zoom-in-95 duration-200" align="end" forceMount>
-              {/* Header do Usuário */}
-              <div className="p-4 bg-gradient-to-br from-brand-50 to-brand-100 border-b border-stone-200/60 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-11 w-11 ring-2 ring-white shadow-sm">
-                    <AvatarImage src="/avatars/01.png" alt="@noivos" />
-                    <AvatarFallback className="bg-brand text-white font-bold text-xs">{initials}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h4 className="font-bold text-sm text-stone-900 font-serif italic">{coupleNames}</h4>
-                    <span className="inline-block text-xs font-extrabold uppercase tracking-wider bg-brand text-white px-2 py-0.5 rounded-full mt-0.5">
-                      {role}
-                    </span>
-                  </div>
+            <div className="max-h-80 divide-y divide-linha overflow-y-auto" data-lenis-prevent>
+              {notifications.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 px-4 py-8 text-center text-sm text-tinta-suave">
+                  <CheckCircle2 className="h-6 w-6 text-sucesso" />
+                  <span>Nada pendente por aqui.</span>
                 </div>
-              </div>
-
-              {/* CARD DE DESTAQUE: MÓDULO CARTEIRA */}
-              <div className="p-3">
-                <Link
-                  href="/carteira"
-                  className="block p-4 bg-gradient-to-br from-stone-900 via-stone-850 to-stone-950 text-white rounded-2xl shadow-md border border-stone-800 hover:border-brand/50 transition-all duration-300 group relative overflow-hidden"
-                >
-                  <div className="absolute right-0 top-0 w-24 h-24 bg-white/5 rounded-full blur-xl pointer-events-none" />
-
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 bg-brand rounded-lg flex items-center justify-center text-white shadow-xs">
-                        <CreditCardIcon className="w-4 h-4" />
-                      </div>
-                      <span className="font-bold text-xs text-stone-200">Módulo Carteira</span>
+              ) : (
+                notifications.map((n) => (
+                  <Link key={n.id} href={n.linkHref} className="group flex items-start gap-3 p-3.5 transition-colors hover:bg-linho">
+                    <div className={`mt-0.5 shrink-0 rounded-xl p-2 ${TONE[n.type] ?? TONE.info}`}>
+                      {n.category === "finance" && <Wallet className="h-4 w-4" />}
+                      {n.category === "expense" && <Calendar className="h-4 w-4" />}
+                      {n.category === "guest" && <UsersIcon className="h-4 w-4" />}
+                      {n.category === "whatsapp" && <MessageCircle className="h-4 w-4" />}
                     </div>
-                    <span className="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
-                      Exclusivo
-                    </span>
-                  </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-tinta group-hover:text-ameixa">{n.title}</p>
+                      <p className="line-clamp-2 text-sm text-tinta-suave">{n.description}</p>
+                    </div>
+                    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-tinta-suave transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                ))
+              )}
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-                  <p className="text-xs text-stone-500 leading-snug">
-                    Gerencie cartões de crédito, saldos e movimentações financeiras.
-                  </p>
-
-                  <div className="mt-3 pt-2.5 border-t border-stone-800/80 flex items-center justify-between text-xs font-bold text-brand-300 group-hover:text-white transition-colors">
-                    <span>Acessar Minha Carteira</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </Link>
-              </div>
-
-              <DropdownMenuSeparator className="bg-stone-100 my-1" />
-
-              {/* Itens do Menu de Usuário */}
-              <div className="p-1 space-y-0.5">
-                {(allowedPaths.includes("*") || allowedPaths.includes("/configuracoes")) && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => (window.location.href = "/configuracoes")}
-                      className="px-3 py-2.5 rounded-xl text-xs font-semibold text-stone-700 hover:bg-stone-50 cursor-pointer flex items-center gap-2.5"
-                    >
-                      <SettingsIcon className="w-4 h-4 text-stone-500" />
-                      <span>Configurações Gerais</span>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => (window.location.href = "/usuarios")}
-                      className="px-3 py-2.5 rounded-xl text-xs font-semibold text-stone-700 hover:bg-stone-50 cursor-pointer flex items-center gap-2.5"
-                    >
-                      <KeyRound className="w-4 h-4 text-stone-500" />
-                      <span>Gerenciar Usuários</span>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => (window.location.href = "/perfis")}
-                      className="px-3 py-2.5 rounded-xl text-xs font-semibold text-stone-700 hover:bg-stone-50 cursor-pointer flex items-center gap-2.5"
-                    >
-                      <Shield className="w-4 h-4 text-stone-500" />
-                      <span>Perfis e Acessos (Roles)</span>
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </div>
-
-              <DropdownMenuSeparator className="bg-stone-100 my-1" />
-
-              {/* Botão de Logout */}
-              <div className="p-1.5 bg-stone-50/50">
-                <DropdownMenuItem
-                  onClick={() => logout()}
-                  className="px-3 py-2.5 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 cursor-pointer flex items-center gap-2.5"
-                >
-                  <LogOut className="w-4 h-4 text-red-600" />
-                  <span>Sair da Conta</span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-linha bg-ameixa-suave font-display text-base text-ameixa transition-shadow hover:shadow-[0_0_0_3px_var(--color-ameixa-suave)]"
+              aria-label="Menu da conta"
+            >
+              {initials}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-72 overflow-hidden rounded-2xl border-linha bg-papel p-0 font-sans shadow-[var(--shadow-aceito-2)]" align="end">
+            <div className="border-b border-linha px-4 py-3">
+              <p className="font-display text-lg text-tinta">{coupleNames}</p>
+              <p className="text-sm text-tinta-suave">{role}</p>
+            </div>
+            <div className="space-y-0.5 p-1.5">
+              {can("/carteira") && (
+                <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5 text-sm text-tinta">
+                  <Link href="/carteira" className="flex items-center gap-2.5">
+                    <CreditCardIcon className="h-4 w-4 text-tinta-suave" /> Carteira
+                  </Link>
                 </DropdownMenuItem>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
-
-      {/* Sliding Mobile Menu Drawer */}
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-[#4A3E3D]/40 backdrop-blur-sm transition-opacity duration-300 animate-in fade-in"
-            onClick={() => setIsMenuOpen(false)}
-          />
-
-          {/* Sidebar Drawer */}
-          <div className="absolute top-0 left-0 bottom-0 w-[260px] bg-paper shadow-2xl flex flex-col p-6 animate-in slide-in-from-left duration-300 border-r border-stone-200/50">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-200/50">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-brand-300 to-brand-400 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xs leading-none">{initials}</span>
-                </div>
-                <h2 className="font-semibold text-base text-stone-800 font-serif italic truncate">
-                  {coupleNames}
-                </h2>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsMenuOpen(false)}
-                className="text-stone-500 w-8 h-8 hover:bg-stone-100"
-                aria-label="Fechar menu"
-              >
-                <X className="w-5 h-5" />
-              </Button>
+              )}
+              {can("/configuracoes") && (
+                <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5 text-sm text-tinta">
+                  <Link href="/configuracoes" className="flex items-center gap-2.5">
+                    <SettingsIcon className="h-4 w-4 text-tinta-suave" /> Configurações
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {can("/usuarios") && (
+                <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5 text-sm text-tinta">
+                  <Link href="/usuarios" className="flex items-center gap-2.5">
+                    <KeyRound className="h-4 w-4 text-tinta-suave" /> Usuários
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {can("/perfis") && (
+                <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5 text-sm text-tinta">
+                  <Link href="/perfis" className="flex items-center gap-2.5">
+                    <Shield className="h-4 w-4 text-tinta-suave" /> Perfis de acesso
+                  </Link>
+                </DropdownMenuItem>
+              )}
             </div>
-
-            <nav aria-label="Menu principal" className="flex-1 overflow-y-auto">
-              <NavList allowedPaths={allowedPaths} onNavigate={() => setIsMenuOpen(false)} />
-            </nav>
-            
-            <div className="p-4 border-t border-stone-200/50 mt-auto">
-              <button 
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  logout();
-                }}
-                className="flex w-full items-center gap-3 px-3 py-2 rounded-lg transition-colors text-red-600 font-semibold text-xs tracking-wide hover:bg-red-50 cursor-pointer"
+            <DropdownMenuSeparator className="my-0 bg-linha" />
+            <div className="p-1.5">
+              <DropdownMenuItem
+                onClick={() => logout()}
+                className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-perigo focus:bg-perigo-suave focus:text-perigo"
               >
-                <LogOut className="w-4 h-4 shrink-0" />
-                <span>Sair</span>
-              </button>
+                <LogOut className="h-4 w-4" /> Sair
+              </DropdownMenuItem>
             </div>
-          </div>
-        </div>
-      )}
-    </>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </header>
   );
 }

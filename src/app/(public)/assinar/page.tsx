@@ -5,8 +5,8 @@ import { Loader2 } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Escolha seu Plano | MarryApp Checkout",
-  description: "Ative seu plano no MarryApp para noivos ou fornecedores.",
+  title: "Escolha seu Plano | Aceito Checkout",
+  description: "Ative seu plano no Aceito para noivos ou fornecedores.",
 };
 
 export default function AssinarPage() {

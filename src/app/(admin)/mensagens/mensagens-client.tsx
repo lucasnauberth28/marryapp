@@ -325,10 +325,10 @@ export function MensagensClient({
       {/* Header com Navegação por Abas */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-zinc-200/80 pb-4">
         <div>
-          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+          <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
             <span>Mensagens</span>
           </h1>
-          <p className="mt-1 text-sm text-stone-600">
+          <p className="mt-1 text-sm text-tinta-suave">
             Crie modelos de mensagens com badges de links clicáveis e envie convites diretamente para os convidados.
           </p>
         </div>
@@ -342,7 +342,7 @@ export function MensagensClient({
             }}
             className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
               activeTab === "templates"
-                ? "bg-white text-zinc-900 shadow-sm"
+                ? "bg-papel text-zinc-900 shadow-sm"
                 : "text-zinc-600 hover:text-zinc-900"
             }`}
           >
@@ -352,7 +352,7 @@ export function MensagensClient({
             onClick={() => setActiveTab("disparador")}
             className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
               activeTab === "disparador"
-                ? "bg-white text-zinc-900 shadow-sm"
+                ? "bg-papel text-zinc-900 shadow-sm"
                 : "text-zinc-600 hover:text-zinc-900"
             }`}
           >
@@ -382,7 +382,7 @@ export function MensagensClient({
                 <p className="text-xs text-zinc-500 max-w-[220px] leading-relaxed">
                   Crie um modelo customizado com imagem e badges de links diretos.
                 </p>
-                <span className="mt-4 text-xs font-bold text-amber-800 bg-amber-100 px-3.5 py-1.5 rounded-full border border-amber-200 group-hover:bg-amber-600 group-hover:text-white transition-all">
+                <span className="mt-4 text-xs font-bold text-aviso bg-amber-100 px-3.5 py-1.5 rounded-full border border-amber-200 group-hover:bg-amber-600 group-hover:text-white transition-all">
                   + Abrir Criador
                 </span>
               </div>
@@ -401,7 +401,7 @@ export function MensagensClient({
                 return (
                   <div
                     key={t.id}
-                    className="bg-white border border-zinc-200/80 hover:border-amber-400 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group relative"
+                    className="bg-papel border border-zinc-200/80 hover:border-amber-400 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group relative"
                   >
                     <div>
                       {/* Top Badges */}
@@ -428,7 +428,7 @@ export function MensagensClient({
                       </div>
 
                       {/* Title & Content Snippet */}
-                      <h3 className="font-bold text-zinc-900 text-base mb-2 group-hover:text-amber-800 transition-colors">
+                      <h3 className="font-bold text-zinc-900 text-base mb-2 group-hover:text-aviso transition-colors">
                         {t.name}
                       </h3>
                       
@@ -446,9 +446,9 @@ export function MensagensClient({
                             {badgeList.map((b, idx) => (
                               <span
                                 key={idx}
-                                className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-1 rounded-lg font-medium flex items-center gap-1"
+                                className="text-xs bg-sucesso-suave text-sucesso border border-emerald-200 px-2.5 py-1 rounded-lg font-medium flex items-center gap-1"
                               >
-                                <LinkIcon className="w-3 h-3 text-emerald-700" />
+                                <LinkIcon className="w-3 h-3 text-sucesso" />
                                 {b.text}
                               </span>
                             ))}
@@ -463,7 +463,7 @@ export function MensagensClient({
                         variant="outline"
                         size="sm"
                         onClick={() => handleEdit(t)}
-                        className="rounded-xl flex-1 text-xs font-semibold hover:bg-amber-50 hover:text-amber-900 hover:border-amber-300"
+                        className="rounded-xl flex-1 text-xs font-semibold hover:bg-aviso-suave hover:text-amber-900 hover:border-amber-300"
                       >
                         Editar Template
                       </Button>
@@ -471,7 +471,7 @@ export function MensagensClient({
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(t.id)}
-                        className="rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50 h-9 w-9 p-0"
+                        className="rounded-xl text-perigo hover:text-perigo hover:bg-perigo-suave h-9 w-9 p-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -509,7 +509,7 @@ export function MensagensClient({
               <Card className="lg:col-span-7 shadow-md border-zinc-200/80 rounded-2xl p-6 space-y-6">
                 <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
                   <h3 className="font-bold text-lg text-zinc-900 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-amber-700" />
+                    <Sparkles className="w-5 h-5 text-aviso" />
                     {selectedTemplate ? `Editar: ${selectedTemplate.name}` : "Criar Novo Template"}
                   </h3>
                   {selectedTemplate && (
@@ -574,17 +574,17 @@ export function MensagensClient({
                   </div>
 
                   {/* Gerenciador de Badges de Links Diretos */}
-                  <div className="border border-amber-200/80 bg-amber-50/40 p-4 rounded-xl space-y-3">
+                  <div className="border border-amber-200/80 bg-aviso-suave/40 p-4 rounded-xl space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
-                        <LinkIcon className="w-4 h-4 text-amber-700" />
+                        <LinkIcon className="w-4 h-4 text-aviso" />
                         <span>Badges de Links Clicáveis no WhatsApp</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Button type="button" variant="outline" size="sm" onClick={applyRsvpPreset} className="text-xs h-7 rounded-lg bg-white">
+                        <Button type="button" variant="outline" size="sm" onClick={applyRsvpPreset} className="text-xs h-7 rounded-lg bg-papel">
                           + Preset RSVP
                         </Button>
-                        <Button type="button" variant="outline" size="sm" onClick={applyGiftsPreset} className="text-xs h-7 rounded-lg bg-white">
+                        <Button type="button" variant="outline" size="sm" onClick={applyGiftsPreset} className="text-xs h-7 rounded-lg bg-papel">
                           + Preset Presentes
                         </Button>
                       </div>
@@ -602,7 +602,7 @@ export function MensagensClient({
                             value={btn.text}
                             onChange={(e) => handleUpdateButton(idx, e.target.value)}
                             placeholder="Nome da Badge (Ex: ✅ Confirmar Presença)"
-                            className="rounded-lg h-9 text-sm bg-white"
+                            className="rounded-lg h-9 text-sm bg-papel"
                           />
                           <Button
                             type="button"
@@ -610,7 +610,7 @@ export function MensagensClient({
                             size="sm"
                             onClick={() => handleRemoveButton(idx)}
                             aria-label="Remover botão"
-                            className="text-red-600 hover:text-red-700 h-9 w-9 p-0 rounded-lg"
+                            className="text-perigo hover:text-perigo h-9 w-9 p-0 rounded-lg"
                           >
                             <X className="w-4 h-4" />
                           </Button>
@@ -624,7 +624,7 @@ export function MensagensClient({
                         variant="outline"
                         size="sm"
                         onClick={handleAddButton}
-                        className="w-full text-xs rounded-lg bg-white border-dashed text-zinc-600 hover:text-zinc-900"
+                        className="w-full text-xs rounded-lg bg-papel border-dashed text-zinc-600 hover:text-zinc-900"
                       >
                         <Plus className="w-3.5 h-3.5 mr-1" />
                         Adicionar Badge ({buttonsList.length}/3)
@@ -689,7 +689,7 @@ export function MensagensClient({
               <div className="lg:col-span-5 sticky top-24">
                 {/* Seletor de Cores do iPhone 15 Plus */}
                 <div className="text-center mb-3">
-                  <div className="inline-flex items-center gap-1 bg-white p-1 rounded-2xl border border-zinc-200 shadow-sm text-xs font-medium">
+                  <div className="inline-flex items-center gap-1 bg-papel p-1 rounded-2xl border border-zinc-200 shadow-sm text-xs font-medium">
                     <span className="text-xs text-zinc-500 font-semibold px-2 flex items-center gap-1">
                       <Smartphone className="w-3.5 h-3.5 text-zinc-700" /> iPhone 15 Plus:
                     </span>
@@ -817,7 +817,7 @@ export function MensagensClient({
                                 <div key={idx} className="bg-[#111b21] p-1.5 rounded-lg border border-emerald-700/40 font-mono text-xs text-emerald-300">
                                   <span className="font-bold text-white block">{b.text}:</span>
                                   <span className="underline text-emerald-400 truncate block">
-                                    {b.text.toLowerCase().includes("presente") ? "https://marryapp.vercel.app/presentes" : "https://marryapp.vercel.app/rsvp"}
+                                    {b.text.toLowerCase().includes("presente") ? "https://aceito.com.br/presentes" : "https://aceito.com.br/rsvp"}
                                   </span>
                                 </div>
                               ))}
@@ -842,7 +842,7 @@ export function MensagensClient({
                     </div>
 
                     <div className="bg-[#1f2c34] pt-1 pb-1 flex justify-center rounded-b-[40px]">
-                      <div className="w-28 h-1 bg-white/70 rounded-full" />
+                      <div className="w-28 h-1 bg-papel/70 rounded-full" />
                     </div>
                   </div>
                 </div>
@@ -861,7 +861,7 @@ export function MensagensClient({
             <Card className="shadow-md border-amber-200/80 bg-gradient-to-r from-amber-50/60 via-white to-amber-50/30 rounded-2xl p-6 relative overflow-hidden">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-bold text-base text-amber-950 flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-amber-700" />
+                  <Bell className="w-5 h-5 text-aviso" />
                   Notificações & Lembretes Automáticos do Sistema
                 </h3>
               </div>
@@ -907,7 +907,7 @@ export function MensagensClient({
                   Selecione o Template de Mensagem
                 </h3>
                 {activeTemplateObj && (
-                  <span className="text-xs text-amber-800 font-semibold bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+                  <span className="text-xs text-aviso font-semibold bg-aviso-suave px-2.5 py-1 rounded-full border border-amber-200">
                     Template Selecionado
                   </span>
                 )}
@@ -981,7 +981,7 @@ export function MensagensClient({
                   <button
                     onClick={() => setGuestFilter("pending")}
                     className={`px-3 py-1 rounded-xl font-semibold transition ${
-                      guestFilter === "pending" ? "bg-amber-700 text-white" : "bg-amber-50 text-amber-800 hover:bg-amber-100"
+                      guestFilter === "pending" ? "bg-amber-700 text-white" : "bg-aviso-suave text-aviso hover:bg-amber-100"
                     }`}
                   >
                     RSVP Pendente
@@ -1007,15 +1007,15 @@ export function MensagensClient({
               </div>
 
               {/* Lista Selecionável de Convidados */}
-              <div className="max-h-80 overflow-y-auto border border-zinc-100 rounded-2xl divide-y divide-zinc-100 bg-white">
+              <div className="max-h-80 overflow-y-auto border border-zinc-100 rounded-2xl divide-y divide-zinc-100 bg-papel">
                 {filteredGuests.map((g) => {
                   const isChecked = selectedGuests.includes(g.id);
                   return (
                     <div
                       key={g.id}
                       onClick={() => toggleGuest(g.id)}
-                      className={`flex items-center justify-between p-3 cursor-pointer hover:bg-amber-50/40 transition-all ${
-                        isChecked ? "bg-amber-50/70" : ""
+                      className={`flex items-center justify-between p-3 cursor-pointer hover:bg-aviso-suave/40 transition-all ${
+                        isChecked ? "bg-aviso-suave/70" : ""
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -1023,7 +1023,7 @@ export function MensagensClient({
                           type="checkbox"
                           checked={isChecked}
                           readOnly
-                          className="rounded text-amber-700 focus:ring-amber-600 h-4 w-4 border-zinc-300 cursor-pointer"
+                          className="rounded text-aviso focus:ring-amber-600 h-4 w-4 border-zinc-300 cursor-pointer"
                         />
                         <div>
                           <p className="text-sm font-bold text-zinc-900">{g.name}</p>
@@ -1033,12 +1033,12 @@ export function MensagensClient({
 
                       <div className="flex items-center gap-2">
                         {g.rsvpStatus === "CONFIRMED" && (
-                          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                          <span className="text-xs font-semibold text-sucesso bg-sucesso-suave px-2 py-0.5 rounded-full">
                             Confirmado
                           </span>
                         )}
                         {g.hasReceivedMessage ? (
-                          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full flex items-center gap-1 border border-emerald-200">
+                          <span className="text-xs font-semibold text-sucesso bg-sucesso-suave px-2.5 py-1 rounded-full flex items-center gap-1 border border-emerald-200">
                             <CheckCircle2 className="w-3.5 h-3.5" /> Enviado
                           </span>
                         ) : (
@@ -1071,27 +1071,27 @@ export function MensagensClient({
 
               <div className="flex justify-between items-center bg-zinc-50 p-3 rounded-xl border border-zinc-100">
                 <span className="text-zinc-500 font-medium">Destinatários Selecionados:</span>
-                <span className="font-extrabold text-amber-700 text-xl">
+                <span className="font-extrabold text-aviso text-xl">
                   {selectedGuests.length}
                 </span>
               </div>
 
               {sendStatus?.success && (
-                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-900 text-sm flex items-start gap-2.5 animate-in slide-in-from-top-1">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-700 mt-0.5 shrink-0" />
+                <div className="p-4 bg-sucesso-suave border border-emerald-200 rounded-2xl text-emerald-900 text-sm flex items-start gap-2.5 animate-in slide-in-from-top-1">
+                  <CheckCircle2 className="w-5 h-5 text-sucesso mt-0.5 shrink-0" />
                   <div>
-                    <p className="font-bold text-xs uppercase tracking-wider text-emerald-800">Envio Concluído!</p>
-                    <p className="text-xs text-emerald-700 mt-0.5">{sendStatus.message || "Mensagens entregues com sucesso!"}</p>
+                    <p className="font-bold text-xs uppercase tracking-wider text-sucesso">Envio Concluído!</p>
+                    <p className="text-xs text-sucesso mt-0.5">{sendStatus.message || "Mensagens entregues com sucesso!"}</p>
                   </div>
                 </div>
               )}
 
               {sendStatus?.error && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-900 text-sm flex items-start gap-2.5">
-                  <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
+                <div className="p-4 bg-perigo-suave border border-perigo/40 rounded-2xl text-red-900 text-sm flex items-start gap-2.5">
+                  <AlertCircle className="w-5 h-5 text-perigo mt-0.5 shrink-0" />
                   <div>
                     <p className="font-bold text-xs uppercase tracking-wider text-red-800">Falha no Envio</p>
-                    <p className="text-xs text-red-700 mt-0.5">{sendStatus.error}</p>
+                    <p className="text-xs text-perigo mt-0.5">{sendStatus.error}</p>
                   </div>
                 </div>
               )}

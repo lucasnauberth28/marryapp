@@ -112,10 +112,10 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+          <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
             Usuários
           </h1>
-          <p className="mt-1 text-sm text-stone-600">
+          <p className="mt-1 text-sm text-tinta-suave">
             Gerencie quem tem acesso ao painel e defina seus perfis.
           </p>
         </div>
@@ -243,7 +243,7 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
                   <Button aria-label="Editar" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-zinc-600" onClick={() => openEditForm(user)}>
                     <Edit2 className="w-4 h-4" />
                   </Button>
-                  <Button aria-label="Excluir" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-600" onClick={() => handleDelete(user.id)}>
+                  <Button aria-label="Excluir" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-perigo" onClick={() => handleDelete(user.id)}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>

@@ -51,7 +51,7 @@ function contrast(a: [number, number, number], b: [number, number, number]) {
   return (l1 + 0.05) / (l2 + 0.05);
 }
 
-const IVORY: [number, number, number] = [0xfa, 0xf8, 0xf5];
+const IVORY: [number, number, number] = [0xf7, 0xf3, 0xec];
 
 /**
  * Cor de destaque legível: escurece a cor escolhida até ter contraste 5:1 sobre o fundo marfim
@@ -60,7 +60,7 @@ const IVORY: [number, number, number] = [0xfa, 0xf8, 0xf5];
  */
 export function readableAccent(hex: string): { color: string; adjusted: boolean } {
   const rgb = hexToRgb(hex);
-  if (!rgb) return { color: "#8C6D45", adjusted: false };
+  if (!rgb) return { color: "#5E2B4E", adjusted: false };
   let current = rgb;
   let steps = 0;
   while (contrast(current, IVORY) < 5 && steps < 40) {
@@ -75,7 +75,7 @@ export function readableAccent(hex: string): { color: string; adjusted: boolean 
  * Variáveis CSS que aplicam a cor do casal a uma seção (tokens bg-brand, text-brand-600 ...).
  */
 export function brandThemeStyle(hex: string | null | undefined): Record<string, string> {
-  const { color } = readableAccent(hex || "#8C6D45");
+  const { color } = readableAccent(hex || "#5E2B4E");
   return {
     "--color-brand": color,
     "--color-brand-500": color,

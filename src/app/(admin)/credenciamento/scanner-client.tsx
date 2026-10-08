@@ -66,7 +66,7 @@ export function ScannerClient() {
 
   const handleScannedCode = async (text: string) => {
     if (!text.startsWith("GUEST:")) {
-      setResult({ type: "error", message: "QR Code Inválido. Não pertence ao MarryApp." });
+      setResult({ type: "error", message: "QR Code Inválido. Não pertence ao Aceito." });
       return;
     }
 
@@ -88,7 +88,7 @@ export function ScannerClient() {
   };
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm flex flex-col items-center justify-center min-h-[400px]">
+    <div className="bg-papel border border-zinc-200 rounded-xl p-6 shadow-sm flex flex-col items-center justify-center min-h-[400px]">
       <AnimatePresence mode="wait">
         {loading && (
           <motion.div 
@@ -96,7 +96,7 @@ export function ScannerClient() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="flex flex-col items-center justify-center p-12 text-zinc-500"
           >
-            <Loader2 className="w-12 h-12 animate-spin mb-4 text-emerald-700" />
+            <Loader2 className="w-12 h-12 animate-spin mb-4 text-sucesso" />
             <p>Validando ingresso...</p>
           </motion.div>
         )}
@@ -133,8 +133,8 @@ export function ScannerClient() {
             className="flex flex-col items-center text-center max-w-md w-full"
           >
             {result && (
-              <div className={`w-full p-6 mb-8 rounded-xl border ${result.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
-                {result.type === 'success' ? <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-emerald-700" /> : <XCircle className="w-12 h-12 mx-auto mb-3 text-red-600" />}
+              <div className={`w-full p-6 mb-8 rounded-xl border ${result.type === 'success' ? 'bg-sucesso-suave border-emerald-200 text-sucesso' : 'bg-perigo-suave border-perigo/40 text-perigo'}`}>
+                {result.type === 'success' ? <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-sucesso" /> : <XCircle className="w-12 h-12 mx-auto mb-3 text-perigo" />}
                 <p className="font-semibold text-lg">{result.message}</p>
               </div>
             )}

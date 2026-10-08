@@ -1,24 +1,40 @@
 // src/app/layout.tsx
-import type { Metadata } from "next";
-import { Cormorant_Garamond, Outfit } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Bodoni_Moda, IBM_Plex_Mono, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { RevealObserver } from "@/components/motion/reveal-observer";
 
-const outfit = Outfit({
+const instrumentSans = Instrument_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-serif",
+// Display: só a partir de 24px. Variável com eixo óptico (opsz) para nomes e títulos.
+const bodoniModa = Bodoni_Moda({
+  variable: "--font-display",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
   style: ["normal", "italic"],
+  axes: ["opsz"],
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: { default: "MarryApp", template: "%s · MarryApp" },
-  description: "Organize o casamento, receba presentes e confirme presenças em um só lugar.",
+  title: { default: "Aceito", template: "%s · Aceito" },
+  description: "Do convite ao grande dia, tudo num só sim. Site do casal, confirmações pelo WhatsApp, presentes em Pix e fornecedores.",
+  applicationName: "Aceito",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#F7F3EC",
 };
 
 export default function RootLayout({
@@ -27,20 +43,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${outfit.variable} ${cormorant.variable} antialiased`}>
-      <body className="min-h-screen bg-ivory font-sans text-stone-800">
+    <html
+      lang="pt-BR"
+      className={`${instrumentSans.variable} ${bodoniModa.variable} ${plexMono.variable} antialiased`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* Antes da pintura: habilita as animações de entrada só quando há JavaScript. */}
+        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+      </head>
+      <body className="min-h-screen bg-linho font-sans text-tinta">
+        <RevealObserver />
         {children}
-        <Toaster 
-          position="bottom-right" 
-          richColors 
-          closeButton 
+        <Toaster
+          position="bottom-right"
+          richColors
+          closeButton
           duration={4000}
           toastOptions={{
             style: {
               borderRadius: "16px",
               padding: "16px",
               fontSize: "14px",
-              boxShadow: "0 10px 30px -10px rgba(0,0,0,0.15)",
+              boxShadow: "0 16px 40px -12px rgba(35, 28, 36, 0.22)",
             },
           }}
         />

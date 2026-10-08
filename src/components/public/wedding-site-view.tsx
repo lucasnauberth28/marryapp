@@ -32,6 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createGuestBookEntry } from "@/actions/site-builder-actions";
 import { brandThemeStyle, daysUntil } from "@/lib/wedding-format";
 import { toast } from "sonner";
+import { Reveal, RevealWords } from "@/components/motion/reveal";
 
 export interface WeddingSiteSettings {
   title?: string | null;
@@ -128,11 +129,12 @@ function parsePalette(raw?: string | null): string[] {
 
 function SectionHeading({ eyebrow, title, children }: { eyebrow: string; title: string; children?: ReactNode }) {
   return (
-    <div className="mx-auto mb-12 max-w-2xl text-center">
-      <p className="font-sans text-xs font-semibold uppercase tracking-wider text-brand-600">{eyebrow}</p>
-      <h2 className="mt-2 font-serif text-3xl font-semibold text-stone-900 text-balance sm:text-4xl">{title}</h2>
-      {children && <div className="mt-3 font-sans text-sm leading-relaxed text-stone-600">{children}</div>}
-    </div>
+    <Reveal className="mx-auto mb-14 max-w-2xl text-center">
+      <p className="font-sans text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">{eyebrow}</p>
+      <h2 className="mt-3 font-display text-4xl leading-[1.1] text-tinta text-balance sm:text-5xl">{title}</h2>
+      <span className="mx-auto mt-5 block h-px w-12 bg-brand/40" aria-hidden="true" />
+      {children && <div className="mt-5 font-sans text-base leading-relaxed text-tinta-suave">{children}</div>}
+    </Reveal>
   );
 }
 
@@ -199,17 +201,17 @@ export function WeddingSiteView({
   const linkProps = preview ? { tabIndex: -1, "aria-disabled": true, onClick: (e: React.MouseEvent) => e.preventDefault() } : {};
 
   return (
-    <div style={themeStyle} className="min-h-screen bg-ivory font-sans text-stone-900 antialiased selection:bg-brand/20">
+    <div style={themeStyle} className="min-h-screen overflow-x-clip bg-ivory font-sans text-tinta antialiased selection:bg-brand/20">
       {/* CAPA */}
       <section
-        className={`relative flex min-h-[85vh] flex-col items-center justify-center overflow-hidden border-b border-stone-200 px-6 py-24 text-center ${
+        className={`relative flex min-h-[92svh] flex-col items-center justify-center overflow-hidden border-b border-linha px-6 py-24 text-center ${
           hasHeroImage ? "text-white" : ""
         }`}
       >
         {hasHeroImage ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element -- imagem enviada pelo casal, de domínio variável */}
-            <img src={s.heroImageUrl!} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <img src={s.heroImageUrl!} alt="" className="hero-settle absolute inset-0 h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-black/60" aria-hidden="true" />
           </>
         ) : (
@@ -220,22 +222,26 @@ export function WeddingSiteView({
         )}
 
         <div className="relative z-10 mx-auto flex max-w-4xl flex-col items-center">
-          <p className={`mb-4 text-xs font-semibold uppercase tracking-[0.3em] sm:text-sm ${hasHeroImage ? "text-white" : "text-brand-600"}`}>
+          <Reveal as="p" variant="fade" className={`mb-5 text-xs font-semibold uppercase tracking-[0.3em] sm:text-sm ${hasHeroImage ? "text-white" : "text-brand-600"}`}>
             Convidamos você para celebrar
-          </p>
+          </Reveal>
 
-          <h1 className={`font-serif text-5xl font-semibold leading-none tracking-tight text-balance sm:text-7xl md:text-8xl ${hasHeroImage ? "text-white" : "text-stone-900"}`}>
-            {coupleNames}
+          <h1 className={`font-display text-6xl italic leading-[0.95] tracking-[-0.02em] text-balance sm:text-8xl md:text-9xl ${hasHeroImage ? "text-white" : "text-tinta"}`}>
+            <RevealWords text={coupleNames} baseDelay={150} step={110} />
           </h1>
 
           {s.subtitle && (
-            <p className={`mt-5 text-base font-medium sm:text-xl ${hasHeroImage ? "text-white" : "text-stone-600"}`}>{s.subtitle}</p>
+            <Reveal as="p" delay={450} className={`mt-6 text-base font-medium sm:text-xl ${hasHeroImage ? "text-white" : "text-tinta-suave"}`}>
+              {s.subtitle}
+            </Reveal>
           )}
 
           {(dateLabel || s.ceremonyTime || s.locationName) && (
-            <ul
-              className={`mt-7 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-3xl border px-6 py-3 text-sm font-semibold ${
-                hasHeroImage ? "border-white/25 bg-black/25 text-white backdrop-blur" : "border-stone-200/80 bg-white/80 text-stone-700 backdrop-blur"
+            <Reveal
+              as="ul"
+              delay={550}
+              className={`mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-3xl border px-6 py-3 text-sm font-semibold ${
+                hasHeroImage ? "border-white/25 bg-black/25 text-white backdrop-blur" : "border-linha/80 bg-papel/80 text-tinta-suave backdrop-blur"
               }`}
             >
               {dateLabel && (
@@ -253,18 +259,18 @@ export function WeddingSiteView({
                   <MapPin className="h-4 w-4" aria-hidden="true" /> {s.locationName}
                 </li>
               )}
-            </ul>
+            </Reveal>
           )}
 
           {daysToGo !== null && daysToGo >= 0 && (
-            <p className={`mt-6 font-serif text-2xl italic ${hasHeroImage ? "text-white" : "text-brand-600"}`} suppressHydrationWarning>
-              {daysToGo === 0 ? "É hoje!" : daysToGo === 1 ? "Falta 1 dia" : `Faltam ${daysToGo} dias`}
-            </p>
+            <Reveal as="p" variant="fade" delay={650} className={`mt-7 font-display text-2xl italic ${hasHeroImage ? "text-white" : "text-brand-600"}`}>
+              <span suppressHydrationWarning>{daysToGo === 0 ? "É hoje!" : daysToGo === 1 ? "Falta 1 dia" : `Faltam ${daysToGo} dias`}</span>
+            </Reveal>
           )}
 
-          <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+          <Reveal delay={750} className="mt-10 flex flex-wrap items-center justify-center gap-3">
             {showRsvp && (
-              <Button asChild className="h-12 rounded-full bg-brand px-7 text-sm font-semibold text-white shadow-lg hover:bg-brand-600">
+              <Button asChild className="lift h-12 rounded-full bg-brand px-7 text-sm font-semibold text-white shadow-lg hover:bg-brand-600">
                 <Link href="/rsvp" {...linkProps}>
                   <CalendarCheck className="h-4 w-4" aria-hidden="true" /> Confirmar presença
                 </Link>
@@ -275,7 +281,7 @@ export function WeddingSiteView({
                 asChild
                 variant="outline"
                 className={`h-12 rounded-full px-7 text-sm font-semibold ${
-                  hasHeroImage ? "border-white/60 bg-white/10 text-white hover:bg-white/20 hover:text-white" : "border-stone-300 text-stone-800 hover:bg-white"
+                  hasHeroImage ? "border-white/60 bg-papel/10 text-white hover:bg-papel/20 hover:text-white" : "border-linha text-tinta hover:bg-papel"
                 }`}
               >
                 <Link href="/presentes" {...linkProps}>
@@ -283,8 +289,15 @@ export function WeddingSiteView({
                 </Link>
               </Button>
             )}
-          </div>
+          </Reveal>
         </div>
+
+        <span
+          className={`absolute bottom-8 left-1/2 hidden h-12 w-px -translate-x-1/2 overflow-hidden sm:block ${hasHeroImage ? "bg-white/30" : "bg-linha"}`}
+          aria-hidden="true"
+        >
+          <span className={`scroll-cue block h-1/2 w-full ${hasHeroImage ? "bg-white" : "bg-brand"}`} />
+        </span>
       </section>
 
       {/* NOSSA HISTÓRIA */}
@@ -295,28 +308,35 @@ export function WeddingSiteView({
           </SectionHeading>
 
           {s.couplePhotoUrl && (
-            // eslint-disable-next-line @next/next/no-img-element -- imagem enviada pelo casal
-            <img
-              src={s.couplePhotoUrl}
-              alt={`Foto de ${coupleNames}`}
-              className="mx-auto mb-12 aspect-[4/3] w-full max-w-2xl rounded-3xl object-cover shadow-md"
-            />
+            <Reveal variant="arch" className="arch mx-auto mb-16 aspect-[4/5] w-full max-w-md overflow-hidden shadow-[var(--shadow-aceito-2)]">
+              {/* eslint-disable-next-line @next/next/no-img-element -- imagem enviada pelo casal */}
+              <img src={s.couplePhotoUrl} alt={`Foto de ${coupleNames}`} className="h-full w-full object-cover" />
+            </Reveal>
           )}
 
           {storyItems.length > 0 && (
             <ol className="flex flex-col gap-6">
-              {storyItems.map((item) => (
-                <li key={item.id} className="flex flex-col items-center gap-6 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm md:flex-row md:p-8">
+              {storyItems.map((item, i) => (
+                <Reveal
+                  as="li"
+                  key={item.id}
+                  variant={i % 2 === 0 ? "left" : "right"}
+                  className={`flex flex-col items-center gap-6 rounded-3xl border border-linha bg-papel p-6 shadow-sm md:p-8 ${
+                    i % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+                  }`}
+                >
                   {item.imageUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element -- imagem enviada pelo casal
-                    <img src={item.imageUrl} alt="" className="h-48 w-full shrink-0 rounded-2xl object-cover md:w-56" />
+                    <div className="zoom-media h-56 w-full shrink-0 overflow-hidden rounded-2xl md:h-48 md:w-56">
+                      {/* eslint-disable-next-line @next/next/no-img-element -- imagem enviada pelo casal */}
+                      <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+                    </div>
                   )}
                   <div className="min-w-0 flex-1">
                     {item.dateLabel && <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">{item.dateLabel}</p>}
-                    <h3 className="mt-1 font-serif text-2xl font-semibold text-stone-900">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-stone-600">{item.description}</p>
+                    <h3 className="mt-1 font-display text-3xl text-tinta">{item.title}</h3>
+                    <p className="mt-2 text-base leading-relaxed text-tinta-suave">{item.description}</p>
                   </div>
-                </li>
+                </Reveal>
               ))}
             </ol>
           )}
@@ -325,30 +345,30 @@ export function WeddingSiteView({
 
       {/* LOCAL E HORÁRIOS */}
       {showLocation && (
-        <section className="border-y border-stone-200 bg-white py-24">
+        <section className="border-y border-linha bg-papel py-24">
           <div className="mx-auto max-w-5xl px-6">
             <SectionHeading eyebrow="Local e horários" title="Onde vamos celebrar" />
 
-            <div className="grid gap-6 rounded-3xl border border-stone-200/80 bg-ivory p-6 sm:p-8 md:grid-cols-[1.4fr_1fr]">
+            <Reveal variant="scale" className="grid gap-6 rounded-3xl border border-linha/80 bg-ivory p-6 sm:p-8 md:grid-cols-[1.4fr_1fr]">
               <div className="min-w-0">
                 <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/10 text-brand">
                   <MapPin className="h-6 w-6" aria-hidden="true" />
                 </div>
-                {s.locationName && <h3 className="font-serif text-2xl font-semibold text-stone-900">{s.locationName}</h3>}
-                {address && <p className="mt-2 text-sm text-stone-600">{address}</p>}
+                {s.locationName && <h3 className="font-display text-3xl text-tinta">{s.locationName}</h3>}
+                {address && <p className="mt-2 text-sm text-tinta-suave">{address}</p>}
 
                 {(s.ceremonyTime || s.receptionTime) && (
-                  <dl className="mt-6 grid gap-2 border-t border-stone-200/80 pt-5 text-sm">
+                  <dl className="mt-6 grid gap-2 border-t border-linha/80 pt-5 text-sm">
                     {s.ceremonyTime && (
                       <div className="flex justify-between gap-4">
-                        <dt className="text-stone-600">Cerimônia</dt>
-                        <dd className="font-semibold tabular-nums text-stone-900">{s.ceremonyTime}</dd>
+                        <dt className="text-tinta-suave">Cerimônia</dt>
+                        <dd className="font-semibold tabular-nums text-tinta">{s.ceremonyTime}</dd>
                       </div>
                     )}
                     {s.receptionTime && (
                       <div className="flex justify-between gap-4">
-                        <dt className="text-stone-600">Recepção</dt>
-                        <dd className="font-semibold tabular-nums text-stone-900">{s.receptionTime}</dd>
+                        <dt className="text-tinta-suave">Recepção</dt>
+                        <dd className="font-semibold tabular-nums text-tinta">{s.receptionTime}</dd>
                       </div>
                     )}
                   </dl>
@@ -357,23 +377,23 @@ export function WeddingSiteView({
 
               {(mapsUrl || wazeUrl || uberUrl) && (
                 <div className="flex flex-col justify-center gap-3">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">Como chegar</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-tinta-suave">Como chegar</p>
                   {mapsUrl && (
-                    <Button asChild variant="outline" className="h-12 justify-start gap-3 rounded-2xl border-stone-300 bg-white font-semibold">
+                    <Button asChild variant="outline" className="h-12 justify-start gap-3 rounded-2xl border-linha bg-papel font-semibold">
                       <a href={mapsUrl} target="_blank" rel="noopener noreferrer" {...linkProps}>
                         <MapIcon className="h-4 w-4 text-brand" aria-hidden="true" /> Ver no Google Maps
                       </a>
                     </Button>
                   )}
                   {wazeUrl && (
-                    <Button asChild variant="outline" className="h-12 justify-start gap-3 rounded-2xl border-stone-300 bg-white font-semibold">
+                    <Button asChild variant="outline" className="h-12 justify-start gap-3 rounded-2xl border-linha bg-papel font-semibold">
                       <a href={wazeUrl} target="_blank" rel="noopener noreferrer" {...linkProps}>
                         <Navigation className="h-4 w-4 text-brand" aria-hidden="true" /> Abrir no Waze
                       </a>
                     </Button>
                   )}
                   {uberUrl && (
-                    <Button asChild variant="outline" className="h-12 justify-start gap-3 rounded-2xl border-stone-300 bg-white font-semibold">
+                    <Button asChild variant="outline" className="h-12 justify-start gap-3 rounded-2xl border-linha bg-papel font-semibold">
                       <a href={uberUrl} target="_blank" rel="noopener noreferrer" {...linkProps}>
                         <Car className="h-4 w-4 text-brand" aria-hidden="true" /> Chamar um Uber
                       </a>
@@ -381,7 +401,7 @@ export function WeddingSiteView({
                   )}
                 </div>
               )}
-            </div>
+            </Reveal>
           </div>
         </section>
       )}
@@ -393,56 +413,56 @@ export function WeddingSiteView({
             {s.dressCodeDesc}
           </SectionHeading>
           {palette.length > 0 && (
-            <div className="text-center">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-stone-500">Cores sugeridas</p>
+            <Reveal className="text-center">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-tinta-suave">Cores sugeridas</p>
               <ul className="flex flex-wrap items-center justify-center gap-3">
                 {palette.map((color) => (
                   <li
                     key={color}
-                    className="h-10 w-10 rounded-full border-2 border-white shadow-md ring-1 ring-stone-200"
+                    className="h-10 w-10 rounded-full border-2 border-white shadow-md ring-1 ring-linha"
                     style={{ backgroundColor: color }}
                     title={color}
                     aria-label={`Cor ${color}`}
                   />
                 ))}
               </ul>
-            </div>
+            </Reveal>
           )}
         </section>
       )}
 
       {/* DICAS AOS CONVIDADOS */}
       {showTips && (
-        <section className="border-y border-stone-200 bg-white py-24">
+        <section className="border-y border-linha bg-papel py-24">
           <div className="mx-auto max-w-5xl px-6">
             <SectionHeading eyebrow="Para os convidados" title="Dicas para aproveitar o dia">
               Hospedagem, beleza e transporte que indicamos.
             </SectionHeading>
             <ul className="grid gap-5 sm:grid-cols-2">
-              {tips.map((tip) => {
+              {tips.map((tip, i) => {
                 const cat = TIP_CATEGORIES[tip.category] ?? { label: "Dica", icon: MapPin };
                 const Icon = cat.icon;
                 return (
-                  <li key={tip.id} className="flex flex-col gap-3 rounded-3xl border border-stone-200 bg-ivory p-6">
+                  <Reveal as="li" key={tip.id} delay={(i % 2) * 100} className="lift flex flex-col gap-3 rounded-3xl border border-linha bg-ivory p-6">
                     <div className="flex items-center gap-3">
                       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand">
                         <Icon className="h-5 w-5" aria-hidden="true" />
                       </span>
                       <div className="min-w-0">
                         <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">{cat.label}</p>
-                        <h3 className="truncate font-serif text-xl font-semibold text-stone-900">{tip.title}</h3>
+                        <h3 className="truncate font-display text-2xl text-tinta">{tip.title}</h3>
                       </div>
                     </div>
-                    {tip.description && <p className="text-sm text-stone-600">{tip.description}</p>}
-                    <div className="flex flex-col gap-1 text-sm text-stone-600">
+                    {tip.description && <p className="text-sm text-tinta-suave">{tip.description}</p>}
+                    <div className="flex flex-col gap-1 text-sm text-tinta-suave">
                       {tip.address && (
                         <span className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 shrink-0 text-stone-500" aria-hidden="true" /> {tip.address}
+                          <MapPin className="h-4 w-4 shrink-0 text-tinta-suave" aria-hidden="true" /> {tip.address}
                         </span>
                       )}
                       {tip.phone && (
                         <span className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 shrink-0 text-stone-500" aria-hidden="true" /> {tip.phone}
+                          <Phone className="h-4 w-4 shrink-0 text-tinta-suave" aria-hidden="true" /> {tip.phone}
                         </span>
                       )}
                     </div>
@@ -464,7 +484,7 @@ export function WeddingSiteView({
                         </a>
                       )}
                     </div>
-                  </li>
+                  </Reveal>
                 );
               })}
             </ul>
@@ -475,55 +495,60 @@ export function WeddingSiteView({
       {/* CONFIRMAÇÃO DE PRESENÇA */}
       {showRsvp && (
         <section className="px-6 py-20">
-          <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 rounded-3xl bg-brand px-6 py-12 text-center text-white shadow-lg">
-            <CalendarCheck className="h-8 w-8" aria-hidden="true" />
-            <h2 className="font-serif text-3xl font-semibold text-balance sm:text-4xl">Você vem?</h2>
-            <p className="max-w-md text-sm text-white">
+          <Reveal
+            variant="scale"
+            className="relative mx-auto flex max-w-3xl flex-col items-center gap-4 overflow-hidden rounded-3xl bg-brand px-6 py-14 text-center text-white shadow-lg"
+          >
+            <span className="arch pointer-events-none absolute -bottom-24 -left-16 h-64 w-48 border border-white/20" aria-hidden="true" />
+            <span className="arch pointer-events-none absolute -right-12 -top-10 h-56 w-40 border border-white/15" aria-hidden="true" />
+            <CalendarCheck className="relative h-8 w-8" aria-hidden="true" />
+            <h2 className="relative font-display text-4xl italic text-balance sm:text-5xl">Você vem?</h2>
+            <p className="relative max-w-md text-base text-white">
               {deadlineLabel
                 ? `Confirme sua presença até ${deadlineLabel}. Leva menos de um minuto.`
                 : "Confirme sua presença para organizarmos tudo com carinho. Leva menos de um minuto."}
             </p>
-            <Button asChild className="mt-2 h-12 rounded-full bg-white px-8 font-semibold text-brand-600 hover:bg-white/90">
+            <Button asChild className="lift relative mt-2 h-12 rounded-full bg-papel px-8 font-semibold text-brand-600 hover:bg-papel/90">
               <Link href="/rsvp" {...linkProps}>
                 Confirmar presença
               </Link>
             </Button>
-          </div>
+          </Reveal>
         </section>
       )}
 
       {/* PLAYLIST */}
       {showMusic && (
         <section className="mx-auto max-w-3xl px-6 pb-20">
-          <div className="flex flex-col items-center gap-4 rounded-3xl border border-stone-200 bg-white p-8 text-center sm:flex-row sm:text-left">
+          <Reveal className="flex flex-col items-center gap-4 rounded-3xl border border-linha bg-papel p-8 text-center sm:flex-row sm:text-left">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-brand">
               <Music className="h-6 w-6" aria-hidden="true" />
             </span>
             <div className="flex-1">
-              <h2 className="font-serif text-xl font-semibold text-stone-900">A trilha sonora da festa</h2>
-              <p className="text-sm text-stone-600">Ouça a nossa playlist e entre no clima.</p>
+              <h2 className="font-display text-2xl text-tinta">A trilha sonora da festa</h2>
+              <p className="text-sm text-tinta-suave">Ouça a nossa playlist e entre no clima.</p>
             </div>
-            <Button asChild variant="outline" className="rounded-full border-stone-300 font-semibold">
+            <Button asChild variant="outline" className="rounded-full border-linha font-semibold">
               <a href={s.spotifyPlaylistUrl!} target="_blank" rel="noopener noreferrer" {...linkProps}>
                 Ouvir playlist <ExternalLink className="h-4 w-4" aria-hidden="true" />
               </a>
             </Button>
-          </div>
+          </Reveal>
         </section>
       )}
 
       {/* MURAL DE RECADOS */}
       {showGuestbook && (
-        <section className="border-t border-stone-200 bg-white py-24">
+        <section className="border-t border-linha bg-papel py-24">
           <div className="mx-auto max-w-5xl px-6">
             <SectionHeading eyebrow="Mural de recados" title="Deixe uma mensagem">
               Os noivos vão guardar cada palavra.
             </SectionHeading>
 
             <div className="grid items-start gap-8 md:grid-cols-2">
-              <form onSubmit={handleSendGuestbook} className="flex flex-col gap-4 rounded-3xl border border-stone-200 bg-ivory p-6 shadow-sm sm:p-8">
+              <form onSubmit={handleSendGuestbook} data-reveal="left" className="flex flex-col gap-4 rounded-3xl border border-linha bg-ivory p-6 shadow-sm sm:p-8">
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="guestbook-name" className="text-sm font-semibold text-stone-700">
+                  <label htmlFor="guestbook-name" className="text-sm font-semibold text-tinta-suave">
                     Seu nome
                   </label>
                   <Input
@@ -533,11 +558,11 @@ export function WeddingSiteView({
                     placeholder="Ex.: Rodrigo e Carol"
                     maxLength={80}
                     disabled={preview}
-                    className="h-12 rounded-2xl border-stone-200 bg-white"
+                    className="h-12 rounded-2xl border-linha bg-papel"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label htmlFor="guestbook-message" className="text-sm font-semibold text-stone-700">
+                  <label htmlFor="guestbook-message" className="text-sm font-semibold text-tinta-suave">
                     Mensagem
                   </label>
                   <Textarea
@@ -548,7 +573,7 @@ export function WeddingSiteView({
                     rows={4}
                     maxLength={1000}
                     disabled={preview}
-                    className="rounded-2xl border-stone-200 bg-white"
+                    className="rounded-2xl border-linha bg-papel"
                   />
                 </div>
                 <Button type="submit" disabled={isPending || preview} className="h-12 gap-2 rounded-full bg-brand font-semibold text-white hover:bg-brand-600">
@@ -556,22 +581,22 @@ export function WeddingSiteView({
                 </Button>
               </form>
 
-              <ul className="flex max-h-[460px] flex-col gap-3 overflow-y-auto pr-1">
+              <ul data-reveal="right" data-lenis-prevent className="flex max-h-[460px] flex-col gap-3 overflow-y-auto pr-1">
                 {entries.length === 0 ? (
-                  <li className="rounded-3xl border border-stone-200 bg-ivory p-8 text-center text-sm text-stone-600">
-                    <MessageSquare className="mx-auto mb-2 h-8 w-8 text-stone-400" aria-hidden="true" />
+                  <li className="rounded-3xl border border-linha bg-ivory p-8 text-center text-sm text-tinta-suave">
+                    <MessageSquare className="mx-auto mb-2 h-8 w-8 text-tinta-suave" aria-hidden="true" />
                     Seja o primeiro a deixar um recado.
                   </li>
                 ) : (
                   entries.map((item) => (
-                    <li key={item.id} className="rounded-2xl border border-stone-200 bg-ivory p-5">
+                    <li key={item.id} className="rounded-2xl border border-linha bg-ivory p-5">
                       <div className="mb-2 flex items-center justify-between gap-3">
-                        <span className="text-sm font-semibold text-stone-900">{item.authorName}</span>
-                        <time className="text-xs text-stone-500" dateTime={new Date(item.createdAt).toISOString()}>
+                        <span className="text-sm font-semibold text-tinta">{item.authorName}</span>
+                        <time className="text-xs text-tinta-suave" dateTime={new Date(item.createdAt).toISOString()}>
                           {format(new Date(item.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                         </time>
                       </div>
-                      <p className="font-serif text-base italic leading-relaxed text-stone-700">“{item.message}”</p>
+                      <p className="font-display text-base italic leading-relaxed text-tinta-suave">“{item.message}”</p>
                     </li>
                   ))
                 )}
@@ -589,28 +614,35 @@ export function WeddingSiteView({
           </SectionHeading>
 
           <ul className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-            {gifts.slice(0, 6).map((gift) => (
-              <li key={gift.id} className="flex flex-col overflow-hidden rounded-3xl border border-stone-200 bg-white p-5 shadow-sm">
+            {gifts.slice(0, 6).map((gift, i) => (
+              <Reveal
+                as="li"
+                key={gift.id}
+                delay={(i % 3) * 90}
+                className="lift flex flex-col overflow-hidden rounded-3xl border border-linha bg-papel p-5 shadow-sm"
+              >
                 {gift.imageUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element -- imagem enviada pelo casal
-                  <img src={gift.imageUrl} alt="" className="mb-4 h-44 w-full rounded-2xl object-cover" />
+                  <div className="zoom-media mb-4 h-44 w-full overflow-hidden rounded-2xl">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- imagem enviada pelo casal */}
+                    <img src={gift.imageUrl} alt="" className="h-full w-full object-cover" />
+                  </div>
                 )}
-                <h3 className="line-clamp-1 font-serif text-lg font-semibold text-stone-900">{gift.title}</h3>
-                {gift.description && <p className="mt-1 line-clamp-2 text-sm text-stone-600">{gift.description}</p>}
-                <div className="mt-auto flex items-center justify-between gap-3 border-t border-stone-100 pt-4">
-                  <span className="text-base font-semibold tabular-nums text-stone-900">{brl.format(gift.amount / 100)}</span>
+                <h3 className="line-clamp-1 font-display text-xl text-tinta">{gift.title}</h3>
+                {gift.description && <p className="mt-1 line-clamp-2 text-sm text-tinta-suave">{gift.description}</p>}
+                <div className="mt-auto flex items-center justify-between gap-3 border-t border-linha pt-4">
+                  <span className="text-base font-semibold tabular-nums text-tinta">{brl.format(gift.amount / 100)}</span>
                   <Button asChild className="h-9 rounded-full bg-brand px-4 text-sm font-semibold text-white hover:bg-brand-600">
                     <Link href={`/checkout/${gift.id}`} {...linkProps}>
                       Presentear
                     </Link>
                   </Button>
                 </div>
-              </li>
+              </Reveal>
             ))}
           </ul>
 
           <div className="mt-12 text-center">
-            <Button asChild variant="outline" className="h-12 gap-2 rounded-full border-stone-300 px-8 font-semibold">
+            <Button asChild variant="outline" className="h-12 gap-2 rounded-full border-linha px-8 font-semibold">
               <Link href="/presentes" {...linkProps}>
                 Ver a lista completa <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
@@ -619,11 +651,11 @@ export function WeddingSiteView({
         </section>
       )}
 
-      <footer className="border-t border-stone-200 bg-white py-10 text-center text-sm text-stone-500">
-        <p className="mb-1 flex items-center justify-center gap-2 font-serif text-lg italic text-stone-700">
+      <footer className="border-t border-linha bg-papel py-10 text-center text-sm text-tinta-suave">
+        <p className="mb-1 flex items-center justify-center gap-2 font-display text-xl italic text-tinta">
           <Heart className="h-4 w-4 fill-brand text-brand" aria-hidden="true" /> {coupleNames}
         </p>
-        <p>{dateLabel ? `${dateLabel} · ` : ""}Feito com MarryApp</p>
+        <p>{dateLabel ? `${dateLabel} · ` : ""}Feito com Aceito</p>
       </footer>
     </div>
   );

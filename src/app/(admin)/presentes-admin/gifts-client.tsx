@@ -68,10 +68,10 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+          <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
             Presentes
           </h1>
-          <p className="mt-1 text-sm text-stone-600">
+          <p className="mt-1 text-sm text-tinta-suave">
             Cadastre os itens que deseja ganhar. Os convidados poderão comprar via Pix ou Cartão.
           </p>
         </div>
@@ -88,11 +88,11 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
         {[
           { label: "Itens Cadastrados", value: totalGifts, color: "text-zinc-900" },
           { label: "Valor Total da Vitrine", value: formatPrice(totalAmountInCents), color: "text-zinc-900" },
-          { label: "Presentes Ganhos", value: purchasedCount, color: "text-emerald-700" },
+          { label: "Presentes Ganhos", value: purchasedCount, color: "text-sucesso" },
         ].map((s, index) => (
           <div
             key={index}
-            className="bg-white rounded-xl border border-zinc-200/80 shadow-sm p-5"
+            className="bg-papel rounded-xl border border-zinc-200/80 shadow-sm p-5"
           >
             <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
               {s.label}
@@ -104,7 +104,7 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
 
       {/* Grid de Presentes */}
       {gifts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white border border-zinc-200/80 rounded-2xl text-zinc-500">
+        <div className="flex flex-col items-center justify-center py-20 bg-papel border border-zinc-200/80 rounded-2xl text-zinc-500">
           <GiftIcon className="w-10 h-10 mb-3 text-zinc-200" />
           <p className="font-medium text-zinc-500">Nenhum presente na vitrine</p>
           <p className="text-sm mt-1">Clique em "Novo Presente" para começar.</p>
@@ -114,7 +114,7 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
           {gifts.map((gift) => (
             <div
               key={gift.id}
-              className="bg-white rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden flex flex-col group transition-all duration-300 hover:shadow-md hover:border-zinc-300"
+              className="bg-papel rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden flex flex-col group transition-all duration-300 hover:shadow-md hover:border-zinc-300"
             >
               {/* Imagem do Presente */}
               <div className="h-48 bg-zinc-100 relative flex items-center justify-center overflow-hidden">
@@ -134,7 +134,7 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
                 {/* Badge Status */}
                 <div className="absolute top-3 right-3">
                   {gift.isPurchased ? (
-                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-50 font-semibold shadow-sm">
+                    <Badge className="bg-sucesso-suave text-sucesso border-emerald-200 hover:bg-sucesso-suave font-semibold shadow-sm">
                       ✓ Comprado
                     </Badge>
                   ) : (
@@ -171,7 +171,7 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
                     size="icon"
                     onClick={() => handleDelete(gift.id)}
                     disabled={isPending && deletingId === gift.id}
-                    className="text-zinc-500 hover:text-red-600 hover:bg-red-50 rounded-full h-9 w-9"
+                    className="text-zinc-500 hover:text-perigo hover:bg-perigo-suave rounded-full h-9 w-9"
                   >
                     {isPending && deletingId === gift.id ? (
                       <Loader2 className="w-4 h-4 animate-spin text-zinc-500" />

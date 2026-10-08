@@ -16,8 +16,8 @@ export default async function DiaDoEventoPage() {
   return (
     <div className="flex-1 flex flex-col items-center p-8 pt-12 w-full max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="text-center mb-12">
-        <h1 className="text-3xl font-serif font-bold text-zinc-900 tracking-tight">O Grande Dia</h1>
-        <p className="text-zinc-500 mt-2">
+        <h1 className="text-3xl font-display text-tinta tracking-tight">O Grande Dia</h1>
+        <p className="text-tinta-suave mt-2">
           Acompanhe os horários para não perder nenhum momento especial.
         </p>
       </div>

@@ -29,15 +29,15 @@ interface GuestsClientProps {
 const rsvpConfig = {
   PENDING: {
     label: "Pendente",
-    className: "bg-amber-50 text-amber-700 border-amber-200",
+    className: "bg-aviso-suave text-aviso border-amber-200",
   },
   CONFIRMED: {
     label: "Confirmado",
-    className: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    className: "bg-sucesso-suave text-sucesso border-emerald-200",
   },
   DECLINED: {
     label: "Recusado",
-    className: "bg-red-50 text-red-700 border-red-200",
+    className: "bg-perigo-suave text-perigo border-perigo/40",
   },
 };
 
@@ -110,10 +110,10 @@ export function GuestsClient({
       {/* Header com Navegação por Abas */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 pb-4">
         <div>
-          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+          <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
             Convidados
           </h1>
-          <p className="mt-1 text-sm text-stone-600">
+          <p className="mt-1 text-sm text-tinta-suave">
             Gerencie sua lista de convidados, tipos, vínculos de família e alocação de lugares nas mesas.
           </p>
         </div>
@@ -125,7 +125,7 @@ export function GuestsClient({
             onClick={() => setActiveTab("guests")}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
               activeTab === "guests"
-                ? "bg-white text-zinc-900 shadow-sm font-semibold"
+                ? "bg-papel text-zinc-900 shadow-sm font-semibold"
                 : "text-zinc-600 hover:text-zinc-900"
             }`}
           >
@@ -137,7 +137,7 @@ export function GuestsClient({
             onClick={() => setActiveTab("tables")}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
               activeTab === "tables"
-                ? "bg-white text-zinc-900 shadow-sm font-semibold"
+                ? "bg-papel text-zinc-900 shadow-sm font-semibold"
                 : "text-zinc-600 hover:text-zinc-900"
             }`}
           >
@@ -175,13 +175,13 @@ export function GuestsClient({
                       Acompanhantes:{" "}
                       {guest.rsvpStatus === "CONFIRMED" ? `${guest.confirmedCompanions || 0} de ${guest.allowedCompanions}` : `até ${guest.allowedCompanions}`}
                     </p>
-                    {guest.dietaryRestrictions && <p className="mt-1 text-sm text-amber-800">Restrição: {guest.dietaryRestrictions}</p>}
+                    {guest.dietaryRestrictions && <p className="mt-1 text-sm text-aviso">Restrição: {guest.dietaryRestrictions}</p>}
                   </div>
                   <div className="flex shrink-0 gap-1">
                     <Button aria-label={`Editar ${guest.name}`} variant="ghost" size="icon" onClick={() => openEdit(guest)} className="h-10 w-10 text-zinc-600">
                       <Pencil className="w-4 h-4" />
                     </Button>
-                    <Button aria-label={`Excluir ${guest.name}`} variant="ghost" size="icon" onClick={() => handleDelete(guest.id)} className="h-10 w-10 text-zinc-600 hover:text-red-600">
+                    <Button aria-label={`Excluir ${guest.name}`} variant="ghost" size="icon" onClick={() => handleDelete(guest.id)} className="h-10 w-10 text-zinc-600 hover:text-perigo">
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -226,7 +226,7 @@ export function GuestsClient({
                       </span>
                     )}
                     {guest.dietaryRestrictions && (
-                      <span className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded px-1.5 py-0.5 w-fit mt-1.5 font-medium">
+                      <span className="text-xs text-aviso bg-aviso-suave border border-amber-100 rounded px-1.5 py-0.5 w-fit mt-1.5 font-medium">
                         Restrição: {guest.dietaryRestrictions}
                       </span>
                     )}
@@ -242,7 +242,7 @@ export function GuestsClient({
                 accessor: (g) => g.category || "",
                 cell: (guest) =>
                   guest.category ? (
-                    <Badge variant="outline" className="bg-amber-50/80 text-amber-900 border-amber-200/80 font-medium">
+                    <Badge variant="outline" className="bg-aviso-suave/80 text-amber-900 border-amber-200/80 font-medium">
                       {guest.category}
                     </Badge>
                   ) : (
@@ -338,7 +338,7 @@ export function GuestsClient({
                       variant="ghost"
                       size="icon"
                       onClick={() => handleDelete(guest.id)}
-                      className="h-8 w-8 text-zinc-500 hover:text-red-600 hover:bg-red-50"
+                      className="h-8 w-8 text-zinc-500 hover:text-perigo hover:bg-perigo-suave"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

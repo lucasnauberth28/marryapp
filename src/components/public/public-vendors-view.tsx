@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Reveal } from "@/components/motion/reveal";
 import Link from "next/link";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -135,7 +136,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                 onClick: () =>
                   window.open(
                     `https://wa.me/${whatsapp}?text=${encodeURIComponent(
-                      `Olá! Sou ${coupleName} e acabei de pedir um orçamento pelo MarryApp${weddingDate ? ` para o casamento em ${new Date(weddingDate).toLocaleDateString("pt-BR")}` : ""}.`
+                      `Olá! Sou ${coupleName} e acabei de pedir um orçamento pelo Aceito${weddingDate ? ` para o casamento em ${new Date(weddingDate).toLocaleDateString("pt-BR")}` : ""}.`
                     )}`,
                     "_blank",
                     "noopener,noreferrer"
@@ -157,38 +158,38 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
   };
 
   return (
-    <div className="min-h-screen bg-paper text-stone-900 font-sans flex flex-col justify-between">
+    <div className="min-h-screen bg-paper text-tinta font-sans flex flex-col justify-between">
       <LandingHeader />
 
       <div className="flex-1 py-12 px-6 max-w-7xl mx-auto w-full space-y-10">
         {/* Banner Superior do Marketplace (Sem badge descasada) */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <h1 className="text-4xl sm:text-5xl font-extrabold font-serif text-stone-900 leading-tight">
+          <h1 className="text-4xl sm:text-5xl font-display text-tinta leading-tight">
             Os Melhores Fornecedores para o seu <span className="italic text-brand">Grande Dia</span>
           </h1>
 
-          <p className="text-stone-600 text-sm sm:text-base leading-relaxed">
-            Profissionais verificados pela curadoria MarryApp, com portfólio auditado, avaliações reais de casais e agenda aberta na sua região.
+          <p className="text-tinta-suave text-sm sm:text-base leading-relaxed">
+            Profissionais verificados pela curadoria Aceito, com portfólio auditado, avaliações reais de casais e agenda aberta na sua região.
           </p>
         </div>
 
         {/* Barra de Filtros e Busca */}
-        <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm space-y-5">
+        <div className="bg-papel p-6 rounded-3xl border border-linha shadow-sm space-y-5">
           {/* Busca por texto e Região */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
             <div className="md:col-span-8 relative">
-              <Search className="w-4 h-4 text-stone-500 absolute left-4 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-tinta-suave absolute left-4 top-1/2 -translate-y-1/2" />
               <Input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar por espaço, fotógrafo, buffet ou estilo..."
-                className="pl-11 rounded-2xl h-12 text-sm bg-stone-50/60 border-stone-200"
+                className="pl-11 rounded-2xl h-12 text-sm bg-linho/60 border-linha"
               />
             </div>
 
             <div className="md:col-span-4">
               <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-                <SelectTrigger aria-label="Filtrar por região" className="rounded-2xl h-12 bg-stone-50/60 border-stone-200 text-xs font-bold text-stone-800">
+                <SelectTrigger aria-label="Filtrar por região" className="rounded-2xl h-12 bg-linho/60 border-linha text-xs font-bold text-tinta">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-brand shrink-0" />
                     <SelectValue placeholder="Selecione a Região" />
@@ -206,7 +207,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
           </div>
 
           {/* Categorias em Botões Roláveis */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide pt-2 border-t border-stone-100">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide pt-2 border-t border-linha">
             {CATEGORIES.map((cat) => {
               const isSelected = selectedCategory === cat;
               return (
@@ -216,7 +217,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                   className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                     isSelected
                       ? "bg-brand text-white shadow-xs"
-                      : "bg-stone-100/80 text-stone-600 hover:bg-stone-200"
+                      : "bg-areia/80 text-tinta-suave hover:bg-stone-200"
                   }`}
                 >
                   {cat === "TODOS" ? "✨ Todas as Categorias" : cat}
@@ -228,10 +229,10 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
 
         {/* Lista de Fornecedores */}
         {filteredPartners.length === 0 ? (
-          <div className="bg-white p-12 rounded-3xl border border-stone-200 text-center space-y-4">
+          <div className="bg-papel p-12 rounded-3xl border border-linha text-center space-y-4">
             <Building2 className="w-12 h-12 text-stone-300 mx-auto" />
-            <h3 className="text-lg font-bold font-serif text-stone-800">Nenhum fornecedor encontrado</h3>
-            <p className="text-xs text-stone-500 max-w-md mx-auto">
+            <h3 className="text-lg font-display text-tinta">Nenhum fornecedor encontrado</h3>
+            <p className="text-xs text-tinta-suave max-w-md mx-auto">
               Tente alterar os filtros de região ou categoria para encontrar outros parceiros disponíveis.
             </p>
             <Button
@@ -248,7 +249,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredPartners.map((partner) => {
+            {filteredPartners.map((partner, index) => {
               let regions: string[] = [];
               try {
                 regions = JSON.parse(partner.serviceRegions || "[]");
@@ -259,17 +260,17 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
               const isMaster = partner.planTier === "MASTER";
 
               return (
+                <Reveal key={partner.id} delay={(index % 3) * 90} className="flex">
                 <div
-                  key={partner.id}
-                  className={`bg-white rounded-3xl overflow-hidden border transition-all flex flex-col justify-between hover:shadow-xl group ${
+                  className={`bg-papel rounded-3xl overflow-hidden border transition-all flex w-full flex-col justify-between hover:shadow-xl group ${
                     isMaster
                       ? "border-brand/40 ring-1 ring-brand/20 shadow-md"
-                      : "border-stone-200/90 shadow-xs"
+                      : "border-linha/90 shadow-xs"
                   }`}
                 >
                   <div>
                     {/* Imagem de Capa com Link para Perfil */}
-                    <Link href={`/fornecedores/${partner.id}`} className="block relative h-52 w-full bg-stone-100 overflow-hidden">
+                    <Link href={`/fornecedores/${partner.id}`} className="block relative h-52 w-full bg-areia overflow-hidden">
                       {partner.coverUrl ? (
                         <img
                           src={partner.coverUrl}
@@ -277,7 +278,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-stone-100 text-stone-300">
+                        <div className="w-full h-full flex items-center justify-center bg-areia text-stone-300">
                           <Building2 className="w-12 h-12" />
                         </div>
                       )}
@@ -315,41 +316,41 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                       <div>
                         <div className="flex items-center justify-between gap-2">
                           <Link href={`/fornecedores/${partner.id}`}>
-                            <h3 className="font-serif font-bold text-xl text-stone-900 group-hover:text-brand transition-colors line-clamp-1">
+                            <h3 className="font-display text-xl text-tinta group-hover:text-brand transition-colors line-clamp-1">
                               {partner.companyName}
                             </h3>
                           </Link>
                           {partner.rating && (
-                            <div className="flex items-center gap-1 text-xs font-bold text-stone-700 bg-stone-50 px-2.5 py-1 rounded-xl border border-stone-200/60 shrink-0">
+                            <div className="flex items-center gap-1 text-xs font-bold text-tinta-suave bg-linho px-2.5 py-1 rounded-xl border border-linha/60 shrink-0">
                               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                               <span>{partner.rating.toFixed(1)}</span>
-                              <span className="text-xs text-stone-500 font-normal">
+                              <span className="text-xs text-tinta-suave font-normal">
                                 ({partner.reviewCount || 0})
                               </span>
                             </div>
                           )}
                         </div>
-                        <p className="text-xs text-stone-500 mt-2 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-tinta-suave mt-2 line-clamp-2 leading-relaxed">
                           {partner.description}
                         </p>
                       </div>
 
                       {/* Tags de Regiões de Atendimento */}
                       <div className="space-y-1.5">
-                        <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block">
+                        <span className="text-xs font-bold uppercase tracking-wider text-tinta-suave block">
                           Regiões Atendidas:
                         </span>
                         <div className="flex flex-wrap gap-1">
                           {regions.slice(0, 3).map((r, i) => (
                             <span
                               key={i}
-                              className="text-xs bg-stone-100 text-stone-600 px-2.5 py-0.5 rounded-full font-medium"
+                              className="text-xs bg-areia text-tinta-suave px-2.5 py-0.5 rounded-full font-medium"
                             >
                               📍 {r}
                             </span>
                           ))}
                           {regions.length > 3 && (
-                            <span className="text-xs text-stone-500 font-bold px-1 py-0.5">
+                            <span className="text-xs text-tinta-suave font-bold px-1 py-0.5">
                               +{regions.length - 3}
                             </span>
                           )}
@@ -357,15 +358,15 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                       </div>
 
                       {/* Recursos de Atendimento */}
-                      <div className="flex items-center gap-4 text-xs text-stone-600 pt-2 border-t border-stone-100">
+                      <div className="flex items-center gap-4 text-xs text-tinta-suave pt-2 border-t border-linha">
                         {partner.offersOnlineMeet && (
-                          <div className="flex items-center gap-1 text-emerald-700 font-bold text-xs">
+                          <div className="flex items-center gap-1 text-sucesso font-bold text-xs">
                             <Video className="w-3.5 h-3.5" />
                             <span>Reunião Online</span>
                           </div>
                         )}
                         {partner.hasPhysicalSpace && (
-                          <div className="flex items-center gap-1 text-stone-600 text-xs">
+                          <div className="flex items-center gap-1 text-tinta-suave text-xs">
                             <Building2 className="w-3.5 h-3.5" />
                             <span>Showroom Presencial</span>
                           </div>
@@ -377,9 +378,9 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                   {/* Rodapé do Card com Preço e Ações */}
                   <div className="p-6 pt-0 space-y-3">
                     {partner.startingPrice && partner.startingPrice > 0 && (
-                      <div className="flex items-baseline justify-between text-xs pt-3 border-t border-stone-100">
-                        <span className="text-stone-500 font-medium">A partir de:</span>
-                        <span className="font-extrabold text-base text-stone-900">
+                      <div className="flex items-baseline justify-between text-xs pt-3 border-t border-linha">
+                        <span className="text-tinta-suave font-medium">A partir de:</span>
+                        <span className="font-extrabold text-base text-tinta">
                           {new Intl.NumberFormat("pt-BR", {
                             style: "currency",
                             currency: "BRL",
@@ -390,7 +391,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
 
                     {/* Ação principal: pedido de orçamento (registra o contato do casal) */}
                     <div className="grid grid-cols-2 gap-2">
-                      <Button asChild variant="outline" className="w-full rounded-2xl h-11 text-sm font-semibold border-stone-300 gap-1.5">
+                      <Button asChild variant="outline" className="w-full rounded-2xl h-11 text-sm font-semibold border-linha gap-1.5">
                         <Link href={`/fornecedores/${partner.id}`}>
                           <ImageIcon className="w-4 h-4" aria-hidden="true" />
                           Ver perfil
@@ -406,6 +407,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                     </div>
                   </div>
                 </div>
+                </Reveal>
               );
             })}
           </div>
@@ -414,7 +416,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
         {/* Banner CTA para Novos Fornecedores (Sem badge descasada) */}
         <section className="mt-16 bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 text-white rounded-3xl p-8 sm:p-12 shadow-xl flex flex-col md:flex-row items-center justify-between gap-8 border border-stone-800">
           <div className="space-y-2 max-w-2xl text-center md:text-left">
-            <h2 className="text-2xl sm:text-3xl font-extrabold font-serif text-stone-100">
+            <h2 className="text-2xl sm:text-3xl font-display text-stone-100">
               Você é Fornecedor de Casamento?
             </h2>
             <p className="text-xs sm:text-sm text-stone-300/90 leading-relaxed">
@@ -433,77 +435,77 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
 
       {/* Modal de Agendamento de Reunião e Orçamento */}
       <Dialog open={leadModalOpen} onOpenChange={setLeadModalOpen}>
-        <DialogContent className="sm:max-w-md bg-white rounded-3xl p-6">
+        <DialogContent className="sm:max-w-md bg-papel rounded-3xl p-6">
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl font-bold text-stone-900">
+            <DialogTitle className="font-display text-xl text-tinta">
               Solicitar Orçamento & Reunião
             </DialogTitle>
-            <p className="text-xs text-stone-500 mt-1">
+            <p className="text-xs text-tinta-suave mt-1">
               Conecte-se diretamente com <strong>{selectedPartner?.companyName}</strong>.
             </p>
           </DialogHeader>
 
           <form onSubmit={handleSubmitLead} className="space-y-4 pt-4">
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-stone-700 uppercase">Seu Nome / Casal</Label>
+              <Label className="text-xs font-bold text-tinta-suave uppercase">Seu Nome / Casal</Label>
               <Input
                 value={coupleName}
                 onChange={(e) => setCoupleName(e.target.value)}
                 placeholder="Ex: Giovanna & Lucas"
                 required
-                className="rounded-2xl h-11 text-xs bg-stone-50"
+                className="rounded-2xl h-11 text-xs bg-linho"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-stone-700 uppercase">WhatsApp</Label>
+                <Label className="text-xs font-bold text-tinta-suave uppercase">WhatsApp</Label>
                 <Input
                   value={couplePhone}
                   onChange={(e) => setCouplePhone(e.target.value)}
                   placeholder="(11) 99999-9999"
                   required
-                  className="rounded-2xl h-11 text-xs bg-stone-50 font-mono"
+                  className="rounded-2xl h-11 text-xs bg-linho font-mono"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-stone-700 uppercase">E-mail</Label>
+                <Label className="text-xs font-bold text-tinta-suave uppercase">E-mail</Label>
                 <Input
                   type="email"
                   value={coupleEmail}
                   onChange={(e) => setCoupleEmail(e.target.value)}
                   placeholder="noivos@email.com"
-                  className="rounded-2xl h-11 text-xs bg-stone-50"
+                  className="rounded-2xl h-11 text-xs bg-linho"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-stone-700 uppercase">Qtd. Convidados</Label>
+                <Label className="text-xs font-bold text-tinta-suave uppercase">Qtd. Convidados</Label>
                 <Input
                   type="number"
                   value={guestCount}
                   onChange={(e) => setGuestCount(e.target.value)}
                   placeholder="Ex: 150"
-                  className="rounded-2xl h-11 text-xs bg-stone-50 font-mono"
+                  className="rounded-2xl h-11 text-xs bg-linho font-mono"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-stone-700 uppercase">Data Prevista</Label>
+                <Label className="text-xs font-bold text-tinta-suave uppercase">Data Prevista</Label>
                 <DatePicker
                   value={weddingDate}
                   onChange={(e) => setWeddingDate(e.target.value)}
                   placeholder="Selecione a data"
-                  className="rounded-2xl h-11 text-xs bg-stone-50"
+                  className="rounded-2xl h-11 text-xs bg-linho"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-stone-700 uppercase">Preferência de Reunião</Label>
+              <Label className="text-xs font-bold text-tinta-suave uppercase">Preferência de Reunião</Label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -511,7 +513,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                   className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer ${
                     meetingType === "ONLINE"
                       ? "bg-brand-50 border-brand text-brand"
-                      : "bg-stone-50 border-stone-200 text-stone-600"
+                      : "bg-linho border-linha text-tinta-suave"
                   }`}
                 >
                   <Video className="w-3.5 h-3.5" />
@@ -524,7 +526,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                   className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer ${
                     meetingType === "PRESENTIAL"
                       ? "bg-brand-50 border-brand text-brand"
-                      : "bg-stone-50 border-stone-200 text-stone-600"
+                      : "bg-linho border-linha text-tinta-suave"
                   }`}
                 >
                   <Building2 className="w-3.5 h-3.5" />
@@ -534,12 +536,12 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-stone-700 uppercase">Mensagem Adicional</Label>
+              <Label className="text-xs font-bold text-tinta-suave uppercase">Mensagem Adicional</Label>
               <Textarea
                 value={leadMessage}
                 onChange={(e) => setLeadMessage(e.target.value)}
                 placeholder="Conte um pouco sobre o estilo do casamento ou dúvidas específicas..."
-                className="rounded-2xl text-xs bg-stone-50 resize-none h-20"
+                className="rounded-2xl text-xs bg-linho resize-none h-20"
               />
             </div>
 

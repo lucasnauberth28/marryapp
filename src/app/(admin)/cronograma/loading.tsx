@@ -14,7 +14,7 @@ export default function CronogramaLoading() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl p-6 border border-zinc-200 space-y-6">
+      <div className="bg-papel rounded-2xl p-6 border border-zinc-200 space-y-6">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex items-center gap-4">
             <Skeleton className="w-12 h-12 rounded-full shrink-0" />

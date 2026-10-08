@@ -9,7 +9,7 @@ export default function MesasLoading() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-1 bg-white border border-zinc-200 rounded-xl p-4 space-y-3">
+        <div className="lg:col-span-1 bg-papel border border-zinc-200 rounded-xl p-4 space-y-3">
           <Skeleton className="h-6 w-32 rounded-md" />
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full rounded-lg" />

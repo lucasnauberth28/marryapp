@@ -308,7 +308,7 @@ export async function approveVendorAction(vendorId: string) {
       data: {
         curationStatus: "APPROVED",
         isVerified: true,
-        curationNotes: "Aprovado pela curadoria MarryApp.",
+        curationNotes: "Aprovado pela curadoria Aceito.",
       },
     });
 

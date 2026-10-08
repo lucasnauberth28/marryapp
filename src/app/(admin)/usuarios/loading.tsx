@@ -11,7 +11,7 @@ export default function UsuariosLoading() {
         <Skeleton className="h-10 w-36 rounded-xl" />
       </div>
 
-      <div className="bg-white rounded-2xl border border-zinc-200 p-4 space-y-3">
+      <div className="bg-papel rounded-2xl border border-zinc-200 p-4 space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="flex items-center justify-between py-3 border-b last:border-0 border-zinc-100">
             <div className="flex items-center gap-3">

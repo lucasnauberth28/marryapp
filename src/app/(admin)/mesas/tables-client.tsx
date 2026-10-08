@@ -30,7 +30,7 @@ function DraggableGuest({ guest }: { guest: any }) {
       style={style}
       {...listeners}
       {...attributes}
-      className="bg-white border border-zinc-200 p-2.5 mb-2 rounded-lg shadow-sm text-sm cursor-grab active:cursor-grabbing hover:border-amber-300 hover:shadow transition-all flex flex-col gap-1"
+      className="bg-papel border border-zinc-200 p-2.5 mb-2 rounded-lg shadow-sm text-sm cursor-grab active:cursor-grabbing hover:border-amber-300 hover:shadow transition-all flex flex-col gap-1"
     >
       <div className="flex items-center justify-between">
         <span className="font-medium text-zinc-900">{guest.name}</span>
@@ -43,7 +43,7 @@ function DraggableGuest({ guest }: { guest: any }) {
 
       <div className="flex flex-wrap items-center gap-1">
         {category && (
-          <span className="text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200/80 px-1.5 py-0.2 rounded">
+          <span className="text-xs font-medium bg-aviso-suave text-aviso border border-amber-200/80 px-1.5 py-0.2 rounded">
             {category}
           </span>
         )}
@@ -68,13 +68,13 @@ function DroppableTable({ id, title, capacity, guests, onDelete }: { id: string,
     <div
       ref={setNodeRef}
       className={`p-4 rounded-xl border-2 min-h-[200px] flex flex-col transition-colors ${
-        isOver ? "border-emerald-400 bg-emerald-50/50" : "border-dashed border-zinc-200 bg-zinc-50/50"
+        isOver ? "border-emerald-400 bg-sucesso-suave/50" : "border-dashed border-zinc-200 bg-zinc-50/50"
       }`}
     >
       <div className="flex justify-between items-center mb-4">
         <div>
           <h3 className="font-bold text-zinc-900">{title}</h3>
-          <span className={`text-xs font-medium ${isFull ? "text-red-600" : "text-zinc-500"}`}>
+          <span className={`text-xs font-medium ${isFull ? "text-perigo" : "text-zinc-500"}`}>
             {occupied} / {capacity} lugares
           </span>
         </div>
@@ -182,7 +182,7 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         
         {/* Lista de Convidados (Não Alocados) */}
-        <div className="lg:col-span-1 bg-white border border-zinc-200 rounded-xl flex flex-col max-h-[800px] overflow-hidden">
+        <div className="lg:col-span-1 bg-papel border border-zinc-200 rounded-xl flex flex-col max-h-[800px] overflow-hidden">
           <div className="p-4 border-b border-zinc-200 bg-zinc-50/50">
             <h3 className="font-bold text-zinc-900 flex items-center gap-2">
               <UsersIcon className="w-4 h-4" /> Sem Mesa
@@ -198,7 +198,7 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
         <div className="lg:col-span-3 space-y-6">
           
           {/* Controls */}
-          <div className="bg-white p-4 border border-zinc-200 rounded-xl flex flex-wrap gap-4 items-end">
+          <div className="bg-papel p-4 border border-zinc-200 rounded-xl flex flex-wrap gap-4 items-end">
             <div className="flex-1 min-w-[12rem]">
               <label htmlFor="new-table-name" className="text-xs font-medium text-zinc-500 mb-1 block">Nome da mesa</label>
               <Input id="new-table-name" value={newTableName} onChange={e => setNewTableName(e.target.value)} placeholder="Ex: Mesa dos Padrinhos" />

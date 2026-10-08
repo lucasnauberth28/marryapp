@@ -17,8 +17,8 @@ export function StatusScreen({ eyebrow, title, description, actions }: StatusScr
           <WeddingRingsIcon className="h-7 w-7" />
         </div>
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">{eyebrow}</p>
-        <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">{title}</h1>
-        <p className="text-sm text-stone-600">{description}</p>
+        <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">{title}</h1>
+        <p className="text-sm text-tinta-suave">{description}</p>
         <div className="mt-2 flex flex-wrap items-center justify-center gap-3">{actions}</div>
       </div>
     </div>

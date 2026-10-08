@@ -11,7 +11,7 @@ export default function PresentesPublicLoading() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-3xl p-5 border border-stone-200 space-y-3">
+            <div key={i} className="bg-papel rounded-3xl p-5 border border-linha space-y-3">
               <Skeleton className="h-44 w-full rounded-2xl" />
               <Skeleton className="h-5 w-3/4 rounded-md" />
               <Skeleton className="h-4 w-1/2 rounded-md" />

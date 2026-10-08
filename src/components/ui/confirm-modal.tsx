@@ -38,7 +38,7 @@ export function ConfirmModal({
     >
       <div className="space-y-4">
         {variant === "destructive" && (
-          <div className="flex items-center gap-3 p-3 bg-red-50 border border-red-100 rounded-xl text-red-700 text-sm">
+          <div className="flex items-center gap-3 p-3 bg-perigo-suave border border-red-100 rounded-xl text-perigo text-sm">
             <AlertTriangle className="w-5 h-5 shrink-0" />
             <p className="font-medium">Esta ação não poderá ser desfeita.</p>
           </div>

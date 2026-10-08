@@ -205,7 +205,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
       {/* Header com Título & Ações */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="font-serif text-3xl font-semibold tracking-tight text-stone-900 text-balance">
+          <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
             <Wallet className="w-6 h-6 text-brand" />
             Carteira
           </h1>
@@ -218,9 +218,9 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
           <Button
             onClick={() => setBalanceModalOpen(true)}
             variant="outline"
-            className="border-emerald-200 text-emerald-800 hover:bg-emerald-50 text-xs font-semibold rounded-xl"
+            className="border-emerald-200 text-sucesso hover:bg-sucesso-suave text-xs font-semibold rounded-xl"
           >
-            <DollarSign className="w-4 h-4 mr-1.5 text-emerald-700" />
+            <DollarSign className="w-4 h-4 mr-1.5 text-sucesso" />
             Editar Saldo em Conta
           </Button>
 
@@ -239,11 +239,11 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
         {/* Card 1: Saldo em Conta */}
         <Card className="p-5 rounded-2xl border-emerald-100 bg-gradient-to-br from-emerald-50/60 to-white shadow-xs space-y-3 relative overflow-hidden">
           <div className="flex justify-between items-center">
-            <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
-              <QrCode className="w-4 h-4 text-emerald-700" />
+            <span className="text-xs font-bold text-sucesso uppercase tracking-wider flex items-center gap-1.5">
+              <QrCode className="w-4 h-4 text-sucesso" />
               Saldo em Conta / Pix
             </span>
-            <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs">
+            <Badge className="bg-emerald-100 text-sucesso border-emerald-200 text-xs">
               Disponível
             </Badge>
           </div>
@@ -251,7 +251,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
             <div className="text-2xl font-black text-emerald-950 tracking-tight">
               {formatCurrency(balance)}
             </div>
-            <p className="text-xs text-emerald-700 mt-1">
+            <p className="text-xs text-sucesso mt-1">
               Recurso fictício/real em conta para compras à vista e pagamentos Pix.
             </p>
           </div>
@@ -282,7 +282,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
         <Card className="p-5 rounded-2xl border-amber-100 bg-gradient-to-br from-amber-50/60 to-white shadow-xs space-y-3 relative overflow-hidden">
           <div className="flex justify-between items-center">
             <span className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-amber-700" />
+              <Sparkles className="w-4 h-4 text-aviso" />
               Poder de Compra Total
             </span>
             <Badge className="bg-amber-100 text-amber-900 border-amber-200 text-xs">
@@ -293,7 +293,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
             <div className="text-2xl font-black text-amber-950 tracking-tight">
               {formatCurrency(totalAssets)}
             </div>
-            <p className="text-xs text-amber-800 mt-1">
+            <p className="text-xs text-aviso mt-1">
               Capacidade financeira combinada (Saldo em Conta + Limites de Crédito).
             </p>
           </div>
@@ -349,7 +349,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
                         <span className="font-semibold text-sm block mt-0.5">{card.nickname}</span>
                       )}
                     </div>
-                    <Badge className="bg-white/20 text-white border-none text-xs font-bold">
+                    <Badge className="bg-papel/20 text-white border-none text-xs font-bold">
                       {card.brand}
                     </Badge>
                   </div>
@@ -376,14 +376,14 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
                     <div className="flex items-center gap-1">
                       <button aria-label="Editar Cartão"
                         onClick={() => openEditCardModal(card)}
-                        className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition cursor-pointer"
+                        className="p-1.5 rounded-lg bg-papel/10 hover:bg-papel/20 text-white transition cursor-pointer"
                         title="Editar Cartão"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button aria-label="Excluir Cartão"
                         onClick={() => handleDeleteCard(card.id)}
-                        className="p-1.5 rounded-lg bg-white/10 hover:bg-red-500/80 text-white transition cursor-pointer"
+                        className="p-1.5 rounded-lg bg-papel/10 hover:bg-red-500/80 text-white transition cursor-pointer"
                         title="Excluir Cartão"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -402,7 +402,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-emerald-700" />
+              <DollarSign className="w-5 h-5 text-sucesso" />
               Editar Saldo em Conta / Pix
             </DialogTitle>
           </DialogHeader>

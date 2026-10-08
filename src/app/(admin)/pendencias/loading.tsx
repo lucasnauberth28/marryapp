@@ -20,7 +20,7 @@ export default function PendenciasLoading() {
             </div>
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, j) => (
-                <div key={j} className="bg-white p-4 rounded-xl border border-zinc-200/60 space-y-2">
+                <div key={j} className="bg-papel p-4 rounded-xl border border-zinc-200/60 space-y-2">
                   <Skeleton className="h-4 w-3/4 rounded-md" />
                   <Skeleton className="h-3 w-1/2 rounded-md" />
                 </div>

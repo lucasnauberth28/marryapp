@@ -22,55 +22,268 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --font-sans: var(--font-sans);
-  --font-serif: var(--font-serif);
-  --color-white: #FCFBF9;
+  --font-serif: var(--font-display);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+  --color-white: #FFFDF9;
 
-  --color-zinc-800: #755630;
-  --color-zinc-900: #82643D;
-  --color-zinc-950: #82643D;
+  /* Legado: telas antigas usam zinc-900 como cor de destaque. Apontam para a ameixa
+     até serem migradas para os tokens Aceito. */
+  --color-zinc-800: #4A2140;
+  --color-zinc-900: #5E2B4E;
+  --color-zinc-950: #4A2140;
 }
 
-/* Tokens da marca fora do "inline": as classes usam var(--color-brand-*), então uma seção
-   pode trocar a cor redefinindo as variáveis (o site do casal usa a cor escolhida pelos noivos). */
+/* Tokens Aceito (design system "Aceito"). Fora do "inline" para que uma seção possa
+   trocar a cor redefinindo as variáveis: o site do casal usa a cor escolhida pelos noivos. */
 @theme {
-  /* Escala da marca (bronze champanhe). Use estes tokens em vez de hex fixos:
-     bg-brand, text-brand-600, border-brand/30, bg-brand-50 ... */
-  --color-brand-50: #FAF4ED;
-  --color-brand-100: #F3ECE3;
-  --color-brand-300: #C5A880;
-  --color-brand-400: #A3855E;
-  --color-brand: #82643D; /* 4,6:1 ou mais sobre todos os fundos da marca */
-  --color-brand-500: #82643D;
-  --color-brand-600: #765A37;
-  --color-ivory: #FAF8F5;
-  --color-paper: #FCFBF9;
-  --color-line: #E8E2D9;
+  /* Neutros */
+  --color-linho: #F7F3EC;
+  --color-papel: #FFFDF9;
+  --color-areia: #EAE3D8;
+  --color-linha: #DDD4C7;
+  --color-linha-forte: #8F8290;
+  --color-tinta: #231C24;
+  --color-tinta-suave: #5F5560;
+
+  /* Marca */
+  --color-ameixa: #5E2B4E;
+  --color-ameixa-hover: #4A2140;
+  --color-ameixa-suave: #F1E6EC;
+  --color-on-ameixa: #FFFDF9;
+  --color-petala: #E9B8C2;
+  --color-salvia: #4E5F49;
+  --color-salvia-suave: #E3E9DD;
+  --color-champanhe: #B8935A;
+
+  /* Estados: sempre com ícone e palavra */
+  --color-sucesso: #22696F;
+  --color-sucesso-suave: #DCECEC;
+  --color-aviso: #8A5A00;
+  --color-aviso-suave: #F6EAD2;
+  --color-perigo: #A3263B;
+  --color-perigo-suave: #F6E0E3;
+
+  /* Escala "brand" (legado e cor do casal). Por padrão = ameixa. */
+  --color-brand-50: #F8F1F5;
+  --color-brand-100: #F1E6EC;
+  --color-brand-300: #C9A2BB;
+  --color-brand-400: #8C5A7C;
+  --color-brand: #5E2B4E;
+  --color-brand-500: #5E2B4E;
+  --color-brand-600: #4A2140;
+  --color-ivory: #F7F3EC;
+  --color-paper: #FFFDF9;
+  --color-line: #DDD4C7;
+
+  --ease-aceito: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-aceito-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --shadow-aceito-1: 0 1px 2px 0 rgba(35, 28, 36, 0.06), 0 1px 1px 0 rgba(35, 28, 36, 0.04);
+  --shadow-aceito-2: 0 16px 40px -12px rgba(35, 28, 36, 0.22);
 }
 
 :root {
-  --background: #FAF8F5; /* Marfim Claro */
-  --foreground: #4A3E3D; /* Bronze/Grafite Quente */
-  --card: #ffffff;
-  --card-foreground: #4A3E3D;
-  --popover: #ffffff;
-  --popover-foreground: #4A3E3D;
-  --primary: #82643D; /* Dourado Champanhe / Bronze */
-  --primary-foreground: #FAF8F5;
-  --secondary: #F5EFEB; /* Creme */
-  --secondary-foreground: #8C6D45;
-  --muted: #F5EFEB;
-  --muted-foreground: #76655A; /* contraste 5,2:1 sobre o marfim (WCAG AA) */
-  --accent: #F5EFEB;
-  --accent-foreground: #8C6D45;
-  --destructive: #dc2626; /* Vermelho mais sutil */
-  --destructive-foreground: #FAF8F5;
-  --border: #E8E2D9; /* Borda Champanhe */
-  --input: #E8E2D9;
-  --ring: #C5A880;
-  --radius: 0.45rem; /* Bordas modernas e estruturadas */
+  --background: #F7F3EC; /* linho */
+  --foreground: #231C24; /* tinta */
+  --card: #FFFDF9; /* papel */
+  --card-foreground: #231C24;
+  --popover: #FFFDF9;
+  --popover-foreground: #231C24;
+  --primary: #5E2B4E; /* ameixa */
+  --primary-foreground: #FFFDF9;
+  --secondary: #F1E6EC; /* ameixa-suave */
+  --secondary-foreground: #5E2B4E;
+  --muted: #EAE3D8; /* areia */
+  --muted-foreground: #5F5560; /* tinta-suave: 6,3:1 sobre linho */
+  --accent: #F1E6EC;
+  --accent-foreground: #5E2B4E;
+  --destructive: #A3263B;
+  --destructive-foreground: #FFFDF9;
+  --border: #DDD4C7; /* linha */
+  --input: #8F8290; /* linha-forte: 3:1 nas bordas de campo */
+  --ring: #5E2B4E;
+  --radius: 0.75rem; /* 12px: botões e campos */
+}
+
+@layer base {
+  html {
+    scroll-padding-top: 88px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    background: var(--color-linho);
+    color: var(--color-tinta);
+    font-feature-settings: "kern" 1, "liga" 1;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--color-ameixa-suave);
+    color: var(--color-ameixa);
+  }
+
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-ameixa);
+    outline-offset: 2px;
+  }
+
+  /* Barra de rolagem: fina, em tom de linho, polegar ameixa ao passar o mouse. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--color-tinta-suave) 45%, transparent) transparent;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--color-tinta-suave) 40%, transparent);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ameixa);
+    background-clip: padding-box;
+  }
+}
+
+/* Lenis (rolagem suave nas páginas públicas). */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Revelação ao rolar (ver components/motion/reveal.tsx). Só esconde quando há JavaScript
+   (classe .js no <html>, posta antes da pintura); o RevealObserver revela. */
+.js [data-reveal] {
+  opacity: 0;
+  transition:
+    opacity 0.9s var(--ease-aceito),
+    transform 0.9s var(--ease-aceito),
+    clip-path 1.1s var(--ease-aceito-in-out),
+    filter 0.9s var(--ease-aceito);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+.js [data-reveal="up"] { transform: translate3d(0, 28px, 0); }
+.js [data-reveal="left"] { transform: translate3d(-32px, 0, 0); }
+.js [data-reveal="right"] { transform: translate3d(32px, 0, 0); }
+.js [data-reveal="scale"] { transform: scale(0.96); filter: blur(6px); }
+.js [data-reveal="arch"] { opacity: 1; clip-path: inset(100% 0 0 0 round 999px 999px 0 0); }
+.js [data-reveal="word"] { transform: translate3d(0, 105%, 0); opacity: 1; transition-duration: 0.9s; }
+
+.js [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  clip-path: inset(0 0 0 0 round 999px 999px 0 0);
+}
+.js [data-reveal]:not([data-reveal="arch"]).is-revealed { clip-path: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+  }
+}
+
+/* Entrada suave de página nas rotas públicas (template.tsx). */
+@keyframes aceito-page-in {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to { opacity: 1; transform: none; }
+}
+.page-in {
+  animation: aceito-page-in 0.6s var(--ease-aceito) both;
+}
+
+/* Botões e cards: microinterações. */
+.lift {
+  transition: transform 0.35s var(--ease-aceito), box-shadow 0.35s var(--ease-aceito);
+}
+.lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-aceito-2);
+}
+
+/* Imagem que aproxima levemente ao passar o mouse, dentro de um contêiner com overflow oculto. */
+.zoom-media img {
+  transition: transform 1.2s var(--ease-aceito);
+}
+.zoom-media:hover img {
+  transform: scale(1.04);
+}
+
+/* Texto display: Bodoni Moda com eixo óptico. */
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+}
+
+/* Arco: a forma-assinatura do Aceito (moldura de foto). */
+.arch {
+  border-radius: 999px 999px 0 0;
+}
+
+/* Capa: a foto assenta devagar ao abrir a página. */
+@keyframes aceito-hero-settle {
+  from { transform: scale(1.08); }
+  to { transform: scale(1); }
+}
+.hero-settle {
+  animation: aceito-hero-settle 2.4s var(--ease-aceito) both;
+}
+
+/* Indicador de rolagem na capa. */
+@keyframes aceito-scroll-cue {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
+.scroll-cue {
+  animation: aceito-scroll-cue 2.2s var(--ease-aceito-in-out) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

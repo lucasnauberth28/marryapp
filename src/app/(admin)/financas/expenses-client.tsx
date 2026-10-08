@@ -480,7 +480,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
             <button
               onClick={() => setFilterType("ALL")}
               className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
-                filterType === "ALL" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-600 hover:text-zinc-900"
+                filterType === "ALL" ? "bg-papel text-zinc-900 shadow-xs" : "text-zinc-600 hover:text-zinc-900"
               }`}
             >
               Todas ({expenses.length})
@@ -510,7 +510,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
             <button
               onClick={() => setViewMode("grouped")}
               className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${
-                viewMode === "grouped" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-600 hover:text-zinc-900"
+                viewMode === "grouped" ? "bg-papel text-zinc-900 shadow-xs" : "text-zinc-600 hover:text-zinc-900"
               }`}
             >
               <Layers className="w-3.5 h-3.5 text-brand" />
@@ -519,7 +519,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
             <button
               onClick={() => setViewMode("detailed")}
               className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 ${
-                viewMode === "detailed" ? "bg-white text-zinc-900 shadow-xs" : "text-zinc-600 hover:text-zinc-900"
+                viewMode === "detailed" ? "bg-papel text-zinc-900 shadow-xs" : "text-zinc-600 hover:text-zinc-900"
               }`}
             >
               <ListFilter className="w-3.5 h-3.5 text-brand" />
@@ -720,7 +720,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                         <div className="flex items-center gap-3">
                           <img src={imageBase64} alt="Preview" className="w-10 h-10 object-cover rounded-lg border border-zinc-200" />
                           <span className="text-xs font-medium text-zinc-700 truncate max-w-[200px]">{imageFileName}</span>
-                          <Button type="button" variant="ghost" size="sm" onClick={() => setImageBase64("")} className="text-xs text-red-600 h-6 px-2">Remover</Button>
+                          <Button type="button" variant="ghost" size="sm" onClick={() => setImageBase64("")} className="text-xs text-perigo h-6 px-2">Remover</Button>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 text-zinc-500 text-xs py-1">
@@ -834,7 +834,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                                 <button
                                   type="button"
                                   onClick={() => removeBlock(block.id)}
-                                  className="text-red-600 hover:text-red-700 text-xs cursor-pointer"
+                                  className="text-perigo hover:text-perigo text-xs cursor-pointer"
                                 >
                                   Remover Bloco
                                 </button>
@@ -879,7 +879,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
 
                       {/* Pré-visualização ao vivo */}
                       {generatedInstallments.length > 0 && (
-                        <div className="border border-zinc-200 rounded-lg p-3 bg-white space-y-2">
+                        <div className="border border-zinc-200 rounded-lg p-3 bg-papel space-y-2">
                           <div className="flex justify-between items-center text-xs border-b border-zinc-100 pb-2">
                             <span className="font-bold text-zinc-700">
                               Pré-visualização ({generatedInstallments.length} parcelas)
@@ -932,12 +932,12 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                 setGroupedSearch(e.target.value);
                 setGroupedPage(1);
               }}
-              className="bg-white border-zinc-200"
+              className="bg-papel border-zinc-200"
             />
           </div>
 
           {paginatedGroupedExpenses.length === 0 ? (
-            <div className="bg-white border border-zinc-200 rounded-xl p-12 text-center text-zinc-500">
+            <div className="bg-papel border border-zinc-200 rounded-xl p-12 text-center text-zinc-500">
               {groupedSearch ? "Nenhuma despesa encontrada para a busca." : "Nenhuma despesa cadastrada para este filtro."}
             </div>
           ) : (
@@ -951,8 +951,8 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                 return (
                   <div
                     key={group.id}
-                    className={`bg-white border rounded-xl shadow-sm overflow-hidden transition-all duration-200 ${
-                      isFullyPaid ? "border-emerald-200/80 bg-emerald-50/10" : "border-zinc-200"
+                    className={`bg-papel border rounded-xl shadow-sm overflow-hidden transition-all duration-200 ${
+                      isFullyPaid ? "border-emerald-200/80 bg-sucesso-suave/10" : "border-zinc-200"
                     }`}
                   >
                     {/* Header do Card da Dívida / Compra */}
@@ -983,15 +983,15 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                               className={`font-semibold text-xs ${
                                 isPurchase
                                   ? "bg-purple-50 text-purple-700 border-purple-200"
-                                  : "bg-amber-50 text-amber-800 border-amber-200"
+                                  : "bg-aviso-suave text-aviso border-amber-200"
                               }`}
                             >
                               {isPurchase ? <ShoppingBag className="w-3 h-3 mr-1" /> : <Building2 className="w-3 h-3 mr-1" />}
                               {isPurchase ? `Compra: ${group.vendorName}` : group.vendorName}
                             </Badge>
                             {isFullyPaid && (
-                              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs font-semibold">
-                                <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-700" /> Quitado
+                              <Badge className="bg-emerald-100 text-sucesso border-emerald-200 text-xs font-semibold">
+                                <CheckCircle2 className="w-3 h-3 mr-1 text-sucesso" /> Quitado
                               </Badge>
                             )}
                           </div>
@@ -1043,8 +1043,8 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                         {!isFullyPaid && group.nextDueDate && (
                           <div className="text-right text-xs space-y-0.5">
                             <span className="text-zinc-500 block">Próx. Vencimento:</span>
-                            <span className="font-bold text-amber-700 block flex items-center justify-end gap-1">
-                              <Calendar className="w-3.5 h-3.5 text-amber-700" />
+                            <span className="font-bold text-aviso block flex items-center justify-end gap-1">
+                              <Calendar className="w-3.5 h-3.5 text-aviso" />
                               {new Date(group.nextDueDate).toLocaleDateString('pt-BR')} ({formatCurrency(group.nextDueAmount || 0)})
                             </span>
                           </div>
@@ -1086,7 +1086,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                     {/* Sub-tabela Expandível com as Parcelas Individuais */}
                     {isExpanded && (
                       <div className="border-t border-zinc-100 bg-zinc-50/50 p-4 animate-in slide-in-from-top-2 duration-200">
-                        <div className="bg-white rounded-lg border border-zinc-200/80 overflow-hidden shadow-2xs">
+                        <div className="bg-papel rounded-lg border border-zinc-200/80 overflow-hidden shadow-2xs">
                           <Table>
                             <TableHeader className="bg-zinc-50/80">
                               <TableRow className="text-xs">
@@ -1122,8 +1122,8 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                                       >
                                         <Badge variant={isPaid ? "default" : "outline"} className={`text-xs cursor-pointer transition-colors px-2 py-0.5 ${
                                           isPaid
-                                            ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-emerald-200"
-                                            : "bg-amber-100 text-amber-800 hover:bg-amber-200 border-amber-200"
+                                            ? "bg-emerald-100 text-sucesso hover:bg-emerald-200 border-emerald-200"
+                                            : "bg-amber-100 text-aviso hover:bg-amber-200 border-amber-200"
                                         }`}>
                                           {isPaid ? <CheckCircle className="w-3 h-3 mr-1" /> : <Clock className="w-3 h-3 mr-1" />}
                                           {isPaid ? "Pago" : "Pendente"}
@@ -1132,7 +1132,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                                     </TableCell>
                                     <TableCell className="text-right">
                                       <Button aria-label="Excluir" variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(expense.id)}>
-                                        <Trash2 className="w-3.5 h-3.5 text-red-600" />
+                                        <Trash2 className="w-3.5 h-3.5 text-perigo" />
                                       </Button>
                                     </TableCell>
                                   </TableRow>
@@ -1149,7 +1149,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
 
               {/* Paginação dos Grupos de Dívida */}
               {totalGroupPages > 1 && (
-                <div className="flex items-center justify-between px-4 py-3 bg-white border border-zinc-200 rounded-xl text-xs text-zinc-500 shadow-sm">
+                <div className="flex items-center justify-between px-4 py-3 bg-papel border border-zinc-200 rounded-xl text-xs text-zinc-500 shadow-sm">
                   <div>
                     Mostrando página <span className="font-semibold text-zinc-900">{safeGroupPage}</span> de{" "}
                     <span className="font-semibold text-zinc-900">{totalGroupPages}</span> ({filteredGroupedExpenses.length} itens)
@@ -1228,7 +1228,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
               cell: (exp) => {
                 const isPur = (exp.type || "CONTRACT") === "PURCHASE";
                 return (
-                  <Badge variant="outline" className={`text-xs font-semibold ${isPur ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-amber-50 text-amber-800 border-amber-200"}`}>
+                  <Badge variant="outline" className={`text-xs font-semibold ${isPur ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-aviso-suave text-aviso border-amber-200"}`}>
                     {isPur ? <ShoppingBag className="w-3 h-3 mr-1" /> : <Building2 className="w-3 h-3 mr-1" />}
                     {isPur ? "Compra" : "Contrato"}
                   </Badge>
@@ -1295,8 +1295,8 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                   >
                     <Badge variant={isPaid ? "default" : "outline"} className={`text-xs cursor-pointer transition-colors ${
                       isPaid
-                        ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border-emerald-200"
-                        : "bg-amber-100 text-amber-800 hover:bg-amber-200 border-amber-200"
+                        ? "bg-emerald-100 text-sucesso hover:bg-emerald-200 border-emerald-200"
+                        : "bg-amber-100 text-aviso hover:bg-amber-200 border-amber-200"
                     }`}>
                       {isPaid ? <CheckCircle className="w-3 h-3 mr-1" /> : <Clock className="w-3 h-3 mr-1" />}
                       {isPaid ? "Pago" : "Pendente"}
@@ -1315,7 +1315,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
               cell: (exp) => (
                 <div className="flex justify-end gap-1">
                   <Button aria-label="Excluir" variant="ghost" size="icon" onClick={() => handleDelete(exp.id)}>
-                    <Trash2 className="w-4 h-4 text-red-600" />
+                    <Trash2 className="w-4 h-4 text-perigo" />
                   </Button>
                 </div>
               ),

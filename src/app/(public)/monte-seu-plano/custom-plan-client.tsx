@@ -64,7 +64,7 @@ export function CustomPlanClient() {
   const progressPercent = Math.round((selectedCount / totalCount) * 100);
 
   return (
-    <div className="min-h-screen bg-paper text-stone-900 font-sans flex flex-col justify-between">
+    <div className="min-h-screen bg-paper text-tinta font-sans flex flex-col justify-between">
       <LandingHeader />
 
       <div className="flex-1 py-12 px-6 max-w-7xl mx-auto w-full space-y-10">
@@ -72,17 +72,17 @@ export function CustomPlanClient() {
         <div className="space-y-4">
           <Link
             href="/#planos"
-            className="inline-flex items-center gap-2 text-xs font-bold text-stone-500 hover:text-stone-900 transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-bold text-tinta-suave hover:text-tinta transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Voltar para os pacotes fixos</span>
           </Link>
 
           <div className="max-w-3xl space-y-3">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold font-serif text-stone-900">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-display text-tinta">
               Monte o Plano Perfeito para o seu Casamento
             </h1>
-            <p className="text-stone-600 text-sm sm:text-base leading-relaxed">
+            <p className="text-tinta-suave text-sm sm:text-base leading-relaxed">
               Ative ou desative cada funcionalidade individualmente. Você só paga taxa única pelo que for utilizar, com descontos progressivos automáticos de até 25% OFF.
             </p>
           </div>
@@ -92,8 +92,8 @@ export function CustomPlanClient() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Coluna Principal: Lista de Módulos */}
           <div className="lg:col-span-8 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-stone-200">
-              <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
+            <div className="flex items-center justify-between pb-2 border-b border-linha">
+              <span className="text-xs font-bold uppercase tracking-wider text-tinta-suave">
                 Catálogo de Funcionalidades ({selectedCount} de {totalCount} selecionadas)
               </span>
               <div className="flex items-center gap-2 text-xs font-bold text-brand">
@@ -113,8 +113,8 @@ export function CustomPlanClient() {
                     onClick={() => toggleModule(mod.id)}
                     className={`p-6 rounded-3xl border-2 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-5 ${
                       isSelected
-                        ? "bg-white border-brand shadow-lg ring-2 ring-brand/20 scale-[1.01]"
-                        : "bg-ivory border-stone-200/80 hover:bg-white hover:border-stone-300 opacity-75 hover:opacity-100"
+                        ? "bg-papel border-brand shadow-lg ring-2 ring-brand/20 scale-[1.01]"
+                        : "bg-ivory border-linha/80 hover:bg-papel hover:border-linha opacity-75 hover:opacity-100"
                     }`}
                   >
                     <div className="flex items-start gap-4">
@@ -122,7 +122,7 @@ export function CustomPlanClient() {
                         className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors shadow-xs ${
                           isSelected
                             ? "bg-brand text-white"
-                            : "bg-stone-200/80 text-stone-600"
+                            : "bg-stone-200/80 text-tinta-suave"
                         }`}
                       >
                         <Icon className="w-6 h-6" />
@@ -130,7 +130,7 @@ export function CustomPlanClient() {
 
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-serif font-bold text-lg text-stone-900">
+                          <h3 className="font-display text-lg text-tinta">
                             {mod.name}
                           </h3>
                           {mod.highlightBadge && (
@@ -139,15 +139,15 @@ export function CustomPlanClient() {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-stone-600 leading-relaxed max-w-xl">
+                        <p className="text-xs text-tinta-suave leading-relaxed max-w-xl">
                           {mod.description}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between sm:justify-end gap-5 shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-stone-100">
+                    <div className="flex items-center justify-between sm:justify-end gap-5 shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-linha">
                       <div className="text-right">
-                        <span className="font-extrabold text-base text-stone-900 block">
+                        <span className="font-extrabold text-base text-tinta block">
                           {isBase
                             ? "Grátis"
                             : new Intl.NumberFormat("pt-BR", {
@@ -155,14 +155,14 @@ export function CustomPlanClient() {
                                 currency: "BRL",
                               }).format(mod.price / 100)}
                         </span>
-                        <span className="text-xs text-stone-500 font-medium block">taxa única</span>
+                        <span className="text-xs text-tinta-suave font-medium block">taxa única</span>
                       </div>
 
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                           isSelected
                             ? "bg-brand text-white shadow-xs"
-                            : "border-2 border-stone-300 bg-white"
+                            : "border-2 border-linha bg-papel"
                         }`}
                       >
                         {isSelected && <Check className="w-5 h-5 stroke-[3]" />}
@@ -180,17 +180,17 @@ export function CustomPlanClient() {
               <span className="text-xs font-extrabold uppercase tracking-wider text-brand">
                 Resumo da Seleção
               </span>
-              <span className="text-xs text-stone-500 font-bold">
+              <span className="text-xs text-tinta-suave font-bold">
                 {selectedCount} módulos ativos
               </span>
             </div>
 
             <div>
-              <span className="text-xs text-stone-500 font-bold uppercase tracking-wider block">
+              <span className="text-xs text-tinta-suave font-bold uppercase tracking-wider block">
                 Investimento Total do Casal:
               </span>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-4xl sm:text-5xl font-black text-stone-900 font-serif">
+                <span className="text-4xl sm:text-5xl font-black text-tinta font-display">
                   {calculation.total === 0
                     ? "Grátis"
                     : new Intl.NumberFormat("pt-BR", {
@@ -198,30 +198,30 @@ export function CustomPlanClient() {
                         currency: "BRL",
                       }).format(calculation.total / 100)}
                 </span>
-                <span className="text-xs text-stone-500 font-medium">/ taxa única</span>
+                <span className="text-xs text-tinta-suave font-medium">/ taxa única</span>
               </div>
 
               {calculation.discountAmount > 0 && (
                 <div className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold shadow-2xs">
-                  <Zap className="w-4 h-4 text-emerald-700" />
+                  <Zap className="w-4 h-4 text-sucesso" />
                   <span>{calculation.discountBadge}</span>
                 </div>
               )}
             </div>
 
             {/* Lista dos Recursos Selecionados */}
-            <div className="pt-4 border-t border-stone-200/80 space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block">
+            <div className="pt-4 border-t border-linha/80 space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-tinta-suave block">
                 Recursos incluídos no seu pacote:
               </span>
-              <ul className="space-y-2 text-xs text-stone-700 font-medium max-h-56 overflow-y-auto pr-1">
+              <ul className="space-y-2 text-xs text-tinta-suave font-medium max-h-56 overflow-y-auto pr-1">
                 {calculation.selectedModules.map((m) => (
                   <li key={m.id} className="flex items-center justify-between gap-2">
                     <span className="flex items-center gap-2 truncate">
                       <CheckCircle2 className="w-4 h-4 text-brand shrink-0" />
                       <span className="truncate">{m.name}</span>
                     </span>
-                    <span className="text-xs font-bold text-stone-500 shrink-0">
+                    <span className="text-xs font-bold text-tinta-suave shrink-0">
                       {m.price === 0 ? "Grátis" : `R$ ${m.price / 100}`}
                     </span>
                   </li>
@@ -237,8 +237,8 @@ export function CustomPlanClient() {
               </Button>
             </Link>
 
-            <div className="flex items-center gap-2 text-xs text-stone-500 pt-3 border-t border-stone-200/60">
-              <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0" />
+            <div className="flex items-center gap-2 text-xs text-tinta-suave pt-3 border-t border-linha/60">
+              <ShieldCheck className="w-4 h-4 text-sucesso shrink-0" />
               <span>Sem mensalidades ou surpresas. Pagamento único com liberação imediata.</span>
             </div>
           </div>

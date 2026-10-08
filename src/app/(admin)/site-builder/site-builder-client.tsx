@@ -128,28 +128,28 @@ function parsePalette(raw?: string | null): string[] {
 function Field({ id, label, hint, children }: { id: string; label: string; hint?: string; children: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-semibold text-stone-700">
+      <label htmlFor={id} className="text-sm font-semibold text-tinta-suave">
         {label}
       </label>
       {children}
-      {hint && <p className="text-xs text-stone-500">{hint}</p>}
+      {hint && <p className="text-xs text-tinta-suave">{hint}</p>}
     </div>
   );
 }
 
 function Panel({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
-    <section className="flex flex-col gap-5 rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm sm:p-6">
+    <section className="flex flex-col gap-5 rounded-2xl border border-linha/80 bg-papel p-5 shadow-sm sm:p-6">
       <div>
-        <h2 className="font-serif text-xl font-semibold text-stone-900">{title}</h2>
-        {description && <p className="mt-1 text-sm text-stone-600">{description}</p>}
+        <h2 className="font-serif text-xl font-semibold text-tinta">{title}</h2>
+        {description && <p className="mt-1 text-sm text-tinta-suave">{description}</p>}
       </div>
       {children}
     </section>
   );
 }
 
-const inputClass = "h-11 rounded-xl bg-stone-50/50";
+const inputClass = "h-11 rounded-xl bg-linho/50";
 
 export function SiteBuilderClient({
   initialSettings,
@@ -179,7 +179,7 @@ export function SiteBuilderClient({
   };
 
   const palette = parsePalette(settings.dressCodePalette);
-  const accent = readableAccent(settings.themeColor || "#8C6D45");
+  const accent = readableAccent(settings.themeColor || "#5E2B4E");
 
   const handleSave = () => {
     const payload = Object.fromEntries(
@@ -303,10 +303,10 @@ export function SiteBuilderClient({
   );
 
   const preview = (
-    <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-stone-200 bg-stone-50 px-4 py-2">
-        <span className="text-xs font-semibold uppercase tracking-wider text-stone-500">Prévia ao vivo</span>
-        {dirty && <span className="text-xs font-semibold text-amber-700">Alterações não salvas</span>}
+    <div className="overflow-hidden rounded-2xl border border-linha bg-papel shadow-sm">
+      <div className="flex items-center justify-between border-b border-linha bg-linho px-4 py-2">
+        <span className="text-xs font-semibold uppercase tracking-wider text-tinta-suave">Prévia ao vivo</span>
+        {dirty && <span className="text-xs font-semibold text-aviso">Alterações não salvas</span>}
       </div>
       <div className="h-[72vh] overflow-y-auto">
         <div className="pointer-events-none select-none" style={{ zoom: 0.5 }} aria-hidden="true">
@@ -331,7 +331,7 @@ export function SiteBuilderClient({
         description="Edite os textos, fotos e seções do site. A prévia mostra o resultado enquanto você digita."
         actions={
           <>
-            <Button asChild variant="outline" className="h-11 gap-2 rounded-full border-stone-300 px-5">
+            <Button asChild variant="outline" className="h-11 gap-2 rounded-full border-linha px-5">
               <Link href="/casamento" target="_blank">
                 <Eye className="h-4 w-4" aria-hidden="true" /> Ver site publicado
               </Link>
@@ -356,7 +356,7 @@ export function SiteBuilderClient({
                   aria-selected={active}
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                    active ? "bg-brand text-white" : "border border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
+                    active ? "bg-brand text-white" : "border border-linha bg-papel text-tinta-suave hover:bg-linho"
                   }`}
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
@@ -388,9 +388,9 @@ export function SiteBuilderClient({
                       <input
                         id="themeColor"
                         type="color"
-                        value={settings.themeColor || "#8C6D45"}
+                        value={settings.themeColor || "#5E2B4E"}
                         onChange={(e) => update({ themeColor: e.target.value })}
-                        className="h-11 w-14 cursor-pointer rounded-xl border border-stone-200 bg-white p-1"
+                        className="h-11 w-14 cursor-pointer rounded-xl border border-linha bg-papel p-1"
                         aria-describedby="themeColor-hint"
                       />
                       <Input
@@ -401,10 +401,10 @@ export function SiteBuilderClient({
                         maxLength={7}
                       />
                     </div>
-                    <p id="themeColor-hint" className="flex items-center gap-1.5 text-xs text-stone-500">
+                    <p id="themeColor-hint" className="flex items-center gap-1.5 text-xs text-tinta-suave">
                       {accent.adjusted ? (
                         <>
-                          <AlertTriangle className="h-3.5 w-3.5 text-amber-700" aria-hidden="true" />
+                          <AlertTriangle className="h-3.5 w-3.5 text-aviso" aria-hidden="true" />
                           Cor clara demais para texto: o site usa um tom mais escuro para manter a leitura.
                         </>
                       ) : (
@@ -414,7 +414,7 @@ export function SiteBuilderClient({
                   </Field>
                 </div>
                 <Field id="welcomeMessage" label="Mensagem de boas-vindas">
-                  <Textarea id="welcomeMessage" rows={3} value={settings.welcomeMessage || ""} onChange={(e) => update({ welcomeMessage: e.target.value })} className="rounded-xl bg-stone-50/50" />
+                  <Textarea id="welcomeMessage" rows={3} value={settings.welcomeMessage || ""} onChange={(e) => update({ welcomeMessage: e.target.value })} className="rounded-xl bg-linho/50" />
                 </Field>
               </Panel>
 
@@ -459,10 +459,10 @@ export function SiteBuilderClient({
                 <Input id="dressCodeTitle" value={settings.dressCodeTitle || ""} onChange={(e) => update({ dressCodeTitle: e.target.value })} placeholder="Passeio completo" className={inputClass} />
               </Field>
               <Field id="dressCodeDesc" label="Orientações">
-                <Textarea id="dressCodeDesc" rows={3} value={settings.dressCodeDesc || ""} onChange={(e) => update({ dressCodeDesc: e.target.value })} className="rounded-xl bg-stone-50/50" />
+                <Textarea id="dressCodeDesc" rows={3} value={settings.dressCodeDesc || ""} onChange={(e) => update({ dressCodeDesc: e.target.value })} className="rounded-xl bg-linho/50" />
               </Field>
               <fieldset className="flex flex-col gap-2">
-                <legend className="text-sm font-semibold text-stone-700">Cores sugeridas</legend>
+                <legend className="text-sm font-semibold text-tinta-suave">Cores sugeridas</legend>
                 <div className="flex flex-wrap items-center gap-3">
                   {palette.map((color, i) => (
                     <div key={i} className="flex items-center gap-1">
@@ -475,13 +475,13 @@ export function SiteBuilderClient({
                           next[i] = e.target.value;
                           update({ dressCodePalette: JSON.stringify(next) });
                         }}
-                        className="h-10 w-10 cursor-pointer rounded-full border border-stone-200 bg-white p-0.5"
+                        className="h-10 w-10 cursor-pointer rounded-full border border-linha bg-papel p-0.5"
                       />
                       <button
                         type="button"
                         aria-label={`Remover cor ${i + 1}`}
                         onClick={() => update({ dressCodePalette: JSON.stringify(palette.filter((_, j) => j !== i)) })}
-                        className="rounded-full p-1 text-stone-500 hover:bg-stone-100 hover:text-red-600"
+                        className="rounded-full p-1 text-tinta-suave hover:bg-areia hover:text-perigo"
                       >
                         <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
@@ -509,7 +509,7 @@ export function SiteBuilderClient({
                   </Field>
                 </div>
                 <Field id="story-desc" label="O que aconteceu">
-                  <Textarea id="story-desc" rows={3} value={story.description} onChange={(e) => setStory({ ...story, description: e.target.value })} className="rounded-xl bg-stone-50/50" />
+                  <Textarea id="story-desc" rows={3} value={story.description} onChange={(e) => setStory({ ...story, description: e.target.value })} className="rounded-xl bg-linho/50" />
                 </Field>
                 <Button onClick={handleAddStory} disabled={isPending} className="w-fit gap-2 rounded-full">
                   <Plus className="h-4 w-4" aria-hidden="true" /> Adicionar momento
@@ -531,7 +531,7 @@ export function SiteBuilderClient({
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field id="tip-category" label="Categoria">
                     <Select value={tip.category} onValueChange={(v) => setTip({ ...tip, category: v })}>
-                      <SelectTrigger id="tip-category" className="h-11 w-full rounded-xl bg-stone-50/50">
+                      <SelectTrigger id="tip-category" className="h-11 w-full rounded-xl bg-linho/50">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -560,7 +560,7 @@ export function SiteBuilderClient({
                   </Field>
                 </div>
                 <Field id="tip-desc" label="Descrição">
-                  <Textarea id="tip-desc" rows={2} value={tip.description} onChange={(e) => setTip({ ...tip, description: e.target.value })} className="rounded-xl bg-stone-50/50" />
+                  <Textarea id="tip-desc" rows={2} value={tip.description} onChange={(e) => setTip({ ...tip, description: e.target.value })} className="rounded-xl bg-linho/50" />
                 </Field>
                 <Button onClick={handleAddTip} disabled={isPending} className="w-fit gap-2 rounded-full">
                   <Plus className="h-4 w-4" aria-hidden="true" /> Adicionar dica
@@ -578,14 +578,14 @@ export function SiteBuilderClient({
 
           {activeTab === "BLOCKS" && (
             <Panel title="Seções do site" description="Escolha o que aparece para os convidados. As mudanças são publicadas na hora.">
-              <ul className="divide-y divide-stone-100">
+              <ul className="divide-y divide-linha">
                 {BLOCKS.map((block) => (
                   <li key={block.key} className="flex items-center justify-between gap-4 py-4">
                     <div className="min-w-0">
-                      <label htmlFor={`block-${block.key}`} className="text-sm font-semibold text-stone-900">
+                      <label htmlFor={`block-${block.key}`} className="text-sm font-semibold text-tinta">
                         {block.label}
                       </label>
-                      <p className="text-sm text-stone-600">{block.desc}</p>
+                      <p className="text-sm text-tinta-suave">{block.desc}</p>
                       {block.key === "showMusic" && (
                         <Input
                           aria-label="Link da playlist"
@@ -643,24 +643,24 @@ function ItemList({
 }) {
   return (
     <section className="flex flex-col gap-3">
-      <h3 className="text-sm font-semibold text-stone-700">{title}</h3>
+      <h3 className="text-sm font-semibold text-tinta-suave">{title}</h3>
       {items.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-stone-300 bg-white p-5 text-sm text-stone-600">{empty}</p>
+        <p className="rounded-2xl border border-dashed border-linha bg-papel p-5 text-sm text-tinta-suave">{empty}</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {items.map((item) => (
-            <li key={item.id} className="flex items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white p-4">
+            <li key={item.id} className="flex items-center justify-between gap-4 rounded-2xl border border-linha bg-papel p-4">
               <div className="min-w-0">
                 {item.eyebrow && <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">{item.eyebrow}</p>}
-                <p className="truncate font-serif text-base font-semibold text-stone-900">{item.title}</p>
-                {item.text && <p className="line-clamp-2 text-sm text-stone-600">{item.text}</p>}
+                <p className="truncate font-serif text-base font-semibold text-tinta">{item.title}</p>
+                {item.text && <p className="line-clamp-2 text-sm text-tinta-suave">{item.text}</p>}
               </div>
               <Button
                 aria-label={`Remover ${item.title}`}
                 variant="ghost"
                 size="icon"
                 onClick={() => onDelete(item)}
-                className="h-9 w-9 shrink-0 rounded-full text-stone-500 hover:bg-red-50 hover:text-red-600"
+                className="h-9 w-9 shrink-0 rounded-full text-tinta-suave hover:bg-perigo-suave hover:text-perigo"
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
               </Button>

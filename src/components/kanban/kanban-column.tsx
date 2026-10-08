@@ -34,7 +34,7 @@ export function KanbanColumn({
 
   return (
     <div className="flex flex-col bg-zinc-100/50 rounded-2xl w-full md:w-[350px] shrink-0 overflow-hidden border border-zinc-200/60 shadow-sm h-[calc(100vh-140px)]">
-      <div className="p-4 border-b border-zinc-200/60 bg-white/50 backdrop-blur-sm flex items-center justify-between sticky top-0 z-10">
+      <div className="p-4 border-b border-zinc-200/60 bg-papel/50 backdrop-blur-sm flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-zinc-700">{title}</h3>
           <span className="bg-zinc-200/70 text-zinc-600 text-xs py-0.5 px-2 rounded-full font-medium">
@@ -45,7 +45,7 @@ export function KanbanColumn({
           aria-label={`Adicionar tarefa em ${title}`}
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-zinc-600 hover:text-zinc-900 bg-white/50 hover:bg-white"
+          className="h-8 w-8 text-zinc-600 hover:text-zinc-900 bg-papel/50 hover:bg-papel"
           onClick={() => onAddTask(columnId)}
         >
           <PlusIcon className="h-4 w-4" />
