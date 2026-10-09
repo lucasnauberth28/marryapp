@@ -27,9 +27,14 @@ const AVAILABLE_MODULES = [
   { id: "/presentes-admin", name: "Lista de Presentes (Admin)" },
   { id: "/lua-de-mel", name: "Cotas de Lua de Mel" },
   { id: "/pendencias", name: "Tarefas & Pendências" },
+  { id: "/site-builder", name: "Editar o site" },
+  { id: "/plano", name: "Plano e pagamentos do casal" },
   { id: "/configuracoes", name: "Configurações Globais (WhatsApp API)" },
   { id: "/usuarios", name: "Gestão de Usuários" },
   { id: "/perfis", name: "Gestão de Perfis & Permissões (RBAC)" },
+  { id: "/curadoria", name: "Curadoria de fornecedores (plataforma)" },
+  { id: "/assinaturas", name: "Assinaturas e pagamentos (plataforma)" },
+  { id: "/fornecedor", name: "Painel do fornecedor" },
 ];
 
 export function RolesClient({ initialRoles }: { initialRoles: any[] }) {

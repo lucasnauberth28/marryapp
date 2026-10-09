@@ -9,6 +9,8 @@ import {
   Compass,
   Receipt,
   Wallet,
+  CreditCard,
+  BadgeDollarSign,
   Gift as GiftIcon,
   LayoutTemplate,
   MessageCircle,
@@ -67,12 +69,16 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: "Conta",
-    items: [{ name: "Configurações", href: "/configuracoes", icon: SettingsIcon }],
+    items: [
+      { name: "Configurações", href: "/configuracoes", icon: SettingsIcon },
+      { name: "Plano e pagamentos", href: "/plano", icon: CreditCard },
+    ],
   },
   {
     title: "Administração",
     items: [
       { name: "Curadoria", href: "/curadoria", icon: ShieldCheck },
+      { name: "Assinaturas", href: "/assinaturas", icon: BadgeDollarSign },
       { name: "Usuários", href: "/usuarios", icon: KeyRound },
       { name: "Perfis de acesso", href: "/perfis", icon: UserCog },
     ],
