@@ -312,8 +312,9 @@ model User {
 // pelo webhook do Mercado Pago ou pela conferência na tela do Pix (o que chegar primeiro).
 model Subscription {
   id          String        @id @default(uuid())
-  userId      String
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Conta que pagou. Fica nulo se a conta for excluída: o pagamento é guardado para fins fiscais.
+  userId      String?
+  user        User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   planId      String        // chave do catálogo (lib/plans): classic, vip, pro, master ou custom
   planType    String        // "COUPLE" | "VENDOR"
   planName    String

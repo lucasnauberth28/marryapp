@@ -9,6 +9,7 @@ import bcrypt from "bcryptjs";
 import { signToken, sessionCookieOptions, hasPathAccess, SESSION_COOKIE_NAME } from "@/lib/auth";
 import { checkRateLimit, rateLimitByIp, SecurityLimits } from "@/lib/security/rate-limiter";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { classifyAccount } from "@/lib/account/wedding-provisioning";
 
 // Hash válido usado quando o usuário não existe, para que o tempo de resposta
 // não revele quais logins estão cadastrados.
@@ -27,8 +28,20 @@ async function setSessionCookie(token: string) {
 
 const GENERIC_LOGIN_ERROR = "Usuário ou senha incorretos.";
 
-/** Destino após o login: o painel do casal, ou o painel do fornecedor quando o perfil só libera /fornecedor. */
-function landingPathFor(allowedPaths: string[]) {
+/**
+ * Destino após o login: o painel do fornecedor para contas de fornecedor; o onboarding (/boas-vindas)
+ * para contas de casal ainda sem casamento; senão o painel do casal.
+ */
+function landingPathFor(user: {
+  id: string;
+  weddingId: string | null;
+  partnerVendorId: string | null;
+  role: { name: string; allowedPaths: unknown };
+}) {
+  const allowedPaths = Array.isArray(user.role.allowedPaths) ? (user.role.allowedPaths as string[]) : [];
+  const kind = classifyAccount(user);
+  if (kind === "vendor") return hasPathAccess(allowedPaths, "/fornecedor") ? "/fornecedor" : "/dashboard";
+  if (kind === "couple" && !user.weddingId) return "/boas-vindas";
   if (hasPathAccess(allowedPaths, "/dashboard")) return "/dashboard";
   if (hasPathAccess(allowedPaths, "/fornecedor")) return "/fornecedor";
   return "/dashboard";
@@ -72,8 +85,14 @@ export async function login(password: string, username?: string) {
 
   const user = await prisma.user.findUnique({
     where: { username: username.trim() },
-    // Seleção explícita: o login não deve depender de colunas novas do usuário.
-    select: { id: true, password: true, role: { select: { name: true, allowedPaths: true } } },
+    // Seleção explícita: só o necessário para conferir a senha e escolher o destino.
+    select: {
+      id: true,
+      password: true,
+      weddingId: true,
+      partnerVendorId: true,
+      role: { select: { name: true, allowedPaths: true } },
+    },
   });
 
   const passwordOk = await bcrypt.compare(password, user?.password ?? DUMMY_HASH);
@@ -90,7 +109,7 @@ export async function login(password: string, username?: string) {
   });
   await setSessionCookie(token);
 
-  return { success: true, redirectTo: landingPathFor(allowedPaths) };
+  return { success: true, redirectTo: landingPathFor(user) };
 }
 
 export async function logout() {

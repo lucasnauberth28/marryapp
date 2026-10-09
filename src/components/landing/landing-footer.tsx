@@ -70,8 +70,16 @@ export function LandingFooter() {
       </div>
 
       <div className="border-t border-linha">
-        <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-2 px-4 py-6 text-sm text-tinta-suave sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-2 px-4 py-6 text-sm text-tinta-suave sm:px-6 md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} Aceito. Feito no Brasil para quem vai dizer sim.</p>
+          <nav aria-label="Documentos legais" className="flex flex-wrap items-center gap-x-5">
+            <Link href="/termos" className={linkClass}>
+              Termos de uso
+            </Link>
+            <Link href="/privacidade" className={linkClass}>
+              Privacidade
+            </Link>
+          </nav>
           <p>Convidado? Você não precisa de conta: use o link do convite.</p>
         </div>
       </div>

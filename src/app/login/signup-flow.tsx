@@ -447,7 +447,15 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
               </button>
             </div>
             <p className="text-center text-sm leading-5 text-tinta-suave">
-              Ao criar a conta, você concorda com os termos de uso e a política de privacidade do Aceito.
+              Ao criar a conta, você concorda com os{" "}
+              <Link href="/termos" target="_blank" className="font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 hover:decoration-ameixa">
+                termos de uso
+              </Link>{" "}
+              e a{" "}
+              <Link href="/privacidade" target="_blank" className="font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 hover:decoration-ameixa">
+                política de privacidade
+              </Link>{" "}
+              do Aceito.
             </p>
           </form>
         </section>
@@ -493,11 +501,13 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
               <Heading
                 ref={headingRef}
                 title={firstName ? `Tudo certo, ${firstName}` : "Conta criada"}
-                text={`A conta de vocês está criada${paid ? " e o pagamento foi confirmado" : ""}. Estamos abrindo o painel para novos casais aos poucos: avisamos em ${email.trim().toLowerCase() || "seu e-mail"} assim que ele estiver liberado.`}
+                text={`A conta de vocês está criada${paid ? " e o pagamento foi confirmado" : ""}. Agora contem um pouco sobre o casamento: leva um minuto e o site já fica com a cara de vocês.`}
               />
-              <Link href="/" className={cn(btn.secondary, btn.block, "min-h-12")}>
-                Voltar para o início
-              </Link>
+              {/* Navegação completa: a próxima tela lê o cookie de sessão recém-criado. */}
+              <a href={redirectTo ?? "/boas-vindas"} className={cn(btn.primary, btn.block, "min-h-12")}>
+                Preparar o nosso casamento
+                <ArrowRight aria-hidden="true" className={btnArrow} />
+              </a>
             </>
           )}
         </section>

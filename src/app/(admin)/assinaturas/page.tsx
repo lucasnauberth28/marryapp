@@ -224,8 +224,8 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
   const panel: PanelSubscription | null = selected
     ? {
         id: selected.id,
-        accountName: selected.user.name,
-        companyName: selected.user.partnerVendor?.companyName ?? null,
+        accountName: selected.user?.name ?? "Conta excluída",
+        companyName: selected.user?.partnerVendor?.companyName ?? null,
         accountType: selected.planType === "VENDOR" ? "Fornecedor" : "Casal",
         planName: planLabel(selected.planId, selected.planName),
         amount: money(selected.amount),
@@ -233,7 +233,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
         createdAt: when(selected.createdAt, now),
         paidAt: selected.paidAt ? when(selected.paidAt, now) : null,
         periodEnd: selected.periodEnd ? dayMonth.format(selected.periodEnd).replace(".", "") : null,
-        email: selected.user.username,
+        email: selected.user?.username ?? "—",
         method: isStaticPix(selected.gatewayId) ? "Pix estático" : selected.gatewayId ? "Mercado Pago" : "Pix",
         status: statusOf(selected, now),
         checkable: isCheckable(selected),
@@ -313,10 +313,10 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
                       <tr key={r.id} className={cn("border-t border-linha", isSelected && "bg-ameixa-suave")}>
                         <td className="px-4 py-3.5">
                           <span className="flex flex-col">
-                            <strong className="font-semibold text-tinta">{r.user.name}</strong>
+                            <strong className="font-semibold text-tinta">{r.user?.name ?? "Conta excluída"}</strong>
                             <span className="text-[13px] text-tinta-suave">
                               {isVendor ? "Fornecedor" : "Casal"}
-                              {isVendor && r.user.partnerVendor?.companyName ? ` · ${r.user.partnerVendor.companyName}` : ""}
+                              {isVendor && r.user?.partnerVendor?.companyName ? ` · ${r.user.partnerVendor.companyName}` : ""}
                             </span>
                           </span>
                         </td>
@@ -341,7 +341,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
                             )}
                           >
                             {isCheckable(r) ? "Conferir" : "Detalhes"}
-                            <span className="sr-only"> o pagamento de {r.user.name}</span>
+                            <span className="sr-only"> o pagamento de {r.user?.name ?? "conta excluída"}</span>
                           </Link>
                         </td>
                       </tr>

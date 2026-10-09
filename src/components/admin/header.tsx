@@ -16,6 +16,7 @@ import {
   MessageCircle,
   RefreshCw,
   CreditCard as CreditCardIcon,
+  UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -156,6 +157,11 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
               <p className="text-sm text-tinta-suave">{role}</p>
             </div>
             <div className="space-y-0.5 p-1.5">
+              <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5 text-sm text-tinta">
+                <Link href="/conta" className="flex items-center gap-2.5">
+                  <UserRound className="h-4 w-4 text-tinta-suave" /> Minha conta
+                </Link>
+              </DropdownMenuItem>
               {can("/carteira") && (
                 <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5 text-sm text-tinta">
                   <Link href="/carteira" className="flex items-center gap-2.5">

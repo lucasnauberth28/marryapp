@@ -16,6 +16,7 @@ import { revalidatePath } from "next/cache";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { applyApprovedPayment, markPaymentFailed } from "@/lib/subscriptions";
 import { subscriptionReference } from "@/lib/subscription-period";
+import { isUniqueViolation, provisionWedding, upsertCoupleRole, withSlugRetry } from "@/lib/account/wedding-provisioning";
 
 /** Perfil das contas de fornecedor (o mesmo criado pelo seed). */
 const VENDOR_ROLE_NAME = "Fornecedor";
@@ -297,8 +298,17 @@ function revalidatePlanPages() {
   revalidatePath("/fornecedores");
 }
 
+/** Data do casamento do cadastro: só datas plausíveis (o resto vira "ainda sem data"). */
+function validWeddingDate(date: Date | null | undefined): Date | null {
+  if (!date || Number.isNaN(date.getTime())) return null;
+  const year = date.getUTCFullYear();
+  const now = new Date().getUTCFullYear();
+  return year >= now - 1 && year <= now + 10 ? date : null;
+}
+
 /**
  * Registra a conta do usuário (Casal ou Fornecedor).
+ * Casal: cria o casamento junto com a conta e devolve redirectTo "/boas-vindas" (onboarding).
  */
 export async function registerPlanAccount(data: PlanRegistrationData) {
   const plan = resolvePlan(data.planId, data.modules);
@@ -321,15 +331,8 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
     }
 
     // Fornecedores entram direto no painel próprio (/fornecedor), já vinculados ao perfil criado.
-    // Casais aguardam ativação: até o isolamento de dados por casamento, uma conta nova
-    // não pode enxergar o painel existente.
+    // Casais ganham o próprio casamento (com site e regras) e seguem para o onboarding.
     const isVendor = plan.type === "VENDOR";
-    const roleName = isVendor ? VENDOR_ROLE_NAME : "Casal / Noivos (aguardando ativação)";
-    const role = await prisma.role.upsert({
-      where: { name: roleName },
-      update: {},
-      create: { name: roleName, allowedPaths: isVendor ? [VENDOR_PANEL_PATH] : [] },
-    });
 
     let vendorData: Parameters<typeof prisma.partnerVendor.create>[0]["data"] | null = null;
     if (plan.type === "VENDOR") {
@@ -372,12 +375,60 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
     }
 
     const hashedPassword = await bcrypt.hash(input.password, 12);
+    const name = normalizeText(input.name);
+
+    if (!isVendor) {
+      const weddingDate = validWeddingDate(input.weddingDate);
+      // Casamento, site, regras, perfil "Casal" e usuário nascem juntos (tudo ou nada).
+      const created = await withSlugRetry(() =>
+        prisma.$transaction(async (tx) => {
+          const role = await upsertCoupleRole(tx);
+          const wedding = await provisionWedding(tx, {
+            coupleNames: name,
+            weddingDate,
+            slugSource: input.slug || name,
+          });
+          const user = await tx.user.create({
+            data: { name, username: input.email, password: hashedPassword, roleId: role.id, weddingId: wedding.id },
+            select: { id: true },
+          });
+          return { user, role, wedding };
+        }),
+      ).catch(async (error) => {
+        // Dois envios do mesmo formulário ao mesmo tempo: o segundo bate no e-mail único.
+        if (isUniqueViolation(error) && (await prisma.user.findUnique({ where: { username: input.email }, select: { id: true } }))) {
+          return null;
+        }
+        throw error;
+      });
+      if (!created) return { success: false, error: "Já existe uma conta com este e-mail. Faça login para continuar." };
+
+      const allowedPaths = Array.isArray(created.role.allowedPaths) ? (created.role.allowedPaths as string[]) : [];
+      const token = await signToken({ userId: created.user.id, role: created.role.name, allowedPaths });
+      const cookieStore = await cookies();
+      cookieStore.set(SESSION_COOKIE_NAME, token, sessionCookieOptions());
+
+      return {
+        success: true,
+        userId: created.user.id,
+        isFree: plan.price === 0,
+        isVendor,
+        redirectTo: "/boas-vindas",
+        slug: created.wedding.slug,
+      };
+    }
+
+    const role = await prisma.role.upsert({
+      where: { name: VENDOR_ROLE_NAME },
+      update: {},
+      create: { name: VENDOR_ROLE_NAME, allowedPaths: [VENDOR_PANEL_PATH] },
+    });
 
     const user = await prisma.$transaction(async (tx) => {
       const vendor = vendorData ? await tx.partnerVendor.create({ data: vendorData, select: { id: true } }) : null;
       return tx.user.create({
         data: {
-          name: normalizeText(input.name),
+          name,
           username: input.email,
           password: hashedPassword,
           roleId: role.id,
@@ -399,7 +450,7 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
       userId: user.id,
       isFree: plan.price === 0,
       isVendor,
-      redirectTo: isVendor && hasPathAccess(allowedPaths, VENDOR_PANEL_PATH) ? VENDOR_PANEL_PATH : null,
+      redirectTo: hasPathAccess(allowedPaths, VENDOR_PANEL_PATH) ? VENDOR_PANEL_PATH : null,
       slug: input.slug ? sanitizeSlug(input.slug) : undefined,
     };
   } catch (error) {

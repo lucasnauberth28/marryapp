@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { login } from "@/actions/auth-actions";
 import { btn, btnArrow } from "@/components/landing/styles";
@@ -63,9 +64,17 @@ export function LoginForm({ initialEmail = "", onCreateAccount }: { initialEmail
       </div>
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="login-senha" className="text-sm font-semibold leading-5 text-tinta">
-          Senha
-        </label>
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor="login-senha" className="text-sm font-semibold leading-5 text-tinta">
+            Senha
+          </label>
+          <Link
+            href="/esqueci-a-senha"
+            className="-my-3 inline-flex min-h-11 items-center text-sm font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 transition-colors hover:decoration-ameixa"
+          >
+            Esqueci a senha
+          </Link>
+        </div>
         <div className="relative">
           <Lock aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 size-[18px] -translate-y-1/2 text-tinta-suave" strokeWidth={1.75} />
           <input

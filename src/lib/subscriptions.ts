@@ -41,7 +41,7 @@ export async function applyApprovedPayment(
     if (updated.count === 0) return "already";
 
     const tier = sub.planType === "VENDOR" ? vendorTierForPlan(sub.planId) : null;
-    if (tier) {
+    if (tier && sub.userId) {
       const user = await tx.user.findUnique({
         where: { id: sub.userId },
         select: { partnerVendor: { select: { id: true, planTier: true, planExpiresAt: true } } },
@@ -90,7 +90,7 @@ export async function refundSubscription(subscriptionId: string) {
     });
     if (!sub || sub.status !== PaymentStatus.APPROVED) return;
     await tx.subscription.update({ where: { id: subscriptionId }, data: { status: PaymentStatus.REFUNDED } });
-    const vendorId = sub.user.partnerVendorId;
+    const vendorId = sub.user?.partnerVendorId;
     if (vendorId && sub.periodEnd) {
       await tx.partnerVendor.updateMany({
         where: { id: vendorId, planExpiresAt: sub.periodEnd },
