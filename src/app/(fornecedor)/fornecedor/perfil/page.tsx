@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Reveal } from "@/components/motion/reveal";
+import prisma from "@/lib/prisma";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
 import { CurationChip } from "../../_components/status-chip";
-import { centsToBrlInput, parseRegions, VENDOR_CATEGORIES } from "../../_lib/vendor-panel";
+import { centsToBrlInput, MAX_GALLERY_IMAGES, parseGallery, parseRegions, VENDOR_CATEGORIES } from "../../_lib/vendor-panel";
+import { MediaForm } from "./media-form";
 import { ProfileForm } from "./profile-form";
 
 export const metadata: Metadata = { title: "Meu perfil" };
@@ -17,7 +19,12 @@ export default async function PerfilPage() {
   const { vendor } = await getVendorPageContext();
   if (!vendor) return null; // o layout explica que a conta ainda não foi vinculada
 
+  // Galeria não vem no contexto da sessão: lê só do fornecedor da sessão.
+  const media = await prisma.partnerVendor.findUnique({ where: { id: vendor.id }, select: { galleryImages: true } });
+  const gallery = parseGallery(media?.galleryImages ?? null).slice(0, MAX_GALLERY_IMAGES);
+
   const fields = [
+    gallery.length > 0 ? "galeria" : null,
     vendor.description,
     vendor.startingPrice,
     vendor.serviceRegions,
@@ -63,6 +70,7 @@ export default async function PerfilPage() {
           website: vendor.website ?? "",
         }}
       />
+      <MediaForm initial={{ logoUrl: vendor.logoUrl, coverUrl: vendor.coverUrl, gallery }} />
     </div>
   );
 }

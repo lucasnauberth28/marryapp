@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Mail, MessageCircle, Send } from "lucide-react";
+import { ArrowLeft, CalendarDays, Lock, Mail, MapPin, MessageCircle, Send } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,13 @@ import { getVendorPageContext } from "@/lib/security/vendor-guard";
 import { LeadStatusChip } from "../../../_components/status-chip";
 import {
   centsToBrlInput,
+  effectiveVendorTier,
+  firstNameOf,
+  isLeadLocked,
+  PLAN_HREF,
+  proposalPublicUrl,
+  reviewPublicUrl,
+  START_MONTHLY_LEAD_LIMIT,
   formatBrl,
   formatDateTimeBrasilia,
   formatPhone,
@@ -24,6 +31,7 @@ import {
 } from "../../../_lib/vendor-panel";
 import { DeclineLead } from "./decline-lead";
 import { ProposalForm, type SavedProposal } from "./proposal-form";
+import { ReviewRequest } from "./review-request";
 import { StatusSelect } from "./status-select";
 
 export const metadata: Metadata = { title: "Pedido de orçamento" };
@@ -89,9 +97,28 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
       declinedAt: true,
       declineMessage: true,
       createdAt: true,
+      locked: true,
+      proposalToken: true,
+      proposalAcceptedAt: true,
+      proposalAcceptedName: true,
+      reviewToken: true,
+      reviewRequestedAt: true,
+      review: { select: { rating: true, createdAt: true } },
     },
   });
   if (!lead) notFound();
+
+  // Limite do Start: pedido bloqueado mostra só primeiro nome, data e cidade (sem contato nem mensagem).
+  if (isLeadLocked(lead, effectiveVendorTier(vendor.planTier, vendor.planExpiresAt))) {
+    return (
+      <LockedLead
+        firstName={firstNameOf(lead.coupleName)}
+        date={formatWeddingDateLong(lead.weddingDate)}
+        location={lead.location}
+        arrived={arrivedLabel(lead.createdAt)}
+      />
+    );
+  }
 
   const status: LeadStatus = isLeadStatus(lead.status) ? lead.status : "NEW";
   const day = lead.weddingDate
@@ -183,12 +210,14 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
   let savedProposal: SavedProposal | null = null;
   if (lead.proposalSentAt && lead.proposalAmount != null) {
     const validUntil = formatWeddingDate(lead.proposalValidUntil);
+    const publicUrl = lead.proposalToken ? proposalPublicUrl(lead.proposalToken) : null;
     const text = [
       `Olá, ${lead.coupleName}! Aqui é ${vendor.companyName}, pelo Aceito. Segue a nossa proposta${dateShort ? ` para o casamento em ${dateShort}` : ""}:`,
       "",
       `Valor: ${formatBrl(lead.proposalAmount)}`,
       ...(validUntil ? [`Válida até: ${validUntil}`] : []),
       ...(lead.proposalDetails ? ["", "O que está incluído:", lead.proposalDetails] : []),
+      ...(publicUrl ? ["", "Para ver os detalhes e aceitar a proposta:", publicUrl] : []),
       "",
       "Qualquer dúvida, é só responder por aqui.",
     ].join("\n");
@@ -196,6 +225,11 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
       sentAtLabel: formatDateTimeBrasilia(lead.proposalSentAt),
       text,
       whatsappUrl: whatsappHref(lead.couplePhone, text),
+      publicUrl,
+      accepted:
+        lead.proposalAcceptedAt && lead.proposalAcceptedName
+          ? { name: lead.proposalAcceptedName, atLabel: formatDateTimeBrasilia(lead.proposalAcceptedAt) }
+          : null,
     };
   }
 
@@ -227,7 +261,9 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
       : {
           label: "Fechado",
           done: status === "CLOSED",
-          detail: lead.closedAt ? capitalize(formatDateTimeBrasilia(lead.closedAt)) : undefined,
+          detail: lead.closedAt
+            ? `${capitalize(formatDateTimeBrasilia(lead.closedAt))}${lead.proposalAcceptedAt ? " · aceite digital do casal" : ""}`
+            : undefined,
         },
   ];
   // Recusado sem ter passado por uma etapa: a etapa some em vez de ficar pendente.
@@ -315,10 +351,12 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
             <section id="proposta" aria-labelledby="proposta-titulo" className={cn(CARD, "flex scroll-mt-20 flex-col gap-4")}>
               <div className="flex flex-col gap-0.5">
                 <h2 id="proposta-titulo" className="text-lg font-semibold">
-                  Enviar proposta
+                  {savedProposal?.accepted ? "Proposta aceita" : "Enviar proposta"}
                 </h2>
                 <p className="text-sm text-tinta-suave">
-                  A proposta fica registrada neste pedido e abre pronta no seu WhatsApp para você enviar ao casal.
+                  {savedProposal?.accepted
+                    ? "O casal aceitou a proposta pelo link. O aceite fica registrado neste pedido."
+                    : "A proposta fica registrada neste pedido e abre pronta no seu WhatsApp, com o link para o casal aceitar."}
                 </p>
               </div>
               <ProposalForm
@@ -403,6 +441,20 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
             </section>
           </Reveal>
 
+          {status === "CLOSED" ? (
+            <Reveal variant="up" delay={240}>
+              <ReviewRequest
+                leadId={lead.id}
+                coupleName={lead.coupleName}
+                couplePhone={lead.couplePhone}
+                companyName={vendor.companyName}
+                url={lead.reviewToken ? reviewPublicUrl(lead.reviewToken) : null}
+                requestedAtLabel={lead.reviewRequestedAt ? formatDateTimeBrasilia(lead.reviewRequestedAt) : null}
+                review={lead.review ? { rating: lead.review.rating, atLabel: formatDateTimeBrasilia(lead.review.createdAt) } : null}
+              />
+            </Reveal>
+          ) : null}
+
           <DeclineLead
             leadId={lead.id}
             couplePhone={lead.couplePhone}
@@ -441,6 +493,74 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
           {savedProposal ? "Ver proposta" : "Enviar proposta"}
         </a>
       </div>
+    </div>
+  );
+}
+
+/** Pedido além do limite do Plano Start: só primeiro nome, data e cidade. */
+function LockedLead({
+  firstName,
+  date,
+  location,
+  arrived,
+}: {
+  firstName: string;
+  date: string | null;
+  location: string | null;
+  arrived: string;
+}) {
+  return (
+    <div className="flex flex-col gap-6">
+      <Reveal variant="fade" className="flex flex-col gap-4">
+        <Link
+          href="/fornecedor"
+          className="-ml-3 inline-flex min-h-11 w-fit items-center gap-2 rounded-xl px-3 text-[15px] font-semibold text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
+        >
+          <ArrowLeft aria-hidden="true" className="size-4" />
+          Todos os pedidos
+        </Link>
+        <div className="flex min-w-0 flex-col gap-2">
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-areia px-2.5 py-1 text-[13px] leading-4 font-semibold text-tinta">
+            <Lock aria-hidden="true" className="size-3.5" strokeWidth={2.25} />
+            Bloqueado <span className="font-medium">· {arrived}</span>
+          </span>
+          <h1 className="font-display text-[34px] leading-10 font-medium break-words md:text-[44px] md:leading-[50px]">
+            {firstName}
+          </h1>
+        </div>
+      </Reveal>
+
+      <Reveal variant="up" delay={80}>
+        <section aria-labelledby="bloqueado-titulo" className={cn(CARD, "flex max-w-2xl flex-col gap-4")}>
+          <h2 id="bloqueado-titulo" className="text-lg font-semibold">
+            Pedido bloqueado pelo Plano Start
+          </h2>
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-0.5">
+              <dt className={cn(OVERLINE, "flex items-center gap-1.5")}>
+                <CalendarDays aria-hidden="true" className="size-3.5" />
+                Data
+              </dt>
+              <dd className="text-base font-semibold sm:text-[17px]">{date ?? "A definir"}</dd>
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <dt className={cn(OVERLINE, "flex items-center gap-1.5")}>
+                <MapPin aria-hidden="true" className="size-3.5" />
+                Cidade
+              </dt>
+              <dd className="text-base font-semibold sm:text-[17px]">{location ?? "Não informada"}</dd>
+            </div>
+          </dl>
+          <p className="text-tinta-suave">
+            Este casal pediu orçamento depois dos {START_MONTHLY_LEAD_LIMIT} pedidos do mês do Plano Start. Assine o Pro para
+            ver o nome completo, o WhatsApp, o e-mail e a mensagem, e para responder ao pedido.
+          </p>
+          <Link href={PLAN_HREF} className={cn(BTN_PRIMARY, "w-full sm:w-fit")}>
+            <Lock aria-hidden="true" className="size-[18px]" />
+            Desbloquear com o Pro
+          </Link>
+        </section>
+      </Reveal>
     </div>
   );
 }

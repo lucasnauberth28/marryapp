@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -7,9 +8,16 @@ import prisma from "@/lib/prisma";
 import { requireVendorSession, VENDOR_PANEL_PATH } from "@/lib/security/vendor-guard";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { normalizeText, sanitizeUrl } from "@/lib/security/sanitize";
+import { MAX_IMAGE_BYTES, uploadImageDataUrl } from "@/lib/supabase";
+import type { VendorPanelVendor } from "@/lib/security/vendor-guard";
 import {
+  effectiveVendorTier,
+  isLeadLocked,
   LEAD_STATUSES,
+  MAX_GALLERY_IMAGES,
+  parseGallery,
   parseIsoDate,
+  reviewPublicUrl,
   todayBrasilia,
   VENDOR_CATEGORIES,
   VENDOR_EVENT_KINDS,
@@ -23,6 +31,17 @@ async function rateLimitVendor(userId: string) {
 }
 
 const RATE_LIMIT_ERROR = "Muitas alterações em pouco tempo. Aguarde um instante e tente novamente.";
+const LOCKED_ERROR = "Este pedido está bloqueado pelo limite do Plano Start. Assine o Pro para desbloquear.";
+
+/** Pedido bloqueado pelo limite do Start (considerando o plano em vigor do fornecedor). */
+function lockedFor(vendor: VendorPanelVendor, lead: { locked: boolean }) {
+  return isLeadLocked(lead, effectiveVendorTier(vendor.planTier, vendor.planExpiresAt));
+}
+
+/** Token público (proposta / avaliação): 24 bytes aleatórios em base64url (32 caracteres). */
+function newPublicToken() {
+  return randomBytes(24).toString("base64url");
+}
 
 const optionalText = (max: number) => z.string().trim().max(max).optional().or(z.literal(""));
 
@@ -58,9 +77,10 @@ export async function updateLeadStatus(leadId: string, status: string) {
     // Posse: o filtro por vendorId garante que um fornecedor nunca leia ou altere pedidos de outro.
     const current = await prisma.vendorLead.findFirst({
       where: { id: parsed.data.leadId, vendorId: vendor.id },
-      select: { status: true, respondedAt: true },
+      select: { status: true, respondedAt: true, locked: true },
     });
     if (!current) return { success: false, error: "Pedido não encontrado." };
+    if (lockedFor(vendor, current)) return { success: false, error: LOCKED_ERROR };
     if (current.status === target) return { success: true };
 
     const now = new Date();
@@ -141,14 +161,21 @@ export async function saveLeadProposal(input: LeadProposalInput) {
 
     const current = await prisma.vendorLead.findFirst({
       where: { id: data.leadId, vendorId: vendor.id },
-      select: { status: true, respondedAt: true },
+      select: { status: true, respondedAt: true, locked: true, proposalToken: true, proposalAcceptedAt: true },
     });
     if (!current) return { success: false, error: "Pedido não encontrado." };
+    if (lockedFor(vendor, current)) return { success: false, error: LOCKED_ERROR };
+    // O que o casal aceitou fica registrado como foi aceito.
+    if (current.proposalAcceptedAt) {
+      return { success: false, error: "O casal já aceitou esta proposta. Ela não pode mais ser alterada." };
+    }
 
     const now = new Date();
     const result = await prisma.vendorLead.updateMany({
-      where: { id: data.leadId, vendorId: vendor.id },
+      where: { id: data.leadId, vendorId: vendor.id, proposalAcceptedAt: null },
       data: {
+        // Link para o casal aceitar a proposta (o mesmo link continua valendo nas atualizações).
+        ...(!current.proposalToken ? { proposalToken: newPublicToken() } : {}),
         proposalAmount: data.amount,
         proposalValidUntil: data.validUntil,
         proposalDetails: data.details.replace(/\r\n/g, "\n"),
@@ -189,9 +216,10 @@ export async function declineLead(input: DeclineLeadInput) {
 
     const current = await prisma.vendorLead.findFirst({
       where: { id: data.leadId, vendorId: vendor.id },
-      select: { respondedAt: true },
+      select: { respondedAt: true, locked: true },
     });
     if (!current) return { success: false, error: "Pedido não encontrado." };
+    if (lockedFor(vendor, current)) return { success: false, error: LOCKED_ERROR };
 
     const now = new Date();
     const result = await prisma.vendorLead.updateMany({
@@ -211,6 +239,50 @@ export async function declineLead(input: DeclineLeadInput) {
   } catch (error) {
     console.error("[declineLead Error]:", error);
     return { success: false, error: "Erro ao recusar o pedido." };
+  }
+}
+
+const RequestReviewSchema = z.string().uuid("Pedido inválido.");
+
+export type RequestLeadReviewResult = { success: true; url: string } | { success: false; error: string };
+
+/**
+ * Pedido fechado: gera (uma vez) o link para o casal avaliar o fornecedor.
+ * A avaliação feita por esse link entra como verificada.
+ */
+export async function requestLeadReview(leadId: string): Promise<RequestLeadReviewResult> {
+  const { session, vendor } = await requireVendorSession();
+
+  const parsed = RequestReviewSchema.safeParse(leadId);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+
+  try {
+    const rateLimit = await rateLimitVendor(session.userId);
+    if (!rateLimit.success) return { success: false, error: RATE_LIMIT_ERROR };
+
+    const current = await prisma.vendorLead.findFirst({
+      where: { id: parsed.data, vendorId: vendor.id },
+      select: { status: true, locked: true, reviewToken: true, review: { select: { id: true } } },
+    });
+    if (!current) return { success: false, error: "Pedido não encontrado." };
+    if (lockedFor(vendor, current)) return { success: false, error: LOCKED_ERROR };
+    if (current.status !== "CLOSED") {
+      return { success: false, error: "Só dá para pedir avaliação de pedidos fechados." };
+    }
+    if (current.review) return { success: false, error: "Este casal já avaliou o seu trabalho." };
+
+    const token = current.reviewToken ?? newPublicToken();
+    const result = await prisma.vendorLead.updateMany({
+      where: { id: parsed.data, vendorId: vendor.id },
+      data: { reviewToken: token, reviewRequestedAt: new Date() },
+    });
+    if (result.count === 0) return { success: false, error: "Pedido não encontrado." };
+
+    revalidatePath(VENDOR_PANEL_PATH, "layout");
+    return { success: true, url: reviewPublicUrl(token) };
+  } catch (error) {
+    console.error("[requestLeadReview Error]:", error);
+    return { success: false, error: "Erro ao gerar o link de avaliação." };
   }
 }
 
@@ -263,11 +335,13 @@ export async function createVendorEvent(input: VendorEventInput) {
     // O pedido vinculado precisa ser do próprio fornecedor.
     let lead: { id: string; coupleName: string } | null = null;
     if (data.leadId) {
-      lead = await prisma.vendorLead.findFirst({
+      const found = await prisma.vendorLead.findFirst({
         where: { id: data.leadId, vendorId: vendor.id },
-        select: { id: true, coupleName: true },
+        select: { id: true, coupleName: true, locked: true },
       });
-      if (!lead) return { success: false, error: "Pedido não encontrado." };
+      if (!found) return { success: false, error: "Pedido não encontrado." };
+      if (lockedFor(vendor, found)) return { success: false, error: LOCKED_ERROR };
+      lead = { id: found.id, coupleName: found.coupleName };
     }
 
     if (data.kind === "BLOCKED") {
@@ -435,5 +509,120 @@ export async function updateVendorProfile(input: VendorProfileInput) {
   } catch (error) {
     console.error("[updateVendorProfile Error]:", error);
     return { success: false, error: "Erro ao salvar o perfil." };
+  }
+}
+
+// ==========================================
+// FOTOS DO PERFIL (logo, capa e galeria)
+// ==========================================
+
+// Imagem já redimensionada no navegador (até 1600 px), enviada como data URL.
+// O helper de upload confere tipo real (magic bytes) e tamanho (até 5 MB).
+const ImageDataUrl = z
+  .string({ message: "Imagem inválida." })
+  .max(Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 64, "Imagem acima do limite de 5 MB.")
+  .regex(/^data:image\/(jpeg|png|webp|avif);base64,[A-Za-z0-9+/=]+$/, "Formato de imagem não suportado (use JPG, PNG ou WEBP).");
+
+const GalleryIndex = z.number().int().min(0).max(MAX_GALLERY_IMAGES - 1);
+
+const VendorMediaSchema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("set-logo"), image: ImageDataUrl }),
+  z.object({ action: z.literal("remove-logo") }),
+  z.object({ action: z.literal("set-cover"), image: ImageDataUrl }),
+  z.object({ action: z.literal("remove-cover") }),
+  z.object({ action: z.literal("add-gallery"), image: ImageDataUrl }),
+  z.object({ action: z.literal("remove-gallery"), index: GalleryIndex }),
+  z.object({ action: z.literal("move-gallery"), index: GalleryIndex, direction: z.enum(["up", "down"]) }),
+]);
+
+export type VendorMediaInput = z.input<typeof VendorMediaSchema>;
+export type VendorMedia = { logoUrl: string | null; coverUrl: string | null; gallery: string[] };
+export type VendorMediaResult = { success: true; media: VendorMedia } | { success: false; error: string };
+
+/** Uma alteração por vez nas fotos do perfil do fornecedor da sessão; devolve como ficaram. */
+export async function updateVendorMedia(input: VendorMediaInput): Promise<VendorMediaResult> {
+  const { session, vendor } = await requireVendorSession();
+
+  const parsed = VendorMediaSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+  const op = parsed.data;
+
+  try {
+    const rateLimit = await rateLimitVendor(session.userId);
+    if (!rateLimit.success) return { success: false, error: RATE_LIMIT_ERROR };
+
+    const current = await prisma.partnerVendor.findUnique({
+      where: { id: vendor.id },
+      select: { logoUrl: true, coverUrl: true, galleryImages: true },
+    });
+    if (!current) return { success: false, error: "Fornecedor não encontrado." };
+
+    const media: VendorMedia = {
+      logoUrl: current.logoUrl,
+      coverUrl: current.coverUrl,
+      gallery: parseGallery(current.galleryImages).slice(0, MAX_GALLERY_IMAGES),
+    };
+
+    const upload = async (image: string, folder: string) => {
+      const res = await uploadImageDataUrl(image, folder);
+      return res.success ? { url: res.url } : { error: res.error };
+    };
+
+    switch (op.action) {
+      case "set-logo":
+      case "set-cover":
+      case "add-gallery": {
+        if (op.action === "add-gallery" && media.gallery.length >= MAX_GALLERY_IMAGES) {
+          return { success: false, error: `A galeria aceita até ${MAX_GALLERY_IMAGES} fotos. Remova uma para adicionar outra.` };
+        }
+        const folder = op.action === "set-logo" ? "vendors/logos" : op.action === "set-cover" ? "vendors/covers" : "vendors/gallery";
+        const res = await upload(op.image, folder);
+        if ("error" in res) return { success: false, error: res.error ?? "Falha ao enviar a imagem." };
+        if (op.action === "set-logo") media.logoUrl = res.url;
+        else if (op.action === "set-cover") media.coverUrl = res.url;
+        else media.gallery.push(res.url);
+        break;
+      }
+      case "remove-logo":
+        media.logoUrl = null;
+        break;
+      case "remove-cover":
+        media.coverUrl = null;
+        break;
+      case "remove-gallery":
+        if (op.index >= media.gallery.length) return { success: false, error: "Foto não encontrada." };
+        media.gallery.splice(op.index, 1);
+        break;
+      case "move-gallery": {
+        const target = op.direction === "up" ? op.index - 1 : op.index + 1;
+        if (op.index >= media.gallery.length || target < 0 || target >= media.gallery.length) {
+          return { success: false, error: "Não dá para mover esta foto." };
+        }
+        [media.gallery[op.index], media.gallery[target]] = [media.gallery[target], media.gallery[op.index]];
+        break;
+      }
+    }
+
+    await prisma.partnerVendor.update({
+      // O id vem da sessão (vínculo do usuário), nunca do cliente.
+      where: { id: vendor.id },
+      data: {
+        logoUrl: media.logoUrl,
+        coverUrl: media.coverUrl,
+        galleryImages: media.gallery.length > 0 ? JSON.stringify(media.gallery) : null,
+        // Perfil recusado volta para a fila da curadoria depois de ajustado.
+        ...(vendor.curationStatus === "REJECTED" ? { curationStatus: "PENDING_APPROVAL" } : {}),
+      },
+    });
+
+    revalidatePath(VENDOR_PANEL_PATH, "layout");
+    revalidatePath("/fornecedores");
+    revalidatePath(`/fornecedores/${vendor.id}`);
+    revalidatePath("/curadoria");
+
+    return { success: true, media };
+  } catch (error) {
+    console.error("[updateVendorMedia Error]:", error);
+    return { success: false, error: "Erro ao salvar as fotos." };
   }
 }

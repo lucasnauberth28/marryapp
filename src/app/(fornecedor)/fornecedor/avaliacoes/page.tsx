@@ -106,7 +106,8 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
           </span>
           <p className="text-lg font-semibold">Nenhuma avaliação por aqui ainda</p>
           <p className="max-w-md text-tinta-suave">
-            Quando um casal avaliar seu trabalho no seu perfil público, a avaliação aparece aqui e você pode responder.
+            Nos pedidos fechados, use “Pedir avaliação”: o casal recebe um link só dele e a avaliação chega aqui como
+            verificada, para você responder.
           </p>
           {publicProfileHref ? (
             <Link

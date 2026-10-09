@@ -5,7 +5,7 @@ import { getVendorPageContext } from "@/lib/security/vendor-guard";
 import { Chip } from "./_components/status-chip";
 import { VendorAvatar } from "./_components/vendor-avatar";
 import { LogoutButton, LogoutIconButton, VendorMobileTitle, VendorSidebarNav, VendorTabBar } from "./_components/vendor-nav";
-import { PLAN_LABEL, START_MONTHLY_LEAD_LIMIT, startOfMonthBrasilia } from "./_lib/vendor-panel";
+import { effectiveVendorTier, PLAN_LABEL, START_MONTHLY_LEAD_LIMIT, startOfMonthBrasilia } from "./_lib/vendor-panel";
 
 export const metadata: Metadata = {
   title: { default: "Painel do fornecedor", template: "%s · Aceito para Fornecedores" },
@@ -46,7 +46,8 @@ export default async function FornecedorLayout({ children }: { children: React.R
   const { vendor } = await getVendorPageContext();
   if (!vendor) return <UnlinkedAccount />;
 
-  const isFree = vendor.planTier === "FREE";
+  const tier = effectiveVendorTier(vendor.planTier, vendor.planExpiresAt);
+  const isFree = tier === "FREE";
   const [newLeads, monthLeads] = await Promise.all([
     prisma.vendorLead.count({ where: { vendorId: vendor.id, status: "NEW" } }),
     isFree
@@ -54,7 +55,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
       : Promise.resolve(0),
   ]);
 
-  const planLabel = PLAN_LABEL[vendor.planTier] ?? "Plano Start";
+  const planLabel = PLAN_LABEL[tier] ?? "Plano Start";
   const publicProfileHref = vendor.curationStatus === "APPROVED" ? `/fornecedores/${vendor.id}` : null;
 
   return (

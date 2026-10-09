@@ -15,58 +15,109 @@ import {
   ShieldCheck,
   ArrowLeft,
   Share2,
-  Heart,
   Globe,
-  Phone,
-  FileText,
   Sparkles,
   Camera,
   Loader2,
-  Send,
+  CalendarCheck,
+  CalendarX,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DatePicker } from "@/components/ui/date-picker";
-import { createVendorLead, createVendorReview } from "@/actions/partner-vendor-actions";
+import { checkVendorAvailability, createVendorLead, type PublicVendor } from "@/actions/partner-vendor-actions";
 import { toast } from "sonner";
-import { LEAD_BUDGET_OPTIONS } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { LEAD_BUDGET_OPTIONS, parseGallery, parseRegions } from "@/app/(fornecedor)/_lib/vendor-panel";
 
 interface VendorDetailClientProps {
-  vendor: any;
+  vendor: PublicVendor;
+  /** Hoje em Brasília ("AAAA-MM-DD"), mínimo da consulta de disponibilidade. */
+  todayIso: string;
 }
 
-export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
-  let galleryImages: string[] = [];
-  try {
-    galleryImages = JSON.parse(vendor.galleryImages || "[]");
-  } catch {
-    galleryImages = [];
-  }
+/** "Ver disponibilidade": consulta só sim/não na agenda do fornecedor. */
+function AvailabilityCheck({ vendorId, todayIso }: { vendorId: string; todayIso: string }) {
+  const [date, setDate] = useState("");
+  const [result, setResult] = useState<{ date: string; available: boolean } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setResult(null);
+    if (!date) {
+      setError("Escolha a data do casamento.");
+      return;
+    }
+    startTransition(async () => {
+      const res = await checkVendorAvailability(vendorId, date);
+      if (res.success) setResult({ date, available: res.available });
+      else setError(res.error);
+    });
+  };
+
+  const dateLabel = (iso: string) => {
+    const [y, m, d] = iso.split("-");
+    return `${d}/${m}/${y}`;
+  };
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-2" aria-describedby="disponibilidade-resultado">
+      <Label htmlFor="disponibilidade-data" className="text-xs font-bold text-tinta-suave uppercase">
+        Ver disponibilidade
+      </Label>
+      <div className="flex gap-2">
+        <Input
+          id="disponibilidade-data"
+          type="date"
+          min={todayIso}
+          value={date}
+          onChange={(e) => {
+            setDate(e.target.value);
+            setResult(null);
+            setError(null);
+          }}
+          className="h-10 flex-1 rounded-xl bg-linho text-xs"
+        />
+        <Button type="submit" variant="outline" disabled={isPending} className="h-10 rounded-xl text-xs font-bold">
+          {isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : "Consultar"}
+        </Button>
+      </div>
+      <div id="disponibilidade-resultado" role="status" aria-live="polite">
+        {result ? (
+          result.available ? (
+            <p className="flex items-center gap-1.5 rounded-xl bg-sucesso-suave px-3 py-2 text-xs font-bold text-sucesso">
+              <CalendarCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+              Data disponível em {dateLabel(result.date)}. Peça seu orçamento!
+            </p>
+          ) : (
+            <p className="flex items-center gap-1.5 rounded-xl bg-perigo-suave px-3 py-2 text-xs font-bold text-perigo">
+              <CalendarX className="h-4 w-4 shrink-0" aria-hidden="true" />
+              Data indisponível em {dateLabel(result.date)}.
+            </p>
+          )
+        ) : null}
+        {error ? <p className="text-xs font-medium text-perigo">{error}</p> : null}
+      </div>
+    </form>
+  );
+}
+
+export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps) {
+  let galleryImages = parseGallery(vendor.galleryImages);
   if (galleryImages.length === 0 && vendor.coverUrl) {
     galleryImages = [vendor.coverUrl];
   }
 
-  let serviceRegions: string[] = [];
-  try {
-    serviceRegions = JSON.parse(vendor.serviceRegions || "[]");
-  } catch {
-    serviceRegions = ["São Paulo - Capital"];
-  }
+  const serviceRegions = parseRegions(vendor.serviceRegions);
+  const isMaster = vendor.planTier === "MASTER";
+  // WhatsApp direto é recurso do Pro/Master (o servidor nem envia o número dos demais).
+  const directWhatsapp = vendor.planTier !== "FREE" ? vendor.whatsapp?.replace(/\D/g, "") || null : null;
 
   const [activeImage, setActiveImage] = useState(galleryImages[0] || vendor.coverUrl);
-  const [reviews, setReviews] = useState<any[]>(vendor.reviews || []);
-
-  // Modal de Avaliação
-  const [reviewModalOpen, setReviewModalOpen] = useState(false);
-  const [reviewCoupleNames, setReviewCoupleNames] = useState("");
-  const [reviewWeddingDate, setReviewWeddingDate] = useState("");
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState("");
-  const [isPendingReview, startTransitionReview] = useTransition();
+  const reviews = vendor.reviews;
 
   // Formulário de Lead / Reunião
   const [coupleName, setCoupleName] = useState("");
@@ -103,7 +154,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
       });
 
       if (res.success) {
-        const whatsapp = vendor.whatsapp?.replace(/\D/g, "");
+        const whatsapp = directWhatsapp;
         toast.success(`Pedido enviado para ${vendor.companyName}.`, {
           id: toastId,
           description: "O fornecedor recebeu seus dados e vai entrar em contato.",
@@ -130,37 +181,6 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
         setLeadBudget("");
       } else {
         toast.error(res.error || "Erro ao solicitar orçamento.", { id: toastId });
-      }
-    });
-  };
-
-  const handleSendReview = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!reviewCoupleNames || !reviewComment) {
-      toast.error("Preencha o nome do casal e o seu depoimento.");
-      return;
-    }
-
-    const toastId = toast.loading("Publicando sua avaliação...");
-    startTransitionReview(async () => {
-      const res = await createVendorReview({
-        vendorId: vendor.id,
-        coupleNames: reviewCoupleNames,
-        weddingDate: reviewWeddingDate ? new Date(reviewWeddingDate) : undefined,
-        rating: reviewRating,
-        comment: reviewComment,
-      });
-
-      if (res.success && res.review) {
-        toast.success("Avaliação publicada com sucesso! Obrigado por compartilhar sua experiência.", {
-          id: toastId,
-        });
-        setReviews([res.review, ...reviews]);
-        setReviewModalOpen(false);
-        setReviewCoupleNames("");
-        setReviewComment("");
-      } else {
-        toast.error(res.error || "Erro ao publicar avaliação.", { id: toastId });
       }
     });
   };
@@ -237,6 +257,12 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                     <span>Curadoria Aprovada</span>
                   </span>
                 )}
+                {isMaster && (
+                  <span className="bg-amber-700 text-white font-extrabold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>Destaque</span>
+                  </span>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center gap-3 text-xs text-tinta-suave">
@@ -298,11 +324,17 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
 
               {/* Imagem Principal em Destaque */}
               <div className="w-full h-80 sm:h-[420px] rounded-2xl overflow-hidden bg-areia border border-linha">
-                <img
-                  src={activeImage}
-                  alt={vendor.companyName}
-                  className="w-full h-full object-cover transition-all duration-500"
-                />
+                {activeImage ? (
+                  <img
+                    src={activeImage}
+                    alt={vendor.companyName}
+                    className="w-full h-full object-cover transition-all duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-stone-300">
+                    <Camera className="w-12 h-12" aria-hidden="true" />
+                  </div>
+                )}
               </div>
 
               {/* Miniaturas Clicáveis */}
@@ -423,110 +455,17 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                     <span>Avaliações dos Noivos</span>
                   </h2>
                   <p className="text-xs text-tinta-suave mt-0.5">
-                    Experiências reais de casais que contrataram este fornecedor.
+                    Experiências reais de casais que contrataram este fornecedor. Só quem fechou pelo Aceito recebe o link para avaliar.
                   </p>
                 </div>
 
-                <Dialog open={reviewModalOpen} onOpenChange={setReviewModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-brand hover:bg-brand-600 text-white rounded-full text-xs font-bold px-5 h-10 shadow-xs cursor-pointer">
-                      <span>Deixar Avaliação</span>
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md bg-papel rounded-3xl p-6">
-                    <DialogHeader>
-                      <DialogTitle className="font-display text-xl text-tinta">
-                        Avaliar {vendor.companyName}
-                      </DialogTitle>
-                      <p className="text-xs text-tinta-suave mt-1">
-                        Compartilhe como foi a sua experiência para ajudar outros noivos.
-                      </p>
-                    </DialogHeader>
-
-                    <form onSubmit={handleSendReview} className="space-y-4 pt-4">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-bold text-tinta-suave uppercase">Nomes do Casal</Label>
-                        <Input
-                          value={reviewCoupleNames}
-                          onChange={(e) => setReviewCoupleNames(e.target.value)}
-                          placeholder="Ex: Larissa & André"
-                          required
-                          className="rounded-2xl h-11 text-xs bg-linho"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-bold text-tinta-suave uppercase">Data do Casamento</Label>
-                        <DatePicker
-                          value={reviewWeddingDate}
-                          onChange={(e) => setReviewWeddingDate(e.target.value)}
-                          placeholder="Selecione a data"
-                          className="rounded-2xl h-11 text-xs bg-linho"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-bold text-tinta-suave uppercase">Nota (1 a 5 estrelas)</Label>
-                        <div className="flex items-center gap-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                              key={star}
-                              type="button"
-                              onClick={() => setReviewRating(star)}
-                              aria-label={`${star} ${star === 1 ? "estrela" : "estrelas"}`}
-                              aria-pressed={star === reviewRating}
-                              className="p-1 hover:scale-110 transition-transform cursor-pointer"
-                            >
-                              <Star
-                                className={`w-6 h-6 ${
-                                  star <= reviewRating
-                                    ? "fill-amber-400 text-amber-400"
-                                    : "text-stone-300"
-                                }`}
-                              />
-                            </button>
-                          ))}
-                          <span className="text-xs font-bold text-tinta-suave ml-2">
-                            {reviewRating} de 5 estrelas
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-bold text-tinta-suave uppercase">Seu Depoimento</Label>
-                        <Textarea
-                          value={reviewComment}
-                          onChange={(e) => setReviewComment(e.target.value)}
-                          placeholder="Conte sobre o atendimento, pontualidade, qualidade e como foi o resultado..."
-                          required
-                          className="rounded-2xl text-xs bg-linho resize-none h-24"
-                        />
-                      </div>
-
-                      <Button
-                        type="submit"
-                        disabled={isPendingReview}
-                        className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-12 text-xs shadow-md gap-2 mt-2"
-                      >
-                        {isPendingReview ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <>
-                            <Send className="w-4 h-4" />
-                            <span>Publicar Avaliação</span>
-                          </>
-                        )}
-                      </Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
               </div>
 
               {/* Lista de Avaliações */}
               {reviews.length === 0 ? (
                 <div className="text-center py-8 text-tinta-suave space-y-2">
                   <Star className="w-8 h-8 mx-auto text-stone-300" />
-                  <p className="text-xs">Seja o primeiro casal a avaliar este fornecedor!</p>
+                  <p className="text-xs">Este fornecedor ainda não recebeu avaliações de casais que fecharam pelo Aceito.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -563,7 +502,7 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                       </div>
 
                       <p className="text-xs text-tinta-suave leading-relaxed">
-                        "{rev.comment}"
+                        “{rev.comment}”
                       </p>
 
                       {rev.weddingDate && (
@@ -622,6 +561,10 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                     }).format(vendor.averageTicket / 100)}
                   </p>
                 )}
+              </div>
+
+              <div className="pt-4 border-t border-linha">
+                <AvailabilityCheck vendorId={vendor.id} todayIso={todayIso} />
               </div>
 
               <div id="orcamento" className="pt-4 border-t border-linha scroll-mt-24">

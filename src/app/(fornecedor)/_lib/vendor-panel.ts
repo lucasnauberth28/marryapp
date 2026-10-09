@@ -205,3 +205,62 @@ export function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/).filter((p) => /^[\p{L}\p{N}]/u.test(p));
   return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "A";
 }
+
+// ==========================================
+// PLANO EFETIVO, PEDIDOS BLOQUEADOS E LINKS PÚBLICOS
+// ==========================================
+
+export type VendorTier = "FREE" | "PRO" | "MASTER";
+
+/**
+ * Plano em vigor: um plano pago com período vencido vale como Start,
+ * mesmo antes de a rotina de expiração gravar FREE no banco.
+ */
+export function effectiveVendorTier(planTier: string, planExpiresAt: Date | null, now: Date = new Date()): VendorTier {
+  if (planTier !== "PRO" && planTier !== "MASTER") return "FREE";
+  if (planExpiresAt && planExpiresAt.getTime() <= now.getTime()) return "FREE";
+  return planTier;
+}
+
+/**
+ * Pedido bloqueado pelo limite do Start. Se o fornecedor passou a ter um plano pago
+ * (inclusive dado manualmente), o pedido deixa de ser tratado como bloqueado.
+ */
+export function isLeadLocked(lead: { locked: boolean }, tier: VendorTier): boolean {
+  return lead.locked && tier === "FREE";
+}
+
+/** "Giovanna & Lucas" -> "Giovanna" (pedido bloqueado mostra só o primeiro nome). */
+export function firstNameOf(name: string): string {
+  return name.trim().split(/[\s&,]+/)[0] || "Casal";
+}
+
+/** Tokens públicos (proposta e avaliação): 24 bytes em base64url. */
+export const PUBLIC_TOKEN_RE = /^[A-Za-z0-9_-]{32}$/;
+
+function publicOrigin(): string {
+  return (process.env.NEXT_PUBLIC_BASE_URL ?? "https://aceito.com.br").replace(/\/+$/, "");
+}
+
+/** Link que o casal abre para aceitar a proposta. */
+export function proposalPublicUrl(token: string): string {
+  return `${publicOrigin()}/proposta/${token}`;
+}
+
+/** Link que o casal abre para avaliar o fornecedor. */
+export function reviewPublicUrl(token: string): string {
+  return `${publicOrigin()}/avaliar/${token}`;
+}
+
+/** Galeria (JSON de URLs) tolerante a valores antigos. */
+export function parseGallery(value: string | null): string[] {
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter((u): u is string => typeof u === "string" && u.length > 0) : [];
+  } catch {
+    return [];
+  }
+}
+
+export const MAX_GALLERY_IMAGES = 8;

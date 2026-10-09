@@ -58,6 +58,8 @@ export async function applyApprovedPayment(
           where: { id: vendor.id },
           data: { planTier: VendorPlanTier[tier], planExpiresAt: periodEnd },
         });
+        // Pro/Master liberam os pedidos que chegaram bloqueados pelo limite do Start.
+        await tx.vendorLead.updateMany({ where: { vendorId: vendor.id, locked: true }, data: { locked: false } });
         await tx.subscription.update({ where: { id: sub.id }, data: { periodEnd } });
       } else {
         console.error(`[Assinatura] ${sub.id} paga, mas a conta não tem fornecedor vinculado.`);

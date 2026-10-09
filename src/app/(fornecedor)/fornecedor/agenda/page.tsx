@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
 import { Chip } from "../../_components/status-chip";
 import {
+  effectiveVendorTier,
   formatTime,
   formatWeddingDate,
   MONTH_NAMES,
@@ -108,7 +109,12 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
       select: { id: true, coupleName: true, weddingDate: true, location: true },
     }),
     prisma.vendorLead.findMany({
-      where: { vendorId: vendor.id, status: { not: "DECLINED" } },
+      // Pedidos bloqueados pelo limite do Start não entram (o nome completo fica oculto).
+      where: {
+        vendorId: vendor.id,
+        status: { not: "DECLINED" },
+        ...(effectiveVendorTier(vendor.planTier, vendor.planExpiresAt) === "FREE" ? { locked: false } : {}),
+      },
       orderBy: { createdAt: "desc" },
       take: 100,
       select: { id: true, coupleName: true, weddingDate: true },

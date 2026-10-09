@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Check, Copy, Loader2, MessageCircle, Send } from "lucide-react";
+import { BadgeCheck, Check, Copy, Link2, Loader2, MessageCircle, Send } from "lucide-react";
 import { toast } from "sonner";
 import { saveLeadProposal } from "@/actions/vendor-panel-actions";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,10 @@ export interface SavedProposal {
   /** Texto pronto para o casal (WhatsApp ou copiar). */
   text: string;
   whatsappUrl: string | null;
+  /** Link público para o casal ver e aceitar a proposta. */
+  publicUrl: string | null;
+  /** Registro do aceite digital (nome digitado pelo casal e quando). */
+  accepted: { name: string; atLabel: string } | null;
 }
 
 export function ProposalForm({
@@ -56,13 +60,72 @@ export function ProposalForm({
     });
   }
 
-  async function copyText(text: string) {
+  async function copyText(text: string, done = "Texto da proposta copiado.") {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success("Texto da proposta copiado.");
+      toast.success(done);
     } catch {
       toast.error("Não foi possível copiar. Selecione o texto e copie manualmente.");
     }
+  }
+
+  const linkBox = saved?.publicUrl ? (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor="proposta-link" className="text-sm font-semibold text-tinta">
+        Link da proposta para o casal
+      </label>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <input
+          id="proposta-link"
+          readOnly
+          value={saved.publicUrl}
+          onFocus={(e) => e.currentTarget.select()}
+          className={cn(INPUT, "flex-1 text-sm")}
+        />
+        <button
+          type="button"
+          onClick={() => copyText(saved.publicUrl!, "Link da proposta copiado.")}
+          className={cn(BTN, "border border-linha-forte bg-papel text-tinta hover:bg-areia")}
+        >
+          <Link2 aria-hidden="true" className="size-[18px]" />
+          Copiar link
+        </button>
+      </div>
+    </div>
+  ) : null;
+
+  if (saved?.accepted) {
+    return (
+      <div className="flex flex-col gap-4">
+        <div role="status" className="flex flex-col gap-1 rounded-xl bg-sucesso-suave p-4">
+          <p className="flex items-start gap-2 text-[15px]">
+            <BadgeCheck aria-hidden="true" className="mt-0.5 size-[18px] shrink-0 text-sucesso" />
+            <strong className="font-semibold">
+              Proposta aceita por {saved.accepted.name} em {saved.accepted.atLabel}.
+            </strong>
+          </p>
+          <p className="pl-[26px] text-sm text-tinta-suave">
+            Aceite digital registrado pelo link da proposta (nome completo, data e hora). Agora é com você: envie o
+            contrato ao casal.
+          </p>
+        </div>
+        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase">Valor</dt>
+            <dd className="text-[17px] font-semibold">R$ {initial.amount}</dd>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase">Registrada</dt>
+            <dd className="text-[17px] font-semibold">{saved.sentAtLabel}</dd>
+          </div>
+          <div className="flex flex-col gap-0.5 sm:col-span-2">
+            <dt className="text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase">O que está incluído</dt>
+            <dd className="text-[15px] whitespace-pre-line break-words">{initial.details}</dd>
+          </div>
+        </dl>
+        {linkBox}
+      </div>
+    );
   }
 
   return (
@@ -110,6 +173,7 @@ export function ProposalForm({
               Copiar texto
             </button>
           </div>
+          {linkBox}
         </div>
       ) : null}
 

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Reveal } from "@/components/motion/reveal";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import {
@@ -10,18 +11,16 @@ import {
   Star,
   MapPin,
   Video,
-  CheckCircle2,
   Calendar,
-  ExternalLink,
   ShieldCheck,
   Search,
   ArrowRight,
   Loader2,
-  Users,
   Image as ImageIcon,
+  Sparkles,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,7 +33,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
-import { createVendorLead } from "@/actions/partner-vendor-actions";
+import { createVendorLead, type PublicVendorListItem } from "@/actions/partner-vendor-actions";
+import { parseRegions } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { toast } from "sonner";
 
 const CATEGORIES = [
@@ -59,18 +59,30 @@ const REGIONS = [
 ];
 
 interface PublicVendorsViewProps {
-  initialPartners: any[];
+  /** Já filtrados pelo servidor quando há data do casamento (sem quem está ocupado nela). */
+  initialPartners: PublicVendorListItem[];
+  /** Filtro "Data do casamento" em vigor ("AAAA-MM-DD" ou ""). */
+  weddingDate?: string;
+  todayIso: string;
 }
 
-export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
-  const [partners, setPartners] = useState<any[]>(initialPartners);
+function formatIsoDate(iso: string) {
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "", todayIso }: PublicVendorsViewProps) {
+  const partners = initialPartners;
+  const router = useRouter();
+  const [dateInput, setDateInput] = useState(activeDate);
+  const [isPendingDate, startTransitionDate] = useTransition();
   const [selectedCategory, setSelectedCategory] = useState("TODOS");
   const [selectedRegion, setSelectedRegion] = useState("TODAS");
   const [searchTerm, setSearchTerm] = useState("");
 
   // Modal de Agendamento de Reunião & Lead
   const [leadModalOpen, setLeadModalOpen] = useState(false);
-  const [selectedPartner, setSelectedPartner] = useState<any | null>(null);
+  const [selectedPartner, setSelectedPartner] = useState<PublicVendorListItem | null>(null);
   const [coupleName, setCoupleName] = useState("");
   const [couplePhone, setCouplePhone] = useState("");
   const [coupleEmail, setCoupleEmail] = useState("");
@@ -85,12 +97,8 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
     
     let matchesRegion = true;
     if (selectedRegion !== "TODAS") {
-      try {
-        const regions: string[] = JSON.parse(p.serviceRegions || "[]");
-        matchesRegion = regions.includes(selectedRegion) || regions.includes("Brasil Todo");
-      } catch {
-        matchesRegion = true;
-      }
+      const regions = parseRegions(p.serviceRegions);
+      matchesRegion = regions.includes(selectedRegion) || regions.includes("Brasil Todo");
     }
 
     const matchesSearch =
@@ -102,7 +110,19 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
     return matchesCategory && matchesRegion && matchesSearch;
   });
 
-  const handleOpenLeadModal = (partner: any) => {
+  // Master: faixa "Em destaque" no topo (eles continuam na lista, que já vem ordenada pelo plano).
+  const featuredPartners = filteredPartners.filter((p) => p.planTier === "MASTER").slice(0, 6);
+
+  // A data vai para a URL (?data=): o servidor devolve só quem está livre nesse dia.
+  const applyDate = (value: string) => {
+    setDateInput(value);
+    if (value && value < todayIso) return;
+    startTransitionDate(() => {
+      router.replace(value ? `/fornecedores?data=${value}` : "/fornecedores", { scroll: false });
+    });
+  };
+
+  const handleOpenLeadModal = (partner: PublicVendorListItem) => {
     setSelectedPartner(partner);
     setLeadModalOpen(true);
   };
@@ -127,7 +147,8 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
       });
 
       if (res.success) {
-        const whatsapp = selectedPartner.whatsapp?.replace(/\D/g, "");
+        // WhatsApp direto é recurso do Pro/Master (o servidor nem envia o número dos demais).
+        const whatsapp = selectedPartner.planTier !== "FREE" ? selectedPartner.whatsapp?.replace(/\D/g, "") || null : null;
         toast.success(`Pedido enviado para ${selectedPartner.companyName}.`, {
           description: "O fornecedor recebeu seus dados e vai entrar em contato.",
           action: whatsapp
@@ -177,7 +198,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
         <div className="bg-papel p-6 rounded-3xl border border-linha shadow-sm space-y-5">
           {/* Busca por texto e Região */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-            <div className="md:col-span-8 relative">
+            <div className="md:col-span-5 relative">
               <Search className="w-4 h-4 text-tinta-suave absolute left-4 top-1/2 -translate-y-1/2" />
               <Input
                 value={searchTerm}
@@ -185,6 +206,40 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                 placeholder="Buscar por espaço, fotógrafo, buffet ou estilo..."
                 className="pl-11 rounded-2xl h-12 text-sm bg-linho/60 border-linha"
               />
+            </div>
+
+            <div className="md:col-span-3">
+              <Label htmlFor="filtro-data" className="sr-only">
+                Data do casamento
+              </Label>
+              <div className="relative">
+                <Calendar className="w-4 h-4 text-brand absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+                <Input
+                  id="filtro-data"
+                  type="date"
+                  min={todayIso}
+                  value={dateInput}
+                  onChange={(e) => applyDate(e.target.value)}
+                  aria-describedby="filtro-data-dica"
+                  title="Data do casamento"
+                  className="pl-11 pr-10 rounded-2xl h-12 text-xs font-bold bg-linho/60 border-linha"
+                />
+                {isPendingDate ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-tinta-suave absolute right-4 top-1/2 -translate-y-1/2" aria-label="Atualizando" />
+                ) : dateInput ? (
+                  <button
+                    type="button"
+                    onClick={() => applyDate("")}
+                    aria-label="Limpar data do casamento"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 grid size-8 place-items-center rounded-full text-tinta-suave hover:bg-areia hover:text-tinta"
+                  >
+                    <X className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                ) : null}
+              </div>
+              <p id="filtro-data-dica" className="sr-only">
+                Data do casamento: mostra só fornecedores com a data livre.
+              </p>
             </div>
 
             <div className="md:col-span-4">
@@ -225,7 +280,59 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
               );
             })}
           </div>
+
+          {activeDate ? (
+            <p role="status" className="text-xs font-semibold text-tinta-suave">
+              Mostrando fornecedores com a data {formatIsoDate(activeDate)} livre na agenda.
+            </p>
+          ) : null}
         </div>
+
+        {/* Em destaque: fornecedores Master */}
+        {featuredPartners.length > 0 ? (
+          <section aria-labelledby="em-destaque" className="space-y-3">
+            <h2 id="em-destaque" className="flex items-center gap-2 text-xl font-display text-tinta">
+              <Sparkles className="w-5 h-5 text-amber-700" aria-hidden="true" />
+              Em destaque
+            </h2>
+            <ul className="-mx-6 flex gap-4 overflow-x-auto px-6 pb-2 scrollbar-hide snap-x">
+              {featuredPartners.map((partner) => (
+                <li key={partner.id} className="w-64 shrink-0 snap-start">
+                  <Link
+                    href={`/fornecedores/${partner.id}`}
+                    className="group block overflow-hidden rounded-3xl border border-brand/40 bg-papel shadow-xs ring-1 ring-brand/20 transition-shadow hover:shadow-lg"
+                  >
+                    <div className="relative h-32 w-full bg-areia">
+                      {partner.coverUrl ? (
+                        <img src={partner.coverUrl} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-stone-300">
+                          <Building2 className="w-10 h-10" aria-hidden="true" />
+                        </div>
+                      )}
+                      <span className="absolute top-2 left-2 rounded-full bg-amber-700 px-2.5 py-1 text-xs font-extrabold text-white shadow-xs">
+                        Destaque
+                      </span>
+                    </div>
+                    <div className="space-y-1 p-4">
+                      <p className="line-clamp-1 font-display text-lg text-tinta group-hover:text-brand">{partner.companyName}</p>
+                      <p className="flex items-center justify-between gap-2 text-xs text-tinta-suave">
+                        <span>{partner.category}</span>
+                        {partner.reviewCount > 0 ? (
+                          <span className="inline-flex items-center gap-1 font-bold text-tinta">
+                            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
+                            {partner.rating.toFixed(1)}
+                            <span className="sr-only">de 5 estrelas</span>
+                          </span>
+                        ) : null}
+                      </p>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         {/* Lista de Fornecedores */}
         {filteredPartners.length === 0 ? (
@@ -233,7 +340,9 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
             <Building2 className="w-12 h-12 text-stone-300 mx-auto" />
             <h3 className="text-lg font-display text-tinta">Nenhum fornecedor encontrado</h3>
             <p className="text-xs text-tinta-suave max-w-md mx-auto">
-              Tente alterar os filtros de região ou categoria para encontrar outros parceiros disponíveis.
+              {activeDate
+                ? "Nenhum fornecedor com esses filtros está livre nessa data. Tente outra data ou outros filtros."
+                : "Tente alterar os filtros de região ou categoria para encontrar outros parceiros disponíveis."}
             </p>
             <Button
               variant="outline"
@@ -241,6 +350,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
                 setSelectedCategory("TODOS");
                 setSelectedRegion("TODAS");
                 setSearchTerm("");
+                if (activeDate) applyDate("");
               }}
               className="rounded-full text-xs font-bold"
             >
@@ -250,12 +360,7 @@ export function PublicVendorsView({ initialPartners }: PublicVendorsViewProps) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredPartners.map((partner, index) => {
-              let regions: string[] = [];
-              try {
-                regions = JSON.parse(partner.serviceRegions || "[]");
-              } catch {
-                regions = [];
-              }
+              const regions = parseRegions(partner.serviceRegions);
 
               const isMaster = partner.planTier === "MASTER";
 

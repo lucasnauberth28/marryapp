@@ -1,15 +1,24 @@
 "use server";
 
+import { createHmac, createHash } from "node:crypto";
 import { requirePathPermission } from "@/lib/security/auth-guard";
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { Prisma } from "@prisma/client";
+import { CurationStatus, Prisma } from "@prisma/client";
 import { z } from "zod";
-import { rateLimitByIp } from "@/lib/security/rate-limiter";
+import { checkRateLimit, getClientIp, rateLimitByIp } from "@/lib/security/rate-limiter";
 import { normalizeText } from "@/lib/security/sanitize";
-import { LEAD_BUDGET_OPTIONS } from "@/app/(fornecedor)/_lib/vendor-panel";
-
+import { getUnavailableVendorIds, isVendorAvailable } from "@/lib/vendor-availability";
+import {
+  effectiveVendorTier,
+  LEAD_BUDGET_OPTIONS,
+  parseIsoDate,
+  PUBLIC_TOKEN_RE,
+  START_MONTHLY_LEAD_LIMIT,
+  startOfMonthBrasilia,
+  todayBrasilia,
+} from "@/app/(fornecedor)/_lib/vendor-panel";
 
 const PUBLIC_VENDOR_SELECT = {
   id: true,
@@ -34,6 +43,7 @@ const PUBLIC_VENDOR_SELECT = {
   tiktok: true,
   website: true,
   planTier: true,
+  planExpiresAt: true,
   isVerified: true,
   rating: true,
   reviewCount: true,
@@ -52,23 +62,52 @@ const PUBLIC_REVIEW_SELECT = {
   createdAt: true,
 } satisfies Prisma.VendorReviewSelect;
 
+type PublicVendorRow = Prisma.PartnerVendorGetPayload<{ select: typeof PUBLIC_VENDOR_SELECT }>;
+
 /**
- * CNPJ é dado público; CPF é dado pessoal (LGPD) e nunca é exposto no marketplace.
+ * DTO público do fornecedor:
+ * - CNPJ é dado público; CPF é dado pessoal (LGPD) e nunca é exposto no marketplace.
+ * - WhatsApp e telefone só saem para o cliente no Pro/Master (plano em vigor).
+ * - planTier vira o plano efetivo (pago vencido = FREE) e a data de expiração não sai.
  */
-function toPublicVendor<T extends { documentType: string | null; documentNumber: string | null }>(vendor: T): T {
-  return vendor.documentType === "CNPJ" ? vendor : { ...vendor, documentNumber: null };
+function toPublicVendor<T extends PublicVendorRow>(vendor: T) {
+  const { planExpiresAt, ...rest } = vendor;
+  const tier = effectiveVendorTier(vendor.planTier, planExpiresAt);
+  const paid = tier !== "FREE";
+  return {
+    ...rest,
+    planTier: tier,
+    documentNumber: vendor.documentType === "CNPJ" ? vendor.documentNumber : null,
+    phone: paid ? vendor.phone : null,
+    whatsapp: paid ? vendor.whatsapp : null,
+  };
+}
+
+/** "2027-04-17" válido (2000–2100) ou null. */
+function parseWeddingDay(value: string | undefined | null): Date | null {
+  if (!value) return null;
+  const day = parseIsoDate(value);
+  if (!day || day.getUTCFullYear() < 2000 || day.getUTCFullYear() > 2100) return null;
+  return day;
 }
 
 /**
- * Pública: fornecedores aprovados para o Marketplace
+ * Pública: fornecedores aprovados para o Marketplace.
+ * Com `weddingDate` ("AAAA-MM-DD"), deixa de fora quem já está ocupado nessa data.
  */
-export async function getPartnerVendorsAction(category?: string) {
+export async function getPartnerVendorsAction(category?: string, options?: { weddingDate?: string }) {
   try {
     const where: Prisma.PartnerVendorWhereInput = {
       curationStatus: "APPROVED", // Apenas fornecedores aprovados na curadoria aparecem publicamente
     };
     if (category && category !== "Todos") {
       where.category = category;
+    }
+
+    const day = parseWeddingDay(options?.weddingDate);
+    if (day) {
+      const busy = await getUnavailableVendorIds(day);
+      if (busy.size > 0) where.id = { notIn: [...busy] };
     }
 
     const vendors = await prisma.partnerVendor.findMany({
@@ -80,7 +119,13 @@ export async function getPartnerVendorsAction(category?: string) {
       orderBy: [{ planTier: "desc" }, { isVerified: "desc" }, { rating: "desc" }],
     });
 
-    return vendors.map(toPublicVendor);
+    const publicVendors = vendors.map(toPublicVendor);
+    // Plano vencido ainda gravado como pago desce para junto dos gratuitos (ordenação estável).
+    const rank = { MASTER: 2, PRO: 1, FREE: 0 } as const;
+    return publicVendors
+      .map((v, i) => ({ v, i }))
+      .sort((a, b) => rank[b.v.planTier] - rank[a.v.planTier] || a.i - b.i)
+      .map(({ v }) => v);
   } catch (error) {
     console.error("[getPartnerVendorsAction Error]:", error);
     return [];
@@ -111,79 +156,53 @@ export async function getPartnerVendorById(id: string) {
   }
 }
 
-const ReviewSchema = z.object({
-  vendorId: z.string().uuid(),
-  coupleNames: z.string().trim().min(3, "Informe o nome do casal.").max(120),
-  weddingDate: z.coerce.date().optional().nullable(),
-  rating: z.coerce.number().int().min(1).max(5),
-  comment: z.string().trim().min(10, "Conte um pouco mais sobre a experiência.").max(2000),
+export type PublicVendor = NonNullable<Awaited<ReturnType<typeof getPartnerVendorById>>>;
+export type PublicVendorListItem = Awaited<ReturnType<typeof getPartnerVendorsAction>>[number];
+
+const AVAILABILITY_LIMIT = { limit: 30, windowMs: 1000 * 60 * 10 }; // 30 consultas / 10 min por IP
+
+const AvailabilitySchema = z.object({
+  vendorId: z.string().uuid("Fornecedor inválido."),
+  date: z.string().transform((v, ctx) => {
+    const day = parseWeddingDay(v);
+    if (!day) {
+      ctx.addIssue({ code: "custom", message: "Escolha uma data válida." });
+      return z.NEVER;
+    }
+    if (day < todayBrasilia()) {
+      ctx.addIssue({ code: "custom", message: "Escolha uma data a partir de hoje." });
+      return z.NEVER;
+    }
+    return day;
+  }),
 });
 
+export type VendorAvailabilityResult = { success: true; available: boolean } | { success: false; error: string };
+
 /**
- * Pública: avaliação de fornecedor.
- * Sem vínculo comprovado de contratação, a avaliação nunca é marcada como verificada.
+ * Pública: o fornecedor está livre nesta data? Responde só sim/não (sem detalhes da agenda).
  */
-export async function createVendorReview(data: {
-  vendorId: string;
-  coupleNames: string;
-  weddingDate?: Date | null;
-  rating: number;
-  comment: string;
-}) {
-  const parsed = ReviewSchema.safeParse(data);
+export async function checkVendorAvailability(vendorId: string, date: string): Promise<VendorAvailabilityResult> {
+  const parsed = AvailabilitySchema.safeParse({ vendorId, date });
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
-  const input = parsed.data;
 
   try {
-    const rateLimit = await rateLimitByIp("PUBLIC_FORM", `review:${input.vendorId}`);
+    const ip = await getClientIp();
+    const rateLimit = await checkRateLimit({ key: `VENDOR_AVAILABILITY:${ip}`, ...AVAILABILITY_LIMIT });
     if (!rateLimit.success) {
-      return { success: false, error: "Você já enviou avaliações demais em pouco tempo. Tente novamente mais tarde." };
+      return { success: false, error: "Muitas consultas em pouco tempo. Tente novamente daqui a alguns minutos." };
     }
 
     const vendor = await prisma.partnerVendor.findFirst({
-      where: { id: input.vendorId, curationStatus: "APPROVED" },
+      where: { id: parsed.data.vendorId, curationStatus: "APPROVED" },
       select: { id: true },
     });
     if (!vendor) return { success: false, error: "Fornecedor não encontrado." };
 
-    const review = await prisma.$transaction(async (tx) => {
-      const created = await tx.vendorReview.create({
-        data: {
-          vendorId: input.vendorId,
-          coupleNames: normalizeText(input.coupleNames),
-          weddingDate: input.weddingDate ?? null,
-          rating: input.rating,
-          comment: input.comment,
-          isVerified: false,
-        },
-        select: PUBLIC_REVIEW_SELECT,
-      });
-
-      // Recalcula a média no banco, sem carregar todas as avaliações
-      const stats = await tx.vendorReview.aggregate({
-        where: { vendorId: input.vendorId },
-        _avg: { rating: true },
-        _count: { _all: true },
-      });
-
-      await tx.partnerVendor.update({
-        where: { id: input.vendorId },
-        data: {
-          rating: Number((stats._avg.rating ?? 0).toFixed(1)),
-          reviewCount: stats._count._all,
-        },
-      });
-
-      return created;
-    });
-
-    revalidatePath(`/fornecedores/${input.vendorId}`);
-    revalidatePath("/fornecedores");
-
-    return { success: true, review };
+    return { success: true, available: await isVendorAvailable(vendor.id, parsed.data.date) };
   } catch (error) {
-    console.error("[createVendorReview Error]:", error);
-    return { success: false, error: "Erro ao enviar avaliação." };
+    console.error("[checkVendorAvailability Error]:", error);
+    return { success: false, error: "Não foi possível consultar a agenda agora." };
   }
 }
 
@@ -204,7 +223,10 @@ const LeadSchema = z.object({
 });
 
 /**
- * Pública: solicitação de contato / agendamento de reunião com o fornecedor
+ * Pública: solicitação de contato / agendamento de reunião com o fornecedor.
+ * No Plano Start, a partir do 4º pedido do mês (horário de Brasília) o pedido chega
+ * bloqueado: o fornecedor vê só o primeiro nome, a data e a cidade até assinar o Pro.
+ * Para o casal, a resposta é a mesma.
  */
 export async function createVendorLead(data: {
   vendorId: string;
@@ -230,9 +252,17 @@ export async function createVendorLead(data: {
 
     const vendor = await prisma.partnerVendor.findFirst({
       where: { id: input.vendorId, curationStatus: "APPROVED" },
-      select: { id: true },
+      select: { id: true, planTier: true, planExpiresAt: true },
     });
     if (!vendor) return { success: false, error: "Fornecedor não encontrado." };
+
+    let locked = false;
+    if (effectiveVendorTier(vendor.planTier, vendor.planExpiresAt) === "FREE") {
+      const monthCount = await prisma.vendorLead.count({
+        where: { vendorId: vendor.id, createdAt: { gte: startOfMonthBrasilia() } },
+      });
+      locked = monthCount >= START_MONTHLY_LEAD_LIMIT;
+    }
 
     const lead = await prisma.vendorLead.create({
       data: {
@@ -246,6 +276,7 @@ export async function createVendorLead(data: {
         meetingType: input.meetingType || "ONLINE",
         location: input.location ? normalizeText(input.location) || null : null,
         budget: input.budget || null,
+        locked,
       },
       select: { id: true, createdAt: true },
     });
@@ -254,6 +285,94 @@ export async function createVendorLead(data: {
   } catch (error) {
     console.error("[createVendorLead Error]:", error);
     return { success: false, error: "Erro ao solicitar orçamento." };
+  }
+}
+
+// ==========================================
+// ACEITE DA PROPOSTA PELO CASAL (link /proposta/<token>)
+// ==========================================
+
+const PROPOSAL_ACCEPT_LIMIT = { limit: 10, windowMs: 1000 * 60 * 10 }; // 10 tentativas / 10 min por IP
+
+/** Hash do IP (prova do aceite sem guardar o IP em claro). */
+function hashIp(ip: string): string {
+  const secret = process.env.JWT_SECRET;
+  return secret
+    ? createHmac("sha256", secret).update(`proposta:${ip}`).digest("hex")
+    : createHash("sha256").update(`proposta:${ip}`).digest("hex");
+}
+
+const AcceptProposalSchema = z.object({
+  token: z.string().regex(PUBLIC_TOKEN_RE, "Link inválido."),
+  fullName: z
+    .string({ message: "Informe seu nome completo." })
+    .trim()
+    .min(5, "Informe seu nome completo.")
+    .max(120, "Use até 120 caracteres no nome.")
+    .refine((v) => v.split(/\s+/).filter(Boolean).length >= 2, "Informe nome e sobrenome."),
+  agreed: z.literal(true, { message: "Marque “Li e aceito esta proposta” para continuar." }),
+});
+
+export type AcceptProposalInput = { token: string; fullName: string; agreed: boolean };
+export type AcceptProposalResult = { success: true; acceptedAt: string; name: string } | { success: false; error: string };
+
+/** Pública: o casal aceita a proposta registrada pelo fornecedor. */
+export async function acceptLeadProposal(input: AcceptProposalInput): Promise<AcceptProposalResult> {
+  const parsed = AcceptProposalSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
+  const { token, fullName } = parsed.data;
+
+  try {
+    const ip = await getClientIp();
+    const rateLimit = await checkRateLimit({ key: `PROPOSAL_ACCEPT:${ip}`, ...PROPOSAL_ACCEPT_LIMIT });
+    if (!rateLimit.success) {
+      return { success: false, error: "Muitas tentativas em pouco tempo. Tente novamente daqui a alguns minutos." };
+    }
+
+    const lead = await prisma.vendorLead.findUnique({
+      where: { proposalToken: token },
+      select: {
+        id: true,
+        vendorId: true,
+        status: true,
+        locked: true,
+        proposalSentAt: true,
+        proposalAmount: true,
+        proposalValidUntil: true,
+        proposalAcceptedAt: true,
+        respondedAt: true,
+      },
+    });
+    if (!lead || lead.locked || !lead.proposalSentAt || lead.proposalAmount == null) {
+      return { success: false, error: "Proposta não encontrada." };
+    }
+    if (lead.proposalAcceptedAt) return { success: false, error: "Esta proposta já foi aceita." };
+    if (lead.status === "DECLINED") return { success: false, error: "Esta proposta não está mais disponível." };
+    if (lead.proposalValidUntil && lead.proposalValidUntil < todayBrasilia()) {
+      return { success: false, error: "O prazo desta proposta já passou. Fale com o fornecedor para renová-la." };
+    }
+
+    const now = new Date();
+    const name = normalizeText(fullName);
+    // Condições repetidas no update: duas abas aceitando ao mesmo tempo gravam só uma vez.
+    const result = await prisma.vendorLead.updateMany({
+      where: { id: lead.id, proposalToken: token, proposalAcceptedAt: null, locked: false, status: { not: "DECLINED" } },
+      data: {
+        proposalAcceptedAt: now,
+        proposalAcceptedName: name,
+        proposalAcceptedIp: hashIp(ip),
+        status: "CLOSED",
+        closedAt: now,
+        declinedAt: null,
+        ...(!lead.respondedAt ? { respondedAt: now } : {}),
+      },
+    });
+    if (result.count === 0) return { success: false, error: "Esta proposta já foi aceita." };
+
+    return { success: true, acceptedAt: now.toISOString(), name };
+  } catch (error) {
+    console.error("[acceptLeadProposal Error]:", error);
+    return { success: false, error: "Não foi possível registrar o aceite. Tente novamente." };
   }
 }
 
@@ -271,15 +390,17 @@ export async function getAllVendorsForCurationAction(filterStatus?: string) {
   try {
 
     const whereClause: Prisma.PartnerVendorWhereInput = {};
-    if (filterStatus && filterStatus !== "ALL") {
-      whereClause.curationStatus = filterStatus;
+    const status = Object.values(CurationStatus).find((s) => s === filterStatus);
+    if (status) {
+      whereClause.curationStatus = status;
     }
 
     const vendors = await prisma.partnerVendor.findMany({
       where: whereClause,
       include: {
         reviews: true,
-        leads: true,
+        // Só o necessário para a curadoria: tokens e dados de aceite dos pedidos não saem daqui.
+        leads: { select: { id: true, status: true, createdAt: true } },
       },
       orderBy: [
         { curationStatus: "asc" },
