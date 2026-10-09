@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { getGifts } from "@/actions/gift-actions"
 import { GiftsClient } from "./gifts-client"
-import { verifyAdminSession } from "@/actions/auth-actions"
+import { requireWeddingPage } from "@/lib/security/wedding-context"
 
 export const metadata: Metadata = {
   title: "Vitrine de Presentes",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 }
 
 export default async function PresentesAdminPage() {
-  await verifyAdminSession()
+  await requireWeddingPage("/presentes-admin")
   
   const result = await getGifts()
 

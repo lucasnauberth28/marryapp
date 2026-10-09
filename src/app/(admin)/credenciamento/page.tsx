@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { verifyAdminSession } from "@/actions/auth-actions";
+import { requireWeddingPage } from "@/lib/security/wedding-context";
 import { ScannerClient } from "./scanner-client";
 
 export const metadata: Metadata = {
@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CredenciamentoPage() {
-  await verifyAdminSession();
+  await requireWeddingPage("/credenciamento");
 
   return (
     <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">

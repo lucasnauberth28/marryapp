@@ -1,5 +1,6 @@
 import { getWalletData } from "@/actions/wallet-actions";
 import { CarteiraClient } from "./carteira-client";
+import { requireWeddingPage } from "@/lib/security/wedding-context";
 
 export const metadata = {
   title: "Carteira",
@@ -7,6 +8,7 @@ export const metadata = {
 };
 
 export default async function CarteiraPage() {
+  await requireWeddingPage("/carteira");
   const { balance, cards } = await getWalletData();
 
   return (

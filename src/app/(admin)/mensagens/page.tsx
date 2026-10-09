@@ -1,21 +1,23 @@
 // src/app/(admin)/mensagens/page.tsx
 import prisma from "@/lib/prisma";
-import { verifyAdminSession } from "@/actions/auth-actions";
+import { requireWeddingPage } from "@/lib/security/wedding-context";
 import { MensagensClient } from "./mensagens-client";
 import { getWeddingIdentity } from "@/lib/wedding";
 
 export const metadata = { title: "Mensagens" };
 
 export default async function MensagensPage() {
-  await verifyAdminSession();
+  const { weddingId, wedding } = await requireWeddingPage("/mensagens");
 
-  // Busca todos os templates
+  // Busca os templates do casamento
   const templates = await prisma.messageTemplate.findMany({
+    where: { weddingId },
     orderBy: { createdAt: "desc" },
   });
 
-  // Busca todos os convidados (para o disparador)
+  // Busca os convidados do casamento (para o disparador)
   const convidados = await prisma.guest.findMany({
+    where: { weddingId },
     orderBy: { name: "asc" },
   });
 
@@ -24,6 +26,7 @@ export default async function MensagensPage() {
   return (
     <MensagensClient
       coupleNames={coupleNames}
+      slug={wedding.slug}
       initialTemplates={JSON.parse(JSON.stringify(templates))} 
       initialGuests={JSON.parse(JSON.stringify(convidados))} 
     />

@@ -1,6 +1,6 @@
 "use server";
 
-import { requirePathPermission } from "@/lib/security/auth-guard";
+import { requireWedding } from "@/lib/security/wedding-context";
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
@@ -20,16 +20,28 @@ const ExpenseSchema = z.object({
   status: z.nativeEnum(ExpenseStatus).default(ExpenseStatus.PENDING),
 });
 
+/** O fornecedor vinculado precisa ser do mesmo casamento. Devolve o id validado, null ou false (inválido). */
+async function resolveVendorId(weddingId: string, vendorId: string | null | undefined): Promise<string | null | false> {
+  if (!vendorId) return null;
+  if (typeof vendorId !== "string") return false;
+  const vendor = await prisma.vendor.findFirst({ where: { id: vendorId, weddingId }, select: { id: true } });
+  return vendor ? vendor.id : false;
+}
+
+const EXPENSE_STATUSES = new Set<string>(Object.values(ExpenseStatus));
+const EXPENSE_TYPES = new Set<string>(Object.values(ExpenseType));
+
 export async function getExpenses() {
-  await requirePathPermission("/financas");
+  const { weddingId } = await requireWedding("/financas");
   return prisma.expense.findMany({
+    where: { weddingId },
     orderBy: { dueDate: "asc" },
     include: { vendor: true }
   });
 }
 
 export async function createExpense(formData: FormData) {
-  await requirePathPermission("/financas");
+  const { weddingId } = await requireWedding("/financas");
   const raw = {
     description: formData.get("description"),
     amount: formData.get("amount"),
@@ -48,13 +60,17 @@ export async function createExpense(formData: FormData) {
   }
 
   try {
+    const vendorId = await resolveVendorId(weddingId, parsed.data.vendorId || null);
+    if (vendorId === false) return { success: false, error: "Fornecedor não encontrado." };
+
     await prisma.expense.create({
       data: {
+        weddingId,
         description: parsed.data.description,
         amount: parsed.data.amount,
         dueDate: new Date(parsed.data.dueDate),
         type: parsed.data.type,
-        vendorId: parsed.data.vendorId || null,
+        vendorId,
         purchaseUrl: parsed.data.purchaseUrl || null,
         paymentMethod: parsed.data.paymentMethod || null,
         imageUrl: parsed.data.imageUrl || null,
@@ -71,12 +87,16 @@ export async function createExpense(formData: FormData) {
 }
 
 export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
-  await requirePathPermission("/financas");
+  const { weddingId } = await requireWedding("/financas");
   try {
-    await prisma.expense.update({
-      where: { id },
+    if (typeof id !== "string" || !EXPENSE_STATUSES.has(status)) {
+      return { success: false, error: "Erro ao atualizar despesa." };
+    }
+    const result = await prisma.expense.updateMany({
+      where: { id, weddingId },
       data: { status }
     });
+    if (result.count === 0) return { success: false, error: "Despesa não encontrada." };
     revalidatePath("/(admin)/financas", "page");
     revalidatePath("/(admin)/dashboard", "page");
     return { success: true };
@@ -87,9 +107,11 @@ export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
 }
 
 export async function deleteExpense(id: string) {
-  await requirePathPermission("/financas");
+  const { weddingId } = await requireWedding("/financas");
   try {
-    await prisma.expense.delete({ where: { id } });
+    if (typeof id !== "string") return { success: false, error: "Despesa não encontrada." };
+    const result = await prisma.expense.deleteMany({ where: { id, weddingId } });
+    if (result.count === 0) return { success: false, error: "Despesa não encontrada." };
     revalidatePath("/(admin)/financas", "page");
     revalidatePath("/(admin)/dashboard", "page");
     return { success: true };
@@ -110,14 +132,29 @@ export async function createBatchExpenses(items: Array<{
   imageUrl?: string | null;
   storeName?: string | null;
 }>) {
-  await requirePathPermission("/financas");
-  if (!items || items.length === 0) {
+  const { weddingId } = await requireWedding("/financas");
+  if (!Array.isArray(items) || items.length === 0) {
     return { success: false, error: "Nenhuma parcela informada." };
+  }
+  if (items.length > 120) {
+    return { success: false, error: "Parcelas demais em um único lançamento." };
   }
 
   try {
+    // Cada fornecedor citado precisa ser deste casamento
+    const vendorIds = [...new Set(items.map((item) => item.vendorId).filter((v): v is string => !!v))];
+    if (vendorIds.some((v) => typeof v !== "string")) return { success: false, error: "Fornecedor não encontrado." };
+    if (vendorIds.length > 0) {
+      const owned = await prisma.vendor.count({ where: { id: { in: vendorIds }, weddingId } });
+      if (owned !== vendorIds.length) return { success: false, error: "Fornecedor não encontrado." };
+    }
+    if (items.some((item) => item.type && !EXPENSE_TYPES.has(item.type))) {
+      return { success: false, error: "Tipo de despesa inválido." };
+    }
+
     await prisma.expense.createMany({
       data: items.map((item) => ({
+        weddingId,
         description: item.description,
         amount: item.amount,
         dueDate: new Date(item.dueDate),

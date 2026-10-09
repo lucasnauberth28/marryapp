@@ -1,6 +1,7 @@
 "use server";
 
-import { requireAuthSession, requirePathPermission } from "@/lib/security/auth-guard";
+import { requireWedding } from "@/lib/security/wedding-context";
+import { ensureWalletBalance } from "@/lib/wedding-data";
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
@@ -16,18 +17,11 @@ const CreditCardSchema = z.object({
 });
 
 export async function getWalletData() {
-  await requireAuthSession();
-  let wallet = await prisma.walletBalance.findUnique({
-    where: { id: "global" },
-  });
-
-  if (!wallet) {
-    wallet = await prisma.walletBalance.create({
-      data: { id: "global", balance: 0 },
-    });
-  }
+  const { weddingId } = await requireWedding();
+  const wallet = await ensureWalletBalance(weddingId);
 
   const cards = await prisma.creditCard.findMany({
+    where: { weddingId },
     orderBy: { createdAt: "desc" },
   });
 
@@ -38,12 +32,13 @@ export async function getWalletData() {
 }
 
 export async function updateWalletBalance(balanceInCents: number) {
-  await requirePathPermission("/carteira");
+  const { weddingId } = await requireWedding("/carteira");
   try {
+    const balance = Math.max(0, Math.round(Number(balanceInCents) || 0));
     await prisma.walletBalance.upsert({
-      where: { id: "global" },
-      update: { balance: Math.max(0, balanceInCents) },
-      create: { id: "global", balance: Math.max(0, balanceInCents) },
+      where: { weddingId },
+      update: { balance },
+      create: { weddingId, balance },
     });
     revalidatePath("/(admin)/carteira", "page");
     revalidatePath("/(admin)/financas", "page");
@@ -55,7 +50,7 @@ export async function updateWalletBalance(balanceInCents: number) {
 }
 
 export async function createCreditCard(formData: FormData) {
-  await requirePathPermission("/carteira");
+  const { weddingId } = await requireWedding("/carteira");
   const limitAmount = Math.round(parseFloat((formData.get("limit") as string || "0").replace(',', '.')) * 100);
 
   const raw = {
@@ -74,7 +69,7 @@ export async function createCreditCard(formData: FormData) {
 
   try {
     await prisma.creditCard.create({
-      data: parsed.data,
+      data: { ...parsed.data, weddingId },
     });
     revalidatePath("/(admin)/carteira", "page");
     revalidatePath("/(admin)/financas", "page");
@@ -86,7 +81,7 @@ export async function createCreditCard(formData: FormData) {
 }
 
 export async function updateCreditCard(id: string, formData: FormData) {
-  await requirePathPermission("/carteira");
+  const { weddingId } = await requireWedding("/carteira");
   const limitAmount = Math.round(parseFloat((formData.get("limit") as string || "0").replace(',', '.')) * 100);
 
   const raw = {
@@ -104,10 +99,12 @@ export async function updateCreditCard(id: string, formData: FormData) {
   }
 
   try {
-    await prisma.creditCard.update({
-      where: { id },
+    if (typeof id !== "string") return { success: false, error: "Cartão não encontrado." };
+    const result = await prisma.creditCard.updateMany({
+      where: { id, weddingId },
       data: parsed.data,
     });
+    if (result.count === 0) return { success: false, error: "Cartão não encontrado." };
     revalidatePath("/(admin)/carteira", "page");
     revalidatePath("/(admin)/financas", "page");
     return { success: true };
@@ -118,9 +115,11 @@ export async function updateCreditCard(id: string, formData: FormData) {
 }
 
 export async function deleteCreditCard(id: string) {
-  await requirePathPermission("/carteira");
+  const { weddingId } = await requireWedding("/carteira");
   try {
-    await prisma.creditCard.delete({ where: { id } });
+    if (typeof id !== "string") return { success: false, error: "Cartão não encontrado." };
+    const result = await prisma.creditCard.deleteMany({ where: { id, weddingId } });
+    if (result.count === 0) return { success: false, error: "Cartão não encontrado." };
     revalidatePath("/(admin)/carteira", "page");
     revalidatePath("/(admin)/financas", "page");
     return { success: true };

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { AuthorizationError, requirePathPermission } from "@/lib/security/auth-guard";
+import { AuthorizationError } from "@/lib/security/auth-guard";
+import { requireWedding } from "@/lib/security/wedding-context";
 
 /**
  * Escapa um valor para CSV e neutraliza injeção de fórmulas (=, +, -, @) ao abrir no Excel/Sheets.
@@ -13,8 +14,9 @@ function csvCell(value: string | number | null | undefined) {
 }
 
 export async function GET() {
+  let weddingId: string;
   try {
-    await requirePathPermission("/convidados");
+    ({ weddingId } = await requireWedding("/convidados"));
   } catch (error) {
     if (error instanceof AuthorizationError) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -24,6 +26,7 @@ export async function GET() {
 
   try {
     const guests = await prisma.guest.findMany({
+      where: { weddingId },
       include: { table: true },
       orderBy: { name: "asc" },
     });

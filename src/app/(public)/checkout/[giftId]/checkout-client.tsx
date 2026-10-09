@@ -19,6 +19,7 @@ import {
   processCardPaymentAction,
 } from "@/actions/payment-actions";
 import { tokenizeCard } from "@/lib/mercadopago-client";
+import { weddingSitePath } from "@/lib/wedding-links";
 import { motion, AnimatePresence } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
 import {
@@ -35,12 +36,14 @@ import {
 interface CheckoutClientProps {
   gift: Gift;
   coupleNames: string;
+  /** Casamento do presente (/casamento/<slug>) */
+  slug: string;
 }
 
 type CheckoutStep = "IDENTIFICATION" | "METHOD" | "PAYMENT" | "SUCCESS";
 type PaymentMethod = "PIX" | "CREDIT_CARD";
 
-export function CheckoutClient({ gift, coupleNames }: CheckoutClientProps) {
+export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps) {
   const [step, setStep] = useState<CheckoutStep>("IDENTIFICATION");
   const [method, setMethod] = useState<PaymentMethod>("PIX");
   const [isPending, startTransition] = useTransition();
@@ -721,10 +724,10 @@ export function CheckoutClient({ gift, coupleNames }: CheckoutClientProps) {
 
             <div className="w-full grid gap-3 sm:grid-cols-2">
               <Button asChild className="rounded-full h-12 font-semibold">
-                <Link href="/rsvp">Confirmar presença</Link>
+                <Link href={weddingSitePath(slug, "rsvp")}>Confirmar presença</Link>
               </Button>
               <Button asChild variant="outline" className="rounded-full h-12 font-semibold">
-                <Link href="/casamento">Ver o site do casal</Link>
+                <Link href={weddingSitePath(slug)}>Ver o site do casal</Link>
               </Button>
             </div>
           </motion.div>

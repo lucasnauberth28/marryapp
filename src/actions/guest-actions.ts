@@ -1,6 +1,6 @@
 "use server";
 
-import { requirePathPermission } from "@/lib/security/auth-guard";
+import { requireWedding, getWeddingBySlug } from "@/lib/security/wedding-context";
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { sendTextMessage, sendInteractiveMessage, sendBulkMessages } from "@/lib/evolution";
 import { RsvpStatus } from "@prisma/client";
 import { rateLimitByIp } from "@/lib/security/rate-limiter";
+import { weddingSiteUrl } from "@/lib/wedding-links";
 
 // ==========================================
 // VALIDAÇÕES ZOD
@@ -69,9 +70,9 @@ const GuestSchema = z.object({
 // ==========================================
 
 export async function getGuests(filter?: RsvpStatus) {
-  await requirePathPermission("/convidados");
+  const { weddingId } = await requireWedding("/convidados");
   return prisma.guest.findMany({
-    where: filter ? { rsvpStatus: filter } : undefined,
+    where: filter ? { weddingId, rsvpStatus: filter } : { weddingId },
     include: {
       parentGuest: true,
       linkedGuests: true,
@@ -82,11 +83,20 @@ export async function getGuests(filter?: RsvpStatus) {
 }
 
 export async function getGuestById(id: string) {
-  await requirePathPermission("/convidados");
-  return prisma.guest.findUnique({
-    where: { id },
+  const { weddingId } = await requireWedding("/convidados");
+  if (typeof id !== "string") return null;
+  return prisma.guest.findFirst({
+    where: { id, weddingId },
     include: { parentGuest: true, linkedGuests: true, table: true },
   });
+}
+
+/** O titular vinculado precisa ser um convidado do mesmo casamento. */
+async function resolveParentGuestId(weddingId: string, parentGuestId: string | null, selfId?: string) {
+  if (!parentGuestId || parentGuestId === selfId) return { ok: true as const, value: null };
+  const parent = await prisma.guest.findFirst({ where: { id: parentGuestId, weddingId }, select: { id: true } });
+  if (!parent) return { ok: false as const, error: "Convidado titular não encontrado." };
+  return { ok: true as const, value: parent.id };
 }
 
 // ==========================================
@@ -94,7 +104,7 @@ export async function getGuestById(id: string) {
 // ==========================================
 
 export async function createGuest(formData: FormData) {
-  await requirePathPermission("/convidados");
+  const { weddingId } = await requireWedding("/convidados");
   const raw = {
     name: formData.get("name"),
     phone: formData.get("phone"),
@@ -110,13 +120,17 @@ export async function createGuest(formData: FormData) {
   }
 
   try {
+    const parent = await resolveParentGuestId(weddingId, parsed.data.parentGuestId || null);
+    if (!parent.ok) return { success: false, error: parent.error };
+
     await prisma.guest.create({
       data: {
+        weddingId,
         name: parsed.data.name,
         phone: parsed.data.phone,
         email: parsed.data.email || null,
         category: parsed.data.category || null,
-        parentGuestId: parsed.data.parentGuestId || null,
+        parentGuestId: parent.value,
         allowedCompanions: parsed.data.allowedCompanions,
         confirmedCompanions: 0,
       },
@@ -131,7 +145,8 @@ export async function createGuest(formData: FormData) {
 }
 
 export async function updateGuest(id: string, formData: FormData) {
-  await requirePathPermission("/convidados");
+  const { weddingId } = await requireWedding("/convidados");
+  if (typeof id !== "string") return { success: false, error: "Convidado não encontrado." };
   const raw = {
     name: formData.get("name"),
     phone: formData.get("phone"),
@@ -150,18 +165,19 @@ export async function updateGuest(id: string, formData: FormData) {
     return { success: false, error: parsed.error.issues[0].message };
   }
 
-  // Prevenir que um convidado seja vinculado a si próprio
-  const parentGuestId = parsed.data.parentGuestId === id ? null : (parsed.data.parentGuestId || null);
-
   try {
-    await prisma.guest.update({
-      where: { id },
+    // Prevenir que um convidado seja vinculado a si próprio ou a alguém de outro casamento
+    const parent = await resolveParentGuestId(weddingId, parsed.data.parentGuestId || null, id);
+    if (!parent.ok) return { success: false, error: parent.error };
+
+    const result = await prisma.guest.updateMany({
+      where: { id, weddingId },
       data: {
         name: parsed.data.name,
         phone: parsed.data.phone,
         email: parsed.data.email || null,
         category: parsed.data.category || null,
-        parentGuestId,
+        parentGuestId: parent.value,
         allowedCompanions: parsed.data.allowedCompanions,
         rsvpStatus: parsed.data.rsvpStatus,
         confirmedCompanions: parsed.data.confirmedCompanions || 0,
@@ -169,6 +185,7 @@ export async function updateGuest(id: string, formData: FormData) {
         dietaryRestrictions: parsed.data.dietaryRestrictions || null,
       },
     });
+    if (result.count === 0) return { success: false, error: "Convidado não encontrado." };
 
     revalidatePath("/convidados");
     return { success: true };
@@ -179,9 +196,11 @@ export async function updateGuest(id: string, formData: FormData) {
 }
 
 export async function deleteGuest(id: string) {
-  await requirePathPermission("/convidados");
+  const { weddingId } = await requireWedding("/convidados");
   try {
-    await prisma.guest.delete({ where: { id } });
+    if (typeof id !== "string") return { success: false, error: "Convidado não encontrado." };
+    const result = await prisma.guest.deleteMany({ where: { id, weddingId } });
+    if (result.count === 0) return { success: false, error: "Convidado não encontrado." };
     revalidatePath("/convidados");
     return { success: true };
   } catch (error) {
@@ -194,20 +213,19 @@ export async function deleteGuest(id: string) {
 // COMUNICAÇÃO WHATSAPP
 // ==========================================
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://seuapp.vercel.app";
-
 /**
  * Envia o convite individual para um convidado via WhatsApp.
  * Inclui botões interativos para confirmar presença e ver lista de presentes.
  */
 export async function sendInvite(guestId: string) {
-  await requirePathPermission("/convidados");
-  const guest = await prisma.guest.findUnique({ where: { id: guestId } });
+  const { weddingId, wedding } = await requireWedding("/convidados");
+  if (typeof guestId !== "string") return { success: false, error: "Convidado não encontrado." };
+  const guest = await prisma.guest.findFirst({ where: { id: guestId, weddingId } });
   if (!guest?.phone) {
     return { success: false, error: "Convidado sem telefone cadastrado." };
   }
 
-  const message = `💍 *Você está convidado!*\n\nOlá, *${guest.name}*!\n\nTemos a honra de convidá-lo(a) para o nosso casamento.\n\nPor favor, confirme sua presença e veja nossa lista de presentes acessando os links abaixo:\n\n✅ *Confirmar Presença:* ${BASE_URL}/rsvp\n🎁 *Lista de Presentes:* ${BASE_URL}/presentes\n\nAguardamos você! ❤️`;
+  const message = `💍 *Você está convidado!*\n\nOlá, *${guest.name}*!\n\nTemos a honra de convidá-lo(a) para o nosso casamento.\n\nPor favor, confirme sua presença e veja nossa lista de presentes acessando os links abaixo:\n\n✅ *Confirmar Presença:* ${weddingSiteUrl(wedding.slug, "rsvp")}\n🎁 *Lista de Presentes:* ${weddingSiteUrl(wedding.slug, "presentes")}\n\nAguardamos você! ❤️`;
 
   const result = await sendTextMessage({
     phone: guest.phone,
@@ -215,8 +233,8 @@ export async function sendInvite(guestId: string) {
   });
 
   if (result.success) {
-    await prisma.guest.update({
-      where: { id: guestId },
+    await prisma.guest.updateMany({
+      where: { id: guest.id, weddingId },
       data: { hasReceivedMessage: true },
     });
     revalidatePath("/convidados");
@@ -235,18 +253,19 @@ export async function sendBulkReminders(
   filter: "PENDING" | "CONFIRMED_CLOSE",
   weddingDate?: Date
 ) {
-  await requirePathPermission("/convidados");
+  const { weddingId, wedding } = await requireWedding("/convidados");
   let guests;
 
   if (filter === "PENDING") {
     guests = await prisma.guest.findMany({
-      where: { rsvpStatus: RsvpStatus.PENDING, phone: { not: null } },
+      where: { weddingId, rsvpStatus: RsvpStatus.PENDING, phone: { not: null } },
     });
   } else {
     const now = new Date();
     const threshold = weddingDate ?? new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000);
     guests = await prisma.guest.findMany({
       where: {
+        weddingId,
         rsvpStatus: RsvpStatus.CONFIRMED,
         phone: { not: null },
       },
@@ -264,11 +283,12 @@ export async function sendBulkReminders(
     return { success: true, sent: 0, message: "Nenhum convidado encontrado para esse filtro." };
   }
 
+  const rsvpUrl = weddingSiteUrl(wedding.slug, "rsvp");
   const messages = guests.map((g) => ({
     phone: g.phone!,
     message:
       filter === "PENDING"
-        ? `Olá, ${g.name}! 💌 Ainda não recebemos sua confirmação de presença para o nosso casamento. Confirme pelo link: ${BASE_URL}/rsvp`
+        ? `Olá, ${g.name}! 💌 Ainda não recebemos sua confirmação de presença para o nosso casamento. Confirme pelo link: ${rsvpUrl}`
         : `Olá, ${g.name}! 🎉 O grande dia está chegando! Sua presença está confirmada. Aguardamos você com muito carinho!`,
   }));
 
@@ -283,18 +303,22 @@ export async function sendBulkReminders(
 // ==========================================
 
 /**
- * Pública: localiza o convite pelo telefone. Retorna apenas o necessário para o RSVP.
+ * Pública: localiza o convite pelo telefone, só dentro do casamento do endereço (slug).
+ * Retorna apenas o necessário para o RSVP.
  */
-export async function findGuestByPhone(phone: string) {
-  if (typeof phone !== "string") return null;
+export async function findGuestByPhone(slug: string, phone: string) {
+  if (typeof slug !== "string" || typeof phone !== "string") return null;
   const cleanPhone = phone.replace(/\D/g, "");
   if (cleanPhone.length < 10 || cleanPhone.length > 13) return null;
 
   const rateLimit = await rateLimitByIp("RSVP");
   if (!rateLimit.success) return null;
 
+  const wedding = await getWeddingBySlug(slug);
+  if (!wedding) return null;
+
   const guest = await prisma.guest.findFirst({
-    where: { phone: { endsWith: cleanPhone } },
+    where: { weddingId: wedding.id, phone: { endsWith: cleanPhone } },
     select: {
       id: true,
       name: true,
@@ -308,6 +332,7 @@ export async function findGuestByPhone(phone: string) {
 }
 
 const PublicRsvpSchema = z.object({
+  slug: z.string().min(1).max(100),
   id: z.string().uuid(),
   status: z.enum(["CONFIRMED", "DECLINED"]),
   confirmedCompanions: z.coerce.number().int().min(0).max(50),
@@ -315,14 +340,16 @@ const PublicRsvpSchema = z.object({
   dietaryRestrictions: z.string().max(500).optional(),
 });
 
+/** Pública: confirma ou recusa o convite de um convidado do casamento do endereço (slug). */
 export async function publicConfirmRsvp(
+  slug: string,
   id: string,
   status: RsvpStatus,
   confirmedCompanions: number,
   companionsNames: string,
   dietaryRestrictions?: string
 ) {
-  const parsed = PublicRsvpSchema.safeParse({ id, status, confirmedCompanions, companionsNames, dietaryRestrictions });
+  const parsed = PublicRsvpSchema.safeParse({ slug, id, status, confirmedCompanions, companionsNames, dietaryRestrictions });
   if (!parsed.success) return { success: false, error: "Dados de confirmação inválidos." };
   const data = parsed.data;
 
@@ -332,15 +359,18 @@ export async function publicConfirmRsvp(
       return { success: false, error: "Muitas tentativas. Aguarde alguns minutos e tente novamente." };
     }
 
-    const guest = await prisma.guest.findUnique({ where: { id: data.id } });
+    const wedding = await getWeddingBySlug(data.slug);
+    if (!wedding) return { success: false, error: "Convidado não encontrado." };
+
+    const guest = await prisma.guest.findFirst({ where: { id: data.id, weddingId: wedding.id } });
     if (!guest) return { success: false, error: "Convidado não encontrado." };
 
     if (data.status === "CONFIRMED" && data.confirmedCompanions > guest.allowedCompanions) {
       return { success: false, error: `Você só pode levar até ${guest.allowedCompanions} acompanhante(s).` };
     }
 
-    await prisma.guest.update({
-      where: { id: data.id },
+    const result = await prisma.guest.updateMany({
+      where: { id: guest.id, weddingId: wedding.id },
       data: {
         rsvpStatus: data.status,
         confirmedCompanions: data.status === "CONFIRMED" ? data.confirmedCompanions : 0,
@@ -348,6 +378,7 @@ export async function publicConfirmRsvp(
         dietaryRestrictions: data.dietaryRestrictions?.trim() || null,
       },
     });
+    if (result.count === 0) return { success: false, error: "Convidado não encontrado." };
 
     revalidatePath("/convidados");
     return { success: true };
@@ -358,22 +389,27 @@ export async function publicConfirmRsvp(
 }
 
 export async function checkInGuest(guestId: string) {
-  await requirePathPermission("/credenciamento");
+  const { weddingId } = await requireWedding("/credenciamento");
   try {
-    const guest = await prisma.guest.findUnique({ where: { id: guestId } });
+    if (typeof guestId !== "string") return { success: false, error: "Convidado não encontrado." };
+    const guest = await prisma.guest.findFirst({ where: { id: guestId, weddingId } });
     if (!guest) return { success: false, error: "Convidado não encontrado." };
 
     if (guest.isPresent) {
       return { success: false, error: "Atenção: Este convidado já realizou o check-in anteriormente!" };
     }
 
-    await prisma.guest.update({
-      where: { id: guestId },
+    // Só o primeiro check-in vale (dois leitores lendo o mesmo QR ao mesmo tempo)
+    const result = await prisma.guest.updateMany({
+      where: { id: guest.id, weddingId, isPresent: false },
       data: {
         isPresent: true,
         checkInTime: new Date(),
       },
     });
+    if (result.count === 0) {
+      return { success: false, error: "Atenção: Este convidado já realizou o check-in anteriormente!" };
+    }
 
     revalidatePath("/convidados");
     revalidatePath("/dashboard");

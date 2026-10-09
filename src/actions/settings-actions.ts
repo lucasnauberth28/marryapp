@@ -1,24 +1,15 @@
 "use server";
 
-import { requirePathPermission } from "@/lib/security/auth-guard";
+import { requireWedding } from "@/lib/security/wedding-context";
+import { ensureSystemSettings } from "@/lib/wedding-data";
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+/** Regras do casamento da sessão. As páginas públicas leem o prazo pelo endereço (lib/wedding-data). */
 export async function getSettings() {
-  let settings = await prisma.systemSettings.findFirst();
-
-  if (!settings) {
-    settings = await prisma.systemSettings.create({
-      data: {
-        id: "global",
-        themeColor: "#18181b",
-        welcomeText: "Bem-vindos ao nosso casamento!",
-      },
-    });
-  }
-
-  return settings;
+  const { weddingId } = await requireWedding();
+  return ensureSystemSettings(weddingId);
 }
 
 /**
@@ -26,21 +17,20 @@ export async function getSettings() {
  * ficam em updateSiteCustomization (editor do site).
  */
 export async function updateSettings(data: { rsvpDeadline: Date | null }) {
-  await requirePathPermission("/configuracoes");
+  const { weddingId } = await requireWedding("/configuracoes");
 
-  const rsvpDeadline = data.rsvpDeadline ? new Date(data.rsvpDeadline) : null;
+  const rsvpDeadline = data?.rsvpDeadline ? new Date(data.rsvpDeadline) : null;
   if (rsvpDeadline && Number.isNaN(rsvpDeadline.getTime())) {
     return { success: false, error: "Data inválida." };
   }
 
   await prisma.systemSettings.upsert({
-    where: { id: "global" },
+    where: { weddingId },
     update: { rsvpDeadline },
-    create: { id: "global", rsvpDeadline },
+    create: { weddingId, rsvpDeadline },
   });
 
-  revalidatePath("/rsvp");
-  revalidatePath("/casamento");
+  revalidatePath("/casamento", "layout");
   revalidatePath("/configuracoes");
 
   return { success: true };

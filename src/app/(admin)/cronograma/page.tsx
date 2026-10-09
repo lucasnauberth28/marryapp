@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { verifyAdminSession } from "@/actions/auth-actions";
+import { requireWeddingPage } from "@/lib/security/wedding-context";
 import { getTimelineEvents } from "@/actions/timeline-actions";
 import { TimelineClient } from "./timeline-client";
 import { PageHeader } from "@/components/admin/page-header";
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CronogramaPage() {
-  await verifyAdminSession();
+  await requireWeddingPage("/cronograma");
   const events = await getTimelineEvents();
 
   return (

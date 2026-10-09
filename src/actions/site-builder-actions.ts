@@ -1,6 +1,12 @@
 "use server";
 
-import { requirePathPermission } from "@/lib/security/auth-guard";
+import { getWeddingBySlug, requireWedding } from "@/lib/security/wedding-context";
+import {
+  ensureSiteCustomization,
+  getApprovedGuestBookEntries,
+  getWeddingStoryItems,
+  getWeddingTipsList,
+} from "@/lib/wedding-data";
 
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
@@ -11,37 +17,13 @@ import { sanitizeUrl } from "@/lib/security/sanitize";
 import { uploadImageFile } from "@/lib/supabase";
 
 /**
- * Obtém ou inicializa as configurações visuais e seções do site dos noivos
+ * Obtém ou inicializa as configurações visuais e seções do site do casamento da sessão.
+ * O site público lê pelo endereço do casamento (lib/wedding-data).
  */
 export async function getSiteCustomization() {
+  const { wedding } = await requireWedding("/site-builder");
   try {
-    let settings = await prisma.siteCustomization.findUnique({
-      where: { id: "global" },
-    });
-
-    if (!settings) {
-      // Primeiro acesso: valores neutros que o casal preenche no editor do site
-      settings = await prisma.siteCustomization.create({
-        data: {
-          id: "global",
-          title: "Nosso Casamento",
-          subtitle: "",
-          weddingDate: null,
-          ceremonyTime: null,
-          receptionTime: null,
-          locationName: null,
-          locationAddress: null,
-          themeColor: "#5E2B4E",
-          fontFamily: "serif",
-          dressCodeTitle: null,
-          dressCodeDesc: null,
-          dressCodePalette: null,
-          welcomeMessage: null,
-        },
-      });
-    }
-
-    return settings;
+    return await ensureSiteCustomization(wedding);
   } catch (error) {
     console.error("[getSiteCustomization Error]:", error);
     return null;
@@ -95,7 +77,7 @@ export type SiteCustomizationInput = z.input<typeof SiteCustomizationSchema>;
  * Atualiza as configurações e blocos do site do casal
  */
 export async function updateSiteCustomization(data: SiteCustomizationInput) {
-  await requirePathPermission("/site-builder");
+  const { weddingId, wedding } = await requireWedding("/site-builder");
 
   const parsed = SiteCustomizationSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -104,20 +86,18 @@ export async function updateSiteCustomization(data: SiteCustomizationInput) {
   const required = new Set(["title", "subtitle", "themeColor"]);
   const clean = Object.fromEntries(
     Object.entries(parsed.data).map(([k, v]) => [k, v === "" && !required.has(k) ? null : v])
-  ) as Prisma.SiteCustomizationUpdateInput;
+  ) as Prisma.SiteCustomizationUncheckedUpdateInput;
 
   try {
-    const updated = await prisma.siteCustomization.upsert({
-      where: { id: "global" },
-      update: clean,
-      create: { id: "global", ...(clean as Prisma.SiteCustomizationCreateInput) },
+    await ensureSiteCustomization(wedding);
+    const updated = await prisma.siteCustomization.update({
+      where: { weddingId },
+      data: clean,
     });
 
     revalidatePath("/");
     revalidatePath("/casamento", "layout");
     revalidatePath("/site-builder");
-    revalidatePath("/rsvp");
-    revalidatePath("/presentes");
 
     return { success: true, settings: updated };
   } catch (error) {
@@ -130,7 +110,7 @@ export async function updateSiteCustomization(data: SiteCustomizationInput) {
  * Envia uma foto do site (capa ou casal) ao storage e devolve a URL pública.
  */
 export async function uploadSiteImageAction(formData: FormData) {
-  await requirePathPermission("/site-builder");
+  await requireWedding("/site-builder");
 
   const file = formData.get("image");
   if (!(file instanceof File) || file.size === 0) {
@@ -145,10 +125,9 @@ export async function uploadSiteImageAction(formData: FormData) {
  * Gerenciamento de Momentos da História do Casal (Storytelling)
  */
 export async function getStoryItems() {
+  const { weddingId } = await requireWedding("/site-builder");
   try {
-    return await prisma.weddingStoryItem.findMany({
-      orderBy: { position: "asc" },
-    });
+    return await getWeddingStoryItems(weddingId);
   } catch (error) {
     console.error("[getStoryItems Error]:", error);
     return [];
@@ -162,10 +141,11 @@ export async function createStoryItem(data: {
   imageUrl?: string;
   position?: number;
 }) {
-  await requirePathPermission("/site-builder");
+  const { weddingId } = await requireWedding("/site-builder");
   try {
     const item = await prisma.weddingStoryItem.create({
       data: {
+        weddingId,
         title: data.title,
         dateLabel: data.dateLabel,
         description: data.description,
@@ -174,7 +154,7 @@ export async function createStoryItem(data: {
       },
     });
 
-    revalidatePath("/casamento");
+    revalidatePath("/casamento", "layout");
     revalidatePath("/site-builder");
     return { success: true, item };
   } catch (error) {
@@ -183,10 +163,12 @@ export async function createStoryItem(data: {
 }
 
 export async function deleteStoryItem(id: string) {
-  await requirePathPermission("/site-builder");
+  const { weddingId } = await requireWedding("/site-builder");
   try {
-    await prisma.weddingStoryItem.delete({ where: { id } });
-    revalidatePath("/casamento");
+    if (typeof id !== "string") return { success: false, error: "Momento não encontrado." };
+    const result = await prisma.weddingStoryItem.deleteMany({ where: { id, weddingId } });
+    if (result.count === 0) return { success: false, error: "Momento não encontrado." };
+    revalidatePath("/casamento", "layout");
     revalidatePath("/site-builder");
     return { success: true };
   } catch (error) {
@@ -198,10 +180,9 @@ export async function deleteStoryItem(id: string) {
  * Gerenciamento de Dicas aos Convidados (Hotéis, Salões, Transporte)
  */
 export async function getWeddingTips() {
+  const { weddingId } = await requireWedding("/site-builder");
   try {
-    return await prisma.weddingTip.findMany({
-      orderBy: { position: "asc" },
-    });
+    return await getWeddingTipsList(weddingId);
   } catch (error) {
     console.error("[getWeddingTips Error]:", error);
     return [];
@@ -218,10 +199,11 @@ export async function createWeddingTip(data: {
   discountCode?: string;
   position?: number;
 }) {
-  await requirePathPermission("/site-builder");
+  const { weddingId } = await requireWedding("/site-builder");
   try {
     const tip = await prisma.weddingTip.create({
       data: {
+        weddingId,
         category: data.category,
         title: data.title,
         description: data.description,
@@ -233,7 +215,7 @@ export async function createWeddingTip(data: {
       },
     });
 
-    revalidatePath("/casamento");
+    revalidatePath("/casamento", "layout");
     revalidatePath("/site-builder");
     return { success: true, tip };
   } catch (error) {
@@ -242,10 +224,12 @@ export async function createWeddingTip(data: {
 }
 
 export async function deleteWeddingTip(id: string) {
-  await requirePathPermission("/site-builder");
+  const { weddingId } = await requireWedding("/site-builder");
   try {
-    await prisma.weddingTip.delete({ where: { id } });
-    revalidatePath("/casamento");
+    if (typeof id !== "string") return { success: false, error: "Dica não encontrada." };
+    const result = await prisma.weddingTip.deleteMany({ where: { id, weddingId } });
+    if (result.count === 0) return { success: false, error: "Dica não encontrada." };
+    revalidatePath("/casamento", "layout");
     revalidatePath("/site-builder");
     return { success: true };
   } catch (error) {
@@ -257,11 +241,9 @@ export async function deleteWeddingTip(id: string) {
  * Mural de Recados dos Convidados (Guestbook)
  */
 export async function getGuestBookEntries() {
+  const { weddingId } = await requireWedding("/site-builder");
   try {
-    return await prisma.guestBookEntry.findMany({
-      where: { isApproved: true },
-      orderBy: { createdAt: "desc" },
-    });
+    return await getApprovedGuestBookEntries(weddingId);
   } catch (error) {
     console.error("[getGuestBookEntries Error]:", error);
     return [];
@@ -275,13 +257,17 @@ const GuestBookSchema = z.object({
 });
 
 /**
- * Pública: recado de convidado no mural do site.
+ * Pública: recado de convidado no mural do site do casamento do endereço (slug).
  */
-export async function createGuestBookEntry(data: {
-  authorName: string;
-  message: string;
-  imageUrl?: string;
-}) {
+export async function createGuestBookEntry(
+  slug: string,
+  data: {
+    authorName: string;
+    message: string;
+    imageUrl?: string;
+  }
+) {
+  if (typeof slug !== "string") return { success: false, error: "Casamento não encontrado." };
   const parsed = GuestBookSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
@@ -296,8 +282,12 @@ export async function createGuestBookEntry(data: {
       return { success: false, error: "Você enviou muitos recados em pouco tempo. Tente novamente mais tarde." };
     }
 
+    const wedding = await getWeddingBySlug(slug);
+    if (!wedding) return { success: false, error: "Casamento não encontrado." };
+
     const entry = await prisma.guestBookEntry.create({
       data: {
+        weddingId: wedding.id,
         authorName: parsed.data.authorName,
         message: parsed.data.message,
         imageUrl,
@@ -305,7 +295,7 @@ export async function createGuestBookEntry(data: {
       },
       select: { id: true, authorName: true, message: true, imageUrl: true, createdAt: true },
     });
-    revalidatePath("/casamento");
+    revalidatePath("/casamento", "layout");
     return { success: true, entry };
   } catch (error) {
     console.error("[createGuestBookEntry Error]:", error);

@@ -6,8 +6,7 @@ import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { parseSubscriptionReference } from "@/lib/subscription-period";
 import { applyApprovedPayment, markPaymentFailed, refundSubscription } from "@/lib/subscriptions";
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://seuapp.vercel.app";
+import { weddingSiteUrl } from "@/lib/wedding-links";
 
 export async function POST(req: Request) {
   try {
@@ -59,7 +58,8 @@ export async function POST(req: Request) {
 
     const transaction = await prisma.transaction.findUnique({
       where: { id: internalTxId },
-      include: { gift: true, guest: true },
+      // O casamento é sempre o da própria transação (gravado a partir do presente no checkout)
+      include: { gift: true, guest: true, wedding: { select: { slug: true } } },
     });
 
     if (!transaction) {
@@ -90,7 +90,10 @@ export async function POST(req: Request) {
           data: { status: PaymentStatus.APPROVED, gatewayId: paymentId },
         });
         if (updated.count === 0) return false;
-        await tx.gift.update({ where: { id: transaction.giftId }, data: { isPurchased: true } });
+        await tx.gift.updateMany({
+          where: { id: transaction.giftId, weddingId: transaction.weddingId },
+          data: { isPurchased: true },
+        });
         return true;
       });
 
@@ -98,7 +101,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true, alreadyApproved: true });
       }
 
-      revalidatePath("/presentes");
+      revalidatePath("/casamento", "layout");
       revalidatePath("/presentes-admin");
       revalidatePath("/financas");
 
@@ -116,7 +119,7 @@ export async function POST(req: Request) {
           `🎁 *${transaction.gift.title}* — ${amountFormatted}\n\n` +
           `Sua generosidade faz parte da realização do nosso sonho. ❤️\n\n` +
           `Nos vemos no altar! 💒\n` +
-          `_Não esqueça de confirmar sua presença em:_ ${BASE_URL}/rsvp`;
+          `_Não esqueça de confirmar sua presença em:_ ${weddingSiteUrl(transaction.wedding.slug, "rsvp")}`;
 
         await sendTextMessage({ phone: guest.phone, text: message }).catch((err) =>
           console.error("[Webhook MP] Erro ao enviar WhatsApp:", err)
@@ -133,7 +136,10 @@ export async function POST(req: Request) {
           where: { id: internalTxId },
           data: { status: PaymentStatus.REFUNDED },
         }),
-        prisma.gift.update({ where: { id: transaction.giftId }, data: { isPurchased: false } }),
+        prisma.gift.updateMany({
+          where: { id: transaction.giftId, weddingId: transaction.weddingId },
+          data: { isPurchased: false },
+        }),
       ]);
     }
 

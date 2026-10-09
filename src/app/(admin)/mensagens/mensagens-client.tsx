@@ -64,17 +64,21 @@ import {
   markGuestAsSent,
 } from "@/actions/message-actions";
 import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-actions";
+import { weddingSiteUrl } from "@/lib/wedding-links";
 
 interface MensagensClientProps {
   initialTemplates: MessageTemplate[];
   initialGuests: Guest[];
   coupleNames: string;
+  /** Endereço público do casamento, para os links das mensagens */
+  slug: string;
 }
 
 export function MensagensClient({
   initialTemplates,
   initialGuests,
   coupleNames,
+  slug,
 }: MensagensClientProps) {
   const [templates, setTemplates] = useState<MessageTemplate[]>(initialTemplates);
   const [activeTab, setActiveTab] = useState<"templates" | "disparador">("templates");
@@ -817,7 +821,7 @@ export function MensagensClient({
                                 <div key={idx} className="bg-[#111b21] p-1.5 rounded-lg border border-emerald-700/40 font-mono text-xs text-emerald-300">
                                   <span className="font-bold text-white block">{b.text}:</span>
                                   <span className="underline text-emerald-400 truncate block">
-                                    {b.text.toLowerCase().includes("presente") ? "https://aceito.com.br/presentes" : "https://aceito.com.br/rsvp"}
+                                    {weddingSiteUrl(slug, b.text.toLowerCase().includes("presente") ? "presentes" : "rsvp")}
                                   </span>
                                 </div>
                               ))}

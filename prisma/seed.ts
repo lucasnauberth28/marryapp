@@ -1,9 +1,9 @@
 /**
- * Seed de demonstração do marketplace de fornecedores.
+ * Seed de demonstração do marketplace de fornecedores e do casamento de demonstração.
  * Uso local: `npx prisma db seed` (nunca roda automaticamente em produção).
  */
 import "dotenv/config";
-import { PrismaClient, VendorPlanTier } from "@prisma/client";
+import { CurationStatus, PrismaClient, VendorPlanTier } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import bcrypt from "bcryptjs";
@@ -40,7 +40,7 @@ const DEMO_PARTNERS = [
     serviceRegions: JSON.stringify(["São Paulo - Capital", "Grande SP", "Campinas e Região"]),
     planTier: VendorPlanTier.MASTER,
     isVerified: true,
-    curationStatus: "APPROVED",
+    curationStatus: CurationStatus.APPROVED,
     offersOnlineMeet: true,
     hasPhysicalSpace: true,
   },
@@ -70,7 +70,7 @@ const DEMO_PARTNERS = [
     serviceRegions: JSON.stringify(["São Paulo - Capital", "Litoral Norte", "Campinas e Região"]),
     planTier: VendorPlanTier.MASTER,
     isVerified: true,
-    curationStatus: "APPROVED",
+    curationStatus: CurationStatus.APPROVED,
     offersOnlineMeet: true,
     hasPhysicalSpace: true,
   },
@@ -99,7 +99,7 @@ const DEMO_PARTNERS = [
     serviceRegions: JSON.stringify(["São Paulo - Capital", "Grande SP", "Litoral Norte", "Brasil Todo"]),
     planTier: VendorPlanTier.PRO,
     isVerified: true,
-    curationStatus: "APPROVED",
+    curationStatus: CurationStatus.APPROVED,
     offersOnlineMeet: true,
     hasPhysicalSpace: true,
   },
@@ -126,7 +126,7 @@ const DEMO_PARTNERS = [
     serviceRegions: JSON.stringify(["São Paulo - Capital", "Grande SP", "Campinas e Região"]),
     planTier: VendorPlanTier.PRO,
     isVerified: true,
-    curationStatus: "APPROVED",
+    curationStatus: CurationStatus.APPROVED,
     offersOnlineMeet: true,
     hasPhysicalSpace: false,
   },
@@ -148,7 +148,7 @@ const DEMO_PARTNERS = [
     serviceRegions: JSON.stringify(["São Paulo - Capital", "Grande SP", "Litoral Norte"]),
     planTier: VendorPlanTier.PRO,
     isVerified: true,
-    curationStatus: "APPROVED",
+    curationStatus: CurationStatus.APPROVED,
     offersOnlineMeet: true,
     hasPhysicalSpace: false,
   },
@@ -172,7 +172,7 @@ const DEMO_PARTNERS = [
     serviceRegions: JSON.stringify(["São Paulo - Capital", "Campinas e Região", "Brasil Todo"]),
     planTier: VendorPlanTier.PRO,
     isVerified: true,
-    curationStatus: "APPROVED",
+    curationStatus: CurationStatus.APPROVED,
     offersOnlineMeet: true,
     hasPhysicalSpace: true,
   },
@@ -195,11 +195,64 @@ const DEMO_PARTNERS = [
     serviceRegions: JSON.stringify(["São Paulo - Capital", "Grande SP"]),
     planTier: VendorPlanTier.PRO,
     isVerified: true,
-    curationStatus: "APPROVED",
+    curationStatus: CurationStatus.APPROVED,
     offersOnlineMeet: true,
     hasPhysicalSpace: true,
   },
 ];
+
+// Casamento de demonstração: todo dado do painel do casal pertence a um casamento (weddingId).
+const DEMO_WEDDING = { slug: "lucas-e-giovanna", coupleNames: "Lucas & Giovanna" };
+
+/** Reusa o casamento principal (o mais antigo) ou cria o de demonstração, com as linhas únicas dele. */
+async function ensureDemoWedding(prisma: PrismaClient) {
+  let wedding = await prisma.wedding.findFirst({ orderBy: { createdAt: "asc" } });
+  if (!wedding) {
+    wedding = await prisma.wedding.create({ data: DEMO_WEDDING });
+    console.log(`Casamento de demonstração "${wedding.coupleNames}" criado (/casamento/${wedding.slug}).`);
+  } else {
+    console.log(`Casamento "${wedding.coupleNames}" reaproveitado (/casamento/${wedding.slug}).`);
+  }
+
+  const weddingId = wedding.id;
+  await prisma.systemSettings.upsert({
+    where: { weddingId },
+    update: {},
+    create: { weddingId, themeColor: "#18181b", welcomeText: "Bem-vindos ao nosso casamento!" },
+  });
+  await prisma.walletBalance.upsert({ where: { weddingId }, update: {}, create: { weddingId, balance: 0 } });
+  await prisma.siteCustomization.upsert({
+    where: { weddingId },
+    update: {},
+    create: { weddingId, slug: wedding.slug, title: wedding.coupleNames, themeColor: wedding.themeColor },
+  });
+
+  // Modelos de mensagem padrão do casamento (os mesmos que o painel cria no primeiro acesso)
+  const buttons = JSON.stringify([
+    { id: "confirm", text: "✅ Confirmar Presença" },
+    { id: "decline", text: "❌ Não poderei ir" },
+  ]);
+  const templates = [
+    {
+      name: "Convite Inicial (Com Botões RSVP)",
+      type: "INITIAL_INVITE",
+      content:
+        "💍 *Você está convidado!*\n\nOlá, *{nome}*! 🎉\n\nTemos a honra de convidá-lo(a) para o nosso casamento!\n\nPor favor, confirme sua presença clicando no botão abaixo:",
+    },
+    {
+      name: "Lembrete de RSVP Pendente",
+      type: "RSVP_REMINDER",
+      content:
+        "🔔 *Lembrete de Presença*\n\nOlá, *{nome}*! Tudo bem? 😊\n\nPercebemos que ainda não recebemos a sua confirmação para o nosso casamento.\n\nPor favor, confirme pelo botão abaixo:",
+    },
+  ];
+  for (const template of templates) {
+    const exists = await prisma.messageTemplate.findFirst({ where: { weddingId, type: template.type }, select: { id: true } });
+    if (!exists) await prisma.messageTemplate.create({ data: { ...template, buttons, weddingId } });
+  }
+
+  return wedding;
+}
 
 async function main() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -214,6 +267,8 @@ async function main() {
     }
     console.log(`${DEMO_PARTNERS.length} fornecedores de demonstração criados.`);
   }
+
+  await ensureDemoWedding(prisma);
 
   // Perfil "Fornecedor": cria se não existir, sem sobrescrever ajustes feitos pelo admin.
   const vendorRole = await prisma.role.upsert({

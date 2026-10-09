@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PageHeader } from "@/components/admin/page-header";
 import { WeddingSiteView, type WeddingSiteSettings } from "@/components/public/wedding-site-view";
 import { readableAccent } from "@/lib/wedding-format";
+import { weddingSitePath } from "@/lib/wedding-links";
 import {
   updateSiteCustomization,
   uploadSiteImageAction,
@@ -71,6 +72,8 @@ interface SiteBuilderClientProps {
   initialTips: Tip[];
   previewGifts: PreviewGift[];
   rsvpDeadline: Date | string | null;
+  /** Endereço público do casamento (/casamento/<slug>) */
+  slug: string;
 }
 
 type TabId = "GENERAL" | "LOCATION" | "DRESS" | "STORY" | "TIPS" | "BLOCKS";
@@ -157,6 +160,7 @@ export function SiteBuilderClient({
   initialTips,
   previewGifts,
   rsvpDeadline,
+  slug,
 }: SiteBuilderClientProps) {
   const [settings, setSettings] = useState<WeddingSiteSettings>(initialSettings ?? {});
   const [storyItems, setStoryItems] = useState<StoryItem[]>(initialStoryItems);
@@ -311,6 +315,7 @@ export function SiteBuilderClient({
       <div className="h-[72vh] overflow-y-auto">
         <div className="pointer-events-none select-none" style={{ zoom: 0.5 }} aria-hidden="true">
           <WeddingSiteView
+            slug={slug}
             settings={settings}
             storyItems={storyItems}
             tips={tips}
@@ -332,7 +337,7 @@ export function SiteBuilderClient({
         actions={
           <>
             <Button asChild variant="outline" className="h-11 gap-2 rounded-full border-linha px-5">
-              <Link href="/casamento" target="_blank">
+              <Link href={weddingSitePath(slug)} target="_blank">
                 <Eye className="h-4 w-4" aria-hidden="true" /> Ver site publicado
               </Link>
             </Button>

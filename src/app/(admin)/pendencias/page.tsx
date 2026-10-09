@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { getTasks } from "@/actions/tasks";
 import { KanbanBoard } from "@/components/kanban/kanban-board";
-import { verifyAdminSession } from "@/actions/auth-actions";
+import { requireWeddingPage } from "@/lib/security/wedding-context";
 
 export const metadata: Metadata = {
   title: "Tarefas",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PendenciasPage() {
-  await verifyAdminSession();
+  await requireWeddingPage("/pendencias");
   
   const { data: tasks, success } = await getTasks();
 

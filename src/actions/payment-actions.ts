@@ -60,10 +60,17 @@ export async function createPixTransactionAction(input: {
     if (!gift) return { success: false, error: "Presente não encontrado." };
     if (gift.isPurchased) return { success: false, error: "Este presente já foi comprado." };
 
-    const guest = await findOrCreateGuest({ name: guestName, phone: guestPhone, email: guestEmail || null });
+    // O casamento vem sempre do presente (nunca do navegador): convidado e transação ficam nele.
+    const guest = await findOrCreateGuest({
+      weddingId: gift.weddingId,
+      name: guestName,
+      phone: guestPhone,
+      email: guestEmail || null,
+    });
 
     const transaction = await prisma.transaction.create({
       data: {
+        weddingId: gift.weddingId,
         guestName,
         amount: gift.amount,
         netAmount: gift.amount,
@@ -152,7 +159,7 @@ export async function checkTransactionStatusAction(transactionId: string) {
 
     const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
-      select: { id: true, status: true, gatewayId: true, giftId: true, amount: true },
+      select: { id: true, status: true, gatewayId: true, giftId: true, amount: true, weddingId: true },
     });
 
     if (!transaction) return { approved: false };
@@ -172,11 +179,14 @@ export async function checkTransactionStatusAction(transactionId: string) {
               data: { status: PaymentStatus.APPROVED },
             });
             if (updated.count > 0) {
-              await tx.gift.update({ where: { id: transaction.giftId }, data: { isPurchased: true } });
+              await tx.gift.updateMany({
+                where: { id: transaction.giftId, weddingId: transaction.weddingId },
+                data: { isPurchased: true },
+              });
             }
           });
 
-          revalidatePath("/presentes");
+          revalidatePath("/casamento", "layout");
           revalidatePath("/presentes-admin");
           revalidatePath("/financas");
 
@@ -232,10 +242,12 @@ export async function processCardPaymentAction(input: {
 
     const { finalAmount, fee } = calculateCardFee(gift.amount);
 
-    const guest = await findOrCreateGuest({ name: guestName, phone: guestPhone, email: payerEmail });
+    // O casamento vem sempre do presente (nunca do navegador): convidado e transação ficam nele.
+    const guest = await findOrCreateGuest({ weddingId: gift.weddingId, name: guestName, phone: guestPhone, email: payerEmail });
 
     const transaction = await prisma.transaction.create({
       data: {
+        weddingId: gift.weddingId,
         guestName,
         amount: finalAmount,
         netAmount: gift.amount,
@@ -266,10 +278,10 @@ export async function processCardPaymentAction(input: {
           where: { id: transaction.id },
           data: { status: PaymentStatus.APPROVED, gatewayId: String(mpResponse.id) },
         }),
-        prisma.gift.update({ where: { id: gift.id }, data: { isPurchased: true } }),
+        prisma.gift.updateMany({ where: { id: gift.id, weddingId: gift.weddingId }, data: { isPurchased: true } }),
       ]);
 
-      revalidatePath("/presentes");
+      revalidatePath("/casamento", "layout");
       revalidatePath("/presentes-admin");
 
       return { success: true, status: "APPROVED", transactionId: transaction.id };

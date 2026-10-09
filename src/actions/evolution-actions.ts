@@ -1,15 +1,15 @@
 "use server";
 
-import { requirePathPermission } from "@/lib/security/auth-guard";
+import { requireWedding } from "@/lib/security/wedding-context";
 
 import { getConnectionState, connectInstance } from "@/lib/evolution";
 
 export async function getWhatsAppStatus() {
-  await requirePathPermission("/configuracoes");
+  await requireWedding("/configuracoes");
   return getConnectionState();
 }
 
 export async function generateWhatsAppQRCode() {
-  await requirePathPermission("/configuracoes");
+  await requireWedding("/configuracoes");
   return connectInstance();
 }

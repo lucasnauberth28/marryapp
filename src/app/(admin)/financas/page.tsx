@@ -2,7 +2,7 @@ import { getFinancialMetrics, getTransactions } from "@/actions/finance-actions"
 import { getExpenses } from "@/actions/expense-actions";
 import { getVendors } from "@/actions/vendor-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { verifyAdminSession } from "@/actions/auth-actions";
+import { requireWeddingPage } from "@/lib/security/wedding-context";
 import {
   Wallet,
   TrendingUp,
@@ -43,7 +43,7 @@ export const metadata = {
 import { getWalletData } from "@/actions/wallet-actions";
 
 export default async function FinancasPage() {
-  await verifyAdminSession();
+  await requireWeddingPage("/financas");
 
   // Fetch paralelo para otimizar carregamento
   const [metrics, transactions, expenses, vendors, walletData] = await Promise.all([

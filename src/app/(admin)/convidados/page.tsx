@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { getGuests } from "@/actions/guest-actions";
 import { getTablesWithGuests, getUnassignedGuests } from "@/actions/table-actions";
 import { GuestsClient } from "./guests-client";
-import { verifyAdminSession } from "@/actions/auth-actions";
+import { requireWeddingPage } from "@/lib/security/wedding-context";
 
 export const metadata: Metadata = {
   title: "Convidados",
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ConvidadosPage() {
-  await verifyAdminSession();
+  await requireWeddingPage("/convidados");
   
   const [guests, tables, unassignedGuests] = await Promise.all([
     getGuests(),

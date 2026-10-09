@@ -1,25 +1,13 @@
-import {
-  getSiteCustomization,
-  getStoryItems,
-  getWeddingTips,
-  getGuestBookEntries,
-} from "@/actions/site-builder-actions";
-import prisma from "@/lib/prisma";
 import { WeddingSiteView } from "@/components/public/wedding-site-view";
-import { getSettings } from "@/actions/settings-actions";
+import { guestPageMetadata } from "@/lib/wedding";
+import { getPublicSiteData } from "@/lib/wedding-data";
+import { requirePublicWedding } from "@/lib/wedding-redirect";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const settings = await prisma.siteCustomization.findFirst({
-    where: { slug },
-  });
-
-  return {
-    title: { absolute: settings?.title || "Casamento" },
-    description: "Celebre conosco este momento especial. Informações do local, traje, lista de presentes e confirmação de presença.",
-  };
+  return guestPageMetadata(slug, null);
 }
 
 export default async function WeddingPublicSlugPage({
@@ -28,37 +16,18 @@ export default async function WeddingPublicSlugPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-
-  let settings = await prisma.siteCustomization.findFirst({
-    where: { slug },
-  });
-
-  if (!settings) {
-    settings = await getSiteCustomization();
-  }
-
-  const [storyItems, tips, guestbookEntries, gifts, rules] = await Promise.all([
-    getStoryItems(),
-    getWeddingTips(),
-    getGuestBookEntries(),
-    prisma.gift
-      .findMany({
-        where: { isPurchased: false },
-        select: { id: true, title: true, description: true, amount: true, imageUrl: true },
-        take: 6,
-      })
-      .catch(() => []),
-    getSettings().catch(() => null),
-  ]);
+  const wedding = await requirePublicWedding(slug);
+  const { settings, storyItems, tips, guestbookEntries, gifts, rsvpDeadline } = await getPublicSiteData(wedding);
 
   return (
     <WeddingSiteView
+      slug={wedding.slug}
       settings={settings}
       storyItems={storyItems}
       tips={tips}
       guestbookEntries={guestbookEntries}
       gifts={gifts}
-      rsvpDeadline={rules?.rsvpDeadline ?? null}
+      rsvpDeadline={rsvpDeadline}
     />
   );
 }

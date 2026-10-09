@@ -1,17 +1,37 @@
 "use server";
 
-import { requirePathPermission } from "@/lib/security/auth-guard";
+import { requireWedding } from "@/lib/security/wedding-context";
 
 import prisma from "@/lib/prisma";
-import { TaskStatus } from "@prisma/client";
+import { Prisma, TaskStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { BoardItem, BoardItemType } from "@/types/kanban";
 
+const TASK_STATUSES = new Set<string>(Object.values(TaskStatus));
+
+function isTaskStatus(value: unknown): value is TaskStatus {
+  return typeof value === "string" && TASK_STATUSES.has(value);
+}
+
+function optionalText(value: unknown, max: number): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  return typeof value === "string" ? value.slice(0, max) : undefined;
+}
+
+function optionalDate(value: unknown): Date | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+  const date = new Date(value as string | number | Date);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
 export async function getTasks() {
-  await requirePathPermission("/pendencias");
+  const { weddingId } = await requireWedding("/pendencias");
   try {
     const tasks = await prisma.task.findMany({
+      where: { weddingId },
       orderBy: {
         position: 'asc',
       },
@@ -42,11 +62,16 @@ export async function createTask(data: {
   assignee?: string;
   status: TaskStatus;
 }) {
-  await requirePathPermission("/pendencias");
+  const { weddingId } = await requireWedding("/pendencias");
+  // Só os campos da tarefa: nada do que o navegador enviar decide o casamento
+  const title = typeof data?.title === "string" ? data.title.trim().slice(0, 200) : "";
+  if (!title) return { success: false, error: "Informe o título da tarefa." };
+  if (!isTaskStatus(data.status)) return { success: false, error: "Status inválido." };
+
   try {
     // Acha a maior posição atual para essa coluna
     const maxPositionTask = await prisma.task.findFirst({
-      where: { status: data.status },
+      where: { weddingId, status: data.status },
       orderBy: { position: 'desc' },
       select: { position: true },
     });
@@ -55,7 +80,12 @@ export async function createTask(data: {
 
     const task = await prisma.task.create({
       data: {
-        ...data,
+        weddingId,
+        title,
+        description: optionalText(data.description, 5000) ?? null,
+        dueDate: optionalDate(data.dueDate) ?? null,
+        assignee: optionalText(data.assignee, 120) ?? null,
+        status: data.status,
         position: newPosition,
       },
     });
@@ -74,15 +104,19 @@ export async function updateTaskStatus(
   newPosition: number,
   type: BoardItemType = "MANUAL"
 ) {
-  await requirePathPermission("/pendencias");
+  const { weddingId } = await requireWedding("/pendencias");
+  if (typeof taskId !== "string" || !isTaskStatus(newStatus) || !Number.isFinite(Number(newPosition))) {
+    return { success: false, error: "Falha ao atualizar o status." };
+  }
   try {
-    await prisma.task.update({
-      where: { id: taskId },
+    const result = await prisma.task.updateMany({
+      where: { id: taskId, weddingId },
       data: {
         status: newStatus,
-        position: newPosition,
+        position: Math.round(Number(newPosition)),
       },
     });
+    if (result.count === 0) return { success: false, error: "Tarefa não encontrada." };
 
     revalidatePath("/pendencias");
     
@@ -100,12 +134,36 @@ export async function updateTask(taskId: string, data: Partial<{
   assignee: string | null;
   status: TaskStatus;
 }>) {
-  await requirePathPermission("/pendencias");
+  const { weddingId } = await requireWedding("/pendencias");
+  if (typeof taskId !== "string" || !data || typeof data !== "object") {
+    return { success: false, error: "Falha ao atualizar a tarefa." };
+  }
+
+  // Só os campos editáveis da tarefa
+  const update: Prisma.TaskUpdateManyMutationInput = {};
+  if (data.title !== undefined) {
+    const title = typeof data.title === "string" ? data.title.trim().slice(0, 200) : "";
+    if (!title) return { success: false, error: "Informe o título da tarefa." };
+    update.title = title;
+  }
+  const description = optionalText(data.description, 5000);
+  if (description !== undefined) update.description = description;
+  const dueDate = optionalDate(data.dueDate);
+  if (dueDate !== undefined) update.dueDate = dueDate;
+  const assignee = optionalText(data.assignee, 120);
+  if (assignee !== undefined) update.assignee = assignee;
+  if (data.status !== undefined) {
+    if (!isTaskStatus(data.status)) return { success: false, error: "Status inválido." };
+    update.status = data.status;
+  }
+
   try {
-    const task = await prisma.task.update({
-      where: { id: taskId },
-      data,
+    const result = await prisma.task.updateMany({
+      where: { id: taskId, weddingId },
+      data: update,
     });
+    if (result.count === 0) return { success: false, error: "Tarefa não encontrada." };
+    const task = await prisma.task.findFirst({ where: { id: taskId, weddingId } });
 
     revalidatePath("/pendencias");
     return { success: true, data: task };
@@ -116,11 +174,13 @@ export async function updateTask(taskId: string, data: Partial<{
 }
 
 export async function deleteTask(taskId: string) {
-  await requirePathPermission("/pendencias");
+  const { weddingId } = await requireWedding("/pendencias");
   try {
-    await prisma.task.delete({
-      where: { id: taskId },
+    if (typeof taskId !== "string") return { success: false, error: "Tarefa não encontrada." };
+    const result = await prisma.task.deleteMany({
+      where: { id: taskId, weddingId },
     });
+    if (result.count === 0) return { success: false, error: "Tarefa não encontrada." };
 
     revalidatePath("/pendencias");
     return { success: true };

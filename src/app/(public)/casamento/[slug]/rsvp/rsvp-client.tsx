@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Loader2, Search, CheckCircle2, XCircle, Gift, Download, MapPin, Calendar, Users, Heart } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 import { motion, AnimatePresence } from "framer-motion";
+import { weddingSitePath } from "@/lib/wedding-links";
 
 // Função para aplicar máscara de telefone brasileiro: (XX) XXXXX-XXXX
 const maskPhone = (value: string) => {
@@ -27,12 +28,14 @@ const maskPhone = (value: string) => {
 };
 
 interface RsvpClientProps {
+  /** Casamento do endereço: a busca e a confirmação ficam restritas a ele */
+  slug: string;
   coupleNames: string;
   initials: string;
   dateLabel: string | null;
 }
 
-export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps) {
+export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClientProps) {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -58,7 +61,7 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
 
     const toastId = toast.loading("Localizando seu convite pelo WhatsApp...");
     try {
-      const found = await findGuestByPhone(phone);
+      const found = await findGuestByPhone(slug, phone);
       if (found) {
         setGuest(found);
         // Inicializa contagem e lista de nomes vazias
@@ -103,6 +106,7 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
 
     try {
       const res = await publicConfirmRsvp(
+        slug,
         guest.id, 
         status, 
         status === "CONFIRMED" ? companionsCount : 0, 
@@ -192,7 +196,7 @@ export function RsvpClient({ coupleNames, initials, dateLabel }: RsvpClientProps
                     </div>
 
                     <Button asChild className="w-full bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl h-12 shadow-md">
-                      <a href="/presentes" className="flex items-center justify-center gap-2">
+                      <a href={weddingSitePath(slug, "presentes")} className="flex items-center justify-center gap-2">
                         <Gift className="w-4 h-4" />
                         Ver Lista de Presentes
                       </a>

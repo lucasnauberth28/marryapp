@@ -31,6 +31,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createGuestBookEntry } from "@/actions/site-builder-actions";
 import { brandThemeStyle, daysUntil } from "@/lib/wedding-format";
+import { weddingSitePath } from "@/lib/wedding-links";
 import { toast } from "sonner";
 import { Reveal, RevealWords } from "@/components/motion/reveal";
 
@@ -98,6 +99,8 @@ interface SiteGift {
 }
 
 interface WeddingSiteViewProps {
+  /** Endereço do casamento (/casamento/<slug>): links de RSVP, presentes e o mural usam este casamento. */
+  slug: string;
   settings: WeddingSiteSettings | null;
   storyItems: StoryItem[];
   tips: Tip[];
@@ -139,6 +142,7 @@ function SectionHeading({ eyebrow, title, children }: { eyebrow: string; title: 
 }
 
 export function WeddingSiteView({
+  slug,
   settings,
   storyItems,
   tips,
@@ -185,7 +189,7 @@ export function WeddingSiteView({
     }
 
     startTransition(async () => {
-      const res = await createGuestBookEntry({ authorName, message });
+      const res = await createGuestBookEntry(slug, { authorName, message });
       if (res.success && res.entry) {
         setEntries((prev) => [res.entry as GuestbookEntry, ...prev]);
         setAuthorName("");
@@ -271,7 +275,7 @@ export function WeddingSiteView({
           <Reveal delay={750} className="mt-10 flex flex-wrap items-center justify-center gap-3">
             {showRsvp && (
               <Button asChild className="lift h-12 rounded-full bg-brand px-7 text-sm font-semibold text-white shadow-lg hover:bg-brand-600">
-                <Link href="/rsvp" {...linkProps}>
+                <Link href={weddingSitePath(slug, "rsvp")} {...linkProps}>
                   <CalendarCheck className="h-4 w-4" aria-hidden="true" /> Confirmar presença
                 </Link>
               </Button>
@@ -284,7 +288,7 @@ export function WeddingSiteView({
                   hasHeroImage ? "border-white/60 bg-papel/10 text-white hover:bg-papel/20 hover:text-white" : "border-linha text-tinta hover:bg-papel"
                 }`}
               >
-                <Link href="/presentes" {...linkProps}>
+                <Link href={weddingSitePath(slug, "presentes")} {...linkProps}>
                   <Gift className="h-4 w-4" aria-hidden="true" /> Lista de presentes
                 </Link>
               </Button>
@@ -509,7 +513,7 @@ export function WeddingSiteView({
                 : "Confirme sua presença para organizarmos tudo com carinho. Leva menos de um minuto."}
             </p>
             <Button asChild className="lift relative mt-2 h-12 rounded-full bg-papel px-8 font-semibold text-brand-600 hover:bg-papel/90">
-              <Link href="/rsvp" {...linkProps}>
+              <Link href={weddingSitePath(slug, "rsvp")} {...linkProps}>
                 Confirmar presença
               </Link>
             </Button>
@@ -643,7 +647,7 @@ export function WeddingSiteView({
 
           <div className="mt-12 text-center">
             <Button asChild variant="outline" className="h-12 gap-2 rounded-full border-linha px-8 font-semibold">
-              <Link href="/presentes" {...linkProps}>
+              <Link href={weddingSitePath(slug, "presentes")} {...linkProps}>
                 Ver a lista completa <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
             </Button>

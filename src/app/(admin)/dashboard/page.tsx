@@ -15,7 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import prisma from "@/lib/prisma";
-import { verifyAdminSession } from "@/actions/auth-actions";
+import { requireWeddingPage } from "@/lib/security/wedding-context";
 import { getWeddingIdentity } from "@/lib/wedding";
 import { daysUntil } from "@/lib/wedding-format";
 import { PageHeader } from "@/components/admin/page-header";
@@ -54,28 +54,31 @@ function Section({ title, href, linkLabel, children, delay = 0 }: { title: strin
 }
 
 export default async function DashboardPage() {
-  await verifyAdminSession();
+  const { weddingId } = await requireWeddingPage("/dashboard");
   const wedding = await getWeddingIdentity();
   const today = startOfDay(new Date());
 
   const [guests, tasks, expenses, approvedGifts, pendingPix] = await Promise.all([
     prisma.guest.findMany({
+      where: { weddingId },
       select: { rsvpStatus: true, allowedCompanions: true, confirmedCompanions: true, phone: true, hasReceivedMessage: true },
     }),
     prisma.task.findMany({
+      where: { weddingId },
       select: { id: true, title: true, status: true, dueDate: true },
       orderBy: [{ dueDate: { sort: "asc", nulls: "last" } }, { position: "asc" }],
     }),
     prisma.expense.findMany({
+      where: { weddingId },
       select: { id: true, description: true, amount: true, status: true, dueDate: true },
       orderBy: { dueDate: "asc" },
     }),
     prisma.transaction.findMany({
-      where: { status: "APPROVED" },
+      where: { weddingId, status: "APPROVED" },
       orderBy: { createdAt: "desc" },
       select: { id: true, netAmount: true, amount: true, guestName: true, createdAt: true, gift: { select: { title: true } } },
     }),
-    prisma.transaction.count({ where: { status: "PENDING", paymentMethod: "PIX" } }),
+    prisma.transaction.count({ where: { weddingId, status: "PENDING", paymentMethod: "PIX" } }),
   ]);
 
   // Convidados

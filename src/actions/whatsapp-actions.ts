@@ -1,21 +1,21 @@
 "use server";
 
-import { requirePathPermission } from "@/lib/security/auth-guard";
+import { requireWedding } from "@/lib/security/wedding-context";
+import { weddingSiteUrl } from "@/lib/wedding-links";
 
 import prisma from "@/lib/prisma";
 import { sendBulkMessages } from "@/lib/evolution";
 import { RsvpStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://seuapp.vercel.app";
-
 /**
  * Dispara lembretes em massa para convidados com RSVP pendente.
  */
 export async function sendRsvpReminders() {
-  await requirePathPermission("/mensagens");
+  const { weddingId, wedding } = await requireWedding("/mensagens");
   const guests = await prisma.guest.findMany({
     where: {
+      weddingId,
       rsvpStatus: RsvpStatus.PENDING,
       phone: { not: null },
       hasReceivedMessage: true, // Já recebeu convite inicial
@@ -29,7 +29,7 @@ export async function sendRsvpReminders() {
 
   // Busca se existe um template customizado cadastrado para RSVP_REMINDER
   const reminderTemplate = await prisma.messageTemplate.findFirst({
-    where: { type: "RSVP_REMINDER" },
+    where: { weddingId, type: "RSVP_REMINDER" },
   });
 
   let parsedButtons: Array<{ id: string; text: string }> | null = null;
@@ -46,7 +46,7 @@ export async function sendRsvpReminders() {
         `Olá, *${g.name}*! Tudo bem? 😊\n\n` +
         `Percebemos que ainda não recebemos a sua confirmação de presença para o nosso casamento.\n\n` +
         `Por favor, confirme pelo link abaixo:\n` +
-        `✅ ${BASE_URL}/rsvp\n\n` +
+        `✅ ${weddingSiteUrl(wedding.slug, "rsvp")}\n\n` +
         `Ficaria muito especial ter você conosco! ❤️`;
 
     return {
@@ -78,9 +78,10 @@ export async function sendRsvpReminders() {
  * Dispara convites para convidados que ainda não receberam mensagem.
  */
 export async function sendInitialInvites() {
-  await requirePathPermission("/mensagens");
+  const { weddingId, wedding } = await requireWedding("/mensagens");
   const guests = await prisma.guest.findMany({
     where: {
+      weddingId,
       hasReceivedMessage: false,
       phone: { not: null },
     },
@@ -93,7 +94,7 @@ export async function sendInitialInvites() {
 
   // Busca se existe um template customizado cadastrado para INITIAL_INVITE
   const inviteTemplate = await prisma.messageTemplate.findFirst({
-    where: { type: "INITIAL_INVITE" },
+    where: { weddingId, type: "INITIAL_INVITE" },
   });
 
   let parsedButtons: Array<{ id: string; text: string }> | null = null;
@@ -110,8 +111,8 @@ export async function sendInitialInvites() {
         `Olá, *${g.name}*! 🎉\n\n` +
         `Temos a honra de convidá-lo(a) para o nosso casamento!\n\n` +
         `Por favor:\n` +
-        `✅ *Confirme sua presença:* ${BASE_URL}/rsvp\n` +
-        `🎁 *Veja nossa lista de presentes:* ${BASE_URL}/presentes\n\n` +
+        `✅ *Confirme sua presença:* ${weddingSiteUrl(wedding.slug, "rsvp")}\n` +
+        `🎁 *Veja nossa lista de presentes:* ${weddingSiteUrl(wedding.slug, "presentes")}\n\n` +
         `Mal podemos esperar para te ver! ❤️`;
 
     return {
@@ -132,7 +133,7 @@ export async function sendInitialInvites() {
   const successPhones = results.filter((r) => r.success).map((r) => r.phone);
   if (successPhones.length > 0) {
     await prisma.guest.updateMany({
-      where: { phone: { in: successPhones } },
+      where: { weddingId, phone: { in: successPhones } },
       data: { hasReceivedMessage: true },
     });
   }

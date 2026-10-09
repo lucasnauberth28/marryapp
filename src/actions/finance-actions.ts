@@ -1,6 +1,6 @@
 "use server";
 
-import { requirePathPermission } from "@/lib/security/auth-guard";
+import { requireWedding } from "@/lib/security/wedding-context";
 
 import prisma from "@/lib/prisma";
 import { PaymentStatus, PaymentMethod, ExpenseStatus, Prisma } from "@prisma/client";
@@ -49,7 +49,7 @@ export type TransactionWithGift = Prisma.TransactionGetPayload<
  * Todos os valores estão em centavos (Int).
  */
 export async function getFinancialMetrics(): Promise<FinancialMetrics> {
-  await requirePathPermission("/financas");
+  const { weddingId } = await requireWedding("/financas");
   const [
     approved,
     pending,
@@ -67,40 +67,42 @@ export async function getFinancialMetrics(): Promise<FinancialMetrics> {
         netAmount: true,
         fee: true,
       },
-      where: { status: PaymentStatus.APPROVED },
+      where: { weddingId, status: PaymentStatus.APPROVED },
     }),
     // Soma das transações pendentes
     prisma.transaction.aggregate({
       _sum: { amount: true },
-      where: { status: PaymentStatus.PENDING },
+      where: { weddingId, status: PaymentStatus.PENDING },
     }),
     // Count total de transações
     prisma.transaction.count({
       where: {
+        weddingId,
         status: { in: [PaymentStatus.APPROVED, PaymentStatus.PENDING] },
       },
     }),
     // Count pendentes de transações
     prisma.transaction.count({
-      where: { status: PaymentStatus.PENDING },
+      where: { weddingId, status: PaymentStatus.PENDING },
     }),
     // Total de despesas cadastradas
     prisma.expense.aggregate({
       _sum: { amount: true },
+      where: { weddingId },
     }),
     // Total de despesas pagas
     prisma.expense.aggregate({
       _sum: { amount: true },
-      where: { status: ExpenseStatus.PAID },
+      where: { weddingId, status: ExpenseStatus.PAID },
     }),
     // Total de despesas pendentes/atrasadas
     prisma.expense.aggregate({
       _sum: { amount: true },
-      where: { status: { in: [ExpenseStatus.PENDING, ExpenseStatus.OVERDUE] } },
+      where: { weddingId, status: { in: [ExpenseStatus.PENDING, ExpenseStatus.OVERDUE] } },
     }),
     // Count despesas pendentes
     prisma.expense.count({
-      where: { status: { in: [ExpenseStatus.PENDING, ExpenseStatus.OVERDUE] } },
+      where: { weddingId, status: { in: [ExpenseStatus.PENDING, ExpenseStatus.OVERDUE] } },
     }),
   ]);
 
@@ -129,8 +131,8 @@ export async function getFinancialMetrics(): Promise<FinancialMetrics> {
  * incluindo o presente (Gift) e convidado (Guest) associados.
  */
 export async function getTransactions(): Promise<TransactionWithGift[]> {
-  await requirePathPermission("/financas");
-  return prisma.transaction.findMany(transactionQueryArgs);
+  const { weddingId } = await requireWedding("/financas");
+  return prisma.transaction.findMany({ ...transactionQueryArgs, where: { weddingId } });
 }
 
 /**
@@ -143,11 +145,12 @@ export async function approvePixTransaction(
   transactionId: string,
   giftId: string
 ): Promise<{ success: boolean; error?: string }> {
-  await requirePathPermission("/financas");
+  const { weddingId } = await requireWedding("/financas");
   try {
+    if (typeof transactionId !== "string") return { success: false, error: "Transação não encontrada." };
     // O presente é sempre o da própria transação (não confiar no giftId enviado pelo cliente)
-    const transaction = await prisma.transaction.findUnique({
-      where: { id: transactionId },
+    const transaction = await prisma.transaction.findFirst({
+      where: { id: transactionId, weddingId },
       select: { giftId: true, status: true, paymentMethod: true },
     });
     if (!transaction || transaction.giftId !== giftId) {
@@ -157,19 +160,22 @@ export async function approvePixTransaction(
       return { success: false, error: "Apenas Pix pendentes podem ser conferidos manualmente." };
     }
 
-    await prisma.$transaction([
-      prisma.transaction.update({
-        where: { id: transactionId },
+    const approved = await prisma.$transaction(async (tx) => {
+      const updated = await tx.transaction.updateMany({
+        where: { id: transactionId, weddingId, status: PaymentStatus.PENDING },
         data: { status: PaymentStatus.APPROVED },
-      }),
-      prisma.gift.update({
-        where: { id: transaction.giftId },
+      });
+      if (updated.count === 0) return false;
+      await tx.gift.updateMany({
+        where: { id: transaction.giftId, weddingId },
         data: { isPurchased: true },
-      }),
-    ]);
+      });
+      return true;
+    });
+    if (!approved) return { success: false, error: "Apenas Pix pendentes podem ser conferidos manualmente." };
 
     revalidatePath("/financas");
-    revalidatePath("/presentes");
+    revalidatePath("/casamento", "layout");
     revalidatePath("/presentes-admin");
     revalidatePath("/dashboard");
 
@@ -190,12 +196,14 @@ export async function toggleThankYouSent(
   transactionId: string,
   currentStatus: boolean
 ): Promise<{ success: boolean; error?: string }> {
-  await requirePathPermission("/financas");
+  const { weddingId } = await requireWedding("/financas");
   try {
-    await prisma.transaction.update({
-      where: { id: transactionId },
+    if (typeof transactionId !== "string") return { success: false, error: "Transação não encontrada." };
+    const result = await prisma.transaction.updateMany({
+      where: { id: transactionId, weddingId },
       data: { thankYouSent: !currentStatus },
     });
+    if (result.count === 0) return { success: false, error: "Transação não encontrada." };
 
     revalidatePath("/financas");
     revalidatePath("/dashboard");

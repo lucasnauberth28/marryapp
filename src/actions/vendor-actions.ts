@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuthSession, requirePathPermission } from "@/lib/security/auth-guard";
+import { requireWedding } from "@/lib/security/wedding-context";
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
@@ -15,17 +15,18 @@ const VendorSchema = z.object({
 });
 
 export async function getVendors() {
-  await requireAuthSession();
+  const { weddingId } = await requireWedding();
   return prisma.vendor.findMany({
+    where: { weddingId },
     orderBy: { createdAt: "desc" },
     include: {
-      expenses: true // Traz as despesas amarradas ao fornecedor
+      expenses: { where: { weddingId } } // Traz as despesas amarradas ao fornecedor
     }
   });
 }
 
 export async function createVendor(formData: FormData) {
-  await requirePathPermission("/meus-fornecedores");
+  const { weddingId } = await requireWedding("/meus-fornecedores");
   const raw = {
     name: formData.get("name"),
     category: formData.get("category"),
@@ -40,7 +41,7 @@ export async function createVendor(formData: FormData) {
   }
 
   try {
-    await prisma.vendor.create({ data: parsed.data });
+    await prisma.vendor.create({ data: { ...parsed.data, weddingId } });
     revalidatePath("/(admin)/fornecedores", "page");
     return { success: true };
   } catch (error) {
@@ -50,7 +51,7 @@ export async function createVendor(formData: FormData) {
 }
 
 export async function updateVendor(id: string, formData: FormData) {
-  await requirePathPermission("/meus-fornecedores");
+  const { weddingId } = await requireWedding("/meus-fornecedores");
   const raw = {
     name: formData.get("name"),
     category: formData.get("category"),
@@ -65,10 +66,12 @@ export async function updateVendor(id: string, formData: FormData) {
   }
 
   try {
-    await prisma.vendor.update({
-      where: { id },
+    if (typeof id !== "string") return { success: false, error: "Fornecedor não encontrado." };
+    const result = await prisma.vendor.updateMany({
+      where: { id, weddingId },
       data: parsed.data,
     });
+    if (result.count === 0) return { success: false, error: "Fornecedor não encontrado." };
     revalidatePath("/(admin)/fornecedores", "page");
     revalidatePath("/(admin)/financas", "page");
     return { success: true };
@@ -79,9 +82,11 @@ export async function updateVendor(id: string, formData: FormData) {
 }
 
 export async function deleteVendor(id: string) {
-  await requirePathPermission("/meus-fornecedores");
+  const { weddingId } = await requireWedding("/meus-fornecedores");
   try {
-    await prisma.vendor.delete({ where: { id } });
+    if (typeof id !== "string") return { success: false, error: "Fornecedor não encontrado." };
+    const result = await prisma.vendor.deleteMany({ where: { id, weddingId } });
+    if (result.count === 0) return { success: false, error: "Fornecedor não encontrado." };
     revalidatePath("/(admin)/fornecedores", "page");
     return { success: true };
   } catch (error) {

@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Clock, FileText, Receipt } from "lucide-react";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { isPlanKey } from "@/lib/plans";
-import { AuthorizationError, requirePathPermission, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { requireWeddingPage } from "@/lib/security/wedding-context";
 import { planOption, shortPlanName, type PlanOption } from "@/app/login/auth-config";
 import { PageHeader } from "@/components/admin/page-header";
 import { Reveal } from "@/components/motion/reveal";
@@ -26,22 +26,13 @@ const UPGRADE_KEYS = ["classic", "vip"] as const;
 const STATIC_PIX_PREFIX = "ASSIN";
 const STATIC_PIX_REVIEW_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 
-async function guard() {
-  try {
-    return await requirePathPermission("/plano");
-  } catch (error) {
-    if (error instanceof AuthorizationError) return null;
-    throw error;
-  }
-}
-
 function plural(n: number, one: string, many: string) {
   return `${n} ${n === 1 ? one : many}`;
 }
 
 export default async function PlanoPage() {
-  const session = await guard();
-  if (!session) redirect("/login");
+  // Plano de casal vale para o casamento (os dois do casal), não para a conta
+  const { session, weddingId } = await requireWeddingPage("/plano");
 
   const isSuperAdmin = session.userId === SUPER_ADMIN_USER_ID;
   const now = new Date();
@@ -51,7 +42,7 @@ export default async function PlanoPage() {
       ? Promise.resolve([])
       : prisma.subscription.findMany({
           where: {
-            userId: session.userId,
+            weddingId,
             planType: "COUPLE",
             status: { in: [PaymentStatus.APPROVED, PaymentStatus.REFUNDED] },
           },
@@ -62,7 +53,7 @@ export default async function PlanoPage() {
       ? Promise.resolve(null)
       : prisma.subscription.findFirst({
           where: {
-            userId: session.userId,
+            weddingId,
             planType: "COUPLE",
             status: PaymentStatus.PENDING,
             gatewayId: { startsWith: STATIC_PIX_PREFIX },
@@ -72,7 +63,7 @@ export default async function PlanoPage() {
           select: { planId: true, planName: true, amount: true, createdAt: true },
         }),
     prisma.transaction.aggregate({
-      where: { status: PaymentStatus.APPROVED },
+      where: { weddingId, status: PaymentStatus.APPROVED },
       _sum: { fee: true },
       _count: { _all: true },
     }),

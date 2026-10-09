@@ -1,21 +1,23 @@
 "use server";
 
-import { requirePathPermission } from "@/lib/security/auth-guard";
+import { requireWedding } from "@/lib/security/wedding-context";
+import { weddingSiteUrl } from "@/lib/wedding-links";
 
 import prisma from "@/lib/prisma";
 import { sendBulkMessages } from "@/lib/evolution";
 import { revalidatePath } from "next/cache";
 
 export async function ensureDefaultTemplates() {
-  await requirePathPermission("/mensagens");
+  const { weddingId } = await requireWedding("/mensagens");
   try {
     const existingInvite = await prisma.messageTemplate.findFirst({
-      where: { type: "INITIAL_INVITE" },
+      where: { weddingId, type: "INITIAL_INVITE" },
     });
 
     if (!existingInvite) {
       await prisma.messageTemplate.create({
         data: {
+          weddingId,
           name: "Convite Inicial (Com Botões RSVP)",
           type: "INITIAL_INVITE",
           content: "💍 *Você está convidado!*\n\nOlá, *{nome}*! 🎉\n\nTemos a honra de convidá-lo(a) para o nosso casamento!\n\nPor favor, confirme sua presença clicando no botão abaixo:",
@@ -28,12 +30,13 @@ export async function ensureDefaultTemplates() {
     }
 
     const existingReminder = await prisma.messageTemplate.findFirst({
-      where: { type: "RSVP_REMINDER" },
+      where: { weddingId, type: "RSVP_REMINDER" },
     });
 
     if (!existingReminder) {
       await prisma.messageTemplate.create({
         data: {
+          weddingId,
           name: "Lembrete de RSVP Pendente",
           type: "RSVP_REMINDER",
           content: "🔔 *Lembrete de Presença*\n\nOlá, *{nome}*! Tudo bem? 😊\n\nPercebemos que ainda não recebemos a sua confirmação para o nosso casamento.\n\nPor favor, confirme pelo botão abaixo:",
@@ -50,10 +53,11 @@ export async function ensureDefaultTemplates() {
 }
 
 export async function getMessageTemplates() {
-  await requirePathPermission("/mensagens");
+  const { weddingId } = await requireWedding("/mensagens");
   try {
     await ensureDefaultTemplates();
     const templates = await prisma.messageTemplate.findMany({
+      where: { weddingId },
       orderBy: { createdAt: "desc" },
     });
     return { success: true, data: templates };
@@ -64,7 +68,7 @@ export async function getMessageTemplates() {
 }
 
 export async function createMessageTemplate(formData: FormData) {
-  await requirePathPermission("/mensagens");
+  const { weddingId } = await requireWedding("/mensagens");
   try {
     const name = formData.get("name") as string;
     const content = formData.get("content") as string;
@@ -78,7 +82,7 @@ export async function createMessageTemplate(formData: FormData) {
     }
 
     const template = await prisma.messageTemplate.create({
-      data: { name, content, mediaUrl, mediaType, type, buttons },
+      data: { weddingId, name, content, mediaUrl, mediaType, type, buttons },
     });
 
     revalidatePath("/mensagens");
@@ -90,7 +94,7 @@ export async function createMessageTemplate(formData: FormData) {
 }
 
 export async function updateMessageTemplate(id: string, formData: FormData) {
-  await requirePathPermission("/mensagens");
+  const { weddingId } = await requireWedding("/mensagens");
   try {
     const name = formData.get("name") as string;
     const content = formData.get("content") as string;
@@ -103,10 +107,13 @@ export async function updateMessageTemplate(id: string, formData: FormData) {
       return { success: false, error: "Nome e conteúdo são obrigatórios." };
     }
 
-    const template = await prisma.messageTemplate.update({
-      where: { id },
+    if (typeof id !== "string") return { success: false, error: "Template não encontrado." };
+    const result = await prisma.messageTemplate.updateMany({
+      where: { id, weddingId },
       data: { name, content, mediaUrl, mediaType, type, buttons },
     });
+    if (result.count === 0) return { success: false, error: "Template não encontrado." };
+    const template = await prisma.messageTemplate.findFirst({ where: { id, weddingId } });
 
     revalidatePath("/mensagens");
     return { success: true, data: template };
@@ -117,9 +124,11 @@ export async function updateMessageTemplate(id: string, formData: FormData) {
 }
 
 export async function deleteMessageTemplate(id: string) {
-  await requirePathPermission("/mensagens");
+  const { weddingId } = await requireWedding("/mensagens");
   try {
-    await prisma.messageTemplate.delete({ where: { id } });
+    if (typeof id !== "string") return { success: false, error: "Template não encontrado." };
+    const result = await prisma.messageTemplate.deleteMany({ where: { id, weddingId } });
+    if (result.count === 0) return { success: false, error: "Template não encontrado." };
     revalidatePath("/mensagens");
     return { success: true };
   } catch (error) {
@@ -132,13 +141,15 @@ export async function deleteMessageTemplate(id: string) {
  * Dispara um template para vários convidados
  */
 export async function sendTemplateToGuests(templateId: string, guestIds: string[]) {
-  await requirePathPermission("/mensagens");
+  const { weddingId, wedding } = await requireWedding("/mensagens");
   try {
-    const template = await prisma.messageTemplate.findUnique({ where: { id: templateId } });
+    if (typeof templateId !== "string") return { success: false, error: "Template não encontrado." };
+    const template = await prisma.messageTemplate.findFirst({ where: { id: templateId, weddingId } });
     if (!template) return { success: false, error: "Template não encontrado." };
 
+    const ids = Array.isArray(guestIds) ? guestIds.filter((id): id is string => typeof id === "string") : [];
     const guests = await prisma.guest.findMany({
-      where: { id: { in: guestIds } },
+      where: { id: { in: ids }, weddingId },
     });
 
     if (guests.length === 0) return { success: false, error: "Nenhum convidado selecionado." };
@@ -153,7 +164,8 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
       }
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://aceito.com.br";
+    const rsvpUrl = weddingSiteUrl(wedding.slug, "rsvp");
+    const giftsUrl = weddingSiteUrl(wedding.slug, "presentes");
 
     // Mapeia os convidados para o formato esperado pela Evolution API
     const recipients = guests
@@ -167,11 +179,11 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
             const label = btn.text || "";
             const lower = label.toLowerCase();
             if (lower.includes("presente") || btn.id === "gifts") {
-              messageText += `\n🎁 *${label}:*\n${baseUrl}/presentes`;
+              messageText += `\n🎁 *${label}:*\n${giftsUrl}`;
             } else if (lower.includes("recusar") || lower.includes("não") || btn.id === "decline") {
-              messageText += `\n❌ *${label}:*\n${baseUrl}/rsvp`;
+              messageText += `\n❌ *${label}:*\n${rsvpUrl}`;
             } else {
-              messageText += `\n✅ *${label}:*\n${baseUrl}/rsvp`;
+              messageText += `\n✅ *${label}:*\n${rsvpUrl}`;
             }
           });
         }
@@ -201,7 +213,7 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
 
     if (sent > 0) {
       await prisma.guest.updateMany({
-        where: { id: { in: guests.map((g) => g.id) } },
+        where: { id: { in: guests.map((g) => g.id) }, weddingId },
         data: { hasReceivedMessage: true },
       });
     }
@@ -220,12 +232,14 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
 }
 
 export async function markGuestAsSent(guestId: string) {
-  await requirePathPermission("/mensagens");
+  const { weddingId } = await requireWedding("/mensagens");
   try {
-    await prisma.guest.update({
-      where: { id: guestId },
+    if (typeof guestId !== "string") return { success: false, error: "Convidado não encontrado." };
+    const result = await prisma.guest.updateMany({
+      where: { id: guestId, weddingId },
       data: { hasReceivedMessage: true },
     });
+    if (result.count === 0) return { success: false, error: "Convidado não encontrado." };
     revalidatePath("/(admin)/convidados", "page");
     revalidatePath("/(admin)/mensagens", "page");
     return { success: true };

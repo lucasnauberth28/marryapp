@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { getSettings } from "@/actions/settings-actions";
 import { SettingsClient } from "./settings-client";
-import { verifyAdminSession } from "@/actions/auth-actions";
+import { requireWeddingPage } from "@/lib/security/wedding-context";
 
 export const metadata: Metadata = {
   title: "Configurações",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function SettingsPage() {
-  await verifyAdminSession();
+  await requireWeddingPage("/configuracoes");
   const settings = await getSettings();
 
   return (

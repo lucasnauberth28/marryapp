@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAuthSession } from "@/lib/security/auth-guard";
+import { getWeddingContext } from "@/lib/security/wedding-context";
 
 import prisma from "@/lib/prisma";
 import { PaymentStatus, PaymentMethod, ExpenseStatus, RsvpStatus } from "@prisma/client";
@@ -20,6 +21,10 @@ export async function getSystemNotifications(): Promise<{
   unreadCount: number;
 }> {
   await requireAuthSession();
+  // Conta sem casamento (ex.: administração da plataforma ou cadastro sem onboarding): nada a avisar
+  const ctx = await getWeddingContext();
+  if (!ctx) return { notifications: [], unreadCount: 0 };
+  const { weddingId } = ctx;
   try {
     const notifications: SystemNotification[] = [];
 
@@ -35,6 +40,7 @@ export async function getSystemNotifications(): Promise<{
       // 1. Pix Pendentes
       prisma.transaction.findMany({
         where: {
+          weddingId,
           status: PaymentStatus.PENDING,
           paymentMethod: PaymentMethod.PIX,
         },
@@ -49,6 +55,7 @@ export async function getSystemNotifications(): Promise<{
       // 2. Despesas Próximas ou Vencidas
       prisma.expense.findMany({
         where: {
+          weddingId,
           status: { in: [ExpenseStatus.PENDING, ExpenseStatus.OVERDUE] },
           dueDate: { lte: sevenDaysFromNow },
         },
@@ -61,12 +68,12 @@ export async function getSystemNotifications(): Promise<{
 
       // 3. Convidados Pendentes de RSVP
       prisma.guest.count({
-        where: { rsvpStatus: RsvpStatus.PENDING },
+        where: { weddingId, rsvpStatus: RsvpStatus.PENDING },
       }),
 
       // 4. Convidados Sem Convite Disparado
       prisma.guest.count({
-        where: { hasReceivedMessage: false, phone: { not: null } },
+        where: { weddingId, hasReceivedMessage: false, phone: { not: null } },
       }),
     ]);
 

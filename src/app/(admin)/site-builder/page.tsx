@@ -4,7 +4,8 @@ import {
   getWeddingTips,
 } from "@/actions/site-builder-actions";
 import { getSettings } from "@/actions/settings-actions";
-import prisma from "@/lib/prisma";
+import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { getFeaturedGifts } from "@/lib/wedding-data";
 import { SiteBuilderClient } from "./site-builder-client";
 
 export const dynamic = "force-dynamic";
@@ -15,15 +16,12 @@ export const metadata = {
 };
 
 export default async function SiteBuilderPage() {
+  const { weddingId, wedding } = await requireWeddingPage("/site-builder");
   const [settings, storyItems, tips, previewGifts, rules] = await Promise.all([
     getSiteCustomization(),
     getStoryItems(),
     getWeddingTips(),
-    prisma.gift.findMany({
-      where: { isPurchased: false },
-      select: { id: true, title: true, description: true, amount: true, imageUrl: true },
-      take: 6,
-    }),
+    getFeaturedGifts(weddingId),
     getSettings(),
   ]);
 
@@ -34,6 +32,7 @@ export default async function SiteBuilderPage() {
       initialTips={tips}
       previewGifts={previewGifts}
       rsvpDeadline={rules.rsvpDeadline}
+      slug={wedding.slug}
     />
   );
 }

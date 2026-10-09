@@ -1,44 +1,12 @@
-import { RsvpClient } from "./rsvp-client";
-import { getSettings } from "@/actions/settings-actions";
-import { Card, CardContent } from "@/components/ui/card";
-import { Clock } from "lucide-react";
-import { isAfter, startOfDay } from "date-fns";
-import { getWeddingIdentity, guestPageMetadata } from "@/lib/wedding";
+import { redirectToPrincipalWedding } from "@/lib/wedding-redirect";
 
-// Lê o banco a cada acesso: nunca pré-renderizar no build (dados congelados e build dependente do banco)
+// Endereço antigo (sem casamento): redireciona para /casamento/<slug>/rsvp do casamento principal.
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata() {
-  return guestPageMetadata("Confirmar presença");
-}
-
-export default async function RsvpPage() {
-  const [settings, wedding] = await Promise.all([getSettings(), getWeddingIdentity()]);
-  
-  const isExpired = settings.rsvpDeadline 
-    ? isAfter(startOfDay(new Date()), startOfDay(new Date(settings.rsvpDeadline))) 
-    : false;
-
-  if (isExpired) {
-    return (
-      <div className="flex-1 w-full bg-ivory flex items-center justify-center p-4">
-        <Card className="max-w-md w-full shadow-lg border-0 rounded-3xl overflow-hidden text-center p-8 animate-in fade-in zoom-in-95 duration-500">
-          <div className="w-16 h-16 bg-areia rounded-full flex items-center justify-center mx-auto mb-6">
-            <Clock className="w-8 h-8 text-tinta-suave" />
-          </div>
-          <h2 className="text-2xl font-semibold text-tinta mb-2">Confirmações encerradas</h2>
-          <p className="text-tinta-suave">
-            O prazo para confirmar presença no casamento de {wedding.coupleNames} já passou.
-            Se precisar de ajuda, fale diretamente com os noivos.
-          </p>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex-1 w-full bg-ivory flex items-center justify-center p-4">
-      <RsvpClient coupleNames={wedding.coupleNames} initials={wedding.initials} dateLabel={wedding.dateLabel} />
-    </div>
-  );
+export default async function RsvpRedirect({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  await redirectToPrincipalWedding("rsvp", await searchParams);
 }
