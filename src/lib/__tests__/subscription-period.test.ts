@@ -52,7 +52,7 @@ test("trocar de plano ou renovar depois de vencido começa de agora", () => {
   );
 });
 
-import { slugifyCoupleNames } from "../wedding.ts";
+import { slugifyCoupleNames } from "../wedding-rules.ts";
 
 test("endereço do site a partir dos nomes do casal", () => {
   assert.equal(slugifyCoupleNames("Ana & Rafael"), "ana-e-rafael");
