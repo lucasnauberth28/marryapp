@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { checkInGuest } from "@/actions/guest-actions";
 import { BrowserQRCodeReader, IScannerControls } from "@zxing/browser";
 import { Button } from "@/components/ui/button";
@@ -80,7 +80,7 @@ export function ScannerClient() {
       } else {
         setResult({ type: "error", message: res.error || "Erro ao realizar check-in." });
       }
-    } catch (err) {
+    } catch {
       setResult({ type: "error", message: "Erro de rede ao validar QR Code." });
     } finally {
       setLoading(false);

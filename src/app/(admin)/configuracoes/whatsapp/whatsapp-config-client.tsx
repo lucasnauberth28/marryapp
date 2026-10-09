@@ -14,12 +14,8 @@ export function WhatsAppConfigClient() {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkStatusAndQRCode = useCallback(async (isManualRefresh = false) => {
-    let toastId: string | number | undefined;
-    if (isManualRefresh) {
-      setLoading(true);
-      toastId = toast.loading("Verificando status da conexão com WhatsApp...");
-    }
+  // Consulta a Evolution API; o primeiro setState só acontece depois do await
+  const checkStatusAndQRCode = useCallback(async (isManualRefresh = false, toastId?: string | number) => {
     try {
       const statusRes = await getWhatsAppStatus();
 
@@ -47,7 +43,7 @@ export function WhatsAppConfigClient() {
           }
         }
       }
-    } catch (err: any) {
+    } catch {
       setStatus("ERROR");
       setMessage("Erro inesperado ao consultar Evolution API.");
       if (isManualRefresh) {
@@ -70,14 +66,21 @@ export function WhatsAppConfigClient() {
       } else {
         setMessage(res.error || "Erro ao gerar QR Code");
       }
-    } catch (err: any) {
+    } catch {
       setMessage("Erro inesperado ao solicitar QR Code.");
     } finally {
       setLoading(false);
     }
   };
 
+  const refreshManually = () => {
+    setLoading(true);
+    const toastId = toast.loading("Verificando status da conexão com WhatsApp...");
+    checkStatusAndQRCode(true, toastId);
+  };
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- busca inicial na Evolution API (sistema externo); setState só após o await
     checkStatusAndQRCode();
   }, [checkStatusAndQRCode]);
 
@@ -92,7 +95,7 @@ export function WhatsAppConfigClient() {
           setQrCode(null);
           setMessage("");
         }
-      } catch (err) {
+      } catch {
         // Silencioso no polling
       }
     }, 5000);
@@ -104,7 +107,7 @@ export function WhatsAppConfigClient() {
     <div className="bg-papel border border-zinc-200 rounded-xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-zinc-900">Status da Conexão</h2>
-        <Button variant="outline" size="sm" onClick={() => checkStatusAndQRCode(true)} disabled={loading}>
+        <Button variant="outline" size="sm" onClick={refreshManually} disabled={loading}>
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           Atualizar
         </Button>
@@ -156,7 +159,7 @@ export function WhatsAppConfigClient() {
               <span>Aguardando leitura pelo aplicativo do WhatsApp...</span>
             </div>
 
-            <Button className="mt-6 bg-papel text-zinc-900 hover:bg-zinc-100 font-medium" onClick={() => checkStatusAndQRCode(true)} disabled={loading}>
+            <Button className="mt-6 bg-papel text-zinc-900 hover:bg-zinc-100 font-medium" onClick={refreshManually} disabled={loading}>
               {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
               Já escaneei (Verificar Status)
             </Button>

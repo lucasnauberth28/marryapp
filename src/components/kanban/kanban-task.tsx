@@ -3,8 +3,7 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, GripVertical, User2Icon, Palmtree, StickyNote } from "lucide-react";
+import { CalendarIcon, GripVertical, User2Icon, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BoardItem } from "@/types/kanban";
 

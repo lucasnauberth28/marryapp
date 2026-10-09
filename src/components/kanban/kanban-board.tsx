@@ -18,7 +18,7 @@ import {
 import { sortableKeyboardCoordinates, arrayMove } from "@dnd-kit/sortable";
 import { KanbanColumn } from "./kanban-column";
 import { KanbanTask } from "./kanban-task";
-import { TaskDialog } from "./task-dialog";
+import { TaskDialog, type TaskFormData } from "./task-dialog";
 import {
   createTask,
   deleteTask,
@@ -190,7 +190,7 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
     setIsDialogOpen(true);
   };
 
-  const handleSaveDialog = async (data: any) => {
+  const handleSaveDialog = async (data: TaskFormData) => {
     const toastId = toast.loading(editingTask ? "Atualizando pendência..." : "Criando nova pendência...");
     if (editingTask) {
       const res = await updateTask(editingTask.id, data);
@@ -202,7 +202,13 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
         toast.error("Erro ao atualizar pendência.", { id: toastId });
       }
     } else {
-      const res = await createTask(data);
+      const res = await createTask({
+        title: data.title,
+        status: data.status,
+        description: data.description ?? undefined,
+        assignee: data.assignee ?? undefined,
+        dueDate: data.dueDate ?? undefined,
+      });
       if (res.success && res.data) {
         const created: BoardItem = { ...res.data, type: "MANUAL" };
         setTasks([...tasks, created]);
@@ -265,6 +271,7 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
 
       <div className="flex-1 overflow-x-auto pb-4">
         <DndContext
+          id="kanban-board" // id fixo: evita divergência de hidratação no aria-describedby
           sensors={sensors}
           collisionDetection={closestCorners}
           onDragStart={handleDragStart}

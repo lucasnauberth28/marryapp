@@ -43,6 +43,31 @@ interface CheckoutClientProps {
 type CheckoutStep = "IDENTIFICATION" | "METHOD" | "PAYMENT" | "SUCCESS";
 type PaymentMethod = "PIX" | "CREDIT_CARD";
 
+// Logo da bandeira do cartão (componente no nível do módulo)
+function BrandLogo({ name }: { name: string }) {
+  if (name === "Visa") {
+    return (
+      <svg className="h-8 text-white fill-current" viewBox="0 0 100 32">
+        <path d="M38.1 19.3L41.3 5H46.4L43.3 19.3H38.1ZM25.2 5.3C24.1 4.9 22.3 4.5 20.3 4.5C15.6 4.5 12.3 6.9 12.1 10.4C11.9 13 14.4 14.4 16.2 15.3C18.1 16.2 18.7 16.8 18.7 17.6C18.7 18.8 17.3 19.4 15.8 19.4C14.3 19.4 13.1 19 12 18.4L11.2 22.2C12.5 22.8 14.2 23.2 16 23.2C21.1 23.2 24.3 20.7 24.5 16.9C24.7 14.7 23.3 13.1 20.8 11.9C19.3 11.2 18.6 10.6 18.6 9.8C18.6 8.8 19.8 7.8 22.1 7.8C23.9 7.8 25.2 8.2 26.1 8.6L25.2 5.3ZM62.9 5H58.8C57.6 5 56.7 5.7 56.1 6.8L48.1 23H53.3L54.4 20H60.6L61.2 23H65.8L62.9 5ZM55.8 16.1L58.5 8.7L60.1 16.1H55.8ZM9.1 5L4.2 17.1L3.3 12.5C2.6 10 1.2 6.5 1.2 6.5C0.9 6 0 5 0 5H6.2L9.1 5Z" />
+      </svg>
+    );
+  }
+  if (name === "Mastercard") {
+    return (
+      <svg className="h-10" viewBox="0 0 100 60">
+        <circle cx="35" cy="30" r="20" fill="#EB001B" fillOpacity="0.9" />
+        <circle cx="65" cy="30" r="20" fill="#FF5F00" fillOpacity="0.9" />
+        <circle cx="50" cy="30" r="20" fill="#FF5F00" fillOpacity="0.2" />
+      </svg>
+    );
+  }
+  return (
+    <span className="text-sm font-bold tracking-wide italic text-white">
+      {name}
+    </span>
+  );
+}
+
 export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps) {
   const [step, setStep] = useState<CheckoutStep>("IDENTIFICATION");
   const [method, setMethod] = useState<PaymentMethod>("PIX");
@@ -121,31 +146,6 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
     if (bank.includes("neon")) return "from-cyan-500 to-cyan-700";
     return cardBrand.color;
   }, [cardBank, cardBrand.color]);
-
-  // Logotipo da Bandeira em SVG
-  const BrandLogo = () => {
-    if (cardBrand.name === "Visa") {
-      return (
-        <svg className="h-8 text-white fill-current" viewBox="0 0 100 32">
-          <path d="M38.1 19.3L41.3 5H46.4L43.3 19.3H38.1ZM25.2 5.3C24.1 4.9 22.3 4.5 20.3 4.5C15.6 4.5 12.3 6.9 12.1 10.4C11.9 13 14.4 14.4 16.2 15.3C18.1 16.2 18.7 16.8 18.7 17.6C18.7 18.8 17.3 19.4 15.8 19.4C14.3 19.4 13.1 19 12 18.4L11.2 22.2C12.5 22.8 14.2 23.2 16 23.2C21.1 23.2 24.3 20.7 24.5 16.9C24.7 14.7 23.3 13.1 20.8 11.9C19.3 11.2 18.6 10.6 18.6 9.8C18.6 8.8 19.8 7.8 22.1 7.8C23.9 7.8 25.2 8.2 26.1 8.6L25.2 5.3ZM62.9 5H58.8C57.6 5 56.7 5.7 56.1 6.8L48.1 23H53.3L54.4 20H60.6L61.2 23H65.8L62.9 5ZM55.8 16.1L58.5 8.7L60.1 16.1H55.8ZM9.1 5L4.2 17.1L3.3 12.5C2.6 10 1.2 6.5 1.2 6.5C0.9 6 0 5 0 5H6.2L9.1 5Z" />
-        </svg>
-      );
-    }
-    if (cardBrand.name === "Mastercard") {
-      return (
-        <svg className="h-10" viewBox="0 0 100 60">
-          <circle cx="35" cy="30" r="20" fill="#EB001B" fillOpacity="0.9" />
-          <circle cx="65" cy="30" r="20" fill="#FF5F00" fillOpacity="0.9" />
-          <circle cx="50" cy="30" r="20" fill="#FF5F00" fillOpacity="0.2" />
-        </svg>
-      );
-    }
-    return (
-      <span className="text-sm font-bold tracking-wide italic text-white">
-        {cardBrand.name}
-      </span>
-    );
-  };
 
   function handleIdentificationNext(e: React.FormEvent) {
     e.preventDefault();
@@ -433,7 +433,7 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
                       <CreditCard className="w-9 h-9 mt-3 text-white" />
                     </div>
                     <div className="flex items-center bg-papel/10 px-3 py-1.5 rounded-xl backdrop-blur-sm">
-                      <BrandLogo />
+                      <BrandLogo name={cardBrand.name} />
                     </div>
                   </div>
 

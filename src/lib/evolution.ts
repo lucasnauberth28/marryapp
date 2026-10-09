@@ -212,7 +212,7 @@ export async function getConnectionState() {
 
     const data = await response.json();
     return { state: data.instance?.state || "DISCONNECTED" };
-  } catch (error) {
+  } catch {
     return { state: "DISCONNECTED", message: "Erro ao comunicar com Evolution API." };
   }
 }

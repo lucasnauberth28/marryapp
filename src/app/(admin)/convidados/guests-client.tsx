@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { GuestLocal as Guest } from "@/types/local";
 import { deleteGuest } from "@/actions/guest-actions";
 import { GuestModal } from "./guest-modal";
-import { TablesClient } from "../mesas/tables-client";
+import { TablesClient, type SeatGuest, type TableWithGuests } from "../mesas/tables-client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
@@ -22,8 +22,8 @@ import {
 
 interface GuestsClientProps {
   initialGuests: Guest[];
-  initialTables: any[];
-  initialUnassigned: any[];
+  initialTables: TableWithGuests[];
+  initialUnassigned: SeatGuest[];
 }
 
 const rsvpConfig = {
@@ -49,7 +49,7 @@ export function GuestsClient({
   const [activeTab, setActiveTab] = useState<"guests" | "tables">("guests");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   // Estados para Confirmação de Exclusão
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -96,14 +96,6 @@ export function GuestsClient({
     );
   }
 
-  // Métricas
-  const confirmedMain = initialGuests.filter((g) => g.rsvpStatus === "CONFIRMED").length;
-  const confirmedCompanions = initialGuests
-    .filter((g) => g.rsvpStatus === "CONFIRMED")
-    .reduce((acc, g) => acc + (g.confirmedCompanions || 0), 0);
-  const totalPeopleConfirmed = confirmedMain + confirmedCompanions;
-
-  const pending = initialGuests.filter((g) => g.rsvpStatus === "PENDING").length;
 
   return (
     <div className="flex flex-col gap-6">

@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useSyncedState } from "@/hooks/use-synced-state";
 
 import { useState } from "react";
+import type { CreditCard } from "@prisma/client";
 import { toast } from "sonner";
 import { updateWalletBalance, createCreditCard, updateCreditCard, deleteCreditCard } from "@/actions/wallet-actions";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Wallet,
   CreditCard as CreditCardIcon,
@@ -21,11 +22,8 @@ import {
   Trash2,
   Loader2,
   DollarSign,
-  TrendingUp,
-  Landmark,
   Sparkles,
   QrCode,
-  ShieldCheck,
 } from "lucide-react";
 
 const BANKS = [
@@ -45,18 +43,18 @@ const BRANDS = ["Visa", "Mastercard", "Elo", "Amex", "Hipercard"];
 
 interface CarteiraClientProps {
   initialBalance: number;
-  initialCards: any[];
+  initialCards: CreditCard[];
 }
 
 export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientProps) {
   const router = useRouter();
   const [balance, setBalance] = useSyncedState<number>(initialBalance);
-  const [cards, setCards] = useSyncedState<any[]>(initialCards);
+  const [cards, setCards] = useSyncedState<CreditCard[]>(initialCards);
 
   const [loading, setLoading] = useState(false);
   const [balanceModalOpen, setBalanceModalOpen] = useState(false);
   const [cardModalOpen, setCardModalOpen] = useState(false);
-  const [editingCard, setEditingCard] = useState<any | null>(null);
+  const [editingCard, setEditingCard] = useState<CreditCard | null>(null);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cardToDelete, setCardToDelete] = useState<string | null>(null);
@@ -111,7 +109,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
     setCardModalOpen(true);
   };
 
-  const openEditCardModal = (card: any) => {
+  const openEditCardModal = (card: CreditCard) => {
     setEditingCard(card);
     setCardForm({
       bank: card.bank || "Outro",

@@ -4,10 +4,6 @@ import { getVendors } from "@/actions/vendor-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
 import {
-  Wallet,
-  TrendingUp,
-  Receipt,
-  Clock,
   ArrowDownRight,
   ArrowUpRight,
   Scale,

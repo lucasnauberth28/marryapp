@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, Search, CheckCircle2, XCircle, Gift, Download, MapPin, Calendar, Users, Heart } from "lucide-react";
+import { Loader2, Search, CheckCircle2, Gift, Download, Users, Heart } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 import { motion, AnimatePresence } from "framer-motion";
 import { weddingSitePath } from "@/lib/wedding-links";
@@ -73,7 +73,7 @@ export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClien
         setError("Não encontramos um convite para este número. Digite com o DDD.");
         toast.error("Número não encontrado na lista de convidados.", { id: toastId });
       }
-    } catch (err) {
+    } catch {
       setError("Erro ao buscar convite. Tente novamente.");
       toast.error("Erro ao buscar convite.", { id: toastId });
     } finally {
@@ -125,7 +125,7 @@ export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClien
         setError(res.error || "Erro ao salvar resposta.");
         toast.error(res.error || "Erro ao salvar resposta.", { id: toastId });
       }
-    } catch (err) {
+    } catch {
       setError("Erro de conexão com o servidor.");
       toast.error("Erro de conexão com o servidor.", { id: toastId });
     } finally {

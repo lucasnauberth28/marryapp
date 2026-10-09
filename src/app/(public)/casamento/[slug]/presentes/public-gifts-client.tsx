@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Reveal } from "@/components/motion/reveal";
 import { GiftLocal as Gift } from "@/types/local";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   Gift as GiftIcon,
@@ -16,19 +15,13 @@ import {
   Eye,
   CheckCircle2,
   Sparkles,
-  X,
   ShieldCheck,
   CreditCard,
   QrCode,
-  Tag
 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 
 interface PublicGiftsClientProps {

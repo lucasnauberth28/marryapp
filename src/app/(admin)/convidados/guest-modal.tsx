@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition } from "react";
 import { toast } from "sonner";
 import { GuestLocal as Guest, RsvpStatus } from "@/types/local";
 import { Button } from "@/components/ui/button";
@@ -74,15 +74,17 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
 
   const isEditing = !!guest;
 
-  // Resetar todos os campos ao abrir o modal ou trocar de convidado
-  useEffect(() => {
+  // Resetar todos os campos ao abrir o modal ou trocar de convidado (ajuste durante o render, sem efeito)
+  const [synced, setSynced] = useState({ isOpen, guest });
+  if (synced.isOpen !== isOpen || synced.guest !== guest) {
+    setSynced({ isOpen, guest });
     if (isOpen) {
       setCategory(guest?.category ?? "");
       setParentGuestId(guest?.parentGuestId ?? "none");
       setRsvpStatus(guest?.rsvpStatus ?? RsvpStatus.PENDING);
       setError(null);
     }
-  }, [isOpen, guest]);
+  }
 
   // Filtrar o próprio convidado para não se auto-vincular
   const availableParents = allGuests.filter((g) => !guest || g.id !== guest.id);

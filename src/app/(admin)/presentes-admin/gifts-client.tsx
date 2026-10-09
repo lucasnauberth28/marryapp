@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useTransition } from "react"
+import { useState, useTransition } from "react"
+import { useSyncedState } from "@/hooks/use-synced-state"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
@@ -9,7 +10,7 @@ import { deleteGift } from "@/actions/gift-actions"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { GiftModal } from "./gift-modal"
-import { Trash2, Gift as GiftIcon, DollarSign, ImageOff, Loader2 } from "lucide-react"
+import { Trash2, Gift as GiftIcon, ImageOff, Loader2 } from "lucide-react"
 
 interface GiftsClientProps {
   initialGifts: Gift[]
@@ -17,16 +18,12 @@ interface GiftsClientProps {
 
 export function GiftsClient({ initialGifts }: GiftsClientProps) {
   const router = useRouter()
-  const [gifts, setGifts] = useState<Gift[]>(initialGifts)
+  const [gifts, setGifts] = useSyncedState<Gift[]>(initialGifts)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null)
-
-  useEffect(() => {
-    setGifts(initialGifts)
-  }, [initialGifts])
 
   function handleDelete(id: string) {
     setConfirmAction(() => () => {
@@ -107,7 +104,7 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
         <div className="flex flex-col items-center justify-center py-20 bg-papel border border-zinc-200/80 rounded-2xl text-zinc-500">
           <GiftIcon className="w-10 h-10 mb-3 text-zinc-200" />
           <p className="font-medium text-zinc-500">Nenhum presente na vitrine</p>
-          <p className="text-sm mt-1">Clique em "Novo Presente" para começar.</p>
+          <p className="text-sm mt-1">Clique em &ldquo;Novo Presente&rdquo; para começar.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

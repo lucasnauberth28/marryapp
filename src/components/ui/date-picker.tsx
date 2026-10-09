@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -50,11 +50,12 @@ export function DatePicker({
   const [open, setOpen] = useState(false);
   const [internalValue, setInternalValue] = useState<string>(controlledValue ?? defaultValue);
 
-  useEffect(() => {
-    if (controlledValue !== undefined) {
-      setInternalValue(controlledValue);
-    }
-  }, [controlledValue]);
+  // Acompanha o valor controlado (ajuste durante o render, sem efeito)
+  const [prevControlled, setPrevControlled] = useState(controlledValue);
+  if (prevControlled !== controlledValue) {
+    setPrevControlled(controlledValue);
+    if (controlledValue !== undefined) setInternalValue(controlledValue);
+  }
 
   const selectedDate = useMemo(() => {
     const val = controlledValue !== undefined ? controlledValue : internalValue;
@@ -63,15 +64,14 @@ export function DatePicker({
     return isValid(parsed) ? parsed : null;
   }, [controlledValue, internalValue]);
 
-  const [currentMonth, setCurrentMonth] = useState<Date>(
-    selectedDate || new Date()
-  );
+  const [currentMonth, setCurrentMonth] = useState<Date>(() => selectedDate || new Date());
 
-  useEffect(() => {
-    if (selectedDate) {
-      setCurrentMonth(selectedDate);
-    }
-  }, [selectedDate]);
+  // Ao mudar a data escolhida, o calendário vai para o mês dela
+  const [prevSelected, setPrevSelected] = useState(selectedDate);
+  if (prevSelected !== selectedDate) {
+    setPrevSelected(selectedDate);
+    if (selectedDate) setCurrentMonth(selectedDate);
+  }
 
   const handleSelectDate = (date: Date) => {
     const formatted = format(date, "yyyy-MM-dd");

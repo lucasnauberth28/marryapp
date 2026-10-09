@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { TaskStatus } from "@/types/kanban";
@@ -19,12 +19,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BoardItem } from "@/types/kanban";
 
+export interface TaskFormData {
+  title: string;
+  description: string | null;
+  status: TaskStatus;
+  assignee: string | null;
+  dueDate: Date | null;
+}
+
 interface TaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   task?: BoardItem | null;
   defaultStatus?: TaskStatus;
-  onSave: (data: Partial<BoardItem>) => Promise<void>;
+  onSave: (data: TaskFormData) => Promise<void>;
   onDelete?: (taskId: string) => Promise<void>;
 }
 
@@ -45,7 +53,11 @@ export function TaskDialog({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
-  useEffect(() => {
+  // Preenche o formulário ao abrir ou trocar de tarefa (ajuste durante o render, sem efeito)
+  // Começa "fechado" para que um diálogo montado já aberto também seja preenchido
+  const [synced, setSynced] = useState({ open: false, task, defaultStatus });
+  if (synced.open !== open || synced.task !== task || synced.defaultStatus !== defaultStatus) {
+    setSynced({ open, task, defaultStatus });
     if (open) {
       if (task) {
         setTitle(task.title);
@@ -61,7 +73,7 @@ export function TaskDialog({
         setDueDate("");
       }
     }
-  }, [open, task, defaultStatus]);
+  }
 
   const handleSave = async () => {
     if (!title.trim()) return;
@@ -73,7 +85,7 @@ export function TaskDialog({
         description: description || null,
         status,
         assignee: assignee || null,
-        dueDate: dueDate ? (new Date(dueDate) as any) : null,
+        dueDate: dueDate ? new Date(dueDate) : null,
       });
       onOpenChange(false);
     } finally {

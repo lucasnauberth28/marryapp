@@ -3,7 +3,14 @@
 import { Clock } from "lucide-react";
 import { motion } from "framer-motion";
 
-export function TimelinePublicClient({ events }: { events: any[] }) {
+interface PublicTimelineEvent {
+  id: string;
+  title: string;
+  time: string;
+  description?: string | null;
+}
+
+export function TimelinePublicClient({ events }: { events: PublicTimelineEvent[] }) {
   if (events.length === 0) {
     return (
       <div className="text-center p-8 bg-linho rounded-2xl border border-linha w-full">

@@ -11,10 +11,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { toast } from "sonner";
-import { generateTimelinePdf } from "@/lib/generate-timeline-pdf";
+import { generateTimelinePdf, type TimelineEventPdf } from "@/lib/generate-timeline-pdf";
 import { TimePicker } from "@/components/ui/time-picker";
 
-export function TimelineClient({ initialEvents, coupleNames }: { initialEvents: any[]; coupleNames: string }) {
+export function TimelineClient({ initialEvents, coupleNames }: { initialEvents: TimelineEventPdf[]; coupleNames: string }) {
   const [events, setEvents] = useState(initialEvents);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -146,7 +146,7 @@ export function TimelineClient({ initialEvents, coupleNames }: { initialEvents: 
           ) : (
             [...events]
               .sort((a, b) => a.time.localeCompare(b.time))
-              .map((event, i) => (
+              .map((event) => (
               <motion.div 
                 key={event.id}
                 initial={{ opacity: 0, x: -20 }}

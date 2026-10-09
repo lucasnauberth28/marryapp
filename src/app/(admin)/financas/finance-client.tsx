@@ -4,14 +4,6 @@ import { useState, useTransition } from "react";
 import type { TransactionWithGift } from "@/actions/finance-actions";
 import { approvePixTransaction, toggleThankYouSent } from "@/actions/finance-actions";
 import { DataTable } from "@/components/ui/data-table";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,11 +12,9 @@ import {
   CreditCard,
   QrCode,
   ArrowUpDown,
-  Search,
   X,
   Heart,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
 
 // ==========================================
 // UTILS

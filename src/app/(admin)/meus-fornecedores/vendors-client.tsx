@@ -5,46 +5,43 @@ import { useSyncedState } from "@/hooks/use-synced-state";
 import { useState, useRef, useTransition } from "react";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { createVendor, updateVendor, deleteVendor } from "@/actions/vendor-actions";
-import { createVendorLead } from "@/actions/partner-vendor-actions";
+import { createVendor, updateVendor, deleteVendor, type getVendors } from "@/actions/vendor-actions";
+import { createVendorLead, type getPartnerVendors } from "@/actions/partner-vendor-actions";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { DataTable } from "@/components/ui/data-table";
 import {
   Plus,
   Trash2,
   Pencil,
   Loader2,
-  Link as LinkIcon,
-  FileText,
-  Upload,
   Building2,
   Compass,
   Star,
   MapPin,
   Video,
-  CheckCircle2,
   MessageCircle,
   Calendar,
-  ExternalLink,
   ShieldCheck,
   Search,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
+type WeddingVendor = Awaited<ReturnType<typeof getVendors>>[number];
+type PartnerVendor = Awaited<ReturnType<typeof getPartnerVendors>>[number];
+
 interface VendorsClientProps {
-  initialVendors: any[];
-  initialPartners?: any[];
+  initialVendors: WeddingVendor[];
+  initialPartners?: PartnerVendor[];
 }
 
 export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsClientProps) {
   const [activeTab, setActiveTab] = useState<"MY_VENDORS" | "MARKETPLACE">("MARKETPLACE");
   const router = useRouter();
-  const [vendors, setVendors] = useSyncedState<any[]>(initialVendors);
-  const [partners, setPartners] = useSyncedState<any[]>(initialPartners);
+  const [vendors, setVendors] = useSyncedState<WeddingVendor[]>(initialVendors);
+  const [partners, setPartners] = useSyncedState<PartnerVendor[]>(initialPartners);
   
   // Filtros do Marketplace
   const [selectedRegion, setSelectedRegion] = useState("TODAS");
@@ -53,7 +50,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
 
   // Modal de Lead / Reunião
   const [leadModalOpen, setLeadModalOpen] = useState(false);
-  const [selectedPartner, setSelectedPartner] = useState<any | null>(null);
+  const [selectedPartner, setSelectedPartner] = useState<PartnerVendor | null>(null);
   const [coupleName, setCoupleName] = useState("");
   const [couplePhone, setCouplePhone] = useState("");
   const [coupleEmail, setCoupleEmail] = useState("");
@@ -65,7 +62,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
   // Estados dos modais de fornecedores internos
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [editingVendor, setEditingVendor] = useState<any | null>(null);
+  const [editingVendor, setEditingVendor] = useState<WeddingVendor | null>(null);
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
@@ -118,7 +115,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
     return matchesCategory && matchesRegion && matchesSearch;
   });
 
-  const handleOpenLeadModal = (partner: any) => {
+  const handleOpenLeadModal = (partner: PartnerVendor) => {
     setSelectedPartner(partner);
     setLeadModalOpen(true);
   };
@@ -129,10 +126,12 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
       toast.error("Preencha seu nome e WhatsApp.");
       return;
     }
+    const partner = selectedPartner;
+    if (!partner) return;
 
     startTransitionLead(async () => {
       const res = await createVendorLead({
-        vendorId: selectedPartner.id,
+        vendorId: partner.id,
         coupleName,
         couplePhone,
         coupleEmail,
@@ -142,7 +141,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
       });
 
       if (res.success) {
-        toast.success(`Solicitação enviada com sucesso para ${selectedPartner.companyName}! 📅`);
+        toast.success(`Solicitação enviada com sucesso para ${partner.companyName}! 📅`);
         setLeadModalOpen(false);
         setCoupleName("");
         setCouplePhone("");
@@ -202,7 +201,7 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
     setLoading(false);
   };
 
-  const handleEdit = (vendor: any) => {
+  const handleEdit = (vendor: WeddingVendor) => {
     setEditingVendor(vendor);
     setEditForm({
       name: vendor.name,

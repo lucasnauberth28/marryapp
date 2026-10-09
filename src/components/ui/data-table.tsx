@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 export interface Column<T> {
   key: string;
   header: React.ReactNode;
-  accessor?: (item: T) => any;
+  accessor?: (item: T) => unknown;
   cell?: (item: T) => React.ReactNode;
   sortable?: boolean;
   searchable?: boolean;
@@ -73,7 +73,7 @@ export function DataTable<T>({
         if (val === null || val === undefined) return "";
         return String(val);
       }
-      const val = (item as any)[col.key];
+      const val = (item as Record<string, unknown>)[col.key];
       if (val === null || val === undefined) return "";
       return String(val);
     },

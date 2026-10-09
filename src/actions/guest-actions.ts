@@ -5,7 +5,7 @@ import { requireWedding, getWeddingBySlug } from "@/lib/security/wedding-context
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { sendTextMessage, sendInteractiveMessage, sendBulkMessages } from "@/lib/evolution";
+import { sendTextMessage, sendBulkMessages } from "@/lib/evolution";
 import { RsvpStatus } from "@prisma/client";
 import { rateLimitByIp } from "@/lib/security/rate-limiter";
 import { weddingSiteUrl } from "@/lib/wedding-links";
@@ -13,8 +13,6 @@ import { weddingSiteUrl } from "@/lib/wedding-links";
 // ==========================================
 // VALIDAÇÕES ZOD
 // ==========================================
-
-const PhoneRegex = /^\+?[1-9]\d{7,14}$/; // E.164 flexível
 
 const GuestSchema = z.object({
   name: z.string().min(2, "Nome deve ter ao menos 2 caracteres.").trim(),

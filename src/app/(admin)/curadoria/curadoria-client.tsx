@@ -9,23 +9,14 @@ import {
   Clock,
   Building2,
   ExternalLink,
-  MapPin,
   Camera,
-  Star,
-  FileText,
-  DollarSign,
-  AlertTriangle,
-  Loader2,
   Search,
-  Filter,
   Eye,
   Check,
   X,
-  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   approveVendorAction,
@@ -34,8 +25,10 @@ import {
 } from "@/actions/partner-vendor-actions";
 import { toast } from "sonner";
 
+type CurationVendor = Awaited<ReturnType<typeof getAllVendorsForCurationAction>>["vendors"][number];
+
 interface CuradoriaClientProps {
-  initialVendors: any[];
+  initialVendors: CurationVendor[];
   initialCounts: {
     total: number;
     pending: number;
@@ -48,16 +41,16 @@ export function CuradoriaClient({
   initialVendors,
   initialCounts,
 }: CuradoriaClientProps) {
-  const [vendors, setVendors] = useState<any[]>(initialVendors);
+  const [vendors, setVendors] = useState<CurationVendor[]>(initialVendors);
   const [counts, setCounts] = useState(initialCounts);
   const [activeTab, setActiveTab] = useState<"ALL" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED">(
     "ALL"
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedVendor, setSelectedVendor] = useState<any | null>(null);
+  const [selectedVendor, setSelectedVendor] = useState<CurationVendor | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [vendorToReject, setVendorToReject] = useState<any | null>(null);
+  const [vendorToReject, setVendorToReject] = useState<CurationVendor | null>(null);
 
   const [isPending, startTransition] = useTransition();
 
@@ -70,7 +63,7 @@ export function CuradoriaClient({
     return matchesTab && matchesSearch;
   });
 
-  const handleApprove = (vendor: any) => {
+  const handleApprove = (vendor: CurationVendor) => {
     const toastId = toast.loading(`Aprovando e homologando ${vendor.companyName}...`);
     startTransition(async () => {
       const res = await approveVendorAction(vendor.id);
@@ -99,7 +92,7 @@ export function CuradoriaClient({
     });
   };
 
-  const handleOpenReject = (vendor: any) => {
+  const handleOpenReject = (vendor: CurationVendor) => {
     setVendorToReject(vendor);
     setRejectReason("");
     setIsRejectModalOpen(true);

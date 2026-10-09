@@ -11,9 +11,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, Plus, Users as UsersIcon, Loader2 } from "lucide-react";
 
+// --- Tipos ---
+
+export interface SeatGuest {
+  id: string;
+  name: string;
+  category?: string | null;
+  allowedCompanions: number;
+  parentGuest?: { name: string } | null;
+}
+
+export interface TableWithGuests {
+  id: string;
+  name: string;
+  capacity: number;
+  guests: SeatGuest[];
+}
+
 // --- DND Components ---
 
-function DraggableGuest({ guest }: { guest: any }) {
+function DraggableGuest({ guest }: { guest: SeatGuest }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: guest.id,
     data: { guest },
@@ -57,7 +74,7 @@ function DraggableGuest({ guest }: { guest: any }) {
   );
 }
 
-function DroppableTable({ id, title, capacity, guests, onDelete }: { id: string, title: string, capacity: number, guests: any[], onDelete?: () => void }) {
+function DroppableTable({ id, title, capacity, guests, onDelete }: { id: string, title: string, capacity: number, guests: SeatGuest[], onDelete?: () => void }) {
   const { isOver, setNodeRef } = useDroppable({ id });
   
   // Calcula o total de assentos ocupados (convidado + acompanhantes)
@@ -95,10 +112,10 @@ function DroppableTable({ id, title, capacity, guests, onDelete }: { id: string,
 
 // --- Main Client Component ---
 
-export function TablesClient({ initialTables, initialUnassigned }: { initialTables: any[], initialUnassigned: any[] }) {
+export function TablesClient({ initialTables, initialUnassigned }: { initialTables: TableWithGuests[], initialUnassigned: SeatGuest[] }) {
   const router = useRouter();
-  const [tables, setTables] = useSyncedState<any[]>(initialTables);
-  const [unassigned, setUnassigned] = useSyncedState<any[]>(initialUnassigned);
+  const [tables, setTables] = useSyncedState<TableWithGuests[]>(initialTables);
+  const [unassigned, setUnassigned] = useSyncedState<SeatGuest[]>(initialUnassigned);
   
   const [newTableName, setNewTableName] = useState("");
   const [newTableCap, setNewTableCap] = useState(10);
@@ -111,17 +128,17 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
     if (!over) return; // Dropped outside
 
     const guestId = active.id as string;
-    const fromContainerId = unassigned.find(g => g.id === guestId) ? "unassigned" : tables.find(t => t.guests.some((g: any) => g.id === guestId))?.id;
+    const fromContainerId = unassigned.find(g => g.id === guestId) ? "unassigned" : tables.find(t => t.guests.some(g => g.id === guestId))?.id;
     const toContainerId = over.id as string;
 
     if (fromContainerId === toContainerId) return;
 
     // Achar o guest inteiro
-    let guestObj: any;
+    let guestObj: SeatGuest | undefined;
     if (fromContainerId === "unassigned") {
       guestObj = unassigned.find(g => g.id === guestId);
     } else {
-      guestObj = tables.find(t => t.id === fromContainerId)?.guests.find((g: any) => g.id === guestId);
+      guestObj = tables.find(t => t.id === fromContainerId)?.guests.find(g => g.id === guestId);
     }
 
     if (!guestObj) return;
@@ -130,7 +147,7 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
     if (fromContainerId === "unassigned") {
       setUnassigned(prev => prev.filter(g => g.id !== guestId));
     } else {
-      setTables(prev => prev.map(t => t.id === fromContainerId ? { ...t, guests: t.guests.filter((g: any) => g.id !== guestId) } : t));
+      setTables(prev => prev.map(t => t.id === fromContainerId ? { ...t, guests: t.guests.filter(g => g.id !== guestId) } : t));
     }
 
     if (toContainerId === "unassigned") {
@@ -178,7 +195,7 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
   };
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext id="mesas" onDragEnd={handleDragEnd}>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         
         {/* Lista de Convidados (Não Alocados) */}

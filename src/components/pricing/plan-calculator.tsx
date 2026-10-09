@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Check, Sliders, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 export function PlanCalculator() {
   return (

@@ -25,7 +25,6 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
-  LayoutGrid,
   ListFilter,
   CheckCircle2,
   Calendar,
@@ -38,13 +37,10 @@ import {
   FileCheck,
   CreditCard,
   QrCode,
-  Link as LinkIcon,
   Upload,
-  Image as ImageIcon,
   ArrowRight,
   Check,
   ExternalLink,
-  Store,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
@@ -53,6 +49,34 @@ interface InstallmentBlock {
   count: number;
   amount: string; // Ex: "300.00"
   startDate: string; // Ex: "2026-08-10"
+}
+
+interface ExpenseItem {
+  id: string;
+  description: string;
+  amount: number;
+  dueDate: Date | string;
+  status: string;
+  type?: "CONTRACT" | "PURCHASE" | null;
+  vendorId?: string | null;
+  storeName?: string | null;
+  purchaseUrl?: string | null;
+  paymentMethod?: string | null;
+  imageUrl?: string | null;
+  vendor?: { name: string; category: string } | null;
+}
+
+interface VendorOption {
+  id: string;
+  name: string;
+  category: string;
+}
+
+interface WalletCard {
+  id: string;
+  bank: string;
+  nickname?: string | null;
+  lastDigits?: string | null;
 }
 
 interface GroupedExpense {
@@ -70,10 +94,10 @@ interface GroupedExpense {
   pendingAmount: number;
   paidCount: number;
   totalCount: number;
-  nextDueDate: string | null;
+  nextDueDate: Date | string | null;
   nextDueAmount: number | null;
   nextDueExpenseId: string | null;
-  expenses: any[];
+  expenses: ExpenseItem[];
 }
 
 const PAYMENT_METHODS = [
@@ -84,9 +108,9 @@ const PAYMENT_METHODS = [
   { id: "boleto", label: "Boleto Bancário", icon: FileCheck },
 ];
 
-export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { initialExpenses: any[], vendors: any[], userCards?: any[] }) {
+export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { initialExpenses: ExpenseItem[], vendors: VendorOption[], userCards?: WalletCard[] }) {
   const router = useRouter();
-  const [expenses, setExpenses] = useSyncedState<any[]>(initialExpenses);
+  const [expenses, setExpenses] = useSyncedState<ExpenseItem[]>(initialExpenses);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -164,7 +188,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
   };
 
   const allPaymentMethods = useMemo(() => {
-    const list: Array<{ id: string; label: string; icon: any }> = [
+    const list: Array<{ id: string; label: string; icon: typeof CreditCard }> = [
       { id: "pix_balance", label: "Saldo em Conta / Pix", icon: QrCode },
     ];
 
@@ -215,7 +239,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
     setBlocks(blocks.filter(b => b.id !== id));
   };
 
-  const updateBlock = (id: number, field: keyof InstallmentBlock, value: any) => {
+  const updateBlock = (id: number, field: keyof InstallmentBlock, value: InstallmentBlock[keyof InstallmentBlock]) => {
     setBlocks(blocks.map(b => b.id === id ? { ...b, [field]: value } : b));
   };
 

@@ -30,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  MessageSquare,
   Send,
   Plus,
   Trash2,
@@ -51,17 +50,12 @@ import {
   Battery,
   Link as LinkIcon,
   Filter,
-  Check,
-  Gift,
-  Calendar,
-  Users
 } from "lucide-react";
 import {
   createMessageTemplate,
   updateMessageTemplate,
   deleteMessageTemplate,
   sendTemplateToGuests,
-  markGuestAsSent,
 } from "@/actions/message-actions";
 import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-actions";
 import { weddingSiteUrl } from "@/lib/wedding-links";
@@ -170,7 +164,7 @@ export function MensagensClient({
     if (template.buttons) {
       try {
         setButtonsList(JSON.parse(template.buttons));
-      } catch (e) {
+      } catch {
         setButtonsList([]);
       }
     } else {
@@ -399,7 +393,7 @@ export function MensagensClient({
                   try {
                     badgeList = JSON.parse(t.buttons);
                     badgeCount = badgeList.length;
-                  } catch (e) {}
+                  } catch {}
                 }
 
                 return (

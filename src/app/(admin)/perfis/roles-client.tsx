@@ -9,7 +9,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { createRole, updateRole, deleteRole } from "@/actions/rbac-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Shield, Plus, Edit2, Trash2, Check, X, ShieldAlert } from "lucide-react";
+import { Shield, Plus, Edit2, Trash2, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 const AVAILABLE_MODULES = [
@@ -37,11 +37,22 @@ const AVAILABLE_MODULES = [
   { id: "/fornecedor", name: "Painel do fornecedor" },
 ];
 
-export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
+interface RoleItem {
+  id: string;
+  name: string;
+  allowedPaths: unknown; // coluna Json: array de paths
+  _count?: { users: number };
+}
+
+function toPaths(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((p): p is string => typeof p === "string") : [];
+}
+
+export function RolesClient({ initialRoles }: { initialRoles: RoleItem[] }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const [roles, setRoles] = useSyncedState(initialRoles);
-  const [editingRole, setEditingRole] = useState<any | null>(null);
+  const [roles] = useSyncedState(initialRoles);
+  const [editingRole, setEditingRole] = useState<RoleItem | null>(null);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -58,11 +69,11 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
     setIsFormOpen(true);
   }
 
-  function openEditForm(role: any) {
+  function openEditForm(role: RoleItem) {
     setEditingRole(role);
     setFormData({
       name: role.name,
-      allowedPaths: role.allowedPaths || [],
+      allowedPaths: toPaths(role.allowedPaths),
     });
     setIsFormOpen(true);
   }
@@ -235,19 +246,19 @@ export function RolesClient({ initialRoles }: { initialRoles: any[] }) {
               header: "Módulos Permitidos",
               sortable: true,
               accessor: (r) =>
-                r.allowedPaths.includes("*")
+                toPaths(r.allowedPaths).includes("*")
                   ? "Acesso Total"
-                  : r.allowedPaths
-                      .map((p: string) => AVAILABLE_MODULES.find((m) => m.id === p)?.name || p)
+                  : toPaths(r.allowedPaths)
+                      .map((p) => AVAILABLE_MODULES.find((m) => m.id === p)?.name || p)
                       .join(", "),
               cell: (role) => (
                 <div className="flex flex-wrap gap-1.5">
-                  {role.allowedPaths.includes("*") ? (
+                  {toPaths(role.allowedPaths).includes("*") ? (
                     <span className="text-xs bg-zinc-100 text-zinc-700 px-2 py-1 rounded-md font-medium border border-zinc-200">
                       Acesso Total
                     </span>
                   ) : (
-                    role.allowedPaths.map((path: string) => (
+                    toPaths(role.allowedPaths).map((path) => (
                       <span key={path} className="text-xs bg-zinc-50 text-zinc-600 px-2 py-1 rounded-md border border-zinc-200">
                         {AVAILABLE_MODULES.find((m) => m.id === path)?.name || path}
                       </span>

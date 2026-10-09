@@ -3,7 +3,6 @@
 import { CustomModal } from "./custom-modal";
 import { Button } from "./button";
 import { AlertTriangle } from "lucide-react";
-import { motion } from "framer-motion";
 
 interface ConfirmModalProps {
   isOpen: boolean;

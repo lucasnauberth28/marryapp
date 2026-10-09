@@ -36,7 +36,7 @@ export async function sendRsvpReminders() {
   if (reminderTemplate?.buttons) {
     try {
       parsedButtons = JSON.parse(reminderTemplate.buttons);
-    } catch (e) {}
+    } catch {}
   }
 
   const messages = guests.map((g) => {
@@ -101,7 +101,7 @@ export async function sendInitialInvites() {
   if (inviteTemplate?.buttons) {
     try {
       parsedButtons = JSON.parse(inviteTemplate.buttons);
-    } catch (e) {}
+    } catch {}
   }
 
   const messages = guests.map((g) => {

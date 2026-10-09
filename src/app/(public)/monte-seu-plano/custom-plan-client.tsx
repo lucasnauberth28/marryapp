@@ -19,15 +19,13 @@ import {
   ShieldCheck,
   Zap,
   ArrowLeft,
-  Heart,
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, typeof Sliders> = {
   Sliders,
   Percent,
   MessageCircle,

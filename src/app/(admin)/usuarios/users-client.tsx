@@ -10,23 +10,28 @@ import { DataTable } from "@/components/ui/data-table";
 import { createUser, updateUser, deleteUser } from "@/actions/rbac-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Edit2, Trash2, KeyRound } from "lucide-react";
+import { Plus, Edit2, Trash2, KeyRound } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-export function UsersClient({ initialUsers, roles }: { initialUsers: any[], roles: any[] }) {
+interface UserItem {
+  id: string;
+  name: string;
+  username: string;
+  roleId: string;
+  role?: { name: string } | null;
+}
+
+interface RoleOption {
+  id: string;
+  name: string;
+}
+
+export function UsersClient({ initialUsers, roles }: { initialUsers: UserItem[], roles: RoleOption[] }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const [users, setUsers] = useSyncedState(initialUsers);
-  const [editingUser, setEditingUser] = useState<any | null>(null);
+  const [users] = useSyncedState(initialUsers);
+  const [editingUser, setEditingUser] = useState<UserItem | null>(null);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -45,7 +50,7 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: any[], role
     setIsFormOpen(true);
   }
 
-  function openEditForm(user: any) {
+  function openEditForm(user: UserItem) {
     setEditingUser(user);
     setFormData({
       name: user.name,
