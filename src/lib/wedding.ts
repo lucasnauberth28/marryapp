@@ -1,69 +1,40 @@
-import "server-only";
-import { cache } from "react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import prisma from "@/lib/prisma";
-import { getCoupleInitials } from "@/lib/wedding-format";
+// Regras puras do casamento (sem banco), usadas pelo cadastro, onboarding e convites.
 
-export interface WeddingIdentity {
-  /** Ex.: "Lucas & Giovanna" */
-  coupleNames: string;
-  /** Ex.: "L&G" */
-  initials: string;
-  weddingDate: Date | null;
-  /** Ex.: "11 de outubro de 2027" */
-  dateLabel: string | null;
-  locationName: string | null;
-  slug: string | null;
-}
-
-const FALLBACK_NAMES = "Nosso Casamento";
+/** Perfil de acesso das contas de casal (o casal e o par convidado). */
+export const COUPLE_ROLE_NAME = "Casal";
 
 /**
- * Identidade do casamento exibida nas telas (nomes, iniciais, data).
- * Lida uma vez por request. Se o banco estiver indisponível, devolve um nome neutro
- * em vez de derrubar a página.
+ * Módulos do painel liberados para o casal. Ficam de fora os da plataforma
+ * (/curadoria, /assinaturas, /usuarios, /perfis), que são da administração do Aceito.
  */
-export const getWeddingIdentity = cache(async (): Promise<WeddingIdentity> => {
-  try {
-    const site = await prisma.siteCustomization.findUnique({
-      where: { id: "global" },
-      select: { title: true, weddingDate: true, locationName: true, slug: true },
-    });
+export const COUPLE_PATHS = [
+  "/dashboard",
+  "/convidados",
+  "/mensagens",
+  "/mesas",
+  "/credenciamento",
+  "/pendencias",
+  "/cronograma",
+  "/meus-fornecedores",
+  "/fornecedores",
+  "/financas",
+  "/carteira",
+  "/site-builder",
+  "/presentes-admin",
+  "/configuracoes",
+  "/plano",
+] as const;
 
-    const coupleNames = site?.title?.trim() || FALLBACK_NAMES;
-    const weddingDate = site?.weddingDate ?? null;
-
-    return {
-      coupleNames,
-      initials: getCoupleInitials(coupleNames),
-      weddingDate,
-      dateLabel: weddingDate ? format(weddingDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR }) : null,
-      locationName: site?.locationName ?? null,
-      slug: site?.slug ?? null,
-    };
-  } catch (error) {
-    console.error("[getWeddingIdentity]", error);
-    return {
-      coupleNames: FALLBACK_NAMES,
-      initials: getCoupleInitials(FALLBACK_NAMES),
-      weddingDate: null,
-      dateLabel: null,
-      locationName: null,
-      slug: null,
-    };
-  }
-});
-
-/**
- * Metadados das páginas públicas do convidado: "Página · Nomes do casal".
- */
-export async function guestPageMetadata(page: string | null, description?: string) {
-  const { coupleNames, dateLabel } = await getWeddingIdentity();
-  return {
-    title: { absolute: page ? `${page} · ${coupleNames}` : `${coupleNames}${dateLabel ? ` · ${dateLabel}` : ""}` },
-    description:
-      description ??
-      `Celebre com ${coupleNames}: local, horários, traje, lista de presentes e confirmação de presença.`,
-  };
+/** "Ana & Rafael" → "ana-e-rafael" (sem acentos, só letras, números e hífen). */
+export function slugifyCoupleNames(names: string): string {
+  const base = names
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/&|\+/g, " e ")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60)
+    .replace(/-+$/g, "");
+  return base || "casamento";
 }

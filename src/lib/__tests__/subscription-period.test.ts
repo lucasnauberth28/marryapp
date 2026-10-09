@@ -51,3 +51,11 @@ test("trocar de plano ou renovar depois de vencido começa de agora", () => {
     30 * DAY,
   );
 });
+
+import { slugifyCoupleNames } from "../wedding.ts";
+
+test("endereço do site a partir dos nomes do casal", () => {
+  assert.equal(slugifyCoupleNames("Ana & Rafael"), "ana-e-rafael");
+  assert.equal(slugifyCoupleNames("  João + Lívia  "), "joao-e-livia");
+  assert.equal(slugifyCoupleNames("!!!"), "casamento");
+});
