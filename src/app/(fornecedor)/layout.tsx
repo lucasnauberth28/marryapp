@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
 import { Chip } from "./_components/status-chip";
 import { VendorAvatar } from "./_components/vendor-avatar";
-import { LogoutButton, VendorMobileTitle, VendorSidebarNav, VendorTabBar } from "./_components/vendor-nav";
+import { LogoutButton, LogoutIconButton, VendorMobileTitle, VendorSidebarNav, VendorTabBar } from "./_components/vendor-nav";
 import { PLAN_LABEL, START_MONTHLY_LEAD_LIMIT, startOfMonthBrasilia } from "./_lib/vendor-panel";
 
 export const metadata: Metadata = {
@@ -82,12 +82,13 @@ export default async function FornecedorLayout({ children }: { children: React.R
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-[60px] items-center gap-2.5 border-b border-linha bg-linho/95 px-4 backdrop-blur md:hidden">
+        <header className="sticky top-0 z-30 flex h-[60px] items-center gap-2.5 border-b border-linha bg-linho/95 pr-2 pl-4 backdrop-blur md:hidden">
           <VendorAvatar name={vendor.companyName} logoUrl={vendor.logoUrl} size={36} />
           <VendorMobileTitle />
           <Chip tone="salvia">
             {isFree ? `Start · ${Math.min(monthLeads, START_MONTHLY_LEAD_LIMIT)} de ${START_MONTHLY_LEAD_LIMIT}` : planLabel}
           </Chip>
+          <LogoutIconButton />
         </header>
 
         <main

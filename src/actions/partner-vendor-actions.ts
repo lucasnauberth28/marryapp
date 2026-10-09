@@ -8,6 +8,7 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { rateLimitByIp } from "@/lib/security/rate-limiter";
 import { normalizeText } from "@/lib/security/sanitize";
+import { LEAD_BUDGET_OPTIONS } from "@/app/(fornecedor)/_lib/vendor-panel";
 
 
 const PUBLIC_VENDOR_SELECT = {
@@ -46,6 +47,8 @@ const PUBLIC_REVIEW_SELECT = {
   rating: true,
   comment: true,
   isVerified: true,
+  reply: true,
+  repliedAt: true,
   createdAt: true,
 } satisfies Prisma.VendorReviewSelect;
 
@@ -196,6 +199,8 @@ const LeadSchema = z.object({
   guestCount: z.coerce.number().int().min(0).max(5000).optional().nullable(),
   message: z.string().trim().max(2000).optional(),
   meetingType: z.enum(["ONLINE", "PRESENTIAL"]).optional(),
+  location: z.string().trim().max(80, "Use até 80 caracteres na cidade.").optional(),
+  budget: z.enum(LEAD_BUDGET_OPTIONS, { message: "Faixa de orçamento inválida." }).optional().or(z.literal("")),
 });
 
 /**
@@ -210,6 +215,8 @@ export async function createVendorLead(data: {
   guestCount?: number;
   message?: string;
   meetingType?: string; // "ONLINE" | "PRESENTIAL"
+  location?: string; // cidade do casamento
+  budget?: string; // uma das LEAD_BUDGET_OPTIONS
 }) {
   const parsed = LeadSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -237,6 +244,8 @@ export async function createVendorLead(data: {
         guestCount: input.guestCount ?? null,
         message: input.message || null,
         meetingType: input.meetingType || "ONLINE",
+        location: input.location ? normalizeText(input.location) || null : null,
+        budget: input.budget || null,
       },
       select: { id: true, createdAt: true },
     });

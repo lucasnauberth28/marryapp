@@ -30,6 +30,7 @@ const FILTERS: { value: LeadStatus | null; label: string }[] = [
   { value: "CONTACTED", label: "Respondidos" },
   { value: "PROPOSAL_SENT", label: "Propostas" },
   { value: "CLOSED", label: "Fechados" },
+  { value: "DECLINED", label: "Recusados" },
 ];
 
 function plural(n: number, one: string, many: string) {
@@ -47,7 +48,8 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
   // Todas as consultas filtram pelo fornecedor da sessão.
   const [leads, monthCount, newCount, closedCount, totalCount] = await Promise.all([
     prisma.vendorLead.findMany({
-      where: { vendorId: vendor.id, ...(filter ? { status: filter } : {}) },
+      // "Todos" deixa de fora os recusados (eles ficam no filtro "Recusados").
+      where: { vendorId: vendor.id, status: filter ?? { not: "DECLINED" } },
       orderBy: { createdAt: "desc" },
       take: 100,
       select: {
@@ -210,14 +212,20 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
                     aria-labelledby={`lead-${lead.id}`}
                     className={cn(
                       CARD,
-                      "flex flex-col gap-4 p-4 sm:flex-row sm:items-start sm:p-6",
+                      "relative flex flex-col gap-4 p-4 transition-colors hover:border-linha-forte sm:flex-row sm:items-start sm:p-6",
                       status === "NEW" && "border-2 border-ameixa",
                     )}
                   >
                     <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                       <LeadStatusChip status={status} suffix={formatRelative(lead.createdAt)} />
                       <h3 id={`lead-${lead.id}`} className="font-display text-2xl leading-tight font-medium break-words">
-                        {lead.coupleName}
+                        {/* O link cobre o cartão inteiro; as ações ficam acima dele (z-10). */}
+                        <Link
+                          href={`/fornecedor/pedidos/${lead.id}`}
+                          className="rounded-sm after:absolute after:inset-0 after:rounded-2xl after:content-[''] hover:underline"
+                        >
+                          {lead.coupleName}
+                        </Link>
                       </h3>
                       {details.length > 0 || lead.meetingType ? (
                         <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-tinta-suave sm:text-base">
@@ -239,14 +247,20 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
                         {formatPhone(lead.couplePhone)}
                         {lead.coupleEmail ? ` · ${lead.coupleEmail}` : ""}
                       </p>
+                      <span aria-hidden="true" className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-ameixa">
+                        Ver pedido completo
+                        <ArrowRight className="size-4" />
+                      </span>
                     </div>
-                    <LeadActions
+                    <div className="relative z-10 w-full sm:w-auto">
+                      <LeadActions
                       leadId={lead.id}
                       status={status}
                       coupleName={lead.coupleName}
                       whatsappUrl={whatsappHref(lead.couplePhone, waText)}
                       coupleEmail={lead.coupleEmail}
-                    />
+                      />
+                    </div>
                   </article>
                 </Reveal>
               );

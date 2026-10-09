@@ -1,4 +1,4 @@
-import { Check, CircleAlert, Hourglass, MessageCircle, Send, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
+import { Check, CircleAlert, CircleX, Hourglass, MessageCircle, Send, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LEAD_STATUS_LABEL, type LeadStatus } from "../_lib/vendor-panel";
 
@@ -43,12 +43,13 @@ const LEAD_STATUS_STYLE: Record<LeadStatus, { tone: Tone; icon: LucideIcon }> = 
   CONTACTED: { tone: "salvia", icon: MessageCircle },
   PROPOSAL_SENT: { tone: "neutro", icon: Send },
   CLOSED: { tone: "sucesso", icon: Check },
+  DECLINED: { tone: "perigo", icon: CircleX },
 };
 
-export function LeadStatusChip({ status, suffix }: { status: LeadStatus; suffix?: string }) {
+export function LeadStatusChip({ status, suffix, className }: { status: LeadStatus; suffix?: string; className?: string }) {
   const { tone, icon } = LEAD_STATUS_STYLE[status];
   return (
-    <Chip tone={tone} icon={icon}>
+    <Chip tone={tone} icon={icon} className={className}>
       {LEAD_STATUS_LABEL[status]}
       {suffix ? <span className="font-medium"> · {suffix}</span> : null}
     </Chip>

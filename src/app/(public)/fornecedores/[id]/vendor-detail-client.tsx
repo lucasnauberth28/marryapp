@@ -33,6 +33,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DatePicker } from "@/components/ui/date-picker";
 import { createVendorLead, createVendorReview } from "@/actions/partner-vendor-actions";
 import { toast } from "sonner";
+import { LEAD_BUDGET_OPTIONS } from "@/app/(fornecedor)/_lib/vendor-panel";
 
 interface VendorDetailClientProps {
   vendor: any;
@@ -75,6 +76,8 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
   const [weddingDate, setWeddingDate] = useState("");
   const [meetingType, setMeetingType] = useState<"ONLINE" | "PRESENTIAL">("ONLINE");
   const [leadMessage, setLeadMessage] = useState("");
+  const [leadLocation, setLeadLocation] = useState("");
+  const [leadBudget, setLeadBudget] = useState("");
   const [isPendingLead, startTransitionLead] = useTransition();
 
   const handleSendLead = (e: React.FormEvent) => {
@@ -95,6 +98,8 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
         weddingDate: weddingDate ? new Date(weddingDate) : undefined,
         message: leadMessage,
         meetingType,
+        location: leadLocation,
+        budget: leadBudget,
       });
 
       if (res.success) {
@@ -121,6 +126,8 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
         setCoupleEmail("");
         setGuestCount("");
         setLeadMessage("");
+        setLeadLocation("");
+        setLeadBudget("");
       } else {
         toast.error(res.error || "Erro ao solicitar orçamento.", { id: toastId });
       }
@@ -568,6 +575,17 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                           })}
                         </p>
                       )}
+
+                      {rev.reply && (
+                        <div className="mt-3 rounded-xl border-l-2 border-champanhe bg-areia/60 px-4 py-3 space-y-1">
+                          <p className="text-xs font-semibold text-tinta-suave">
+                            Resposta de {vendor.companyName}
+                          </p>
+                          <p className="text-sm text-tinta leading-relaxed whitespace-pre-line break-words">
+                            {rev.reply}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -645,6 +663,40 @@ export function VendorDetailClient({ vendor }: VendorDetailClientProps) {
                       placeholder="Selecione a data"
                       className="rounded-xl h-10 text-xs bg-linho"
                     />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="lead-cidade" className="text-xs font-bold text-tinta-suave uppercase">
+                      Cidade do casamento
+                    </Label>
+                    <Input
+                      id="lead-cidade"
+                      value={leadLocation}
+                      onChange={(e) => setLeadLocation(e.target.value)}
+                      placeholder="Ex: Itu, SP"
+                      maxLength={80}
+                      autoComplete="address-level2"
+                      className="rounded-xl h-10 text-xs bg-linho"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="lead-orcamento" className="text-xs font-bold text-tinta-suave uppercase">
+                      Faixa de orçamento
+                    </Label>
+                    <select
+                      id="lead-orcamento"
+                      value={leadBudget}
+                      onChange={(e) => setLeadBudget(e.target.value)}
+                      className="h-10 w-full cursor-pointer rounded-xl border border-linha bg-linho px-3 text-xs text-tinta"
+                    >
+                      <option value="">Selecione (opcional)</option>
+                      {LEAD_BUDGET_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="space-y-1">

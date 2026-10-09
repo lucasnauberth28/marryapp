@@ -2,16 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CreditCard, ExternalLink, Inbox, LogOut, Store, type LucideIcon } from "lucide-react";
+import { CalendarDays, CreditCard, ExternalLink, Inbox, LogOut, Star, Store, type LucideIcon } from "lucide-react";
 import { logout } from "@/actions/auth-actions";
 import { cn } from "@/lib/utils";
 import { PLAN_HREF } from "../_lib/vendor-panel";
 
 const PANEL = "/fornecedor";
+const ORDERS = "/fornecedor/pedidos";
+const AGENDA = "/fornecedor/agenda";
 const PROFILE = "/fornecedor/perfil";
+const REVIEWS = "/fornecedor/avaliacoes";
 
 function isActive(pathname: string, href: string) {
-  if (href === PANEL) return pathname === PANEL;
+  // A lista de pedidos fica em /fornecedor; o detalhe, em /fornecedor/pedidos/[id].
+  if (href === PANEL) return pathname === PANEL || pathname === ORDERS || pathname.startsWith(`${ORDERS}/`);
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -29,7 +33,9 @@ export function VendorSidebarNav({ newLeads, publicProfileHref }: { newLeads: nu
 
   const items: SideItem[] = [
     { href: PANEL, label: "Pedidos de orçamento", icon: Inbox, count: newLeads },
+    { href: AGENDA, label: "Agenda", icon: CalendarDays },
     { href: PROFILE, label: "Meu perfil", icon: Store },
+    { href: REVIEWS, label: "Avaliações", icon: Star },
     { href: PLAN_HREF, label: "Plano", icon: CreditCard },
   ];
   if (publicProfileHref) {
@@ -88,23 +94,35 @@ export function LogoutButton({ className }: { className?: string }) {
   );
 }
 
-/** Título do topo no celular, conforme a página. */
-export function VendorMobileTitle() {
-  const pathname = usePathname();
+/** Botão "Sair" só com ícone, para o topo no celular. */
+export function LogoutIconButton() {
   return (
-    <p className="min-w-0 flex-1 truncate text-lg font-semibold">{isActive(pathname, PROFILE) ? "Meu perfil" : "Pedidos"}</p>
+    <form action={logout} className="shrink-0">
+      <button
+        type="submit"
+        aria-label="Sair"
+        title="Sair"
+        className="grid size-11 place-items-center rounded-xl text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
+      >
+        <LogOut aria-hidden="true" className="size-5" />
+      </button>
+    </form>
   );
 }
 
-const tabClass =
-  "flex min-h-11 flex-col items-center justify-center gap-0.5 text-xs font-semibold transition-colors";
+const MOBILE_TITLES: { href: string; title: string }[] = [
+  { href: ORDERS, title: "Pedido" },
+  { href: AGENDA, title: "Agenda" },
+  { href: PROFILE, title: "Meu perfil" },
+  { href: REVIEWS, title: "Avaliações" },
+  { href: PLAN_HREF, title: "Plano" },
+];
 
-function TabIcon({ icon: Icon, active }: { icon: LucideIcon; active: boolean }) {
-  return (
-    <span className={cn("grid place-items-center rounded-full px-3.5 py-0.5", active && "bg-salvia-suave")}>
-      <Icon aria-hidden="true" className="size-5" />
-    </span>
-  );
+/** Título do topo no celular, conforme a página. */
+export function VendorMobileTitle() {
+  const pathname = usePathname();
+  const match = MOBILE_TITLES.find(({ href }) => pathname === href || pathname.startsWith(`${href}/`));
+  return <p className="min-w-0 flex-1 truncate text-lg font-semibold">{match?.title ?? "Pedidos"}</p>;
 }
 
 /** Barra de abas inferior (celular): 80px incluindo a área segura. */
@@ -112,6 +130,7 @@ export function VendorTabBar() {
   const pathname = usePathname();
   const tabs = [
     { href: PANEL, label: "Pedidos", icon: Inbox },
+    { href: AGENDA, label: "Agenda", icon: CalendarDays },
     { href: PROFILE, label: "Perfil", icon: Store },
     { href: PLAN_HREF, label: "Plano", icon: CreditCard },
   ];
@@ -121,26 +140,25 @@ export function VendorTabBar() {
       aria-label="Painel do fornecedor"
       className="fixed inset-x-0 bottom-0 z-40 grid h-20 grid-cols-4 border-t border-linha bg-papel pb-[max(16px,env(safe-area-inset-bottom))] md:hidden"
     >
-      {tabs.map(({ href, label, icon }) => {
+      {tabs.map(({ href, label, icon: Icon }) => {
         const active = isActive(pathname, href);
         return (
           <Link
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={cn(tabClass, active ? "text-salvia" : "text-tinta-suave hover:text-tinta")}
+            className={cn(
+              "flex min-h-11 flex-col items-center justify-center gap-0.5 text-xs font-semibold transition-colors",
+              active ? "text-salvia" : "text-tinta-suave hover:text-tinta",
+            )}
           >
-            <TabIcon icon={icon} active={active} />
+            <span className={cn("grid place-items-center rounded-full px-3.5 py-0.5", active && "bg-salvia-suave")}>
+              <Icon aria-hidden="true" className="size-5" />
+            </span>
             {label}
           </Link>
         );
       })}
-      <form action={logout} className="contents">
-        <button type="submit" className={cn(tabClass, "text-tinta-suave hover:text-tinta")}>
-          <TabIcon icon={LogOut} active={false} />
-          Sair
-        </button>
-      </form>
     </nav>
   );
 }
