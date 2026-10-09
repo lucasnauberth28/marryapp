@@ -438,6 +438,7 @@ model PartnerVendor {
 
   leads            VendorLead[]
   reviews          VendorReview[]
+  events           VendorEvent[]
   user             User?          // Login do fornecedor (painel /fornecedor)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
@@ -454,6 +455,9 @@ model VendorReview {
   rating      Int           @default(5) // 1 a 5 estrelas
   comment     String        @db.Text
   isVerified  Boolean       @default(true)
+  // Resposta pública do fornecedor (painel > Avaliações)
+  reply       String?       @db.Text
+  repliedAt   DateTime?
   createdAt   DateTime      @default(now())
 
   @@map("vendor_reviews")
@@ -470,10 +474,41 @@ model VendorLead {
   guestCount      Int?
   message         String?        @db.Text
   meetingType     String?        @default("ONLINE") // "ONLINE", "PRESENTIAL"
-  status          String         @default("NEW") // "NEW", "CONTACTED", "PROPOSAL_SENT", "CLOSED"
+  location        String?        // cidade do casamento
+  budget          String?        // faixa de orçamento informada pelo casal
+  status          String         @default("NEW") // "NEW", "CONTACTED", "PROPOSAL_SENT", "CLOSED", "DECLINED"
+  // Proposta registrada pelo fornecedor
+  proposalAmount     Int?        // centavos
+  proposalDetails    String?     @db.Text
+  proposalValidUntil DateTime?
+  proposalSentAt     DateTime?
+  // Andamento
+  respondedAt     DateTime?
+  closedAt        DateTime?
+  declinedAt      DateTime?
+  declineMessage  String?        @db.Text
+  events          VendorEvent[]
   createdAt       DateTime       @default(now())
 
   @@index([vendorId, status])
   @@index([createdAt])
   @@map("vendor_leads")
+}
+// Agenda do fornecedor: reuniões com casais e datas bloqueadas.
+// Casamentos fechados vêm dos pedidos (status CLOSED + weddingDate), não daqui.
+model VendorEvent {
+  id        String        @id @default(uuid())
+  vendorId  String
+  vendor    PartnerVendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  kind      String        // "MEETING" | "BLOCKED"
+  date      DateTime      @db.Date
+  time      String?       // "19:00" (reuniões)
+  title     String
+  notes     String?       @db.Text
+  leadId    String?
+  lead      VendorLead?   @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  createdAt DateTime      @default(now())
+
+  @@index([vendorId, date])
+  @@map("vendor_events")
 }
