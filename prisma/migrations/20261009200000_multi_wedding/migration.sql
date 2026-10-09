@@ -1,3 +1,6 @@
+-- Tudo ou nada: se algum passo falhar, o banco volta ao estado anterior.
+BEGIN;
+
 -- Multi-casamento: cada dado do painel do casal passa a pertencer a um casamento.
 -- Os dados que já existem viram o "casamento principal", sem perda.
 
@@ -386,3 +389,5 @@ WHERE u."roleId" = r."id" AND u."partnerVendorId" IS NULL
 UPDATE "subscriptions" s SET "weddingId" = u."weddingId"
 FROM "users" u
 WHERE s."userId" = u."id" AND s."planType" = 'COUPLE';
+
+COMMIT;
