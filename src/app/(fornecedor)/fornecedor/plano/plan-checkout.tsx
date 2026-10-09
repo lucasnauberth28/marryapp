@@ -14,10 +14,16 @@ const TIER_OF: Record<string, string> = { pro: "PRO", master: "MASTER" };
 export function PlanCheckout({
   currentTier,
   hasActivePeriod,
+  daysLeft,
+  endLabels,
   options,
 }: {
   currentTier: string;
   hasActivePeriod: boolean;
+  /** Dias que faltam do período pago atual (null sem período ativo). */
+  daysLeft: number | null;
+  /** Até quando cada plano passa a valer se for pago agora ("13 nov"), por id do plano. */
+  endLabels: Record<string, string>;
   options: PlanOption[];
 }) {
   const router = useRouter();
@@ -26,6 +32,13 @@ export function PlanCheckout({
   const [done, setDone] = useState(false);
   const plan = options.find((o) => o.id === selected) ?? options[0];
   const isRenewal = TIER_OF[plan.id] === currentTier && hasActivePeriod;
+  const endLabel = endLabels[plan.id];
+  const remaining = daysLeft === 1 ? "ao 1 dia que falta" : `aos ${daysLeft ?? 0} dias que faltam`;
+  const periodNote = isRenewal
+    ? `Renovar soma 30 dias ${remaining}: o ${plan.name} passa a valer até ${endLabel}.`
+    : currentTier !== "FREE" && hasActivePeriod
+      ? `Trocar de plano começa um novo período de 30 dias: o ${plan.name} passa a valer até ${endLabel}.`
+      : `Vale 30 dias a partir da confirmação do Pix: o ${plan.name} passa a valer até ${endLabel}.`;
 
   const handlePaid = useCallback(() => {
     setPaying(false);
@@ -74,7 +87,9 @@ export function PlanCheckout({
               onClick={() => setSelected(o.id)}
               className={cn(
                 "flex cursor-pointer flex-col gap-4 rounded-2xl bg-papel p-5 text-left transition-[border-color,box-shadow] duration-300",
-                active ? "border-2 border-ameixa p-[19px] shadow-[var(--shadow-aceito-1)]" : "border border-linha hover:border-linha-forte",
+                active
+                  ? "border-2 border-ameixa p-[19px] shadow-[var(--shadow-aceito-1)]"
+                  : "border border-linha hover:border-linha-forte",
               )}
             >
               <span className="flex items-start justify-between gap-3">
@@ -82,7 +97,9 @@ export function PlanCheckout({
                   <span className="flex items-center gap-2 text-lg font-semibold">
                     {o.name}
                     {isCurrent ? (
-                      <span className="rounded-md bg-salvia-suave px-2 py-0.5 text-xs font-semibold text-salvia">Seu plano</span>
+                      <span className="rounded-md bg-salvia-suave px-2 py-0.5 text-xs font-semibold text-salvia">
+                        Seu plano
+                      </span>
                     ) : null}
                   </span>
                   <span className="block text-[15px] text-tinta-suave">{o.summary}</span>
@@ -104,14 +121,23 @@ export function PlanCheckout({
           );
         })}
       </div>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[15px] text-tinta-suave">
-          {isRenewal
-            ? "Renovar soma 30 dias ao período que você já tem."
-            : "Pagamento mensal por Pix, sem renovação automática. Vale 30 dias a partir da confirmação."}
+      <div
+        id="pagar"
+        className="flex scroll-mt-24 flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <p aria-live="polite" className="text-center text-[15px] text-tinta-suave sm:text-left">
+          {periodNote}
         </p>
-        <button type="button" onClick={() => setPaying(true)} className={cn(btn.primary, "min-h-12 shrink-0")}>
-          {isRenewal ? `Renovar o ${plan.name}` : currentTier === "FREE" ? `Assinar o ${plan.name}` : `Mudar para o ${plan.name}`}
+        <button
+          type="button"
+          onClick={() => setPaying(true)}
+          className={cn(btn.primary, "min-h-12 w-full shrink-0 sm:w-auto")}
+        >
+          {TIER_OF[plan.id] === currentTier
+            ? `Renovar o ${plan.name} com Pix`
+            : currentTier === "FREE"
+              ? `Assinar o ${plan.name} com Pix`
+              : `Mudar para o ${plan.name} com Pix`}
           <ArrowRight aria-hidden="true" className={btnArrow} />
         </button>
       </div>
