@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { Reveal } from "@/components/motion/reveal";
@@ -150,7 +151,7 @@ export default async function PlanoPage() {
               tabIndex={0}
               className="overflow-x-auto rounded-2xl border border-linha bg-papel"
             >
-              <table className="w-full min-w-[560px] border-collapse text-[15px]">
+              <table className="w-full min-w-[640px] border-collapse text-[15px]">
                 <thead>
                   <tr className="text-left text-[13px] text-tinta-suave">
                     <th scope="col" className="px-5 py-3 font-semibold">
@@ -164,6 +165,9 @@ export default async function PlanoPage() {
                     </th>
                     <th scope="col" className="px-5 py-3 text-right font-semibold">
                       Valor
+                    </th>
+                    <th scope="col" className="px-5 py-3">
+                      <span className="sr-only">Recibo</span>
                     </th>
                   </tr>
                 </thead>
@@ -182,6 +186,16 @@ export default async function PlanoPage() {
                         <td className="px-5 py-3.5 text-right whitespace-nowrap tabular-nums">
                           {refunded ? <span className="mr-2 text-sm font-semibold text-aviso">Estornado</span> : null}
                           {brl.format(p.amount / 100)}
+                        </td>
+                        <td className="px-3 py-1.5 text-right">
+                          {refunded ? null : (
+                            <Link
+                              href={`/recibo/${p.id}`}
+                              className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold whitespace-nowrap text-ameixa hover:bg-ameixa-suave"
+                            >
+                              Recibo
+                            </Link>
+                          )}
                         </td>
                       </tr>
                     );

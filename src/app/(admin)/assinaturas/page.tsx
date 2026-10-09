@@ -237,6 +237,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
         method: isStaticPix(selected.gatewayId) ? "Pix estático" : selected.gatewayId ? "Mercado Pago" : "Pix",
         status: statusOf(selected, now),
         checkable: isCheckable(selected),
+        receiptHref: selected.status === PaymentStatus.APPROVED ? `/recibo/${selected.id}` : null,
       }
     : null;
 
@@ -328,7 +329,16 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
                         <td className="px-4 py-3.5 text-sm text-tinta-suave">
                           {when(r.paidAt ?? r.createdAt, now)} · {detail}
                         </td>
-                        <td className="px-4 py-2 text-right">
+                        <td className="px-4 py-2 text-right whitespace-nowrap">
+                          {r.status === PaymentStatus.APPROVED ? (
+                            <Link
+                              href={`/recibo/${r.id}`}
+                              className="inline-flex min-h-11 items-center whitespace-nowrap rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave"
+                            >
+                              Recibo
+                              <span className="sr-only"> do pagamento de {r.user?.name ?? "conta excluída"}</span>
+                            </Link>
+                          ) : null}
                           <Link
                             href={hrefFor(filter, r.id)}
                             scroll={false}

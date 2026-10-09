@@ -25,6 +25,8 @@ export interface PanelSubscription {
   status: { tone: "aviso" | "sucesso" | "perigo" | "neutro"; label: string };
   /** Pix estático pendente: pode ser confirmado ou recusado à mão. */
   checkable: boolean;
+  /** Pagos têm recibo para imprimir. */
+  receiptHref: string | null;
 }
 
 const TONE_CLASS = {
@@ -122,6 +124,15 @@ export function SubscriptionPanel({ subscription: s, closeHref }: { subscription
         <dt className="text-tinta-suave">E-mail</dt>
         <dd className="break-all text-tinta">{s.email}</dd>
       </dl>
+
+      {s.receiptHref ? (
+        <Link
+          href={s.receiptHref}
+          className={cn(BUTTON, "self-start border border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}
+        >
+          Ver recibo
+        </Link>
+      ) : null}
 
       {s.checkable ? (
         <form

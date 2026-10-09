@@ -172,6 +172,14 @@ export default async function PlanoPage() {
                     </span>
                   ) : null}
                   <span className="font-semibold tabular-nums text-tinta">{money(s.amount)}</span>
+                  {s.status === PaymentStatus.APPROVED ? (
+                    <Link
+                      href={`/recibo/${s.id}`}
+                      className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave"
+                    >
+                      Ver recibo
+                    </Link>
+                  ) : null}
                 </div>
               </li>
             ))}

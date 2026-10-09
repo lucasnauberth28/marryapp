@@ -142,7 +142,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
     // Plano de fornecedor só para conta de fornecedor, e vice-versa.
     const user = await prisma.user.findUnique({
       where: { id: session.userId },
-      select: { name: true, username: true, partnerVendorId: true },
+      select: { name: true, username: true, partnerVendorId: true, weddingId: true },
     });
     if (!user) return { success: false, error: "Conta não encontrada." };
     if ((plan.type === "VENDOR") !== Boolean(user.partnerVendorId)) {
@@ -156,6 +156,8 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
         planId: String(input.planId),
         planType: plan.type,
         planName: plan.name,
+        // Plano de casal vale para o casamento (os dois do casal veem e usam).
+        weddingId: plan.type === "COUPLE" ? user.weddingId : null,
         modules: input.planId === "custom" ? modules : undefined,
         amount: plan.price,
         expiresAt,

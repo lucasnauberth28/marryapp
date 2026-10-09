@@ -28,8 +28,9 @@ const PUBLIC_PATHS = [
 ];
 
 // Rotas de qualquer conta logada, sem depender de módulo do perfil:
-// o onboarding do casamento e a área "Minha conta" (senha, convite, dados, excluir conta).
-const SESSION_PATHS = ["/boas-vindas", "/conta"];
+// o onboarding do casamento, a área "Minha conta" (senha, convite, dados, excluir conta)
+// e os recibos (a própria página confere se o recibo é da conta ou se ela administra assinaturas).
+const SESSION_PATHS = ["/boas-vindas", "/conta", "/recibo"];
 
 function isSessionPath(path: string) {
   return SESSION_PATHS.some((p) => path === p || path.startsWith(`${p}/`));
