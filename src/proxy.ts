@@ -18,7 +18,22 @@ const PUBLIC_PATHS = [
   "/dia-do-evento",
   "/api/webhooks",
   "/api/cron", // autenticada pelo CRON_SECRET na própria rota
+  "/convite", // aceitar o convite do par
+  "/esqueci-a-senha",
+  "/redefinir-senha",
+  "/termos",
+  "/privacidade",
+  "/proposta", // casal aceita a proposta do fornecedor pelo link
+  "/avaliar", // casal avalia o fornecedor pelo link do pedido fechado
 ];
+
+// Rotas de qualquer conta logada, sem depender de módulo do perfil:
+// o onboarding do casamento e a área "Minha conta" (senha, convite, dados, excluir conta).
+const SESSION_PATHS = ["/boas-vindas", "/conta"];
+
+function isSessionPath(path: string) {
+  return SESSION_PATHS.some((p) => path === p || path.startsWith(`${p}/`));
+}
 
 function isPublicPath(path: string) {
   if (path === "/") return true;
@@ -63,7 +78,7 @@ export default async function proxy(request: NextRequest) {
       return dest === "/login" ? NextResponse.next() : NextResponse.redirect(new URL(dest, request.url));
     }
 
-    if (!isPublic && !path.startsWith("/api/") && !hasPathAccess(payload.allowedPaths, path)) {
+    if (!isPublic && !isSessionPath(path) && !path.startsWith("/api/") && !hasPathAccess(payload.allowedPaths, path)) {
       return NextResponse.redirect(new URL(dest, request.url));
     }
   }
