@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { expireVendorPlans } from "@/lib/subscriptions";
+import { sendVendorPlanReminders } from "@/lib/vendor-plan-reminders";
 
 /**
- * Rotina diária (Vercel Cron, ver vercel.json): fornecedores com o mês pago vencido voltam ao plano gratuito.
+ * Rotina diária (Vercel Cron, ver vercel.json): fornecedores com o mês pago vencido voltam ao plano gratuito,
+ * e quem vence em 7 dias ou 1 dia recebe o aviso para renovar.
  * A Vercel envia "Authorization: Bearer <CRON_SECRET>"; sem o segredo configurado, a rota não roda.
  */
 export async function GET(req: Request) {
@@ -23,5 +25,10 @@ export async function GET(req: Request) {
     revalidatePath("/fornecedor", "layout");
     revalidatePath("/fornecedores");
   }
-  return NextResponse.json({ success: true, expired });
+  // Um erro nos avisos não pode desfazer a expiração, que já aconteceu.
+  const reminders = await sendVendorPlanReminders().catch((error) => {
+    console.error("[Cron] Falha nos avisos de vencimento:", error);
+    return null;
+  });
+  return NextResponse.json({ success: true, expired, reminders });
 }

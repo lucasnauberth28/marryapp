@@ -56,7 +56,8 @@ export async function applyApprovedPayment(
         });
         await tx.partnerVendor.update({
           where: { id: vendor.id },
-          data: { planTier: VendorPlanTier[tier], planExpiresAt: periodEnd },
+          // Novo período: os avisos de vencimento voltam a valer.
+          data: { planTier: VendorPlanTier[tier], planExpiresAt: periodEnd, planReminderDays: null },
         });
         // Pro/Master liberam os pedidos que chegaram bloqueados pelo limite do Start.
         await tx.vendorLead.updateMany({ where: { vendorId: vendor.id, locked: true }, data: { locked: false } });
@@ -104,7 +105,7 @@ export async function refundSubscription(subscriptionId: string) {
 export async function expireVendorPlans(now = new Date()) {
   const result = await prisma.partnerVendor.updateMany({
     where: { planTier: { not: VendorPlanTier.FREE }, planExpiresAt: { lt: now } },
-    data: { planTier: VendorPlanTier.FREE, planExpiresAt: null },
+    data: { planTier: VendorPlanTier.FREE, planExpiresAt: null, planReminderDays: null },
   });
   return result.count;
 }
