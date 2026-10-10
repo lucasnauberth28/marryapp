@@ -1,143 +1,189 @@
 "use server";
 
-import { requireAuthSession } from "@/lib/security/auth-guard";
-import { getWeddingContext } from "@/lib/security/wedding-context";
-
+import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { PaymentStatus, PaymentMethod, ExpenseStatus, RsvpStatus } from "@prisma/client";
+import { ExpenseStatus, PaymentMethod, PaymentStatus, RsvpStatus } from "@prisma/client";
+import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { getWeddingContext } from "@/lib/security/wedding-context";
+import { unreadCountFor } from "@/lib/notifications/queries";
 
-export interface SystemNotification {
+// Central de avisos. Tudo aqui vale só para o usuário da sessão: o id do usuário nunca vem do navegador,
+// e um aviso de outra pessoa simplesmente não é encontrado (userId faz parte de todo filtro).
+
+export interface NotificationItem {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  href: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
+
+/** Lembrete: situação que ainda está de pé (calculada na hora, sem estado de leitura). */
+export interface ReminderItem {
   id: string;
   title: string;
   description: string;
-  type: "warning" | "alert" | "info" | "success";
-  linkHref: string;
+  href: string;
   category: "finance" | "expense" | "guest" | "whatsapp";
-  createdAt?: string;
 }
 
-export async function getSystemNotifications(): Promise<{
-  notifications: SystemNotification[];
+export interface NotificationList {
+  items: NotificationItem[];
   unreadCount: number;
-}> {
-  await requireAuthSession();
-  // Conta sem casamento (ex.: administração da plataforma ou cadastro sem onboarding): nada a avisar
-  const ctx = await getWeddingContext();
-  if (!ctx) return { notifications: [], unreadCount: 0 };
-  const { weddingId } = ctx;
+  reminders: ReminderItem[];
+}
+
+const EMPTY: NotificationList = { items: [], unreadCount: 0, reminders: [] };
+
+const SELECT = { id: true, type: true, title: true, body: true, href: true, readAt: true, createdAt: true } as const;
+
+function toItem(row: { id: string; type: string; title: string; body: string; href: string | null; readAt: Date | null; createdAt: Date }): NotificationItem {
+  return { ...row, readAt: row.readAt?.toISOString() ?? null, createdAt: row.createdAt.toISOString() };
+}
+
+/** Sessão ou null (sem lançar erro: o sino consulta sozinho e a sessão pode ter expirado). */
+async function sessionUserId(): Promise<string | null> {
+  const session = await getSession();
+  if (!session || session.userId === SUPER_ADMIN_USER_ID) return null;
+  return session.userId;
+}
+
+/** Só o contador, para a consulta periódica. */
+export async function getUnreadNotificationCount(): Promise<number> {
+  const userId = await sessionUserId();
+  return userId ? unreadCountFor(userId) : 0;
+}
+
+/**
+ * Lembretes do painel do casal: o que ainda está de pé (Pix para conferir, despesas, RSVP, convites).
+ * Não têm "lido": somem sozinhos quando a situação se resolve.
+ */
+async function coupleReminders(weddingId: string): Promise<ReminderItem[]> {
+  const soon = new Date();
+  soon.setDate(soon.getDate() + 7);
+
+  const [pixToCheck, dueExpenses, pendingRsvp, uninvited] = await Promise.all([
+    // Pix estático (sem gatewayId): só o casal sabe se caiu na conta
+    prisma.transaction.count({
+      where: { weddingId, status: PaymentStatus.PENDING, paymentMethod: PaymentMethod.PIX, gatewayId: null },
+    }),
+    prisma.expense.count({
+      where: { weddingId, status: { in: [ExpenseStatus.PENDING, ExpenseStatus.OVERDUE] }, dueDate: { lte: soon } },
+    }),
+    prisma.guest.count({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING } }),
+    prisma.guest.count({ where: { weddingId, hasReceivedMessage: false, phone: { not: null } } }),
+  ]);
+
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+  const reminders: ReminderItem[] = [];
+  if (pixToCheck > 0) {
+    reminders.push({
+      id: "pix_pending",
+      title: "Pix para conferir",
+      description: `${plural(pixToCheck, "pagamento aguarda", "pagamentos aguardam")} a conferência no extrato.`,
+      href: "/financas",
+      category: "finance",
+    });
+  }
+  if (dueExpenses > 0) {
+    reminders.push({
+      id: "expenses_due",
+      title: "Despesas para acompanhar",
+      description: `${plural(dueExpenses, "despesa vence", "despesas vencem")} nos próximos 7 dias ou já venceu.`,
+      href: "/financas",
+      category: "expense",
+    });
+  }
+  if (pendingRsvp > 0) {
+    reminders.push({
+      id: "rsvp_pending",
+      title: "Confirmações de presença pendentes",
+      description: `${plural(pendingRsvp, "convidado ainda não respondeu", "convidados ainda não responderam")} ao convite.`,
+      href: "/convidados",
+      category: "guest",
+    });
+  }
+  if (uninvited > 0) {
+    reminders.push({
+      id: "whatsapp_uninvited",
+      title: "Convites por enviar",
+      description: `${plural(uninvited, "convidado com telefone ainda não recebeu", "convidados com telefone ainda não receberam")} o convite por WhatsApp.`,
+      href: "/mensagens",
+      category: "whatsapp",
+    });
+  }
+  return reminders;
+}
+
+/** Últimos avisos (sino) e, no painel do casal, os lembretes. */
+export async function listNotifications(): Promise<NotificationList> {
+  const session = await getSession();
+  if (!session) return EMPTY;
+
   try {
-    const notifications: SystemNotification[] = [];
-
-    const sevenDaysFromNow = new Date();
-    sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
-
-    const [
-      pendingPix,
-      urgentExpenses,
-      pendingRsvpCount,
-      uninvitedCount,
-    ] = await Promise.all([
-      // 1. Pix Pendentes
-      prisma.transaction.findMany({
-        where: {
-          weddingId,
-          status: PaymentStatus.PENDING,
-          paymentMethod: PaymentMethod.PIX,
-        },
-        include: {
-          gift: { select: { title: true } },
-          guest: { select: { name: true } },
-        },
-        take: 5,
-        orderBy: { createdAt: "desc" },
-      }),
-
-      // 2. Despesas Próximas ou Vencidas
-      prisma.expense.findMany({
-        where: {
-          weddingId,
-          status: { in: [ExpenseStatus.PENDING, ExpenseStatus.OVERDUE] },
-          dueDate: { lte: sevenDaysFromNow },
-        },
-        include: {
-          vendor: { select: { name: true } },
-        },
-        take: 5,
-        orderBy: { dueDate: "asc" },
-      }),
-
-      // 3. Convidados Pendentes de RSVP
-      prisma.guest.count({
-        where: { weddingId, rsvpStatus: RsvpStatus.PENDING },
-      }),
-
-      // 4. Convidados Sem Convite Disparado
-      prisma.guest.count({
-        where: { weddingId, hasReceivedMessage: false, phone: { not: null } },
-      }),
+    const userId = session.userId === SUPER_ADMIN_USER_ID ? null : session.userId;
+    const [rows, unreadCount, ctx] = await Promise.all([
+      userId
+        ? prisma.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 20, select: SELECT })
+        : Promise.resolve([]),
+      userId ? unreadCountFor(userId) : Promise.resolve(0),
+      // Conta sem casamento (fornecedor, cadastro sem onboarding): sem lembretes
+      getWeddingContext(),
     ]);
-
-    // Mapear Pix Pendentes
-    for (const pix of pendingPix) {
-      notifications.push({
-        id: `pix_${pix.id}`,
-        title: "Pagamento Pix a Conferir",
-        description: `${pix.guest?.name || "Convidado"} enviou R$ ${(pix.amount / 100).toFixed(2).replace('.', ',')} em "${pix.gift?.title || "Presente"}"`,
-        type: "warning",
-        linkHref: "/financas",
-        category: "finance",
-        createdAt: pix.createdAt.toISOString(),
-      });
-    }
-
-    // Mapear Despesas Próximas do Vencimento
-    for (const exp of urgentExpenses) {
-      const isPast = new Date(exp.dueDate) < new Date();
-      const originName = exp.vendor?.name || exp.storeName || "Compra Direta";
-      notifications.push({
-        id: `exp_${exp.id}`,
-        title: isPast ? "Despesa Vencida!" : "Despesa a Vencer em Breve",
-        description: `"${exp.description}" (${originName}) — R$ ${(exp.amount / 100).toFixed(2).replace('.', ',')} em ${new Date(exp.dueDate).toLocaleDateString('pt-BR')}`,
-        type: isPast ? "alert" : "warning",
-        linkHref: "/financas",
-        category: "expense",
-        createdAt: exp.dueDate.toISOString(),
-      });
-    }
-
-    // Mapear RSVP Pendente
-    if (pendingRsvpCount > 0) {
-      notifications.push({
-        id: "rsvp_pending",
-        title: "Confirmações de Presença Pendentes",
-        description: `${pendingRsvpCount} convidado(s) ainda não responderam ao RSVP do casamento.`,
-        type: "info",
-        linkHref: "/convidados",
-        category: "guest",
-      });
-    }
-
-    // Mapear Convites WhatsApp
-    if (uninvitedCount > 0) {
-      notifications.push({
-        id: "whatsapp_uninvited",
-        title: "Convites Iniciais Pendentes",
-        description: `${uninvitedCount} convidado(s) com telefone ainda não receberam o convite por WhatsApp.`,
-        type: "info",
-        linkHref: "/mensagens",
-        category: "whatsapp",
-      });
-    }
-
-    return {
-      notifications,
-      unreadCount: notifications.length,
-    };
+    const reminders = ctx ? await coupleReminders(ctx.weddingId) : [];
+    return { items: rows.map(toItem), unreadCount, reminders };
   } catch (error) {
-    console.error("[getSystemNotifications Error]:", error);
-    return {
-      notifications: [],
-      unreadCount: 0,
-    };
+    console.error("[listNotifications Error]:", error);
+    return EMPTY;
+  }
+}
+
+/** Histórico completo para a página de avisos: os últimos 100. */
+export async function listNotificationHistory(): Promise<{ items: NotificationItem[]; unreadCount: number }> {
+  const userId = await sessionUserId();
+  if (!userId) return { items: [], unreadCount: 0 };
+  try {
+    const [rows, unreadCount] = await Promise.all([
+      prisma.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 100, select: SELECT }),
+      unreadCountFor(userId),
+    ]);
+    return { items: rows.map(toItem), unreadCount };
+  } catch (error) {
+    console.error("[listNotificationHistory Error]:", error);
+    return { items: [], unreadCount: 0 };
+  }
+}
+
+export type MarkReadResult = { success: boolean; unreadCount: number };
+
+const IdSchema = z.string().uuid();
+
+/** Marca um aviso da própria pessoa como lido. Id de outra pessoa não encontra nada. */
+export async function markNotificationRead(id: string): Promise<MarkReadResult> {
+  const userId = await sessionUserId();
+  if (!userId) return { success: false, unreadCount: 0 };
+  const parsed = IdSchema.safeParse(id);
+  if (!parsed.success) return { success: false, unreadCount: await unreadCountFor(userId) };
+  try {
+    await prisma.notification.updateMany({ where: { id: parsed.data, userId, readAt: null }, data: { readAt: new Date() } });
+    return { success: true, unreadCount: await unreadCountFor(userId) };
+  } catch (error) {
+    console.error("[markNotificationRead Error]:", error);
+    return { success: false, unreadCount: await unreadCountFor(userId) };
+  }
+}
+
+/** Marca todos os avisos da própria pessoa como lidos. */
+export async function markAllNotificationsRead(): Promise<MarkReadResult> {
+  const userId = await sessionUserId();
+  if (!userId) return { success: false, unreadCount: 0 };
+  try {
+    await prisma.notification.updateMany({ where: { userId, readAt: null }, data: { readAt: new Date() } });
+    return { success: true, unreadCount: 0 };
+  } catch (error) {
+    console.error("[markAllNotificationsRead Error]:", error);
+    return { success: false, unreadCount: await unreadCountFor(userId) };
   }
 }

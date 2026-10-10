@@ -10,6 +10,8 @@ import { sendTextMessage, sendBulkMessages } from "@/lib/evolution";
 import { RsvpStatus } from "@prisma/client";
 import { rateLimitByIp } from "@/lib/security/rate-limiter";
 import { weddingSiteUrl } from "@/lib/wedding-links";
+import { deferNotify } from "@/lib/notifications/service";
+import { notifyRsvp } from "@/lib/notifications/events";
 
 // ==========================================
 // VALIDAÇÕES ZOD
@@ -382,6 +384,19 @@ export async function publicConfirmRsvp(
       },
     });
     if (result.count === 0) return { success: false, error: "Convidado não encontrado." };
+
+    // Avisa o casal só quando a resposta mudou (reenviar o mesmo formulário não vira outro aviso)
+    if (guest.rsvpStatus !== data.status) {
+      deferNotify(() =>
+        notifyRsvp({
+          weddingId: wedding.id,
+          guestId: guest.id,
+          guestName: guest.name,
+          status: data.status,
+          companions: data.status === "CONFIRMED" ? data.confirmedCompanions : 0,
+        }),
+      );
+    }
 
     revalidatePath("/convidados");
     return { success: true };

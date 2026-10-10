@@ -5,6 +5,7 @@ import { MobileTabBar } from "@/components/admin/mobile-tab-bar"
 import { redirect } from "next/navigation"
 import { getSession } from "@/lib/security/auth-guard"
 import { getWeddingIdentity } from "@/lib/wedding"
+import { unreadCountFor } from "@/lib/notifications/queries"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Perfil e permissões vêm do banco (não só do JWT), refletindo alterações de acesso na hora.
@@ -12,7 +13,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!session) redirect("/login");
 
   const { role, allowedPaths } = session;
-  const wedding = await getWeddingIdentity();
+  const [wedding, unreadNotifications] = await Promise.all([getWeddingIdentity(), unreadCountFor(session.userId)]);
 
   return (
     <div className="flex min-h-screen bg-linho">
@@ -24,6 +25,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           coupleNames={wedding.coupleNames}
           initials={wedding.initials}
           dateLabel={wedding.dateLabel}
+          unreadNotifications={unreadNotifications}
         />
         <main id="conteudo" className="page-in flex-1 px-4 pb-32 pt-6 md:px-8 md:pb-12 md:pt-8">
           <div className="mx-auto w-full max-w-[1240px]">

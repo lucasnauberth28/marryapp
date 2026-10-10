@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, CreditCard, ExternalLink, Inbox, LogOut, Star, Store, type LucideIcon } from "lucide-react";
+import { Bell, CalendarDays, CreditCard, ExternalLink, Inbox, LogOut, Star, Store, UserRound, type LucideIcon } from "lucide-react";
 import { logout } from "@/actions/auth-actions";
 import { cn } from "@/lib/utils";
 import { PLAN_HREF } from "../_lib/vendor-panel";
@@ -12,6 +12,7 @@ const ORDERS = "/fornecedor/pedidos";
 const AGENDA = "/fornecedor/agenda";
 const PROFILE = "/fornecedor/perfil";
 const REVIEWS = "/fornecedor/avaliacoes";
+const NOTIFICATIONS = "/fornecedor/notificacoes";
 
 function isActive(pathname: string, href: string) {
   // A lista de pedidos fica em /fornecedor; o detalhe, em /fornecedor/pedidos/[id].
@@ -37,6 +38,8 @@ export function VendorSidebarNav({ newLeads, publicProfileHref }: { newLeads: nu
     { href: PROFILE, label: "Meu perfil", icon: Store },
     { href: REVIEWS, label: "Avaliações", icon: Star },
     { href: PLAN_HREF, label: "Plano", icon: CreditCard },
+    { href: NOTIFICATIONS, label: "Avisos", icon: Bell },
+    { href: "/conta", label: "Minha conta", icon: UserRound },
   ];
   if (publicProfileHref) {
     items.push({ href: publicProfileHref, label: "Ver perfil público", icon: ExternalLink, external: true });
@@ -116,6 +119,7 @@ const MOBILE_TITLES: { href: string; title: string }[] = [
   { href: PROFILE, title: "Meu perfil" },
   { href: REVIEWS, title: "Avaliações" },
   { href: PLAN_HREF, title: "Plano" },
+  { href: NOTIFICATIONS, title: "Avisos" },
 ];
 
 /** Título do topo no celular, conforme a página. */

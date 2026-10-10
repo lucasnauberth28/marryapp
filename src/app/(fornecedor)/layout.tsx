@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import prisma from "@/lib/prisma";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
+import { NotificationBell } from "@/components/notifications/notification-bell";
+import { unreadCountFor } from "@/lib/notifications/queries";
 import { Chip } from "./_components/status-chip";
 import { VendorAvatar } from "./_components/vendor-avatar";
 import { LogoutButton, LogoutIconButton, VendorMobileTitle, VendorSidebarNav, VendorTabBar } from "./_components/vendor-nav";
@@ -43,16 +46,17 @@ function UnlinkedAccount() {
 }
 
 export default async function FornecedorLayout({ children }: { children: React.ReactNode }) {
-  const { vendor } = await getVendorPageContext();
+  const { session, vendor } = await getVendorPageContext();
   if (!vendor) return <UnlinkedAccount />;
 
   const tier = effectiveVendorTier(vendor.planTier, vendor.planExpiresAt);
   const isFree = tier === "FREE";
-  const [newLeads, monthLeads] = await Promise.all([
+  const [newLeads, monthLeads, unreadNotifications] = await Promise.all([
     prisma.vendorLead.count({ where: { vendorId: vendor.id, status: "NEW" } }),
     isFree
       ? prisma.vendorLead.count({ where: { vendorId: vendor.id, createdAt: { gte: startOfMonthBrasilia() } } })
       : Promise.resolve(0),
+    unreadCountFor(session.userId),
   ]);
 
   const planLabel = PLAN_LABEL[tier] ?? "Plano Start";
@@ -68,7 +72,17 @@ export default async function FornecedorLayout({ children }: { children: React.R
       </a>
 
       <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col gap-5 overflow-y-auto border-r border-linha bg-linho px-4 py-6 md:flex">
-        <BrandBlock />
+        <div className="flex items-start justify-between gap-2">
+          <BrandBlock />
+          <NotificationBell
+            initialUnread={unreadNotifications}
+            allHref="/fornecedor/notificacoes"
+            settingsHref="/conta#avisos"
+            side="right"
+            align="start"
+            className="-mt-2.5"
+          />
+        </div>
         <div className="flex items-center gap-2.5 rounded-xl border border-linha bg-papel p-3">
           <VendorAvatar name={vendor.companyName} logoUrl={vendor.logoUrl} size={40} />
           <span className="flex min-w-0 flex-col">
@@ -84,11 +98,19 @@ export default async function FornecedorLayout({ children }: { children: React.R
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-[60px] items-center gap-2.5 border-b border-linha bg-linho/95 pr-2 pl-4 backdrop-blur md:hidden">
-          <VendorAvatar name={vendor.companyName} logoUrl={vendor.logoUrl} size={36} />
+          <Link href="/conta" aria-label="Minha conta" className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-salvia">
+            <VendorAvatar name={vendor.companyName} logoUrl={vendor.logoUrl} size={36} />
+          </Link>
           <VendorMobileTitle />
           <Chip tone="salvia">
             {isFree ? `Start · ${Math.min(monthLeads, START_MONTHLY_LEAD_LIMIT)} de ${START_MONTHLY_LEAD_LIMIT}` : planLabel}
           </Chip>
+          <NotificationBell
+            initialUnread={unreadNotifications}
+            allHref="/fornecedor/notificacoes"
+            settingsHref="/conta#avisos"
+            className="-mr-1"
+          />
           <LogoutIconButton />
         </header>
 

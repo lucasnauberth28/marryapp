@@ -8,6 +8,8 @@ import prisma from "@/lib/prisma";
 import { requireVendorSession } from "@/lib/security/vendor-guard";
 import { checkRateLimit, getClientIp } from "@/lib/security/rate-limiter";
 import { PUBLIC_TOKEN_RE } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { deferNotify } from "@/lib/notifications/service";
+import { notifyReviewNew } from "@/lib/notifications/events";
 
 // Painel do fornecedor > Avaliações: o fornecedor responde publicamente às avaliações que recebeu.
 const REVIEW_REPLY_LIMIT = { limit: 30, windowMs: 1000 * 60 }; // 30 respostas / minuto por conta
@@ -126,6 +128,8 @@ export async function submitLeadReview(input: SubmitLeadReviewInput): Promise<Su
         data: { rating: Number((stats._avg.rating ?? 0).toFixed(1)), reviewCount: stats._count._all },
       });
     });
+
+    deferNotify(() => notifyReviewNew(lead.id));
 
     revalidatePath(`/fornecedores/${lead.vendorId}`);
     revalidatePath("/fornecedores");

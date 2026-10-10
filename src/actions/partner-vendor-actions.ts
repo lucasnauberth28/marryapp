@@ -10,6 +10,8 @@ import { CurationStatus, Prisma } from "@prisma/client";
 import { z } from "zod";
 import { checkRateLimit, getClientIp, rateLimitByIp } from "@/lib/security/rate-limiter";
 import { normalizeText } from "@/lib/security/sanitize";
+import { deferNotify } from "@/lib/notifications/service";
+import { notifyLeadNew, notifyProposalAccepted } from "@/lib/notifications/events";
 import { getUnavailableVendorIds, isVendorAvailable } from "@/lib/vendor-availability";
 import {
   effectiveVendorTier,
@@ -282,6 +284,9 @@ export async function createVendorLead(data: {
       select: { id: true, createdAt: true },
     });
 
+    // Aviso no sino do fornecedor (e push), depois da resposta ao casal
+    deferNotify(() => notifyLeadNew(lead.id));
+
     return { success: true, lead };
   } catch (error) {
     console.error("[createVendorLead Error]:", error);
@@ -369,6 +374,8 @@ export async function acceptLeadProposal(input: AcceptProposalInput): Promise<Ac
       },
     });
     if (result.count === 0) return { success: false, error: "Esta proposta já foi aceita." };
+
+    deferNotify(() => notifyProposalAccepted(lead.id));
 
     return { success: true, acceptedAt: now.toISOString(), name };
   } catch (error) {

@@ -1,24 +1,14 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import {
-  Bell,
-  Users as UsersIcon,
-  Wallet,
   Settings as SettingsIcon,
   Shield,
   KeyRound,
   LogOut,
-  Calendar,
-  CheckCircle2,
-  ArrowRight,
-  MessageCircle,
-  RefreshCw,
   CreditCard as CreditCardIcon,
   UserRound,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/actions/auth-actions";
-import { getSystemNotifications, SystemNotification } from "@/actions/notification-actions";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { hasPathAccess } from "@/lib/permissions";
 import { Logo } from "@/components/brand/logo";
 
@@ -37,32 +27,11 @@ interface HeaderProps {
   coupleNames: string;
   initials: string;
   dateLabel?: string | null;
+  /** Avisos não lidos, já contados no servidor. */
+  unreadNotifications?: number;
 }
 
-const TONE: Record<SystemNotification["type"], string> = {
-  alert: "bg-perigo-suave text-perigo",
-  warning: "bg-aviso-suave text-aviso",
-  info: "bg-ameixa-suave text-ameixa",
-  success: "bg-sucesso-suave text-sucesso",
-};
-
-export function Header({ role = "Admin", allowedPaths = [], coupleNames, initials, dateLabel }: HeaderProps) {
-  const [notifications, setNotifications] = useState<SystemNotification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [isPending, startTransition] = useTransition();
-
-  const loadNotifications = () => {
-    startTransition(async () => {
-      const res = await getSystemNotifications();
-      setNotifications(res.notifications);
-      setUnreadCount(res.unreadCount);
-    });
-  };
-
-  useEffect(() => {
-    loadNotifications();
-  }, []);
-
+export function Header({ role = "Admin", allowedPaths = [], coupleNames, initials, dateLabel, unreadNotifications = 0 }: HeaderProps) {
   const can = (path: string) => hasPathAccess(allowedPaths, path);
 
   return (
@@ -78,69 +47,7 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
       </div>
 
       <div className="flex items-center gap-2 md:gap-3">
-        <DropdownMenu onOpenChange={(open) => open && loadNotifications()}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative h-11 w-11 cursor-pointer rounded-xl text-tinta-suave hover:bg-areia/70 hover:text-ameixa"
-              aria-label={unreadCount > 0 ? `Avisos (${unreadCount} novos)` : "Avisos"}
-            >
-              <Bell className="h-5 w-5" strokeWidth={1.75} />
-              {unreadCount > 0 && (
-                <span className="absolute right-2 top-2 grid h-4 min-w-4 place-items-center rounded-full border-2 border-linho bg-perigo px-1 text-[10px] font-bold text-on-ameixa">
-                  {unreadCount}
-                </span>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[calc(100vw-32px)] max-w-96 overflow-hidden rounded-2xl border-linha bg-papel p-0 font-sans shadow-[var(--shadow-aceito-2)]" align="end">
-            <div className="flex items-center justify-between border-b border-linha px-4 py-3">
-              <p className="text-sm font-semibold text-tinta">Avisos</p>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-tinta-suave"
-                  onClick={loadNotifications}
-                  aria-label="Atualizar avisos"
-                >
-                  <RefreshCw className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
-                </Button>
-                {unreadCount > 0 && (
-                  <button onClick={() => setUnreadCount(0)} className="cursor-pointer px-2 text-sm font-semibold text-ameixa hover:underline">
-                    Marcar como lidos
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="max-h-80 divide-y divide-linha overflow-y-auto" data-lenis-prevent>
-              {notifications.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 px-4 py-8 text-center text-sm text-tinta-suave">
-                  <CheckCircle2 className="h-6 w-6 text-sucesso" />
-                  <span>Nada pendente por aqui.</span>
-                </div>
-              ) : (
-                notifications.map((n) => (
-                  <Link key={n.id} href={n.linkHref} className="group flex items-start gap-3 p-3.5 transition-colors hover:bg-linho">
-                    <div className={`mt-0.5 shrink-0 rounded-xl p-2 ${TONE[n.type] ?? TONE.info}`}>
-                      {n.category === "finance" && <Wallet className="h-4 w-4" />}
-                      {n.category === "expense" && <Calendar className="h-4 w-4" />}
-                      {n.category === "guest" && <UsersIcon className="h-4 w-4" />}
-                      {n.category === "whatsapp" && <MessageCircle className="h-4 w-4" />}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-tinta group-hover:text-ameixa">{n.title}</p>
-                      <p className="line-clamp-2 text-sm text-tinta-suave">{n.description}</p>
-                    </div>
-                    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-tinta-suave transition-transform group-hover:translate-x-0.5" />
-                  </Link>
-                ))
-              )}
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <NotificationBell initialUnread={unreadNotifications} allHref="/notificacoes" settingsHref="/conta#avisos" />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

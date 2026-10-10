@@ -3,6 +3,8 @@ import { PaymentStatus, VendorPlanTier } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { paidAmountMatches } from "@/lib/security/webhook-signature";
 import { nextVendorPeriodEnd, vendorTierForPlan } from "@/lib/subscription-period";
+import { deferNotify } from "@/lib/notifications/service";
+import { notifyPlanActivated } from "@/lib/notifications/events";
 
 export type ActivationResult = "activated" | "already" | "amount_mismatch" | "not_found";
 
@@ -33,7 +35,7 @@ export async function applyApprovedPayment(
   }
 
   const now = new Date();
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const updated = await tx.subscription.updateMany({
       where: { id: sub.id, status: { not: PaymentStatus.APPROVED } },
       data: { status: PaymentStatus.APPROVED, gatewayId: payment.id, paidAt: now },
@@ -79,6 +81,9 @@ export async function applyApprovedPayment(
     // Planos de casal ficam registrados como pagos na assinatura; o painel lê a última aprovada.
     return "activated";
   });
+  // Aviso no sino de quem pagou, depois da resposta; só o primeiro processamento chega aqui.
+  if (result === "activated") deferNotify(() => notifyPlanActivated(sub.id));
+  return result;
 }
 
 /** Pagamento recusado ou cancelado no gateway: a cobrança deixa de valer. */
@@ -111,11 +116,21 @@ export async function refundSubscription(subscriptionId: string) {
   });
 }
 
-/** Fornecedores com período vencido voltam ao plano gratuito. Planos sem data (dados manualmente) ficam. */
+/**
+ * Fornecedores com período vencido voltam ao plano gratuito. Planos sem data (dados manualmente) ficam.
+ * Devolve também quem expirou, para o aviso "seu plano venceu".
+ */
 export async function expireVendorPlans(now = new Date()) {
+  const where = { planTier: { not: VendorPlanTier.FREE }, planExpiresAt: { lt: now } };
+  const due = await prisma.partnerVendor.findMany({ where, select: { id: true, planTier: true, planExpiresAt: true } });
   const result = await prisma.partnerVendor.updateMany({
-    where: { planTier: { not: VendorPlanTier.FREE }, planExpiresAt: { lt: now } },
+    where: { ...where, id: { in: due.map((v) => v.id) } },
     data: { planTier: VendorPlanTier.FREE, planExpiresAt: null, planReminderDays: null },
   });
-  return result.count;
+  const vendors = due.map((v) => ({
+    id: v.id,
+    planName: v.planTier === VendorPlanTier.MASTER ? "Master Elite" : "Pro",
+    expiredAt: v.planExpiresAt ?? now,
+  }));
+  return { count: result.count, vendors };
 }

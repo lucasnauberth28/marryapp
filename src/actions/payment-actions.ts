@@ -9,6 +9,8 @@ import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { rateLimitByIp } from "@/lib/security/rate-limiter";
 import { normalizeText } from "@/lib/security/sanitize";
+import { deferNotify } from "@/lib/notifications/service";
+import { notifyGiftPaid, notifyPixToCheck } from "@/lib/notifications/events";
 
 // Ações públicas usadas pelo checkout de presentes. Nenhuma delas pode aprovar
 // pagamento por conta própria: aprovação só vem do Mercado Pago (webhook/consulta)
@@ -125,6 +127,9 @@ export async function createPixTransactionAction(input: {
       return { success: false, error: "Pagamento via Pix indisponível no momento." };
     }
 
+    // Aviso ao casal: o Pix estático precisa de conferência no extrato
+    deferNotify(() => notifyPixToCheck(transaction.id));
+
     const pixPayload = generatePixPayload({
       pixKey,
       merchantName: (process.env.PIX_MERCHANT_NAME || "Casamento").trim(),
@@ -189,6 +194,7 @@ export async function checkTransactionStatusAction(transactionId: string) {
           revalidatePath("/casamento", "layout");
           revalidatePath("/presentes-admin");
           revalidatePath("/financas");
+          deferNotify(() => notifyGiftPaid(transaction.id));
 
           return { approved: true };
         }
@@ -283,6 +289,7 @@ export async function processCardPaymentAction(input: {
 
       revalidatePath("/casamento", "layout");
       revalidatePath("/presentes-admin");
+      deferNotify(() => notifyGiftPaid(transaction.id));
 
       return { success: true, status: "APPROVED", transactionId: transaction.id };
     }

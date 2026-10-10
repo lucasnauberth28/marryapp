@@ -5,6 +5,7 @@ import { appUrl } from "@/lib/app-url";
 import { brandedEmail, sendEmail } from "@/lib/email";
 import { sendTextMessage } from "@/lib/evolution";
 import { dueReminder, reminderWindowEnd, type PlanReminderDay } from "@/lib/plan-reminders";
+import { notifyPlanExpiring } from "@/lib/notifications/cron";
 
 const TIER_NAME: Record<string, string> = { PRO: "Pro", MASTER: "Master Elite" };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -78,6 +79,15 @@ export async function sendVendorPlanReminders(now = new Date()): Promise<Reminde
       data: { planReminderDays: day },
     });
     if (claimed.count === 0) continue;
+
+    // Aviso no sino (e push) além do WhatsApp e do e-mail abaixo; nunca lança erro.
+    await notifyPlanExpiring({
+      vendorId: vendor.id,
+      planName: TIER_NAME[vendor.planTier] ?? "pago",
+      expiresAt: vendor.planExpiresAt,
+      day,
+      now,
+    });
 
     const texts = reminderTexts(day, TIER_NAME[vendor.planTier] ?? "pago", vendor.companyName, vendor.planExpiresAt, now);
     const phone = vendor.whatsapp || vendor.phone;

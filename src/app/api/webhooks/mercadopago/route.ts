@@ -7,6 +7,8 @@ import { revalidatePath } from "next/cache";
 import { parseSubscriptionReference } from "@/lib/subscription-period";
 import { applyApprovedPayment, markPaymentFailed, refundSubscription } from "@/lib/subscriptions";
 import { weddingSiteUrl } from "@/lib/wedding-links";
+import { deferNotify } from "@/lib/notifications/service";
+import { notifyGiftPaid } from "@/lib/notifications/events";
 
 export async function POST(req: Request) {
   try {
@@ -104,6 +106,9 @@ export async function POST(req: Request) {
       revalidatePath("/casamento", "layout");
       revalidatePath("/presentes-admin");
       revalidatePath("/financas");
+
+      // Aviso no sino do casal: depois da resposta, e uma falha aqui nunca atrapalha o webhook.
+      deferNotify(() => notifyGiftPaid(internalTxId));
 
       const guest = transaction.guest;
       if (guest?.phone) {
