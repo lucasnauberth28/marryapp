@@ -1,6 +1,7 @@
 "use server";
 
 import { requireWedding } from "@/lib/security/wedding-context";
+import { moduleRefusal } from "@/lib/wedding-plan";
 import { weddingSiteUrl } from "@/lib/wedding-links";
 
 import prisma from "@/lib/prisma";
@@ -141,7 +142,9 @@ export async function deleteMessageTemplate(id: string) {
  * Dispara um template para vários convidados
  */
 export async function sendTemplateToGuests(templateId: string, guestIds: string[]) {
-  const { weddingId, wedding } = await requireWedding("/mensagens");
+  const { weddingId, wedding, session } = await requireWedding("/mensagens");
+  const refusal = await moduleRefusal({ weddingId, session }, "whatsapp");
+  if (refusal) return { success: false, error: refusal };
   try {
     if (typeof templateId !== "string") return { success: false, error: "Template não encontrado." };
     const template = await prisma.messageTemplate.findFirst({ where: { id: templateId, weddingId } });

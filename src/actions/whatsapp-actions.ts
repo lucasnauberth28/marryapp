@@ -1,6 +1,7 @@
 "use server";
 
 import { requireWedding } from "@/lib/security/wedding-context";
+import { moduleRefusal } from "@/lib/wedding-plan";
 import { weddingSiteUrl } from "@/lib/wedding-links";
 
 import prisma from "@/lib/prisma";
@@ -12,7 +13,9 @@ import { revalidatePath } from "next/cache";
  * Dispara lembretes em massa para convidados com RSVP pendente.
  */
 export async function sendRsvpReminders() {
-  const { weddingId, wedding } = await requireWedding("/mensagens");
+  const { weddingId, wedding, session } = await requireWedding("/mensagens");
+  const refusal = await moduleRefusal({ weddingId, session }, "whatsapp");
+  if (refusal) return { success: false, error: refusal };
   const guests = await prisma.guest.findMany({
     where: {
       weddingId,
@@ -78,7 +81,9 @@ export async function sendRsvpReminders() {
  * Dispara convites para convidados que ainda não receberam mensagem.
  */
 export async function sendInitialInvites() {
-  const { weddingId, wedding } = await requireWedding("/mensagens");
+  const { weddingId, wedding, session } = await requireWedding("/mensagens");
+  const refusal = await moduleRefusal({ weddingId, session }, "whatsapp");
+  if (refusal) return { success: false, error: refusal };
   const guests = await prisma.guest.findMany({
     where: {
       weddingId,

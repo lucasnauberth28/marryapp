@@ -1,13 +1,16 @@
 // src/app/(admin)/mensagens/page.tsx
 import prisma from "@/lib/prisma";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { weddingHasModule } from "@/lib/wedding-plan";
+import { UpgradeCard } from "@/components/plan/upgrade-card";
 import { MensagensClient } from "./mensagens-client";
 import { getWeddingIdentity } from "@/lib/wedding";
 
 export const metadata = { title: "Mensagens" };
 
 export default async function MensagensPage() {
-  const { weddingId, wedding } = await requireWeddingPage("/mensagens");
+  const { session, weddingId, wedding } = await requireWeddingPage("/mensagens");
+  if (!(await weddingHasModule({ weddingId, session }, "whatsapp"))) return <UpgradeCard moduleId="whatsapp" />;
 
   // Busca os templates do casamento
   const templates = await prisma.messageTemplate.findMany({

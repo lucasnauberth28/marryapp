@@ -1,6 +1,7 @@
 "use server";
 
 import { requireWedding, getWeddingBySlug } from "@/lib/security/wedding-context";
+import { moduleRefusal } from "@/lib/wedding-plan";
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
@@ -216,7 +217,9 @@ export async function deleteGuest(id: string) {
  * Inclui botões interativos para confirmar presença e ver lista de presentes.
  */
 export async function sendInvite(guestId: string) {
-  const { weddingId, wedding } = await requireWedding("/convidados");
+  const { weddingId, wedding, session } = await requireWedding("/convidados");
+  const refusal = await moduleRefusal({ weddingId, session }, "whatsapp");
+  if (refusal) return { success: false, error: refusal };
   if (typeof guestId !== "string") return { success: false, error: "Convidado não encontrado." };
   const guest = await prisma.guest.findFirst({ where: { id: guestId, weddingId } });
   if (!guest?.phone) {
@@ -251,7 +254,9 @@ export async function sendBulkReminders(
   filter: "PENDING" | "CONFIRMED_CLOSE",
   weddingDate?: Date
 ) {
-  const { weddingId, wedding } = await requireWedding("/convidados");
+  const { weddingId, wedding, session } = await requireWedding("/convidados");
+  const refusal = await moduleRefusal({ weddingId, session }, "whatsapp");
+  if (refusal) return { success: false, error: refusal };
   let guests;
 
   if (filter === "PENDING") {
@@ -387,7 +392,9 @@ export async function publicConfirmRsvp(
 }
 
 export async function checkInGuest(guestId: string) {
-  const { weddingId } = await requireWedding("/credenciamento");
+  const { weddingId, session } = await requireWedding("/credenciamento");
+  const refusal = await moduleRefusal({ weddingId, session }, "qrcode");
+  if (refusal) return { success: false, error: refusal };
   try {
     if (typeof guestId !== "string") return { success: false, error: "Convidado não encontrado." };
     const guest = await prisma.guest.findFirst({ where: { id: guestId, weddingId } });

@@ -1,5 +1,7 @@
 import { Metadata } from "next";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { weddingHasModule } from "@/lib/wedding-plan";
+import { UpgradeCard } from "@/components/plan/upgrade-card";
 import { ScannerClient } from "./scanner-client";
 
 export const metadata: Metadata = {
@@ -8,7 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default async function CredenciamentoPage() {
-  await requireWeddingPage("/credenciamento");
+  const { session, weddingId } = await requireWeddingPage("/credenciamento");
+  if (!(await weddingHasModule({ weddingId, session }, "qrcode"))) return <UpgradeCard moduleId="qrcode" />;
 
   return (
     <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
