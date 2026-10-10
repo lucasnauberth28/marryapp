@@ -31,6 +31,13 @@ export function daysUntil(date: Date, now = new Date()): number {
   return Math.round((end - start) / 86_400_000);
 }
 
+/** Saudação do painel pela hora (0 a 23) no fuso do casal: "Bom dia", "Boa tarde" ou "Boa noite". */
+export function greetingForHour(hour: number): string {
+  if (hour >= 5 && hour < 12) return "Bom dia";
+  if (hour >= 12 && hour < 18) return "Boa tarde";
+  return "Boa noite";
+}
+
 /** "faltam 191 dias", "falta 1 dia", "é hoje"; vazio se já passou ou não há data. */
 export function daysLeftLabel(days: number | null): string | null {
   if (days === null || days < 0) return null;

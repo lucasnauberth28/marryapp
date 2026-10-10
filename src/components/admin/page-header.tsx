@@ -5,7 +5,7 @@ interface PageHeaderProps {
   title: string;
   description?: ReactNode;
   /** Sobretítulo (ac-overline) acima do título: a área do menu ou a data. */
-  eyebrow?: string;
+  eyebrow?: ReactNode;
   /** Botões e filtros da página. No celular, descem para baixo do título e quebram linha. */
   actions?: ReactNode;
   className?: string;

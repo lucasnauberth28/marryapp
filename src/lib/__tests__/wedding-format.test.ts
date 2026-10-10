@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { daysLeftLabel, formatPhoneBR } from "../wedding-format.ts";
+import { daysLeftLabel, formatPhoneBR, greetingForHour } from "../wedding-format.ts";
 
 test("formatPhoneBR formata celular e fixo com DDD", () => {
   assert.equal(formatPhoneBR("11988887777"), "(11) 98888-7777");
@@ -23,4 +23,13 @@ test("daysLeftLabel fala em dias, no singular e no próprio dia", () => {
   assert.equal(daysLeftLabel(0), "é hoje");
   assert.equal(daysLeftLabel(-3), null);
   assert.equal(daysLeftLabel(null), null);
+});
+
+test("greetingForHour muda de manhã, tarde e noite (madrugada é noite)", () => {
+  assert.equal(greetingForHour(5), "Bom dia");
+  assert.equal(greetingForHour(11), "Bom dia");
+  assert.equal(greetingForHour(12), "Boa tarde");
+  assert.equal(greetingForHour(17), "Boa tarde");
+  assert.equal(greetingForHour(18), "Boa noite");
+  assert.equal(greetingForHour(2), "Boa noite");
 });
