@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import { SESSION_COOKIE_NAME } from "@/lib/auth";
+import { SESSION_COOKIE_NAME, SESSION_SEEN_COOKIE_NAME } from "@/lib/auth";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { generateLinkToken } from "@/lib/account/tokens";
@@ -241,5 +241,6 @@ export async function deleteMyAccount(input: { confirmation: string; password: s
 
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE_NAME);
+  cookieStore.delete(SESSION_SEEN_COOKIE_NAME);
   return { success: true };
 }

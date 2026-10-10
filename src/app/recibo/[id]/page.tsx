@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
@@ -8,7 +8,7 @@ import { Logo } from "@/components/brand/logo";
 import { btn } from "@/components/landing/styles";
 import { hasPathAccess } from "@/lib/permissions";
 import { COUPLE_MODULES } from "@/lib/pricing-modules";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { getSession, SUPER_ADMIN_USER_ID, redirectToLogin } from "@/lib/security/auth-guard";
 import { VENDOR_PERIOD_DAYS } from "@/lib/subscription-period";
 import { cn } from "@/lib/utils";
 import { PrintButton } from "./print-button";
@@ -35,7 +35,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  */
 export default async function ReciboPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
-  if (!session) redirect("/login");
+  if (!session) return redirectToLogin();
 
   const { id } = await params;
   if (!UUID.test(id)) notFound();

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Clock } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 import { LoginForm } from "./login-form";
@@ -15,13 +15,17 @@ interface AuthExperienceProps {
   initialType?: AccountType | null;
   initialPlanId?: string;
   customModules?: string[];
+  /** Caminho (já validado no servidor) para onde voltar depois de entrar. */
+  nextPath?: string | null;
+  /** A pessoa chegou aqui porque a sessão expirou. */
+  sessionExpired?: boolean;
 }
 
 /**
  * Tela única de acesso: entrar e criar conta lado a lado, sem recarregar a página.
  * /login abre na aba Entrar e /cadastro na aba Criar conta.
  */
-export function AuthExperience({ initialMode, initialType = null, initialPlanId, customModules }: AuthExperienceProps) {
+export function AuthExperience({ initialMode, initialType = null, initialPlanId, customModules, nextPath = null, sessionExpired = false }: AuthExperienceProps) {
   const planType = typeOfPlan(initialPlanId);
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [type, setType] = useState<AccountType | null>(initialType ?? planType);
@@ -96,7 +100,16 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
                   </h1>
                   <p className="text-base leading-6 text-tinta-suave">Entrem para continuar organizando o casamento.</p>
                 </div>
-                <LoginForm key={loginEmail} initialEmail={loginEmail} onCreateAccount={() => setMode("criar")} />
+                {sessionExpired ? (
+                  <p
+                    role="status"
+                    className="flex items-start gap-2.5 rounded-[12px] border border-linha bg-areia px-4 py-3 text-[15px] leading-6 text-tinta"
+                  >
+                    <Clock aria-hidden="true" className="mt-0.5 size-[18px] shrink-0 text-tinta-suave" strokeWidth={1.75} />
+                    Sua sessão expirou. Entre de novo para continuar.
+                  </p>
+                ) : null}
+                <LoginForm key={loginEmail} initialEmail={loginEmail} nextPath={nextPath} onCreateAccount={() => setMode("criar")} />
               </div>
             ) : (
               <SignupFlow

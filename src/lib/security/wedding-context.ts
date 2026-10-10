@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import {
   AuthorizationError,
   getSession,
+  redirectToLogin,
   requireAuthSession,
   requirePathPermission,
   SUPER_ADMIN_USER_ID,
@@ -96,7 +97,7 @@ export async function requireWedding(path?: string): Promise<WeddingContext> {
  */
 export async function requireWeddingPage(path?: string): Promise<WeddingContext> {
   const session = await getSession();
-  if (!session) redirect("/login");
+  if (!session) return redirectToLogin(path);
   if (path) {
     try {
       await requirePathPermission(path);

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { Logo } from "@/components/brand/logo";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { getSession, SUPER_ADMIN_USER_ID, redirectToLogin } from "@/lib/security/auth-guard";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
 import { groupsFor } from "@/lib/notifications/catalog";
 import { resolvePrefs } from "@/lib/notifications/preferences";
@@ -21,7 +21,7 @@ const KIND_LABEL = { couple: "Conta de casal", vendor: "Conta de fornecedor", ad
 
 export default async function ContaPage() {
   const session = await getSession();
-  if (!session) redirect("/login");
+  if (!session) return redirectToLogin();
   if (session.userId === SUPER_ADMIN_USER_ID) redirect("/dashboard");
 
   const now = new Date();

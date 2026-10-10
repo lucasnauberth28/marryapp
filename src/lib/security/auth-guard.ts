@@ -1,8 +1,10 @@
 import "server-only";
 import { cache } from "react";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { verifyToken, hasPathAccess, SESSION_COOKIE_NAME } from "@/lib/auth";
+import { verifyToken, hasPathAccess, SESSION_COOKIE_NAME, SESSION_SEEN_COOKIE_NAME, CURRENT_PATH_HEADER } from "@/lib/auth";
+import { loginUrl, safeNextPath } from "@/lib/login-redirect";
 
 export const SUPER_ADMIN_USER_ID = "super-admin";
 
@@ -70,4 +72,16 @@ export async function requirePathPermission(path: string): Promise<SecureAuthCon
     throw new AuthorizationError(`Acesso negado: permissão insuficiente para '${path}'.`);
   }
   return session;
+}
+
+/**
+ * Manda para o login quando a página não tem sessão. Leva o caminho que a pessoa abriu
+ * (`?proxima=`) para voltar a ele depois de entrar e, se ela já esteve logada neste navegador,
+ * avisa que a sessão expirou. `fallbackPath` vale quando o proxy não informou o caminho.
+ */
+export async function redirectToLogin(fallbackPath?: string): Promise<never> {
+  const [headerStore, cookieStore] = await Promise.all([headers(), cookies()]);
+  const here = safeNextPath(headerStore.get(CURRENT_PATH_HEADER)) ?? safeNextPath(fallbackPath);
+  const expired = cookieStore.has(SESSION_COOKIE_NAME) || cookieStore.has(SESSION_SEEN_COOKIE_NAME);
+  redirect(loginUrl(here, expired));
 }

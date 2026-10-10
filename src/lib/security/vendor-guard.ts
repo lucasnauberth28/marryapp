@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { hasPathAccess } from "@/lib/permissions";
-import { AuthorizationError, getSession, type SecureAuthContext } from "@/lib/security/auth-guard";
+import { AuthorizationError, getSession, redirectToLogin, type SecureAuthContext } from "@/lib/security/auth-guard";
 
 /** Path do painel do fornecedor (o perfil "Fornecedor" libera só este módulo). */
 export const VENDOR_PANEL_PATH = "/fornecedor";
@@ -84,7 +84,7 @@ export async function requireVendorSession(): Promise<VendorSessionContext> {
  */
 export async function getVendorPageContext(): Promise<{ session: SecureAuthContext; vendor: VendorPanelVendor | null }> {
   const result = await lookupVendor();
-  if (result.status === "no-session") redirect("/login");
+  if (result.status === "no-session") return redirectToLogin();
   if (result.status === "forbidden") redirect("/dashboard");
   if (result.status === "no-vendor") return { session: result.session, vendor: null };
   return { session: result.session, vendor: result.vendor };

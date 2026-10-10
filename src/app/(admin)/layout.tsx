@@ -2,8 +2,7 @@
 import { Sidebar } from "@/components/admin/sidebar"
 import { Header } from "@/components/admin/header"
 import { MobileTabBar } from "@/components/admin/mobile-tab-bar"
-import { redirect } from "next/navigation"
-import { getSession } from "@/lib/security/auth-guard"
+import { getSession, redirectToLogin } from "@/lib/security/auth-guard"
 import { getAccountView, getWeddingIdentity } from "@/lib/wedding"
 import { getWeddingContext } from "@/lib/security/wedding-context"
 import { getNavCounts } from "@/lib/nav-counts"
@@ -16,7 +15,7 @@ import { vapidPublicKey } from "@/lib/notifications/push"
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Perfil e permissões vêm do banco (não só do JWT), refletindo alterações de acesso na hora.
   const session = await getSession();
-  if (!session) redirect("/login");
+  if (!session) return redirectToLogin();
 
   const { role, allowedPaths } = session;
   const [wedding, account, ctx, unreadNotifications] = await Promise.all([

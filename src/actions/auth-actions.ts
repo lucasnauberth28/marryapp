@@ -6,7 +6,8 @@ import { createHash, timingSafeEqual } from "node:crypto";
 
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { signToken, sessionCookieOptions, hasPathAccess, SESSION_COOKIE_NAME } from "@/lib/auth";
+import { signToken, sessionCookieOptions, hasPathAccess, SESSION_COOKIE_NAME, SESSION_SEEN_COOKIE_NAME } from "@/lib/auth";
+import { resolvePostLoginPath } from "@/lib/login-redirect";
 import { checkRateLimit, rateLimitByIp, SecurityLimits } from "@/lib/security/rate-limiter";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
@@ -47,7 +48,11 @@ function landingPathFor(user: {
   return "/dashboard";
 }
 
-export async function login(password: string, username?: string) {
+/**
+ * `proxima`: caminho de onde a pessoa saiu (vem do `?proxima=` do login). Vale só se for um caminho
+ * interno do app que o perfil pode abrir; senão o destino padrão do perfil.
+ */
+export async function login(password: string, username?: string, proxima?: string) {
   if (typeof password !== "string" || password.length === 0 || password.length > 200) {
     return { success: false, error: GENERIC_LOGIN_ERROR };
   }
@@ -76,7 +81,7 @@ export async function login(password: string, username?: string) {
       allowedPaths: ["*"],
     });
     await setSessionCookie(token);
-    return { success: true };
+    return { success: true, redirectTo: resolvePostLoginPath(proxima, "/dashboard", ["*"]) };
   }
 
   if (!username) {
@@ -109,12 +114,14 @@ export async function login(password: string, username?: string) {
   });
   await setSessionCookie(token);
 
-  return { success: true, redirectTo: landingPathFor(user) };
+  return { success: true, redirectTo: resolvePostLoginPath(proxima, landingPathFor(user), allowedPaths) };
 }
 
 export async function logout() {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE_NAME);
+  // Saiu de propósito: não é sessão expirada
+  cookieStore.delete(SESSION_SEEN_COOKIE_NAME);
   redirect("/login");
 }
 

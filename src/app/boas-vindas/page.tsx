@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { getSession, SUPER_ADMIN_USER_ID, redirectToLogin } from "@/lib/security/auth-guard";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
 import { DEFAULT_THEME_COLOR, GUEST_RANGES, THEME_PRESETS, splitCoupleNames, type GuestRange } from "@/lib/onboarding-options";
 import { OnboardingFlow } from "./onboarding-flow";
@@ -26,7 +26,7 @@ function toDateInput(date: Date | null) {
 
 export default async function BoasVindasPage() {
   const session = await getSession();
-  if (!session) redirect("/login");
+  if (!session) return redirectToLogin();
   if (session.userId === SUPER_ADMIN_USER_ID) redirect("/dashboard");
 
   const user = await prisma.user.findUnique({

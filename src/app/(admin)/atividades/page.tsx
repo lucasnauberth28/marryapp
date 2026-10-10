@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { ScrollText } from "lucide-react";
 import prisma from "@/lib/prisma";
-import { getSession } from "@/lib/security/auth-guard";
+import { getSession, redirectToLogin } from "@/lib/security/auth-guard";
 import { PageHeader } from "@/components/admin/page-header";
 import { Reveal } from "@/components/motion/reveal";
 
@@ -75,7 +75,7 @@ const TARGET_LABEL: Record<string, string> = {
 
 export default async function AtividadesPage() {
   const session = await getSession();
-  if (!session) redirect("/login");
+  if (!session) return redirectToLogin();
   // Só quem tem acesso total (administração da plataforma) lê o registro.
   if (!session.allowedPaths.includes("*")) redirect("/dashboard");
 

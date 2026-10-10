@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { PaymentStatus, VendorPlanTier, type Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { isPlanKey } from "@/lib/plans";
-import { AuthorizationError, requirePathPermission } from "@/lib/security/auth-guard";
+import { AuthorizationError, requirePathPermission, redirectToLogin } from "@/lib/security/auth-guard";
 import { planOption, shortPlanName } from "@/app/login/auth-config";
 import { PageHeader } from "@/components/admin/page-header";
 import { Reveal } from "@/components/motion/reveal";
@@ -184,7 +183,7 @@ export default async function AssinaturasPage({
   searchParams: Promise<{ status?: string; id?: string; aba?: string }>;
 }) {
   const session = await guard();
-  if (!session) redirect("/login");
+  if (!session) return redirectToLogin();
 
   const params = await searchParams;
   const tab = params.aba === "cupons" ? "cupons" : "pagamentos";

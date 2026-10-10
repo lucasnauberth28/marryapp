@@ -11,7 +11,15 @@ import { FormAlert, fieldClass } from "./fields";
 
 const field = cn(fieldClass, "pl-11");
 
-export function LoginForm({ initialEmail = "", onCreateAccount }: { initialEmail?: string; onCreateAccount: () => void }) {
+export function LoginForm({
+  initialEmail = "",
+  nextPath = null,
+  onCreateAccount,
+}: {
+  initialEmail?: string;
+  nextPath?: string | null;
+  onCreateAccount: () => void;
+}) {
   const [username, setUsername] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +32,7 @@ export function LoginForm({ initialEmail = "", onCreateAccount }: { initialEmail
     setIsLoading(true);
 
     try {
-      const res = await login(password, username);
+      const res = await login(password, username, nextPath ?? undefined);
       if (res.success) {
         window.location.href = ("redirectTo" in res && res.redirectTo) || "/dashboard";
       } else {
