@@ -100,7 +100,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-[60px] items-center gap-2.5 border-b border-linha bg-linho/95 pr-2 pl-4 backdrop-blur md:hidden">
-          <Link href="/conta" aria-label="Minha conta" className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-salvia">
+          <Link href="/conta" aria-label="Minha conta" className="-ml-2 grid size-11 shrink-0 place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-salvia">
             <VendorAvatar name={vendor.companyName} logoUrl={vendor.logoUrl} size={36} />
           </Link>
           <VendorMobileTitle />
