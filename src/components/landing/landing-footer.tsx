@@ -10,7 +10,7 @@ const LINKS: { title: string; items: { label: string; href: string }[] }[] = [
     title: "Para casais",
     items: [
       { label: "Como funciona", href: "/#como" },
-      { label: "Planos", href: "/#planos" },
+      { label: "Planos", href: "/planos" },
       { label: "Monte seu plano", href: "/monte-seu-plano" },
       { label: "Criar meu casamento", href: "/cadastro" },
     ],

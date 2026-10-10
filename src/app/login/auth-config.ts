@@ -23,7 +23,7 @@ export interface PlanOption {
 const SUMMARY: Record<PlanKey, string> = {
   basic: "Site, lista de presentes e confirmações.",
   classic: "Tudo para receber os convidados sem planilha.",
-  vip: "Domínio próprio, álbum ao vivo e atendimento prioritário.",
+  vip: "Tudo do Classic, mesas e atendimento prioritário.",
   start: "Seu perfil na vitrine, com curadoria.",
   pro: "Pedidos ilimitados e WhatsApp direto com o casal.",
   master: "Destaque nas buscas e painel de resultados.",

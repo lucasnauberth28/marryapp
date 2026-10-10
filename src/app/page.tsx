@@ -139,9 +139,8 @@ const FEATURES = [
   "Lista de presentes em Pix",
   "QR Code na portaria",
   "Mural de recados",
-  "Álbum coletivo ao vivo",
   "Fornecedores com curadoria",
-  "A Madrinha",
+  "Sugestões da Madrinha",
 ];
 
 function FeatureBand() {
@@ -181,7 +180,7 @@ const STEPS = [
   },
   {
     title: "Convidem pelo WhatsApp",
-    text: "Cada convidado recebe um link, acha o próprio nome e responde em dois toques. Sem cadastro, sem senha.",
+    text: "Cada convidado recebe um link, digita o próprio WhatsApp e responde em dois toques. Sem cadastro, sem senha.",
     img: "img-14-fotografia-detalhes.webp",
     alt: "Convite em papel, alianças e sapatos da noiva sobre linho",
     chip: (
@@ -337,7 +336,7 @@ function CoupleSite() {
 /* ============================================================================================ */
 
 const GUEST_POINTS = [
-  "Lembretes automáticos para quem ainda não respondeu",
+  "Lembrete pelo WhatsApp para quem ainda não respondeu, em um toque",
   "Restrições alimentares e acompanhantes no mesmo passo",
   "QR Code de entrada no dia, conferido na portaria",
 ];
@@ -355,8 +354,8 @@ function Guests() {
           </Reveal>
           <Reveal delay={120}>
             <p className={lead}>
-              O convidado digita o nome, vê só o convite dele, com os lugares que vocês reservaram, e responde. Vocês recebem a
-              confirmação na hora, e ele recebe os detalhes no WhatsApp.
+              O convidado digita o próprio WhatsApp, vê só o convite dele, com os lugares que vocês reservaram, e responde.
+              Vocês recebem a confirmação na hora, e ele guarda o ingresso com QR Code para o dia.
             </p>
           </Reveal>
           <ul className="mt-1 flex flex-col gap-3">
@@ -400,7 +399,7 @@ function Guests() {
 /* Madrinha                                                                                     */
 /* ============================================================================================ */
 
-const MADRINHA_POINTS = ["Lembretes para quem não respondeu", "Cronograma do grande dia", "Mensagens de agradecimento"];
+const MADRINHA_POINTS = ["Lembrete para quem ainda não respondeu", "Convites que ainda faltam enviar", "Despesas com vencimento atrasado"];
 
 function Madrinha() {
   return (
@@ -421,12 +420,12 @@ function Madrinha() {
             </p>
           </Reveal>
           <h2 id="madrinha-titulo" className={cn(h2, "text-on-ameixa")}>
-            <SplitWords parts={["Uma assistente que lembra de tudo por vocês."]} step={55} />
+            <SplitWords parts={["Um passo de cada vez, sugerido pelo painel."]} step={55} />
           </h2>
           <Reveal delay={200}>
             <p className="max-w-[48ch] text-[17px] leading-[26px] text-on-ameixa/90 sm:text-lg sm:leading-7">
-              A Madrinha olha o painel de vocês e sugere o próximo passo: o lembrete para quem não respondeu, o cronograma do dia,
-              a mensagem de agradecimento. Ela prepara; vocês aprovam.
+              A Madrinha olha o painel de vocês e sugere o próximo passo: lembrar quem ainda não respondeu, enviar os convites que
+              faltam, conferir uma despesa atrasada. Ela não conversa nem decide nada: só aponta o caminho, e vocês escolhem.
             </p>
           </Reveal>
           <ul className="flex flex-col border-t border-on-ameixa/20">
@@ -438,45 +437,16 @@ function Madrinha() {
             ))}
           </ul>
           <Reveal delay={480} className="pt-2">
-            <AnchorLink href="/#planos" className={cn(btn.onAmeixa, "max-sm:w-full")}>
-              Ver os planos com a Madrinha
+            <Link href="/cadastro?plano=basic" className={cn(btn.onAmeixa, "max-sm:w-full")}>
+              Experimentar de graça
               <ArrowRight aria-hidden="true" className={btnArrow} />
-            </AnchorLink>
+            </Link>
           </Reveal>
         </div>
 
         <div className="relative flex flex-col gap-4 text-tinta sm:pl-10 lg:pl-6">
-          {/* Cartão de fundo: rascunho do cronograma */}
-          <div className="ml-auto w-[88%] max-w-[340px] sm:mr-4">
-            <Parallax strength={30}>
-              <Reveal variant="right" delay={150}>
-                <div aria-hidden="true" className="rounded-[16px] border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)]">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-semibold">Rascunho do cronograma</p>
-                    <span className="inline-flex min-h-7 shrink-0 items-center whitespace-nowrap rounded-[6px] bg-aviso-suave px-2.5 text-sm font-semibold text-aviso">
-                      Para revisar
-                    </span>
-                  </div>
-                  <ul className="mt-4 flex flex-col gap-2.5 text-sm">
-                    {[
-                      ["15h30", "Chegada dos convidados"],
-                      ["16h", "Cerimônia"],
-                      ["17h30", "Recepção e jantar"],
-                    ].map(([t, label]) => (
-                      <li key={t} className="flex items-center gap-3">
-                        <span className="w-12 shrink-0 font-semibold tabular-nums text-ameixa">{t}</span>
-                        <span className="h-px w-3 bg-linha" />
-                        <span className="text-tinta-suave">{label}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </Reveal>
-            </Parallax>
-          </div>
-
           {/* Cartão principal: sugestão da Madrinha */}
-          <div className="relative -mt-10 w-full max-w-[480px] sm:-mt-6">
+          <div className="relative w-full max-w-[480px]">
             <Parallax strength={60}>
               <Reveal variant="up" delay={300}>
                 <aside
@@ -491,12 +461,12 @@ function Madrinha() {
                       Madrinha <span className="font-normal text-tinta-suave">· sua assistente</span>
                     </p>
                     <p className="mt-1 text-base leading-6">
-                      32 convidados ainda não responderam e o prazo é em nove dias. Quer que eu prepare uma mensagem de lembrete
-                      para mandar no WhatsApp?
+                      32 convites ainda não tiveram resposta e o prazo é em nove dias. Quer preparar um lembrete para mandar no
+                      WhatsApp?
                     </p>
                   </div>
                   <div aria-hidden="true" className="col-start-2 flex flex-wrap gap-2">
-                    <span className={cn(btn.primary, btn.sm, "pointer-events-none")}>Preparar mensagem</span>
+                    <span className={cn(btn.primary, btn.sm, "pointer-events-none")}>Preparar lembrete</span>
                     <span className={cn(btn.quiet, btn.sm, "pointer-events-none")}>Agora não</span>
                   </div>
                 </aside>
@@ -652,7 +622,7 @@ function Plans() {
             </Link>
             . É fornecedor? O plano Start é gratuito, e o Pro sai por {reais(PLANS_CONFIG.pro.price)} por mês.
           </p>
-          <Link href="/cadastro" className={cn(btn.secondary, "shrink-0")}>
+          <Link href="/planos" className={cn(btn.secondary, "shrink-0")}>
             Comparar os planos
           </Link>
         </Reveal>

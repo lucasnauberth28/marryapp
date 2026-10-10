@@ -29,7 +29,7 @@ export const PLANS_CONFIG = {
     features: [
       "0% de taxa no Pix: vocês recebem o valor inteiro",
       "Editor do site completo, com todos os blocos",
-      "Disparos automáticos no WhatsApp dos convidados",
+      "Convites e lembretes pelo WhatsApp, enviados pelo painel",
       "Check-in com QR Code na portaria",
       "Mural de recados e dicas de traje",
     ],
@@ -42,8 +42,8 @@ export const PLANS_CONFIG = {
     badge: "Experiência VIP",
     features: [
       "Tudo incluído no Plano Classic",
-      "Domínio próprio (.com.br) grátis por 1 ano",
-      "Álbum coletivo ao vivo com QR Code nas mesas",
+      "Mesas organizadas e relatório de restrições para o buffet",
+      "Domínio próprio (.com.br) grátis por 1 ano (em breve)",
       "Atendimento VIP e suporte prioritário no WhatsApp",
     ],
   },

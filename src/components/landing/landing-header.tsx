@@ -15,7 +15,7 @@ const NAV: NavItem[] = [
   { label: "Como funciona", href: "/#como", anchor: true },
   { label: "Para convidados", href: "/#convidados", anchor: true },
   { label: "Fornecedores", href: "/fornecedores" },
-  { label: "Planos", href: "/#planos", anchor: true },
+  { label: "Planos", href: "/planos" },
 ];
 
 function NavLink({ item, className, onClick, children }: { item: NavItem; className?: string; onClick?: () => void; children: React.ReactNode }) {

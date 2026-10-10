@@ -17,7 +17,7 @@ const FAQS = [
   },
   {
     q: "Os convidados precisam criar conta para confirmar presença?",
-    a: "Não. O convidado abre o link do convite, digita o nome, vê só o convite dele e responde em dois toques. Nos planos Classic e VIP, os lembretes para quem ainda não respondeu saem automaticamente pelo WhatsApp.",
+    a: "Não. O convidado abre o link do convite, digita o próprio WhatsApp, vê só o convite dele e responde em dois toques. Para lembrar quem ainda não respondeu, vocês mandam o lembrete pelo WhatsApp direto do painel, nos planos Classic e VIP.",
   },
   {
     q: "Dá para deixar o site com a nossa cara?",
