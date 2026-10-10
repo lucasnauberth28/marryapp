@@ -1,9 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Bell, ChevronDown, Link as LinkIcon, MessageCircle, Plus, Search, Send, Trash2, X } from "lucide-react";
+import type { Guest } from "@prisma/client";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { Guest } from "@prisma/client";
+import { PageHeader } from "@/components/admin/page-header";
+import { RsvpChip, StatusChip } from "@/components/painel/status-chip";
+import { btn, btnDanger, btnIcon, card, chipBase, chipTone, errorBox, hint, input, label, overline, textarea } from "@/components/painel/styles";
+import { createMessageTemplate, updateMessageTemplate, deleteMessageTemplate, sendTemplateToGuests } from "@/actions/message-actions";
+import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-actions";
+import { weddingSiteUrl } from "@/lib/wedding-links";
+import { formatPhoneBR } from "@/lib/wedding-format";
 
 export interface MessageTemplate {
   id: string;
@@ -17,49 +26,6 @@ export interface MessageTemplate {
   updatedAt: Date;
 }
 
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Send,
-  Plus,
-  Trash2,
-  Save,
-  Paperclip,
-  Image as ImageIcon,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  Bell,
-  Sparkles,
-  X,
-  Smartphone,
-  ArrowLeft,
-  CheckCheck,
-  Heart,
-  Wifi,
-  Battery,
-  Link as LinkIcon,
-  Filter,
-} from "lucide-react";
-import {
-  createMessageTemplate,
-  updateMessageTemplate,
-  deleteMessageTemplate,
-  sendTemplateToGuests,
-} from "@/actions/message-actions";
-import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-actions";
-import { weddingSiteUrl } from "@/lib/wedding-links";
-
 interface MensagensClientProps {
   initialTemplates: MessageTemplate[];
   initialGuests: Guest[];
@@ -68,1066 +34,580 @@ interface MensagensClientProps {
   slug: string;
 }
 
-export function MensagensClient({
-  initialTemplates,
-  initialGuests,
-  coupleNames,
+type LinkItem = { id: string; text: string };
+
+const DEFAULT_LINKS: LinkItem[] = [
+  { id: "confirm", text: "✅ Confirmar Presença" },
+  { id: "decline", text: "❌ Não poderei ir" },
+];
+
+const TYPE_LABEL: Record<string, string> = {
+  INITIAL_INVITE: "Convite inicial",
+  RSVP_REMINDER: "Lembrete de confirmação",
+  CUSTOM: "Personalizado",
+};
+
+const typeLabel = (t?: string | null) => TYPE_LABEL[t ?? "CUSTOM"] ?? "Personalizado";
+
+function parseLinks(raw?: string | null): LinkItem[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+const hasPhone = (g: Guest) => !!g.phone && g.phone.replace(/\D/g, "").length >= 8;
+
+type Audience = "pending" | "unsent" | "confirmed" | "all" | "custom";
+
+function idsFor(audience: Audience, guests: Guest[]): string[] {
+  const withPhone = guests.filter(hasPhone);
+  switch (audience) {
+    case "pending":
+      return withPhone.filter((g) => g.rsvpStatus === "PENDING").map((g) => g.id);
+    case "unsent":
+      return withPhone.filter((g) => !g.hasReceivedMessage).map((g) => g.id);
+    case "confirmed":
+      return withPhone.filter((g) => g.rsvpStatus === "CONFIRMED").map((g) => g.id);
+    case "all":
+      return withPhone.map((g) => g.id);
+    default:
+      return [];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Editor + envio + prévia de um modelo. Recebe `key`, então o estado reinicia ao trocar de modelo.
+// ---------------------------------------------------------------------------
+
+function TemplateEditor({
+  template,
+  guests,
   slug,
-}: MensagensClientProps) {
-  const [templates, setTemplates] = useState<MessageTemplate[]>(initialTemplates);
-  const [activeTab, setActiveTab] = useState<"templates" | "disparador">("templates");
-  
-  // Controls editor mode vs grid view mode
-  const [isEditingMode, setIsEditingMode] = useState(false);
+  coupleNames,
+  onSaved,
+  onDeleted,
+}: {
+  template: MessageTemplate | null;
+  guests: Guest[];
+  slug: string;
+  coupleNames: string;
+  onSaved: (t: MessageTemplate, created: boolean) => void;
+  onDeleted: (id: string) => void;
+}) {
+  const router = useRouter();
+  const ids = { name: useId(), type: useId(), content: useId(), audience: useId(), media: useId(), mediaUrl: useId(), search: useId() };
+  const textRef = useRef<HTMLTextAreaElement>(null);
 
-  // iPhone 15 Plus chassis color option
-  const [iphoneColor, setIphoneColor] = useState<"blue" | "natural" | "pink" | "black">("blue");
+  const [name, setName] = useState(template?.name ?? "");
+  const [content, setContent] = useState(template?.content ?? "");
+  const [type, setType] = useState(template?.type ?? "CUSTOM");
+  const [mediaUrl, setMediaUrl] = useState(template?.mediaUrl ?? "");
+  const [mediaType, setMediaType] = useState(template?.mediaType ?? "image");
+  const [links, setLinks] = useState<LinkItem[]>(template ? parseLinks(template.buttons) : DEFAULT_LINKS);
+  const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // Form states
-  const [selectedTemplate, setSelectedTemplate] = useState<MessageTemplate | null>(null);
-  const [name, setName] = useState("");
-  const [content, setContent] = useState("");
-  const [mediaUrl, setMediaUrl] = useState("");
-  const [mediaType, setMediaType] = useState("image");
-  const [type, setType] = useState("CUSTOM");
-  const [buttonsList, setButtonsList] = useState<Array<{ id: string; text: string }>>([
-    { id: "confirm", text: "✅ Confirmar Presença" },
-    { id: "decline", text: "❌ Não poderei ir" }
-  ]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Envio
+  const [audience, setAudience] = useState<Audience>(() => (idsFor("pending", guests).length > 0 ? "pending" : "all"));
+  const [picked, setPicked] = useState<string[]>(() => idsFor(idsFor("pending", guests).length > 0 ? "pending" : "all", guests));
+  const [search, setSearch] = useState("");
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
 
-  // Trigger states
-  const [chosenTemplateId, setChosenTemplateId] = useState("");
-  const [selectedGuests, setSelectedGuests] = useState<string[]>([]);
-  const [searchGuest, setSearchGuest] = useState("");
-  const [guestFilter, setGuestFilter] = useState<"all" | "pending" | "not_sent">("all");
-  const [isSending, setIsSending] = useState(false);
-  const [sendStatus, setSendStatus] = useState<{
-    success?: boolean;
-    error?: string;
-    message?: string;
-  } | null>(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
+  const savedLinksJson = JSON.stringify(template ? parseLinks(template.buttons) : DEFAULT_LINKS);
+  const dirty =
+    !template ||
+    name !== template.name ||
+    content !== template.content ||
+    type !== (template.type ?? "CUSTOM") ||
+    mediaUrl !== (template.mediaUrl ?? "") ||
+    (mediaUrl !== "" && mediaType !== (template.mediaType ?? "image")) ||
+    JSON.stringify(links) !== savedLinksJson;
 
-  // Badge / Link Management
-  const handleAddButton = () => {
-    if (buttonsList.length >= 3) {
-      toast.error("Você pode cadastrar no máximo 3 Badges de Links por mensagem.");
+  const counts = useMemo(
+    () => ({
+      pending: idsFor("pending", guests).length,
+      unsent: idsFor("unsent", guests).length,
+      confirmed: idsFor("confirmed", guests).length,
+      all: idsFor("all", guests).length,
+    }),
+    [guests]
+  );
+
+  const shownGuests = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return guests;
+    const digits = q.replace(/\D/g, "");
+    return guests.filter((g) => g.name.toLowerCase().includes(q) || (digits.length >= 3 && !!g.phone && g.phone.replace(/\D/g, "").includes(digits)));
+  }, [guests, search]);
+
+  function changeAudience(next: Audience) {
+    setAudience(next);
+    if (next !== "custom") setPicked(idsFor(next, guests));
+    setResult(null);
+  }
+
+  function toggleGuest(id: string) {
+    setAudience("custom");
+    setPicked((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setResult(null);
+  }
+
+  function insertVariable(variable: string) {
+    const el = textRef.current;
+    if (!el) {
+      setContent((c) => `${c}${variable}`);
       return;
     }
-    setButtonsList([...buttonsList, { id: `badge_${Date.now()}`, text: "Novo Link" }]);
-  };
+    const start = el.selectionStart ?? content.length;
+    const end = el.selectionEnd ?? content.length;
+    const next = content.slice(0, start) + variable + content.slice(end);
+    setContent(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(start + variable.length, start + variable.length);
+    });
+  }
 
-  const handleUpdateButton = (index: number, text: string) => {
-    const updated = [...buttonsList];
-    updated[index].text = text;
-    setButtonsList(updated);
-  };
-
-  const handleRemoveButton = (index: number) => {
-    setButtonsList(buttonsList.filter((_, i) => i !== index));
-  };
-
-  const applyRsvpPreset = () => {
-    setButtonsList([
-      { id: "confirm", text: "✅ Confirmar Presença" },
-      { id: "decline", text: "❌ Não poderei ir" }
-    ]);
-    toast.success("Badges de Links de RSVP aplicadas!");
-  };
-
-  const applyGiftsPreset = () => {
-    setButtonsList([
-      { id: "gifts", text: "🎁 Ver Lista de Presentes" },
-      { id: "confirm", text: "✅ Confirmar Presença" }
-    ]);
-    toast.success("Badges de Links de Presentes aplicadas!");
-  };
-
-  const insertVariable = (variable: string) => {
-    setContent((prev) => `${prev} ${variable}`);
-  };
-
-  const handleOpenCreateForm = () => {
-    resetForm();
-    setIsEditingMode(true);
-  };
-
-  const handleEdit = (template: MessageTemplate) => {
-    setSelectedTemplate(template);
-    setName(template.name);
-    setContent(template.content);
-    setMediaUrl(template.mediaUrl || "");
-    setMediaType(template.mediaType || "image");
-    setType(template.type || "CUSTOM");
-    if (template.buttons) {
-      try {
-        setButtonsList(JSON.parse(template.buttons));
-      } catch {
-        setButtonsList([]);
-      }
-    } else {
-      setButtonsList([]);
+  function addLink() {
+    if (links.length >= 3) {
+      toast.error("São no máximo 3 links por mensagem.");
+      return;
     }
-    setIsEditingMode(true);
-  };
+    setLinks([...links, { id: `badge_${Date.now()}`, text: "" }]);
+  }
 
-  const handleSaveTemplate = async (e: React.FormEvent) => {
+  async function save(e: React.FormEvent) {
     e.preventDefault();
-    setIsSubmitting(true);
-
+    setSaving(true);
     const formData = new FormData();
     formData.append("name", name);
     formData.append("content", content);
     formData.append("mediaUrl", mediaUrl);
     formData.append("mediaType", mediaType);
     formData.append("type", type);
-    formData.append("buttons", JSON.stringify(buttonsList));
+    formData.append("buttons", JSON.stringify(links.filter((l) => l.text.trim())));
 
-    const toastId = toast.loading(selectedTemplate ? "Atualizando template de mensagem..." : "Criando novo template...");
-
-    if (selectedTemplate) {
-      const res = await updateMessageTemplate(selectedTemplate.id, formData);
-      if (res.success && res.data) {
-        setTemplates(templates.map((t) => (t.id === selectedTemplate.id ? (res.data as MessageTemplate) : t)));
-        setIsEditingMode(false);
-        resetForm();
-        toast.success("Template atualizado com sucesso!", { id: toastId });
-      } else {
-        toast.error(res.error || "Erro ao salvar template", { id: toastId });
-      }
+    const toastId = toast.loading("Salvando o modelo...");
+    const res = template ? await updateMessageTemplate(template.id, formData) : await createMessageTemplate(formData);
+    if (res.success && res.data) {
+      toast.success("Modelo salvo.", { id: toastId });
+      onSaved(res.data as MessageTemplate, !template);
     } else {
-      const res = await createMessageTemplate(formData);
-      if (res.success && res.data) {
-        setTemplates([res.data as MessageTemplate, ...templates]);
-        setIsEditingMode(false);
-        resetForm();
-        toast.success("Novo template criado com sucesso!", { id: toastId });
-      } else {
-        toast.error(res.error || "Erro ao criar template", { id: toastId });
-      }
+      toast.error(res.error || "Não deu para salvar o modelo. Tente de novo.", { id: toastId });
     }
-    setIsSubmitting(false);
-  };
+    setSaving(false);
+  }
 
-  const handleDelete = async (id: string) => {
-    setConfirmAction(() => async () => {
-      const toastId = toast.loading("Excluindo template...");
-      const res = await deleteMessageTemplate(id);
-      if (res.success) {
-        setTemplates(templates.filter((t) => t.id !== id));
-        if (selectedTemplate?.id === id) {
-          resetForm();
-          setIsEditingMode(false);
-        }
-        toast.success("Template excluído com sucesso!", { id: toastId });
-      } else {
-        toast.error(res.error || "Erro ao excluir template", { id: toastId });
-      }
+  async function remove() {
+    if (!template) return;
+    const toastId = toast.loading("Excluindo o modelo...");
+    const res = await deleteMessageTemplate(template.id);
+    if (res.success) {
+      toast.success("Modelo excluído.", { id: toastId });
+      onDeleted(template.id);
+    } else {
+      toast.error(res.error || "Não deu para excluir agora. Tente de novo.", { id: toastId });
+    }
+  }
+
+  async function send() {
+    if (!template || picked.length === 0) return;
+    setSending(true);
+    setResult(null);
+    const toastId = toast.loading(`Enviando para ${picked.length} ${picked.length === 1 ? "pessoa" : "pessoas"}...`);
+    const res = await sendTemplateToGuests(template.id, picked);
+    if (res.success) {
+      setResult({ ok: true, text: res.message || "Mensagens enviadas." });
+      toast.success(res.message || "Mensagens enviadas.", { id: toastId });
+      router.refresh();
+    } else {
+      setResult({ ok: false, text: res.error || "Não deu para enviar agora. Tente de novo." });
+      toast.error(res.error || "Não deu para enviar agora.", { id: toastId });
+    }
+    setSending(false);
+  }
+
+  // Prévia: o primeiro destinatário escolhido dá o nome de exemplo
+  const sample = guests.find((g) => g.id === picked[0])?.name ?? guests[0]?.name ?? "Nome do convidado";
+  const previewText = (content || "O texto da mensagem aparece aqui enquanto vocês escrevem.").replace(/\{nome\}/gi, sample);
+  const previewLinks = links
+    .filter((l) => l.text.trim())
+    .map((l) => {
+      const lower = l.text.toLowerCase();
+      const gifts = lower.includes("presente") || l.id === "gifts";
+      return { text: l.text, url: weddingSiteUrl(slug, gifts ? "presentes" : "rsvp") };
     });
-    setConfirmOpen(true);
-  };
 
-  const resetForm = () => {
-    setSelectedTemplate(null);
-    setName("");
-    setContent("");
-    setMediaUrl("");
-    setMediaType("image");
-    setType("CUSTOM");
-    setButtonsList([
-      { id: "confirm", text: "✅ Confirmar Presença" },
-      { id: "decline", text: "❌ Não poderei ir" }
-    ]);
-  };
-
-  const toggleGuest = (id: string) => {
-    setSelectedGuests((prev) =>
-      prev.includes(id) ? prev.filter((gid) => gid !== id) : [...prev, id]
-    );
-  };
-
-  const toggleAllGuests = () => {
-    if (selectedGuests.length === filteredGuests.length) {
-      setSelectedGuests([]);
-    } else {
-      setSelectedGuests(filteredGuests.map((g) => g.id));
-    }
-  };
-
-  const handleSendMessages = async () => {
-    if (!chosenTemplateId) return toast.error("Selecione um template!");
-    if (selectedGuests.length === 0) return toast.error("Selecione pelo menos 1 convidado!");
-
-    setIsSending(true);
-    setSendStatus(null);
-    const toastId = toast.loading(`Disparando mensagens para ${selectedGuests.length} convidados...`);
-
-    const res = await sendTemplateToGuests(chosenTemplateId, selectedGuests);
-    if (res.success) {
-      setSendStatus({ success: true, message: res.message });
-      setSelectedGuests([]);
-      toast.success(res.message || "Mensagens enviadas com sucesso! 🚀", { id: toastId });
-    } else {
-      setSendStatus({ error: res.error || "Erro ao realizar o disparo." });
-      toast.error(res.error || "Erro no disparo", { id: toastId });
-    }
-    setIsSending(false);
-  };
-
-  const [isTriggeringRsvp, setIsTriggeringRsvp] = useState(false);
-  const [isTriggeringInvites, setIsTriggeringInvites] = useState(false);
-
-  const handleSendInitialInvites = async () => {
-    setIsTriggeringInvites(true);
-    const toastId = toast.loading("Disparando convites iniciais com QR Code...");
-    const res = await sendInitialInvites();
-    if (res.success) {
-      toast.success(res.message, { id: toastId });
-    } else {
-      toast.error("Erro ao disparar convites iniciais.", { id: toastId });
-    }
-    setIsTriggeringInvites(false);
-  };
-
-  const handleSendRsvpReminders = async () => {
-    setIsTriggeringRsvp(true);
-    const toastId = toast.loading("Disparando lembretes de RSVP pendentes...");
-    const res = await sendRsvpReminders();
-    if (res.success) {
-      toast.success(res.message, { id: toastId });
-    } else {
-      toast.error("Erro ao disparar lembretes de RSVP.", { id: toastId });
-    }
-    setIsTriggeringRsvp(false);
-  };
-
-  // Filtered Guests Logic for Disparador Tab
-  const filteredGuests = initialGuests.filter((g) => {
-    const matchesSearch =
-      g.name.toLowerCase().includes(searchGuest.toLowerCase()) ||
-      (g.phone && g.phone.includes(searchGuest));
-
-    if (!matchesSearch) return false;
-
-    if (guestFilter === "pending") return g.rsvpStatus === "PENDING";
-    if (guestFilter === "not_sent") return !g.hasReceivedMessage;
-    return true;
-  });
-
-  const activeTemplateObj = templates.find((t) => t.id === chosenTemplateId);
+  const lastSent = guests.filter((g) => g.hasReceivedMessage).length;
 
   return (
-    <div className="space-y-6">
-      {/* Header com Navegação por Abas */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-zinc-200/80 pb-4">
-        <div>
-          <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
-            <span>Mensagens</span>
-          </h1>
-          <p className="mt-1 text-sm text-tinta-suave">
-            Crie modelos de mensagens com badges de links clicáveis e envie convites diretamente para os convidados.
-          </p>
+    <div className="grid min-w-0 gap-6 min-[1280px]:grid-cols-[minmax(0,1fr)_300px] min-[1280px]:items-start">
+      <section className={`${card} flex min-w-0 flex-col gap-5 p-5 sm:p-6`}>
+        <form onSubmit={save} className="flex flex-col gap-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <label htmlFor={ids.name} className={label}>
+                Nome do modelo
+              </label>
+              <input id={ids.name} required value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex.: Lembrete de confirmação" className={input} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor={ids.type} className={label}>
+                Para que serve
+              </label>
+              <select id={ids.type} value={type} onChange={(e) => setType(e.target.value)} className={input}>
+                <option value="INITIAL_INVITE">Convite inicial</option>
+                <option value="RSVP_REMINDER">Lembrete de confirmação</option>
+                <option value="CUSTOM">Personalizado</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor={ids.content} className={label}>
+              Texto
+            </label>
+            <textarea
+              id={ids.content}
+              ref={textRef}
+              required
+              rows={7}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Oi, {nome}! Aqui são vocês. Ainda não recebemos sua resposta para o casamento..."
+              className={`${textarea} min-h-44 resize-y`}
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-tinta-suave">Inserir:</span>
+              <button type="button" onClick={() => insertVariable("{nome}")} className={`${chipBase} ${chipTone.neutro} min-h-11 cursor-pointer !pl-3 hover:brightness-95 sm:min-h-8`}>
+                {"{nome}"}
+              </button>
+              <span className="text-sm text-tinta-suave">vira o nome de quem recebe.</span>
+            </div>
+          </div>
+
+          <fieldset className="flex flex-col gap-3 rounded-xl border border-linha p-4">
+            <legend className="flex items-center gap-2 px-1 text-sm font-semibold text-tinta">
+              <LinkIcon className="size-4" aria-hidden="true" />
+              Links no fim da mensagem
+            </legend>
+            <p className={hint}>Cada link leva a pessoa direto ao convite ou à lista de presentes. Até 3.</p>
+            {links.map((l, idx) => (
+              <div key={l.id} className="flex items-center gap-2">
+                <input
+                  aria-label={`Texto do link ${idx + 1}`}
+                  value={l.text}
+                  onChange={(e) => setLinks(links.map((x, i) => (i === idx ? { ...x, text: e.target.value } : x)))}
+                  placeholder="Ex.: Confirmar presença"
+                  className={input}
+                />
+                <button type="button" aria-label={`Remover o link ${idx + 1}`} onClick={() => setLinks(links.filter((_, i) => i !== idx))} className={btnIcon}>
+                  <X className="size-4" aria-hidden="true" />
+                </button>
+              </div>
+            ))}
+            <div className="flex flex-wrap gap-2">
+              {links.length < 3 && (
+                <button type="button" onClick={addLink} className={`${btn.secondary} ${btn.sm}`}>
+                  <Plus className="size-4" aria-hidden="true" />
+                  Adicionar link
+                </button>
+              )}
+              <button type="button" onClick={() => setLinks(DEFAULT_LINKS)} className={`${btn.quiet} ${btn.sm}`}>
+                Confirmar ou recusar
+              </button>
+              <button
+                type="button"
+                onClick={() => setLinks([{ id: "gifts", text: "🎁 Ver Lista de Presentes" }, { id: "confirm", text: "✅ Confirmar Presença" }])}
+                className={`${btn.quiet} ${btn.sm}`}
+              >
+                Presentes e confirmar
+              </button>
+            </div>
+          </fieldset>
+
+          <details className="group rounded-xl border border-linha" open={!!mediaUrl}>
+            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-4 text-sm font-semibold text-tinta">
+              Anexar imagem ou arquivo (opcional)
+              <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+            </summary>
+            <div className="grid gap-4 px-4 pb-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <label htmlFor={ids.media} className={label}>
+                  Tipo do anexo
+                </label>
+                <select id={ids.media} value={mediaType} onChange={(e) => setMediaType(e.target.value)} className={input}>
+                  <option value="image">Imagem (JPG, PNG)</option>
+                  <option value="document">Documento (PDF)</option>
+                  <option value="audio">Áudio</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label htmlFor={ids.mediaUrl} className={label}>
+                  Endereço do arquivo
+                </label>
+                <input id={ids.mediaUrl} type="url" value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} placeholder="https://..." className={input} />
+              </div>
+            </div>
+          </details>
+
+          <div className="flex flex-wrap gap-2">
+            <button type="submit" disabled={saving || !dirty} className={btn.primary}>
+              {saving ? "Salvando..." : template ? "Salvar alterações" : "Salvar modelo"}
+            </button>
+            {template && (
+              <button type="button" onClick={() => setConfirmDelete(true)} className={btnDanger}>
+                <Trash2 className="size-4" aria-hidden="true" />
+                Excluir modelo
+              </button>
+            )}
+          </div>
+        </form>
+
+        <hr className="border-0 border-t border-linha" />
+
+        {/* Envio */}
+        <div className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold leading-7 text-tinta">Enviar pelo WhatsApp</h2>
+          {!template ? (
+            <p className={hint}>Salve o modelo para poder enviar.</p>
+          ) : (
+            <>
+              <div className="flex flex-col gap-2 sm:max-w-sm">
+                <label htmlFor={ids.audience} className={label}>
+                  Para quem
+                </label>
+                <select id={ids.audience} value={audience} onChange={(e) => changeAudience(e.target.value as Audience)} className={input}>
+                  <option value="pending">Sem resposta ({counts.pending})</option>
+                  <option value="unsent">Ainda sem mensagem ({counts.unsent})</option>
+                  <option value="confirmed">Confirmados ({counts.confirmed})</option>
+                  <option value="all">Todos com telefone ({counts.all})</option>
+                  {audience === "custom" && <option value="custom">Escolhidos a dedo ({picked.length})</option>}
+                </select>
+                <p className={hint}>Só entra quem tem telefone cadastrado.</p>
+              </div>
+
+              <details className="group rounded-xl border border-linha">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-4 text-sm font-semibold text-tinta">
+                  Escolher pessoas uma a uma
+                  <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden="true" />
+                </summary>
+                <div className="flex flex-col gap-3 px-4 pb-4">
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-tinta-suave" aria-hidden="true" />
+                    <input id={ids.search} type="search" aria-label="Buscar convidado" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome ou telefone" className={`${input} pl-10`} />
+                  </div>
+                  <ul className="max-h-72 divide-y divide-linha overflow-y-auto rounded-xl border border-linha">
+                    {shownGuests.length === 0 && <li className="px-4 py-6 text-center text-sm text-tinta-suave">Ninguém com esta busca.</li>}
+                    {shownGuests.map((g) => {
+                      const ok = hasPhone(g);
+                      return (
+                        <li key={g.id}>
+                          <label className={`flex min-h-14 items-center gap-3 px-3 py-2 ${ok ? "cursor-pointer hover:bg-ameixa-suave/40" : "opacity-60"}`}>
+                            <input type="checkbox" disabled={!ok} checked={picked.includes(g.id)} onChange={() => toggleGuest(g.id)} className="size-5 shrink-0 accent-[var(--color-ameixa)]" />
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate font-semibold text-tinta">{g.name}</span>
+                              <span className="block text-sm text-tinta-suave">{g.phone ? formatPhoneBR(g.phone) : "Sem telefone"}</span>
+                            </span>
+                            <span className="flex shrink-0 flex-col items-end gap-1 sm:flex-row sm:items-center">
+                              <RsvpChip status={g.rsvpStatus} />
+                              {g.hasReceivedMessage && <StatusChip tone="neutro">Já recebeu</StatusChip>}
+                            </span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </details>
+
+              {dirty && <p className="text-sm font-semibold text-aviso">Salve as alterações do modelo antes de enviar: o envio usa a versão salva.</p>}
+
+              {result && (
+                <p role={result.ok ? "status" : "alert"} className={result.ok ? "rounded-xl bg-sucesso-suave px-3 py-2 text-sm font-semibold text-sucesso" : errorBox}>
+                  {result.text}
+                </p>
+              )}
+
+              <div>
+                <button type="button" onClick={send} disabled={sending || dirty || picked.length === 0} className={btn.primary}>
+                  <Send className="size-4" aria-hidden="true" />
+                  {sending ? "Enviando..." : picked.length === 0 ? "Escolha quem recebe" : `Enviar para ${picked.length} ${picked.length === 1 ? "pessoa" : "pessoas"}`}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+
+      {/* Prévia */}
+      <section aria-label="Prévia no WhatsApp" className="flex min-w-0 flex-col gap-2 min-[1280px]:sticky min-[1280px]:top-24">
+        <p className={overline}>Como chega</p>
+        <div className="flex flex-col gap-2 rounded-3xl bg-areia p-4">
+          <div className="flex items-center gap-2 pb-1 text-sm font-semibold text-tinta">
+            <MessageCircle className="size-4 shrink-0" aria-hidden="true" />
+            <span className="truncate">{coupleNames}</span>
+          </div>
+          <div className="max-w-[92%] self-start rounded-[4px_16px_16px_16px] bg-papel px-3 py-2.5 text-sm leading-5 text-tinta shadow-[var(--shadow-aceito-1)]">
+            {mediaUrl && mediaType === "image" && (
+              // eslint-disable-next-line @next/next/no-img-element -- prévia de um endereço qualquer informado pelo casal
+              <img src={mediaUrl} alt="Imagem anexada" className="mb-2 max-h-36 w-full rounded-lg object-cover" />
+            )}
+            {mediaUrl && mediaType !== "image" && <p className="mb-2 text-tinta-suave">Anexo: {mediaType === "document" ? "documento" : "áudio"}</p>}
+            <p className="whitespace-pre-wrap break-words">{previewText}</p>
+            {previewLinks.length > 0 && (
+              <div className="mt-2 flex flex-col gap-1.5 border-t border-linha pt-2">
+                {previewLinks.map((l, i) => (
+                  <p key={i} className="break-all">
+                    <span className="font-semibold">{l.text}</span>
+                    <br />
+                    <span className="text-ameixa underline">{l.url}</span>
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <p className={hint}>
+          {lastSent > 0 ? `${lastSent} ${lastSent === 1 ? "convidado já recebeu" : "convidados já receberam"} alguma mensagem.` : "Ainda não saiu nenhuma mensagem para os convidados."}
+        </p>
+      </section>
+
+      <ConfirmModal
+        isOpen={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          setConfirmDelete(false);
+          void remove();
+        }}
+        title="Excluir modelo"
+        description="Excluir este modelo de mensagem? Não dá para desfazer."
+        confirmText="Excluir"
+      />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Tela
+// ---------------------------------------------------------------------------
+
+export function MensagensClient({ initialTemplates, initialGuests, coupleNames, slug }: MensagensClientProps) {
+  const router = useRouter();
+  const [templates, setTemplates] = useState<MessageTemplate[]>(initialTemplates);
+  // null = escrevendo um modelo novo
+  const [selectedId, setSelectedId] = useState<string | null>(initialTemplates[0]?.id ?? null);
+  const [shortcut, setShortcut] = useState<"invites" | "reminders" | null>(null);
+
+  const selected = templates.find((t) => t.id === selectedId) ?? null;
+
+  const invitesToSend = initialGuests.filter((g) => !g.hasReceivedMessage && hasPhone(g)).length;
+  const remindersToSend = initialGuests.filter((g) => g.rsvpStatus === "PENDING" && g.hasReceivedMessage && hasPhone(g)).length;
+
+  async function runShortcut(kind: "invites" | "reminders") {
+    setShortcut(kind);
+    const toastId = toast.loading(kind === "invites" ? "Enviando os convites..." : "Enviando os lembretes...");
+    const res = kind === "invites" ? await sendInitialInvites() : await sendRsvpReminders();
+    if (res.success) {
+      toast.success(res.message, { id: toastId });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Não deu para enviar agora. Tente de novo.", { id: toastId });
+    }
+    setShortcut(null);
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        eyebrow="Convidados"
+        title="Mensagens"
+        description="Escrevam os modelos e enviem convites e lembretes pelo WhatsApp."
+        actions={
+          <button type="button" onClick={() => setSelectedId(null)} className={btn.secondary}>
+            <Plus className="size-4" aria-hidden="true" />
+            Nova mensagem
+          </button>
+        }
+      />
+
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+        <div className="flex min-w-0 flex-col gap-4 lg:w-60 lg:flex-none">
+          <nav aria-label="Modelos">
+            <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0 lg:pb-0">
+              {templates.map((t) => {
+                const active = t.id === selectedId;
+                return (
+                  <li key={t.id} className="shrink-0 lg:shrink">
+                    <button
+                      type="button"
+                      aria-current={active ? "true" : undefined}
+                      onClick={() => setSelectedId(t.id)}
+                      className={`flex min-h-14 w-56 cursor-pointer flex-col rounded-xl p-3 text-left transition-colors lg:w-full ${active ? "bg-ameixa-suave" : "border border-linha bg-papel hover:bg-ameixa-suave/50 lg:border-0 lg:bg-transparent"}`}
+                    >
+                      <strong className={`line-clamp-2 font-semibold ${active ? "text-ameixa" : "text-tinta"}`}>{t.name}</strong>
+                      <span className="text-sm text-tinta-suave">{typeLabel(t.type)}</span>
+                    </button>
+                  </li>
+                );
+              })}
+              {templates.length === 0 && <li className="px-1 text-sm text-tinta-suave">Ainda não tem nenhum modelo. Escreva o primeiro abaixo.</li>}
+            </ul>
+          </nav>
+
+          <section className={`${card} hidden flex-col gap-3 p-4 lg:flex`} aria-labelledby="envios-prontos">
+            <h2 id="envios-prontos" className="flex items-center gap-2 text-base font-semibold text-tinta">
+              <Bell className="size-4" aria-hidden="true" />
+              Envios prontos
+            </h2>
+            <p className={hint}>Usam os modelos de convite inicial e de lembrete.</p>
+            <button type="button" disabled={shortcut !== null || invitesToSend === 0} onClick={() => runShortcut("invites")} className={`${btn.secondary} ${btn.sm}`}>
+              {invitesToSend === 0 ? "Todos já têm convite" : `Convite para ${invitesToSend} ${invitesToSend === 1 ? "pessoa" : "pessoas"}`}
+            </button>
+            <button type="button" disabled={shortcut !== null || remindersToSend === 0} onClick={() => runShortcut("reminders")} className={`${btn.secondary} ${btn.sm}`}>
+              {remindersToSend === 0 ? "Ninguém para lembrar" : `Lembrete para ${remindersToSend} ${remindersToSend === 1 ? "pessoa" : "pessoas"}`}
+            </button>
+          </section>
         </div>
 
-        {/* Seleção de Abas Principais */}
-        <div className="flex bg-zinc-100 rounded-2xl p-1 border border-zinc-200 shadow-inner">
-          <button
-            onClick={() => {
-              setActiveTab("templates");
-              setIsEditingMode(false);
+        <div className="min-w-0 flex-1">
+          <TemplateEditor
+            key={selectedId ?? "novo"}
+            template={selected}
+            guests={initialGuests}
+            slug={slug}
+            coupleNames={coupleNames}
+            onSaved={(t, created) => {
+              setTemplates((prev) => (created ? [t, ...prev] : prev.map((x) => (x.id === t.id ? t : x))));
+              setSelectedId(t.id);
             }}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-              activeTab === "templates"
-                ? "bg-papel text-zinc-900 shadow-sm"
-                : "text-zinc-600 hover:text-zinc-900"
-            }`}
-          >
-            Galeria de Templates ({templates.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("disparador")}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-              activeTab === "disparador"
-                ? "bg-papel text-zinc-900 shadow-sm"
-                : "text-zinc-600 hover:text-zinc-900"
-            }`}
-          >
-            Disparador em Massa
-          </button>
+            onDeleted={(id) => {
+              const rest = templates.filter((t) => t.id !== id);
+              setTemplates(rest);
+              setSelectedId(rest[0]?.id ?? null);
+            }}
+          />
         </div>
       </div>
 
-      {activeTab === "templates" ? (
-        !isEditingMode ? (
-          /* ================================================================= */
-          /* MODALIDADE 1: PAINEL DE CARDS DE TEMPLATES                       */
-          /* ================================================================= */
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Card Especial: "+ Novo Template" */}
-              <div
-                onClick={handleOpenCreateForm}
-                className="group border-2 border-dashed border-amber-300/80 bg-gradient-to-br from-amber-50/60 via-white to-amber-50/40 hover:bg-amber-100/60 hover:border-amber-500 hover:shadow-xl transition-all duration-300 rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer min-h-[260px] relative overflow-hidden"
-              >
-                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-400 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Plus className="w-8 h-8 stroke-[2.5]" />
-                </div>
-                <h3 className="font-bold text-lg text-zinc-900 mb-1 group-hover:text-amber-900 transition-colors">
-                  Novo Template
-                </h3>
-                <p className="text-xs text-zinc-500 max-w-[220px] leading-relaxed">
-                  Crie um modelo customizado com imagem e badges de links diretos.
-                </p>
-                <span className="mt-4 text-xs font-bold text-aviso bg-amber-100 px-3.5 py-1.5 rounded-full border border-amber-200 group-hover:bg-amber-600 group-hover:text-white transition-all">
-                  + Abrir Criador
-                </span>
-              </div>
-
-              {/* Cards dos Templates Cadastrados */}
-              {templates.map((t) => {
-                let badgeCount = 0;
-                let badgeList: Array<{ id: string; text: string }> = [];
-                if (t.buttons) {
-                  try {
-                    badgeList = JSON.parse(t.buttons);
-                    badgeCount = badgeList.length;
-                  } catch {}
-                }
-
-                return (
-                  <div
-                    key={t.id}
-                    className="bg-papel border border-zinc-200/80 hover:border-amber-400 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group relative"
-                  >
-                    <div>
-                      {/* Top Badges */}
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        {t.type === "INITIAL_INVITE" ? (
-                          <span className="bg-amber-100 text-amber-900 border border-amber-300 text-xs px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1">
-                            💍 Convite Inicial (Sistema)
-                          </span>
-                        ) : t.type === "RSVP_REMINDER" ? (
-                          <span className="bg-blue-100 text-blue-900 border border-blue-300 text-xs px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1">
-                            🔔 Lembrete RSVP (Sistema)
-                          </span>
-                        ) : (
-                          <span className="bg-zinc-100 text-zinc-700 border border-zinc-200 text-xs px-2.5 py-0.5 rounded-full font-medium">
-                            📝 Personalizado
-                          </span>
-                        )}
-
-                        {t.mediaUrl && (
-                          <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <ImageIcon className="w-3 h-3" /> Mídia
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Title & Content Snippet */}
-                      <h3 className="font-bold text-zinc-900 text-base mb-2 group-hover:text-aviso transition-colors">
-                        {t.name}
-                      </h3>
-                      
-                      <p className="text-sm text-zinc-600 line-clamp-3 whitespace-pre-wrap leading-relaxed mb-4 bg-zinc-50/70 p-3 rounded-xl border border-zinc-100 font-sans">
-                        {t.content}
-                      </p>
-
-                      {/* Badges de Links */}
-                      {badgeCount > 0 && (
-                        <div className="space-y-1 mb-4">
-                          <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider block mb-1">
-                            Badges de Links ({badgeCount}):
-                          </span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {badgeList.map((b, idx) => (
-                              <span
-                                key={idx}
-                                className="text-xs bg-sucesso-suave text-sucesso border border-emerald-200 px-2.5 py-1 rounded-lg font-medium flex items-center gap-1"
-                              >
-                                <LinkIcon className="w-3 h-3 text-sucesso" />
-                                {b.text}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Footer Actions */}
-                    <div className="flex items-center gap-2 border-t border-zinc-100 pt-4 mt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(t)}
-                        className="rounded-xl flex-1 text-xs font-semibold hover:bg-aviso-suave hover:text-amber-900 hover:border-amber-300"
-                      >
-                        Editar Template
-                      </Button>
-                      <Button aria-label="Excluir"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(t.id)}
-                        className="rounded-xl text-perigo hover:text-perigo hover:bg-perigo-suave h-9 w-9 p-0"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : (
-          /* ================================================================= */
-          /* MODALIDADE 2: ESTÚDIO DE EDICÃO COM IPHONE 15 PLUS SIMULATOR      */
-          /* ================================================================= */
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setIsEditingMode(false);
-                  resetForm();
-                }}
-                className="text-zinc-600 hover:text-zinc-900 font-semibold text-sm flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Voltar à Galeria de Templates
-              </Button>
-
-              <span className="text-xs text-zinc-500 font-mono">
-                {selectedTemplate ? `Editando ID: ${selectedTemplate.id.slice(0, 8)}...` : "Modo: Novo Template"}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Lado Esquerdo: Formulário de Configuração (7 Cols) */}
-              <Card className="lg:col-span-7 shadow-md border-zinc-200/80 rounded-2xl p-6 space-y-6">
-                <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
-                  <h3 className="font-bold text-lg text-zinc-900 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-aviso" />
-                    {selectedTemplate ? `Editar: ${selectedTemplate.name}` : "Criar Novo Template"}
-                  </h3>
-                  {selectedTemplate && (
-                    <Button variant="ghost" size="sm" onClick={resetForm} className="text-xs text-zinc-500">
-                      + Limpar
-                    </Button>
-                  )}
-                </div>
-
-                <form onSubmit={handleSaveTemplate} className="space-y-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="name" className="font-semibold text-zinc-700">Nome do Template</Label>
-                      <Input
-                        id="name"
-                        placeholder="Ex: Convite de Casamento Oficial"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="rounded-xl mt-1.5"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="type" className="font-semibold text-zinc-700">Tipo / Categoria do Sistema</Label>
-                      <Select value={type} onValueChange={setType}>
-                        <SelectTrigger id="type" className="rounded-xl mt-1.5">
-                          <SelectValue placeholder="Selecione o tipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="INITIAL_INVITE">💍 Convite Inicial (Sistema)</SelectItem>
-                          <SelectItem value="RSVP_REMINDER">🔔 Lembrete RSVP (Sistema)</SelectItem>
-                          <SelectItem value="CUSTOM">📝 Personalizado</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <Label htmlFor="content" className="font-semibold text-zinc-700">Texto da Mensagem</Label>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs text-zinc-500 font-medium">Inserir tag:</span>
-                        <button
-                          type="button"
-                          onClick={() => insertVariable("{nome}")}
-                          className="text-xs font-mono bg-zinc-100 hover:bg-amber-100 hover:text-amber-900 border border-zinc-200 px-2 py-0.5 rounded-md font-semibold transition"
-                        >
-                          + {`{nome}`}
-                        </button>
-                      </div>
-                    </div>
-                    <Textarea
-                      id="content"
-                      rows={5}
-                      placeholder="Olá {nome}, temos a honra de convidá-lo(a) para nosso casamento..."
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      className="rounded-xl resize-none font-sans leading-relaxed text-sm"
-                      required
-                    />
-                  </div>
-
-                  {/* Gerenciador de Badges de Links Diretos */}
-                  <div className="border border-amber-200/80 bg-aviso-suave/40 p-4 rounded-xl space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
-                        <LinkIcon className="w-4 h-4 text-aviso" />
-                        <span>Badges de Links Clicáveis no WhatsApp</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Button type="button" variant="outline" size="sm" onClick={applyRsvpPreset} className="text-xs h-7 rounded-lg bg-papel">
-                          + Preset RSVP
-                        </Button>
-                        <Button type="button" variant="outline" size="sm" onClick={applyGiftsPreset} className="text-xs h-7 rounded-lg bg-papel">
-                          + Preset Presentes
-                        </Button>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-zinc-500">
-                      As Badges geram links diretos e clicáveis formatados com emojis ao final da mensagem.
-                    </p>
-
-                    <div className="space-y-2">
-                      {buttonsList.map((btn, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <span className="text-xs font-mono text-zinc-500 w-5">#{idx + 1}</span>
-                          <Input
-                            value={btn.text}
-                            onChange={(e) => handleUpdateButton(idx, e.target.value)}
-                            placeholder="Nome da Badge (Ex: ✅ Confirmar Presença)"
-                            className="rounded-lg h-9 text-sm bg-papel"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveButton(idx)}
-                            aria-label="Remover botão"
-                            className="text-perigo hover:text-perigo h-9 w-9 p-0 rounded-lg"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-
-                    {buttonsList.length < 3 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleAddButton}
-                        className="w-full text-xs rounded-lg bg-papel border-dashed text-zinc-600 hover:text-zinc-900"
-                      >
-                        <Plus className="w-3.5 h-3.5 mr-1" />
-                        Adicionar Badge ({buttonsList.length}/3)
-                      </Button>
-                    )}
-                  </div>
-
-                  {/* Mídia Anexada */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="mediaType" className="font-semibold text-zinc-700">Tipo de Mídia (Opcional)</Label>
-                      <Select value={mediaType} onValueChange={setMediaType}>
-                        <SelectTrigger id="mediaType" className="rounded-xl mt-1.5">
-                          <SelectValue placeholder="Sem mídia" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="image">Imagem (JPG, PNG)</SelectItem>
-                          <SelectItem value="document">Documento (PDF)</SelectItem>
-                          <SelectItem value="audio">Áudio</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="mediaUrl" className="font-semibold text-zinc-700">URL da Imagem (HTTPS Público)</Label>
-                      <Input
-                        id="mediaUrl"
-                        type="url"
-                        placeholder="https://..."
-                        value={mediaUrl}
-                        onChange={(e) => setMediaUrl(e.target.value)}
-                        className="rounded-xl mt-1.5"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3 pt-3 border-t border-zinc-100">
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl flex-1 flex items-center justify-center gap-2 h-11 font-bold shadow-md"
-                    >
-                      <Save className="w-4 h-4" />
-                      {selectedTemplate ? "Salvar Alterações" : "Salvar Template"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setIsEditingMode(false);
-                        resetForm();
-                      }}
-                      className="rounded-xl text-zinc-600 h-11 px-6"
-                    >
-                      Cancelar
-                    </Button>
-                  </div>
-                </form>
-              </Card>
-
-              {/* Lado Direito: SIMULADOR IPHONE 15 PLUS EM TEMPO REAL */}
-              <div className="lg:col-span-5 sticky top-24">
-                {/* Seletor de Cores do iPhone 15 Plus */}
-                <div className="text-center mb-3">
-                  <div className="inline-flex items-center gap-1 bg-papel p-1 rounded-2xl border border-zinc-200 shadow-sm text-xs font-medium">
-                    <span className="text-xs text-zinc-500 font-semibold px-2 flex items-center gap-1">
-                      <Smartphone className="w-3.5 h-3.5 text-zinc-700" /> iPhone 15 Plus:
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIphoneColor("blue")}
-                      className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition ${
-                        iphoneColor === "blue" ? "bg-blue-900 text-white shadow-sm" : "text-zinc-600 hover:text-zinc-900"
-                      }`}
-                    >
-                      Azul Titânio
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIphoneColor("natural")}
-                      className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition ${
-                        iphoneColor === "natural" ? "bg-stone-600 text-white shadow-sm" : "text-zinc-600 hover:text-zinc-900"
-                      }`}
-                    >
-                      Natural
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIphoneColor("pink")}
-                      className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition ${
-                        iphoneColor === "pink" ? "bg-pink-800 text-white shadow-sm" : "text-zinc-600 hover:text-zinc-900"
-                      }`}
-                    >
-                      Rosa
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIphoneColor("black")}
-                      className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition ${
-                        iphoneColor === "black" ? "bg-zinc-900 text-white shadow-sm" : "text-zinc-600 hover:text-zinc-900"
-                      }`}
-                    >
-                      Preto
-                    </button>
-                  </div>
-                </div>
-
-                {/* iPhone 15 Plus Chassis Mockup */}
-                <div className="relative max-w-[340px] mx-auto py-2">
-                  <div className="absolute left-[-4px] top-24 w-[4px] h-6 bg-zinc-700 rounded-l-md shadow-sm" />
-                  <div className="absolute left-[-4px] top-34 w-[4px] h-11 bg-zinc-700 rounded-l-md shadow-sm" />
-                  <div className="absolute left-[-4px] top-48 w-[4px] h-11 bg-zinc-700 rounded-l-md shadow-sm" />
-                  <div className="absolute right-[-4px] top-36 w-[4px] h-16 bg-zinc-700 rounded-r-md shadow-sm" />
-
-                  <div
-                    className={`border-[9px] rounded-[52px] p-2 shadow-2xl overflow-hidden transition-all duration-500 relative text-zinc-100 ${
-                      iphoneColor === "blue"
-                        ? "bg-[#16222f] border-[#2c3d50] shadow-blue-950/60 ring-2 ring-[#3b516b]/50"
-                        : iphoneColor === "natural"
-                        ? "bg-[#292724] border-[#4a4742] shadow-amber-950/40 ring-2 ring-[#615e58]/50"
-                        : iphoneColor === "pink"
-                        ? "bg-[#331d24] border-[#593440] shadow-pink-950/60 ring-2 ring-[#704251]/50"
-                        : "bg-[#111214] border-[#25272a] shadow-black/90 ring-2 ring-[#34373b]/50"
-                    }`}
-                  >
-                    {/* iPhone Dynamic Island */}
-                    <div className="relative bg-[#1f2c34] text-zinc-100 pt-2 pb-1.5 px-4 rounded-t-[42px] border-b border-zinc-800 flex items-center justify-between">
-                      <span className="text-xs font-bold font-sans tracking-tight">09:41</span>
-
-                      <div className="w-24 h-4.5 bg-black rounded-full flex items-center justify-between px-2 shadow-inner border border-zinc-800/80">
-                        <div className="w-2 h-2 rounded-full bg-[#0d131a] border border-zinc-800" />
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-950/70 border border-blue-900/60" />
-                      </div>
-
-                      <div className="flex items-center gap-1">
-                        <Wifi className="w-3 h-3 text-zinc-200" />
-                        <Battery className="w-3.5 h-3.5 text-zinc-200" />
-                      </div>
-                    </div>
-
-                    {/* WhatsApp Chat Header */}
-                    <div className="bg-[#1f2c34] px-3 py-2 flex items-center gap-2.5 border-b border-zinc-800/80">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 text-white flex items-center justify-center text-xs font-bold shadow-sm">
-                        <Heart className="w-3.5 h-3.5 fill-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-xs font-bold text-zinc-100 truncate">{coupleNames}</h4>
-                        <p className="text-xs text-emerald-400 font-medium">online no WhatsApp</p>
-                      </div>
-                    </div>
-
-                    {/* Chat Canvas Wallpaper */}
-                    <div className="bg-[#0b141a] p-3 min-h-[380px] max-h-[460px] overflow-y-auto space-y-3 font-sans relative">
-                      <div className="flex justify-start">
-                        <div className="bg-[#202c33] text-zinc-200 p-2.5 rounded-2xl rounded-tl-none max-w-[85%] text-xs shadow-sm space-y-1">
-                          <p className="leading-relaxed text-xs">
-                            Olá! Vocês já lançaram os convites oficiais e a lista de presentes do casamento? 🎉
-                          </p>
-                          <span className="text-xs text-zinc-500 block text-right">09:40</span>
-                        </div>
-                      </div>
-
-                      {/* LIVE SIMULATION BUBBLE */}
-                      <div className="flex justify-end">
-                        <div className="bg-[#005c4b] text-zinc-100 p-3 rounded-2xl rounded-tr-none max-w-[90%] text-xs shadow-md space-y-2 border border-emerald-600/30">
-                          {mediaUrl && (
-                            <div className="rounded-lg overflow-hidden bg-black/40 border border-emerald-700/40 p-1">
-                              {mediaType === "image" ? (
-                                <img src={mediaUrl} alt="Visualização da Mídia" className="max-h-36 object-cover rounded-md w-full" />
-                              ) : (
-                                <div className="flex items-center gap-2 p-2 text-xs text-emerald-200">
-                                  <Paperclip className="w-4 h-4" />
-                                  <span>Arquivo: {mediaType}</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          <p className="text-xs text-zinc-100 whitespace-pre-wrap leading-relaxed">
-                            {(content || "Sua mensagem aparecerá aqui em tempo real...").replace(/\{nome\}/gi, "Giovanni Nespoli")}
-                          </p>
-
-                          {/* Render Badges with Clickable Links Simulation */}
-                          {buttonsList.length > 0 && (
-                            <div className="border-t border-emerald-600/50 pt-2 space-y-1.5 text-xs">
-                              <p className="text-xs text-emerald-200/90 font-bold uppercase tracking-wider">
-                                👇 Acesse abaixo:
-                              </p>
-                              {buttonsList.map((b, idx) => (
-                                <div key={idx} className="bg-[#111b21] p-1.5 rounded-lg border border-emerald-700/40 font-mono text-xs text-emerald-300">
-                                  <span className="font-bold text-white block">{b.text}:</span>
-                                  <span className="underline text-emerald-400 truncate block">
-                                    {weddingSiteUrl(slug, b.text.toLowerCase().includes("presente") ? "presentes" : "rsvp")}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          <div className="flex items-center justify-end gap-1 text-xs text-emerald-200/80 pt-0.5">
-                            <span>09:41</span>
-                            <CheckCheck className="w-3 h-3 text-cyan-400" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#1f2c34] p-2 flex items-center gap-2 border-t border-zinc-800 text-xs text-zinc-500">
-                      <div className="bg-[#2a3942] px-3 py-1.5 rounded-full flex-1 text-xs text-zinc-500">
-                        Digite uma mensagem...
-                      </div>
-                      <div className="w-7 h-7 rounded-full bg-[#00a884] text-white flex items-center justify-center">
-                        <Send className="w-3.5 h-3.5 fill-white" />
-                      </div>
-                    </div>
-
-                    <div className="bg-[#1f2c34] pt-1 pb-1 flex justify-center rounded-b-[40px]">
-                      <div className="w-28 h-1 bg-papel/70 rounded-full" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
-      ) : (
-        /* ================================================================= */
-        /* ABA 2: CENTRAL DE DISPAROS EM MASSA (UI/UX REDESIGNED)           */
-        /* ================================================================= */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Coluna Esquerda: Automações & Seleções de Convidados (8 Cols) */}
-          <div className="lg:col-span-8 space-y-6">
-            {/* Card 1: Disparos de Sistema Automáticos */}
-            <Card className="shadow-md border-amber-200/80 bg-gradient-to-r from-amber-50/60 via-white to-amber-50/30 rounded-2xl p-6 relative overflow-hidden">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-bold text-base text-amber-950 flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-aviso" />
-                  Notificações & Lembretes Automáticos do Sistema
-                </h3>
-              </div>
-              <p className="text-xs text-zinc-600 mb-4">
-                Envie automações em lote para todos os convidados pendentes usando os templates inteligentes do sistema.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Button
-                  onClick={handleSendInitialInvites}
-                  disabled={isTriggeringInvites}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl h-11 shadow-sm justify-start px-4"
-                >
-                  {isTriggeringInvites ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4 mr-2" />
-                  )}
-                  Disparar Convites Iniciais
-                </Button>
-
-                <Button
-                  onClick={handleSendRsvpReminders}
-                  disabled={isTriggeringRsvp}
-                  variant="outline"
-                  className="border-blue-300 text-blue-900 hover:bg-blue-50 text-xs font-bold rounded-xl h-11 shadow-sm justify-start px-4"
-                >
-                  {isTriggeringRsvp ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Bell className="w-4 h-4 mr-2 text-blue-600" />
-                  )}
-                  Lembretes de RSVP Pendente
-                </Button>
-              </div>
-            </Card>
-
-            {/* Passo 1: Seleção de Template */}
-            <Card className="shadow-md border-zinc-200/80 rounded-2xl p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-base text-zinc-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-600 text-white text-xs flex items-center justify-center font-bold">1</span>
-                  Selecione o Template de Mensagem
-                </h3>
-                {activeTemplateObj && (
-                  <span className="text-xs text-aviso font-semibold bg-aviso-suave px-2.5 py-1 rounded-full border border-amber-200">
-                    Template Selecionado
-                  </span>
-                )}
-              </div>
-
-              <Select
-                value={chosenTemplateId}
-                onValueChange={setChosenTemplateId}
-              >
-                <SelectTrigger className="rounded-xl h-11 font-medium">
-                  <SelectValue placeholder="Escolha um modelo de mensagem..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {templates.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.name} {t.type === "INITIAL_INVITE" ? "(💍 Convite Inicial)" : t.type === "RSVP_REMINDER" ? "(🔔 Lembrete RSVP)" : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {activeTemplateObj && (
-                <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                      Prévia do Template: {activeTemplateObj.name}
-                    </p>
-                    {activeTemplateObj.mediaUrl && (
-                      <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <ImageIcon className="w-3.5 h-3.5" /> Mídia Anexada
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-zinc-800 whitespace-pre-wrap leading-relaxed font-sans">
-                    {activeTemplateObj.content.replace(/\{nome\}/gi, "Nome do Convidado")}
-                  </p>
-                </div>
-              )}
-            </Card>
-
-            {/* Passo 2: Seleção & Filtro de Convidados */}
-            <Card className="shadow-md border-zinc-200/80 rounded-2xl p-6 space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h3 className="font-bold text-base text-zinc-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-amber-600 text-white text-xs flex items-center justify-center font-bold">2</span>
-                  Selecione os Destinatários ({selectedGuests.length})
-                </h3>
-
-                <Input
-                  placeholder="Buscar por nome ou telefone..."
-                  value={searchGuest}
-                  onChange={(e) => setSearchGuest(e.target.value)}
-                  className="rounded-xl max-w-xs h-9 text-xs"
-                />
-              </div>
-
-              {/* Filtros em Pílula */}
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-100 pb-3 text-xs">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-zinc-500 font-semibold flex items-center gap-1 mr-1">
-                    <Filter className="w-3.5 h-3.5" /> Filtrar:
-                  </span>
-                  <button
-                    onClick={() => setGuestFilter("all")}
-                    className={`px-3 py-1 rounded-xl font-semibold transition ${
-                      guestFilter === "all" ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-                    }`}
-                  >
-                    Todos ({initialGuests.length})
-                  </button>
-                  <button
-                    onClick={() => setGuestFilter("pending")}
-                    className={`px-3 py-1 rounded-xl font-semibold transition ${
-                      guestFilter === "pending" ? "bg-amber-700 text-white" : "bg-aviso-suave text-aviso hover:bg-amber-100"
-                    }`}
-                  >
-                    RSVP Pendente
-                  </button>
-                  <button
-                    onClick={() => setGuestFilter("not_sent")}
-                    className={`px-3 py-1 rounded-xl font-semibold transition ${
-                      guestFilter === "not_sent" ? "bg-blue-700 text-white" : "bg-blue-50 text-blue-800 hover:bg-blue-100"
-                    }`}
-                  >
-                    Não Enviado
-                  </button>
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={toggleAllGuests}
-                  className="rounded-xl text-xs font-semibold h-8"
-                >
-                  {selectedGuests.length === filteredGuests.length ? "Desmarcar Todos" : "Marcar Todos Filtrados"}
-                </Button>
-              </div>
-
-              {/* Lista Selecionável de Convidados */}
-              <div className="max-h-80 overflow-y-auto border border-zinc-100 rounded-2xl divide-y divide-zinc-100 bg-papel">
-                {filteredGuests.map((g) => {
-                  const isChecked = selectedGuests.includes(g.id);
-                  return (
-                    <div
-                      key={g.id}
-                      onClick={() => toggleGuest(g.id)}
-                      className={`flex items-center justify-between p-3 cursor-pointer hover:bg-aviso-suave/40 transition-all ${
-                        isChecked ? "bg-aviso-suave/70" : ""
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          readOnly
-                          className="rounded text-aviso focus:ring-amber-600 h-4 w-4 border-zinc-300 cursor-pointer"
-                        />
-                        <div>
-                          <p className="text-sm font-bold text-zinc-900">{g.name}</p>
-                          <p className="text-xs text-zinc-500">{g.phone || "Sem telefone cadastrado"}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {g.rsvpStatus === "CONFIRMED" && (
-                          <span className="text-xs font-semibold text-sucesso bg-sucesso-suave px-2 py-0.5 rounded-full">
-                            Confirmado
-                          </span>
-                        )}
-                        {g.hasReceivedMessage ? (
-                          <span className="text-xs font-semibold text-sucesso bg-sucesso-suave px-2.5 py-1 rounded-full flex items-center gap-1 border border-emerald-200">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Enviado
-                          </span>
-                        ) : (
-                          <span className="text-xs text-zinc-500 bg-zinc-50 px-2.5 py-1 rounded-full border border-zinc-200">
-                            Pendente
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
-          </div>
-
-          {/* Coluna Direita: Resumo & Disparo Principal (4 Cols) */}
-          <Card className="lg:col-span-4 shadow-lg border-zinc-200/80 rounded-2xl p-6 h-fit sticky top-24 space-y-5">
-            <h3 className="font-bold text-lg text-zinc-900 flex items-center gap-2 border-b border-zinc-100 pb-3">
-              <span className="w-6 h-6 rounded-full bg-amber-600 text-white text-xs flex items-center justify-center font-bold">3</span>
-              Confirmar & Disparar
-            </h3>
-
-            <div className="space-y-3.5 text-sm">
-              <div className="flex justify-between items-center bg-zinc-50 p-3 rounded-xl border border-zinc-100">
-                <span className="text-zinc-500 font-medium">Modelo Escolhido:</span>
-                <span className="font-bold text-zinc-900 truncate max-w-[140px]">
-                  {activeTemplateObj ? activeTemplateObj.name : "Nenhum"}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center bg-zinc-50 p-3 rounded-xl border border-zinc-100">
-                <span className="text-zinc-500 font-medium">Destinatários Selecionados:</span>
-                <span className="font-extrabold text-aviso text-xl">
-                  {selectedGuests.length}
-                </span>
-              </div>
-
-              {sendStatus?.success && (
-                <div className="p-4 bg-sucesso-suave border border-emerald-200 rounded-2xl text-emerald-900 text-sm flex items-start gap-2.5 animate-in slide-in-from-top-1">
-                  <CheckCircle2 className="w-5 h-5 text-sucesso mt-0.5 shrink-0" />
-                  <div>
-                    <p className="font-bold text-xs uppercase tracking-wider text-sucesso">Envio Concluído!</p>
-                    <p className="text-xs text-sucesso mt-0.5">{sendStatus.message || "Mensagens entregues com sucesso!"}</p>
-                  </div>
-                </div>
-              )}
-
-              {sendStatus?.error && (
-                <div className="p-4 bg-perigo-suave border border-perigo/40 rounded-2xl text-red-900 text-sm flex items-start gap-2.5">
-                  <AlertCircle className="w-5 h-5 text-perigo mt-0.5 shrink-0" />
-                  <div>
-                    <p className="font-bold text-xs uppercase tracking-wider text-red-800">Falha no Envio</p>
-                    <p className="text-xs text-perigo mt-0.5">{sendStatus.error}</p>
-                  </div>
-                </div>
-              )}
-
-              <Button
-                onClick={handleSendMessages}
-                disabled={
-                  isSending || !chosenTemplateId || selectedGuests.length === 0
-                }
-                className="w-full bg-gradient-to-r from-amber-600 via-amber-700 to-zinc-900 hover:from-amber-700 hover:to-zinc-800 text-white rounded-xl py-6 text-base font-bold shadow-xl shadow-amber-900/10 flex items-center justify-center gap-2 mt-2 transition-all"
-              >
-                {isSending ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Disparando mensagens...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-5 h-5" />
-                    <span>Disparar via WhatsApp</span>
-                  </>
-                )}
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      <ConfirmModal
-        isOpen={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        onConfirm={() => {
-          setConfirmOpen(false);
-          confirmAction?.();
-        }}
-        title="Excluir Template"
-        description="Tem certeza de que deseja excluir esse template?"
-      />
+      {/* Envios prontos no celular, depois do editor */}
+      <section className={`${card} flex flex-col gap-3 p-4 lg:hidden`} aria-labelledby="envios-prontos-m">
+        <h2 id="envios-prontos-m" className="flex items-center gap-2 text-base font-semibold text-tinta">
+          <Bell className="size-4" aria-hidden="true" />
+          Envios prontos
+        </h2>
+        <button type="button" disabled={shortcut !== null || invitesToSend === 0} onClick={() => runShortcut("invites")} className={btn.secondary}>
+          {invitesToSend === 0 ? "Todos já têm convite" : `Convite para ${invitesToSend} ${invitesToSend === 1 ? "pessoa" : "pessoas"}`}
+        </button>
+        <button type="button" disabled={shortcut !== null || remindersToSend === 0} onClick={() => runShortcut("reminders")} className={btn.secondary}>
+          {remindersToSend === 0 ? "Ninguém para lembrar" : `Lembrete para ${remindersToSend} ${remindersToSend === 1 ? "pessoa" : "pessoas"}`}
+        </button>
+      </section>
     </div>
   );
 }
