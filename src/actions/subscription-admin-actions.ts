@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { logAudit } from "@/lib/audit";
 import { AuthorizationError, requirePathPermission } from "@/lib/security/auth-guard";
 import { applyApprovedPayment, markPaymentFailed } from "@/lib/subscriptions";
 
@@ -63,6 +64,12 @@ export async function confirmSubscriptionManually(subscriptionId: string): Promi
     console.info(
       `[Assinatura] Pix estático ${sub.gatewayId} (assinatura ${sub.id}) confirmado manualmente por ${session.userId}${result === "already" ? " (já estava pago)" : ""}.`,
     );
+    await logAudit({
+      action: "subscription.confirm",
+      targetType: "subscription",
+      targetId: sub.id,
+      details: { gatewayId: sub.gatewayId, amount: sub.amount, alreadyPaid: result === "already" },
+    });
     revalidateSubscriptionPages();
     return { success: true };
   } catch (error) {
@@ -82,6 +89,12 @@ export async function rejectSubscription(subscriptionId: string): Promise<Action
 
     await markPaymentFailed(found.sub.id);
     console.info(`[Assinatura] Pix estático ${found.sub.gatewayId} (assinatura ${found.sub.id}) marcado como não recebido por ${session.userId}.`);
+    await logAudit({
+      action: "subscription.reject",
+      targetType: "subscription",
+      targetId: found.sub.id,
+      details: { gatewayId: found.sub.gatewayId, amount: found.sub.amount },
+    });
     revalidateSubscriptionPages();
     return { success: true };
   } catch (error) {

@@ -1,6 +1,7 @@
 "use server";
 
 import { createHmac, createHash } from "node:crypto";
+import { logAudit } from "@/lib/audit";
 import { requirePathPermission } from "@/lib/security/auth-guard";
 
 import prisma from "@/lib/prisma";
@@ -441,6 +442,7 @@ export async function approveVendorAction(vendorId: string) {
         curationNotes: "Aprovado pela curadoria Aceito.",
       },
     });
+    await logAudit({ action: "vendor.approve", targetType: "partner_vendor", targetId: vendorId });
 
     revalidatePath("/fornecedores");
     revalidatePath(`/fornecedores/${vendorId}`);
@@ -466,6 +468,12 @@ export async function rejectVendorAction(vendorId: string, reason?: string) {
         isVerified: false,
         curationNotes: reason || "Documentação pendente ou inconsistente.",
       },
+    });
+    await logAudit({
+      action: "vendor.reject",
+      targetType: "partner_vendor",
+      targetId: vendorId,
+      details: { reason: (reason || "").slice(0, 500) },
     });
 
     revalidatePath("/fornecedores");

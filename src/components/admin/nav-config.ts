@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   KeyRound,
   UserCog,
+  ScrollText,
   Menu,
   type LucideIcon,
 } from "lucide-react";
@@ -81,6 +82,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { name: "Assinaturas", href: "/assinaturas", icon: BadgeDollarSign },
       { name: "Usuários", href: "/usuarios", icon: KeyRound },
       { name: "Perfis de acesso", href: "/perfis", icon: UserCog },
+      // Só quem tem acesso total ("*") entra: a página confere de novo no servidor.
+      { name: "Registro de atividades", href: "/atividades", icon: ScrollText },
     ],
   },
 ];

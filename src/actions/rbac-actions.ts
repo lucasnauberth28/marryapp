@@ -1,5 +1,6 @@
 "use server";
 
+import { logAudit } from "@/lib/audit";
 import { requireAuthSession, requirePathPermission, AuthorizationError } from "@/lib/security/auth-guard";
 import { hasPathAccess } from "@/lib/auth";
 
@@ -67,6 +68,12 @@ export async function createRole(data: { name: string; allowedPaths: string[] })
 
   try {
     const role = await prisma.role.create({ data: parsed.data });
+    await logAudit({
+      action: "role.create",
+      targetType: "role",
+      targetId: role.id,
+      details: { name: role.name, allowedPaths: parsed.data.allowedPaths },
+    });
     revalidatePath("/perfis");
     return { success: true, role };
   } catch (error) {
@@ -82,13 +89,24 @@ export async function updateRole(id: string, data: { name: string; allowedPaths:
   const parsed = RoleSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
-  const current = await prisma.role.findUnique({ where: { id }, select: { allowedPaths: true } });
+  const current = await prisma.role.findUnique({ where: { id }, select: { name: true, allowedPaths: true } });
   if (!current) return { success: false, error: "Perfil não encontrado." };
   assertCanGrant(session.allowedPaths, current.allowedPaths);
   assertCanGrant(session.allowedPaths, parsed.data.allowedPaths);
 
   try {
     const role = await prisma.role.update({ where: { id }, data: parsed.data });
+    await logAudit({
+      action: "role.update",
+      targetType: "role",
+      targetId: id,
+      details: {
+        name: role.name,
+        previousName: current.name,
+        previousPaths: Array.isArray(current.allowedPaths) ? (current.allowedPaths as string[]) : [],
+        allowedPaths: parsed.data.allowedPaths,
+      },
+    });
     revalidatePath("/perfis");
     return { success: true, role };
   } catch {
@@ -98,12 +116,13 @@ export async function updateRole(id: string, data: { name: string; allowedPaths:
 
 export async function deleteRole(id: string) {
   const session = await requirePathPermission("/perfis");
-  const current = await prisma.role.findUnique({ where: { id }, select: { allowedPaths: true } });
+  const current = await prisma.role.findUnique({ where: { id }, select: { name: true, allowedPaths: true } });
   if (!current) return { success: false, error: "Perfil não encontrado." };
   assertCanGrant(session.allowedPaths, current.allowedPaths);
 
   try {
     await prisma.role.delete({ where: { id } });
+    await logAudit({ action: "role.delete", targetType: "role", targetId: id, details: { name: current.name } });
     revalidatePath("/perfis");
     return { success: true };
   } catch {
@@ -159,6 +178,12 @@ export async function createUser(data: { name: string; username: string; passwor
       },
       select: { id: true },
     });
+    await logAudit({
+      action: "user.create",
+      targetType: "user",
+      targetId: user.id,
+      details: { name: parsed.data.name, username: parsed.data.username, roleId: parsed.data.roleId },
+    });
     revalidatePath("/usuarios");
     return { success: true, user: { id: user.id } };
   } catch (error) {
@@ -174,7 +199,10 @@ export async function updateUser(id: string, data: { name: string; username: str
   const parsed = UserSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
-  const target = await prisma.user.findUnique({ where: { id }, select: { role: { select: { allowedPaths: true } } } });
+  const target = await prisma.user.findUnique({
+    where: { id },
+    select: { roleId: true, username: true, role: { select: { allowedPaths: true } } },
+  });
   if (!target) return { success: false, error: "Usuário não encontrado." };
   assertCanGrant(session.allowedPaths, target.role.allowedPaths);
   if (!(await assertRoleAssignable(session.allowedPaths, parsed.data.roleId))) {
@@ -195,6 +223,18 @@ export async function updateUser(id: string, data: { name: string; username: str
 
   try {
     await prisma.user.update({ where: { id }, data: updateData, select: { id: true } });
+    await logAudit({
+      action: "user.update",
+      targetType: "user",
+      targetId: id,
+      details: {
+        username: parsed.data.username,
+        previousUsername: target.username,
+        roleId: parsed.data.roleId,
+        previousRoleId: target.roleId,
+        passwordChanged: Boolean(updateData.password),
+      },
+    });
     revalidatePath("/usuarios");
     return { success: true };
   } catch (error) {
@@ -211,12 +251,21 @@ export async function deleteUser(id: string) {
     return { success: false, error: "Você não pode excluir o próprio usuário." };
   }
 
-  const target = await prisma.user.findUnique({ where: { id }, select: { role: { select: { allowedPaths: true } } } });
+  const target = await prisma.user.findUnique({
+    where: { id },
+    select: { name: true, username: true, role: { select: { name: true, allowedPaths: true } } },
+  });
   if (!target) return { success: false, error: "Usuário não encontrado." };
   assertCanGrant(session.allowedPaths, target.role.allowedPaths);
 
   try {
     await prisma.user.delete({ where: { id }, select: { id: true } });
+    await logAudit({
+      action: "user.delete",
+      targetType: "user",
+      targetId: id,
+      details: { name: target.name, username: target.username, role: target.role.name },
+    });
     revalidatePath("/usuarios");
     return { success: true };
   } catch {
