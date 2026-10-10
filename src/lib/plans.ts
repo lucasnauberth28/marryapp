@@ -83,9 +83,9 @@ export const PLANS_CONFIG = {
     badge: "Alta performance",
     features: [
       "Topo das buscas na sua categoria e região",
-      "Banner de destaque no feed dos noivos",
+      "Faixa de destaque na vitrine de fornecedores",
       "Painel com visitas ao perfil e propostas",
-      "Envio de propostas e contratos digitais integrados",
+      "Envio de propostas ao casal pelo painel",
     ],
   },
 };

@@ -170,11 +170,37 @@ export default async function PlanoPage() {
             <h2 id="pagamentos-titulo" className="text-lg font-semibold">
               Pagamentos
             </h2>
+            {/* Celular: lista de linhas de 56px, como no design; a tabela fica para telas maiores. */}
+            <ul className="flex flex-col rounded-2xl border border-linha bg-papel md:hidden">
+              {payments.map((p) => {
+                const refunded = p.status === PaymentStatus.REFUNDED;
+                return (
+                  <li key={p.id} className="flex min-h-14 items-center gap-3 border-t border-linha px-4 py-2 first:border-t-0">
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <strong className="font-semibold">{shortPlanName(p.planName)}</strong>
+                      <span className="text-sm text-tinta-suave">
+                        {p.paidAt ? `Pago em ${formatDate(p.paidAt, now)}` : "Pagamento sem data"}
+                        {refunded ? " · Estornado" : ""}
+                      </span>
+                    </span>
+                    <span className="tabular-nums">{brl.format(p.amount / 100)}</span>
+                    {refunded ? null : (
+                      <Link
+                        href={`/recibo/${p.id}`}
+                        className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave"
+                      >
+                        Recibo
+                      </Link>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
             <div
               role="region"
               aria-labelledby="pagamentos-titulo"
               tabIndex={0}
-              className="relative overflow-x-auto rounded-2xl border border-linha bg-papel"
+              className="relative hidden overflow-x-auto rounded-2xl border border-linha bg-papel md:block"
             >
               <table className="w-full min-w-[640px] border-collapse text-[15px]">
                 <thead>

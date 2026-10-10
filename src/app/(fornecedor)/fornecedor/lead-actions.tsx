@@ -41,7 +41,7 @@ export function LeadActions({
   }
 
   return (
-    <div className="grid w-full grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:flex sm:w-56 sm:flex-col">
+    <div className="grid w-full grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:flex sm:w-64 sm:flex-col">
       {whatsappUrl ? (
         <a
           href={whatsappUrl}

@@ -191,7 +191,8 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
       {isFree ? (
         <Reveal
           variant="up"
-          className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-salvia-suave px-5 py-4"
+          // No celular a lista de pedidos vem primeiro e o convite ao Pro fecha a página, como no design.
+          className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-salvia-suave px-5 py-4 max-md:order-last"
         >
           <div className="flex min-w-0 flex-col gap-0.5">
             <strong className="font-semibold">
@@ -229,7 +230,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
         ))}
       </section>
 
-      <Reveal variant="up" delay={120}>
+      <Reveal variant="up" delay={120} className={cn(!isMaster && "max-md:order-last")}>
         {isMaster ? <ResultsCard days={dailyViews} leads={windowLeads} /> : <ResultsTeaser />}
       </Reveal>
 

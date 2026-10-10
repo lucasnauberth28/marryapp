@@ -20,7 +20,7 @@ function BrandBlock() {
   return (
     <div className="flex flex-col gap-1.5 px-3">
       <Logo height={22} />
-      <span className="w-fit rounded-full bg-salvia-suave px-2.5 py-0.5 text-xs font-semibold text-salvia">
+      <span className="w-fit rounded-md bg-salvia-suave px-2.5 py-0.5 text-xs font-semibold text-salvia">
         para Fornecedores
       </span>
     </div>

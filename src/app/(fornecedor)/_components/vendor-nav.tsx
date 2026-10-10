@@ -59,7 +59,7 @@ export function VendorSidebarNav({ newLeads, publicProfileHref }: { newLeads: nu
                 rel={external ? "noopener" : undefined}
                 className={cn(
                   "flex min-h-11 items-center gap-3 rounded-xl px-3 text-[15px] font-medium transition-colors",
-                  active ? "bg-salvia-suave font-semibold text-salvia" : "text-tinta-suave hover:bg-areia hover:text-tinta",
+                  active ? "bg-ameixa-suave font-semibold text-ameixa" : "text-tinta-suave hover:bg-areia hover:text-tinta",
                 )}
               >
                 <Icon aria-hidden="true" className="size-[18px] shrink-0" />
