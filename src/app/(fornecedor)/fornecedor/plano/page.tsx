@@ -7,7 +7,10 @@ import { btn } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
 import { planOption, shortPlanName } from "@/app/login/auth-config";
+import { PLANS_CONFIG } from "@/lib/plans";
 import { nextVendorPeriodEnd, VENDOR_PERIOD_DAYS, vendorTierForPlan } from "@/lib/subscription-period";
+import { priceBreakdown } from "@/lib/checkout-pricing";
+import { upgradeCredit } from "@/lib/upgrade-credit";
 import { formatWeddingDate, START_MONTHLY_LEAD_LIMIT, startOfMonthBrasilia } from "../../_lib/vendor-panel";
 import { PlanCheckout } from "./plan-checkout";
 
@@ -57,6 +60,26 @@ export default async function PlanoPage() {
       const newTier = vendorTierForPlan(o.id) ?? "PRO";
       const end = nextVendorPeriodEnd({ currentTier: vendor.planTier, currentExpiresAt: expiresAt, newTier, now });
       return [o.id, formatDate(end, now, true)];
+    }),
+  );
+
+  // Crédito dos dias pagos que sobraram ao subir de plano (mesma conta do servidor ao gerar o Pix).
+  const currentKey = vendor.planTier === "PRO" ? "pro" : vendor.planTier === "MASTER" ? "master" : null;
+  const credits = Object.fromEntries(
+    options.map((o) => {
+      const newTier = vendorTierForPlan(o.id);
+      const credit =
+        newTier && currentKey
+          ? upgradeCredit({
+              currentTier: vendor.planTier,
+              currentExpiresAt: expiresAt,
+              newTier,
+              now,
+              currentMonthlyPrice: PLANS_CONFIG[currentKey].price,
+              newPrice: o.price,
+            })
+          : 0;
+      return [o.id, priceBreakdown({ price: o.price, credit })];
     }),
   );
 
@@ -136,6 +159,8 @@ export default async function PlanoPage() {
         hasActivePeriod={hasActivePeriod}
         daysLeft={hasActivePeriod ? daysLeft : null}
         endLabels={endLabels}
+        credits={credits}
+        currentPlanName={planName}
         options={options}
       />
 

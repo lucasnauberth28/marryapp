@@ -1,6 +1,8 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { resolvePlan } from "@/lib/plans";
+import { PLANS_CONFIG, resolvePlan } from "@/lib/plans";
+import { vendorTierForPlan } from "@/lib/subscription-period";
+import { upgradeCredit } from "@/lib/upgrade-credit";
 import {
   COUPON_PROBLEM_MESSAGE,
   couponProblem,
@@ -40,7 +42,13 @@ export async function quoteSubscription(params: {
 
   const user = await prisma.user.findUnique({
     where: { id: params.userId },
-    select: { name: true, username: true, weddingId: true, partnerVendorId: true },
+    select: {
+      name: true,
+      username: true,
+      weddingId: true,
+      partnerVendorId: true,
+      partnerVendor: { select: { planTier: true, planExpiresAt: true } },
+    },
   });
   if (!user) return { ok: false, error: "Conta não encontrada." };
   // Plano de fornecedor só para conta de fornecedor, e vice-versa.
@@ -60,7 +68,23 @@ export async function quoteSubscription(params: {
     if (problem) return { ok: false, error: COUPON_PROBLEM_MESSAGE[problem], field: "coupon" };
   }
 
-  const breakdown = priceBreakdown({ price: plan.price, coupon });
+  // Fornecedor que sobe de plano (Pro -> Master) ganha o valor dos dias pagos que sobraram.
+  const newTier = plan.type === "VENDOR" ? vendorTierForPlan(planId) : null;
+  const vendor = user.partnerVendor;
+  const currentKey = vendor?.planTier === "PRO" ? "pro" : vendor?.planTier === "MASTER" ? "master" : null;
+  const credit =
+    newTier && vendor && currentKey
+      ? upgradeCredit({
+          currentTier: vendor.planTier,
+          currentExpiresAt: vendor.planExpiresAt,
+          newTier,
+          now,
+          currentMonthlyPrice: PLANS_CONFIG[currentKey].price,
+          newPrice: plan.price,
+        })
+      : 0;
+
+  const breakdown = priceBreakdown({ price: plan.price, credit, coupon });
   return {
     ok: true,
     quote: {

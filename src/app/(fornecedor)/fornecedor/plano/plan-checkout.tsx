@@ -17,6 +17,8 @@ export function PlanCheckout({
   hasActivePeriod,
   daysLeft,
   endLabels,
+  credits,
+  currentPlanName,
   options,
 }: {
   currentTier: string;
@@ -25,6 +27,9 @@ export function PlanCheckout({
   daysLeft: number | null;
   /** Até quando cada plano passa a valer se for pago agora ("13 nov"), por id do plano. */
   endLabels: Record<string, string>;
+  /** Preço, crédito dos dias que sobraram e total de cada plano (crédito só ao subir de plano). */
+  credits: Record<string, { price: number; credit: number; total: number }>;
+  currentPlanName: string;
   options: PlanOption[];
 }) {
   const router = useRouter();
@@ -38,6 +43,11 @@ export function PlanCheckout({
   const isRenewal = TIER_OF[plan.id] === currentTier && hasActivePeriod;
   const endLabel = endLabels[plan.id];
   const remaining = daysLeft === 1 ? "ao 1 dia que falta" : `aos ${daysLeft ?? 0} dias que faltam`;
+  const creditInfo = credits[plan.id];
+  const creditNote =
+    creditInfo && creditInfo.credit > 0
+      ? `Você tem ${formatPrice(creditInfo.credit)} de crédito dos dias que sobraram do ${currentPlanName}: o Pix sai por ${formatPrice(creditInfo.total)}.`
+      : null;
   const periodNote = isRenewal
     ? `Renovar soma 30 dias ${remaining}: o ${plan.name} passa a valer até ${endLabel}.`
     : currentTier !== "FREE" && hasActivePeriod
@@ -126,8 +136,13 @@ export function PlanCheckout({
         })}
       </div>
       <div className="sm:max-w-md">
-        <CouponField planId={plan.id} applied={coupon} onChange={setCoupon} />
+        <CouponField planId={plan.id} applied={coupon} onChange={setCoupon} creditLabel={`Crédito do ${currentPlanName}`} />
       </div>
+      {creditNote && !couponFor ? (
+        <p role="status" className="rounded-2xl bg-sucesso-suave p-4 text-[15px] text-tinta">
+          {creditNote}
+        </p>
+      ) : null}
       <div
         id="pagar"
         className="flex scroll-mt-24 flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between"
