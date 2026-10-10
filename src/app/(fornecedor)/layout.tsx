@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { unreadCountFor } from "@/lib/notifications/queries";
+import { vapidPublicKey } from "@/lib/notifications/push";
 import { Chip } from "./_components/status-chip";
 import { VendorAvatar } from "./_components/vendor-avatar";
 import { LogoutButton, LogoutIconButton, VendorMobileTitle, VendorSidebarNav, VendorTabBar } from "./_components/vendor-nav";
@@ -78,6 +79,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
             initialUnread={unreadNotifications}
             allHref="/fornecedor/notificacoes"
             settingsHref="/conta#avisos"
+            pushPublicKey={vapidPublicKey()}
             side="right"
             align="start"
             className="-mt-2.5"
@@ -109,6 +111,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
             initialUnread={unreadNotifications}
             allHref="/fornecedor/notificacoes"
             settingsHref="/conta#avisos"
+            pushPublicKey={vapidPublicKey()}
             className="-mr-1"
           />
           <LogoutIconButton />

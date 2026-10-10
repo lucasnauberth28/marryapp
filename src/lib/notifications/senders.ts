@@ -1,13 +1,14 @@
 import "server-only";
 import { DEFAULT_PREFS, type NotificationChannel } from "./preferences.ts";
 import type { FanOutDeps, FanOutItem } from "./fanout.ts";
+import { sendPushNotification } from "./push.ts";
 
 /**
  * Envios reais de cada canal. Cada um devolve true se entregou ao serviço do canal e false se não
  * havia para onde enviar (sem aparelho cadastrado, sem telefone, serviço não configurado).
  */
 const senders: Record<NotificationChannel, (item: FanOutItem) => Promise<boolean>> = {
-  push: async () => false,
+  push: (item) => sendPushNotification(item.userId, item),
   whatsapp: async () => false,
   email: async () => false,
 };

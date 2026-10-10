@@ -31,6 +31,9 @@ export const metadata: Metadata = {
   title: { default: "Aceito", template: "%s · Aceito" },
   description: "Do convite ao grande dia, tudo num só sim. Site do casal, confirmações pelo WhatsApp, presentes em Pix e fornecedores.",
   applicationName: "Aceito",
+  // iPhone: ícone da tela de início e abertura em tela cheia quando instalado
+  icons: { apple: "/icons/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "Aceito", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

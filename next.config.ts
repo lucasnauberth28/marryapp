@@ -71,6 +71,17 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Service worker (avisos no aparelho): nunca em cache, para uma correção chegar na hora,
+      // e com CSP própria e mais estrita (ele não precisa de scripts inline nem de outras origens).
+      // Vem depois da regra geral: em chave repetida, a última vence.
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Security-Policy", value: "default-src 'self'; script-src 'self'" },
+        ],
+      },
     ];
   },
 };

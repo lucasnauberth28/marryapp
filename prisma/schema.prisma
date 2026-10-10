@@ -305,6 +305,7 @@ model User {
   subscriptions   Subscription[]
   passwordResets  PasswordResetToken[]
   notifications   Notification[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
 }
@@ -330,6 +331,23 @@ model Notification {
   @@index([userId, readAt])
   @@index([userId, createdAt])
   @@map("notifications")
+}
+
+// Aparelho que ativou os avisos (Web Push). O endereço (endpoint) é único: o mesmo navegador
+// nunca aparece duas vezes, e quem entra depois no mesmo aparelho passa a ser o dono dele.
+model PushSubscription {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint   String   @unique @db.Text
+  p256dh     String
+  auth       String
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }
 
 // Cobrança de um plano pago (Pix). O plano só é aplicado quando o pagamento é aprovado,

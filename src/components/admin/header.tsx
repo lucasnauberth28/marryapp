@@ -29,9 +29,10 @@ interface HeaderProps {
   dateLabel?: string | null;
   /** Avisos não lidos, já contados no servidor. */
   unreadNotifications?: number;
+  pushPublicKey?: string | null;
 }
 
-export function Header({ role = "Admin", allowedPaths = [], coupleNames, initials, dateLabel, unreadNotifications = 0 }: HeaderProps) {
+export function Header({ role = "Admin", allowedPaths = [], coupleNames, initials, dateLabel, unreadNotifications = 0, pushPublicKey = null }: HeaderProps) {
   const can = (path: string) => hasPathAccess(allowedPaths, path);
 
   return (
@@ -47,7 +48,7 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
       </div>
 
       <div className="flex items-center gap-2 md:gap-3">
-        <NotificationBell initialUnread={unreadNotifications} allHref="/notificacoes" settingsHref="/conta#avisos" />
+        <NotificationBell initialUnread={unreadNotifications} allHref="/notificacoes" settingsHref="/conta#avisos" pushPublicKey={pushPublicKey} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -3,6 +3,7 @@
 import { useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Bell,
   Check,
   Copy,
   Download,
@@ -25,6 +26,7 @@ import { cancelPartnerInvite, changePassword, createPartnerInvite, deleteMyAccou
 import { btn } from "@/components/landing/styles";
 import { Field, FormAlert } from "@/app/login/fields";
 import { cn } from "@/lib/utils";
+import { PushCard } from "@/components/notifications/push-card";
 
 interface Member {
   id: string;
@@ -44,15 +46,18 @@ interface Props {
   kind: "couple" | "vendor" | "admin";
   account: { name: string; email: string; createdAt: string; companyName: string | null };
   wedding: { coupleNames: string; slug: string; members: Member[]; invites: Invite[] } | null;
+  /** Chave pública do push (null com o push desligado no servidor). */
+  pushPublicKey: string | null;
 }
 
 const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "America/Sao_Paulo" });
 const shortFmt = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" });
 
-export function AccountSections({ kind, account, wedding }: Props) {
+export function AccountSections({ kind, account, wedding, pushPublicKey }: Props) {
   return (
     <div className="flex flex-col gap-6">
       {wedding ? <PartnerSection wedding={wedding} /> : null}
+      <NotificationsSection pushPublicKey={pushPublicKey} />
       <PasswordSection />
       <DataSection kind={kind} createdAt={account.createdAt} companyName={account.companyName} coupleNames={wedding?.coupleNames ?? null} />
       {kind !== "admin" ? <DeleteSection kind={kind} isLastMember={wedding ? wedding.members.length <= 1 : false} /> : null}
@@ -77,9 +82,10 @@ function Section({
 }) {
   return (
     <section
+      id={id}
       aria-labelledby={`${id}-titulo`}
       className={cn(
-        "flex flex-col gap-5 rounded-[20px] border bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-7",
+        "scroll-mt-24 flex flex-col gap-5 rounded-[20px] border bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-7",
         tone === "danger" ? "border-perigo/25" : "border-linha",
       )}
     >
@@ -119,6 +125,19 @@ function PasswordToggle({ show, onToggle }: { show: boolean; onToggle: () => voi
 }
 
 // ---------------------------------------------------------------------------
+
+function NotificationsSection({ pushPublicKey }: { pushPublicKey: string | null }) {
+  return (
+    <Section
+      id="avisos"
+      icon={Bell}
+      title="Avisos"
+      description="Escolha como e quando o Aceito avisa você. O sino no topo guarda tudo, aconteça o que acontecer."
+    >
+      <PushCard publicKey={pushPublicKey} />
+    </Section>
+  );
+}
 
 function PasswordSection() {
   const [current, setCurrent] = useState("");

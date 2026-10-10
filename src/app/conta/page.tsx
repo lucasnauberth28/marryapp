@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { Logo } from "@/components/brand/logo";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
+import { vapidPublicKey } from "@/lib/notifications/push";
 import { AccountSections } from "./account-sections";
 
 export const metadata: Metadata = {
@@ -80,6 +81,7 @@ export default async function ContaPage() {
 
         <AccountSections
           kind={kind}
+          pushPublicKey={vapidPublicKey()}
           account={{
             name: user.name,
             email: user.username,

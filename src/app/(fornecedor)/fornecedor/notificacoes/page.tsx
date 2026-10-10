@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Settings2 } from "lucide-react";
 import { listNotificationHistory } from "@/actions/notification-actions";
 import { HistoryList } from "@/components/notifications/history-list";
+import { PushCard } from "@/components/notifications/push-card";
+import { vapidPublicKey } from "@/lib/notifications/push";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
 
 export const metadata: Metadata = { title: "Avisos" };
@@ -27,6 +29,7 @@ export default async function FornecedorNotificacoesPage() {
           Escolher quais avisos receber
         </Link>
       </div>
+      <PushCard publicKey={vapidPublicKey()} />
       <HistoryList initialItems={items} nowIso={new Date().toISOString()} />
     </div>
   );

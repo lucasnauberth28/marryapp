@@ -10,6 +10,7 @@ import { NotificationRow } from "./notification-row";
 import { useNotificationFeed } from "./use-notification-feed";
 import { useNow } from "./use-now";
 import { ReminderIcon } from "./reminder-icon";
+import { PushCard } from "./push-card";
 
 interface Props {
   /** Contagem de não lidos já calculada no servidor (evita o sino piscar vazio). */
@@ -18,13 +19,15 @@ interface Props {
   allHref: string;
   /** Onde ficam as escolhas de avisos. */
   settingsHref: string;
+  /** Chave pública do push (null com o push desligado no servidor). */
+  pushPublicKey?: string | null;
   align?: "start" | "center" | "end";
   side?: "top" | "right" | "bottom" | "left";
   className?: string;
 }
 
 /** Sino com contador de não lidos e painel dos últimos avisos. Serve aos dois painéis (casal e fornecedor). */
-export function NotificationBell({ initialUnread, allHref, settingsHref, align = "end", side = "bottom", className }: Props) {
+export function NotificationBell({ initialUnread, allHref, settingsHref, pushPublicKey = null, align = "end", side = "bottom", className }: Props) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const isShown = useCallback(() => triggerRef.current?.offsetParent != null, []);
   const feed = useNotificationFeed(initialUnread, isShown);
@@ -175,6 +178,8 @@ export function NotificationBell({ initialUnread, allHref, settingsHref, align =
             </>
           )}
         </div>
+
+        <PushCard publicKey={pushPublicKey} variant="compact" />
 
         <div className="flex items-center justify-between gap-2 border-t border-linha px-2 py-1">
           <Link

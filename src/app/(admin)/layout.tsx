@@ -6,6 +6,7 @@ import { redirect } from "next/navigation"
 import { getSession } from "@/lib/security/auth-guard"
 import { getWeddingIdentity } from "@/lib/wedding"
 import { unreadCountFor } from "@/lib/notifications/queries"
+import { vapidPublicKey } from "@/lib/notifications/push"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Perfil e permissões vêm do banco (não só do JWT), refletindo alterações de acesso na hora.
@@ -26,6 +27,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           initials={wedding.initials}
           dateLabel={wedding.dateLabel}
           unreadNotifications={unreadNotifications}
+          pushPublicKey={vapidPublicKey()}
         />
         <main id="conteudo" className="page-in flex-1 px-4 pb-32 pt-6 md:px-8 md:pb-12 md:pt-8">
           <div className="mx-auto w-full max-w-[1240px]">

@@ -5,6 +5,8 @@ import { Settings2 } from "lucide-react";
 import { listNotificationHistory } from "@/actions/notification-actions";
 import { PageHeader } from "@/components/admin/page-header";
 import { HistoryList } from "@/components/notifications/history-list";
+import { PushCard } from "@/components/notifications/push-card";
+import { vapidPublicKey } from "@/lib/notifications/push";
 import { hasPathAccess } from "@/lib/permissions";
 import { getSession } from "@/lib/security/auth-guard";
 import { getWeddingContext } from "@/lib/security/wedding-context";
@@ -35,6 +37,7 @@ export default async function NotificacoesPage() {
           </Link>
         }
       />
+      <PushCard publicKey={vapidPublicKey()} />
       <HistoryList initialItems={items} nowIso={new Date().toISOString()} />
     </div>
   );
