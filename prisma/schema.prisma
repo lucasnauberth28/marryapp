@@ -307,6 +307,7 @@ model User {
   notifications   Notification[]
   pushSubscriptions PushSubscription[]
   notificationPreference NotificationPreference?
+  domainOrders    DomainOrder[]
 
   @@map("users")
 }
@@ -387,6 +388,8 @@ model Subscription {
   periodEnd   DateTime?     // fim do período pago (planos mensais de fornecedor)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+
+  domainOrders DomainOrder[]
 
   @@index([userId, status])
   @@index([weddingId, status])
@@ -677,6 +680,16 @@ enum CurationStatus {
 // ==========================================
 
 // Um casamento: tudo do painel do casal pertence a um casamento.
+// Pedido de domínio próprio (.com.br) registrado no nome do cliente. Ativos: tudo menos REJECTED e CANCELED.
+enum DomainOrderStatus {
+  REQUESTED   // pedido recebido, aguardando o registro
+  REGISTERING // o dono do Aceito começou o registro
+  REGISTERED  // registrado no nome do titular
+  CONNECTED   // apontado para o site e no ar
+  REJECTED    // recusado (com motivo)
+  CANCELED    // cancelado pelo casal antes de começar
+}
+
 model Wedding {
   id            String    @id @default(uuid())
   slug          String    @unique // endereço do site: /casamento/<slug>
@@ -686,10 +699,13 @@ model Wedding {
   guestEstimate String?   // faixa informada no onboarding
   themeColor    String    @default("#5E2B4E")
   onboardedAt   DateTime?
+  // Domínio próprio já conectado e no ar (sem "www."): só depois de um pedido CONNECTED
+  customDomain  String?   @unique
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   members       User[]
+  domainOrders  DomainOrder[]
   invites       WeddingInvite[]
   subscriptions Subscription[]
   settings      SystemSettings?
@@ -714,6 +730,38 @@ model Wedding {
 }
 
 // Convite para o par entrar no mesmo casamento.
+// Índices únicos parciais (só entre pedidos ativos) existem na migration 20261010160000_domain_orders:
+// o Prisma não os descreve aqui. Um domínio e um casamento têm no máximo um pedido ativo.
+model DomainOrder {
+  id                String            @id @default(uuid())
+  weddingId         String
+  wedding           Wedding           @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  requestedByUserId String?
+  requestedBy       User?             @relation(fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  subscriptionId    String?
+  subscription      Subscription?     @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  domain            String            // ex.: ana-e-rafael.com.br
+  status            DomainOrderStatus @default(REQUESTED)
+  holderName        String            // nome completo ou razão social do titular
+  // CPF/CNPJ completo só enquanto o pedido não é concluído; ao virar REGISTERED é trocado pela versão escondida
+  holderDocument    String
+  holderEmail       String
+  holderPhone       String
+  adminNote         String?
+  rejectionReason   String?
+  requestedAt       DateTime          @default(now())
+  registeredAt      DateTime?
+  expiresAt         DateTime?         // vencimento anual no Registro.br
+  connectedAt       DateTime?
+  vercelState       String?           // última situação lida da Vercel: pending, verified, misconfigured...
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([status, requestedAt])
+  @@index([weddingId])
+  @@map("domain_orders")
+}
+
 model WeddingInvite {
   id          String    @id @default(uuid())
   weddingId   String
