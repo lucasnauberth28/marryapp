@@ -2,55 +2,24 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import {
-  COUPLE_MODULES,
-  calculateCustomPlanPrice,
-} from "@/lib/pricing-modules";
-import {
-  Sliders,
-  Percent,
-  MessageCircle,
-  QrCode,
-  Sparkles,
-  Users,
-  Compass,
-  Check,
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  ArrowLeft,
-  CheckCircle2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { COUPLE_MODULES, calculateCustomPlanPrice } from "@/lib/pricing-modules";
+import { Check, ArrowLeft, Zap } from "lucide-react";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
+import { btn, container, overline } from "@/components/landing/styles";
+import { cn } from "@/lib/utils";
 
-const ICON_MAP: Record<string, typeof Sliders> = {
-  Sliders,
-  Percent,
-  MessageCircle,
-  QrCode,
-  Sparkles,
-  Users,
-  Compass,
-};
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+const brlShort = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 export function CustomPlanClient() {
-  const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>([
-    "site",
-    "pixZero",
-    "whatsapp",
-  ]);
+  const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>(["site", "pixZero", "whatsapp"]);
 
   const toggleModule = (id: string) => {
-    setSelectedModuleIds((prev) =>
-      prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]
-    );
+    setSelectedModuleIds((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]));
   };
 
-  const calculation = useMemo(() => {
-    return calculateCustomPlanPrice(selectedModuleIds);
-  }, [selectedModuleIds]);
+  const calculation = useMemo(() => calculateCustomPlanPrice(selectedModuleIds), [selectedModuleIds]);
 
   const customCheckoutUrl = useMemo(() => {
     const modulesParam = selectedModuleIds.join(",");
@@ -58,190 +27,139 @@ export function CustomPlanClient() {
   }, [selectedModuleIds, calculation.total]);
 
   const selectedCount = selectedModuleIds.length;
-  const totalCount = COUPLE_MODULES.length;
-  const progressPercent = Math.round((selectedCount / totalCount) * 100);
+  // Quanto falta para o próximo degrau de desconto (3 itens pagos: 15%; 5 ou mais: 25%).
+  const nextStep =
+    calculation.paidCount < 3
+      ? { missing: 3 - calculation.paidCount, percent: 15 }
+      : calculation.paidCount < 5
+        ? { missing: 5 - calculation.paidCount, percent: 25 }
+        : null;
 
   return (
-    <div className="min-h-screen bg-paper text-tinta font-sans flex flex-col justify-between">
+    <div className="flex min-h-screen flex-col bg-linho font-sans text-tinta">
       <LandingHeader />
 
-      <div className="flex-1 py-12 px-6 max-w-7xl mx-auto w-full space-y-10">
-        {/* Navegação de Volta & Cabeçalho Principal */}
-        <div className="space-y-4">
-          <Link
-            href="/#planos"
-            className="inline-flex items-center gap-2 text-xs font-bold text-tinta-suave hover:text-tinta transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Voltar para os pacotes fixos</span>
+      <main className={cn(container, "flex flex-1 flex-col gap-8 pb-20 pt-6 sm:pb-24 sm:pt-10")}>
+        <div className="flex flex-col gap-3">
+          <Link href="/#planos" className={cn(btn.quiet, "-ml-3 w-fit")}>
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Ver planos prontos
           </Link>
-
-          <div className="max-w-3xl space-y-3">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-display text-tinta">
-              Monte o plano do seu casamento
-            </h1>
-            <p className="text-tinta-suave text-sm sm:text-base leading-relaxed">
-              Escolha só o que vocês vão usar e pague uma única vez. Quanto mais itens, maior o desconto, até 25%.
-            </p>
-          </div>
+          <p className={overline}>Monte seu plano</p>
+          <h1 className="font-display text-[34px] font-normal leading-[40px] tracking-[-0.015em] sm:text-5xl sm:leading-[54px] lg:text-[56px] lg:leading-[62px]">
+            Escolham só o que vão usar
+          </h1>
+          <p className="max-w-[60ch] text-[17px] leading-[26px] text-tinta-suave sm:text-lg sm:leading-7">
+            Com 3 recursos o plano ganha 15% de desconto; com 5 ou mais, 25%. Pagamento único, válido até o casamento.
+          </p>
         </div>
 
-        {/* Grade de Módulos + Painel Lateral Fixo */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Coluna Principal: Lista de Módulos */}
-          <div className="lg:col-span-8 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-linha">
-              <span className="text-xs font-bold uppercase tracking-wider text-tinta-suave">
-                Catálogo de Funcionalidades ({selectedCount} de {totalCount} selecionadas)
-              </span>
-              <div className="flex items-center gap-2 text-xs font-bold text-brand">
-                <span>{progressPercent}% do pacote completo</span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
+          {/* Recursos: cada cartão é uma caixa de seleção, que funciona com teclado e leitor de tela */}
+          <fieldset className="m-0 min-w-0 border-0 p-0">
+            <legend className="sr-only">Recursos do plano</legend>
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {COUPLE_MODULES.map((mod) => {
-                const Icon = ICON_MAP[mod.iconName] || Sliders;
                 const isSelected = selectedModuleIds.includes(mod.id);
-                const isBase = mod.isIncludedInBase;
-
+                const inputId = `modulo-${mod.id}`;
                 return (
-                  <div
-                    key={mod.id}
-                    onClick={() => toggleModule(mod.id)}
-                    className={`p-6 rounded-3xl border-2 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-5 ${
-                      isSelected
-                        ? "bg-papel border-brand shadow-lg ring-2 ring-brand/20 scale-[1.01]"
-                        : "bg-ivory border-linha/80 hover:bg-papel hover:border-linha opacity-75 hover:opacity-100"
-                    }`}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div
-                        className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors shadow-xs ${
-                          isSelected
-                            ? "bg-brand text-white"
-                            : "bg-stone-200/80 text-tinta-suave"
-                        }`}
+                  <li key={mod.id} className="flex">
+                    <label
+                      htmlFor={inputId}
+                      className={cn(
+                        "relative flex w-full cursor-pointer gap-4 rounded-[16px] border bg-papel p-5 shadow-aceito-1 transition-colors duration-150 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ameixa",
+                        isSelected ? "border-2 border-ameixa p-[19px]" : "border-linha hover:border-linha-forte",
+                      )}
+                    >
+                      <input
+                        id={inputId}
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleModule(mod.id)}
+                        className="peer sr-only"
+                      />
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          "mt-0.5 grid size-6 shrink-0 place-items-center rounded-[6px] border-2",
+                          isSelected ? "border-ameixa bg-ameixa text-on-ameixa" : "border-linha-forte bg-papel",
+                        )}
                       >
-                        <Icon className="w-6 h-6" />
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-display text-lg text-tinta">
-                            {mod.name}
-                          </h3>
-                          {mod.highlightBadge && (
-                            <span className="text-xs font-bold text-brand uppercase tracking-wider">
-                              • {mod.highlightBadge}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-tinta-suave leading-relaxed max-w-xl">
-                          {mod.description}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between sm:justify-end gap-5 shrink-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-linha">
-                      <div className="text-right">
-                        <span className="font-extrabold text-base text-tinta block">
-                          {isBase
-                            ? "Grátis"
-                            : new Intl.NumberFormat("pt-BR", {
-                                style: "currency",
-                                currency: "BRL",
-                              }).format(mod.price / 100)}
+                        {isSelected ? <Check className="size-4" strokeWidth={3} /> : null}
+                      </span>
+                      <span className="flex min-w-0 flex-col gap-1">
+                        <span className={overline}>{mod.category}</span>
+                        <span className="text-lg font-semibold leading-6">{mod.name}</span>
+                        <span className="text-base leading-6 text-tinta-suave">{mod.description}</span>
+                        <span className="mt-1 font-semibold">
+                          {mod.isIncludedInBase ? "Grátis" : brlShort.format(mod.price / 100)}
+                          <span className="font-normal text-tinta-suave"> · pagamento único</span>
                         </span>
-                        <span className="text-xs text-tinta-suave font-medium block">taxa única</span>
-                      </div>
-
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                          isSelected
-                            ? "bg-brand text-white shadow-xs"
-                            : "border-2 border-linha bg-papel"
-                        }`}
-                      >
-                        {isSelected && <Check className="w-5 h-5 stroke-[3]" />}
-                      </div>
-                    </div>
-                  </div>
+                      </span>
+                    </label>
+                  </li>
                 );
               })}
-            </div>
-          </div>
+            </ul>
+          </fieldset>
 
-          {/* Painel Lateral Sticky: Resumo do Investimento */}
-          <div className="lg:col-span-4 sticky top-28 bg-gradient-to-b from-brand-50 to-white p-7 rounded-3xl border-2 border-brand/40 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-brand">
-                Resumo da Seleção
-              </span>
-              <span className="text-xs text-tinta-suave font-bold">
-                {selectedCount} módulos ativos
-              </span>
-            </div>
+          {/* Resumo */}
+          <aside aria-labelledby="resumo-titulo" className="flex flex-col gap-4 rounded-[16px] border border-linha bg-papel p-6 shadow-aceito-2 lg:sticky lg:top-24">
+            <h2 id="resumo-titulo" className="text-xl font-semibold leading-7">
+              Resumo
+            </h2>
 
-            <div>
-              <span className="text-xs text-tinta-suave font-bold uppercase tracking-wider block">
-                Investimento Total do Casal:
-              </span>
-              <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-4xl sm:text-5xl font-black text-tinta font-display">
-                  {calculation.total === 0
-                    ? "Grátis"
-                    : new Intl.NumberFormat("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      }).format(calculation.total / 100)}
-                </span>
-                <span className="text-xs text-tinta-suave font-medium">/ taxa única</span>
-              </div>
-
-              {calculation.discountAmount > 0 && (
-                <div className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold shadow-2xs">
-                  <Zap className="w-4 h-4 text-sucesso" />
-                  <span>{calculation.discountBadge}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Lista dos Recursos Selecionados */}
-            <div className="pt-4 border-t border-linha/80 space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-tinta-suave block">
-                Recursos incluídos no seu pacote:
-              </span>
-              <ul className="space-y-2 text-xs text-tinta-suave font-medium max-h-56 overflow-y-auto pr-1">
+            {calculation.selectedModules.length === 0 ? (
+              <p className="text-base text-tinta-suave">Escolham ao menos um recurso para ver o valor.</p>
+            ) : (
+              <ul className="flex flex-col gap-2 text-base">
                 {calculation.selectedModules.map((m) => (
-                  <li key={m.id} className="flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-2 truncate">
-                      <CheckCircle2 className="w-4 h-4 text-brand shrink-0" />
-                      <span className="truncate">{m.name}</span>
-                    </span>
-                    <span className="text-xs font-bold text-tinta-suave shrink-0">
-                      {m.price === 0 ? "Grátis" : `R$ ${m.price / 100}`}
-                    </span>
+                  <li key={m.id} className="flex items-baseline justify-between gap-3">
+                    <span>{m.name}</span>
+                    <span className="shrink-0 tabular-nums">{m.price === 0 ? "Grátis" : brl.format(m.price / 100)}</span>
                   </li>
                 ))}
               </ul>
+            )}
+
+            <div className="flex flex-col gap-2 border-t border-linha pt-4" aria-live="polite">
+              <p className="flex items-center justify-between text-tinta-suave">
+                <span>Subtotal</span>
+                <span className="tabular-nums">{brl.format(calculation.subtotal / 100)}</span>
+              </p>
+              {calculation.discountAmount > 0 ? (
+                <p className="flex items-center justify-between gap-3">
+                  <span className="inline-flex min-h-7 items-center gap-1 rounded-[6px] bg-sucesso-suave pl-2 pr-3 text-sm font-semibold text-sucesso">
+                    <Zap className="size-4" aria-hidden="true" />
+                    {calculation.paidCount >= 5 ? "Combo de 5 · 25%" : "Combo de 3 · 15%"}
+                  </span>
+                  <span className="font-semibold tabular-nums text-sucesso">− {brl.format(calculation.discountAmount / 100)}</span>
+                </p>
+              ) : null}
+              <p className="mt-2 flex items-end justify-between gap-3">
+                <span className="font-semibold">Total</span>
+                <span className="font-display text-[40px] leading-[44px] tabular-nums">
+                  {calculation.total === 0 ? "Grátis" : brl.format(calculation.total / 100)}
+                </span>
+              </p>
+              {nextStep ? (
+                <p className="text-sm text-tinta-suave">
+                  {nextStep.missing === 1 ? "Mais 1 recurso" : `Mais ${nextStep.missing} recursos`} e o desconto sobe para {nextStep.percent}%.
+                </p>
+              ) : null}
             </div>
 
-            {/* Botão de Contratação */}
-            <Link href={customCheckoutUrl} className="block mt-6">
-              <Button className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-14 text-sm shadow-xl hover:scale-105 transition-all gap-2 cursor-pointer">
-                <span>Contratar Plano Personalizado</span>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
+            <Link
+              href={customCheckoutUrl}
+              aria-disabled={selectedCount === 0}
+              className={cn(btn.primary, btn.block, selectedCount === 0 && "pointer-events-none opacity-60")}
+            >
+              Continuar para o pagamento
             </Link>
-
-            <div className="flex items-center gap-2 text-xs text-tinta-suave pt-3 border-t border-linha/60">
-              <ShieldCheck className="w-4 h-4 text-sucesso shrink-0" />
-              <span>Sem mensalidades ou surpresas. Pagamento único com liberação imediata.</span>
-            </div>
-          </div>
+            <p className="text-sm text-tinta-suave">Sem mensalidade. Pagamento único, com liberação imediata.</p>
+          </aside>
         </div>
-      </div>
+      </main>
 
       <LandingFooter />
     </div>
