@@ -1,5 +1,7 @@
 import { getWalletData } from "@/actions/wallet-actions";
 import { CarteiraClient } from "./carteira-client";
+import { ExpenseStatus } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
 
 export const metadata = {
@@ -8,12 +10,17 @@ export const metadata = {
 };
 
 export default async function CarteiraPage() {
-  await requireWeddingPage("/carteira");
+  const { weddingId } = await requireWeddingPage("/carteira");
   const { balance, cards } = await getWalletData();
+  // Quanto ainda falta pagar das despesas cadastradas (leitura, só deste casamento)
+  const toPay = await prisma.expense.aggregate({
+    where: { weddingId, status: { in: [ExpenseStatus.PENDING, ExpenseStatus.OVERDUE] } },
+    _sum: { amount: true },
+  });
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 font-sans">
-      <CarteiraClient initialBalance={balance} initialCards={cards} />
+      <CarteiraClient initialBalance={balance} initialCards={cards} toPayCents={toPay._sum.amount ?? 0} />
     </div>
   );
 }
