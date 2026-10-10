@@ -51,8 +51,6 @@ jobs:
 
       - name: Lint
         run: npm run lint
-        # Temporário: há erros de lint antigos sendo zerados; volta a bloquear em seguida.
-        continue-on-error: true
 
       - name: Testes
         run: npm test
