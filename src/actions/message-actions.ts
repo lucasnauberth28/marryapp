@@ -3,51 +3,28 @@
 import { requireWedding } from "@/lib/security/wedding-context";
 import { moduleRefusal } from "@/lib/wedding-plan";
 import { weddingSiteUrl } from "@/lib/wedding-links";
+import { defaultTemplatesToCreate } from "@/lib/default-message-templates";
 
 import prisma from "@/lib/prisma";
 import { sendBulkMessages } from "@/lib/evolution";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Dá os modelos padrão (convite e lembrete) a um casamento que ainda não tem nenhum.
+ * Seguro para rodar a cada visita e em paralelo: um bloqueio por casamento (advisory lock da transação)
+ * impede que duas aberturas da tela criem os modelos em dobro. Quem já tem modelos não é alterado.
+ */
 export async function ensureDefaultTemplates() {
   const { weddingId } = await requireWedding("/mensagens");
   try {
-    const existingInvite = await prisma.messageTemplate.findFirst({
-      where: { weddingId, type: "INITIAL_INVITE" },
+    await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`message-templates:${weddingId}`}))`;
+      const toCreate = defaultTemplatesToCreate(await tx.messageTemplate.count({ where: { weddingId } }));
+      // A lista mostra o mais novo primeiro: cria o lembrete antes para o convite ficar no topo
+      for (const template of [...toCreate].reverse()) {
+        await tx.messageTemplate.create({ data: { weddingId, ...template } });
+      }
     });
-
-    if (!existingInvite) {
-      await prisma.messageTemplate.create({
-        data: {
-          weddingId,
-          name: "Convite Inicial (Com Botões RSVP)",
-          type: "INITIAL_INVITE",
-          content: "💍 *Você está convidado!*\n\nOlá, *{nome}*! 🎉\n\nTemos a honra de convidá-lo(a) para o nosso casamento!\n\nPor favor, confirme sua presença clicando no botão abaixo:",
-          buttons: JSON.stringify([
-            { id: "confirm", text: "✅ Confirmar Presença" },
-            { id: "decline", text: "❌ Não poderei ir" },
-          ]),
-        },
-      });
-    }
-
-    const existingReminder = await prisma.messageTemplate.findFirst({
-      where: { weddingId, type: "RSVP_REMINDER" },
-    });
-
-    if (!existingReminder) {
-      await prisma.messageTemplate.create({
-        data: {
-          weddingId,
-          name: "Lembrete de RSVP Pendente",
-          type: "RSVP_REMINDER",
-          content: "🔔 *Lembrete de Presença*\n\nOlá, *{nome}*! Tudo bem? 😊\n\nPercebemos que ainda não recebemos a sua confirmação para o nosso casamento.\n\nPor favor, confirme pelo botão abaixo:",
-          buttons: JSON.stringify([
-            { id: "confirm", text: "✅ Confirmar Presença" },
-            { id: "decline", text: "❌ Não poderei ir" },
-          ]),
-        },
-      });
-    }
   } catch (err) {
     console.error("[ensureDefaultTemplates Error]:", err);
   }
