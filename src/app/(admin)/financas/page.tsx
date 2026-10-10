@@ -1,14 +1,11 @@
 import { getFinancialMetrics, getTransactions } from "@/actions/finance-actions";
 import { getExpenses } from "@/actions/expense-actions";
 import { getVendors } from "@/actions/vendor-actions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getWalletData } from "@/actions/wallet-actions";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
-import {
-  ArrowDownRight,
-  ArrowUpRight,
-  Scale,
-  CalendarClock,
-} from "lucide-react";
+import { PageHeader } from "@/components/admin/page-header";
+import { Reveal } from "@/components/motion/reveal";
+import { bigNumber, card, cardTitle, overline } from "@/components/casal/ui";
 import { FinanceTable } from "./finance-client";
 import { ExpensesClient } from "./expenses-client";
 
@@ -16,12 +13,14 @@ import { ExpensesClient } from "./expenses-client";
 // UTILS
 // ==========================================
 
-function formatCurrency(centavos: number): string {
-  return (centavos / 100).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+
+/** Centavos em "R$ 4.870" (com centavos só quando houver). */
+function money(centavos: number): string {
+  return brl.format(centavos / 100).replace(/,00$/, "").replace(/ /g, " ");
 }
+
+const dueFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", timeZone: "UTC" });
 
 // ==========================================
 // METADATA
@@ -35,8 +34,6 @@ export const metadata = {
 // ==========================================
 // PAGE COMPONENT (Server)
 // ==========================================
-
-import { getWalletData } from "@/actions/wallet-actions";
 
 export default async function FinancasPage() {
   await requireWeddingPage("/financas");
@@ -52,128 +49,82 @@ export default async function FinancasPage() {
 
   const isSaldoPositivo = metrics.saldoPrevisto >= 0;
 
+  // Próxima conta a pagar: a pendente (ou atrasada) com o vencimento mais perto (a lista já vem por data)
+  const nextDue = expenses.find((e) => e.status !== "PAID") ?? null;
+  const nextDueName = nextDue ? nextDue.description.replace(/\s*\(\d+[/\sde]+\d+\)\s*$/i, "").trim() : "";
+  const paidPercent = metrics.totalDespesas > 0 ? Math.round((metrics.totalDespesasPagas / metrics.totalDespesas) * 100) : 0;
+
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
-      <div>
-        <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
-          Finanças
-        </h1>
-        <p className="mt-1 text-sm text-tinta-suave">
-          Balanço geral do casamento: conciliação de entradas, controle de despesas e saldo previsto.
-        </p>
-      </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        eyebrow="Organização"
+        title="Finanças"
+        description="Presentes que entraram, contas a pagar e quanto sobra no fim."
+      />
 
-      {/* Metric Cards - Entradas vs Saídas Equilibradas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Entradas Líquidas */}
-        <Card className="border-emerald-100 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-600">
-              Entradas Líquidas
-            </CardTitle>
-            <div className="h-8 w-8 rounded-xl bg-sucesso-suave flex items-center justify-center border border-emerald-200">
-              <ArrowDownRight className="h-4 w-4 text-sucesso" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-sucesso">
-              {formatCurrency(metrics.totalLiquido)}
-            </div>
-            <p className="text-xs text-zinc-500 mt-1 truncate">
-              Bruto: {formatCurrency(metrics.totalBruto)} {metrics.totalPendente > 0 && `| Pix Pend.: ${formatCurrency(metrics.totalPendente)}`}
-            </p>
-          </CardContent>
-        </Card>
+      <Reveal className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <article className={`${card} flex flex-col gap-2 p-5 sm:p-6`}>
+          <p className={overline}>Presentes recebidos</p>
+          <span className={bigNumber}>{money(metrics.totalLiquido)}</span>
+          <span className="text-sm text-tinta-suave">
+            {metrics.totalPendente > 0
+              ? `Mais ${money(metrics.totalPendente)} em Pix a conferir`
+              : metrics.totalLiquido > 0
+                ? "Tudo conferido"
+                : "Os presentes pagos entram aqui."}
+          </span>
+        </article>
 
-        {/* Saídas / Despesas Totais */}
-        <Card className="border-rose-100 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-600">
-              Despesas Totais
-            </CardTitle>
-            <div className="h-8 w-8 rounded-xl bg-rose-50 flex items-center justify-center border border-rose-200">
-              <ArrowUpRight className="h-4 w-4 text-rose-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-rose-700">
-              {formatCurrency(metrics.totalDespesas)}
-            </div>
-            <p className="text-xs text-zinc-500 mt-1 truncate">
-              Já pagas: {formatCurrency(metrics.totalDespesasPagas)}
-            </p>
-          </CardContent>
-        </Card>
+        <article className={`${card} flex flex-col gap-2 p-5 sm:p-6`}>
+          <p className={overline}>Despesas</p>
+          <span className={bigNumber}>{money(metrics.totalDespesas)}</span>
+          <span className="text-sm text-tinta-suave">
+            {metrics.totalDespesas > 0
+              ? `${paidPercent}% pago · já saíram ${money(metrics.totalDespesasPagas)}`
+              : "Cadastrem a primeira despesa."}
+          </span>
+        </article>
 
-        {/* Saldo Previsto */}
-        <Card className={`shadow-sm ${isSaldoPositivo ? "border-amber-200/60 bg-aviso-suave/20" : "border-perigo/40 bg-perigo-suave/20"}`}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-700 font-semibold">
-              Saldo Previsto
-            </CardTitle>
-            <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${isSaldoPositivo ? "bg-brand-100 text-brand" : "bg-red-100 text-perigo"}`}>
-              <Scale className="h-4 w-4" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${isSaldoPositivo ? "text-brand" : "text-perigo"}`}>
-              {formatCurrency(metrics.saldoPrevisto)}
-            </div>
-            <p className="text-xs text-zinc-500 mt-1">
-              Entradas Líquidas − Despesas Totais
-            </p>
-          </CardContent>
-        </Card>
+        <article className={`${card} flex flex-col gap-2 p-5 sm:p-6`}>
+          <p className={overline}>Saldo previsto</p>
+          <span className={isSaldoPositivo ? bigNumber : bigNumber.replace("text-tinta", "text-perigo")}>{money(metrics.saldoPrevisto)}</span>
+          <span className="text-sm text-tinta-suave">Presentes recebidos menos as despesas</span>
+        </article>
 
-        {/* Contas a Pagar Pendentes */}
-        <Card className="border-amber-100 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-zinc-600">
-              Contas a Pagar
-            </CardTitle>
-            <div className="h-8 w-8 rounded-xl bg-aviso-suave flex items-center justify-center border border-amber-200">
-              <CalendarClock className="h-4 w-4 text-aviso" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-aviso">
-              {formatCurrency(metrics.totalDespesasPendentes)}
-            </div>
-            <p className="text-xs text-zinc-500 mt-1">
-              {metrics.countDespesasPendentes} despesas/parcelas a vencer
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        <article className={`${card} flex flex-col gap-2 p-5 sm:p-6 ${nextDue ? "border-2 border-aviso" : ""}`}>
+          <p className={overline}>Próxima parcela</p>
+          <span className={bigNumber}>{nextDue ? money(nextDue.amount) : "R$ 0"}</span>
+          <span className={`text-sm ${nextDue ? "font-semibold text-aviso" : "text-tinta-suave"}`}>
+            {nextDue
+              ? `${nextDueName} · vence ${dueFmt.format(nextDue.dueDate).replace(".", "")}${metrics.countDespesasPendentes > 1 ? ` (mais ${metrics.countDespesasPendentes - 1} a vencer)` : ""}`
+              : "Nenhuma conta a pagar."}
+          </span>
+        </article>
+      </Reveal>
 
-      {/* Control of Expenses */}
-      <div className="space-y-4 pt-2">
+      <section aria-labelledby="despesas-titulo" className="flex flex-col gap-3">
         <div>
-          <h3 className="text-lg font-semibold text-zinc-900">
-            Controle de Despesas
-          </h3>
-          <p className="text-sm text-zinc-500 mt-0.5">
-            Gerencie as despesas e pagamentos a fornecedores.
-          </p>
+          <h2 id="despesas-titulo" className={cardTitle}>
+            Despesas
+          </h2>
+          <p className="mt-0.5 text-[15px] text-tinta-suave">Contratos com fornecedores e compras avulsas, com as parcelas de cada um.</p>
         </div>
 
         <ExpensesClient initialExpenses={expenses} vendors={vendors} userCards={walletData.cards} />
-      </div>
+      </section>
 
-      {/* Conciliation Table */}
-      <div className="space-y-4 pt-6 border-t border-zinc-200">
+      <section aria-labelledby="pagamentos-titulo" className="flex flex-col gap-3 border-t border-linha pt-6">
         <div>
-          <h3 className="text-lg font-semibold text-zinc-900">
+          <h2 id="pagamentos-titulo" className={cardTitle}>
             Pagamentos dos presentes
-          </h3>
-          <p className="text-sm text-zinc-500 mt-0.5">
+          </h2>
+          <p className="mt-0.5 text-[15px] text-tinta-suave">
             Confira no extrato do banco os Pix recebidos e confirme cada um aqui.
           </p>
         </div>
 
         <FinanceTable transactions={transactions} />
-      </div>
+      </section>
     </div>
   );
 }
