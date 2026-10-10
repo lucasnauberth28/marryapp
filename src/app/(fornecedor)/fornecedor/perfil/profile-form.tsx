@@ -63,6 +63,7 @@ export function ProfileForm({
   categories,
   initial,
   notice,
+  portfolio,
 }: {
   vendorId: string;
   isPublic: boolean;
@@ -70,6 +71,8 @@ export function ProfileForm({
   initial: FormValues;
   /** Aviso da curadoria, exibido logo abaixo do título. */
   notice?: React.ReactNode;
+  /** Portfólio (fotos): vem antes dos campos de texto, como no design. */
+  portfolio?: React.ReactNode;
 }) {
   const [values, setValues] = useState<FormValues>(initial);
   const [error, setError] = useState<string | null>(null);
@@ -128,6 +131,8 @@ export function ProfileForm({
 
       {notice}
 
+      {portfolio}
+
       <form id={FORM_ID} onSubmit={onSubmit} noValidate className="flex flex-col gap-6" aria-describedby={error ? "perfil-erro" : undefined}>
         {error ? (
           <p id="perfil-erro" role="alert" className="rounded-xl bg-perigo-suave px-4 py-3 text-sm font-medium text-perigo">
@@ -136,7 +141,7 @@ export function ProfileForm({
         ) : null}
 
         <Reveal as="section" variant="up" delay={80} className={cn(CARD, "grid grid-cols-1 gap-4 sm:grid-cols-2")}>
-          <h2 className="text-lg font-semibold sm:col-span-2">Sobre o negócio</h2>
+          <h2 className="text-xl leading-7 font-semibold sm:col-span-2">Sobre o negócio</h2>
           <Field id="f-nome" label="Nome">
             <input
               id="f-nome"
@@ -203,7 +208,7 @@ export function ProfileForm({
 
         <Reveal as="section" variant="up" delay={160} className={cn(CARD, "grid grid-cols-1 gap-4 sm:grid-cols-2")}>
           <div className="flex flex-col gap-1 sm:col-span-2">
-            <h2 className="text-lg font-semibold">Contato e redes</h2>
+            <h2 className="text-xl leading-7 font-semibold">Contato e redes</h2>
             <p className={HINT}>Os pedidos de orçamento chegam aqui no painel; o WhatsApp aparece para os casais no Plano Pro.</p>
           </div>
           <Field id="f-whats" label="WhatsApp" hint="Com DDD. Ex.: (11) 99876-5432">

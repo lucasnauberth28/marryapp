@@ -59,6 +59,7 @@ export default async function PerfilPage() {
             ) : null}
           </Reveal>
         }
+        portfolio={<MediaForm initial={{ logoUrl: vendor.logoUrl, coverUrl: vendor.coverUrl, gallery }} />}
         initial={{
           companyName: vendor.companyName,
           category: vendor.category,
@@ -70,7 +71,6 @@ export default async function PerfilPage() {
           website: vendor.website ?? "",
         }}
       />
-      <MediaForm initial={{ logoUrl: vendor.logoUrl, coverUrl: vendor.coverUrl, gallery }} />
     </div>
   );
 }

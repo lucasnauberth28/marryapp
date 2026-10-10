@@ -127,8 +127,8 @@ export function MediaForm({ initial }: { initial: VendorMedia }) {
     <Reveal variant="up" delay={200}>
     <section aria-labelledby="fotos-titulo" className={cn(CARD, "flex flex-col gap-6")}>
       <div className="flex flex-col gap-1">
-        <h2 id="fotos-titulo" className="text-lg font-semibold">
-          Fotos
+        <h2 id="fotos-titulo" className="text-xl leading-7 font-semibold">
+          Portfólio
         </h2>
         <p className={HINT}>
           As fotos são salvas na hora. Reduzimos cada imagem para até {MAX_SIDE} px antes de enviar (JPG, PNG ou WEBP, até 5
@@ -228,10 +228,10 @@ export function MediaForm({ initial }: { initial: VendorMedia }) {
             Nenhuma foto na galeria ainda. Casais pedem mais orçamento a perfis com fotos reais de casamentos.
           </p>
         ) : (
-          <ol className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:grid-cols-4">
+          <ol className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {media.gallery.map((url, i) => (
               <li key={`${i}-${url.slice(-24)}`} className="flex flex-col gap-2 rounded-xl border border-linha bg-linho p-2">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-areia">
+                <div className={cn("relative aspect-[4/3] overflow-hidden rounded-lg bg-areia", i === 0 && "outline-2 outline-offset-2 outline-ameixa")}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={url} alt={`Foto ${i + 1} da galeria`} className="size-full object-cover" />
                   <span className="absolute top-1.5 left-1.5 rounded-full bg-papel/95 px-2 py-0.5 text-xs font-semibold">{i + 1}</span>
