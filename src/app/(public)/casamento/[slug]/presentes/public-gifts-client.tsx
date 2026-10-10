@@ -23,6 +23,7 @@ import {
   Dialog,
   DialogContent,
 } from "@/components/ui/dialog";
+import { UserImage } from "@/components/ui/user-image";
 
 interface PublicGiftsClientProps {
   initialGifts: Gift[];
@@ -149,10 +150,11 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
               {/* Imagem do Presente */}
               <div className="h-56 bg-areia relative overflow-hidden flex items-center justify-center">
                 {gift.imageUrl ? (
-                  <img
+                  <UserImage
                     src={gift.imageUrl}
                     alt={gift.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center text-tinta-suave">
@@ -235,11 +237,14 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
               {/* Lado Esquerdo: Imagem do Presente (60% da Largura) */}
               <div className="md:w-[60%] bg-linho border-b md:border-b-0 md:border-r border-linha relative min-h-[220px] md:min-h-[380px] max-h-[380px] flex items-center justify-center p-4 overflow-hidden">
                 {selectedGift.imageUrl ? (
-                  <img
-                    src={selectedGift.imageUrl}
-                    alt={selectedGift.title}
-                    className="w-full h-full max-h-[340px] object-contain rounded-xl drop-shadow-xs transition-transform duration-500 hover:scale-105"
-                  />
+                  <div className="relative h-[300px] w-full max-h-[340px]">
+                    <UserImage
+                      src={selectedGift.imageUrl}
+                      alt={selectedGift.title}
+                      sizes="(min-width: 768px) 55vw, 90vw"
+                      className="object-contain rounded-xl drop-shadow-xs transition-transform duration-500 hover:scale-105"
+                    />
+                  </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center text-tinta-suave p-6 text-center">
                     <GiftIcon className="w-12 h-12 text-linha-forte mb-2 stroke-[1.2]" />

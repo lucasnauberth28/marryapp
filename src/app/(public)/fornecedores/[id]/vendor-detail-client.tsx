@@ -29,6 +29,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { checkVendorAvailability, createVendorLead, type PublicVendor } from "@/actions/partner-vendor-actions";
 import { toast } from "sonner";
 import { LEAD_BUDGET_OPTIONS, parseGallery, parseRegions } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { UserImage } from "@/components/ui/user-image";
 
 interface VendorDetailClientProps {
   vendor: PublicVendor;
@@ -234,13 +235,9 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
         <div className="bg-papel rounded-3xl p-6 sm:p-8 border border-linha shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             {/* Logotipo / Avatar do Fornecedor */}
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-brand-50 border-2 border-brand/30 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-brand-50 border-2 border-brand/30 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
               {vendor.logoUrl ? (
-                <img
-                  src={vendor.logoUrl}
-                  alt={vendor.companyName}
-                  className="w-full h-full object-cover"
-                />
+                <UserImage src={vendor.logoUrl} alt={vendor.companyName} sizes="96px" className="object-cover" />
               ) : (
                 <Building2 className="w-10 h-10 text-brand" />
               )}
@@ -323,12 +320,13 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
               </div>
 
               {/* Imagem Principal em Destaque */}
-              <div className="w-full h-80 sm:h-[420px] rounded-2xl overflow-hidden bg-areia border border-linha">
+              <div className="relative w-full h-80 sm:h-[420px] rounded-2xl overflow-hidden bg-areia border border-linha">
                 {activeImage ? (
-                  <img
+                  <UserImage
                     src={activeImage}
                     alt={vendor.companyName}
-                    className="w-full h-full object-cover transition-all duration-500"
+                    sizes="(min-width: 1024px) 700px, 100vw"
+                    className="object-cover transition-all duration-500"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-stone-300">
@@ -346,17 +344,13 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                       onClick={() => setActiveImage(img)}
                       aria-label={`Ver foto ${i + 1}`}
                       aria-pressed={activeImage === img}
-                      className={`w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                      className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
                         activeImage === img
                           ? "border-brand scale-105 shadow-md"
                           : "border-transparent opacity-70 hover:opacity-100"
                       }`}
                     >
-                      <img
-                        src={img}
-                        alt={`Portfólio ${i + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <UserImage src={img} alt={`Portfólio ${i + 1}`} sizes="96px" className="object-cover" />
                     </button>
                   ))}
                 </div>

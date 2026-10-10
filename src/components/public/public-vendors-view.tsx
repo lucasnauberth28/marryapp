@@ -36,6 +36,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { createVendorLead, type PublicVendorListItem } from "@/actions/partner-vendor-actions";
 import { parseRegions } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { toast } from "sonner";
+import { UserImage } from "@/components/ui/user-image";
 
 const CATEGORIES = [
   "TODOS",
@@ -304,7 +305,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
                   >
                     <div className="relative h-32 w-full bg-areia">
                       {partner.coverUrl ? (
-                        <img src={partner.coverUrl} alt="" className="h-full w-full object-cover" />
+                        <UserImage src={partner.coverUrl} alt="" sizes="256px" className="object-cover" />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-stone-300">
                           <Building2 className="w-10 h-10" aria-hidden="true" />
@@ -377,10 +378,11 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
                     {/* Imagem de Capa com Link para Perfil */}
                     <Link href={`/fornecedores/${partner.id}`} className="block relative h-52 w-full bg-areia overflow-hidden">
                       {partner.coverUrl ? (
-                        <img
+                        <UserImage
                           src={partner.coverUrl}
                           alt={partner.companyName}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-areia text-stone-300">

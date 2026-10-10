@@ -32,6 +32,7 @@ import {
   CheckCircle2,
   Loader2,
 } from "lucide-react";
+import { UserImage } from "@/components/ui/user-image";
 
 interface CheckoutClientProps {
   gift: Gift;
@@ -262,11 +263,9 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
       {/* Resumo do Presente Premium */}
       <div className="flex items-center gap-5 pb-8 border-b border-linha/80 mb-10 mt-2">
         {gift.imageUrl ? (
-          <img
-            src={gift.imageUrl}
-            alt={gift.title}
-            className="w-24 h-24 object-cover rounded-[24px] border border-linha/50 shadow-md transition-transform duration-300 hover:scale-105"
-          />
+          <div className="relative w-24 h-24 shrink-0 overflow-hidden rounded-[24px] border border-linha/50 shadow-md">
+            <UserImage src={gift.imageUrl} alt={gift.title} sizes="96px" className="object-cover transition-transform duration-300 hover:scale-105" />
+          </div>
         ) : (
           <div className="w-24 h-24 bg-linho border border-linha rounded-[24px] flex items-center justify-center text-4xl shadow-sm">
             🎁

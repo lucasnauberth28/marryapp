@@ -34,6 +34,7 @@ import { brandThemeStyle, daysUntil } from "@/lib/wedding-format";
 import { weddingSitePath } from "@/lib/wedding-links";
 import { toast } from "sonner";
 import { Reveal, RevealWords } from "@/components/motion/reveal";
+import { UserImage } from "@/components/ui/user-image";
 
 export interface WeddingSiteSettings {
   title?: string | null;
@@ -214,8 +215,7 @@ export function WeddingSiteView({
       >
         {hasHeroImage ? (
           <>
-            {/* eslint-disable-next-line @next/next/no-img-element -- imagem enviada pelo casal, de domínio variável */}
-            <img src={s.heroImageUrl!} alt="" className="hero-settle absolute inset-0 h-full w-full object-cover" />
+            <UserImage src={s.heroImageUrl!} alt="" sizes="100vw" priority className="hero-settle object-cover" />
             <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-black/60" aria-hidden="true" />
           </>
         ) : (
@@ -312,9 +312,8 @@ export function WeddingSiteView({
           </SectionHeading>
 
           {s.couplePhotoUrl && (
-            <Reveal variant="arch" className="arch mx-auto mb-16 aspect-[4/5] w-full max-w-md overflow-hidden shadow-[var(--shadow-aceito-2)]">
-              {/* eslint-disable-next-line @next/next/no-img-element -- imagem enviada pelo casal */}
-              <img src={s.couplePhotoUrl} alt={`Foto de ${coupleNames}`} className="h-full w-full object-cover" />
+            <Reveal variant="arch" className="arch relative mx-auto mb-16 aspect-[4/5] w-full max-w-md overflow-hidden shadow-[var(--shadow-aceito-2)]">
+              <UserImage src={s.couplePhotoUrl} alt={`Foto de ${coupleNames}`} sizes="(min-width: 448px) 448px, 100vw" className="object-cover" />
             </Reveal>
           )}
 
@@ -330,9 +329,8 @@ export function WeddingSiteView({
                   }`}
                 >
                   {item.imageUrl && (
-                    <div className="zoom-media h-56 w-full shrink-0 overflow-hidden rounded-2xl md:h-48 md:w-56">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- imagem enviada pelo casal */}
-                      <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+                    <div className="zoom-media relative h-56 w-full shrink-0 overflow-hidden rounded-2xl md:h-48 md:w-56">
+                      <UserImage src={item.imageUrl} alt="" sizes="(min-width: 768px) 224px, 100vw" className="object-cover" />
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
@@ -626,9 +624,8 @@ export function WeddingSiteView({
                 className="lift flex flex-col overflow-hidden rounded-3xl border border-linha bg-papel p-5 shadow-sm"
               >
                 {gift.imageUrl && (
-                  <div className="zoom-media mb-4 h-44 w-full overflow-hidden rounded-2xl">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- imagem enviada pelo casal */}
-                    <img src={gift.imageUrl} alt="" className="h-full w-full object-cover" />
+                  <div className="zoom-media relative mb-4 h-44 w-full overflow-hidden rounded-2xl">
+                    <UserImage src={gift.imageUrl} alt="" sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
                   </div>
                 )}
                 <h3 className="line-clamp-1 font-display text-xl text-tinta">{gift.title}</h3>

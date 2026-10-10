@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { storageRemotePattern } from "./src/lib/image-source";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -23,8 +24,14 @@ const contentSecurityPolicy = [
   ...(isDev ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
+// Fotos de usuário ficam no Supabase Storage (bucket público); só esse caminho passa pelo otimizador.
+const storagePattern = storageRemotePattern(process.env.NEXT_PUBLIC_SUPABASE_URL);
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  images: {
+    remotePatterns: storagePattern ? [storagePattern] : [],
+  },
   experimental: {
     serverActions: {
       // Cadastro de fornecedor envia logo + galeria (até 8 imagens) em uma única action
