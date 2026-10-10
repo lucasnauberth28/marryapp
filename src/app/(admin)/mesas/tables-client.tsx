@@ -200,7 +200,7 @@ function UnassignedPanel({ guests, tables, totalConfirmed, onMove }: { guests: S
       <h2 id="sem-mesa" className="text-lg font-semibold leading-7 text-tinta">
         Sem mesa · {guests.length}
       </h2>
-      <p className={`${hint} mb-2`}>Arraste pela alça para uma mesa, ou toque no ícone de troca e escolha.</p>
+      {guests.length > 0 && <p className={`${hint} mb-2`}>Arraste pela alça para uma mesa, ou toque no ícone de troca e escolha.</p>}
       {guests.length > 0 ? (
         <ul className="flex max-h-80 flex-col gap-2 overflow-y-auto lg:max-h-[640px]">
           {guests.map((g) => (
