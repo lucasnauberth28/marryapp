@@ -1,10 +1,13 @@
 import { RsvpClient } from "./rsvp-client";
-import { Card } from "@/components/ui/card";
+import Link from "next/link";
 import { Clock } from "lucide-react";
 import { isAfter, startOfDay } from "date-fns";
+import { btn } from "@/components/landing/styles";
+import { Monogram } from "@/components/public/guest-header";
 import { getIdentityForWedding, guestPageMetadata } from "@/lib/wedding";
 import { getRsvpDeadline } from "@/lib/wedding-data";
 import { requirePublicWedding } from "@/lib/wedding-redirect";
+import { weddingSitePath } from "@/lib/wedding-links";
 
 // Lê o banco a cada acesso: nunca pré-renderizar no build (dados congelados e build dependente do banco)
 export const dynamic = "force-dynamic";
@@ -18,31 +21,43 @@ export default async function RsvpPage({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const weddingRow = await requirePublicWedding(slug);
   const [rsvpDeadline, wedding] = await Promise.all([getRsvpDeadline(weddingRow.id), getIdentityForWedding(weddingRow)]);
-  
-  const isExpired = rsvpDeadline 
-    ? isAfter(startOfDay(new Date()), startOfDay(new Date(rsvpDeadline))) 
+
+  const isExpired = rsvpDeadline
+    ? isAfter(startOfDay(new Date()), startOfDay(new Date(rsvpDeadline)))
     : false;
 
-  if (isExpired) {
-    return (
-      <div className="flex-1 w-full bg-ivory flex items-center justify-center p-4">
-        <Card className="max-w-md w-full shadow-lg border-0 rounded-3xl overflow-hidden text-center p-8 animate-in fade-in zoom-in-95 duration-500">
-          <div className="w-16 h-16 bg-areia rounded-full flex items-center justify-center mx-auto mb-6">
-            <Clock className="w-8 h-8 text-tinta-suave" />
-          </div>
-          <h2 className="text-2xl font-semibold text-tinta mb-2">Confirmações encerradas</h2>
-          <p className="text-tinta-suave">
-            O prazo para confirmar presença no casamento de {wedding.coupleNames} já passou.
-            Se precisar de ajuda, fale diretamente com os noivos.
-          </p>
-        </Card>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex-1 w-full bg-ivory flex items-center justify-center p-4">
-      <RsvpClient slug={weddingRow.slug} coupleNames={wedding.coupleNames} initials={wedding.initials} dateLabel={wedding.dateLabel} />
+    <div className="flex min-h-dvh flex-1 flex-col bg-linho text-tinta">
+      <header className="border-b border-linha">
+        <div className="mx-auto flex max-w-[1120px] items-center justify-between px-4 py-4 sm:px-6">
+          <Link href={weddingSitePath(weddingRow.slug)} aria-label={`Site de ${wedding.coupleNames}`} className="no-underline">
+            <Monogram initials={wedding.initials} />
+          </Link>
+          {wedding.shortDateLabel ? <span className="text-sm text-tinta-suave">{wedding.shortDateLabel}</span> : null}
+        </div>
+      </header>
+
+      {isExpired ? (
+        <div className="mx-auto flex w-full max-w-[460px] flex-1 flex-col gap-6 px-4 py-8 sm:py-14">
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Confirmação de presença</p>
+            <h1 className="font-display text-[34px] font-normal leading-10 tracking-[-0.015em]">As confirmações foram encerradas</h1>
+            <p className="text-tinta-suave">
+              O prazo para confirmar presença no casamento de {wedding.coupleNames} já passou. Se precisar de ajuda, fale
+              diretamente com os noivos.
+            </p>
+          </div>
+          <p className="flex items-center gap-2 text-sm text-tinta-suave">
+            <Clock aria-hidden="true" className="size-4" strokeWidth={1.75} />
+            Quem já respondeu não precisa fazer mais nada.
+          </p>
+          <Link href={weddingSitePath(weddingRow.slug)} className={btn.secondary}>
+            Ver o site do casal
+          </Link>
+        </div>
+      ) : (
+        <RsvpClient slug={weddingRow.slug} coupleNames={wedding.coupleNames} dateLabel={wedding.dateLabel} locationName={wedding.locationName} />
+      )}
     </div>
   );
 }

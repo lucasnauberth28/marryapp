@@ -137,7 +137,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
   const confirmedPeople = companionsCount + 1;
 
   return (
-    <main id="conteudo" className="mx-auto flex w-full max-w-[460px] flex-1 flex-col px-4 py-8 sm:py-14">
+    <div className="mx-auto flex w-full max-w-[460px] flex-1 flex-col px-4 py-8 sm:py-14">
       {stage === "busca" ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
           <div className="flex flex-col gap-2">
@@ -320,7 +320,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
             </p>
             <button type="button" onClick={downloadQrCode} className={cn(btn.secondary, btn.block)}>
               <Download aria-hidden="true" className="size-4" />
-              Salvar o ingresso como imagem
+              Salvar como imagem
             </button>
           </div>
 
@@ -355,6 +355,6 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
           </button>
         </section>
       ) : null}
-    </main>
+    </div>
   );
 }
