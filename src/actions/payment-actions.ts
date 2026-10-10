@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { generatePixPayload } from "@/lib/pix-utils";
 import { calculateCardFee, isMercadoPagoConfigured, mpPayment, paidAmountMatches } from "@/lib/mercadopago";
 import { findOrCreateGuest } from "@/lib/guest-matching";
+import { TOO_MANY_ATTEMPTS_MESSAGE } from "@/lib/rate-limit-message";
 import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { rateLimitByIp } from "@/lib/security/rate-limiter";
@@ -55,7 +56,7 @@ export async function createPixTransactionAction(input: {
   try {
     const rateLimit = await rateLimitByIp("CHECKOUT");
     if (!rateLimit.success) {
-      return { success: false, error: "Muitas tentativas de geração de pagamento. Aguarde alguns minutos." };
+      return { success: false, error: TOO_MANY_ATTEMPTS_MESSAGE };
     }
 
     const gift = await prisma.gift.findUnique({ where: { id: giftId } });
@@ -232,10 +233,7 @@ export async function processCardPaymentAction(input: {
     // Proteção anti card-testing
     const rateLimit = await rateLimitByIp("CHECKOUT");
     if (!rateLimit.success) {
-      return {
-        success: false,
-        error: "Muitas tentativas consecutivas de pagamento com cartão. Por segurança, aguarde alguns minutos.",
-      };
+      return { success: false, error: TOO_MANY_ATTEMPTS_MESSAGE };
     }
 
     if (!isMercadoPagoConfigured()) {

@@ -13,6 +13,8 @@ import { weddingSiteUrl } from "@/lib/wedding-links";
 import { deferNotify } from "@/lib/notifications/service";
 import { notifyRsvp } from "@/lib/notifications/events";
 import { notGiftOnlyWhere } from "@/lib/guest-origin";
+import { TOO_MANY_ATTEMPTS_MESSAGE } from "@/lib/rate-limit-message";
+import type { GuestLookup } from "@/lib/rsvp-lookup";
 
 // ==========================================
 // VALIDAÇÕES ZOD
@@ -312,16 +314,17 @@ export async function sendBulkReminders(
  * Pública: localiza o convite pelo telefone, só dentro do casamento do endereço (slug).
  * Retorna apenas o necessário para o RSVP.
  */
-export async function findGuestByPhone(slug: string, phone: string) {
-  if (typeof slug !== "string" || typeof phone !== "string") return null;
+export async function findGuestByPhone(slug: string, phone: string): Promise<GuestLookup> {
+  if (typeof slug !== "string" || typeof phone !== "string") return { status: "not_found" };
   const cleanPhone = phone.replace(/\D/g, "");
-  if (cleanPhone.length < 10 || cleanPhone.length > 13) return null;
+  if (cleanPhone.length < 10 || cleanPhone.length > 13) return { status: "invalid_phone" };
 
+  // Limite de tentativas: resposta própria (não pode parecer "convite não encontrado")
   const rateLimit = await rateLimitByIp("RSVP");
-  if (!rateLimit.success) return null;
+  if (!rateLimit.success) return { status: "rate_limited" };
 
   const wedding = await getWeddingBySlug(slug);
-  if (!wedding) return null;
+  if (!wedding) return { status: "not_found" };
 
   const guest = await prisma.guest.findFirst({
     where: { weddingId: wedding.id, phone: { endsWith: cleanPhone } },
@@ -334,7 +337,7 @@ export async function findGuestByPhone(slug: string, phone: string) {
     },
   });
 
-  return guest;
+  return guest ? { status: "found", guest } : { status: "not_found" };
 }
 
 const PublicRsvpSchema = z.object({
@@ -362,7 +365,7 @@ export async function publicConfirmRsvp(
   try {
     const rateLimit = await rateLimitByIp("RSVP");
     if (!rateLimit.success) {
-      return { success: false, error: "Muitas tentativas. Aguarde alguns minutos e tente novamente." };
+      return { success: false, error: TOO_MANY_ATTEMPTS_MESSAGE };
     }
 
     const wedding = await getWeddingBySlug(data.slug);
