@@ -1,201 +1,217 @@
 "use client";
 
-import { useState } from "react";
-import { createTimelineEvent, deleteTimelineEvent } from "@/actions/timeline-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Clock, Plus, Trash2, CalendarHeart, Download } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { useId, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { CalendarClock, Download, Pencil, Plus, Trash2 } from "lucide-react";
+import { createTimelineEvent, deleteTimelineEvent, updateTimelineEvent } from "@/actions/timeline-actions";
+import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { CustomModal } from "@/components/ui/custom-modal";
+import { PageHeader } from "@/components/admin/page-header";
+import { btn, btnDanger, btnIcon, btnIconDanger, card, errorBox, hint, input, label, textarea } from "@/components/painel/styles";
+import { useSyncedState } from "@/hooks/use-synced-state";
 import { generateTimelinePdf, type TimelineEventPdf } from "@/lib/generate-timeline-pdf";
-import { TimePicker } from "@/components/ui/time-picker";
 
-export function TimelineClient({ initialEvents, coupleNames }: { initialEvents: TimelineEventPdf[]; coupleNames: string }) {
-  const [events, setEvents] = useState(initialEvents);
-  const [loading, setLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+type TimelineEvent = TimelineEventPdf & { position?: number; icon?: string };
 
-  const [formData, setFormData] = useState({
-    title: "",
-    time: "",
-    description: "",
-  });
+/** "14:00" vira "14h" e "19:30" vira "19h30". */
+function timeLabel(time: string) {
+  const m = /^(\d{1,2}):(\d{2})/.exec(time);
+  if (!m) return time;
+  const h = Number(m[1]);
+  return m[2] === "00" ? `${h}h` : `${h}h${m[2]}`;
+}
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [confirmId, setConfirmId] = useState<string | null>(null);
+function EventForm({ event, count, onClose, onSaved, onDelete }: { event: TimelineEvent | null; count: number; onClose: () => void; onSaved: () => void; onDelete: (e: TimelineEvent) => void }) {
+  const ids = { title: useId(), time: useId(), description: useId() };
+  const [title, setTitle] = useState(event?.title ?? "");
+  const [time, setTime] = useState(event?.time ?? "");
+  const [description, setDescription] = useState(event?.description ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    const toastId = toast.loading("Adicionando evento ao cronograma...");
-    try {
-      const payload = {
-        ...formData,
-        icon: "Clock",
-        position: events.length,
-      };
-      const res = await createTimelineEvent(payload);
-      if (res.success) {
-        setEvents([...events, { id: Math.random().toString(), ...payload }]);
-        setIsModalOpen(false);
-        setFormData({ title: "", time: "", description: "" });
-        toast.success("Evento criado com sucesso!", { id: toastId });
-      } else {
-        toast.error("Erro ao salvar evento.", { id: toastId });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = (id: string) => {
-    setConfirmId(id);
-    setConfirmOpen(true);
-  };
-
-  const executeDelete = async () => {
-    if (!confirmId) return;
-    const targetId = confirmId;
-    setConfirmOpen(false);
-    setConfirmId(null);
-    const toastId = toast.loading("Removendo evento...");
-    setEvents(prev => prev.filter(e => e.id !== targetId));
-    await deleteTimelineEvent(targetId);
-    toast.success("Evento excluído do cronograma!", { id: toastId });
-  };
-
-  const handleExportPdf = () => {
-    if (events.length === 0) {
-      toast.error("Nenhum evento cadastrado para gerar o PDF.");
+    if (!title.trim() || !time) {
+      setError(!title.trim() ? "Dê um nome ao horário, por exemplo: Cerimônia." : "Escolha a hora.");
       return;
     }
-    const success = generateTimelinePdf(events, coupleNames);
-    if (success) {
-      toast.success("PDF do cronograma gerado com sucesso!");
+    setError(null);
+    setBusy(true);
+    const toastId = toast.loading(event ? "Salvando o horário..." : "Adicionando o horário...");
+    const payload = { title: title.trim(), time, description: description.trim(), icon: event?.icon ?? "Clock", position: event?.position ?? count };
+    const res = event ? await updateTimelineEvent(event.id, payload) : await createTimelineEvent(payload);
+    setBusy(false);
+    if (res.success) {
+      toast.success(event ? "Horário salvo." : "Horário adicionado.", { id: toastId });
+      onSaved();
+      onClose();
+    } else {
+      toast.error(res.error || "Não deu para salvar. Tente de novo.", { id: toastId });
+      setError(res.error || "Não deu para salvar. Tente de novo.");
     }
-  };
+  }
 
   return (
-    <div className="bg-papel border border-zinc-200 rounded-xl p-6 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 border-b border-zinc-100 pb-4">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <CalendarHeart className="text-zinc-500" aria-hidden="true" /> Eventos
-        </h2>
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={handleExportPdf}
-            disabled={events.length === 0}
-            className="border-zinc-300 text-zinc-700 hover:bg-zinc-100"
-          >
-            <Download className="w-4 h-4 mr-2 text-brand" /> Gerar PDF
-          </Button>
-
-          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-zinc-900 hover:bg-zinc-800 text-white">
-                <Plus className="w-4 h-4 mr-2" /> Novo Evento
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Adicionar ao Cronograma</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleCreate} className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label>Título</Label>
-                  <Input 
-                    placeholder="Ex: Cerimônia, Recepção, Valsa..." 
-                    value={formData.title} 
-                    onChange={e => setFormData({ ...formData, title: e.target.value })} 
-                    required 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Horário</Label>
-                  <TimePicker 
-                    value={formData.time} 
-                    onChange={e => setFormData({ ...formData, time: e.target.value })} 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Descrição (Opcional)</Label>
-                  <Textarea 
-                    placeholder="Detalhes ou local do evento..." 
-                    value={formData.description} 
-                    onChange={e => setFormData({ ...formData, description: e.target.value })} 
-                  />
-                </div>
-                <Button type="submit" disabled={loading} className="w-full bg-brand hover:bg-brand-600 text-white">
-                  {loading ? "Salvando..." : "Salvar Evento"}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+    <form onSubmit={submit} className="flex flex-col gap-5">
+      <div className="flex flex-col gap-2">
+        <label htmlFor={ids.title} className={label}>
+          O que acontece
+        </label>
+        <input id={ids.title} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: Cerimônia, coquetel, valsa" disabled={busy} className={input} />
       </div>
-
-      <div className="relative pl-4 border-l-2 border-line ml-4 space-y-8 py-4">
-        <AnimatePresence>
-          {events.length === 0 ? (
-            <p className="text-zinc-500 text-center py-8">Nenhum evento cadastrado no cronograma.</p>
-          ) : (
-            [...events]
-              .sort((a, b) => a.time.localeCompare(b.time))
-              .map((event) => (
-              <motion.div 
-                key={event.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="relative pl-6"
-              >
-                {/* Timeline Dot */}
-                <span className="absolute -left-[35px] top-1 w-6 h-6 rounded-full bg-brand-100 border-2 border-brand flex items-center justify-center">
-                  <Clock className="w-3 h-3 text-brand" />
-                </span>
-
-                <div className="bg-paper border border-line rounded-lg p-4 flex justify-between items-start group hover:border-brand-300/50 transition-colors shadow-sm">
-                  <div>
-                    <h3 className="font-semibold text-base text-zinc-900 flex items-center gap-2">
-                      <span className="text-brand font-mono bg-brand-100 px-2 py-0.5 rounded text-sm font-semibold">
-                        {event.time}
-                      </span> 
-                      {event.title}
-                    </h3>
-                    {event.description && (
-                      <p className="text-zinc-600 mt-2 text-sm">{event.description}</p>
-                    )}
-                  </div>
-                  <Button aria-label="Excluir" 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => handleDelete(event.id)}
-                    className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-perigo hover:bg-perigo-suave"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </motion.div>
-            ))
-          )}
-        </AnimatePresence>
+      <div className="flex flex-col gap-2 sm:max-w-44">
+        <label htmlFor={ids.time} className={label}>
+          Horário
+        </label>
+        <input id={ids.time} type="time" value={time} onChange={(e) => setTime(e.target.value)} disabled={busy} className={input} />
       </div>
-
-      {confirmOpen && (
-        <ConfirmModal
-          isOpen={confirmOpen}
-          onClose={() => setConfirmOpen(false)}
-          onConfirm={executeDelete}
-          title="Excluir Evento"
-          description="Deseja realmente remover este evento do cronograma do casamento?"
-        />
+      <div className="flex flex-col gap-2">
+        <label htmlFor={ids.description} className={label}>
+          Local ou detalhes (opcional)
+        </label>
+        <textarea id={ids.description} value={description} onChange={(e) => setDescription(e.target.value)} rows={3} disabled={busy} className={`${textarea} resize-y`} />
+        <p className={hint}>Quem vê o site também lê este texto.</p>
+      </div>
+      {error && (
+        <p role="alert" className={errorBox}>
+          {error}
+        </p>
       )}
-    </div>
+      <div className="flex flex-col gap-2 border-t border-linha pt-4">
+        <button type="submit" disabled={busy} className={`${btn.primary} ${btn.block}`}>
+          {busy ? "Salvando..." : event ? "Salvar alterações" : "Adicionar horário"}
+        </button>
+        <button type="button" onClick={onClose} disabled={busy} className={`${btn.quiet} ${btn.block}`}>
+          Cancelar
+        </button>
+        {event && (
+          <button type="button" onClick={() => onDelete(event)} disabled={busy} className={`${btnDanger} w-full`}>
+            Excluir horário
+          </button>
+        )}
+      </div>
+    </form>
   );
 }
 
+export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { initialEvents: TimelineEvent[]; coupleNames: string; dateLabel: string | null }) {
+  const router = useRouter();
+  const [events, setEvents] = useSyncedState<TimelineEvent[]>(initialEvents);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<TimelineEvent | null>(null);
+  const [toDelete, setToDelete] = useState<TimelineEvent | null>(null);
+
+  const sorted = [...events].sort((a, b) => a.time.localeCompare(b.time));
+
+  function openNew() {
+    setEditing(null);
+    setModalOpen(true);
+  }
+
+  function openEdit(e: TimelineEvent) {
+    setEditing(e);
+    setModalOpen(true);
+  }
+
+  async function executeDelete(target: TimelineEvent) {
+    const toastId = toast.loading("Removendo o horário...");
+    const res = await deleteTimelineEvent(target.id);
+    if (res.success) {
+      setEvents((prev) => prev.filter((e) => e.id !== target.id));
+      toast.success("Horário removido.", { id: toastId });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Não deu para remover agora. Tente de novo.", { id: toastId });
+    }
+  }
+
+  function exportPdf() {
+    if (events.length === 0) {
+      toast.error("Cadastre ao menos um horário para gerar o PDF.");
+      return;
+    }
+    if (generateTimelinePdf(events, coupleNames)) toast.success("PDF do cronograma gerado.");
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        eyebrow={dateLabel ?? "Dia do casamento"}
+        title="Cronograma do dia"
+        description="Os convidados veem estes horários na página do dia do evento, no site de vocês."
+        actions={
+          <>
+            <button type="button" onClick={exportPdf} disabled={events.length === 0} className={btn.secondary}>
+              <Download className="size-4" aria-hidden="true" />
+              PDF para fornecedores
+            </button>
+            <button type="button" onClick={openNew} className={btn.primary}>
+              <Plus className="size-4" aria-hidden="true" />
+              Novo horário
+            </button>
+          </>
+        }
+      />
+
+      {sorted.length === 0 ? (
+        <div className={`${card} flex flex-col items-center gap-3 px-6 py-14 text-center`}>
+          <span className="grid size-12 place-items-center rounded-full bg-ameixa-suave text-ameixa">
+            <CalendarClock className="size-6" aria-hidden="true" />
+          </span>
+          <h2 className="font-display text-[26px] font-medium leading-8 text-tinta">Nenhum horário ainda</h2>
+          <p className="max-w-md text-tinta-suave">Anotem a ordem do dia, da chegada dos fornecedores à pista de dança. Com tudo aqui, fornecedores e convidados sabem a hora de cada momento.</p>
+          <button type="button" onClick={openNew} className={`${btn.primary} mt-2`}>
+            Adicionar o primeiro horário
+          </button>
+        </div>
+      ) : (
+        <ol className="flex flex-col gap-3">
+          {sorted.map((e) => (
+            <li key={e.id} className={`${card} grid grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:grid-cols-[88px_minmax(0,1fr)_auto] sm:gap-4 sm:px-5 sm:py-4`}>
+              <span className="font-display text-[22px] leading-8 text-ameixa [font-variant-numeric:lining-nums] sm:text-[26px]">{timeLabel(e.time)}</span>
+              <div className="min-w-0">
+                <strong className="block font-semibold text-tinta">{e.title}</strong>
+                {e.description && <p className="mt-0.5 whitespace-pre-wrap break-words text-sm text-tinta-suave">{e.description}</p>}
+              </div>
+              <div className="flex items-center">
+                <button type="button" onClick={() => openEdit(e)} aria-label={`Editar ${e.title}`} className={btnIcon}>
+                  <Pencil className="size-4" aria-hidden="true" />
+                </button>
+                <button type="button" onClick={() => setToDelete(e)} aria-label={`Excluir ${e.title}`} className={btnIconDanger}>
+                  <Trash2 className="size-4" aria-hidden="true" />
+                </button>
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+
+      <CustomModal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? "Editar horário" : "Novo horário"} size="sm" className="max-h-[92vh] overflow-y-auto">
+        <EventForm
+          event={editing}
+          count={events.length}
+          onClose={() => setModalOpen(false)}
+          onSaved={() => router.refresh()}
+          onDelete={(e) => {
+            setModalOpen(false);
+            setToDelete(e);
+          }}
+        />
+      </CustomModal>
+
+      <ConfirmModal
+        isOpen={!!toDelete}
+        onClose={() => setToDelete(null)}
+        onConfirm={() => {
+          const t = toDelete;
+          setToDelete(null);
+          if (t) void executeDelete(t);
+        }}
+        title="Excluir horário"
+        description={toDelete ? `Remover "${toDelete.title}" do cronograma? Não dá para desfazer.` : ""}
+        confirmText="Excluir"
+      />
+    </div>
+  );
+}
