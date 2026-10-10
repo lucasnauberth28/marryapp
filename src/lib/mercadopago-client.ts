@@ -48,7 +48,8 @@ function loadSdk(): Promise<void> {
 }
 
 async function getInstance(): Promise<MercadoPagoInstance> {
-  const publicKey = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY;
+  // Aceita também NEXT_PUBLIC_MP_PUBLIC_KEY, o nome usado na Vercel do projeto (cada acesso precisa ser literal para o Next embutir no build).
+  const publicKey = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || process.env.NEXT_PUBLIC_MP_PUBLIC_KEY;
   if (!publicKey) throw new Error("Pagamento com cartão indisponível no momento.");
   await loadSdk();
   if (!window.MercadoPago) throw new Error("Não foi possível carregar o Mercado Pago.");

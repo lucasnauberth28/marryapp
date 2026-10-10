@@ -4,7 +4,8 @@ import { randomUUID } from 'node:crypto'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 // Uploads acontecem apenas no servidor, com a service key. Nunca cair para a chave anônima.
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || ''
+// SUPABASE_SERVICE_ROLE_KEY é o nome que a integração Supabase da Vercel cria.
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'gifts'
 
 export const supabase = supabaseUrl && supabaseServiceKey
