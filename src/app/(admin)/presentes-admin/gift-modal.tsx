@@ -2,7 +2,7 @@
 
 import { useId, useState, useTransition } from "react"
 import { toast } from "sonner"
-import { Button } from "@/components/ui/button"
+import { btn } from "@/components/landing/styles"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { CustomModal } from "@/components/ui/custom-modal"
@@ -63,7 +63,7 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
             Foto do presente <span className="font-normal text-tinta-suave">(opcional)</span>
           </span>
           <div className="flex items-center justify-center w-full">
-            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-linha-forte border-dashed rounded-xl cursor-pointer hover:bg-zinc-50/50 transition-colors relative overflow-hidden focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ameixa">
+            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-linha-forte border-dashed rounded-xl cursor-pointer hover:bg-linho transition-colors relative overflow-hidden focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ameixa">
               {imagePreview ? (
                 <img
                   src={imagePreview}
@@ -72,11 +72,11 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <ImagePlus className="w-8 h-8 text-zinc-500 mb-2" />
-                  <p className="text-sm text-zinc-500 font-medium">
+                  <ImagePlus className="w-8 h-8 text-tinta-suave mb-2" />
+                  <p className="text-sm text-tinta-suave font-medium">
                     Toque para escolher uma foto
                   </p>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-tinta-suave mt-1">
                     JPG, PNG ou WEBP
                   </p>
                 </div>
@@ -146,17 +146,13 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
         )}
 
         <div className="pt-2 flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isPending} className="h-11 px-4 sm:h-9">
+          <button type="button" onClick={onClose} disabled={isPending} className={btn.secondary}>
             Cancelar
-          </Button>
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="h-11 gap-2 bg-zinc-900 px-4 text-white hover:bg-zinc-800 shadow-sm sm:h-9"
-          >
-            {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+          </button>
+          <button type="submit" disabled={isPending} className={btn.primary}>
+            {isPending && <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />}
             {isPending ? "Salvando..." : "Adicionar presente"}
-          </Button>
+          </button>
         </div>
       </form>
     </CustomModal>

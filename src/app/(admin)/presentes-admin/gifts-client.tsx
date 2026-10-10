@@ -1,22 +1,62 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import Link from "next/link"
 import { useSyncedState } from "@/hooks/use-synced-state"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { Check, Clock, CreditCard, Gift as GiftIcon, ImageOff, Loader2, Plus, Trash2, Undo2 } from "lucide-react"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { GiftLocal as Gift } from "@/types/local"
 import { deleteGift } from "@/actions/gift-actions"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { PageHeader } from "@/components/admin/page-header"
+import { btn } from "@/components/landing/styles"
+import { Chip, bigNumber, card, cardTitle, overline, th, type ChipTone } from "@/components/casal/ui"
 import { GiftModal } from "./gift-modal"
-import { Trash2, Gift as GiftIcon, ImageOff, Loader2 } from "lucide-react"
+
+export interface GiftPayment {
+  id: string
+  from: string
+  giftTitle: string
+  /** Em centavos. */
+  amount: number
+  when: string
+  situation: "pix" | "card" | "toCheck" | "refunded"
+}
+
+interface GiftsSummary {
+  receivedCents: number
+  receivedCount: number
+  receivedPeople: number
+  toCheckCents: number
+  toCheckCount: number
+}
 
 interface GiftsClientProps {
   initialGifts: Gift[]
+  payments: GiftPayment[]
+  summary: GiftsSummary
+  siteGiftsHref: string
 }
 
-export function GiftsClient({ initialGifts }: GiftsClientProps) {
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
+// Centavos para "R$ 4.870" (sem centavos quando redondo) ou "R$ 4.870,50".
+function formatPrice(cents: number) {
+  return brl.format(cents / 100).replace(/,00$/, "").replace(/ /g, " ")
+}
+
+function plural(n: number, one: string, many: string) {
+  return `${n} ${n === 1 ? one : many}`
+}
+
+const SITUATION: Record<GiftPayment["situation"], { tone: ChipTone; icon: typeof Check; label: string }> = {
+  pix: { tone: "sucesso", icon: Check, label: "Pix recebido" },
+  card: { tone: "sucesso", icon: CreditCard, label: "Cartão recebido" },
+  toCheck: { tone: "aviso", icon: Clock, label: "A conferir" },
+  refunded: { tone: "neutro", icon: Undo2, label: "Estornado" },
+}
+
+export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: GiftsClientProps) {
   const router = useRouter()
   const [gifts, setGifts] = useSyncedState<Gift[]>(initialGifts)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -48,149 +88,184 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
     setConfirmOpen(true)
   }
 
-  // Conversão de centavos para Real
-  function formatPrice(amount: number) {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(amount / 100)
-  }
-
-  const totalGifts = gifts.length
-  const totalAmountInCents = gifts.reduce((acc, g) => acc + g.amount, 0)
-  const purchasedCount = gifts.filter(g => g.isPurchased).length
+  const giftedCount = gifts.filter(g => g.isPurchased).length
 
   return (
-    <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
-            Presentes
-          </h1>
-          <p className="mt-1 text-sm text-tinta-suave">
-            Cadastrem os presentes que vocês gostariam de ganhar. Os convidados escolhem um e pagam por Pix ou cartão.
-          </p>
-        </div>
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="h-11 bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm flex items-center gap-2 sm:h-9"
-        >
-          <span className="text-lg leading-none" aria-hidden="true">+</span> Novo presente
-        </Button>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        eyebrow="Site e presentes"
+        title="Presentes"
+        actions={
+          <>
+            <Link href={siteGiftsHref} target="_blank" rel="noopener" className={`${btn.secondary}`}>
+              Ver como o convidado vê
+            </Link>
+            <button type="button" onClick={() => setIsModalOpen(true)} className={btn.primary}>
+              <Plus className="size-4" aria-hidden="true" /> Novo presente
+            </button>
+          </>
+        }
+      />
+
+      {/* Resumo: só o que o sistema sabe de verdade (pagamentos dos presentes) */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
+        <article className={`${card} flex flex-col gap-2 p-5 sm:p-6`}>
+          <p className={overline}>Total recebido</p>
+          <span className={bigNumber}>{formatPrice(summary.receivedCents)}</span>
+          <span className="text-sm text-tinta-suave">
+            {summary.receivedCount === 0
+              ? "Os presentes pagos aparecem aqui."
+              : `${plural(summary.receivedCount, "presente", "presentes")} de ${plural(summary.receivedPeople, "pessoa", "pessoas")}`}
+          </span>
+        </article>
+        <article className={`${card} flex flex-col gap-2 p-5 sm:p-6 ${summary.toCheckCount > 0 ? "border-2 border-aviso/50" : ""}`}>
+          <p className={overline}>A conferir</p>
+          <span className={bigNumber}>{formatPrice(summary.toCheckCents)}</span>
+          <span className="text-sm text-tinta-suave">
+            {summary.toCheckCount === 0 ? (
+              "Nenhum Pix esperando conferência."
+            ) : (
+              <>
+                {summary.toCheckCount} Pix esperando conferência.{" "}
+                <Link href="/financas" className="inline-flex min-h-11 items-center font-semibold text-ameixa underline-offset-4 hover:underline sm:min-h-0">
+                  Conferir em Finanças
+                </Link>
+              </>
+            )}
+          </span>
+        </article>
+        <article className={`${card} flex flex-col gap-2 p-5 sm:p-6`}>
+          <p className={overline}>Presentes ganhos</p>
+          <span className={bigNumber}>{giftedCount}</span>
+          <span className="text-sm text-tinta-suave">
+            {gifts.length === 0 ? "Cadastrem o primeiro presente." : `de ${plural(gifts.length, "presente na vitrine", "presentes na vitrine")}`}
+          </span>
+        </article>
       </div>
 
-      {/* Cards de Métricas (só fazem sentido depois do primeiro presente) */}
-      {gifts.length > 0 && (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { label: "Itens Cadastrados", value: totalGifts, color: "text-zinc-900" },
-          { label: "Valor Total da Vitrine", value: formatPrice(totalAmountInCents), color: "text-zinc-900" },
-          { label: "Presentes Ganhos", value: purchasedCount, color: "text-sucesso" },
-        ].map((s, index) => (
-          <div
-            key={index}
-            className="bg-papel rounded-xl border border-zinc-200/80 shadow-sm p-5"
-          >
-            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              {s.label}
+      {/* Recebidos */}
+      <section aria-labelledby="recebidos-titulo" className={`${card} overflow-hidden`}>
+        <div className="px-5 pb-2 pt-5 sm:px-6">
+          <h2 id="recebidos-titulo" className={cardTitle}>Recebidos</h2>
+        </div>
+        {payments.length === 0 ? (
+          <p className="px-5 pb-6 pt-2 text-[15px] text-tinta-suave sm:px-6">
+            Quando alguém presentear vocês, o pagamento aparece aqui com o nome de quem enviou.
+          </p>
+        ) : (
+          <>
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full border-collapse text-[15px]">
+                <thead>
+                  <tr className="border-b border-linha">
+                    <th scope="col" className={th}>De</th>
+                    <th scope="col" className={th}>Presente</th>
+                    <th scope="col" className={th}>Valor</th>
+                    <th scope="col" className={th}>Situação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {payments.map((p) => {
+                    const s = SITUATION[p.situation]
+                    return (
+                      <tr key={p.id} className="border-b border-linha last:border-b-0">
+                        <td className="py-3.5 pl-6 pr-3">
+                          <strong className="font-semibold text-tinta">{p.from}</strong>
+                          <br />
+                          <span className="text-sm text-tinta-suave">{p.when}</span>
+                        </td>
+                        <td className="px-3 py-3.5 text-tinta">{p.giftTitle}</td>
+                        <td className="px-3 py-3.5 font-semibold tabular-nums text-tinta">{formatPrice(p.amount)}</td>
+                        <td className="py-3.5 pl-3 pr-6">
+                          <Chip tone={s.tone} icon={s.icon}>{s.label}</Chip>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <ul className="divide-y divide-linha border-t border-linha md:hidden">
+              {payments.map((p) => {
+                const s = SITUATION[p.situation]
+                return (
+                  <li key={p.id} className="flex flex-col gap-2 px-5 py-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-tinta">{p.from}</p>
+                        <p className="text-sm text-tinta-suave">{p.when}</p>
+                      </div>
+                      <span className="shrink-0 font-semibold tabular-nums text-tinta">{formatPrice(p.amount)}</span>
+                    </div>
+                    <p className="text-[15px] text-tinta">{p.giftTitle}</p>
+                    <Chip tone={s.tone} icon={s.icon}>{s.label}</Chip>
+                  </li>
+                )
+              })}
+            </ul>
+          </>
+        )}
+      </section>
+
+      {/* Vitrine */}
+      <section aria-labelledby="vitrine-titulo" className="flex flex-col gap-3">
+        <h2 id="vitrine-titulo" className={cardTitle}>
+          Vitrine · {plural(gifts.length, "presente", "presentes")}
+        </h2>
+        {gifts.length === 0 ? (
+          <div className={`${card} flex flex-col items-center justify-center px-4 py-16 text-center`}>
+            <GiftIcon className="mb-3 size-10 text-linha-forte" aria-hidden="true" />
+            <p className="font-semibold text-tinta">Vocês ainda não cadastraram presentes</p>
+            <p className="mt-1 max-w-xs text-sm text-tinta-suave">
+              Cadastrem o primeiro com nome e valor. Pode ser um item da casa ou uma cota da lua de mel.
             </p>
-            <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+            <button type="button" onClick={() => setIsModalOpen(true)} className={`${btn.primary} mt-5`}>
+              Cadastrar o primeiro presente
+            </button>
           </div>
-        ))}
-      </div>
-      )}
-
-      {/* Grid de Presentes */}
-      {gifts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-papel border border-zinc-200/80 rounded-2xl text-zinc-500">
-          <GiftIcon className="w-10 h-10 mb-3 text-zinc-200" />
-          <p className="font-medium text-tinta">Vocês ainda não cadastraram presentes</p>
-          <p className="mt-1 max-w-xs px-4 text-center text-sm text-tinta-suave">
-            Cadastrem o primeiro com nome e valor. Pode ser um item da casa ou uma cota da lua de mel.
-          </p>
-          <Button onClick={() => setIsModalOpen(true)} className="mt-5 h-11 bg-zinc-900 px-5 text-white hover:bg-zinc-800">
-            Cadastrar o primeiro presente
-          </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {gifts.map((gift) => (
-            <div
-              key={gift.id}
-              className="bg-papel rounded-2xl border border-zinc-200/80 shadow-sm overflow-hidden flex flex-col group transition-all duration-300 hover:shadow-md hover:border-zinc-300"
-            >
-              {/* Imagem do Presente */}
-              <div className="h-48 bg-zinc-100 relative flex items-center justify-center overflow-hidden">
-                {gift.imageUrl ? (
-                  <img
-                    src={gift.imageUrl}
-                    alt={gift.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center text-zinc-500">
-                    <ImageOff className="w-8 h-8 text-zinc-300 mb-2" />
-                    <span className="text-xs">Sem imagem</span>
-                  </div>
-                )}
-
-                {/* Badge Status */}
-                <div className="absolute top-3 right-3">
-                  {gift.isPurchased ? (
-                    <Badge className="bg-sucesso-suave text-sucesso border-emerald-200 hover:bg-sucesso-suave font-semibold shadow-sm">
-                      ✓ Comprado
-                    </Badge>
+        ) : (
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] sm:gap-4">
+            {gifts.map((gift) => (
+              <li key={gift.id} className={`${card} flex flex-col gap-2 p-3`}>
+                <div className="grid aspect-square place-items-center overflow-hidden rounded-xl bg-areia text-xs text-tinta-suave">
+                  {gift.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={gift.imageUrl} alt="" className="block size-full object-cover" />
                   ) : (
-                    <Badge variant="outline" className="bg-zinc-50/90 text-zinc-600 border-zinc-200 font-medium shadow-sm backdrop-blur-sm">
-                      Disponível
-                    </Badge>
+                    <span className="flex flex-col items-center gap-1">
+                      <ImageOff className="size-6" aria-hidden="true" />
+                      Sem foto
+                    </span>
                   )}
                 </div>
-              </div>
-
-              {/* Informações */}
-              <div className="p-5 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="font-semibold text-lg text-zinc-900 line-clamp-1 group-hover:text-zinc-950">
-                    {gift.title}
-                  </h3>
-                  <p className="text-sm text-zinc-500 mt-1 line-clamp-2 min-h-[40px]">
-                    {gift.description || "Sem descrição disponível."}
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-zinc-100 mt-4">
-                  <div className="flex flex-col">
-                    <span className="text-xs text-zinc-500 uppercase tracking-wider font-semibold">
-                      Valor
-                    </span>
-                    <span className="text-xl font-bold text-zinc-900">
-                      {formatPrice(gift.amount)}
-                    </span>
-                  </div>
-
-                  <Button aria-label={`Excluir ${gift.title}`}
-                    variant="ghost"
-                    size="icon"
+                <strong className="line-clamp-2 text-[15px] font-semibold leading-5 text-tinta">{gift.title}</strong>
+                {gift.isPurchased ? (
+                  <span className="text-sm font-semibold text-sucesso">Presenteado · {formatPrice(gift.amount)}</span>
+                ) : (
+                  <span className="text-sm text-tinta-suave">{formatPrice(gift.amount)} · disponível</span>
+                )}
+                {!gift.isPurchased && (
+                  <button
+                    type="button"
+                    aria-label={`Excluir ${gift.title}`}
                     onClick={() => handleDelete(gift.id)}
                     disabled={isPending && deletingId === gift.id}
-                    className="text-zinc-500 hover:text-perigo hover:bg-perigo-suave rounded-full size-11"
+                    className={`${btn.quiet} ${btn.sm} self-start text-perigo hover:bg-perigo-suave`}
                   >
                     {isPending && deletingId === gift.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-zinc-500" />
+                      <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                     ) : (
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="size-4" aria-hidden="true" />
                     )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                    Excluir
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
-      {/* Modal */}
       <GiftModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
