@@ -3,7 +3,7 @@ import { COUPLE_MODULES } from "./pricing-modules.ts";
 
 /**
  * Módulos do catálogo (lib/pricing-modules) que cada plano fechado inclui, segundo a lista de
- * benefícios em lib/plans: Classic = site completo, Pix sem taxa, WhatsApp automático e QR Code;
+ * benefícios em lib/plans: Classic = site completo, Pix sem taxa, WhatsApp e QR Code;
  * VIP = tudo do Classic + domínio próprio (na prática, todos os módulos).
  * O plano adaptado (custom) vale pelos módulos escolhidos; o Básico não inclui nenhum.
  */
@@ -34,7 +34,7 @@ export function planIncludes(modules: readonly string[], moduleId: string): bool
 }
 
 const FEATURE: Record<EnforcedModule, { sentence: string; short: string }> = {
-  whatsapp: { sentence: "Os disparos automáticos no WhatsApp fazem parte", short: "WhatsApp automático" },
+  whatsapp: { sentence: "Os envios pelo WhatsApp fazem parte", short: "WhatsApp" },
   qrcode: { sentence: "O check-in com QR Code na portaria faz parte", short: "Check-in com QR Code" },
 };
 

@@ -30,9 +30,9 @@ export const COUPLE_MODULES: PricingModule[] = [
   },
   {
     id: "whatsapp",
-    name: "WhatsApp automático e confirmação de presença",
+    name: "WhatsApp para convites, lembretes e agradecimentos",
     category: "Comunicação",
-    description: "Disparos automáticos de convites oficiais e lembretes de confirmação com botões interativos direto no WhatsApp.",
+    description: "Mande convites e lembretes de confirmação pelo painel, direto no WhatsApp dos convidados, e o agradecimento sai sozinho quando alguém presenteia.",
     price: 6900, // R$ 69,00
     iconName: "MessageCircle",
     highlightBadge: "Mais Pedido",

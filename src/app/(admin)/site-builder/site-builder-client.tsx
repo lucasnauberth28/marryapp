@@ -477,7 +477,7 @@ export function SiteBuilderClient({
                         )}
                       </p>
                     </Field>
-                    {photoField("heroImageUrl", "Foto da capa", "Fica atrás dos nomes, no topo do site. Prefira fotos na horizontal. JPG, PNG ou WEBP de até 5 MB.", heroInput)}
+                    {photoField("heroImageUrl", "Foto da capa", "Aparece em um arco vertical no topo do site. Prefira uma foto em pé, com vocês no centro. JPG, PNG ou WEBP de até 5 MB.", heroInput)}
                   </>
                 )}
 
