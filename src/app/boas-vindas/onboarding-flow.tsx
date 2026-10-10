@@ -284,7 +284,7 @@ export function OnboardingFlow({
               </span>
             </div>
           </div>
-          <div role="radiogroup" aria-label="Cor do site" className="grid grid-cols-3 gap-3">
+          <div role="radiogroup" aria-label="Cor do site" className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3">
             {THEME_PRESETS.map((preset) => {
               const selected = themeColor === preset.hex;
               return (
@@ -302,7 +302,7 @@ export function OnboardingFlow({
                   <span className="grid size-6 shrink-0 place-items-center rounded-full" style={{ backgroundColor: preset.hex }}>
                     {selected ? <Check aria-hidden="true" className="size-3.5 text-on-ameixa" strokeWidth={3} /> : null}
                   </span>
-                  <span className="truncate">{preset.name}</span>
+                  <span>{preset.name}</span>
                 </button>
               );
             })}
@@ -340,10 +340,10 @@ export function OnboardingFlow({
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">Endereço do site</p>
             <div className="flex items-center gap-2">
               <Globe aria-hidden="true" className="size-[18px] shrink-0 text-ameixa" strokeWidth={1.75} />
-              <a href={sitePath} target="_blank" rel="noopener" className="min-w-0 flex-1 truncate font-semibold text-tinta underline decoration-linha underline-offset-4 hover:decoration-ameixa">
+              <a href={sitePath} target="_blank" rel="noopener" className="min-w-0 flex-1 break-all font-semibold text-tinta underline decoration-linha underline-offset-4 hover:decoration-ameixa">
                 {origin ? `${origin.replace(/^https?:\/\//, "")}${sitePath}` : sitePath}
               </a>
-              <button type="button" onClick={copyAddress} className={cn(btn.quiet, btn.sm, "shrink-0")}>
+              <button type="button" onClick={copyAddress} className={cn(btn.quiet, btn.sm, "min-h-11 shrink-0")}>
                 {copied ? <Check aria-hidden="true" className="size-4" /> : <Copy aria-hidden="true" className="size-4" />}
                 {copied ? "Copiado" : "Copiar"}
               </button>
@@ -356,7 +356,7 @@ export function OnboardingFlow({
           <div className="flex flex-col gap-3">
             <p className="text-sm font-semibold text-tinta">Primeiros passos</p>
             <FirstStep href="/site-builder" icon={Palette} title="Personalizar o site" text="Fotos, história, local e horários." />
-            <FirstStep href="/convidados" icon={Users} title="Adicionar convidados" text="Importe a lista e mande os convites." />
+            <FirstStep href="/convidados" icon={Users} title="Adicionar convidados" text="Cadastre a lista e mande os convites." />
             <FirstStep href="/dashboard" icon={LayoutDashboard} title="Ir para o painel" text="Tudo do casamento num lugar só." />
           </div>
         </section>

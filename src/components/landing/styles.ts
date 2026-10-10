@@ -11,7 +11,8 @@ export const btn = {
   quiet: `${base} px-3 text-ameixa hover:bg-ameixa-suave`,
   /** Botão claro sobre a faixa ameixa. */
   onAmeixa: `${base} bg-on-ameixa text-ameixa hover:bg-ameixa-suave focus-visible:outline-on-ameixa`,
-  sm: "min-h-9 px-4 text-sm leading-5",
+  /** Compacto no computador; no celular mantém os 44px de área de toque. */
+  sm: "min-h-11 px-4 text-sm leading-5 sm:min-h-9",
   block: "w-full",
 };
 

@@ -41,9 +41,9 @@ function Section({ title, href, linkLabel, children, delay = 0 }: { title: strin
   return (
     <Reveal as="section" delay={delay} className="lift flex min-w-0 flex-col gap-4 rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold text-tinta">{title}</h2>
+        <h2 className="min-w-0 text-xl font-semibold text-tinta">{title}</h2>
         {href && (
-          <Link href={href} className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-ameixa hover:underline">
+          <Link href={href} className="inline-flex min-h-11 shrink-0 items-center gap-1 whitespace-nowrap text-sm font-semibold text-ameixa hover:underline">
             {linkLabel} <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         )}
@@ -110,6 +110,8 @@ export default async function DashboardPage() {
   const alerts: Alert[] = [];
   if (!wedding.weddingDate)
     alerts.push({ id: "date", text: "Defina a data do casamento para liberar a contagem regressiva.", action: "Definir data", href: "/site-builder", icon: CalendarHeart, tone: "info" });
+  if (invites === 0)
+    alerts.push({ id: "guests", text: "Cadastrem os convidados para poder mandar os convites e acompanhar as respostas.", action: "Adicionar", href: "/convidados", icon: Users, tone: "info" });
   if (pendingPix > 0)
     alerts.push({ id: "pix", text: `${pendingPix} Pix de presente aguardando sua conferência.`, action: "Conferir", href: "/financas", icon: Gift, tone: "warning" });
   if (overdue > 0)
@@ -152,17 +154,26 @@ export default async function DashboardPage() {
             {[wedding.dateLabel, wedding.locationName].filter(Boolean).join(" · ") || "Informe a data e o local no editor do site."}
           </p>
         </div>
-        <div className="relative w-full max-w-xs">
-          <div className="mb-2 flex items-baseline justify-between text-sm">
-            <span className="font-semibold">Tarefas concluídas</span>
-            <span className="tabular-nums text-on-ameixa">
-              {doneTasks} de {tasks.length}
-            </span>
+        {tasks.length === 0 ? (
+          <div className="relative w-full max-w-xs text-sm">
+            <p className="font-semibold">Ainda sem tarefas</p>
+            <Link href="/pendencias" className="mt-1 inline-flex min-h-11 items-center font-semibold underline underline-offset-4 hover:no-underline">
+              Anotar a primeira tarefa
+            </Link>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-papel/25" role="progressbar" aria-valuenow={taskProgress} aria-valuemin={0} aria-valuemax={100} aria-label="Tarefas concluídas">
-            <div className="h-full rounded-full bg-papel" style={{ width: `${taskProgress}%` }} />
+        ) : (
+          <div className="relative w-full max-w-xs">
+            <div className="mb-2 flex items-baseline justify-between text-sm">
+              <span className="font-semibold">Tarefas concluídas</span>
+              <span className="tabular-nums text-on-ameixa">
+                {doneTasks} de {tasks.length}
+              </span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-papel/25" role="progressbar" aria-valuenow={taskProgress} aria-valuemin={0} aria-valuemax={100} aria-label="Tarefas concluídas">
+              <div className="h-full rounded-full bg-papel" style={{ width: `${taskProgress}%` }} />
+            </div>
           </div>
-        </div>
+        )}
       </Reveal>
 
       {/* Alertas acionáveis */}
@@ -200,8 +211,8 @@ export default async function DashboardPage() {
         <Section title="Confirmações de presença" href="/convidados" linkLabel="Ver lista" delay={0}>
           {invites === 0 ? (
             <p className="text-sm text-tinta-suave">
-              Nenhum convidado cadastrado ainda.{" "}
-              <Link href="/convidados" className="font-semibold text-ameixa hover:underline">
+              Nenhum convidado cadastrado ainda.
+              <Link href="/convidados" className="flex min-h-11 w-fit items-center font-semibold text-ameixa hover:underline">
                 Adicionar convidados
               </Link>
             </p>
@@ -244,7 +255,12 @@ export default async function DashboardPage() {
         {/* Próximas tarefas */}
         <Section title="Próximas tarefas" href="/pendencias" linkLabel="Todas as tarefas" delay={80}>
           {nextTasks.length === 0 ? (
-            <p className="text-sm text-tinta-suave">Nenhuma tarefa em aberto.</p>
+            <p className="text-sm text-tinta-suave">
+              {tasks.length === 0 ? "Ainda não há tarefas. Anotem o que falta fazer e acompanhem aqui. " : "Nenhuma tarefa em aberto. "}
+              <Link href="/pendencias" className="flex min-h-11 w-fit items-center font-semibold text-ameixa hover:underline">
+                {tasks.length === 0 ? "Criar a primeira tarefa" : "Ver todas"}
+              </Link>
+            </p>
           ) : (
             <ul className="flex flex-col divide-y divide-linha">
               {nextTasks.map((t) => {
@@ -266,7 +282,12 @@ export default async function DashboardPage() {
         {/* Dinheiro */}
         <Section title="Despesas" href="/financas" linkLabel="Ver finanças" delay={0}>
           {expensesTotal === 0 ? (
-            <p className="text-sm text-tinta-suave">Nenhuma despesa registrada ainda.</p>
+            <p className="text-sm text-tinta-suave">
+              Nenhuma despesa registrada ainda. Anotem o que já contrataram para saber quanto falta pagar.
+              <Link href="/financas" className="flex min-h-11 w-fit items-center font-semibold text-ameixa hover:underline">
+                Registrar uma despesa
+              </Link>
+            </p>
           ) : (
             <>
               <div className="flex flex-wrap items-baseline gap-x-2">
@@ -306,7 +327,12 @@ export default async function DashboardPage() {
             </span>
           </div>
           {approvedGifts.length === 0 ? (
-            <p className="text-sm text-tinta-suave">Quando um convidado presentear, ele aparece aqui.</p>
+            <p className="text-sm text-tinta-suave">
+              Quando um convidado presentear, o valor aparece aqui.
+              <Link href="/presentes-admin" className="flex min-h-11 w-fit items-center font-semibold text-ameixa hover:underline">
+                Ver a lista de presentes
+              </Link>
+            </p>
           ) : (
             <ul className="flex flex-col divide-y divide-linha">
               {approvedGifts.slice(0, 4).map((t) => (

@@ -64,13 +64,13 @@ export function AuthShell({
           >
             <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.75} />
           </Link>
-          <Link href="/" aria-label="Aceito, início" className="-m-2 rounded-[12px] p-2 transition-opacity hover:opacity-80">
+          <Link href="/" aria-label="Aceito, início" className="-m-2.5 rounded-[12px] p-2.5 transition-opacity hover:opacity-80">
             <Logo height={24} priority className="lg:hidden" />
             <Logo height={28} priority className="hidden lg:block" />
           </Link>
         </header>
 
-        <main id="conteudo" className="mx-auto flex w-full max-w-[460px] flex-1 flex-col justify-center px-4 pb-8 pt-6 lg:px-0 lg:py-12">
+        <main id="conteudo" className="mx-auto flex w-full max-w-[460px] flex-1 flex-col justify-start px-4 pb-8 pt-6 lg:justify-center lg:px-0 lg:py-12">
           {children}
         </main>
 

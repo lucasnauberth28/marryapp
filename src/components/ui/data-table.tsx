@@ -33,7 +33,8 @@ export interface DataTableProps<T> {
   columns: Column<T>[];
   pageSize?: number;
   searchPlaceholder?: string;
-  emptyMessage?: string;
+  /** Texto (ou bloco) mostrado quando não há linhas. */
+  emptyMessage?: React.ReactNode;
   keyExtractor: (item: T) => string | number;
   topRightElement?: React.ReactNode;
   className?: string;
@@ -154,19 +155,20 @@ export function DataTable<T>({
       {/* Top Bar: Search + Custom Right Element */}
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+          <Search aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
           <Input
             type="text"
+            aria-label={searchPlaceholder}
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="pl-9 pr-8 bg-papel border-zinc-200"
+            className="h-11 pl-9 pr-8 bg-papel sm:h-10"
           />
           {search && (
             <button
               onClick={() => handleSearchChange("")}
               aria-label="Limpar busca"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-600 p-0.5 rounded-full"
+              className="absolute right-1 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full text-zinc-500 hover:text-zinc-700"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -202,6 +204,8 @@ export function DataTable<T>({
                   return (
                     <th
                       key={col.key}
+                      scope="col"
+                      aria-sort={isSorted && sortOrder ? (sortOrder === "asc" ? "ascending" : "descending") : undefined}
                       className={cn(
                         "px-4 py-3 select-none",
                         isSortable && "cursor-pointer hover:bg-zinc-100/70 transition-colors",
@@ -209,10 +213,11 @@ export function DataTable<T>({
                       )}
                       onClick={() => isSortable && handleSort(col.key)}
                     >
-                      <div className="flex items-center gap-1.5">
-                        <span>{col.header}</span>
-                        {isSortable && (
-                          <span className="text-zinc-500">
+                      {/* Botão de verdade: quem usa só o teclado também consegue ordenar. */}
+                      {isSortable ? (
+                        <button type="button" className="flex items-center gap-1.5 rounded uppercase tracking-wider" onClick={(e) => { e.stopPropagation(); handleSort(col.key); }}>
+                          <span>{col.header}</span>
+                          <span className="text-zinc-500" aria-hidden="true">
                             {isSorted ? (
                               sortOrder === "asc" ? (
                                 <ArrowUp className="w-3.5 h-3.5 text-brand" />
@@ -223,8 +228,10 @@ export function DataTable<T>({
                               <ArrowUpDown className="w-3.5 h-3.5 opacity-40 hover:opacity-100" />
                             )}
                           </span>
-                        )}
-                      </div>
+                        </button>
+                      ) : (
+                        <span>{col.header}</span>
+                      )}
                     </th>
                   );
                 })}
@@ -255,20 +262,21 @@ export function DataTable<T>({
           </table>
         </div>
 
-        {/* Footer / Pagination Controls */}
+        {/* Footer / Pagination Controls (sem linhas, não há o que paginar) */}
+        {data.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-zinc-50/50 border-t border-zinc-200 text-xs text-zinc-500">
           <div>
-            Mostrando <span className="font-semibold text-zinc-800">{startRecord}</span> até{" "}
+            Mostrando <span className="font-semibold text-zinc-800">{startRecord}</span> a{" "}
             <span className="font-semibold text-zinc-800">{endRecord}</span> de{" "}
-            <span className="font-semibold text-zinc-800">{sortedData.length}</span> registros
-            {search && ` (filtrado de ${data.length} total)`}
+            <span className="font-semibold text-zinc-800">{sortedData.length}</span>
+            {search && ` (filtrado de ${data.length} no total)`}
           </div>
 
           <div className="flex items-center gap-1">
             <Button aria-label="Primeira página"
               variant="outline"
               size="icon"
-              className="h-8 w-8 rounded-lg border-zinc-200"
+              className="h-11 w-11 rounded-lg border-zinc-200 sm:h-8 sm:w-8"
               onClick={() => setCurrentPage(1)}
               disabled={safePage <= 1}
               title="Primeira página"
@@ -278,7 +286,7 @@ export function DataTable<T>({
             <Button aria-label="Anterior"
               variant="outline"
               size="icon"
-              className="h-8 w-8 rounded-lg border-zinc-200"
+              className="h-11 w-11 rounded-lg border-zinc-200 sm:h-8 sm:w-8"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={safePage <= 1}
               title="Página anterior"
@@ -293,7 +301,7 @@ export function DataTable<T>({
             <Button aria-label="Próximo"
               variant="outline"
               size="icon"
-              className="h-8 w-8 rounded-lg border-zinc-200"
+              className="h-11 w-11 rounded-lg border-zinc-200 sm:h-8 sm:w-8"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={safePage >= totalPages}
               title="Próxima página"
@@ -303,7 +311,7 @@ export function DataTable<T>({
             <Button aria-label="Última página"
               variant="outline"
               size="icon"
-              className="h-8 w-8 rounded-lg border-zinc-200"
+              className="h-11 w-11 rounded-lg border-zinc-200 sm:h-8 sm:w-8"
               onClick={() => setCurrentPage(totalPages)}
               disabled={safePage >= totalPages}
               title="Última página"
@@ -312,6 +320,7 @@ export function DataTable<T>({
             </Button>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

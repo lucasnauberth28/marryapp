@@ -88,3 +88,17 @@ export function brandThemeStyle(hex: string | null | undefined): Record<string, 
     "--ring": `color-mix(in oklab, ${color} 55%, white)`,
   };
 }
+
+/**
+ * Telefone brasileiro legível a partir dos dígitos guardados:
+ * "11988887777" -> "(11) 98888-7777"; "5511988887777" -> "+55 (11) 98888-7777".
+ * Se não reconhecer o formato, devolve os dígitos como vieram.
+ */
+export function formatPhoneBR(phone: string | null | undefined): string {
+  const digits = (phone ?? "").replace(/\D/g, "");
+  const national = digits.length >= 12 && digits.startsWith("55") ? digits.slice(2) : digits;
+  const prefix = national !== digits ? "+55 " : "";
+  if (national.length === 11) return `${prefix}(${national.slice(0, 2)}) ${national.slice(2, 7)}-${national.slice(7)}`;
+  if (national.length === 10) return `${prefix}(${national.slice(0, 2)}) ${national.slice(2, 6)}-${national.slice(6)}`;
+  return digits;
+}

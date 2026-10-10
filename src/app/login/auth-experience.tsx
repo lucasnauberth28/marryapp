@@ -57,7 +57,7 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
           >
             <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.75} />
           </Link>
-          <Link href="/" aria-label="Aceito, início" className="-m-2 rounded-[12px] p-2 transition-opacity hover:opacity-80">
+          <Link href="/" aria-label="Aceito, início" className="-m-2.5 rounded-[12px] p-2.5 transition-opacity hover:opacity-80">
             <Logo height={24} priority className="lg:hidden" />
             <Logo height={28} priority className="hidden lg:block" />
           </Link>

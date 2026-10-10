@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useId, useState, useMemo, useTransition } from "react";
 import { toast } from "sonner";
 import { GuestLocal as Guest, RsvpStatus } from "@/types/local";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,9 @@ function Field({
   placeholder,
   defaultValue,
   required,
+  hint,
+  inputMode,
+  autoComplete,
 }: {
   label: string;
   name: string;
@@ -45,20 +48,33 @@ function Field({
   placeholder?: string;
   defaultValue?: string | number;
   required?: boolean;
+  hint?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+  autoComplete?: string;
 }) {
+  const id = useId();
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-        {label} {required && <span className="text-red-400">*</span>}
+      <label htmlFor={id} className="text-sm font-semibold text-tinta">
+        {label} {required && <span className="text-perigo" aria-hidden="true">*</span>}
       </label>
       <Input
+        id={id}
         name={name}
         type={type}
         placeholder={placeholder}
         defaultValue={defaultValue}
         required={required}
-        className="bg-papel border-zinc-200"
+        inputMode={inputMode}
+        autoComplete={autoComplete}
+        aria-describedby={hint ? `${id}-dica` : undefined}
+        className="h-11 border-linha-forte bg-papel sm:h-10"
       />
+      {hint && (
+        <p id={`${id}-dica`} className="text-xs text-tinta-suave">
+          {hint}
+        </p>
+      )}
     </div>
   );
 }
@@ -90,7 +106,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
   const availableParents = allGuests.filter((g) => !guest || g.id !== guest.id);
 
   const parentOptions = useMemo(() => [
-    { value: "none", label: "Nenhum (Convidado Principal)" },
+    { value: "none", label: "Não, convida a si mesmo" },
     ...availableParents.map((p) => ({
       value: p.id,
       label: p.name,
@@ -127,11 +143,11 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
     <CustomModal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? "Editar Convidado" : "Novo Convidado"}
+      title={isEditing ? "Editar convidado" : "Novo convidado"}
       description={
         isEditing
           ? "Atualize as informações do convidado."
-          : "Cadastre um novo convidado no planejamento."
+          : "Só o nome é obrigatório. O resto dá para completar depois."
       }
       size="md"
     >
@@ -141,7 +157,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
             <Field
               label="Nome completo"
               name="name"
-              placeholder="Ex: João Silva"
+              placeholder="Ex.: João Silva" autoComplete="off"
               defaultValue={guest?.name}
               required
             />
@@ -149,19 +165,23 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
 
           <div className="col-span-2">
             <Field
-              label="Telefone (WhatsApp)"
+              label="WhatsApp"
               name="phone"
-              placeholder="5511999998888"
+              type="tel"
+              inputMode="tel"
+              autoComplete="off"
+              hint="Com DDD, por exemplo (11) 99999-8888. É por ele que o convite é enviado."
+              placeholder="(11) 99999-8888"
               defaultValue={guest?.phone ?? ""}
             />
           </div>
 
           <div className="col-span-2 sm:col-span-1 space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              Tipo de Convidado
+            <label htmlFor="guest-category" className="text-sm font-semibold text-tinta">
+              Tipo de convidado
             </label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="bg-papel border-zinc-200">
+              <SelectTrigger id="guest-category" className="h-11 w-full border-linha-forte bg-papel sm:h-10">
                 <SelectValue placeholder="Selecione o tipo..." />
               </SelectTrigger>
               <SelectContent>
@@ -175,14 +195,14 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
           </div>
 
           <div className="col-span-2 sm:col-span-1 space-y-1.5">
-            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              Vincular a Convidado (Família)
+            <label className="text-sm font-semibold text-tinta">
+              Vem junto com outro convidado?
             </label>
             <SearchableSelect
               options={parentOptions}
               value={parentGuestId}
               onValueChange={setParentGuestId}
-              placeholder="Sem vínculo (Titular)"
+              placeholder="Não, convida a si mesmo"
               searchPlaceholder="Buscar convidado..."
               emptyMessage="Nenhum convidado encontrado."
             />
@@ -191,14 +211,14 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
           {isEditing && (
             <>
               <div className="col-span-2 space-y-1.5">
-                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                  Status RSVP
+                <label htmlFor="guest-rsvp" className="text-sm font-semibold text-tinta">
+                  Resposta ao convite
                 </label>
                 <Select
                   value={rsvpStatus}
                   onValueChange={(v) => setRsvpStatus(v as RsvpStatus)}
                 >
-                  <SelectTrigger className="bg-papel border-zinc-200">
+                  <SelectTrigger id="guest-rsvp" className="h-11 w-full border-linha-forte bg-papel sm:h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -212,7 +232,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
               {rsvpStatus === RsvpStatus.CONFIRMED && (
                 <div className="col-span-2">
                   <Field
-                    label="Restrições Alimentares"
+                    label="Restrições alimentares"
                     name="dietaryRestrictions"
                     placeholder="Sem glúten, vegano..."
                     defaultValue={guest?.dietaryRestrictions ?? ""}
@@ -230,15 +250,15 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [] }: GuestModa
         )}
 
         <div className="pt-2 flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
+          <Button type="button" variant="outline" onClick={onClose} disabled={isPending} className="h-11 px-4 sm:h-9">
             Cancelar
           </Button>
           <Button
             type="submit"
             disabled={isPending}
-            className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm"
+            className="h-11 bg-zinc-900 px-4 text-white hover:bg-zinc-800 shadow-sm sm:h-9"
           >
-            {isPending ? "Salvando..." : isEditing ? "Salvar Alterações" : "Adicionar Convidado"}
+            {isPending ? "Salvando..." : isEditing ? "Salvar alterações" : "Adicionar convidado"}
           </Button>
         </div>
       </form>

@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { DataTable } from "@/components/ui/data-table";
 import { toast } from "sonner";
+import { formatPhoneBR } from "@/lib/wedding-format";
 import {
   Trash2,
   Pencil,
@@ -106,7 +107,7 @@ export function GuestsClient({
             Convidados
           </h1>
           <p className="mt-1 text-sm text-tinta-suave">
-            Gerencie sua lista de convidados, tipos, vínculos de família e alocação de lugares nas mesas.
+            Cadastrem quem vai ser convidado, quantos acompanhantes cada um pode levar e onde vai sentar.
           </p>
         </div>
 
@@ -115,26 +116,26 @@ export function GuestsClient({
           <button
             type="button"
             onClick={() => setActiveTab("guests")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+            className={`flex min-h-11 items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
               activeTab === "guests"
                 ? "bg-papel text-zinc-900 shadow-sm font-semibold"
                 : "text-zinc-600 hover:text-zinc-900"
             }`}
           >
             <Users className="w-4 h-4 text-brand" />
-            Lista de Convidados ({initialGuests.length})
+            Convidados ({initialGuests.length})
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("tables")}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+            className={`flex min-h-11 items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
               activeTab === "tables"
                 ? "bg-papel text-zinc-900 shadow-sm font-semibold"
                 : "text-zinc-600 hover:text-zinc-900"
             }`}
           >
             <LayoutGrid className="w-4 h-4 text-brand" />
-            Organização de Mesas ({initialTables.length})
+            Mesas ({initialTables.length})
           </button>
         </div>
       </div>
@@ -148,7 +149,22 @@ export function GuestsClient({
             pageSize={15}
             keyExtractor={(g) => g.id}
             searchPlaceholder="Buscar por nome, e-mail, telefone..."
-            emptyMessage="Nenhum convidado encontrado."
+            emptyMessage={
+              initialGuests.length === 0 ? (
+                <div className="mx-auto flex max-w-sm flex-col items-center gap-3">
+                  <Users className="h-9 w-9 text-zinc-300" aria-hidden="true" />
+                  <p className="font-semibold text-tinta">Vocês ainda não cadastraram ninguém</p>
+                  <p className="text-sm text-tinta-suave">
+                    Comecem pelos convidados mais próximos. Cada um recebe o convite e confirma presença pelo link, sem criar conta.
+                  </p>
+                  <Button onClick={openAdd} className="h-11 bg-zinc-900 px-5 text-white hover:bg-zinc-800">
+                    Adicionar o primeiro convidado
+                  </Button>
+                </div>
+              ) : (
+                "Nenhum convidado com esta busca."
+              )
+            }
             mobileCard={(guest) => {
               const rsvp = rsvpConfig[guest.rsvpStatus];
               return (
@@ -161,7 +177,7 @@ export function GuestsClient({
                       </Badge>
                     </div>
                     <p className="mt-1 text-sm text-zinc-600">
-                      {[guest.category, guest.phone ? `+${guest.phone}` : null].filter(Boolean).join(" · ") || "Sem telefone"}
+                      {[guest.category, guest.phone ? formatPhoneBR(guest.phone) : null].filter(Boolean).join(" · ") || "Sem telefone"}
                     </p>
                     <p className="text-sm text-zinc-600">
                       Acompanhantes:{" "}
@@ -185,7 +201,7 @@ export function GuestsClient({
                 <Button
                   asChild
                   variant="outline"
-                  className="shadow-sm flex items-center gap-2 text-zinc-700 h-10"
+                  className="shadow-sm flex items-center gap-2 text-zinc-700 h-11 sm:h-10"
                 >
                   <a href="/api/export/guests" download="convidados.csv">
                     <Download className="w-4 h-4" />
@@ -194,7 +210,7 @@ export function GuestsClient({
                 </Button>
                 <Button
                   onClick={openAdd}
-                  className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm flex items-center gap-2 h-10"
+                  className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm flex items-center gap-2 h-11 sm:h-10"
                 >
                   <span className="text-lg leading-none" aria-hidden="true">+</span> Novo convidado
                 </Button>
@@ -275,7 +291,7 @@ export function GuestsClient({
                 accessor: (g) => g.phone || "",
                 cell: (guest) =>
                   guest.phone ? (
-                    <span className="text-sm text-zinc-600 tabular-nums">+{guest.phone}</span>
+                    <span className="text-sm text-zinc-600 tabular-nums">{formatPhoneBR(guest.phone)}</span>
                   ) : (
                     <span className="text-xs text-zinc-500 italic">Não informado</span>
                   ),

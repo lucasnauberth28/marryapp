@@ -69,18 +69,19 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
             Presentes
           </h1>
           <p className="mt-1 text-sm text-tinta-suave">
-            Cadastre os itens que deseja ganhar. Os convidados poderão comprar via Pix ou Cartão.
+            Cadastrem os presentes que vocês gostariam de ganhar. Os convidados escolhem um e pagam por Pix ou cartão.
           </p>
         </div>
         <Button
           onClick={() => setIsModalOpen(true)}
-          className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm flex items-center gap-2"
+          className="h-11 bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm flex items-center gap-2 sm:h-9"
         >
-          <span className="text-lg leading-none">+</span> Novo Presente
+          <span className="text-lg leading-none" aria-hidden="true">+</span> Novo presente
         </Button>
       </div>
 
-      {/* Cards de Métricas */}
+      {/* Cards de Métricas (só fazem sentido depois do primeiro presente) */}
+      {gifts.length > 0 && (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
           { label: "Itens Cadastrados", value: totalGifts, color: "text-zinc-900" },
@@ -98,13 +99,19 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
           </div>
         ))}
       </div>
+      )}
 
       {/* Grid de Presentes */}
       {gifts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-papel border border-zinc-200/80 rounded-2xl text-zinc-500">
           <GiftIcon className="w-10 h-10 mb-3 text-zinc-200" />
-          <p className="font-medium text-zinc-500">Nenhum presente na vitrine</p>
-          <p className="text-sm mt-1">Clique em &ldquo;Novo Presente&rdquo; para começar.</p>
+          <p className="font-medium text-tinta">Vocês ainda não cadastraram presentes</p>
+          <p className="mt-1 max-w-xs px-4 text-center text-sm text-tinta-suave">
+            Cadastrem o primeiro com nome e valor. Pode ser um item da casa ou uma cota da lua de mel.
+          </p>
+          <Button onClick={() => setIsModalOpen(true)} className="mt-5 h-11 bg-zinc-900 px-5 text-white hover:bg-zinc-800">
+            Cadastrar o primeiro presente
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -163,12 +170,12 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
                     </span>
                   </div>
 
-                  <Button aria-label="Excluir"
+                  <Button aria-label={`Excluir ${gift.title}`}
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDelete(gift.id)}
                     disabled={isPending && deletingId === gift.id}
-                    className="text-zinc-500 hover:text-perigo hover:bg-perigo-suave rounded-full h-9 w-9"
+                    className="text-zinc-500 hover:text-perigo hover:bg-perigo-suave rounded-full size-11"
                   >
                     {isPending && deletingId === gift.id ? (
                       <Loader2 className="w-4 h-4 animate-spin text-zinc-500" />
@@ -195,7 +202,7 @@ export function GiftsClient({ initialGifts }: GiftsClientProps) {
           setConfirmOpen(false)
           confirmAction?.()
         }}
-        title="Excluir Presente"
+        title="Excluir presente"
         description="Deseja realmente excluir este item da vitrine?"
       />
     </div>
