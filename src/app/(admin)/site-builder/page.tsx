@@ -11,7 +11,7 @@ import { SiteBuilderClient } from "./site-builder-client";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Site do casal",
+  title: "Editar o site",
   description: "Edite os textos, fotos e seções do site do casamento.",
 };
 
