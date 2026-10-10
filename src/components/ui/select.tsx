@@ -44,7 +44,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-full items-center justify-between gap-2 rounded-xl border border-linha bg-papel px-3.5 py-2 text-sm text-tinta transition-colors outline-none select-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-tinta-suave data-[size=default]:h-10 data-[size=sm]:h-8 data-[size=lg]:h-12 shadow-xs cursor-pointer",
+        "flex w-full items-center justify-between gap-2 rounded-xl border border-linha-forte bg-papel px-4 py-2 text-base text-tinta transition-colors outline-none select-none hover:border-tinta-suave focus-visible:border-ameixa focus-visible:ring-2 focus-visible:ring-ameixa/25 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-2 aria-invalid:border-perigo data-placeholder:text-tinta-suave data-[size=default]:h-11 data-[size=sm]:h-11 data-[size=sm]:sm:h-9 data-[size=sm]:text-sm data-[size=lg]:h-12 cursor-pointer",
         className
       )}
       {...props}
@@ -99,7 +99,7 @@ function SelectLabel({
   return (
     <SelectPrimitive.Label
       data-slot="select-label"
-      className={cn("px-2 py-1.5 text-xs font-bold text-tinta-suave uppercase tracking-wider", className)}
+      className={cn("px-2 py-1.5 text-xs font-semibold text-tinta-suave uppercase tracking-[0.08em]", className)}
       {...props}
     />
   )

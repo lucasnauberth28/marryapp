@@ -85,7 +85,7 @@ export function TimePicker({
     return () => document.removeEventListener("mousedown", handleClickOutside, true);
   }, [isOpen]);
 
-  const handleToggle = useCallback((e: React.MouseEvent) => {
+  const handleToggle = useCallback((e: React.SyntheticEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (disabled) return;
@@ -110,18 +110,27 @@ export function TimePicker({
       <div
         onClick={handleToggle}
         onMouseDown={(e) => e.stopPropagation()}
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        aria-disabled={disabled || undefined}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") handleToggle(e);
+          else if (e.key === "Escape" && isOpen) setIsOpen(false);
+        }}
         className={cn(
-          "h-10 w-full rounded-lg border border-input bg-background px-3 py-2 pr-10 text-sm transition-all outline-none flex items-center shadow-sm cursor-pointer select-none",
-          isOpen && "ring-2 ring-brand/30 border-brand",
+          "h-11 w-full rounded-xl border border-linha-forte bg-papel px-4 py-2 pr-10 text-base transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa flex items-center hover:border-tinta-suave cursor-pointer select-none",
+          isOpen && "ring-2 ring-ameixa/25 border-ameixa",
           disabled && "pointer-events-none opacity-50 bg-input/50",
         )}
         id={id}
       >
-        <span className={cn("font-mono tracking-wider", !displayValue && "text-muted-foreground")}>
+        <span className={cn("font-mono tracking-wider", !displayValue && "text-tinta-suave")}>
           {displayValue || placeholder}
         </span>
         <div className="absolute right-3 pointer-events-none">
-          <Clock className="w-4 h-4 text-zinc-500" />
+          <Clock className="w-4 h-4 text-tinta-suave" />
         </div>
       </div>
 
@@ -130,7 +139,7 @@ export function TimePicker({
         <div
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
-          className="absolute top-full left-0 mt-1.5 rounded-xl border border-zinc-200 bg-papel p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+          className="absolute top-full left-0 mt-1.5 rounded-xl border border-linha bg-papel p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
           style={{ zIndex: 999999 }}
         >
           <div className="flex items-center gap-3">
@@ -140,7 +149,7 @@ export function TimePicker({
                 type="button"
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={incrementHour}
-                className="w-12 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-100 text-zinc-500 transition cursor-pointer"
+                className="w-12 h-8 flex items-center justify-center rounded-lg hover:bg-areia text-tinta-suave transition cursor-pointer"
               >
                 <ChevronUp className="w-4 h-4" />
               </button>
@@ -153,7 +162,7 @@ export function TimePicker({
                 type="button"
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={decrementHour}
-                className="w-12 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-100 text-zinc-500 transition cursor-pointer"
+                className="w-12 h-8 flex items-center justify-center rounded-lg hover:bg-areia text-tinta-suave transition cursor-pointer"
               >
                 <ChevronDown className="w-4 h-4" />
               </button>
@@ -168,7 +177,7 @@ export function TimePicker({
                 type="button"
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={incrementMinute}
-                className="w-12 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-100 text-zinc-500 transition cursor-pointer"
+                className="w-12 h-8 flex items-center justify-center rounded-lg hover:bg-areia text-tinta-suave transition cursor-pointer"
               >
                 <ChevronUp className="w-4 h-4" />
               </button>
@@ -181,7 +190,7 @@ export function TimePicker({
                 type="button"
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={decrementMinute}
-                className="w-12 h-8 flex items-center justify-center rounded-lg hover:bg-zinc-100 text-zinc-500 transition cursor-pointer"
+                className="w-12 h-8 flex items-center justify-center rounded-lg hover:bg-areia text-tinta-suave transition cursor-pointer"
               >
                 <ChevronDown className="w-4 h-4" />
               </button>
@@ -189,7 +198,7 @@ export function TimePicker({
           </div>
 
           {/* Quick presets */}
-          <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-zinc-100">
+          <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-linha">
             {["08:00", "10:00", "12:00", "14:00", "16:00", "18:00", "20:00"].map((preset) => (
               <button
                 key={preset}
@@ -206,7 +215,7 @@ export function TimePicker({
                   "px-2 py-1 text-xs rounded-md font-medium transition cursor-pointer",
                   displayValue === preset
                     ? "bg-brand text-white"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                    : "bg-areia text-tinta-suave hover:bg-linha"
                 )}
               >
                 {preset}

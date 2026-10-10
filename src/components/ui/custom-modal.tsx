@@ -41,8 +41,8 @@ export function CustomModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className={cn(`p-6 sm:p-8 ${sizeClasses[size]}`, className)}>
         <DialogHeader className="mb-2">
-          <DialogTitle className="text-xl font-semibold tracking-tight">{title}</DialogTitle>
-          {description && <DialogDescription className="text-zinc-500 mt-1">{description}</DialogDescription>}
+          <DialogTitle>{title}</DialogTitle>
+          {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         <div className="py-2">
           {children}

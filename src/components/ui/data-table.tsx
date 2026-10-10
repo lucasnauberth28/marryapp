@@ -12,6 +12,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   X,
+  Inbox,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -48,8 +49,8 @@ export function DataTable<T>({
   data,
   columns,
   pageSize = 15,
-  searchPlaceholder = "Buscar registros...",
-  emptyMessage = "Nenhum registro encontrado.",
+  searchPlaceholder = "Buscar",
+  emptyMessage = "Ainda não tem nada por aqui.",
   keyExtractor,
   topRightElement,
   className,
@@ -150,25 +151,42 @@ export function DataTable<T>({
   const startRecord = sortedData.length === 0 ? 0 : (safePage - 1) * pageSize + 1;
   const endRecord = Math.min(safePage * pageSize, sortedData.length);
 
+  // Sem dados: a mensagem de quem usa. Busca sem resultado: diz isso e oferece limpar.
+  const emptyState =
+    data.length > 0 && search ? (
+      <div className="flex flex-col items-center gap-2 text-center text-tinta-suave">
+        <Search aria-hidden="true" className="h-6 w-6" />
+        <p>Nada encontrado para “{search}”.</p>
+        <button type="button" onClick={() => handleSearchChange("")} className="inline-flex min-h-11 items-center font-semibold text-ameixa hover:underline">
+          Limpar busca
+        </button>
+      </div>
+    ) : (
+      <div className="flex flex-col items-center gap-2 text-center text-tinta-suave">
+        <Inbox aria-hidden="true" className="h-6 w-6" />
+        <div>{emptyMessage}</div>
+      </div>
+    );
+
   return (
     <div className={cn("space-y-4 w-full", className)}>
       {/* Top Bar: Search + Custom Right Element */}
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div className="relative flex-1 max-w-sm">
-          <Search aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+          <Search aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-tinta-suave" />
           <Input
             type="text"
             aria-label={searchPlaceholder}
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="h-11 pl-9 pr-8 bg-papel sm:h-10"
+            className="pl-10 pr-10"
           />
           {search && (
             <button
               onClick={() => handleSearchChange("")}
               aria-label="Limpar busca"
-              className="absolute right-1 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full text-zinc-500 hover:text-zinc-700"
+              className="absolute right-1 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full text-tinta-suave hover:text-tinta"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -179,11 +197,11 @@ export function DataTable<T>({
       </div>
 
       {/* Table Container */}
-      <div className="bg-papel border border-zinc-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)]">
         {mobileCard && (
-          <ul className="divide-y divide-zinc-100 md:hidden">
+          <ul className="divide-y divide-linha md:hidden">
             {paginatedData.length === 0 ? (
-              <li className="px-4 py-12 text-center text-zinc-500">{emptyMessage}</li>
+              <li className="px-4 py-12">{emptyState}</li>
             ) : (
               paginatedData.map((item) => (
                 <li key={keyExtractor(item)} className="p-4">
@@ -196,7 +214,7 @@ export function DataTable<T>({
         <div className={cn("overflow-x-auto", mobileCard && "hidden md:block")}>
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="bg-zinc-50/80 border-b border-zinc-200 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              <tr className="h-11 border-b border-linha bg-areia/40 text-sm font-semibold text-tinta-suave">
                 {columns.map((col) => {
                   const isSorted = sortKey === col.key;
                   const isSortable = col.sortable !== false;
@@ -207,25 +225,25 @@ export function DataTable<T>({
                       scope="col"
                       aria-sort={isSorted && sortOrder ? (sortOrder === "asc" ? "ascending" : "descending") : undefined}
                       className={cn(
-                        "px-4 py-3 select-none",
-                        isSortable && "cursor-pointer hover:bg-zinc-100/70 transition-colors",
+                        "px-4 select-none",
+                        isSortable && "cursor-pointer hover:bg-areia/70 transition-colors",
                         col.headerClassName
                       )}
                       onClick={() => isSortable && handleSort(col.key)}
                     >
                       {/* Botão de verdade: quem usa só o teclado também consegue ordenar. */}
                       {isSortable ? (
-                        <button type="button" className="flex items-center gap-1.5 rounded uppercase tracking-wider" onClick={(e) => { e.stopPropagation(); handleSort(col.key); }}>
+                        <button type="button" className="flex min-h-11 items-center gap-1.5 rounded font-semibold hover:text-tinta" onClick={(e) => { e.stopPropagation(); handleSort(col.key); }}>
                           <span>{col.header}</span>
-                          <span className="text-zinc-500" aria-hidden="true">
+                          <span className="text-tinta-suave" aria-hidden="true">
                             {isSorted ? (
                               sortOrder === "asc" ? (
-                                <ArrowUp className="w-3.5 h-3.5 text-brand" />
+                                <ArrowUp className="w-3.5 h-3.5 text-ameixa" />
                               ) : (
-                                <ArrowDown className="w-3.5 h-3.5 text-brand" />
+                                <ArrowDown className="w-3.5 h-3.5 text-ameixa" />
                               )
                             ) : (
-                              <ArrowUpDown className="w-3.5 h-3.5 opacity-40 hover:opacity-100" />
+                              <ArrowUpDown className="w-3.5 h-3.5 opacity-60" />
                             )}
                           </span>
                         </button>
@@ -237,21 +255,21 @@ export function DataTable<T>({
                 })}
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100">
+            <tbody className="divide-y divide-linha">
               {paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="px-4 py-12 text-center text-zinc-500">
-                    {emptyMessage}
+                  <td colSpan={columns.length} className="px-4 py-12">
+                    {emptyState}
                   </td>
                 </tr>
               ) : (
                 paginatedData.map((item) => (
                   <tr
                     key={keyExtractor(item)}
-                    className="hover:bg-zinc-50/60 transition-colors"
+                    className="h-14 transition-colors hover:bg-areia/40"
                   >
                     {columns.map((col) => (
-                      <td key={col.key} className={cn("px-4 py-3.5 align-middle", col.className)}>
+                      <td key={col.key} className={cn("px-4 py-2 align-middle", col.className)}>
                         {col.cell ? col.cell(item) : getRawValue(item, col)}
                       </td>
                     ))}
@@ -264,11 +282,11 @@ export function DataTable<T>({
 
         {/* Footer / Pagination Controls (sem linhas, não há o que paginar) */}
         {data.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-zinc-50/50 border-t border-zinc-200 text-xs text-zinc-500">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-linha bg-areia/30 text-sm text-tinta-suave">
           <div>
-            Mostrando <span className="font-semibold text-zinc-800">{startRecord}</span> a{" "}
-            <span className="font-semibold text-zinc-800">{endRecord}</span> de{" "}
-            <span className="font-semibold text-zinc-800">{sortedData.length}</span>
+            Mostrando <span className="font-semibold text-tinta">{startRecord}</span> a{" "}
+            <span className="font-semibold text-tinta">{endRecord}</span> de{" "}
+            <span className="font-semibold text-tinta">{sortedData.length}</span>
             {search && ` (filtrado de ${data.length} no total)`}
           </div>
 
@@ -276,7 +294,7 @@ export function DataTable<T>({
             <Button aria-label="Primeira página"
               variant="outline"
               size="icon"
-              className="h-11 w-11 rounded-lg border-zinc-200 sm:h-8 sm:w-8"
+              className="h-11 w-11 rounded-lg sm:h-9 sm:w-9"
               onClick={() => setCurrentPage(1)}
               disabled={safePage <= 1}
               title="Primeira página"
@@ -286,7 +304,7 @@ export function DataTable<T>({
             <Button aria-label="Anterior"
               variant="outline"
               size="icon"
-              className="h-11 w-11 rounded-lg border-zinc-200 sm:h-8 sm:w-8"
+              className="h-11 w-11 rounded-lg sm:h-9 sm:w-9"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={safePage <= 1}
               title="Página anterior"
@@ -294,14 +312,14 @@ export function DataTable<T>({
               <ChevronLeft className="w-4 h-4" />
             </Button>
 
-            <span className="px-3 font-medium text-zinc-700">
+            <span className="px-3 font-medium text-tinta">
               Página {safePage} de {totalPages}
             </span>
 
             <Button aria-label="Próximo"
               variant="outline"
               size="icon"
-              className="h-11 w-11 rounded-lg border-zinc-200 sm:h-8 sm:w-8"
+              className="h-11 w-11 rounded-lg sm:h-9 sm:w-9"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={safePage >= totalPages}
               title="Próxima página"
@@ -311,7 +329,7 @@ export function DataTable<T>({
             <Button aria-label="Última página"
               variant="outline"
               size="icon"
-              className="h-11 w-11 rounded-lg border-zinc-200 sm:h-8 sm:w-8"
+              className="h-11 w-11 rounded-lg sm:h-9 sm:w-9"
               onClick={() => setCurrentPage(totalPages)}
               disabled={safePage >= totalPages}
               title="Última página"

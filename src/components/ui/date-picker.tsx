@@ -120,18 +120,18 @@ export function DatePicker({
             variant="outline"
             disabled={disabled}
             className={cn(
-              "w-full h-10 justify-start text-left font-normal bg-papel border-zinc-200 shadow-xs hover:bg-zinc-50 px-3 rounded-lg text-sm transition-colors",
-              !selectedDate && "text-muted-foreground",
-              open && "ring-2 ring-brand/30 border-brand",
+              "w-full h-11 justify-start text-left font-normal text-base bg-papel border-linha-forte hover:bg-papel hover:border-tinta-suave px-4 rounded-xl transition-colors",
+              !selectedDate && "text-tinta-suave",
+              open && "ring-2 ring-ameixa/25 border-ameixa",
               className
             )}
           >
-            <CalendarIcon className="mr-2 h-4 w-4 shrink-0 text-brand" />
+            <CalendarIcon className="mr-2 h-4 w-4 shrink-0 text-ameixa" />
             <span className="flex-1 truncate">{formattedDisplay || placeholder}</span>
             {selectedDate && (
               <span
                 onClick={handleClear}
-                className="ml-auto text-zinc-500 hover:text-zinc-600 p-0.5 rounded-full"
+                className="ml-auto text-tinta-suave hover:text-tinta p-0.5 rounded-full"
                 title="Limpar data"
               >
                 <X className="w-3.5 h-3.5" />
@@ -140,25 +140,25 @@ export function DatePicker({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className="w-[280px] p-3 shadow-2xl border-zinc-200 rounded-xl" align="start">
+        <PopoverContent className="w-[280px] p-3 shadow-2xl border-linha rounded-xl" align="start">
           {/* Header de Navegação por Mês e Ano */}
           <div className="flex items-center justify-between mb-3 px-1">
             <button
               type="button"
               onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
-              className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-600 transition cursor-pointer"
+              className="p-1 rounded-lg hover:bg-areia text-tinta-suave transition cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
 
-            <span className="font-bold text-xs text-zinc-800 capitalize font-sans">
+            <span className="font-bold text-xs text-tinta capitalize font-sans">
               {format(currentMonth, "MMMM yyyy", { locale: ptBR })}
             </span>
 
             <button
               type="button"
               onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
-              className="p-1 rounded-lg hover:bg-zinc-100 text-zinc-600 transition cursor-pointer"
+              className="p-1 rounded-lg hover:bg-areia text-tinta-suave transition cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -167,7 +167,7 @@ export function DatePicker({
           {/* Rótulos dos Dias da Semana */}
           <div className="grid grid-cols-7 gap-1 text-center mb-1">
             {WEEKDAYS.map((day) => (
-              <span key={day} className="text-xs font-semibold text-zinc-500 py-1">
+              <span key={day} className="text-xs font-semibold text-tinta-suave py-1">
                 {day}
               </span>
             ))}
@@ -186,8 +186,8 @@ export function DatePicker({
                   onClick={() => handleSelectDate(day)}
                   className={cn(
                     "h-7 w-7 mx-auto rounded-lg text-xs flex items-center justify-center transition-all cursor-pointer",
-                    !isCurrentMonth && "text-zinc-300 font-normal",
-                    isCurrentMonth && !isSelected && "text-zinc-700 font-medium hover:bg-zinc-100",
+                    !isCurrentMonth && "text-tinta-suave/50 font-normal",
+                    isCurrentMonth && !isSelected && "text-tinta font-medium hover:bg-areia",
                     isSelected && "bg-brand text-white font-bold shadow-xs hover:bg-brand-600"
                   )}
                 >
@@ -198,7 +198,7 @@ export function DatePicker({
           </div>
 
           {/* Controles do Rodapé */}
-          <div className="flex items-center justify-between pt-2.5 mt-2.5 border-t border-zinc-100 text-xs">
+          <div className="flex items-center justify-between pt-2.5 mt-2.5 border-t border-linha text-xs">
             <button
               type="button"
               onClick={() => handleSelectDate(new Date())}
@@ -210,7 +210,7 @@ export function DatePicker({
               <button
                 type="button"
                 onClick={(e) => handleClear(e)}
-                className="text-zinc-500 hover:text-zinc-600 font-medium text-xs cursor-pointer"
+                className="text-tinta-suave hover:text-tinta font-medium text-xs cursor-pointer"
               >
                 Limpar
               </button>

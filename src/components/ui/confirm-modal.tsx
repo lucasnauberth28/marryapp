@@ -37,8 +37,8 @@ export function ConfirmModal({
     >
       <div className="space-y-4">
         {variant === "destructive" && (
-          <div className="flex items-center gap-3 p-3 bg-perigo-suave border border-red-100 rounded-xl text-perigo text-sm">
-            <AlertTriangle className="w-5 h-5 shrink-0" />
+          <div className="flex items-center gap-3 p-3 bg-perigo-suave rounded-xl text-perigo text-sm">
+            <AlertTriangle className="w-5 h-5 shrink-0" aria-hidden="true" />
             <p className="font-medium">Esta ação não poderá ser desfeita.</p>
           </div>
         )}
@@ -48,7 +48,6 @@ export function ConfirmModal({
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
-            className="rounded-xl border-zinc-200"
           >
             {cancelText}
           </Button>
@@ -58,9 +57,8 @@ export function ConfirmModal({
               onConfirm();
             }}
             disabled={isLoading}
-            className="rounded-xl font-semibold shadow-sm"
           >
-            {isLoading ? "Aguarde..." : confirmText}
+            {isLoading ? "Aguarde…" : confirmText}
           </Button>
         </div>
       </div>
