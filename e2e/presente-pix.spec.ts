@@ -14,8 +14,7 @@ test("convidado presenteia no site do casal e recebe um Pix copia e cola", async
   const convidado = await novoContexto(browser, { permissions: ["clipboard-read", "clipboard-write"] });
   const pagina = await convidado.newPage();
   await pagina.goto(`${sitePath}/presentes`);
-  await pagina.getByText("Cafeteira E2E").click();
-  await pagina.getByRole("link", { name: /Presentear agora/ }).click();
+  await pagina.getByRole("link", { name: "Presentear: Cafeteira E2E" }).click();
   await pagina.waitForURL(/\/checkout\//);
 
   await pagina.getByLabel("Seu nome completo").fill("Convidado E2E");

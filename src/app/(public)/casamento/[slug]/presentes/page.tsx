@@ -1,4 +1,5 @@
 import { Metadata } from "next"
+import { GuestHeader } from "@/components/public/guest-header"
 import { getIdentityForWedding, guestPageMetadata } from "@/lib/wedding"
 import { getWeddingGifts } from "@/lib/wedding-data"
 import { requirePublicWedding } from "@/lib/wedding-redirect"
@@ -16,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function ListaPresentesPublicPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const wedding = await requirePublicWedding(slug)
-  const [gifts, { coupleNames }] = await Promise.all([
+  const [gifts, identity] = await Promise.all([
     getWeddingGifts(wedding.id).catch((error) => {
       console.error("Erro ao buscar presentes:", error)
       return []
@@ -25,8 +26,9 @@ export default async function ListaPresentesPublicPage({ params }: { params: Pro
   ])
 
   return (
-    <div className="flex-1 py-12 px-6 w-full max-w-6xl mx-auto animate-in fade-in duration-500">
-      <PublicGiftsClient initialGifts={gifts} coupleNames={coupleNames} cardEnabled={isCardPaymentAvailable()} />
+    <div className="flex min-h-dvh flex-1 flex-col bg-linho text-tinta">
+      <GuestHeader slug={wedding.slug} initials={identity.initials} coupleNames={identity.coupleNames} current="presentes" title="Lista de presentes" />
+      <PublicGiftsClient initialGifts={gifts} coupleNames={identity.coupleNames} cardEnabled={isCardPaymentAvailable()} />
     </div>
   )
 }
