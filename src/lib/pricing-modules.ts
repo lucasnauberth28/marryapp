@@ -46,14 +46,6 @@ export const COUPLE_MODULES: PricingModule[] = [
     iconName: "QrCode",
   },
   {
-    id: "liveAlbum",
-    name: "Mural de fotos ao vivo nas mesas (telão)",
-    category: "Experiência",
-    description: "QR Code nas mesas para convidados enviarem fotos da festa em tempo real projetadas no telão do evento.",
-    price: 4900, // R$ 49,00
-    iconName: "Sparkles",
-  },
-  {
     id: "tables",
     name: "Mesas e relatório para o buffet",
     category: "Organização",

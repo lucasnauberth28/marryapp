@@ -4,7 +4,7 @@ import { COUPLE_MODULES } from "./pricing-modules.ts";
 /**
  * Módulos do catálogo (lib/pricing-modules) que cada plano fechado inclui, segundo a lista de
  * benefícios em lib/plans: Classic = site completo, Pix sem taxa, WhatsApp automático e QR Code;
- * VIP = tudo do Classic + domínio próprio e álbum ao vivo (na prática, todos os módulos).
+ * VIP = tudo do Classic + domínio próprio (na prática, todos os módulos).
  * O plano adaptado (custom) vale pelos módulos escolhidos; o Básico não inclui nenhum.
  */
 const CLASSIC_MODULES = ["site", "pixZero", "whatsapp", "qrcode"];
@@ -12,7 +12,7 @@ const CLASSIC_MODULES = ["site", "pixZero", "whatsapp", "qrcode"];
 /**
  * Módulos que o servidor realmente bloqueia hoje: os claramente premium e que já existem no app.
  * O resto fica liberado (site, mesas e Pix sem taxa têm limites ambíguos no catálogo;
- * álbum ao vivo e domínio próprio ainda não existem como recurso).
+ * o domínio próprio ainda não existe como recurso).
  */
 export const ENFORCED_MODULES = ["whatsapp", "qrcode"] as const;
 export type EnforcedModule = (typeof ENFORCED_MODULES)[number];

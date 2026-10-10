@@ -9,7 +9,7 @@ test("básico e plano desconhecido não incluem nada", () => {
   assert.deepEqual(modulesForPlan("start"), []);
 });
 
-test("classic inclui WhatsApp e QR Code, mas não álbum nem domínio", () => {
+test("classic inclui WhatsApp e QR Code, mas não o domínio próprio", () => {
   const m = modulesForPlan("classic");
   assert.ok(planIncludes(m, "whatsapp") && planIncludes(m, "qrcode"));
   assert.ok(!planIncludes(m, "liveAlbum") && !planIncludes(m, "customDomain"));
@@ -17,7 +17,7 @@ test("classic inclui WhatsApp e QR Code, mas não álbum nem domínio", () => {
 
 test("vip inclui todos os módulos", () => {
   const m = modulesForPlan("vip");
-  for (const id of ["site", "pixZero", "whatsapp", "qrcode", "liveAlbum", "tables", "customDomain"]) assert.ok(planIncludes(m, id), id);
+  for (const id of ["site", "pixZero", "whatsapp", "qrcode", "tables", "customDomain"]) assert.ok(planIncludes(m, id), id);
 });
 
 test("plano adaptado vale pelos módulos escolhidos, ignorando ids estranhos", () => {
