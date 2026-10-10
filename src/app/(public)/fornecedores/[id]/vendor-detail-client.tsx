@@ -4,16 +4,18 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
+import { btn, container } from "@/components/landing/styles";
 import {
   Building2,
   Star,
   MapPin,
   Video,
   CheckCircle2,
-  Calendar,
+  Check,
   ExternalLink,
-  ShieldCheck,
   ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
   Share2,
   Globe,
   Sparkles,
@@ -22,19 +24,36 @@ import {
   CalendarCheck,
   CalendarX,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { checkVendorAvailability, createVendorLead, type PublicVendor } from "@/actions/partner-vendor-actions";
 import { toast } from "sonner";
 import { LEAD_BUDGET_OPTIONS, parseGallery, parseRegions } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { UserImage } from "@/components/ui/user-image";
+import { cn } from "@/lib/utils";
 
 interface VendorDetailClientProps {
   vendor: PublicVendor;
   /** Hoje em Brasília ("AAAA-MM-DD"), mínimo da consulta de disponibilidade. */
   todayIso: string;
+}
+
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+
+// Campos do design: 44px, borda forte, raio de 12px, texto de 16px.
+const inputCls = "h-11 rounded-[12px] bg-papel text-base shadow-none";
+const labelCls = "text-sm font-semibold leading-5 text-tinta";
+const sectionTitle = "font-display text-2xl font-medium leading-8 text-tinta sm:text-[26px]";
+
+/** Com menos de 5 fotos, as pequenas crescem para o mosaico não ficar com buraco. */
+function mosaicCell(index: number, total: number) {
+  if (index === 0) return "col-span-2 row-span-2 bg-salvia-suave";
+  if (total === 2) return "col-span-2 row-span-2";
+  if (total === 3) return "col-span-2";
+  if (total === 4 && index === 3) return "col-span-2";
+  return "";
 }
 
 /** "Ver disponibilidade": consulta só sim/não na agenda do fornecedor. */
@@ -65,9 +84,9 @@ function AvailabilityCheck({ vendorId, todayIso }: { vendorId: string; todayIso:
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-2" aria-describedby="disponibilidade-resultado">
-      <Label htmlFor="disponibilidade-data" className="text-sm font-semibold text-tinta">
-        Ver disponibilidade
+    <form onSubmit={onSubmit} className="flex flex-col gap-2" aria-describedby="disponibilidade-resultado">
+      <Label htmlFor="disponibilidade-data" className={labelCls}>
+        A data está livre?
       </Label>
       <div className="flex gap-2">
         <Input
@@ -80,27 +99,27 @@ function AvailabilityCheck({ vendorId, todayIso }: { vendorId: string; todayIso:
             setResult(null);
             setError(null);
           }}
-          className="h-11 flex-1 rounded-xl bg-linho text-sm"
+          className={cn(inputCls, "flex-1")}
         />
-        <Button type="submit" variant="outline" disabled={isPending} className="h-11 rounded-xl text-sm font-bold">
-          {isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : "Consultar"}
-        </Button>
+        <button type="submit" disabled={isPending} className={cn(btn.secondary, "px-4")}>
+          {isPending ? <Loader2 className="size-4 animate-spin" aria-label="Consultando" /> : "Consultar"}
+        </button>
       </div>
       <div id="disponibilidade-resultado" role="status" aria-live="polite">
         {result ? (
           result.available ? (
-            <p className="flex items-center gap-1.5 rounded-xl bg-sucesso-suave px-3 py-2 text-xs font-bold text-sucesso">
-              <CalendarCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
-              Data disponível em {dateLabel(result.date)}. Peça seu orçamento!
+            <p className="flex items-start gap-2 rounded-[12px] bg-sucesso-suave px-3 py-2 text-sm font-semibold text-sucesso">
+              <CalendarCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              Data livre em {dateLabel(result.date)}. Peça seu orçamento.
             </p>
           ) : (
-            <p className="flex items-center gap-1.5 rounded-xl bg-perigo-suave px-3 py-2 text-xs font-bold text-perigo">
-              <CalendarX className="h-4 w-4 shrink-0" aria-hidden="true" />
-              Data indisponível em {dateLabel(result.date)}.
+            <p className="flex items-start gap-2 rounded-[12px] bg-perigo-suave px-3 py-2 text-sm font-semibold text-perigo">
+              <CalendarX className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              Data ocupada em {dateLabel(result.date)}.
             </p>
           )
         ) : null}
-        {error ? <p className="text-xs font-medium text-perigo">{error}</p> : null}
+        {error ? <p className="text-sm font-semibold text-perigo">{error}</p> : null}
       </div>
     </form>
   );
@@ -117,7 +136,9 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
   // WhatsApp direto é recurso do Pro/Master (o servidor nem envia o número dos demais).
   const directWhatsapp = vendor.planTier !== "FREE" ? vendor.whatsapp?.replace(/\D/g, "") || null : null;
 
-  const [activeImage, setActiveImage] = useState(galleryImages[0] || vendor.coverUrl);
+  // Foto da galeria em destaque no celular e foto aberta na janela de fotos (-1 = fechada).
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [lightbox, setLightbox] = useState(-1);
   const reviews = vendor.reviews;
 
   // Formulário de Lead / Reunião
@@ -177,388 +198,326 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
       ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
       : vendor.rating.toFixed(1);
 
+  const price = vendor.startingPrice && vendor.startingPrice > 0 ? brl.format(vendor.startingPrice / 100) : null;
+  const mosaic = galleryImages.slice(0, 5);
+  const showWhere = serviceRegions.length > 0 ? serviceRegions.join(", ") : null;
+
+  const share = () => {
+    if (navigator.share) {
+      navigator.share({ title: vendor.companyName, url: window.location.href }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast.success("Link copiado.");
+    }
+  };
+
+  const step = (delta: number) => setLightbox((i) => (i < 0 ? i : (i + delta + galleryImages.length) % galleryImages.length));
+
   return (
-    <div className="min-h-screen bg-paper text-tinta font-sans flex flex-col justify-between">
+    <div className="flex min-h-screen flex-col bg-linho font-sans text-tinta">
       <LandingHeader />
 
-      <div className="flex-1 py-8 px-6 max-w-7xl mx-auto w-full space-y-8">
-        {/* Navegação Superior */}
-        <div className="flex items-center justify-between">
-          <Link
-            href="/fornecedores"
-            className="inline-flex items-center gap-2 text-xs font-bold text-tinta-suave hover:text-tinta transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Voltar para Todos os Fornecedores</span>
+      <div className={cn(container, "flex flex-1 flex-col gap-6 pb-0 pt-4 sm:pt-6 lg:pb-24")}>
+        {/* Voltar e compartilhar */}
+        <div className="flex items-center justify-between gap-3">
+          <Link href="/fornecedores" className={cn(btn.quiet, "-ml-3 shrink-0")}>
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Fornecedores
           </Link>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({
-                    title: vendor.companyName,
-                    url: window.location.href,
-                  });
-                } else {
-                  navigator.clipboard.writeText(window.location.href);
-                  toast.success("Link copiado para a área de transferência!");
-                }
-              }}
-              className="rounded-full text-xs font-bold gap-1.5 h-9"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>Compartilhar</span>
-            </Button>
-          </div>
+          <button type="button" onClick={share} className={cn(btn.secondary, btn.sm)}>
+            <Share2 className="size-4" aria-hidden="true" />
+            Compartilhar
+          </button>
         </div>
 
-        {/* ========================================================================= */}
-        {/* CABEÇALHO DO PERFIL DO FORNECEDOR */}
-        {/* ========================================================================= */}
-        <div className="bg-papel rounded-3xl p-6 sm:p-8 border border-linha shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-center gap-5">
-            {/* Logotipo / Avatar do Fornecedor */}
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-brand-50 border-2 border-brand/30 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
-              {vendor.logoUrl ? (
-                <UserImage src={vendor.logoUrl} alt={vendor.companyName} sizes="96px" className="object-cover" />
-              ) : (
-                <Building2 className="w-10 h-10 text-brand" />
-              )}
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-display text-tinta">
-                  {vendor.companyName}
-                </h1>
-                {vendor.isVerified && (
-                  <span className="bg-brand-50 text-brand border border-brand/30 font-bold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-brand" />
-                    <span>Curadoria Aprovada</span>
-                  </span>
-                )}
-                {isMaster && (
-                  <span className="bg-amber-700 text-white font-extrabold text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-                    <span>Destaque</span>
-                  </span>
-                )}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 text-xs text-tinta-suave">
-                <span className="font-bold text-tinta bg-areia px-2.5 py-0.5 rounded-full">
-                  {vendor.category}
-                </span>
-
-                {vendor.priceRange && (
-                  <span className="font-semibold tracking-wider text-aviso bg-aviso-suave px-2.5 py-0.5 rounded-full border border-amber-200">
-                    Faixa: {vendor.priceRange}
-                  </span>
-                )}
-
-                <div className="flex items-center gap-1 font-bold text-tinta">
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  <span>{averageRating}</span>
-                  <span className="text-tinta-suave font-normal">
-                    ({reviews.length} avaliações)
-                  </span>
+        {/* Fotos: mosaico no computador, foto grande com miniaturas no celular */}
+        {galleryImages.length > 0 ? (
+          <section aria-label="Fotos do trabalho">
+            <div className="hidden md:grid md:auto-rows-[200px] md:grid-cols-4 md:gap-2 md:overflow-hidden md:rounded-[16px]">
+              {mosaic.map((img, i) => (
+                <div key={i} className={cn("relative bg-areia", mosaicCell(i, mosaic.length))}>
+                  <button
+                    type="button"
+                    onClick={() => setLightbox(i)}
+                    aria-label={`Ampliar foto ${i + 1} de ${galleryImages.length}`}
+                    className="absolute inset-0 block cursor-zoom-in"
+                  >
+                    <UserImage
+                      src={img}
+                      alt=""
+                      sizes={i === 0 ? "(min-width: 1200px) 600px, 50vw" : "(min-width: 1200px) 300px, 25vw"}
+                      className="object-cover transition-transform duration-500 hover:scale-[1.02]"
+                      priority={i === 0}
+                    />
+                  </button>
+                  {i === mosaic.length - 1 && galleryImages.length > 1 ? (
+                    <button
+                      type="button"
+                      onClick={() => setLightbox(0)}
+                      className={cn(btn.secondary, btn.sm, "absolute bottom-3 right-3")}
+                    >
+                      Ver as {galleryImages.length} fotos
+                    </button>
+                  ) : null}
                 </div>
-              </div>
-
-              {vendor.documentNumber && (
-                <p className="text-xs text-tinta-suave tabular-nums">
-                  {vendor.documentType || "CNPJ"}: {vendor.documentNumber}
-                </p>
-              )}
+              ))}
             </div>
-          </div>
 
-          {/* Ações Rápidas no Topo */}
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <Button asChild className="w-full rounded-2xl h-12 text-sm font-semibold gap-1.5 shadow-xs md:w-auto">
-              <a href="#orcamento">
-                <Calendar className="w-4 h-4" aria-hidden="true" />
-                Pedir orçamento
-              </a>
-            </Button>
-          </div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* CORPO PRINCIPAL: GALERIA, DETALHES, AVALIAÇÕES E FORMULÁRIO */}
-        {/* ========================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* LADO ESQUERDO: GALERIA DE FOTOS, SOBRE E AVALIAÇÕES (8 COLUNAS) */}
-          <div className="lg:col-span-8 space-y-8">
-            {/* Galeria de Fotos Interativa */}
-            <div className="bg-papel rounded-3xl p-6 sm:p-8 border border-linha shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-display text-tinta flex items-center gap-2">
-                  <Camera className="w-5 h-5 text-brand" />
-                  <span>Portfólio & Fotos Reais</span>
-                </h2>
-                <span className="text-xs text-tinta-suave font-medium">
-                  {galleryImages.length} imagens disponíveis
-                </span>
+            <div className="flex flex-col gap-3 md:hidden">
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[16px] bg-salvia-suave">
+                <UserImage
+                  src={galleryImages[activeIndex] ?? galleryImages[0]}
+                  alt={`Foto ${activeIndex + 1} de ${vendor.companyName}`}
+                  sizes="100vw"
+                  className="object-cover"
+                  priority
+                />
+                {galleryImages.length > 1 ? (
+                  <span className="absolute bottom-3 right-3 rounded-full bg-papel px-3 py-1 text-sm font-semibold text-tinta">
+                    {activeIndex + 1} / {galleryImages.length}
+                  </span>
+                ) : null}
               </div>
-
-              {/* Imagem Principal em Destaque */}
-              <div className="relative w-full h-80 sm:h-[420px] rounded-2xl overflow-hidden bg-areia border border-linha">
-                {activeImage ? (
-                  <UserImage
-                    src={activeImage}
-                    alt={vendor.companyName}
-                    sizes="(min-width: 1024px) 700px, 100vw"
-                    className="object-cover transition-all duration-500"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-stone-300">
-                    <Camera className="w-12 h-12" aria-hidden="true" />
-                  </div>
-                )}
-              </div>
-
-              {/* Miniaturas Clicáveis */}
-              {galleryImages.length > 1 && (
-                <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide pt-1">
+              {galleryImages.length > 1 ? (
+                <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   {galleryImages.map((img, i) => (
                     <button
                       key={i}
-                      onClick={() => setActiveImage(img)}
+                      type="button"
+                      onClick={() => setActiveIndex(i)}
                       aria-label={`Ver foto ${i + 1}`}
-                      aria-pressed={activeImage === img}
-                      className={`relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
-                        activeImage === img
-                          ? "border-brand scale-105 shadow-md"
-                          : "border-transparent opacity-70 hover:opacity-100"
-                      }`}
+                      aria-pressed={activeIndex === i}
+                      className={cn(
+                        "relative size-[60px] shrink-0 cursor-pointer overflow-hidden rounded-[12px] border-2 bg-areia",
+                        activeIndex === i ? "border-ameixa" : "border-transparent opacity-80",
+                      )}
                     >
-                      <UserImage src={img} alt={`Portfólio ${i + 1}`} sizes="96px" className="object-cover" />
+                      <UserImage src={img} alt="" sizes="60px" className="object-cover" />
                     </button>
                   ))}
                 </div>
-              )}
+              ) : null}
             </div>
-
-            {/* Sobre o Fornecedor & Diferenciais */}
-            <div className="bg-papel rounded-3xl p-6 sm:p-8 border border-linha shadow-sm space-y-6">
-              <div>
-                <h2 className="text-xl font-display text-tinta mb-3">
-                  Sobre a Empresa
-                </h2>
-                <p className="text-sm text-tinta-suave leading-relaxed whitespace-pre-line">
-                  {vendor.description}
-                </p>
-              </div>
-
-              {/* Regiões de Atendimento */}
-              <div className="pt-4 border-t border-linha space-y-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-tinta-suave">
-                  Regiões e Cidades Atendidas
-                </h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {serviceRegions.map((region, i) => (
-                    <span
-                      key={i}
-                      className="text-xs bg-brand-50 text-brand border border-brand/20 px-3 py-1 rounded-full font-medium flex items-center gap-1"
-                    >
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span>{region}</span>
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Endereço e Atendimento */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-linha text-xs text-tinta-suave">
-                {vendor.offersOnlineMeet && (
-                  <div className="flex items-center gap-2 bg-sucesso-suave text-sucesso p-3 rounded-2xl border border-emerald-200">
-                    <Video className="w-4 h-4 text-sucesso shrink-0" />
-                    <div>
-                      <p className="font-bold">Reuniões por Vídeo</p>
-                      <p className="text-xs text-sucesso">Google Meet & Zoom disponíveis</p>
-                    </div>
-                  </div>
-                )}
-
-                {vendor.hasPhysicalSpace && vendor.address && (
-                  <div className="flex items-center gap-2 bg-linho text-tinta p-3 rounded-2xl border border-linha">
-                    <Building2 className="w-4 h-4 text-tinta-suave shrink-0" />
-                    <div>
-                      <p className="font-bold">Showroom / Espaço Físico</p>
-                      <p className="text-xs text-tinta-suave line-clamp-1">{vendor.address}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Redes Sociais e Website */}
-              <div className="pt-4 border-t border-linha flex flex-wrap items-center gap-4">
-                {vendor.instagram && (
-                  <a
-                    href={`https://instagram.com/${vendor.instagram.replace("@", "")}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-tinta-suave hover:text-brand transition-colors"
-                  >
-                    <Camera className="w-4 h-4 text-pink-600" />
-                    <span>{vendor.instagram}</span>
-                  </a>
-                )}
-
-                {vendor.website && (
-                  <a
-                    href={vendor.website.startsWith("http") ? vendor.website : `https://${vendor.website}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-tinta-suave hover:text-brand transition-colors"
-                  >
-                    <Globe className="w-4 h-4 text-blue-600" />
-                    <span>Website Oficial</span>
-                    <ExternalLink className="w-3 h-3 text-tinta-suave" />
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* ========================================================================= */}
-            {/* SISTEMA DE AVALIAÇÕES DE CASAIS */}
-            {/* ========================================================================= */}
-            <div className="bg-papel rounded-3xl p-6 sm:p-8 border border-linha shadow-sm space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-linha pb-4">
-                <div>
-                  <h2 className="text-xl font-display text-tinta flex items-center gap-2">
-                    <Star className="w-5 h-5 text-aviso fill-amber-500" />
-                    <span>Avaliações dos Noivos</span>
-                  </h2>
-                  <p className="text-xs text-tinta-suave mt-0.5">
-                    Experiências reais de casais que contrataram este fornecedor. Só quem fechou pelo Aceito recebe o link para avaliar.
-                  </p>
-                </div>
-
-              </div>
-
-              {/* Lista de Avaliações */}
-              {reviews.length === 0 ? (
-                <div className="text-center py-8 text-tinta-suave space-y-2">
-                  <Star className="w-8 h-8 mx-auto text-stone-300" />
-                  <p className="text-xs">Este fornecedor ainda não recebeu avaliações de casais que fecharam pelo Aceito.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {reviews.map((rev) => (
-                    <div
-                      key={rev.id}
-                      className="p-5 rounded-2xl bg-ivory border border-linha/80 space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="font-display text-sm text-tinta">
-                            {rev.coupleNames}
-                          </span>
-                          {rev.isVerified && (
-                            <span className="bg-emerald-100 text-sucesso text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                              <CheckCircle2 className="w-3 h-3 text-sucesso" />
-                              <span>Casamento Verificado</span>
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-3.5 h-3.5 ${
-                                i < rev.rating
-                                  ? "fill-amber-400 text-amber-400"
-                                  : "text-stone-300"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-tinta-suave leading-relaxed">
-                        “{rev.comment}”
-                      </p>
-
-                      {rev.weddingDate && (
-                        <p className="text-xs text-tinta-suave">
-                          Casamento realizado em:{" "}
-                          {new Date(rev.weddingDate).toLocaleDateString("pt-BR", {
-                            month: "long",
-                            year: "numeric",
-                          })}
-                        </p>
-                      )}
-
-                      {rev.reply && (
-                        <div className="mt-3 rounded-xl border-l-2 border-champanhe bg-areia/60 px-4 py-3 space-y-1">
-                          <p className="text-xs font-semibold text-tinta-suave">
-                            Resposta de {vendor.companyName}
-                          </p>
-                          <p className="text-sm text-tinta leading-relaxed whitespace-pre-line break-words">
-                            {rev.reply}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+          </section>
+        ) : (
+          <div className="flex aspect-[16/6] w-full flex-col items-center justify-center gap-1 rounded-[16px] bg-salvia-suave text-sm text-tinta-suave">
+            <Camera className="size-8" aria-hidden="true" />
+            Este fornecedor ainda não enviou fotos.
           </div>
+        )}
 
-          {/* ========================================================================= */}
-          {/* LADO DIREITO: CARD STICKY DE ORÇAMENTO & AGENDAMENTO (4 COLUNAS) */}
-          {/* ========================================================================= */}
-          <div className="lg:col-span-4 sticky top-20 space-y-6">
-            <div className="bg-papel rounded-3xl p-6 sm:p-8 border-2 border-brand/30 shadow-xl space-y-6">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-tinta-suave block">
-                  Investimento Estimado
+        <div className="flex flex-wrap items-start gap-x-12 gap-y-10 pt-4">
+          <main className="flex min-w-0 flex-[999_1_560px] flex-col gap-10">
+            {/* Título */}
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex min-h-7 items-center rounded-[6px] bg-salvia-suave px-3 text-sm font-semibold text-salvia">
+                  {vendor.category}
                 </span>
-                <div className="mt-1 flex items-baseline gap-2">
-                  <span className="text-xs text-tinta-suave font-medium">A partir de</span>
-                  <span className="text-3xl text-tinta font-display">
-                    {vendor.startingPrice
-                      ? new Intl.NumberFormat("pt-BR", {
-                          style: "currency",
-                          currency: "BRL",
-                        }).format(vendor.startingPrice / 100)
-                      : "Sob Consulta"}
+                {vendor.isVerified ? (
+                  <span className="inline-flex min-h-7 items-center gap-1 rounded-[6px] bg-sucesso-suave pl-2 pr-3 text-sm font-semibold text-sucesso">
+                    <Check className="size-4" aria-hidden="true" />
+                    Verificado pela curadoria
                   </span>
+                ) : null}
+                {isMaster ? (
+                  <span className="inline-flex min-h-7 items-center gap-1 rounded-[6px] bg-ameixa-suave pl-2 pr-3 text-sm font-semibold text-ameixa">
+                    <Sparkles className="size-4" aria-hidden="true" />
+                    Destaque
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="flex items-center gap-4">
+                {vendor.logoUrl ? (
+                  <div className="relative size-14 shrink-0 overflow-hidden rounded-full border border-linha bg-papel sm:size-16">
+                    <UserImage src={vendor.logoUrl} alt="" sizes="64px" className="object-cover" />
+                  </div>
+                ) : null}
+                <h1 className="font-display text-[34px] font-normal leading-10 tracking-[-0.015em] text-tinta sm:text-5xl sm:leading-[54px]">
+                  {vendor.companyName}
+                </h1>
+              </div>
+
+              <p className="flex flex-wrap gap-x-4 gap-y-2 text-base text-tinta-suave">
+                {showWhere ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="size-4 shrink-0" aria-hidden="true" />
+                    {showWhere}
+                  </span>
+                ) : null}
+                {reviews.length > 0 ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Star className="size-4 shrink-0 fill-champanhe text-champanhe" aria-hidden="true" />
+                    <strong className="font-semibold text-tinta">{averageRating}</strong>
+                    <span className="sr-only">de 5 estrelas,</span>({reviews.length} {reviews.length === 1 ? "avaliação" : "avaliações"})
+                  </span>
+                ) : null}
+                {vendor.documentNumber ? (
+                  <span className="tabular-nums">
+                    {vendor.documentType || "CNPJ"}: {vendor.documentNumber}
+                  </span>
+                ) : null}
+              </p>
+            </div>
+
+            {/* Sobre */}
+            {vendor.description ? (
+              <section className="flex flex-col gap-3">
+                <h2 className={sectionTitle}>Sobre</h2>
+                <p className="max-w-[68ch] whitespace-pre-line text-[17px] leading-7 text-tinta-suave sm:text-lg">{vendor.description}</p>
+              </section>
+            ) : null}
+
+            {/* Atendimento */}
+            {serviceRegions.length > 0 || vendor.offersOnlineMeet || (vendor.hasPhysicalSpace && vendor.address) || vendor.instagram || vendor.website ? (
+              <section className="flex flex-col gap-4">
+                <h2 className={sectionTitle}>Como atende</h2>
+                {serviceRegions.length > 0 ? (
+                  <ul className="flex flex-wrap gap-2" aria-label="Regiões atendidas">
+                    {serviceRegions.map((region) => (
+                      <li
+                        key={region}
+                        className="inline-flex min-h-8 items-center gap-1.5 rounded-[8px] bg-areia px-3 text-sm font-semibold text-tinta-suave"
+                      >
+                        <MapPin className="size-4" aria-hidden="true" />
+                        {region}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {vendor.offersOnlineMeet ? (
+                    <div className="flex items-center gap-3 rounded-[16px] border border-linha bg-papel p-4 shadow-aceito-1">
+                      <Video className="size-5 shrink-0 text-sucesso" aria-hidden="true" />
+                      <div>
+                        <p className="font-semibold">Reunião por vídeo</p>
+                        <p className="text-sm text-tinta-suave">Para quem mora longe ou tem pouco tempo.</p>
+                      </div>
+                    </div>
+                  ) : null}
+                  {vendor.hasPhysicalSpace && vendor.address ? (
+                    <div className="flex items-center gap-3 rounded-[16px] border border-linha bg-papel p-4 shadow-aceito-1">
+                      <Building2 className="size-5 shrink-0 text-tinta-suave" aria-hidden="true" />
+                      <div className="min-w-0">
+                        <p className="font-semibold">Atendimento no local</p>
+                        <p className="text-sm text-tinta-suave">{vendor.address}</p>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
-                {vendor.averageTicket && (
-                  <p className="text-xs text-tinta-suave mt-1">
-                    Ticket médio:{" "}
-                    {new Intl.NumberFormat("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    }).format(vendor.averageTicket / 100)}
-                  </p>
-                )}
+
+                {vendor.instagram || vendor.website ? (
+                  <div className="flex flex-wrap gap-x-6 gap-y-1">
+                    {vendor.instagram ? (
+                      <a
+                        href={`https://instagram.com/${vendor.instagram.replace("@", "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex min-h-11 items-center gap-2 font-semibold text-ameixa hover:underline"
+                      >
+                        <Camera className="size-4" aria-hidden="true" />
+                        {vendor.instagram}
+                        <span className="sr-only"> (abre em nova aba)</span>
+                      </a>
+                    ) : null}
+                    {vendor.website ? (
+                      <a
+                        href={vendor.website.startsWith("http") ? vendor.website : `https://${vendor.website}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex min-h-11 items-center gap-2 font-semibold text-ameixa hover:underline"
+                      >
+                        <Globe className="size-4" aria-hidden="true" />
+                        Site do fornecedor
+                        <ExternalLink className="size-3.5" aria-hidden="true" />
+                        <span className="sr-only"> (abre em nova aba)</span>
+                      </a>
+                    ) : null}
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
+
+            {/* Avaliações */}
+            <section className="flex flex-col gap-4" aria-labelledby="avaliacoes">
+              <div className="flex flex-col gap-1">
+                <h2 id="avaliacoes" className={sectionTitle}>
+                  O que os casais dizem
+                </h2>
+                <p className="text-sm text-tinta-suave">Só quem fechou pelo Aceito recebe o link para avaliar.</p>
               </div>
 
-              <div className="pt-4 border-t border-linha">
-                <AvailabilityCheck vendorId={vendor.id} todayIso={todayIso} />
-              </div>
+              {reviews.length === 0 ? (
+                <p className="rounded-[16px] border border-linha bg-papel p-6 text-base text-tinta-suave shadow-aceito-1">
+                  Ainda não há avaliações de casais que fecharam por aqui.
+                </p>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {reviews.map((rev) => (
+                    <figure key={rev.id} className="m-0 flex flex-col gap-3 rounded-[16px] border border-linha bg-papel p-6 shadow-aceito-1">
+                      <div className="flex items-center gap-0.5" role="img" aria-label={`${rev.rating} de 5 estrelas`}>
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            aria-hidden="true"
+                            className={cn("size-4", i < rev.rating ? "fill-champanhe text-champanhe" : "text-linha")}
+                          />
+                        ))}
+                      </div>
+                      <blockquote className="m-0 font-display text-xl italic leading-7 text-tinta">“{rev.comment}”</blockquote>
+                      <figcaption className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-tinta-suave">
+                        <span>
+                          {rev.coupleNames}
+                          {rev.weddingDate
+                            ? ` · casou em ${new Date(rev.weddingDate).toLocaleDateString("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" })}`
+                            : ""}
+                        </span>
+                        {rev.isVerified ? (
+                          <span className="inline-flex min-h-6 items-center gap-1 rounded-[6px] bg-sucesso-suave pl-1.5 pr-2 text-sm font-semibold text-sucesso">
+                            <CheckCircle2 className="size-4" aria-hidden="true" />
+                            Casamento confirmado
+                          </span>
+                        ) : null}
+                      </figcaption>
 
-              <div id="orcamento" className="pt-4 border-t border-linha scroll-mt-24">
-                <h3 className="text-sm font-display text-tinta mb-1">
-                  Pedir orçamento ou reunião
-                </h3>
-                <p className="text-xs text-tinta-suave mb-4">
-                  Envie seus dados e o fornecedor responderá com disponibilidade na sua data.
+                      {rev.reply ? (
+                        <div className="rounded-[12px] border-l-2 border-champanhe bg-areia/60 px-4 py-3">
+                          <p className="text-sm font-semibold text-tinta-suave">Resposta de {vendor.companyName}</p>
+                          <p className="whitespace-pre-line break-words text-base leading-6 text-tinta">{rev.reply}</p>
+                        </div>
+                      ) : null}
+                    </figure>
+                  ))}
+                </div>
+              )}
+            </section>
+          </main>
+
+          {/* Pedido de orçamento */}
+          <aside className="min-w-0 max-w-[400px] flex-[1_1_320px] max-lg:max-w-none lg:sticky lg:top-24">
+            <div className="flex flex-col gap-5 rounded-[16px] border border-linha bg-papel p-6 shadow-aceito-2">
+              <p className="flex flex-col">
+                <span className="text-tinta-suave">{price ? "A partir de" : "Preço"}</span>
+                <span className="font-display text-[34px] leading-10 text-tinta">{price ?? "Sob consulta"}</span>
+                {vendor.averageTicket ? (
+                  <span className="mt-1 text-sm text-tinta-suave">Valor médio dos serviços: {brl.format(vendor.averageTicket / 100)}</span>
+                ) : null}
+              </p>
+
+              <AvailabilityCheck vendorId={vendor.id} todayIso={todayIso} />
+
+              <div id="orcamento" className="scroll-mt-24 border-t border-linha pt-5">
+                <h2 className="font-display text-[22px] font-medium leading-7 text-tinta">Pedir orçamento</h2>
+                <p className="mb-4 mt-1 text-sm leading-5 text-tinta-suave">
+                  Envie seus dados e o fornecedor responde com a disponibilidade na sua data.
                 </p>
 
                 {sentTo ? (
-                  <div role="status" className="space-y-3 rounded-2xl border border-sucesso/30 bg-sucesso-suave p-4 text-sm text-tinta">
+                  <div role="status" className="flex flex-col gap-3 rounded-[16px] border border-sucesso/30 bg-sucesso-suave p-4 text-base text-tinta">
                     <p className="flex items-center gap-2 font-semibold">
-                      <CheckCircle2 className="h-5 w-5 shrink-0 text-sucesso" aria-hidden="true" />
+                      <CheckCircle2 className="size-5 shrink-0 text-sucesso" aria-hidden="true" />
                       Pedido enviado para {vendor.companyName}
                     </p>
                     <p className="text-tinta-suave">
@@ -569,154 +528,181 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                         href={`https://wa.me/${directWhatsapp}?text=${encodeURIComponent(`Olá! Sou ${sentTo.coupleName} e acabei de pedir um orçamento pelo Aceito.`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex min-h-11 items-center justify-center rounded-full bg-tinta px-4 font-bold text-papel"
+                        className={cn(btn.primary, btn.block)}
                       >
                         Conversar agora no WhatsApp
                         <span className="sr-only"> (abre em nova aba)</span>
                       </a>
                     ) : null}
-                    <button type="button" onClick={() => setSentTo(null)} className="min-h-11 w-full rounded-full font-semibold text-ameixa hover:bg-ameixa-suave">
+                    <button type="button" onClick={() => setSentTo(null)} className={cn(btn.quiet, btn.block)}>
                       Fazer outro pedido
                     </button>
                   </div>
                 ) : (
-                <form onSubmit={handleSendLead} className="space-y-3.5">
-                  <div className="space-y-1">
-                    <Label htmlFor="lead-nome" className="text-sm font-semibold text-tinta">Seu nome</Label>
-                    <Input
-                      id="lead-nome"
-                      name="name"
-                      autoComplete="name"
-                      value={coupleName}
-                      onChange={(e) => setCoupleName(e.target.value)}
-                      placeholder="Ex.: Giovanna"
-                      required
-                      className="rounded-xl h-11 text-sm bg-linho"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label htmlFor="lead-telefone" className="text-sm font-semibold text-tinta">Seu WhatsApp com DDD</Label>
-                    <Input
-                      id="lead-telefone"
-                      name="phone"
-                      type="tel"
-                      inputMode="tel"
-                      autoComplete="tel-national"
-                      value={couplePhone}
-                      onChange={(e) => setCouplePhone(e.target.value)}
-                      placeholder="(11) 99999-9999"
-                      required
-                      className="rounded-xl h-11 text-sm bg-linho"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label className="text-sm font-semibold text-tinta">Data do casamento</Label>
-                    <DatePicker
-                      value={weddingDate}
-                      onChange={(e) => setWeddingDate(e.target.value)}
-                      placeholder="Selecione a data"
-                      className="rounded-xl h-11 text-sm bg-linho"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label htmlFor="lead-cidade" className="text-sm font-semibold text-tinta">
-                      Cidade do casamento
-                    </Label>
-                    <Input
-                      id="lead-cidade"
-                      value={leadLocation}
-                      onChange={(e) => setLeadLocation(e.target.value)}
-                      placeholder="Ex: Itu, SP"
-                      maxLength={80}
-                      autoComplete="address-level2"
-                      className="rounded-xl h-11 text-sm bg-linho"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label htmlFor="lead-orcamento" className="text-sm font-semibold text-tinta">
-                      Faixa de orçamento
-                    </Label>
-                    <select
-                      id="lead-orcamento"
-                      value={leadBudget}
-                      onChange={(e) => setLeadBudget(e.target.value)}
-                      className="h-11 w-full cursor-pointer rounded-xl border border-linha-forte bg-linho px-3 text-sm text-tinta"
-                    >
-                      <option value="">Selecione (opcional)</option>
-                      {LEAD_BUDGET_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label className="text-sm font-semibold text-tinta">Tipo de reunião</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        aria-pressed={meetingType === "ONLINE"}
-                        onClick={() => setMeetingType("ONLINE")}
-                        className={`min-h-11 p-2.5 rounded-xl border text-sm font-bold flex items-center justify-center gap-1 cursor-pointer ${
-                          meetingType === "ONLINE"
-                            ? "bg-brand-50 border-brand text-brand"
-                            : "bg-linho border-linha text-tinta-suave"
-                        }`}
-                      >
-                        <Video className="w-3.5 h-3.5" />
-                        <span>Online</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        aria-pressed={meetingType === "PRESENTIAL"}
-                        onClick={() => setMeetingType("PRESENTIAL")}
-                        className={`min-h-11 p-2.5 rounded-xl border text-sm font-bold flex items-center justify-center gap-1 cursor-pointer ${
-                          meetingType === "PRESENTIAL"
-                            ? "bg-brand-50 border-brand text-brand"
-                            : "bg-linho border-linha text-tinta-suave"
-                        }`}
-                      >
-                        <Building2 className="w-3.5 h-3.5" />
-                        <span>Presencial</span>
-                      </button>
+                  <form onSubmit={handleSendLead} className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="lead-nome" className={labelCls}>
+                        Seu nome
+                      </Label>
+                      <Input
+                        id="lead-nome"
+                        name="name"
+                        autoComplete="name"
+                        value={coupleName}
+                        onChange={(e) => setCoupleName(e.target.value)}
+                        placeholder="Ex.: Giovanna"
+                        required
+                        className={inputCls}
+                      />
                     </div>
-                  </div>
 
-                  <Button
-                    type="submit"
-                    disabled={isPendingLead}
-                    className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-12 text-sm shadow-md gap-2 mt-3 cursor-pointer"
-                  >
-                    {isPendingLead ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Calendar className="w-4 h-4" />
-                        <span>Pedir orçamento</span>
-                      </>
-                    )}
-                  </Button>
-                </form>
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="lead-telefone" className={labelCls}>
+                        Seu WhatsApp com DDD
+                      </Label>
+                      <Input
+                        id="lead-telefone"
+                        name="phone"
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel-national"
+                        value={couplePhone}
+                        onChange={(e) => setCouplePhone(e.target.value)}
+                        placeholder="(11) 99999-9999"
+                        required
+                        className={inputCls}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <Label className={labelCls}>Data do casamento</Label>
+                      <DatePicker
+                        value={weddingDate}
+                        onChange={(e) => setWeddingDate(e.target.value)}
+                        placeholder="Escolha a data"
+                        className={inputCls}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="lead-cidade" className={labelCls}>
+                        Cidade do casamento
+                      </Label>
+                      <Input
+                        id="lead-cidade"
+                        value={leadLocation}
+                        onChange={(e) => setLeadLocation(e.target.value)}
+                        placeholder="Ex.: Itu, SP"
+                        maxLength={80}
+                        autoComplete="address-level2"
+                        className={inputCls}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="lead-orcamento" className={labelCls}>
+                        Quanto vocês pensam em investir
+                      </Label>
+                      <select
+                        id="lead-orcamento"
+                        value={leadBudget}
+                        onChange={(e) => setLeadBudget(e.target.value)}
+                        className="min-h-11 w-full cursor-pointer rounded-[12px] border border-linha-forte bg-papel px-3 text-base text-tinta"
+                      >
+                        <option value="">Escolha (opcional)</option>
+                        {LEAD_BUDGET_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <fieldset className="flex flex-col gap-2">
+                      <legend className={cn(labelCls, "mb-2")}>Como prefere conversar?</legend>
+                      <div className="grid grid-cols-2 gap-2">
+                        {(
+                          [
+                            ["ONLINE", "Por vídeo", Video],
+                            ["PRESENTIAL", "Presencial", Building2],
+                          ] as const
+                        ).map(([value, label, Icon]) => (
+                          <button
+                            key={value}
+                            type="button"
+                            aria-pressed={meetingType === value}
+                            onClick={() => setMeetingType(value)}
+                            className={cn(
+                              "flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-[12px] border px-3 text-base font-semibold transition-colors",
+                              meetingType === value
+                                ? "border-ameixa bg-ameixa-suave text-ameixa"
+                                : "border-linha-forte bg-papel text-tinta-suave hover:border-ameixa",
+                            )}
+                          >
+                            <Icon className="size-4" aria-hidden="true" />
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
+
+                    <button type="submit" disabled={isPendingLead} className={cn(btn.primary, btn.block)}>
+                      {isPendingLead ? <Loader2 className="size-4 animate-spin" aria-label="Enviando" /> : "Pedir orçamento"}
+                    </button>
+                    {directWhatsapp ? (
+                      <a
+                        href={`https://wa.me/${directWhatsapp}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(btn.secondary, btn.block)}
+                      >
+                        Conversar no WhatsApp
+                        <span className="sr-only"> (abre em nova aba)</span>
+                      </a>
+                    ) : null}
+                  </form>
                 )}
               </div>
-
-              {/* Garantia Aceito */}
-              <div className="pt-4 border-t border-linha text-xs text-tinta-suave space-y-2">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-sucesso shrink-0" />
-                  <span>Profissional verificado pela curadoria.</span>
-                </div>
-              </div>
             </div>
-          </div>
+          </aside>
+        </div>
+        {/* Celular: preço e o botão principal sempre à mão (sticky: o pai tem transform, que quebraria o fixed) */}
+        <div className="sticky bottom-0 z-40 -mx-4 mt-auto flex items-center justify-between gap-4 border-t border-linha bg-papel px-4 py-3 sm:-mx-6 sm:px-6 lg:hidden">
+          <p className="flex flex-col leading-tight">
+            <span className="text-sm text-tinta-suave">{price ? "A partir de" : "Preço"}</span>
+            <span className="font-display text-xl text-tinta">{price ?? "Sob consulta"}</span>
+          </p>
+          <a href="#orcamento" className={cn(btn.primary, "flex-1 max-w-[240px]")}>
+            Pedir orçamento
+          </a>
         </div>
       </div>
+
+      {/* Fotos ampliadas */}
+      <Dialog open={lightbox >= 0} onOpenChange={(open) => !open && setLightbox(-1)}>
+        <DialogContent className="max-w-[min(960px,calc(100%-1rem))] gap-3 rounded-[16px] bg-papel p-3 sm:max-w-[min(960px,calc(100%-2rem))]">
+          <DialogTitle className="sr-only">Fotos de {vendor.companyName}</DialogTitle>
+          <DialogDescription className="sr-only">Use as setas para ver as outras fotos.</DialogDescription>
+          {lightbox >= 0 ? (
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[12px] bg-areia">
+              <UserImage src={galleryImages[lightbox]} alt={`Foto ${lightbox + 1} de ${galleryImages.length}`} sizes="960px" className="object-contain" />
+            </div>
+          ) : null}
+          <div className="flex items-center justify-between gap-3">
+            <button type="button" onClick={() => step(-1)} className={cn(btn.secondary, btn.sm)} aria-label="Foto anterior">
+              <ChevronLeft className="size-4" aria-hidden="true" />
+              Anterior
+            </button>
+            <span className="text-sm font-semibold text-tinta-suave">
+              {lightbox + 1} / {galleryImages.length}
+            </span>
+            <button type="button" onClick={() => step(1)} className={cn(btn.secondary, btn.sm)} aria-label="Próxima foto">
+              Próxima
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <LandingFooter />
     </div>
