@@ -15,6 +15,7 @@ import { z } from "zod";
 import { rateLimitByIp } from "@/lib/security/rate-limiter";
 import { sanitizeUrl } from "@/lib/security/sanitize";
 import { uploadImageFile } from "@/lib/supabase";
+import { isAllowedSiteImage } from "@/lib/image-source";
 
 /**
  * Obtém ou inicializa as configurações visuais e seções do site do casamento da sessão.
@@ -37,6 +38,14 @@ const optionalUrl = z
   .refine((v) => v === "" || /^https:\/\//i.test(v) || v.startsWith("data:image/"), "Use um link começando com https://")
   .optional()
   .nullable();
+// Fotos do site: https://, data:image/ (sem storage) ou arquivo estático do próprio app (/images/...)
+const optionalImage = z
+  .string()
+  .trim()
+  .max(2000)
+  .refine(isAllowedSiteImage, "Use um link começando com https:// ou escolha uma foto do computador.")
+  .optional()
+  .nullable();
 const optionalText = (max: number) => z.string().trim().max(max).optional().nullable();
 
 // Campos que o editor do site pode alterar. Qualquer outro campo enviado é ignorado.
@@ -53,8 +62,8 @@ const SiteCustomizationSchema = z
     wazeUrl: optionalUrl,
     uberUrl: optionalUrl,
     themeColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Cor inválida."),
-    heroImageUrl: optionalUrl,
-    couplePhotoUrl: optionalUrl,
+    heroImageUrl: optionalImage,
+    couplePhotoUrl: optionalImage,
     dressCodeTitle: optionalText(160),
     dressCodeDesc: optionalText(2000),
     dressCodePalette: optionalText(500),

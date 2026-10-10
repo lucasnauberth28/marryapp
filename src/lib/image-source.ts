@@ -29,3 +29,24 @@ export function isOptimizableImage(src: string | null | undefined, supabaseUrl: 
     return false;
   }
 }
+
+// Caminho de imagem dos arquivos estáticos do próprio app (pasta public), ex.: /images/aceito/capa.webp.
+// Só letras, números, ponto, hífen, sublinhado e barra; precisa terminar em extensão de imagem.
+const OWN_IMAGE_PATH = /^\/[A-Za-z0-9][A-Za-z0-9._/-]*\.(?:avif|gif|jpe?g|png|svg|webp)$/i;
+
+/** true para "/images/foto.webp": caminho absoluto no próprio site, sem "//", sem "..", sem esquema, sem query. */
+export function isOwnStaticImagePath(value: string): boolean {
+  if (!OWN_IMAGE_PATH.test(value)) return false;
+  if (value.includes("//") || value.includes("..") || value.includes("/.")) return false;
+  return true;
+}
+
+/**
+ * Valida o endereço de uma imagem do editor do site: vazio (sem imagem), https://, data:image/
+ * (ambiente local sem storage) ou um arquivo estático do próprio app (/images/...).
+ * Nada de javascript:, http:, "//host" ou caminhos que sobem de pasta.
+ */
+export function isAllowedSiteImage(value: string): boolean {
+  if (value === "") return true;
+  return /^https:\/\//i.test(value) || value.startsWith("data:image/") || isOwnStaticImagePath(value);
+}
