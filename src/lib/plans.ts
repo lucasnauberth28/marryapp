@@ -11,7 +11,7 @@ export const PLANS_CONFIG = {
     name: "Plano Básico",
     price: 0,
     period: "Gratuito",
-    badge: "Para Começar",
+    badge: "Para começar",
     features: [
       "Site padrão dos noivos com subdomínio",
       "Lista de presentes com Pix e Cartão",
@@ -24,14 +24,14 @@ export const PLANS_CONFIG = {
     name: "Plano Classic",
     price: 14900, // R$ 149,00
     period: "Taxa única",
-    badge: "Mais Escolhido",
+    badge: "Mais escolhido",
     isPopular: true,
     features: [
-      "0% de Taxa no Pix dos Noivos (Saque 100% integral)",
-      "Construtor completo No-Code com todos os blocos",
+      "0% de taxa no Pix: vocês recebem o valor inteiro",
+      "Editor do site completo, com todos os blocos",
       "Disparos automáticos no WhatsApp dos convidados",
-      "Credenciamento com QR Code na portaria",
-      "Mural de Recados interativo e Dicas de Traje",
+      "Check-in com QR Code na portaria",
+      "Mural de recados e dicas de traje",
     ],
   },
   vip: {
@@ -42,9 +42,9 @@ export const PLANS_CONFIG = {
     badge: "Experiência VIP",
     features: [
       "Tudo incluído no Plano Classic",
-      "Domínio Próprio (.com.br) gratuito por 1 ano",
-      "Álbum Coletivo ao Vivo com QR Code nas mesas",
-      "Concierge VIP e suporte prioritário no WhatsApp",
+      "Domínio próprio (.com.br) grátis por 1 ano",
+      "Álbum coletivo ao vivo com QR Code nas mesas",
+      "Atendimento VIP e suporte prioritário no WhatsApp",
     ],
   },
   // Fornecedores
@@ -65,10 +65,10 @@ export const PLANS_CONFIG = {
     name: "Fornecedor Pro",
     price: 9900, // R$ 99,00
     period: "/ mês",
-    badge: "Mais Popular",
+    badge: "Mais popular",
     isPopular: true,
     features: [
-      "Selo de Fornecedor Verificado pela Curadoria",
+      "Selo de fornecedor verificado pela curadoria",
       "Múltiplas regiões e cidades de atendimento",
       "Orçamentos e leads ilimitados",
       "Agendamento de reuniões online e presenciais",
@@ -80,11 +80,11 @@ export const PLANS_CONFIG = {
     name: "Fornecedor Master Elite",
     price: 24900, // R$ 249,00
     period: "/ mês",
-    badge: "Alta Performance",
+    badge: "Alta performance",
     features: [
       "Topo das buscas na sua categoria e região",
       "Banner de destaque no feed dos noivos",
-      "Painel de Analytics de visualizações e propostas",
+      "Painel com visitas ao perfil e propostas",
       "Envio de propostas e contratos digitais integrados",
     ],
   },

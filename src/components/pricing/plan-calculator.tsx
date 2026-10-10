@@ -59,7 +59,7 @@ export function PlanCalculator() {
           <div>
             <span className="text-xs font-bold uppercase text-brand tracking-wider">Experiência Completa</span>
             <h3 className="text-xl font-bold font-serif text-tinta mt-1">Plano Classic</h3>
-            <p className="text-xs text-tinta-suave mt-1">Construtor completo e WhatsApp.</p>
+            <p className="text-xs text-tinta-suave mt-1">Editor completo e WhatsApp.</p>
 
             <div className="my-6">
               <span className="text-xs text-tinta-suave font-bold">R$ </span>
@@ -70,11 +70,11 @@ export function PlanCalculator() {
             <ul className="space-y-2.5 text-xs text-tinta-suave font-medium">
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-brand shrink-0" />
-                <span><strong>0% de Taxa no Pix</strong> (Saque 100% integral)</span>
+                <span><strong>0% de taxa no Pix</strong>: vocês recebem o valor inteiro</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-brand shrink-0" />
-                <span>Construtor No-Code com todos os blocos</span>
+                <span>Editor do site completo, com todos os blocos</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-brand shrink-0" />
@@ -82,11 +82,11 @@ export function PlanCalculator() {
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-brand shrink-0" />
-                <span>Credenciamento com QR Code na portaria</span>
+                <span>Check-in com QR Code na portaria</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-brand shrink-0" />
-                <span>Mural de Recados & Dicas de Traje</span>
+                <span>Mural de recados e dicas de traje</span>
               </li>
             </ul>
           </div>
@@ -118,15 +118,15 @@ export function PlanCalculator() {
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-aviso shrink-0" />
-                <span><strong>Domínio Próprio (.com.br)</strong> por 1 ano</span>
+                <span><strong>Domínio próprio (.com.br)</strong> por 1 ano</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-aviso shrink-0" />
-                <span>Álbum Coletivo ao Vivo nas Mesas</span>
+                <span>Álbum coletivo ao vivo nas mesas</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-aviso shrink-0" />
-                <span>Concierge VIP via WhatsApp dedicado</span>
+                <span>Atendimento VIP por WhatsApp</span>
               </li>
             </ul>
           </div>

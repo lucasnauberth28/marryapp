@@ -12,7 +12,7 @@ export interface PricingModule {
 export const COUPLE_MODULES: PricingModule[] = [
   {
     id: "site",
-    name: "Site dos Noivos & Construtor No-Code",
+    name: "Site dos noivos com editor completo",
     category: "Essencial",
     description: "Capa personalizada, história do casal, guia de trajes, mapa interativo Waze/Uber e mural de recados.",
     price: 4900, // R$ 49,00
@@ -21,16 +21,16 @@ export const COUPLE_MODULES: PricingModule[] = [
   },
   {
     id: "pixZero",
-    name: "Taxa 0% no Pix dos Noivos",
+    name: "Sem taxa no Pix dos presentes",
     category: "Presentes",
-    description: "Receba 100% do valor dos presentes em dinheiro com saque direto via Pix no mesmo dia sem desconto de 2,99%.",
+    description: "Vocês recebem o valor inteiro dos presentes, sem o desconto de 2,99%.",
     price: 5900, // R$ 59,00
     iconName: "Percent",
     highlightBadge: "Economia Real",
   },
   {
     id: "whatsapp",
-    name: "WhatsApp Automático & RSVP Interativo",
+    name: "WhatsApp automático e confirmação de presença",
     category: "Comunicação",
     description: "Disparos automáticos de convites oficiais e lembretes de confirmação com botões interativos direto no WhatsApp.",
     price: 6900, // R$ 69,00
@@ -39,15 +39,15 @@ export const COUPLE_MODULES: PricingModule[] = [
   },
   {
     id: "qrcode",
-    name: "Credenciamento com QR Code na Portaria",
+    name: "Check-in com QR Code na portaria",
     category: "Dia do Evento",
-    description: "Leitor de QR Code para recepção rápida de convidados, controle de presença e identificação de mesas.",
+    description: "Leitor de QR Code para receber os convidados rápido, marcar presença e indicar a mesa.",
     price: 3900, // R$ 39,00
     iconName: "QrCode",
   },
   {
     id: "liveAlbum",
-    name: "Mural de Fotos ao Vivo nas Mesas (Telão)",
+    name: "Mural de fotos ao vivo nas mesas (telão)",
     category: "Experiência",
     description: "QR Code nas mesas para convidados enviarem fotos da festa em tempo real projetadas no telão do evento.",
     price: 4900, // R$ 49,00
@@ -55,15 +55,15 @@ export const COUPLE_MODULES: PricingModule[] = [
   },
   {
     id: "tables",
-    name: "Gestão de Mesas & Relatórios para Buffet",
+    name: "Mesas e relatório para o buffet",
     category: "Organização",
-    description: "Organizador visual de assentos e exportação de relatórios em PDF com restrições alimentares para o chef.",
+    description: "Organize os lugares e gere um PDF com as restrições alimentares para o buffet.",
     price: 3900, // R$ 39,00
     iconName: "Users",
   },
   {
     id: "customDomain",
-    name: "Domínio Próprio (.com.br) por 1 Ano",
+    name: "Domínio próprio (.com.br) por 1 ano",
     category: "Exclusividade",
     description: "Endereço exclusivo para os seus convites impressos (ex: www.lucasegiovanna.com.br) com SSL grátis incluso.",
     price: 7900, // R$ 79,00
