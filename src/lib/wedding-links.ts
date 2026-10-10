@@ -10,7 +10,7 @@ export function weddingSitePath(slug: string, page?: WeddingGuestPage): string {
 
 /** Origem pública do app, usada em links enviados por WhatsApp. */
 export function publicBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_BASE_URL ?? "https://aceito.com.br").replace(/\/+$/, "");
+  return (process.env.NEXT_PUBLIC_BASE_URL ?? "https://meuaceito.com.br").replace(/\/+$/, "");
 }
 
 /** Link absoluto de uma página do casamento, para mensagens. */

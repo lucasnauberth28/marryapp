@@ -6,7 +6,7 @@
 export function appBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_BASE_URL?.trim().replace(/\/+$/, "");
   if (configured && /^https?:\/\//.test(configured)) return configured;
-  return process.env.NODE_ENV === "production" ? "https://aceito.com.br" : "http://localhost:3000";
+  return process.env.NODE_ENV === "production" ? "https://meuaceito.com.br" : "http://localhost:3000";
 }
 
 export function appUrl(path: string): string {

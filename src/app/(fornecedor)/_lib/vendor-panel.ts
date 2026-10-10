@@ -239,7 +239,7 @@ export function firstNameOf(name: string): string {
 export const PUBLIC_TOKEN_RE = /^[A-Za-z0-9_-]{32}$/;
 
 function publicOrigin(): string {
-  return (process.env.NEXT_PUBLIC_BASE_URL ?? "https://aceito.com.br").replace(/\/+$/, "");
+  return (process.env.NEXT_PUBLIC_BASE_URL ?? "https://meuaceito.com.br").replace(/\/+$/, "");
 }
 
 /** Link que o casal abre para aceitar a proposta. */

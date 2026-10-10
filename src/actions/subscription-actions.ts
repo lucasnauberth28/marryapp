@@ -208,7 +208,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
             date_of_expiration: expiresAt.toISOString(),
             external_reference: subscriptionReference(subscription.id),
             payer: {
-              email: email.success ? email.data : "contato@aceito.com.br",
+              email: email.success ? email.data : "contato@meuaceito.com.br",
               first_name: name.split(" ")[0],
               last_name: name.split(" ").slice(1).join(" ") || "Cliente",
             },

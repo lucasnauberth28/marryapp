@@ -3,13 +3,13 @@ import "server-only";
 /**
  * Envio de e-mails transacionais (convite do par, redefinição de senha) pela API REST da Resend.
  *
- * - Com RESEND_API_KEY configurada, envia de EMAIL_FROM (padrão "Aceito <nao-responda@aceito.com.br>").
+ * - Com RESEND_API_KEY configurada, envia de EMAIL_FROM (padrão "Aceito <nao-responda@meuaceito.com.br>").
  * - Sem a chave, registra um aviso de uma linha (sem destinatário completo nem conteúdo, que pode
  *   conter tokens) e devolve { sent: false }. Nunca lança erro: quem chama decide o que mostrar.
  */
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
-const DEFAULT_FROM = "Aceito <nao-responda@aceito.com.br>";
+const DEFAULT_FROM = "Aceito <nao-responda@meuaceito.com.br>";
 
 export interface SendEmailInput {
   to: string;

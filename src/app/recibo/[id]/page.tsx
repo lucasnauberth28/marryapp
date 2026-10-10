@@ -130,7 +130,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
           <header className="flex flex-wrap items-start justify-between gap-4 border-b border-linha pb-6">
             <div className="flex flex-col gap-2">
               <Logo height={28} priority />
-              <p className="text-sm text-tinta-suave">Aceito · aceito.com.br</p>
+              <p className="text-sm text-tinta-suave">Aceito · meuaceito.com.br</p>
             </div>
             <div className="text-right">
               <h1 id="recibo-titulo" className="font-display text-[32px] leading-[38px]">

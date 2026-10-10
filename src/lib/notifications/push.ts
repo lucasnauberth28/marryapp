@@ -21,7 +21,7 @@ export function isPushConfigured(): boolean {
 let configured = false;
 function configure() {
   if (configured) return;
-  const subject = process.env.VAPID_SUBJECT?.trim() || "mailto:contato@aceito.com.br";
+  const subject = process.env.VAPID_SUBJECT?.trim() || "mailto:contato@meuaceito.com.br";
   webpush.setVapidDetails(subject, vapidPublicKey()!, process.env.VAPID_PRIVATE_KEY!.trim());
   configured = true;
 }
