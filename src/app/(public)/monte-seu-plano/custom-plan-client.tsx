@@ -78,10 +78,10 @@ export function CustomPlanClient() {
 
           <div className="max-w-3xl space-y-3">
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-display text-tinta">
-              Monte o Plano Perfeito para o seu Casamento
+              Monte o plano do seu casamento
             </h1>
             <p className="text-tinta-suave text-sm sm:text-base leading-relaxed">
-              Ative ou desative cada funcionalidade individualmente. Você só paga taxa única pelo que for utilizar, com descontos progressivos automáticos de até 25% OFF.
+              Escolha só o que vocês vão usar e pague uma única vez. Quanto mais itens, maior o desconto, até 25%.
             </p>
           </div>
         </div>
@@ -95,7 +95,7 @@ export function CustomPlanClient() {
                 Catálogo de Funcionalidades ({selectedCount} de {totalCount} selecionadas)
               </span>
               <div className="flex items-center gap-2 text-xs font-bold text-brand">
-                <span>{progressPercent}% do sistema ativo</span>
+                <span>{progressPercent}% do pacote completo</span>
               </div>
             </div>
 
