@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { btn } from "@/components/landing/styles";
 import { StatusScreen } from "@/components/feedback/status-screen";
 
 export const metadata = { title: "Página não encontrada" };
@@ -8,16 +8,16 @@ export default function NotFound() {
   return (
     <StatusScreen
       eyebrow="Erro 404"
-      title="Não encontramos esta página"
-      description="O link pode estar incompleto ou o conteúdo foi removido. Confira o endereço ou volte para o início."
+      title="Esta página não está na lista"
+      description="O link pode ter mudado ou o site do casal pode ter saído do ar. Confira o endereço com quem te convidou."
       actions={
         <>
-          <Button asChild className="h-11 rounded-full px-5">
-            <Link href="/">Ir para o início</Link>
-          </Button>
-          <Button asChild variant="outline" className="h-11 rounded-full px-5">
-            <Link href="/casamento">Ver um site de exemplo</Link>
-          </Button>
+          <Link href="/" className={btn.primary}>
+            Ir para o início
+          </Link>
+          <Link href="/casamento" className={btn.secondary}>
+            Ver um site de exemplo
+          </Link>
         </>
       }
     />
