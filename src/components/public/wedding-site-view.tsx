@@ -530,7 +530,7 @@ export function WeddingSiteView({
               <h2 className="font-display text-2xl text-tinta">A trilha sonora da festa</h2>
               <p className="text-sm text-tinta-suave">Ouça a nossa playlist e entre no clima.</p>
             </div>
-            <Button asChild variant="outline" className="rounded-full border-linha font-semibold">
+            <Button asChild variant="outline" className="h-11 rounded-full border-linha-forte px-5 font-semibold">
               <a href={s.spotifyPlaylistUrl!} target="_blank" rel="noopener noreferrer" {...linkProps}>
                 Ouvir playlist <ExternalLink className="h-4 w-4" aria-hidden="true" />
               </a>
@@ -632,7 +632,7 @@ export function WeddingSiteView({
                 {gift.description && <p className="mt-1 line-clamp-2 text-sm text-tinta-suave">{gift.description}</p>}
                 <div className="mt-auto flex items-center justify-between gap-3 border-t border-linha pt-4">
                   <span className="text-base font-semibold tabular-nums text-tinta">{brl.format(gift.amount / 100)}</span>
-                  <Button asChild className="h-9 rounded-full bg-brand px-4 text-sm font-semibold text-white hover:bg-brand-600">
+                  <Button asChild className="h-11 rounded-full bg-brand px-5 text-sm font-semibold text-white hover:bg-brand-600">
                     <Link href={`/checkout/${gift.id}`} {...linkProps}>
                       Presentear
                     </Link>

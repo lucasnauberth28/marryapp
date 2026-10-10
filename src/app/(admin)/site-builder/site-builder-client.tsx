@@ -350,7 +350,7 @@ export function SiteBuilderClient({
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:items-start">
         <div className="flex min-w-0 flex-col gap-5">
-          <div role="tablist" aria-label="Partes do site" className="flex gap-2 overflow-x-auto pb-1">
+          <div role="tablist" aria-label="Partes do site" className="flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible">
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const active = activeTab === tab.id;
@@ -360,7 +360,7 @@ export function SiteBuilderClient({
                   role="tab"
                   aria-selected={active}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+                  className={`flex min-h-11 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                     active ? "bg-brand text-white" : "border border-linha bg-papel text-tinta-suave hover:bg-linho"
                   }`}
                 >

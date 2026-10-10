@@ -8,6 +8,7 @@ import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import {
   Building2,
+  CheckCircle2,
   Star,
   MapPin,
   Video,
@@ -24,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -91,6 +92,8 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
   const [weddingDate, setWeddingDate] = useState("");
   const [meetingType, setMeetingType] = useState<"ONLINE" | "PRESENTIAL">("ONLINE");
   const [leadMessage, setLeadMessage] = useState("");
+  // Pedido enviado: a confirmação fica na janela (um aviso passageiro some antes de ser lido).
+  const [leadSent, setLeadSent] = useState<{ vendor: string; first: string; whatsapp: string | null; text: string } | null>(null);
   const [isPendingLead, startTransitionLead] = useTransition();
 
   const filteredPartners = partners.filter((p) => {
@@ -125,13 +128,14 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
 
   const handleOpenLeadModal = (partner: PublicVendorListItem) => {
     setSelectedPartner(partner);
+    setLeadSent(null);
     setLeadModalOpen(true);
   };
 
   const handleSubmitLead = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPartner || !coupleName || !couplePhone) {
-      toast.error("Preencha seu nome e WhatsApp para contato.");
+      toast.error("Preencha seu nome e WhatsApp para o fornecedor poder responder.");
       return;
     }
 
@@ -150,23 +154,12 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
       if (res.success) {
         // WhatsApp direto é recurso do Pro/Master (o servidor nem envia o número dos demais).
         const whatsapp = selectedPartner.planTier !== "FREE" ? selectedPartner.whatsapp?.replace(/\D/g, "") || null : null;
-        toast.success(`Pedido enviado para ${selectedPartner.companyName}.`, {
-          description: "O fornecedor recebeu seus dados e vai entrar em contato.",
-          action: whatsapp
-            ? {
-                label: "Conversar no WhatsApp",
-                onClick: () =>
-                  window.open(
-                    `https://wa.me/${whatsapp}?text=${encodeURIComponent(
-                      `Olá! Sou ${coupleName} e acabei de pedir um orçamento pelo Aceito${weddingDate ? ` para o casamento em ${new Date(weddingDate).toLocaleDateString("pt-BR")}` : ""}.`
-                    )}`,
-                    "_blank",
-                    "noopener,noreferrer"
-                  ),
-              }
-            : undefined,
+        setLeadSent({
+          vendor: selectedPartner.companyName,
+          first: coupleName.split(" ")[0],
+          whatsapp,
+          text: `Olá! Sou ${coupleName} e acabei de pedir um orçamento pelo Aceito${weddingDate ? ` para o casamento em ${new Date(weddingDate).toLocaleDateString("pt-BR")}` : ""}.`,
         });
-        setLeadModalOpen(false);
         // Reseta form
         setCoupleName("");
         setCouplePhone("");
@@ -174,7 +167,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
         setGuestCount("");
         setLeadMessage("");
       } else {
-        toast.error(res.error || "Erro ao enviar solicitação.");
+        toast.error(res.error || "Não conseguimos enviar o pedido. Tente de novo.");
       }
     });
   };
@@ -270,7 +263,8 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  aria-pressed={isSelected}
+                  className={`min-h-11 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
                     isSelected
                       ? "bg-brand text-white shadow-xs"
                       : "bg-areia/80 text-tinta-suave hover:bg-stone-200"
@@ -423,7 +417,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
                       <div>
                         <div className="flex items-center justify-between gap-2">
                           <Link href={`/fornecedores/${partner.id}`}>
-                            <h3 className="font-display text-xl text-tinta group-hover:text-brand transition-colors line-clamp-1">
+                            <h3 className="font-display text-xl text-tinta group-hover:text-brand transition-colors line-clamp-2">
                               {partner.companyName}
                             </h3>
                           </Link>
@@ -506,7 +500,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
                       </Button>
                       <Button
                         onClick={() => handleOpenLeadModal(partner)}
-                        className="w-full rounded-2xl h-11 text-sm font-semibold bg-brand hover:bg-brand-600 text-white shadow-xs gap-1.5"
+                        className="w-full rounded-2xl h-11 px-2 text-sm font-semibold bg-brand hover:bg-brand-600 text-white shadow-xs gap-1.5"
                       >
                         <Calendar className="w-4 h-4" aria-hidden="true" />
                         Pedir orçamento
@@ -545,92 +539,134 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
         <DialogContent className="sm:max-w-md bg-papel rounded-3xl p-6">
           <DialogHeader>
             <DialogTitle className="font-display text-xl text-tinta">
-              Solicitar Orçamento & Reunião
+              {leadSent ? "Pedido enviado" : "Pedir orçamento ou reunião"}
             </DialogTitle>
-            <p className="text-xs text-tinta-suave mt-1">
-              Conecte-se diretamente com <strong>{selectedPartner?.companyName}</strong>.
-            </p>
+            <DialogDescription className="text-sm text-tinta-suave mt-1">
+              {leadSent ? (
+                <>Recebemos os seus dados, {leadSent.first}.</>
+              ) : (
+                <>Os seus dados vão direto para <strong>{selectedPartner?.companyName}</strong>, que responde pelo WhatsApp.</>
+              )}
+            </DialogDescription>
           </DialogHeader>
 
+          {leadSent ? (
+            <div role="status" className="space-y-3 pt-2 text-sm text-tinta">
+              <p className="flex items-start gap-2 rounded-2xl bg-sucesso-suave p-4">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-sucesso" aria-hidden="true" />
+                <span>{leadSent.vendor} recebeu o seu pedido e vai entrar em contato pelo WhatsApp que você informou.</span>
+              </p>
+              {leadSent.whatsapp ? (
+                <a
+                  href={`https://wa.me/${leadSent.whatsapp}?text=${encodeURIComponent(leadSent.text)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex min-h-12 items-center justify-center rounded-full bg-tinta px-4 font-bold text-papel"
+                >
+                  Conversar agora no WhatsApp
+                  <span className="sr-only"> (abre em nova aba)</span>
+                </a>
+              ) : null}
+              <Button type="button" variant="ghost" className="h-11 w-full rounded-full font-semibold text-ameixa" onClick={() => setLeadModalOpen(false)}>
+                Voltar aos fornecedores
+              </Button>
+            </div>
+          ) : (
           <form onSubmit={handleSubmitLead} className="space-y-4 pt-4">
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-tinta-suave uppercase">Seu Nome / Casal</Label>
+              <Label htmlFor="vl-nome" className="text-sm font-semibold text-tinta">Seu nome ou o nome do casal</Label>
               <Input
+                id="vl-nome"
+                name="name"
+                autoComplete="name"
                 value={coupleName}
                 onChange={(e) => setCoupleName(e.target.value)}
-                placeholder="Ex: Giovanna & Lucas"
+                placeholder="Ex.: Giovanna e Lucas"
                 required
-                className="rounded-2xl h-11 text-xs bg-linho"
+                className="rounded-2xl h-11 text-sm bg-linho"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-tinta-suave uppercase">WhatsApp</Label>
+                <Label htmlFor="vl-telefone" className="text-sm font-semibold text-tinta">WhatsApp com DDD</Label>
                 <Input
+                  id="vl-telefone"
+                  name="phone"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel-national"
                   value={couplePhone}
                   onChange={(e) => setCouplePhone(e.target.value)}
                   placeholder="(11) 99999-9999"
                   required
-                  className="rounded-2xl h-11 text-xs bg-linho font-mono"
+                  className="rounded-2xl h-11 text-sm bg-linho"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-tinta-suave uppercase">E-mail</Label>
+                <Label htmlFor="vl-email" className="text-sm font-semibold text-tinta">E-mail <span className="font-normal text-tinta-suave">(opcional)</span></Label>
                 <Input
+                  id="vl-email"
+                  name="email"
+                  autoComplete="email"
                   type="email"
                   value={coupleEmail}
                   onChange={(e) => setCoupleEmail(e.target.value)}
                   placeholder="noivos@email.com"
-                  className="rounded-2xl h-11 text-xs bg-linho"
+                  className="rounded-2xl h-11 text-sm bg-linho"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-tinta-suave uppercase">Qtd. Convidados</Label>
+                <Label htmlFor="vl-convidados" className="text-sm font-semibold text-tinta">Nº de convidados</Label>
                 <Input
+                  id="vl-convidados"
+                  inputMode="numeric"
+                  min={1}
                   type="number"
                   value={guestCount}
                   onChange={(e) => setGuestCount(e.target.value)}
                   placeholder="Ex: 150"
-                  className="rounded-2xl h-11 text-xs bg-linho font-mono"
+                  className="rounded-2xl h-11 text-sm bg-linho"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-tinta-suave uppercase">Data Prevista</Label>
+                <Label className="text-sm font-semibold text-tinta">Data do casamento</Label>
                 <DatePicker
                   value={weddingDate}
                   onChange={(e) => setWeddingDate(e.target.value)}
-                  placeholder="Selecione a data"
-                  className="rounded-2xl h-11 text-xs bg-linho"
+                  placeholder="Escolher"
+                  className="rounded-2xl h-11 text-sm bg-linho"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-tinta-suave uppercase">Preferência de Reunião</Label>
+              <Label className="text-sm font-semibold text-tinta">Como prefere conversar?</Label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
+                  aria-pressed={meetingType === "ONLINE"}
                   onClick={() => setMeetingType("ONLINE")}
-                  className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer ${
+                  className={`min-h-11 p-3 rounded-2xl border text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer ${
                     meetingType === "ONLINE"
                       ? "bg-brand-50 border-brand text-brand"
                       : "bg-linho border-linha text-tinta-suave"
                   }`}
                 >
                   <Video className="w-3.5 h-3.5" />
-                  <span>Google Meet</span>
+                  <span>Por vídeo</span>
                 </button>
 
                 <button
                   type="button"
+                  aria-pressed={meetingType === "PRESENTIAL"}
                   onClick={() => setMeetingType("PRESENTIAL")}
-                  className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer ${
+                  className={`min-h-11 p-3 rounded-2xl border text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer ${
                     meetingType === "PRESENTIAL"
                       ? "bg-brand-50 border-brand text-brand"
                       : "bg-linho border-linha text-tinta-suave"
@@ -643,30 +679,32 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-tinta-suave uppercase">Mensagem Adicional</Label>
+              <Label htmlFor="vl-mensagem" className="text-sm font-semibold text-tinta">Recado para o fornecedor <span className="font-normal text-tinta-suave">(opcional)</span></Label>
               <Textarea
+                id="vl-mensagem"
                 value={leadMessage}
                 onChange={(e) => setLeadMessage(e.target.value)}
-                placeholder="Conte um pouco sobre o estilo do casamento ou dúvidas específicas..."
-                className="rounded-2xl text-xs bg-linho resize-none h-20"
+                placeholder="Conte o estilo do casamento ou tire uma dúvida"
+                className="rounded-2xl text-sm bg-linho resize-none h-20"
               />
             </div>
 
             <Button
               type="submit"
               disabled={isPendingLead}
-              className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-12 text-xs shadow-md gap-2 mt-2"
+              className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-12 text-sm shadow-md gap-2 mt-2"
             >
               {isPendingLead ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <>
                   <Calendar className="w-4 h-4" />
-                  <span>Enviar Solicitação de Reunião</span>
+                  <span>Enviar pedido</span>
                 </>
               )}
             </Button>
           </form>
+          )}
         </DialogContent>
       </Dialog>
 

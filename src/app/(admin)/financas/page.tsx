@@ -165,10 +165,10 @@ export default async function FinancasPage() {
       <div className="space-y-4 pt-6 border-t border-zinc-200">
         <div>
           <h3 className="text-lg font-semibold text-zinc-900">
-            Conciliação de Pagamentos
+            Pagamentos dos presentes
           </h3>
           <p className="text-sm text-zinc-500 mt-0.5">
-            Confira e aprove manualmente os pagamentos via Pix.
+            Confira no extrato do banco os Pix recebidos e confirme cada um aqui.
           </p>
         </div>
 
