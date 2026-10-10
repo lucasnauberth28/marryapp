@@ -10,6 +10,7 @@ export const PUBLIC_PATHS = [
   "/casamento",
   "/fornecedores",
   "/monte-seu-plano",
+  "/planos",
   "/presentes",
   "/checkout",
   "/rsvp",
