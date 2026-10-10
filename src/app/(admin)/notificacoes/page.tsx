@@ -25,6 +25,7 @@ export default async function NotificacoesPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
+        eyebrow="Conta"
         title="Avisos"
         description="Presentes, confirmações e lembretes do casamento. Mostramos os últimos 100."
         actions={

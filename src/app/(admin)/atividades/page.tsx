@@ -10,6 +10,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Registro de atividades" };
 
 const LIMIT = 100;
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 const dateTime = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
 
 /** Frases simples para cada ação registrada. Ações novas aparecem pelo código até ganharem frase. */
@@ -40,7 +41,7 @@ const DETAIL_LABEL: Record<string, string> = {
   name: "Nome",
   username: "Login",
   role: "Perfil",
-  amount: "Valor (centavos)",
+  amount: "Valor",
   reason: "Motivo",
   gatewayId: "Identificador",
   passwordChanged: "Senha trocada",
@@ -54,6 +55,7 @@ function summarize(details: unknown): string {
     const label = DETAIL_LABEL[key];
     if (!label || value === null || value === "") continue;
     if (typeof value === "boolean") parts.push(`${label}: ${value ? "sim" : "não"}`);
+    else if (key === "amount" && typeof value === "number") parts.push(`${label}: ${brl.format(value / 100)}`);
     else if (typeof value === "string" || typeof value === "number") parts.push(`${label}: ${value}`);
     if (parts.length === 5) break;
   }
@@ -89,16 +91,30 @@ export default async function AtividadesPage() {
 
       <Reveal>
         {logs.length === 0 ? (
-          <div className="flex items-center gap-3 rounded-2xl border border-linha bg-linho p-5 text-[15px] text-tinta-suave">
+          <div className="flex items-center gap-3 rounded-2xl border border-linha bg-papel p-5 text-[15px] text-tinta-suave shadow-[var(--shadow-aceito-1)]">
             <ScrollText className="h-5 w-5 shrink-0" aria-hidden="true" />
             Nada registrado ainda. As próximas ações da administração aparecem aqui.
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-linha bg-papel">
+          <>
+          <ul className="divide-y divide-linha rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)] md:hidden">
+            {logs.map((log) => {
+              const summary = summarize(log.details);
+              return (
+                <li key={log.id} className="flex flex-col gap-0.5 px-4 py-3.5">
+                  <span className="text-sm text-tinta-suave">{dateTime.format(log.createdAt).replace(".", "")} · {log.actorName ?? "Sem login"}</span>
+                  <span className="text-[15px] font-semibold text-tinta">{ACTION_LABEL[log.action] ?? log.action}</span>
+                  {log.targetType ? <span className="text-[13px] text-tinta-suave">{TARGET_LABEL[log.targetType] ?? log.targetType}</span> : null}
+                  {summary ? <span className="break-words text-sm text-tinta-suave">{summary}</span> : null}
+                </li>
+              );
+            })}
+          </ul>
+          <div className="hidden overflow-x-auto rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)] md:block">
             <table className="w-full min-w-[720px] border-collapse text-[15px]">
               <caption className="sr-only">Últimas {LIMIT} atividades, da mais recente para a mais antiga</caption>
               <thead>
-                <tr className="text-left text-[13px] text-tinta-suave">
+                <tr className="text-left text-xs uppercase tracking-[0.08em] text-tinta-suave">
                   <th scope="col" className="px-4 py-3 font-semibold">Quando</th>
                   <th scope="col" className="px-4 py-3 font-semibold">Quem</th>
                   <th scope="col" className="px-4 py-3 font-semibold">O que fez</th>
@@ -125,6 +141,7 @@ export default async function AtividadesPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
         {logs.length === LIMIT ? <p className="mt-3 text-sm text-tinta-suave">Mostrando as {LIMIT} mais recentes.</p> : null}
       </Reveal>
