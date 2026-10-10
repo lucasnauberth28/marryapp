@@ -1,28 +1,26 @@
 import { Metadata } from "next";
+import prisma from "@/lib/prisma";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
 import { weddingHasModule } from "@/lib/wedding-plan";
 import { UpgradeCard } from "@/components/plan/upgrade-card";
 import { ScannerClient } from "./scanner-client";
 
 export const metadata: Metadata = {
-  title: "Credenciamento",
+  title: "Check-in no dia",
   description: "Leitor de QR Code para entrada no evento",
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function CredenciamentoPage() {
   const { session, weddingId } = await requireWeddingPage("/credenciamento");
   if (!(await weddingHasModule({ weddingId, session }, "qrcode"))) return <UpgradeCard moduleId="qrcode" />;
 
-  return (
-    <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="mb-8">
-        <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">Check-in no dia</h1>
-        <p className="mt-1 text-sm text-tinta-suave">
-          Aponte a câmera para o QR Code do convite para liberar a entrada do convidado.
-        </p>
-      </div>
+  // Só leitura: quem já entrou e quantos confirmaram
+  const [arrived, confirmed] = await Promise.all([
+    prisma.guest.count({ where: { weddingId, isPresent: true } }),
+    prisma.guest.count({ where: { weddingId, rsvpStatus: "CONFIRMED" } }),
+  ]);
 
-      <ScannerClient />
-    </div>
-  );
+  return <ScannerClient initialArrived={arrived} confirmed={confirmed} />;
 }
