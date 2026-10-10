@@ -3,20 +3,22 @@ import { storageRemotePattern } from "./src/lib/image-source";
 
 const isDev = process.env.NODE_ENV !== "production";
 
-// CSP estática (sem nonce, para manter as páginas públicas cacheáveis).
-// 'unsafe-inline' em scripts é necessário para o bootstrap do Next sem nonce; as demais diretivas
-// ainda bloqueiam clickjacking, plugins, <base> injetado, envio de formulários a terceiros e
-// carregamento de scripts de domínios não listados.
+// CSP estática, sem nonce (decisão deliberada). Nonce exige renderização dinâmica em toda requisição
+// (o Next precisa ler o header por página), o que tiraria do cache estático a home, /termos,
+// /privacidade, /login etc. e encareceria a primeira carga das páginas públicas. Por isso o script-src
+// mantém 'unsafe-inline' (bootstrap do Next sem nonce). O que compensa: scripts só de origens listadas,
+// sem plugins (object-src), sem <base> injetado, formulários só para o próprio site e sem enquadramento
+// em outros sites. Reavaliar se um dia houver conteúdo HTML de terceiros renderizado nas páginas.
 const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://sdk.mercadopago.com https://*.mercadopago.com https://*.mlstatic.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.mercadopago.com https://*.mercadolibre.com https://*.mercadolivre.com https://*.supabase.co",
-  "frame-src 'self' https://*.mercadopago.com https://*.mercadolibre.com https://open.spotify.com https://www.google.com https://maps.google.com",
+  "connect-src 'self' https://*.mercadopago.com https://*.mercadolibre.com https://*.mercadolivre.com",
+  "frame-src 'self' https://*.mercadopago.com https://*.mercadolibre.com",
   "worker-src 'self' blob:",
-  "media-src 'self' blob: https:",
+  "media-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
