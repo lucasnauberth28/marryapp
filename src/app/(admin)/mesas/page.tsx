@@ -8,17 +8,7 @@ export const metadata = { title: "Mesas" };
 
 export default async function TablesPage() {
   await requireWeddingPage("/mesas");
-  const tables = await getTablesWithGuests();
-  const unassignedGuests = await getUnassignedGuests();
+  const [tables, unassignedGuests] = await Promise.all([getTablesWithGuests(), getUnassignedGuests()]);
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">Mesas</h1>
-        <p className="mt-1 text-sm text-tinta-suave">Organize os lugares dos seus convidados confirmados.</p>
-      </div>
-      
-      <TablesClient initialTables={tables} initialUnassigned={unassignedGuests} />
-    </div>
-  );
+  return <TablesClient initialTables={tables} initialUnassigned={unassignedGuests} />;
 }

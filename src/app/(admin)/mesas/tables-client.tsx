@@ -5,11 +5,24 @@ import { useSyncedState } from "@/hooks/use-synced-state";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { DndContext, useDraggable, useDroppable, DragEndEvent } from "@dnd-kit/core";
+import { CustomModal } from "@/components/ui/custom-modal";
+import { PageHeader } from "@/components/admin/page-header";
+import { StatusChip } from "@/components/painel/status-chip";
+import { btn, btnIconDanger, card, hint, input, label, errorBox } from "@/components/painel/styles";
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
 import { createTable, deleteTable, assignGuestToTable } from "@/actions/table-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Trash2, Plus, Users as UsersIcon, Loader2 } from "lucide-react";
+import { ArrowRightLeft, Check, GripVertical, Plus, Trash2, TriangleAlert, Users as UsersIcon } from "lucide-react";
 
 // --- Tipos ---
 
@@ -18,6 +31,8 @@ export interface SeatGuest {
   name: string;
   category?: string | null;
   allowedCompanions: number;
+  rsvpStatus?: "PENDING" | "CONFIRMED" | "DECLINED";
+  dietaryRestrictions?: string | null;
   parentGuest?: { name: string } | null;
 }
 
@@ -28,233 +43,366 @@ export interface TableWithGuests {
   guests: SeatGuest[];
 }
 
-// --- DND Components ---
+const seatsOf = (g: SeatGuest) => 1 + (g.allowedCompanions || 0);
 
-function DraggableGuest({ guest }: { guest: SeatGuest }) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+// --- Convidado: arrastar pela alça ou escolher a mesa na lista ---
+
+function GuestRow({ guest, tables, currentTableId, onMove }: { guest: SeatGuest; tables: TableWithGuests[]; currentTableId: string | null; onMove: (guestId: string, to: string) => void }) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } = useDraggable({
     id: guest.id,
     data: { guest },
   });
 
-  const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 50 } : undefined;
-
-  const parentName = guest.parentGuest?.name;
-  const category = guest.category;
+  const seats = seatsOf(guest);
 
   return (
-    <div
+    <li
       ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
-      className="bg-papel border border-zinc-200 p-2.5 mb-2 rounded-lg shadow-sm text-sm cursor-grab active:cursor-grabbing hover:border-amber-300 hover:shadow transition-all flex flex-col gap-1"
+      className={`flex min-h-11 items-center gap-1 rounded-xl border border-linha bg-papel pr-1 text-left ${isDragging ? "opacity-40" : ""}`}
     >
-      <div className="flex items-center justify-between">
-        <span className="font-medium text-zinc-900">{guest.name}</span>
-        {guest.allowedCompanions > 0 && (
-          <span className="text-xs font-semibold bg-zinc-100 text-zinc-600 px-1.5 py-0.5 rounded-full">
-            +{guest.allowedCompanions} acomp.
-          </span>
-        )}
-      </div>
+      <button
+        type="button"
+        ref={setActivatorNodeRef}
+        {...listeners}
+        {...attributes}
+        aria-label={`Arrastar ${guest.name}`}
+        className="grid size-11 shrink-0 cursor-grab touch-none place-items-center rounded-xl text-tinta-suave active:cursor-grabbing"
+      >
+        <GripVertical className="size-4" aria-hidden="true" />
+      </button>
+      <span className="min-w-0 flex-1 py-1 text-[15px] leading-5">
+        <span className="block truncate">{guest.name}</span>
+        {guest.parentGuest?.name && <span className="block truncate text-sm text-tinta-suave">Com {guest.parentGuest.name}</span>}
+      </span>
+      {guest.dietaryRestrictions && (
+        <span className="inline-flex max-w-24 items-center truncate rounded-md bg-aviso-suave px-2 text-sm font-semibold leading-6 text-aviso" title={guest.dietaryRestrictions}>
+          {guest.dietaryRestrictions}
+        </span>
+      )}
+      <span className="inline-flex min-w-7 items-center justify-center rounded-md bg-areia px-2 text-sm font-semibold leading-6 text-tinta-suave" title={`${seats} ${seats === 1 ? "lugar" : "lugares"}`}>
+        {seats}
+      </span>
+      <span className="relative grid size-11 shrink-0 place-items-center rounded-xl text-tinta-suave has-[select:focus-visible]:outline-2 has-[select:focus-visible]:outline-offset-2 has-[select:focus-visible]:outline-ameixa">
+        <ArrowRightLeft className="size-4" aria-hidden="true" />
+        <select
+          aria-label={`Escolher a mesa de ${guest.name}`}
+          value={currentTableId ?? "unassigned"}
+          onChange={(e) => onMove(guest.id, e.target.value)}
+          className="absolute inset-0 size-full cursor-pointer opacity-0"
+        >
+          <option value="unassigned">Sem mesa</option>
+          {tables.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.name}
+            </option>
+          ))}
+        </select>
+      </span>
+    </li>
+  );
+}
 
-      <div className="flex flex-wrap items-center gap-1">
-        {category && (
-          <span className="text-xs font-medium bg-aviso-suave text-aviso border border-amber-200/80 px-1.5 py-0.2 rounded">
-            {category}
-          </span>
-        )}
-        {parentName && (
-          <span className="text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200/80 px-1.5 py-0.2 rounded">
-            Família de: {parentName}
-          </span>
-        )}
-      </div>
+/** Cópia que acompanha o ponteiro durante o arraste (não é cortada pela lista com rolagem). */
+function GuestPreview({ guest }: { guest: SeatGuest }) {
+  return (
+    <div className="flex min-h-11 items-center gap-1 rounded-xl border-2 border-ameixa bg-ameixa-suave pr-3 shadow-[var(--shadow-aceito-2)]">
+      <span className="grid size-11 place-items-center text-ameixa">
+        <GripVertical className="size-4" aria-hidden="true" />
+      </span>
+      <span className="min-w-0 flex-1 truncate text-[15px] font-semibold">{guest.name}</span>
+      <span className="inline-flex min-w-7 items-center justify-center rounded-md bg-areia px-2 text-sm font-semibold leading-6 text-tinta-suave">{seatsOf(guest)}</span>
     </div>
   );
 }
 
-function DroppableTable({ id, title, capacity, guests, onDelete }: { id: string, title: string, capacity: number, guests: SeatGuest[], onDelete?: () => void }) {
-  const { isOver, setNodeRef } = useDroppable({ id });
-  
-  // Calcula o total de assentos ocupados (convidado + acompanhantes)
-  const occupied = guests.reduce((acc, g) => acc + 1 + (g.allowedCompanions || 0), 0);
-  const isFull = occupied > capacity;
+// --- Mesa: cartão com o círculo, o nome e a ocupação ---
+
+function TableCard({
+  table,
+  number,
+  tables,
+  onDelete,
+  onMove,
+}: {
+  table: TableWithGuests;
+  number: number;
+  tables: TableWithGuests[];
+  onDelete: () => void;
+  onMove: (guestId: string, to: string) => void;
+}) {
+  const { isOver, setNodeRef } = useDroppable({ id: table.id });
+
+  // Total de lugares ocupados (convidado + acompanhantes)
+  const occupied = table.guests.reduce((acc, g) => acc + seatsOf(g), 0);
+  const over = occupied > table.capacity;
+  const full = occupied === table.capacity;
 
   return (
-    <div
+    <article
       ref={setNodeRef}
-      className={`p-4 rounded-xl border-2 min-h-[200px] flex flex-col transition-colors ${
-        isOver ? "border-emerald-400 bg-sucesso-suave/50" : "border-dashed border-zinc-200 bg-zinc-50/50"
+      aria-label={`Mesa ${table.name}`}
+      className={`${card} relative flex flex-col items-center gap-2 p-4 text-center transition-[outline-color] ${
+        isOver ? "outline-2 outline-offset-2 outline-dashed outline-ameixa" : ""
       }`}
     >
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h3 className="font-bold text-zinc-900">{title}</h3>
-          <span className={`text-xs font-medium ${isFull ? "text-perigo" : "text-zinc-500"}`}>
-            {occupied} / {capacity} lugares
-          </span>
-        </div>
-        {onDelete && (
-          <Button aria-label="Excluir" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-red-500" onClick={onDelete}>
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        )}
+      <div className="absolute right-1 top-1">
+        <button type="button" onClick={onDelete} aria-label={`Excluir a mesa ${table.name}`} className={btnIconDanger}>
+          <Trash2 className="size-4" aria-hidden="true" />
+        </button>
       </div>
+      <div
+        className={`grid size-24 place-items-center rounded-full bg-areia font-display text-[28px] text-tinta [font-variant-numeric:lining-nums] ${
+          full ? "border-4 border-dotted border-sucesso" : over ? "border-4 border-dotted border-perigo" : ""
+        }`}
+        aria-hidden="true"
+      >
+        {number}
+      </div>
+      <strong className="max-w-full break-words font-semibold text-tinta">{table.name}</strong>
+      {over ? (
+        <StatusChip tone="perigo" icon={<TriangleAlert className="size-4" aria-hidden="true" />}>
+          {occupied} de {table.capacity} · passou
+        </StatusChip>
+      ) : full ? (
+        <StatusChip tone="sucesso" icon={<Check className="size-4" aria-hidden="true" />}>
+          {occupied} de {table.capacity} · completa
+        </StatusChip>
+      ) : (
+        <span className="text-sm text-tinta-suave">
+          {occupied} de {table.capacity}
+          {isOver && " · solte aqui"}
+        </span>
+      )}
 
-      <div className="flex-1">
-        {guests.map(g => <DraggableGuest key={g.id} guest={g} />)}
-        {guests.length === 0 && <p className="text-zinc-500 text-sm text-center italic mt-4">Arraste convidados para cá</p>}
-      </div>
-    </div>
+      {table.guests.length > 0 ? (
+        <ul className="mt-2 flex w-full flex-col gap-1.5">
+          {table.guests.map((g) => (
+            <GuestRow key={g.id} guest={g} tables={tables} currentTableId={table.id} onMove={onMove} />
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-2 text-sm text-tinta-suave">Arraste alguém para cá, ou escolha a mesa na lista.</p>
+      )}
+    </article>
   );
 }
 
-// --- Main Client Component ---
+// --- Confirmados que ainda não têm mesa ---
 
-export function TablesClient({ initialTables, initialUnassigned }: { initialTables: TableWithGuests[], initialUnassigned: SeatGuest[] }) {
+function UnassignedPanel({ guests, tables, totalConfirmed, onMove }: { guests: SeatGuest[]; tables: TableWithGuests[]; totalConfirmed: number; onMove: (guestId: string, to: string) => void }) {
+  const { setNodeRef, isOver } = useDroppable({ id: "unassigned" });
+  return (
+    <section
+      ref={setNodeRef}
+      aria-labelledby="sem-mesa"
+      className={`${card} flex w-full flex-col gap-2 p-4 sm:p-6 lg:sticky lg:top-24 lg:max-w-80 lg:flex-none ${isOver ? "outline-2 outline-offset-2 outline-dashed outline-ameixa" : ""}`}
+    >
+      <h2 id="sem-mesa" className="text-lg font-semibold leading-7 text-tinta">
+        Sem mesa · {guests.length}
+      </h2>
+      <p className={`${hint} mb-2`}>Arraste pela alça para uma mesa, ou toque no ícone de troca e escolha.</p>
+      {guests.length > 0 ? (
+        <ul className="flex max-h-80 flex-col gap-2 overflow-y-auto lg:max-h-[640px]">
+          {guests.map((g) => (
+            <GuestRow key={g.id} guest={g} tables={tables} currentTableId={null} onMove={onMove} />
+          ))}
+        </ul>
+      ) : (
+        <p className="flex items-start gap-2 text-sm text-tinta-suave">
+          <UsersIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {totalConfirmed > 0 ? "Todos os confirmados já têm mesa." : "Quem confirmar presença aparece aqui para ganhar mesa."}
+        </p>
+      )}
+    </section>
+  );
+}
+
+// --- Tela ---
+
+export function TablesClient({ initialTables, initialUnassigned }: { initialTables: TableWithGuests[]; initialUnassigned: SeatGuest[] }) {
   const router = useRouter();
   const [tables, setTables] = useSyncedState<TableWithGuests[]>(initialTables);
   const [unassigned, setUnassigned] = useSyncedState<SeatGuest[]>(initialUnassigned);
-  
+
+  const [newOpen, setNewOpen] = useState(false);
   const [newTableName, setNewTableName] = useState("");
   const [newTableCap, setNewTableCap] = useState(10);
+  const [newError, setNewError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
+  const [toDelete, setToDelete] = useState<TableWithGuests | null>(null);
+  const [dragging, setDragging] = useState<SeatGuest | null>(null);
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over) return; // Dropped outside
+  const sensors = useSensors(
+    // Um pequeno deslocamento evita arrastar sem querer ao tocar
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor)
+  );
 
-    const guestId = active.id as string;
-    const fromContainerId = unassigned.find(g => g.id === guestId) ? "unassigned" : tables.find(t => t.guests.some(g => g.id === guestId))?.id;
-    const toContainerId = over.id as string;
+  const seatedConfirmed = tables.reduce((acc, t) => acc + t.guests.filter((g) => g.rsvpStatus === "CONFIRMED").length, 0);
+  const totalConfirmed = seatedConfirmed + unassigned.length;
 
-    if (fromContainerId === toContainerId) return;
+  async function moveGuest(guestId: string, toContainerId: string) {
+    const fromContainerId = unassigned.some((g) => g.id === guestId) ? "unassigned" : tables.find((t) => t.guests.some((g) => g.id === guestId))?.id;
+    if (!fromContainerId || fromContainerId === toContainerId) return;
 
-    // Achar o guest inteiro
-    let guestObj: SeatGuest | undefined;
-    if (fromContainerId === "unassigned") {
-      guestObj = unassigned.find(g => g.id === guestId);
-    } else {
-      guestObj = tables.find(t => t.id === fromContainerId)?.guests.find(g => g.id === guestId);
-    }
-
+    const guestObj = fromContainerId === "unassigned" ? unassigned.find((g) => g.id === guestId) : tables.find((t) => t.id === fromContainerId)?.guests.find((g) => g.id === guestId);
     if (!guestObj) return;
 
-    // Atualiza estado local otimisticamente
+    // Atualiza a tela na hora e grava em seguida
     if (fromContainerId === "unassigned") {
-      setUnassigned(prev => prev.filter(g => g.id !== guestId));
+      setUnassigned((prev) => prev.filter((g) => g.id !== guestId));
     } else {
-      setTables(prev => prev.map(t => t.id === fromContainerId ? { ...t, guests: t.guests.filter(g => g.id !== guestId) } : t));
+      setTables((prev) => prev.map((t) => (t.id === fromContainerId ? { ...t, guests: t.guests.filter((g) => g.id !== guestId) } : t)));
     }
 
     if (toContainerId === "unassigned") {
-      setUnassigned(prev => [...prev, guestObj]);
+      setUnassigned((prev) => [...prev, guestObj]);
     } else {
-      setTables(prev => prev.map(t => t.id === toContainerId ? { ...t, guests: [...t.guests, guestObj] } : t));
+      setTables((prev) => prev.map((t) => (t.id === toContainerId ? { ...t, guests: [...t.guests, guestObj] } : t)));
     }
 
-    // Grava no banco em background
-    const targetTableId = toContainerId === "unassigned" ? null : toContainerId;
-    await assignGuestToTable(guestId, targetTableId);
-    toast.success(toContainerId === "unassigned" ? "Convidado movido para a lista de espera." : "Convidado alocado na mesa com sucesso!");
-  };
-
-  const handleAddTable = async () => {
-    if (!newTableName.trim()) return;
-    setLoading(true);
-    const toastId = toast.loading("Criando nova mesa...");
-    const res = await createTable(newTableName, newTableCap);
+    const res = await assignGuestToTable(guestId, toContainerId === "unassigned" ? null : toContainerId);
     if (res.success) {
-      toast.success("Mesa criada com sucesso!", { id: toastId });
+      toast.success(toContainerId === "unassigned" ? `${guestObj.name} voltou para a lista sem mesa.` : `${guestObj.name} está na mesa.`);
+    } else {
+      toast.error(res.error || "Não deu para mover agora. Tente de novo.");
+      router.refresh();
+    }
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    const id = event.active.id as string;
+    setDragging(unassigned.find((g) => g.id === id) ?? tables.flatMap((t) => t.guests).find((g) => g.id === id) ?? null);
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    setDragging(null);
+    const { active, over } = event;
+    if (!over) return; // Soltou fora de qualquer mesa
+    void moveGuest(active.id as string, over.id as string);
+  }
+
+  async function handleAddTable(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newTableName.trim()) {
+      setNewError("Dê um nome à mesa, por exemplo: Mesa dos padrinhos.");
+      return;
+    }
+    setNewError(null);
+    setLoading(true);
+    const toastId = toast.loading("Criando a mesa...");
+    const res = await createTable(newTableName, Number.isFinite(newTableCap) ? newTableCap : 10);
+    if (res.success) {
+      toast.success("Mesa criada.", { id: toastId });
+      setNewTableName("");
+      setNewTableCap(10);
+      setNewOpen(false);
       router.refresh();
     } else {
-      toast.error(res.error || "Erro ao criar mesa.", { id: toastId });
+      toast.error(res.error || "Não deu para criar a mesa. Tente de novo.", { id: toastId });
+      setNewError(res.error || "Não deu para criar a mesa. Tente de novo.");
     }
     setLoading(false);
-  };
+  }
 
-  const handleDeleteTable = async (id: string) => {
-    setConfirmAction(() => async () => {
-      const toastId = toast.loading("Removendo mesa...");
-      const res = await deleteTable(id);
-      if (res.success) {
-        toast.success("Mesa removida com sucesso!", { id: toastId });
-        router.refresh();
-      } else {
-        toast.error(res.error || "Erro ao realizar operação.", {
-          id: toastId,
-          duration: 6000,
-          description: "Ocorreu um erro inesperado no servidor.",
-        });
-      }
-    });
-    setConfirmOpen(true);
-  };
+  async function handleDeleteTable(id: string) {
+    const toastId = toast.loading("Removendo a mesa...");
+    const res = await deleteTable(id);
+    if (res.success) {
+      toast.success("Mesa removida.", { id: toastId });
+      router.refresh();
+    } else {
+      toast.error(res.error || "Não deu para remover agora. Tente de novo.", { id: toastId, duration: 6000 });
+    }
+  }
+
+  const summary =
+    tables.length === 0
+      ? "Crie as mesas e depois arraste os convidados para cada uma."
+      : `${seatedConfirmed} de ${totalConfirmed} ${totalConfirmed === 1 ? "confirmado já tem" : "confirmados já têm"} mesa · ${tables.length} ${tables.length === 1 ? "mesa" : "mesas"}`;
 
   return (
-    <DndContext id="mesas" onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        
-        {/* Lista de Convidados (Não Alocados) */}
-        <div className="lg:col-span-1 bg-papel border border-zinc-200 rounded-xl flex flex-col max-h-[800px] overflow-hidden">
-          <div className="p-4 border-b border-zinc-200 bg-zinc-50/50">
-            <h3 className="font-bold text-zinc-900 flex items-center gap-2">
-              <UsersIcon className="w-4 h-4" /> Sem Mesa
-            </h3>
-            <p className="text-xs text-zinc-500 mt-1">{unassigned.length} convidados aguardando</p>
-          </div>
-          <div className="p-4 overflow-y-auto flex-1">
-            <DroppableTable id="unassigned" title="" capacity={999} guests={unassigned} />
-          </div>
-        </div>
+    <DndContext id="mesas" sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={() => setDragging(null)}>
+      <div className="flex flex-col gap-6">
+        <PageHeader
+          eyebrow="Convidados"
+          title="Mesas"
+          description={summary}
+          actions={
+            <button type="button" onClick={() => setNewOpen(true)} className={btn.primary}>
+              <Plus className="size-4" aria-hidden="true" />
+              Nova mesa
+            </button>
+          }
+        />
 
-        {/* Mesas */}
-        <div className="lg:col-span-3 space-y-6">
-          
-          {/* Controls */}
-          <div className="bg-papel p-4 border border-zinc-200 rounded-xl flex flex-wrap gap-4 items-end">
-            <div className="flex-1 min-w-[12rem]">
-              <label htmlFor="new-table-name" className="text-xs font-medium text-zinc-500 mb-1 block">Nome da mesa</label>
-              <Input id="new-table-name" value={newTableName} onChange={e => setNewTableName(e.target.value)} placeholder="Ex: Mesa dos Padrinhos" />
-            </div>
-            <div className="w-32">
-              <label htmlFor="new-table-capacity" className="text-xs font-medium text-zinc-500 mb-1 block">Lugares</label>
-              <Input id="new-table-capacity" type="number" min={1} value={newTableCap} onChange={e => setNewTableCap(parseInt(e.target.value))} />
-            </div>
-            <Button onClick={handleAddTable} disabled={loading}>
-              {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
-              Nova Mesa
-            </Button>
-          </div>
+        <div className="flex flex-col items-stretch gap-6 lg:flex-row lg:items-start">
+          <UnassignedPanel guests={unassigned} tables={tables} totalConfirmed={totalConfirmed} onMove={moveGuest} />
 
-          {/* Grid de Mesas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {tables.map(table => (
-              <DroppableTable 
-                key={table.id}
-                id={table.id}
-                title={table.name}
-                capacity={table.capacity}
-                guests={table.guests}
-                onDelete={() => handleDeleteTable(table.id)}
-              />
+          {/* Planta das mesas */}
+          <section aria-label="Planta das mesas" className="grid min-w-0 flex-1 grid-cols-[repeat(auto-fill,minmax(240px,1fr))] items-start gap-4">
+            {tables.map((table, i) => (
+              <TableCard key={table.id} table={table} number={i + 1} tables={tables} onDelete={() => setToDelete(table)} onMove={moveGuest} />
             ))}
-          </div>
-
+            <button
+              type="button"
+              onClick={() => setNewOpen(true)}
+              className="flex min-h-48 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-linha-forte font-semibold text-tinta-suave transition-colors hover:bg-ameixa-suave hover:text-ameixa"
+            >
+              <Plus className="size-5" aria-hidden="true" />
+              Nova mesa
+            </button>
+          </section>
         </div>
       </div>
+
+      <DragOverlay dropAnimation={null}>{dragging ? <GuestPreview guest={dragging} /> : null}</DragOverlay>
+
+      <CustomModal isOpen={newOpen} onClose={() => setNewOpen(false)} title="Nova mesa" description="Escolha um nome e quantos lugares a mesa tem." size="sm">
+        <form onSubmit={handleAddTable} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="new-table-name" className={label}>
+              Nome da mesa
+            </label>
+            <input id="new-table-name" value={newTableName} onChange={(e) => setNewTableName(e.target.value)} placeholder="Ex.: Mesa dos padrinhos" autoComplete="off" aria-invalid={!!newError} className={input} />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="new-table-capacity" className={label}>
+              Lugares
+            </label>
+            <input
+              id="new-table-capacity"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={500}
+              value={Number.isFinite(newTableCap) ? newTableCap : ""}
+              onChange={(e) => setNewTableCap(parseInt(e.target.value))}
+              className={input}
+            />
+          </div>
+          {newError && (
+            <p role="alert" className={errorBox}>
+              {newError}
+            </p>
+          )}
+          <button type="submit" disabled={loading} className={`${btn.primary} ${btn.block}`}>
+            {loading ? "Criando..." : "Criar mesa"}
+          </button>
+        </form>
+      </CustomModal>
+
       <ConfirmModal
-        isOpen={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
+        isOpen={!!toDelete}
+        onClose={() => setToDelete(null)}
         onConfirm={() => {
-          setConfirmOpen(false);
-          confirmAction?.();
+          const t = toDelete;
+          setToDelete(null);
+          if (t) void handleDeleteTable(t.id);
         }}
-        title="Excluir Mesa"
-        description="Excluir mesa? Os convidados voltarão para a lista de não alocados."
+        title="Excluir mesa"
+        description={toDelete ? `Excluir a mesa ${toDelete.name}? Quem está nela volta para a lista sem mesa.` : ""}
+        confirmText="Excluir"
       />
     </DndContext>
   );
