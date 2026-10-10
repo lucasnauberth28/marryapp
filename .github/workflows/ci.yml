@@ -60,3 +60,71 @@ jobs:
 
       - name: Build
         run: npx next build
+
+  e2e:
+    # Fluxos de dinheiro e isolamento no navegador (Playwright) contra o build de produção.
+    needs: verificar
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aceito
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/aceito
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/aceito
+      JWT_SECRET: ci-somente-para-testes-com-pelo-menos-32-caracteres
+      ADMIN_PASSWORD: ci-admin-somente-para-testes
+      PIX_KEY: pix-ci@aceito.com.br
+      CRON_SECRET: ci-cron-somente-para-testes
+      MERCADOPAGO_WEBHOOK_SECRET: ci-webhook-somente-para-testes
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      E2E_BASE_URL: http://localhost:3000
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Migrations e dados de demonstração
+        run: |
+          npx prisma migrate deploy
+          npx prisma db seed
+
+      - name: Instalar o Chromium do Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npx next build
+
+      # O Playwright sobe `npm run start` sozinho (webServer em playwright.config.ts).
+      - name: Testes e2e
+        run: npm run test:e2e
+
+      - name: Relatório do Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

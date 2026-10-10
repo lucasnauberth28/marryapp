@@ -45,3 +45,6 @@ next-env.d.ts
 
 # scripts locais de diagnóstico (nunca versionar: costumam conter chaves e telefones)
 scratch-*
+test-results/
+playwright-report/
+blob-report/
