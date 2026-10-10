@@ -2,690 +2,308 @@
 import { useRouter } from "next/navigation";
 import { useSyncedState } from "@/hooks/use-synced-state";
 
-import { useState, useRef, useTransition } from "react";
+import { useId, useRef, useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { createVendor, updateVendor, deleteVendor, type getVendors } from "@/actions/vendor-actions";
-import { createVendorLead, type getPartnerVendors } from "@/actions/partner-vendor-actions";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import {
-  Plus,
-  Trash2,
-  Pencil,
-  Loader2,
-  Building2,
-  Compass,
-  Star,
-  MapPin,
-  Video,
-  MessageCircle,
-  Calendar,
-  ShieldCheck,
-  Search,
-} from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Check, ChevronRight, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { PageHeader } from "@/components/admin/page-header";
+import { btn } from "@/components/landing/styles";
+import { Chip, card } from "@/components/casal/ui";
 
 type WeddingVendor = Awaited<ReturnType<typeof getVendors>>[number];
-type PartnerVendor = Awaited<ReturnType<typeof getPartnerVendors>>[number];
 
 interface VendorsClientProps {
   initialVendors: WeddingVendor[];
-  initialPartners?: PartnerVendor[];
 }
 
-export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsClientProps) {
-  const [activeTab, setActiveTab] = useState<"MY_VENDORS" | "MARKETPLACE">("MARKETPLACE");
+/** Categorias comuns de casamento (as mesmas da vitrine) para lembrar o que ainda falta escolher. */
+const COMMON_CATEGORIES = ["Espaço", "Buffet", "Fotografia", "Decoração", "DJ & Som", "Doces & Bolo", "Vestidos"];
+
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+const money = (cents: number) => brl.format(cents / 100).replace(/,00$/, "").replace(/ /g, " ");
+const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
+
+interface VendorForm {
+  name: string;
+  category: string;
+  contact: string;
+  notes: string;
+  contractUrl: string;
+}
+const EMPTY_FORM: VendorForm = { name: "", category: "", contact: "", notes: "", contractUrl: "" };
+
+/** Resumo do dinheiro do fornecedor a partir das despesas ligadas a ele. */
+function paymentSummary(v: WeddingVendor) {
+  const list = v.expenses ?? [];
+  if (list.length === 0) return "Sem despesas lançadas";
+  const total = list.reduce((acc, e) => acc + e.amount, 0);
+  const paid = list.filter((e) => e.status === "PAID").length;
+  if (paid === list.length) return `${money(total)} · pago`;
+  if (list.length === 1) return `${money(total)} · a pagar`;
+  return `${money(total)} · ${paid} de ${list.length} parcelas pagas`;
+}
+
+export function VendorsClient({ initialVendors }: VendorsClientProps) {
   const router = useRouter();
+  const uid = useId();
   const [vendors, setVendors] = useSyncedState<WeddingVendor[]>(initialVendors);
-  const [partners, setPartners] = useSyncedState<PartnerVendor[]>(initialPartners);
-  
-  // Filtros do Marketplace
-  const [selectedRegion, setSelectedRegion] = useState("TODAS");
-  const [selectedCategory, setSelectedCategory] = useState("TODOS");
-  const [searchTerm, setSearchTerm] = useState("");
 
-  // Modal de Lead / Reunião
-  const [leadModalOpen, setLeadModalOpen] = useState(false);
-  const [selectedPartner, setSelectedPartner] = useState<PartnerVendor | null>(null);
-  const [coupleName, setCoupleName] = useState("");
-  const [couplePhone, setCouplePhone] = useState("");
-  const [coupleEmail, setCoupleEmail] = useState("");
-  const [guestCount, setGuestCount] = useState("");
-  const [meetingType, setMeetingType] = useState<"ONLINE" | "PRESENTIAL">("ONLINE");
-  const [leadMessage, setLeadMessage] = useState("");
-  const [isPendingLead, startTransitionLead] = useTransition();
-
-  // Estados dos modais de fornecedores internos
-  const [open, setOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
   const [editingVendor, setEditingVendor] = useState<WeddingVendor | null>(null);
+  const [form, setForm] = useState<VendorForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const editFileInputRef = useRef<HTMLInputElement>(null);
-  const [contractMode, setContractMode] = useState<"file" | "url">("file");
-  const [fileBase64, setFileBase64] = useState<string>("");
-  const [fileName, setFileName] = useState<string>("");
+  const [fileBase64, setFileBase64] = useState("");
+  const [fileName, setFileName] = useState("");
 
-  const [editContractMode, setEditContractMode] = useState<"file" | "url">("file");
-  const [editFileBase64, setEditFileBase64] = useState<string>("");
-  const [editFileName, setEditFileName] = useState<string>("");
-  const [editForm, setEditForm] = useState({
-    name: "",
-    category: "",
-    contact: "",
-    contractUrl: "",
-    notes: "",
-  });
+  const hiredCategories = vendors.map((v) => norm(v.category));
+  const missing = COMMON_CATEGORIES.filter((c) => !hiredCategories.some((h) => h === norm(c) || h.includes(norm(c))));
 
-  const regionsList = [
-    { id: "TODAS", label: "Todas as Regiões" },
-    { id: "São Paulo - Capital", label: "São Paulo - Capital" },
-    { id: "Grande SP", label: "Grande SP" },
-    { id: "Litoral Norte", label: "Litoral Norte" },
-    { id: "Campinas e Região", label: "Campinas e Região" },
-    { id: "Vale do Paraíba", label: "Vale do Paraíba" },
-    { id: "Brasil Todo", label: "Atende Brasil Todo" },
-  ];
-
-  const categoriesList = ["TODOS", "Espaço", "Buffet", "Fotografia", "Decoração", "DJ & Som", "Doces & Bolo"];
-
-  const filteredPartners = partners.filter((p) => {
-    const matchesCategory = selectedCategory === "TODOS" || p.category === selectedCategory;
-    let matchesRegion = selectedRegion === "TODAS";
-    if (!matchesRegion) {
-      try {
-        const pRegions: string[] = JSON.parse(p.serviceRegions || "[]");
-        matchesRegion = pRegions.includes(selectedRegion) || pRegions.includes("Brasil Todo");
-      } catch {
-        matchesRegion = true;
-      }
-    }
-    const matchesSearch =
-      !searchTerm ||
-      p.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.description?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    return matchesCategory && matchesRegion && matchesSearch;
-  });
-
-  const handleOpenLeadModal = (partner: PartnerVendor) => {
-    setSelectedPartner(partner);
-    setLeadModalOpen(true);
-  };
-
-  const handleSendLead = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!coupleName || !couplePhone) {
-      toast.error("Preencha seu nome e WhatsApp.");
-      return;
-    }
-    const partner = selectedPartner;
-    if (!partner) return;
-
-    startTransitionLead(async () => {
-      const res = await createVendorLead({
-        vendorId: partner.id,
-        coupleName,
-        couplePhone,
-        coupleEmail,
-        guestCount: guestCount ? parseInt(guestCount, 10) : undefined,
-        meetingType,
-        message: leadMessage,
-      });
-
-      if (res.success) {
-        toast.success(`Solicitação enviada com sucesso para ${partner.companyName}! 📅`);
-        setLeadModalOpen(false);
-        setCoupleName("");
-        setCouplePhone("");
-        setCoupleEmail("");
-        setLeadMessage("");
-      } else {
-        toast.error("Erro ao enviar solicitação.");
-      }
-    });
-  };
-
-  const resetForm = () => {
-    setContractMode("file");
+  const resetFile = () => {
     setFileBase64("");
     setFileName("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, isEdit = false) => {
+  const openCreate = () => {
+    setEditingVendor(null);
+    setForm(EMPTY_FORM);
+    resetFile();
+    setFormOpen(true);
+  };
+
+  const openEdit = (vendor: WeddingVendor) => {
+    setEditingVendor(vendor);
+    setForm({
+      name: vendor.name,
+      category: vendor.category,
+      contact: vendor.contact || "",
+      notes: vendor.notes || "",
+      contractUrl: vendor.contractUrl && vendor.contractUrl.startsWith("https://") ? vendor.contractUrl : "",
+    });
+    resetFile();
+    setFormOpen(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 8 * 1024 * 1024) {
-      toast.error("O arquivo deve ter no máximo 8MB.");
+      toast.error("O arquivo deve ter no máximo 8 MB.");
       return;
     }
     const reader = new FileReader();
     reader.onload = (event) => {
-      const res = event.target?.result as string;
-      if (isEdit) {
-        setEditFileBase64(res);
-        setEditFileName(file.name);
-      } else {
-        setFileBase64(res);
-        setFileName(file.name);
-      }
+      setFileBase64(event.target?.result as string);
+      setFileName(file.name);
     };
     reader.readAsDataURL(file);
   };
 
-  const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    const toastId = toast.loading("Cadastrando fornecedor na sua lista...");
-    const formData = new FormData(e.currentTarget);
-    if (contractMode === "file" && fileBase64) {
-      formData.set("contractUrl", fileBase64);
-    }
-    const res = await createVendor(formData);
+    const toastId = toast.loading(editingVendor ? "Salvando as mudanças..." : "Adicionando o fornecedor...");
+    const formData = new FormData();
+    formData.set("name", form.name);
+    formData.set("category", form.category);
+    formData.set("contact", form.contact);
+    formData.set("notes", form.notes);
+    // Arquivo novo vale mais que o link; sem nenhum dos dois, mantém o contrato que já estava salvo
+    const contract = fileBase64 || form.contractUrl || (editingVendor?.contractUrl ?? "");
+    if (contract) formData.set("contractUrl", contract);
+
+    const res = editingVendor ? await updateVendor(editingVendor.id, formData) : await createVendor(formData);
     if (res.success) {
-      toast.success("Fornecedor cadastrado com sucesso!", { id: toastId });
-      resetForm();
-      setOpen(false);
+      toast.success(editingVendor ? "Fornecedor atualizado." : "Fornecedor adicionado.", { id: toastId });
+      setFormOpen(false);
       router.refresh();
     } else {
-      toast.error(res.error || "Erro ao criar fornecedor.", { id: toastId });
+      toast.error(res.error || "Não foi possível salvar o fornecedor.", { id: toastId });
     }
     setLoading(false);
   };
 
-  const handleEdit = (vendor: WeddingVendor) => {
-    setEditingVendor(vendor);
-    setEditForm({
-      name: vendor.name,
-      category: vendor.category,
-      contact: vendor.contact || "",
-      contractUrl: vendor.contractUrl || "",
-      notes: vendor.notes || "",
-    });
-    setEditOpen(true);
-  };
-
-  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!editingVendor) return;
-    setLoading(true);
-    const toastId = toast.loading("Atualizando dados do fornecedor...");
-    const formData = new FormData(e.currentTarget);
-    if (editContractMode === "file" && editFileBase64) {
-      formData.set("contractUrl", editFileBase64);
-    }
-    const res = await updateVendor(editingVendor.id, formData);
-    if (res.success) {
-      toast.success("Fornecedor atualizado com sucesso!", { id: toastId });
-      setEditOpen(false);
-      router.refresh();
-    } else {
-      toast.error(res.error || "Erro ao atualizar fornecedor.", { id: toastId });
-    }
-    setLoading(false);
-  };
-
-  const handleDelete = (id: string) => {
+  const handleDelete = (v: WeddingVendor) => {
     setConfirmAction(() => async () => {
-      const toastId = toast.loading("Removendo fornecedor...");
-      const res = await deleteVendor(id);
+      const toastId = toast.loading("Removendo o fornecedor...");
+      const res = await deleteVendor(v.id);
       if (res.success) {
-        setVendors((prev) => prev.filter((v) => v.id !== id));
-        toast.success("Fornecedor excluído com sucesso!", { id: toastId });
+        setVendors((prev) => prev.filter((x) => x.id !== v.id));
+        toast.success("Fornecedor removido.", { id: toastId });
       } else {
-        toast.error("Erro ao excluir fornecedor.", { id: toastId });
+        toast.error(res.error || "Não foi possível remover o fornecedor.", { id: toastId });
       }
     });
     setConfirmOpen(true);
   };
 
+  const labelCls = "mb-1 block text-sm font-semibold text-tinta";
+  const inputCls = "min-h-11 rounded-xl sm:min-h-10";
+
   return (
-    <div className="space-y-6 font-sans">
-      {/* Header com Navegação em Abas */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
-            Meus fornecedores
-          </h1>
-          <p className="mt-1 text-sm text-tinta-suave">
-            Encontre empresas homologadas na sua região e gerencie os contratos do seu casamento.
-          </p>
-        </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        eyebrow="Organização"
+        title="Meus fornecedores"
+        description={vendors.length === 0 ? "Registrem aqui quem vocês contrataram." : `${vendors.length} ${vendors.length === 1 ? "contratado" : "contratados"}`}
+        actions={
+          <>
+            <Link href="/fornecedores" className={btn.secondary}>
+              Encontrar na vitrine
+            </Link>
+            <button type="button" onClick={openCreate} className={btn.primary}>
+              <Plus className="size-4" aria-hidden="true" /> Adicionar fornecedor
+            </button>
+          </>
+        }
+      />
 
-        {/* Seletor de Abas */}
-        <div className="inline-flex bg-areia p-1 rounded-full border border-linha">
-          <button
-            onClick={() => setActiveTab("MARKETPLACE")}
-            className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              activeTab === "MARKETPLACE"
-                ? "bg-papel text-brand shadow-xs"
-                : "text-tinta-suave hover:text-tinta"
-            }`}
-          >
-            🌟 Marketplace de Parceiros ({partners.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("MY_VENDORS")}
-            className={`px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              activeTab === "MY_VENDORS"
-                ? "bg-papel text-brand shadow-xs"
-                : "text-tinta-suave hover:text-tinta"
-            }`}
-          >
-            📋 Meus Contratos ({vendors.length})
-          </button>
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 1. ABA MARKETPLACE DE FORNECEDORES HOMOLOGADOS */}
-      {/* ========================================================================= */}
-      {activeTab === "MARKETPLACE" && (
-        <div className="space-y-6">
-          {/* Barra de Filtros por Região e Categoria */}
-          <div className="bg-papel p-6 rounded-3xl border border-linha/80 shadow-sm space-y-4">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              {/* Campo de Busca */}
-              <div className="relative w-full md:w-80">
-                <Search className="w-4 h-4 text-tinta-suave absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <Input
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar fornecedor ou serviço..."
-                  className="pl-10 bg-linho/60 border-linha rounded-2xl h-11 text-xs"
-                />
-              </div>
-
-              {/* Seletor de Regiões */}
-              <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1">
-                {regionsList.map((r) => (
-                  <button
-                    key={r.id}
-                    onClick={() => setSelectedRegion(r.id)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                      selectedRegion === r.id
-                        ? "bg-brand text-white shadow-xs"
-                        : "bg-areia/80 text-tinta-suave hover:bg-stone-200/70"
-                    }`}
-                  >
-                    {r.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Categorias */}
-            <div className="flex items-center gap-2 overflow-x-auto pt-2 border-t border-linha pb-1">
-              {categoriesList.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setSelectedCategory(c)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                    selectedCategory === c
-                      ? "bg-stone-900 text-white shadow-xs"
-                      : "bg-papel text-tinta-suave border border-linha hover:bg-linho"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Grid de Fornecedores Parceiros */}
-          {filteredPartners.length === 0 ? (
-            <div className="bg-papel p-12 text-center rounded-3xl border border-linha text-tinta-suave text-sm">
-              <Compass className="w-10 h-10 mx-auto mb-2 opacity-50 text-brand" />
-              <p className="font-bold text-tinta-suave">Nenhum fornecedor encontrado nesta região.</p>
-              <p className="text-xs text-tinta-suave mt-1">Tente selecionar outra categoria ou região de atendimento.</p>
+      <div className="grid items-start gap-4 md:grid-cols-2">
+        {/* Contratados */}
+        <section aria-labelledby="contratados-titulo" className="flex flex-col gap-2 rounded-2xl bg-areia p-3">
+          <h2 id="contratados-titulo" className="mx-2 mb-1 mt-1 flex justify-between text-sm font-semibold text-tinta">
+            Contratados <span className="text-tinta-suave">{vendors.length}</span>
+          </h2>
+          {vendors.length === 0 ? (
+            <div className={`${card} flex flex-col items-start gap-3 p-4`}>
+              <p className="text-[15px] text-tinta-suave">Ainda não há fornecedores aqui. Adicionem o primeiro para acompanhar contato e pagamentos.</p>
+              <button type="button" onClick={openCreate} className={`${btn.primary} ${btn.sm}`}>
+                <Plus className="size-4" aria-hidden="true" /> Adicionar fornecedor
+              </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filteredPartners.map((partner) => {
-                let regions: string[] = [];
-                try {
-                  regions = JSON.parse(partner.serviceRegions || "[]");
-                } catch {
-                  regions = ["São Paulo"];
-                }
-
-                return (
-                  <div
-                    key={partner.id}
-                    className="bg-papel rounded-3xl border border-linha/90 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between group"
-                  >
-                    {/* Imagem de Capa */}
-                    <div className="h-48 relative overflow-hidden bg-areia">
-                      {partner.coverUrl ? (
-                        <img
-                          src={partner.coverUrl}
-                          alt={partner.companyName}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-areia text-tinta-suave">
-                          <Building2 className="w-8 h-8" />
-                        </div>
-                      )}
-
-                      {/* Badges de Destaque */}
-                      <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                        {partner.isVerified && (
-                          <Badge className="bg-emerald-600/90 text-white font-bold text-xs backdrop-blur-md gap-1">
-                            <ShieldCheck className="w-3 h-3" /> Verificado
-                          </Badge>
-                        )}
-                        <Badge className="bg-stone-900/80 text-white font-bold text-xs backdrop-blur-md">
-                          {partner.category}
-                        </Badge>
-                      </div>
-
-                      {/* Avaliação */}
-                      <div className="absolute bottom-3 left-3 bg-papel/95 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-tinta flex items-center gap-1 shadow-xs">
-                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                        <span>{partner.rating.toFixed(1)}</span>
-                        <span className="text-xs text-tinta-suave">({partner.reviewCount})</span>
-                      </div>
+            <ul className="flex flex-col gap-2">
+              {vendors.map((v) => (
+                <li key={v.id} className={`${card} flex flex-col gap-1.5 p-3.5`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 flex-col items-start gap-1.5">
+                      <Chip tone="salvia" className="min-h-6 text-[13px]">{v.category}</Chip>
+                      <strong className="font-semibold text-tinta">{v.name}</strong>
                     </div>
-
-                    {/* Informações Comerciais */}
-                    <div className="p-6 space-y-4">
-                      <div>
-                        <h3 className="font-serif font-bold text-xl text-tinta line-clamp-1">
-                          {partner.companyName}
-                        </h3>
-                        <p className="text-xs text-tinta-suave mt-1 line-clamp-2 leading-relaxed">
-                          {partner.description}
-                        </p>
-                      </div>
-
-                      {/* Regiões de Atendimento */}
-                      <div className="space-y-1.5">
-                        <span className="text-xs font-bold uppercase tracking-wider text-tinta-suave">
-                          Regiões de Atendimento / Entrega:
-                        </span>
-                        <div className="flex flex-wrap gap-1">
-                          {regions.map((r, i) => (
-                            <span
-                              key={i}
-                              className="inline-flex items-center gap-1 text-xs font-bold bg-brand-50 text-brand px-2 py-0.5 rounded-md border border-brand/20"
-                            >
-                              <MapPin className="w-2.5 h-2.5" />
-                              {r}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Modalidades de Reunião */}
-                      <div className="flex items-center gap-3 pt-2 border-t border-linha text-xs text-tinta-suave font-semibold">
-                        {partner.offersOnlineMeet && (
-                          <span className="flex items-center gap-1 text-sucesso">
-                            <Video className="w-3.5 h-3.5" /> Reunião Online
-                          </span>
-                        )}
-                        {partner.hasPhysicalSpace && (
-                          <span className="flex items-center gap-1 text-blue-700">
-                            <MapPin className="w-3.5 h-3.5" /> Showroom Presencial
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Rodapé do Card com Valores e Ações */}
-                      <div className="pt-4 border-t border-linha flex items-center justify-between gap-3">
-                        <div>
-                          <span className="text-xs uppercase font-bold text-tinta-suave block">
-                            Investimento médio:
-                          </span>
-                          <span className="text-base font-extrabold text-tinta">
-                            {partner.startingPrice
-                              ? `A partir de ${new Intl.NumberFormat("pt-BR", {
-                                  style: "currency",
-                                  currency: "BRL",
-                                }).format(partner.startingPrice / 100)}`
-                              : "Sob consulta"}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          {partner.whatsapp && (
-                            <a
-                              href={`https://wa.me/55${partner.whatsapp.replace(/\D/g, "")}?text=Olá,%20encontrei%20sua%20empresa%20no%20Aceito!`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <Button aria-label="Chamar no WhatsApp"
-                                size="icon"
-                                variant="outline"
-                                className="rounded-full w-10 h-10 border-emerald-600 text-sucesso hover:bg-sucesso-suave"
-                                title="Chamar no WhatsApp"
-                              >
-                                <MessageCircle className="w-4 h-4" />
-                              </Button>
-                            </a>
-                          )}
-
-                          <Button
-                            onClick={() => handleOpenLeadModal(partner)}
-                            className="bg-brand hover:bg-brand-600 text-white text-xs font-bold rounded-full h-10 px-4 gap-1.5 shadow-xs"
-                          >
-                            <Calendar className="w-3.5 h-3.5" />
-                            <span>Agendar Reunião</span>
-                          </Button>
-                        </div>
-                      </div>
+                    <div className="-mr-2 -mt-1 flex shrink-0">
+                      <button
+                        type="button"
+                        aria-label={`Editar ${v.name}`}
+                        onClick={() => openEdit(v)}
+                        className={`${btn.quiet} !min-w-11 !px-0`}
+                      >
+                        <Pencil className="size-4" aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`Remover ${v.name}`}
+                        onClick={() => handleDelete(v)}
+                        className={`${btn.quiet} !min-w-11 !px-0 text-perigo hover:bg-perigo-suave`}
+                      >
+                        <Trash2 className="size-4" aria-hidden="true" />
+                      </button>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                  <span className="text-sm text-tinta-suave">{paymentSummary(v)}</span>
+                  {v.contact && <span className="text-sm text-tinta-suave">{v.contact}</span>}
+                  {v.contractUrl && (
+                    <Chip tone="sucesso" icon={Check}>
+                      Contrato anexado
+                    </Chip>
+                  )}
+                </li>
+              ))}
+            </ul>
           )}
-        </div>
-      )}
+        </section>
 
-      {/* ========================================================================= */}
-      {/* 2. ABA MEUS CONTRATOS INTERNOS */}
-      {/* ========================================================================= */}
-      {activeTab === "MY_VENDORS" && (
-        <div className="space-y-6">
-          <div className="flex justify-end">
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-brand hover:bg-brand-600 text-white gap-2 rounded-full font-bold text-xs h-11 px-5">
-                  <Plus className="w-4 h-4" /> Novo Contrato de Fornecedor
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md bg-papel rounded-3xl">
-                <DialogHeader>
-                  <DialogTitle className="font-serif italic font-bold text-xl text-brand">
-                    Adicionar Fornecedor Contratado
-                  </DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleCreate} className="space-y-4 pt-2">
-                  <div>
-                    <Label className="text-xs font-semibold text-zinc-600 mb-1 block">Nome do Fornecedor / Empresa</Label>
-                    <Input name="name" placeholder="Ex: Buffet Flor de Sal" required className="rounded-xl" />
-                  </div>
-                  <div>
-                    <Label className="text-xs font-semibold text-zinc-600 mb-1 block">Categoria</Label>
-                    <Input name="category" placeholder="Ex: Buffet, Fotografia, Decoração" required className="rounded-xl" />
-                  </div>
-                  <div>
-                    <Label className="text-xs font-semibold text-zinc-600 mb-1 block">Contato (Telefone / WhatsApp / E-mail)</Label>
-                    <Input name="contact" placeholder="(11) 99999-9999" className="rounded-xl" />
-                  </div>
-                  <Button type="submit" className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-11" disabled={loading}>
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar Fornecedor"}
-                  </Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
+        {/* Ainda falta escolher */}
+        <section aria-labelledby="falta-titulo" className="flex flex-col gap-2 rounded-2xl bg-areia p-3">
+          <h2 id="falta-titulo" className="mx-2 mb-1 mt-1 flex justify-between text-sm font-semibold text-tinta">
+            Ainda falta escolher <span className="text-tinta-suave">{missing.length}</span>
+          </h2>
+          {missing.length === 0 ? (
+            <p className={`${card} p-4 text-[15px] text-tinta-suave`}>Vocês já têm fornecedor em todas as categorias mais comuns.</p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {missing.map((c) => (
+                <li key={c}>
+                  <Link href="/fornecedores" className={`${card} flex min-h-12 items-center justify-between p-3.5 text-tinta no-underline hover:border-ameixa`}>
+                    <span>{c}</span>
+                    <ChevronRight className="size-4" aria-hidden="true" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
 
-          {/* Tabela de Contratos */}
-          <div className="bg-papel rounded-3xl border border-linha shadow-sm overflow-hidden p-6">
-            <div className="divide-y divide-linha">
-              {vendors.length === 0 ? (
-                <div className="py-12 text-center text-tinta-suave text-sm">
-                  Nenhum contrato cadastrado ainda.
-                </div>
-              ) : (
-                vendors.map((v) => (
-                  <div key={v.id} className="py-4 flex items-center justify-between gap-4">
-                    <div>
-                      <span className="text-xs font-bold uppercase text-brand">{v.category}</span>
-                      <h4 className="font-bold text-base text-tinta font-serif">{v.name}</h4>
-                      <p className="text-xs text-tinta-suave">{v.contact || "Sem contato informado"}</p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button aria-label="Editar"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(v)}
-                        className="text-tinta-suave hover:text-tinta-suave rounded-full h-9 w-9"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button aria-label="Excluir"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(v.id)}
-                        className="text-tinta-suave hover:text-perigo rounded-full h-9 w-9"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL DE SOLICITAÇÃO DE REUNIÃO / LEAD PARA O FORNECEDOR */}
-      {/* ========================================================================= */}
-      <Dialog open={leadModalOpen} onOpenChange={setLeadModalOpen}>
-        <DialogContent className="max-w-lg bg-papel rounded-3xl p-6 font-sans">
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto rounded-2xl bg-papel">
           <DialogHeader>
-            <DialogTitle className="font-serif italic font-bold text-2xl text-tinta">
-              Agendar Reunião / Orçamento
+            <DialogTitle className="font-display text-2xl font-normal text-tinta">
+              {editingVendor ? "Editar fornecedor" : "Adicionar fornecedor"}
             </DialogTitle>
-            <p className="text-xs text-tinta-suave">
-              Solicitando contato com: <span className="font-bold text-tinta">{selectedPartner?.companyName}</span>
-            </p>
+            <DialogDescription>Quem vocês contrataram e como falar com a pessoa.</DialogDescription>
           </DialogHeader>
-
-          <form onSubmit={handleSendLead} className="space-y-4 pt-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label className="text-xs font-bold text-tinta-suave uppercase">Seu Nome / Nome dos Noivos</Label>
-                <Input
-                  value={coupleName}
-                  onChange={(e) => setCoupleName(e.target.value)}
-                  placeholder="Lucas & Giovanna"
-                  required
-                  className="rounded-2xl h-11"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label className="text-xs font-bold text-tinta-suave uppercase">Seu WhatsApp</Label>
-                <Input
-                  value={couplePhone}
-                  onChange={(e) => setCouplePhone(e.target.value)}
-                  placeholder="(11) 99999-9999"
-                  required
-                  className="rounded-2xl h-11 font-mono"
-                />
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+            <div>
+              <Label htmlFor={`${uid}-name`} className={labelCls}>Nome do fornecedor ou da empresa</Label>
+              <Input id={`${uid}-name`} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ex.: Buffet Flor de Sal" required className={inputCls} />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label className="text-xs font-bold text-tinta-suave uppercase">E-mail para Retorno</Label>
-                <Input
-                  type="email"
-                  value={coupleEmail}
-                  onChange={(e) => setCoupleEmail(e.target.value)}
-                  placeholder="contato@noivos.com"
-                  className="rounded-2xl h-11"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label className="text-xs font-bold text-tinta-suave uppercase">Estimativa de Convidados</Label>
-                <Input
-                  type="number"
-                  value={guestCount}
-                  onChange={(e) => setGuestCount(e.target.value)}
-                  placeholder="Ex: 150"
-                  className="rounded-2xl h-11"
-                />
-              </div>
-            </div>
-
-            {/* Modalidade de Reunião */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-tinta-suave uppercase">Modalidade Preferida de Reunião</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setMeetingType("ONLINE")}
-                  className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                    meetingType === "ONLINE"
-                      ? "bg-sucesso-suave border-emerald-600 text-sucesso"
-                      : "bg-linho border-linha text-tinta-suave"
-                  }`}
-                >
-                  <Video className="w-4 h-4 text-sucesso" />
-                  <span>Online (Meet/Zoom)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setMeetingType("PRESENTIAL")}
-                  className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                    meetingType === "PRESENTIAL"
-                      ? "bg-blue-50 border-blue-600 text-blue-800"
-                      : "bg-linho border-linha text-tinta-suave"
-                  }`}
-                >
-                  <MapPin className="w-4 h-4 text-blue-600" />
-                  <span>Presencial no Ateliê</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <Label className="text-xs font-bold text-tinta-suave uppercase">Mensagem ou Dúvidas</Label>
-              <Textarea
-                value={leadMessage}
-                onChange={(e) => setLeadMessage(e.target.value)}
-                placeholder="Olá, gostaríamos de consultar a disponibilidade para a nossa data e agendar uma reunião..."
-                rows={3}
-                className="rounded-2xl"
+            <div>
+              <Label htmlFor={`${uid}-category`} className={labelCls}>Categoria</Label>
+              <Input
+                id={`${uid}-category`}
+                list={`${uid}-categories`}
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                placeholder="Ex.: Buffet, Fotografia, Decoração"
+                required
+                className={inputCls}
               />
+              <datalist id={`${uid}-categories`}>
+                {COMMON_CATEGORIES.map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
             </div>
-
-            <Button
-              type="submit"
-              disabled={isPendingLead}
-              className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold text-xs h-12 gap-2 shadow-sm"
-            >
-              {isPendingLead ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
-              <span>Solicitar Agendamento com Fornecedor</span>
-            </Button>
+            <div>
+              <Label htmlFor={`${uid}-contact`} className={labelCls}>
+                Contato <span className="font-normal text-tinta-suave">(telefone, WhatsApp ou e-mail)</span>
+              </Label>
+              <Input id={`${uid}-contact`} value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })} placeholder="(11) 99999-9999" className={inputCls} />
+            </div>
+            <div>
+              <Label htmlFor={`${uid}-notes`} className={labelCls}>
+                Anotações <span className="font-normal text-tinta-suave">(opcional)</span>
+              </Label>
+              <Textarea id={`${uid}-notes`} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} className="rounded-xl" />
+            </div>
+            <div>
+              <Label htmlFor={`${uid}-contract`} className={labelCls}>
+                Contrato <span className="font-normal text-tinta-suave">(opcional, até 8 MB)</span>
+              </Label>
+              <input
+                id={`${uid}-contract`}
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,image/*"
+                onChange={handleFileChange}
+                className="block min-h-11 w-full cursor-pointer rounded-xl border border-linha-forte bg-papel p-2 text-sm text-tinta file:mr-3 file:rounded-lg file:border-0 file:bg-ameixa-suave file:px-3 file:py-1.5 file:font-semibold file:text-ameixa"
+              />
+              {fileName && <p className="mt-1 text-sm text-tinta-suave">Arquivo escolhido: {fileName}</p>}
+              {editingVendor?.contractUrl && !fileName && <p className="mt-1 text-sm text-tinta-suave">Já há um contrato anexado. Escolher outro arquivo troca o atual.</p>}
+            </div>
+            <button type="submit" className={`${btn.primary} ${btn.block}`} disabled={loading}>
+              {loading ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : editingVendor ? "Salvar mudanças" : "Adicionar fornecedor"}
+            </button>
           </form>
         </DialogContent>
       </Dialog>
@@ -697,8 +315,8 @@ export function VendorsClient({ initialVendors, initialPartners = [] }: VendorsC
           setConfirmOpen(false);
           confirmAction?.();
         }}
-        title="Excluir Fornecedor"
-        description="Tem certeza de que deseja excluir este fornecedor?"
+        title="Remover fornecedor"
+        description="Tem certeza de que deseja remover este fornecedor da lista?"
       />
     </div>
   );
