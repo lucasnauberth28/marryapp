@@ -60,30 +60,28 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
   const giftsPath = weddingSitePath(wedding.slug, "presentes");
 
   return (
-    <div className="min-h-screen bg-linho flex flex-col justify-between py-8 px-4 sm:px-6 w-full animate-in fade-in duration-300 font-sans">
-      <div className="max-w-2xl mx-auto w-full space-y-6">
-        {/* Top Header Imersivo sem Nav Links */}
-        <div className="flex items-center justify-between pb-2 border-b border-linha/60">
+    <div className="flex min-h-dvh flex-col bg-linho font-sans text-tinta">
+      <header className="border-b border-linha">
+        <div className="mx-auto flex h-[60px] max-w-[560px] items-center gap-1 px-2 sm:px-4">
           <Link
             href={giftsPath}
-            className="text-sm font-bold text-tinta-suave hover:text-tinta flex min-h-11 items-center gap-1.5 transition-colors"
+            aria-label="Voltar para a lista de presentes"
+            className="grid size-11 shrink-0 place-items-center rounded-[12px] text-tinta transition-colors hover:bg-areia"
           >
-            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-            <span>Voltar para a lista</span>
+            <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.75} />
           </Link>
-
-          <span className="text-xs font-semibold text-sucesso bg-sucesso-suave border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-sucesso" aria-hidden="true" /> Pagamento seguro
+          <span className="font-semibold">Presentear</span>
+          <span className="ml-auto inline-flex min-h-7 items-center gap-1 rounded-[6px] bg-sucesso-suave px-2.5 text-sm font-semibold text-sucesso">
+            <ShieldCheck aria-hidden="true" className="size-4" strokeWidth={2} /> Pagamento seguro
           </span>
         </div>
+      </header>
 
-        {/* Formulario de Checkout */}
+      <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col px-4 pb-6 pt-5">
         <CheckoutClient gift={gift} coupleNames={coupleNames} slug={wedding.slug} cardEnabled={isCardPaymentAvailable()} />
       </div>
 
-      <div className="text-center text-xs text-tinta-suave py-4 font-sans">
-        {coupleNames} · Feito com Aceito
-      </div>
+      <p className="px-4 pb-6 text-center text-sm text-tinta-suave">{coupleNames} · Feito com Aceito</p>
     </div>
   );
 }
