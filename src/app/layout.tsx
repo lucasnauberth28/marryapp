@@ -31,8 +31,16 @@ export const metadata: Metadata = {
   title: { default: "Aceito", template: "%s · Aceito" },
   description: "Do convite ao grande dia, tudo num só sim. Site do casal, confirmações pelo WhatsApp, presentes em Pix e fornecedores.",
   applicationName: "Aceito",
-  // iPhone: ícone da tela de início e abertura em tela cheia quando instalado
-  icons: { apple: "/icons/apple-touch-icon.png" },
+  // Declarar `icons` aqui substitui o ícone por arquivo (app/icon.svg): por isso o favicon é listado também.
+  // SVG para navegadores modernos, PNG de reserva (Safari) e o ícone da tela de início do iPhone.
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/icons/apple-touch-icon.png",
+  },
   appleWebApp: { capable: true, title: "Aceito", statusBarStyle: "default" },
 };
 
