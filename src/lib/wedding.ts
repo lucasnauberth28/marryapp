@@ -5,6 +5,7 @@ import { ptBR } from "date-fns/locale";
 import prisma from "@/lib/prisma";
 import { getCoupleInitials } from "@/lib/wedding-format";
 import { getWeddingBySlug, getWeddingContext, type WeddingSummary } from "@/lib/security/wedding-context";
+import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 
 export interface WeddingIdentity {
   /** Ex.: "Lucas & Giovanna" */
@@ -14,6 +15,8 @@ export interface WeddingIdentity {
   weddingDate: Date | null;
   /** Ex.: "11 de outubro de 2027" */
   dateLabel: string | null;
+  /** Ex.: "11 out 2027" */
+  shortDateLabel: string | null;
   locationName: string | null;
   /** Endereço público do casamento: /casamento/<slug> */
   slug: string | null;
@@ -32,6 +35,7 @@ function buildIdentity(
     initials: getCoupleInitials(coupleNames),
     weddingDate,
     dateLabel: weddingDate ? format(weddingDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR }) : null,
+    shortDateLabel: weddingDate ? format(weddingDate, "d MMM yyyy", { locale: ptBR }) : null,
     locationName: site?.locationName ?? null,
     slug: wedding?.slug ?? null,
   };
@@ -63,6 +67,31 @@ export const getWeddingIdentity = cache(async (): Promise<WeddingIdentity> => {
   } catch (error) {
     console.error("[getWeddingIdentity]", error);
     return buildIdentity(null, null);
+  }
+});
+
+export interface AccountView {
+  /** Conta de administração sem casamento próprio (o painel mostra o casamento principal). */
+  adminView: boolean;
+  /** Nome cadastrado do usuário; null na conta de emergência ou quando não é administração. */
+  userName: string | null;
+}
+
+/**
+ * Como a conta da sessão aparece no topo e no menu: casal (nomes do casal) ou administração.
+ * Perfil com acesso total ("*") que tem casamento próprio continua sendo conta de casal.
+ */
+export const getAccountView = cache(async (): Promise<AccountView> => {
+  try {
+    const [session, ctx] = await Promise.all([getSession(), getWeddingContext()]);
+    if (!session?.allowedPaths.includes("*")) return { adminView: false, userName: null };
+    if (ctx && !ctx.viaAdmin) return { adminView: false, userName: null };
+    if (session.userId === SUPER_ADMIN_USER_ID) return { adminView: true, userName: null };
+    const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { name: true } });
+    return { adminView: true, userName: user?.name ?? null };
+  } catch (error) {
+    console.error("[getAccountView]", error);
+    return { adminView: false, userName: null };
   }
 });
 

@@ -24,10 +24,15 @@ import {
 } from "lucide-react";
 import { hasPathAccess } from "@/lib/permissions";
 
+/** Contadores reais que o menu pode mostrar ao lado do item (ver lib/nav-counts). */
+export type NavCountKey = "guests" | "messages" | "tasks";
+
 export interface NavItem {
   name: string;
   href: string;
   icon: LucideIcon;
+  /** Número exibido à direita (só quando maior que zero). */
+  countKey?: NavCountKey;
 }
 
 export interface NavGroup {
@@ -44,8 +49,8 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: "Convidados",
     items: [
-      { name: "Lista de convidados", href: "/convidados", icon: UsersIcon },
-      { name: "Mensagens", href: "/mensagens", icon: MessageCircle },
+      { name: "Lista de convidados", href: "/convidados", icon: UsersIcon, countKey: "guests" },
+      { name: "Mensagens", href: "/mensagens", icon: MessageCircle, countKey: "messages" },
       { name: "Mesas", href: "/mesas", icon: Armchair },
       { name: "Check-in no dia", href: "/credenciamento", icon: ScanLine },
     ],
@@ -53,7 +58,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: "Organização",
     items: [
-      { name: "Tarefas", href: "/pendencias", icon: ListChecks },
+      { name: "Tarefas", href: "/pendencias", icon: ListChecks, countKey: "tasks" },
       { name: "Cronograma do dia", href: "/cronograma", icon: CalendarClock },
       { name: "Meus fornecedores", href: "/meus-fornecedores", icon: Store },
       { name: "Encontrar fornecedores", href: "/fornecedores", icon: Compass },
@@ -106,6 +111,14 @@ export function visibleNavGroups(allowedPaths: string[]): NavGroup[] {
     ...group,
     items: group.items.filter((item) => hasPathAccess(allowedPaths, item.href)),
   })).filter((group) => group.items.length > 0);
+}
+
+/** Aba "Mais": as áreas que não estão na barra inferior (como no design). */
+export function visibleMoreGroups(allowedPaths: string[]): NavGroup[] {
+  const inTabs = new Set(MOBILE_TABS.map((t) => t.href));
+  return visibleNavGroups(allowedPaths)
+    .map((group) => ({ ...group, items: group.items.filter((item) => !inTabs.has(item.href)) }))
+    .filter((group) => group.items.length > 0);
 }
 
 export function visibleMobileTabs(allowedPaths: string[]): NavItem[] {

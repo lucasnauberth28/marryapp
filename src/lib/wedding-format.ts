@@ -31,6 +31,13 @@ export function daysUntil(date: Date, now = new Date()): number {
   return Math.round((end - start) / 86_400_000);
 }
 
+/** "faltam 191 dias", "falta 1 dia", "é hoje"; vazio se já passou ou não há data. */
+export function daysLeftLabel(days: number | null): string | null {
+  if (days === null || days < 0) return null;
+  if (days === 0) return "é hoje";
+  return days === 1 ? "falta 1 dia" : `faltam ${days} dias`;
+}
+
 function hexToRgb(hex: string): [number, number, number] | null {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
   if (!m) return null;

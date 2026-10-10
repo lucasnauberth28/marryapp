@@ -5,18 +5,21 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { logout } from "@/actions/auth-actions";
 import { LogOut, ChevronLeft, ChevronRight } from "lucide-react";
-import { NavList } from "@/components/admin/nav-list";
+import { NavList, type NavCounts } from "@/components/admin/nav-list";
 import { Logo } from "@/components/brand/logo";
 
 const COLLAPSED_KEY = "aceito_sidebar_collapsed";
 
 interface SidebarProps {
   allowedPaths?: string[];
-  coupleNames: string;
-  dateLabel?: string | null;
+  /** Título do cartão: nomes do casal ou "Administração". */
+  title: string;
+  /** Linha de baixo do cartão (ex.: "17 abr 2027 · faltam 191 dias"). */
+  subtitle?: string | null;
+  counts?: NavCounts;
 }
 
-export function Sidebar({ allowedPaths = [], coupleNames, dateLabel }: SidebarProps) {
+export function Sidebar({ allowedPaths = [], title, subtitle, counts }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Preferência de menu recolhido salva no navegador
@@ -62,14 +65,14 @@ export function Sidebar({ allowedPaths = [], coupleNames, dateLabel }: SidebarPr
       </div>
 
       {!isCollapsed && (
-        <div className="mx-4 mb-4 rounded-2xl border border-linha bg-papel px-4 py-3">
-          <p className="truncate font-display text-lg leading-tight text-tinta">{coupleNames}</p>
-          {dateLabel && <p className="mt-0.5 text-sm text-tinta-suave">{dateLabel}</p>}
+        <div className="mx-4 mb-5 flex flex-col gap-0.5 rounded-xl border border-linha bg-papel p-3">
+          <p className="truncate font-display text-xl leading-[26px] text-tinta">{title}</p>
+          {subtitle && <p className="truncate text-sm leading-5 text-tinta-suave">{subtitle}</p>}
         </div>
       )}
 
       <nav aria-label="Menu principal" className="flex-1 overflow-y-auto overflow-x-hidden px-3 pb-4" data-lenis-prevent>
-        <NavList allowedPaths={allowedPaths} collapsed={isCollapsed} />
+        <NavList allowedPaths={allowedPaths} collapsed={isCollapsed} counts={counts} />
       </nav>
 
       <div className="mt-auto border-t border-linha p-3">

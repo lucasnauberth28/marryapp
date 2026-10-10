@@ -20,6 +20,7 @@ import { logout } from "@/actions/auth-actions";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { hasPathAccess } from "@/lib/permissions";
 import { Logo } from "@/components/brand/logo";
+import { accountLabel } from "@/lib/account-label";
 
 interface HeaderProps {
   role?: string;
@@ -27,23 +28,28 @@ interface HeaderProps {
   coupleNames: string;
   initials: string;
   dateLabel?: string | null;
+  /** Conta de administração sem casamento próprio: mostra "Administração" em vez do casal. */
+  adminView?: boolean;
+  /** Nome cadastrado do usuário (null na conta de emergência). */
+  userName?: string | null;
   /** Avisos não lidos, já contados no servidor. */
   unreadNotifications?: number;
   pushPublicKey?: string | null;
 }
 
-export function Header({ role = "Admin", allowedPaths = [], coupleNames, initials, dateLabel, unreadNotifications = 0, pushPublicKey = null }: HeaderProps) {
+export function Header({ role = "Admin", allowedPaths = [], coupleNames, initials, dateLabel, adminView = false, userName = null, unreadNotifications = 0, pushPublicKey = null }: HeaderProps) {
   const can = (path: string) => hasPathAccess(allowedPaths, path);
+  const label = accountLabel({ adminView, coupleNames, coupleInitials: initials, userName, role });
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-3 border-b border-linha bg-linho/85 px-4 backdrop-blur-md md:px-8">
+    <header className="sticky top-0 z-40 flex h-[60px] items-center justify-between gap-3 border-b border-linha bg-linho/85 px-4 backdrop-blur-md md:px-8">
       <div className="flex min-w-0 items-center gap-3">
         <Link href="/dashboard" aria-label="Aceito, início do painel" className="md:hidden">
           <Logo variant="mark" height={28} />
         </Link>
         <p className="min-w-0 truncate">
-          <span className="font-display text-lg text-tinta md:text-xl">{coupleNames}</span>
-          {dateLabel && <span className="hidden text-sm text-tinta-suave md:inline"> · {dateLabel}</span>}
+          <span className="font-display text-xl text-tinta">{label.title}</span>
+          {!adminView && dateLabel && <span className="hidden text-sm text-tinta-suave md:inline"> · {dateLabel}</span>}
         </p>
       </div>
 
@@ -56,13 +62,13 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
               className="grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-linha bg-ameixa-suave font-display text-base text-ameixa transition-shadow hover:shadow-[0_0_0_3px_var(--color-ameixa-suave)]"
               aria-label="Menu da conta"
             >
-              {initials}
+              {label.initials}
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-72 overflow-hidden rounded-2xl border-linha bg-papel p-0 font-sans shadow-[var(--shadow-aceito-2)]" align="end">
             <div className="border-b border-linha px-4 py-3">
-              <p className="font-display text-lg text-tinta">{coupleNames}</p>
-              <p className="text-sm text-tinta-suave">{role}</p>
+              <p className="truncate font-display text-lg text-tinta">{label.menuTitle}</p>
+              <p className="text-sm text-tinta-suave">{label.menuSubtitle}</p>
             </div>
             <div className="space-y-0.5 p-1.5">
               <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5 text-sm text-tinta">

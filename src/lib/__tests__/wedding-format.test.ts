@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { formatPhoneBR } from "../wedding-format.ts";
+import { daysLeftLabel, formatPhoneBR } from "../wedding-format.ts";
 
 test("formatPhoneBR formata celular e fixo com DDD", () => {
   assert.equal(formatPhoneBR("11988887777"), "(11) 98888-7777");
@@ -15,4 +15,12 @@ test("formatPhoneBR mostra o +55 só quando o código do país está guardado", 
 test("formatPhoneBR devolve os dígitos quando não reconhece o formato", () => {
   assert.equal(formatPhoneBR("12345"), "12345");
   assert.equal(formatPhoneBR(null), "");
+});
+
+test("daysLeftLabel fala em dias, no singular e no próprio dia", () => {
+  assert.equal(daysLeftLabel(191), "faltam 191 dias");
+  assert.equal(daysLeftLabel(1), "falta 1 dia");
+  assert.equal(daysLeftLabel(0), "é hoje");
+  assert.equal(daysLeftLabel(-3), null);
+  assert.equal(daysLeftLabel(null), null);
 });

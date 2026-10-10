@@ -43,6 +43,8 @@ export interface WeddingContext {
   session: SecureAuthContext;
   weddingId: string;
   wedding: WeddingSummary;
+  /** Conta de administração sem casamento próprio: está vendo o casamento principal. */
+  viaAdmin: boolean;
 }
 
 /** Casamento mais antigo: usado pela administração da plataforma e pelos links antigos sem slug. */
@@ -61,18 +63,18 @@ export const getWeddingContext = cache(async (): Promise<WeddingContext | null> 
 
   if (session.userId === SUPER_ADMIN_USER_ID) {
     const wedding = await getPrincipalWedding();
-    return wedding ? { session, weddingId: wedding.id, wedding } : null;
+    return wedding ? { session, weddingId: wedding.id, wedding, viaAdmin: true } : null;
   }
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
     select: { wedding: { select: WEDDING_SELECT } },
   });
-  if (user?.wedding) return { session, weddingId: user.wedding.id, wedding: user.wedding };
+  if (user?.wedding) return { session, weddingId: user.wedding.id, wedding: user.wedding, viaAdmin: false };
 
   if (session.allowedPaths.includes("*")) {
     const wedding = await getPrincipalWedding();
-    return wedding ? { session, weddingId: wedding.id, wedding } : null;
+    return wedding ? { session, weddingId: wedding.id, wedding, viaAdmin: true } : null;
   }
   return null;
 });
