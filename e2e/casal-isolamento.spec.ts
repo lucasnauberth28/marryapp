@@ -24,9 +24,9 @@ test("o convidado de um casal não aparece para outro casal", async ({ page, bro
   // Casal A cadastra um convidado
   await criarCasalPronto(page, "casal-a");
   await page.goto("/convidados");
-  await page.getByRole("button", { name: /Novo convidado/ }).click();
-  await page.getByLabel("Nome completo").fill(nomeConvidado);
   await page.getByRole("button", { name: "Adicionar convidado" }).click();
+  await page.getByLabel("Nome no convite").fill(nomeConvidado);
+  await page.getByRole("button", { name: "Salvar convidado" }).click();
   await expect(page.locator("tbody").getByText(nomeConvidado)).toBeVisible();
 
   // Casal B, em outra sessão, não vê esse convidado em nenhuma tela

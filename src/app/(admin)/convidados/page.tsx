@@ -1,32 +1,34 @@
 import { Metadata } from "next";
 import { getGuests } from "@/actions/guest-actions";
-import { getTablesWithGuests, getUnassignedGuests } from "@/actions/table-actions";
 import { GuestsClient } from "./guests-client";
+import prisma from "@/lib/prisma";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { weddingHasModule } from "@/lib/wedding-plan";
 
 export const metadata: Metadata = {
   title: "Convidados",
-  description: "Gerencie a lista de convidados e a organização de mesas do casamento",
+  description: "Gerencie a lista de convidados do casamento",
 };
 
 export const dynamic = "force-dynamic";
 
+const deadlineFormat = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
 export default async function ConvidadosPage() {
-  await requireWeddingPage("/convidados");
-  
-  const [guests, tables, unassignedGuests] = await Promise.all([
+  const { session, weddingId } = await requireWeddingPage("/convidados");
+
+  // Só leitura: o prazo de confirmação definido em Configurações, se houver
+  const [guests, settings, canRemind] = await Promise.all([
     getGuests(),
-    getTablesWithGuests(),
-    getUnassignedGuests(),
+    prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } }),
+    weddingHasModule({ weddingId, session }, "whatsapp"),
   ]);
 
   return (
-    <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <GuestsClient
-        initialGuests={guests}
-        initialTables={tables}
-        initialUnassigned={unassignedGuests}
-      />
-    </div>
+    <GuestsClient
+      initialGuests={guests}
+      deadlineLabel={settings?.rsvpDeadline ? deadlineFormat.format(settings.rsvpDeadline) : null}
+      canRemind={canRemind}
+    />
   );
 }

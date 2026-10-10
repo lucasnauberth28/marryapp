@@ -1,69 +1,114 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import Link from "next/link";
+import { useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
+import { Check, Clock, Download, HeartHandshake, MessageCircle, Plus, Search, Trash2, UserCheck, Users, X } from "lucide-react";
 import { GuestLocal as Guest } from "@/types/local";
 import { deleteGuest } from "@/actions/guest-actions";
-import { GuestModal } from "./guest-modal";
-import { TablesClient, type SeatGuest, type TableWithGuests } from "../mesas/tables-client";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { DataTable } from "@/components/ui/data-table";
-import { toast } from "sonner";
+import { PageHeader } from "@/components/admin/page-header";
+import { RsvpChip } from "@/components/painel/status-chip";
+import { btn, btnIconDanger, card, input, overline } from "@/components/painel/styles";
 import { formatPhoneBR } from "@/lib/wedding-format";
-import {
-  Trash2,
-  Pencil,
-  Download,
-  Users,
-  LayoutGrid,
-  HeartHandshake,
-  UserCheck,
-} from "lucide-react";
+import { GuestModal, GUEST_CATEGORIES } from "./guest-modal";
+
+export type GuestRow = Guest & { table?: { name: string } | null };
 
 interface GuestsClientProps {
-  initialGuests: Guest[];
-  initialTables: TableWithGuests[];
-  initialUnassigned: SeatGuest[];
+  initialGuests: GuestRow[];
+  /** Prazo para confirmar já formatado (ex.: "15 de março de 2027"), quando o casal definiu. */
+  deadlineLabel: string | null;
+  /** O plano do casal inclui o WhatsApp: só então o atalho para lembrar quem não respondeu aparece. */
+  canRemind: boolean;
 }
 
-const rsvpConfig = {
-  PENDING: {
-    label: "Pendente",
-    className: "bg-aviso-suave text-aviso border-amber-200",
-  },
-  CONFIRMED: {
-    label: "Confirmado",
-    className: "bg-sucesso-suave text-sucesso border-emerald-200",
-  },
-  DECLINED: {
-    label: "Recusado",
-    className: "bg-perigo-suave text-perigo border-perigo/40",
-  },
-};
+type Filter = "all" | "CONFIRMED" | "PENDING" | "DECLINED";
 
-export function GuestsClient({
-  initialGuests,
-  initialTables,
-  initialUnassigned,
-}: GuestsClientProps) {
-  const [activeTab, setActiveTab] = useState<"guests" | "tables">("guests");
+// Quantos convidados aparecem por vez; "Carregar mais" mostra o resto aos poucos.
+const PAGE_SIZE = 30;
+
+const plain = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+function seats(g: Guest) {
+  return 1 + (g.allowedCompanions || 0);
+}
+
+function seatsLabel(g: Guest) {
+  const n = seats(g);
+  return `${n} ${n === 1 ? "lugar" : "lugares"}`;
+}
+
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? (parts[parts.length - 1][0] ?? "") : "")).toUpperCase();
+}
+
+function LinkBadge({ guest }: { guest: Guest }) {
+  if (guest.parentGuest?.name) {
+    return (
+      <span className="inline-flex items-center gap-1 text-sm text-tinta-suave">
+        <HeartHandshake className="size-4 shrink-0" aria-hidden="true" />
+        Com {guest.parentGuest.name}
+      </span>
+    );
+  }
+  if (guest.linkedGuests && guest.linkedGuests.length > 0) {
+    return (
+      <span className="inline-flex items-center gap-1 text-sm text-tinta-suave">
+        <UserCheck className="size-4 shrink-0" aria-hidden="true" />
+        Titular de {guest.linkedGuests.length} {guest.linkedGuests.length === 1 ? "pessoa" : "pessoas"}
+      </span>
+    );
+  }
+  return null;
+}
+
+export function GuestsClient({ initialGuests, deadlineLabel, canRemind }: GuestsClientProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [, startTransition] = useTransition();
 
-  // Estados para Confirmação de Exclusão
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [confirmData, setConfirmData] = useState<{
-    title: string;
-    description: string;
-    onConfirm: () => void;
-  } | null>(null);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [group, setGroup] = useState("");
+  const [query, setQuery] = useState("");
+  const [visible, setVisible] = useState(PAGE_SIZE);
 
-  const triggerConfirm = (title: string, description: string, onConfirm: () => void) => {
-    setConfirmData({ title, description, onConfirm });
-    setConfirmOpen(true);
-  };
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [toRemove, setToRemove] = useState<Guest | null>(null);
+
+  const counts = useMemo(() => {
+    const c = { all: initialGuests.length, CONFIRMED: 0, PENDING: 0, DECLINED: 0 };
+    for (const g of initialGuests) c[g.rsvpStatus] += 1;
+    return c;
+  }, [initialGuests]);
+
+  const groups = useMemo(() => {
+    const set = new Set<string>(GUEST_CATEGORIES);
+    for (const g of initialGuests) if (g.category) set.add(g.category);
+    return [...set];
+  }, [initialGuests]);
+
+  const filtered = useMemo(() => {
+    const q = plain(query.trim());
+    const digits = query.replace(/\D/g, "");
+    return initialGuests.filter((g) => {
+      if (filter !== "all" && g.rsvpStatus !== filter) return false;
+      if (group && g.category !== group) return false;
+      if (!q) return true;
+      if (plain(g.name).includes(q)) return true;
+      if (g.email && plain(g.email).includes(q)) return true;
+      if (g.companionsNames && plain(g.companionsNames).includes(q)) return true;
+      return digits.length >= 3 && !!g.phone && g.phone.replace(/\D/g, "").includes(digits);
+    });
+  }, [initialGuests, filter, group, query]);
+
+  const shown = filtered.slice(0, visible);
+
+  function changeFilter(next: Filter) {
+    setFilter(next);
+    setVisible(PAGE_SIZE);
+  }
 
   function openAdd() {
     setEditingGuest(null);
@@ -75,305 +120,239 @@ export function GuestsClient({
     setIsModalOpen(true);
   }
 
-  function handleDelete(id: string) {
-    triggerConfirm(
-      "Remover Convidado",
-      "Tem certeza que deseja remover este convidado da lista? Esta ação não pode ser desfeita.",
-      async () => {
-        const toastId = toast.loading("Removendo convidado...");
-        startTransition(async () => {
-          const res = await deleteGuest(id);
-          if (res.success) {
-            toast.success("Convidado removido com sucesso!", { id: toastId });
-          } else {
-            toast.error(res.error || "Erro ao realizar operação.", {
-              id: toastId,
-              duration: 6000,
-              description: "Ocorreu um erro inesperado no servidor.",
-            });
-          }
-        });
-      }
-    );
+  function askRemove(guest: Guest) {
+    setToRemove(guest);
+    setConfirmOpen(true);
   }
 
+  function remove(id: string) {
+    const toastId = toast.loading("Removendo convidado...");
+    startTransition(async () => {
+      const res = await deleteGuest(id);
+      if (res.success) {
+        toast.success("Convidado removido.", { id: toastId });
+      } else {
+        toast.error(res.error || "Não deu para remover agora. Tente de novo.", { id: toastId, duration: 6000 });
+      }
+    });
+  }
+
+  const chips: Array<{ value: Filter; label: string; tone: string; icon?: React.ReactNode }> = [
+    { value: "all", label: "Todos", tone: "bg-areia text-tinta" },
+    { value: "CONFIRMED", label: "Confirmados", tone: "bg-sucesso-suave text-sucesso", icon: <Check className="size-4" aria-hidden="true" /> },
+    { value: "PENDING", label: "Sem resposta", tone: "bg-aviso-suave text-aviso", icon: <Clock className="size-4" aria-hidden="true" /> },
+    { value: "DECLINED", label: "Não vão", tone: "bg-perigo-suave text-perigo", icon: <X className="size-4" aria-hidden="true" /> },
+  ];
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header com Navegação por Abas */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 pb-4">
-        <div>
-          <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
-            Convidados
-          </h1>
-          <p className="mt-1 text-sm text-tinta-suave">
-            Cadastrem quem vai ser convidado, quantos acompanhantes cada um pode levar e onde vai sentar.
+      <PageHeader
+        eyebrow="Convidados"
+        title="Lista de convidados"
+        description={deadlineLabel ? `Prazo para confirmar: ${deadlineLabel}` : "Quem vocês convidam, quantos lugares cada um tem e quem já respondeu."}
+        actions={
+          <>
+            {initialGuests.length > 0 && (
+              <a href="/api/export/guests" download="convidados.csv" className={btn.secondary}>
+                <Download className="size-4" aria-hidden="true" />
+                Exportar CSV
+              </a>
+            )}
+            <button type="button" onClick={openAdd} className={`${btn.primary} max-md:hidden`}>
+              <Plus className="size-4" aria-hidden="true" />
+              Adicionar convidado
+            </button>
+          </>
+        }
+      />
+
+      {initialGuests.length === 0 ? (
+        <div className={`${card} flex flex-col items-center gap-3 px-6 py-14 text-center`}>
+          <span className="grid size-12 place-items-center rounded-full bg-ameixa-suave text-ameixa">
+            <Users className="size-6" aria-hidden="true" />
+          </span>
+          <h2 className="font-display text-[26px] font-medium leading-8 text-tinta">Ainda não tem ninguém aqui</h2>
+          <p className="max-w-md text-tinta-suave">
+            Comecem pelos convidados mais próximos. Cada um recebe o convite e confirma a presença pelo link, sem criar conta.
           </p>
-        </div>
-
-        {/* Abas */}
-        <div className="flex items-center bg-zinc-100 p-1 rounded-xl border border-zinc-200/80 w-fit">
-          <button
-            type="button"
-            onClick={() => setActiveTab("guests")}
-            className={`flex min-h-11 items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
-              activeTab === "guests"
-                ? "bg-papel text-zinc-900 shadow-sm font-semibold"
-                : "text-zinc-600 hover:text-zinc-900"
-            }`}
-          >
-            <Users className="w-4 h-4 text-brand" />
-            Convidados ({initialGuests.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("tables")}
-            className={`flex min-h-11 items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
-              activeTab === "tables"
-                ? "bg-papel text-zinc-900 shadow-sm font-semibold"
-                : "text-zinc-600 hover:text-zinc-900"
-            }`}
-          >
-            <LayoutGrid className="w-4 h-4 text-brand" />
-            Mesas ({initialTables.length})
+          <button type="button" onClick={openAdd} className={`${btn.primary} mt-2`}>
+            Adicionar o primeiro convidado
           </button>
         </div>
-      </div>
-
-      {/* ABA 1: LISTA DE CONVIDADOS */}
-      {activeTab === "guests" && (
-        <div className="flex flex-col gap-6 animate-in fade-in duration-300">
-          {/* Tabela de Convidados com DataTable */}
-          <DataTable
-            data={initialGuests}
-            pageSize={15}
-            keyExtractor={(g) => g.id}
-            searchPlaceholder="Buscar por nome, e-mail, telefone..."
-            emptyMessage={
-              initialGuests.length === 0 ? (
-                <div className="mx-auto flex max-w-sm flex-col items-center gap-3">
-                  <Users className="h-9 w-9 text-zinc-300" aria-hidden="true" />
-                  <p className="font-semibold text-tinta">Vocês ainda não cadastraram ninguém</p>
-                  <p className="text-sm text-tinta-suave">
-                    Comecem pelos convidados mais próximos. Cada um recebe o convite e confirma presença pelo link, sem criar conta.
-                  </p>
-                  <Button onClick={openAdd} className="h-11 bg-zinc-900 px-5 text-white hover:bg-zinc-800">
-                    Adicionar o primeiro convidado
-                  </Button>
-                </div>
-              ) : (
-                "Nenhum convidado com esta busca."
-              )
-            }
-            mobileCard={(guest) => {
-              const rsvp = rsvpConfig[guest.rsvpStatus];
+      ) : (
+        <>
+          <div role="group" aria-label="Filtrar por resposta" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:overflow-visible md:px-0 md:pb-0">
+            {chips.map((c) => {
+              const active = filter === c.value;
               return (
-                <div className="flex items-start gap-3">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-zinc-900">{guest.name}</span>
-                      <Badge variant="outline" className={rsvp.className}>
-                        {rsvp.label}
-                      </Badge>
-                    </div>
-                    <p className="mt-1 text-sm text-zinc-600">
-                      {[guest.category, guest.phone ? formatPhoneBR(guest.phone) : null].filter(Boolean).join(" · ") || "Sem telefone"}
-                    </p>
-                    <p className="text-sm text-zinc-600">
-                      Acompanhantes:{" "}
-                      {guest.rsvpStatus === "CONFIRMED" ? `${guest.confirmedCompanions || 0} de ${guest.allowedCompanions}` : `até ${guest.allowedCompanions}`}
-                    </p>
-                    {guest.dietaryRestrictions && <p className="mt-1 text-sm text-aviso">Restrição: {guest.dietaryRestrictions}</p>}
-                  </div>
-                  <div className="flex shrink-0 gap-1">
-                    <Button aria-label={`Editar ${guest.name}`} variant="ghost" size="icon" onClick={() => openEdit(guest)} className="h-10 w-10 text-zinc-600">
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button aria-label={`Excluir ${guest.name}`} variant="ghost" size="icon" onClick={() => handleDelete(guest.id)} className="h-10 w-10 text-zinc-600 hover:text-perigo">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
+                <button
+                  key={c.value}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => changeFilter(c.value)}
+                  className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-md px-4 text-sm font-semibold transition-colors md:min-h-10 ${
+                    active ? "bg-ameixa text-on-ameixa" : `${c.tone} hover:brightness-95`
+                  }`}
+                >
+                  {!active && c.icon}
+                  {c.label} · {counts[c.value]}
+                </button>
               );
-            }}
-            topRightElement={
-              <div className="flex items-center gap-2">
-                <Button
-                  asChild
-                  variant="outline"
-                  className="shadow-sm flex items-center gap-2 text-zinc-700 h-11 sm:h-10"
-                >
-                  <a href="/api/export/guests" download="convidados.csv">
-                    <Download className="w-4 h-4" />
-                    Exportar (CSV)
-                  </a>
-                </Button>
-                <Button
-                  onClick={openAdd}
-                  className="bg-zinc-900 text-white hover:bg-zinc-800 shadow-sm flex items-center gap-2 h-11 sm:h-10"
-                >
-                  <span className="text-lg leading-none" aria-hidden="true">+</span> Novo convidado
-                </Button>
+            })}
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-tinta-suave" aria-hidden="true" />
+              <input
+                type="search"
+                aria-label="Buscar convidado"
+                placeholder="Buscar por nome ou telefone"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setVisible(PAGE_SIZE);
+                }}
+                className={`${input} pl-10`}
+              />
+            </div>
+            <select
+              aria-label="Grupo"
+              value={group}
+              onChange={(e) => {
+                setGroup(e.target.value);
+                setVisible(PAGE_SIZE);
+              }}
+              className={`${input} sm:w-52 sm:flex-none`}
+            >
+              <option value="">Todos os grupos</option>
+              {groups.map((g) => (
+                <option key={g} value={g}>
+                  {g}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {canRemind && filter === "PENDING" && counts.PENDING > 0 && (
+            <Link href="/mensagens" className={`${btn.secondary} w-full md:w-fit`}>
+              <MessageCircle className="size-4" aria-hidden="true" />
+              Lembrar os {counts.PENDING} no WhatsApp
+            </Link>
+          )}
+
+          {filtered.length === 0 ? (
+            <div className={`${card} px-6 py-12 text-center text-tinta-suave`}>Ninguém com esta busca. Tente outro nome, filtro ou grupo.</div>
+          ) : (
+            <>
+              {/* Computador: tabela com linhas de 56px */}
+              <div className={`${card} hidden overflow-hidden md:block`}>
+                <table className="w-full border-collapse text-left text-[15px]">
+                  <thead>
+                    <tr className="border-b border-linha">
+                      <th scope="col" className={`${overline} px-4 py-3`}>Nome</th>
+                      <th scope="col" className={`${overline} px-2 py-3`}>Grupo</th>
+                      <th scope="col" className={`${overline} px-2 py-3`}>Lugares</th>
+                      <th scope="col" className={`${overline} px-2 py-3`}>Resposta</th>
+                      <th scope="col" className={`${overline} px-2 py-3`}>Mesa</th>
+                      <th scope="col" className="px-4 py-3">
+                        <span className="sr-only">Ações</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {shown.map((g) => (
+                      <tr key={g.id} className="border-b border-linha last:border-b-0 hover:bg-ameixa-suave/40">
+                        <td className="px-4 py-3">
+                          <button type="button" onClick={() => openEdit(g)} className="block cursor-pointer rounded text-left font-semibold text-tinta hover:text-ameixa">
+                            {g.name}
+                          </button>
+                          <span className="block text-sm text-tinta-suave tabular-nums">{g.phone ? formatPhoneBR(g.phone) : "Sem telefone"}</span>
+                          <LinkBadge guest={g} />
+                          {g.companionsNames && <span className="block text-sm text-tinta-suave">Acompanhantes: {g.companionsNames}</span>}
+                          {g.dietaryRestrictions && <span className="block text-sm text-aviso">Restrição: {g.dietaryRestrictions}</span>}
+                        </td>
+                        <td className="px-2 py-3 text-tinta-suave">{g.category || "Sem grupo"}</td>
+                        <td className="px-2 py-3 tabular-nums">{seats(g)}</td>
+                        <td className="px-2 py-3">
+                          <RsvpChip status={g.rsvpStatus} />
+                        </td>
+                        <td className="px-2 py-3 text-tinta-suave">{g.table?.name ?? "Sem mesa"}</td>
+                        <td className="px-4 py-2">
+                          <div className="flex items-center justify-end gap-1">
+                            <button type="button" onClick={() => openEdit(g)} className={`${btn.quiet} ${btn.sm}`} aria-label={`Editar ${g.name}`}>
+                              Editar
+                            </button>
+                            <button type="button" onClick={() => askRemove(g)} className={btnIconDanger} aria-label={`Excluir ${g.name}`}>
+                              <Trash2 className="size-4" aria-hidden="true" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            }
-            columns={[
-              {
-                key: "name",
-                header: "Nome / Detalhes",
-                sortable: true,
-                accessor: (g) => g.name,
-                cell: (guest) => (
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-zinc-900">{guest.name}</span>
-                    {guest.email && (
-                      <span className="text-xs text-zinc-500 mt-0.5">{guest.email}</span>
-                    )}
-                    {guest.companionsNames && (
-                      <span className="text-xs text-zinc-500 mt-1 font-normal">
-                        Acomp: <span className="italic text-zinc-700">{guest.companionsNames}</span>
-                      </span>
-                    )}
-                    {guest.dietaryRestrictions && (
-                      <span className="text-xs text-aviso bg-aviso-suave border border-amber-100 rounded px-1.5 py-0.5 w-fit mt-1.5 font-medium">
-                        Restrição: {guest.dietaryRestrictions}
-                      </span>
-                    )}
-                  </div>
-                ),
-              },
-              {
-                key: "category",
-                header: "Tipo",
-                sortable: true,
-                className: "hidden md:table-cell",
-                headerClassName: "hidden md:table-cell",
-                accessor: (g) => g.category || "",
-                cell: (guest) =>
-                  guest.category ? (
-                    <Badge variant="outline" className="bg-aviso-suave/80 text-amber-900 border-amber-200/80 font-medium">
-                      {guest.category}
-                    </Badge>
-                  ) : (
-                    <span className="text-xs text-zinc-500 italic">Não definido</span>
-                  ),
-              },
-              {
-                key: "parentGuest",
-                header: "Vínculo Familiar",
-                sortable: true,
-                className: "hidden lg:table-cell",
-                headerClassName: "hidden lg:table-cell",
-                accessor: (g) => g.parentGuest?.name || (g.linkedGuests && g.linkedGuests.length > 0 ? "Titular" : ""),
-                cell: (guest) => {
-                  const parentName = guest.parentGuest?.name;
-                  const hasLinked = guest.linkedGuests && guest.linkedGuests.length > 0;
-                  return parentName ? (
-                    <div className="flex items-center gap-1.5 text-xs text-purple-700 bg-purple-50 border border-purple-200/70 px-2 py-1 rounded-md w-fit font-medium">
-                      <HeartHandshake className="w-3.5 h-3.5" />
-                      Família de: {parentName}
-                    </div>
-                  ) : hasLinked ? (
-                    <div className="flex items-center gap-1.5 text-xs text-blue-700 bg-blue-50 border border-blue-200/70 px-2 py-1 rounded-md w-fit font-medium">
-                      <UserCheck className="w-3.5 h-3.5" />
-                      Convidado Principal ({guest.linkedGuests?.length} vínc.)
-                    </div>
-                  ) : (
-                    <span className="text-xs text-zinc-500 italic">Titular</span>
-                  );
-                },
-              },
-              {
-                key: "phone",
-                header: "WhatsApp",
-                sortable: true,
-                className: "hidden md:table-cell",
-                headerClassName: "hidden md:table-cell",
-                accessor: (g) => g.phone || "",
-                cell: (guest) =>
-                  guest.phone ? (
-                    <span className="text-sm text-zinc-600 tabular-nums">{formatPhoneBR(guest.phone)}</span>
-                  ) : (
-                    <span className="text-xs text-zinc-500 italic">Não informado</span>
-                  ),
-              },
-              {
-                key: "confirmedCompanions",
-                header: "Acomp. Confirmados",
-                sortable: true,
-                className: "hidden lg:table-cell",
-                headerClassName: "hidden lg:table-cell",
-                accessor: (g) => g.confirmedCompanions || 0,
-                cell: (guest) => (
-                  <span className="text-sm text-zinc-600">
-                    {guest.rsvpStatus === "CONFIRMED"
-                      ? `${guest.confirmedCompanions || 0} / ${guest.allowedCompanions}`
-                      : `0 / ${guest.allowedCompanions}`}
-                  </span>
-                ),
-              },
-              {
-                key: "rsvpStatus",
-                header: "Status",
-                sortable: true,
-                accessor: (g) => rsvpConfig[g.rsvpStatus]?.label || "",
-                cell: (guest) => {
-                  const rsvp = rsvpConfig[guest.rsvpStatus];
-                  return (
-                    <Badge variant="outline" className={rsvp.className}>
-                      {rsvp.label}
-                    </Badge>
-                  );
-                },
-              },
-              {
-                key: "actions",
-                header: "Ações",
-                sortable: false,
-                searchable: false,
-                className: "text-right",
-                headerClassName: "text-right w-20",
-                cell: (guest) => (
-                  <div className="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                    <Button aria-label="Editar"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openEdit(guest)}
-                      className="h-8 w-8 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100"
+
+              {/* Celular: um cartão por convidado, o toque abre a edição */}
+              <ul className="flex flex-col gap-2 md:hidden">
+                {shown.map((g) => (
+                  <li key={g.id}>
+                    <button
+                      type="button"
+                      onClick={() => openEdit(g)}
+                      aria-label={`Editar ${g.name}`}
+                      className={`${card} flex min-h-14 w-full cursor-pointer items-center gap-3 px-3.5 py-3 text-left`}
                     >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button aria-label="Excluir"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(guest.id)}
-                      className="h-8 w-8 text-zinc-500 hover:text-perigo hover:bg-perigo-suave"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ),
-              },
-            ]}
-          />
-        </div>
+                      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-areia text-sm font-semibold text-tinta" aria-hidden="true">
+                        {initials(g.name)}
+                      </span>
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <strong className="truncate font-semibold text-tinta">{g.name}</strong>
+                        <span className="text-sm text-tinta-suave">{[g.category, seatsLabel(g)].filter(Boolean).join(" · ")}</span>
+                      </span>
+                      <RsvpChip status={g.rsvpStatus} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              <p className="text-sm text-tinta-suave">
+                Mostrando {shown.length} de {filtered.length}
+                {filtered.length !== counts.all && ` (${counts.all} no total)`}
+                {shown.length < filtered.length && (
+                  <>
+                    {" · "}
+                    <button type="button" onClick={() => setVisible((v) => v + PAGE_SIZE)} className="inline-flex min-h-11 cursor-pointer items-center font-semibold text-ameixa underline underline-offset-2 hover:text-ameixa-hover md:min-h-0">
+                      Carregar mais
+                    </button>
+                  </>
+                )}
+              </p>
+            </>
+          )}
+        </>
       )}
 
-      {/* ABA 2: ORGANIZAÇÃO DE MESAS */}
-      {activeTab === "tables" && (
-        <div className="animate-in fade-in duration-300">
-          <TablesClient
-            initialTables={initialTables}
-            initialUnassigned={initialUnassigned}
-          />
-        </div>
-      )}
+      {/* Botão de adicionar no celular, acima da barra inferior */}
+      <button
+        type="button"
+        onClick={openAdd}
+        aria-label="Adicionar convidado"
+        className="fixed bottom-24 right-4 z-30 grid size-14 cursor-pointer place-items-center rounded-full bg-ameixa text-on-ameixa shadow-[var(--shadow-aceito-2)] transition-colors hover:bg-ameixa-hover md:hidden"
+      >
+        <Plus className="size-6" aria-hidden="true" />
+      </button>
 
-      {/* Modais */}
       <GuestModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         guest={editingGuest}
         allGuests={initialGuests}
+        onDelete={(g) => {
+          setIsModalOpen(false);
+          askRemove(g);
+        }}
       />
 
       <ConfirmModal
@@ -381,10 +360,11 @@ export function GuestsClient({
         onClose={() => setConfirmOpen(false)}
         onConfirm={() => {
           setConfirmOpen(false);
-          confirmData?.onConfirm();
+          if (toRemove) remove(toRemove.id);
         }}
-        title={confirmData?.title || ""}
-        description={confirmData?.description || ""}
+        title="Remover convidado"
+        description={toRemove ? `Remover ${toRemove.name} da lista? Não dá para desfazer.` : ""}
+        confirmText="Remover"
       />
     </div>
   );
