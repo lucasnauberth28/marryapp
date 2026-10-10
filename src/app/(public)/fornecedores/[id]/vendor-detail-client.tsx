@@ -66,7 +66,7 @@ function AvailabilityCheck({ vendorId, todayIso }: { vendorId: string; todayIso:
 
   return (
     <form onSubmit={onSubmit} className="space-y-2" aria-describedby="disponibilidade-resultado">
-      <Label htmlFor="disponibilidade-data" className="text-xs font-bold text-tinta-suave uppercase">
+      <Label htmlFor="disponibilidade-data" className="text-sm font-semibold text-tinta">
         Ver disponibilidade
       </Label>
       <div className="flex gap-2">
@@ -80,9 +80,9 @@ function AvailabilityCheck({ vendorId, todayIso }: { vendorId: string; todayIso:
             setResult(null);
             setError(null);
           }}
-          className="h-10 flex-1 rounded-xl bg-linho text-xs"
+          className="h-11 flex-1 rounded-xl bg-linho text-sm"
         />
-        <Button type="submit" variant="outline" disabled={isPending} className="h-10 rounded-xl text-xs font-bold">
+        <Button type="submit" variant="outline" disabled={isPending} className="h-11 rounded-xl text-sm font-bold">
           {isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : "Consultar"}
         </Button>
       </div>
@@ -131,15 +131,17 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
   const [leadLocation, setLeadLocation] = useState("");
   const [leadBudget, setLeadBudget] = useState("");
   const [isPendingLead, startTransitionLead] = useTransition();
+  // Pedido enviado: a confirmação fica na tela (um aviso passageiro some antes de ser lido).
+  const [sentTo, setSentTo] = useState<{ coupleName: string } | null>(null);
 
   const handleSendLead = (e: React.FormEvent) => {
     e.preventDefault();
     if (!coupleName || !couplePhone) {
-      toast.error("Preencha seu nome e WhatsApp para contato.");
+      toast.error("Preencha seu nome e WhatsApp para o fornecedor poder responder.");
       return;
     }
 
-    const toastId = toast.loading(`Enviando solicitação para ${vendor.companyName}...`);
+    const toastId = toast.loading(`Enviando o pedido para ${vendor.companyName}...`);
     startTransitionLead(async () => {
       const res = await createVendorLead({
         vendorId: vendor.id,
@@ -155,24 +157,8 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
       });
 
       if (res.success) {
-        const whatsapp = directWhatsapp;
-        toast.success(`Pedido enviado para ${vendor.companyName}.`, {
-          id: toastId,
-          description: "O fornecedor recebeu seus dados e vai entrar em contato.",
-          action: whatsapp
-            ? {
-                label: "Conversar no WhatsApp",
-                onClick: () =>
-                  window.open(
-                    `https://wa.me/${whatsapp}?text=${encodeURIComponent(
-                      `Olá! Sou ${coupleName} e acabei de pedir um orçamento pelo Aceito.`
-                    )}`,
-                    "_blank",
-                    "noopener,noreferrer"
-                  ),
-              }
-            : undefined,
-        });
+        toast.dismiss(toastId);
+        setSentTo({ coupleName });
         setCoupleName("");
         setCouplePhone("");
         setCoupleEmail("");
@@ -181,7 +167,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
         setLeadLocation("");
         setLeadBudget("");
       } else {
-        toast.error(res.error || "Erro ao solicitar orçamento.", { id: toastId });
+        toast.error(res.error || "Não conseguimos enviar o pedido. Tente de novo.", { id: toastId });
       }
     });
   };
@@ -569,41 +555,74 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                   Envie seus dados e o fornecedor responderá com disponibilidade na sua data.
                 </p>
 
+                {sentTo ? (
+                  <div role="status" className="space-y-3 rounded-2xl border border-sucesso/30 bg-sucesso-suave p-4 text-sm text-tinta">
+                    <p className="flex items-center gap-2 font-semibold">
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-sucesso" aria-hidden="true" />
+                      Pedido enviado para {vendor.companyName}
+                    </p>
+                    <p className="text-tinta-suave">
+                      Recebemos os seus dados, {sentTo.coupleName.split(" ")[0]}. O fornecedor vai entrar em contato pelo WhatsApp que você informou.
+                    </p>
+                    {directWhatsapp ? (
+                      <a
+                        href={`https://wa.me/${directWhatsapp}?text=${encodeURIComponent(`Olá! Sou ${sentTo.coupleName} e acabei de pedir um orçamento pelo Aceito.`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex min-h-11 items-center justify-center rounded-full bg-tinta px-4 font-bold text-papel"
+                      >
+                        Conversar agora no WhatsApp
+                        <span className="sr-only"> (abre em nova aba)</span>
+                      </a>
+                    ) : null}
+                    <button type="button" onClick={() => setSentTo(null)} className="min-h-11 w-full rounded-full font-semibold text-ameixa hover:bg-ameixa-suave">
+                      Fazer outro pedido
+                    </button>
+                  </div>
+                ) : (
                 <form onSubmit={handleSendLead} className="space-y-3.5">
                   <div className="space-y-1">
-                    <Label className="text-xs font-bold text-tinta-suave uppercase">Seu Nome</Label>
+                    <Label htmlFor="lead-nome" className="text-sm font-semibold text-tinta">Seu nome</Label>
                     <Input
+                      id="lead-nome"
+                      name="name"
+                      autoComplete="name"
                       value={coupleName}
                       onChange={(e) => setCoupleName(e.target.value)}
-                      placeholder="Ex: Giovanna"
+                      placeholder="Ex.: Giovanna"
                       required
-                      className="rounded-xl h-10 text-xs bg-linho"
+                      className="rounded-xl h-11 text-sm bg-linho"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-xs font-bold text-tinta-suave uppercase">WhatsApp</Label>
+                    <Label htmlFor="lead-telefone" className="text-sm font-semibold text-tinta">Seu WhatsApp com DDD</Label>
                     <Input
+                      id="lead-telefone"
+                      name="phone"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel-national"
                       value={couplePhone}
                       onChange={(e) => setCouplePhone(e.target.value)}
                       placeholder="(11) 99999-9999"
                       required
-                      className="rounded-xl h-10 text-xs bg-linho font-mono"
+                      className="rounded-xl h-11 text-sm bg-linho"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-xs font-bold text-tinta-suave uppercase">Data do Casamento</Label>
+                    <Label className="text-sm font-semibold text-tinta">Data do casamento</Label>
                     <DatePicker
                       value={weddingDate}
                       onChange={(e) => setWeddingDate(e.target.value)}
                       placeholder="Selecione a data"
-                      className="rounded-xl h-10 text-xs bg-linho"
+                      className="rounded-xl h-11 text-sm bg-linho"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <Label htmlFor="lead-cidade" className="text-xs font-bold text-tinta-suave uppercase">
+                    <Label htmlFor="lead-cidade" className="text-sm font-semibold text-tinta">
                       Cidade do casamento
                     </Label>
                     <Input
@@ -613,19 +632,19 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                       placeholder="Ex: Itu, SP"
                       maxLength={80}
                       autoComplete="address-level2"
-                      className="rounded-xl h-10 text-xs bg-linho"
+                      className="rounded-xl h-11 text-sm bg-linho"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <Label htmlFor="lead-orcamento" className="text-xs font-bold text-tinta-suave uppercase">
+                    <Label htmlFor="lead-orcamento" className="text-sm font-semibold text-tinta">
                       Faixa de orçamento
                     </Label>
                     <select
                       id="lead-orcamento"
                       value={leadBudget}
                       onChange={(e) => setLeadBudget(e.target.value)}
-                      className="h-10 w-full cursor-pointer rounded-xl border border-linha bg-linho px-3 text-xs text-tinta"
+                      className="h-11 w-full cursor-pointer rounded-xl border border-linha-forte bg-linho px-3 text-sm text-tinta"
                     >
                       <option value="">Selecione (opcional)</option>
                       {LEAD_BUDGET_OPTIONS.map((option) => (
@@ -637,12 +656,13 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-xs font-bold text-tinta-suave uppercase">Tipo de Reunião</Label>
+                    <Label className="text-sm font-semibold text-tinta">Tipo de reunião</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
+                        aria-pressed={meetingType === "ONLINE"}
                         onClick={() => setMeetingType("ONLINE")}
-                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1 cursor-pointer ${
+                        className={`min-h-11 p-2.5 rounded-xl border text-sm font-bold flex items-center justify-center gap-1 cursor-pointer ${
                           meetingType === "ONLINE"
                             ? "bg-brand-50 border-brand text-brand"
                             : "bg-linho border-linha text-tinta-suave"
@@ -654,8 +674,9 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
 
                       <button
                         type="button"
+                        aria-pressed={meetingType === "PRESENTIAL"}
                         onClick={() => setMeetingType("PRESENTIAL")}
-                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1 cursor-pointer ${
+                        className={`min-h-11 p-2.5 rounded-xl border text-sm font-bold flex items-center justify-center gap-1 cursor-pointer ${
                           meetingType === "PRESENTIAL"
                             ? "bg-brand-50 border-brand text-brand"
                             : "bg-linho border-linha text-tinta-suave"
@@ -670,18 +691,19 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                   <Button
                     type="submit"
                     disabled={isPendingLead}
-                    className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-12 text-xs shadow-md gap-2 mt-3 cursor-pointer"
+                    className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-12 text-sm shadow-md gap-2 mt-3 cursor-pointer"
                   >
                     {isPendingLead ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <>
                         <Calendar className="w-4 h-4" />
-                        <span>Solicitar Atendimento</span>
+                        <span>Pedir orçamento</span>
                       </>
                     )}
                   </Button>
                 </form>
+                )}
               </div>
 
               {/* Garantia Aceito */}

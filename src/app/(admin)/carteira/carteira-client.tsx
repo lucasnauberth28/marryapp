@@ -203,31 +203,31 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
       {/* Header com Título & Ações */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
-            <Wallet className="w-6 h-6 text-brand" />
+          <h1 className="flex items-center gap-3 font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
+            <Wallet className="w-6 h-6 shrink-0 text-brand" aria-hidden="true" />
             Carteira
           </h1>
-          <p className="text-zinc-500 text-xs mt-0.5">
-            Gerencie o saldo disponível em conta e cadastre seus cartões de crédito para alocação real das despesas do casamento.
+          <p className="mt-1 text-sm text-tinta-suave">
+            Anotem quanto dinheiro vocês têm disponível e quais cartões vão usar, para saber de onde sai o pagamento de cada despesa.
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             onClick={() => setBalanceModalOpen(true)}
             variant="outline"
-            className="border-emerald-200 text-sucesso hover:bg-sucesso-suave text-xs font-semibold rounded-xl"
+            className="h-11 border-emerald-200 text-sucesso hover:bg-sucesso-suave text-sm font-semibold rounded-xl sm:h-9"
           >
             <DollarSign className="w-4 h-4 mr-1.5 text-sucesso" />
-            Editar Saldo em Conta
+            Editar o saldo
           </Button>
 
           <Button
             onClick={openNewCardModal}
-            className="bg-brand hover:bg-brand-600 text-white text-xs font-semibold rounded-xl shadow-xs"
+            className="h-11 bg-brand hover:bg-brand-600 text-white text-sm font-semibold rounded-xl shadow-xs sm:h-9"
           >
             <Plus className="w-4 h-4 mr-1.5" />
-            Novo Cartão de Crédito
+            Novo cartão
           </Button>
         </div>
       </div>
@@ -239,7 +239,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
           <div className="flex justify-between items-center">
             <span className="text-xs font-bold text-sucesso uppercase tracking-wider flex items-center gap-1.5">
               <QrCode className="w-4 h-4 text-sucesso" />
-              Saldo em Conta / Pix
+              Saldo em conta
             </span>
             <Badge className="bg-emerald-100 text-sucesso border-emerald-200 text-xs">
               Disponível
@@ -250,7 +250,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
               {formatCurrency(balance)}
             </div>
             <p className="text-xs text-sucesso mt-1">
-              Recurso fictício/real em conta para compras à vista e pagamentos Pix.
+              Dinheiro disponível para pagar à vista ou por Pix.
             </p>
           </div>
         </Card>
@@ -260,10 +260,10 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
           <div className="flex justify-between items-center">
             <span className="text-xs font-bold text-purple-800 uppercase tracking-wider flex items-center gap-1.5">
               <CreditCardIcon className="w-4 h-4 text-purple-600" />
-              Limites dos Cartões
+              Limite dos cartões
             </span>
             <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs">
-              {cards.length} Cartão(ões)
+              {cards.length === 1 ? "1 cartão" : `${cards.length} cartões`}
             </Badge>
           </div>
           <div>
@@ -271,7 +271,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
               {formatCurrency(totalCardLimit)}
             </div>
             <p className="text-xs text-purple-700 mt-1">
-              Soma do limite total cadastrado em cartões de crédito.
+              Soma do limite dos cartões cadastrados.
             </p>
           </div>
         </Card>
@@ -281,18 +281,16 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
           <div className="flex justify-between items-center">
             <span className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-aviso" />
-              Poder de Compra Total
+              Total para gastar
             </span>
-            <Badge className="bg-amber-100 text-amber-900 border-amber-200 text-xs">
-              Patrimônio
-            </Badge>
+            
           </div>
           <div>
             <div className="text-2xl font-black text-amber-950 tracking-tight">
               {formatCurrency(totalAssets)}
             </div>
             <p className="text-xs text-aviso mt-1">
-              Capacidade financeira combinada (Saldo em Conta + Limites de Crédito).
+              Saldo disponível somado ao limite dos cartões.
             </p>
           </div>
         </Card>
@@ -303,7 +301,7 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-bold text-zinc-900 flex items-center gap-2">
             <CreditCardIcon className="w-5 h-5 text-brand" />
-            Cartões de Crédito Cadastrados
+            Cartões cadastrados
           </h2>
           <span className="text-xs text-zinc-500 font-medium">
             {cards.length} {cards.length === 1 ? "cartão ativo" : "cartões ativos"}
@@ -316,15 +314,15 @@ export function CarteiraClient({ initialBalance, initialCards }: CarteiraClientP
             <div>
               <h3 className="font-bold text-sm text-zinc-700">Nenhum cartão cadastrado</h3>
               <p className="text-xs text-zinc-500 mt-1">
-                Cadastre seus cartões para saber exatamente de onde sairá o pagamento de cada parcela ou compra.
+                Cadastrem os cartões para saber de onde sai cada parcela ou compra.
               </p>
             </div>
             <Button
               onClick={openNewCardModal}
               size="sm"
-              className="bg-brand hover:bg-brand-600 text-white text-xs mt-2"
+              className="mt-2 h-11 bg-brand text-sm text-white hover:bg-brand-600 sm:h-8"
             >
-              <Plus className="w-4 h-4 mr-1" /> Adicionar Primeiro Cartão
+              <Plus className="w-4 h-4 mr-1" /> Adicionar o primeiro cartão
             </Button>
           </Card>
         ) : (

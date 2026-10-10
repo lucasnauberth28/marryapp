@@ -14,6 +14,12 @@ export function isMercadoPagoConfigured() {
   return mpAccessToken.length > 0;
 }
 
+/** Cartão só funciona com o Mercado Pago configurado (token no servidor e chave pública no navegador). */
+export function isCardPaymentAvailable() {
+  const publicKey = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || process.env.NEXT_PUBLIC_MP_PUBLIC_KEY;
+  return isMercadoPagoConfigured() && Boolean(publicKey);
+}
+
 /**
  * Calcula o valor final com o repasse das taxas do cartão.
  * Fórmula: ValorFinal = (ValorPresente + TaxaFixa) / (1 - TaxaPercentual)

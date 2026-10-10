@@ -22,15 +22,19 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { UserImage } from "@/components/ui/user-image";
 
 interface PublicGiftsClientProps {
   initialGifts: Gift[];
   coupleNames: string;
+  /** Falso quando o cartão não está disponível: a tela só fala de Pix. */
+  cardEnabled?: boolean;
 }
 
-export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClientProps) {
+export function PublicGiftsClient({ initialGifts, coupleNames, cardEnabled = true }: PublicGiftsClientProps) {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"default" | "asc" | "desc">("default");
   const [selectedGift, setSelectedGift] = useState<Gift | null>(null);
@@ -72,13 +76,15 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
 
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs font-semibold text-tinta-suave">
           <span className="flex items-center gap-1 text-tinta-suave bg-papel/80 px-2.5 py-1 rounded-full border border-linha/60 shadow-2xs">
-            <QrCode className="w-3 h-3 text-sucesso" /> PIX Copia e Cola (Sem Taxas)
+            <QrCode className="w-3 h-3 text-sucesso" aria-hidden="true" /> Pix sem taxa para quem presenteia
           </span>
+          {cardEnabled && (
+            <span className="flex items-center gap-1 text-tinta-suave bg-papel/80 px-2.5 py-1 rounded-full border border-linha/60 shadow-2xs">
+              <CreditCard className="w-3 h-3 text-ameixa" aria-hidden="true" /> Cartão em até 12x
+            </span>
+          )}
           <span className="flex items-center gap-1 text-tinta-suave bg-papel/80 px-2.5 py-1 rounded-full border border-linha/60 shadow-2xs">
-            <CreditCard className="w-3 h-3 text-indigo-600" /> Cartão de Crédito até 12x
-          </span>
-          <span className="flex items-center gap-1 text-tinta-suave bg-papel/80 px-2.5 py-1 rounded-full border border-linha/60 shadow-2xs">
-            <ShieldCheck className="w-3 h-3 text-primary" /> Checkout Seguro
+            <ShieldCheck className="w-3 h-3 text-primary" aria-hidden="true" /> Pagamento seguro
           </span>
         </div>
       </div>
@@ -86,20 +92,22 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
       {/* Barra de Filtros e Busca */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-6xl mx-auto w-full bg-papel p-3 rounded-2xl border border-linha/80 shadow-2xs">
         <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 text-tinta-suave absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-tinta-suave absolute left-3.5 top-3.5" aria-hidden="true" />
           <Input
-            placeholder="Buscar presente por nome..."
+            aria-label="Buscar presente por nome"
+            placeholder="Buscar presente por nome"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 rounded-xl border-linha text-sm h-10"
+            className="pl-9 rounded-xl text-sm h-11"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 text-xs">
-          <span className="text-tinta-suave font-semibold text-xs whitespace-nowrap">Ordenar por:</span>
+        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 text-sm">
+          <span className="text-tinta-suave font-semibold  whitespace-nowrap">Ordenar por:</span>
           <button
             onClick={() => setSortBy("default")}
-            className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
+            aria-pressed={sortBy === "default"}
+            className={`inline-flex min-h-11 items-center px-4 rounded-xl font-bold transition whitespace-nowrap ${
               sortBy === "default"
                 ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-areia text-tinta-suave hover:bg-areia"
@@ -109,23 +117,25 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
           </button>
           <button
             onClick={() => setSortBy("asc")}
-            className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
+            aria-pressed={sortBy === "asc"}
+            className={`inline-flex min-h-11 items-center px-4 rounded-xl font-bold transition whitespace-nowrap ${
               sortBy === "asc"
                 ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-areia text-tinta-suave hover:bg-areia"
             }`}
           >
-            Menor Valor
+            Menor valor
           </button>
           <button
             onClick={() => setSortBy("desc")}
-            className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
+            aria-pressed={sortBy === "desc"}
+            className={`inline-flex min-h-11 items-center px-4 rounded-xl font-bold transition whitespace-nowrap ${
               sortBy === "desc"
                 ? "bg-primary text-primary-foreground shadow-xs"
                 : "bg-areia text-tinta-suave hover:bg-areia"
             }`}
           >
-            Maior Valor
+            Maior valor
           </button>
         </div>
       </div>
@@ -159,7 +169,7 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
                 ) : (
                   <div className="flex flex-col items-center justify-center text-tinta-suave">
                     <ImageOff className="w-8 h-8 text-linha-forte mb-2" />
-                    <span className="text-xs text-tinta-suave font-medium">Lembrança Especial</span>
+                    <span className="text-xs text-tinta-suave font-medium">Lembrança especial</span>
                   </div>
                 )}
 
@@ -182,7 +192,7 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
               {/* Informações do Presente */}
               <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                 <div>
-                  <h3 className="text-lg font-bold text-tinta group-hover:text-primary transition-colors line-clamp-1">
+                  <h3 className="text-lg font-bold text-tinta group-hover:text-primary transition-colors line-clamp-2">
                     {gift.title}
                   </h3>
                   <p className="text-xs text-tinta-suave mt-1.5 line-clamp-2 leading-relaxed">
@@ -215,9 +225,9 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
                         e.stopPropagation();
                         setSelectedGift(gift);
                       }}
-                      className="rounded-xl px-4 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-all flex items-center gap-1.5"
+                      className="h-11 rounded-xl px-4 text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-all flex items-center gap-1.5"
                     >
-                      <span>Ver Presente</span>
+                      <span>Ver presente</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Button>
                   )}
@@ -271,26 +281,28 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
                   </div>
 
                   <div>
-                    <h2 className="text-xl sm:text-2xl text-tinta tracking-tight font-display italic leading-snug">
-                      {selectedGift.title}
-                    </h2>
+                    <DialogTitle asChild>
+                      <h2 className="text-xl sm:text-2xl text-tinta tracking-tight font-display italic leading-snug">
+                        {selectedGift.title}
+                      </h2>
+                    </DialogTitle>
 
-                    <p className="text-xs sm:text-sm text-tinta-suave mt-2 leading-relaxed">
+                    <DialogDescription className="text-sm text-tinta-suave mt-2 leading-relaxed">
                       {selectedGift.description ||
                         "Sua contribuição com este presente tornará a nossa nova vida juntos ainda mais especial e cheia de carinho!"}
-                    </p>
+                    </DialogDescription>
                   </div>
 
                   {/* Card de Valor da Contribuição */}
                   <div className="bg-primary/5 p-3.5 rounded-xl border border-primary/20 space-y-0.5 mt-2 shadow-2xs">
                     <span className="text-xs font-extrabold uppercase tracking-widest text-primary block">
-                      Valor da Contribuição
+                      Valor da contribuição
                     </span>
                     <span className="text-2xl sm:text-3xl font-black text-tinta tracking-tight block">
                       {formatPrice(selectedGift.amount)}
                     </span>
                     <p className="text-xs text-tinta-suave flex items-center gap-1 pt-0.5 font-medium">
-                      <ShieldCheck className="w-3 h-3 text-sucesso" /> PIX ou Cartão em até 12x
+                      <ShieldCheck className="w-3 h-3 text-sucesso" aria-hidden="true" /> {cardEnabled ? "Pix ou cartão em até 12x" : "Pagamento por Pix"}
                     </p>
                   </div>
                 </div>
@@ -301,18 +313,18 @@ export function PublicGiftsClient({ initialGifts, coupleNames }: PublicGiftsClie
                       Presente Já Comprado
                     </Button>
                   ) : (
-                    <Link href={`/checkout/${selectedGift.id}`} className="block w-full">
-                      <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl py-3 px-4 text-xs sm:text-sm font-bold shadow-md flex items-center justify-center gap-2 transition-all">
-                        <span>Presentear Agora</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    </Link>
+                    <Button asChild className="h-12 w-full bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl px-4 text-sm font-bold shadow-md transition-all">
+                      <Link href={`/checkout/${selectedGift.id}`} className="flex items-center justify-center gap-2">
+                        <span>Presentear agora</span>
+                        <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                      </Link>
+                    </Button>
                   )}
 
                   <Button
                     variant="ghost"
                     onClick={() => setSelectedGift(null)}
-                    className="w-full text-xs font-semibold text-tinta-suave hover:text-tinta rounded-lg h-8"
+                    className="h-11 w-full text-sm font-semibold text-tinta-suave hover:text-tinta rounded-lg"
                   >
                     Voltar para a lista
                   </Button>

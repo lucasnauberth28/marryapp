@@ -4,6 +4,7 @@ import { getIdentityForWedding } from "@/lib/wedding";
 import { weddingSitePath } from "@/lib/wedding-links";
 import { notFound } from "next/navigation";
 import { CheckoutClient } from "./checkout-client";
+import { isCardPaymentAvailable } from "@/lib/mercadopago";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 
@@ -65,19 +66,19 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
         <div className="flex items-center justify-between pb-2 border-b border-linha/60">
           <Link
             href={giftsPath}
-            className="text-xs font-bold text-tinta-suave hover:text-tinta flex items-center gap-1.5 transition-colors"
+            className="text-sm font-bold text-tinta-suave hover:text-tinta flex min-h-11 items-center gap-1.5 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Voltar para Lista de Presentes</span>
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            <span>Voltar para a lista</span>
           </Link>
 
           <span className="text-xs font-semibold text-sucesso bg-sucesso-suave border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-sucesso" /> Checkout Criptografado
+            <ShieldCheck className="w-3.5 h-3.5 text-sucesso" aria-hidden="true" /> Pagamento seguro
           </span>
         </div>
 
         {/* Formulario de Checkout */}
-        <CheckoutClient gift={gift} coupleNames={coupleNames} slug={wedding.slug} />
+        <CheckoutClient gift={gift} coupleNames={coupleNames} slug={wedding.slug} cardEnabled={isCardPaymentAvailable()} />
       </div>
 
       <div className="text-center text-xs text-tinta-suave py-4 font-sans">

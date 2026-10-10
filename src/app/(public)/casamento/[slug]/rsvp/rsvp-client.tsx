@@ -59,7 +59,6 @@ export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClien
     setGuest(null);
     setLoading(true);
 
-    const toastId = toast.loading("Localizando seu convite pelo WhatsApp...");
     try {
       const found = await findGuestByPhone(slug, phone);
       if (found) {
@@ -68,14 +67,11 @@ export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClien
         setCompanionsCount(0);
         setCompanionsNames(Array(found.allowedCompanions).fill(""));
         setDietary(found.dietaryRestrictions || "");
-        toast.success(`Olá, ${found.name}! Convite localizado.`, { id: toastId });
       } else {
-        setError("Não encontramos um convite para este número. Digite com o DDD.");
-        toast.error("Número não encontrado na lista de convidados.", { id: toastId });
+        setError("Não achamos um convite com este número. Use o WhatsApp com DDD que os noivos têm de você. Se ainda não achar, fale com eles.");
       }
     } catch {
-      setError("Erro ao buscar convite. Tente novamente.");
-      toast.error("Erro ao buscar convite.", { id: toastId });
+      setError("Não conseguimos buscar o convite agora. Tente de novo em instantes.");
     } finally {
       setLoading(false);
     }
@@ -92,12 +88,6 @@ export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClien
     setSubmitLoading(true);
     setError("");
 
-    const toastId = toast.loading(
-      status === "CONFIRMED"
-        ? "Registrando sua confirmação de presença..."
-        : "Registrando sua resposta..."
-    );
-    
     // Une os nomes preenchidos dos acompanhantes ativos
     const activeNames = companionsNames
       .slice(0, companionsCount)
@@ -115,19 +105,11 @@ export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClien
       );
       if (res.success) {
         setSuccessStatus(status);
-        toast.success(
-          status === "CONFIRMED"
-            ? "Presença confirmada com sucesso! ✨ Seu QR Code de acesso foi gerado."
-            : "Resposta registrada com sucesso. Sentiremos sua falta!",
-          { id: toastId }
-        );
       } else {
-        setError(res.error || "Erro ao salvar resposta.");
-        toast.error(res.error || "Erro ao salvar resposta.", { id: toastId });
+        setError(res.error || "Não conseguimos salvar a sua resposta. Tente de novo.");
       }
     } catch {
-      setError("Erro de conexão com o servidor.");
-      toast.error("Erro de conexão com o servidor.", { id: toastId });
+      setError("Sem conexão com o servidor. Confira a internet e tente de novo.");
     } finally {
       setSubmitLoading(false);
     }
@@ -169,14 +151,14 @@ export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClien
                 {successStatus === "CONFIRMED" ? (
                   <>
                     <div className="space-y-2">
-                      <h2 className="font-display text-3xl text-tinta">Presença Confirmada!</h2>
+                      <h2 className="font-display text-3xl text-tinta">Presença confirmada!</h2>
                       <p className="text-sm text-tinta-suave px-4">
-                        Tudo certo! Mal podemos esperar para viver este momento com você.
+                        Tudo certo! Mal podemos esperar para viver esse momento com você.
                       </p>
                     </div>
                     
                     <div className="bg-linho p-6 rounded-2xl border border-linha/80 w-full flex flex-col items-center shadow-inner">
-                      <p className="text-xs font-bold text-tinta-suave uppercase tracking-widest mb-4">Seu Ingresso Digital</p>
+                      <p className="text-xs font-bold text-tinta-suave uppercase tracking-widest mb-4">Seu ingresso digital</p>
                       <div ref={qrRef} className="bg-papel p-4 rounded-xl shadow-md border border-linha">
                         <QRCodeCanvas value={`GUEST:${guest?.id ?? ""}`} size={160} level="H" />
                       </div>
@@ -185,29 +167,35 @@ export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClien
                         onClick={downloadQrCode} 
                         variant="outline" 
                         size="sm" 
-                        className="mt-4 w-full border-linha text-tinta-suave hover:bg-areia/50 shadow-sm"
+                        className="mt-4 h-11 w-full border-linha-forte text-tinta hover:bg-areia/50 shadow-sm"
                       >
-                        <Download className="w-4 h-4 mr-2" /> Salvar Ingresso (Imagem)
+                        <Download className="w-4 h-4 mr-2" aria-hidden="true" /> Salvar o ingresso como imagem
                       </Button>
                       
                       <p className="text-xs text-tinta-suave mt-4 px-2">
-                        Apresente a imagem deste QR Code na entrada do evento para liberar seu acesso rapidamente.
+                        Mostre este QR Code na entrada para entrar mais rápido. Salve a imagem no celular, caso a internet falhe lá.
                       </p>
                     </div>
 
                     <Button asChild className="w-full bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl h-12 shadow-md">
                       <a href={weddingSitePath(slug, "presentes")} className="flex items-center justify-center gap-2">
-                        <Gift className="w-4 h-4" />
-                        Ver Lista de Presentes
+                        <Gift className="w-4 h-4" aria-hidden="true" />
+                        Ver a lista de presentes
                       </a>
+                    </Button>
+                    <Button variant="ghost" onClick={() => setSuccessStatus(null)} className="h-11 w-full text-tinta-suave">
+                      Mudar minha resposta
                     </Button>
                   </>
                 ) : (
                   <div className="py-6 space-y-4">
-                    <h2 className="font-display text-3xl text-tinta">Agradecemos por Avisar</h2>
+                    <h2 className="font-display text-3xl text-tinta">Obrigado por avisar</h2>
                     <p className="text-sm text-tinta-suave px-4">
-                      Sentiremos muito a sua falta no nosso grande dia, mas agradecemos por confirmar e nos ajudar na organização!
+                      Vamos sentir a sua falta no nosso grande dia, mas agradecemos por responder e ajudar na organização.
                     </p>
+                    <Button variant="ghost" onClick={() => setSuccessStatus(null)} className="h-11 text-tinta-suave">
+                      Mudar minha resposta
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -236,25 +224,32 @@ export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClien
                 </CardDescription>
               </CardHeader>
               <CardContent className="pb-8">
-                <form onSubmit={handleSearch} className="space-y-4">
-                  <div className="flex gap-2">
-                    <Input
-                      type="tel"
-                      placeholder="Ex: (11) 99999-9999"
-                      value={phone}
-                      onChange={handlePhoneChange}
-                      className="flex-1 rounded-xl border-linha bg-linho/50 focus:bg-papel h-12 text-base px-4 shadow-inner"
-                      required
-                    />
-                    <Button type="submit" disabled={loading} aria-label="Buscar convite" className="bg-brand hover:bg-brand-600 text-white rounded-xl w-12 h-12 shrink-0 shadow-md">
-                      {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
-                    </Button>
-                  </div>
+                <form onSubmit={handleSearch} className="space-y-3">
+                  <Input
+                    type="tel"
+                    name="phone"
+                    inputMode="tel"
+                    autoComplete="tel-national"
+                    aria-label="Seu WhatsApp com DDD"
+                    aria-describedby={error ? "rsvp-erro" : undefined}
+                    aria-invalid={error ? true : undefined}
+                    placeholder="Ex.: (11) 99999-9999"
+                    value={phone}
+                    onChange={handlePhoneChange}
+                    className="h-12 w-full rounded-xl bg-linho/50 px-4 text-base focus:bg-papel"
+                    required
+                  />
+                  <Button type="submit" disabled={loading} className="h-12 w-full gap-2 rounded-xl bg-brand text-base font-semibold text-white shadow-md hover:bg-brand-600">
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> : <Search className="w-5 h-5" aria-hidden="true" />}
+                    {loading ? "Procurando..." : "Encontrar meu convite"}
+                  </Button>
                   {error && (
-                    <motion.p 
-                      initial={{ opacity: 0 }} 
+                    <motion.p
+                      id="rsvp-erro"
+                      role="alert"
+                      initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="text-xs text-perigo font-semibold text-center bg-perigo-suave border border-perigo/20 py-2.5 px-3 rounded-lg"
+                      className="text-sm text-perigo font-semibold text-center bg-perigo-suave border border-perigo/20 py-2.5 px-3 rounded-lg"
                     >
                       {error}
                     </motion.p>
@@ -290,24 +285,29 @@ export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClien
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
-                
+                {guest.rsvpStatus !== "PENDING" && (
+                  <p className="rounded-xl bg-linho px-3 py-2 text-sm text-tinta-suave">
+                    Você já respondeu: {guest.rsvpStatus === "CONFIRMED" ? "vai ao casamento" : "não vai poder ir"}. Se mudou de ideia, é só responder de novo.
+                  </p>
+                )}
+
                 {/* Seletor de Acompanhantes */}
                 {guest.allowedCompanions > 0 && (
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-tinta-suave uppercase tracking-wider">
-                      Quantos acompanhantes você trará?
+                    <label htmlFor="rsvp-acompanhantes" className="block text-sm font-semibold text-tinta">
+                      Quantos acompanhantes você vai levar?
                     </label>
                     <Select
                       value={String(companionsCount)}
                       onValueChange={(val) => setCompanionsCount(Number(val))}
                     >
-                      <SelectTrigger className="w-full h-11 bg-linho border border-linha rounded-xl text-tinta text-sm font-medium">
+                      <SelectTrigger id="rsvp-acompanhantes" className="w-full h-11 bg-linho border border-linha-forte rounded-xl text-tinta text-sm font-medium">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {Array.from({ length: guest.allowedCompanions + 1 }).map((_, i) => (
                           <SelectItem key={i} value={String(i)} className="text-sm font-medium">
-                            {i === 0 ? "Nenhum acompanhante" : `${i} acompanhante(s)`}
+                            {i === 0 ? "Nenhum acompanhante" : i === 1 ? "1 acompanhante" : `${i} acompanhantes`}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -324,9 +324,9 @@ export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClien
                       exit={{ opacity: 0, height: 0 }}
                       className="space-y-3 overflow-hidden border-t border-linha pt-4"
                     >
-                      <label className="block text-xs font-bold text-tinta-suave uppercase tracking-wider">
-                        Nomes dos acompanhantes:
-                      </label>
+                      <p className="block text-sm font-semibold text-tinta">
+                        Nome de cada acompanhante
+                      </p>
                       {Array.from({ length: companionsCount }).map((_, i) => (
                         <motion.div
                           key={i}
@@ -336,10 +336,12 @@ export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClien
                         >
                           <Input
                             type="text"
-                            placeholder={`Nome completo do Acompanhante ${i + 1}`}
+                            aria-label={`Nome completo do acompanhante ${i + 1}`}
+                            autoComplete="off"
+                            placeholder={`Nome completo do acompanhante ${i + 1}`}
                             value={companionsNames[i] || ""}
                             onChange={(e) => handleCompanionNameChange(i, e.target.value)}
-                            className="h-10 border-linha rounded-lg text-sm bg-linho/30"
+                            className="h-11 rounded-lg text-sm bg-linho/30"
                             required
                           />
                         </motion.div>
@@ -349,24 +351,26 @@ export function RsvpClient({ slug, coupleNames, initials, dateLabel }: RsvpClien
                 </AnimatePresence>
 
                 {/* Restrições Alimentares */}
-                <div className="space-y-2 border-t border-linha pt-4">
-                  <label className="block text-xs font-bold text-tinta-suave uppercase tracking-wider">
-                    Restrições Alimentares / Alergias?
+                <div className={`space-y-2 ${guest.allowedCompanions > 0 ? "border-t border-linha pt-4" : ""}`}>
+                  <label htmlFor="rsvp-restricoes" className="block text-sm font-semibold text-tinta">
+                    Alguma restrição alimentar ou alergia? <span className="font-normal text-tinta-suave">(opcional)</span>
                   </label>
-                  <Input 
-                    placeholder="Ex: Vegano, Intolerante a lactose, sem glúten..."
+                  <Input
+                    id="rsvp-restricoes"
+                    placeholder="Ex.: vegano, sem lactose"
                     value={dietary}
                     onChange={(e) => setDietary(e.target.value)}
-                    className="h-11 border-linha rounded-xl text-sm"
+                    className="h-11 rounded-xl text-sm"
+                    aria-describedby="rsvp-restricoes-dica"
                   />
-                  <p className="text-xs text-tinta-suave">Deixe em branco se não possuir nenhuma restrição.</p>
+                  <p id="rsvp-restricoes-dica" className="text-xs text-tinta-suave">Se não tiver nenhuma, é só deixar em branco.</p>
                 </div>
 
                 {/* Botões de Ação */}
                 <div className="pt-4 border-t border-linha space-y-4">
-                  <p className="text-center font-bold text-tinta text-sm">Podemos contar com sua presença?</p>
+                  <p className="text-center font-semibold text-tinta">Podemos contar com você?</p>
                   
-                  {error && <p className="text-xs text-perigo font-semibold text-center bg-perigo-suave py-2 rounded-lg">{error}</p>}
+                  {error && <p role="alert" className="text-sm text-perigo font-semibold text-center bg-perigo-suave py-2 px-3 rounded-lg">{error}</p>}
 
                   <div className="grid grid-cols-2 gap-4">
                     <Button 

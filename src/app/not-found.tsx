@@ -12,11 +12,11 @@ export default function NotFound() {
       description="O link pode estar incompleto ou o conteúdo foi removido. Confira o endereço ou volte para o início."
       actions={
         <>
-          <Button asChild className="rounded-full">
+          <Button asChild className="h-11 rounded-full px-5">
             <Link href="/">Ir para o início</Link>
           </Button>
-          <Button asChild variant="outline" className="rounded-full">
-            <Link href="/casamento">Ver o site do casal</Link>
+          <Button asChild variant="outline" className="h-11 rounded-full px-5">
+            <Link href="/casamento">Ver um site de exemplo</Link>
           </Button>
         </>
       }

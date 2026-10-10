@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition, useMemo, useEffect } from "react";
-import { toast } from "sonner";
 import { GiftLocal as Gift } from "@/types/local";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -39,6 +38,8 @@ interface CheckoutClientProps {
   coupleNames: string;
   /** Casamento do presente (/casamento/<slug>) */
   slug: string;
+  /** Falso quando o cartão não está disponível: só o Pix é oferecido. */
+  cardEnabled?: boolean;
 }
 
 type CheckoutStep = "IDENTIFICATION" | "METHOD" | "PAYMENT" | "SUCCESS";
@@ -69,7 +70,7 @@ function BrandLogo({ name }: { name: string }) {
   );
 }
 
-export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps) {
+export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: CheckoutClientProps) {
   const [step, setStep] = useState<CheckoutStep>("IDENTIFICATION");
   const [method, setMethod] = useState<PaymentMethod>("PIX");
   const [isPending, startTransition] = useTransition();
@@ -82,6 +83,10 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
   const [pixPayload, setPixPayload] = useState("");
   const [transactionId, setTransactionId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
+  // Pix estático: o casal confere no extrato, não há confirmação automática.
+  const [staticPix, setStaticPix] = useState(false);
+  const [pixAcknowledged, setPixAcknowledged] = useState(false);
 
   // Dados do Cartão
   const [cardName, setCardName] = useState("");
@@ -150,8 +155,8 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
 
   function handleIdentificationNext(e: React.FormEvent) {
     e.preventDefault();
-    if (guestName.length < 3 || guestPhone.length < 10) {
-      setError("Por favor, preencha seus dados corretamente.");
+    if (guestName.length < 3 || guestPhone.replace(/\D/g, "").length < 10) {
+      setError("Confira o nome completo e o WhatsApp com DDD para continuar.");
       return;
     }
     setError(null);
@@ -161,7 +166,6 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
   function handleProcessPayment() {
     setError(null);
 
-    const toastId = toast.loading(method === "PIX" ? "Gerando cobrança Pix instantânea..." : "Processando pagamento seguro...");
     startTransition(async () => {
       if (method === "PIX") {
         const result = await createPixTransactionAction({
@@ -172,17 +176,15 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
 
         if (result.success && result.pixPayload) {
           setPixPayload(result.pixPayload);
+          setStaticPix(!("isDynamicMp" in result && result.isDynamicMp));
           setTransactionId(result.transactionId || null);
           setStep("PAYMENT");
-          toast.success("Código Pix gerado com sucesso!", { id: toastId });
         } else {
           setError(result.error ?? "Erro ao gerar o Pix.");
-          toast.error(result.error ?? "Erro ao gerar o Pix.", { id: toastId });
         }
       } else {
         if (!payerEmail || !cardNumber || !cardName || !cardExpiry || !cardCvv) {
           setError("Preencha todos os campos do cartão.");
-          toast.error("Preencha todos os campos do cartão.", { id: toastId });
           return;
         }
 
@@ -193,7 +195,6 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
         } catch (err) {
           const message = err instanceof Error ? err.message : "Não foi possível validar o cartão.";
           setError(message);
-          toast.error(message, { id: toastId });
           return;
         }
 
@@ -208,25 +209,27 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
         });
 
         if (result.success && result.status === "PENDING") {
-          toast.info("Pagamento em análise pelo banco. Você será avisado assim que for aprovado.", { id: toastId });
           setTransactionId(result.transactionId || null);
           setStep("PAYMENT");
         } else if (result.success) {
-          toast.success("Pagamento aprovado com sucesso! Muito obrigado pelo presente! 🎁", { id: toastId });
           setStep("SUCCESS");
         } else {
           setError(result.error ?? "Erro ao processar o pagamento.");
-          toast.error(result.error ?? "Erro ao processar pagamento com cartão.", { id: toastId });
         }
       }
     });
   }
 
-  function copyToClipboard() {
-    navigator.clipboard.writeText(pixPayload);
-    setCopied(true);
-    toast.success("Código Copia e Cola copiado para a área de transferência! 📋");
-    setTimeout(() => setCopied(false), 2000);
+  async function copyToClipboard() {
+    try {
+      await navigator.clipboard.writeText(pixPayload);
+      setCopyFailed(false);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 4000);
+    } catch {
+      // Sem permissão para copiar (alguns navegadores): mostra o código para copiar à mão.
+      setCopyFailed(true);
+    }
   }
 
   // Stepper UI
@@ -237,8 +240,8 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
   ];
 
   return (
-    <div className="bg-papel rounded-[40px] border border-linha/60 shadow-2xl overflow-hidden p-12 transition-all duration-300 relative">
-      <div className="absolute top-0 left-0 right-0 h-2 bg-linho flex">
+    <div className="bg-papel rounded-[28px] sm:rounded-[40px] border border-linha/60 shadow-2xl overflow-hidden p-6 sm:p-12 transition-all duration-300 relative">
+      <div className="absolute top-0 left-0 right-0 h-2 bg-linho flex" aria-hidden="true">
         {steps.map((s, idx) => {
           const activeIdx = steps.findIndex((st) => st.key === step);
           const isCurrent =
@@ -261,21 +264,21 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
       </div>
 
       {/* Resumo do Presente Premium */}
-      <div className="flex items-center gap-5 pb-8 border-b border-linha/80 mb-10 mt-2">
+      <div className="flex items-center gap-4 sm:gap-5 pb-8 border-b border-linha/80 mb-8 sm:mb-10 mt-2">
         {gift.imageUrl ? (
-          <div className="relative w-24 h-24 shrink-0 overflow-hidden rounded-[24px] border border-linha/50 shadow-md">
+          <div className="relative size-20 sm:size-24 shrink-0 overflow-hidden rounded-[24px] border border-linha/50 shadow-md">
             <UserImage src={gift.imageUrl} alt={gift.title} sizes="96px" className="object-cover transition-transform duration-300 hover:scale-105" />
           </div>
         ) : (
-          <div className="w-24 h-24 bg-linho border border-linha rounded-[24px] flex items-center justify-center text-4xl shadow-sm">
+          <div aria-hidden="true" className="size-20 sm:size-24 shrink-0 bg-linho border border-linha rounded-[24px] flex items-center justify-center text-4xl shadow-sm">
             🎁
           </div>
         )}
         <div className="space-y-1">
           <span className="text-xs font-bold text-tinta-suave uppercase tracking-widest">
-            Presente Selecionado
+            Presente escolhido
           </span>
-          <h3 className="text-2xl font-black text-tinta leading-tight tracking-tight">
+          <h3 className="text-xl sm:text-2xl font-black text-tinta leading-tight tracking-tight">
             {gift.title}
           </h3>
           <span className="text-sucesso font-extrabold text-lg block">
@@ -296,42 +299,50 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
             className="space-y-6"
           >
             <div className="text-center pb-2">
-              <h2 className="text-3xl font-black text-tinta tracking-tight">
-                Identificação
+              <h2 className="text-2xl sm:text-3xl font-black text-tinta tracking-tight">
+                Quem está presenteando?
               </h2>
               <p className="text-tinta-suave text-sm mt-1">
-                Rapidamente, nos conte quem é você!
+                Para os noivos saberem quem presenteou.
               </p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-tinta-suave uppercase tracking-wider">
-                Nome Completo
+              <label htmlFor="checkout-nome" className="text-sm font-semibold text-tinta">
+                Seu nome completo
               </label>
               <Input
+                id="checkout-nome"
+                name="name"
+                autoComplete="name"
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
-                placeholder="Como quer ser chamado"
+                placeholder="Como os noivos conhecem você"
                 required
-                className="bg-linho/50 border-linha rounded-2xl h-12 px-4 font-medium"
+                className="bg-linho/50 rounded-2xl h-12 px-4 font-medium"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-tinta-suave uppercase tracking-wider">
-                WhatsApp
+              <label htmlFor="checkout-telefone" className="text-sm font-semibold text-tinta">
+                Seu WhatsApp com DDD
               </label>
               <Input
+                id="checkout-telefone"
+                name="phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel-national"
                 value={guestPhone}
                 onChange={(e) => setGuestPhone(e.target.value)}
-                placeholder="(00) 00000-0000"
+                placeholder="(11) 99999-9999"
                 required
-                className="bg-linho/50 border-linha rounded-2xl h-12 px-4 font-medium"
+                className="bg-linho/50 rounded-2xl h-12 px-4 font-medium"
               />
             </div>
 
             {error && (
-              <p className="text-sm text-perigo bg-perigo-suave p-4 rounded-2xl font-medium">
+              <p role="alert" className="text-sm text-perigo bg-perigo-suave p-4 rounded-2xl font-medium">
                 {error}
               </p>
             )}
@@ -340,7 +351,7 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
               type="submit"
               className="w-full bg-zinc-900 text-white hover:bg-zinc-800 rounded-full h-14 text-base font-bold gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              Escolher Forma de Pagamento <ArrowRight className="w-5 h-5" />
+              Continuar para o pagamento <ArrowRight className="w-5 h-5" aria-hidden="true" />
             </Button>
           </motion.form>
         )}
@@ -355,18 +366,20 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
             className="space-y-8"
           >
             <div className="text-center pb-2">
-              <h2 className="text-3xl font-black text-tinta tracking-tight">
-                Forma de Pagamento
+              <h2 className="text-2xl sm:text-3xl font-black text-tinta tracking-tight">
+                Forma de pagamento
               </h2>
               <p className="text-tinta-suave text-sm mt-1">
-                Escolha a melhor condição para você.
+                {cardEnabled ? "Escolha como prefere pagar." : "O pagamento é por Pix."}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`grid grid-cols-1 gap-4 ${cardEnabled ? "md:grid-cols-2" : ""}`} role="radiogroup" aria-label="Forma de pagamento">
               {/* Opção PIX */}
               <button
                 type="button"
+                role="radio"
+                aria-checked={method === "PIX"}
                 onClick={() => setMethod("PIX")}
                 className={`flex items-center gap-4 p-5 rounded-3xl border-2 transition-all duration-300 text-left ${
                   method === "PIX"
@@ -379,8 +392,8 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
                 </div>
                 <div>
                   <h4 className="font-bold text-tinta text-base">Pix</h4>
-                  <p className="text-xs text-tinta-suave font-medium">
-                    À vista s/ juros
+                  <p className="text-sm text-tinta-suave font-medium">
+                    À vista, sem juros
                   </p>
                   <span className="text-lg font-extrabold text-tinta block mt-1">
                     {formatPrice(gift.amount)}
@@ -389,8 +402,11 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
               </button>
 
               {/* Opção CARTÃO */}
+              {cardEnabled && (
               <button
                 type="button"
+                role="radio"
+                aria-checked={method === "CREDIT_CARD"}
                 onClick={() => setMethod("CREDIT_CARD")}
                 className={`flex items-center gap-4 p-5 rounded-3xl border-2 transition-all duration-300 text-left ${
                   method === "CREDIT_CARD"
@@ -403,14 +419,15 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
                 </div>
                 <div>
                   <h4 className="font-bold text-tinta text-base">Cartão</h4>
-                  <p className="text-xs text-tinta-suave font-medium">
-                    Em até 12x
+                  <p className="text-sm text-tinta-suave font-medium">
+                    Em até 12x, com juros do cartão
                   </p>
                   <span className="text-lg font-extrabold text-tinta block mt-1">
                     {formatPrice(cardFinalAmount)}
                   </span>
                 </div>
               </button>
+              )}
             </div>
 
             {/* FLUXO CARTÃO INTERATIVO */}
@@ -467,47 +484,56 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
                 {/* FORMULÁRIO DE DADOS DO CARTÃO */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-tinta-suave uppercase tracking-wider">
-                      E-mail para Comprovante
+                    <label htmlFor="cartao-email" className="text-sm font-semibold text-tinta">
+                      E-mail para o comprovante
                     </label>
                     <Input
+                      id="cartao-email"
                       type="email"
+                      autoComplete="email"
                       value={payerEmail}
                       onChange={(e) => setPayerEmail(e.target.value)}
                       placeholder="seuemail@exemplo.com"
-                      className="bg-linho/50 border-linha h-12 rounded-2xl font-medium"
+                      className="bg-linho/50 border-linha-forte h-12 rounded-2xl font-medium"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-tinta-suave uppercase tracking-wider">
-                      Banco Emissor
+                    <label htmlFor="cartao-banco" className="text-sm font-semibold text-tinta">
+                      Banco do cartão (opcional)
                     </label>
                     <Input
+                      id="cartao-banco"
+                      autoComplete="off"
                       value={cardBank}
                       onChange={(e) => setCardBank(e.target.value)}
-                      placeholder="Ex: Nubank, Itaú, Bradesco"
-                      className="bg-linho/50 border-linha h-12 rounded-2xl font-medium"
+                      placeholder="Ex.: Nubank, Itaú"
+                      className="bg-linho/50 border-linha-forte h-12 rounded-2xl font-medium"
                     />
                   </div>
 
                   <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-xs font-bold text-tinta-suave uppercase tracking-wider">
-                      Nome Impresso no Cartão
+                    <label htmlFor="cartao-nome" className="text-sm font-semibold text-tinta">
+                      Nome como está no cartão
                     </label>
                     <Input
+                      id="cartao-nome"
+                      autoComplete="cc-name"
                       value={cardName}
                       onChange={(e) => setCardName(e.target.value.toUpperCase())}
                       placeholder="JOAO M SILVA"
-                      className="bg-linho/50 border-linha h-12 rounded-2xl font-bold uppercase"
+                      className="bg-linho/50 border-linha-forte h-12 rounded-2xl font-bold uppercase"
                     />
                   </div>
 
                   <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-xs font-bold text-tinta-suave uppercase tracking-wider">
-                      Número do Cartão
+                    <label htmlFor="cartao-numero" className="text-sm font-semibold text-tinta">
+                      Número do cartão
                     </label>
                     <Input
+                      id="cartao-numero"
+                      inputMode="numeric"
+                      autoComplete="cc-number"
                       value={cardNumber}
                       onChange={(e) => {
                         const raw = e.target.value.replace(/\D/g, "").substring(0, 16);
@@ -515,15 +541,18 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
                       }}
                       placeholder="0000 0000 0000 0000"
                       maxLength={19}
-                      className="bg-linho/50 border-linha h-12 rounded-2xl font-mono text-base font-bold tracking-wider"
+                      className="bg-linho/50 border-linha-forte h-12 rounded-2xl font-mono text-base font-bold tracking-wider"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-tinta-suave uppercase tracking-wider">
+                    <label htmlFor="cartao-validade" className="text-sm font-semibold text-tinta">
                       Validade (MM/AA)
                     </label>
                     <Input
+                      id="cartao-validade"
+                      inputMode="numeric"
+                      autoComplete="cc-exp"
                       value={cardExpiry}
                       onChange={(e) => {
                         const raw = e.target.value.replace(/\D/g, "").substring(0, 4);
@@ -535,16 +564,19 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
                       }}
                       placeholder="MM/AA"
                       maxLength={5}
-                      className="bg-linho/50 border-linha h-12 rounded-2xl font-mono font-bold"
+                      className="bg-linho/50 border-linha-forte h-12 rounded-2xl font-mono font-bold"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-tinta-suave uppercase tracking-wider">
-                      Código de Segurança (CVV)
+                    <label htmlFor="cartao-cvv" className="text-sm font-semibold text-tinta">
+                      Código de segurança (CVV)
                     </label>
                     <Input
+                      id="cartao-cvv"
                       type="password"
+                      inputMode="numeric"
+                      autoComplete="cc-csc"
                       value={cardCvv}
                       onChange={(e) =>
                         setCardCvv(
@@ -553,20 +585,20 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
                       }
                       placeholder="123"
                       maxLength={4}
-                      className="bg-linho/50 border-linha h-12 rounded-2xl font-mono font-bold"
+                      className="bg-linho/50 border-linha-forte h-12 rounded-2xl font-mono font-bold"
                     />
                   </div>
 
                   {/* SELEÇÃO DE PARCELAS (MÁX 12X) */}
                   <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-xs font-bold text-tinta-suave uppercase tracking-wider">
-                      Opções de Parcelamento
+                    <label htmlFor="cartao-parcelas" className="text-sm font-semibold text-tinta">
+                      Parcelas
                     </label>
                     <Select
                       value={String(installments)}
                       onValueChange={(val) => setInstallments(Number(val))}
                     >
-                      <SelectTrigger className="w-full bg-linho/50 border border-linha h-12 rounded-2xl px-4 font-semibold text-tinta">
+                      <SelectTrigger id="cartao-parcelas" className="w-full bg-linho/50 border border-linha-forte h-12 rounded-2xl px-4 font-semibold text-tinta">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -589,7 +621,7 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
             )}
 
             {error && (
-              <p className="text-sm text-perigo bg-perigo-suave p-4 rounded-2xl font-medium">
+              <p role="alert" className="text-sm text-perigo bg-perigo-suave p-4 rounded-2xl font-medium">
                 {error}
               </p>
             )}
@@ -600,19 +632,19 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
                 disabled={isPending}
                 className="w-full bg-zinc-900 text-white hover:bg-zinc-800 rounded-full h-14 text-base font-bold gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                {isPending && <Loader2 className="w-5 h-5 animate-spin" />}
+                {isPending && <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />}
                 {isPending
-                  ? "Processando..."
+                  ? method === "PIX" ? "Gerando o Pix..." : "Processando o pagamento..."
                   : method === "PIX"
                     ? "Gerar Pix"
-                    : "Finalizar Presente"}
+                    : "Pagar com cartão"}
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => setStep("IDENTIFICATION")}
                 className="rounded-full h-14 px-6 text-tinta-suave font-bold"
               >
-                <ArrowLeft className="w-5 h-5 mr-1" /> Voltar
+                <ArrowLeft className="w-5 h-5 mr-1" aria-hidden="true" /> Voltar
               </Button>
             </div>
           </motion.div>
@@ -625,49 +657,85 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            className="space-y-6 flex flex-col items-center text-center"
+            className="flex flex-col items-center gap-6 text-center"
           >
             <div className="pb-1">
-              <h2 className="text-3xl font-black text-tinta tracking-tight">
-                Efetue o Pix
+              <h2 className="text-2xl sm:text-3xl font-black text-tinta tracking-tight">
+                Faça o Pix
               </h2>
               <p className="text-tinta-suave text-sm mt-1">
-                Aponte a câmera do seu banco ou copie o código PIX abaixo.
+                No celular, copie o código e cole no app do seu banco. No computador, escaneie o QR Code com o celular.
               </p>
             </div>
 
-            <div className="bg-papel p-6 rounded-[36px] border-4 border-linho shadow-inner">
-              <QRCodeSVG value={pixPayload} size={240} />
-            </div>
-
-            <div className="w-full space-y-3">
+            {/* No celular o botão de copiar vem primeiro: é o que quase todo mundo usa. */}
+            <div className="order-1 w-full space-y-3 md:order-2">
               <Button
                 variant="outline"
                 onClick={copyToClipboard}
-                className="w-full rounded-full h-14 gap-2 text-tinta font-extrabold border-2 hover:bg-linho shadow-sm text-sm"
+                className="w-full rounded-full h-14 gap-2 text-tinta font-extrabold border-2 border-linha-forte hover:bg-linho shadow-sm text-base"
               >
                 {copied ? (
-                  <CheckCircle2 className="w-5 h-5 text-sucesso" />
+                  <CheckCircle2 className="w-5 h-5 text-sucesso" aria-hidden="true" />
                 ) : (
-                  <Copy className="w-5 h-5" />
+                  <Copy className="w-5 h-5" aria-hidden="true" />
                 )}
-                {copied
-                  ? "Código Copiado com Sucesso!"
-                  : "Copiar Código Pix Copia e Cola"}
+                {copied ? "Código copiado" : "Copiar código Pix"}
               </Button>
+              <p className="min-h-5 text-sm font-semibold text-sucesso" role="status" aria-live="polite">
+                {copied ? "Agora é só colar no app do seu banco, na opção Pix copia e cola." : ""}
+              </p>
 
-              <div className="flex items-center justify-center gap-2.5 text-brand bg-brand-50 border border-brand/20 font-semibold text-xs py-3 px-4 rounded-2xl w-full shadow-xs">
-                <Loader2 className="w-4 h-4 animate-spin text-brand" />
-                <span>Aguardando confirmação automática do pagamento...</span>
-              </div>
+              {copyFailed && (
+                <div className="space-y-2 text-left">
+                  <label htmlFor="checkout-pix-codigo" className="text-sm font-semibold text-tinta">
+                    Não deu para copiar sozinho. Selecione o código e copie:
+                  </label>
+                  <textarea
+                    id="checkout-pix-codigo"
+                    readOnly
+                    value={pixPayload}
+                    rows={4}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="w-full resize-none rounded-2xl border border-linha-forte bg-linho/50 p-3 font-mono text-xs text-tinta"
+                  />
+                </div>
+              )}
+
+              {staticPix ? (
+                <div className="rounded-2xl border border-linha bg-linho/60 p-4 text-left text-sm text-tinta">
+                  <p className="font-semibold">Depois de pagar, é só avisar aqui.</p>
+                  <p className="mt-1 text-tinta-suave">
+                    Os noivos conferem o Pix no extrato e confirmam o presente. Não precisa esperar nesta tela.
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setPixAcknowledged(true);
+                      setStep("SUCCESS");
+                    }}
+                    className="mt-3 h-12 w-full rounded-full bg-zinc-900 text-base font-bold text-white hover:bg-zinc-800"
+                  >
+                    Já fiz o Pix
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2.5 text-brand bg-brand-50 border border-brand/20 font-semibold text-sm py-3 px-4 rounded-2xl w-full shadow-xs">
+                  <Loader2 className="w-4 h-4 animate-spin text-brand" aria-hidden="true" />
+                  <span>Esta tela avisa sozinha quando o pagamento chegar.</span>
+                </div>
+              )}
+            </div>
+
+            <div className="order-2 rounded-[28px] border-4 border-linho bg-papel p-4 shadow-inner md:order-1 sm:rounded-[36px] sm:p-6">
+              <QRCodeSVG value={pixPayload} size={200} role="img" aria-label="QR Code do Pix" />
             </div>
 
             <Button
               variant="ghost"
               onClick={() => setStep("METHOD")}
-              className="rounded-full h-10 gap-1 text-tinta-suave hover:text-tinta-suave font-bold text-xs"
+              className="order-3 h-11 gap-1 rounded-full text-sm font-bold text-tinta-suave hover:text-tinta"
             >
-              <ArrowLeft className="w-4 h-4" /> Alterar Forma de Pagamento
+              <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Voltar
             </Button>
           </motion.div>
         )}
@@ -708,13 +776,15 @@ export function CheckoutClient({ gift, coupleNames, slug }: CheckoutClientProps)
                 Obrigado pelo carinho!
               </h2>
               <p className="text-tinta-suave text-base max-w-sm">
-                Seu presente foi confirmado e {coupleNames} já foram avisados.
+                {pixAcknowledged
+                  ? `${coupleNames} já foram avisados do seu Pix e confirmam o presente assim que ele aparecer no extrato.`
+                  : `Seu presente foi confirmado e ${coupleNames} já foram avisados.`}
               </p>
             </div>
 
             <div className="bg-brand-50 text-tinta border border-brand/15 rounded-3xl p-6 w-full">
               <span className="text-xs font-semibold uppercase tracking-wider block text-brand-600 mb-1">
-                Valor do presente
+                {pixAcknowledged ? "Valor do Pix" : "Valor do presente"}
               </span>
               <span className="text-4xl font-semibold tracking-tight tabular-nums">
                 {formatPrice(gift.amount)}

@@ -12,7 +12,7 @@ export default async function CarteiraPage() {
   const { balance, cards } = await getWalletData();
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 font-sans">
+    <div className="mx-auto max-w-7xl space-y-6 font-sans">
       <CarteiraClient initialBalance={balance} initialCards={cards} />
     </div>
   );

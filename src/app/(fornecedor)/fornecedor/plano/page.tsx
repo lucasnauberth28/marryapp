@@ -174,7 +174,7 @@ export default async function PlanoPage() {
               role="region"
               aria-labelledby="pagamentos-titulo"
               tabIndex={0}
-              className="overflow-x-auto rounded-2xl border border-linha bg-papel"
+              className="relative overflow-x-auto rounded-2xl border border-linha bg-papel"
             >
               <table className="w-full min-w-[640px] border-collapse text-[15px]">
                 <thead>

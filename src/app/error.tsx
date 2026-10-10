@@ -23,10 +23,10 @@ export default function ErrorPage({
       description={`Pode ser uma instabilidade momentânea. Tente de novo em alguns segundos.${error.digest ? ` Código: ${error.digest}` : ""}`}
       actions={
         <>
-          <Button className="rounded-full" onClick={() => unstable_retry()}>
+          <Button className="h-11 rounded-full px-5" onClick={() => unstable_retry()}>
             Tentar de novo
           </Button>
-          <Button asChild variant="outline" className="rounded-full">
+          <Button asChild variant="outline" className="h-11 rounded-full px-5">
             <Link href="/">Ir para o início</Link>
           </Button>
         </>

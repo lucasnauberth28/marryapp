@@ -129,14 +129,14 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
 
   const kpis = [
     { label: "Pedidos no mês", value: monthCount, hint: `${plural(totalCount, "pedido", "pedidos")} no total` },
-    { label: "Sem resposta", value: newCount, hint: newCount > 0 ? "aguardando seu retorno" : "tudo respondido" },
+    { label: "Sem resposta", value: newCount, hint: newCount > 0 ? "aguardando seu retorno" : totalCount > 0 ? "tudo respondido" : "nenhum pedido ainda" },
     {
       label: "Fechados",
       value: closedCount,
       hint: totalCount > 0 ? `${Math.round((closedCount / totalCount) * 100)}% dos pedidos` : "nenhum ainda",
     },
     {
-      label: "Visitas ao perfil (30 dias)",
+      label: "Visitas (30 dias)",
       value: views30,
       hint: publicProfileHref ? "no seu perfil público" : "o perfil aparece após a curadoria",
     },
@@ -162,6 +162,31 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
           </Link>
         ) : null}
       </Reveal>
+
+      {vendor.curationStatus !== "APPROVED" ? (
+        <Reveal
+          variant="up"
+          className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-linha bg-papel px-5 py-4"
+        >
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <strong className="font-semibold">
+              {vendor.curationStatus === "REJECTED" ? "A curadoria pediu ajustes no seu perfil" : "Seu perfil está na fila da curadoria"}
+            </strong>
+            <span className="text-sm text-tinta-suave">
+              {vendor.curationStatus === "REJECTED"
+                ? "Veja o recado, ajuste e salve: o perfil volta para a análise."
+                : "Enquanto isso, complete o perfil com fotos, regiões e preço inicial. Perfis completos são aprovados mais rápido e só aparecem para os casais depois disso."}
+            </span>
+          </div>
+          <Link
+            href="/fornecedor/perfil"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-ameixa px-4 text-[15px] font-semibold text-on-ameixa transition-colors hover:bg-ameixa-hover"
+          >
+            Completar o perfil
+            <ArrowRight aria-hidden="true" className="size-4" />
+          </Link>
+        </Reveal>
+      ) : null}
 
       {isFree ? (
         <Reveal
@@ -194,9 +219,9 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
         </Reveal>
       ) : null}
 
-      <section aria-label="Resumo" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section aria-label="Resumo" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {kpis.map((kpi, i) => (
-          <Reveal key={kpi.label} variant="up" delay={80 * (i + 1)} className={cn(CARD, "flex flex-col gap-1 p-5")}>
+          <Reveal key={kpi.label} variant="up" delay={80 * (i + 1)} className={cn(CARD, "flex flex-col gap-1 p-4 sm:p-5")}>
             <p className={OVERLINE}>{kpi.label}</p>
             <span className="font-display text-4xl leading-tight">{kpi.value}</span>
             <span className="text-sm text-tinta-suave">{kpi.hint}</span>
