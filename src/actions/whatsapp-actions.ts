@@ -8,6 +8,7 @@ import prisma from "@/lib/prisma";
 import { sendBulkMessages } from "@/lib/evolution";
 import { RsvpStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { notGiftOnlyWhere } from "@/lib/guest-origin";
 
 /**
  * Dispara lembretes em massa para convidados com RSVP pendente.
@@ -22,6 +23,7 @@ export async function sendRsvpReminders() {
       rsvpStatus: RsvpStatus.PENDING,
       phone: { not: null },
       hasReceivedMessage: true, // Já recebeu convite inicial
+      ...notGiftOnlyWhere,
     },
     orderBy: { name: "asc" },
   });
@@ -89,6 +91,7 @@ export async function sendInitialInvites() {
       weddingId,
       hasReceivedMessage: false,
       phone: { not: null },
+      ...notGiftOnlyWhere,
     },
     orderBy: { name: "asc" },
   });

@@ -6,6 +6,7 @@ import { ExpenseStatus, PaymentMethod, PaymentStatus, RsvpStatus } from "@prisma
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { getWeddingContext } from "@/lib/security/wedding-context";
 import { unreadCountFor } from "@/lib/notifications/queries";
+import { notGiftOnlyWhere } from "@/lib/guest-origin";
 
 // Central de avisos. Tudo aqui vale só para o usuário da sessão: o id do usuário nunca vem do navegador,
 // e um aviso de outra pessoa simplesmente não é encontrado (userId faz parte de todo filtro).
@@ -72,8 +73,8 @@ async function coupleReminders(weddingId: string): Promise<ReminderItem[]> {
     prisma.expense.count({
       where: { weddingId, status: { in: [ExpenseStatus.PENDING, ExpenseStatus.OVERDUE] }, dueDate: { lte: soon } },
     }),
-    prisma.guest.count({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING } }),
-    prisma.guest.count({ where: { weddingId, hasReceivedMessage: false, phone: { not: null } } }),
+    prisma.guest.count({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING, ...notGiftOnlyWhere } }),
+    prisma.guest.count({ where: { weddingId, hasReceivedMessage: false, phone: { not: null }, ...notGiftOnlyWhere } }),
   ]);
 
   const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;

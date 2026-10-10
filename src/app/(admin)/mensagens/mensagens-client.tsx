@@ -13,6 +13,7 @@ import { createMessageTemplate, updateMessageTemplate, deleteMessageTemplate, se
 import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-actions";
 import { weddingSiteUrl } from "@/lib/wedding-links";
 import { formatPhoneBR } from "@/lib/wedding-format";
+import { isGiftOnlyPending } from "@/lib/guest-origin";
 
 export interface MessageTemplate {
   id: string;
@@ -65,11 +66,13 @@ type Audience = "pending" | "unsent" | "confirmed" | "all" | "custom";
 
 function idsFor(audience: Audience, guests: Guest[]): string[] {
   const withPhone = guests.filter(hasPhone);
+  // Quem só presenteou não foi convidado pelo casal: fica fora dos envios por grupo (só escolhendo à mão)
+  const invitees = withPhone.filter((g) => !isGiftOnlyPending(g));
   switch (audience) {
     case "pending":
-      return withPhone.filter((g) => g.rsvpStatus === "PENDING").map((g) => g.id);
+      return invitees.filter((g) => g.rsvpStatus === "PENDING").map((g) => g.id);
     case "unsent":
-      return withPhone.filter((g) => !g.hasReceivedMessage).map((g) => g.id);
+      return invitees.filter((g) => !g.hasReceivedMessage).map((g) => g.id);
     case "confirmed":
       return withPhone.filter((g) => g.rsvpStatus === "CONFIRMED").map((g) => g.id);
     case "all":
@@ -506,8 +509,8 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
 
   const selected = templates.find((t) => t.id === selectedId) ?? null;
 
-  const invitesToSend = initialGuests.filter((g) => !g.hasReceivedMessage && hasPhone(g)).length;
-  const remindersToSend = initialGuests.filter((g) => g.rsvpStatus === "PENDING" && g.hasReceivedMessage && hasPhone(g)).length;
+  const invitesToSend = initialGuests.filter((g) => !g.hasReceivedMessage && hasPhone(g) && !isGiftOnlyPending(g)).length;
+  const remindersToSend = initialGuests.filter((g) => g.rsvpStatus === "PENDING" && g.hasReceivedMessage && hasPhone(g) && !isGiftOnlyPending(g)).length;
 
   async function runShortcut(kind: "invites" | "reminders") {
     setShortcut(kind);

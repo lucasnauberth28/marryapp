@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import prisma from "@/lib/prisma";
+import { notGiftOnlyWhere } from "@/lib/guest-origin";
 
 export interface NavCounts {
   /** Convidados cadastrados. */
@@ -16,7 +17,7 @@ export const getNavCounts = cache(async (weddingId: string): Promise<NavCounts> 
   try {
     const [guests, messages, tasks] = await Promise.all([
       prisma.guest.count({ where: { weddingId } }),
-      prisma.guest.count({ where: { weddingId, rsvpStatus: "PENDING" } }),
+      prisma.guest.count({ where: { weddingId, rsvpStatus: "PENDING", ...notGiftOnlyWhere } }),
       prisma.task.count({ where: { weddingId, status: { not: "DONE" } } }),
     ]);
     return { guests, messages, tasks };

@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { Guest, Prisma } from "@prisma/client";
+import { giftOnlyGuestDefaults } from "@/lib/guest-origin";
 
 interface FindOrCreateGuestInput {
   /** Casamento dono do presente: a busca e a criação ficam restritas a ele. */
@@ -110,7 +111,8 @@ export async function findOrCreateGuest({
       name: name.trim(),
       phone: formattedPhone,
       email: email && email.trim() !== "" ? email.trim().toLowerCase() : null,
-      rsvpStatus: "CONFIRMED",
+      // Quem só presenteou não respondeu ao convite: fica pendente e marcado (nunca "Confirmado")
+      ...giftOnlyGuestDefaults(),
     },
   });
 }

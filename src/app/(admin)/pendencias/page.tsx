@@ -7,6 +7,7 @@ import { requireWeddingPage } from "@/lib/security/wedding-context";
 import { getWeddingIdentity } from "@/lib/wedding";
 import { daysUntil } from "@/lib/wedding-format";
 import { weddingHasModule } from "@/lib/wedding-plan";
+import { notGiftOnlyWhere } from "@/lib/guest-origin";
 
 export const metadata: Metadata = {
   title: "Tarefas",
@@ -48,7 +49,7 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
       />
     );
   } else {
-    const pending = await prisma.guest.count({ where: { weddingId, rsvpStatus: "PENDING" } });
+    const pending = await prisma.guest.count({ where: { weddingId, rsvpStatus: "PENDING", ...notGiftOnlyWhere } });
     if (pending > 0) {
       const canMessage = await weddingHasModule({ weddingId, session }, "whatsapp");
       suggestion = (

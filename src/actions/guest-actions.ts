@@ -12,6 +12,7 @@ import { rateLimitByIp } from "@/lib/security/rate-limiter";
 import { weddingSiteUrl } from "@/lib/wedding-links";
 import { deferNotify } from "@/lib/notifications/service";
 import { notifyRsvp } from "@/lib/notifications/events";
+import { notGiftOnlyWhere } from "@/lib/guest-origin";
 
 // ==========================================
 // VALIDAÇÕES ZOD
@@ -263,7 +264,7 @@ export async function sendBulkReminders(
 
   if (filter === "PENDING") {
     guests = await prisma.guest.findMany({
-      where: { weddingId, rsvpStatus: RsvpStatus.PENDING, phone: { not: null } },
+      where: { weddingId, rsvpStatus: RsvpStatus.PENDING, phone: { not: null }, ...notGiftOnlyWhere },
     });
   } else {
     const now = new Date();

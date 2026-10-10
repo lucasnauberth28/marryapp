@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { btn } from "@/components/landing/styles";
 import { Seal } from "@/components/landing/seal";
 import { NextSteps, type NextStep } from "./next-steps";
+import { isGiftOnlyPending } from "@/lib/guest-origin";
 
 export const dynamic = "force-dynamic";
 
@@ -93,10 +94,10 @@ export default async function DashboardPage() {
   const now = new Date();
   const today = startOfDay(now);
 
-  const [guests, tasks, taskCount, expenses, approvedGifts, pendingPix, settings, wallet, recent] = await Promise.all([
+  const [allGuests, tasks, taskCount, expenses, approvedGifts, pendingPix, settings, wallet, recent] = await Promise.all([
     prisma.guest.findMany({
       where: { weddingId },
-      select: { rsvpStatus: true, allowedCompanions: true, confirmedCompanions: true, phone: true, hasReceivedMessage: true },
+      select: { rsvpStatus: true, category: true, allowedCompanions: true, confirmedCompanions: true, phone: true, hasReceivedMessage: true },
     }),
     prisma.task.findMany({
       where: { weddingId, status: { not: "DONE" } },
@@ -124,7 +125,8 @@ export default async function DashboardPage() {
     }),
   ]);
 
-  // Convidados (em pessoas, com acompanhantes)
+  // Convidados (em pessoas, com acompanhantes). Quem só presenteou e não respondeu não é convite pendente.
+  const guests = allGuests.filter((g) => !isGiftOnlyPending(g));
   const invites = guests.length;
   const confirmedPeople = guests.filter((g) => g.rsvpStatus === "CONFIRMED").reduce((acc, g) => acc + 1 + g.confirmedCompanions, 0);
   const declinedPeople = guests.filter((g) => g.rsvpStatus === "DECLINED").reduce((acc, g) => acc + 1 + g.allowedCompanions, 0);
