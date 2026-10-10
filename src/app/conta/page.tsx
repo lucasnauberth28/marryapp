@@ -6,6 +6,8 @@ import prisma from "@/lib/prisma";
 import { Logo } from "@/components/brand/logo";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
+import { groupsFor } from "@/lib/notifications/catalog";
+import { resolvePrefs } from "@/lib/notifications/preferences";
 import { vapidPublicKey } from "@/lib/notifications/push";
 import { AccountSections } from "./account-sections";
 
@@ -49,8 +51,10 @@ export default async function ContaPage() {
     },
   });
   if (!user) redirect("/login");
+  const storedPrefs = await prisma.notificationPreference.findUnique({ where: { userId: user.id }, select: { settings: true } });
 
   const kind = classifyAccount(user);
+  const kindIsVendor = kind === "vendor";
   const panelHref = kind === "vendor" ? "/fornecedor" : user.weddingId || kind === "admin" ? "/dashboard" : "/boas-vindas";
 
   return (
@@ -82,6 +86,11 @@ export default async function ContaPage() {
         <AccountSections
           kind={kind}
           pushPublicKey={vapidPublicKey()}
+          notifications={{
+            prefs: resolvePrefs(storedPrefs?.settings),
+            audience: kindIsVendor ? "vendor" : "couple",
+            groups: groupsFor(kindIsVendor ? "vendor" : "couple"),
+          }}
           account={{
             name: user.name,
             email: user.username,

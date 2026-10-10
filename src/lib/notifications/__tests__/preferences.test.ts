@@ -102,3 +102,36 @@ test("sanitizeStoredPrefs guarda o conjunto completo e válido", () => {
   assert.equal(saved.channels?.push?.account, true);
   assert.equal(saved.quietHours?.startHour, 23);
 });
+
+import { offeredChannels } from "../preferences.ts";
+import { emailContent, whatsappText } from "../channel-texts.ts";
+
+test("tela de escolhas: WhatsApp só para o fornecedor, nos grupos com aviso urgente", () => {
+  assert.deepEqual(offeredChannels("requests", "vendor"), ["push", "whatsapp", "email"]);
+  assert.deepEqual(offeredChannels("account", "vendor"), ["push", "whatsapp", "email"]);
+  assert.deepEqual(offeredChannels("money", "couple"), ["push", "email"]);
+  assert.deepEqual(offeredChannels("account", "couple"), ["push", "email"]);
+  assert.deepEqual(offeredChannels("guests", "couple"), ["push", "email"]);
+  // grupo que não existe para aquele painel
+  assert.deepEqual(offeredChannels("guests", "vendor"), []);
+  assert.deepEqual(offeredChannels("requests", "couple"), []);
+});
+
+test("WhatsApp: mensagem curta com o link do pedido", () => {
+  const text = whatsappText(
+    { title: "Novo pedido de orçamento", body: "Helena Prado quer um orçamento." },
+    "https://aceito.com.br/fornecedor/pedidos/abc",
+  );
+  assert.match(text, /^Oi! Novo pedido de orçamento\./);
+  assert.match(text, /https:\/\/aceito\.com\.br\/fornecedor\/pedidos\/abc$/);
+  assert.ok(!/[—–]/.test(text));
+  assert.ok(text.length < 300);
+});
+
+test("e-mail: assunto, botão e como mudar a escolha", () => {
+  const mail = emailContent({ title: "Plano ativado", body: "Pagamento confirmado." }, "https://aceito.com.br/fornecedor/plano", "https://aceito.com.br/conta#avisos");
+  assert.equal(mail.subject, "Plano ativado");
+  assert.equal(mail.cta.url, "https://aceito.com.br/fornecedor/plano");
+  assert.match(mail.footnotes[0], /conta#avisos/);
+  assert.ok(mail.preheader.length <= 100);
+});

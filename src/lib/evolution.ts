@@ -17,6 +17,11 @@ function isConfigured() {
   return !!(EVOLUTION_URL && EVOLUTION_KEY && EVOLUTION_INSTANCE);
 }
 
+/** Para quem só quer saber se há WhatsApp configurado antes de montar a mensagem. */
+export function isWhatsappConfigured() {
+  return isConfigured();
+}
+
 /**
  * O QR de pareamento é uma credencial: nunca enviá-lo a serviços externos para gerar imagem.
  * Retorna a data URL da Evolution, ou o código bruto (renderizado como QR no navegador).

@@ -6,6 +6,8 @@ import { brandedEmail, sendEmail } from "@/lib/email";
 import { sendTextMessage } from "@/lib/evolution";
 import { dueReminder, reminderWindowEnd, type PlanReminderDay } from "@/lib/plan-reminders";
 import { notifyPlanExpiring } from "@/lib/notifications/cron";
+import { DEFAULT_PREFS, decideChannels } from "@/lib/notifications/preferences";
+import { loadPrefsFor } from "@/lib/notifications/senders";
 
 const TIER_NAME: Record<string, string> = { PRO: "Pro", MASTER: "Master Elite" };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -62,7 +64,7 @@ export async function sendVendorPlanReminders(now = new Date()): Promise<Reminde
       planTier: true,
       planExpiresAt: true,
       planReminderDays: true,
-      user: { select: { username: true } },
+      user: { select: { id: true, username: true } },
     },
   });
 
@@ -93,14 +95,19 @@ export async function sendVendorPlanReminders(now = new Date()): Promise<Reminde
     const phone = vendor.whatsapp || vendor.phone;
     const email = vendor.user?.username && EMAIL_RE.test(vendor.user.username) ? vendor.user.username : null;
 
+    // Respeita as escolhas de "Avisos" da pessoa (padrão: WhatsApp e e-mail ligados, como sempre foi)
+    const prefs = vendor.user?.id ? await loadPrefsFor(vendor.user.id).catch(() => DEFAULT_PREFS) : DEFAULT_PREFS;
+    // O horário de silêncio não entra aqui: a rotina já roda às 8h e o aviso de cada período sai uma vez só.
+    const channels = decideChannels({ type: "plan_expiring", prefs: { ...prefs, quietHours: { ...prefs.quietHours, enabled: false } }, now });
+
     let attempted = 0;
     let delivered = 0;
-    if (whatsappReady && phone) {
+    if (whatsappReady && phone && channels.includes("whatsapp")) {
       attempted++;
       const res = await sendTextMessage({ phone, text: texts.whatsapp }).catch(() => ({ success: false }));
       if (res.success) delivered++;
     }
-    if (email) {
+    if (email && channels.includes("email")) {
       const res = await sendEmail({ to: email, subject: texts.subject, ...texts.email });
       // Sem RESEND_API_KEY o envio é ignorado de propósito: não conta como falha.
       if (res.sent || res.reason !== "not_configured") attempted++;

@@ -3,7 +3,7 @@
 // O sino (aviso guardado no banco) é sempre ligado. Os canais extras (push, WhatsApp e e-mail)
 // dependem do tipo do aviso, do que a pessoa escolheu e, no push e no WhatsApp, do horário de silêncio.
 
-import { NOTIFICATION_GROUPS, specOf, type NotificationGroup } from "./catalog.ts";
+import { NOTIFICATION_GROUPS, NOTIFICATION_TYPES, specOf, type NotificationAudience, type NotificationGroup, type NotificationTypeSpec } from "./catalog.ts";
 
 export const NOTIFICATION_CHANNELS = ["push", "whatsapp", "email"] as const;
 export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
@@ -130,4 +130,19 @@ export function sanitizeStoredPrefs(input: unknown): StoredPrefs | null {
   const resolved = resolvePrefs(input);
   // Guarda o conjunto completo já validado: assim mudar o padrão no futuro não mexe no que a pessoa escolheu.
   return { channels: resolved.channels, quietHours: resolved.quietHours };
+}
+
+/**
+ * Quais canais a tela de escolhas oferece para um grupo e um painel. Push e e-mail valem para todo grupo;
+ * WhatsApp só existe para o fornecedor e só nos grupos que têm um aviso urgente (pedido novo, plano).
+ */
+export function offeredChannels(group: NotificationGroup, audience: NotificationAudience): NotificationChannel[] {
+  const types = (Object.values(NOTIFICATION_TYPES) as NotificationTypeSpec[]).filter(
+    (t) => t.group === group && t.audiences.includes(audience),
+  );
+  if (types.length === 0) return [];
+  const channels: NotificationChannel[] = ["push"];
+  if (audience === "vendor" && types.some((t) => t.whatsapp)) channels.push("whatsapp");
+  if (types.some((t) => t.email)) channels.push("email");
+  return channels;
 }

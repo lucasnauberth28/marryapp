@@ -26,7 +26,9 @@ import { cancelPartnerInvite, changePassword, createPartnerInvite, deleteMyAccou
 import { btn } from "@/components/landing/styles";
 import { Field, FormAlert } from "@/app/login/fields";
 import { cn } from "@/lib/utils";
-import { PushCard } from "@/components/notifications/push-card";
+import { PreferencesForm } from "@/components/notifications/preferences-form";
+import type { NotificationAudience, NotificationGroup } from "@/lib/notifications/catalog";
+import type { NotificationPrefs } from "@/lib/notifications/preferences";
 
 interface Member {
   id: string;
@@ -48,16 +50,18 @@ interface Props {
   wedding: { coupleNames: string; slug: string; members: Member[]; invites: Invite[] } | null;
   /** Chave pública do push (null com o push desligado no servidor). */
   pushPublicKey: string | null;
+  /** Escolhas de avisos da conta e o que a tela oferece para este tipo de conta. */
+  notifications: { prefs: NotificationPrefs; audience: NotificationAudience; groups: NotificationGroup[] };
 }
 
 const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "America/Sao_Paulo" });
 const shortFmt = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" });
 
-export function AccountSections({ kind, account, wedding, pushPublicKey }: Props) {
+export function AccountSections({ kind, account, wedding, pushPublicKey, notifications }: Props) {
   return (
     <div className="flex flex-col gap-6">
       {wedding ? <PartnerSection wedding={wedding} /> : null}
-      <NotificationsSection pushPublicKey={pushPublicKey} />
+      <NotificationsSection pushPublicKey={pushPublicKey} notifications={notifications} />
       <PasswordSection />
       <DataSection kind={kind} createdAt={account.createdAt} companyName={account.companyName} coupleNames={wedding?.coupleNames ?? null} />
       {kind !== "admin" ? <DeleteSection kind={kind} isLastMember={wedding ? wedding.members.length <= 1 : false} /> : null}
@@ -126,7 +130,7 @@ function PasswordToggle({ show, onToggle }: { show: boolean; onToggle: () => voi
 
 // ---------------------------------------------------------------------------
 
-function NotificationsSection({ pushPublicKey }: { pushPublicKey: string | null }) {
+function NotificationsSection({ pushPublicKey, notifications }: Pick<Props, "pushPublicKey" | "notifications">) {
   return (
     <Section
       id="avisos"
@@ -134,7 +138,7 @@ function NotificationsSection({ pushPublicKey }: { pushPublicKey: string | null 
       title="Avisos"
       description="Escolha como e quando o Aceito avisa você. O sino no topo guarda tudo, aconteça o que acontecer."
     >
-      <PushCard publicKey={pushPublicKey} />
+      <PreferencesForm initial={notifications.prefs} audience={notifications.audience} groups={notifications.groups} pushPublicKey={pushPublicKey} />
     </Section>
   );
 }

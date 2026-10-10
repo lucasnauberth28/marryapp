@@ -306,6 +306,7 @@ model User {
   passwordResets  PasswordResetToken[]
   notifications   Notification[]
   pushSubscriptions PushSubscription[]
+  notificationPreference NotificationPreference?
 
   @@map("users")
 }
@@ -331,6 +332,18 @@ model Notification {
   @@index([userId, readAt])
   @@index([userId, createdAt])
   @@map("notifications")
+}
+
+// Escolhas de avisos da pessoa (canais por grupo e horário de silêncio). Só guarda o que ela salvou:
+// sem registro valem os padrões de lib/notifications/preferences. `settings` é lido com resolvePrefs,
+// que ignora qualquer valor fora do formato.
+model NotificationPreference {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  settings  Json
+  updatedAt DateTime @updatedAt
+
+  @@map("notification_preferences")
 }
 
 // Aparelho que ativou os avisos (Web Push). O endereço (endpoint) é único: o mesmo navegador
