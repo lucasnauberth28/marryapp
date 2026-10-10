@@ -15,6 +15,18 @@ import { notifyRsvp } from "@/lib/notifications/events";
 import { notGiftOnlyWhere } from "@/lib/guest-origin";
 import { TOO_MANY_ATTEMPTS_MESSAGE } from "@/lib/rate-limit-message";
 import type { GuestLookup } from "@/lib/rsvp-lookup";
+import { logAudit } from "@/lib/audit";
+import {
+  MAX_CATEGORY,
+  MAX_COMPANIONS,
+  MAX_DIETARY,
+  MAX_EMAIL,
+  MAX_GUESTS_PER_WEDDING,
+  MAX_IMPORT_ROWS,
+  MAX_NAME,
+  normalizePhoneBR,
+  planImport,
+} from "@/lib/guest-import";
 
 // ==========================================
 // VALIDAÇÕES ZOD
@@ -145,6 +157,102 @@ export async function createGuest(formData: FormData) {
   } catch (error) {
     console.error("[createGuest]", error);
     return { success: false, error: "Erro ao salvar no banco de dados." };
+  }
+}
+
+// ==========================================
+// IMPORTAR LISTA (planilha lida no navegador)
+// ==========================================
+
+const ImportGuestSchema = z.object({
+  line: z.number().int().min(1).max(1_000_000),
+  name: z.string().trim().min(2, "o nome é curto demais").max(MAX_NAME, "o nome é longo demais"),
+  phone: z
+    .string()
+    .nullable()
+    .refine((v) => v === null || (normalizePhoneBR(v).ok && /^\d{10,11}$/.test(v)), "o telefone não é válido"),
+  email: z.string().trim().email("o e-mail não é válido").max(MAX_EMAIL).nullable(),
+  companions: z.number().int().min(0).max(MAX_COMPANIONS, "são acompanhantes demais"),
+  category: z.string().trim().min(1).max(MAX_CATEGORY, "o grupo é longo demais").nullable(),
+  dietary: z.string().trim().min(1).max(MAX_DIETARY, "a restrição alimentar é longa demais").nullable(),
+});
+
+const ImportGuestsSchema = z
+  .array(ImportGuestSchema)
+  .min(1, "Não há nenhum convidado para importar.")
+  .max(MAX_IMPORT_ROWS, `Dá para importar até ${MAX_IMPORT_ROWS} convidados por vez.`);
+
+/**
+ * Importa convidados de uma planilha. O navegador lê o arquivo e manda só as linhas já
+ * normalizadas; aqui tudo é validado de novo, os repetidos (telefone igual a um convidado do
+ * casamento, ou o mesmo nome entre quem não tem telefone) são pulados e a gravação é única
+ * (tudo ou nada), sempre no casamento da sessão.
+ */
+export async function importGuests(input: unknown) {
+  const { weddingId } = await requireWedding("/convidados");
+
+  const parsed = ImportGuestsSchema.safeParse(input);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    const index = typeof issue.path[0] === "number" ? issue.path[0] : null;
+    const line = index !== null && Array.isArray(input) ? (input[index] as { line?: unknown } | undefined)?.line : null;
+    return {
+      success: false as const,
+      error: typeof line === "number" ? `A linha ${line} não pode ser importada: ${issue.message}.` : issue.message,
+    };
+  }
+  const rows = parsed.data.map((r) => ({ ...r, problem: null }));
+
+  try {
+    const result = await prisma.$transaction(
+      async (tx) => {
+        // Uma importação por vez em cada casamento: evita duplicar se o botão for tocado duas vezes
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`guest-import:${weddingId}`}))`;
+
+        const existing = await tx.guest.findMany({ where: { weddingId }, select: { name: true, phone: true } });
+        const plan = planImport(rows, existing);
+
+        if (existing.length + plan.toAdd.length > MAX_GUESTS_PER_WEDDING) {
+          return { tooMany: true as const };
+        }
+        if (plan.toAdd.length > 0) {
+          await tx.guest.createMany({
+            data: plan.toAdd.map((r) => ({
+              weddingId,
+              name: r.name,
+              phone: r.phone,
+              email: r.email,
+              category: r.category,
+              allowedCompanions: r.companions,
+              dietaryRestrictions: r.dietary,
+            })),
+          });
+        }
+        return { tooMany: false as const, added: plan.toAdd.length, duplicates: plan.duplicates.length };
+      },
+      { timeout: 20_000 },
+    );
+
+    if (result.tooMany) {
+      return {
+        success: false as const,
+        error: `A lista chegaria a mais de ${MAX_GUESTS_PER_WEDDING} convidados, que é o máximo por casamento.`,
+      };
+    }
+
+    await logAudit({
+      action: "guests.import",
+      targetType: "wedding",
+      targetId: weddingId,
+      details: { received: rows.length, added: result.added, duplicates: result.duplicates },
+    });
+
+    revalidatePath("/convidados");
+    revalidatePath("/dashboard");
+    return { success: true as const, added: result.added, duplicates: result.duplicates };
+  } catch (error) {
+    console.error("[importGuests]", error);
+    return { success: false as const, error: "Não deu para importar agora. Nada foi salvo. Tente de novo." };
   }
 }
 

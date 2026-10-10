@@ -280,7 +280,7 @@ export default async function DashboardPage() {
           {invites === 0 ? (
             <>
               <p className="font-display text-[22px] leading-7 md:text-[26px] md:leading-8">Sua lista começa aqui</p>
-              <p className="text-sm text-tinta-suave">Adicione os convidados para acompanhar quem vai e quem ainda não respondeu.</p>
+              <p className="text-sm text-tinta-suave">Adicione os convidados, ou importe uma planilha, para acompanhar quem vai e quem ainda não respondeu.</p>
               <span className="inline-flex min-h-11 items-center text-sm font-semibold text-ameixa">Adicionar convidados</span>
             </>
           ) : (

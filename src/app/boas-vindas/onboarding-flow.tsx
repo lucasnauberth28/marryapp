@@ -356,7 +356,7 @@ export function OnboardingFlow({
           <div className="flex flex-col gap-3">
             <p className="text-sm font-semibold text-tinta">Primeiros passos</p>
             <FirstStep href="/site-builder" icon={Palette} title="Personalizar o site" text="Fotos, história, local e horários." />
-            <FirstStep href="/convidados" icon={Users} title="Adicionar convidados" text="Cadastre a lista e mande os convites." />
+            <FirstStep href="/convidados" icon={Users} title="Adicionar convidados" text="Cadastre a lista ou importe de uma planilha, e mande os convites." />
             <FirstStep href="/dashboard" icon={LayoutDashboard} title="Ir para o painel" text="Tudo do casamento num lugar só." />
           </div>
         </section>

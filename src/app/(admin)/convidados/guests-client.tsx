@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Check, Clock, Download, HeartHandshake, MessageCircle, Plus, Search, Trash2, UserCheck, Users, X } from "lucide-react";
+import { Check, Clock, Download, HeartHandshake, MessageCircle, Plus, Search, Trash2, Upload, UserCheck, Users, X } from "lucide-react";
 import { GuestLocal as Guest } from "@/types/local";
 import { deleteGuest } from "@/actions/guest-actions";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
@@ -12,6 +12,7 @@ import { RsvpChip } from "@/components/painel/status-chip";
 import { btn, btnIconDanger, card, input, overline } from "@/components/painel/styles";
 import { formatPhoneBR } from "@/lib/wedding-format";
 import { GuestModal, GUEST_CATEGORIES } from "./guest-modal";
+import { ImportGuestsModal } from "./import-guests-modal";
 
 export type GuestRow = Guest & { table?: { name: string } | null };
 
@@ -67,6 +68,7 @@ function LinkBadge({ guest }: { guest: Guest }) {
 export function GuestsClient({ initialGuests, deadlineLabel, canRemind }: GuestsClientProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
   const [, startTransition] = useTransition();
 
   const [filter, setFilter] = useState<Filter>("all");
@@ -152,6 +154,10 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind }: Guests
         description={deadlineLabel ? `Prazo para confirmar: ${deadlineLabel}` : "Quem vocês convidam, quantos lugares cada um tem e quem já respondeu."}
         actions={
           <>
+            <button type="button" onClick={() => setImportOpen(true)} className={btn.secondary}>
+              <Upload className="size-4" aria-hidden="true" />
+              Importar lista
+            </button>
             {initialGuests.length > 0 && (
               <a href="/api/export/guests" download="convidados.csv" className={btn.secondary}>
                 <Download className="size-4" aria-hidden="true" />
@@ -173,11 +179,17 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind }: Guests
           </span>
           <h2 className="font-display text-[26px] font-medium leading-8 text-tinta">Ainda não tem ninguém aqui</h2>
           <p className="max-w-md text-tinta-suave">
-            Comecem pelos convidados mais próximos. Cada um recebe o convite e confirma a presença pelo link, sem criar conta.
+            Adicionem os convidados um a um ou tragam a lista de uma planilha (CSV). Cada um recebe o convite e confirma a presença pelo link, sem criar conta.
           </p>
-          <button type="button" onClick={openAdd} className={`${btn.primary} mt-2`}>
-            Adicionar o primeiro convidado
-          </button>
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+            <button type="button" onClick={openAdd} className={btn.primary}>
+              Adicionar o primeiro convidado
+            </button>
+            <button type="button" onClick={() => setImportOpen(true)} className={btn.secondary}>
+              <Upload className="size-4" aria-hidden="true" />
+              Importar lista
+            </button>
+          </div>
         </div>
       ) : (
         <>
@@ -343,6 +355,12 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind }: Guests
       >
         <Plus className="size-6" aria-hidden="true" />
       </button>
+
+      <ImportGuestsModal
+        isOpen={importOpen}
+        onClose={() => setImportOpen(false)}
+        existing={initialGuests.map((g) => ({ name: g.name, phone: g.phone ?? null }))}
+      />
 
       <GuestModal
         isOpen={isModalOpen}
