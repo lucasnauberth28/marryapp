@@ -8,6 +8,8 @@ import { planOption, shortPlanName } from "@/app/login/auth-config";
 import { PageHeader } from "@/components/admin/page-header";
 import { Reveal } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
+import { COUPON_PLAN_IDS, couponPlanIds } from "@/lib/checkout-pricing";
+import { CouponsSection, type CouponRow } from "./coupons-section";
 import { FilterChips } from "./filter-chips";
 import { SubscriptionPanel, type PanelSubscription } from "./subscription-panel";
 
@@ -132,11 +134,60 @@ function statusOf(row: Row, now: Date): { tone: Tone; label: string } {
   }
 }
 
-export default async function AssinaturasPage({ searchParams }: { searchParams: Promise<{ status?: string; id?: string }> }) {
+const dateOnly = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", year: "numeric", timeZone: TZ });
+
+/** Abas da página: pagamentos (padrão) e cupons. */
+function Tabs({ active }: { active: "pagamentos" | "cupons" }) {
+  const tabs = [
+    { value: "pagamentos", label: "Pagamentos", href: "/assinaturas" },
+    { value: "cupons", label: "Cupons", href: "/assinaturas?aba=cupons" },
+  ] as const;
+  return (
+    <nav aria-label="Seções de assinaturas" className="flex gap-1 border-b border-linha">
+      {tabs.map((t) => (
+        <Link
+          key={t.value}
+          href={t.href}
+          aria-current={t.value === active ? "page" : undefined}
+          className={cn(
+            "-mb-px inline-flex min-h-11 items-center border-b-2 px-4 text-[15px] font-semibold transition-colors",
+            t.value === active ? "border-ameixa text-ameixa" : "border-transparent text-tinta-suave hover:text-tinta",
+          )}
+        >
+          {t.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+async function couponRows(now: Date): Promise<CouponRow[]> {
+  const coupons = await prisma.coupon.findMany({ orderBy: { createdAt: "desc" }, take: 200 });
+  return coupons.map((c) => ({
+    id: c.id,
+    code: c.code,
+    percentOff: c.percentOff,
+    amountOff: c.amountOff,
+    planIds: couponPlanIds(c.planIds),
+    maxRedemptions: c.maxRedemptions,
+    redemptions: c.redemptions,
+    expiresOn: c.expiresAt ? dayKey(c.expiresAt) : null,
+    expiresLabel: c.expiresAt ? dateOnly.format(c.expiresAt).replace(/\./g, "") : null,
+    expired: c.expiresAt !== null && c.expiresAt.getTime() <= now.getTime(),
+    active: c.active,
+  }));
+}
+
+export default async function AssinaturasPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; id?: string; aba?: string }>;
+}) {
   const session = await guard();
   if (!session) redirect("/login");
 
   const params = await searchParams;
+  const tab = params.aba === "cupons" ? "cupons" : "pagamentos";
   const filter: FilterValue = isFilter(params.status) ? params.status : "todos";
   const selectedId = typeof params.id === "string" && /^[0-9a-f-]{36}$/i.test(params.id) ? params.id : null;
 
@@ -174,8 +225,8 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
     user: { select: { name: true, username: true, partnerVendor: { select: { companyName: true } } } },
   } satisfies Prisma.SubscriptionSelect;
 
-  const [rows, received, vendorTiers, expiringSoon, reviewCount, oldestReview, selected] = await Promise.all([
-    prisma.subscription.findMany({
+  const [rows, received, vendorTiers, expiringSoon, reviewCount, oldestReview, selected, coupons] = await Promise.all([
+    tab !== "pagamentos" ? Promise.resolve([]) : prisma.subscription.findMany({
       where: listWhere[filter],
       orderBy: { createdAt: "desc" },
       take: 200,
@@ -192,7 +243,10 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
     }),
     prisma.subscription.count({ where: reviewWhere }),
     prisma.subscription.findFirst({ where: reviewWhere, orderBy: { createdAt: "asc" }, select: { createdAt: true } }),
-    selectedId ? prisma.subscription.findUnique({ where: { id: selectedId }, select: subscriptionSelect }) : Promise.resolve(null),
+    selectedId && tab === "pagamentos"
+      ? prisma.subscription.findUnique({ where: { id: selectedId }, select: subscriptionSelect })
+      : Promise.resolve(null),
+    tab === "cupons" ? couponRows(now) : Promise.resolve([]),
   ]);
 
   const proCount = vendorTiers.find((t) => t.planTier === VendorPlanTier.PRO)?._count._all ?? 0;
@@ -259,113 +313,119 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
         ))}
       </Reveal>
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <section aria-labelledby="lista-titulo" className="flex min-w-0 flex-1 flex-col gap-3">
-          <h2 id="lista-titulo" className="sr-only">
-            Pagamentos
-          </h2>
-          <FilterChips
-            filters={FILTERS.map((f) => ({
-              href: hrefFor(f.value),
-              label: f.value === "a-conferir" && reviewCount > 0 ? `${f.label} · ${reviewCount}` : f.label,
-              active: f.value === filter,
-            }))}
-          />
+      <Tabs active={tab} />
 
-          <div className="overflow-x-auto rounded-2xl border border-linha bg-papel">
-            <table className="w-full min-w-[720px] border-collapse text-[15px]">
-              <caption className="sr-only">
-                Assinaturas {filter === "todos" ? "" : `filtradas: ${FILTERS.find((f) => f.value === filter)?.label}`}, mais recentes
-                primeiro
-              </caption>
-              <thead>
-                <tr className="text-left text-[13px] text-tinta-suave">
-                  <th scope="col" className="px-4 py-3 font-semibold">Conta</th>
-                  <th scope="col" className="px-4 py-3 font-semibold">Plano</th>
-                  <th scope="col" className="px-4 py-3 text-right font-semibold">Valor</th>
-                  <th scope="col" className="px-4 py-3 font-semibold">Status</th>
-                  <th scope="col" className="px-4 py-3 font-semibold">Quando</th>
-                  <th scope="col" className="px-4 py-3">
-                    <span className="sr-only">Ação</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length === 0 ? (
-                  <tr className="border-t border-linha">
-                    <td colSpan={6} className="px-4 py-10 text-center text-tinta-suave">
-                      {filter === "a-conferir" ? "Nenhum Pix esperando conferência." : "Nenhum pagamento por aqui."}
-                    </td>
+      {tab === "cupons" ? (
+        <CouponsSection coupons={coupons} plans={COUPON_PLAN_IDS.map((id) => ({ id, label: id === "custom" ? "Adaptado" : planLabel(id, id) }))} />
+      ) : (
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+          <section aria-labelledby="lista-titulo" className="flex min-w-0 flex-1 flex-col gap-3">
+            <h2 id="lista-titulo" className="sr-only">
+              Pagamentos
+            </h2>
+            <FilterChips
+              filters={FILTERS.map((f) => ({
+                href: hrefFor(f.value),
+                label: f.value === "a-conferir" && reviewCount > 0 ? `${f.label} · ${reviewCount}` : f.label,
+                active: f.value === filter,
+              }))}
+            />
+
+            <div className="overflow-x-auto rounded-2xl border border-linha bg-papel">
+              <table className="w-full min-w-[720px] border-collapse text-[15px]">
+                <caption className="sr-only">
+                  Assinaturas {filter === "todos" ? "" : `filtradas: ${FILTERS.find((f) => f.value === filter)?.label}`}, mais recentes
+                  primeiro
+                </caption>
+                <thead>
+                  <tr className="text-left text-[13px] text-tinta-suave">
+                    <th scope="col" className="px-4 py-3 font-semibold">Conta</th>
+                    <th scope="col" className="px-4 py-3 font-semibold">Plano</th>
+                    <th scope="col" className="px-4 py-3 text-right font-semibold">Valor</th>
+                    <th scope="col" className="px-4 py-3 font-semibold">Status</th>
+                    <th scope="col" className="px-4 py-3 font-semibold">Quando</th>
+                    <th scope="col" className="px-4 py-3">
+                      <span className="sr-only">Ação</span>
+                    </th>
                   </tr>
-                ) : (
-                  rows.map((r) => {
-                    const status = statusOf(r, now);
-                    const isSelected = r.id === selectedId;
-                    const isVendor = r.planType === "VENDOR";
-                    const detail =
-                      r.status === PaymentStatus.APPROVED && r.periodEnd
-                        ? `vale até ${dayMonth.format(r.periodEnd).replace(".", "")}`
-                        : isStaticPix(r.gatewayId)
-                          ? "Pix estático"
-                          : r.gatewayId
-                            ? "Mercado Pago"
-                            : "Pix";
-                    return (
-                      <tr key={r.id} className={cn("border-t border-linha", isSelected && "bg-ameixa-suave")}>
-                        <td className="px-4 py-3.5">
-                          <span className="flex flex-col">
-                            <strong className="font-semibold text-tinta">{r.user?.name ?? "Conta excluída"}</strong>
-                            <span className="text-[13px] text-tinta-suave">
-                              {isVendor ? "Fornecedor" : "Casal"}
-                              {isVendor && r.user?.partnerVendor?.companyName ? ` · ${r.user.partnerVendor.companyName}` : ""}
+                </thead>
+                <tbody>
+                  {rows.length === 0 ? (
+                    <tr className="border-t border-linha">
+                      <td colSpan={6} className="px-4 py-10 text-center text-tinta-suave">
+                        {filter === "a-conferir" ? "Nenhum Pix esperando conferência." : "Nenhum pagamento por aqui."}
+                      </td>
+                    </tr>
+                  ) : (
+                    rows.map((r) => {
+                      const status = statusOf(r, now);
+                      const isSelected = r.id === selectedId;
+                      const isVendor = r.planType === "VENDOR";
+                      const detail =
+                        r.status === PaymentStatus.APPROVED && r.periodEnd
+                          ? `vale até ${dayMonth.format(r.periodEnd).replace(".", "")}`
+                          : isStaticPix(r.gatewayId)
+                            ? "Pix estático"
+                            : r.gatewayId
+                              ? "Mercado Pago"
+                              : "Pix";
+                      return (
+                        <tr key={r.id} className={cn("border-t border-linha", isSelected && "bg-ameixa-suave")}>
+                          <td className="px-4 py-3.5">
+                            <span className="flex flex-col">
+                              <strong className="font-semibold text-tinta">{r.user?.name ?? "Conta excluída"}</strong>
+                              <span className="text-[13px] text-tinta-suave">
+                                {isVendor ? "Fornecedor" : "Casal"}
+                                {isVendor && r.user?.partnerVendor?.companyName ? ` · ${r.user.partnerVendor.companyName}` : ""}
+                              </span>
                             </span>
-                          </span>
-                        </td>
-                        <td className="px-4 py-3.5 text-tinta">{planLabel(r.planId, r.planName)}</td>
-                        <td className="px-4 py-3.5 text-right tabular-nums text-tinta">{money(r.amount)}</td>
-                        <td className="px-4 py-3.5">
-                          <StatusChip tone={status.tone}>{status.label}</StatusChip>
-                        </td>
-                        <td className="px-4 py-3.5 text-sm text-tinta-suave">
-                          {when(r.paidAt ?? r.createdAt, now)} · {detail}
-                        </td>
-                        <td className="px-4 py-2 text-right whitespace-nowrap">
-                          {r.status === PaymentStatus.APPROVED ? (
+                          </td>
+                          <td className="px-4 py-3.5 text-tinta">{planLabel(r.planId, r.planName)}</td>
+                          <td className="px-4 py-3.5 text-right tabular-nums text-tinta">{money(r.amount)}</td>
+                          <td className="px-4 py-3.5">
+                            <StatusChip tone={status.tone}>{status.label}</StatusChip>
+                          </td>
+                          <td className="px-4 py-3.5 text-sm text-tinta-suave">
+                            {when(r.paidAt ?? r.createdAt, now)} · {detail}
+                          </td>
+                          <td className="px-4 py-2 text-right whitespace-nowrap">
+                            {r.status === PaymentStatus.APPROVED ? (
+                              <Link
+                                href={`/recibo/${r.id}`}
+                                className="inline-flex min-h-11 items-center whitespace-nowrap rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave"
+                              >
+                                Recibo
+                                <span className="sr-only"> do pagamento de {r.user?.name ?? "conta excluída"}</span>
+                              </Link>
+                            ) : null}
                             <Link
-                              href={`/recibo/${r.id}`}
-                              className="inline-flex min-h-11 items-center whitespace-nowrap rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave"
+                              href={hrefFor(filter, r.id)}
+                              scroll={false}
+                              aria-current={isSelected ? "true" : undefined}
+                              className={cn(
+                                "inline-flex min-h-11 items-center whitespace-nowrap rounded-xl px-3 text-sm font-semibold",
+                                isCheckable(r)
+                                  ? "border border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave"
+                                  : "text-ameixa hover:bg-ameixa-suave",
+                              )}
                             >
-                              Recibo
-                              <span className="sr-only"> do pagamento de {r.user?.name ?? "conta excluída"}</span>
+                              {isCheckable(r) ? "Conferir" : "Detalhes"}
+                              <span className="sr-only"> o pagamento de {r.user?.name ?? "conta excluída"}</span>
                             </Link>
-                          ) : null}
-                          <Link
-                            href={hrefFor(filter, r.id)}
-                            scroll={false}
-                            aria-current={isSelected ? "true" : undefined}
-                            className={cn(
-                              "inline-flex min-h-11 items-center whitespace-nowrap rounded-xl px-3 text-sm font-semibold",
-                              isCheckable(r)
-                                ? "border border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave"
-                                : "text-ameixa hover:bg-ameixa-suave",
-                            )}
-                          >
-                            {isCheckable(r) ? "Conferir" : "Detalhes"}
-                            <span className="sr-only"> o pagamento de {r.user?.name ?? "conta excluída"}</span>
-                          </Link>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-          {rows.length === 200 ? <p className="text-sm text-tinta-suave">Mostrando os 200 mais recentes.</p> : null}
-        </section>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {rows.length === 200 ? <p className="text-sm text-tinta-suave">Mostrando os 200 mais recentes.</p> : null}
+          </section>
 
-        {panel ? <SubscriptionPanel key={panel.id} subscription={panel} closeHref={hrefFor(filter)} /> : null}
-      </div>
+          {panel ? <SubscriptionPanel key={panel.id} subscription={panel} closeHref={hrefFor(filter)} /> : null}
+        </div>
+      )}
     </div>
   );
 }

@@ -17,12 +17,12 @@ export async function applyApprovedPayment(
 ): Promise<ActivationResult> {
   const sub = await prisma.subscription.findUnique({
     where: { id: subscriptionId },
-    select: { id: true, status: true, amount: true, planId: true, planType: true, userId: true },
+    select: { id: true, status: true, amount: true, planId: true, planType: true, userId: true, couponCode: true },
   });
   if (!sub) return "not_found";
   if (sub.status === PaymentStatus.APPROVED) return "already";
 
-  // O valor pago precisa ser exatamente o do catálogo, gravado quando o Pix foi gerado.
+  // O valor pago precisa ser exatamente o gravado quando o Pix foi gerado (catálogo menos cupom e crédito).
   if (!paidAmountMatches(payment.amountInReais, sub.amount)) {
     console.error(`[Assinatura] Valor divergente em ${sub.id}: pago ${payment.amountInReais}, esperado ${sub.amount / 100}.`);
     await prisma.subscription.updateMany({
@@ -39,6 +39,16 @@ export async function applyApprovedPayment(
       data: { status: PaymentStatus.APPROVED, gatewayId: payment.id, paidAt: now },
     });
     if (updated.count === 0) return "already";
+
+    // O uso do cupom só conta com o pagamento aprovado, e nunca passa do limite.
+    if (sub.couponCode) {
+      const counted = await tx.$executeRaw`
+        UPDATE "coupons" SET "redemptions" = "redemptions" + 1
+        WHERE "code" = ${sub.couponCode} AND ("maxRedemptions" IS NULL OR "redemptions" < "maxRedemptions")`;
+      if (counted === 0) {
+        console.warn(`[Assinatura] ${sub.id} paga com o cupom ${sub.couponCode}, que já estava no limite de usos.`);
+      }
+    }
 
     const tier = sub.planType === "VENDOR" ? vendorTierForPlan(sub.planId) : null;
     if (tier && sub.userId) {

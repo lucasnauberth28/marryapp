@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Check, CheckCircle2 } from "lucide-react";
+import { CouponField, type AppliedCoupon } from "@/components/checkout/coupon-field";
 import { SubscriptionPix } from "@/components/checkout/subscription-pix";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { formatPrice, type PlanOption } from "@/app/login/auth-config";
@@ -30,7 +31,10 @@ export function PlanCheckout({
   const [selected, setSelected] = useState<string>(currentTier === "MASTER" ? "master" : "pro");
   const [paying, setPaying] = useState(false);
   const [done, setDone] = useState(false);
+  const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
   const plan = options.find((o) => o.id === selected) ?? options[0];
+  // Só usa o cupom se ele foi conferido para o plano escolhido.
+  const couponFor = coupon && coupon.planId === plan.id ? coupon.code : null;
   const isRenewal = TIER_OF[plan.id] === currentTier && hasActivePeriod;
   const endLabel = endLabels[plan.id];
   const remaining = daysLeft === 1 ? "ao 1 dia que falta" : `aos ${daysLeft ?? 0} dias que faltam`;
@@ -61,7 +65,7 @@ export function PlanCheckout({
   if (paying) {
     return (
       <section aria-label="Pagamento" className="step-in flex max-w-[460px] flex-col gap-4">
-        <SubscriptionPix planId={plan.id} planName={`Plano ${plan.name}`} onPaid={handlePaid} />
+        <SubscriptionPix planId={plan.id} planName={`Plano ${plan.name}`} couponCode={couponFor} onPaid={handlePaid} />
         <button type="button" onClick={() => setPaying(false)} className={cn(btn.quiet, "self-center")}>
           Voltar aos planos
         </button>
@@ -120,6 +124,9 @@ export function PlanCheckout({
             </button>
           );
         })}
+      </div>
+      <div className="sm:max-w-md">
+        <CouponField planId={plan.id} applied={coupon} onChange={setCoupon} />
       </div>
       <div
         id="pagar"

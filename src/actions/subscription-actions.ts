@@ -8,7 +8,7 @@ import { signToken, sessionCookieOptions, hasPathAccess, SESSION_COOKIE_NAME } f
 import { isMercadoPagoConfigured, mpPayment } from "@/lib/mercadopago";
 import { generatePixPayload } from "@/lib/pix-utils";
 import { resolvePlan } from "@/lib/plans";
-import { rateLimitByIp } from "@/lib/security/rate-limiter";
+import { checkRateLimit, rateLimitByIp } from "@/lib/security/rate-limiter";
 import { normalizeText, sanitizeSlug, sanitizeUrl } from "@/lib/security/sanitize";
 import { uploadImageDataUrl } from "@/lib/supabase";
 import { PaymentStatus, VendorPlanTier } from "@prisma/client";
@@ -16,6 +16,7 @@ import { revalidatePath } from "next/cache";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { applyApprovedPayment, markPaymentFailed } from "@/lib/subscriptions";
 import { subscriptionReference } from "@/lib/subscription-period";
+import { quoteSubscription } from "@/lib/subscription-quote";
 import { isUniqueViolation, provisionWedding, upsertCoupleRole, withSlugRetry } from "@/lib/account/wedding-provisioning";
 
 /** Perfil das contas de fornecedor (o mesmo criado pelo seed). */
@@ -113,9 +114,39 @@ async function storeImage(value: string | undefined, folder: string): Promise<st
 export interface SubscriptionCheckoutInput {
   planId: string;
   modules?: string[];
+  /** Cupom opcional: validado de novo no servidor ao gerar o Pix. */
+  couponCode?: string | null;
 }
 
 const PIX_VALIDITY_MS = 10 * 60 * 1000;
+
+/**
+ * Prévia do preço no checkout (crédito de troca e cupom), sem gerar cobrança.
+ * Limitada por conta para ninguém sair testando códigos de cupom.
+ */
+export async function previewSubscriptionPrice(input: SubscriptionCheckoutInput) {
+  try {
+    const session = await getSession();
+    if (!session || session.userId === SUPER_ADMIN_USER_ID) {
+      return { success: false as const, error: "Entre na sua conta para ver o preço." };
+    }
+    if (input.couponCode) {
+      const limit = await checkRateLimit({ key: `COUPON_PREVIEW:${session.userId}`, limit: 20, windowMs: 10 * 60 * 1000 });
+      if (!limit.success) return { success: false as const, error: "Muitas tentativas de cupom. Aguarde alguns minutos.", field: "coupon" as const };
+    }
+    const result = await quoteSubscription({
+      userId: session.userId,
+      planId: String(input.planId ?? ""),
+      modules: input.modules,
+      couponCode: input.couponCode,
+    });
+    if (!result.ok) return { success: false as const, error: result.error, field: result.field };
+    return { success: true as const, couponCode: result.quote.couponCode, ...result.quote.breakdown };
+  } catch (error) {
+    console.error("[previewSubscriptionPrice Error]:", error);
+    return { success: false as const, error: "Não conseguimos calcular o preço agora." };
+  }
+}
 
 /**
  * Gera a cobrança Pix (10 minutos) de um plano pago para a conta logada.
@@ -129,37 +160,36 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
       return { success: false, error: "Entre na sua conta para assinar um plano." };
     }
 
-    const modules = Array.isArray(input.modules) ? input.modules.filter((m) => typeof m === "string").slice(0, 20) : undefined;
-    const plan = resolvePlan(String(input.planId ?? ""), modules);
-    if (!plan) return { success: false, error: "Plano inválido." };
-    if (plan.price <= 0) return { success: false, error: "Este plano é gratuito." };
-
     const rateLimit = await rateLimitByIp("CHECKOUT");
     if (!rateLimit.success) {
       return { success: false, error: "Muitas tentativas de geração de pagamento. Aguarde alguns minutos." };
     }
 
-    // Plano de fornecedor só para conta de fornecedor, e vice-versa.
-    const user = await prisma.user.findUnique({
-      where: { id: session.userId },
-      select: { name: true, username: true, partnerVendorId: true, weddingId: true },
+    // Preço sempre do servidor: catálogo, crédito de troca e cupom conferidos agora.
+    const quoted = await quoteSubscription({
+      userId: session.userId,
+      planId: String(input.planId ?? ""),
+      modules: input.modules,
+      couponCode: input.couponCode,
     });
-    if (!user) return { success: false, error: "Conta não encontrada." };
-    if ((plan.type === "VENDOR") !== Boolean(user.partnerVendorId)) {
-      return { success: false, error: "Este plano não é para o seu tipo de conta." };
-    }
+    if (!quoted.ok) return { success: false, error: quoted.error };
+    const { plan, user, modules, breakdown, couponCode } = quoted.quote;
+    const amount = breakdown.total;
 
     const expiresAt = new Date(Date.now() + PIX_VALIDITY_MS);
     const subscription = await prisma.subscription.create({
       data: {
         userId: session.userId,
-        planId: String(input.planId),
+        planId: quoted.quote.planId,
         planType: plan.type,
         planName: plan.name,
         // Plano de casal vale para o casamento (os dois do casal veem e usam).
         weddingId: plan.type === "COUPLE" ? user.weddingId : null,
-        modules: input.planId === "custom" ? modules : undefined,
-        amount: plan.price,
+        modules: quoted.quote.planId === "custom" ? modules : undefined,
+        couponCode,
+        discount: breakdown.discount > 0 ? breakdown.discount : null,
+        credit: breakdown.credit > 0 ? breakdown.credit : null,
+        amount,
         expiresAt,
       },
       select: { id: true },
@@ -172,7 +202,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
       try {
         const mpResponse = await mpPayment.create({
           body: {
-            transaction_amount: plan.price / 100,
+            transaction_amount: amount / 100,
             payment_method_id: "pix",
             description: `Assinatura Aceito: ${plan.name}`,
             date_of_expiration: expiresAt.toISOString(),
@@ -182,7 +212,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
               first_name: name.split(" ")[0],
               last_name: name.split(" ").slice(1).join(" ") || "Cliente",
             },
-            metadata: { kind: "subscription", plan_id: input.planId },
+            metadata: { kind: "subscription", plan_id: quoted.quote.planId },
           },
         });
 
@@ -197,7 +227,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
             pixPayload: mpPixPayload,
             qrCodeBase64: qrCodeBase64 || null,
             expiresAt: expiresAt.getTime(),
-            amount: plan.price,
+            amount,
             isDynamic: true,
           };
         }
@@ -218,7 +248,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
       pixKey,
       merchantName: (process.env.PIX_MERCHANT_NAME || "ACEITO BRASIL").trim(),
       merchantCity: (process.env.PIX_MERCHANT_CITY || "SAO PAULO").trim(),
-      amount: plan.price,
+      amount,
       txId,
     });
     await prisma.subscription.update({ where: { id: subscription.id }, data: { gatewayId: txId } });
@@ -229,7 +259,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
       pixPayload,
       qrCodeBase64: null,
       expiresAt: expiresAt.getTime(),
-      amount: plan.price,
+      amount,
       isDynamic: false,
     };
   } catch (error) {

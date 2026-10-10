@@ -13,6 +13,8 @@ interface SubscriptionPixProps {
   planId: string;
   modules?: string[];
   planName: string;
+  /** Cupom já conferido na prévia; o servidor confere de novo ao gerar o Pix. */
+  couponCode?: string | null;
   /** Chamado uma vez, quando o pagamento é confirmado (o plano já foi ativado no servidor). */
   onPaid: () => void;
 }
@@ -23,7 +25,7 @@ type Charge = { subscriptionId: string; payload: string; expiresAt: number; amou
  * Cobrança Pix de um plano: gera o código para a conta logada, mostra QR e copia e cola,
  * conta os 10 minutos e confere o pagamento sozinha a cada 5 segundos.
  */
-export function SubscriptionPix({ planId, modules, planName, onPaid }: SubscriptionPixProps) {
+export function SubscriptionPix({ planId, modules, planName, couponCode, onPaid }: SubscriptionPixProps) {
   const [charge, setCharge] = useState<Charge | null>(null);
   const [error, setError] = useState("");
   const [now, setNow] = useState(() => Date.now());
@@ -41,7 +43,7 @@ export function SubscriptionPix({ planId, modules, planName, onPaid }: Subscript
   const create = useCallback(async () => {
     setError("");
     setMessage("");
-    const res = await generateSubscriptionPix({ planId, modules });
+    const res = await generateSubscriptionPix({ planId, modules, couponCode });
     if (res.success && res.pixPayload && res.subscriptionId) {
       setCharge({
         subscriptionId: res.subscriptionId,
@@ -54,7 +56,7 @@ export function SubscriptionPix({ planId, modules, planName, onPaid }: Subscript
     } else {
       setError(res.error || "Não conseguimos gerar o Pix agora.");
     }
-  }, [planId, modules]);
+  }, [planId, modules, couponCode]);
 
   // Gera a cobrança ao abrir. O ref evita duas cobranças no modo estrito do React em desenvolvimento.
   const started = useRef(false);
