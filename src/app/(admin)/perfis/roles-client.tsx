@@ -2,36 +2,39 @@
 import { useRouter } from "next/navigation";
 import { useSyncedState } from "@/hooks/use-synced-state";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { DataTable } from "@/components/ui/data-table";
 import { createRole, updateRole, deleteRole } from "@/actions/rbac-actions";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Shield, Plus, Edit2, Trash2, Check } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Plus, Pencil, Trash2, Check } from "lucide-react";
+import { PageHeader } from "@/components/admin/page-header";
+import { AccessTabs } from "@/components/casal/access-tabs";
+import { btn } from "@/components/landing/styles";
+import { card, cardTitle } from "@/components/casal/ui";
 
 const AVAILABLE_MODULES = [
-  { id: "*", name: "Acesso Total (Super Admin)" },
-  { id: "/dashboard", name: "Dashboard (Visão Geral)" },
-  { id: "/credenciamento", name: "Credenciamento & Check-in (QR Code)" },
-  { id: "/convidados", name: "Convidados & Lista de Presença" },
-  { id: "/mesas", name: "Mapa & Organização de Mesas" },
-  { id: "/cronograma", name: "Cronograma do Casamento" },
-  { id: "/fornecedores", name: "Gestão de Fornecedores" },
-  { id: "/mensagens", name: "Mensagens & WhatsApp API" },
-  { id: "/financas", name: "Finanças & Orçamento" },
-  { id: "/carteira", name: "Carteira & Extrato PIX" },
-  { id: "/despesas", name: "Gestão de Despesas" },
-  { id: "/presentes-admin", name: "Lista de Presentes (Admin)" },
-  { id: "/lua-de-mel", name: "Cotas de Lua de Mel" },
-  { id: "/pendencias", name: "Tarefas & Pendências" },
+  { id: "*", name: "Acesso total" },
+  { id: "/dashboard", name: "Início do painel" },
+  { id: "/credenciamento", name: "Check-in no dia" },
+  { id: "/convidados", name: "Lista de convidados" },
+  { id: "/mesas", name: "Mesas" },
+  { id: "/cronograma", name: "Cronograma do dia" },
+  { id: "/fornecedores", name: "Encontrar fornecedores" },
+  { id: "/meus-fornecedores", name: "Meus fornecedores" },
+  { id: "/mensagens", name: "Mensagens" },
+  { id: "/financas", name: "Finanças" },
+  { id: "/carteira", name: "Carteira" },
+  { id: "/despesas", name: "Despesas" },
+  { id: "/presentes-admin", name: "Presentes" },
+  { id: "/lua-de-mel", name: "Cotas de lua de mel" },
+  { id: "/pendencias", name: "Tarefas" },
   { id: "/site-builder", name: "Editar o site" },
   { id: "/plano", name: "Plano e pagamentos do casal" },
-  { id: "/configuracoes", name: "Configurações Globais (WhatsApp API)" },
-  { id: "/usuarios", name: "Gestão de Usuários" },
-  { id: "/perfis", name: "Gestão de Perfis & Permissões (RBAC)" },
+  { id: "/configuracoes", name: "Configurações" },
+  { id: "/usuarios", name: "Usuários" },
+  { id: "/perfis", name: "Perfis de acesso" },
   { id: "/curadoria", name: "Curadoria de fornecedores (plataforma)" },
   { id: "/assinaturas", name: "Assinaturas e pagamentos (plataforma)" },
   { id: "/fornecedor", name: "Painel do fornecedor" },
@@ -50,6 +53,7 @@ function toPaths(value: unknown): string[] {
 
 export function RolesClient({ initialRoles }: { initialRoles: RoleItem[] }) {
   const [isPending, startTransition] = useTransition();
+  const uid = useId();
   const router = useRouter();
   const [roles] = useSyncedState(initialRoles);
   const [editingRole, setEditingRole] = useState<RoleItem | null>(null);
@@ -94,10 +98,10 @@ export function RolesClient({ initialRoles }: { initialRoles: RoleItem[] }) {
   }
 
   async function handleSave() {
-    if (!formData.name) return toast.error("O nome do perfil é obrigatório.");
-    if (formData.allowedPaths.length === 0) return toast.error("Selecione ao menos um módulo.");
+    if (!formData.name) return toast.error("Dê um nome ao perfil.");
+    if (formData.allowedPaths.length === 0) return toast.error("Marque ao menos uma área.");
 
-    const toastId = toast.loading(editingRole ? "Atualizando perfil de acesso..." : "Criando novo perfil de acesso...");
+    const toastId = toast.loading(editingRole ? "Salvando o perfil..." : "Criando o perfil...");
     startTransition(async () => {
       let result;
       if (editingRole) {
@@ -107,7 +111,7 @@ export function RolesClient({ initialRoles }: { initialRoles: RoleItem[] }) {
       }
 
       if (result.success) {
-        toast.success(editingRole ? "Perfil de acesso atualizado com sucesso!" : "Perfil de acesso criado com sucesso!", {
+        toast.success(editingRole ? "Perfil atualizado." : "Perfil criado.", {
           id: toastId,
         });
         router.refresh();
@@ -123,11 +127,11 @@ export function RolesClient({ initialRoles }: { initialRoles: RoleItem[] }) {
 
   async function handleDelete(id: string) {
     setConfirmAction(() => () => {
-      const toastId = toast.loading("Excluindo perfil de acesso...");
+      const toastId = toast.loading("Excluindo o perfil...");
       startTransition(async () => {
         const result = await deleteRole(id);
         if (result.success) {
-          toast.success("Perfil de acesso excluído com sucesso!", { id: toastId });
+          toast.success("Perfil excluído.", { id: toastId });
           router.refresh();
         } else {
           toast.error(result.error || "Erro ao realizar operação.", {
@@ -141,131 +145,141 @@ export function RolesClient({ initialRoles }: { initialRoles: RoleItem[] }) {
     setConfirmOpen(true);
   }
 
+  const pathsOf = (role: RoleItem) => toPaths(role.allowedPaths);
+  const nameOf = (path: string) => AVAILABLE_MODULES.find((m) => m.id === path)?.name || path;
+  const pathChips = (role: RoleItem) => (
+    <div className="flex flex-wrap gap-1.5">
+      {pathsOf(role).includes("*") ? (
+        <span className="rounded-lg bg-ameixa-suave px-2.5 py-1 text-sm font-semibold text-ameixa">Acesso total</span>
+      ) : (
+        pathsOf(role).map((path) => (
+          <span key={path} className="rounded-lg bg-areia px-2.5 py-1 text-sm text-tinta">
+            {nameOf(path)}
+          </span>
+        ))
+      )}
+    </div>
+  );
+  const rowActions = (role: RoleItem) => (
+    <div className="flex justify-end gap-1">
+      <button type="button" aria-label={`Editar ${role.name}`} className={`${btn.quiet} !min-w-11 !px-0`} onClick={() => openEditForm(role)}>
+        <Pencil className="size-4" aria-hidden="true" />
+      </button>
+      <button type="button" aria-label={`Excluir ${role.name}`} className={`${btn.quiet} !min-w-11 !px-0 text-perigo hover:bg-perigo-suave`} onClick={() => handleDelete(role.id)}>
+        <Trash2 className="size-4" aria-hidden="true" />
+      </button>
+    </div>
+  );
+  const usersLabel = (role: RoleItem) => {
+    const n = role._count?.users || 0;
+    return `${n} ${n === 1 ? "usuário" : "usuários"}`;
+  };
+
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-tinta text-balance md:text-[40px] md:leading-[46px]">
-            Perfis de acesso
-          </h1>
-          <p className="mt-1 text-sm text-tinta-suave">
-            Crie perfis e defina quais páginas cada um pode acessar.
-          </p>
-        </div>
-        {!isFormOpen && (
-          <Button onClick={openNewForm} className="bg-zinc-900 text-white hover:bg-zinc-800">
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Perfil
-          </Button>
-        )}
-      </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        eyebrow="Acesso"
+        title="Usuários e perfis"
+        description="Cada perfil define quais áreas do painel a pessoa pode abrir."
+        actions={
+          !isFormOpen && (
+            <button type="button" onClick={openNewForm} className={btn.primary}>
+              <Plus className="size-4" aria-hidden="true" /> Novo perfil
+            </button>
+          )
+        }
+      />
+      <AccessTabs current="perfis" />
 
       {isFormOpen ? (
-        <Card className="border-zinc-200/60 shadow-sm animate-in zoom-in-95 duration-200">
-          <CardHeader>
-            <CardTitle>{editingRole ? "Editar Perfil" : "Criar Novo Perfil"}</CardTitle>
-            <CardDescription>Defina o nome do perfil e marque as páginas permitidas.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-700">Nome do Perfil</label>
-              <Input
-                placeholder="Ex: Cerimonialista, Financeiro..."
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="max-w-md"
-              />
-            </div>
+        <section aria-labelledby={`${uid}-titulo`} className={`${card} flex flex-col gap-6 p-5 sm:p-6`}>
+          <div>
+            <h2 id={`${uid}-titulo`} className={cardTitle}>{editingRole ? "Editar perfil" : "Novo perfil"}</h2>
+            <p className="mt-0.5 text-[15px] text-tinta-suave">Dê um nome ao perfil e marque as áreas que ele pode abrir.</p>
+          </div>
+          <div className="flex max-w-md flex-col gap-1.5">
+            <label htmlFor={`${uid}-name`} className="text-sm font-semibold text-tinta">Nome do perfil</label>
+            <Input
+              id={`${uid}-name`}
+              placeholder="Ex.: Cerimonialista, Financeiro"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="min-h-11 rounded-xl sm:min-h-10"
+            />
+          </div>
 
-            <div className="space-y-3">
-              <label className="text-sm font-medium text-zinc-700">Módulos Permitidos</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                {AVAILABLE_MODULES.map((mod) => {
-                  const isSelected = formData.allowedPaths.includes(mod.id);
-                  return (
-                    <button
-                      key={mod.id}
-                      onClick={() => togglePath(mod.id)}
-                      className={`flex items-center justify-between p-3 rounded-xl border text-left transition-all ${
-                        isSelected
-                          ? "bg-zinc-900 border-zinc-900 text-white"
-                          : "bg-papel border-zinc-200 text-zinc-600 hover:border-zinc-300"
-                      }`}
-                    >
-                      <span className="text-sm font-medium">{mod.name}</span>
-                      {isSelected && <Check className="w-4 h-4" />}
-                    </button>
-                  );
-                })}
-              </div>
+          <fieldset className="flex flex-col gap-3">
+            <legend className="text-sm font-semibold text-tinta">Áreas liberadas</legend>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+              {AVAILABLE_MODULES.map((mod) => {
+                const isSelected = formData.allowedPaths.includes(mod.id);
+                return (
+                  <button
+                    type="button"
+                    key={mod.id}
+                    aria-pressed={isSelected}
+                    onClick={() => togglePath(mod.id)}
+                    className={`flex min-h-12 items-center justify-between gap-2 rounded-xl border p-3 text-left transition-colors ${
+                      isSelected
+                        ? "border-ameixa bg-ameixa text-on-ameixa"
+                        : "border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave"
+                    }`}
+                  >
+                    <span className="text-[15px] font-medium">{mod.name}</span>
+                    {isSelected && <Check className="size-4 shrink-0" aria-hidden="true" />}
+                  </button>
+                );
+              })}
             </div>
+          </fieldset>
 
-            <div className="flex gap-3 justify-end pt-4 border-t border-zinc-100">
-              <Button variant="outline" onClick={() => setIsFormOpen(false)} disabled={isPending}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSave} disabled={isPending} className="bg-zinc-900 text-white">
-                {isPending ? "Salvando..." : "Salvar Perfil"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          <div className="flex flex-wrap justify-end gap-3 border-t border-linha pt-4">
+            <button type="button" className={btn.secondary} onClick={() => setIsFormOpen(false)} disabled={isPending}>
+              Cancelar
+            </button>
+            <button type="button" className={btn.primary} onClick={handleSave} disabled={isPending}>
+              {isPending ? "Salvando..." : "Salvar perfil"}
+            </button>
+          </div>
+        </section>
       ) : (
         <DataTable
           data={roles}
           pageSize={15}
           keyExtractor={(r) => r.id}
-          searchPlaceholder="Buscar perfil..."
-          emptyMessage="Nenhum perfil cadastrado."
+          searchPlaceholder="Buscar perfil"
+          emptyMessage="Nenhum perfil ainda. Crie o primeiro."
+          mobileCard={(role) => (
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 flex-col gap-2">
+                <strong className="font-semibold text-tinta">{role.name}</strong>
+                <span className="text-sm text-tinta-suave">{usersLabel(role)}</span>
+                {pathChips(role)}
+              </div>
+              {rowActions(role)}
+            </div>
+          )}
           columns={[
             {
               key: "name",
-              header: "Nome do Perfil",
+              header: "Perfil",
               sortable: true,
               accessor: (r) => r.name,
-              cell: (role) => (
-                <div className="flex items-center gap-2 font-medium text-zinc-900">
-                  <Shield className="w-4 h-4 text-zinc-500" />
-                  {role.name}
-                </div>
-              ),
+              cell: (role) => <strong className="font-semibold text-tinta">{role.name}</strong>,
             },
             {
               key: "usersCount",
-              header: "Usuários Vinculados",
+              header: "Usuários",
               sortable: true,
               accessor: (r) => r._count?.users || 0,
-              cell: (role) => (
-                <span className="text-sm text-zinc-600">
-                  {role._count?.users || 0} usuário(s)
-                </span>
-              ),
+              cell: (role) => <span className="text-tinta-suave">{usersLabel(role)}</span>,
             },
             {
               key: "allowedPaths",
-              header: "Módulos Permitidos",
+              header: "Áreas liberadas",
               sortable: true,
-              accessor: (r) =>
-                toPaths(r.allowedPaths).includes("*")
-                  ? "Acesso Total"
-                  : toPaths(r.allowedPaths)
-                      .map((p) => AVAILABLE_MODULES.find((m) => m.id === p)?.name || p)
-                      .join(", "),
-              cell: (role) => (
-                <div className="flex flex-wrap gap-1.5">
-                  {toPaths(role.allowedPaths).includes("*") ? (
-                    <span className="text-xs bg-zinc-100 text-zinc-700 px-2 py-1 rounded-md font-medium border border-zinc-200">
-                      Acesso Total
-                    </span>
-                  ) : (
-                    toPaths(role.allowedPaths).map((path) => (
-                      <span key={path} className="text-xs bg-zinc-50 text-zinc-600 px-2 py-1 rounded-md border border-zinc-200">
-                        {AVAILABLE_MODULES.find((m) => m.id === path)?.name || path}
-                      </span>
-                    ))
-                  )}
-                </div>
-              ),
+              accessor: (r) => (pathsOf(r).includes("*") ? "Acesso total" : pathsOf(r).map(nameOf).join(", ")),
+              cell: (role) => pathChips(role),
             },
             {
               key: "actions",
@@ -274,16 +288,7 @@ export function RolesClient({ initialRoles }: { initialRoles: RoleItem[] }) {
               searchable: false,
               className: "text-right pr-4",
               headerClassName: "text-right pr-4",
-              cell: (role) => (
-                <div className="flex justify-end gap-1">
-                  <Button aria-label="Editar" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-zinc-600" onClick={() => openEditForm(role)}>
-                    <Edit2 className="w-4 h-4" />
-                  </Button>
-                  <Button aria-label="Excluir" variant="ghost" size="icon" className="h-8 w-8 text-zinc-500 hover:text-perigo" onClick={() => handleDelete(role.id)}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              ),
+              cell: (role) => rowActions(role),
             },
           ]}
         />
@@ -295,8 +300,8 @@ export function RolesClient({ initialRoles }: { initialRoles: RoleItem[] }) {
           setConfirmOpen(false);
           confirmAction?.();
         }}
-        title="Excluir Perfil"
-        description="Tem certeza que deseja excluir este perfil? Usuários vinculados podem perder acesso."
+        title="Excluir perfil"
+        description="Tem certeza de que deseja excluir este perfil? Quem usa esse perfil pode perder o acesso."
       />
     </div>
   );
