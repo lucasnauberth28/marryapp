@@ -8,6 +8,13 @@ import { RefreshCw, QrCode, CheckCircle2, XCircle, Loader2 } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react";
 import { motion, AnimatePresence } from "framer-motion";
 
+/** Mensagens técnicas do servidor viram texto claro (sem mostrar endereço nem chave). */
+function friendly(error: string | undefined | null): string {
+  if (!error) return "";
+  if (error.startsWith("Serviço não configurado")) return "A conexão do WhatsApp ainda não foi ativada neste ambiente.";
+  return error;
+}
+
 export function WhatsAppConfigClient() {
   const [status, setStatus] = useState<string>("LOADING");
   const [message, setMessage] = useState<string>("");
@@ -24,7 +31,7 @@ export function WhatsAppConfigClient() {
         setQrCode(null);
         setMessage("");
         if (isManualRefresh) {
-          toast.success("WhatsApp está conectado e pronto para envios! 📲", { id: toastId });
+          toast.success("O WhatsApp está conectado e pronto para enviar.", { id: toastId });
         }
       } else {
         const qrRes = await generateWhatsAppQRCode();
@@ -33,21 +40,21 @@ export function WhatsAppConfigClient() {
           setStatus("QR_CODE_READY");
           setMessage("");
           if (isManualRefresh) {
-            toast.info("Novo QR Code gerado. Aponte a câmera do seu WhatsApp!", { id: toastId });
+            toast.info("Novo QR Code gerado. Aponte a câmera do WhatsApp para ele.", { id: toastId });
           }
         } else {
           setStatus(statusRes.state || "DISCONNECTED");
-          if (qrRes.error) setMessage(qrRes.error);
+          if (qrRes.error) setMessage(friendly(qrRes.error));
           if (isManualRefresh) {
-            toast.error(qrRes.error || "WhatsApp desconectado.", { id: toastId });
+            toast.error(friendly(qrRes.error) || "O WhatsApp está desconectado.", { id: toastId });
           }
         }
       }
     } catch {
       setStatus("ERROR");
-      setMessage("Erro inesperado ao consultar Evolution API.");
+      setMessage("Não deu para consultar a conexão agora. Tente de novo em instantes.");
       if (isManualRefresh) {
-        toast.error("Erro inesperado ao consultar Evolution API.", { id: toastId });
+        toast.error("Não deu para consultar a conexão agora. Tente de novo em instantes.", { id: toastId });
       }
     } finally {
       setLoading(false);
@@ -64,10 +71,10 @@ export function WhatsAppConfigClient() {
         setStatus("QR_CODE_READY");
         setMessage("");
       } else {
-        setMessage(res.error || "Erro ao gerar QR Code");
+        setMessage(friendly(res.error) || "Não deu para gerar o QR Code. Tente de novo.");
       }
     } catch {
-      setMessage("Erro inesperado ao solicitar QR Code.");
+      setMessage("Não deu para gerar o QR Code agora. Tente de novo em instantes.");
     } finally {
       setLoading(false);
     }
@@ -75,7 +82,7 @@ export function WhatsAppConfigClient() {
 
   const refreshManually = () => {
     setLoading(true);
-    const toastId = toast.loading("Verificando status da conexão com WhatsApp...");
+    const toastId = toast.loading("Verificando a conexão com o WhatsApp…");
     checkStatusAndQRCode(true, toastId);
   };
 
@@ -104,80 +111,82 @@ export function WhatsAppConfigClient() {
   }, [status, qrCode]);
 
   return (
-    <div className="bg-papel border border-zinc-200 rounded-xl p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-semibold text-zinc-900">Status da Conexão</h2>
+    <div className="rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] md:p-6">
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <h2 className="text-xl font-semibold leading-7 text-tinta">Status da conexão</h2>
         <Button variant="outline" size="sm" onClick={refreshManually} disabled={loading}>
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw className={loading ? "animate-spin" : ""} aria-hidden="true" />
           Atualizar
         </Button>
       </div>
 
       <AnimatePresence mode="wait">
         {loading && !qrCode && status === "LOADING" ? (
-          <motion.div 
+          <motion.div
             key="loading"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center p-12 text-zinc-500"
+            role="status"
+            className="flex flex-col items-center justify-center p-12 text-tinta-suave"
           >
-            <Loader2 className="w-10 h-10 animate-spin text-zinc-500 mb-3" />
-            <p className="text-sm font-medium text-zinc-600">Verificando status com Evolution API...</p>
+            <Loader2 className="mb-3 h-8 w-8 animate-spin" aria-hidden="true" />
+            <p className="text-[15px]">Verificando a conexão…</p>
           </motion.div>
         ) : status === "open" || status === "CONNECTED" ? (
-          <motion.div 
+          <motion.div
             key="connected"
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center p-12 bg-green-50 border border-green-200 rounded-lg text-green-700"
+            className="flex flex-col items-center justify-center rounded-xl bg-sucesso-suave p-10 text-center text-sucesso"
           >
-            <CheckCircle2 className="w-16 h-16 mb-4 text-green-500" />
-            <h3 className="text-xl font-bold mb-2">WhatsApp Conectado!</h3>
-            <p className="text-center text-green-700 max-w-md text-sm">
-              Seu celular está corretamente pareado com a Evolution API. O disparo automático de mensagens e lembretes funcionará perfeitamente.
+            <CheckCircle2 className="mb-3 h-12 w-12" aria-hidden="true" />
+            <h3 className="font-display text-2xl font-medium">WhatsApp conectado</h3>
+            <p className="mt-2 max-w-md text-[15px]">
+              O número está pareado. Os convites e lembretes podem ser enviados pelo painel.
             </p>
           </motion.div>
         ) : qrCode ? (
-          <motion.div 
+          <motion.div
             key="qrcode"
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center p-8 border border-zinc-200 rounded-xl bg-zinc-900 text-white shadow-md"
+            initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center justify-center rounded-xl bg-areia p-6 text-center md:p-8"
           >
-            <h3 className="text-xl font-bold mb-2 text-white">Escaneie o QR Code</h3>
-            <p className="text-center text-zinc-500 mb-6 max-w-md text-sm">
-              Abra o WhatsApp no seu celular, acesse <strong className="text-white">Aparelhos Conectados</strong> e aponte a câmera para o código abaixo.
+            <h3 className="font-display text-2xl font-medium text-tinta">Escaneie o QR Code</h3>
+            <p className="mb-5 mt-2 max-w-md text-[15px] text-tinta-suave">
+              Abra o WhatsApp no celular, entre em <strong className="text-tinta">Aparelhos conectados</strong> e aponte a câmera para o código.
             </p>
-            
-            <div className="bg-papel p-5 rounded-2xl border-4 border-black shadow-2xl relative">
+
+            <div className="rounded-2xl border border-linha bg-papel p-4">
               {qrCode.startsWith("data:image") ? (
-                <img src={qrCode} alt="WhatsApp QR Code" className="w-64 h-64 object-contain" />
+                // eslint-disable-next-line @next/next/no-img-element -- QR Code gerado em data URI pela API
+                <img src={qrCode} alt="QR Code para conectar o WhatsApp" className="h-60 w-60 object-contain md:h-64 md:w-64" />
               ) : (
-                <QRCodeSVG value={qrCode} size={256} aria-label="WhatsApp QR Code" />
+                <QRCodeSVG value={qrCode} size={240} aria-label="QR Code para conectar o WhatsApp" />
               )}
             </div>
 
-            <div className="flex items-center gap-2 mt-5 text-xs text-zinc-500">
-              <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-400" />
-              <span>Aguardando leitura pelo aplicativo do WhatsApp...</span>
-            </div>
+            <p className="mt-4 flex items-center gap-2 text-sm text-tinta-suave" role="status">
+              <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" />
+              Esperando a leitura pelo aplicativo…
+            </p>
 
-            <Button className="mt-6 bg-papel text-zinc-900 hover:bg-zinc-100 font-medium" onClick={refreshManually} disabled={loading}>
-              {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-              Já escaneei (Verificar Status)
+            <Button className="mt-5" onClick={refreshManually} disabled={loading}>
+              {loading ? <Loader2 className="animate-spin" aria-hidden="true" /> : <RefreshCw aria-hidden="true" />}
+              Já escaneei, verificar
             </Button>
           </motion.div>
         ) : (
-          <motion.div 
+          <motion.div
             key="disconnected"
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center p-12 bg-perigo-suave border border-perigo/40 rounded-lg text-perigo"
+            className="flex flex-col items-center justify-center rounded-xl bg-perigo-suave p-10 text-center text-perigo"
           >
-            <XCircle className="w-16 h-16 mb-4 text-perigo" />
-            <h3 className="text-xl font-bold mb-2">WhatsApp Desconectado</h3>
-            <p className="text-center text-perigo max-w-md mb-6 text-sm">
-              {message || "O sistema não conseguiu se conectar à Evolution API ou o aparelho foi desconectado."}
+            <XCircle className="mb-3 h-12 w-12" aria-hidden="true" />
+            <h3 className="font-display text-2xl font-medium">WhatsApp desconectado</h3>
+            <p className="mb-5 mt-2 max-w-md text-[15px]">
+              {message || "Não conseguimos conectar ao WhatsApp, ou o aparelho foi desconectado."}
             </p>
-            <Button onClick={requestQRCode} disabled={loading} className="bg-red-600 hover:bg-red-700 text-white">
-              {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <QrCode className="w-4 h-4 mr-2" />}
-              Gerar QR Code para Reconectar
+            <Button onClick={requestQRCode} disabled={loading}>
+              {loading ? <Loader2 className="animate-spin" aria-hidden="true" /> : <QrCode aria-hidden="true" />}
+              Gerar QR Code para reconectar
             </Button>
           </motion.div>
         )}
