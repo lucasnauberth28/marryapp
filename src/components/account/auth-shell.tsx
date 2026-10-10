@@ -101,16 +101,20 @@ export function AuthShell({
 export function ShellHeading({
   title,
   text,
+  overline,
   id = "titulo",
   ref,
 }: {
   title: string;
   text?: ReactNode;
+  /** Sobretítulo em caixa-alta pequena, acima do título. */
+  overline?: string;
   id?: string;
   ref?: Ref<HTMLHeadingElement>;
 }) {
   return (
     <div className="flex flex-col gap-2">
+      {overline ? <p className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">{overline}</p> : null}
       <h1
         ref={ref}
         id={id}

@@ -6,7 +6,6 @@ import {
   ArrowRight,
   CalendarHeart,
   Check,
-  CheckCircle2,
   Copy,
   Globe,
   Heart,
@@ -19,13 +18,14 @@ import {
 } from "lucide-react";
 import { completeOnboarding } from "@/actions/onboarding-actions";
 import { AuthShell, SHELL_PHOTOS, ShellHeading } from "@/components/account/auth-shell";
+import { Seal } from "@/components/landing/seal";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { Field, FormAlert } from "@/app/login/fields";
 import { GUEST_RANGES, THEME_PRESETS, joinCoupleNames, type GuestRange } from "@/lib/onboarding-options";
 import { cn } from "@/lib/utils";
 
-type Step = "nomes" | "data" | "cidade" | "convidados" | "cor" | "pronto";
-const STEPS: Exclude<Step, "pronto">[] = ["nomes", "data", "cidade", "convidados", "cor"];
+type Step = "nomes" | "data" | "convidados" | "cor" | "pronto";
+const STEPS: Exclude<Step, "pronto">[] = ["nomes", "data", "convidados", "cor"];
 
 interface Initial {
   yourName: string;
@@ -73,6 +73,13 @@ export function OnboardingFlow({
   }, [step]);
 
   const coupleNames = joinCoupleNames(yourName, partnerName) || "Vocês dois";
+  const previewNames = coupleNames.split(" & ");
+  // "17 de abril de 2027 · Itu": só o que já foi preenchido
+  const previewDate =
+    !noDateYet && weddingDate
+      ? new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" }).format(new Date(`${weddingDate}T12:00:00Z`))
+      : "";
+  const previewLine = [previewDate, city.trim()].filter(Boolean).join(" · ");
   const index = STEPS.indexOf(step as Exclude<Step, "pronto">);
   const go = (to: Step) => {
     setFormError("");
@@ -151,6 +158,7 @@ export function OnboardingFlow({
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
           <ShellHeading
             ref={headingRef}
+            overline="Vamos começar"
             title={firstName ? `Boas-vindas, ${firstName}` : "Boas-vindas"}
             text="Vamos preparar o casamento de vocês. Leva um minuto."
           />
@@ -178,7 +186,12 @@ export function OnboardingFlow({
 
       {step === "data" ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-          <ShellHeading ref={headingRef} title="Quando é o grande dia?" text="Usamos a data na contagem regressiva e no site." />
+          <ShellHeading
+            ref={headingRef}
+            overline="O grande dia"
+            title="Quando e onde?"
+            text="A data entra na contagem regressiva do site. A cidade ajuda a encontrar fornecedores perto de vocês."
+          />
           <form onSubmit={submitDate} noValidate className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
               <Field id="onb-date" label="Data do casamento" icon={CalendarHeart} error={errors.date}>
@@ -207,22 +220,6 @@ export function OnboardingFlow({
                 Ainda não temos a data
               </label>
             </div>
-            <StepButtons onBack={back} />
-          </form>
-        </section>
-      ) : null}
-
-      {step === "cidade" ? (
-        <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-          <ShellHeading ref={headingRef} title="Onde vai ser?" text="A cidade ajuda a encontrar fornecedores perto de vocês." />
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              next();
-            }}
-            noValidate
-            className="flex flex-col gap-5"
-          >
             <Field id="onb-city" label="Cidade" icon={MapPin} optional>
               {(c) => (
                 <input
@@ -236,14 +233,14 @@ export function OnboardingFlow({
                 />
               )}
             </Field>
-            <StepButtons onBack={back} label={city.trim() ? "Continuar" : "Pular por enquanto"} />
+            <StepButtons onBack={back} />
           </form>
         </section>
       ) : null}
 
       {step === "convidados" ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-          <ShellHeading ref={headingRef} title="Quantos convidados?" text="Uma estimativa já basta. Dá para mudar depois." />
+          <ShellHeading ref={headingRef} overline="Convidados" title="Quantos convidados?" text="Uma estimativa já basta, para sugerir fornecedores e o orçamento. Dá para mudar depois." />
           <div role="radiogroup" aria-label="Número de convidados" className="grid grid-cols-2 gap-3">
             {GUEST_RANGES.map((range) => {
               const selected = guestEstimate === range;
@@ -271,18 +268,25 @@ export function OnboardingFlow({
 
       {step === "cor" ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-          <ShellHeading ref={headingRef} title="A cor do site" text="Escolham a cor principal do site do casamento." />
-          <div className="overflow-hidden rounded-[16px] border border-linha bg-papel" aria-hidden="true">
-            <div className="h-2 transition-colors duration-500" style={{ backgroundColor: themeColor }} />
-            <div className="flex flex-col items-center gap-1 px-4 py-6 text-center">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">Vamos nos casar</span>
-              <span className="font-display text-[28px] leading-9 transition-colors duration-500" style={{ color: themeColor }}>
-                {coupleNames}
-              </span>
-              <span className="mt-2 inline-flex min-h-9 items-center rounded-[10px] px-4 text-sm font-semibold text-on-ameixa transition-colors duration-500" style={{ backgroundColor: themeColor }}>
-                Confirmar presença
-              </span>
-            </div>
+          <ShellHeading ref={headingRef} overline="O site de vocês" title="Escolham a cor" text="Ela aparece nos botões e nos detalhes do site do casamento." />
+          <div
+            className="flex flex-col items-center rounded-[999px_999px_16px_16px] border border-linha bg-papel px-6 pb-6 pt-14 text-center"
+            aria-hidden="true"
+          >
+            <span className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Prévia</span>
+            <span className="mt-2 font-display text-[34px] leading-10">
+              {previewNames.length === 2 ? (
+                <>
+                  {previewNames[0]} <em className="italic transition-colors duration-500" style={{ color: themeColor }}>&amp;</em> {previewNames[1]}
+                </>
+              ) : (
+                coupleNames
+              )}
+            </span>
+            {previewLine ? <span className="mb-4 mt-1 text-tinta-suave">{previewLine}</span> : <span className="mb-4" />}
+            <span className="inline-flex min-h-10 items-center rounded-[12px] px-4 text-sm font-semibold text-on-ameixa transition-colors duration-500" style={{ backgroundColor: themeColor }}>
+              Confirmar presença
+            </span>
           </div>
           <div role="radiogroup" aria-label="Cor do site" className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3">
             {THEME_PRESETS.map((preset) => {
@@ -331,9 +335,7 @@ export function OnboardingFlow({
 
       {step === "pronto" && result ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-          <span className="grid size-14 place-items-center rounded-full bg-sucesso-suave text-sucesso">
-            <CheckCircle2 aria-hidden="true" className="size-7" strokeWidth={1.75} />
-          </span>
+          <Seal label="Casamento criado" className="size-24 [&>span]:text-[54px]" />
           <ShellHeading ref={headingRef} title="Tudo pronto" text={`O casamento de ${result.coupleNames} já tem endereço no Aceito.`} />
 
           <div className="flex flex-col gap-2 rounded-[16px] border border-linha bg-papel p-4">
@@ -354,7 +356,7 @@ export function OnboardingFlow({
           </div>
 
           <div className="flex flex-col gap-3">
-            <p className="text-sm font-semibold text-tinta">Primeiros passos</p>
+            <p className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Primeiros passos</p>
             <FirstStep href="/site-builder" icon={Palette} title="Personalizar o site" text="Fotos, história, local e horários." />
             <FirstStep href="/convidados" icon={Users} title="Adicionar convidados" text="Cadastre a lista ou importe de uma planilha, e mande os convites." />
             <FirstStep href="/dashboard" icon={LayoutDashboard} title="Ir para o painel" text="Tudo do casamento num lugar só." />

@@ -62,8 +62,6 @@ export async function concluirOnboarding(page: Page): Promise<string> {
   await page.getByRole("button", { name: "Continuar" }).click();
 
   await page.getByLabel("Ainda não temos a data").check();
-  await page.getByRole("button", { name: /Continuar|Pular/ }).click();
-
   await page.getByLabel("Cidade").fill("Campinas");
   await page.getByRole("button", { name: "Continuar" }).click();
 
