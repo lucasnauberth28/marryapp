@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useId } from "react";
 import { Clock, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Field, joinIds, type FloatOptions } from "@/components/ui/field";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export interface TimePickerProps {
+export type TimePickerProps = Omit<Partial<FloatOptions>, "prefix" | "suffix" | "trailing" | "icon"> & {
   id?: string;
   name?: string;
   value?: string; // HH:mm
@@ -13,9 +15,11 @@ export interface TimePickerProps {
   placeholder?: string;
   disabled?: boolean;
   required?: boolean;
+  /** Classes da raiz do campo. */
   className?: string;
-}
+};
 
+/** Seletor de hora com rótulo flutuante: o rótulo já nasce no alto (o campo nunca fica vazio). */
 export function TimePicker({
   id,
   name,
@@ -25,9 +29,15 @@ export function TimePicker({
   disabled = false,
   required = false,
   className,
+  label = "Hora",
+  hint,
+  error,
+  optional,
+  size,
+  invalid,
 }: TimePickerProps) {
+  const autoId = useId();
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // Parse value into hours and minutes
   const { hours, minutes } = useMemo(() => {
@@ -73,75 +83,52 @@ export function TimePicker({
     fireChange(h, m);
   }, [hours, minutes, fireChange]);
 
-  // Close on outside click
-  useEffect(() => {
-    if (!isOpen) return;
-    function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside, true);
-    return () => document.removeEventListener("mousedown", handleClickOutside, true);
-  }, [isOpen]);
-
-  const handleToggle = useCallback((e: React.SyntheticEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (disabled) return;
-    if (!isOpen && hours < 0) {
-      // Initialize to current time if empty
+  const handleOpenChange = useCallback((next: boolean) => {
+    if (next && disabled) return;
+    if (next && hours < 0) {
+      // Sem horário ainda: começa pela hora atual
       const now = new Date();
       fireChange(now.getHours(), now.getMinutes());
     }
-    setIsOpen((prev) => !prev);
-  }, [disabled, isOpen, hours, fireChange]);
+    setIsOpen(next);
+  }, [disabled, hours, fireChange]);
 
   const displayValue = hours >= 0 && minutes >= 0
     ? `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
     : "";
 
   return (
-    <div ref={containerRef} className={cn("relative w-full", className)}>
-      {/* Hidden input for forms */}
-      {name && <input type="hidden" name={name} value={value} required={required} />}
+    <Field
+      id={id ?? autoId}
+      label={label}
+      hint={hint}
+      error={error}
+      optional={optional}
+      required={required}
+      invalid={invalid}
+      icon={Clock}
+      size={size}
+      control="custom"
+      className={className}
+    >
+      {(c) => (
+        <Popover open={isOpen} onOpenChange={handleOpenChange}>
+          {name && <input type="hidden" name={name} value={value} />}
+          <PopoverTrigger asChild>
+            <button
+              {...c}
+              type="button"
+              disabled={disabled}
+              data-float="always"
+              aria-describedby={joinIds(c["aria-describedby"])}
+            >
+              <span className={cn("tracking-wider", !displayValue && "text-tinta-suave")}>
+                {displayValue || placeholder}
+              </span>
+            </button>
+          </PopoverTrigger>
 
-      {/* Trigger */}
-      <div
-        onClick={handleToggle}
-        onMouseDown={(e) => e.stopPropagation()}
-        role="button"
-        tabIndex={disabled ? -1 : 0}
-        aria-haspopup="dialog"
-        aria-expanded={isOpen}
-        aria-disabled={disabled || undefined}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " " || e.key === "ArrowDown") handleToggle(e);
-          else if (e.key === "Escape" && isOpen) setIsOpen(false);
-        }}
-        className={cn(
-          "h-11 w-full rounded-xl border border-linha-forte bg-papel px-4 py-2 pr-10 text-base transition-colors outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa flex items-center hover:border-tinta-suave cursor-pointer select-none",
-          isOpen && "ring-2 ring-ameixa/25 border-ameixa",
-          disabled && "pointer-events-none opacity-50 bg-input/50",
-        )}
-        id={id}
-      >
-        <span className={cn("font-mono tracking-wider", !displayValue && "text-tinta-suave")}>
-          {displayValue || placeholder}
-        </span>
-        <div className="absolute right-3 pointer-events-none">
-          <Clock className="w-4 h-4 text-tinta-suave" />
-        </div>
-      </div>
-
-      {/* Dropdown Spinner */}
-      {isOpen && (
-        <div
-          onMouseDown={(e) => e.stopPropagation()}
-          onClick={(e) => e.stopPropagation()}
-          className="absolute top-full left-0 mt-1.5 rounded-xl border border-linha bg-papel p-4 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
-          style={{ zIndex: 999999 }}
-        >
+          <PopoverContent align="start" className="w-auto rounded-xl p-4 shadow-2xl">
           <div className="flex items-center gap-3">
             {/* Hours Column */}
             <div className="flex flex-col items-center gap-1">
@@ -149,6 +136,7 @@ export function TimePicker({
                 type="button"
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={incrementHour}
+                aria-label="Aumentar a hora"
                 className="w-12 h-8 flex items-center justify-center rounded-lg hover:bg-areia text-tinta-suave transition cursor-pointer"
               >
                 <ChevronUp className="w-4 h-4" />
@@ -162,6 +150,7 @@ export function TimePicker({
                 type="button"
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={decrementHour}
+                aria-label="Diminuir a hora"
                 className="w-12 h-8 flex items-center justify-center rounded-lg hover:bg-areia text-tinta-suave transition cursor-pointer"
               >
                 <ChevronDown className="w-4 h-4" />
@@ -177,6 +166,7 @@ export function TimePicker({
                 type="button"
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={incrementMinute}
+                aria-label="Aumentar os minutos"
                 className="w-12 h-8 flex items-center justify-center rounded-lg hover:bg-areia text-tinta-suave transition cursor-pointer"
               >
                 <ChevronUp className="w-4 h-4" />
@@ -190,6 +180,7 @@ export function TimePicker({
                 type="button"
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={decrementMinute}
+                aria-label="Diminuir os minutos"
                 className="w-12 h-8 flex items-center justify-center rounded-lg hover:bg-areia text-tinta-suave transition cursor-pointer"
               >
                 <ChevronDown className="w-4 h-4" />
@@ -212,7 +203,7 @@ export function TimePicker({
                   setIsOpen(false);
                 }}
                 className={cn(
-                  "px-2 py-1 text-xs rounded-md font-medium transition cursor-pointer",
+                  "min-h-9 px-3 py-1 text-xs rounded-md font-medium transition cursor-pointer",
                   displayValue === preset
                     ? "bg-brand text-white"
                     : "bg-areia text-tinta-suave hover:bg-linha"
@@ -222,8 +213,9 @@ export function TimePicker({
               </button>
             ))}
           </div>
-        </div>
+          </PopoverContent>
+        </Popover>
       )}
-    </div>
+    </Field>
   );
 }

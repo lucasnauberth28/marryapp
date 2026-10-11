@@ -1,0 +1,358 @@
+/*
+ * Campo com rótulo flutuante (comportamento da variante "on" do FloatLabel do PrimeVue).
+ *
+ * Estrutura (ver field.tsx):
+ *   .ac-float                  raiz: caixa + dica + erro
+ *     .ac-float__box           contêiner relativo (rótulo e adornos ficam por cima do controle)
+ *       .ac-float__control     input, textarea, select ou botão (vem ANTES do rótulo no DOM)
+ *       .ac-float__label       rótulo (vem DEPOIS do controle: seletores de irmão)
+ *       .ac-float__icon / __affix / __trailing   adornos (opcionais)
+ *
+ * O rótulo repousa dentro do campo, como placeholder. Com foco ou valor ele sobe até a linha
+ * da borda e diminui. O recorte da borda não depende da cor do fundo: o rótulo tem um degradê
+ * duro (metade de cima transparente, metade de baixo na cor do campo), então só a linha da
+ * borda some atrás dele.
+ *
+ * "Tem valor" sem JavaScript: input/textarea com placeholder preenchido (" " quando não há
+ * um real) e :placeholder-shown, mais :autofill. Controles customizados usam atributos:
+ *   data-float="always"   sempre no alto (data, hora)
+ *   data-filled="true"    tem valor
+ *   aria-expanded="true" / data-state="open"   menu aberto conta como foco
+ *   role="combobox" sem data-placeholder       tem valor (Radix Select e SearchableSelect)
+ */
+
+.ac-float {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ac-float__box {
+  --ac-float-lead: 16px;
+  --ac-float-trail: 16px;
+  --ac-float-rest-top: 50%;
+  position: relative;
+  min-width: 0;
+}
+.ac-float__box--icon { --ac-float-lead: 42px; }
+.ac-float__box--trailing { --ac-float-trail: 56px; }
+.ac-float__box--chevron { --ac-float-trail: 44px; }
+.ac-float__box--multiline { --ac-float-rest-top: 24px; }
+
+/* ---------- controle ---------- */
+.ac-float__control {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  margin: 0;
+  padding: 0 calc(var(--ac-float-trail) + var(--ac-float-suffix, 0px)) 0 calc(var(--ac-float-lead) + var(--ac-float-prefix, 0px));
+  border: 1px solid var(--color-linha-forte);
+  border-radius: 12px;
+  background-color: var(--color-papel);
+  color: var(--color-tinta);
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: left;
+  text-overflow: ellipsis;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition:
+    border-color 150ms var(--ease-aceito),
+    box-shadow 150ms var(--ease-aceito),
+    background-color 150ms var(--ease-aceito);
+}
+
+textarea.ac-float__control {
+  height: auto;
+  min-height: 96px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  resize: vertical;
+  text-overflow: clip;
+}
+
+/* Botões e selects nativos: conteúdo na vertical, texto cortado com reticências. */
+button.ac-float__control,
+select.ac-float__control {
+  cursor: pointer;
+  user-select: none;
+}
+button.ac-float__control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+button.ac-float__control > span:not([aria-hidden]) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+select.ac-float__control option {
+  color: var(--color-tinta);
+}
+/* Select nativo sem escolha: o campo fica em branco e o rótulo no centro. */
+select.ac-float__control:has(option[value=""]:checked) {
+  color: transparent;
+}
+
+.ac-float__control:hover:not(:disabled):not([aria-disabled="true"]):not([readonly]) {
+  border-color: var(--color-tinta-suave);
+}
+
+/* Placeholder real: só aparece com foco (o rótulo já está no alto). */
+.ac-float__control::placeholder {
+  color: transparent;
+  transition: color 150ms var(--ease-aceito);
+}
+.ac-float__control:focus::placeholder {
+  color: color-mix(in srgb, var(--color-tinta-suave) 80%, transparent);
+}
+/* Placeholder do Radix Select (e do SearchableSelect): o campo fica em branco. */
+.ac-float__control[data-placeholder] {
+  color: transparent;
+}
+.ac-float__control[data-placeholder] > span {
+  color: transparent;
+}
+
+/* Foco (e menu aberto): borda e anel ameixa. Sem contorno separado: o anel não atravessa o rótulo. */
+.ac-float__control:focus,
+.ac-float__control[aria-expanded="true"],
+.ac-float__control[data-state="open"] {
+  border-color: var(--color-ameixa);
+  box-shadow:
+    inset 0 0 0 1px var(--color-ameixa),
+    0 0 0 3px var(--color-ameixa-suave);
+}
+
+/* Erro. */
+.ac-float__control[aria-invalid="true"] {
+  border-color: var(--color-perigo);
+  box-shadow: inset 0 0 0 1px var(--color-perigo);
+}
+.ac-float__control[aria-invalid="true"]:focus,
+.ac-float__control[aria-invalid="true"][aria-expanded="true"],
+.ac-float__control[aria-invalid="true"][data-state="open"] {
+  box-shadow:
+    inset 0 0 0 1px var(--color-perigo),
+    0 0 0 3px var(--color-perigo-suave);
+}
+
+/* Desabilitado e somente leitura. */
+.ac-float__control:disabled,
+.ac-float__control[aria-disabled="true"] {
+  cursor: not-allowed;
+  border-color: var(--color-linha);
+  background-color: var(--color-areia);
+  color: var(--color-tinta-suave);
+  box-shadow: none;
+}
+.ac-float__control[readonly] {
+  border-color: var(--color-linha);
+  background-color: var(--color-linho);
+  color: var(--color-tinta-suave);
+}
+.ac-float__control[readonly]:focus {
+  border-color: var(--color-linha-forte);
+  box-shadow: none;
+}
+
+/* Preenchimento automático do navegador: sem o fundo azul/amarelo. */
+.ac-float__control:-webkit-autofill,
+.ac-float__control:-webkit-autofill:hover,
+.ac-float__control:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-tinta);
+  caret-color: var(--color-tinta);
+  transition:
+    background-color 600000s ease-in-out 0s,
+    border-color 150ms var(--ease-aceito),
+    box-shadow 150ms var(--ease-aceito);
+}
+
+/* Datas e horas nativas ocupam o campo todo. */
+input.ac-float__control[type="date"],
+input.ac-float__control[type="time"],
+input.ac-float__control[type="datetime-local"],
+input.ac-float__control[type="month"] {
+  min-width: 0;
+}
+
+/* ---------- tamanho pequeno ---------- */
+.ac-float__box--sm .ac-float__control { height: 44px; }
+.ac-float__box--sm.ac-float__box--multiline .ac-float__control { height: auto; }
+@media (min-width: 640px) {
+  .ac-float__box--sm .ac-float__control { height: 40px; font-size: 14px; }
+  .ac-float__box--sm .ac-float__label { font-size: 14px; }
+  .ac-float__box--sm.ac-float__box--multiline .ac-float__control { height: auto; }
+}
+
+/* ---------- rótulo ---------- */
+.ac-float__label {
+  --ac-float-bg: var(--color-papel);
+  position: absolute;
+  z-index: 1;
+  top: var(--ac-float-rest-top);
+  left: calc(var(--ac-float-lead) - 4px);
+  box-sizing: border-box;
+  max-width: calc(100% - var(--ac-float-lead) - var(--ac-float-trail) + 8px);
+  padding: 0 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--color-tinta-suave);
+  background: linear-gradient(to bottom, transparent 50%, var(--ac-float-bg) 50%);
+  transform: translateY(-50%);
+  transform-origin: left center;
+  pointer-events: none;
+  transition:
+    top 180ms var(--ease-aceito),
+    transform 180ms var(--ease-aceito),
+    color 180ms var(--ease-aceito),
+    font-weight 180ms var(--ease-aceito);
+}
+
+/* No alto: centro do rótulo sobre a linha da borda (1px), a 85%. */
+:is(
+    input.ac-float__control:not(:placeholder-shown),
+    textarea.ac-float__control:not(:placeholder-shown),
+    input.ac-float__control:is([type="date"], [type="time"], [type="datetime-local"], [type="month"], [type="week"]),
+    select.ac-float__control:not(:has(option[value=""]:checked)),
+    .ac-float__control:is(:focus, [aria-expanded="true"], [data-state="open"], [data-filled="true"], [data-float="always"]),
+    .ac-float__control[role="combobox"]:not([data-placeholder]),
+    .ac-float__control:-webkit-autofill
+  )
+  ~ .ac-float__label {
+  top: -1px;
+  font-weight: 500;
+  transform: translateY(-50%) scale(0.85);
+}
+.ac-float__control:autofill ~ .ac-float__label {
+  top: -1px;
+  font-weight: 500;
+  transform: translateY(-50%) scale(0.85);
+}
+
+/* Cores do rótulo: suave em repouso, ameixa com foco, perigo com erro. */
+.ac-float__control:is(:focus, [aria-expanded="true"], [data-state="open"]) ~ .ac-float__label {
+  color: var(--color-ameixa);
+}
+.ac-float__control[aria-invalid="true"] ~ .ac-float__label {
+  color: var(--color-perigo);
+}
+.ac-float__control:is(:disabled, [aria-disabled="true"]) ~ .ac-float__label {
+  --ac-float-bg: var(--color-areia);
+}
+.ac-float__control[readonly] ~ .ac-float__label {
+  --ac-float-bg: var(--color-linho);
+}
+
+/* ---------- adornos ---------- */
+.ac-float__icon {
+  position: absolute;
+  top: var(--ac-float-rest-top);
+  left: 16px;
+  width: 18px;
+  height: 18px;
+  color: var(--color-tinta-suave);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.ac-float__trailing {
+  position: absolute;
+  top: var(--ac-float-rest-top);
+  right: 4px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  transform: translateY(-50%);
+}
+.ac-float__chevron {
+  position: absolute;
+  top: var(--ac-float-rest-top);
+  right: 16px;
+  width: 16px;
+  height: 16px;
+  color: var(--color-tinta-suave);
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: transform 180ms var(--ease-aceito);
+}
+.ac-float__control:is([aria-expanded="true"], [data-state="open"]) ~ .ac-float__chevron {
+  transform: translateY(-50%) rotate(180deg);
+}
+/* Prefixo e sufixo ("R$", "%"): só aparecem com o rótulo no alto, para não colidir com ele. */
+.ac-float__affix {
+  position: absolute;
+  top: var(--ac-float-rest-top);
+  z-index: 1;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--color-tinta-suave);
+  opacity: 0;
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: opacity 150ms var(--ease-aceito);
+}
+.ac-float__affix--prefix { left: var(--ac-float-lead); }
+.ac-float__affix--suffix { right: 16px; }
+:is(
+    input.ac-float__control:not(:placeholder-shown),
+    textarea.ac-float__control:not(:placeholder-shown),
+    .ac-float__control:is(:focus, [data-filled="true"], [data-float="always"]),
+    .ac-float__control:-webkit-autofill
+  )
+  ~ .ac-float__affix {
+  opacity: 1;
+}
+.ac-float__control:autofill ~ .ac-float__affix { opacity: 1; }
+
+/* ---------- dica e erro ---------- */
+.ac-float__hint {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--color-tinta-suave);
+}
+.ac-float__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--color-perigo);
+}
+.ac-float__error > svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+
+/* ---------- movimento reduzido e alto contraste ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .ac-float__control,
+  .ac-float__control::placeholder,
+  .ac-float__label,
+  .ac-float__affix,
+  .ac-float__chevron {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .ac-float__control:focus,
+  .ac-float__control[aria-expanded="true"],
+  .ac-float__control[data-state="open"] {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}

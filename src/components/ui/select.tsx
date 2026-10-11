@@ -5,6 +5,7 @@ import { Select as SelectPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
+import { Field, joinIds, type FloatOptions } from "@/components/ui/field"
 
 function Select({
   ...props
@@ -31,29 +32,143 @@ function SelectValue({
   return <SelectPrimitive.Value data-slot="select-value" {...props} />
 }
 
+type SelectTriggerProps = React.ComponentProps<typeof SelectPrimitive.Trigger> &
+  Partial<FloatOptions> & {
+    size?: "sm" | "default" | "lg"
+  }
+
+/**
+ * Gatilho do seletor.
+ *  - Com `label`: campo de formulário com rótulo flutuante (sem valor, o campo fica em branco e
+ *    o rótulo no centro; com valor, o rótulo sobe). Dê um `id` quando precisar ligar a algo.
+ *  - Sem `label`: o gatilho simples de antes (filtros e menus compactos).
+ * Em `className`, no modo com rótulo, vão as classes da raiz do campo.
+ */
 function SelectTrigger({
   className,
   size = "default",
   children,
+  label,
+  hint,
+  error,
+  optional,
+  icon,
+  invalid,
+  fieldClassName,
+  id,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
-  size?: "sm" | "default" | "lg"
-}) {
+}: SelectTriggerProps) {
+  const autoId = React.useId()
+
+  if (label === undefined || label === null) {
+    return (
+      <SelectPrimitive.Trigger
+        id={id}
+        data-slot="select-trigger"
+        data-size={size}
+        className={cn(
+          "flex w-full items-center justify-between gap-2 rounded-xl border border-linha-forte bg-papel px-4 py-2 text-base text-tinta transition-colors outline-none select-none hover:border-tinta-suave focus-visible:border-ameixa focus-visible:ring-2 focus-visible:ring-ameixa/25 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-2 aria-invalid:border-perigo data-placeholder:text-tinta-suave data-[size=default]:h-11 data-[size=sm]:h-11 data-[size=sm]:sm:h-9 data-[size=sm]:text-sm data-[size=lg]:h-12 cursor-pointer",
+          className
+        )}
+        {...props}
+      >
+        {children}
+        <SelectPrimitive.Icon asChild>
+          <ChevronDownIcon className="pointer-events-none size-4 text-tinta-suave shrink-0" />
+        </SelectPrimitive.Icon>
+      </SelectPrimitive.Trigger>
+    )
+  }
+
+  const { "aria-describedby": describedBy, "aria-invalid": ariaInvalid, "aria-required": ariaRequired, ...rest } = props
   return (
-    <SelectPrimitive.Trigger
-      data-slot="select-trigger"
-      data-size={size}
-      className={cn(
-        "flex w-full items-center justify-between gap-2 rounded-xl border border-linha-forte bg-papel px-4 py-2 text-base text-tinta transition-colors outline-none select-none hover:border-tinta-suave focus-visible:border-ameixa focus-visible:ring-2 focus-visible:ring-ameixa/25 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-2 aria-invalid:border-perigo data-placeholder:text-tinta-suave data-[size=default]:h-11 data-[size=sm]:h-11 data-[size=sm]:sm:h-9 data-[size=sm]:text-sm data-[size=lg]:h-12 cursor-pointer",
-        className
-      )}
-      {...props}
+    <Field
+      id={id ?? autoId}
+      label={label}
+      hint={hint}
+      error={error}
+      optional={optional}
+      required={ariaRequired === true || ariaRequired === "true"}
+      invalid={invalid || ariaInvalid === true || ariaInvalid === "true"}
+      icon={icon}
+      size={size === "sm" ? "sm" : "default"}
+      chevron
+      control="custom"
+      className={cn(fieldClassName, className)}
+      extra={<ChevronDownIcon aria-hidden="true" className="ac-float__chevron" />}
     >
-      {children}
-      <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="pointer-events-none size-4 text-tinta-suave shrink-0" />
-      </SelectPrimitive.Icon>
-    </SelectPrimitive.Trigger>
+      {(c) => (
+        <SelectPrimitive.Trigger
+          {...rest}
+          {...c}
+          data-slot="select-trigger"
+          data-size={size}
+          aria-describedby={joinIds(c["aria-describedby"], describedBy)}
+        >
+          {children}
+        </SelectPrimitive.Trigger>
+      )}
+    </Field>
+  )
+}
+
+type NativeSelectProps = Omit<React.ComponentProps<"select">, "size"> &
+  Partial<Omit<FloatOptions, "prefix" | "suffix" | "trailing">> & {
+    /** Classes do select no modo com rótulo. Em `className` vão as da raiz do campo. */
+    inputClassName?: string
+  }
+
+/**
+ * Select nativo (`<select>` do navegador) com rótulo flutuante. Útil em formulários simples e
+ * em listas longas no celular. Para mostrar o rótulo no centro quando nada foi escolhido, a
+ * primeira opção deve ter `value=""`; com qualquer outro valor o rótulo sobe.
+ */
+function NativeSelect({
+  label,
+  hint,
+  error,
+  optional,
+  icon,
+  size,
+  invalid,
+  fieldClassName,
+  inputClassName,
+  className,
+  id,
+  children,
+  ...props
+}: NativeSelectProps) {
+  const autoId = React.useId()
+  const { "aria-describedby": describedBy, "aria-invalid": ariaInvalid, required, ...rest } = props
+  return (
+    <Field
+      id={id ?? autoId}
+      label={label ?? ""}
+      hint={hint}
+      error={error}
+      optional={optional}
+      required={required}
+      invalid={invalid || ariaInvalid === true || ariaInvalid === "true"}
+      icon={icon}
+      size={size}
+      chevron
+      control="custom"
+      className={cn(fieldClassName, className)}
+      extra={<ChevronDownIcon aria-hidden="true" className="ac-float__chevron" />}
+    >
+      {(c) => (
+        <select
+          {...rest}
+          {...c}
+          data-slot="native-select"
+          required={required}
+          aria-describedby={joinIds(c["aria-describedby"], describedBy)}
+          className={cn(c.className, inputClassName)}
+        >
+          {children}
+        </select>
+      )}
+    </Field>
   )
 }
 
@@ -179,6 +294,7 @@ function SelectScrollDownButton({
 }
 
 export {
+  NativeSelect,
   Select,
   SelectContent,
   SelectGroup,
