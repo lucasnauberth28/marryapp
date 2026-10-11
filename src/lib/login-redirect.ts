@@ -1,7 +1,21 @@
 // Volta para onde a pessoa estava depois de entrar. Sem dependências do servidor:
 // roda no proxy, em Server Actions e nos testes.
-import { classifyPath } from "./route-access.ts";
-import { hasPathAccess } from "./permissions.ts";
+import { classifyPath, isPlatformAdminPath } from "./route-access.ts";
+import { hasPathAccess, isPlatformAdminPaths } from "./permissions.ts";
+
+/** Início da administração da plataforma: para onde a conta com acesso total ("*") vai ao entrar. */
+export const PLATFORM_ADMIN_HOME = "/admin";
+
+/**
+ * Primeira tela do perfil: a administração da plataforma ("*") entra em /admin; quem tem o início do
+ * painel vai para ele; senão o primeiro módulo liberado (ex.: "/fornecedor"); sem nenhum, o login.
+ */
+export function firstAllowedDestination(allowedPaths: string[]): string {
+  if (isPlatformAdminPaths(allowedPaths)) return PLATFORM_ADMIN_HOME;
+  if (allowedPaths.includes("/dashboard")) return "/dashboard";
+  // "/admin" solto na lista não é destino (o proxy o barraria e a pessoa ficaria em laço)
+  return allowedPaths.find((p) => !isPlatformAdminPath(p)) ?? "/login";
+}
 
 const FAKE_ORIGIN = "http://aceito.invalid";
 const MAX_LENGTH = 500;
@@ -54,7 +68,7 @@ export function resolvePostLoginPath(proxima: unknown, defaultPath: string, allo
   const pathname = safe.split("?")[0];
   switch (classifyPath(pathname)) {
     case "protected":
-      return hasPathAccess(allowedPaths, pathname) ? safe : defaultPath;
+      return (isPlatformAdminPath(pathname) ? isPlatformAdminPaths(allowedPaths) : hasPathAccess(allowedPaths, pathname)) ? safe : defaultPath;
     case "session":
     case "public":
       return safe;

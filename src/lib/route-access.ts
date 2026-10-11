@@ -34,6 +34,9 @@ export const SESSION_PATHS = ["/boas-vindas", "/conta", "/recibo", "/notificacoe
 
 /** Painel do casal, painel do fornecedor e rotas de API da conta: exigem sessão e módulo liberado. */
 export const PROTECTED_PATHS = [
+  // Administração da plataforma: só a conta com acesso total ("*"); cada página, Server Action e rota
+  // de API confere de novo com requirePlatformAdmin (lib/security/platform-admin.ts).
+  "/admin",
   "/dashboard",
   "/assinaturas",
   "/atividades",
@@ -56,6 +59,7 @@ export const PROTECTED_PATHS = [
   "/site-builder",
   "/usuarios",
   "/fornecedor",
+  "/api/admin",
   "/api/conta",
   "/api/export",
 ];
@@ -77,4 +81,9 @@ export function classifyPath(path: string): RouteKind {
 
 export function isSessionPath(path: string) {
   return matches(SESSION_PATHS, path);
+}
+
+/** Caminho da administração da plataforma (/admin e abaixo dele; a API fica em /api/admin). */
+export function isPlatformAdminPath(path: string) {
+  return path === "/admin" || path.startsWith("/admin/");
 }

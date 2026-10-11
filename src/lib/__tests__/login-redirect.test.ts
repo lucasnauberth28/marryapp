@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { loginUrl, resolvePostLoginPath, safeNextPath } from "../login-redirect.ts";
+import { firstAllowedDestination, loginUrl, PLATFORM_ADMIN_HOME, resolvePostLoginPath, safeNextPath } from "../login-redirect.ts";
 
 test("aceita caminho interno, com query", () => {
   assert.equal(safeNextPath("/convidados"), "/convidados");
@@ -82,4 +82,28 @@ test("depois do login, rotas de qualquer conta e públicas são aceitas", () => 
 
 test("conta sem casamento faz o onboarding primeiro", () => {
   assert.equal(resolvePostLoginPath("/convidados", "/boas-vindas", ["*"]), "/boas-vindas");
+});
+
+test("a conta de administração (\"*\") entra em /admin; as outras no painel que o perfil tem", () => {
+  assert.equal(PLATFORM_ADMIN_HOME, "/admin");
+  assert.equal(firstAllowedDestination(["*"]), "/admin");
+  assert.equal(firstAllowedDestination(["/dashboard", "/convidados"]), "/dashboard");
+  assert.equal(firstAllowedDestination(["/fornecedor"]), "/fornecedor");
+  assert.equal(firstAllowedDestination(["/convidados", "/dashboard"]), "/dashboard");
+  assert.equal(firstAllowedDestination([]), "/login");
+  // "/admin" escrito na lista não dá acesso à administração, nem é destino
+  assert.equal(firstAllowedDestination(["/admin"]), "/login", "sem acesso total, \"/admin\" não é destino (evita laço no proxy)");
+  assert.equal(firstAllowedDestination(["/admin", "/fornecedor"]), "/fornecedor");
+});
+
+test("depois do login, a administração respeita a origem; casal e fornecedor nunca vão para /admin", () => {
+  assert.equal(resolvePostLoginPath(undefined, "/admin", ["*"]), "/admin");
+  assert.equal(resolvePostLoginPath("/admin/casais?aba=problema", "/admin", ["*"]), "/admin/casais?aba=problema");
+  assert.equal(resolvePostLoginPath("/convidados", "/admin", ["*"]), "/convidados");
+  const casal = ["/dashboard", "/convidados"];
+  assert.equal(resolvePostLoginPath("/admin", "/dashboard", casal), "/dashboard");
+  assert.equal(resolvePostLoginPath("/admin/saude", "/dashboard", casal), "/dashboard");
+  assert.equal(resolvePostLoginPath("/admin", "/fornecedor", ["/fornecedor"]), "/fornecedor");
+  // "/admin" solto na lista do perfil não vale
+  assert.equal(resolvePostLoginPath("/admin", "/dashboard", ["/admin", "/dashboard"]), "/dashboard");
 });

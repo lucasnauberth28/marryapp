@@ -22,7 +22,7 @@ const KIND_LABEL = { couple: "Conta de casal", vendor: "Conta de fornecedor", ad
 export default async function ContaPage() {
   const session = await getSession();
   if (!session) return redirectToLogin();
-  if (session.userId === SUPER_ADMIN_USER_ID) redirect("/dashboard");
+  if (session.userId === SUPER_ADMIN_USER_ID) redirect("/admin");
 
   const now = new Date();
   const user = await prisma.user.findUnique({
@@ -55,7 +55,7 @@ export default async function ContaPage() {
 
   const kind = classifyAccount(user);
   const kindIsVendor = kind === "vendor";
-  const panelHref = kind === "vendor" ? "/fornecedor" : user.weddingId || kind === "admin" ? "/dashboard" : "/boas-vindas";
+  const panelHref = kind === "vendor" ? "/fornecedor" : user.weddingId ? "/dashboard" : kind === "admin" ? (session.allowedPaths.includes("*") ? "/admin" : "/dashboard") : "/boas-vindas";
 
   return (
     <div className="min-h-dvh bg-linho text-tinta">

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { verifyToken, hasPathAccess, SESSION_COOKIE_NAME, SESSION_SEEN_COOKIE_NAME, CURRENT_PATH_HEADER } from "@/lib/auth";
 import { loginUrl, safeNextPath } from "@/lib/login-redirect";
+import { AuthorizationError } from "@/lib/security/authorization-error";
 
 export const SUPER_ADMIN_USER_ID = "super-admin";
 
@@ -15,12 +16,7 @@ export interface SecureAuthContext {
   isAuthenticated: true;
 }
 
-export class AuthorizationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "AuthorizationError";
-  }
-}
+export { AuthorizationError };
 
 /**
  * Lê e valida a sessão atual (uma vez por request).

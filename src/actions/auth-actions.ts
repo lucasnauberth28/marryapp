@@ -7,7 +7,8 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { signToken, sessionCookieOptions, hasPathAccess, SESSION_COOKIE_NAME, SESSION_SEEN_COOKIE_NAME } from "@/lib/auth";
-import { resolvePostLoginPath } from "@/lib/login-redirect";
+import { isPlatformAdminPaths } from "@/lib/permissions";
+import { PLATFORM_ADMIN_HOME, resolvePostLoginPath } from "@/lib/login-redirect";
 import { checkRateLimit, rateLimitByIp, SecurityLimits } from "@/lib/security/rate-limiter";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
@@ -30,8 +31,8 @@ async function setSessionCookie(token: string) {
 const GENERIC_LOGIN_ERROR = "Usuário ou senha incorretos.";
 
 /**
- * Destino após o login: o painel do fornecedor para contas de fornecedor; o onboarding (/boas-vindas)
- * para contas de casal ainda sem casamento; senão o painel do casal.
+ * Destino após o login: a administração (/admin) para a conta com acesso total ("*"); o painel do fornecedor
+ * para contas de fornecedor; o onboarding (/boas-vindas) para contas de casal ainda sem casamento; senão o painel do casal.
  */
 function landingPathFor(user: {
   id: string;
@@ -40,6 +41,7 @@ function landingPathFor(user: {
   role: { name: string; allowedPaths: unknown };
 }) {
   const allowedPaths = Array.isArray(user.role.allowedPaths) ? (user.role.allowedPaths as string[]) : [];
+  if (isPlatformAdminPaths(allowedPaths)) return PLATFORM_ADMIN_HOME;
   const kind = classifyAccount(user);
   if (kind === "vendor") return hasPathAccess(allowedPaths, "/fornecedor") ? "/fornecedor" : "/dashboard";
   if (kind === "couple" && !user.weddingId) return "/boas-vindas";
@@ -81,7 +83,7 @@ export async function login(password: string, username?: string, proxima?: strin
       allowedPaths: ["*"],
     });
     await setSessionCookie(token);
-    return { success: true, redirectTo: resolvePostLoginPath(proxima, "/dashboard", ["*"]) };
+    return { success: true, redirectTo: resolvePostLoginPath(proxima, PLATFORM_ADMIN_HOME, ["*"]) };
   }
 
   if (!username) {
@@ -113,6 +115,8 @@ export async function login(password: string, username?: string, proxima?: strin
     allowedPaths,
   });
   await setSessionCookie(token);
+  // "Última atividade" na administração; uma falha aqui nunca impede a entrada
+  await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() }, select: { id: true } }).catch(() => null);
 
   return { success: true, redirectTo: resolvePostLoginPath(proxima, landingPathFor(user), allowedPaths) };
 }

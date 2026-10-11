@@ -150,6 +150,9 @@ export function routeCustomDomainPath(pathname: string, slug: string): CustomDom
   // Nada de API aqui: webhooks e rotinas agendadas só existem no domínio principal
   if (path === "/api" || path.startsWith("/api/")) return { action: "not-found" };
 
+  // A administração da plataforma nunca é indicada no domínio do casal: 404, sem redirecionar
+  if (path === "/admin" || path.startsWith("/admin/")) return { action: "not-found" };
+
   // Páginas do app (login, painel, conta, termos...): o lugar delas é o domínio principal
   if (classifyPath(path) !== "unknown") return { action: "redirect-main", pathname: path };
 

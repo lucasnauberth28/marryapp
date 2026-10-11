@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { classifyPath } from "../route-access.ts";
+import { classifyPath, isPlatformAdminPath } from "../route-access.ts";
 
 const APP_DIR = fileURLToPath(new URL("../../app", import.meta.url));
 
@@ -53,8 +53,22 @@ test("classifica públicas, de sessão e protegidas", () => {
   assert.equal(classifyPath("/api/export/guests"), "protected");
 });
 
+test("a administração da plataforma é protegida (página e API), sem confundir com prefixos parecidos", () => {
+  for (const p of ["/admin", "/admin/casais", "/admin/casais/abc", "/admin/planos/catalogo", "/api/admin/sessao"]) {
+    assert.equal(classifyPath(p), "protected", p);
+  }
+  for (const p of ["/adminx", "/administracao", "/admin-painel", "/api/adminx"]) {
+    assert.equal(classifyPath(p), "unknown", p);
+  }
+  assert.equal(isPlatformAdminPath("/admin"), true);
+  assert.equal(isPlatformAdminPath("/admin/saude"), true);
+  assert.equal(isPlatformAdminPath("/adminx"), false);
+  assert.equal(isPlatformAdminPath("/api/admin/sessao"), false, "a API confere o acesso na própria rota");
+  assert.equal(isPlatformAdminPath("/dashboard"), false);
+});
+
 test("caminho que não é do app é desconhecido (compara por segmento)", () => {
-  for (const p of ["/wp-admin", "/admin", "/dashboardx", "/fornecedoresx", "/api", "/api/qualquer", "/convidadosx/a", "/.env"]) {
+  for (const p of ["/wp-admin", "/administrator", "/dashboardx", "/fornecedoresx", "/api", "/api/qualquer", "/convidadosx/a", "/.env"]) {
     assert.equal(classifyPath(p), "unknown", p);
   }
 });

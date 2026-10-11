@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import prisma from "@/lib/prisma";
 import {
   AuthorizationError,
@@ -11,6 +12,7 @@ import {
   SUPER_ADMIN_USER_ID,
   type SecureAuthContext,
 } from "@/lib/security/auth-guard";
+import { resolveImpersonation, type ImpersonationContext } from "@/lib/security/impersonation";
 
 /**
  * Multi-casamento: todo dado do painel do casal pertence a um casamento (weddingId).
@@ -49,6 +51,32 @@ export interface WeddingContext {
   wedding: WeddingSummary;
   /** Conta de administração sem casamento próprio: está vendo o casamento principal. */
   viaAdmin: boolean;
+  /** "Entrar como este casal": sessão auditada da administração (ver security/impersonation.ts). */
+  impersonation?: ImpersonationContext | null;
+}
+
+/** A visita ao painel só é gravada (Wedding.lastActiveAt) se a última tem mais que isto: 1 escrita a cada 30 min. */
+const ACTIVITY_TOUCH_MS = 30 * 60 * 1000;
+
+/** Marca a "última atividade" do casamento depois da resposta, no máximo a cada 30 min. Nunca lança erro. */
+function touchWeddingActivity(weddingId: string, last: Date | null) {
+  const now = Date.now();
+  if (last && now - last.getTime() < ACTIVITY_TOUCH_MS) return;
+  const run = async () => {
+    try {
+      await prisma.wedding.updateMany({
+        where: { id: weddingId, OR: [{ lastActiveAt: null }, { lastActiveAt: { lt: new Date(now - ACTIVITY_TOUCH_MS) } }] },
+        data: { lastActiveAt: new Date(now) },
+      });
+    } catch {
+      // só uma estatística: falhar não pode atrapalhar o painel
+    }
+  };
+  try {
+    after(run);
+  } catch {
+    void run(); // fora de uma requisição (script, teste)
+  }
 }
 
 /** Casamento mais antigo: usado pela administração da plataforma e pelos links antigos sem slug. */
@@ -65,6 +93,15 @@ export const getWeddingContext = cache(async (): Promise<WeddingContext | null> 
   const session = await getSession();
   if (!session) return null;
 
+  // PONTO DE EXTENSÃO do "Entrar como este casal": enquanto resolveImpersonation devolve null, nada muda.
+  // Quando houver sessão válida, o painel do casal mostra ESTE casamento (e não grava atividade).
+  // Depois dele, a conta de administração sem casamento próprio ainda cai no casamento principal (viaAdmin).
+  const impersonation = await resolveImpersonation(session);
+  if (impersonation) {
+    const wedding = await prisma.wedding.findUnique({ where: { id: impersonation.weddingId }, select: WEDDING_SELECT });
+    if (wedding) return { session, weddingId: wedding.id, wedding, viaAdmin: false, impersonation };
+  }
+
   if (session.userId === SUPER_ADMIN_USER_ID) {
     const wedding = await getPrincipalWedding();
     return wedding ? { session, weddingId: wedding.id, wedding, viaAdmin: true } : null;
@@ -72,9 +109,13 @@ export const getWeddingContext = cache(async (): Promise<WeddingContext | null> 
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { wedding: { select: WEDDING_SELECT } },
+    select: { wedding: { select: { ...WEDDING_SELECT, lastActiveAt: true } } },
   });
-  if (user?.wedding) return { session, weddingId: user.wedding.id, wedding: user.wedding, viaAdmin: false };
+  if (user?.wedding) {
+    const { lastActiveAt, ...wedding } = user.wedding;
+    touchWeddingActivity(wedding.id, lastActiveAt);
+    return { session, weddingId: wedding.id, wedding, viaAdmin: false };
+  }
 
   if (session.allowedPaths.includes("*")) {
     const wedding = await getPrincipalWedding();

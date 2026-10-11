@@ -27,7 +27,7 @@ function toDateInput(date: Date | null) {
 export default async function BoasVindasPage() {
   const session = await getSession();
   if (!session) return redirectToLogin();
-  if (session.userId === SUPER_ADMIN_USER_ID) redirect("/dashboard");
+  if (session.userId === SUPER_ADMIN_USER_ID) redirect("/admin");
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
@@ -50,7 +50,7 @@ export default async function BoasVindasPage() {
   const onboardedAt = user.wedding?.onboardedAt;
   const justFinished = finishedRecently(onboardedAt);
   if (onboardedAt && !justFinished) redirect("/dashboard");
-  if (kind === "admin" && !user.wedding) redirect("/dashboard");
+  if (kind === "admin" && !user.wedding) redirect(session.allowedPaths.includes("*") ? "/admin" : "/dashboard");
 
   const firstName = user.name.trim().split(/\s+/)[0] ?? "";
   // No cadastro o casamento nasce com o nome de quem criou a conta; o par entra aqui.

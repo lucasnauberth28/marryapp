@@ -8,8 +8,9 @@ import {
   sessionSeenCookieOptions,
   CURRENT_PATH_HEADER,
 } from "@/lib/auth";
-import { classifyPath, isSessionPath } from "@/lib/route-access";
-import { loginUrl, resolvePostLoginPath } from "@/lib/login-redirect";
+import { classifyPath, isPlatformAdminPath, isSessionPath } from "@/lib/route-access";
+import { isPlatformAdminPaths } from "@/lib/permissions";
+import { firstAllowedDestination, loginUrl, resolvePostLoginPath } from "@/lib/login-redirect";
 import { classifyHost, createTtlCache, mainRedirectUrl, routeCustomDomainPath } from "@/lib/custom-domain-host";
 import prisma from "@/lib/prisma";
 
@@ -18,11 +19,6 @@ import prisma from "@/lib/prisma";
 // e o Next responde 404, com ou sem sessão, sem revelar quais rotas protegidas existem.
 // Isto é apenas uma checagem otimista de navegação: cada Server Action e Route Handler
 // valida a sessão e as permissões novamente no servidor.
-
-function firstAllowedDestination(allowedPaths: string[]) {
-  if (allowedPaths.includes("*") || allowedPaths.includes("/dashboard")) return "/dashboard";
-  return allowedPaths[0] ?? "/login";
-}
 
 // ---------- Domínio próprio do casal ----------
 // Visita a um endereço que não é o do app (nem localhost nem vercel.app): consulta o banco por
@@ -150,7 +146,9 @@ export default async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL(target, request.url));
     }
 
-    if (!isPublic && !isSessionPath(path) && !path.startsWith("/api/") && !hasPathAccess(payload.allowedPaths, path)) {
+    // /admin exige acesso total ("*"): um "/admin" solto na lista do perfil não vale
+    const allowed = isPlatformAdminPath(path) ? isPlatformAdminPaths(payload.allowedPaths) : hasPathAccess(payload.allowedPaths, path);
+    if (!isPublic && !isSessionPath(path) && !path.startsWith("/api/") && !allowed) {
       return NextResponse.redirect(new URL(dest, request.url));
     }
 
