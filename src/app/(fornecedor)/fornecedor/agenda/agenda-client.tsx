@@ -5,6 +5,9 @@ import Link from "next/link";
 import { CalendarPlus, CalendarX2, Loader2, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { createVendorEvent, deleteVendorEvent } from "@/actions/vendor-panel-actions";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { formatTime, MONTH_NAMES, WEEKDAYS_SHORT, type VendorEventKind } from "../../_lib/vendor-panel";
 
@@ -13,9 +16,6 @@ const BTN =
 const BTN_PRIMARY = `${BTN} bg-ameixa text-on-ameixa hover:bg-ameixa-hover`;
 const BTN_SECONDARY = `${BTN} border border-linha-forte bg-papel text-tinta hover:bg-areia`;
 const BTN_QUIET = `${BTN} text-tinta-suave hover:bg-areia hover:text-tinta`;
-const INPUT =
-  "min-h-11 w-full rounded-xl border border-linha-forte bg-papel px-4 text-base text-tinta placeholder:text-tinta-suave/80 disabled:opacity-60";
-const LABEL = "text-sm font-semibold text-tinta";
 
 const WEEKDAYS_LONG = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 
@@ -166,81 +166,56 @@ function EventForm({ request, leads, onDone }: { request: FormRequest; leads: Le
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
       {error ? (
         <p role="alert" className="rounded-xl bg-perigo-suave px-4 py-3 text-sm font-medium text-perigo">
           {error}
         </p>
       ) : null}
-      <div className={cn("grid gap-4", isMeeting && "grid-cols-1 min-[420px]:grid-cols-2")}>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor={`${uid}-data`} className={LABEL}>
-            Data
-          </label>
-          <input id={`${uid}-data`} type="date" required value={values.date} onChange={set("date")} className={INPUT} />
-        </div>
-        {isMeeting ? (
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor={`${uid}-hora`} className={LABEL}>
-              Horário
-            </label>
-            <input id={`${uid}-hora`} type="time" required value={values.time} onChange={set("time")} className={INPUT} />
-          </div>
-        ) : null}
+      <div className={cn("grid gap-5", isMeeting && "grid-cols-1 min-[420px]:grid-cols-2")}>
+        <Input id={`${uid}-data`} label="Data" type="date" required value={values.date} onChange={set("date")} />
+        {isMeeting ? <Input id={`${uid}-hora`} label="Horário" type="time" required value={values.time} onChange={set("time")} /> : null}
       </div>
 
       {isMeeting ? (
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor={`${uid}-pedido`} className={LABEL}>
-            Pedido <span className="font-normal text-tinta-suave">(opcional)</span>
-          </label>
-          <select id={`${uid}-pedido`} value={values.leadId} onChange={set("leadId")} className={cn(INPUT, "cursor-pointer px-3")}>
-            <option value="">Sem pedido vinculado</option>
-            {leads.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <NativeSelect id={`${uid}-pedido`} label="Pedido" optional value={values.leadId} onChange={set("leadId")}>
+          <option value="">Sem pedido vinculado</option>
+          {leads.map((l) => (
+            <option key={l.id} value={l.id}>
+              {l.label}
+            </option>
+          ))}
+        </NativeSelect>
       ) : null}
 
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor={`${uid}-titulo`} className={LABEL}>
-          {isMeeting ? "Título" : "Motivo"}{" "}
-          {!isMeeting || linkedLead ? <span className="font-normal text-tinta-suave">(opcional)</span> : null}
-        </label>
-        <input
-          id={`${uid}-titulo`}
-          maxLength={120}
-          value={values.title}
-          onChange={set("title")}
-          placeholder={
-            isMeeting
-              ? linkedLead
-                ? `Reunião com ${linkedLead.label.split(" · ")[0]}`
-                : "Ex.: Reunião online com Ana & Rafael"
-              : "Ex.: viagem, outro evento"
-          }
-          className={INPUT}
-        />
-      </div>
+      <Input
+        id={`${uid}-titulo`}
+        label={isMeeting ? "Título" : "Motivo"}
+        optional={!isMeeting || Boolean(linkedLead)}
+        maxLength={120}
+        value={values.title}
+        onChange={set("title")}
+        placeholder={
+          isMeeting
+            ? linkedLead
+              ? `Reunião com ${linkedLead.label.split(" · ")[0]}`
+              : "Ex.: Reunião online com Ana & Rafael"
+            : "Ex.: viagem, outro evento"
+        }
+      />
 
       {isMeeting ? (
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor={`${uid}-notas`} className={LABEL}>
-            Observações <span className="font-normal text-tinta-suave">(opcional)</span>
-          </label>
-          <textarea
-            id={`${uid}-notas`}
-            rows={3}
-            maxLength={1000}
-            value={values.notes}
-            onChange={set("notes")}
-            placeholder="Link da chamada, endereço, o que levar…"
-            className={cn(INPUT, "min-h-24 resize-y py-3")}
-          />
-        </div>
+        <Textarea
+          id={`${uid}-notas`}
+          label="Observações"
+          optional
+          rows={3}
+          maxLength={1000}
+          value={values.notes}
+          onChange={set("notes")}
+          placeholder="Link da chamada, endereço, o que levar…"
+          inputClassName="min-h-24"
+        />
       ) : (
         <p className="text-sm text-tinta-suave">Datas bloqueadas aparecem como ocupadas nos seus pedidos de orçamento.</p>
       )}

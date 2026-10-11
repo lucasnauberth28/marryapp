@@ -4,10 +4,10 @@ import { useState, useTransition } from "react";
 import { BadgeCheck, Check, Copy, Link2, Loader2, MessageCircle, Send } from "lucide-react";
 import { toast } from "sonner";
 import { saveLeadProposal } from "@/actions/vendor-panel-actions";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-const INPUT =
-  "min-h-11 w-full rounded-xl border border-linha-forte bg-papel px-4 text-base text-tinta placeholder:text-tinta-suave/80 disabled:opacity-60";
 const BTN =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-[15px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-60";
 
@@ -70,18 +70,16 @@ export function ProposalForm({
   }
 
   const linkBox = saved?.publicUrl ? (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor="proposta-link" className="text-sm font-semibold text-tinta">
-        Link da proposta para o casal
-      </label>
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <input
-          id="proposta-link"
-          readOnly
-          value={saved.publicUrl}
-          onFocus={(e) => e.currentTarget.select()}
-          className={cn(INPUT, "flex-1 text-sm")}
-        />
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+      <Input
+        id="proposta-link"
+        label="Link da proposta para o casal"
+        readOnly
+        value={saved.publicUrl}
+        onFocus={(e) => e.currentTarget.select()}
+        fieldClassName="flex-1"
+        inputClassName="text-sm"
+      />
         <button
           type="button"
           onClick={() => copyText(saved.publicUrl!, "Link da proposta copiado.")}
@@ -90,7 +88,6 @@ export function ProposalForm({
           <Link2 aria-hidden="true" className="size-[18px]" />
           Copiar link
         </button>
-      </div>
     </div>
   ) : null;
 
@@ -177,72 +174,52 @@ export function ProposalForm({
         </div>
       ) : null}
 
-      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4" aria-describedby={error ? "proposta-erro" : undefined}>
+      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5" aria-describedby={error ? "proposta-erro" : undefined}>
         {error ? (
           <p id="proposta-erro" role="alert" className="rounded-xl bg-perigo-suave px-4 py-3 text-sm font-medium text-perigo">
             {error}
           </p>
         ) : null}
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="proposta-valor" className="text-sm font-semibold text-tinta">
-              Valor
-            </label>
-            <div className="relative">
-              <span aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-tinta-suave">
-                R$
-              </span>
-              <input
-                id="proposta-valor"
-                name="amount"
-                inputMode="decimal"
-                autoComplete="off"
-                required
-                maxLength={20}
-                placeholder="7.800"
-                value={values.amount}
-                onChange={set("amount")}
-                aria-describedby="proposta-valor-dica"
-                className={cn(INPUT, "pl-11")}
-              />
-            </div>
-            <p id="proposta-valor-dica" className="text-[13px] text-tinta-suave">
-              Em reais, por exemplo 7.800 ou 7.800,50.
-            </p>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="proposta-validade" className="text-sm font-semibold text-tinta">
-              Vale até <span className="font-normal text-tinta-suave">(opcional)</span>
-            </label>
-            <input
-              id="proposta-validade"
-              name="validUntil"
-              type="date"
-              min={todayIso}
-              value={values.validUntil}
-              onChange={set("validUntil")}
-              className={INPUT}
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="proposta-inclui" className="text-sm font-semibold text-tinta">
-            O que está incluído
-          </label>
-          <textarea
-            id="proposta-inclui"
-            name="details"
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <Input
+            id="proposta-valor"
+            label="Valor"
+            prefix="R$"
+            hint="Em reais, por exemplo 7.800 ou 7.800,50."
+            name="amount"
+            inputMode="decimal"
+            autoComplete="off"
             required
-            rows={4}
-            maxLength={4000}
-            placeholder="Ex.: cobertura de 10 horas, 2 fotógrafos, ensaio pré-wedding e 600 fotos tratadas em galeria online."
-            value={values.details}
-            onChange={set("details")}
-            className={cn(INPUT, "min-h-28 resize-y py-3")}
+            maxLength={20}
+            placeholder="7.800"
+            value={values.amount}
+            onChange={set("amount")}
+          />
+          <Input
+            id="proposta-validade"
+            label="Vale até"
+            optional
+            name="validUntil"
+            type="date"
+            min={todayIso}
+            value={values.validUntil}
+            onChange={set("validUntil")}
           />
         </div>
+
+        <Textarea
+          id="proposta-inclui"
+          label="O que está incluído"
+          name="details"
+          required
+          rows={4}
+          maxLength={4000}
+          placeholder="Ex.: cobertura de 10 horas, 2 fotógrafos, ensaio pré-wedding e 600 fotos tratadas em galeria online."
+          value={values.details}
+          onChange={set("details")}
+          inputClassName="min-h-28"
+        />
 
         <div className="flex justify-end">
           <button type="submit" disabled={isPending} className={cn(BTN, "bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}>

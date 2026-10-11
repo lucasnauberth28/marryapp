@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Link2, Loader2, MessageCircle, Star } from "lucide-react";
 import { toast } from "sonner";
 import { requestLeadReview } from "@/actions/vendor-panel-actions";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { whatsappHref } from "../../../_lib/vendor-panel";
 
@@ -109,15 +110,13 @@ export function ReviewRequest({
               <span className="sr-only"> (abre em nova aba)</span>
             </a>
           ) : null}
-          <label htmlFor="avaliacao-link" className="sr-only">
-            Link de avaliação
-          </label>
-          <input
+          <Input
             id="avaliacao-link"
+            label="Link de avaliação"
             readOnly
             value={url}
             onFocus={(e) => e.currentTarget.select()}
-            className="min-h-11 w-full rounded-xl border border-linha-forte bg-papel px-3 text-sm text-tinta"
+            inputClassName="text-sm"
           />
           <button
             type="button"

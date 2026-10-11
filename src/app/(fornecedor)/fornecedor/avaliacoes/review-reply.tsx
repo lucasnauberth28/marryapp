@@ -5,6 +5,7 @@ import { Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { replyToReview } from "@/actions/vendor-review-actions";
 import { btn } from "@/components/landing/styles";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const MIN = 2;
@@ -95,8 +96,6 @@ function ReplyForm({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const fieldId = `${id}-resposta`;
-  const errorId = `${id}-erro`;
-  const countId = `${id}-contagem`;
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -121,44 +120,23 @@ function ReplyForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor={fieldId} className="text-sm font-semibold">
-          Sua resposta pública
-        </label>
-        <textarea
-          id={fieldId}
-          rows={2}
-          value={value}
-          maxLength={MAX}
-          disabled={isPending}
-          autoFocus={isEdit}
-          onChange={(e) => {
-            setValue(e.target.value);
-            if (error) setError(null);
-          }}
-          placeholder={placeholder}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={cn(error && errorId, countId)}
-          className={cn(
-            "min-h-[88px] w-full resize-y rounded-xl border bg-papel px-4 py-3 text-base text-tinta placeholder:text-tinta-suave/80",
-            "disabled:opacity-60",
-            error ? "border-perigo" : "border-linha-forte",
-          )}
-        />
-        <div className="flex items-start justify-between gap-3 text-sm">
-          {error ? (
-            <p id={errorId} role="alert" className="font-medium text-perigo">
-              {error}
-            </p>
-          ) : (
-            <span />
-          )}
-          <span id={countId} className="shrink-0 tabular-nums text-tinta-suave">
-            {value.length}/{MAX}
-            <span className="sr-only"> caracteres</span>
-          </span>
-        </div>
-      </div>
+      <Textarea
+        id={fieldId}
+        label="Sua resposta pública"
+        rows={2}
+        value={value}
+        maxLength={MAX}
+        disabled={isPending}
+        autoFocus={isEdit}
+        onChange={(e) => {
+          setValue(e.target.value);
+          if (error) setError(null);
+        }}
+        placeholder={placeholder}
+        error={error ?? undefined}
+        hint={`${value.length}/${MAX} caracteres`}
+        inputClassName="min-h-[88px]"
+      />
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         {isEdit ? (
           <button type="button" onClick={onDone} disabled={isPending} className={cn(btn.secondary, btn.sm, "min-h-11")}>

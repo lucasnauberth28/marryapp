@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { Loader2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { declineLead } from "@/actions/vendor-panel-actions";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { whatsappHref } from "../../../_lib/vendor-panel";
 
@@ -87,25 +88,18 @@ export function DeclineLead({
         </button>
       ) : (
         <form id="recusar-form" onSubmit={onSubmit} className="mt-2 flex flex-col gap-3">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="recusar-mensagem" className="text-sm font-semibold text-tinta">
-              Mensagem para o casal
-            </label>
-            <textarea
-              id="recusar-mensagem"
-              // O botão "Recusar com mensagem" some ao abrir: o foco vai direto para a mensagem.
-              autoFocus
-              rows={5}
-              maxLength={2000}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              aria-describedby="recusar-dica"
-              className="min-h-28 w-full resize-y rounded-xl border border-linha-forte bg-papel px-4 py-3 text-base text-tinta"
-            />
-            <p id="recusar-dica" className="text-[13px] text-tinta-suave">
-              Depois de recusar, a mensagem abre pronta no seu WhatsApp para você enviar.
-            </p>
-          </div>
+          <Textarea
+            id="recusar-mensagem"
+            label="Mensagem para o casal"
+            hint="Depois de recusar, a mensagem abre pronta no seu WhatsApp para você enviar."
+            // O botão "Recusar com mensagem" some ao abrir: o foco vai direto para a mensagem.
+            autoFocus
+            rows={5}
+            maxLength={2000}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            inputClassName="min-h-28"
+          />
           {error ? (
             <p role="alert" className="rounded-xl bg-perigo-suave px-4 py-3 text-sm font-medium text-perigo">
               {error}

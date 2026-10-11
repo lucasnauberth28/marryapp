@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import { Loader2, Mail, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { updateLeadStatus } from "@/actions/vendor-panel-actions";
-import { cn } from "@/lib/utils";
+import { NativeSelect } from "@/components/ui/select";
 import { LEAD_NEXT_STEP, LEAD_STATUS_LABEL, LEAD_STATUSES, type LeadStatus } from "../_lib/vendor-panel";
 
 const btnBase =
@@ -67,24 +67,21 @@ export function LeadActions({
         </button>
       ) : null}
 
-      <label className="flex flex-col gap-1 min-[420px]:col-span-2 sm:col-span-1">
-        <span className="sr-only">Alterar status do pedido de {coupleName}</span>
-        <select
-          value={status}
-          disabled={isPending}
-          onChange={(e) => changeStatus(e.target.value as LeadStatus)}
-          className={cn(
-            "min-h-11 w-full cursor-pointer rounded-xl border border-linha-forte bg-papel px-3 text-sm text-tinta",
-            "disabled:opacity-60",
-          )}
-        >
-          {LEAD_STATUSES.map((s) => (
-            <option key={s} value={s}>
-              Status: {LEAD_STATUS_LABEL[s]}
-            </option>
-          ))}
-        </select>
-      </label>
+      <NativeSelect
+        label="Status"
+        size="sm"
+        aria-label={`Alterar status do pedido de ${coupleName}`}
+        fieldClassName="min-[420px]:col-span-2 sm:col-span-1"
+        value={status}
+        disabled={isPending}
+        onChange={(e) => changeStatus(e.target.value as LeadStatus)}
+      >
+        {LEAD_STATUSES.map((s) => (
+          <option key={s} value={s}>
+            {LEAD_STATUS_LABEL[s]}
+          </option>
+        ))}
+      </NativeSelect>
     </div>
   );
 }
