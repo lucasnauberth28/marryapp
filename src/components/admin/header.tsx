@@ -8,6 +8,7 @@ import {
   LogOut,
   CreditCard as CreditCardIcon,
   UserRound,
+  LayoutDashboard,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -18,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/actions/auth-actions";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import { hasPathAccess } from "@/lib/permissions";
+import { hasPathAccess, isPlatformAdminPaths } from "@/lib/permissions";
 import { Logo } from "@/components/brand/logo";
 import { accountLabel } from "@/lib/account-label";
 
@@ -40,6 +41,8 @@ interface HeaderProps {
 export function Header({ role = "Admin", allowedPaths = [], coupleNames, initials, dateLabel, adminView = false, userName = null, unreadNotifications = 0, pushPublicKey = null }: HeaderProps) {
   const can = (path: string) => hasPathAccess(allowedPaths, path);
   const label = accountLabel({ adminView, coupleNames, coupleInitials: initials, userName, role });
+  // Só a conta com acesso total ("*") vê o caminho de volta para a administração da plataforma
+  const isPlatformAdmin = isPlatformAdminPaths(allowedPaths);
 
   return (
     <header className="sticky top-0 z-40 flex h-[60px] items-center justify-between gap-3 border-b border-linha bg-linho/85 px-4 backdrop-blur-md md:px-8">
@@ -54,6 +57,11 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
       </div>
 
       <div className="flex items-center gap-2 md:gap-3">
+        {isPlatformAdmin && (
+          <Link href="/admin" className="hidden min-h-9 items-center gap-1.5 rounded-lg px-2 text-sm font-semibold text-tinta-suave transition-colors hover:text-ameixa md:inline-flex">
+            <LayoutDashboard className="h-4 w-4" aria-hidden="true" /> Administração
+          </Link>
+        )}
         <NotificationBell initialUnread={unreadNotifications} allHref="/notificacoes" settingsHref="/conta#avisos" pushPublicKey={pushPublicKey} />
 
         <DropdownMenu>
@@ -76,6 +84,13 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
                   <UserRound className="h-4 w-4 text-tinta-suave" /> Minha conta
                 </Link>
               </DropdownMenuItem>
+              {isPlatformAdmin && (
+                <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5 text-sm text-tinta md:hidden">
+                  <Link href="/admin" className="flex items-center gap-2.5">
+                    <LayoutDashboard className="h-4 w-4 text-tinta-suave" /> Administração
+                  </Link>
+                </DropdownMenuItem>
+              )}
               {can("/carteira") && (
                 <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5 text-sm text-tinta">
                   <Link href="/carteira" className="flex items-center gap-2.5">

@@ -371,7 +371,7 @@ export async function getCasalTimeline(id: string, limit = 8): Promise<TimelineI
 
   const brl = (cents: number) => (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   const items: TimelineItem[] = [];
-  for (const a of audits) items.push({ id: `a-${a.id}`, at: a.createdAt, text: AUDIT_TEXT[a.action] ?? "Ação da equipe" });
+  for (const a of audits) items.push({ id: `a-${a.id}`, at: a.createdAt, text: AUDIT_TEXT[a.action] ?? `Registro: ${a.action}` });
   for (const s of subs) {
     const pix = s.gatewayId?.startsWith(STATIC_PIX_PREFIX);
     if (s.status === "APPROVED" && s.paidAt) items.push({ id: `sp-${s.id}`, at: s.paidAt, text: `Pagou o plano ${s.planName} (${brl(s.amount)})`, badge: { tone: "sucesso", label: "Pago" } });

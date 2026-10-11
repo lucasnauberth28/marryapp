@@ -11,6 +11,7 @@ import { daysUntil, daysLeftLabel } from "@/lib/wedding-format"
 import { MainWeddingNote } from "@/components/admin/main-wedding-note"
 import { unreadCountFor } from "@/lib/notifications/queries"
 import { vapidPublicKey } from "@/lib/notifications/push"
+import { ImpersonationBanner } from "@/components/admin/impersonation-banner"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Perfil e permissões vêm do banco (não só do JWT), refletindo alterações de acesso na hora.
@@ -38,8 +39,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     ? "Gestão da plataforma"
     : [wedding.shortDateLabel, daysLeft].filter(Boolean).join(" · ") || null;
 
+  // "Entrar como este casal": faixa fixa no topo de TODAS as telas do painel; a barra lateral e o cabeçalho descem a altura dela
+  const impersonation = ctx?.impersonation ?? null;
+
   return (
-    <div className="flex min-h-screen bg-linho">
+    <>
+    {impersonation && <ImpersonationBanner coupleNames={impersonation.weddingNames} canEdit={impersonation.canEdit} expiresAt={impersonation.expiresAt.toISOString()} />}
+    <div
+      className={
+        impersonation
+          ? "flex min-h-screen bg-linho md:[&>aside]:top-14 md:[&>aside]:h-[calc(100vh-3.5rem)] [&>div>header]:top-[68px] md:[&>div>header]:top-14"
+          : "flex min-h-screen bg-linho"
+      }
+    >
       <Sidebar allowedPaths={allowedPaths} title={label.title} subtitle={subtitle} counts={counts} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Header
@@ -62,5 +74,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </div>
       <MobileTabBar allowedPaths={allowedPaths} title={label.title} subtitle={subtitle} initials={label.initials} counts={counts} />
     </div>
+    </>
   )
 }
