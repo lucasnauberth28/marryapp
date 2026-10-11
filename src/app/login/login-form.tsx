@@ -7,9 +7,8 @@ import { login } from "@/actions/auth-actions";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 
-import { FormAlert, fieldClass } from "./fields";
-
-const field = cn(fieldClass, "pl-11");
+import { FormAlert } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 export function LoginForm({
   initialEmail = "",
@@ -47,69 +46,57 @@ export function LoginForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate={false} className="flex flex-col gap-5" aria-describedby={error ? "login-erro" : undefined}>
-      <div className="flex flex-col gap-2">
-        <label htmlFor="login-email" className="text-sm font-semibold leading-5 text-tinta">
-          E-mail
-        </label>
-        <div className="relative">
-          <Mail aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 size-[18px] -translate-y-1/2 text-tinta-suave" strokeWidth={1.75} />
-          <input
-            id="login-email"
-            name="email"
-            type="text"
-            inputMode="email"
-            autoComplete="username"
-            autoCapitalize="none"
-            spellCheck={false}
-            placeholder="voce@email.com"
-            value={username}
-            onChange={(e) => setUsername(e.target.value.toLowerCase())}
-            aria-invalid={error ? true : undefined}
-            className={field}
-            required
-          />
-        </div>
-      </div>
+      <Input
+        id="login-email"
+        name="email"
+        type="text"
+        inputMode="email"
+        autoComplete="username"
+        autoCapitalize="none"
+        spellCheck={false}
+        label="E-mail"
+        icon={Mail}
+        placeholder="voce@email.com"
+        value={username}
+        onChange={(e) => setUsername(e.target.value.toLowerCase())}
+        invalid={Boolean(error)}
+        required
+      />
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-3">
-          <label htmlFor="login-senha" className="text-sm font-semibold leading-5 text-tinta">
-            Senha
-          </label>
-          <Link
-            href="/esqueci-a-senha"
-            className="-my-3 inline-flex min-h-11 items-center text-sm font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 transition-colors hover:decoration-ameixa"
-          >
-            Esqueci a senha
-          </Link>
-        </div>
-        <div className="relative">
-          <Lock aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 size-[18px] -translate-y-1/2 text-tinta-suave" strokeWidth={1.75} />
-          <input
-            id="login-senha"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            aria-invalid={error ? true : undefined}
-            className={cn(field, "pr-12")}
-            required
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-            aria-pressed={showPassword}
-            className="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors duration-200 hover:bg-areia hover:text-tinta"
-          >
-            {showPassword ? (
-              <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
-            ) : (
-              <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
-            )}
-          </button>
-        </div>
+      <div className="flex flex-col gap-1">
+        <Input
+          id="login-senha"
+          name="password"
+          type={showPassword ? "text" : "password"}
+          autoComplete="current-password"
+          label="Senha"
+          icon={Lock}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          invalid={Boolean(error)}
+          required
+          trailing={
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+              aria-pressed={showPassword}
+              className="grid size-11 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors duration-200 hover:bg-areia hover:text-tinta"
+            >
+              {showPassword ? (
+                <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
+              ) : (
+                <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
+              )}
+            </button>
+          }
+        />
+        <Link
+          href="/esqueci-a-senha"
+          className="inline-flex min-h-11 items-center self-end text-sm font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 transition-colors hover:decoration-ameixa"
+        >
+          Esqueci a senha
+        </Link>
       </div>
 
       {error ? <FormAlert id="login-erro">{error}</FormAlert> : null}

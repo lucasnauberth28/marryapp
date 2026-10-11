@@ -26,7 +26,9 @@ import { SubscriptionPix } from "@/components/checkout/subscription-pix";
 import { VENDOR_CATEGORIES } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
-import { Field, FormAlert, maskDocument, maskPhone } from "./fields";
+import { Field, FormAlert } from "@/components/ui/field";
+import { NativeSelect } from "@/components/ui/select";
+import { maskDocument, maskPhone } from "@/lib/masks";
 import { formatPrice, plansFor, type AccountType, type PlanOption, type SignupStep } from "./auth-config";
 
 interface SignupFlowProps {
@@ -265,15 +267,11 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                   )}
                 </Field>
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Field id="cadastro-category" label="Categoria">
-                    {(c) => (
-                      <select {...c} id="cadastro-category" value={category} onChange={(e) => setCategory(e.target.value)} className={cn(c.className, "cursor-pointer appearance-none")}>
-                        {VENDOR_CATEGORIES.map((cat) => (
-                          <option key={cat}>{cat}</option>
-                        ))}
-                      </select>
-                    )}
-                  </Field>
+                  <NativeSelect id="cadastro-category" label="Categoria" value={category} onChange={(e) => setCategory(e.target.value)}>
+                    {VENDOR_CATEGORIES.map((cat) => (
+                      <option key={cat}>{cat}</option>
+                    ))}
+                  </NativeSelect>
                   <Field id="cadastro-city" label="Cidade onde atende" icon={MapPin} error={errors.city}>
                     {(c) => (
                       <input
@@ -369,7 +367,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                   onClick={() => setShowPassword((v) => !v)}
                   aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                   aria-pressed={showPassword}
-                  className="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
+                  className="grid size-11 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
                 >
                   {showPassword ? <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.75} /> : <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />}
                 </button>
@@ -399,7 +397,6 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                       value={weddingDate}
                       disabled={noDateYet}
                       onChange={(e) => setWeddingDate(e.target.value)}
-                      className={cn(c.className, "disabled:cursor-not-allowed disabled:opacity-50")}
                     />
                   )}
                 </Field>

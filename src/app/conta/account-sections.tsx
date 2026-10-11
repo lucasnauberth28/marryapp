@@ -24,7 +24,7 @@ import {
 import { toast } from "sonner";
 import { cancelPartnerInvite, changePassword, createPartnerInvite, deleteMyAccount } from "@/actions/account-actions";
 import { btn } from "@/components/landing/styles";
-import { Field, FormAlert } from "@/app/login/fields";
+import { Field, FormAlert } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 import { PreferencesForm } from "@/components/notifications/preferences-form";
 import type { NotificationAudience, NotificationGroup } from "@/lib/notifications/catalog";
@@ -121,7 +121,7 @@ function PasswordToggle({ show, onToggle }: { show: boolean; onToggle: () => voi
       onClick={onToggle}
       aria-label={show ? "Ocultar senhas" : "Mostrar senhas"}
       aria-pressed={show}
-      className="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
+      className="grid size-11 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
     >
       {show ? <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.75} /> : <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />}
     </button>

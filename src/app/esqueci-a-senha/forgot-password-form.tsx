@@ -6,7 +6,7 @@ import { ArrowRight, Loader2, Mail, MailCheck } from "lucide-react";
 import { requestPasswordReset } from "@/actions/password-reset-actions";
 import { ShellHeading } from "@/components/account/auth-shell";
 import { btn, btnArrow } from "@/components/landing/styles";
-import { Field, FormAlert } from "@/app/login/fields";
+import { Field, FormAlert } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
 export function ForgotPasswordForm() {

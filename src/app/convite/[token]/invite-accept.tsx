@@ -6,7 +6,7 @@ import { acceptInvite, acceptInviteWithNewAccount } from "@/actions/invite-actio
 import { login, logout } from "@/actions/auth-actions";
 import { ShellHeading } from "@/components/account/auth-shell";
 import { btn, btnArrow } from "@/components/landing/styles";
-import { Field, FormAlert } from "@/app/login/fields";
+import { Field, FormAlert } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
 export type Viewer =
@@ -192,7 +192,7 @@ function AnonymousAccept({ token }: { token: string }) {
       onClick={() => setShow((v) => !v)}
       aria-label={show ? "Ocultar senha" : "Mostrar senha"}
       aria-pressed={show}
-      className="absolute right-1 top-1/2 grid size-11 -translate-y-1/2 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
+      className="grid size-11 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
     >
       {show ? <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.75} /> : <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />}
     </button>

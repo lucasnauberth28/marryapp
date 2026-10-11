@@ -20,7 +20,7 @@ import { completeOnboarding } from "@/actions/onboarding-actions";
 import { AuthShell, SHELL_PHOTOS, ShellHeading } from "@/components/account/auth-shell";
 import { Seal } from "@/components/landing/seal";
 import { btn, btnArrow } from "@/components/landing/styles";
-import { Field, FormAlert } from "@/app/login/fields";
+import { Field, FormAlert } from "@/components/ui/field";
 import { GUEST_RANGES, THEME_PRESETS, joinCoupleNames, type GuestRange } from "@/lib/onboarding-options";
 import { cn } from "@/lib/utils";
 
@@ -203,7 +203,6 @@ export function OnboardingFlow({
                     value={weddingDate}
                     disabled={noDateYet}
                     onChange={(e) => setWeddingDate(e.target.value)}
-                    className={cn(c.className, "disabled:cursor-not-allowed disabled:opacity-50")}
                   />
                 )}
               </Field>
