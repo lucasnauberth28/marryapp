@@ -15,6 +15,7 @@ import {
 import { resolveImpersonation, type ImpersonationContext } from "@/lib/security/impersonation";
 import { weddingWriteRefusal } from "@/lib/security/impersonation-rules";
 import { logAudit } from "@/lib/audit";
+import { maintenanceWriteRefusal } from "@/lib/platform/maintenance";
 
 /**
  * Multi-casamento: todo dado do painel do casal pertence a um casamento (weddingId).
@@ -146,7 +147,8 @@ export async function requireWeddingRead(path?: string): Promise<WeddingContext>
  * Para Server Actions do painel do casal que ESCREVEM (todas, salvo as de leitura pura): igual a requireWeddingRead,
  * mais duas recusas centrais:
  *  - "entrar como" somente leitura (a administração só olha; a segunda confirmação de "Permitir editar" vira canEdit);
- *  - casamento suspenso (painel só para leitura).
+ *  - casamento suspenso (painel só para leitura);
+ *  - modo de manutenção ligado pela administração (painel só para leitura, salvo a própria administração).
  * Com "entrar como" editável, cada escrita fica no AuditLog (ator, casamento, sessão e área).
  * Por padrão recusa: uma action nova que esquecer de escolher entre as duas já nasce protegida.
  */
@@ -154,6 +156,9 @@ export async function requireWedding(path?: string): Promise<WeddingContext> {
   const ctx = await requireWeddingRead(path);
   const refusal = weddingWriteRefusal({ impersonation: ctx.impersonation, suspendedAt: ctx.wedding.suspendedAt });
   if (refusal) throw new AuthorizationError(refusal);
+  // Modo de manutenção (administração > Configurações): painel só para leitura; a administração nunca é barrada
+  const maintenance = await maintenanceWriteRefusal(ctx.session.allowedPaths);
+  if (maintenance) throw new AuthorizationError(maintenance);
   if (ctx.impersonation?.canEdit) {
     await logAudit({
       action: "impersonation.write",

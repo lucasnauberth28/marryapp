@@ -17,6 +17,7 @@ export const PUBLIC_PATHS = [
   "/dia-do-evento",
   "/api/webhooks",
   "/api/cron", // autenticada pelo CRON_SECRET na própria rota
+  "/api/manutencao", // aviso de manutenção para convidados (só mostra ligado, mensagem e hora de volta)
   "/convite", // aceitar o convite do par
   "/esqueci-a-senha",
   "/redefinir-senha",

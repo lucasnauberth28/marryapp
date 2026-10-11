@@ -9,6 +9,7 @@ import { getNavCounts } from "@/lib/nav-counts"
 import { accountLabel } from "@/lib/account-label"
 import { daysUntil, daysLeftLabel } from "@/lib/wedding-format"
 import { MainWeddingNote } from "@/components/admin/main-wedding-note"
+import { MaintenanceBanner } from "@/components/admin/maintenance-banner"
 import { unreadCountFor } from "@/lib/notifications/queries"
 import { vapidPublicKey } from "@/lib/notifications/push"
 import { ImpersonationBanner } from "@/components/admin/impersonation-banner"
@@ -67,6 +68,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         />
         <main id="conteudo" className="page-in flex-1 px-4 pb-32 pt-6 md:px-8 md:pb-12 md:pt-8">
           <div className="mx-auto w-full max-w-[1240px]">
+            <MaintenanceBanner allowedPaths={allowedPaths} />
             {account.adminView && ctx && <MainWeddingNote coupleNames={wedding.coupleNames} />}
             {children}
           </div>

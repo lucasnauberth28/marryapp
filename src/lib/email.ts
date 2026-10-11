@@ -1,5 +1,7 @@
 import "server-only";
 import { recordServiceEvent } from "@/lib/platform/system-records";
+import { getEmailSender } from "@/lib/platform/email-sender";
+import { DEFAULT_FROM } from "@/lib/platform/email-sender-core";
 
 /**
  * Envio de e-mails transacionais (convite do par, redefinição de senha) pela API REST da Resend.
@@ -10,7 +12,6 @@ import { recordServiceEvent } from "@/lib/platform/system-records";
  */
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
-const DEFAULT_FROM = "Aceito <nao-responda@meuaceito.com.br>";
 
 export interface SendEmailInput {
   to: string;
@@ -44,19 +45,29 @@ export async function sendEmail({ to, subject, html, text }: SendEmailInput): Pr
   }
 
   try {
-    const res = await fetch(RESEND_ENDPOINT, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: process.env.EMAIL_FROM?.trim() || DEFAULT_FROM,
-        to: [recipient],
-        subject,
-        html,
-        text,
-      }),
-      cache: "no-store",
-      signal: AbortSignal.timeout(10_000),
-    });
+    const sender = await getEmailSender();
+    const post = (from: string) =>
+      fetch(RESEND_ENDPOINT, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from,
+          to: [recipient],
+          subject,
+          html,
+          text,
+          ...(sender.replyTo ? { reply_to: sender.replyTo } : {}),
+        }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10_000),
+      });
+    let res = await post(sender.from);
+    // Remetente configurado na administração recusado (domínio não verificado na Resend): tenta de novo com o do ambiente,
+    // para um endereço errado nas Configurações nunca parar todos os e-mails.
+    if (!res.ok && sender.custom && (res.status === 403 || res.status === 422)) {
+      console.warn(`[email] Resend recusou o remetente configurado (${res.status}); usando o remetente do ambiente.`);
+      res = await post(process.env.EMAIL_FROM?.trim() || DEFAULT_FROM);
+    }
 
     if (!res.ok) {
       console.error(`[email] Resend respondeu ${res.status} ao enviar "${subject}" para ${maskEmail(recipient)}.`);
