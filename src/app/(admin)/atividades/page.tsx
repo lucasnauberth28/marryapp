@@ -34,6 +34,13 @@ const ACTION_LABEL: Record<string, string> = {
   "account.password_reset": "Redefiniu a senha pelo e-mail",
   "wedding.invite_create": "Convidou o par para o casamento",
   "wedding.invite_cancel": "Cancelou um convite do par",
+  "domain.request": "Pedido de domínio próprio feito pelo casal",
+  "domain.cancel": "Pedido de domínio cancelado pelo casal",
+  "domain.start": "Começou o registro de um domínio",
+  "domain.registered": "Marcou um domínio como registrado",
+  "domain.reject": "Recusou um pedido de domínio",
+  "domain.connect": "Conectou um domínio ao site",
+  "domain.online": "Colocou um domínio no ar",
 };
 
 const DETAIL_LABEL: Record<string, string> = {
@@ -43,6 +50,7 @@ const DETAIL_LABEL: Record<string, string> = {
   role: "Perfil",
   amount: "Valor",
   reason: "Motivo",
+  domain: "Domínio",
   gatewayId: "Identificador",
   passwordChanged: "Senha trocada",
 };
@@ -71,6 +79,7 @@ const TARGET_LABEL: Record<string, string> = {
   User: "Usuário",
   Wedding: "Casamento",
   WeddingInvite: "Convite do par",
+  DomainOrder: "Pedido de domínio",
 };
 
 export default async function AtividadesPage() {

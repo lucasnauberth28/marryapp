@@ -145,3 +145,23 @@ export async function notifyPlanActivated(subscriptionId: string): Promise<void>
   if (!target) return;
   await notifyEvent(target, { type: "plan_activated", audience: "couple", planName: sub.planName }, dedupe.planActivated(subscriptionId));
 }
+
+/**
+ * Andamento do pedido de domínio: avisa o casal (os dois). O texto vem do pedido no banco, nunca do navegador.
+ * Só avisa se o pedido está mesmo na situação do aviso (registrado/no ar) ou recusado.
+ */
+export async function notifyDomainOrder(orderId: string, kind: "registered" | "ready" | "rejected"): Promise<void> {
+  const order = await prisma.domainOrder.findUnique({
+    where: { id: orderId },
+    select: { weddingId: true, domain: true, status: true, rejectionReason: true },
+  });
+  if (!order) return;
+  const target = { weddingId: order.weddingId };
+  if (kind === "registered" && order.status === "REGISTERED") {
+    await notifyEvent(target, { type: "domain_registered", domain: order.domain }, dedupe.domainRegistered(orderId));
+  } else if (kind === "ready" && order.status === "CONNECTED") {
+    await notifyEvent(target, { type: "domain_ready", domain: order.domain }, dedupe.domainReady(orderId));
+  } else if (kind === "rejected" && order.status === "REJECTED") {
+    await notifyEvent(target, { type: "domain_rejected", domain: order.domain, reason: order.rejectionReason ?? "" }, dedupe.domainRejected(orderId));
+  }
+}

@@ -33,6 +33,9 @@ const EVENTS: NotificationEvent[] = [
   { type: "plan_expiring", planName: "Pro", daysLeft: 7 },
   { type: "plan_expiring", planName: "Pro", daysLeft: 1 },
   { type: "plan_expired", planName: "Pro" },
+  { type: "domain_registered", domain: "ana-e-rafael.com.br" },
+  { type: "domain_ready", domain: "ana-e-rafael.com.br" },
+  { type: "domain_rejected", domain: "ana-e-rafael.com.br", reason: "O nome já pertence a uma marca registrada e não pode ser aberto no nome de vocês." },
 ];
 
 test("todo tipo do catálogo tem texto, grupo conhecido e pelo menos um público", () => {
@@ -141,4 +144,18 @@ test("tipo desconhecido (de versão futura) cai num padrão neutro", () => {
   const spec = specOf("nao_existe");
   assert.equal(spec.whatsapp, false);
   assert.equal(spec.email, false);
+});
+
+test("avisos do domínio: só para o casal, levam a /dominio e citam o endereço", () => {
+  for (const type of ["domain_registered", "domain_ready", "domain_rejected"] as const) {
+    assert.deepEqual(NOTIFICATION_TYPES[type].audiences, ["couple"]);
+    assert.ok(!(NOTIFICATION_TYPES[type] as { whatsapp: boolean }).whatsapp);
+    const copy = buildCopy(EVENTS.find((e) => e.type === type)!);
+    assert.equal(copy.href, "/dominio");
+    assert.match(copy.body, /ana-e-rafael\.com\.br/);
+  }
+  assert.equal(buildCopy({ type: "domain_registered", domain: "a.com.br" }).title, "Seu domínio foi registrado");
+  assert.equal(buildCopy({ type: "domain_ready", domain: "a.com.br" }).title, "Seu domínio está no ar");
+  assert.match(buildCopy({ type: "domain_rejected", domain: "a.com.br", reason: "Nome reservado." }).body, /Motivo: Nome reservado\./);
+  assert.match(dedupe.domainReady("o1"), /^domain_ready:o1$/);
 });

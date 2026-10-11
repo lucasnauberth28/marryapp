@@ -12,7 +12,7 @@ export const GROUP_LABEL: Record<NotificationGroup, { title: string; hint: strin
   requests: { title: "Pedidos e propostas", hint: "Novos pedidos de orçamento, propostas aceitas e avaliações." },
   reminders: { title: "Lembretes", hint: "Despesas perto de vencer ou vencidas." },
   guests: { title: "Convidados", hint: "Quem confirmou ou não poderá ir." },
-  account: { title: "Plano e conta", hint: "Plano ativado, perto de vencer ou vencido." },
+  account: { title: "Plano e conta", hint: "Plano ativado, perto de vencer ou vencido, e o andamento do domínio próprio." },
 };
 
 export type NotificationTone = "success" | "info" | "warning" | "alert";
@@ -39,6 +39,9 @@ export const NOTIFICATION_TYPES = {
   rsvp_declined: { audiences: ["couple"], group: "guests", tone: "info", icon: "x", whatsapp: false, email: true, ignoresQuietHours: false },
   expense_due: { audiences: ["couple"], group: "reminders", tone: "warning", icon: "calendar", whatsapp: false, email: true, ignoresQuietHours: false },
   plan_activated: { audiences: ["couple", "vendor"], group: "account", tone: "success", icon: "sparkles", whatsapp: true, email: true, ignoresQuietHours: true },
+  domain_registered: { audiences: ["couple"], group: "account", tone: "success", icon: "check", whatsapp: false, email: true, ignoresQuietHours: false },
+  domain_ready: { audiences: ["couple"], group: "account", tone: "success", icon: "sparkles", whatsapp: false, email: true, ignoresQuietHours: false },
+  domain_rejected: { audiences: ["couple"], group: "account", tone: "warning", icon: "x", whatsapp: false, email: true, ignoresQuietHours: false },
   lead_new: { audiences: ["vendor"], group: "requests", tone: "info", icon: "inbox", whatsapp: true, email: true, ignoresQuietHours: false },
   proposal_accepted: { audiences: ["vendor"], group: "requests", tone: "success", icon: "handshake", whatsapp: false, email: true, ignoresQuietHours: false },
   review_new: { audiences: ["vendor"], group: "requests", tone: "info", icon: "star", whatsapp: false, email: true, ignoresQuietHours: false },
@@ -79,6 +82,9 @@ export type NotificationEvent =
   | { type: "rsvp_declined"; guestName: string }
   | { type: "expense_due"; description: string; amountCents: number; dueDate: Date; overdue: boolean }
   | { type: "plan_activated"; audience: NotificationAudience; planName: string; periodEnd?: Date | null }
+  | { type: "domain_registered"; domain: string }
+  | { type: "domain_ready"; domain: string }
+  | { type: "domain_rejected"; domain: string; reason: string }
   | { type: "lead_new"; leadId: string; coupleName: string; locked: boolean; weddingDate?: Date | null }
   | { type: "proposal_accepted"; leadId: string; coupleName: string }
   | { type: "review_new"; coupleNames: string; rating: number }
@@ -156,6 +162,24 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
       }
       return { title: "Plano ativado", body: `O plano ${plan} já está valendo para o casamento de vocês.`, href: "/plano" };
     }
+    case "domain_registered":
+      return {
+        title: "Seu domínio foi registrado",
+        body: `${clean(event.domain, 70)} já está registrado no nome do titular. Falta ligar ao site de vocês; avisamos quando estiver no ar.`,
+        href: "/dominio",
+      };
+    case "domain_ready":
+      return {
+        title: "Seu domínio está no ar",
+        body: `O site de vocês já abre em ${clean(event.domain, 70)}. Os links enviados aos convidados passam a usar este endereço.`,
+        href: "/dominio",
+      };
+    case "domain_rejected":
+      return {
+        title: "Pedido de domínio recusado",
+        body: `Não foi possível registrar ${clean(event.domain, 70)}. Motivo: ${clean(event.reason, 110, "sem detalhes")}. Vocês podem fazer um novo pedido.`,
+        href: "/dominio",
+      };
     case "lead_new": {
       const href = `/fornecedor/pedidos/${event.leadId}`;
       if (event.locked) {
@@ -216,6 +240,9 @@ export const dedupe = {
   rsvp: (status: "confirmed" | "declined", guestId: string, day: string) => `rsvp_${status}:${guestId}:${day}`,
   expense: (expenseId: string, kind: "soon" | "overdue") => `expense_due:${expenseId}:${kind}`,
   planActivated: (subscriptionId: string) => `plan_activated:${subscriptionId}`,
+  domainRegistered: (orderId: string) => `domain_registered:${orderId}`,
+  domainReady: (orderId: string) => `domain_ready:${orderId}`,
+  domainRejected: (orderId: string) => `domain_rejected:${orderId}`,
   leadNew: (leadId: string) => `lead_new:${leadId}`,
   proposalAccepted: (leadId: string) => `proposal_accepted:${leadId}`,
   reviewNew: (reviewKey: string) => `review_new:${reviewKey}`,
