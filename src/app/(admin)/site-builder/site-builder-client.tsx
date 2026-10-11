@@ -121,19 +121,25 @@ function parsePalette(raw?: string | null): string[] {
   }
 }
 
-function Field({ id, label, hint, children }: { id: string; label: string; hint?: string; children: ReactNode }) {
+/** Rótulo fixo para controles que não são campo de texto (seletor de cor e envio de foto). */
+function Field({ id, label, hint, group, children }: { id: string; label: string; hint?: string; group?: boolean; children: ReactNode }) {
   return (
-    <div className="flex min-w-0 flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-semibold text-tinta">
-        {label}
-      </label>
+    <div className="flex min-w-0 flex-col gap-1.5" {...(group ? { role: "group", "aria-labelledby": `${id}-rotulo` } : {})}>
+      {group ? (
+        <span id={`${id}-rotulo`} className="text-sm font-semibold text-tinta">
+          {label}
+        </span>
+      ) : (
+        <label htmlFor={id} className="text-sm font-semibold text-tinta">
+          {label}
+        </label>
+      )}
       {children}
       {hint && <p className="text-sm text-tinta-suave">{hint}</p>}
     </div>
   );
 }
 
-const inputClass = "h-11 rounded-xl bg-papel";
 
 const savedFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
 
@@ -174,7 +180,7 @@ function SectionRow({
         </button>
       </h3>
       {open && (
-        <div id={`secao-${id}`} className="flex flex-col gap-4 px-3 pb-4 pt-1">
+        <div id={`secao-${id}`} className="flex flex-col gap-5 px-3 pb-4 pt-3">
           {children}
         </div>
       )}
@@ -318,7 +324,7 @@ export function SiteBuilderClient({
   const photoField = (field: "heroImageUrl" | "couplePhotoUrl", label: string, hint: string, ref: React.RefObject<HTMLInputElement | null>) => {
     const url = settings[field];
     return (
-      <Field id={field} label={label} hint={hint}>
+      <Field id={field} group label={label} hint={hint}>
         <div className="flex items-center gap-3">
           <div className="grid aspect-[3/4] w-[72px] shrink-0 place-items-center overflow-hidden rounded-t-full bg-areia text-center text-[11px] text-tinta-suave">
             {url ? (
@@ -342,11 +348,12 @@ export function SiteBuilderClient({
           </button>
         </div>
         <Input
-          id={field}
+          id={`${field}-link`}
+          label="Ou cole o link da foto"
           value={url || ""}
           onChange={(e) => update({ [field]: e.target.value })}
-          placeholder="Ou cole um link https://..."
-          className={inputClass}
+          placeholder="https://..."
+          fieldClassName="mt-1"
         />
       </Field>
     );
@@ -438,19 +445,14 @@ export function SiteBuilderClient({
               >
                 {section.id === "COVER" && (
                   <>
-                    <Field id="title" label="Nomes do casal">
-                      <Input id="title" value={settings.title || ""} onChange={(e) => update({ title: e.target.value })} placeholder="Ana & Pedro" className={`${inputClass} text-base font-semibold`} />
-                    </Field>
-                    <Field id="weddingDate" label="Data do casamento">
-                      <DatePicker
-                        id="weddingDate"
-                        value={toDateInput(settings.weddingDate)}
-                        onChange={(e) => update({ weddingDate: e.target.value ? `${e.target.value}T12:00:00.000Z` : null })}
-                      />
-                    </Field>
-                    <Field id="subtitle" label="Frase acima dos nomes" hint="Opcional. Ex.: “Vamos nos casar!”">
-                      <Input id="subtitle" value={settings.subtitle || ""} onChange={(e) => update({ subtitle: e.target.value })} className={inputClass} />
-                    </Field>
+                    <Input id="title" label="Nomes do casal" value={settings.title || ""} onChange={(e) => update({ title: e.target.value })} placeholder="Ana & Pedro" inputClassName="text-base font-semibold" />
+                    <DatePicker
+                      id="weddingDate"
+                      label="Data do casamento"
+                      value={toDateInput(settings.weddingDate)}
+                      onChange={(e) => update({ weddingDate: e.target.value ? `${e.target.value}T12:00:00.000Z` : null })}
+                    />
+                    <Input id="subtitle" label="Frase acima dos nomes" optional hint="Ex.: “Vamos nos casar!”" value={settings.subtitle || ""} onChange={(e) => update({ subtitle: e.target.value })} />
                     <Field id="themeColor" label="Cor do site">
                       <div className="flex items-center gap-2">
                         <input
@@ -458,14 +460,16 @@ export function SiteBuilderClient({
                           type="color"
                           value={settings.themeColor || "#5E2B4E"}
                           onChange={(e) => update({ themeColor: e.target.value })}
-                          className="h-11 w-14 cursor-pointer rounded-xl border border-linha-forte bg-papel p-1"
+                          className="h-12 w-14 shrink-0 cursor-pointer rounded-xl border border-linha-forte bg-papel p-1"
                           aria-describedby="themeColor-hint"
                         />
                         <Input
-                          aria-label="Código da cor"
+                          id="themeColorCode"
+                          label="Código da cor"
                           value={settings.themeColor || ""}
                           onChange={(e) => update({ themeColor: e.target.value })}
-                          className={`${inputClass} font-mono uppercase`}
+                          fieldClassName="flex-1"
+                          inputClassName="font-mono uppercase"
                           maxLength={7}
                         />
                       </div>
@@ -487,22 +491,14 @@ export function SiteBuilderClient({
                 {section.id === "STORY" && section.key && (
                   <>
                     {visibilityToggle(section.key, section.desc)}
-                    <Field id="welcomeMessage" label="Mensagem de boas-vindas">
-                      <Textarea id="welcomeMessage" rows={3} value={settings.welcomeMessage || ""} onChange={(e) => update({ welcomeMessage: e.target.value })} className="rounded-xl bg-papel" />
-                    </Field>
+                    <Textarea id="welcomeMessage" label="Mensagem de boas-vindas" rows={3} value={settings.welcomeMessage || ""} onChange={(e) => update({ welcomeMessage: e.target.value })} />
                     {photoField("couplePhotoUrl", "Foto do casal", "Aparece na seção “Nossa história”.", coupleInput)}
 
                     <fieldset className="flex flex-col gap-3 rounded-xl border border-linha p-3">
                       <legend className="px-1 text-sm font-semibold text-tinta">Novo momento</legend>
-                      <Field id="story-title" label="Título">
-                        <Input id="story-title" value={story.title} onChange={(e) => setStory({ ...story, title: e.target.value })} placeholder="O primeiro encontro" className={inputClass} />
-                      </Field>
-                      <Field id="story-date" label="Quando">
-                        <Input id="story-date" value={story.dateLabel} onChange={(e) => setStory({ ...story, dateLabel: e.target.value })} placeholder="Outubro de 2021" className={inputClass} />
-                      </Field>
-                      <Field id="story-desc" label="O que aconteceu">
-                        <Textarea id="story-desc" rows={3} value={story.description} onChange={(e) => setStory({ ...story, description: e.target.value })} className="rounded-xl bg-papel" />
-                      </Field>
+                      <Input id="story-title" label="Título" value={story.title} onChange={(e) => setStory({ ...story, title: e.target.value })} placeholder="O primeiro encontro" />
+                      <Input id="story-date" label="Quando" value={story.dateLabel} onChange={(e) => setStory({ ...story, dateLabel: e.target.value })} placeholder="Outubro de 2021" />
+                      <Textarea id="story-desc" label="O que aconteceu" rows={3} value={story.description} onChange={(e) => setStory({ ...story, description: e.target.value })} />
                       <button type="button" onClick={handleAddStory} disabled={isPending} className={`${btn.secondary} ${btn.sm} w-fit`}>
                         <Plus className="size-4" aria-hidden="true" /> Adicionar momento
                       </button>
@@ -520,41 +516,23 @@ export function SiteBuilderClient({
                   <>
                     {visibilityToggle(section.key)}
                     <p className="text-sm text-tinta-suave">Se você não informar os links de rota, o site cria os botões a partir do endereço.</p>
-                    <Field id="locationName" label="Nome do local">
-                      <Input id="locationName" value={settings.locationName || ""} onChange={(e) => update({ locationName: e.target.value })} className={inputClass} />
-                    </Field>
-                    <Field id="locationAddress" label="Endereço completo">
-                      <Input id="locationAddress" value={settings.locationAddress || ""} onChange={(e) => update({ locationAddress: e.target.value })} className={inputClass} />
-                    </Field>
+                    <Input id="locationName" label="Nome do local" value={settings.locationName || ""} onChange={(e) => update({ locationName: e.target.value })} />
+                    <Input id="locationAddress" label="Endereço completo" value={settings.locationAddress || ""} onChange={(e) => update({ locationAddress: e.target.value })} />
                     <div className="grid grid-cols-2 gap-3">
-                      <Field id="ceremonyTime" label="Horário da cerimônia">
-                        <Input id="ceremonyTime" type="time" value={settings.ceremonyTime || ""} onChange={(e) => update({ ceremonyTime: e.target.value })} className={inputClass} />
-                      </Field>
-                      <Field id="receptionTime" label="Horário da recepção">
-                        <Input id="receptionTime" type="time" value={settings.receptionTime || ""} onChange={(e) => update({ receptionTime: e.target.value })} className={inputClass} />
-                      </Field>
+                      <Input id="ceremonyTime" label="Horário da cerimônia" type="time" value={settings.ceremonyTime || ""} onChange={(e) => update({ ceremonyTime: e.target.value })} />
+                      <Input id="receptionTime" label="Horário da recepção" type="time" value={settings.receptionTime || ""} onChange={(e) => update({ receptionTime: e.target.value })} />
                     </div>
-                    <Field id="locationMapUrl" label="Link do Google Maps" hint="Opcional">
-                      <Input id="locationMapUrl" value={settings.locationMapUrl || ""} onChange={(e) => update({ locationMapUrl: e.target.value })} placeholder="https://maps.app.goo.gl/..." className={inputClass} />
-                    </Field>
-                    <Field id="wazeUrl" label="Link do Waze" hint="Opcional">
-                      <Input id="wazeUrl" value={settings.wazeUrl || ""} onChange={(e) => update({ wazeUrl: e.target.value })} placeholder="https://waze.com/ul/..." className={inputClass} />
-                    </Field>
-                    <Field id="uberUrl" label="Link do Uber" hint="Opcional">
-                      <Input id="uberUrl" value={settings.uberUrl || ""} onChange={(e) => update({ uberUrl: e.target.value })} placeholder="https://m.uber.com/ul/..." className={inputClass} />
-                    </Field>
+                    <Input id="locationMapUrl" label="Link do Google Maps" optional value={settings.locationMapUrl || ""} onChange={(e) => update({ locationMapUrl: e.target.value })} placeholder="https://maps.app.goo.gl/..." />
+                    <Input id="wazeUrl" label="Link do Waze" optional value={settings.wazeUrl || ""} onChange={(e) => update({ wazeUrl: e.target.value })} placeholder="https://waze.com/ul/..." />
+                    <Input id="uberUrl" label="Link do Uber" optional value={settings.uberUrl || ""} onChange={(e) => update({ uberUrl: e.target.value })} placeholder="https://m.uber.com/ul/..." />
                   </>
                 )}
 
                 {section.id === "DRESS" && section.key && (
                   <>
                     {visibilityToggle(section.key, section.desc)}
-                    <Field id="dressCodeTitle" label="Tipo de traje">
-                      <Input id="dressCodeTitle" value={settings.dressCodeTitle || ""} onChange={(e) => update({ dressCodeTitle: e.target.value })} placeholder="Passeio completo" className={inputClass} />
-                    </Field>
-                    <Field id="dressCodeDesc" label="Orientações">
-                      <Textarea id="dressCodeDesc" rows={3} value={settings.dressCodeDesc || ""} onChange={(e) => update({ dressCodeDesc: e.target.value })} className="rounded-xl bg-papel" />
-                    </Field>
+                    <Input id="dressCodeTitle" label="Tipo de traje" value={settings.dressCodeTitle || ""} onChange={(e) => update({ dressCodeTitle: e.target.value })} placeholder="Passeio completo" />
+                    <Textarea id="dressCodeDesc" label="Orientações" rows={3} value={settings.dressCodeDesc || ""} onChange={(e) => update({ dressCodeDesc: e.target.value })} />
                     <fieldset className="flex flex-col gap-2">
                       <legend className="text-sm font-semibold text-tinta">Cores sugeridas</legend>
                       <div className="flex flex-wrap items-center gap-3">
@@ -596,38 +574,24 @@ export function SiteBuilderClient({
                     {visibilityToggle(section.key, section.desc)}
                     <fieldset className="flex flex-col gap-3 rounded-xl border border-linha p-3">
                       <legend className="px-1 text-sm font-semibold text-tinta">Nova dica</legend>
-                      <Field id="tip-category" label="Categoria">
-                        <Select value={tip.category} onValueChange={(v) => setTip({ ...tip, category: v })}>
-                          <SelectTrigger id="tip-category" className="h-11 w-full rounded-xl bg-papel">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Object.entries(TIP_LABELS).map(([value, label]) => (
-                              <SelectItem key={value} value={value}>
-                                {label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </Field>
-                      <Field id="tip-title" label="Nome do lugar">
-                        <Input id="tip-title" value={tip.title} onChange={(e) => setTip({ ...tip, title: e.target.value })} className={inputClass} />
-                      </Field>
-                      <Field id="tip-address" label="Endereço">
-                        <Input id="tip-address" value={tip.address} onChange={(e) => setTip({ ...tip, address: e.target.value })} className={inputClass} />
-                      </Field>
-                      <Field id="tip-phone" label="Telefone">
-                        <Input id="tip-phone" value={tip.phone} onChange={(e) => setTip({ ...tip, phone: e.target.value })} className={inputClass} />
-                      </Field>
-                      <Field id="tip-link" label="Site ou link de reserva">
-                        <Input id="tip-link" value={tip.linkUrl} onChange={(e) => setTip({ ...tip, linkUrl: e.target.value })} placeholder="https://..." className={inputClass} />
-                      </Field>
-                      <Field id="tip-discount" label="Cupom de desconto">
-                        <Input id="tip-discount" value={tip.discountCode} onChange={(e) => setTip({ ...tip, discountCode: e.target.value.toUpperCase() })} className={`${inputClass} font-semibold uppercase`} />
-                      </Field>
-                      <Field id="tip-desc" label="Descrição">
-                        <Textarea id="tip-desc" rows={2} value={tip.description} onChange={(e) => setTip({ ...tip, description: e.target.value })} className="rounded-xl bg-papel" />
-                      </Field>
+                      <Select value={tip.category} onValueChange={(v) => setTip({ ...tip, category: v })}>
+                        <SelectTrigger id="tip-category" label="Categoria">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(TIP_LABELS).map(([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input id="tip-title" label="Nome do lugar" value={tip.title} onChange={(e) => setTip({ ...tip, title: e.target.value })} />
+                      <Input id="tip-address" label="Endereço" value={tip.address} onChange={(e) => setTip({ ...tip, address: e.target.value })} />
+                      <Input id="tip-phone" label="Telefone" value={tip.phone} onChange={(e) => setTip({ ...tip, phone: e.target.value })} />
+                      <Input id="tip-link" label="Site ou link de reserva" value={tip.linkUrl} onChange={(e) => setTip({ ...tip, linkUrl: e.target.value })} placeholder="https://..." />
+                      <Input id="tip-discount" label="Cupom de desconto" value={tip.discountCode} onChange={(e) => setTip({ ...tip, discountCode: e.target.value.toUpperCase() })} inputClassName="font-semibold uppercase" />
+                      <Textarea id="tip-desc" label="Descrição" rows={2} value={tip.description} onChange={(e) => setTip({ ...tip, description: e.target.value })} />
                       <button type="button" onClick={handleAddTip} disabled={isPending} className={`${btn.secondary} ${btn.sm} w-fit`}>
                         <Plus className="size-4" aria-hidden="true" /> Adicionar dica
                       </button>
@@ -644,15 +608,7 @@ export function SiteBuilderClient({
                 {section.id === "MUSIC" && section.key && (
                   <>
                     {visibilityToggle(section.key, section.desc)}
-                    <Field id="spotifyPlaylistUrl" label="Link da playlist">
-                      <Input
-                        id="spotifyPlaylistUrl"
-                        value={settings.spotifyPlaylistUrl || ""}
-                        onChange={(e) => update({ spotifyPlaylistUrl: e.target.value })}
-                        placeholder="https://open.spotify.com/playlist/..."
-                        className={inputClass}
-                      />
-                    </Field>
+                    <Input id="spotifyPlaylistUrl" label="Link da playlist" value={settings.spotifyPlaylistUrl || ""} onChange={(e) => update({ spotifyPlaylistUrl: e.target.value })} placeholder="https://open.spotify.com/playlist/..." />
                   </>
                 )}
 
