@@ -6,7 +6,6 @@ import { updateSettings } from "@/actions/settings-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Field } from "@/components/ui/field";
 import { PageHeader } from "@/components/admin/page-header";
 import { toast } from "sonner";
 
@@ -73,14 +72,14 @@ export function SettingsClient({ initialSettings, summary, canSeePlan }: Setting
           <CardTitle>Confirmação de presença</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <Field
-            htmlFor="rsvpDeadline"
+          <DatePicker
+            id="rsvpDeadline"
             label="Prazo para responder"
             hint="Depois desta data, o formulário de confirmação é fechado automaticamente."
             className="sm:max-w-[320px]"
-          >
-            <DatePicker id="rsvpDeadline" value={rsvpDeadline} onChange={(e) => setRsvpDeadline(e.target.value)} />
-          </Field>
+            value={rsvpDeadline}
+            onChange={(e) => setRsvpDeadline(e.target.value)}
+          />
           <div>
             <Button onClick={handleSave} disabled={isPending} aria-busy={isPending}>
               {isPending ? "Salvando…" : "Salvar prazo"}

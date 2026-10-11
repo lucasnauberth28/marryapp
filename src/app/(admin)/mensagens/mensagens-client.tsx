@@ -8,7 +8,10 @@ import type { Guest } from "@prisma/client";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { PageHeader } from "@/components/admin/page-header";
 import { RsvpChip, StatusChip } from "@/components/painel/status-chip";
-import { btn, btnDanger, btnIcon, card, chipBase, chipTone, errorBox, hint, input, label, overline, textarea } from "@/components/painel/styles";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/select";
+import { btn, btnDanger, btnIcon, card, chipBase, chipTone, errorBox, hint, input, overline } from "@/components/painel/styles";
 import { createMessageTemplate, updateMessageTemplate, deleteMessageTemplate, sendTemplateToGuests } from "@/actions/message-actions";
 import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-actions";
 import { weddingSiteUrl } from "@/lib/wedding-links";
@@ -256,38 +259,26 @@ function TemplateEditor({
     <div className="grid min-w-0 gap-6 min-[1280px]:grid-cols-[minmax(0,1fr)_300px] min-[1280px]:items-start">
       <section className={`${card} flex min-w-0 flex-col gap-5 p-5 sm:p-6`}>
         <form onSubmit={save} className="flex flex-col gap-5">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <label htmlFor={ids.name} className={label}>
-                Nome do modelo
-              </label>
-              <input id={ids.name} required value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex.: Lembrete de confirmação" className={input} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label htmlFor={ids.type} className={label}>
-                Para que serve
-              </label>
-              <select id={ids.type} value={type} onChange={(e) => setType(e.target.value)} className={input}>
-                <option value="INITIAL_INVITE">Convite inicial</option>
-                <option value="RSVP_REMINDER">Lembrete de confirmação</option>
-                <option value="CUSTOM">Personalizado</option>
-              </select>
-            </div>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Input id={ids.name} label="Nome do modelo" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex.: Lembrete de confirmação" />
+            <NativeSelect id={ids.type} label="Para que serve" value={type} onChange={(e) => setType(e.target.value)}>
+              <option value="INITIAL_INVITE">Convite inicial</option>
+              <option value="RSVP_REMINDER">Lembrete de confirmação</option>
+              <option value="CUSTOM">Personalizado</option>
+            </NativeSelect>
           </div>
 
           <div className="flex flex-col gap-2">
-            <label htmlFor={ids.content} className={label}>
-              Texto
-            </label>
-            <textarea
+            <Textarea
               id={ids.content}
+              label="Texto"
               ref={textRef}
               required
               rows={7}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Oi, {nome}! Aqui são vocês. Ainda não recebemos sua resposta para o casamento..."
-              className={`${textarea} min-h-44 resize-y`}
+              inputClassName="min-h-44"
             />
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm text-tinta-suave">Inserir:</span>
@@ -305,13 +296,14 @@ function TemplateEditor({
             </legend>
             <p className={hint}>Cada link leva a pessoa direto ao convite ou à lista de presentes. Até 3.</p>
             {links.map((l, idx) => (
-              <div key={l.id} className="flex items-center gap-2">
-                <input
-                  aria-label={`Texto do link ${idx + 1}`}
+              <div key={l.id} className="mt-1 flex items-center gap-2">
+                <Input
+                  id={`${ids.name}-link-${idx}`}
+                  label={`Texto do link ${idx + 1}`}
                   value={l.text}
                   onChange={(e) => setLinks(links.map((x, i) => (i === idx ? { ...x, text: e.target.value } : x)))}
                   placeholder="Ex.: Confirmar presença"
-                  className={input}
+                  fieldClassName="flex-1"
                 />
                 <button type="button" aria-label={`Remover o link ${idx + 1}`} onClick={() => setLinks(links.filter((_, i) => i !== idx))} className={btnIcon}>
                   <X className="size-4" aria-hidden="true" />
@@ -343,23 +335,13 @@ function TemplateEditor({
               Anexar imagem ou arquivo (opcional)
               <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden="true" />
             </summary>
-            <div className="grid gap-4 px-4 pb-4 sm:grid-cols-2">
-              <div className="flex flex-col gap-2">
-                <label htmlFor={ids.media} className={label}>
-                  Tipo do anexo
-                </label>
-                <select id={ids.media} value={mediaType} onChange={(e) => setMediaType(e.target.value)} className={input}>
-                  <option value="image">Imagem (JPG, PNG)</option>
-                  <option value="document">Documento (PDF)</option>
-                  <option value="audio">Áudio</option>
-                </select>
-              </div>
-              <div className="flex flex-col gap-2">
-                <label htmlFor={ids.mediaUrl} className={label}>
-                  Endereço do arquivo
-                </label>
-                <input id={ids.mediaUrl} type="url" value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} placeholder="https://..." className={input} />
-              </div>
+            <div className="grid gap-5 px-4 pb-4 pt-2 sm:grid-cols-2">
+              <NativeSelect id={ids.media} label="Tipo do anexo" value={mediaType} onChange={(e) => setMediaType(e.target.value)}>
+                <option value="image">Imagem (JPG, PNG)</option>
+                <option value="document">Documento (PDF)</option>
+                <option value="audio">Áudio</option>
+              </NativeSelect>
+              <Input id={ids.mediaUrl} type="url" label="Endereço do arquivo" value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} placeholder="https://..." />
             </div>
           </details>
 
@@ -385,19 +367,20 @@ function TemplateEditor({
             <p className={hint}>Salve o modelo para poder enviar.</p>
           ) : (
             <>
-              <div className="flex flex-col gap-2 sm:max-w-sm">
-                <label htmlFor={ids.audience} className={label}>
-                  Para quem
-                </label>
-                <select id={ids.audience} value={audience} onChange={(e) => changeAudience(e.target.value as Audience)} className={input}>
-                  <option value="pending">Sem resposta ({counts.pending})</option>
-                  <option value="unsent">Ainda sem mensagem ({counts.unsent})</option>
-                  <option value="confirmed">Confirmados ({counts.confirmed})</option>
-                  <option value="all">Todos com telefone ({counts.all})</option>
-                  {audience === "custom" && <option value="custom">Escolhidos a dedo ({picked.length})</option>}
-                </select>
-                <p className={hint}>Só entra quem tem telefone cadastrado.</p>
-              </div>
+              <NativeSelect
+                id={ids.audience}
+                label="Para quem"
+                hint="Só entra quem tem telefone cadastrado."
+                fieldClassName="sm:max-w-sm"
+                value={audience}
+                onChange={(e) => changeAudience(e.target.value as Audience)}
+              >
+                <option value="pending">Sem resposta ({counts.pending})</option>
+                <option value="unsent">Ainda sem mensagem ({counts.unsent})</option>
+                <option value="confirmed">Confirmados ({counts.confirmed})</option>
+                <option value="all">Todos com telefone ({counts.all})</option>
+                {audience === "custom" && <option value="custom">Escolhidos a dedo ({picked.length})</option>}
+              </NativeSelect>
 
               <details className="group rounded-xl border border-linha">
                 <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-4 text-sm font-semibold text-tinta">
