@@ -21,6 +21,21 @@ npm run dev
 
 Scripts úteis: `npm run typecheck`, `npm run lint`, `npm test`.
 
+## Campos de formulário (rótulo flutuante)
+
+Todo campo digitável ou selecionável usa o rótulo flutuante (comportamento da variante "on" do FloatLabel do PrimeVue): o rótulo repousa dentro do campo e, com foco ou valor, sobe até a linha da borda, que fica interrompida só atrás dele. O estado vem de CSS (`:placeholder-shown`, `:autofill`, `:focus`), sem re-render por tecla. Estilos em `src/components/ui/float-field.css`; componentes em `src/components/ui/`.
+
+```tsx
+<Input label="E-mail" icon={Mail} type="email" error={erro} hint="…" optional />
+<Textarea label="Mensagem" />
+<Select value={v} onValueChange={setV}><SelectTrigger label="Categoria"><SelectValue /></SelectTrigger>…</Select>
+<NativeSelect label="Status">…</NativeSelect>
+<DatePicker label="Data" … />   <TimePicker label="Hora" … />   <SearchableSelect label="Cidade" … />
+<Field id="x" label="Algo">{(c) => <input {...c} name="x" />}</Field>   // controle próprio
+```
+
+Sem a prop `label`, `Input`, `Textarea` e `SelectTrigger` continuam o primitivo simples (células editáveis, buscas só com lupa). Checkbox, radio, switch, slider, upload e seletor de cor não usam rótulo flutuante. `float-field.css` é copiado em `floatlabel-demo.html` quando for levado ao design system.
+
 ## Segurança: regras do projeto
 
 - **Toda Server Action é um endpoint público.** Ações do painel chamam `requirePathPermission("/modulo")`
