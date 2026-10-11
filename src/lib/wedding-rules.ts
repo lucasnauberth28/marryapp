@@ -23,6 +23,7 @@ export const COUPLE_PATHS = [
   "/presentes-admin",
   "/configuracoes",
   "/plano",
+  "/dominio",
 ] as const;
 
 /** "Ana & Rafael" → "ana-e-rafael" (sem acentos, só letras, números e hífen). */

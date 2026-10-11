@@ -47,7 +47,7 @@ export function accountLabel({ adminView, coupleNames, coupleInitials, userName,
 }
 
 // Páginas de administração e de conta: o casamento principal não é o assunto delas.
-const NON_WEDDING_PATHS = ["/curadoria", "/assinaturas", "/usuarios", "/perfis", "/atividades", "/conta", "/notificacoes"];
+const NON_WEDDING_PATHS = ["/curadoria", "/assinaturas", "/dominios", "/usuarios", "/perfis", "/atividades", "/conta", "/notificacoes"];
 
 /**
  * Se a página mostra o aviso "Você está vendo o casamento principal": só para a administração

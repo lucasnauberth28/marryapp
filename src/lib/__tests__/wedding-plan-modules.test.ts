@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { ENFORCED_MODULES, modulesForPlan, planIncludes, upgradeMessage } from "../wedding-plan-modules.ts";
+import { ENFORCED_MODULES, modulesForPlan, planIncludes, requiredPlanLabel, upgradeMessage } from "../wedding-plan-modules.ts";
 
 test("básico e plano desconhecido não incluem nada", () => {
   assert.deepEqual(modulesForPlan("basic"), []);
@@ -28,4 +28,16 @@ test("plano adaptado vale pelos módulos escolhidos, ignorando ids estranhos", (
 
 test("mensagens de upgrade existem para todo módulo bloqueado", () => {
   for (const id of ENFORCED_MODULES) assert.match(upgradeMessage(id), /Plano e pagamentos/);
+});
+
+test("domínio próprio é bloqueado no servidor e o aviso fala do VIP, não do Classic", () => {
+  assert.ok((ENFORCED_MODULES as readonly string[]).includes("customDomain"));
+  const msg = upgradeMessage("customDomain");
+  assert.match(msg, /domínio próprio/i);
+  assert.match(msg, /VIP/);
+  assert.ok(!/Classic/.test(msg));
+  assert.equal(requiredPlanLabel("customDomain"), "VIP");
+  assert.equal(requiredPlanLabel("whatsapp"), "Classic");
+  assert.ok(!planIncludes(modulesForPlan("classic"), "customDomain"));
+  assert.ok(planIncludes(modulesForPlan("custom", ["customDomain"]), "customDomain"));
 });

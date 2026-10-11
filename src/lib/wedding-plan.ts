@@ -10,6 +10,8 @@ export interface WeddingPlan {
   /** Chave do plano pago mais recente (classic, vip, custom) ou null no Básico. */
   planId: string | null;
   modules: string[];
+  /** Assinatura aprovada que dá o plano (ligada ao pedido de domínio), ou null no Básico. */
+  subscriptionId: string | null;
 }
 
 /**
@@ -24,10 +26,10 @@ export const getWeddingPlan = cache(async (weddingId: string): Promise<WeddingPl
       OR: [{ weddingId }, { weddingId: null, user: { weddingId } }],
     },
     orderBy: [{ paidAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
-    select: { planId: true, modules: true },
+    select: { id: true, planId: true, modules: true },
   });
-  if (!sub) return { planId: null, modules: [] };
-  return { planId: sub.planId, modules: modulesForPlan(sub.planId, sub.modules) };
+  if (!sub) return { planId: null, modules: [], subscriptionId: null };
+  return { planId: sub.planId, modules: modulesForPlan(sub.planId, sub.modules), subscriptionId: sub.id };
 });
 
 /**

@@ -32,6 +32,7 @@ const AVAILABLE_MODULES = [
   { id: "/pendencias", name: "Tarefas" },
   { id: "/site-builder", name: "Editar o site" },
   { id: "/plano", name: "Plano e pagamentos do casal" },
+  { id: "/dominio", name: "Domínio próprio" },
   { id: "/configuracoes", name: "Configurações" },
   { id: "/usuarios", name: "Usuários" },
   { id: "/perfis", name: "Perfis de acesso" },

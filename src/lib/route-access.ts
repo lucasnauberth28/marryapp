@@ -43,6 +43,8 @@ export const PROTECTED_PATHS = [
   "/credenciamento",
   "/cronograma",
   "/curadoria",
+  "/dominio",
+  "/dominios",
   "/financas",
   "/mensagens",
   "/mesas",

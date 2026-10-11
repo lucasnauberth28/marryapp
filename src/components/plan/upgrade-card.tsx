@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Lock } from "lucide-react";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
-import { featureName, upgradeMessage, type EnforcedModule } from "@/lib/wedding-plan-modules";
+import { featureName, requiredPlanLabel, upgradeMessage, type EnforcedModule } from "@/lib/wedding-plan-modules";
 
 /** Aviso amigável no lugar de um recurso que o plano do casamento ainda não inclui. */
 export function UpgradeCard({ moduleId }: { moduleId: EnforcedModule }) {
@@ -16,7 +16,7 @@ export function UpgradeCard({ moduleId }: { moduleId: EnforcedModule }) {
       </span>
       <div className="flex flex-col gap-1.5">
         <h1 id="upgrade-recurso-titulo" className="font-display text-[28px] leading-8 text-tinta">
-          {featureName(moduleId)} é do plano Classic
+          {featureName(moduleId)} é do plano {requiredPlanLabel(moduleId)}
         </h1>
         <p className="text-[15px] leading-6 text-tinta-suave">{upgradeMessage(moduleId)}</p>
       </div>

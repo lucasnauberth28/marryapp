@@ -24,7 +24,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     getWeddingContext(),
     unreadCountFor(session.userId),
   ]);
-  const counts = ctx ? await getNavCounts(ctx.weddingId) : undefined;
+  const counts = ctx ? await getNavCounts(ctx.weddingId, allowedPaths.includes("*")) : undefined;
   const label = accountLabel({
     adminView: account.adminView,
     coupleNames: wedding.coupleNames,

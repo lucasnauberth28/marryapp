@@ -7,6 +7,8 @@ import {
   CalendarClock,
   Store,
   Compass,
+  Globe,
+  Link2,
   Receipt,
   Wallet,
   CreditCard,
@@ -25,7 +27,7 @@ import {
 import { hasPathAccess } from "@/lib/permissions";
 
 /** Contadores reais que o menu pode mostrar ao lado do item (ver lib/nav-counts). */
-export type NavCountKey = "guests" | "messages" | "tasks";
+export type NavCountKey = "guests" | "messages" | "tasks" | "domains";
 
 export interface NavItem {
   name: string;
@@ -71,6 +73,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { name: "Editar o site", href: "/site-builder", icon: LayoutTemplate },
       { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },
+      { name: "Domínio próprio", href: "/dominio", icon: Globe },
     ],
   },
   {
@@ -85,6 +88,8 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { name: "Curadoria", href: "/curadoria", icon: ShieldCheck },
       { name: "Assinaturas", href: "/assinaturas", icon: BadgeDollarSign },
+      // Só quem tem acesso total ("*") entra: a página confere de novo no servidor.
+      { name: "Domínios", href: "/dominios", icon: Link2, countKey: "domains" },
       { name: "Usuários", href: "/usuarios", icon: KeyRound },
       { name: "Perfis de acesso", href: "/perfis", icon: UserCog },
       // Só quem tem acesso total ("*") entra: a página confere de novo no servidor.

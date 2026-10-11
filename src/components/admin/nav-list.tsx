@@ -20,7 +20,7 @@ interface NavListProps {
   counts?: NavCounts;
 }
 
-const COUNT_HINT: Record<NavCountKey, string> = { guests: "no total", messages: "sem resposta", tasks: "em aberto" };
+const COUNT_HINT: Record<NavCountKey, string> = { guests: "no total", messages: "sem resposta", tasks: "em aberto", domains: "aguardando" };
 
 /** Número à direita do item; o complemento fica só para leitores de tela. */
 function CountMark({ n, kind }: { n: number; kind: NavCountKey }) {
