@@ -4,8 +4,15 @@ import { cadastrarFornecedor, criarCasalPronto, emailUnico, entrar, expect, novo
 // As Server Actions dessas telas só existem dentro destas páginas e todas começam com requirePlatformAdmin;
 // aqui conferimos que quem não é administração nem chega às telas nem às rotas de API.
 
-const ROTAS_API = ["/api/admin/fornecedores.csv"];
-const PAGINAS = ["/admin/fornecedores", "/admin/fornecedores/curadoria"];
+const ROTAS_API = ["/api/admin/fornecedores.csv", "/api/admin/contador?mes=2026-09"];
+const PAGINAS = [
+  "/admin/fornecedores",
+  "/admin/fornecedores/curadoria",
+  "/admin/planos",
+  "/admin/planos?aba=reembolsos",
+  "/admin/planos/assinaturas",
+  "/admin/planos/cupons",
+];
 
 test("sem sessão: telas pedem login e as rotas de API respondem 401", async ({ page, request }) => {
   for (const rota of PAGINAS) {
@@ -22,14 +29,16 @@ test("casal não abre as telas de dinheiro e as rotas de API respondem 403", asy
     await expect(page, rota).toHaveURL(/\/dashboard$/);
   }
   for (const rota of ROTAS_API) expect((await page.request.get(rota)).status(), rota).toBe(403);
-  // A curadoria antiga não vira atalho
-  await page.goto("/curadoria");
-  await expect(page).not.toHaveURL(/\/admin/);
+  // As telas antigas não viram atalho
+  for (const antiga of ["/curadoria", "/assinaturas", "/assinaturas?aba=cupons"]) {
+    await page.goto(antiga);
+    await expect(page, antiga).not.toHaveURL(/\/admin/);
+  }
 });
 
 test("fornecedor não abre as telas de dinheiro nem a curadoria", async ({ page }) => {
   await cadastrarFornecedor(page, emailUnico("forn-dinheiro"), "Bia Dinheiro", "Estúdio Dinheiro");
-  for (const rota of [...PAGINAS, "/curadoria"]) {
+  for (const rota of [...PAGINAS, "/curadoria", "/assinaturas"]) {
     await page.goto(rota);
     await expect(page, rota).toHaveURL(/\/fornecedor/);
   }

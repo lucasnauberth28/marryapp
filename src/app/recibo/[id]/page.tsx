@@ -79,7 +79,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
   if (!isOwner && !isAdmin) notFound();
 
   const isVendor = sub.planType === "VENDOR";
-  const backHref = isOwner ? (isVendor ? "/fornecedor/plano" : "/plano") : `/assinaturas?id=${sub.id}`;
+  const backHref = isOwner ? (isVendor ? "/fornecedor/plano" : "/plano") : `/admin/planos/assinaturas?id=${sub.id}`;
   const discount = sub.discount ?? 0;
   const credit = sub.credit ?? 0;
   const listPrice = sub.amount + discount + credit;

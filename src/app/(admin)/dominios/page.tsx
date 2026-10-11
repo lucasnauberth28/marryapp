@@ -8,7 +8,7 @@ import { formatPhoneBr, isOpenStatus, type DomainOrderStatusName } from "@/lib/d
 import { vercelConfigured } from "@/lib/vercel-domains";
 import { PageHeader } from "@/components/admin/page-header";
 import { Reveal } from "@/components/motion/reveal";
-import { FilterChips } from "../assinaturas/filter-chips";
+import { FilterChips } from "@/app/(plataforma)/admin/planos/_components/filter-chips";
 import { DomainOrderCard, type AdminOrder } from "./order-card";
 
 export const dynamic = "force-dynamic";

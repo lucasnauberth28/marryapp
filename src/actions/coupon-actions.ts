@@ -6,9 +6,7 @@ import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 import { COUPON_PLAN_IDS, normalizeCouponCode } from "@/lib/checkout-pricing";
-import { AuthorizationError, requirePathPermission } from "@/lib/security/auth-guard";
-
-const ADMIN_PATH = "/assinaturas";
+import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
 
 type ActionResult = { success: true } | { success: false; error: string };
 
@@ -62,14 +60,12 @@ function auditDetails(code: string, fields: z.output<typeof FieldsSchema>) {
 }
 
 function failure(error: unknown, context: string): ActionResult {
-  if (error instanceof AuthorizationError) return { success: false, error: "Você não tem permissão para mexer em cupons." };
-  console.error(`[${context}]`, error);
-  return { success: false, error: "Não foi possível salvar agora. Tente de novo." };
+  return platformAdminFailure(error, context, "Não foi possível salvar agora. Tente de novo.");
 }
 
 export async function createCoupon(input: { code: string } & CouponFields): Promise<ActionResult> {
   try {
-    await requirePathPermission(ADMIN_PATH);
+    await requirePlatformAdmin();
     const code = normalizeCouponCode(input?.code);
     if (!code) return { success: false, error: "O código precisa ter de 3 a 30 letras ou números, sem espaços." };
     const parsed = FieldsSchema.safeParse(input);
@@ -77,7 +73,7 @@ export async function createCoupon(input: { code: string } & CouponFields): Prom
 
     const created = await prisma.coupon.create({ data: { code, ...toData(parsed.data) }, select: { id: true } });
     await logAudit({ action: "coupon.create", targetType: "coupon", targetId: created.id, details: auditDetails(code, parsed.data) });
-    revalidatePath(ADMIN_PATH);
+    revalidatePath("/admin/planos", "layout");
     return { success: true };
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -90,7 +86,7 @@ export async function createCoupon(input: { code: string } & CouponFields): Prom
 /** O código não muda depois de criado: ele fica gravado nas cobranças que o usaram. */
 export async function updateCoupon(id: string, input: CouponFields): Promise<ActionResult> {
   try {
-    await requirePathPermission(ADMIN_PATH);
+    await requirePlatformAdmin();
     if (!z.string().uuid().safeParse(id).success) return { success: false, error: "Cupom inválido." };
     const parsed = FieldsSchema.safeParse(input);
     if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -99,7 +95,7 @@ export async function updateCoupon(id: string, input: CouponFields): Promise<Act
     if (!coupon) return { success: false, error: "Cupom não encontrado. Atualize a página." };
     await prisma.coupon.update({ where: { id }, data: toData(parsed.data) });
     await logAudit({ action: "coupon.update", targetType: "coupon", targetId: id, details: auditDetails(coupon.code, parsed.data) });
-    revalidatePath(ADMIN_PATH);
+    revalidatePath("/admin/planos", "layout");
     return { success: true };
   } catch (error) {
     return failure(error, "updateCoupon");
@@ -109,7 +105,7 @@ export async function updateCoupon(id: string, input: CouponFields): Promise<Act
 /** Excluir não mexe nas cobranças já feitas: elas guardam o código e o desconto. */
 export async function deleteCoupon(id: string): Promise<ActionResult> {
   try {
-    await requirePathPermission(ADMIN_PATH);
+    await requirePlatformAdmin();
     if (!z.string().uuid().safeParse(id).success) return { success: false, error: "Cupom inválido." };
     const deleted = await prisma.coupon.delete({ where: { id }, select: { code: true, redemptions: true } }).catch(() => null);
     if (!deleted) return { success: false, error: "Cupom não encontrado. Atualize a página." };
@@ -119,7 +115,7 @@ export async function deleteCoupon(id: string): Promise<ActionResult> {
       targetId: id,
       details: { code: deleted.code, redemptions: deleted.redemptions },
     });
-    revalidatePath(ADMIN_PATH);
+    revalidatePath("/admin/planos", "layout");
     return { success: true };
   } catch (error) {
     return failure(error, "deleteCoupon");

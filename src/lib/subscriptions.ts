@@ -106,6 +106,8 @@ export async function refundSubscription(subscriptionId: string) {
     });
     if (!sub || sub.status !== PaymentStatus.APPROVED) return;
     await tx.subscription.update({ where: { id: subscriptionId }, data: { status: PaymentStatus.REFUNDED } });
+    // Pedido de reembolso registrado na administração: o estorno chegou, então o pedido está concluído.
+    await tx.refundRequest.updateMany({ where: { subscriptionId, status: "REQUESTED" }, data: { status: "REFUNDED" } });
     const vendorId = sub.user?.partnerVendorId;
     if (vendorId && sub.periodEnd) {
       await tx.partnerVendor.updateMany({

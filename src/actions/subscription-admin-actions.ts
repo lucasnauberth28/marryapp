@@ -5,10 +5,9 @@ import { revalidatePath } from "next/cache";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { AuthorizationError, requirePathPermission } from "@/lib/security/auth-guard";
+import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
 import { applyApprovedPayment, markPaymentFailed } from "@/lib/subscriptions";
 
-const ADMIN_PATH = "/assinaturas";
 /** Pix estático (sem confirmação automática): o txid gerado em generateSubscriptionPix começa assim. */
 const STATIC_PIX_PREFIX = "ASSIN";
 
@@ -31,16 +30,14 @@ async function findCheckableSubscription(subscriptionId: string) {
 }
 
 function revalidateSubscriptionPages() {
-  revalidatePath(ADMIN_PATH);
+  revalidatePath("/admin/planos", "layout");
   revalidatePath("/plano");
   revalidatePath("/fornecedor", "layout");
   revalidatePath("/fornecedores");
 }
 
 function failure(error: unknown, context: string): ActionResult {
-  if (error instanceof AuthorizationError) return { success: false, error: "Você não tem permissão para conferir pagamentos." };
-  console.error(`[${context}]`, error);
-  return { success: false, error: "Não foi possível concluir agora. Tente de novo." };
+  return platformAdminFailure(error, context);
 }
 
 /**
@@ -49,7 +46,7 @@ function failure(error: unknown, context: string): ActionResult {
  */
 export async function confirmSubscriptionManually(subscriptionId: string): Promise<ActionResult> {
   try {
-    const session = await requirePathPermission(ADMIN_PATH);
+    const session = await requirePlatformAdmin();
     const parsed = IdSchema.safeParse(subscriptionId);
     if (!parsed.success) return { success: false, error: "Cobrança inválida." };
 
@@ -80,7 +77,7 @@ export async function confirmSubscriptionManually(subscriptionId: string): Promi
 /** O crédito não apareceu no extrato: a cobrança deixa de valer e o cliente precisa gerar outro Pix. */
 export async function rejectSubscription(subscriptionId: string): Promise<ActionResult> {
   try {
-    const session = await requirePathPermission(ADMIN_PATH);
+    const session = await requirePlatformAdmin();
     const parsed = IdSchema.safeParse(subscriptionId);
     if (!parsed.success) return { success: false, error: "Cobrança inválida." };
 

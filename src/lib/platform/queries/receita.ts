@@ -2,6 +2,7 @@ import "server-only";
 import { PaymentStatus, VendorPlanTier, type Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { getCatalog } from "@/lib/catalog-server";
+import { PIX_REVIEW_WINDOW_MS, STATIC_PIX_PREFIX } from "@/lib/platform/payments";
 import {
   averagePayment,
   brasiliaMonthKey,
@@ -21,11 +22,7 @@ import {
  * Valores em centavos. Nada daqui lê dado de pessoa (só somas e contagens).
  */
 
-/** Pix estático: o txid gerado em generateSubscriptionPix começa assim (não tem confirmação automática). */
-export const STATIC_PIX_PREFIX = "ASSIN";
-const DAY_MS = 24 * 60 * 60 * 1000;
-/** Pix pendente com o código vencido há mais que isto sai da fila de conferência (mesma regra de nav-counts). */
-export const PIX_REVIEW_WINDOW_MS = 3 * DAY_MS;
+export { STATIC_PIX_PREFIX, PIX_REVIEW_WINDOW_MS };
 
 /** Pix de plano a conferir: pendente, Pix estático e com o código vencido há no máximo 3 dias. */
 export function pixToCheckWhere(now: Date = new Date()): Prisma.SubscriptionWhereInput {
@@ -175,3 +172,118 @@ export async function countPendingInvoices(): Promise<number> {
 }
 
 export { shiftMonthKey };
+
+// ---------------------------------------------------------------------------------------------
+// Listas da tela Planos e receita
+// ---------------------------------------------------------------------------------------------
+
+/** Nome de quem pagou: o do fornecedor (empresa) ou o da pessoa; conta excluída vira "Conta excluída". */
+function payerLabel(user: { name: string; partnerVendor: { companyName: string } | null } | null): string {
+  return user?.partnerVendor?.companyName ?? user?.name ?? "Conta excluída";
+}
+
+export interface PendingInvoice {
+  id: string;
+  payer: string;
+  planName: string;
+  planType: string;
+  amount: number;
+  paidAt: Date | null;
+}
+
+export async function listPendingInvoices(take = 20): Promise<PendingInvoice[]> {
+  const rows = await prisma.subscription.findMany({
+    where: pendingInvoiceWhere,
+    orderBy: [{ paidAt: "desc" }, { createdAt: "desc" }],
+    take,
+    select: { id: true, planName: true, planType: true, amount: true, paidAt: true, user: { select: { name: true, partnerVendor: { select: { companyName: true } } } } },
+  });
+  return rows.map((r) => ({ id: r.id, payer: payerLabel(r.user), planName: r.planName, planType: r.planType, amount: r.amount, paidAt: r.paidAt }));
+}
+
+export interface RefundRow {
+  id: string;
+  subscriptionId: string;
+  payer: string;
+  planName: string;
+  planType: string;
+  amount: number;
+  paidAmount: number;
+  reason: string;
+  status: string;
+  dueAt: Date | null;
+  decidedAt: Date | null;
+  decidedByName: string | null;
+  decisionNote: string | null;
+  createdAt: Date;
+}
+
+/** Pedidos de reembolso: os que esperam decisão ou estorno primeiro, depois os mais recentes. */
+export async function listRefunds(take = 30): Promise<RefundRow[]> {
+  const rows = await prisma.refundRequest.findMany({
+    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    take,
+    select: {
+      id: true,
+      subscriptionId: true,
+      amount: true,
+      reason: true,
+      status: true,
+      dueAt: true,
+      decidedAt: true,
+      decidedByName: true,
+      decisionNote: true,
+      createdAt: true,
+      subscription: { select: { planName: true, planType: true, amount: true, user: { select: { name: true, partnerVendor: { select: { companyName: true } } } } } },
+    },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    subscriptionId: r.subscriptionId,
+    payer: payerLabel(r.subscription.user),
+    planName: r.subscription.planName,
+    planType: r.subscription.planType,
+    amount: r.amount,
+    paidAmount: r.subscription.amount,
+    reason: r.reason,
+    status: r.status,
+    dueAt: r.dueAt,
+    decidedAt: r.decidedAt,
+    decidedByName: r.decidedByName,
+    decisionNote: r.decisionNote,
+    createdAt: r.createdAt,
+  }));
+}
+
+/** Pagamentos aprovados recentes, para escolher qual deles ganha um pedido de reembolso. */
+export async function listRefundablePayments(take = 60): Promise<{ id: string; label: string; amount: number }[]> {
+  const rows = await prisma.subscription.findMany({
+    where: { status: PaymentStatus.APPROVED, amount: { gt: 0 }, refundRequests: { none: { status: "REQUESTED" } } },
+    orderBy: [{ paidAt: "desc" }, { createdAt: "desc" }],
+    take,
+    select: { id: true, planName: true, amount: true, paidAt: true, user: { select: { name: true, partnerVendor: { select: { companyName: true } } } } },
+  });
+  return rows.map((r) => ({ id: r.id, amount: r.amount, label: `${payerLabel(r.user)} · ${r.planName.replace(/^(Plano|Fornecedor)\s+/, "")}` }));
+}
+
+export interface CouponInUse {
+  id: string;
+  code: string;
+  percentOff: number | null;
+  amountOff: number | null;
+  redemptions: number;
+  maxRedemptions: number | null;
+  expiresAt: Date | null;
+}
+
+/** Cupons valendo agora (ativos e dentro do prazo), os mais usados primeiro. */
+export async function listCouponsInUse(now: Date = new Date(), take = 5): Promise<CouponInUse[]> {
+  return prisma.coupon.findMany({
+    where: { active: true, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+    orderBy: [{ redemptions: "desc" }, { createdAt: "desc" }],
+    take,
+    select: { id: true, code: true, percentOff: true, amountOff: true, redemptions: true, maxRedemptions: true, expiresAt: true },
+  });
+}
+
+export { payerLabel };

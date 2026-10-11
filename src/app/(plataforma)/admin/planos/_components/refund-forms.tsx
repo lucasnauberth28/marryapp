@@ -1,0 +1,140 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { decideRefundAction, registerRefundRequestAction, type AdminPlanosResult } from "@/actions/admin-planos-actions";
+import { btn } from "@/components/landing/styles";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+
+function useRun() {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const run = (action: () => Promise<AdminPlanosResult>, after?: () => void) => {
+    setError(null);
+    startTransition(async () => {
+      const res = await action();
+      if (res.success) {
+        if (res.message) toast.success(res.message);
+        after?.();
+        router.refresh();
+      } else {
+        setError(res.error);
+      }
+    });
+  };
+  return { pending, error, run };
+}
+
+/** Decisão sobre um pedido de reembolso: aprovar (e estornar no Mercado Pago) ou recusar, sempre com a nota. */
+export function RefundDecision({ refundId, payer }: { refundId: string; payer: string }) {
+  const { pending, error, run } = useRun();
+  const [open, setOpen] = useState<"approve" | "deny" | null>(null);
+  const [note, setNote] = useState("");
+  return (
+    <div className="flex flex-col gap-3">
+      {open ? (
+        <form
+          className="flex flex-col gap-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            run(() => decideRefundAction({ refundId, decision: open, note }), () => setOpen(null));
+          }}
+        >
+          {open === "approve" ? (
+            <p className="text-sm text-tinta">
+              Ao aprovar, o Aceito só registra a decisão. Depois, abra o pagamento no painel do Mercado Pago e faça o estorno: quando o aviso do Mercado Pago chegar, o pedido e o pagamento ficam como estornados.
+            </p>
+          ) : null}
+          <Textarea label={open === "approve" ? "Anotação da aprovação" : "Motivo da recusa"} rows={2} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} error={error ?? undefined} hint="Fica no registro de atividades." />
+          <div className="flex flex-wrap gap-2">
+            <button type="submit" disabled={pending || note.trim().length < 5} className={cn(btn.primary, btn.sm)}>
+              {open === "approve" ? "Aprovar reembolso" : "Recusar pedido"}
+            </button>
+            <button type="button" onClick={() => setOpen(null)} className={cn(btn.quiet, btn.sm)}>
+              Voltar
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => setOpen("approve")} className={cn(btn.secondary, btn.sm)}>
+            Aprovar
+            <span className="sr-only"> o reembolso de {payer}</span>
+          </button>
+          <button type="button" onClick={() => setOpen("deny")} className={cn(btn.secondary, btn.sm)}>
+            Recusar
+            <span className="sr-only"> o reembolso de {payer}</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+
+/** Registrar um pedido de reembolso que chegou por WhatsApp ou e-mail. */
+export function RegisterRefundForm({ payments }: { payments: { id: string; label: string; amount: number }[] }) {
+  const { pending, error, run } = useRun();
+  const [subscriptionId, setSubscriptionId] = useState("");
+  const [amount, setAmount] = useState("");
+  const [reason, setReason] = useState("");
+  const chosen = payments.find((p) => p.id === subscriptionId);
+
+  if (payments.length === 0) {
+    return <p className="text-sm text-tinta-suave">Quando houver pagamentos aprovados, você pode registrar aqui um pedido de reembolso que chegou por WhatsApp ou e-mail.</p>;
+  }
+
+  const toCents = (text: string) => {
+    const clean = text.replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
+    const n = Number(clean);
+    return Number.isFinite(n) ? Math.round(n * 100) : Number.NaN;
+  };
+
+  return (
+    <form
+      className="grid gap-4 md:grid-cols-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        run(() => registerRefundRequestAction({ subscriptionId, amountCents: toCents(amount), reason }), () => {
+          setSubscriptionId("");
+          setAmount("");
+          setReason("");
+        });
+      }}
+    >
+      <NativeSelect
+        label="Pagamento"
+        alwaysFloat
+        value={subscriptionId}
+        onChange={(e) => {
+          setSubscriptionId(e.target.value);
+          const p = payments.find((x) => x.id === e.target.value);
+          if (p) setAmount((p.amount / 100).toFixed(2).replace(".", ","));
+        }}
+        required
+      >
+        <option value="">Escolha o pagamento</option>
+        {payments.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.label} · {brl.format(p.amount / 100)}
+          </option>
+        ))}
+      </NativeSelect>
+      <Input label="Valor a devolver (R$)" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} hint={chosen ? `Pago: ${brl.format(chosen.amount / 100)}` : undefined} required />
+      <div className="md:col-span-2">
+        <Textarea label="Motivo do pedido" rows={2} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} error={error ?? undefined} required />
+      </div>
+      <div className="md:col-span-2">
+        <button type="submit" disabled={pending || !subscriptionId || reason.trim().length < 5} className={cn(btn.secondary)}>
+          Registrar pedido
+        </button>
+      </div>
+    </form>
+  );
+}

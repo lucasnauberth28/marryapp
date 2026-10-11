@@ -21,11 +21,26 @@ test("fornecedor gera Pix do plano Pro e o admin confirma na mão: o plano fica 
   const admin = await novoContexto(browser);
   const paginaAdmin = await admin.newPage();
   await entrar(paginaAdmin, "admin", adminSenha);
-  await paginaAdmin.goto("/assinaturas");
+  // A tela antiga redireciona para a administração
+  await paginaAdmin.goto("/assinaturas?status=a-conferir");
+  await expect(paginaAdmin).toHaveURL(/\/admin\/planos\/assinaturas\?status=a-conferir/);
   await paginaAdmin.getByRole("link", { name: `Conferir o pagamento de ${nome}` }).click();
   await paginaAdmin.getByLabel(/Vi o crédito/).check();
   await paginaAdmin.getByRole("button", { name: "Confirmar e liberar o plano" }).click();
   await expect(paginaAdmin.getByRole("button", { name: "Confirmar e liberar o plano" })).toBeHidden();
+
+  // Reembolso: registra o pedido sobre esse pagamento e aprova (o estorno é no Mercado Pago, o webhook conclui)
+  await paginaAdmin.goto("/admin/planos?aba=reembolsos");
+  const opcao = paginaAdmin.locator("select option", { hasText: "Buffet E2E" }).first(); // o pagamento mais recente
+  await paginaAdmin.getByLabel("Pagamento", { exact: true }).selectOption((await opcao.getAttribute("value")) as string);
+  await paginaAdmin.getByLabel("Motivo do pedido").fill("Pediu o dinheiro de volta no teste");
+  await paginaAdmin.getByRole("button", { name: "Registrar pedido" }).click();
+  await expect(paginaAdmin.getByText("Pedido de reembolso registrado.")).toBeVisible();
+  await expect(paginaAdmin.getByText("Para decidir").first()).toBeVisible();
+  await paginaAdmin.getByRole("button", { name: /^Aprovar o reembolso de Buffet E2E/ }).first().click();
+  await paginaAdmin.getByLabel("Anotação da aprovação").fill("Dentro do prazo, vou estornar");
+  await paginaAdmin.getByRole("button", { name: "Aprovar reembolso" }).click();
+  await expect(paginaAdmin.getByText("Falta estornar no Mercado Pago").first()).toBeVisible();
   await admin.close();
 
   // O plano Pro aparece ativo para o fornecedor
