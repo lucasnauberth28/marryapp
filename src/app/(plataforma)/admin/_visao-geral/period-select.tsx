@@ -1,0 +1,39 @@
+"use client";
+
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
+import { NativeSelect } from "@/components/ui/select";
+import { PERIODS, type Period } from "@/lib/platform/overview-period";
+
+const LABEL: Record<Period, string> = { "30d": "Últimos 30 dias", mes: "Este mês", "90d": "Últimos 90 dias" };
+
+/** Seletor "Período" da Visão geral: escreve ?periodo= na URL (o servidor recalcula os cartões). */
+export function PeriodSelect({ value }: { value: Period }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const [pending, startTransition] = useTransition();
+
+  return (
+    <div aria-busy={pending} className="w-full sm:w-[240px]">
+      <NativeSelect
+        label="Período"
+        alwaysFloat
+        value={value}
+        onChange={(e) => {
+          const next = new URLSearchParams(params.toString());
+          if (e.target.value === "30d") next.delete("periodo");
+          else next.set("periodo", e.target.value);
+          const qs = next.toString();
+          startTransition(() => router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false }));
+        }}
+      >
+        {PERIODS.map((p) => (
+          <option key={p} value={p}>
+            {LABEL[p]}
+          </option>
+        ))}
+      </NativeSelect>
+    </div>
+  );
+}

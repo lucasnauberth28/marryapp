@@ -159,3 +159,35 @@ test("suspender o casal tira o site do ar e deixa o painel só para leitura; rea
   await expect(page.locator("tbody").getByText(nome)).toBeVisible();
   await contexto.close();
 });
+
+test("Visão geral e lista de Casais: números reais, busca, filtro sem resultado e CSV da administração", async ({ page, browser }) => {
+  const { email } = await criarCasalPronto(page, "casal-lista");
+  const { contexto, page: admin } = await paginaAdmin(browser);
+
+  // Visão geral: cartões e blocos reais (nunca os números de exemplo do desenho)
+  await expect(admin.getByRole("heading", { level: 1 })).toContainText(/Bom dia|Boa tarde|Boa noite/);
+  await expect(admin.getByText("Precisa da sua atenção")).toBeVisible();
+  await expect(admin.getByText("Receita por mês")).toBeVisible();
+  await expect(admin.getByText("4.820")).toHaveCount(0);
+  await admin.getByLabel("Período").selectOption("90d");
+  await expect(admin).toHaveURL(/periodo=90d/);
+  await expect(admin.getByText("Novos casais, 90 dias")).toBeVisible();
+
+  // Lista: a busca acha o casal pelo e-mail; filtro sem resultado mostra "Limpar filtros"
+  await admin.goto(`/admin/casais?q=${encodeURIComponent(email)}`);
+  await expect(admin.getByRole("link", { name: /Ana & Bia/ })).toHaveCount(1);
+  await admin.goto(`/admin/casais?q=${encodeURIComponent(email)}&plano=vip`);
+  await expect(admin.getByRole("heading", { name: "Nenhum casal com esses filtros" })).toBeVisible();
+  await admin.getByRole("link", { name: "Limpar filtros" }).click();
+  await expect(admin).toHaveURL(/\/admin\/casais$/);
+
+  // CSV: só a administração baixa, sem telefone nem documento, e fórmulas ficam neutralizadas
+  const csv = await admin.request.get(`/api/admin/casais.csv?q=${encodeURIComponent(email)}`);
+  expect(csv.status()).toBe(200);
+  expect(csv.headers()["content-type"]).toContain("text/csv");
+  const texto = await csv.text();
+  expect(texto).toContain(email);
+  expect(texto.toLowerCase()).not.toContain("telefone");
+  expect((await page.request.get("/api/admin/casais.csv")).status()).toBe(403);
+  await contexto.close();
+});
