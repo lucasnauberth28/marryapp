@@ -11,7 +11,7 @@ import { TimelinePublicClient } from "./timeline-public-client";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  return guestPageMetadata(slug, "Cronograma do dia", "Acompanhe os horários do grande dia.");
+  return guestPageMetadata(slug, "Cronograma do dia", "Acompanhe os horários do grande dia.", "dia-do-evento");
 }
 
 // Lê o banco a cada acesso: nunca pré-renderizar no build (dados congelados e build dependente do banco)

@@ -33,6 +33,7 @@ export default async function SiteBuilderPage() {
       previewGifts={previewGifts}
       rsvpDeadline={rules.rsvpDeadline}
       slug={wedding.slug}
+      customDomain={wedding.customDomain ?? null}
     />
   );
 }

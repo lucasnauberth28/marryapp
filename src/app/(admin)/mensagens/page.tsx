@@ -34,6 +34,7 @@ export default async function MensagensPage() {
     <MensagensClient
       coupleNames={coupleNames}
       slug={wedding.slug}
+      customDomain={wedding.customDomain ?? null}
       initialTemplates={JSON.parse(JSON.stringify(templates))} 
       initialGuests={JSON.parse(JSON.stringify(convidados))} 
     />

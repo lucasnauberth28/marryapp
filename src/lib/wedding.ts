@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { getCoupleInitials } from "@/lib/wedding-format";
 import { getWeddingBySlug, getWeddingContext, type WeddingSummary } from "@/lib/security/wedding-context";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { weddingSiteUrl, type WeddingGuestPage } from "@/lib/wedding-links";
 
 export interface WeddingIdentity {
   /** Ex.: "Lucas & Giovanna" */
@@ -105,10 +106,16 @@ export const getWeddingIdentityBySlug = cache(async (slug: string): Promise<Wedd
 /**
  * Metadados das páginas públicas do convidado: "Página · Nomes do casal".
  */
-export async function guestPageMetadata(slug: string, page: string | null, description?: string) {
-  const identity = (await getWeddingIdentityBySlug(slug)) ?? buildIdentity(null, null);
+export async function guestPageMetadata(slug: string, page: string | null, description?: string, guestPage?: WeddingGuestPage) {
+  const wedding = await getWeddingBySlug(slug).catch(() => null);
+  const identity = wedding ? await getIdentityForWedding(wedding) : buildIdentity(null, null);
   const { coupleNames, dateLabel } = identity;
+  // Endereço oficial: o domínio próprio quando existe (links e buscadores usam o mesmo endereço)
+  const customDomain = wedding?.customDomain ?? null;
+  const canonical = weddingSiteUrl(slug, guestPage, customDomain);
   return {
+    ...(customDomain ? { metadataBase: new URL(`https://${customDomain}`) } : {}),
+    alternates: { canonical },
     title: { absolute: page ? `${page} · ${coupleNames}` : `${coupleNames}${dateLabel ? ` · ${dateLabel}` : ""}` },
     description:
       description ??

@@ -339,7 +339,7 @@ export async function sendInvite(guestId: string) {
     return { success: false, error: "Convidado sem telefone cadastrado." };
   }
 
-  const message = `💍 *Você está convidado!*\n\nOlá, *${guest.name}*!\n\nTemos a honra de convidá-lo(a) para o nosso casamento.\n\nPor favor, confirme sua presença e veja nossa lista de presentes acessando os links abaixo:\n\n✅ *Confirmar Presença:* ${weddingSiteUrl(wedding.slug, "rsvp")}\n🎁 *Lista de Presentes:* ${weddingSiteUrl(wedding.slug, "presentes")}\n\nAguardamos você! ❤️`;
+  const message = `💍 *Você está convidado!*\n\nOlá, *${guest.name}*!\n\nTemos a honra de convidá-lo(a) para o nosso casamento.\n\nPor favor, confirme sua presença e veja nossa lista de presentes acessando os links abaixo:\n\n✅ *Confirmar Presença:* ${weddingSiteUrl(wedding.slug, "rsvp", wedding.customDomain)}\n🎁 *Lista de Presentes:* ${weddingSiteUrl(wedding.slug, "presentes", wedding.customDomain)}\n\nAguardamos você! ❤️`;
 
   const result = await sendTextMessage({
     phone: guest.phone,
@@ -399,7 +399,7 @@ export async function sendBulkReminders(
     return { success: true, sent: 0, message: "Nenhum convidado encontrado para esse filtro." };
   }
 
-  const rsvpUrl = weddingSiteUrl(wedding.slug, "rsvp");
+  const rsvpUrl = weddingSiteUrl(wedding.slug, "rsvp", wedding.customDomain);
   const messages = guests.map((g) => ({
     phone: g.phone!,
     message:

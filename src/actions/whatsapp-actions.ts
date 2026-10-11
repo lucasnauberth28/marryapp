@@ -51,7 +51,7 @@ export async function sendRsvpReminders() {
         `Olá, *${g.name}*! Tudo bem? 😊\n\n` +
         `Percebemos que ainda não recebemos a sua confirmação de presença para o nosso casamento.\n\n` +
         `Por favor, confirme pelo link abaixo:\n` +
-        `✅ ${weddingSiteUrl(wedding.slug, "rsvp")}\n\n` +
+        `✅ ${weddingSiteUrl(wedding.slug, "rsvp", wedding.customDomain)}\n\n` +
         `Ficaria muito especial ter você conosco! ❤️`;
 
     return {
@@ -119,8 +119,8 @@ export async function sendInitialInvites() {
         `Olá, *${g.name}*! 🎉\n\n` +
         `Temos a honra de convidá-lo(a) para o nosso casamento!\n\n` +
         `Por favor:\n` +
-        `✅ *Confirme sua presença:* ${weddingSiteUrl(wedding.slug, "rsvp")}\n` +
-        `🎁 *Veja nossa lista de presentes:* ${weddingSiteUrl(wedding.slug, "presentes")}\n\n` +
+        `✅ *Confirme sua presença:* ${weddingSiteUrl(wedding.slug, "rsvp", wedding.customDomain)}\n` +
+        `🎁 *Veja nossa lista de presentes:* ${weddingSiteUrl(wedding.slug, "presentes", wedding.customDomain)}\n\n` +
         `Mal podemos esperar para te ver! ❤️`;
 
     return {

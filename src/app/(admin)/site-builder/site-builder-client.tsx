@@ -72,6 +72,8 @@ interface SiteBuilderClientProps {
   rsvpDeadline: Date | string | null;
   /** Endereço público do casamento (/casamento/<slug>) */
   slug: string;
+  /** Domínio próprio conectado (aparece como endereço do site) */
+  customDomain?: string | null;
 }
 
 type SectionId = "COVER" | "STORY" | "LOCATION" | "DRESS" | "TIPS" | "RSVP" | "MUSIC" | "GIFTS" | "GUESTBOOK";
@@ -187,6 +189,7 @@ export function SiteBuilderClient({
   previewGifts,
   rsvpDeadline,
   slug,
+  customDomain,
 }: SiteBuilderClientProps) {
   const [settings, setSettings] = useState<WeddingSiteSettings>(initialSettings ?? {});
   const [storyItems, setStoryItems] = useState<StoryItem[]>(initialStoryItems);
@@ -349,7 +352,7 @@ export function SiteBuilderClient({
     );
   };
 
-  const siteAddress = weddingSiteUrl(slug).replace(/^https?:\/\//, "");
+  const siteAddress = weddingSiteUrl(slug, undefined, customDomain).replace(/^https?:\/\//, "");
 
   const preview = (
     <div className="overflow-hidden rounded-2xl bg-linho shadow-[var(--shadow-aceito-2)]">

@@ -10,6 +10,8 @@ import {
 } from "@/lib/auth";
 import { classifyPath, isSessionPath } from "@/lib/route-access";
 import { loginUrl, resolvePostLoginPath } from "@/lib/login-redirect";
+import { classifyHost, createTtlCache, mainRedirectUrl, routeCustomDomainPath } from "@/lib/custom-domain-host";
+import prisma from "@/lib/prisma";
 
 // As listas de rotas (públicas, de qualquer conta logada e do painel) ficam em src/lib/route-access.ts.
 // Rota protegida exige sessão (deny-by-default); caminho que não pertence ao app segue direto
@@ -22,7 +24,77 @@ function firstAllowedDestination(allowedPaths: string[]) {
   return allowedPaths[0] ?? "/login";
 }
 
+// ---------- Domínio próprio do casal ----------
+// Visita a um endereço que não é o do app (nem localhost nem vercel.app): consulta o banco por
+// Wedding.customDomain, com cache de 60 s (inclusive para "não é de ninguém"). O domínio do casal só serve as
+// páginas públicas do casamento daquele slug (regras em lib/custom-domain-host.ts) e nunca recebe a sessão do painel.
+const domainCache = createTtlCache<{ slug: string } | null>(60_000);
+
+async function lookupCustomDomain(domain: string): Promise<{ slug: string } | null> {
+  const cached = domainCache.get(domain);
+  if (cached !== undefined) return cached;
+  const wedding = await prisma.wedding.findUnique({ where: { customDomain: domain }, select: { slug: true } });
+  domainCache.set(domain, wedding);
+  return wedding;
+}
+
+/** Cabeçalhos da requisição sem o cookie de sessão do painel (defesa: o domínio do casal nunca autentica). */
+function withoutSession(request: NextRequest): Headers {
+  const headers = new Headers(request.headers);
+  const cookies = (headers.get("cookie") ?? "")
+    .split(";")
+    .map((part) => part.trim())
+    .filter((part) => part && !part.startsWith(`${SESSION_COOKIE_NAME}=`));
+  if (cookies.length > 0) headers.set("cookie", cookies.join("; "));
+  else headers.delete("cookie");
+  return headers;
+}
+
+async function handleCustomDomain(request: NextRequest, domain: string): Promise<NextResponse | null> {
+  let wedding: { slug: string } | null;
+  try {
+    wedding = await lookupCustomDomain(domain);
+  } catch (error) {
+    console.error("[proxy] Falha ao consultar o domínio próprio:", error instanceof Error ? error.message : error);
+    return new NextResponse("Não foi possível abrir o site agora. Tente de novo em instantes.", { status: 503, headers: { "cache-control": "no-store" } });
+  }
+  // Endereço que não é de nenhum casal: segue como o app (a Vercel só entrega endereços adicionados ao projeto)
+  if (!wedding) return null;
+
+  const headers = withoutSession(request);
+  const route = routeCustomDomainPath(request.nextUrl.pathname, wedding.slug);
+  switch (route.action) {
+    case "rewrite": {
+      const url = request.nextUrl.clone();
+      url.pathname = route.pathname;
+      return NextResponse.rewrite(url, { request: { headers } });
+    }
+    case "pass":
+      return NextResponse.next({ request: { headers } });
+    case "redirect-main": {
+      const target = mainRedirectUrl(process.env.NEXT_PUBLIC_BASE_URL, route.pathname, request.nextUrl.search);
+      return target ? NextResponse.redirect(target, 307) : notFoundResponse(request);
+    }
+    default:
+      return notFoundResponse(request);
+  }
+}
+
+/** 404 com a página de "não encontrado" do app (reescreve para um caminho que não existe). */
+function notFoundResponse(request: NextRequest): NextResponse {
+  const url = request.nextUrl.clone();
+  url.pathname = "/_dominio-nao-encontrado";
+  url.search = "";
+  return NextResponse.rewrite(url, { request: { headers: withoutSession(request) } });
+}
+
 export default async function proxy(request: NextRequest) {
+  const host = classifyHost(request.headers.get("host"), process.env.NEXT_PUBLIC_BASE_URL);
+  if (host.kind === "candidate") {
+    const custom = await handleCustomDomain(request, host.domain);
+    if (custom) return custom;
+  }
+
   const path = request.nextUrl.pathname;
   const kind = classifyPath(path);
 

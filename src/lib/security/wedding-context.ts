@@ -28,6 +28,7 @@ const WEDDING_SELECT = {
   city: true,
   themeColor: true,
   onboardedAt: true,
+  customDomain: true,
 } as const;
 
 export type WeddingSummary = {
@@ -38,6 +39,8 @@ export type WeddingSummary = {
   city: string | null;
   themeColor: string;
   onboardedAt: Date | null;
+  /** Domínio próprio conectado e no ar (sem "www."), ou null. */
+  customDomain?: string | null;
 };
 
 export interface WeddingContext {

@@ -144,8 +144,8 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
       }
     }
 
-    const rsvpUrl = weddingSiteUrl(wedding.slug, "rsvp");
-    const giftsUrl = weddingSiteUrl(wedding.slug, "presentes");
+    const rsvpUrl = weddingSiteUrl(wedding.slug, "rsvp", wedding.customDomain);
+    const giftsUrl = weddingSiteUrl(wedding.slug, "presentes", wedding.customDomain);
 
     // Mapeia os convidados para o formato esperado pela Evolution API
     const recipients = guests

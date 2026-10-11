@@ -23,7 +23,7 @@ export default async function SettingsPage() {
           names: identity.coupleNames,
           date: identity.dateLabel,
           place: identity.locationName || wedding.city || null,
-          address: identity.slug ? weddingSiteUrl(identity.slug).replace(/^https?:\/\//, "") : null,
+          address: identity.slug ? weddingSiteUrl(identity.slug, undefined, wedding.customDomain).replace(/^https?:\/\//, "") : null,
         }}
         canSeePlan={hasPathAccess(session.allowedPaths, "/plano")}
       />

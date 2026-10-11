@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return guestPageMetadata(slug, "Confirmar presença");
+  return guestPageMetadata(slug, "Confirmar presença", undefined, "rsvp");
 }
 
 export default async function RsvpPage({ params }: { params: Promise<{ slug: string }> }) {

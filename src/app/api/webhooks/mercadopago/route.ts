@@ -61,7 +61,7 @@ export async function POST(req: Request) {
     const transaction = await prisma.transaction.findUnique({
       where: { id: internalTxId },
       // O casamento é sempre o da própria transação (gravado a partir do presente no checkout)
-      include: { gift: true, guest: true, wedding: { select: { slug: true } } },
+      include: { gift: true, guest: true, wedding: { select: { slug: true, customDomain: true } } },
     });
 
     if (!transaction) {
@@ -124,7 +124,7 @@ export async function POST(req: Request) {
           `🎁 *${transaction.gift.title}* — ${amountFormatted}\n\n` +
           `Sua generosidade faz parte da realização do nosso sonho. ❤️\n\n` +
           `Nos vemos no altar! 💒\n` +
-          `_Não esqueça de confirmar sua presença em:_ ${weddingSiteUrl(transaction.wedding.slug, "rsvp")}`;
+          `_Não esqueça de confirmar sua presença em:_ ${weddingSiteUrl(transaction.wedding.slug, "rsvp", transaction.wedding.customDomain)}`;
 
         await sendTextMessage({ phone: guest.phone, text: message }).catch((err) =>
           console.error("[Webhook MP] Erro ao enviar WhatsApp:", err)

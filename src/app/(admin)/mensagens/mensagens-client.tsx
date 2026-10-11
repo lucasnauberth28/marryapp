@@ -33,6 +33,8 @@ interface MensagensClientProps {
   coupleNames: string;
   /** Endereço público do casamento, para os links das mensagens */
   slug: string;
+  /** Domínio próprio conectado: os links das mensagens passam a usá-lo */
+  customDomain?: string | null;
 }
 
 type LinkItem = { id: string; text: string };
@@ -90,6 +92,7 @@ function TemplateEditor({
   template,
   guests,
   slug,
+  customDomain,
   coupleNames,
   onSaved,
   onDeleted,
@@ -97,6 +100,7 @@ function TemplateEditor({
   template: MessageTemplate | null;
   guests: Guest[];
   slug: string;
+  customDomain?: string | null;
   coupleNames: string;
   onSaved: (t: MessageTemplate, created: boolean) => void;
   onDeleted: (id: string) => void;
@@ -243,7 +247,7 @@ function TemplateEditor({
     .map((l) => {
       const lower = l.text.toLowerCase();
       const gifts = lower.includes("presente") || l.id === "gifts";
-      return { text: l.text, url: weddingSiteUrl(slug, gifts ? "presentes" : "rsvp") };
+      return { text: l.text, url: weddingSiteUrl(slug, gifts ? "presentes" : "rsvp", customDomain) };
     });
 
   const lastSent = guests.filter((g) => g.hasReceivedMessage).length;
@@ -500,7 +504,7 @@ function TemplateEditor({
 // Tela
 // ---------------------------------------------------------------------------
 
-export function MensagensClient({ initialTemplates, initialGuests, coupleNames, slug }: MensagensClientProps) {
+export function MensagensClient({ initialTemplates, initialGuests, coupleNames, slug, customDomain }: MensagensClientProps) {
   const router = useRouter();
   const [templates, setTemplates] = useState<MessageTemplate[]>(initialTemplates);
   // null = escrevendo um modelo novo
@@ -584,6 +588,7 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
             template={selected}
             guests={initialGuests}
             slug={slug}
+            customDomain={customDomain}
             coupleNames={coupleNames}
             onSaved={(t, created) => {
               setTemplates((prev) => (created ? [t, ...prev] : prev.map((x) => (x.id === t.id ? t : x))));
