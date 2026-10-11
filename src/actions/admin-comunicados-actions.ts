@@ -1,0 +1,179 @@
+"use server";
+
+import { after } from "next/server";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import prisma from "@/lib/prisma";
+import { logAudit } from "@/lib/audit";
+import { isEmailConfigured } from "@/lib/email";
+import { checkRateLimit } from "@/lib/security/rate-limiter";
+import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { MAX_RECIPIENTS, announcementInput, audienceLabel, audienceSchema, validateLinkUrl, type AnnouncementInput } from "@/lib/platform/announcement";
+import { previewAudience, resolveAudienceUsers, type AudiencePreview } from "@/lib/platform/queries/comunicados";
+import { processAnnouncement, queueRecipients, refreshAnnouncementTotals, releaseStaleClaims, sendAnnouncementTest } from "@/lib/platform/announcement-send";
+
+/**
+ * Comunicados da administração. Todo destinatário é resolvido AQUI, a partir do filtro de público
+ * (nunca de uma lista vinda do navegador). Limites: até 5.000 pessoas por envio e 5 envios por hora.
+ * Agendamento não existe: não há rotina que envie na hora marcada.
+ */
+
+type Fail = { success: false; error: string; fieldErrors?: Record<string, string> };
+const MINUTE = 60_000;
+
+/** Valida o formulário e devolve os dados limpos ou a falha com mensagens por campo. */
+function validate(input: unknown): { ok: true; data: AnnouncementInput; linkUrl: string | null } | { ok: false; fail: Fail } {
+  const parsed = announcementInput.safeParse(input);
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) fieldErrors[String(issue.path[0] ?? "form")] ??= issue.message;
+    return { ok: false, fail: { success: false, error: "Confira os campos marcados.", fieldErrors } };
+  }
+  const link = validateLinkUrl(parsed.data.linkUrl);
+  if (!link.ok) return { ok: false, fail: { success: false, error: "Confira os campos marcados.", fieldErrors: { linkUrl: link.error } } };
+  return { ok: true, data: parsed.data, linkUrl: link.url };
+}
+
+/** Quantas pessoas o público alcança agora (contagem real, para o texto "Chega a N casais"). */
+export async function previewAnnouncementAudience(input: unknown): Promise<{ success: true; preview: AudiencePreview } | Fail> {
+  try {
+    await requirePlatformAdmin();
+    const audience = audienceSchema.parse(input);
+    return { success: true, preview: await previewAudience(audience) };
+  } catch (error) {
+    return platformAdminFailure(error, "previewAnnouncementAudience");
+  }
+}
+
+async function saveDraftRow(data: AnnouncementInput, linkUrl: string | null, admin: { userId: string; name: string | null }) {
+  const values = {
+    title: data.title,
+    emailSubject: data.emailSubject || null,
+    body: data.body,
+    linkUrl,
+    audience: data.audience,
+    channels: data.channels,
+  };
+  if (data.id) {
+    const res = await prisma.announcement.updateMany({ where: { id: data.id, status: "DRAFT" }, data: values });
+    if (res.count !== 1) return null; // não existe ou já foi enviado
+    return data.id;
+  }
+  const created = await prisma.announcement.create({ data: { ...values, createdById: admin.userId, createdByName: admin.name ?? "Administrador" }, select: { id: true } });
+  return created.id;
+}
+
+export async function saveAnnouncementDraft(input: unknown): Promise<{ success: true; id: string; message: string } | Fail> {
+  try {
+    const admin = await requirePlatformAdmin();
+    const v = validate(input);
+    if (!v.ok) return v.fail;
+    const id = await saveDraftRow(v.data, v.linkUrl, admin);
+    if (!id) return { success: false, error: "Este comunicado não pode mais ser editado (já foi enviado ou não existe)." };
+    await logAudit({ action: "announcement.draft_save", targetType: "announcement", targetId: id, details: { title: v.data.title, channels: v.data.channels, audience: audienceLabel(v.data.audience) } });
+    revalidatePath("/admin/comunicados");
+    return { success: true, id, message: "Rascunho salvo." };
+  } catch (error) {
+    return platformAdminFailure(error, "saveAnnouncementDraft");
+  }
+}
+
+export async function deleteAnnouncementDraft(input: unknown): Promise<{ success: true; message: string } | Fail> {
+  try {
+    await requirePlatformAdmin();
+    const { id } = z.object({ id: z.string().uuid() }).parse(input);
+    const res = await prisma.announcement.deleteMany({ where: { id, status: "DRAFT" } });
+    if (res.count !== 1) return { success: false, error: "Rascunho não encontrado." };
+    await logAudit({ action: "announcement.draft_delete", targetType: "announcement", targetId: id });
+    revalidatePath("/admin/comunicados");
+    return { success: true, message: "Rascunho excluído." };
+  } catch (error) {
+    return platformAdminFailure(error, "deleteAnnouncementDraft");
+  }
+}
+
+/** Envia um teste só para a pessoa logada (painel, celular e e-mail), sem registrar destinatários. */
+export async function sendAnnouncementTestToMe(input: unknown): Promise<{ success: true; message: string } | Fail> {
+  try {
+    const admin = await requirePlatformAdmin();
+    const v = validate(input);
+    if (!v.ok) return v.fail;
+    const limit = await checkRateLimit({ key: `ANNOUNCE_TEST:${admin.userId}`, limit: 10, windowMs: 60 * MINUTE });
+    if (!limit.success) return { success: false, error: "Muitos testes seguidos. Aguarde um pouco." };
+    const result = await sendAnnouncementTest(admin, {
+      title: v.data.title,
+      emailSubject: v.data.emailSubject,
+      body: v.data.body,
+      linkUrl: v.linkUrl,
+      channels: v.data.channels,
+      service: v.data.audience.service,
+    });
+    await logAudit({ action: "announcement.test", targetType: "announcement", details: { title: v.data.title, channels: v.data.channels } });
+    if (result.done.length === 0) return { success: false, error: result.notes.join(" ") || "Nada foi enviado." };
+    return { success: true, message: `Teste enviado (${result.done.join(", ")}).${result.notes.length ? ` ${result.notes.join(" ")}` : ""}` };
+  } catch (error) {
+    return platformAdminFailure(error, "sendAnnouncementTestToMe");
+  }
+}
+
+/** Envia o comunicado agora. O envio roda depois da resposta (after) e pode ser retomado se for interrompido. */
+export async function sendAnnouncementNow(input: unknown): Promise<{ success: true; id: string; message: string } | Fail> {
+  try {
+    const admin = await requirePlatformAdmin();
+    const v = validate(input);
+    if (!v.ok) return v.fail;
+    const { data } = v;
+
+    if (data.channels.includes("EMAIL") && !isEmailConfigured()) {
+      return { success: false, error: "O e-mail não está configurado no servidor (RESEND_API_KEY). Tire o canal E-mail ou configure o envio." };
+    }
+    const limit = await checkRateLimit({ key: `ANNOUNCE_SEND:${admin.userId}`, limit: 5, windowMs: 60 * MINUTE });
+    if (!limit.success) return { success: false, error: "Você já fez 5 envios na última hora. Aguarde um pouco." };
+
+    const users = await resolveAudienceUsers(data.audience);
+    if (users.length === 0) return { success: false, error: "Esse público não alcança ninguém. Mude o filtro." };
+    if (users.length > MAX_RECIPIENTS) return { success: false, error: `Esse público tem ${users.length} pessoas e o limite por envio é ${MAX_RECIPIENTS}. Restrinja o público.` };
+
+    const id = await saveDraftRow(data, v.linkUrl, admin);
+    if (!id) return { success: false, error: "Este comunicado já foi enviado ou não existe." };
+
+    // Só o primeiro clique passa de DRAFT para SENDING: duplo clique ou reenvio não duplica nada
+    const claimed = await prisma.announcement.updateMany({ where: { id, status: "DRAFT" }, data: { status: "SENDING", recipientCount: users.length } });
+    if (claimed.count !== 1) return { success: false, error: "Este comunicado já foi enviado." };
+
+    await queueRecipients(id, users, data.channels, data.audience.service);
+    await logAudit({
+      action: "announcement.send",
+      targetType: "announcement",
+      targetId: id,
+      details: { title: data.title, channels: data.channels, audience: audienceLabel(data.audience), recipients: users.length, service: data.audience.service },
+    });
+    after(() => processAnnouncement(id));
+    revalidatePath("/admin/comunicados");
+    return { success: true, id, message: `Envio começou para ${users.length} ${users.length === 1 ? "pessoa" : "pessoas"}. Acompanhe no histórico.` };
+  } catch (error) {
+    return platformAdminFailure(error, "sendAnnouncementNow");
+  }
+}
+
+/** Retoma um envio interrompido: libera as reservas velhas e processa o que sobrou (quem já recebeu não repete). */
+export async function resumeAnnouncement(input: unknown): Promise<{ success: true; message: string } | Fail> {
+  try {
+    const admin = await requirePlatformAdmin();
+    const { id } = z.object({ id: z.string().uuid() }).parse(input);
+    const limit = await checkRateLimit({ key: `ANNOUNCE_RESUME:${admin.userId}`, limit: 10, windowMs: 60 * MINUTE });
+    if (!limit.success) return { success: false, error: "Muitas tentativas seguidas. Aguarde um pouco." };
+    const found = await prisma.announcement.findUnique({ where: { id }, select: { status: true } });
+    if (!found || found.status !== "SENDING") return { success: false, error: "Este envio não está em andamento." };
+    const released = await releaseStaleClaims(id);
+    await logAudit({ action: "announcement.resume", targetType: "announcement", targetId: id, details: { released } });
+    after(async () => {
+      await processAnnouncement(id);
+      await refreshAnnouncementTotals(id);
+    });
+    revalidatePath("/admin/comunicados");
+    return { success: true, message: "Retomamos o envio." };
+  } catch (error) {
+    return platformAdminFailure(error, "resumeAnnouncement");
+  }
+}
