@@ -37,7 +37,7 @@
 }
 .ac-float__box--icon { --ac-float-lead: 42px; }
 .ac-float__box--trailing { --ac-float-trail: 56px; }
-.ac-float__box--chevron { --ac-float-trail: 44px; }
+.ac-float__box--chevron { --ac-float-trail: 40px; }
 .ac-float__box--multiline { --ac-float-rest-top: 24px; }
 
 /* ---------- controle ---------- */
@@ -231,11 +231,13 @@ input.ac-float__control[type="month"] {
   )
   ~ .ac-float__label {
   top: -1px;
+  max-width: calc((100% - var(--ac-float-lead) - var(--ac-float-trail) + 8px) / 0.85);
   font-weight: 500;
   transform: translateY(-50%) scale(0.85);
 }
 .ac-float__control:autofill ~ .ac-float__label {
   top: -1px;
+  max-width: calc((100% - var(--ac-float-lead) - var(--ac-float-trail) + 8px) / 0.85);
   font-weight: 500;
   transform: translateY(-50%) scale(0.85);
 }

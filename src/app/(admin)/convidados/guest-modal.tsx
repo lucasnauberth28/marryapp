@@ -7,7 +7,9 @@ import { GuestLocal as Guest, RsvpStatus } from "@/types/local";
 import { CustomModal } from "@/components/ui/custom-modal";
 import { createGuest, updateGuest } from "@/actions/guest-actions";
 import { formatPhoneBR } from "@/lib/wedding-format";
-import { btn, btnDanger, errorBox, hint, input, label } from "@/components/painel/styles";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select";
+import { btn, btnDanger, errorBox, hint, label } from "@/components/painel/styles";
 
 export const GUEST_CATEGORIES = [
   "Padrinho/Madrinha",
@@ -49,30 +51,29 @@ function Field({
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   autoComplete?: string;
 }) {
-  const id = useId();
   return (
-    <div className="flex min-w-0 flex-col gap-2">
-      <label htmlFor={id} className={label}>
-        {text} {required && <span className="text-perigo" aria-hidden="true">*</span>}
-      </label>
-      <input
-        id={id}
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        defaultValue={defaultValue}
-        required={required}
-        inputMode={inputMode}
-        autoComplete={autoComplete}
-        aria-describedby={help ? `${id}-dica` : undefined}
-        className={input}
-      />
-      {help && (
-        <p id={`${id}-dica`} className={hint}>
-          {help}
-        </p>
-      )}
-    </div>
+    <Input
+      label={
+        required ? (
+          <>
+            {text}{" "}
+            <span className="text-perigo" aria-hidden="true">
+              *
+            </span>
+          </>
+        ) : (
+          text
+        )
+      }
+      name={name}
+      type={type}
+      placeholder={placeholder}
+      defaultValue={defaultValue}
+      required={required}
+      inputMode={inputMode}
+      autoComplete={autoComplete}
+      hint={help}
+    />
   );
 }
 
@@ -201,48 +202,33 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
           <p className={hint}>Conta a própria pessoa e quem ela pode levar.</p>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <label htmlFor={ids.category} className={label}>
-              Grupo
-            </label>
-            <select id={ids.category} value={category} onChange={(e) => setCategory(e.target.value)} className={input}>
-              <option value="">Sem grupo</option>
-              {category && !GUEST_CATEGORIES.some((c) => c === category) && <option value={category}>{category}</option>}
-              {GUEST_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="grid gap-5">
+          <NativeSelect id={ids.category} label="Grupo" value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option value=""></option>
+            {category && !GUEST_CATEGORIES.some((c) => c === category) && <option value={category}>{category}</option>}
+            {GUEST_CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </NativeSelect>
 
-          <div className="flex flex-col gap-2">
-            <label htmlFor={ids.parent} className={label}>
-              Vem junto com outro convidado?
-            </label>
-            <select id={ids.parent} value={parentGuestId} onChange={(e) => setParentGuestId(e.target.value)} className={input}>
-              {parentOptions.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <NativeSelect id={ids.parent} label="Vem junto com outro convidado?" value={parentGuestId} onChange={(e) => setParentGuestId(e.target.value)}>
+            {parentOptions.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </NativeSelect>
         </div>
 
         {isEditing && (
           <>
-            <div className="flex flex-col gap-2">
-              <label htmlFor={ids.rsvp} className={label}>
-                Resposta ao convite
-              </label>
-              <select id={ids.rsvp} value={rsvpStatus} onChange={(e) => setRsvpStatus(e.target.value as RsvpStatus)} className={input}>
-                <option value={RsvpStatus.PENDING}>Sem resposta</option>
-                <option value={RsvpStatus.CONFIRMED}>Confirmado</option>
-                <option value={RsvpStatus.DECLINED}>Não vai</option>
-              </select>
-            </div>
+            <NativeSelect id={ids.rsvp} label="Resposta ao convite" value={rsvpStatus} onChange={(e) => setRsvpStatus(e.target.value as RsvpStatus)}>
+              <option value={RsvpStatus.PENDING}>Sem resposta</option>
+              <option value={RsvpStatus.CONFIRMED}>Confirmado</option>
+              <option value={RsvpStatus.DECLINED}>Não vai</option>
+            </NativeSelect>
 
             {rsvpStatus === RsvpStatus.CONFIRMED ? (
               <Field label="Restrições alimentares" name="dietaryRestrictions" placeholder="Sem glúten, vegano..." defaultValue={guest?.dietaryRestrictions ?? ""} />
