@@ -494,7 +494,7 @@ export function SiteBuilderClient({
                     <Textarea id="welcomeMessage" label="Mensagem de boas-vindas" rows={3} value={settings.welcomeMessage || ""} onChange={(e) => update({ welcomeMessage: e.target.value })} />
                     {photoField("couplePhotoUrl", "Foto do casal", "Aparece na seção “Nossa história”.", coupleInput)}
 
-                    <fieldset className="flex flex-col gap-3 rounded-xl border border-linha p-3">
+                    <fieldset className="flex flex-col gap-5 rounded-xl border border-linha p-3 pt-4">
                       <legend className="px-1 text-sm font-semibold text-tinta">Novo momento</legend>
                       <Input id="story-title" label="Título" value={story.title} onChange={(e) => setStory({ ...story, title: e.target.value })} placeholder="O primeiro encontro" />
                       <Input id="story-date" label="Quando" value={story.dateLabel} onChange={(e) => setStory({ ...story, dateLabel: e.target.value })} placeholder="Outubro de 2021" />
@@ -572,7 +572,7 @@ export function SiteBuilderClient({
                 {section.id === "TIPS" && section.key && (
                   <>
                     {visibilityToggle(section.key, section.desc)}
-                    <fieldset className="flex flex-col gap-3 rounded-xl border border-linha p-3">
+                    <fieldset className="flex flex-col gap-5 rounded-xl border border-linha p-3 pt-4">
                       <legend className="px-1 text-sm font-semibold text-tinta">Nova dica</legend>
                       <Select value={tip.category} onValueChange={(v) => setTip({ ...tip, category: v })}>
                         <SelectTrigger id="tip-category" label="Categoria">

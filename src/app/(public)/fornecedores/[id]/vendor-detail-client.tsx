@@ -575,7 +575,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                       maxLength={80}
                       autoComplete="address-level2"
                     />
-                    <NativeSelect id="lead-orcamento" label="Quanto vocês pensam em investir" optional value={leadBudget} onChange={(e) => setLeadBudget(e.target.value)}>
+                    <NativeSelect id="lead-orcamento" label="Orçamento previsto" optional value={leadBudget} onChange={(e) => setLeadBudget(e.target.value)}>
                       <option value=""></option>
                       {LEAD_BUDGET_OPTIONS.map((option) => (
                         <option key={option} value={option}>
