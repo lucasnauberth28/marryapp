@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Plus, TicketPercent } from "lucide-react";
 import { createCoupon, deleteCoupon, updateCoupon, type CouponFields } from "@/actions/coupon-actions";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 export interface CouponRow {
@@ -30,8 +32,6 @@ interface PlanChoice {
 
 const BUTTON =
   "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60";
-const INPUT =
-  "min-h-11 w-full rounded-xl border border-linha-forte bg-papel px-3 text-[15px] text-tinta outline-none focus-visible:border-ameixa focus-visible:ring-2 focus-visible:ring-ameixa/25 disabled:bg-linho disabled:text-tinta-suave";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -173,72 +173,67 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
           }}
           className="flex flex-col gap-5 rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6"
         >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-1.5 text-sm font-semibold text-tinta">
-              Código
-              <input
-                value={draft.code}
-                onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })}
-                disabled={editing !== "new"}
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Input
+              id="cupom-codigo"
+              label="Código"
+              hint={editing === "new" ? "Letras e números, sem espaços." : "O código não muda depois de criado."}
+              value={draft.code}
+              onChange={(e) => setDraft({ ...draft, code: e.target.value.toUpperCase() })}
+              disabled={editing !== "new"}
+              required
+              minLength={3}
+              maxLength={30}
+              autoCapitalize="characters"
+              placeholder="NOIVOS10"
+              inputClassName="font-mono uppercase"
+            />
+
+            <div className="flex gap-3">
+              <NativeSelect
+                id="cupom-tipo"
+                label="Tipo de desconto"
+                fieldClassName="w-44 shrink-0"
+                value={draft.kind}
+                onChange={(e) => setDraft({ ...draft, kind: e.target.value as Draft["kind"], value: "" })}
+              >
+                <option value="percent">Percentual (%)</option>
+                <option value="amount">Valor fixo (R$)</option>
+              </NativeSelect>
+              <Input
+                id="cupom-valor"
+                label={draft.kind === "percent" ? "Percentual" : "Valor"}
+                {...(draft.kind === "percent" ? { suffix: "%" } : { prefix: "R$" })}
+                fieldClassName="min-w-0 flex-1"
+                inputMode={draft.kind === "percent" ? "numeric" : "decimal"}
+                value={draft.value}
+                onChange={(e) => setDraft({ ...draft, value: e.target.value })}
                 required
-                minLength={3}
-                maxLength={30}
-                autoCapitalize="characters"
-                placeholder="NOIVOS10"
-                className={cn(INPUT, "font-mono uppercase")}
+                placeholder={draft.kind === "percent" ? "10" : "20,00"}
+                inputClassName="tabular-nums"
               />
-              <span className="text-[13px] font-normal text-tinta-suave">
-                {editing === "new" ? "Letras e números, sem espaços." : "O código não muda depois de criado."}
-              </span>
-            </label>
+            </div>
 
-            <fieldset className="flex flex-col gap-1.5">
-              <legend className="mb-1.5 text-sm font-semibold text-tinta">Desconto</legend>
-              <div className="flex gap-2">
-                <select
-                  aria-label="Tipo de desconto"
-                  value={draft.kind}
-                  onChange={(e) => setDraft({ ...draft, kind: e.target.value as Draft["kind"], value: "" })}
-                  className={cn(INPUT, "w-auto cursor-pointer")}
-                >
-                  <option value="percent">Percentual (%)</option>
-                  <option value="amount">Valor fixo (R$)</option>
-                </select>
-                <input
-                  aria-label={draft.kind === "percent" ? "Percentual de desconto" : "Valor do desconto em reais"}
-                  inputMode={draft.kind === "percent" ? "numeric" : "decimal"}
-                  value={draft.value}
-                  onChange={(e) => setDraft({ ...draft, value: e.target.value })}
-                  required
-                  placeholder={draft.kind === "percent" ? "10" : "20,00"}
-                  className={cn(INPUT, "tabular-nums")}
-                />
-              </div>
-            </fieldset>
+            <Input
+              id="cupom-limite"
+              label="Limite de usos"
+              type="number"
+              min={1}
+              inputMode="numeric"
+              value={draft.maxRedemptions}
+              onChange={(e) => setDraft({ ...draft, maxRedemptions: e.target.value })}
+              placeholder="Sem limite"
+              inputClassName="tabular-nums"
+            />
 
-            <label className="flex flex-col gap-1.5 text-sm font-semibold text-tinta">
-              Limite de usos
-              <input
-                type="number"
-                min={1}
-                inputMode="numeric"
-                value={draft.maxRedemptions}
-                onChange={(e) => setDraft({ ...draft, maxRedemptions: e.target.value })}
-                placeholder="Sem limite"
-                className={cn(INPUT, "tabular-nums")}
-              />
-            </label>
-
-            <label className="flex flex-col gap-1.5 text-sm font-semibold text-tinta">
-              Vale até
-              <input
-                type="date"
-                value={draft.expiresAt}
-                onChange={(e) => setDraft({ ...draft, expiresAt: e.target.value })}
-                className={INPUT}
-              />
-              <span className="text-[13px] font-normal text-tinta-suave">Em branco, não vence. Vale até o fim do dia.</span>
-            </label>
+            <Input
+              id="cupom-validade"
+              label="Vale até"
+              type="date"
+              hint="Em branco, não vence. Vale até o fim do dia."
+              value={draft.expiresAt}
+              onChange={(e) => setDraft({ ...draft, expiresAt: e.target.value })}
+            />
           </div>
 
           <fieldset className="flex flex-col gap-2">

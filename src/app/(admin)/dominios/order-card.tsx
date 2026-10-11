@@ -17,7 +17,6 @@ import {
 } from "@/actions/domain-admin-actions";
 import { Button } from "@/components/ui/button";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Chip, card, type ChipTone } from "@/components/casal/ui";
@@ -234,13 +233,9 @@ export function DomainOrderCard({ order, vercelReady }: { order: AdminOrder; ver
           }}
         >
           <p className="text-sm text-tinta">Ao confirmar, o CPF/CNPJ completo é trocado pela versão escondida e o casal é avisado.</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field htmlFor={`reg-${id}`} label="Data do registro">
-              <Input id={`reg-${id}`} type="date" value={registeredAt} onChange={(e) => { setRegisteredAt(e.target.value); if (e.target.value) setExpiresAt(plusOneYear(e.target.value)); }} required />
-            </Field>
-            <Field htmlFor={`exp-${id}`} label="Vencimento (1 ano depois)">
-              <Input id={`exp-${id}`} type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} required />
-            </Field>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Input id={`reg-${id}`} label="Data do registro" type="date" value={registeredAt} onChange={(e) => { setRegisteredAt(e.target.value); if (e.target.value) setExpiresAt(plusOneYear(e.target.value)); }} required />
+            <Input id={`exp-${id}`} label="Vencimento (1 ano depois)" type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} required />
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button type="submit" disabled={pending}>
@@ -261,9 +256,7 @@ export function DomainOrderCard({ order, vercelReady }: { order: AdminOrder; ver
             run(() => rejectDomainOrderAction({ orderId: id, reason }), () => setPanel(null));
           }}
         >
-          <Field htmlFor={`rej-${id}`} label="Motivo (o casal vai ler)" hint="Explique em poucas palavras, por exemplo: o nome não está disponível no Registro.br.">
-            <Textarea id={`rej-${id}`} value={reason} onChange={(e) => setReason(e.target.value)} rows={3} maxLength={500} required />
-          </Field>
+          <Textarea id={`rej-${id}`} label="Motivo (o casal vai ler)" hint="Explique em poucas palavras, por exemplo: o nome não está disponível no Registro.br." value={reason} onChange={(e) => setReason(e.target.value)} rows={3} maxLength={500} required />
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button type="submit" variant="danger" disabled={pending || reason.trim().length < 5}>
               {pending ? "Recusando…" : "Recusar o pedido"}
@@ -295,9 +288,7 @@ export function DomainOrderCard({ order, vercelReady }: { order: AdminOrder; ver
           run(() => saveDomainNoteAction({ orderId: id, note }));
         }}
       >
-        <Field htmlFor={`nota-${id}`} label="Anotação da equipe" hint="O casal não vê.">
-          <Textarea id={`nota-${id}`} value={note} onChange={(e) => setNote(e.target.value)} rows={2} maxLength={1000} />
-        </Field>
+        <Textarea id={`nota-${id}`} label="Anotação da equipe" hint="O casal não vê." value={note} onChange={(e) => setNote(e.target.value)} rows={2} maxLength={1000} />
         <div>
           <Button type="submit" size="sm" variant="outline" disabled={pending || note === (order.adminNote ?? "")}>
             Salvar anotação

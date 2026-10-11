@@ -9,7 +9,6 @@ import { PageHeader } from "@/components/admin/page-header";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Chip, card, cardTitle, type ChipTone } from "@/components/casal/ui";
 import { btn } from "@/components/landing/styles";
@@ -207,31 +206,20 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
           <p className="text-[15px] text-tinta-suave">Hoje registramos endereços terminados em {DOMAIN_SUFFIX}.</p>
         </div>
 
-        <Field
-          htmlFor="dominio-nome"
+        <Input
+          id="dominio-nome"
           label="Nome do endereço"
+          suffix={DOMAIN_SUFFIX}
           hint="Só letras, números e hífen. Pode digitar do seu jeito, nós arrumamos."
           error={errors.domain}
-        >
-          <div className="flex items-stretch">
-            <Input
-              id="dominio-nome"
-              value={name}
-              onChange={(e) => changeName(e.target.value)}
-              placeholder="anaerafael"
-              autoComplete="off"
-              autoCapitalize="none"
-              spellCheck={false}
-              inputMode="url"
-              aria-invalid={!!errors.domain}
-              aria-describedby={["dominio-nome-dica", errors.domain ? "dominio-nome-erro" : ""].filter(Boolean).join(" ")}
-              className="min-w-0 rounded-r-none border-r-0"
-            />
-            <span className="flex items-center rounded-r-xl border border-l-0 border-linha-forte bg-areia px-3 text-base font-semibold text-tinta-suave">
-              {DOMAIN_SUFFIX}
-            </span>
-          </div>
-        </Field>
+          value={name}
+          onChange={(e) => changeName(e.target.value)}
+          placeholder="anaerafael"
+          autoComplete="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          inputMode="url"
+        />
 
         {nameParsed.ok && name.trim() && nameParsed.label !== name.trim().toLowerCase() ? (
           <p className="text-sm text-tinta-suave">
@@ -272,57 +260,47 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
             O domínio fica registrado no nome do titular (uma pessoa com CPF ou uma empresa com CNPJ). O Registro.br pede esses dados.
           </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field htmlFor="dominio-titular-nome" label="Nome completo ou razão social" error={errors.holderName} className="sm:col-span-2">
-            <Input
-              id="dominio-titular-nome"
-              value={holderName}
-              onChange={(e) => setHolderName(e.target.value)}
-              autoComplete="name"
-              aria-invalid={!!errors.holderName}
-              aria-describedby={errors.holderName ? "dominio-titular-nome-erro" : undefined}
-            />
-          </Field>
-          <Field
-            htmlFor="dominio-titular-doc"
+        <div className="grid gap-5 sm:grid-cols-2">
+          <Input
+            id="dominio-titular-nome"
+            label="Nome completo ou razão social"
+            fieldClassName="sm:col-span-2"
+            error={errors.holderName}
+            value={holderName}
+            onChange={(e) => setHolderName(e.target.value)}
+            autoComplete="name"
+          />
+          <Input
+            id="dominio-titular-doc"
             label="CPF ou CNPJ"
             hint="Guardamos só até concluir o registro. Depois escondemos os números."
             error={errors.holderDocument}
-          >
-            <Input
-              id="dominio-titular-doc"
-              value={holderDocument}
-              onChange={(e) => setHolderDocument(e.target.value)}
-              onBlur={() => setHolderDocument((v) => formatDocument(v))}
-              autoComplete="off"
-              inputMode="text"
-              aria-invalid={!!errors.holderDocument}
-              aria-describedby={["dominio-titular-doc-dica", errors.holderDocument ? "dominio-titular-doc-erro" : ""].filter(Boolean).join(" ")}
-            />
-          </Field>
-          <Field htmlFor="dominio-titular-tel" label="Telefone com DDD" error={errors.holderPhone}>
-            <Input
-              id="dominio-titular-tel"
-              type="tel"
-              value={holderPhone}
-              onChange={(e) => setHolderPhone(e.target.value)}
-              autoComplete="tel"
-              placeholder="(11) 91234-5678"
-              aria-invalid={!!errors.holderPhone}
-              aria-describedby={errors.holderPhone ? "dominio-titular-tel-erro" : undefined}
-            />
-          </Field>
-          <Field htmlFor="dominio-titular-email" label="E-mail do titular" error={errors.holderEmail} className="sm:col-span-2">
-            <Input
-              id="dominio-titular-email"
-              type="email"
-              value={holderEmail}
-              onChange={(e) => setHolderEmail(e.target.value)}
-              autoComplete="email"
-              aria-invalid={!!errors.holderEmail}
-              aria-describedby={errors.holderEmail ? "dominio-titular-email-erro" : undefined}
-            />
-          </Field>
+            value={holderDocument}
+            onChange={(e) => setHolderDocument(e.target.value)}
+            onBlur={() => setHolderDocument((v) => formatDocument(v))}
+            autoComplete="off"
+            inputMode="text"
+          />
+          <Input
+            id="dominio-titular-tel"
+            type="tel"
+            label="Telefone com DDD"
+            error={errors.holderPhone}
+            value={holderPhone}
+            onChange={(e) => setHolderPhone(e.target.value)}
+            autoComplete="tel"
+            placeholder="(11) 91234-5678"
+          />
+          <Input
+            id="dominio-titular-email"
+            type="email"
+            label="E-mail do titular"
+            fieldClassName="sm:col-span-2"
+            error={errors.holderEmail}
+            value={holderEmail}
+            onChange={(e) => setHolderEmail(e.target.value)}
+            autoComplete="email"
+          />
         </div>
       </section>
 

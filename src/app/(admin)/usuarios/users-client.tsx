@@ -115,8 +115,6 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: UserItem[],
     setConfirmOpen(true);
   }
 
-  const labelCls = "text-sm font-semibold text-tinta";
-  const inputCls = "min-h-11 rounded-xl sm:min-h-10";
 
   const roleChip = (user: UserItem) => <Chip tone="neutro" className="text-tinta">{user.role?.name || "Sem perfil"}</Chip>;
   const rowActions = (user: UserItem) => (
@@ -154,55 +152,41 @@ export function UsersClient({ initialUsers, roles }: { initialUsers: UserItem[],
               {editingUser ? "Altere os dados ou defina uma senha nova." : "Crie um acesso para uma pessoa da equipe."}
             </p>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor={`${uid}-name`} className={labelCls}>Nome completo</label>
-              <Input
-                id={`${uid}-name`}
-                placeholder="Ex.: João da Silva"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className={inputCls}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor={`${uid}-username`} className={labelCls}>Login</label>
-              <Input
-                id={`${uid}-username`}
-                placeholder="Ex.: joao.silva"
-                autoCapitalize="none"
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase() })}
-                className={inputCls}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor={`${uid}-password`} className={labelCls}>
-                Senha {editingUser && <span className="font-normal text-tinta-suave">(deixe em branco para não mudar)</span>}
-              </label>
-              <Input
-                id={`${uid}-password`}
-                type="password"
-                autoComplete="new-password"
-                placeholder="Pelo menos 8 caracteres"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className={inputCls}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor={`${uid}-role`} className={labelCls}>Perfil de acesso</label>
-              <Select value={formData.roleId} onValueChange={(value) => setFormData({ ...formData, roleId: value })}>
-                <SelectTrigger id={`${uid}-role`} className="min-h-11 w-full rounded-xl sm:min-h-10">
-                  <SelectValue placeholder="Escolha um perfil" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map((r) => (
-                    <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <Input
+              id={`${uid}-name`}
+              label="Nome completo"
+              placeholder="Ex.: João da Silva"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+            <Input
+              id={`${uid}-username`}
+              label="Login"
+              placeholder="Ex.: joao.silva"
+              autoCapitalize="none"
+              value={formData.username}
+              onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase() })}
+            />
+            <Input
+              id={`${uid}-password`}
+              label="Senha"
+              type="password"
+              autoComplete="new-password"
+              hint={editingUser ? "Deixe em branco para não mudar." : "Pelo menos 8 caracteres."}
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            />
+            <Select value={formData.roleId} onValueChange={(value) => setFormData({ ...formData, roleId: value })}>
+              <SelectTrigger id={`${uid}-role`} label="Perfil de acesso">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.map((r) => (
+                  <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-linha pt-4">

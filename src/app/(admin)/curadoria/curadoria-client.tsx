@@ -223,17 +223,14 @@ export function CuradoriaClient({ initialVendors, initialCounts, nowIso }: Curad
           <p className="rounded-xl bg-perigo-suave p-3 text-[15px] text-perigo">Motivo da recusa: {vendor.curationNotes}</p>
         )}
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor={`${uid}-msg`} className="text-sm font-semibold text-tinta">Mensagem para o fornecedor</label>
-          <Textarea
-            id={`${uid}-msg`}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            rows={3}
-            placeholder="Explique o que falta, se for recusar"
-            className="rounded-xl bg-papel"
-          />
-        </div>
+        <Textarea
+          id={`${uid}-msg`}
+          label="Mensagem para o fornecedor"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          rows={3}
+          placeholder="Explique o que falta, se for recusar"
+        />
 
         <div className="flex flex-wrap gap-2">
           {vendor.curationStatus !== "APPROVED" && (

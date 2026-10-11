@@ -148,7 +148,6 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
   };
 
   const labelCls = "mb-1 block text-sm font-semibold text-tinta";
-  const inputCls = "min-h-11 rounded-xl sm:min-h-10";
 
   return (
     <div className="flex flex-col gap-6">
@@ -252,21 +251,17 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
             </DialogTitle>
             <DialogDescription>Quem vocês contrataram e como falar com a pessoa.</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5 pt-3">
+            <Input id={`${uid}-name`} label="Nome do fornecedor ou da empresa" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ex.: Buffet Flor de Sal" required />
             <div>
-              <Label htmlFor={`${uid}-name`} className={labelCls}>Nome do fornecedor ou da empresa</Label>
-              <Input id={`${uid}-name`} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ex.: Buffet Flor de Sal" required className={inputCls} />
-            </div>
-            <div>
-              <Label htmlFor={`${uid}-category`} className={labelCls}>Categoria</Label>
               <Input
                 id={`${uid}-category`}
+                label="Categoria"
                 list={`${uid}-categories`}
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
                 placeholder="Ex.: Buffet, Fotografia, Decoração"
                 required
-                className={inputCls}
               />
               <datalist id={`${uid}-categories`}>
                 {COMMON_CATEGORIES.map((c) => (
@@ -274,18 +269,15 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
                 ))}
               </datalist>
             </div>
-            <div>
-              <Label htmlFor={`${uid}-contact`} className={labelCls}>
-                Contato <span className="font-normal text-tinta-suave">(telefone, WhatsApp ou e-mail)</span>
-              </Label>
-              <Input id={`${uid}-contact`} value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })} placeholder="(11) 99999-9999" className={inputCls} />
-            </div>
-            <div>
-              <Label htmlFor={`${uid}-notes`} className={labelCls}>
-                Anotações <span className="font-normal text-tinta-suave">(opcional)</span>
-              </Label>
-              <Textarea id={`${uid}-notes`} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} className="rounded-xl" />
-            </div>
+            <Input
+              id={`${uid}-contact`}
+              label="Contato"
+              hint="Telefone, WhatsApp ou e-mail."
+              value={form.contact}
+              onChange={(e) => setForm({ ...form, contact: e.target.value })}
+              placeholder="(11) 99999-9999"
+            />
+            <Textarea id={`${uid}-notes`} label="Anotações" optional value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} />
             <div>
               <Label htmlFor={`${uid}-contract`} className={labelCls}>
                 Contrato <span className="font-normal text-tinta-suave">(opcional, até 8 MB)</span>

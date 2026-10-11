@@ -198,16 +198,14 @@ export function RolesClient({ initialRoles }: { initialRoles: RoleItem[] }) {
             <h2 id={`${uid}-titulo`} className={cardTitle}>{editingRole ? "Editar perfil" : "Novo perfil"}</h2>
             <p className="mt-0.5 text-[15px] text-tinta-suave">Dê um nome ao perfil e marque as áreas que ele pode abrir.</p>
           </div>
-          <div className="flex max-w-md flex-col gap-1.5">
-            <label htmlFor={`${uid}-name`} className="text-sm font-semibold text-tinta">Nome do perfil</label>
-            <Input
-              id={`${uid}-name`}
-              placeholder="Ex.: Cerimonialista, Financeiro"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="min-h-11 rounded-xl sm:min-h-10"
-            />
-          </div>
+          <Input
+            id={`${uid}-name`}
+            label="Nome do perfil"
+            fieldClassName="max-w-md"
+            placeholder="Ex.: Cerimonialista, Financeiro"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
 
           <fieldset className="flex flex-col gap-3">
             <legend className="text-sm font-semibold text-tinta">Áreas liberadas</legend>
