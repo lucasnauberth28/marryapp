@@ -4,7 +4,10 @@ import { useId, useState } from "react";
 import { BoardItem, TaskStatus } from "@/types/kanban";
 import { CustomModal } from "@/components/ui/custom-modal";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { btn, btnDanger, errorBox, input, label, textarea } from "@/components/painel/styles";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/select";
+import { btn, btnDanger } from "@/components/painel/styles";
 
 export interface TaskFormData {
   title: string;
@@ -57,51 +60,28 @@ function TaskForm({ task, onSave, onDelete, onClose }: { task: BoardItem | null;
   return (
     <>
       <form onSubmit={submit} className="flex flex-col gap-5">
-        <div className="flex flex-col gap-2">
-          <label htmlFor={ids.title} className={label}>
-            O que precisa ser feito?
-          </label>
-          <input id={ids.title} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: Fechar contrato do buffet" disabled={busy} aria-invalid={!!error} className={input} />
-        </div>
+        <Input
+          id={ids.title}
+          label="O que precisa ser feito?"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Ex.: Fechar contrato do buffet"
+          disabled={busy}
+          error={error && !title.trim() ? error : undefined}
+        />
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor={ids.description} className={label}>
-            Detalhes (opcional)
-          </label>
-          <textarea id={ids.description} value={description} onChange={(e) => setDescription(e.target.value)} rows={3} disabled={busy} className={`${textarea} resize-y`} />
-        </div>
+        <Textarea id={ids.description} label="Detalhes" optional value={description} onChange={(e) => setDescription(e.target.value)} rows={3} disabled={busy} />
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <label htmlFor={ids.due} className={label}>
-              Prazo
-            </label>
-            <input id={ids.due} type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} disabled={busy} className={input} />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label htmlFor={ids.assignee} className={label}>
-              Quem cuida
-            </label>
-            <input id={ids.assignee} value={assignee} onChange={(e) => setAssignee(e.target.value)} placeholder="Nome" disabled={busy} className={input} />
-          </div>
+          <Input id={ids.due} type="date" label="Prazo" value={dueDate} onChange={(e) => setDueDate(e.target.value)} disabled={busy} />
+          <Input id={ids.assignee} label="Quem cuida" value={assignee} onChange={(e) => setAssignee(e.target.value)} placeholder="Nome" disabled={busy} />
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label htmlFor={ids.status} className={label}>
-            Como está
-          </label>
-          <select id={ids.status} value={status} onChange={(e) => setStatus(e.target.value as TaskStatus)} disabled={busy} className={input}>
-            <option value={TaskStatus.TODO}>A fazer</option>
-            <option value={TaskStatus.IN_PROGRESS}>Em andamento</option>
-            <option value={TaskStatus.DONE}>Concluída</option>
-          </select>
-        </div>
-
-        {error && (
-          <p role="alert" className={errorBox}>
-            {error}
-          </p>
-        )}
+        <NativeSelect id={ids.status} label="Como está" value={status} onChange={(e) => setStatus(e.target.value as TaskStatus)} disabled={busy}>
+          <option value={TaskStatus.TODO}>A fazer</option>
+          <option value={TaskStatus.IN_PROGRESS}>Em andamento</option>
+          <option value={TaskStatus.DONE}>Concluída</option>
+        </NativeSelect>
 
         <div className="flex flex-col gap-2 border-t border-linha pt-4">
           <button type="submit" disabled={busy} className={`${btn.primary} ${btn.block}`}>

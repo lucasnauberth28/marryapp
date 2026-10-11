@@ -8,7 +8,9 @@ import { createTimelineEvent, deleteTimelineEvent, updateTimelineEvent } from "@
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { CustomModal } from "@/components/ui/custom-modal";
 import { PageHeader } from "@/components/admin/page-header";
-import { btn, btnDanger, btnIcon, btnIconDanger, card, errorBox, hint, input, label, textarea } from "@/components/painel/styles";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { btn, btnDanger, btnIcon, btnIconDanger, card, errorBox } from "@/components/painel/styles";
 import { useSyncedState } from "@/hooks/use-synced-state";
 import { generateTimelinePdf, type TimelineEventPdf } from "@/lib/generate-timeline-pdf";
 
@@ -54,26 +56,36 @@ function EventForm({ event, count, onClose, onSaved, onDelete }: { event: Timeli
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-5">
-      <div className="flex flex-col gap-2">
-        <label htmlFor={ids.title} className={label}>
-          O que acontece
-        </label>
-        <input id={ids.title} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: Cerimônia, coquetel, valsa" disabled={busy} className={input} />
-      </div>
-      <div className="flex flex-col gap-2 sm:max-w-44">
-        <label htmlFor={ids.time} className={label}>
-          Horário
-        </label>
-        <input id={ids.time} type="time" value={time} onChange={(e) => setTime(e.target.value)} disabled={busy} className={input} />
-      </div>
-      <div className="flex flex-col gap-2">
-        <label htmlFor={ids.description} className={label}>
-          Local ou detalhes (opcional)
-        </label>
-        <textarea id={ids.description} value={description} onChange={(e) => setDescription(e.target.value)} rows={3} disabled={busy} className={`${textarea} resize-y`} />
-        <p className={hint}>Quem vê o site também lê este texto.</p>
-      </div>
-      {error && (
+      <Input
+        id={ids.title}
+        label="O que acontece"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Ex.: Cerimônia, coquetel, valsa"
+        disabled={busy}
+        error={error && !title.trim() ? error : undefined}
+      />
+      <Input
+        id={ids.time}
+        type="time"
+        label="Horário"
+        fieldClassName="sm:max-w-44"
+        value={time}
+        onChange={(e) => setTime(e.target.value)}
+        disabled={busy}
+        error={error && title.trim() && !time ? error : undefined}
+      />
+      <Textarea
+        id={ids.description}
+        label="Local ou detalhes"
+        optional
+        hint="Quem vê o site também lê este texto."
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        rows={3}
+        disabled={busy}
+      />
+      {error && title.trim() && time && (
         <p role="alert" className={errorBox}>
           {error}
         </p>

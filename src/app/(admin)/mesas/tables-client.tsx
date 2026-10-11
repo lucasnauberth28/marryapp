@@ -8,7 +8,8 @@ import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { CustomModal } from "@/components/ui/custom-modal";
 import { PageHeader } from "@/components/admin/page-header";
 import { StatusChip } from "@/components/painel/status-chip";
-import { btn, btnIconDanger, card, hint, input, label, errorBox } from "@/components/painel/styles";
+import { Input } from "@/components/ui/input";
+import { btn, btnIconDanger, card, hint, errorBox } from "@/components/painel/styles";
 import {
   DndContext,
   DragOverlay,
@@ -359,28 +360,26 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
       <DragOverlay dropAnimation={null}>{dragging ? <GuestPreview guest={dragging} /> : null}</DragOverlay>
 
       <CustomModal isOpen={newOpen} onClose={() => setNewOpen(false)} title="Nova mesa" description="Escolha um nome e quantos lugares a mesa tem." size="sm">
-        <form onSubmit={handleAddTable} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="new-table-name" className={label}>
-              Nome da mesa
-            </label>
-            <input id="new-table-name" value={newTableName} onChange={(e) => setNewTableName(e.target.value)} placeholder="Ex.: Mesa dos padrinhos" autoComplete="off" aria-invalid={!!newError} className={input} />
-          </div>
-          <div className="flex flex-col gap-2">
-            <label htmlFor="new-table-capacity" className={label}>
-              Lugares
-            </label>
-            <input
-              id="new-table-capacity"
-              type="number"
-              inputMode="numeric"
-              min={1}
-              max={500}
-              value={Number.isFinite(newTableCap) ? newTableCap : ""}
-              onChange={(e) => setNewTableCap(parseInt(e.target.value))}
-              className={input}
-            />
-          </div>
+        <form onSubmit={handleAddTable} className="flex flex-col gap-5">
+          <Input
+            id="new-table-name"
+            label="Nome da mesa"
+            value={newTableName}
+            onChange={(e) => setNewTableName(e.target.value)}
+            placeholder="Ex.: Mesa dos padrinhos"
+            autoComplete="off"
+            invalid={!!newError}
+          />
+          <Input
+            id="new-table-capacity"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={500}
+            label="Lugares"
+            value={Number.isFinite(newTableCap) ? newTableCap : ""}
+            onChange={(e) => setNewTableCap(parseInt(e.target.value))}
+          />
           {newError && (
             <p role="alert" className={errorBox}>
               {newError}
