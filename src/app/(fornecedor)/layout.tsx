@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CircleAlert } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import prisma from "@/lib/prisma";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
@@ -121,7 +122,21 @@ export default async function FornecedorLayout({ children }: { children: React.R
           id="conteudo"
           className="flex-1 px-4 pt-4 pb-[calc(80px+env(safe-area-inset-bottom)+24px)] md:px-[clamp(16px,4vw,48px)] md:pt-10 md:pb-16"
         >
-          <div className="mx-auto w-full max-w-[1180px]">{children}</div>
+          <div className="mx-auto w-full max-w-[1180px]">
+            {vendor.suspendedAt ? (
+              <div role="status" className="mb-6 flex items-start gap-3 rounded-2xl border border-perigo/40 bg-perigo-suave px-4 py-3.5 text-tinta">
+                <CircleAlert aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-perigo" />
+                <div className="text-[15px] leading-6">
+                  <p className="font-semibold">Seu perfil está suspenso</p>
+                  <p>
+                    Ele não aparece na vitrine e não recebe novos pedidos de orçamento.
+                    {vendor.suspendedReason ? ` Motivo: ${vendor.suspendedReason}` : ""} Para entender e resolver, fale com a equipe do Aceito.
+                  </p>
+                </div>
+              </div>
+            ) : null}
+            {children}
+          </div>
         </main>
       </div>
 

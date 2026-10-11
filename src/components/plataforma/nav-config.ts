@@ -57,9 +57,9 @@ export const PLATFORM_NAV_GROUPS: PlatformNavGroup[] = [
     title: "Casais e fornecedores",
     items: [
       { name: "Casais", href: "/admin/casais", icon: Heart },
-      { name: "Fornecedores", href: "/admin/fornecedores", icon: Store },
-      // MIGRAR: tela antiga (shell do casal), vira /admin/fornecedores/curadoria
-      { name: "Curadoria", href: "/curadoria", icon: ShieldCheck, countKey: "curadoria", child: true },
+      { name: "Fornecedores", href: "/admin/fornecedores", icon: Store, exact: true },
+      // Migrada para o shell /admin (a rota antiga /curadoria só redireciona e fica ativa junto)
+      { name: "Curadoria", href: "/admin/fornecedores/curadoria", icon: ShieldCheck, countKey: "curadoria", child: true, alsoActiveFor: ["/curadoria"] },
     ],
   },
   {

@@ -1,11 +1,9 @@
 "use server";
 
 import { createHmac, createHash } from "node:crypto";
-import { logAudit } from "@/lib/audit";
 import { requirePathPermission } from "@/lib/security/auth-guard";
 
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
 import { CurationStatus, Prisma } from "@prisma/client";
 import { z } from "zod";
 import { checkRateLimit, getClientIp, rateLimitByIp } from "@/lib/security/rate-limiter";
@@ -13,6 +11,8 @@ import { normalizeText } from "@/lib/security/sanitize";
 import { deferNotify } from "@/lib/notifications/service";
 import { notifyLeadNew, notifyProposalAccepted } from "@/lib/notifications/events";
 import { getUnavailableVendorIds, isVendorAvailable } from "@/lib/vendor-availability";
+import { vitrineRank } from "@/lib/platform/vendor-admin";
+import { approveVendor, rejectVendor } from "@/lib/vendor-curation";
 import {
   effectiveVendorTier,
   LEAD_BUDGET_OPTIONS,
@@ -118,17 +118,22 @@ export async function getPartnerVendorsAction(category?: string, options?: { wed
       where,
       select: {
         ...PUBLIC_VENDOR_SELECT,
+        isFeatured: true, // só para ordenar: não sai no DTO público
         reviews: { where: { hiddenAt: null }, select: PUBLIC_REVIEW_SELECT, orderBy: { createdAt: "desc" }, take: 5 },
       },
       orderBy: [{ planTier: "desc" }, { isVerified: "desc" }, { rating: "desc" }],
     });
 
-    const publicVendors = vendors.map(toPublicVendor);
-    // Plano vencido ainda gravado como pago desce para junto dos gratuitos (ordenação estável).
+    // Destacado pela administração fica no topo; depois o plano em vigor. Plano vencido ainda gravado como pago
+    // desce para junto dos gratuitos (ordenação estável).
     const rank = { MASTER: 2, PRO: 1, FREE: 0 } as const;
-    return publicVendors
-      .map((v, i) => ({ v, i }))
-      .sort((a, b) => rank[b.v.planTier] - rank[a.v.planTier] || a.i - b.i)
+    return vendors
+      .map((vendor, index) => {
+        const { isFeatured, ...rest } = vendor;
+        const v = toPublicVendor(rest);
+        return { v, featured: isFeatured, tierRank: rank[v.planTier], index };
+      })
+      .sort(vitrineRank)
       .map(({ v }) => v);
   } catch (error) {
     console.error("[getPartnerVendorsAction Error]:", error);
@@ -442,19 +447,7 @@ export async function getAllVendorsForCurationAction(filterStatus?: string) {
 export async function approveVendorAction(vendorId: string) {
   await requirePathPermission("/curadoria");
   try {
-    await prisma.partnerVendor.update({
-      where: { id: vendorId },
-      data: {
-        curationStatus: "APPROVED",
-        isVerified: true,
-        curationNotes: "Aprovado pela curadoria Aceito.",
-      },
-    });
-    await logAudit({ action: "vendor.approve", targetType: "partner_vendor", targetId: vendorId });
-
-    revalidatePath("/fornecedores");
-    revalidatePath(`/fornecedores/${vendorId}`);
-    revalidatePath("/curadoria");
+    await approveVendor(vendorId);
 
     return { success: true, message: "Fornecedor aprovado e publicado com sucesso no marketplace! ✨" };
   } catch (error) {
@@ -469,24 +462,7 @@ export async function approveVendorAction(vendorId: string) {
 export async function rejectVendorAction(vendorId: string, reason?: string) {
   await requirePathPermission("/curadoria");
   try {
-    await prisma.partnerVendor.update({
-      where: { id: vendorId },
-      data: {
-        curationStatus: "REJECTED",
-        isVerified: false,
-        curationNotes: reason || "Documentação pendente ou inconsistente.",
-      },
-    });
-    await logAudit({
-      action: "vendor.reject",
-      targetType: "partner_vendor",
-      targetId: vendorId,
-      details: { reason: (reason || "").slice(0, 500) },
-    });
-
-    revalidatePath("/fornecedores");
-    revalidatePath(`/fornecedores/${vendorId}`);
-    revalidatePath("/curadoria");
+    await rejectVendor(vendorId, reason);
 
     return { success: true, message: "Status de curadoria atualizado para recusado." };
   } catch (error) {

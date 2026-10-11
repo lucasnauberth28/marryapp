@@ -1,15 +1,10 @@
-import { PageHeader } from "@/components/plataforma/page-header";
-import { ScreenInProgress } from "@/components/plataforma/screen-in-progress";
+import { VendorsScreen } from "./_components/vendors-screen";
 import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import type { SearchParams } from "@/lib/platform/list-params";
 
 export const metadata = { title: "Fornecedores" };
 
-export default async function Page() {
+export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
   await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
-  return (
-    <>
-      <PageHeader eyebrow="Casais e fornecedores" title="Fornecedores" description="Perfis do marketplace, planos e avaliações." />
-      <ScreenInProgress />
-    </>
-  );
+  return <VendorsScreen searchParams={await searchParams} mode="lista" />;
 }

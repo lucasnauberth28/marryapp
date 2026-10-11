@@ -26,6 +26,8 @@ const VENDOR_PANEL_SELECT = {
   isVerified: true,
   curationStatus: true,
   curationNotes: true,
+  suspendedAt: true,
+  suspendedReason: true,
 } satisfies Prisma.PartnerVendorSelect;
 
 export type VendorPanelVendor = Prisma.PartnerVendorGetPayload<{ select: typeof VENDOR_PANEL_SELECT }>;

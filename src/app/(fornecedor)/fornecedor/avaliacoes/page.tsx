@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ExternalLink, ShieldCheck, Star } from "lucide-react";
+import { EyeOff, ExternalLink, Flag, ShieldCheck, Star } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
 import { Chip } from "../../_components/status-chip";
 import { formatWeddingDate } from "../../_lib/vendor-panel";
+import { ReportReview } from "./report-review";
 import { ReviewReply } from "./review-reply";
 import { Stars } from "./stars";
 
@@ -74,6 +75,9 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
             reply: true,
             repliedAt: true,
             createdAt: true,
+            reportedAt: true,
+            hiddenAt: true,
+            moderatedAt: true,
           },
         })
       : [];
@@ -235,12 +239,15 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
                                 Verificada
                               </Chip>
                             ) : null}
+                            {review.hiddenAt ? <Chip tone="neutro" icon={EyeOff}>Ocultada pela equipe do Aceito</Chip> : null}
+                            {review.reportedAt && !review.moderatedAt && !review.hiddenAt ? <Chip tone="aviso" icon={Flag}>Denúncia em análise</Chip> : null}
                             <Stars rating={review.rating} label={`${review.rating} de 5 estrelas`} />
                           </div>
                         </div>
                         <p className="font-display text-lg leading-7 whitespace-pre-line break-words italic sm:text-xl sm:leading-[30px]">
                           “{review.comment}”
                         </p>
+                        {!review.reportedAt || review.moderatedAt ? <ReportReview reviewId={review.id} coupleNames={review.coupleNames} /> : null}
                         <ReviewReply
                           reviewId={review.id}
                           coupleNames={review.coupleNames}

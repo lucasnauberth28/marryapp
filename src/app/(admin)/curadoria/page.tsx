@@ -1,9 +1,6 @@
-import { getAllVendorsForCurationAction } from "@/actions/partner-vendor-actions";
-import { CuradoriaClient } from "./curadoria-client";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "Curadoria" };
-
-export default async function CuradoriaPage() {
-  const data = await getAllVendorsForCurationAction("ALL");
-  return <CuradoriaClient initialVendors={data.vendors} initialCounts={data.counts} nowIso={new Date().toISOString()} />;
+// A curadoria mudou para a administração da plataforma (/admin/fornecedores/curadoria); o endereço antigo só redireciona.
+export default function CuradoriaPage() {
+  redirect("/admin/fornecedores/curadoria");
 }
