@@ -7,7 +7,7 @@ import { btn } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
 import { planOption, shortPlanName } from "@/app/login/auth-config";
-import { PLANS_CONFIG } from "@/lib/plans";
+import { getCatalog } from "@/lib/catalog-server";
 import { nextVendorPeriodEnd, VENDOR_PERIOD_DAYS, vendorTierForPlan } from "@/lib/subscription-period";
 import { priceBreakdown } from "@/lib/checkout-pricing";
 import { upgradeCredit } from "@/lib/upgrade-credit";
@@ -37,6 +37,7 @@ export default async function PlanoPage() {
 
   // Página dinâmica (sessão): a data de agora é lida a cada requisição.
   const now = new Date();
+  const catalog = await getCatalog();
   const [payments, monthLeads] = await Promise.all([
     prisma.subscription.findMany({
       where: { userId: session.userId, status: { in: [PaymentStatus.APPROVED, PaymentStatus.REFUNDED] } },
@@ -51,9 +52,9 @@ export default async function PlanoPage() {
   const expiresAt = vendor.planExpiresAt;
   const hasActivePeriod = expiresAt !== null && expiresAt.getTime() > now.getTime();
   const daysLeft = isPaid && expiresAt ? Math.max(0, Math.ceil((expiresAt.getTime() - now.getTime()) / DAY_MS)) : null;
-  const planName = shortPlanName(planOption(TIER_PLAN[vendor.planTier] ?? "start").name);
+  const planName = shortPlanName(planOption(TIER_PLAN[vendor.planTier] ?? "start", catalog).name);
 
-  const options = [planOption("pro"), planOption("master")];
+  const options = [planOption("pro", catalog), planOption("master", catalog)];
   // Até quando vale cada plano se pago agora (mesma regra do webhook de confirmação).
   const endLabels = Object.fromEntries(
     options.map((o) => {
@@ -75,7 +76,7 @@ export default async function PlanoPage() {
               currentExpiresAt: expiresAt,
               newTier,
               now,
-              currentMonthlyPrice: PLANS_CONFIG[currentKey].price,
+              currentMonthlyPrice: catalog.plans[currentKey].price,
               newPrice: o.price,
             })
           : 0;

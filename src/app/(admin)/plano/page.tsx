@@ -3,6 +3,7 @@ import { Clock, FileText, Receipt } from "lucide-react";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { isPlanKey } from "@/lib/plans";
+import { getCatalog } from "@/lib/catalog-server";
 import { SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
 import { planOption, shortPlanName, type PlanOption } from "@/app/login/auth-config";
@@ -36,6 +37,7 @@ export default async function PlanoPage() {
 
   const isSuperAdmin = session.userId === SUPER_ADMIN_USER_ID;
   const now = new Date();
+  const catalog = await getCatalog();
 
   const [subscriptions, pendingStatic, gifts] = await Promise.all([
     isSuperAdmin
@@ -71,9 +73,9 @@ export default async function PlanoPage() {
 
   const current = subscriptions.find((s) => s.status === PaymentStatus.APPROVED) ?? null;
   const currentRank = current ? (PLAN_RANK[current.planId] ?? 0) : 0;
-  const currentName = current ? (isPlanKey(current.planId) ? planOption(current.planId).name : shortPlanName(current.planName)) : "Básico";
+  const currentName = current ? (isPlanKey(current.planId) ? planOption(current.planId, catalog).name : shortPlanName(current.planName)) : "Básico";
 
-  const upgrades: PlanOption[] = UPGRADE_KEYS.filter((key) => PLAN_RANK[key] > currentRank).map(planOption);
+  const upgrades: PlanOption[] = UPGRADE_KEYS.filter((key) => PLAN_RANK[key] > currentRank).map((key) => planOption(key, catalog));
   const awaitingReview = pendingStatic && (PLAN_RANK[pendingStatic.planId] ?? 0) > currentRank ? pendingStatic : null;
 
   const giftCount = gifts._count._all;
@@ -123,7 +125,7 @@ export default async function PlanoPage() {
           <Clock className="mt-0.5 h-5 w-5 shrink-0 text-aviso" aria-hidden="true" />
           <p>
             Há um Pix de {money(awaitingReview.amount)} do plano{" "}
-            {isPlanKey(awaitingReview.planId) ? planOption(awaitingReview.planId).name : shortPlanName(awaitingReview.planName)} gerado em{" "}
+            {isPlanKey(awaitingReview.planId) ? planOption(awaitingReview.planId, catalog).name : shortPlanName(awaitingReview.planName)} gerado em{" "}
             {dateFmt.format(awaitingReview.createdAt)}. Se vocês já pagaram, nossa equipe confere no extrato e libera o plano em até 1
             dia útil.
           </p>
@@ -159,7 +161,7 @@ export default async function PlanoPage() {
                 <Receipt className="h-4 w-4 shrink-0 text-tinta-suave" aria-hidden="true" />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-tinta">
-                    {isPlanKey(s.planId) ? planOption(s.planId).name : shortPlanName(s.planName)}
+                    {isPlanKey(s.planId) ? planOption(s.planId, catalog).name : shortPlanName(s.planName)}
                   </p>
                   <p className="text-sm text-tinta-suave">
                     {s.paidAt ? `Pago em ${dateFmt.format(s.paidAt)}` : `Gerado em ${dateFmt.format(s.createdAt)}`} · Pix

@@ -1,6 +1,11 @@
 // Textos, fotos e planos da tela de acesso (entrar e criar conta). Sem dependências de servidor.
-import { PLANS_CONFIG, type PlanKey } from "@/lib/plans";
-import { calculateCustomPlanPrice } from "@/lib/pricing-modules";
+import type { PlanKey } from "@/lib/plans";
+import { defaultCatalog, customPlanPriceIn, type Catalog } from "@/lib/catalog";
+
+// Sem catálogo passado, valem os preços do código; as telas reais passam o catálogo do servidor (lib/catalog-server.ts),
+// que traz os preços editados pela administração.
+let codeCatalog: Catalog | null = null;
+const fallbackCatalog = () => (codeCatalog ??= defaultCatalog());
 
 export type AuthMode = "entrar" | "criar";
 export type AccountType = "casal" | "fornecedor";
@@ -34,21 +39,21 @@ export function shortPlanName(name: string) {
   return name.replace(/^(Plano|Fornecedor)\s+/, "");
 }
 
-export function planOption(key: PlanKey): PlanOption {
-  const plan = PLANS_CONFIG[key];
+export function planOption(key: PlanKey, catalog: Catalog = fallbackCatalog()): PlanOption {
+  const plan = catalog.plans[key];
   return {
     id: key,
     name: shortPlanName(plan.name),
     summary: SUMMARY[key],
     price: plan.price,
     period: plan.price === 0 ? "para sempre" : plan.type === "VENDOR" ? "por mês" : "uma vez",
-    features: plan.features,
-    popular: "isPopular" in plan && plan.isPopular === true,
+    features: [...plan.features],
+    popular: plan.isPopular === true,
   };
 }
 
-export function customPlanOption(modules: string[]): PlanOption | null {
-  const calc = calculateCustomPlanPrice(modules);
+export function customPlanOption(modules: string[], catalog: Catalog = fallbackCatalog()): PlanOption | null {
+  const calc = customPlanPriceIn(catalog, modules);
   if (calc.selectedModules.length === 0) return null;
   return {
     id: "custom",
@@ -60,10 +65,10 @@ export function customPlanOption(modules: string[]): PlanOption | null {
   };
 }
 
-export function plansFor(type: AccountType, customModules?: string[]): PlanOption[] {
-  if (type === "fornecedor") return VENDOR_PLAN_KEYS.map(planOption);
-  const custom = customModules?.length ? customPlanOption(customModules) : null;
-  return [...(custom ? [custom] : []), ...COUPLE_PLAN_KEYS.map(planOption)];
+export function plansFor(type: AccountType, customModules?: string[], catalog: Catalog = fallbackCatalog()): PlanOption[] {
+  if (type === "fornecedor") return VENDOR_PLAN_KEYS.map((key) => planOption(key, catalog));
+  const custom = customModules?.length ? customPlanOption(customModules, catalog) : null;
+  return [...(custom ? [custom] : []), ...COUPLE_PLAN_KEYS.map((key) => planOption(key, catalog))];
 }
 
 export function typeOfPlan(planId: string | undefined): AccountType | null {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AuthExperience } from "@/app/login/auth-experience";
 import type { AccountType } from "@/app/login/auth-config";
+import { getCatalog } from "@/lib/catalog-server";
 
 export const metadata: Metadata = {
   title: "Criar conta",
@@ -32,6 +33,7 @@ export default async function CadastroPage({ searchParams }: { searchParams: Sea
       initialType={isCustom ? "casal" : type}
       initialPlanId={plano}
       customModules={modules}
+      catalog={await getCatalog()}
     />
   );
 }

@@ -13,9 +13,13 @@ import { LandingHeader } from "@/components/landing/landing-header";
 import { Seal } from "@/components/landing/seal";
 import { SplitWords } from "@/components/landing/split-heading";
 import { btn, btnArrow, container, h2, lead, overline } from "@/components/landing/styles";
-import { PLANS_CONFIG } from "@/lib/plans";
+import type { Catalog } from "@/lib/catalog";
+import { getCatalog } from "@/lib/catalog-server";
 import { cn } from "@/lib/utils";
 import { CountUp, RsvpDemo, ScrollDrift, VendorStrip } from "./home-landing-client";
+
+// Os preços vêm do catálogo da administração: a página se refaz sozinha a cada 5 minutos e na hora que um preço muda.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: { absolute: "Aceito · Do convite ao grande dia, tudo num só sim" },
@@ -552,7 +556,7 @@ const COUPLE_PLANS = [
   { key: "vip", summary: "Para a experiência completa.", cta: "Escolher o VIP" },
 ] as const;
 
-function Plans() {
+function Plans({ catalog }: { catalog: Catalog }) {
   return (
     <section id="planos" aria-labelledby="planos-titulo" className="py-16 sm:py-24 lg:py-28">
       <div className={container}>
@@ -565,7 +569,7 @@ function Plans() {
 
         <ul className="-mx-4 mt-10 flex snap-x snap-mandatory scroll-pl-4 gap-4 overflow-x-auto px-4 pb-4 pt-3 [scrollbar-width:none] md:mx-0 md:grid md:snap-none md:grid-cols-3 md:gap-6 md:overflow-visible md:px-0 lg:mt-14 [&::-webkit-scrollbar]:hidden">
           {COUPLE_PLANS.map(({ key, summary, cta }, i) => {
-            const plan = PLANS_CONFIG[key];
+            const plan = catalog.plans[key];
             const popular = key === "classic";
             return (
               <Reveal
@@ -620,7 +624,7 @@ function Plans() {
             <Link href="/monte-seu-plano" className="font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 transition-colors hover:decoration-ameixa">
               Montem o plano de vocês
             </Link>
-            . É fornecedor? O plano Start é gratuito, e o Pro sai por {reais(PLANS_CONFIG.pro.price)} por mês.
+            . É fornecedor? O plano Start é gratuito, e o Pro sai por {reais(catalog.plans.pro.price)} por mês.
           </p>
           <Link href="/planos" className={cn(btn.secondary, "shrink-0")}>
             Comparar os planos
@@ -684,7 +688,8 @@ function Closing() {
 
 /* ============================================================================================ */
 
-export default function Home() {
+export default async function Home() {
+  const catalog = await getCatalog();
   return (
     <div className="overflow-x-clip bg-linho text-tinta">
       <SmoothScroll />
@@ -704,7 +709,7 @@ export default function Home() {
         <Guests />
         <Madrinha />
         <Vendors />
-        <Plans />
+        <Plans catalog={catalog} />
         <FaqSection />
         <Closing />
       </main>

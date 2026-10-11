@@ -65,10 +65,12 @@ export const COUPLE_MODULES: PricingModule[] = [
 ];
 
 /**
- * Calcula o valor total e o desconto progressivo por combo
+ * Calcula o valor total e o desconto progressivo por combo.
+ * `modules` é a lista com os preços vigentes (o catálogo mesclado da administração, lib/catalog.ts);
+ * sem ela valem os preços do código.
  */
-export function calculateCustomPlanPrice(selectedModuleIds: string[]) {
-  const selectedModules = COUPLE_MODULES.filter((m) =>
+export function calculateCustomPlanPrice(selectedModuleIds: string[], modules: readonly PricingModule[] = COUPLE_MODULES) {
+  const selectedModules = modules.filter((m) =>
     selectedModuleIds.includes(m.id)
   );
 

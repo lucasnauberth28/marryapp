@@ -6,8 +6,11 @@ import { FaqSection } from "@/components/landing/faq-section";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { Seal } from "@/components/landing/seal";
 import { btn, container, lead, overline } from "@/components/landing/styles";
-import { PLANS_CONFIG } from "@/lib/plans";
+import { getCatalog } from "@/lib/catalog-server";
 import { cn } from "@/lib/utils";
+
+// Os preços vêm do catálogo da administração: a página se refaz sozinha a cada 5 minutos e na hora que um preço muda.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Planos",
@@ -33,7 +36,8 @@ const shortName = (name: string) => name.replace(/^(Plano|Fornecedor)\s+/, "").r
 const tab =
   "inline-flex min-h-10 items-center rounded-[10px] px-5 font-semibold text-tinta-suave no-underline transition-colors hover:text-tinta";
 
-export default function PlanosPage() {
+export default async function PlanosPage() {
+  const catalog = await getCatalog();
   return (
     <div className="bg-linho text-tinta">
       <LandingHeader />
@@ -63,7 +67,7 @@ export default function PlanosPage() {
         <section id="casais" aria-label="Planos para casais" className={cn(container, "scroll-mt-24 pb-12 pt-6")}>
           <ul className="grid gap-6 md:grid-cols-3">
             {COUPLE_PLANS.map(({ key, kicker, cta }) => {
-              const plan = PLANS_CONFIG[key];
+              const plan = catalog.plans[key];
               const popular = key === "classic";
               return (
                 <li key={key}>
@@ -128,7 +132,7 @@ export default function PlanosPage() {
             </div>
             <ul className="grid gap-6 md:grid-cols-3">
               {VENDOR_PLANS.map(({ key, cta }) => {
-                const plan = PLANS_CONFIG[key];
+                const plan = catalog.plans[key];
                 const popular = key === "pro";
                 return (
                   <li key={key}>

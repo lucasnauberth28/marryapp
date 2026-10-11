@@ -9,12 +9,15 @@ import { cn } from "@/lib/utils";
 import { LoginForm } from "./login-form";
 import { SignupFlow } from "./signup-flow";
 import { photoFor, typeOfPlan, type AccountType, type AuthMode, type SignupStep } from "./auth-config";
+import type { Catalog } from "@/lib/catalog";
 
 interface AuthExperienceProps {
   initialMode: AuthMode;
   initialType?: AccountType | null;
   initialPlanId?: string;
   customModules?: string[];
+  /** Preços vigentes (catálogo do servidor); sem ele valem os do código. */
+  catalog?: Catalog;
   /** Caminho (já validado no servidor) para onde voltar depois de entrar. */
   nextPath?: string | null;
   /** A pessoa chegou aqui porque a sessão expirou. */
@@ -25,7 +28,7 @@ interface AuthExperienceProps {
  * Tela única de acesso: entrar e criar conta lado a lado, sem recarregar a página.
  * /login abre na aba Entrar e /cadastro na aba Criar conta.
  */
-export function AuthExperience({ initialMode, initialType = null, initialPlanId, customModules, nextPath = null, sessionExpired = false }: AuthExperienceProps) {
+export function AuthExperience({ initialMode, initialType = null, initialPlanId, customModules, catalog, nextPath = null, sessionExpired = false }: AuthExperienceProps) {
   const planType = typeOfPlan(initialPlanId);
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [type, setType] = useState<AccountType | null>(initialType ?? planType);
@@ -119,6 +122,7 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
                 onTypeChange={setType}
                 initialPlanId={initialPlanId}
                 customModules={customModules}
+                catalog={catalog}
                 onGoToLogin={goToLogin}
               />
             )}

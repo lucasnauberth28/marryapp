@@ -7,7 +7,8 @@ import { cookies } from "next/headers";
 import { signToken, sessionCookieOptions, hasPathAccess, SESSION_COOKIE_NAME } from "@/lib/auth";
 import { isMercadoPagoConfigured, mpPayment } from "@/lib/mercadopago";
 import { generatePixPayload } from "@/lib/pix-utils";
-import { resolvePlan } from "@/lib/plans";
+import { resolvePlanIn } from "@/lib/catalog";
+import { getCatalog } from "@/lib/catalog-server";
 import { checkRateLimit, rateLimitByIp } from "@/lib/security/rate-limiter";
 import { normalizeText, sanitizeSlug, sanitizeUrl } from "@/lib/security/sanitize";
 import { uploadImageDataUrl } from "@/lib/supabase";
@@ -343,7 +344,8 @@ function validWeddingDate(date: Date | null | undefined): Date | null {
  * Casal: cria o casamento junto com a conta e devolve redirectTo "/boas-vindas" (onboarding).
  */
 export async function registerPlanAccount(data: PlanRegistrationData) {
-  const plan = resolvePlan(data.planId, data.modules);
+  // O preço vem do catálogo do servidor; o `amount` enviado pelo navegador é ignorado.
+  const plan = resolvePlanIn(await getCatalog(), data.planId, data.modules);
   if (!plan) return { success: false, error: "Plano inválido." };
 
   const parsed = RegistrationSchema.safeParse(data);

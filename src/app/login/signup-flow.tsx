@@ -30,6 +30,7 @@ import { Field, FormAlert } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/select";
 import { maskDocument, maskPhone } from "@/lib/masks";
 import { formatPrice, plansFor, type AccountType, type PlanOption, type SignupStep } from "./auth-config";
+import type { Catalog } from "@/lib/catalog";
 
 interface SignupFlowProps {
   step: SignupStep;
@@ -39,6 +40,8 @@ interface SignupFlowProps {
   /** Plano vindo da URL (?plano=classic) ou do plano adaptado. */
   initialPlanId?: string;
   customModules?: string[];
+  /** Preços vigentes (catálogo do servidor). */
+  catalog?: Catalog;
   /** Conta já existente: leva para a aba Entrar com o e-mail preenchido. */
   onGoToLogin: (email: string) => void;
 }
@@ -47,8 +50,8 @@ type Errors = Partial<Record<"name" | "email" | "phone" | "password" | "companyN
 
 const STEP_NUMBER: Record<SignupStep, number> = { tipo: 1, plano: 2, dados: 3, pagamento: 4, pronto: 4 };
 
-export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlanId, customModules, onGoToLogin }: SignupFlowProps) {
-  const plans = useMemo(() => (type ? plansFor(type, customModules) : []), [type, customModules]);
+export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlanId, customModules, catalog, onGoToLogin }: SignupFlowProps) {
+  const plans = useMemo(() => (type ? plansFor(type, customModules, catalog) : []), [type, customModules, catalog]);
   const [planId, setPlanId] = useState<string | null>(initialPlanId ?? null);
   const plan: PlanOption | undefined = plans.find((p) => p.id === planId) ?? plans.find((p) => p.popular) ?? plans[0];
 
@@ -173,7 +176,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
               selected={type === "casal"}
               onClick={() => {
                 onTypeChange("casal");
-                if (planId && !plansFor("casal", customModules).some((p) => p.id === planId)) setPlanId(null);
+                if (planId && !plansFor("casal", customModules, catalog).some((p) => p.id === planId)) setPlanId(null);
                 onStepChange("plano");
               }}
             />
@@ -184,7 +187,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
               selected={type === "fornecedor"}
               onClick={() => {
                 onTypeChange("fornecedor");
-                if (planId && !plansFor("fornecedor").some((p) => p.id === planId)) setPlanId(null);
+                if (planId && !plansFor("fornecedor", undefined, catalog).some((p) => p.id === planId)) setPlanId(null);
                 onStepChange("plano");
               }}
             />

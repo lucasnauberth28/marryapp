@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { COUPLE_MODULES, calculateCustomPlanPrice } from "@/lib/pricing-modules";
+import { calculateCustomPlanPrice, type PricingModule } from "@/lib/pricing-modules";
 import { Check, ArrowLeft, Zap } from "lucide-react";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -12,14 +12,14 @@ import { cn } from "@/lib/utils";
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 const brlShort = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
-export function CustomPlanClient() {
+export function CustomPlanClient({ modules }: { modules: PricingModule[] }) {
   const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>(["site", "pixZero", "whatsapp"]);
 
   const toggleModule = (id: string) => {
     setSelectedModuleIds((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]));
   };
 
-  const calculation = useMemo(() => calculateCustomPlanPrice(selectedModuleIds), [selectedModuleIds]);
+  const calculation = useMemo(() => calculateCustomPlanPrice(selectedModuleIds, modules), [selectedModuleIds, modules]);
 
   const customCheckoutUrl = useMemo(() => {
     const modulesParam = selectedModuleIds.join(",");
@@ -59,7 +59,7 @@ export function CustomPlanClient() {
           <fieldset className="m-0 min-w-0 border-0 p-0">
             <legend className="sr-only">Recursos do plano</legend>
             <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {COUPLE_MODULES.map((mod) => {
+              {modules.map((mod) => {
                 const isSelected = selectedModuleIds.includes(mod.id);
                 const inputId = `modulo-${mod.id}`;
                 return (

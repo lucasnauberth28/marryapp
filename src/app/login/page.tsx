@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { SESSION_COOKIE_NAME } from "@/lib/auth";
 import { safeNextPath } from "@/lib/login-redirect";
 import { getSession } from "@/lib/security/auth-guard";
+import { getCatalog } from "@/lib/catalog-server";
 import { AuthExperience } from "./auth-experience";
 
 export const metadata: Metadata = {
@@ -28,5 +29,5 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
     expired = (await getSession()) === null;
   }
 
-  return <AuthExperience initialMode="entrar" nextPath={nextPath} sessionExpired={expired} />;
+  return <AuthExperience initialMode="entrar" nextPath={nextPath} sessionExpired={expired} catalog={await getCatalog()} />;
 }

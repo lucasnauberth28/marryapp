@@ -2,7 +2,7 @@
  * Catálogo de planos. Fonte única de preço: o servidor sempre recalcula o valor a partir daqui,
  * nunca confiando no valor enviado pelo navegador.
  */
-import { calculateCustomPlanPrice } from "@/lib/pricing-modules";
+import { calculateCustomPlanPrice } from "./pricing-modules.ts";
 
 export const PLANS_CONFIG = {
   // Casais
@@ -97,7 +97,8 @@ export function isPlanKey(value: string): value is PlanKey {
 }
 
 /**
- * Resolve tipo e preço (em centavos) de um plano. Planos personalizados são sempre de casal.
+ * Resolve tipo e preço (em centavos) de um plano pelos valores DO CÓDIGO. Planos personalizados são sempre de casal.
+ * No servidor, quem cobra usa o catálogo mesclado com os preços da administração (lib/catalog.ts: resolvePlanIn).
  */
 export function resolvePlan(planId: string, modules?: string[]): { type: "COUPLE" | "VENDOR"; name: string; price: number } | null {
   if (planId === "custom") {

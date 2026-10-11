@@ -1,6 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { PLANS_CONFIG, resolvePlan } from "@/lib/plans";
+import { resolvePlanIn } from "@/lib/catalog";
+import { getCatalog } from "@/lib/catalog-server";
 import { vendorTierForPlan } from "@/lib/subscription-period";
 import { upgradeCredit } from "@/lib/upgrade-credit";
 import {
@@ -36,7 +37,9 @@ export async function quoteSubscription(params: {
   const now = params.now ?? new Date();
   const planId = String(params.planId ?? "");
   const modules = Array.isArray(params.modules) ? params.modules.filter((m) => typeof m === "string").slice(0, 20) : undefined;
-  const plan = resolvePlan(planId, modules);
+  // Preço sempre do catálogo vigente no servidor (código + edições da administração), nunca do navegador.
+  const catalog = await getCatalog();
+  const plan = resolvePlanIn(catalog, planId, modules);
   if (!plan) return { ok: false, error: "Plano inválido." };
   if (plan.price <= 0) return { ok: false, error: "Este plano é gratuito." };
 
@@ -79,7 +82,7 @@ export async function quoteSubscription(params: {
           currentExpiresAt: vendor.planExpiresAt,
           newTier,
           now,
-          currentMonthlyPrice: PLANS_CONFIG[currentKey].price,
+          currentMonthlyPrice: catalog.plans[currentKey].price,
           newPrice: plan.price,
         })
       : 0;

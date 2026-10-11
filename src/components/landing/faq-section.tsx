@@ -1,15 +1,16 @@
 import { Plus } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
-import { PLANS_CONFIG } from "@/lib/plans";
+import { getCatalog } from "@/lib/catalog-server";
+import type { Catalog } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 import { container, h2, lead, overline } from "./styles";
 
 const reais = (cents: number) => `R$ ${(cents / 100).toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`;
 
-const FAQS = [
+const faqs = (catalog: Catalog) => [
   {
     q: "Posso começar de graça?",
-    a: `Podem. O plano Básico é gratuito para sempre e já traz o site, a lista de presentes com Pix e cartão e as confirmações de presença. Se quiserem mais, o Classic (${reais(PLANS_CONFIG.classic.price)}) e o VIP (${reais(PLANS_CONFIG.vip.price)}) são pagos uma vez só, sem mensalidade.`,
+    a: `Podem. O plano Básico é gratuito para sempre e já traz o site, a lista de presentes com Pix e cartão e as confirmações de presença. Se quiserem mais, o Classic (${reais(catalog.plans.classic.price)}) e o VIP (${reais(catalog.plans.vip.price)}) são pagos uma vez só, sem mensalidade.`,
   },
   {
     q: "Como funciona a taxa zero no Pix?",
@@ -33,7 +34,8 @@ const FAQS = [
  * Perguntas frequentes em acordeão nativo (<details>), sem JavaScript.
  * Só uma aberta por vez (atributo name). Onde o navegador permite, a altura anima.
  */
-export function FaqSection() {
+export async function FaqSection() {
+  const FAQS = faqs(await getCatalog());
   return (
     <section id="duvidas" aria-labelledby="duvidas-titulo" className="py-16 sm:py-24 lg:py-28">
       <div className={cn(container, "grid gap-10 lg:grid-cols-[5fr_7fr] lg:gap-20")}>
