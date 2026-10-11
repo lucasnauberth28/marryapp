@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { saveNotificationPreferences } from "@/actions/notification-preferences-actions";
 import { GROUP_LABEL, type NotificationAudience, type NotificationGroup } from "@/lib/notifications/catalog";
 import { offeredChannels, type NotificationChannel, type NotificationPrefs } from "@/lib/notifications/preferences";
+import { NativeSelect } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { PushCard } from "./push-card";
 import { ToggleSwitch } from "./toggle-switch";
@@ -30,9 +31,6 @@ const WHATSAPP_HINT: Partial<Record<NotificationGroup, string>> = {
 
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
 const hourLabel = (h: number) => `${h}h`;
-
-const SELECT =
-  "h-11 min-w-24 cursor-pointer rounded-xl border border-linha-forte bg-papel px-3 text-[15px] text-tinta focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ameixa";
 
 /**
  * "Avisos" da conta: aviso no aparelho, e canais por grupo, e horário de silêncio.
@@ -125,39 +123,35 @@ export function PreferencesForm({ initial, audience, groups, pushPublicKey }: Pr
           <ToggleSwitch checked={quiet.enabled} onChange={(value) => void setQuiet({ enabled: value })} label="Não incomodar à noite" />
         </div>
 
-        <div className={cn("mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 pl-[52px]", !quiet.enabled && "opacity-50")}>
-          <label className="flex items-center gap-2 text-sm text-tinta-suave">
-            Das
-            <select
-              className={SELECT}
-              value={quiet.startHour}
-              disabled={!quiet.enabled}
-              onChange={(e) => void setQuiet({ startHour: Number(e.target.value) })}
-              aria-label="Início do silêncio"
-            >
-              {HOURS.map((h) => (
-                <option key={h} value={h}>
-                  {hourLabel(h)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="flex items-center gap-2 text-sm text-tinta-suave">
-            às
-            <select
-              className={SELECT}
-              value={quiet.endHour}
-              disabled={!quiet.enabled}
-              onChange={(e) => void setQuiet({ endHour: Number(e.target.value) })}
-              aria-label="Fim do silêncio"
-            >
-              {HOURS.map((h) => (
-                <option key={h} value={h}>
-                  {hourLabel(h)}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className={cn("mt-4 flex flex-wrap items-center gap-x-4 gap-y-4 pl-[52px]", !quiet.enabled && "opacity-80")}>
+          <NativeSelect
+            id="silencio-inicio"
+            label="Das"
+            fieldClassName="w-32"
+            value={quiet.startHour}
+            disabled={!quiet.enabled}
+            onChange={(e) => void setQuiet({ startHour: Number(e.target.value) })}
+          >
+            {HOURS.map((h) => (
+              <option key={h} value={h}>
+                {hourLabel(h)}
+              </option>
+            ))}
+          </NativeSelect>
+          <NativeSelect
+            id="silencio-fim"
+            label="Até"
+            fieldClassName="w-32"
+            value={quiet.endHour}
+            disabled={!quiet.enabled}
+            onChange={(e) => void setQuiet({ endHour: Number(e.target.value) })}
+          >
+            {HOURS.map((h) => (
+              <option key={h} value={h}>
+                {hourLabel(h)}
+              </option>
+            ))}
+          </NativeSelect>
           <span className="text-xs text-tinta-suave">Horário de Brasília</span>
         </div>
         {quiet.enabled && quiet.startHour === quiet.endHour && (
