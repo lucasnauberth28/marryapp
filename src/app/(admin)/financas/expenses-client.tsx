@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { btn } from "@/components/landing/styles";
 import { Chip } from "@/components/casal/ui";
@@ -568,7 +567,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
               <Plus className="size-4" aria-hidden="true" /> Nova despesa
             </button>
           </DialogTrigger>
-          <DialogContent className="max-w-3xl sm:max-w-3xl w-full max-h-[88vh] overflow-y-auto p-6 sm:p-7">
+          <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-3xl w-full max-h-[88vh] overflow-y-auto p-6 sm:p-7">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-base">
                 <CalendarRange className="w-5 h-5 text-brand" />
@@ -662,56 +661,48 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                   </div>
 
                   {/* Descrição Principal */}
-                  <div>
-                    <Label className="text-xs font-semibold text-tinta-suave mb-1 block">Descrição da despesa</Label>
-                    <Input
-                      placeholder={expenseType === "CONTRACT" ? "Ex: Sinal do Buffet ou Contrato de Fotos" : "Ex: Lembrancinhas para Padrinhos"}
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      required
-                    />
-                  </div>
+                  <Input
+                    label="Descrição da despesa"
+                    placeholder={expenseType === "CONTRACT" ? "Ex: Sinal do Buffet ou Contrato de Fotos" : "Ex: Lembrancinhas para Padrinhos"}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    required
+                  />
 
                   {/* Fornecedor (Contrato) vs Loja/Link (Compra) */}
                   {expenseType === "CONTRACT" ? (
-                    <div>
-                      <Label className="text-xs font-semibold text-tinta-suave mb-1 block">Fornecedor</Label>
-                      <Select value={vendorId} onValueChange={setVendorId}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Selecione o Fornecedor..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {vendors.map(v => (
-                            <SelectItem key={v.id} value={v.id}>{v.name} ({v.category})</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <Select value={vendorId} onValueChange={setVendorId}>
+                      <SelectTrigger label="Fornecedor">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {vendors.map(v => (
+                          <SelectItem key={v.id} value={v.id}>{v.name} ({v.category})</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <Label className="text-xs font-semibold text-tinta-suave mb-1 block">Loja ou local (opcional)</Label>
-                        <Input
-                          placeholder="Ex: Shopee, Mercado Livre, Loja X"
-                          value={storeName}
-                          onChange={(e) => setStoreName(e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs font-semibold text-tinta-suave mb-1 block">Link da compra ou do produto</Label>
-                        <Input
-                          placeholder="https://shopee.com.br/produto..."
-                          value={purchaseUrl}
-                          onChange={(e) => setPurchaseUrl(e.target.value)}
-                          type="url"
-                        />
-                      </div>
+                      <Input
+                        label="Loja ou local"
+                        optional
+                        placeholder="Ex: Shopee, Mercado Livre, Loja X"
+                        value={storeName}
+                        onChange={(e) => setStoreName(e.target.value)}
+                      />
+                      <Input
+                        label="Link da compra ou do produto"
+                        placeholder="https://shopee.com.br/produto..."
+                        value={purchaseUrl}
+                        onChange={(e) => setPurchaseUrl(e.target.value)}
+                        type="url"
+                      />
                     </div>
                   )}
 
                   {/* Meio de pagamento de Pagamento */}
-                  <div>
-                    <Label className="text-xs font-semibold text-tinta-suave mb-1.5 block">Como foi ou será pago</Label>
+                  <div role="group" aria-labelledby="despesa-forma-pagamento">
+                    <span id="despesa-forma-pagamento" className="text-xs font-semibold text-tinta-suave mb-1.5 block">Como foi ou será pago</span>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {allPaymentMethods.map((pm) => {
                         const Icon = pm.icon;
@@ -721,6 +712,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                             key={pm.id}
                             type="button"
                             onClick={() => setPaymentMethod(pm.label)}
+                            aria-pressed={isSelected}
                             className={`p-2.5 rounded-xl border text-left text-xs font-medium transition-all flex items-center gap-2 cursor-pointer ${
                               isSelected
                                 ? "border-brand bg-brand-100/40 text-brand font-bold shadow-xs"
@@ -737,10 +729,11 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
 
                   {/* Upload da Imagem da Compra / Produto */}
                   <div>
-                    <Label className="text-xs font-semibold text-tinta-suave mb-1 block">Foto da compra ou do produto (opcional)</Label>
+                    <span className="text-xs font-semibold text-tinta-suave mb-1 block">Foto da compra ou do produto (opcional)</span>
                     <div className="border-2 border-dashed border-linha rounded-xl p-3 text-center relative hover:bg-linho transition flex items-center justify-center gap-3">
                       <input
                         ref={imageInputRef}
+                        aria-label="Foto da compra ou do produto"
                         type="file"
                         accept="image/*"
                         onChange={handleImageChange}
@@ -821,36 +814,33 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                   </div>
 
                   {mode === "single" ? (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-xs font-semibold text-tinta-suave mb-1 block">Valor (R$)</Label>
-                        <Input
-                          placeholder="Ex: 350.00"
-                          type="number"
-                          step="0.01"
-                          value={singleAmount}
-                          onChange={(e) => setSingleAmount(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs font-semibold text-tinta-suave mb-1 block">Vencimento</Label>
-                        <DatePicker
-                          value={singleDueDate}
-                          onChange={(e) => setSingleDueDate(e.target.value)}
-                          required
-                        />
-                      </div>
+                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                      <Input
+                        label="Valor"
+                        prefix="R$"
+                        placeholder="Ex: 350.00"
+                        type="number"
+                        step="0.01"
+                        value={singleAmount}
+                        onChange={(e) => setSingleAmount(e.target.value)}
+                        required
+                      />
+                      <DatePicker
+                        label="Vencimento"
+                        value={singleDueDate}
+                        onChange={(e) => setSingleDueDate(e.target.value)}
+                        required
+                      />
                     </div>
                   ) : (
                     /* Modo Parcelado Flexível */
                     <div className="space-y-4">
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <Label className="text-sm font-semibold text-tinta flex items-center gap-1">
+                          <span className="text-sm font-semibold text-tinta flex items-center gap-1">
                             <Layers className="w-3.5 h-3.5 text-brand" />
                             Blocos de parcelas
-                          </Label>
+                          </span>
                           <Button type="button" variant="outline" size="sm" onClick={addBlock} className="text-xs h-7">
                             + Adicionar bloco
                           </Button>
@@ -871,37 +861,30 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                               )}
                             </div>
 
-                            <div className="grid grid-cols-3 gap-2">
-                              <div>
-                                <Label className="text-xs text-tinta-suave">Número de parcelas</Label>
-                                <Input
-                                  type="number"
-                                  min={1}
-                                  max={60}
-                                  value={block.count}
-                                  onChange={(e) => updateBlock(block.id, "count", Number(e.target.value))}
-                                  placeholder="Ex: 3"
-                                />
-                              </div>
-
-                              <div>
-                                <Label className="text-xs text-tinta-suave">Valor da Parcela (R$)</Label>
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  value={block.amount}
-                                  onChange={(e) => updateBlock(block.id, "amount", e.target.value)}
-                                  placeholder="Ex: 300.00"
-                                />
-                              </div>
-
-                              <div>
-                                <Label className="text-xs text-tinta-suave">Primeiro vencimento</Label>
-                                <DatePicker
-                                  value={block.startDate}
-                                  onChange={(e) => updateBlock(block.id, "startDate", e.target.value)}
-                                />
-                              </div>
+                            <div className="grid grid-cols-1 gap-5 pt-1 sm:grid-cols-3 sm:gap-3">
+                              <Input
+                                label="Número de parcelas"
+                                type="number"
+                                min={1}
+                                max={60}
+                                value={block.count}
+                                onChange={(e) => updateBlock(block.id, "count", Number(e.target.value))}
+                                placeholder="Ex: 3"
+                              />
+                              <Input
+                                label="Valor da parcela"
+                                prefix="R$"
+                                type="number"
+                                step="0.01"
+                                value={block.amount}
+                                onChange={(e) => updateBlock(block.id, "amount", e.target.value)}
+                                placeholder="Ex: 300.00"
+                              />
+                              <DatePicker
+                                label="1º vencimento"
+                                value={block.startDate}
+                                onChange={(e) => updateBlock(block.id, "startDate", e.target.value)}
+                              />
                             </div>
                           </div>
                         ))}

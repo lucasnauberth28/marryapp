@@ -194,7 +194,6 @@ export function CarteiraClient({ initialBalance, initialCards, toPayCents }: Car
   };
 
   const fits = toPayCents <= totalAssets;
-  const inputCls = "min-h-11 sm:min-h-10";
   const labelCls = "mb-1 block text-sm font-semibold text-tinta";
 
   return (
@@ -312,26 +311,20 @@ export function CarteiraClient({ initialBalance, initialCards, toPayCents }: Car
             <DialogTitle>Atualizar saldo em conta e Pix</DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleUpdateBalance} className="mt-2 space-y-4">
-            <div>
-              <Label htmlFor="carteira-saldo" className={labelCls}>
-                Quanto vocês têm em conta (R$)
-              </Label>
-              <Input
-                id="carteira-saldo"
-                type="number"
-                inputMode="decimal"
-                step="0.01"
-                placeholder="Ex.: 5000,00"
-                value={inputBalance}
-                onChange={(e) => setInputBalance(e.target.value)}
-                required
-                className={inputCls}
-              />
-              <p className="mt-1 text-sm text-tinta-suave">
-                O valor reservado para as despesas do casamento. Vocês atualizam quando mudar.
-              </p>
-            </div>
+          <form onSubmit={handleUpdateBalance} className="mt-2 flex flex-col gap-5">
+            <Input
+              id="carteira-saldo"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              label="Quanto vocês têm em conta"
+              prefix="R$"
+              placeholder="Ex.: 5000,00"
+              hint="O valor reservado para as despesas do casamento. Vocês atualizam quando mudar."
+              value={inputBalance}
+              onChange={(e) => setInputBalance(e.target.value)}
+              required
+            />
 
             <button type="submit" className={`${btn.primary} ${btn.block}`} disabled={loading}>
               {loading ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : "Salvar saldo"}
@@ -347,88 +340,68 @@ export function CarteiraClient({ initialBalance, initialCards, toPayCents }: Car
             <DialogTitle>{editingCard ? "Editar cartão" : "Adicionar cartão"}</DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSaveCard} className="mt-2 space-y-4">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="cartao-banco" className={labelCls}>Banco</Label>
-                <Select value={cardForm.bank} onValueChange={handleBankChange}>
-                  <SelectTrigger id="cartao-banco" className="w-full">
-                    <SelectValue placeholder="Escolha" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BANKS.map((b) => (
-                      <SelectItem key={b.name} value={b.name}>
-                        {b.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+          <form onSubmit={handleSaveCard} className="mt-2 flex flex-col gap-5">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <Select value={cardForm.bank} onValueChange={handleBankChange}>
+                <SelectTrigger id="cartao-banco" label="Banco">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {BANKS.map((b) => (
+                    <SelectItem key={b.name} value={b.name}>
+                      {b.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-              <div>
-                <Label htmlFor="cartao-bandeira" className={labelCls}>Bandeira</Label>
-                <Select
-                  value={cardForm.brand}
-                  onValueChange={(val) => setCardForm({ ...cardForm, brand: val })}
-                >
-                  <SelectTrigger id="cartao-bandeira" className="w-full">
-                    <SelectValue placeholder="Escolha" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BRANDS.map((br) => (
-                      <SelectItem key={br} value={br}>
-                        {br}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select value={cardForm.brand} onValueChange={(val) => setCardForm({ ...cardForm, brand: val })}>
+                <SelectTrigger id="cartao-bandeira" label="Bandeira">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {BRANDS.map((br) => (
+                    <SelectItem key={br} value={br}>
+                      {br}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="cartao-apelido" className={labelCls}>
-                  Apelido <span className="font-normal text-tinta-suave">(opcional)</span>
-                </Label>
-                <Input
-                  id="cartao-apelido"
-                  placeholder="Ex.: Cartão da Ana"
-                  value={cardForm.nickname}
-                  onChange={(e) => setCardForm({ ...cardForm, nickname: e.target.value })}
-                  className={inputCls}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="cartao-final" className={labelCls}>
-                  Final do cartão <span className="font-normal text-tinta-suave">(opcional)</span>
-                </Label>
-                <Input
-                  id="cartao-final"
-                  placeholder="Ex.: 1234"
-                  inputMode="numeric"
-                  maxLength={4}
-                  value={cardForm.lastDigits}
-                  onChange={(e) => setCardForm({ ...cardForm, lastDigits: e.target.value })}
-                  className={inputCls}
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="cartao-limite" className={labelCls}>Limite (R$)</Label>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <Input
-                id="cartao-limite"
-                type="number"
-                inputMode="decimal"
-                step="0.01"
-                placeholder="Ex.: 8000,00"
-                value={cardForm.limit}
-                onChange={(e) => setCardForm({ ...cardForm, limit: e.target.value })}
-                required
-                className={inputCls}
+                id="cartao-apelido"
+                label="Apelido"
+                optional
+                placeholder="Ex.: Cartão da Ana"
+                value={cardForm.nickname}
+                onChange={(e) => setCardForm({ ...cardForm, nickname: e.target.value })}
+              />
+              <Input
+                id="cartao-final"
+                label="Final do cartão"
+                optional
+                placeholder="Ex.: 1234"
+                inputMode="numeric"
+                maxLength={4}
+                value={cardForm.lastDigits}
+                onChange={(e) => setCardForm({ ...cardForm, lastDigits: e.target.value })}
               />
             </div>
+
+            <Input
+              id="cartao-limite"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              label="Limite"
+              prefix="R$"
+              placeholder="Ex.: 8000,00"
+              value={cardForm.limit}
+              onChange={(e) => setCardForm({ ...cardForm, limit: e.target.value })}
+              required
+            />
 
             <div>
               <Label htmlFor="cartao-cor" className={labelCls}>Cor do cartão na lista</Label>

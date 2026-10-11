@@ -57,7 +57,7 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
       description="Ele aparece na lista de presentes do site de vocês."
       size="md"
     >
-      <form action={handleSubmit} className="space-y-4 pt-2">
+      <form action={handleSubmit} className="flex flex-col gap-5 pt-2">
         <div className="space-y-1.5">
           <span id={`${uid}-img`} className="text-sm font-semibold text-tinta">
             Foto do presente <span className="font-normal text-tinta-suave">(opcional)</span>
@@ -93,51 +93,36 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <label htmlFor={`${uid}-title`} className="text-sm font-semibold text-tinta">
-            Nome do presente
-          </label>
-          <Input
-            id={`${uid}-title`}
-            name="title"
-            placeholder="Ex.: Jogo de panelas"
-            required
-            className="h-11 sm:h-10"
-          />
-        </div>
+        <Input
+          id={`${uid}-title`}
+          name="title"
+          label="Nome do presente"
+          placeholder="Ex.: Jogo de panelas"
+          required
+        />
 
-        <div className="space-y-1.5">
-          <label htmlFor={`${uid}-amount`} className="text-sm font-semibold text-tinta">
-            Valor em reais
-          </label>
-          <Input
-            id={`${uid}-amount`}
-            name="amount"
-            type="number"
-            inputMode="decimal"
-            step="0.01"
-            min="0.01"
-            placeholder="Ex.: 150,00"
-            required
-            aria-describedby={`${uid}-amount-dica`}
-            className="h-11 sm:h-10"
-          />
-          <p id={`${uid}-amount-dica`} className="text-xs text-tinta-suave">
-            Quanto o convidado paga pelo presente. Ele escolhe Pix ou cartão.
-          </p>
-        </div>
+        <Input
+          id={`${uid}-amount`}
+          name="amount"
+          type="number"
+          inputMode="decimal"
+          step="0.01"
+          min="0.01"
+          label="Valor em reais"
+          prefix="R$"
+          placeholder="Ex.: 150,00"
+          hint="Quanto o convidado paga pelo presente. Ele escolhe Pix ou cartão."
+          required
+        />
 
-        <div className="space-y-1.5">
-          <label htmlFor={`${uid}-desc`} className="text-sm font-semibold text-tinta">
-            Recado para os convidados <span className="font-normal text-tinta-suave">(opcional)</span>
-          </label>
-          <Textarea
-            id={`${uid}-desc`}
-            name="description"
-            placeholder="Uma mensagem carinhosa ou detalhes sobre o presente"
-            className="min-h-[100px]"
-          />
-        </div>
+        <Textarea
+          id={`${uid}-desc`}
+          name="description"
+          label="Recado para os convidados"
+          optional
+          placeholder="Uma mensagem carinhosa ou detalhes sobre o presente"
+          rows={4}
+        />
 
         {error && (
           <p className="text-sm text-perigo bg-perigo-suave border border-perigo/40 rounded-lg px-3 py-2">
