@@ -119,7 +119,7 @@ export async function submitLeadReview(input: SubmitLeadReviewInput): Promise<Su
 
       // Recalcula a média no banco, sem carregar todas as avaliações
       const stats = await tx.vendorReview.aggregate({
-        where: { vendorId: lead.vendorId },
+        where: { vendorId: lead.vendorId, hiddenAt: null }, // avaliação ocultada pela administração não conta
         _avg: { rating: true },
         _count: { _all: true },
       });

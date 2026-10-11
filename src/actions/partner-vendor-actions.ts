@@ -102,6 +102,7 @@ export async function getPartnerVendorsAction(category?: string, options?: { wed
   try {
     const where: Prisma.PartnerVendorWhereInput = {
       curationStatus: "APPROVED", // Apenas fornecedores aprovados na curadoria aparecem publicamente
+      suspendedAt: null, // suspenso pela administração some da vitrine
     };
     if (category && category !== "Todos") {
       where.category = category;
@@ -117,7 +118,7 @@ export async function getPartnerVendorsAction(category?: string, options?: { wed
       where,
       select: {
         ...PUBLIC_VENDOR_SELECT,
-        reviews: { select: PUBLIC_REVIEW_SELECT, orderBy: { createdAt: "desc" }, take: 5 },
+        reviews: { where: { hiddenAt: null }, select: PUBLIC_REVIEW_SELECT, orderBy: { createdAt: "desc" }, take: 5 },
       },
       orderBy: [{ planTier: "desc" }, { isVerified: "desc" }, { rating: "desc" }],
     });
@@ -145,10 +146,10 @@ export async function getPartnerVendorById(id: string) {
     if (!z.string().uuid().safeParse(id).success) return null;
 
     const vendor = await prisma.partnerVendor.findFirst({
-      where: { id, curationStatus: "APPROVED" },
+      where: { id, curationStatus: "APPROVED", suspendedAt: null },
       select: {
         ...PUBLIC_VENDOR_SELECT,
-        reviews: { select: PUBLIC_REVIEW_SELECT, orderBy: { createdAt: "desc" } },
+        reviews: { where: { hiddenAt: null }, select: PUBLIC_REVIEW_SELECT, orderBy: { createdAt: "desc" } },
       },
     });
 
@@ -197,7 +198,7 @@ export async function checkVendorAvailability(vendorId: string, date: string): P
     }
 
     const vendor = await prisma.partnerVendor.findFirst({
-      where: { id: parsed.data.vendorId, curationStatus: "APPROVED" },
+      where: { id: parsed.data.vendorId, curationStatus: "APPROVED", suspendedAt: null },
       select: { id: true },
     });
     if (!vendor) return { success: false, error: "Fornecedor não encontrado." };
@@ -254,7 +255,7 @@ export async function createVendorLead(data: {
     }
 
     const vendor = await prisma.partnerVendor.findFirst({
-      where: { id: input.vendorId, curationStatus: "APPROVED" },
+      where: { id: input.vendorId, curationStatus: "APPROVED", suspendedAt: null },
       select: { id: true, planTier: true, planExpiresAt: true },
     });
     if (!vendor) return { success: false, error: "Fornecedor não encontrado." };
