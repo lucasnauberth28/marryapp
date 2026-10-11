@@ -168,8 +168,8 @@ test("modo de manutenção: casal só lê, convidado é avisado e a administraç
     await casal.goto("/pendencias");
     await expect(casal.getByText("Estamos em manutenção.")).toBeVisible();
     await casal.getByRole("button", { name: "Nova tarefa" }).first().click();
-    await casal.getByLabel("Título").fill("Tarefa durante a manutenção");
-    await casal.getByRole("dialog").getByRole("button", { name: /Salvar|Criar|Adicionar/ }).last().click();
+    await casal.getByLabel("O que precisa ser feito?").fill("Tarefa durante a manutenção");
+    await casal.getByRole("button", { name: "Criar tarefa" }).click();
     await casal.waitForTimeout(1500);
     await casal.goto("/pendencias");
     await expect(casal.getByText("Tarefa durante a manutenção")).toHaveCount(0);
