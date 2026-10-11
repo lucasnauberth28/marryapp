@@ -25,7 +25,7 @@ import {
   CalendarX,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { checkVendorAvailability, createVendorLead, type PublicVendor } from "@/actions/partner-vendor-actions";
@@ -43,7 +43,6 @@ interface VendorDetailClientProps {
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 // Campos do design: 44px, borda forte, raio de 12px, texto de 16px.
-const inputCls = "h-11 rounded-[12px] bg-papel text-base shadow-none";
 const labelCls = "text-sm font-semibold leading-5 text-tinta";
 const sectionTitle = "font-display text-2xl font-medium leading-8 text-tinta sm:text-[26px]";
 
@@ -85,13 +84,11 @@ function AvailabilityCheck({ vendorId, todayIso }: { vendorId: string; todayIso:
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-2" aria-describedby="disponibilidade-resultado">
-      <Label htmlFor="disponibilidade-data" className={labelCls}>
-        A data está livre?
-      </Label>
-      <div className="flex gap-2">
+      <div className="flex items-start gap-2">
         <Input
           id="disponibilidade-data"
           type="date"
+          label="A data está livre?"
           min={todayIso}
           value={date}
           onChange={(e) => {
@@ -99,9 +96,9 @@ function AvailabilityCheck({ vendorId, todayIso }: { vendorId: string; todayIso:
             setResult(null);
             setError(null);
           }}
-          className={cn(inputCls, "flex-1")}
+          fieldClassName="flex-1"
         />
-        <button type="submit" disabled={isPending} className={cn(btn.secondary, "px-4")}>
+        <button type="submit" disabled={isPending} className={cn(btn.secondary, "min-h-12 px-4")}>
           {isPending ? <Loader2 className="size-4 animate-spin" aria-label="Consultando" /> : "Consultar"}
         </button>
       </div>
@@ -539,84 +536,53 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                     </button>
                   </div>
                 ) : (
-                  <form onSubmit={handleSendLead} className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="lead-nome" className={labelCls}>
-                        Seu nome
-                      </Label>
-                      <Input
-                        id="lead-nome"
-                        name="name"
-                        autoComplete="name"
-                        value={coupleName}
-                        onChange={(e) => setCoupleName(e.target.value)}
-                        placeholder="Ex.: Giovanna"
-                        required
-                        className={inputCls}
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="lead-telefone" className={labelCls}>
-                        Seu WhatsApp com DDD
-                      </Label>
-                      <Input
-                        id="lead-telefone"
-                        name="phone"
-                        type="tel"
-                        inputMode="tel"
-                        autoComplete="tel-national"
-                        value={couplePhone}
-                        onChange={(e) => setCouplePhone(e.target.value)}
-                        placeholder="(11) 99999-9999"
-                        required
-                        className={inputCls}
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Label className={labelCls}>Data do casamento</Label>
-                      <DatePicker
-                        value={weddingDate}
-                        onChange={(e) => setWeddingDate(e.target.value)}
-                        placeholder="Escolha a data"
-                        className={inputCls}
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="lead-cidade" className={labelCls}>
-                        Cidade do casamento
-                      </Label>
-                      <Input
-                        id="lead-cidade"
-                        value={leadLocation}
-                        onChange={(e) => setLeadLocation(e.target.value)}
-                        placeholder="Ex.: Itu, SP"
-                        maxLength={80}
-                        autoComplete="address-level2"
-                        className={inputCls}
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Label htmlFor="lead-orcamento" className={labelCls}>
-                        Quanto vocês pensam em investir
-                      </Label>
-                      <select
-                        id="lead-orcamento"
-                        value={leadBudget}
-                        onChange={(e) => setLeadBudget(e.target.value)}
-                        className="min-h-11 w-full cursor-pointer rounded-[12px] border border-linha-forte bg-papel px-3 text-base text-tinta"
-                      >
-                        <option value="">Escolha (opcional)</option>
-                        {LEAD_BUDGET_OPTIONS.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                  <form onSubmit={handleSendLead} className="flex flex-col gap-5">
+                    <Input
+                      id="lead-nome"
+                      name="name"
+                      label="Seu nome"
+                      autoComplete="name"
+                      value={coupleName}
+                      onChange={(e) => setCoupleName(e.target.value)}
+                      placeholder="Ex.: Giovanna"
+                      required
+                    />
+                    <Input
+                      id="lead-telefone"
+                      name="phone"
+                      label="Seu WhatsApp com DDD"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel-national"
+                      value={couplePhone}
+                      onChange={(e) => setCouplePhone(e.target.value)}
+                      placeholder="(11) 99999-9999"
+                      required
+                    />
+                    <DatePicker
+                      id="lead-data"
+                      label="Data do casamento"
+                      value={weddingDate}
+                      onChange={(e) => setWeddingDate(e.target.value)}
+                      placeholder="Escolha a data"
+                    />
+                    <Input
+                      id="lead-cidade"
+                      label="Cidade do casamento"
+                      value={leadLocation}
+                      onChange={(e) => setLeadLocation(e.target.value)}
+                      placeholder="Ex.: Itu, SP"
+                      maxLength={80}
+                      autoComplete="address-level2"
+                    />
+                    <NativeSelect id="lead-orcamento" label="Quanto vocês pensam em investir" optional value={leadBudget} onChange={(e) => setLeadBudget(e.target.value)}>
+                      <option value=""></option>
+                      {LEAD_BUDGET_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </NativeSelect>
 
                     <fieldset className="flex flex-col gap-2">
                       <legend className={cn(labelCls, "mb-2")}>Como prefere conversar?</legend>

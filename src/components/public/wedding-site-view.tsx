@@ -790,37 +790,27 @@ export function WeddingSiteView({
           </div>
 
           {formOpen && (
-            <form id="form-recado" onSubmit={handleSendGuestbook} className="flex flex-col gap-4 rounded-2xl border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)] md:max-w-[560px]">
-              <div className="flex flex-col gap-2">
-                <label htmlFor="guestbook-name" className="text-sm font-semibold text-tinta">
-                  Seu nome
-                </label>
-                <Input
-                  id="guestbook-name"
-                  value={authorName}
-                  onChange={(e) => setAuthorName(e.target.value)}
-                  placeholder="Ex.: Rodrigo e Carol"
-                  maxLength={80}
-                  disabled={preview}
-                  autoComplete="name"
-                  className="h-11 rounded-xl border-linha-forte bg-papel"
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label htmlFor="guestbook-message" className="text-sm font-semibold text-tinta">
-                  Mensagem
-                </label>
-                <Textarea
-                  id="guestbook-message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Desejamos toda a felicidade do mundo..."
-                  rows={4}
-                  maxLength={1000}
-                  disabled={preview}
-                  className="rounded-xl border-linha-forte bg-papel"
-                />
-              </div>
+            <form id="form-recado" onSubmit={handleSendGuestbook} className="flex flex-col gap-5 rounded-2xl border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)] md:max-w-[560px]">
+              <Input
+                id="guestbook-name"
+                label="Seu nome"
+                value={authorName}
+                onChange={(e) => setAuthorName(e.target.value)}
+                placeholder="Ex.: Rodrigo e Carol"
+                maxLength={80}
+                disabled={preview}
+                autoComplete="name"
+              />
+              <Textarea
+                id="guestbook-message"
+                label="Mensagem"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Desejamos toda a felicidade do mundo..."
+                rows={4}
+                maxLength={1000}
+                disabled={preview}
+              />
               <button type="submit" disabled={isPending || preview} className={btn.primary}>
                 {isPending ? "Enviando..." : "Enviar recado"}
               </button>

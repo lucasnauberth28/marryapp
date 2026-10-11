@@ -94,40 +94,7 @@ export function joinIds(...ids: Array<string | undefined | false | null>) {
   return out || undefined
 }
 
-/** Uso antigo (rótulo fixo acima do controle). Sai quando as últimas telas forem migradas. */
-interface LegacyFieldProps {
-  htmlFor: string
-  label: React.ReactNode
-  hint?: React.ReactNode
-  error?: React.ReactNode
-  className?: string
-  children: React.ReactNode
-}
-
-function LegacyField({ htmlFor, label, hint, error, className, children }: LegacyFieldProps) {
-  return (
-    <div className={cn("flex min-w-0 flex-col gap-2", className)}>
-      <label htmlFor={htmlFor} className="text-sm leading-5 font-semibold text-tinta">
-        {label}
-      </label>
-      {children}
-      {hint && (
-        <p id={`${htmlFor}-dica`} className="text-sm leading-5 text-tinta-suave">
-          {hint}
-        </p>
-      )}
-      {error && (
-        <p id={`${htmlFor}-erro`} role="alert" className="flex items-center gap-1 text-sm leading-5 font-semibold text-perigo">
-          <CircleAlert className="size-4 shrink-0" aria-hidden="true" />
-          {error}
-        </p>
-      )}
-    </div>
-  )
-}
-
-export function Field(props: FieldProps | LegacyFieldProps) {
-  if ("htmlFor" in props) return <LegacyField {...props} />
+export function Field(props: FieldProps) {
   return <FloatField {...props} />
 }
 

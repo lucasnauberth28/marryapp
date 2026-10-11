@@ -95,9 +95,13 @@ button.ac-float__control > span:not([aria-hidden]) {
 select.ac-float__control option {
   color: var(--color-tinta);
 }
-/* Select nativo sem escolha: o campo fica em branco e o rótulo no centro. */
+/* Select nativo sem escolha: o campo fica em branco e o rótulo no centro.
+   Com data-float="always" a opção vazia é um valor de verdade (ex.: "Qualquer valor"). */
 select.ac-float__control:has(option[value=""]:checked) {
   color: transparent;
+}
+select.ac-float__control[data-float="always"]:has(option[value=""]:checked) {
+  color: var(--color-tinta);
 }
 
 .ac-float__control:hover:not(:disabled):not([aria-disabled="true"]):not([readonly]) {

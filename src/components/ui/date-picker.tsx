@@ -22,7 +22,7 @@ import {
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-export type DatePickerProps = Omit<Partial<FloatOptions>, "prefix" | "suffix" | "trailing" | "icon"> & {
+export type DatePickerProps = Omit<FloatOptions, "prefix" | "suffix" | "trailing" | "icon"> & {
   id?: string;
   name?: string;
   value?: string; // YYYY-MM-DD
@@ -48,7 +48,7 @@ export function DatePicker({
   disabled = false,
   required = false,
   className,
-  label = "Data",
+  label,
   hint,
   error,
   optional,

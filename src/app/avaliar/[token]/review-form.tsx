@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BadgeCheck, Loader2, Star } from "lucide-react";
 import { submitLeadReview } from "@/actions/vendor-review-actions";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { TOKEN_CARD } from "@/components/public/token-page-shell";
 
@@ -91,25 +92,18 @@ export function ReviewForm({ token, companyName }: { token: string; companyName:
           </div>
         </fieldset>
 
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="avaliar-comentario" className="text-sm font-semibold text-tinta">
-            Conte como foi
-          </label>
-          <textarea
-            id="avaliar-comentario"
-            rows={5}
-            minLength={10}
-            maxLength={2000}
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Atendimento, pontualidade, qualidade e como ficou o resultado no grande dia."
-            aria-describedby="avaliar-comentario-dica"
-            className="min-h-32 w-full resize-y rounded-xl border border-linha-forte bg-papel px-4 py-3 text-base text-tinta placeholder:text-tinta-suave/80"
-          />
-          <p id="avaliar-comentario-dica" className="text-[13px] text-tinta-suave">
-            De 10 a 2.000 caracteres ({length}).
-          </p>
-        </div>
+        <Textarea
+          id="avaliar-comentario"
+          label="Conte como foi"
+          rows={5}
+          minLength={10}
+          maxLength={2000}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Atendimento, pontualidade, qualidade e como ficou o resultado no grande dia."
+          hint={`De 10 a 2.000 caracteres (${length}).`}
+          inputClassName="min-h-32"
+        />
 
         <button
           type="submit"

@@ -4,11 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BadgeCheck, Loader2 } from "lucide-react";
 import { acceptLeadProposal } from "@/actions/partner-vendor-actions";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { TOKEN_CARD } from "@/components/public/token-page-shell";
 
-const INPUT =
-  "min-h-11 w-full rounded-xl border border-linha-forte bg-papel px-4 text-base text-tinta placeholder:text-tinta-suave/80 disabled:opacity-60";
 
 export function AcceptProposalForm({ token, companyName }: { token: string; companyName: string }) {
   const router = useRouter();
@@ -56,27 +55,22 @@ export function AcceptProposalForm({ token, companyName }: { token: string; comp
           fornecedor.
         </p>
       </div>
-      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4" aria-describedby={error ? "aceitar-erro" : undefined}>
+      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5" aria-describedby={error ? "aceitar-erro" : undefined}>
         {error ? (
           <p id="aceitar-erro" role="alert" className="rounded-xl bg-perigo-suave px-4 py-3 text-sm font-medium text-perigo">
             {error}
           </p>
         ) : null}
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="aceitar-nome" className="text-sm font-semibold text-tinta">
-            Nome completo
-          </label>
-          <input
-            id="aceitar-nome"
-            name="fullName"
-            required
-            autoComplete="name"
-            maxLength={120}
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            className={INPUT}
-          />
-        </div>
+        <Input
+          id="aceitar-nome"
+          label="Nome completo"
+          name="fullName"
+          required
+          autoComplete="name"
+          maxLength={120}
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+        />
         <label className="flex min-h-11 cursor-pointer items-start gap-3 text-[15px]">
           <input
             type="checkbox"

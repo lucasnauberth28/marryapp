@@ -116,6 +116,8 @@ type NativeSelectProps = Omit<React.ComponentProps<"select">, "size"> &
   Partial<Omit<FloatOptions, "prefix" | "suffix" | "trailing">> & {
     /** Classes do select no modo com rótulo. Em `className` vão as da raiz do campo. */
     inputClassName?: string
+    /** O rótulo fica sempre no alto e a opção de valor vazio aparece (ex.: "Qualquer valor"). */
+    alwaysFloat?: boolean
   }
 
 /**
@@ -133,6 +135,7 @@ function NativeSelect({
   invalid,
   fieldClassName,
   inputClassName,
+  alwaysFloat,
   className,
   id,
   children,
@@ -161,6 +164,7 @@ function NativeSelect({
           {...rest}
           {...c}
           data-slot="native-select"
+          data-float={alwaysFloat ? "always" : undefined}
           required={required}
           aria-describedby={joinIds(c["aria-describedby"], describedBy)}
           className={cn(c.className, inputClassName)}

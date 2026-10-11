@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -68,7 +68,6 @@ const SORTS: { value: SortKey; label: string }[] = [
 // Campos do design: 44px de altura, borda forte, raio de 12px.
 const field =
   "min-h-11 w-full rounded-[12px] border border-linha-forte bg-papel px-4 text-base leading-6 text-tinta transition-colors duration-150 hover:border-tinta-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa";
-const fieldLabel = "text-sm font-semibold leading-5 text-tinta";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
@@ -250,90 +249,64 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
             role="search"
             aria-label="Buscar fornecedores"
             onSubmit={(e) => e.preventDefault()}
-            className="grid grid-cols-1 gap-3 rounded-[16px] border border-linha bg-papel p-4 shadow-aceito-1 sm:grid-cols-2 lg:grid-cols-4"
+            className="grid grid-cols-1 gap-x-3 gap-y-5 rounded-[16px] border border-linha bg-papel p-4 pt-5 shadow-aceito-1 sm:grid-cols-2 lg:grid-cols-4"
           >
-            <div className="flex min-w-0 flex-col gap-2">
-              <Label htmlFor="filtro-busca" className={fieldLabel}>
-                O que você procura?
-              </Label>
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-tinta-suave" aria-hidden="true" />
-                <input
-                  id="filtro-busca"
-                  type="search"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Espaço, fotógrafo, buffet..."
-                  className={cn(field, "pl-10")}
-                />
-              </div>
-            </div>
+            <Input
+              id="filtro-busca"
+              type="search"
+              label="O que você procura?"
+              icon={Search}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Espaço, fotógrafo, buffet..."
+            />
 
-            <div className="flex min-w-0 flex-col gap-2">
-              <Label htmlFor="filtro-regiao" className={fieldLabel}>
-                Onde vai ser?
-              </Label>
-              <div className="relative">
-                <MapPin className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-tinta-suave" aria-hidden="true" />
-                <select
-                  id="filtro-regiao"
-                  value={selectedRegion}
-                  onChange={(e) => setSelectedRegion(e.target.value)}
-                  className={cn(field, "pl-10")}
-                >
-                  {REGIONS.map((reg) => (
-                    <option key={reg} value={reg}>
-                      {reg === ALL_REGIONS ? "Todas as regiões" : reg}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <NativeSelect id="filtro-regiao" label="Onde vai ser?" icon={MapPin} value={selectedRegion} onChange={(e) => setSelectedRegion(e.target.value)}>
+              {REGIONS.map((reg) => (
+                <option key={reg} value={reg}>
+                  {reg === ALL_REGIONS ? "Todas as regiões" : reg}
+                </option>
+              ))}
+            </NativeSelect>
 
-            <div className={cn("min-w-0 flex-col gap-2 sm:flex", moreOpen || dateInput ? "flex" : "hidden")}>
-              <Label htmlFor="filtro-data" className={fieldLabel}>
-                Data do casamento
-              </Label>
-              <div className="relative">
-                <Calendar className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-tinta-suave" aria-hidden="true" />
-                <input
-                  id="filtro-data"
-                  type="date"
-                  min={todayIso}
-                  value={dateInput}
-                  onChange={(e) => applyDate(e.target.value)}
-                  aria-describedby="filtro-data-dica"
-                  className={cn(field, "pl-10 pr-11")}
-                />
-                {isPendingDate ? (
-                  <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-tinta-suave" aria-label="Atualizando" />
-                ) : dateInput ? (
-                  <button
-                    type="button"
-                    onClick={() => applyDate("")}
-                    aria-label="Limpar data do casamento"
-                    className="absolute right-1 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-full text-tinta-suave hover:bg-areia hover:text-tinta"
-                  >
-                    <X className="size-4" aria-hidden="true" />
-                  </button>
-                ) : null}
-              </div>
+            <div className={cn("min-w-0 flex-col sm:flex", moreOpen || dateInput ? "flex" : "hidden")}>
+              <Input
+                id="filtro-data"
+                type="date"
+                label="Data do casamento"
+                icon={Calendar}
+                min={todayIso}
+                value={dateInput}
+                onChange={(e) => applyDate(e.target.value)}
+                aria-describedby="filtro-data-dica"
+                trailing={
+                  isPendingDate ? (
+                    <Loader2 className="mr-3 size-4 animate-spin text-tinta-suave" aria-label="Atualizando" />
+                  ) : dateInput ? (
+                    <button
+                      type="button"
+                      onClick={() => applyDate("")}
+                      aria-label="Limpar data do casamento"
+                      className="grid size-9 place-items-center rounded-full text-tinta-suave hover:bg-areia hover:text-tinta"
+                    >
+                      <X className="size-4" aria-hidden="true" />
+                    </button>
+                  ) : undefined
+                }
+              />
               <p id="filtro-data-dica" className="sr-only">
                 Mostra só fornecedores com a data livre na agenda.
               </p>
             </div>
 
-            <div className={cn("min-w-0 flex-col gap-2 sm:flex", moreOpen || budget || dateInput ? "flex" : "hidden")}>
-              <Label htmlFor="filtro-valor" className={fieldLabel}>
-                Até quanto?
-              </Label>
-              <select id="filtro-valor" value={budget} onChange={(e) => setBudget(e.target.value)} className={field}>
+            <div className={cn("min-w-0 flex-col sm:flex", moreOpen || budget || dateInput ? "flex" : "hidden")}>
+              <NativeSelect id="filtro-valor" label="Até quanto?" alwaysFloat value={budget} onChange={(e) => setBudget(e.target.value)}>
                 {BUDGETS.map((b) => (
                   <option key={b.value} value={b.value}>
                     {b.label}
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
 
             <button
@@ -629,81 +602,66 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
               </Button>
             </div>
           ) : (
-          <form onSubmit={handleSubmitLead} className="space-y-4 pt-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="vl-nome" className="text-sm font-semibold text-tinta">Seu nome ou o nome do casal</Label>
+          <form onSubmit={handleSubmitLead} className="flex flex-col gap-5 pt-5">
+            <Input
+              id="vl-nome"
+              name="name"
+              label="Seu nome ou o nome do casal"
+              autoComplete="name"
+              value={coupleName}
+              onChange={(e) => setCoupleName(e.target.value)}
+              placeholder="Ex.: Giovanna e Lucas"
+              required
+            />
+
+            <div className="grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 min-[480px]:gap-3">
               <Input
-                id="vl-nome"
-                name="name"
-                autoComplete="name"
-                value={coupleName}
-                onChange={(e) => setCoupleName(e.target.value)}
-                placeholder="Ex.: Giovanna e Lucas"
+                id="vl-telefone"
+                name="phone"
+                label="WhatsApp com DDD"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel-national"
+                value={couplePhone}
+                onChange={(e) => setCouplePhone(e.target.value)}
+                placeholder="(11) 99999-9999"
                 required
-                className="rounded-2xl h-11 text-sm bg-linho"
+              />
+              <Input
+                id="vl-email"
+                name="email"
+                label="E-mail"
+                optional
+                autoComplete="email"
+                type="email"
+                value={coupleEmail}
+                onChange={(e) => setCoupleEmail(e.target.value)}
+                placeholder="noivos@email.com"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="vl-telefone" className="text-sm font-semibold text-tinta">WhatsApp com DDD</Label>
-                <Input
-                  id="vl-telefone"
-                  name="phone"
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel-national"
-                  value={couplePhone}
-                  onChange={(e) => setCouplePhone(e.target.value)}
-                  placeholder="(11) 99999-9999"
-                  required
-                  className="rounded-2xl h-11 text-sm bg-linho"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="vl-email" className="text-sm font-semibold text-tinta">E-mail <span className="font-normal text-tinta-suave">(opcional)</span></Label>
-                <Input
-                  id="vl-email"
-                  name="email"
-                  autoComplete="email"
-                  type="email"
-                  value={coupleEmail}
-                  onChange={(e) => setCoupleEmail(e.target.value)}
-                  placeholder="noivos@email.com"
-                  className="rounded-2xl h-11 text-sm bg-linho"
-                />
-              </div>
+            <div className="grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 min-[480px]:gap-3">
+              <Input
+                id="vl-convidados"
+                label="Nº de convidados"
+                inputMode="numeric"
+                min={1}
+                type="number"
+                value={guestCount}
+                onChange={(e) => setGuestCount(e.target.value)}
+                placeholder="Ex: 150"
+              />
+              <DatePicker
+                id="vl-data"
+                label="Data do casamento"
+                value={weddingDate}
+                onChange={(e) => setWeddingDate(e.target.value)}
+                placeholder="Escolher"
+              />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="vl-convidados" className="text-sm font-semibold text-tinta">Nº de convidados</Label>
-                <Input
-                  id="vl-convidados"
-                  inputMode="numeric"
-                  min={1}
-                  type="number"
-                  value={guestCount}
-                  onChange={(e) => setGuestCount(e.target.value)}
-                  placeholder="Ex: 150"
-                  className="rounded-2xl h-11 text-sm bg-linho"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-sm font-semibold text-tinta">Data do casamento</Label>
-                <DatePicker
-                  value={weddingDate}
-                  onChange={(e) => setWeddingDate(e.target.value)}
-                  placeholder="Escolher"
-                  className="rounded-2xl h-11 text-sm bg-linho"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-sm font-semibold text-tinta">Como prefere conversar?</Label>
+            <div role="group" aria-labelledby="vl-conversa" className="flex flex-col gap-1.5">
+              <span id="vl-conversa" className="text-sm font-semibold text-tinta">Como prefere conversar?</span>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -735,16 +693,15 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="vl-mensagem" className="text-sm font-semibold text-tinta">Recado para o fornecedor <span className="font-normal text-tinta-suave">(opcional)</span></Label>
-              <Textarea
-                id="vl-mensagem"
-                value={leadMessage}
-                onChange={(e) => setLeadMessage(e.target.value)}
-                placeholder="Conte o estilo do casamento ou tire uma dúvida"
-                className="rounded-2xl text-sm bg-linho resize-none h-20"
-              />
-            </div>
+            <Textarea
+              id="vl-mensagem"
+              label="Recado para o fornecedor"
+              optional
+              value={leadMessage}
+              onChange={(e) => setLeadMessage(e.target.value)}
+              placeholder="Conte o estilo do casamento ou tire uma dúvida"
+              rows={3}
+            />
 
             <Button
               type="submit"

@@ -9,6 +9,8 @@ import { findGuestByPhone, publicConfirmRsvp } from "@/actions/guest-actions";
 import { btn } from "@/components/landing/styles";
 import { Seal } from "@/components/landing/seal";
 import { Field, FormAlert } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select";
 import { maskPhone } from "@/lib/masks";
 import { weddingSitePath } from "@/lib/wedding-links";
 import { lookupMessage, type PublicRsvpGuest } from "@/lib/rsvp-lookup";
@@ -26,8 +28,6 @@ type Guest = PublicRsvpGuest;
 
 const overline = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
 const title = "font-display text-[34px] font-normal leading-10 tracking-[-0.015em] text-tinta outline-none";
-const selectClass =
-  "block min-h-12 w-full cursor-pointer rounded-[12px] border border-linha-forte bg-papel px-4 text-base leading-6 text-tinta transition-[border-color,box-shadow] duration-200 hover:border-tinta-suave focus:border-ameixa focus:shadow-[0_0_0_3px_var(--color-ameixa-suave)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa";
 
 export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpClientProps) {
   const [phone, setPhone] = useState("");
@@ -218,37 +218,31 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
 
           {guest.allowedCompanions > 0 ? (
             <>
-              <div className="flex flex-col gap-2">
-                <label htmlFor="rsvp-acompanhantes" className="text-sm font-semibold leading-5 text-tinta">
-                  Quantos acompanhantes você vai levar?
-                </label>
-                <select
-                  id="rsvp-acompanhantes"
-                  value={companionsCount}
-                  onChange={(e) => setCompanionsCount(Number(e.target.value))}
-                  className={selectClass}
-                >
-                  {Array.from({ length: guest.allowedCompanions + 1 }).map((_, i) => (
-                    <option key={i} value={i}>
-                      {i === 0 ? "Nenhum acompanhante" : i === 1 ? "1 acompanhante" : `${i} acompanhantes`}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <NativeSelect
+                id="rsvp-acompanhantes"
+                label="Quantos acompanhantes você leva?"
+                value={companionsCount}
+                onChange={(e) => setCompanionsCount(Number(e.target.value))}
+              >
+                {Array.from({ length: guest.allowedCompanions + 1 }).map((_, i) => (
+                  <option key={i} value={i}>
+                    {i === 0 ? "Nenhum acompanhante" : i === 1 ? "1 acompanhante" : `${i} acompanhantes`}
+                  </option>
+                ))}
+              </NativeSelect>
 
               {companionsCount > 0 ? (
-                <fieldset className="flex flex-col gap-3">
-                  <legend className="mb-2 text-sm font-semibold leading-5 text-tinta">Nome de cada acompanhante</legend>
+                <fieldset className="flex flex-col gap-5">
+                  <legend className="mb-3 text-sm font-semibold leading-5 text-tinta">Nome de cada acompanhante</legend>
                   {Array.from({ length: companionsCount }).map((_, i) => (
-                    <input
+                    <Input
                       key={i}
+                      id={`rsvp-acompanhante-${i + 1}`}
                       type="text"
-                      aria-label={`Nome completo do acompanhante ${i + 1}`}
+                      label={`Nome completo do acompanhante ${i + 1}`}
                       autoComplete="off"
-                      placeholder={`Nome completo do acompanhante ${i + 1}`}
                       value={companionsNames[i] || ""}
                       onChange={(e) => handleCompanionNameChange(i, e.target.value)}
-                      className="block min-h-12 w-full rounded-[12px] border border-linha-forte bg-papel px-4 text-base leading-6 text-tinta placeholder:text-tinta-suave/80 hover:border-tinta-suave focus:border-ameixa focus:shadow-[0_0_0_3px_var(--color-ameixa-suave)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa"
                       required
                     />
                   ))}
@@ -257,7 +251,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
             </>
           ) : null}
 
-          <Field id="rsvp-restricoes" label="Alguma restrição alimentar ou alergia?" optional hint="Se não tiver nenhuma, é só deixar em branco.">
+          <Field id="rsvp-restricoes" label="Restrição alimentar ou alergia" optional hint="Se não tiver nenhuma, é só deixar em branco.">
             {(c) => (
               <input
                 {...c}

@@ -4,6 +4,7 @@ import { useEffect, useId, useState, useTransition } from "react";
 import { Loader2, TicketPercent, X } from "lucide-react";
 import { previewSubscriptionPrice } from "@/actions/subscription-actions";
 import { btn } from "@/components/landing/styles";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -34,7 +35,6 @@ interface CouponFieldProps {
  */
 export function CouponField({ planId, modules, applied, onChange, creditLabel = "Crédito do plano atual" }: CouponFieldProps) {
   const inputId = useId();
-  const errorId = useId();
   const [open, setOpen] = useState(Boolean(applied));
   const [code, setCode] = useState(applied?.code ?? "");
   const [error, setError] = useState("");
@@ -123,7 +123,7 @@ export function CouponField({ planId, modules, applied, onChange, creditLabel = 
 
   return (
     <form
-      className="flex flex-col gap-1.5"
+      className="flex flex-col gap-1.5 pt-2"
       onSubmit={(e) => {
         e.preventDefault();
         const value = code.trim();
@@ -134,12 +134,10 @@ export function CouponField({ planId, modules, applied, onChange, creditLabel = 
         startTransition(() => check(value));
       }}
     >
-      <label htmlFor={inputId} className="text-sm font-semibold text-tinta">
-        Cupom de desconto
-      </label>
-      <div className="flex gap-2">
-        <input
+      <div className="flex items-start gap-2">
+        <Input
           id={inputId}
+          label="Cupom de desconto"
           value={code}
           onChange={(e) => {
             setCode(e.target.value.toUpperCase());
@@ -149,21 +147,16 @@ export function CouponField({ planId, modules, applied, onChange, creditLabel = 
           autoCapitalize="characters"
           spellCheck={false}
           maxLength={30}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? errorId : undefined}
+          error={error || undefined}
           placeholder="Ex.: NOIVOS10"
-          className="min-h-11 w-full min-w-0 rounded-xl border border-linha-forte bg-papel px-3 font-mono text-[15px] uppercase text-tinta outline-none focus-visible:border-ameixa focus-visible:ring-2 focus-visible:ring-ameixa/25"
+          fieldClassName="min-w-0 flex-1"
+          inputClassName="font-mono uppercase"
         />
-        <button type="submit" disabled={isPending} className={cn(btn.secondary, "min-h-11 shrink-0")}>
+        <button type="submit" disabled={isPending} className={cn(btn.secondary, "min-h-12 shrink-0")}>
           {isPending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
           Aplicar
         </button>
       </div>
-      {error ? (
-        <p id={errorId} role="alert" className="text-sm font-semibold text-perigo">
-          {error}
-        </p>
-      ) : null}
     </form>
   );
 }

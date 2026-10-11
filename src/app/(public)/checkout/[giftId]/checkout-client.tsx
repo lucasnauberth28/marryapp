@@ -6,6 +6,8 @@ import { QRCodeSVG } from "qrcode.react";
 import { ArrowRight, Check, Copy, Heart, Hourglass, Loader2, Lock } from "lucide-react";
 import { createPixTransactionAction, checkTransactionStatusAction, processCardPaymentAction } from "@/actions/payment-actions";
 import { Field, FormAlert } from "@/components/ui/field";
+import { NativeSelect } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { maskPhone } from "@/lib/masks";
 import { Seal } from "@/components/landing/seal";
 import { btn, btnArrow } from "@/components/landing/styles";
@@ -173,8 +175,6 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
 
   const overline = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
   const heading = "font-display text-[30px] font-normal leading-[36px] tracking-[-0.015em] text-tinta outline-none";
-  const selectClass =
-    "block min-h-12 w-full cursor-pointer rounded-[12px] border border-linha-forte bg-papel px-4 text-base leading-6 text-tinta transition-[border-color,box-shadow] duration-200 hover:border-tinta-suave focus:border-ameixa focus:shadow-[0_0_0_3px_var(--color-ameixa-suave)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa";
 
   const methodOptions: { id: PaymentMethod; label: string; hint: string; value: string }[] = [
     { id: "PIX", label: "Pix", hint: "À vista, sem juros", value: formatPrice(gift.amount) },
@@ -292,7 +292,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
           </div>
 
           {method === "CREDIT_CARD" && (
-            <div className="grid grid-cols-2 gap-x-3 gap-y-4">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-5">
               <Field id="cartao-email" label="E-mail para o comprovante" className="col-span-2">
                 {(c) => (
                   <input
@@ -373,26 +373,22 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
               </Field>
 
               {/* Parcelas (máx. 12x) */}
-              <div className="col-span-2 flex flex-col gap-2">
-                <label htmlFor="cartao-parcelas" className="text-sm font-semibold leading-5 text-tinta">
-                  Parcelas
-                </label>
-                <select
-                  id="cartao-parcelas"
-                  value={installments}
-                  onChange={(e) => setInstallments(Number(e.target.value))}
-                  className={selectClass}
-                >
-                  {[...Array(12)].map((_, i) => {
-                    const count = i + 1;
-                    return (
-                      <option key={count} value={count}>
-                        {count}x de {formatPrice(Math.round(cardFinalAmount / count))}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
+              <NativeSelect
+                id="cartao-parcelas"
+                label="Parcelas"
+                fieldClassName="col-span-2"
+                value={installments}
+                onChange={(e) => setInstallments(Number(e.target.value))}
+              >
+                {[...Array(12)].map((_, i) => {
+                  const count = i + 1;
+                  return (
+                    <option key={count} value={count}>
+                      {count}x de {formatPrice(Math.round(cardFinalAmount / count))}
+                    </option>
+                  );
+                })}
+              </NativeSelect>
             </div>
           )}
 
@@ -448,19 +444,17 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
             </p>
 
             {copyFailed && (
-              <div className="flex w-full flex-col gap-2 text-left">
-                <label htmlFor="checkout-pix-codigo" className="text-sm font-semibold text-tinta">
-                  Não deu para copiar sozinho. Selecione o código e copie:
-                </label>
-                <textarea
-                  id="checkout-pix-codigo"
-                  readOnly
-                  value={pixPayload}
-                  rows={4}
-                  onFocus={(e) => e.currentTarget.select()}
-                  className="w-full resize-none rounded-[12px] border border-linha-forte bg-papel p-3 font-mono text-xs text-tinta"
-                />
-              </div>
+              <Textarea
+                id="checkout-pix-codigo"
+                label="Código Pix"
+                hint="Não deu para copiar sozinho. Selecione o código e copie."
+                fieldClassName="w-full text-left"
+                readOnly
+                value={pixPayload}
+                rows={4}
+                onFocus={(e) => e.currentTarget.select()}
+                inputClassName="resize-none font-mono text-xs"
+              />
             )}
           </section>
 

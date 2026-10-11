@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Field, joinIds, type FloatOptions } from "@/components/ui/field";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export type TimePickerProps = Omit<Partial<FloatOptions>, "prefix" | "suffix" | "trailing" | "icon"> & {
+export type TimePickerProps = Omit<FloatOptions, "prefix" | "suffix" | "trailing" | "icon"> & {
   id?: string;
   name?: string;
   value?: string; // HH:mm
@@ -29,7 +29,7 @@ export function TimePicker({
   disabled = false,
   required = false,
   className,
-  label = "Hora",
+  label,
   hint,
   error,
   optional,
