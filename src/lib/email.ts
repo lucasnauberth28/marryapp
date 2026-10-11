@@ -1,4 +1,5 @@
 import "server-only";
+import { recordServiceEvent } from "@/lib/platform/system-records";
 
 /**
  * Envio de e-mails transacionais (convite do par, redefinição de senha) pela API REST da Resend.
@@ -59,12 +60,16 @@ export async function sendEmail({ to, subject, html, text }: SendEmailInput): Pr
 
     if (!res.ok) {
       console.error(`[email] Resend respondeu ${res.status} ao enviar "${subject}" para ${maskEmail(recipient)}.`);
+      // Saúde do sistema: só o código HTTP, nunca destinatário nem conteúdo
+      await recordServiceEvent({ service: "email", kind: "send", ok: false, message: `Resend respondeu ${res.status}` });
       return { sent: false, reason: "failed" };
     }
     const body = (await res.json().catch(() => null)) as { id?: string } | null;
+    await recordServiceEvent({ service: "email", kind: "send", ok: true });
     return { sent: true, id: body?.id ?? null };
   } catch (error) {
     console.error(`[email] Falha ao enviar "${subject}" para ${maskEmail(recipient)}:`, error instanceof Error ? error.message : error);
+    await recordServiceEvent({ service: "email", kind: "send", ok: false, message: error instanceof Error && error.name === "TimeoutError" ? "Tempo esgotado ao falar com a Resend" : "Falha de conexão com a Resend" });
     return { sent: false, reason: "failed" };
   }
 }

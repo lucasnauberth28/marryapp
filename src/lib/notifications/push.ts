@@ -1,6 +1,7 @@
 import "server-only";
 import webpush from "web-push";
 import prisma from "@/lib/prisma";
+import { recordServiceEvent } from "@/lib/platform/system-records";
 import { buildPushPayload, deliverPush, type PushDeliveryReport, type PushPayload, type PushSource } from "./push-payload.ts";
 
 // Web Push sem serviço externo: VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY (npx web-push generate-vapid-keys)
@@ -52,9 +53,19 @@ export async function sendPushToUser(userId: string, payload: PushPayload): Prom
         await prisma.pushSubscription.updateMany({ where: { endpoint: { in: endpoints }, userId }, data: { lastUsedAt: new Date() } });
       },
     });
+    // Saúde do sistema: uma linha por pessoa com aparelho (sem endereço do aparelho nem texto do aviso)
+    if (subscriptions.length > 0) {
+      await recordServiceEvent({
+        service: "push",
+        kind: "send",
+        ok: report.failed === 0,
+        message: report.failed === 0 ? null : `${report.failed} de ${subscriptions.length} aparelhos falharam`,
+      });
+    }
     return { ...report, devices: subscriptions.length };
   } catch (error) {
     console.error("[push] Falha ao enviar:", error instanceof Error ? error.message : error);
+    await recordServiceEvent({ service: "push", kind: "send", ok: false, message: "Erro ao enviar" });
     return { ...EMPTY, devices: 0 };
   }
 }

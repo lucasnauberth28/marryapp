@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { rejectUnlessCron } from "@/lib/security/cron-auth";
 import { sendExpenseReminders } from "@/lib/notifications/cron";
 import { prunePlatformRecords, recordCronRun } from "@/lib/platform/system-records";
+import { runHealthAlerts } from "@/lib/platform/health-alerts";
 
 /**
  * Rotina diária (Vercel Cron, ver vercel.json): avisa o casal das despesas que vencem em até 3 dias
@@ -28,5 +29,7 @@ export async function GET(req: Request) {
     error: failure,
   });
   await prunePlatformRecords();
-  return NextResponse.json({ success: true, expenses });
+  // Alertas por e-mail da Saúde do sistema (uma verificação por dia; nunca lança erro)
+  const alerts = await runHealthAlerts();
+  return NextResponse.json({ success: true, expenses, alerts: alerts.reason });
 }

@@ -9,8 +9,9 @@ import { applyApprovedPayment, markPaymentFailed, refundSubscription } from "@/l
 import { weddingSiteUrl } from "@/lib/wedding-links";
 import { deferNotify } from "@/lib/notifications/service";
 import { notifyGiftPaid } from "@/lib/notifications/events";
+import { recordServiceEvent } from "@/lib/platform/system-records";
 
-export async function POST(req: Request) {
+async function handleWebhook(req: Request) {
   try {
     const url = new URL(req.url);
     const body = await req.json().catch(() => ({}));
@@ -153,6 +154,31 @@ export async function POST(req: Request) {
     console.error("[Webhook Mercado Pago Error]:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
+}
+
+/**
+ * Entrada do webhook. O processamento está em handleWebhook; aqui só se registra o resultado de cada aviso para a
+ * Saúde do sistema (sem corpo da notificação nem dados de pagamento: só o resultado e o id numérico do pagamento).
+ */
+export async function POST(req: Request) {
+  const response = await handleWebhook(req);
+  try {
+    const paymentId = new URL(req.url).searchParams.get("data.id");
+    const body = (await response.clone().json().catch(() => null)) as { error?: string; success?: boolean; ignored?: string } | null;
+    let ok = response.status < 400 && body?.success !== false;
+    let message: string | null = null;
+    if (response.status === 401) message = "Assinatura inválida";
+    else if (response.status === 400) message = "Aviso sem o id do pagamento";
+    else if (response.status >= 500) message = "Erro interno ao processar";
+    else if (body?.error === "Amount mismatch") message = "Valor pago diferente do cobrado";
+    else if (body?.success === false) message = "Não aplicado";
+    else if (body?.ignored) message = `Ignorado: ${body.ignored}`.slice(0, 120);
+    if (response.status === 401 || response.status === 400) ok = false;
+    await recordServiceEvent({ service: "mercadopago", kind: "webhook", ok, message, refId: paymentId && /^\d+$/.test(paymentId) ? paymentId : null });
+  } catch {
+    // registrar nunca atrapalha a resposta ao Mercado Pago
+  }
+  return response;
 }
 
 /** Pagamento de assinatura: libera, recusa ou estorna o plano. Repetições do webhook não mudam nada. */

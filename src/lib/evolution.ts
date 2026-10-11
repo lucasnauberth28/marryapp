@@ -7,6 +7,7 @@
  */
 
 import "server-only";
+import { recordServiceEvent } from "@/lib/platform/system-records";
 
 // Sem valores padrão: URL, chave e instância precisam vir do ambiente.
 const EVOLUTION_URL = (process.env.EVOLUTION_API_URL || "").trim().replace(/\/+$/, "");
@@ -92,7 +93,7 @@ export async function resolveWhatsappJid(phone: string): Promise<{ exists: boole
 /**
  * Envia uma mensagem de texto simples via WhatsApp.
  */
-export async function sendTextMessage({ phone, text }: SendMessageOptions) {
+async function sendTextMessageRaw({ phone, text }: SendMessageOptions) {
   if (!isConfigured()) {
     console.warn("[Evolution API] Serviço não configurado. Mensagem não enviada.");
     return { success: false, error: "Evolution API não configurada." };
@@ -140,7 +141,7 @@ export async function sendTextMessage({ phone, text }: SendMessageOptions) {
  * Envia uma mensagem com botões interativos via WhatsApp.
  * A Evolution API usa o formato de "buttons" do WhatsApp Business.
  */
-export async function sendInteractiveMessage({
+async function sendInteractiveMessageRaw({
   phone,
   title,
   body,
@@ -346,7 +347,7 @@ interface SendMediaOptions {
 /**
  * Envia imagem, PDF, áudio ou outro arquivo via WhatsApp.
  */
-export async function sendMediaMessage({ 
+async function sendMediaMessageRaw({ 
   phone, 
   mediaUrl, 
   mediaType, 
@@ -409,6 +410,34 @@ export async function sendMediaMessage({
     return { success: false, error: (error instanceof Error ? error.message : undefined) || "Erro de conexão ao enviar mídia." };
   }
 }
+
+
+// ---------- Saúde do sistema: resultado de cada envio, sem telefone, texto nem mídia ----------
+
+type SendResult = { success: boolean; error?: string };
+
+/** Motivo curto e seguro da falha (a mensagem original pode conter número de telefone ou corpo da resposta). */
+function safeReason(error: string | undefined): string {
+  if (!error) return "Falha no envio";
+  const http = error.match(/^HTTP (\d{3})/);
+  if (http) return `A Evolution API respondeu ${http[1]}`;
+  if (/n[uú]mero .*n[aã]o possui conta/i.test(error)) return "Número sem WhatsApp";
+  if (/n[aã]o configurada/i.test(error)) return "";
+  return "Falha de conexão com a Evolution API";
+}
+
+async function tracked<T extends SendResult>(kind: string, run: () => Promise<T>): Promise<T> {
+  const result = await run();
+  const reason = result.success ? null : safeReason(result.error);
+  if (reason === "") return result; // serviço não configurado: aparece como "não configurado", não como falha
+  if (reason === "Número sem WhatsApp") await recordServiceEvent({ service: "whatsapp", kind: "invalid_number", ok: true, message: reason });
+  else await recordServiceEvent({ service: "whatsapp", kind, ok: result.success, message: reason });
+  return result;
+}
+
+export const sendTextMessage = (options: Parameters<typeof sendTextMessageRaw>[0]) => tracked("send", () => sendTextMessageRaw(options));
+export const sendInteractiveMessage = (options: Parameters<typeof sendInteractiveMessageRaw>[0]) => tracked("send", () => sendInteractiveMessageRaw(options));
+export const sendMediaMessage = (options: Parameters<typeof sendMediaMessageRaw>[0]) => tracked("send", () => sendMediaMessageRaw(options));
 
 /**
  * Dispara mensagens para uma lista de convidados com rate limiting anti-ban.
