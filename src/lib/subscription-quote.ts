@@ -75,6 +75,18 @@ export async function quoteSubscription(params: {
   const newTier = plan.type === "VENDOR" ? vendorTierForPlan(planId) : null;
   const vendor = user.partnerVendor;
   const currentKey = vendor?.planTier === "PRO" ? "pro" : vendor?.planTier === "MASTER" ? "master" : null;
+  // O crédito parte do que o fornecedor de fato pagou pelo plano atual (último pagamento aprovado),
+  // não do preço de hoje no catálogo: reajuste de preço não muda o valor dos dias já pagos.
+  // Sem pagamento aprovado (cortesia ou plano dado pela administração), não há crédito.
+  let paidMonthlyPrice = 0;
+  if (newTier && vendor && currentKey) {
+    const lastPaid = await prisma.subscription.findFirst({
+      where: { userId: params.userId, planId: currentKey, status: "APPROVED" },
+      orderBy: { paidAt: "desc" },
+      select: { amount: true },
+    });
+    paidMonthlyPrice = lastPaid?.amount ?? 0;
+  }
   const credit =
     newTier && vendor && currentKey
       ? upgradeCredit({
@@ -82,7 +94,7 @@ export async function quoteSubscription(params: {
           currentExpiresAt: vendor.planExpiresAt,
           newTier,
           now,
-          currentMonthlyPrice: catalog.plans[currentKey].price,
+          currentMonthlyPrice: paidMonthlyPrice,
           newPrice: plan.price,
         })
       : 0;
