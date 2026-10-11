@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
+import { maskDocument } from "@/lib/document-br";
 
 export const dynamic = "force-dynamic";
 
@@ -81,6 +82,7 @@ export async function GET() {
               story: true,
               tips: true,
               guestbook: true,
+              domainOrders: { orderBy: { requestedAt: "asc" } },
             },
           })
         : null;
@@ -107,7 +109,8 @@ export async function GET() {
         updatedAt: user.updatedAt,
       },
       subscriptions: user.subscriptions,
-      wedding,
+      // Pedidos de domínio: o CPF/CNPJ do titular sai sempre escondido (o número completo é só para o registro)
+      wedding: wedding && { ...wedding, domainOrders: wedding.domainOrders.map((o) => ({ ...o, holderDocument: maskDocument(o.holderDocument) })) },
       vendorProfile,
     };
 

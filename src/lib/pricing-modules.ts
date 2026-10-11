@@ -57,7 +57,7 @@ export const COUPLE_MODULES: PricingModule[] = [
     id: "customDomain",
     name: "Domínio próprio (.com.br) por 1 ano",
     category: "Exclusividade",
-    description: "Endereço exclusivo para os seus convites impressos (ex: www.lucasegiovanna.com.br) com SSL grátis incluso.",
+    description: "Registramos um endereço .com.br no nome de vocês, com o primeiro ano incluso, e o site passa a abrir nele (ex: lucasegiovanna.com.br), com SSL grátis. Ótimo para convites impressos.",
     price: 7900, // R$ 79,00
     iconName: "Compass",
     highlightBadge: "Exclusivo",

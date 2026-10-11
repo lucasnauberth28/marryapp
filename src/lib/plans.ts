@@ -43,7 +43,7 @@ export const PLANS_CONFIG = {
     features: [
       "Tudo incluído no Plano Classic",
       "Mesas organizadas e relatório de restrições para o buffet",
-      "Domínio próprio (.com.br) grátis por 1 ano (em breve)",
+      "Domínio próprio por 1 ano: registramos no nome de vocês",
       "Atendimento VIP e suporte prioritário no WhatsApp",
     ],
   },
