@@ -75,6 +75,7 @@ export async function createRole(data: { name: string; allowedPaths: string[] })
       details: { name: role.name, allowedPaths: parsed.data.allowedPaths },
     });
     revalidatePath("/perfis");
+    revalidatePath("/admin/usuarios");
     return { success: true, role };
   } catch (error) {
     if (prismaErrorCode(error) === "P2002") {
@@ -108,6 +109,7 @@ export async function updateRole(id: string, data: { name: string; allowedPaths:
       },
     });
     revalidatePath("/perfis");
+    revalidatePath("/admin/usuarios");
     return { success: true, role };
   } catch {
     return { success: false, error: "Erro ao atualizar perfil." };
@@ -124,6 +126,7 @@ export async function deleteRole(id: string) {
     await prisma.role.delete({ where: { id } });
     await logAudit({ action: "role.delete", targetType: "role", targetId: id, details: { name: current.name } });
     revalidatePath("/perfis");
+    revalidatePath("/admin/usuarios");
     return { success: true };
   } catch {
     return { success: false, error: "Erro ao excluir perfil. Pode haver usuários vinculados." };
@@ -185,6 +188,7 @@ export async function createUser(data: { name: string; username: string; passwor
       details: { name: parsed.data.name, username: parsed.data.username, roleId: parsed.data.roleId },
     });
     revalidatePath("/usuarios");
+    revalidatePath("/admin/usuarios");
     return { success: true, user: { id: user.id } };
   } catch (error) {
     if (prismaErrorCode(error) === "P2002") {
@@ -236,6 +240,7 @@ export async function updateUser(id: string, data: { name: string; username: str
       },
     });
     revalidatePath("/usuarios");
+    revalidatePath("/admin/usuarios");
     return { success: true };
   } catch (error) {
     if (prismaErrorCode(error) === "P2002") {
@@ -267,6 +272,7 @@ export async function deleteUser(id: string) {
       details: { name: target.name, username: target.username, role: target.role.name },
     });
     revalidatePath("/usuarios");
+    revalidatePath("/admin/usuarios");
     return { success: true };
   } catch {
     return { success: false, error: "Erro ao excluir usuário." };

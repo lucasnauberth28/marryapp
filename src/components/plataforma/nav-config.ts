@@ -86,10 +86,10 @@ export const PLATFORM_NAV_GROUPS: PlatformNavGroup[] = [
     title: "Sistema",
     items: [
       { name: "Saúde do sistema", href: "/admin/saude", icon: Activity, countKey: "saude" },
-      // MIGRAR: /usuarios e /perfis (Usuários e Perfis de acesso) viram uma tela só em /admin/usuarios
-      { name: "Usuários e perfis", href: "/usuarios", icon: Users, alsoActiveFor: ["/perfis"] },
-      // MIGRAR: /atividades (Registro de atividades)
-      { name: "Registro de atividades", href: "/atividades", icon: ScrollText },
+      // Migrado: /usuarios e /perfis viram uma tela só em /admin/usuarios (as antigas redirecionam)
+      { name: "Usuários e perfis", href: "/admin/usuarios", icon: Users, alsoActiveFor: ["/usuarios", "/perfis"] },
+      // Migrado: /atividades agora é /admin/atividades (a antiga redireciona)
+      { name: "Registro de atividades", href: "/admin/atividades", icon: ScrollText, alsoActiveFor: ["/atividades"] },
       { name: "Configurações da plataforma", href: "/admin/configuracoes", icon: SettingsIcon },
     ],
   },

@@ -1,5 +1,8 @@
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getUsers, getRoles } from "@/actions/rbac-actions";
+import { getSession } from "@/lib/security/auth-guard";
+import { isPlatformAdminPaths } from "@/lib/permissions";
 import { UsersClient } from "./users-client";
 
 export const metadata: Metadata = {
@@ -8,6 +11,10 @@ export const metadata: Metadata = {
 };
 
 export default async function UsersPage() {
+  // A administração da plataforma usa a tela nova (/admin/usuarios); a antiga segue para quem só tem o módulo Usuários
+  const session = await getSession();
+  if (session && isPlatformAdminPaths(session.allowedPaths)) redirect("/admin/usuarios");
+
   const [users, roles] = await Promise.all([
     getUsers(),
     getRoles()

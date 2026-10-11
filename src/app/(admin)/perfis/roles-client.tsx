@@ -52,7 +52,8 @@ function toPaths(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((p): p is string => typeof p === "string") : [];
 }
 
-export function RolesClient({ initialRoles }: { initialRoles: RoleItem[] }) {
+/** `embedded`: dentro do shell /admin (as abas e o cabeçalho vêm da página); sem ele, a tela antiga. */
+export function RolesClient({ initialRoles, embedded = false }: { initialRoles: RoleItem[]; embedded?: boolean }) {
   const [isPending, startTransition] = useTransition();
   const uid = useId();
   const router = useRouter();
@@ -178,19 +179,31 @@ export function RolesClient({ initialRoles }: { initialRoles: RoleItem[] }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        eyebrow="Acesso"
-        title="Usuários e perfis"
-        description="Cada perfil define quais áreas do painel a pessoa pode abrir."
-        actions={
-          !isFormOpen && (
+      {embedded ? (
+        !isFormOpen && (
+          <div className="flex justify-end">
             <button type="button" onClick={openNewForm} className={btn.primary}>
               <Plus className="size-4" aria-hidden="true" /> Novo perfil
             </button>
-          )
-        }
-      />
-      <AccessTabs current="perfis" />
+          </div>
+        )
+      ) : (
+        <>
+          <PageHeader
+            eyebrow="Acesso"
+            title="Usuários e perfis"
+            description="Cada perfil define quais áreas do painel a pessoa pode abrir."
+            actions={
+              !isFormOpen && (
+                <button type="button" onClick={openNewForm} className={btn.primary}>
+                  <Plus className="size-4" aria-hidden="true" /> Novo perfil
+                </button>
+              )
+            }
+          />
+          <AccessTabs current="perfis" />
+        </>
+      )}
 
       {isFormOpen ? (
         <section aria-labelledby={`${uid}-titulo`} className={`${card} flex flex-col gap-6 p-5 sm:p-6`}>
