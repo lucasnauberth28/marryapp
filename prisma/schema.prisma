@@ -309,6 +309,13 @@ model User {
   notificationPreference NotificationPreference?
   domainOrders    DomainOrder[]
 
+  // Última entrada na conta (administração: "Última atividade" e filtros de casais sem atividade)
+  lastLoginAt     DateTime?
+
+  announcementDeliveries AnnouncementRecipient[]
+  supportTickets         SupportTicket[]
+  dataRequests           DataRequest[]
+
   @@map("users")
 }
 
@@ -386,10 +393,14 @@ model Subscription {
   expiresAt   DateTime      // validade do código Pix
   paidAt      DateTime?
   periodEnd   DateTime?     // fim do período pago (planos mensais de fornecedor)
+  // Administração: nota fiscal deste pagamento (controle do contador; só pagamentos aprovados)
+  invoiceIssuedAt DateTime?
+  invoiceNumber   String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  domainOrders DomainOrder[]
+  domainOrders  DomainOrder[]
+  refundRequests RefundRequest[]
 
   @@index([userId, status])
   @@index([weddingId, status])
@@ -569,10 +580,18 @@ model PartnerVendor {
   rating           Float          @default(5.0)
   reviewCount      Int            @default(0)
 
+  // Administração: suspenso some da vitrine (as consultas públicas filtram suspendedAt = null);
+  // destaque coloca o perfil no topo da categoria e da região.
+  suspendedAt      DateTime?
+  suspendedReason  String?        @db.Text
+  isFeatured       Boolean        @default(false)
+
   leads            VendorLead[]
   reviews          VendorReview[]
   events           VendorEvent[]
   profileViews     VendorProfileView[]
+  adminNotes       AdminNote[]
+  supportTickets   SupportTicket[]
   user             User?          // Login do fornecedor (painel /fornecedor)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
@@ -595,8 +614,15 @@ model VendorReview {
   // Resposta pública do fornecedor (painel > Avaliações)
   reply       String?       @db.Text
   repliedAt   DateTime?
+  // Moderação (administração): denúncia do fornecedor e avaliação ocultada (some do perfil público)
+  reportedAt   DateTime?
+  reportReason String?       @db.Text
+  hiddenAt     DateTime?
+  hiddenReason String?       @db.Text
+  moderatedAt  DateTime?     // a administração já analisou a denúncia (manter ou ocultar)
   createdAt   DateTime      @default(now())
 
+  @@index([reportedAt])
   @@map("vendor_reviews")
 }
 
@@ -701,6 +727,13 @@ model Wedding {
   onboardedAt   DateTime?
   // Domínio próprio já conectado e no ar (sem "www."): só depois de um pedido CONNECTED
   customDomain  String?   @unique
+  // Administração: suspenso tira o site do ar e deixa o painel só para leitura
+  suspendedAt     DateTime?
+  suspendedReason String?   @db.Text
+  // "Marcar para acompanhar" na lista de casais
+  flaggedAt       DateTime?
+  // Última visita ao painel do casal (gravada no máximo a cada 30 min)
+  lastActiveAt    DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -725,7 +758,14 @@ model Wedding {
   story         WeddingStoryItem[]
   tips          WeddingTip[]
   guestbook     GuestBookEntry[]
+  adminNotes    AdminNote[]
+  impersonations ImpersonationSession[]
+  madrinhaOverride MadrinhaWeddingOverride?
+  supportTickets SupportTicket[]
+  dataRequests  DataRequest[]
 
+  @@index([createdAt])
+  @@index([weddingDate])
   @@map("weddings")
 }
 
@@ -754,6 +794,7 @@ model DomainOrder {
   expiresAt         DateTime?         // vencimento anual no Registro.br
   connectedAt       DateTime?
   vercelState       String?           // última situação lida da Vercel: pending, verified, misconfigured...
+  renewalReminderDays Int?            // último aviso de renovação enviado ao casal (60 ou 30 dias antes de vencer)
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -834,4 +875,359 @@ model AuditLog {
   @@index([createdAt])
   @@index([targetType, targetId])
   @@map("audit_logs")
+}
+
+
+// ==========================================
+// ADMINISTRAÇÃO DA PLATAFORMA (/admin)
+// Contrato com as telas em design-admin-impl/SCHEMA.md. Só a administração ("*") lê e escreve aqui.
+// ==========================================
+
+// Nota interna sobre um casal ou fornecedor ("Só a equipe vê"). Nunca aparece para o casal.
+model AdminNote {
+  id         String         @id @default(uuid())
+  weddingId  String?
+  wedding    Wedding?       @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  vendorId   String?
+  vendor     PartnerVendor? @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  authorId   String?        // "super-admin" para a conta de emergência
+  authorName String
+  body       String         @db.Text
+  createdAt  DateTime       @default(now())
+
+  @@index([weddingId, createdAt])
+  @@index([vendorId, createdAt])
+  @@map("admin_notes")
+}
+
+// "Entrar como este casal": cada entrada fica registrada (quem, por quê, até quando, se pôde editar).
+// O navegador guarda só o id desta sessão em um cookie; a validade e o dono são sempre conferidos aqui.
+model ImpersonationSession {
+  id           String    @id @default(uuid())
+  adminUserId  String    // "super-admin" para a conta de emergência
+  adminName    String
+  weddingId    String?
+  wedding      Wedding?  @relation(fields: [weddingId], references: [id], onDelete: SetNull)
+  weddingNames String    // nomes do casal na hora da entrada (o registro sobrevive à exclusão do casamento)
+  reason       String    // motivo escolhido na tela
+  ticketNumber Int?      // chamado relacionado (SupportTicket.number), opcional
+  canEdit      Boolean   @default(false) // false = painel só para leitura
+  startedAt    DateTime  @default(now())
+  expiresAt    DateTime
+  endedAt      DateTime?
+  endedReason  String?   // "manual" | "expired"
+
+  @@index([adminUserId, endedAt])
+  @@index([weddingId, startedAt])
+  @@map("impersonation_sessions")
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  CANCELED
+}
+
+enum AnnouncementChannel {
+  PANEL
+  PUSH
+  EMAIL
+  WHATSAPP
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+// Comunicado da plataforma para casais e fornecedores. `audience` guarda o filtro escolhido
+// (público, planos, janela da data do casamento); os destinatários reais ficam em AnnouncementRecipient.
+model Announcement {
+  id             String                @id @default(uuid())
+  title          String
+  emailSubject   String?
+  body           String                @db.Text
+  linkUrl        String?
+  audience       Json
+  channels       AnnouncementChannel[]
+  status         AnnouncementStatus    @default(DRAFT)
+  scheduledFor   DateTime?
+  sentAt         DateTime?
+  recipientCount Int                   @default(0)
+  deliveredCount Int                   @default(0)
+  failedCount    Int                   @default(0)
+  createdById    String?
+  createdByName  String?
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  recipients     AnnouncementRecipient[]
+
+  @@index([status, scheduledFor])
+  @@index([createdAt])
+  @@map("announcements")
+}
+
+// Uma linha por pessoa e canal. "Lidos" do aviso no painel vem de Notification.readAt (dedupeKey "announcement:<id>").
+model AnnouncementRecipient {
+  id             String              @id @default(uuid())
+  announcementId String
+  announcement   Announcement        @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel        AnnouncementChannel
+  status         DeliveryStatus      @default(PENDING)
+  error          String?
+  sentAt         DateTime?
+
+  @@unique([announcementId, userId, channel])
+  @@index([announcementId, status])
+  @@map("announcement_recipients")
+}
+
+enum SupportTicketStatus {
+  NEW
+  IN_PROGRESS
+  ANSWERED
+  CLOSED
+}
+
+// Pedido de ajuda registrado pela equipe (recebido por WhatsApp, e-mail ou conversa). Não há formulário
+// público ainda: o chamado nasce na tela Suporte e LGPD.
+model SupportTicket {
+  id             String              @id @default(uuid())
+  number         Int                 @unique @default(autoincrement()) // "#2041"
+  subject        String
+  body           String?             @db.Text
+  requesterName  String
+  requesterEmail String?
+  requesterPhone String?
+  weddingId      String?
+  wedding        Wedding?            @relation(fields: [weddingId], references: [id], onDelete: SetNull)
+  vendorId       String?
+  vendor         PartnerVendor?      @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  userId         String?
+  user           User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  status         SupportTicketStatus @default(NEW)
+  assigneeId     String?
+  assigneeName   String?
+  internalNote   String?             @db.Text
+  answeredAt     DateTime?
+  closedAt       DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([status, createdAt])
+  @@map("support_tickets")
+}
+
+enum DataRequestType {
+  EXPORT
+  DELETE
+  CORRECTION
+  OTHER
+}
+
+enum DataRequestStatus {
+  NEW
+  IN_REVIEW
+  DONE
+  REFUSED
+}
+
+// Pedido de titular sobre dados pessoais (LGPD). `dueAt` = recebimento + prazo legal (15 dias, a confirmar com o jurídico).
+// Exportação e exclusão feitas pela própria pessoa em "Minha conta" continuam sem registro aqui.
+model DataRequest {
+  id             String            @id @default(uuid())
+  type           DataRequestType
+  requesterName  String
+  requesterEmail String
+  userId         String?
+  user           User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  weddingId      String?
+  wedding        Wedding?          @relation(fields: [weddingId], references: [id], onDelete: SetNull)
+  status         DataRequestStatus @default(NEW)
+  receivedAt     DateTime          @default(now())
+  dueAt          DateTime
+  completedAt    DateTime?
+  note           String?           @db.Text
+  handledById    String?
+  handledByName  String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([status, dueAt])
+  @@map("data_requests")
+}
+
+enum IncidentStatus {
+  OPEN
+  CLOSED
+}
+
+// Incidente de segurança: o que foi afetado, quando e quem foi avisado.
+model SecurityIncident {
+  id            String         @id @default(uuid())
+  title         String
+  description   String         @db.Text
+  affected      String?        @db.Text
+  discoveredAt  DateTime
+  notifiedAt    DateTime?
+  notifiedWho   String?        @db.Text
+  status        IncidentStatus @default(OPEN)
+  closedAt      DateTime?
+  createdById   String?
+  createdByName String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([status, discoveredAt])
+  @@map("security_incidents")
+}
+
+// Configurações da plataforma e da Madrinha: uma linha por chave, valor em JSON validado pelo código
+// (lib/platform/settings.ts). Sem linha, vale o padrão do código.
+model PlatformSetting {
+  key           String   @id
+  value         Json
+  updatedAt     DateTime @updatedAt
+  updatedById   String?
+  updatedByName String?
+
+  @@map("platform_settings")
+}
+
+// Preço editável do catálogo: sobrepõe o valor de lib/plans (chave "plan:classic") ou de
+// lib/pricing-modules (chave "module:presentes"). Vale só para compras novas: Subscription.amount guarda o que foi cobrado.
+// O histórico das mudanças fica no AuditLog (ação "catalog.price_update", com o motivo).
+model CatalogPrice {
+  key           String   @id
+  priceCents    Int
+  name          String?
+  reason        String?
+  updatedAt     DateTime @updatedAt
+  updatedById   String?
+  updatedByName String?
+
+  @@map("catalog_prices")
+}
+
+// Pedido de reembolso de um pagamento de plano. O estorno em si chega pelo webhook do Mercado Pago
+// (Subscription.status = REFUNDED); aqui fica a decisão e o motivo.
+enum RefundStatus {
+  REQUESTED
+  REFUNDED
+  DENIED
+}
+
+model RefundRequest {
+  id              String        @id @default(uuid())
+  subscriptionId  String
+  subscription    Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  amount          Int           // centavos a devolver
+  reason          String        @db.Text
+  requestedByName String?
+  status          RefundStatus  @default(REQUESTED)
+  dueAt           DateTime?     // responder até
+  decidedAt       DateTime?
+  decidedByName   String?
+  decisionNote    String?       @db.Text
+  gatewayRefundId String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status, dueAt])
+  @@index([subscriptionId])
+  @@map("refund_requests")
+}
+
+enum CronRunStatus {
+  OK
+  FAILED
+}
+
+// Registro de cada execução das rotinas diárias (Saúde do sistema). Rotina sem registro = "ainda não rodou".
+model CronRun {
+  id         String        @id @default(uuid())
+  job        String        // "expirar-planos" | "avisos" | ...
+  startedAt  DateTime      @default(now())
+  finishedAt DateTime?
+  status     CronRunStatus
+  summary    Json?         // contagens do resultado (ex.: { expired: 2, reminders: 5 })
+  error      String?       @db.Text
+
+  @@index([job, startedAt])
+  @@map("cron_runs")
+}
+
+// Resultado de chamadas a serviços externos (Mercado Pago, e-mail, WhatsApp, push), para a Saúde do sistema.
+// Guarda só o necessário: nunca corpo de mensagem, e-mail, telefone ou chave. Limpo depois de 30 dias.
+model ServiceEvent {
+  id        String   @id @default(uuid())
+  service   String   // "mercadopago" | "email" | "whatsapp" | "push"
+  kind      String   // ex.: "webhook", "send"
+  ok        Boolean
+  message   String?  // motivo curto da falha
+  refId     String?  // id interno relacionado (assinatura, transação)
+  createdAt DateTime @default(now())
+
+  @@index([service, createdAt])
+  @@index([createdAt])
+  @@map("service_events")
+}
+
+// ---------- Madrinha (ainda sem IA conectada: só configuração, sem conversas nem custos) ----------
+
+enum MadrinhaContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// Instruções da Madrinha, versionadas. No máximo uma publicada; a mais nova em rascunho é a que se edita.
+model MadrinhaInstructionVersion {
+  id            String                @id @default(uuid())
+  version       Int                   @unique
+  content       String                @db.Text
+  changeNote    String?
+  status        MadrinhaContentStatus @default(DRAFT)
+  createdById   String?
+  createdByName String?
+  createdAt     DateTime              @default(now())
+  publishedAt   DateTime?
+
+  @@index([status])
+  @@map("madrinha_instruction_versions")
+}
+
+// Base de conhecimento: textos de ajuda que a Madrinha poderá consultar.
+model MadrinhaKnowledgeArticle {
+  id          String                @id @default(uuid())
+  title       String
+  content     String                @db.Text
+  status      MadrinhaContentStatus @default(DRAFT)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  publishedAt DateTime?
+
+  @@map("madrinha_knowledge_articles")
+}
+
+// Ajuste da Madrinha para um casal: ligar/desligar, mensagens a mais no mês e bloqueio por abuso.
+model MadrinhaWeddingOverride {
+  id            String    @id @default(uuid())
+  weddingId     String    @unique
+  wedding       Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  enabled       Boolean?  // null = segue o padrão do plano
+  extraMessages Int       @default(0)
+  blockedAt     DateTime?
+  blockedReason String?   @db.Text
+  note          String?   @db.Text
+  updatedAt     DateTime  @updatedAt
+
+  @@map("madrinha_wedding_overrides")
 }
