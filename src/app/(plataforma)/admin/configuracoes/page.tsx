@@ -165,7 +165,7 @@ export default async function Page() {
                 </li>
               ))}
               <li className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3">
-                <span className="text-[15px] font-semibold text-tinta">API da Madrinha</span>
+                <span className="text-[15px] font-semibold text-tinta">API da Liz</span>
                 <StatusChip tone="neutro" icon={MinusCircle}>Ainda não conectada</StatusChip>
               </li>
             </ul>

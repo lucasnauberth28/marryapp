@@ -1,7 +1,7 @@
 import type { Browser, Page } from "@playwright/test";
 import { criarCasalPronto, entrar, expect, novoContexto, test } from "./helpers";
 
-// Madrinha, Comunicados, Suporte, Saúde e Configurações da administração: acesso negado para casal e visitante nas
+// Liz, Comunicados, Suporte, Saúde e Configurações da administração: acesso negado para casal e visitante nas
 // Server Actions, e o modo de manutenção aplicado de verdade (casal só leitura, convidado avisado, admin livre).
 
 const adminSenha = () => {
@@ -48,7 +48,7 @@ test("Server Actions da administração recusam casal e visitante, e nada é gra
   const p = admin.page;
   const capturas: Record<string, Captura> = {};
 
-  // Madrinha: limites
+  // Liz: limites
   await p.goto("/admin/madrinha");
   const limiteAntes = await p.getByLabel("Mensagens por dia").first().inputValue();
   const novoLimite = limiteAntes === "31" ? "32" : "31";
@@ -185,7 +185,7 @@ test("modo de manutenção: casal só lê, convidado é avisado e a administraç
     await p.goto("/admin");
     await expect(p.getByRole("heading", { level: 1 })).toBeVisible();
     await p.goto("/admin/madrinha");
-    await expect(p.getByRole("heading", { level: 1, name: "Madrinha" })).toBeVisible();
+    await expect(p.getByRole("heading", { level: 1, name: "Liz" })).toBeVisible();
   } finally {
     await ligar(false);
   }

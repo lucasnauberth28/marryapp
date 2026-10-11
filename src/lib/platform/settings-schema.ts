@@ -1,6 +1,6 @@
-// Chaves, formato e padrões das configurações da plataforma e da Madrinha (tabela platform_settings).
+// Chaves, formato e padrões das configurações da plataforma e da Liz (tabela platform_settings).
 // Sem dependências do servidor: roda nos testes. A leitura e a gravação (com auditoria) ficam em settings.ts.
-// Regra: só entra aqui o que o sistema de fato usa ou vai usar quando a Madrinha for ativada. Valor fora do
+// Regra: só entra aqui o que o sistema de fato usa ou vai usar quando a Liz for ativada. Valor fora do
 // formato (linha editada na mão, versão antiga) nunca quebra a tela: volta ao padrão.
 import { z } from "zod";
 
@@ -8,7 +8,7 @@ const money = z.number().int().min(0).max(100_000_00); // centavos
 const percent = z.number().int().min(0).max(100);
 const count = z.number().int().min(0).max(1_000_000);
 
-/** Limites de mensagens e custo por tipo de assinatura da Madrinha. */
+/** Limites de mensagens e custo por tipo de assinatura da Liz. */
 const madrinhaPlanLimits = z.object({
   perDay: count,
   perMonth: count,
@@ -65,7 +65,7 @@ export const SETTING_DEFS = {
     default: { mercadoPagoFailures: true, whatsappDisconnected: true, routineMissed: true, errorRate: false, sendTo: "" },
   },
 
-  // ---------- Madrinha: só configuração (a IA ainda não está conectada; nada aqui simula conversa ou custo) ----------
+  // ---------- Liz: só configuração (a IA ainda não está conectada; nada aqui simula conversa ou custo) ----------
   /** Interruptor geral. Fica travado em desligado até existir a conexão com a API; `pausedAt` é o "Pausar para todos". */
   "madrinha.master": {
     schema: z.object({
@@ -75,7 +75,7 @@ export const SETTING_DEFS = {
     }),
     default: { enabled: false, pausedAt: null as string | null, pausedReason: null as string | null },
   },
-  /** O que a Madrinha pode fazer (ligado/desligado por recurso). "Enviar mensagens sozinha" nunca liga: o casal sempre aprova. */
+  /** O que a Liz pode fazer (ligado/desligado por recurso). "Enviar mensagens sozinha" nunca liga: o casal sempre aprova. */
   "madrinha.capabilities": {
     schema: z.object({
       draftReminder: z.boolean(),
@@ -93,7 +93,7 @@ export const SETTING_DEFS = {
       trial: { perDay: 10, perMonth: 50, costCapCents: 200, warnPercent: 80, autoBlock: true },
     },
   },
-  /** Teto mensal de custo de toda a Madrinha. */
+  /** Teto mensal de custo de toda a Liz. */
   "madrinha.globalCap": {
     schema: z.object({ monthlyCostCapCents: money, warnPercent: percent, pauseAtCap: z.boolean() }),
     default: { monthlyCostCapCents: 30000, warnPercent: 80, pauseAtCap: true },

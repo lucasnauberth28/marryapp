@@ -17,7 +17,7 @@ const items = PLATFORM_NAV_GROUPS.flatMap((g) => g.items);
 test("o menu segue o desenho: grupos, ordem e nomes", () => {
   assert.deepEqual(
     PLATFORM_NAV_GROUPS.map((g) => g.title ?? "(topo)"),
-    ["(topo)", "Casais e fornecedores", "Dinheiro", "Madrinha", "Comunicação", "Suporte", "Sistema"],
+    ["(topo)", "Casais e fornecedores", "Dinheiro", "Liz", "Comunicação", "Suporte", "Sistema"],
   );
   assert.deepEqual(
     items.map((i) => i.name),
@@ -28,7 +28,7 @@ test("o menu segue o desenho: grupos, ordem e nomes", () => {
       "Curadoria",
       "Planos e receita",
       "Domínios",
-      "Madrinha",
+      "Liz",
       "Comunicados",
       "Suporte e LGPD",
       "Saúde do sistema",

@@ -36,7 +36,7 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
   const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: SP }).format(new Date());
   const daysLeft = identity.weddingDate ? daysUntil(identity.weddingDate) : null;
 
-  // Sugestão da Madrinha por regras, com os dados reais do casamento (sem IA)
+  // Sugestão da Liz por regras, com os dados reais do casamento (sem IA)
   const overdue = (tasks ?? []).filter((t) => t.status !== "DONE" && t.dueDate && new Date(t.dueDate).toISOString().slice(0, 10) < todayKey).length;
   let suggestion: React.ReactNode = null;
   if (overdue > 0) {

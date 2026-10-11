@@ -74,7 +74,7 @@ function PlanCard({
   );
 }
 
-/** Limites por tipo de assinatura (salvos de verdade, valem quando a Madrinha for ativada). */
+/** Limites por tipo de assinatura (salvos de verdade, valem quando a Liz for ativada). */
 export function LimitsForm({ subscription, trial }: { subscription: PlanLimits; trial: PlanLimits }) {
   const [sub, setSub] = useState(() => toState(subscription));
   const [tri, setTri] = useState(() => toState(trial));
@@ -88,7 +88,7 @@ export function LimitsForm({ subscription, trial }: { subscription: PlanLimits; 
       }}
     >
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <PlanCard prefix="subscription" title="Assinatura" subtitle="Casais com a Madrinha contratada" state={sub} onChange={setSub} errors={errors} />
+        <PlanCard prefix="subscription" title="Assinatura" subtitle="Casais com a Liz contratada" state={sub} onChange={setSub} errors={errors} />
         <PlanCard prefix="trial" title="Teste" subtitle="Período de teste, se o produto oferecer" state={tri} onChange={setTri} errors={errors} />
       </div>
       {formError && <FormAlert>{formError}</FormAlert>}
@@ -114,10 +114,10 @@ export function GlobalCapForm({ monthlyCostCapCents, warnPercent, pauseAtCap }: 
         run(() => saveMadrinhaGlobalCap({ monthlyCostCap: cap, warnPercent: warn, pauseAtCap: pause }));
       }}
     >
-      <Input label="Custo máximo da Madrinha por mês" prefix="R$" inputMode="decimal" value={cap} onChange={(e) => setCap(e.target.value)} error={errors.monthlyCostCap} />
+      <Input label="Custo máximo da Liz por mês" prefix="R$" inputMode="decimal" value={cap} onChange={(e) => setCap(e.target.value)} error={errors.monthlyCostCap} />
       <Input label="Avisar ao chegar em" suffix="%" inputMode="numeric" value={warn} onChange={(e) => setWarn(e.target.value)} error={errors.warnPercent} />
       <ToggleRow label="Pausar tudo ao chegar no teto" description="Evita surpresa na fatura da API." checked={pause} onCheckedChange={setPause} />
-      <p className="text-sm leading-5 text-tinta-suave">Ao chegar no aviso, a equipe receberá um e-mail. O envio só começa quando a Madrinha for ativada.</p>
+      <p className="text-sm leading-5 text-tinta-suave">Ao chegar no aviso, a equipe receberá um e-mail. O envio só começa quando a Liz for ativada.</p>
       {formError && <FormAlert>{formError}</FormAlert>}
       <div className="mt-auto">
         <button type="submit" disabled={pending} className={cn(btn.secondary)}>

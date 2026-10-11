@@ -1,10 +1,10 @@
-// Regras puras da configuração da Madrinha (limites, tetos, instruções): sem banco nem Next, roda nos testes.
+// Regras puras da configuração da Liz (limites, tetos, instruções): sem banco nem Next, roda nos testes.
 // A IA ainda não está conectada: nada aqui simula conversa, custo ou recusa; só guarda o que o dono configurou.
 import { z } from "zod";
 
 /** Texto inicial sugerido das instruções (conteúdo editável, não dado de exemplo). */
 export const DEFAULT_MADRINHA_INSTRUCTIONS = [
-  "Você é a Madrinha, a assistente do Aceito. Só responde sobre casamento, sobre o painel do Aceito e sobre o casamento do casal que está conversando com você.",
+  "Você é a Liz, a assistente do Aceito. Só responde sobre casamento, sobre o painel do Aceito e sobre o casamento do casal que está conversando com você.",
   "Se a pergunta for de outro assunto, diga com gentileza que só pode ajudar com o casamento e convide a voltar ao tema.",
   "Nunca envie mensagens por conta própria. Prepare um rascunho e deixe o casal aprovar.",
   "Nunca peça nem repita dados pessoais de convidados além do necessário.",
@@ -92,5 +92,5 @@ export function nextVersion(existing: readonly number[]): number {
   return existing.length === 0 ? 1 : Math.max(...existing) + 1;
 }
 
-/** Chaves de configuração da Madrinha que ganham o selo "padrão sugerido" até serem salvas. */
+/** Chaves de configuração da Liz que ganham o selo "padrão sugerido" até serem salvas. */
 export const MADRINHA_SETTING_KEYS = ["madrinha.limits", "madrinha.globalCap", "madrinha.abuse", "madrinha.capabilities"] as const;

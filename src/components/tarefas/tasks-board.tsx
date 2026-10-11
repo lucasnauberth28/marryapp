@@ -20,7 +20,7 @@ interface TasksBoardProps {
   /** Dias até o casamento, quando há data. */
   daysLeft: number | null;
   initialFilter: Filter;
-  /** Cartão de sugestão da Madrinha (decidido no servidor com dados reais). */
+  /** Cartão de sugestão da Liz (decidido no servidor com dados reais). */
   suggestion?: ReactNode;
 }
 

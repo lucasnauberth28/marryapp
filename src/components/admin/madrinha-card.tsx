@@ -6,7 +6,7 @@ import { Flower2 } from "lucide-react";
 import { btn } from "@/components/landing/styles";
 
 /**
- * Cartão de sugestão da Madrinha: uma dica por regras (sem IA, sem chat) com uma ação principal.
+ * Cartão de sugestão da Liz: uma dica por regras (sem IA, sem chat) com uma ação principal.
  * "Agora não" esconde a dica por alguns dias, lembrando no navegador (localStorage).
  * Quem usa decide a dica com dados reais do casamento e passa `id` estável por tipo de dica.
  */
@@ -64,7 +64,7 @@ export function MadrinhaCard({ id, text, actionLabel, actionHref, className = ""
 
   return (
     <aside
-      aria-label="Sugestão da Madrinha"
+      aria-label="Sugestão da Liz"
       className={`grid grid-cols-[auto_1fr] gap-x-3 gap-y-2.5 rounded-2xl border border-linha bg-papel p-4 sm:gap-x-4 sm:gap-y-3 sm:p-6 ${className}`}
     >
       <span
@@ -75,7 +75,7 @@ export function MadrinhaCard({ id, text, actionLabel, actionHref, className = ""
       </span>
       <div className="min-w-0">
         <p className="text-sm font-semibold leading-5 text-tinta">
-          Madrinha <span className="hidden font-normal text-tinta-suave sm:inline">· sua assistente</span>
+          Liz <span className="hidden font-normal text-tinta-suave sm:inline">· sua assistente</span>
         </p>
         <p className="mt-1 text-[15px] leading-6 text-tinta sm:text-base">{text}</p>
       </div>

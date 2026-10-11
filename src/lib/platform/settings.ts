@@ -6,7 +6,7 @@ import { requirePlatformAdmin } from "@/lib/security/platform-admin";
 import { SETTING_DEFS, parseSetting, type SettingKey, type SettingValue } from "@/lib/platform/settings-schema";
 
 /**
- * Configurações da plataforma e da Madrinha (tabela platform_settings), com formato validado por zod
+ * Configurações da plataforma e da Liz (tabela platform_settings), com formato validado por zod
  * (settings-schema.ts) e padrão do código quando não há linha.
  *
  *  - getPlatformSetting(key)        leitura (qualquer lugar do servidor, inclusive páginas públicas: ex. manutenção).

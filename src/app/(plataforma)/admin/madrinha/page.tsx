@@ -15,7 +15,7 @@ import { AbuseForm, GlobalCapForm, LimitsForm } from "./_components/config-forms
 import { WeddingAdjust } from "./_components/wedding-adjust";
 import { SettingBadge } from "../_sistema/setting-badge";
 
-export const metadata = { title: "Madrinha" };
+export const metadata = { title: "Liz" };
 
 export default async function Page() {
   await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
@@ -39,17 +39,17 @@ export default async function Page() {
   return (
     <>
       <PageHeader
-        eyebrow="Madrinha"
-        title="Madrinha"
+        eyebrow="Liz"
+        title="Liz"
         description="A assistente do Aceito para os casais: só responde sobre casamento e sobre o Aceito."
         actions={
-          <button type="button" disabled className={`${btn.secondary} text-perigo`} title="Só dá para pausar depois que a Madrinha for ativada">
-            <Pause className="size-4" aria-hidden="true" /> Pausar a Madrinha para todos
+          <button type="button" disabled className={`${btn.secondary} text-perigo`} title="Só dá para pausar depois que a Liz for ativada">
+            <Pause className="size-4" aria-hidden="true" /> Pausar a Liz para todos
           </button>
         }
       />
 
-      <Notice tone="aviso" icon={Info} title="A Madrinha ainda não foi ativada" aside={<NotActiveTag />}>
+      <Notice tone="aviso" icon={Info} title="A Liz ainda não foi ativada" aside={<NotActiveTag />}>
         Nenhuma conexão com a API foi feita. Você já pode salvar os limites, os tetos e as instruções para quando ela for ativada. Por enquanto não há conversas, uso nem custos.
       </Notice>
 
@@ -58,7 +58,7 @@ export default async function Page() {
           <div className="flex items-start justify-between gap-4 border-b border-linha pb-4">
             <div className="min-w-0">
               <p id="master-t" className="text-[15px] font-semibold leading-5 text-tinta">
-                Madrinha ligada para os casais
+                Liz ligada para os casais
               </p>
               <p id="master-d" className="mt-0.5 text-sm leading-5 text-tinta-suave">
                 <Lock className="mr-1 inline size-3.5 align-[-2px]" aria-hidden="true" />
@@ -85,11 +85,11 @@ export default async function Page() {
 
         <Panel title="Uso e custo do mês" aside={<NotActiveTag>Sem dados ainda</NotActiveTag>}>
           <StatGrid cols={3}>
-            <StatCard label="Assinantes" value="—" hint="Sem dados ainda. Não há plano da Madrinha à venda." />
+            <StatCard label="Assinantes" value="—" hint="Sem dados ainda. Não há plano da Liz à venda." />
             <StatCard label="Mensagens no mês" value="—" hint="Sem dados ainda." />
             <StatCard label="Custo estimado" value="—" hint="Sem dados ainda." />
           </StatGrid>
-          <p className="mt-4 text-sm leading-5 text-tinta-suave">Quando a Madrinha for ativada, o uso, o custo e as conversas recusadas aparecem aqui, calculados do que de fato aconteceu.</p>
+          <p className="mt-4 text-sm leading-5 text-tinta-suave">Quando a Liz for ativada, o uso, o custo e as conversas recusadas aparecem aqui, calculados do que de fato aconteceu.</p>
         </Panel>
       </div>
 
@@ -121,7 +121,7 @@ export default async function Page() {
         </Panel>
       </div>
 
-      <Panel title="Casais com ajuste" description="Quem tem a Madrinha ligada, desligada ou bloqueada à mão, ou mensagens a mais.">
+      <Panel title="Casais com ajuste" description="Quem tem a Liz ligada, desligada ou bloqueada à mão, ou mensagens a mais.">
         {overrides.length === 0 ? (
           <p className="text-sm text-tinta-suave">Nenhum casal com ajuste ainda.</p>
         ) : (

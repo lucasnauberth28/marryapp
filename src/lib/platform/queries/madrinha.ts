@@ -5,7 +5,7 @@ import { getPlatformSetting } from "@/lib/platform/settings";
 import { MADRINHA_SETTING_KEYS, DEFAULT_MADRINHA_INSTRUCTIONS } from "@/lib/platform/madrinha";
 
 /**
- * Consultas da Madrinha (configuração apenas: a IA não está conectada, então não há conversas, custos nem uso).
+ * Consultas da Liz (configuração apenas: a IA não está conectada, então não há conversas, custos nem uso).
  * Cada função confere o acesso da administração por conta própria.
  */
 
@@ -16,7 +16,7 @@ export interface SettingMeta {
   updatedByName: string | null;
 }
 
-/** Quais configurações da Madrinha já foram salvas de verdade (e por quem). */
+/** Quais configurações da Liz já foram salvas de verdade (e por quem). */
 export async function getMadrinhaSettingsMeta(): Promise<Record<(typeof MADRINHA_SETTING_KEYS)[number], SettingMeta>> {
   await requirePlatformAdmin();
   const rows = await prisma.platformSetting.findMany({

@@ -23,7 +23,7 @@ test("valor fora do formato volta ao padrão em vez de quebrar a tela", () => {
   assert.equal(ok.monthlyCostCapCents, 50000);
 });
 
-test("a Madrinha nasce desligada e sem pausa (sem API conectada)", () => {
+test("a Liz nasce desligada e sem pausa (sem API conectada)", () => {
   const master = parseSetting("madrinha.master", null);
   assert.equal(master.enabled, false);
   assert.equal(master.pausedAt, null);

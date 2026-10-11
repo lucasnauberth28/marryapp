@@ -126,7 +126,7 @@ ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F7F3EC;padding:32px 16px">
 <tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
-<tr><td style="padding:0 8px 20px;font-family:Georgia,'Times New Roman',serif;font-size:26px;color:#5E2B4E">aceito</td></tr>
+<tr><td style="padding:0 8px 20px;font-family:Georgia,'Times New Roman',serif;font-size:26px;color:#5E2B4E">Aceito</td></tr>
 <tr><td style="background:#FFFDF9;border:1px solid #DDD4C7;border-radius:16px;padding:32px 28px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:24px;color:#231C24">
 <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-weight:normal;font-size:28px;line-height:34px;color:#231C24">${escapeHtml(heading)}</h1>
 ${paragraphs.map((t) => p(t, "")).join("\n")}

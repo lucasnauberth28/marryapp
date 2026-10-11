@@ -5,7 +5,7 @@ import { StatusChip } from "@/components/plataforma/status-chip";
 
 /**
  * Avisos de contexto.
- *   <Notice tone="aviso" icon={Info} title="A Madrinha ainda não foi ativada" aside={<NotActiveTag />}>Você já pode configurar…</Notice>
+ *   <Notice tone="aviso" icon={Info} title="A Liz ainda não foi ativada" aside={<NotActiveTag />}>Você já pode configurar…</Notice>
  *   <NotActiveTag />                 chip "Desligada" para recurso que existe no desenho mas ainda não está ativo.
  *   <NotMeasured>explicação</NotMeasured>   no lugar de um número que o sistema ainda não mede ("Ainda não medimos").
  * Regra de honestidade: bloco sem fonte de dados real NUNCA mostra o número de exemplo do desenho; use <NotMeasured> ou omita.

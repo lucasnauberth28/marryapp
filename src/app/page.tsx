@@ -144,7 +144,7 @@ const FEATURES = [
   "QR Code na portaria",
   "Mural de recados",
   "Fornecedores com curadoria",
-  "Sugestões da Madrinha",
+  "Sugestões da Liz",
 ];
 
 function FeatureBand() {
@@ -400,12 +400,12 @@ function Guests() {
 }
 
 /* ============================================================================================ */
-/* Madrinha                                                                                     */
+/* Liz                                                                                     */
 /* ============================================================================================ */
 
 const MADRINHA_POINTS = ["Lembrete para quem ainda não respondeu", "Convites que ainda faltam enviar", "Despesas com vencimento atrasado"];
 
-function Madrinha() {
+function Liz() {
   return (
     <section aria-labelledby="madrinha-titulo" className="relative overflow-hidden bg-ameixa text-on-ameixa">
       {/* Arco ornamental em fio champanhe. */}
@@ -420,7 +420,7 @@ function Madrinha() {
           <Reveal variant="fade">
             <p className="flex items-center gap-3 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-on-ameixa/85">
               <Flower2 aria-hidden="true" className="size-4" strokeWidth={1.75} />
-              Conheça a Madrinha
+              Conheça a Liz
             </p>
           </Reveal>
           <h2 id="madrinha-titulo" className={cn(h2, "text-on-ameixa")}>
@@ -428,7 +428,7 @@ function Madrinha() {
           </h2>
           <Reveal delay={200}>
             <p className="max-w-[48ch] text-[17px] leading-[26px] text-on-ameixa/90 sm:text-lg sm:leading-7">
-              A Madrinha olha o painel de vocês e sugere o próximo passo: lembrar quem ainda não respondeu, enviar os convites que
+              A Liz olha o painel de vocês e sugere o próximo passo: lembrar quem ainda não respondeu, enviar os convites que
               faltam, conferir uma despesa atrasada. Ela não conversa nem decide nada: só aponta o caminho, e vocês escolhem.
             </p>
           </Reveal>
@@ -449,12 +449,12 @@ function Madrinha() {
         </div>
 
         <div className="relative flex flex-col gap-4 text-tinta sm:pl-10 lg:pl-6">
-          {/* Cartão principal: sugestão da Madrinha */}
+          {/* Cartão principal: sugestão da Liz */}
           <div className="relative w-full max-w-[480px]">
             <Parallax strength={60}>
               <Reveal variant="up" delay={300}>
                 <aside
-                  aria-label="Exemplo de sugestão da Madrinha"
+                  aria-label="Exemplo de sugestão da Liz"
                   className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 rounded-[16px] border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-2)] sm:p-6"
                 >
                   <span className="grid h-[52px] w-10 place-items-center rounded-[999px_999px_6px_6px] bg-salvia-suave text-salvia">
@@ -462,7 +462,7 @@ function Madrinha() {
                   </span>
                   <div>
                     <p className="text-sm font-semibold leading-5">
-                      Madrinha <span className="font-normal text-tinta-suave">· sua assistente</span>
+                      Liz <span className="font-normal text-tinta-suave">· sua assistente</span>
                     </p>
                     <p className="mt-1 text-base leading-6">
                       32 convites ainda não tiveram resposta e o prazo é em nove dias. Quer preparar um lembrete para mandar no
@@ -707,7 +707,7 @@ export default async function Home() {
         <HowItWorks />
         <CoupleSite />
         <Guests />
-        <Madrinha />
+        <Liz />
         <Vendors />
         <Plans catalog={catalog} />
         <FaqSection />

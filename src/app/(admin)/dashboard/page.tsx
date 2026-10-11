@@ -159,7 +159,7 @@ export default async function DashboardPage() {
     return { id: t.id, title: t.title, dueLabel: t.status === "IN_PROGRESS" ? "Em andamento" : null, tone: "neutro" };
   });
 
-  // Sugestão da Madrinha, por regras e com dado real: respostas atrasadas, convites por enviar, despesa vencida
+  // Sugestão da Liz, por regras e com dado real: respostas atrasadas, convites por enviar, despesa vencida
   const deadline = settings?.rsvpDeadline ? new Date(settings.rsvpDeadline) : null;
   let tip: Tip | null = null;
   if (awaitingReply > 0) {

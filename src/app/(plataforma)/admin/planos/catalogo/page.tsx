@@ -96,7 +96,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                 ]}
               />
               <p className="mt-3 text-sm text-tinta-suave">
-                Plano Madrinha: ainda não está à venda, então não tem preço para editar. A taxa dos presentes vem do Mercado Pago e aparece aqui só como informação.
+                Plano Liz: ainda não está à venda, então não tem preço para editar. A taxa dos presentes vem do Mercado Pago e aparece aqui só como informação.
               </p>
             </div>
           </Panel>

@@ -28,7 +28,7 @@ const STATUS = {
   ARCHIVED: { tone: "neutro", icon: Archive, label: "Anterior" },
 } as const;
 
-/** Instruções da Madrinha com histórico de versões: salvar como nova versão, publicar e reverter. */
+/** Instruções da Liz com histórico de versões: salvar como nova versão, publicar e reverter. */
 export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
   const latest = versions[0];
   const [text, setText] = useState(latest?.content ?? "");
@@ -40,7 +40,7 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
 
   return (
     <Panel
-      title="Instruções da Madrinha"
+      title="Instruções da Liz"
       aside={st && latest ? <StatusChip tone={st.tone} icon={st.icon}>{`Versão ${latest.version}, ${st.label.toLowerCase()}`}</StatusChip> : undefined}
     >
       <form
@@ -50,7 +50,7 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
           save.run(() => saveInstructionVersion({ content: text, changeNote: note }), () => setNote(""));
         }}
       >
-        <Textarea label="O que a Madrinha deve fazer" value={text} onChange={(e) => setText(e.target.value)} rows={10} error={save.errors.content} maxLength={8000} />
+        <Textarea label="O que a Liz deve fazer" value={text} onChange={(e) => setText(e.target.value)} rows={10} error={save.errors.content} maxLength={8000} />
         <Input label="O que mudou nesta versão" value={note} onChange={(e) => setNote(e.target.value)} error={save.errors.changeNote} maxLength={160} />
         {save.formError && !Object.keys(save.errors).length && <FormAlert>{save.formError}</FormAlert>}
         <div className="flex flex-wrap items-center gap-3">

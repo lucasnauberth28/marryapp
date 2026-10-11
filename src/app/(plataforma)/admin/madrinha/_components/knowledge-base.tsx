@@ -20,7 +20,7 @@ export interface ArticleItem {
   updatedAt: string;
 }
 
-/** Base de conhecimento: textos de ajuda que a Madrinha poderá consultar. Novo texto, editar, publicar, remover. */
+/** Base de conhecimento: textos de ajuda que a Liz poderá consultar. Novo texto, editar, publicar, remover. */
 export function KnowledgeBase({ articles }: { articles: ArticleItem[] }) {
   // editing: null = lista; "novo" = formulário vazio; item = editando
   const [editing, setEditing] = useState<ArticleItem | "novo" | null>(null);
@@ -34,7 +34,7 @@ export function KnowledgeBase({ articles }: { articles: ArticleItem[] }) {
           </button>
         ) : undefined
       }
-      description="A Madrinha consulta só estes textos e os dados do casal que está conversando. Ela não busca nada na internet."
+      description="A Liz consulta só estes textos e os dados do casal que está conversando. Ela não busca nada na internet."
     >
       {editing === null ? (
         articles.length === 0 ? (

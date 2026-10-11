@@ -20,7 +20,7 @@ import {
 import { searchWeddingsForMadrinha, type WeddingHit } from "@/lib/platform/queries/madrinha";
 
 /**
- * Configuração da Madrinha (a IA ainda não está conectada: nada aqui chama a API nem simula uso).
+ * Configuração da Liz (a IA ainda não está conectada: nada aqui chama a API nem simula uso).
  * Toda função começa pelo guard da administração e grava no AuditLog. Não existe ação que ligue o
  * interruptor geral nem que pause para todos: enquanto não houver conexão, isso não pode ser feito daqui.
  */
@@ -54,7 +54,7 @@ export async function saveMadrinhaLimits(input: unknown): Promise<Ok | Fail> {
     }
     await savePlatformSetting("madrinha.limits", { subscription: sub.value, trial: trial.value });
     refresh();
-    return { success: true, message: "Limites salvos. Valem quando a Madrinha for ativada." };
+    return { success: true, message: "Limites salvos. Valem quando a Liz for ativada." };
   } catch (error) {
     return platformAdminFailure(error, "saveMadrinhaLimits");
   }
@@ -100,7 +100,7 @@ export async function saveMadrinhaAbuse(input: unknown): Promise<Ok | Fail> {
   }
 }
 
-/** "Enviar mensagens sozinha" não existe no formato: a Madrinha nunca envia sozinha. `.strict()` recusa qualquer campo a mais. */
+/** "Enviar mensagens sozinha" não existe no formato: a Liz nunca envia sozinha. `.strict()` recusa qualquer campo a mais. */
 export async function saveMadrinhaCapabilities(input: unknown): Promise<Ok | Fail> {
   try {
     await requirePlatformAdmin();
@@ -190,7 +190,7 @@ export async function publishInstructionVersion(input: unknown): Promise<Ok | Fa
       details: { version: target.version, previousPublished: previous },
     });
     refresh();
-    return { success: true, message: `Versão ${target.version} publicada. A Madrinha só a usará quando for ativada.` };
+    return { success: true, message: `Versão ${target.version} publicada. A Liz só a usará quando for ativada.` };
   } catch (error) {
     return platformAdminFailure(error, "publishInstructionVersion");
   }
@@ -339,7 +339,7 @@ export async function blockWeddingMadrinha(input: unknown): Promise<Ok | Fail> {
     });
     await logAudit({ action: "madrinha.override_block", targetType: "wedding", targetId: wedding.id, details: { reason: data.reason } });
     refresh();
-    return { success: true, message: `${wedding.coupleNames} ficará sem a Madrinha quando ela for ativada.` };
+    return { success: true, message: `${wedding.coupleNames} ficará sem a Liz quando ela for ativada.` };
   } catch (error) {
     return platformAdminFailure(error, "blockWeddingMadrinha");
   }
@@ -360,7 +360,7 @@ export async function unblockWeddingMadrinha(input: unknown): Promise<Ok | Fail>
   }
 }
 
-/** Ligar ou desligar a Madrinha de um casal (null = segue o padrão do plano). */
+/** Ligar ou desligar a Liz de um casal (null = segue o padrão do plano). */
 export async function setWeddingMadrinhaEnabled(input: unknown): Promise<Ok | Fail> {
   try {
     await requirePlatformAdmin();

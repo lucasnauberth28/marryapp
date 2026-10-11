@@ -71,8 +71,8 @@ export const PLATFORM_NAV_GROUPS: PlatformNavGroup[] = [
     ],
   },
   {
-    title: "Madrinha",
-    items: [{ name: "Madrinha", href: "/admin/madrinha", icon: Flower2 }],
+    title: "Liz",
+    items: [{ name: "Liz", href: "/admin/madrinha", icon: Flower2 }],
   },
   {
     title: "Comunicação",

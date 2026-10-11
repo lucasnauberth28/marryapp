@@ -199,7 +199,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
           { value: "convidados", label: "Convidados e presentes" },
           { value: "atividade", label: "Atividade e notificações" },
           { value: "dominio", label: "Domínio" },
-          { value: "madrinha", label: "Madrinha" },
+          { value: "madrinha", label: "Liz" },
           { value: "suporte", label: "Suporte" },
         ]}
       />
@@ -560,17 +560,17 @@ async function MadrinhaTab({ id }: { id: string }) {
     <Panel title="Assistente">
       <div className="flex items-center justify-between gap-4 border-b border-linha pb-4">
         <div>
-          <p className="font-semibold">Madrinha para este casal</p>
+          <p className="font-semibold">Liz para este casal</p>
           <p className="text-sm text-tinta-suave">Ainda não ativada na plataforma</p>
         </div>
-        <Switch checked={false} disabled aria-label="Madrinha para este casal (ainda não ativada na plataforma)" />
+        <Switch checked={false} disabled aria-label="Liz para este casal (ainda não ativada na plataforma)" />
       </div>
       <p className="mt-4 text-sm leading-6 text-tinta-suave">
-        Quando a Madrinha for ativada, aqui você vê o limite deste casal e pode bloquear por abuso.
+        Quando a Liz for ativada, aqui você vê o limite deste casal e pode bloquear por abuso.
         {override && (override.extraMessages > 0 || override.blockedAt) ? ` Já existe um ajuste guardado para este casal: ${override.extraMessages > 0 ? `${override.extraMessages} mensagens a mais` : ""}${override.blockedAt ? `${override.extraMessages > 0 ? ", " : ""}bloqueado` : ""}.` : ""}
       </p>
       <Link href="/admin/madrinha" className={cn(btn.secondary, btn.sm, "mt-4")}>
-        Ver a gestão da Madrinha
+        Ver a gestão da Liz
       </Link>
     </Panel>
   );

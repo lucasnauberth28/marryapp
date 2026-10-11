@@ -16,7 +16,7 @@ export interface WeddingToggleItem {
   blocked: boolean;
 }
 
-/** Ligar ou desligar a Madrinha por casal. Lista os casais com ajuste e o que a busca encontrar. */
+/** Ligar ou desligar a Liz por casal. Lista os casais com ajuste e o que a busca encontrar. */
 export function WeddingToggles({ initial }: { initial: WeddingToggleItem[] }) {
   const [items, setItems] = useState(initial);
   const { pending, formError, run } = useAdminAction();
