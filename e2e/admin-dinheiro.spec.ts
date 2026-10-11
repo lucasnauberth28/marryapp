@@ -12,6 +12,8 @@ const PAGINAS = [
   "/admin/planos?aba=reembolsos",
   "/admin/planos/assinaturas",
   "/admin/planos/cupons",
+  "/admin/planos/catalogo",
+  "/admin/dominios",
 ];
 
 test("sem sessão: telas pedem login e as rotas de API respondem 401", async ({ page, request }) => {
@@ -30,7 +32,7 @@ test("casal não abre as telas de dinheiro e as rotas de API respondem 403", asy
   }
   for (const rota of ROTAS_API) expect((await page.request.get(rota)).status(), rota).toBe(403);
   // As telas antigas não viram atalho
-  for (const antiga of ["/curadoria", "/assinaturas", "/assinaturas?aba=cupons"]) {
+  for (const antiga of ["/curadoria", "/assinaturas", "/assinaturas?aba=cupons", "/dominios"]) {
     await page.goto(antiga);
     await expect(page, antiga).not.toHaveURL(/\/admin/);
   }
@@ -38,7 +40,7 @@ test("casal não abre as telas de dinheiro e as rotas de API respondem 403", asy
 
 test("fornecedor não abre as telas de dinheiro nem a curadoria", async ({ page }) => {
   await cadastrarFornecedor(page, emailUnico("forn-dinheiro"), "Bia Dinheiro", "Estúdio Dinheiro");
-  for (const rota of [...PAGINAS, "/curadoria", "/assinaturas"]) {
+  for (const rota of [...PAGINAS, "/curadoria", "/assinaturas", "/dominios"]) {
     await page.goto(rota);
     await expect(page, rota).toHaveURL(/\/fornecedor/);
   }

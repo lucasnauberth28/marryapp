@@ -4,11 +4,13 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
-import { maskDocument } from "@/lib/document-br";
+import { formatDocument, isMaskedDocument, maskDocument } from "@/lib/document-br";
 import { getRegistrar } from "@/lib/domain-registrar";
 import { deferNotify } from "@/lib/notifications/service";
 import { notifyDomainOrder } from "@/lib/notifications/events";
-import { getSession } from "@/lib/security/auth-guard";
+import { requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { addOneYear } from "@/lib/domain-renewal";
+import { isOpenStatus } from "@/lib/domain-order";
 import { connectDomainToProject, verifyProjectDomain, type ConnectionResult } from "@/lib/vercel-domains";
 
 // Ações da administração do Aceito sobre os pedidos de domínio. Só quem tem acesso total ("*") passa.
@@ -23,12 +25,18 @@ const IdSchema = z.string().uuid();
 const NOT_ALLOWED: Fail = { success: false, error: "Só a administração do Aceito pode fazer isso." };
 const STALE: Fail = { success: false, error: "O pedido mudou enquanto você olhava. Atualize a página." };
 
+/** Só a administração da plataforma (acesso total) passa: o guard único confere a sessão e o perfil no banco. */
 async function adminOnly(): Promise<boolean> {
-  const session = await getSession();
-  return !!session?.allowedPaths.includes("*");
+  try {
+    await requirePlatformAdmin();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function refresh() {
+  revalidatePath("/admin/dominios");
   revalidatePath("/dominios");
   revalidatePath("/dominio");
   revalidatePath("/casamento", "layout");
@@ -146,7 +154,7 @@ export async function saveDomainNoteAction(input: { orderId: string; note: strin
   const note = typeof input.note === "string" ? input.note.replace(/\s+/g, " ").trim().slice(0, 1000) : "";
   const done = await prisma.domainOrder.updateMany({ where: { id: id.data }, data: { adminNote: note || null } });
   if (done.count !== 1) return STALE;
-  revalidatePath("/dominios");
+  revalidatePath("/admin/dominios");
   return { success: true, message: "Anotação salva." };
 }
 
@@ -224,4 +232,48 @@ export async function markDomainOnlineAction(orderId: string): Promise<AdminResu
   const order = await registeredOrder(orderId);
   if (!order) return { success: false, error: "Só dá para marcar como no ar um domínio já registrado." };
   return finishConnection(order, "manual");
+}
+
+/**
+ * Mostra o CPF/CNPJ completo do titular, só enquanto o pedido está aberto (precisa dele para registrar no Registro.br).
+ * Cada revelação fica no registro de atividades. Depois de registrado, o documento já é a versão escondida.
+ */
+export async function revealDomainHolderDocumentAction(orderId: string): Promise<{ success: true; document: string } | Fail> {
+  if (!(await adminOnly())) return NOT_ALLOWED;
+  const id = IdSchema.safeParse(orderId);
+  if (!id.success) return { success: false, error: "Pedido inválido." };
+  const order = await prisma.domainOrder.findUnique({ where: { id: id.data }, select: { id: true, status: true, domain: true, holderDocument: true } });
+  if (!order || !isOpenStatus(order.status) || isMaskedDocument(order.holderDocument)) {
+    return { success: false, error: "O documento completo só fica guardado enquanto o pedido está aberto." };
+  }
+  await logAudit({ action: "domain.reveal_document", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain } });
+  return { success: true, document: formatDocument(order.holderDocument) };
+}
+
+/**
+ * "Marcar como renovado": a renovação é feita à mão no Registro.br (não há integração). Soma 1 ano ao vencimento e
+ * zera a marca dos avisos de 60 e 30 dias, que voltam a valer para o próximo período.
+ */
+export async function markDomainRenewedAction(orderId: string): Promise<AdminResult> {
+  if (!(await adminOnly())) return NOT_ALLOWED;
+  const id = IdSchema.safeParse(orderId);
+  if (!id.success) return { success: false, error: "Pedido inválido." };
+  const order = await prisma.domainOrder.findUnique({ where: { id: id.data }, select: { id: true, status: true, domain: true, expiresAt: true } });
+  if (!order || !order.expiresAt || (order.status !== "REGISTERED" && order.status !== "CONNECTED")) {
+    return { success: false, error: "Só dá para renovar um domínio já registrado e com vencimento." };
+  }
+  const next = addOneYear(order.expiresAt);
+  const done = await prisma.domainOrder.updateMany({
+    where: { id: order.id, expiresAt: order.expiresAt, status: { in: ["REGISTERED", "CONNECTED"] } },
+    data: { expiresAt: next, renewalReminderDays: null },
+  });
+  if (done.count !== 1) return STALE;
+  await logAudit({
+    action: "domain.renewed",
+    targetType: "DomainOrder",
+    targetId: order.id,
+    details: { domain: order.domain, from: order.expiresAt.toISOString().slice(0, 10), to: next.toISOString().slice(0, 10) },
+  });
+  refresh();
+  return { success: true, message: `Renovação registrada. Novo vencimento: ${next.toISOString().slice(0, 10).split("-").reverse().join("/")}.` };
 }
