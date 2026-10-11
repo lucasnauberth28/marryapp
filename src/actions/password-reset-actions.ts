@@ -5,12 +5,10 @@ import bcrypt from "bcryptjs";
 import { after } from "next/server";
 import prisma from "@/lib/prisma";
 import { checkRateLimit, getClientIp } from "@/lib/security/rate-limiter";
-import { generateLinkToken, hashLinkToken, isLinkTokenShape } from "@/lib/account/tokens";
-import { brandedEmail, sendEmail } from "@/lib/email";
-import { appUrl } from "@/lib/app-url";
+import { hashLinkToken, isLinkTokenShape } from "@/lib/account/tokens";
+import { sendPasswordResetLink } from "@/lib/account/password-reset-link";
 import { logAudit } from "@/lib/audit";
 
-const RESET_TTL_MS = 60 * 60 * 1000; // 1 hora
 const MINUTE = 60 * 1000;
 
 /** Mesma resposta exista ou não a conta: não revela quais e-mails estão cadastrados. */
@@ -46,30 +44,7 @@ export async function requestPasswordReset(input: { email: string }): Promise<Re
       const user = await prisma.user.findUnique({ where: { username: email }, select: { id: true, name: true } });
       if (!user) return;
 
-      const { token, tokenHash } = generateLinkToken();
-      await prisma.$transaction([
-        // Um link por vez: pedir de novo invalida o anterior.
-        prisma.passwordResetToken.deleteMany({ where: { userId: user.id, usedAt: null } }),
-        prisma.passwordResetToken.create({
-          data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + RESET_TTL_MS) },
-        }),
-      ]);
-
-      const firstName = user.name.trim().split(/\s+/)[0] || "";
-      const { html, text } = brandedEmail({
-        heading: "Crie uma nova senha",
-        preheader: "O link vale por 1 hora.",
-        paragraphs: [
-          `${firstName ? `Olá, ${firstName}. ` : "Olá. "}Recebemos um pedido para trocar a senha da sua conta no Aceito.`,
-          "Toque no botão abaixo para escolher uma senha nova.",
-        ],
-        cta: { label: "Criar nova senha", url: appUrl(`/redefinir-senha/${token}`) },
-        footnotes: [
-          "O link vale por 1 hora e só pode ser usado uma vez.",
-          "Se não foi você, ignore este e-mail: sua senha continua a mesma.",
-        ],
-      });
-      await sendEmail({ to: email, subject: "Sua nova senha no Aceito", html, text });
+      await sendPasswordResetLink({ id: user.id, name: user.name, username: email });
     } catch (error) {
       console.error("[requestPasswordReset] Falha ao preparar o link:", error instanceof Error ? error.message : error);
     }
