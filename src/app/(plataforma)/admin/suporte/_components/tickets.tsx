@@ -1,0 +1,226 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Bell, Plus, Clock, CheckCircle2, MessageCircle, Lock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/select";
+import { FormAlert } from "@/components/ui/field";
+import { Panel } from "@/components/plataforma/panel";
+import { StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
+import { EmptyState } from "@/components/plataforma/empty-state";
+import { btn } from "@/components/landing/styles";
+import { TICKET_STATUSES, TICKET_STATUS_LABEL } from "@/lib/platform/support";
+import { createSupportTicket, updateSupportTicket } from "@/actions/admin-suporte-actions";
+import { useAdminAction } from "../../_sistema/use-admin-action";
+
+export interface TicketItem {
+  id: string;
+  number: number;
+  subject: string;
+  body: string | null;
+  requesterName: string;
+  requesterEmail: string | null;
+  status: (typeof TICKET_STATUSES)[number];
+  assigneeName: string | null;
+  mine: boolean;
+  internalNote: string | null;
+  whenLabel: string;
+  weddingId: string | null;
+  vendorId: string | null;
+}
+
+export interface TicketPrefill {
+  weddingId?: string;
+  vendorId?: string;
+  requesterName: string;
+  requesterEmail: string;
+  label: string;
+}
+
+const TONE: Record<TicketItem["status"], { tone: StatusTone; icon: typeof Clock }> = {
+  NEW: { tone: "aviso", icon: Clock },
+  IN_PROGRESS: { tone: "aviso", icon: Clock },
+  ANSWERED: { tone: "salvia", icon: CheckCircle2 },
+  CLOSED: { tone: "neutro", icon: Lock },
+};
+
+export function Tickets({ rows, newCount, closedCount, showClosed, prefill, openForm }: { rows: TicketItem[]; newCount: number; closedCount: number; showClosed: boolean; prefill: TicketPrefill | null; openForm: boolean }) {
+  const [formOpen, setFormOpen] = useState(openForm);
+  const [editing, setEditing] = useState<string | null>(null);
+  return (
+    <Panel
+      title="Pedidos de ajuda"
+      aside={
+        <div className="flex flex-wrap items-center gap-2">
+          {newCount > 0 && (
+            <StatusChip tone="aviso" icon={Bell}>
+              {newCount} {newCount === 1 ? "novo" : "novos"}
+            </StatusChip>
+          )}
+          {!formOpen && (
+            <button type="button" onClick={() => setFormOpen(true)} className={`${btn.secondary} ${btn.sm}`}>
+              <Plus className="size-4" aria-hidden="true" /> Registrar pedido
+            </button>
+          )}
+        </div>
+      }
+    >
+      <div id="chamados" className="scroll-mt-24" />
+      {formOpen && <NewTicket prefill={prefill} onDone={() => setFormOpen(false)} />}
+      {rows.length === 0 ? (
+        <EmptyState icon={MessageCircle} compact title={showClosed ? "Nenhum pedido registrado" : "Nenhum pedido em aberto"}>
+          Não há formulário público: registre aqui os pedidos que chegarem por WhatsApp ou e-mail.
+        </EmptyState>
+      ) : (
+        <ul className="divide-y divide-linha overflow-hidden rounded-2xl border border-linha">
+          {rows.map((t) => {
+            const s = TONE[t.status];
+            return (
+              <li key={t.id}>
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+                  <div className="min-w-0">
+                    <p className="text-[15px] font-semibold leading-5 text-tinta">
+                      <span className="text-tinta-suave">#{t.number}</span> {t.subject}
+                    </p>
+                    <p className="text-sm leading-5 text-tinta-suave">
+                      {t.requesterName} · {t.whenLabel} · {t.assigneeName ? `Responsável: ${t.mine ? "você" : t.assigneeName.split(" ")[0]}` : "Sem responsável"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <StatusChip tone={s.tone} icon={s.icon}>
+                      {TICKET_STATUS_LABEL[t.status]}
+                    </StatusChip>
+                    <button type="button" aria-expanded={editing === t.id} onClick={() => setEditing(editing === t.id ? null : t.id)} className={`${btn.quiet} ${btn.sm}`}>
+                      {editing === t.id ? "Fechar" : "Abrir"}
+                    </button>
+                  </div>
+                </div>
+                {editing === t.id && <TicketEditor ticket={t} onDone={() => setEditing(null)} />}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <p className="mt-3 text-sm text-tinta-suave">
+        {showClosed ? (
+          <Link href="/admin/suporte#chamados" className="font-semibold text-ameixa underline underline-offset-2">
+            Esconder os encerrados
+          </Link>
+        ) : closedCount > 0 ? (
+          <Link href="/admin/suporte?encerrados=1#chamados" className="font-semibold text-ameixa underline underline-offset-2">
+            Mostrar os {closedCount} encerrados
+          </Link>
+        ) : null}
+      </p>
+    </Panel>
+  );
+}
+
+function NewTicket({ prefill, onDone }: { prefill: TicketPrefill | null; onDone: () => void }) {
+  const router = useRouter();
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+  const [name, setName] = useState(prefill?.requesterName ?? "");
+  const [email, setEmail] = useState(prefill?.requesterEmail ?? "");
+  const [phone, setPhone] = useState("");
+  const { pending, errors, formError, run } = useAdminAction();
+  return (
+    <form
+      className="mb-4 flex flex-col gap-4 rounded-2xl bg-linho p-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        run(
+          () => createSupportTicket({ subject, body, requesterName: name, requesterEmail: email, requesterPhone: phone, weddingId: prefill?.weddingId, vendorId: prefill?.vendorId }),
+          () => {
+            onDone();
+            router.replace("/admin/suporte#chamados");
+            router.refresh();
+          },
+        );
+      }}
+    >
+      <h3 className="text-lg font-semibold text-tinta">Registrar um pedido de ajuda</h3>
+      {prefill && <p className="text-sm text-tinta-suave">Ligado ao {prefill.label}.</p>}
+      <Input label="Assunto" value={subject} onChange={(e) => setSubject(e.target.value)} error={errors.subject} maxLength={140} />
+      <Textarea label="O que a pessoa contou" optional value={body} onChange={(e) => setBody(e.target.value)} error={errors.body} rows={3} maxLength={2000} />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Input label="Quem pediu" value={name} onChange={(e) => setName(e.target.value)} error={errors.requesterName} maxLength={120} />
+        <Input label="E-mail" optional type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.requesterEmail} />
+        <Input label="Telefone" optional value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.requesterPhone} maxLength={30} />
+      </div>
+      {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
+      <div className="flex flex-wrap gap-3">
+        <button type="submit" disabled={pending} className={btn.primary}>
+          Registrar pedido
+        </button>
+        <button type="button" onClick={onDone} className={btn.quiet}>
+          Cancelar
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function TicketEditor({ ticket, onDone }: { ticket: TicketItem; onDone: () => void }) {
+  const router = useRouter();
+  const [status, setStatus] = useState(ticket.status);
+  const [note, setNote] = useState(ticket.internalNote ?? "");
+  const [assign, setAssign] = useState<"keep" | "me" | "none">("keep");
+  const { pending, errors, formError, run } = useAdminAction();
+  return (
+    <form
+      className="flex flex-col gap-4 border-t border-linha bg-linho px-4 py-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        run(
+          () => updateSupportTicket({ id: ticket.id, status, internalNote: note, assignToMe: assign === "me", unassign: assign === "none" }),
+          () => {
+            onDone();
+            router.refresh();
+          },
+        );
+      }}
+    >
+      {ticket.body && <p className="whitespace-pre-line rounded-xl bg-papel p-3 text-sm leading-5 text-tinta">{ticket.body}</p>}
+      {(ticket.requesterEmail || ticket.weddingId || ticket.vendorId) && (
+        <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-tinta-suave">
+          {ticket.requesterEmail && <span>{ticket.requesterEmail}</span>}
+          {ticket.weddingId && (
+            <Link className="font-semibold text-ameixa underline underline-offset-2" href={`/admin/casais/${ticket.weddingId}`}>
+              Abrir o casal
+            </Link>
+          )}
+          {ticket.vendorId && (
+            <Link className="font-semibold text-ameixa underline underline-offset-2" href={`/admin/fornecedores?id=${ticket.vendorId}`}>
+              Abrir o fornecedor
+            </Link>
+          )}
+        </p>
+      )}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <NativeSelect label="Situação" value={status} onChange={(e) => setStatus(e.target.value as TicketItem["status"])} alwaysFloat>
+          {TICKET_STATUSES.map((s) => (
+            <option key={s} value={s}>
+              {TICKET_STATUS_LABEL[s]}
+            </option>
+          ))}
+        </NativeSelect>
+        <NativeSelect label="Responsável" value={assign} onChange={(e) => setAssign(e.target.value as typeof assign)} alwaysFloat>
+          <option value="keep">{ticket.assigneeName ? `Continua ${ticket.mine ? "com você" : ticket.assigneeName.split(" ")[0]}` : "Sem responsável"}</option>
+          <option value="me">Assumir (eu)</option>
+          {ticket.assigneeName && <option value="none">Tirar o responsável</option>}
+        </NativeSelect>
+      </div>
+      <Textarea label="Nota interna" optional hint="Só a equipe vê." value={note} onChange={(e) => setNote(e.target.value)} error={errors.internalNote} rows={3} maxLength={2000} />
+      {formError && <FormAlert>{formError}</FormAlert>}
+      <div>
+        <button type="submit" disabled={pending} className={btn.primary}>
+          Salvar
+        </button>
+      </div>
+    </form>
+  );
+}

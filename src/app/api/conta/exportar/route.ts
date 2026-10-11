@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
-import { classifyAccount } from "@/lib/account/wedding-provisioning";
-import { maskDocument } from "@/lib/document-br";
+import { buildAccountExport } from "@/lib/account/export-data";
 
 export const dynamic = "force-dynamic";
 
@@ -23,103 +21,14 @@ export async function GET() {
   if (!limit.success) return NextResponse.json({ error: "Muitas exportações seguidas. Aguarde alguns minutos." }, { status: 429 });
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: session.userId },
-      select: {
-        id: true,
-        name: true,
-        username: true,
-        createdAt: true,
-        updatedAt: true,
-        weddingId: true,
-        partnerVendorId: true,
-        role: { select: { name: true, allowedPaths: true } },
-        subscriptions: {
-          select: {
-            id: true,
-            planId: true,
-            planType: true,
-            planName: true,
-            modules: true,
-            couponCode: true,
-            discount: true,
-            credit: true,
-            amount: true,
-            status: true,
-            paidAt: true,
-            periodEnd: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: "asc" },
-        },
-      },
-    });
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const exported = await buildAccountExport(session.userId);
+    if (!exported) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const kind = classifyAccount(user);
-
-    const wedding =
-      kind !== "vendor" && user.weddingId
-        ? await prisma.wedding.findUnique({
-            where: { id: user.weddingId },
-            include: {
-              members: { select: { id: true, name: true, username: true, createdAt: true } },
-              invites: { select: { id: true, email: true, createdAt: true, expiresAt: true, usedAt: true } },
-              settings: true,
-              site: true,
-              wallet: true,
-              guests: true,
-              timeline: true,
-              tables: true,
-              gifts: true,
-              transactions: true,
-              vendors: true,
-              expenses: true,
-              tasks: true,
-              honeymoon: true,
-              templates: true,
-              creditCards: true,
-              story: true,
-              tips: true,
-              guestbook: true,
-              domainOrders: { orderBy: { requestedAt: "asc" } },
-            },
-          })
-        : null;
-
-    const vendorProfile = user.partnerVendorId
-      ? await prisma.partnerVendor.findUnique({
-          where: { id: user.partnerVendorId },
-          include: { leads: true, reviews: true, events: true, profileViews: true },
-        })
-      : null;
-
-    const exportedAt = new Date();
-    const payload = {
-      exportedAt: exportedAt.toISOString(),
-      notice:
-        "Cópia dos seus dados no Aceito (LGPD, art. 18, V). Valores em dinheiro estão em centavos. Senhas e tokens não são exportados.",
-      account: {
-        id: user.id,
-        name: user.name,
-        email: user.username,
-        type: kind,
-        role: user.role.name,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      },
-      subscriptions: user.subscriptions,
-      // Pedidos de domínio: o CPF/CNPJ do titular sai sempre escondido (o número completo é só para o registro)
-      wedding: wedding && { ...wedding, domainOrders: wedding.domainOrders.map((o) => ({ ...o, holderDocument: maskDocument(o.holderDocument) })) },
-      vendorProfile,
-    };
-
-    const filename = `aceito-meus-dados-${exportedAt.toISOString().slice(0, 10)}.json`;
-    return new NextResponse(JSON.stringify(payload, null, 2), {
+    return new NextResponse(exported.json, {
       status: 200,
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Disposition": `attachment; filename="${exported.filename}"`,
         "Cache-Control": "no-store, private",
         "X-Content-Type-Options": "nosniff",
       },
