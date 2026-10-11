@@ -13,7 +13,7 @@ import { ACTIVE_STATUSES, parseDomainRequest, type DomainRequestField } from "@/
 import { DOMAIN_TERMS_VERSION } from "@/lib/domain-terms";
 import { AuthorizationError, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { checkRateLimit, getClientIp } from "@/lib/security/rate-limiter";
-import { requireWedding } from "@/lib/security/wedding-context";
+import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
 import { getWeddingPlan, moduleRefusal } from "@/lib/wedding-plan";
 
 // Ações do casal para o domínio próprio. Tudo é do casamento da sessão: o navegador nunca diz de qual
@@ -24,9 +24,10 @@ const ERR_BUSY = "Muitas tentativas seguidas. Aguarde alguns minutos e tente de 
 
 type Ctx = Awaited<ReturnType<typeof requireWedding>>;
 
-async function context(): Promise<{ ctx: Ctx; error?: undefined } | { ctx?: undefined; error: string }> {
+/** `write: false` para consultas (só leem): valem também em "entrar como" somente leitura e casamento suspenso. */
+async function context(write = true): Promise<{ ctx: Ctx; error?: undefined } | { ctx?: undefined; error: string }> {
   try {
-    return { ctx: await requireWedding("/dominio") };
+    return { ctx: await (write ? requireWedding("/dominio") : requireWeddingRead("/dominio")) };
   } catch (error) {
     if (error instanceof AuthorizationError) return { error: error.message || ERR_SESSION };
     throw error;
@@ -48,7 +49,7 @@ export type CheckDomainResult =
 
 /** Confere se o nome está livre no Registro.br. É só um aviso: a conferência final é na hora de registrar. */
 export async function checkDomainAvailabilityAction(input: { domain: string }): Promise<CheckDomainResult> {
-  const got = await context();
+  const got = await context(false);
   if (got.error !== undefined) return { success: false, error: got.error };
   const { ctx } = got;
 

@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { getIdentityForWedding } from "@/lib/wedding";
 import { weddingSitePath } from "@/lib/wedding-links";
 import { notFound } from "next/navigation";
+import { SiteUnavailable } from "@/components/public/site-unavailable";
 import { CheckoutClient } from "./checkout-client";
 import { isCardPaymentAvailable } from "@/lib/mercadopago";
 import Link from "next/link";
@@ -22,7 +23,7 @@ async function loadGift(giftId: string) {
       isPurchased: true,
       createdAt: true,
       wedding: {
-        select: { id: true, slug: true, coupleNames: true, weddingDate: true, city: true, themeColor: true, onboardedAt: true },
+        select: { id: true, slug: true, coupleNames: true, weddingDate: true, city: true, themeColor: true, onboardedAt: true, suspendedAt: true },
       },
     },
   });
@@ -31,6 +32,7 @@ async function loadGift(giftId: string) {
 export async function generateMetadata({ params }: CheckoutPageProps): Promise<Metadata> {
   const { giftId } = await params;
   const gift = await loadGift(giftId);
+  if (gift?.wedding.suspendedAt) return { title: { absolute: "Site indisponível" }, robots: { index: false, follow: false } };
   const { coupleNames } = await getIdentityForWedding(gift?.wedding ?? null);
   return {
     title: { absolute: `Presentear · ${coupleNames}` },
@@ -53,6 +55,8 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
   if (!giftWithWedding) {
     notFound();
   }
+
+  if (giftWithWedding.wedding.suspendedAt) return <SiteUnavailable />;
 
   // Só os campos do presente vão para o cliente
   const { wedding, ...gift } = giftWithWedding;

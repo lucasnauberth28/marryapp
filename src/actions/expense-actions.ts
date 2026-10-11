@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding } from "@/lib/security/wedding-context";
+import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
@@ -32,7 +32,7 @@ const EXPENSE_STATUSES = new Set<string>(Object.values(ExpenseStatus));
 const EXPENSE_TYPES = new Set<string>(Object.values(ExpenseType));
 
 export async function getExpenses() {
-  const { weddingId } = await requireWedding("/financas");
+  const { weddingId } = await requireWeddingRead("/financas");
   return prisma.expense.findMany({
     where: { weddingId },
     orderBy: { dueDate: "asc" },

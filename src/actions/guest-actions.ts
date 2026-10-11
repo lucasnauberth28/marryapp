@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding, getWeddingBySlug } from "@/lib/security/wedding-context";
+import { requireWedding, requireWeddingRead, getWeddingBySlug } from "@/lib/security/wedding-context";
 import { moduleRefusal } from "@/lib/wedding-plan";
 
 import { z } from "zod";
@@ -86,7 +86,7 @@ const GuestSchema = z.object({
 // ==========================================
 
 export async function getGuests(filter?: RsvpStatus) {
-  const { weddingId } = await requireWedding("/convidados");
+  const { weddingId } = await requireWeddingRead("/convidados");
   return prisma.guest.findMany({
     where: filter ? { weddingId, rsvpStatus: filter } : { weddingId },
     include: {
@@ -99,7 +99,7 @@ export async function getGuests(filter?: RsvpStatus) {
 }
 
 export async function getGuestById(id: string) {
-  const { weddingId } = await requireWedding("/convidados");
+  const { weddingId } = await requireWeddingRead("/convidados");
   if (typeof id !== "string") return null;
   return prisma.guest.findFirst({
     where: { id, weddingId },
@@ -432,7 +432,7 @@ export async function findGuestByPhone(slug: string, phone: string): Promise<Gue
   if (!rateLimit.success) return { status: "rate_limited" };
 
   const wedding = await getWeddingBySlug(slug);
-  if (!wedding) return { status: "not_found" };
+  if (!wedding || wedding.suspendedAt) return { status: "not_found" };
 
   const guest = await prisma.guest.findFirst({
     where: { weddingId: wedding.id, phone: { endsWith: cleanPhone } },
@@ -478,6 +478,7 @@ export async function publicConfirmRsvp(
 
     const wedding = await getWeddingBySlug(data.slug);
     if (!wedding) return { success: false, error: "Convidado não encontrado." };
+    if (wedding.suspendedAt) return { success: false, error: "Este site está indisponível no momento." };
 
     const guest = await prisma.guest.findFirst({ where: { id: data.id, weddingId: wedding.id } });
     if (!guest) return { success: false, error: "Convidado não encontrado." };

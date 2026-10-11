@@ -1,3 +1,4 @@
+import { SiteUnavailable } from "@/components/public/site-unavailable";
 import { Metadata } from "next";
 import Link from "next/link";
 import { QrCode } from "lucide-react";
@@ -33,6 +34,7 @@ function weekdayLabel(date: Date) {
 export default async function DiaDoEventoPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const wedding = await requirePublicWedding(slug);
+  if (wedding.suspendedAt) return <SiteUnavailable />;
   const [events, identity] = await Promise.all([getWeddingTimeline(wedding.id), getIdentityForWedding(wedding)]);
   const date = identity.weddingDate;
 

@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { requireWedding } from "@/lib/security/wedding-context";
+import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
 import { moduleRefusal } from "@/lib/wedding-plan";
 
 // Consultas só de leitura da portaria: nada é gravado aqui (a entrada é registrada por checkInGuest).
@@ -48,7 +48,7 @@ const select = {
 
 /** Dados do convidado do QR Code lido, para a pessoa da portaria conferir antes de liberar a entrada. */
 export async function lookupGuestForCheckIn(guestId: string): Promise<{ success: true; guest: CheckInGuestInfo } | { success: false; error: string }> {
-  const { weddingId, session } = await requireWedding("/credenciamento");
+  const { weddingId, session } = await requireWeddingRead("/credenciamento");
   const refusal = await moduleRefusal({ weddingId, session }, "qrcode");
   if (refusal) return { success: false, error: refusal };
   if (typeof guestId !== "string" || !guestId) return { success: false, error: "Convidado não encontrado." };
@@ -59,7 +59,7 @@ export async function lookupGuestForCheckIn(guestId: string): Promise<{ success:
 
 /** Busca pelo nome, para quem esqueceu o QR Code. */
 export async function searchGuestsForCheckIn(query: string): Promise<CheckInGuestInfo[]> {
-  const { weddingId, session } = await requireWedding("/credenciamento");
+  const { weddingId, session } = await requireWeddingRead("/credenciamento");
   const refusal = await moduleRefusal({ weddingId, session }, "qrcode");
   if (refusal) return [];
   const q = typeof query === "string" ? query.trim().slice(0, 80) : "";

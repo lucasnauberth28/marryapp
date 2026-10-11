@@ -108,6 +108,8 @@ export const getWeddingIdentityBySlug = cache(async (slug: string): Promise<Wedd
  */
 export async function guestPageMetadata(slug: string, page: string | null, description?: string, guestPage?: WeddingGuestPage) {
   const wedding = await getWeddingBySlug(slug).catch(() => null);
+  // Suspenso: nada do casal nos metadados e fora dos buscadores
+  if (wedding?.suspendedAt) return { title: { absolute: "Site indisponível" }, robots: { index: false, follow: false } };
   const identity = wedding ? await getIdentityForWedding(wedding) : buildIdentity(null, null);
   const { coupleNames, dateLabel } = identity;
   // Endereço oficial: o domínio próprio quando existe (links e buscadores usam o mesmo endereço)

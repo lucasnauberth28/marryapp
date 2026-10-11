@@ -1,6 +1,6 @@
 "use server";
 
-import { getWeddingBySlug, requireWedding } from "@/lib/security/wedding-context";
+import { getWeddingBySlug, requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
 import {
   ensureSiteCustomization,
   getApprovedGuestBookEntries,
@@ -22,7 +22,7 @@ import { isAllowedSiteImage } from "@/lib/image-source";
  * O site público lê pelo endereço do casamento (lib/wedding-data).
  */
 export async function getSiteCustomization() {
-  const { wedding } = await requireWedding("/site-builder");
+  const { wedding } = await requireWeddingRead("/site-builder");
   try {
     return await ensureSiteCustomization(wedding);
   } catch (error) {
@@ -134,7 +134,7 @@ export async function uploadSiteImageAction(formData: FormData) {
  * Gerenciamento de Momentos da História do Casal (Storytelling)
  */
 export async function getStoryItems() {
-  const { weddingId } = await requireWedding("/site-builder");
+  const { weddingId } = await requireWeddingRead("/site-builder");
   try {
     return await getWeddingStoryItems(weddingId);
   } catch (error) {
@@ -189,7 +189,7 @@ export async function deleteStoryItem(id: string) {
  * Gerenciamento de Dicas aos Convidados (Hotéis, Salões, Transporte)
  */
 export async function getWeddingTips() {
-  const { weddingId } = await requireWedding("/site-builder");
+  const { weddingId } = await requireWeddingRead("/site-builder");
   try {
     return await getWeddingTipsList(weddingId);
   } catch (error) {
@@ -250,7 +250,7 @@ export async function deleteWeddingTip(id: string) {
  * Mural de Recados dos Convidados (Guestbook)
  */
 export async function getGuestBookEntries() {
-  const { weddingId } = await requireWedding("/site-builder");
+  const { weddingId } = await requireWeddingRead("/site-builder");
   try {
     return await getApprovedGuestBookEntries(weddingId);
   } catch (error) {
@@ -293,6 +293,7 @@ export async function createGuestBookEntry(
 
     const wedding = await getWeddingBySlug(slug);
     if (!wedding) return { success: false, error: "Casamento não encontrado." };
+    if (wedding.suspendedAt) return { success: false, error: "Este site está indisponível no momento." };
 
     const entry = await prisma.guestBookEntry.create({
       data: {

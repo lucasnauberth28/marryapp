@@ -1,3 +1,4 @@
+import { SiteUnavailable } from "@/components/public/site-unavailable"
 import { Metadata } from "next"
 import { GuestHeader } from "@/components/public/guest-header"
 import { getIdentityForWedding, guestPageMetadata } from "@/lib/wedding"
@@ -17,6 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function ListaPresentesPublicPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const wedding = await requirePublicWedding(slug)
+  if (wedding.suspendedAt) return <SiteUnavailable />
   const [gifts, identity] = await Promise.all([
     getWeddingGifts(wedding.id).catch((error) => {
       console.error("Erro ao buscar presentes:", error)

@@ -1,3 +1,4 @@
+import { SiteUnavailable } from "@/components/public/site-unavailable";
 import { WeddingSiteView } from "@/components/public/wedding-site-view";
 import { guestPageMetadata } from "@/lib/wedding";
 import { getPublicSiteData } from "@/lib/wedding-data";
@@ -17,6 +18,7 @@ export default async function WeddingPublicSlugPage({
 }) {
   const { slug } = await params;
   const wedding = await requirePublicWedding(slug);
+  if (wedding.suspendedAt) return <SiteUnavailable />;
   const { settings, storyItems, tips, guestbookEntries, gifts, rsvpDeadline } = await getPublicSiteData(wedding);
 
   return (

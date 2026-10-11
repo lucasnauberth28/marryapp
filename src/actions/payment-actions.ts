@@ -10,6 +10,7 @@ import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { rateLimitByIp } from "@/lib/security/rate-limiter";
 import { normalizeText } from "@/lib/security/sanitize";
+import { isWeddingSuspended, SITE_UNAVAILABLE_MESSAGE } from "@/lib/wedding-suspension";
 import { deferNotify } from "@/lib/notifications/service";
 import { notifyGiftPaid, notifyPixToCheck } from "@/lib/notifications/events";
 
@@ -62,6 +63,7 @@ export async function createPixTransactionAction(input: {
     const gift = await prisma.gift.findUnique({ where: { id: giftId } });
     if (!gift) return { success: false, error: "Presente não encontrado." };
     if (gift.isPurchased) return { success: false, error: "Este presente já foi comprado." };
+    if (await isWeddingSuspended(gift.weddingId)) return { success: false, error: SITE_UNAVAILABLE_MESSAGE };
 
     // O casamento vem sempre do presente (nunca do navegador): convidado e transação ficam nele.
     const guest = await findOrCreateGuest({
@@ -243,6 +245,7 @@ export async function processCardPaymentAction(input: {
     const gift = await prisma.gift.findUnique({ where: { id: giftId } });
     if (!gift) return { success: false, error: "Presente não encontrado." };
     if (gift.isPurchased) return { success: false, error: "Este presente já foi comprado." };
+    if (await isWeddingSuspended(gift.weddingId)) return { success: false, error: SITE_UNAVAILABLE_MESSAGE };
 
     const { finalAmount, fee } = calculateCardFee(gift.amount);
 

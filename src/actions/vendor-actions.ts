@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding } from "@/lib/security/wedding-context";
+import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
@@ -15,7 +15,7 @@ const VendorSchema = z.object({
 });
 
 export async function getVendors() {
-  const { weddingId } = await requireWedding();
+  const { weddingId } = await requireWeddingRead();
   return prisma.vendor.findMany({
     where: { weddingId },
     orderBy: { createdAt: "desc" },

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding } from "@/lib/security/wedding-context";
+import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
 
 import prisma from "@/lib/prisma";
 import { PaymentStatus, PaymentMethod, ExpenseStatus, Prisma } from "@prisma/client";
@@ -49,7 +49,7 @@ export type TransactionWithGift = Prisma.TransactionGetPayload<
  * Todos os valores estão em centavos (Int).
  */
 export async function getFinancialMetrics(): Promise<FinancialMetrics> {
-  const { weddingId } = await requireWedding("/financas");
+  const { weddingId } = await requireWeddingRead("/financas");
   const [
     approved,
     pending,
@@ -131,7 +131,7 @@ export async function getFinancialMetrics(): Promise<FinancialMetrics> {
  * incluindo o presente (Gift) e convidado (Guest) associados.
  */
 export async function getTransactions(): Promise<TransactionWithGift[]> {
-  const { weddingId } = await requireWedding("/financas");
+  const { weddingId } = await requireWeddingRead("/financas");
   return prisma.transaction.findMany({ ...transactionQueryArgs, where: { weddingId } });
 }
 

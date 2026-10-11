@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding } from "@/lib/security/wedding-context";
+import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
 import { moduleRefusal } from "@/lib/wedding-plan";
 import { weddingSiteUrl } from "@/lib/wedding-links";
 import { defaultTemplatesToCreate } from "@/lib/default-message-templates";
@@ -15,7 +15,9 @@ import { revalidatePath } from "next/cache";
  * impede que duas aberturas da tela criem os modelos em dobro. Quem já tem modelos não é alterado.
  */
 export async function ensureDefaultTemplates() {
-  const { weddingId } = await requireWedding("/mensagens");
+  const { weddingId, impersonation } = await requireWeddingRead("/mensagens");
+  // Abrir a tela não grava nada em "entrar como" somente leitura (a administração só olha)
+  if (impersonation && !impersonation.canEdit) return;
   try {
     await prisma.$transaction(async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`message-templates:${weddingId}`}))`;
@@ -31,7 +33,7 @@ export async function ensureDefaultTemplates() {
 }
 
 export async function getMessageTemplates() {
-  const { weddingId } = await requireWedding("/mensagens");
+  const { weddingId } = await requireWeddingRead("/mensagens");
   try {
     await ensureDefaultTemplates();
     const templates = await prisma.messageTemplate.findMany({

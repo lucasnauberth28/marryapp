@@ -1,12 +1,12 @@
 "use server";
 
-import { requireWedding } from "@/lib/security/wedding-context";
+import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 export async function getTablesWithGuests() {
-  const { weddingId } = await requireWedding();
+  const { weddingId } = await requireWeddingRead();
   return prisma.table.findMany({
     where: { weddingId },
     include: {
@@ -23,7 +23,7 @@ export async function getTablesWithGuests() {
 }
 
 export async function getUnassignedGuests() {
-  const { weddingId } = await requireWedding();
+  const { weddingId } = await requireWeddingRead();
   return prisma.guest.findMany({
     where: {
       weddingId,

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding } from "@/lib/security/wedding-context";
+import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
 import { ensureSystemSettings } from "@/lib/wedding-data";
 
 import prisma from "@/lib/prisma";
@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 
 /** Regras do casamento da sessão. As páginas públicas leem o prazo pelo endereço (lib/wedding-data). */
 export async function getSettings() {
-  const { weddingId } = await requireWedding();
+  const { weddingId } = await requireWeddingRead();
   return ensureSystemSettings(weddingId);
 }
 

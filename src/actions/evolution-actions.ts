@@ -1,11 +1,11 @@
 "use server";
 
-import { requireWedding } from "@/lib/security/wedding-context";
+import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
 
 import { getConnectionState, connectInstance } from "@/lib/evolution";
 
 export async function getWhatsAppStatus() {
-  await requireWedding("/configuracoes");
+  await requireWeddingRead("/configuracoes");
   return getConnectionState();
 }
 

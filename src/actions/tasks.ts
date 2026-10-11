@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding } from "@/lib/security/wedding-context";
+import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
 
 import prisma from "@/lib/prisma";
 import { Prisma, TaskStatus } from "@prisma/client";
@@ -28,7 +28,7 @@ function optionalDate(value: unknown): Date | null | undefined {
 }
 
 export async function getTasks() {
-  const { weddingId } = await requireWedding("/pendencias");
+  const { weddingId } = await requireWeddingRead("/pendencias");
   try {
     const tasks = await prisma.task.findMany({
       where: { weddingId },

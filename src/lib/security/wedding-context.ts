@@ -13,6 +13,8 @@ import {
   type SecureAuthContext,
 } from "@/lib/security/auth-guard";
 import { resolveImpersonation, type ImpersonationContext } from "@/lib/security/impersonation";
+import { weddingWriteRefusal } from "@/lib/security/impersonation-rules";
+import { logAudit } from "@/lib/audit";
 
 /**
  * Multi-casamento: todo dado do painel do casal pertence a um casamento (weddingId).
@@ -31,6 +33,7 @@ const WEDDING_SELECT = {
   themeColor: true,
   onboardedAt: true,
   customDomain: true,
+  suspendedAt: true,
 } as const;
 
 export type WeddingSummary = {
@@ -43,6 +46,8 @@ export type WeddingSummary = {
   onboardedAt: Date | null;
   /** Domínio próprio conectado e no ar (sem "www."), ou null. */
   customDomain?: string | null;
+  /** Suspenso pela administração: site público fora do ar e painel só para leitura. */
+  suspendedAt?: Date | null;
 };
 
 export interface WeddingContext {
@@ -93,9 +98,9 @@ export const getWeddingContext = cache(async (): Promise<WeddingContext | null> 
   const session = await getSession();
   if (!session) return null;
 
-  // PONTO DE EXTENSÃO do "Entrar como este casal": enquanto resolveImpersonation devolve null, nada muda.
-  // Quando houver sessão válida, o painel do casal mostra ESTE casamento (e não grava atividade).
-  // Depois dele, a conta de administração sem casamento próprio ainda cai no casamento principal (viaAdmin).
+  // "Entrar como este casal": com sessão válida (cookie assinado + linha no banco, 30 min) o painel do casal mostra
+  // ESTE casamento e não grava atividade. Sem ela, a conta de administração sem casamento próprio ainda cai no
+  // casamento principal (viaAdmin).
   const impersonation = await resolveImpersonation(session);
   if (impersonation) {
     const wedding = await prisma.wedding.findUnique({ where: { id: impersonation.weddingId }, select: WEDDING_SELECT });
@@ -125,14 +130,38 @@ export const getWeddingContext = cache(async (): Promise<WeddingContext | null> 
 });
 
 /**
- * Para Server Actions do painel do casal: exige sessão (e a permissão do módulo, se informada)
- * e um casamento. Lança AuthorizationError caso contrário.
+ * Para Server Actions do painel do casal que SÓ LEEM: exige sessão (e a permissão do módulo, se informada)
+ * e um casamento. Lança AuthorizationError caso contrário. Vale também em "entrar como" somente leitura
+ * e em casamento suspenso. Quem escreve usa requireWedding.
  */
-export async function requireWedding(path?: string): Promise<WeddingContext> {
+export async function requireWeddingRead(path?: string): Promise<WeddingContext> {
   if (path) await requirePathPermission(path);
   else await requireAuthSession();
   const ctx = await getWeddingContext();
   if (!ctx) throw new AuthorizationError("Esta conta ainda não tem um casamento. Conclua o cadastro do casamento.");
+  return ctx;
+}
+
+/**
+ * Para Server Actions do painel do casal que ESCREVEM (todas, salvo as de leitura pura): igual a requireWeddingRead,
+ * mais duas recusas centrais:
+ *  - "entrar como" somente leitura (a administração só olha; a segunda confirmação de "Permitir editar" vira canEdit);
+ *  - casamento suspenso (painel só para leitura).
+ * Com "entrar como" editável, cada escrita fica no AuditLog (ator, casamento, sessão e área).
+ * Por padrão recusa: uma action nova que esquecer de escolher entre as duas já nasce protegida.
+ */
+export async function requireWedding(path?: string): Promise<WeddingContext> {
+  const ctx = await requireWeddingRead(path);
+  const refusal = weddingWriteRefusal({ impersonation: ctx.impersonation, suspendedAt: ctx.wedding.suspendedAt });
+  if (refusal) throw new AuthorizationError(refusal);
+  if (ctx.impersonation?.canEdit) {
+    await logAudit({
+      action: "impersonation.write",
+      targetType: "wedding",
+      targetId: ctx.weddingId,
+      details: { sessionId: ctx.impersonation.id, area: path ?? "painel", reason: ctx.impersonation.reason },
+    });
+  }
   return ctx;
 }
 

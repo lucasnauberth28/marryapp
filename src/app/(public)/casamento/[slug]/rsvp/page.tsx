@@ -1,3 +1,4 @@
+import { SiteUnavailable } from "@/components/public/site-unavailable";
 import { RsvpClient } from "./rsvp-client";
 import Link from "next/link";
 import { Clock } from "lucide-react";
@@ -20,6 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function RsvpPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const weddingRow = await requirePublicWedding(slug);
+  if (weddingRow.suspendedAt) return <SiteUnavailable />;
   const [rsvpDeadline, wedding] = await Promise.all([getRsvpDeadline(weddingRow.id), getIdentityForWedding(weddingRow)]);
 
   const isExpired = rsvpDeadline

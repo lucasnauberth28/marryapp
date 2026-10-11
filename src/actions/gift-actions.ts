@@ -1,6 +1,6 @@
 'use server'
 
-import { requireWedding } from "@/lib/security/wedding-context"
+import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context"
 import { getWeddingGifts } from "@/lib/wedding-data"
 
 import prisma from "@/lib/prisma"
@@ -17,7 +17,7 @@ const GiftSchema = z.object({
 // Painel do casal: presentes do casamento da sessão. A lista pública (/casamento/<slug>/presentes)
 // lê direto no servidor pelo casamento do endereço (lib/wedding-data).
 export async function getGifts() {
-  const { weddingId } = await requireWedding("/presentes-admin")
+  const { weddingId } = await requireWeddingRead("/presentes-admin")
   try {
     const gifts = await getWeddingGifts(weddingId)
     return { success: true, data: gifts }
