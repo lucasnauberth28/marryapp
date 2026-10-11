@@ -441,7 +441,7 @@ function OrderProgress({ order }: { order: DomainOrderView }) {
                     {step.title}
                     <span className="ml-2 text-sm font-normal text-tinta-suave">{STATE_LABEL[state]}</span>
                   </p>
-                  <p className="text-[15px] leading-6 text-tinta-suave">{step.text}</p>
+                  <p className="text-[15px] leading-6 text-tinta-suave">{state === "done" ? step.doneText : step.text}</p>
                   {date && state === "done" ? <p className="text-sm text-tinta-suave">{step.status === "REQUESTED" ? `Pedido em ${date}` : step.status === "REGISTERED" ? `Registrado em ${date}` : `No ar desde ${date}`}</p> : null}
                 </div>
               </li>

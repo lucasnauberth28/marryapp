@@ -30,10 +30,10 @@ export const STATUS_LABEL: Record<DomainOrderStatusName, string> = {
 // ==========================================
 
 export const TIMELINE_STEPS = [
-  { status: "REQUESTED", title: "Pedido recebido", text: "Recebemos o pedido e os dados do titular." },
-  { status: "REGISTERING", title: "Em registro", text: "Estamos registrando o domínio no nome do titular." },
-  { status: "REGISTERED", title: "Registrado", text: "O domínio já é do titular. Falta apontar para o site de vocês." },
-  { status: "CONNECTED", title: "No ar", text: "O site de vocês já abre neste endereço." },
+  { status: "REQUESTED", title: "Pedido recebido", text: "Recebemos o pedido e os dados do titular.", doneText: "Recebemos o pedido e os dados do titular." },
+  { status: "REGISTERING", title: "Em registro", text: "Estamos registrando o domínio no nome do titular.", doneText: "O registro foi feito no nome do titular." },
+  { status: "REGISTERED", title: "Registrado", text: "O domínio já é do titular. Falta apontar para o site de vocês.", doneText: "O domínio já é do titular." },
+  { status: "CONNECTED", title: "No ar", text: "O site de vocês vai abrir neste endereço.", doneText: "O site de vocês já abre neste endereço." },
 ] as const;
 
 export type TimelineState = "done" | "current" | "next" | "todo";
