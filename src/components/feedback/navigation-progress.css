@@ -1,0 +1,54 @@
+/*
+ * Fio de progresso de navegação (ver navigation-progress.tsx).
+ * data-phase: idle (invisível) | waiting (ainda invisível, aguardando 120ms) | loading | done (cheio, some).
+ */
+
+.ac-nav-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 200;
+  height: 3px;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.ac-nav-progress__bar {
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background-image: linear-gradient(90deg, var(--color-ameixa) 0%, var(--color-ameixa) 55%, var(--color-champanhe) 100%);
+  border-radius: 0 3px 3px 0;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-champanhe) 55%, transparent);
+}
+
+.ac-nav-progress[data-phase="loading"] {
+  opacity: 1;
+  transition: opacity 120ms var(--ease-aceito);
+}
+.ac-nav-progress[data-phase="loading"] .ac-nav-progress__bar {
+  transition: transform 220ms var(--ease-aceito);
+}
+
+.ac-nav-progress[data-phase="done"] {
+  opacity: 0;
+  transition: opacity 280ms var(--ease-aceito) 160ms;
+}
+.ac-nav-progress[data-phase="done"] .ac-nav-progress__bar {
+  transition: transform 160ms var(--ease-aceito);
+}
+
+/* Sem movimento: uma linha cheia e parada enquanto carrega. */
+@media (prefers-reduced-motion: reduce) {
+  .ac-nav-progress[data-phase="loading"] {
+    transition: none;
+  }
+  .ac-nav-progress[data-phase="done"] {
+    transition: none;
+  }
+  .ac-nav-progress__bar,
+  .ac-nav-progress[data-phase] .ac-nav-progress__bar {
+    transform: none !important;
+    transition: none !important;
+    box-shadow: none;
+  }
+}

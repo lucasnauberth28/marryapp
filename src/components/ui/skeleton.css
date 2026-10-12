@@ -1,0 +1,40 @@
+/*
+ * Esqueleto de carregamento (ver skeleton.tsx e components/skeletons/README.md).
+ *
+ * Bloco de areia com um brilho suave que atravessa da esquerda para a direita. O brilho é um
+ * pseudo-elemento animado só por transform (barato para o navegador, sem repintar o bloco).
+ * Com prefers-reduced-motion: reduce o brilho some e o bloco fica estático.
+ */
+
+.ac-skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-areia);
+  /* Isola o brilho: nada dentro do bloco vaza para fora do raio da borda. */
+  isolation: isolate;
+}
+
+.ac-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    100deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-papel) 65%, transparent) 50%,
+    transparent 100%
+  );
+  animation: ac-skeleton-shimmer 1.6s var(--ease-aceito-in-out) infinite;
+}
+
+@keyframes ac-skeleton-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ac-skeleton::after {
+    display: none;
+    animation: none;
+  }
+}
