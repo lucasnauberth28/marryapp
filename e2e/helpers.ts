@@ -45,7 +45,7 @@ export async function cadastrarCasal(page: Page, email: string) {
   await page.goto("/cadastro?tipo=casal");
   await page.getByRole("radio", { name: /Básico/ }).click();
   await page.getByRole("button", { name: /Continuar com o Básico/ }).click();
-  await page.getByLabel("Seu nome completo").fill("Ana Teste Silva");
+  await page.getByLabel("Seu nome", { exact: true }).fill("Ana Teste Silva");
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("WhatsApp").fill("(11) 98765-4321");
   await page.getByLabel("Crie uma senha").fill(SENHA);

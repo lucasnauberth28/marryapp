@@ -99,7 +99,7 @@ export const PHOTOS = {
   casal: {
     src: "/images/aceito/img-01-casal-capa.webp",
     alt: "Noivos se olhando no campo ao entardecer",
-    caption: "Comecem de graça. O resto vem com calma.",
+    caption: "Comecem pelo site e pela lista de convidados.",
     position: "50% 30%",
   },
   fornecedor: {

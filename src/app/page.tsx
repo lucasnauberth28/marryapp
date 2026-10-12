@@ -123,7 +123,7 @@ function Hero() {
                 className="w-[264px] rounded-[16px] border border-linha bg-papel p-4 shadow-[var(--shadow-aceito-2)] sm:w-[300px] sm:p-5"
               >
                 <p className="mb-3 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Exemplo do painel</p>
-                <p className="flex items-center gap-3 whitespace-nowrap text-[15px] font-semibold leading-5 text-tinta">
+                <p className="flex items-center gap-3 text-[15px] font-semibold leading-5 text-tinta">
                   <Seal />
                   Mariana confirmou presença
                 </p>
