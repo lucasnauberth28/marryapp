@@ -4,6 +4,9 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, Link2, Mail, Megaphone, Send, Settings, Clock, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
@@ -13,7 +16,6 @@ import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { FormAlert } from "@/components/ui/field";
 import { Panel } from "@/components/plataforma/panel";
 import { StatusChip } from "@/components/plataforma/status-chip";
-import { btn } from "@/components/landing/styles";
 import { card } from "@/components/casal/ui";
 import { cn } from "@/lib/utils";
 import {
@@ -71,6 +73,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
   const [channels, setChannels] = useState<Channel[]>(initial.channels);
   const [preview, setPreview] = useState<AudiencePreview | null>(initialPreview);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [previewing, setPreviewing] = useState(false); // recalculando o público depois de mudar um filtro
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
   const ticket = useRef(0);
   const save = useAdminAction();
@@ -96,8 +99,11 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
 
   async function refreshPreview(next: Audience) {
     const mine = ++ticket.current;
+    setPreviewing(true);
     const result = await previewAnnouncementAudience(next).catch(() => null);
-    if (result?.success && mine === ticket.current) setPreview(result.preview);
+    if (mine !== ticket.current) return; // chegou uma resposta mais nova
+    if (result?.success) setPreview(result.preview);
+    setPreviewing(false);
   }
 
   function changeAudience(patch: Partial<Audience>) {
@@ -235,14 +241,18 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
                 <option value="news">Novidade</option>
                 <option value="service">Aviso do serviço</option>
               </NativeSelect>
-              <p className="flex flex-wrap items-center gap-2 text-sm leading-5 text-tinta-suave" aria-live="polite">
+              <p aria-busy={previewing || undefined} className={cn("flex min-h-7 flex-wrap items-center gap-2 text-sm leading-5 text-tinta-suave transition-opacity", previewing && "opacity-60")} aria-live="polite">
                 {preview ? (
                   <>
                     <StatusChip tone={preview.people === 0 || preview.tooMany ? "aviso" : "salvia"}>Chega a {audienceText}</StatusChip>
                     <span>{preview.tooMany ? "Passa do limite de 5.000 pessoas por envio." : `${plural(preview.people, "pessoa", "pessoas")} com conta.`}</span>
                   </>
                 ) : (
-                  "Calculando o público..."
+                  <>
+                    <span className="sr-only">Calculando o público...</span>
+                    <Skeleton className="h-7 w-44 rounded-lg" />
+                    <Skeleton className="h-4 w-32 rounded-md" />
+                  </>
                 )}
               </p>
             </fieldset>
@@ -290,15 +300,17 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
             {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
 
             <div className="flex flex-wrap items-center gap-3">
-              <button type="submit" disabled={busy} className={btn.primary}>
+              <Button type="submit" disabled={busy}>
                 <Send className="size-4" aria-hidden="true" /> Enviar agora
-              </button>
-              <button type="button" disabled={busy} onClick={() => test.run(() => sendAnnouncementTestToMe(form()))} className={btn.secondary}>
+              </Button>
+              <Button type="button" variant="outline" disabled={busy && !test.pending} loading={test.pending} onClick={() => test.run(() => sendAnnouncementTestToMe(form()))}>
                 Enviar um teste para mim
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                disabled={busy}
+                variant="quiet"
+                disabled={busy && !save.pending}
+                loading={save.pending}
                 onClick={() =>
                   save.run(
                     () => saveAnnouncementDraft(form()),
@@ -308,10 +320,9 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
                     },
                   )
                 }
-                className={btn.quiet}
               >
                 Salvar rascunho
-              </button>
+              </Button>
             </div>
             <p className="text-sm leading-5 text-tinta-suave">O envio é imediato: não há agendamento. Quem já recebeu não recebe de novo se o envio for retomado.</p>
           </form>
@@ -409,6 +420,7 @@ function DeleteDraft({ id, current }: { id: string; current: boolean }) {
     <button
       type="button"
       disabled={pending}
+      aria-busy={pending || undefined}
       aria-label="Excluir este rascunho"
       onClick={() =>
         run(
@@ -421,7 +433,7 @@ function DeleteDraft({ id, current }: { id: string; current: boolean }) {
       }
       className="grid size-11 shrink-0 place-items-center rounded-xl text-tinta-suave hover:bg-areia hover:text-perigo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa"
     >
-      <Trash2 className="size-4" aria-hidden="true" />
+      {pending ? <Spinner /> : <Trash2 className="size-4" aria-hidden="true" />}
     </button>
   );
 }

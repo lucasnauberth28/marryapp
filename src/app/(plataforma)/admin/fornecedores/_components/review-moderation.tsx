@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import { Check, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { moderateReviewAction } from "@/actions/admin-fornecedores-actions";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 
 /** Decisão sobre uma avaliação denunciada (manter no ar, ocultar com motivo) ou ocultada (reexibir). */
 export function ReviewModeration({ reviewId, hidden, vendorName }: { reviewId: string; hidden: boolean; vendorName: string }) {
@@ -16,9 +15,11 @@ export function ReviewModeration({ reviewId, hidden, vendorName }: { reviewId: s
   const [hiding, setHiding] = useState(false);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [running, setRunning] = useState<"keep" | "hide" | "show" | null>(null); // só o botão clicado mostra o spinner
 
   const run = (decision: "keep" | "hide" | "show") => {
     setError(null);
+    setRunning(decision);
     startTransition(async () => {
       const res = await moderateReviewAction({ reviewId, decision, reason: decision === "hide" ? reason : undefined });
       if (res.success) {
@@ -37,31 +38,31 @@ export function ReviewModeration({ reviewId, hidden, vendorName }: { reviewId: s
         <div className="flex flex-col gap-3">
           <Textarea label="Motivo de ocultar" rows={2} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} error={error ?? undefined} hint="Fica no registro de atividades." />
           <div className="flex flex-wrap gap-2">
-            <button type="button" disabled={pending || reason.trim().length < 5} onClick={() => run("hide")} className={cn(btn.secondary, btn.sm)}>
+            <Button type="button" variant="outline" size="sm" disabled={reason.trim().length < 5 || pending} loading={pending && running === "hide"} onClick={() => run("hide")}>
               <EyeOff className="size-4" aria-hidden="true" /> Ocultar avaliação
-            </button>
-            <button type="button" onClick={() => setHiding(false)} className={cn(btn.quiet, btn.sm)}>
+            </Button>
+            <Button type="button" variant="quiet" size="sm" onClick={() => setHiding(false)} disabled={pending}>
               Voltar
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2">
           {hidden ? (
-            <button type="button" disabled={pending} onClick={() => run("show")} className={cn(btn.secondary, btn.sm)}>
+            <Button type="button" variant="outline" size="sm" disabled={pending} loading={pending && running === "show"} onClick={() => run("show")}>
               <Eye className="size-4" aria-hidden="true" /> Reexibir
               <span className="sr-only"> a avaliação sobre {vendorName}</span>
-            </button>
+            </Button>
           ) : (
             <>
-              <button type="button" disabled={pending} onClick={() => run("keep")} className={cn(btn.secondary, btn.sm)}>
+              <Button type="button" variant="outline" size="sm" disabled={pending} loading={pending && running === "keep"} onClick={() => run("keep")}>
                 <Check className="size-4" aria-hidden="true" /> Manter no ar
                 <span className="sr-only"> a avaliação sobre {vendorName}</span>
-              </button>
-              <button type="button" disabled={pending} onClick={() => setHiding(true)} className={cn(btn.secondary, btn.sm)}>
+              </Button>
+              <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => setHiding(true)}>
                 <EyeOff className="size-4" aria-hidden="true" /> Ocultar avaliação
                 <span className="sr-only"> sobre {vendorName}</span>
-              </button>
+              </Button>
             </>
           )}
         </div>

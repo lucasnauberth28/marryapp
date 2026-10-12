@@ -4,11 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { decideRefundAction, registerRefundRequestAction, type AdminPlanosResult } from "@/actions/admin-planos-actions";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 
 function useRun() {
   const router = useRouter();
@@ -52,24 +51,24 @@ export function RefundDecision({ refundId, payer }: { refundId: string; payer: s
           ) : null}
           <Textarea label={open === "approve" ? "Anotação da aprovação" : "Motivo da recusa"} rows={2} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} error={error ?? undefined} hint="Fica no registro de atividades." />
           <div className="flex flex-wrap gap-2">
-            <button type="submit" disabled={pending || note.trim().length < 5} className={cn(btn.primary, btn.sm)}>
+            <Button type="submit" size="sm" disabled={note.trim().length < 5} loading={pending}>
               {open === "approve" ? "Aprovar reembolso" : "Recusar pedido"}
-            </button>
-            <button type="button" onClick={() => setOpen(null)} className={cn(btn.quiet, btn.sm)}>
+            </Button>
+            <Button type="button" variant="quiet" size="sm" onClick={() => setOpen(null)} disabled={pending}>
               Voltar
-            </button>
+            </Button>
           </div>
         </form>
       ) : (
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => setOpen("approve")} className={cn(btn.secondary, btn.sm)}>
+          <Button type="button" variant="outline" size="sm" onClick={() => setOpen("approve")}>
             Aprovar
             <span className="sr-only"> o reembolso de {payer}</span>
-          </button>
-          <button type="button" onClick={() => setOpen("deny")} className={cn(btn.secondary, btn.sm)}>
+          </Button>
+          <Button type="button" variant="outline" size="sm" onClick={() => setOpen("deny")}>
             Recusar
             <span className="sr-only"> o reembolso de {payer}</span>
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -131,9 +130,9 @@ export function RegisterRefundForm({ payments }: { payments: { id: string; label
         <Textarea label="Motivo do pedido" rows={2} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} error={error ?? undefined} required />
       </div>
       <div className="md:col-span-2">
-        <button type="submit" disabled={pending || !subscriptionId || reason.trim().length < 5} className={cn(btn.secondary)}>
+        <Button type="submit" variant="outline" disabled={!subscriptionId || reason.trim().length < 5} loading={pending}>
           Registrar pedido
-        </button>
+        </Button>
       </div>
     </form>
   );

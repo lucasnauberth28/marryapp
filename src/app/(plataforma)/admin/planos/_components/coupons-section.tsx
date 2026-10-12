@@ -3,8 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Plus, TicketPercent } from "lucide-react";
+import { Plus, TicketPercent } from "lucide-react";
 import { createCoupon, deleteCoupon, updateCoupon, type CouponFields } from "@/actions/coupon-actions";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
@@ -151,17 +152,12 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
     <>
       {deleting === c.id ? (
         <span role="group" aria-label={`Confirmar exclusão do cupom ${c.code}`} className="inline-flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => remove(c)}
-            disabled={isPending}
-            className={cn(BUTTON, "min-h-11 bg-perigo px-3 text-sm text-papel hover:bg-perigo/90")}
-          >
+          <Button type="button" size="sm" onClick={() => remove(c)} loading={isPending} className="bg-perigo text-papel hover:bg-perigo/90">
             Excluir
-          </button>
-          <button type="button" onClick={() => setDeleting(null)} className={cn(BUTTON, "px-3 text-sm text-ameixa hover:bg-ameixa-suave")}>
+          </Button>
+          <Button type="button" variant="quiet" size="sm" onClick={() => setDeleting(null)} disabled={isPending}>
             Voltar
-          </button>
+          </Button>
         </span>
       ) : (
         <span className="inline-flex items-center gap-1">
@@ -308,13 +304,12 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
           ) : null}
 
           <div className="flex flex-wrap gap-2">
-            <button type="submit" disabled={isPending} className={cn(BUTTON, "bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}>
-              {isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+            <Button type="submit" loading={isPending}>
               {editing === "new" ? "Criar cupom" : "Salvar"}
-            </button>
-            <button type="button" onClick={() => setEditing(null)} disabled={isPending} className={cn(BUTTON, "text-ameixa hover:bg-ameixa-suave")}>
+            </Button>
+            <Button type="button" variant="quiet" onClick={() => setEditing(null)} disabled={isPending}>
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
       ) : null}

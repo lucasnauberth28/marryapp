@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { History } from "lucide-react";
 import { grantWeddingPlan } from "@/actions/admin-casais-actions";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { StatusChip } from "@/components/plataforma/status-chip";
 import { Checkbox } from "@/components/ui/checkbox";
 import { NativeSelect } from "@/components/ui/select";
@@ -54,9 +54,9 @@ export function GrantPlanForm({ weddingId, currentPlanId }: { weddingId: string;
         </p>
       )}
       <div>
-        <button type="submit" disabled={pending || reason.trim().length < 5} className={btn.primary}>
-          {pending ? "Liberando..." : `Conceder o ${name}`}
-        </button>
+        <Button type="submit" disabled={reason.trim().length < 5} loading={pending}>
+          Conceder o {name}
+        </Button>
       </div>
     </form>
   );

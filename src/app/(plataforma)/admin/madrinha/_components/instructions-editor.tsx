@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { FormAlert } from "@/components/ui/field";
 import { StatusChip } from "@/components/plataforma/status-chip";
 import { Panel } from "@/components/plataforma/panel";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Pencil, CheckCircle2, Archive } from "lucide-react";
 import { formatDateTime } from "@/lib/platform/format";
 import { publishInstructionVersion, revertInstructionVersion, saveInstructionVersion } from "@/actions/admin-madrinha-actions";
@@ -35,6 +35,7 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
   const [note, setNote] = useState("");
   const save = useAdminAction();
   const row = useAdminAction();
+  const [rowBusy, setRowBusy] = useState<string | null>(null); // "publicar:<id>" ou "reverter:<id>": só esse botão mostra o spinner
   const changed = text.trim() !== (latest?.content ?? "").trim();
   const st = latest ? STATUS[latest.status] : null;
 
@@ -54,21 +55,21 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
         <Input label="O que mudou nesta versão" value={note} onChange={(e) => setNote(e.target.value)} error={save.errors.changeNote} maxLength={160} />
         {save.formError && !Object.keys(save.errors).length && <FormAlert>{save.formError}</FormAlert>}
         <div className="flex flex-wrap items-center gap-3">
-          <button type="submit" disabled={save.pending || !changed} className={btn.primary}>
-            {save.pending ? "Salvando..." : "Salvar como nova versão"}
-          </button>
-          <button
+          <Button type="submit" disabled={!changed} loading={save.pending}>
+            Salvar como nova versão
+          </Button>
+          <Button
             type="button"
-            disabled={!changed}
+            variant="quiet"
+            disabled={!changed || save.pending}
             onClick={() => {
               setText(latest?.content ?? "");
               setNote("");
               save.clear();
             }}
-            className={btn.quiet}
           >
             Descartar mudanças
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -94,24 +95,34 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {v.status !== "PUBLISHED" && (
-                    <button
+                    <Button
                       type="button"
+                      variant="quiet"
+                      size="sm"
                       disabled={row.pending}
-                      onClick={() => row.run(() => publishInstructionVersion({ id: v.id }))}
-                      className={`${btn.quiet} ${btn.sm}`}
+                      loading={row.pending && rowBusy === `publicar:${v.id}`}
+                      onClick={() => {
+                        setRowBusy(`publicar:${v.id}`);
+                        row.run(() => publishInstructionVersion({ id: v.id }));
+                      }}
                     >
                       Publicar
-                    </button>
+                    </Button>
                   )}
                   {v.id !== latest?.id && (
-                    <button
+                    <Button
                       type="button"
+                      variant="quiet"
+                      size="sm"
                       disabled={row.pending}
-                      onClick={() => row.run(() => revertInstructionVersion({ id: v.id }))}
-                      className={`${btn.quiet} ${btn.sm}`}
+                      loading={row.pending && rowBusy === `reverter:${v.id}`}
+                      onClick={() => {
+                        setRowBusy(`reverter:${v.id}`);
+                        row.run(() => revertInstructionVersion({ id: v.id }));
+                      }}
                     >
                       Reverter para esta
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>

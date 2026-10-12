@@ -11,6 +11,7 @@ import { Panel } from "@/components/plataforma/panel";
 import { StatusChip } from "@/components/plataforma/status-chip";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { createSecurityIncident, updateSecurityIncident } from "@/actions/admin-suporte-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
@@ -98,12 +99,12 @@ function NewIncident({ today, onDone }: { today: string; onDone: () => void }) {
       <Textarea label="Quem foi avisado" optional value={notifiedWho} onChange={(e) => setNotifiedWho(e.target.value)} error={errors.notifiedWho} rows={2} maxLength={2000} />
       {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
       <div className="flex flex-wrap gap-3">
-        <button type="submit" disabled={pending} className={btn.primary}>
+        <Button type="submit" loading={pending}>
           Registrar incidente
-        </button>
-        <button type="button" onClick={onDone} className={btn.quiet}>
+        </Button>
+        <Button type="button" variant="quiet" onClick={onDone} disabled={pending}>
           Cancelar
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -114,6 +115,7 @@ function IncidentEditor({ item, onDone }: { item: IncidentItem; onDone: () => vo
   const [notifiedOn, setNotifiedOn] = useState(item.notifiedOn);
   const [notifiedWho, setNotifiedWho] = useState(item.notifiedWho ?? "");
   const { pending, errors, formError, run } = useAdminAction();
+  const [running, setRunning] = useState<"save" | "close" | "reopen" | null>(null); // só o botão clicado mostra o spinner
   const after = () => {
     onDone();
     router.refresh();
@@ -126,17 +128,43 @@ function IncidentEditor({ item, onDone }: { item: IncidentItem; onDone: () => vo
       <Textarea label="Quem foi avisado" optional value={notifiedWho} onChange={(e) => setNotifiedWho(e.target.value)} rows={2} maxLength={2000} />
       {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
       <div className="flex flex-wrap gap-3">
-        <button type="button" disabled={pending} onClick={() => run(() => updateSecurityIncident({ id: item.id, notifiedOn, notifiedWho }), after)} className={btn.secondary}>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={pending}
+          loading={pending && running === "save"}
+          onClick={() => {
+            setRunning("save");
+            run(() => updateSecurityIncident({ id: item.id, notifiedOn, notifiedWho }), after);
+          }}
+        >
           Salvar aviso
-        </button>
+        </Button>
         {item.open ? (
-          <button type="button" disabled={pending} onClick={() => run(() => updateSecurityIncident({ id: item.id, notifiedOn, notifiedWho, close: true }), after)} className={btn.primary}>
+          <Button
+            type="button"
+            disabled={pending}
+            loading={pending && running === "close"}
+            onClick={() => {
+              setRunning("close");
+              run(() => updateSecurityIncident({ id: item.id, notifiedOn, notifiedWho, close: true }), after);
+            }}
+          >
             Fechar o incidente
-          </button>
+          </Button>
         ) : (
-          <button type="button" disabled={pending} onClick={() => run(() => updateSecurityIncident({ id: item.id, notifiedOn, notifiedWho, reopen: true }), after)} className={btn.quiet}>
+          <Button
+            type="button"
+            variant="quiet"
+            disabled={pending}
+            loading={pending && running === "reopen"}
+            onClick={() => {
+              setRunning("reopen");
+              run(() => updateSecurityIncident({ id: item.id, notifiedOn, notifiedWho, reopen: true }), after);
+            }}
+          >
             Reabrir
-          </button>
+          </Button>
         )}
       </div>
     </div>

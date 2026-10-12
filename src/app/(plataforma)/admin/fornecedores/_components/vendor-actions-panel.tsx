@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2 } from "lucide-react";
+import { Check } from "lucide-react";
 import { toast } from "sonner";
 import {
   approveVendorAdminAction,
@@ -13,7 +13,7 @@ import {
   unsuspendVendorAction,
   type AdminVendorResult,
 } from "@/actions/admin-fornecedores-actions";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,9 +49,12 @@ export function VendorActionsPanel({
   const [suspendOpen, setSuspendOpen] = useState(false);
   const [suspendReason, setSuspendReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // Qual ação está rodando: só o botão clicado mostra o spinner, os outros ficam desabilitados
+  const [running, setRunning] = useState<string | null>(null);
 
-  const run = (action: () => Promise<AdminVendorResult>, after?: () => void) => {
+  const run = (key: string, action: () => Promise<AdminVendorResult>, after?: () => void) => {
     setError(null);
+    setRunning(key);
     startTransition(async () => {
       const res = await action();
       if (res.success) {
@@ -74,9 +77,9 @@ export function VendorActionsPanel({
       ) : null}
 
       {curation !== "approved" && !suspended ? (
-        <button type="button" disabled={pending} onClick={() => run(() => approveVendorAdminAction({ vendorId }))} className={cn(btn.primary, "self-start")}>
-          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Check className="size-4" aria-hidden="true" />} Aprovar
-        </button>
+        <Button type="button" disabled={pending} loading={pending && running === "approve"} onClick={() => run("approve", () => approveVendorAdminAction({ vendorId }))} className="self-start">
+          <Check className="size-4" aria-hidden="true" /> Aprovar
+        </Button>
       ) : null}
 
       {curation !== "approved" && !suspended ? (
@@ -98,14 +101,16 @@ export function VendorActionsPanel({
             ))}
           </NativeSelect>
           <Textarea label="Mensagem para o fornecedor" rows={4} maxLength={500} value={message} onChange={(e) => setMessage(e.target.value)} hint="Ele lê esta mensagem no painel dele." />
-          <button
+          <Button
             type="button"
-            disabled={pending || message.trim().length < 10}
-            onClick={() => run(() => rejectVendorAdminAction({ vendorId, message }))}
-            className={cn(btn.secondary, DANGER, "self-start")}
+            variant="outline"
+            disabled={message.trim().length < 10 || pending}
+            loading={pending && running === "reject"}
+            onClick={() => run("reject", () => rejectVendorAdminAction({ vendorId, message }))}
+            className={cn(DANGER, "self-start")}
           >
             Recusar com motivo
-          </button>
+          </Button>
         </section>
       ) : null}
 
@@ -126,7 +131,7 @@ export function VendorActionsPanel({
               id={`destaque-${vendorId}`}
               checked={featured}
               disabled={pending || (!canFeature && !featured)}
-              onCheckedChange={(checked) => run(() => setVendorFeaturedAction({ vendorId, featured: checked }))}
+              onCheckedChange={(checked) => run("feature", () => setVendorFeaturedAction({ vendorId, featured: checked }))}
             />
           </div>
 
@@ -134,7 +139,7 @@ export function VendorActionsPanel({
             className="flex flex-col gap-3"
             onSubmit={(e) => {
               e.preventDefault();
-              run(() => grantVendorPlanAction({ vendorId, tier, days: Number(days), reason: grantReason }), () => setGrantReason(""));
+              run("grant", () => grantVendorPlanAction({ vendorId, tier, days: Number(days), reason: grantReason }), () => setGrantReason(""));
             }}
           >
             <div className="grid grid-cols-2 gap-3">
@@ -151,9 +156,9 @@ export function VendorActionsPanel({
               </NativeSelect>
             </div>
             <Textarea label="Motivo da cortesia" rows={2} maxLength={500} value={grantReason} onChange={(e) => setGrantReason(e.target.value)} hint="Fica no registro de atividades. Não gera cobrança." />
-            <button type="submit" disabled={pending || grantReason.trim().length < 5} className={cn(btn.secondary, "self-start")}>
+            <Button type="submit" variant="outline" disabled={grantReason.trim().length < 5 || pending} loading={pending && running === "grant"} className="self-start">
               Conceder plano
-            </button>
+            </Button>
           </form>
         </section>
       ) : null}
@@ -162,31 +167,33 @@ export function VendorActionsPanel({
         {suspended ? (
           <>
             <p className="text-sm text-tinta-suave">Este fornecedor está suspenso e fora da vitrine.</p>
-            <button type="button" disabled={pending} onClick={() => run(() => unsuspendVendorAction({ vendorId }))} className={cn(btn.secondary, "self-start")}>
+            <Button type="button" variant="outline" disabled={pending} loading={pending && running === "unsuspend"} onClick={() => run("unsuspend", () => unsuspendVendorAction({ vendorId }))} className="self-start">
               Reativar o fornecedor
-            </button>
+            </Button>
           </>
         ) : suspendOpen ? (
           <>
             <Textarea label="Motivo da suspensão" rows={2} maxLength={500} value={suspendReason} onChange={(e) => setSuspendReason(e.target.value)} hint="O fornecedor vê este motivo no painel dele." />
             <div className="flex flex-wrap gap-2">
-              <button
+              <Button
                 type="button"
-                disabled={pending || suspendReason.trim().length < 5}
-                onClick={() => run(() => suspendVendorAction({ vendorId, reason: suspendReason }), () => setSuspendOpen(false))}
-                className={cn(btn.secondary, DANGER)}
+                variant="outline"
+                disabled={suspendReason.trim().length < 5 || pending}
+                loading={pending && running === "suspend"}
+                onClick={() => run("suspend", () => suspendVendorAction({ vendorId, reason: suspendReason }), () => setSuspendOpen(false))}
+                className={DANGER}
               >
                 Suspender o fornecedor
-              </button>
-              <button type="button" onClick={() => setSuspendOpen(false)} className={cn(btn.quiet)}>
+              </Button>
+              <Button type="button" variant="quiet" onClick={() => setSuspendOpen(false)} disabled={pending}>
                 Voltar
-              </button>
+              </Button>
             </div>
           </>
         ) : (
-          <button type="button" onClick={() => setSuspendOpen(true)} className={cn(btn.secondary, DANGER, "self-start")}>
+          <Button type="button" variant="outline" onClick={() => setSuspendOpen(true)} className={cn(DANGER, "self-start")}>
             Suspender o fornecedor
-          </button>
+          </Button>
         )}
         <p className="text-sm text-tinta-suave">Toda ação aqui fica no Registro de atividades.</p>
       </section>

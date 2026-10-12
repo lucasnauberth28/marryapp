@@ -12,6 +12,7 @@ import { Panel } from "@/components/plataforma/panel";
 import { StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { TICKET_STATUSES, TICKET_STATUS_LABEL } from "@/lib/platform/support";
 import { createSupportTicket, updateSupportTicket } from "@/actions/admin-suporte-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
@@ -153,12 +154,12 @@ function NewTicket({ prefill, onDone }: { prefill: TicketPrefill | null; onDone:
       </div>
       {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
       <div className="flex flex-wrap gap-3">
-        <button type="submit" disabled={pending} className={btn.primary}>
+        <Button type="submit" loading={pending}>
           Registrar pedido
-        </button>
-        <button type="button" onClick={onDone} className={btn.quiet}>
+        </Button>
+        <Button type="button" variant="quiet" onClick={onDone} disabled={pending}>
           Cancelar
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -217,9 +218,9 @@ function TicketEditor({ ticket, onDone }: { ticket: TicketItem; onDone: () => vo
       <Textarea label="Nota interna" optional hint="Só a equipe vê." value={note} onChange={(e) => setNote(e.target.value)} error={errors.internalNote} rows={3} maxLength={2000} />
       {formError && <FormAlert>{formError}</FormAlert>}
       <div>
-        <button type="submit" disabled={pending} className={btn.primary}>
+        <Button type="submit" loading={pending}>
           Salvar
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { LogIn, ShieldAlert } from "lucide-react";
 import { startImpersonation } from "@/actions/admin-impersonation-actions";
 import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
@@ -18,6 +19,8 @@ export function EntrarComoForm({ weddingId, coupleNames, backHref }: { weddingId
   const [confirmEdit, setConfirmEdit] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Depois do sucesso a página recarrega por inteiro: o botão continua ocupado até lá (sem segundo clique)
+  const [redirecting, setRedirecting] = useState(false);
 
   const ticketDigits = ticket.replace(/\D/g, "");
   const ticketNumber = ticketDigits ? Number(ticketDigits) : null;
@@ -31,6 +34,7 @@ export function EntrarComoForm({ weddingId, coupleNames, backHref }: { weddingId
         const result = await startImpersonation({ weddingId, reason, ticketNumber, canEdit, confirmEdit: canEdit && confirmEdit });
         if (result.success) {
           // Carga completa: o painel e a faixa fixa já nascem com a sessão nova
+          setRedirecting(true);
           window.location.assign(result.redirectTo);
         } else setError(result.error);
       } catch {
@@ -101,9 +105,9 @@ export function EntrarComoForm({ weddingId, coupleNames, backHref }: { weddingId
         </p>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <button type="submit" disabled={pending || ticketInvalid || (canEdit && !confirmEdit)} className={`${btn.primary} gap-2`}>
-          <LogIn className="size-4" aria-hidden="true" /> {pending ? "Entrando..." : `Entrar como ${coupleNames}`}
-        </button>
+        <Button type="submit" disabled={ticketInvalid || (canEdit && !confirmEdit)} loading={pending || redirecting}>
+          <LogIn className="size-4" aria-hidden="true" /> Entrar como {coupleNames}
+        </Button>
         <Link href={backHref} className={btn.quiet}>
           Cancelar
         </Link>

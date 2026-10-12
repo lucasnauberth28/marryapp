@@ -5,7 +5,7 @@ import { Lock, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { FormAlert } from "@/components/ui/field";
 import { Panel } from "@/components/plataforma/panel";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { sendSupportPasswordReset } from "@/actions/admin-suporte-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
@@ -29,9 +29,9 @@ export function PasswordReset() {
         </p>
         {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
         <div>
-          <button type="submit" disabled={pending || email.trim().length < 5} className={btn.primary}>
+          <Button type="submit" disabled={email.trim().length < 5} loading={pending}>
             <Mail className="size-4" aria-hidden="true" /> Enviar link de redefinição
-          </button>
+          </Button>
         </div>
       </form>
     </Panel>

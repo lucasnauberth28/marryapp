@@ -8,6 +8,7 @@ import { FormAlert } from "@/components/ui/field";
 import { Panel } from "@/components/plataforma/panel";
 import { StatusChip } from "@/components/plataforma/status-chip";
 import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { formatDayMonth } from "@/lib/platform/format";
 import { archiveKnowledgeArticle, saveKnowledgeArticle } from "@/actions/admin-madrinha-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
@@ -76,7 +77,12 @@ function ArticleForm({ article, onDone }: { article: ArticleItem | null; onDone:
   const [title, setTitle] = useState(article?.title ?? "");
   const [content, setContent] = useState(article?.content ?? "");
   const { pending, errors, formError, run } = useAdminAction();
-  const submit = (status: "DRAFT" | "PUBLISHED") => run(() => saveKnowledgeArticle({ id: article?.id, title, content, status }), onDone);
+  // Qual botão está rodando: só ele mostra o spinner, os outros ficam desabilitados
+  const [running, setRunning] = useState<"PUBLISHED" | "DRAFT" | "remove" | null>(null);
+  const submit = (status: "DRAFT" | "PUBLISHED") => {
+    setRunning(status);
+    run(() => saveKnowledgeArticle({ id: article?.id, title, content, status }), onDone);
+  };
 
   return (
     <form
@@ -90,24 +96,29 @@ function ArticleForm({ article, onDone }: { article: ArticleItem | null; onDone:
       <Textarea label="Texto de ajuda" value={content} onChange={(e) => setContent(e.target.value)} rows={8} error={errors.content} maxLength={8000} />
       {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
       <div className="flex flex-wrap items-center gap-3">
-        <button type="submit" disabled={pending} className={btn.primary}>
+        <Button type="submit" disabled={pending} loading={pending && running === "PUBLISHED"}>
           Publicar
-        </button>
-        <button type="button" disabled={pending} onClick={() => submit("DRAFT")} className={btn.secondary}>
+        </Button>
+        <Button type="button" variant="outline" disabled={pending} loading={pending && running === "DRAFT"} onClick={() => submit("DRAFT")}>
           Salvar rascunho
-        </button>
-        <button type="button" disabled={pending} onClick={onDone} className={btn.quiet}>
+        </Button>
+        <Button type="button" variant="quiet" disabled={pending} onClick={onDone}>
           Cancelar
-        </button>
+        </Button>
         {article && (
-          <button
+          <Button
             type="button"
+            variant="quiet"
             disabled={pending}
-            onClick={() => run(() => archiveKnowledgeArticle({ id: article.id }), onDone)}
-            className={`${btn.quiet} text-perigo`}
+            loading={pending && running === "remove"}
+            onClick={() => {
+              setRunning("remove");
+              run(() => archiveKnowledgeArticle({ id: article.id }), onDone);
+            }}
+            className="text-perigo"
           >
             Remover texto
-          </button>
+          </Button>
         )}
       </div>
     </form>

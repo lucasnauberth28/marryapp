@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { AlertCircle, Check, CheckCircle2, Clock, Copy, Eye, Link2, Loader2, RefreshCw } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, Clock, Copy, Eye, Link2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import {
   connectDomainAction,
@@ -18,6 +18,7 @@ import {
   type ConnectResult,
 } from "@/actions/domain-admin-actions";
 import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { StatusChip } from "@/components/plataforma/status-chip";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { Input } from "@/components/ui/input";
@@ -78,11 +79,14 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
   const [connection, setConnection] = useState<ConnectionResult | null>(null);
   const [fullDocument, setFullDocument] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Qual ação está rodando: só o botão clicado mostra o spinner, os outros ficam desabilitados
+  const [running, setRunning] = useState<string | null>(null);
   const id = order.id;
   const states = timelineStates(order.status);
 
-  function run(action: () => Promise<AdminResult | ConnectResult>, afterOk?: () => void) {
+  function run(key: string, action: () => Promise<AdminResult | ConnectResult>, afterOk?: () => void) {
     setError(null);
+    setRunning(key);
     startTransition(async () => {
       const result = await action();
       if (result.success) {
@@ -113,20 +117,23 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
         <p className="flex flex-wrap items-center gap-2">
           <span className="font-mono tabular-nums text-tinta">{fullDocument ?? order.holderDocument}</span>
           {order.canRevealDocument && !fullDocument ? (
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
+              loading={pending && running === "reveal"}
               disabled={pending}
-              onClick={() =>
+              onClick={() => {
+                setRunning("reveal");
                 startTransition(async () => {
                   const res = await revealDomainHolderDocumentAction(id);
                   if (res.success) setFullDocument(res.document);
                   else toast.error(res.error);
-                })
-              }
-              className={cn(btn.secondary, btn.sm)}
+                });
+              }}
             >
               <Eye className="size-4" aria-hidden="true" /> Mostrar completo
-            </button>
+            </Button>
           ) : null}
           {fullDocument ? (
             <button type="button" onClick={() => copyText(fullDocument.replace(/[^0-9A-Z]/g, ""), "Número copiado (só os dígitos).")} className={cn(btn.secondary, btn.sm)}>
@@ -185,36 +192,36 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
       {/* Ações por situação */}
       {order.status === "REQUESTED" ? (
         <div className="flex flex-wrap gap-2">
-          <button type="button" disabled={pending} onClick={() => run(() => startDomainRegistrationAction(id))} className={btn.primary}>
-            {pending ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null} Começar o registro
-          </button>
+          <Button type="button" disabled={pending} loading={pending && running === "start"} onClick={() => run("start", () => startDomainRegistrationAction(id))}>
+            Começar o registro
+          </Button>
         </div>
       ) : null}
       {order.status === "REGISTERING" ? (
         <div className="flex flex-wrap gap-2">
-          <button type="button" disabled={pending} onClick={() => setPanel(panel === "registered" ? null : "registered")} className={btn.primary}>
+          <Button type="button" disabled={pending} onClick={() => setPanel(panel === "registered" ? null : "registered")}>
             Marcar como registrado
-          </button>
+          </Button>
         </div>
       ) : null}
       {order.status === "REGISTERED" ? (
         <div className="flex flex-wrap gap-2">
-          <button type="button" disabled={pending || !vercelReady} onClick={() => run(() => connectDomainAction(id))} className={btn.primary}>
+          <Button type="button" disabled={pending || !vercelReady} loading={pending && running === "connect"} onClick={() => run("connect", () => connectDomainAction(id))}>
             <Link2 className="size-4" aria-hidden="true" /> Conectar à Vercel
-          </button>
-          <button type="button" disabled={pending || !vercelReady} onClick={() => run(() => verifyDomainAction(id))} className={btn.secondary}>
+          </Button>
+          <Button type="button" variant="outline" disabled={pending || !vercelReady} loading={pending && running === "verify"} onClick={() => run("verify", () => verifyDomainAction(id))}>
             <RefreshCw className="size-4" aria-hidden="true" /> Verificar DNS
-          </button>
-          <button type="button" disabled={pending} onClick={() => setPanel(panel === "online" ? null : "online")} className={btn.secondary}>
+          </Button>
+          <Button type="button" variant="outline" disabled={pending} onClick={() => setPanel(panel === "online" ? null : "online")}>
             Marcar como no ar
-          </button>
+          </Button>
         </div>
       ) : null}
       {order.canRenew ? (
         <div>
-          <button type="button" disabled={pending} onClick={() => run(() => markDomainRenewedAction(id))} className={btn.secondary}>
+          <Button type="button" variant="outline" disabled={pending} loading={pending && running === "renew"} onClick={() => run("renew", () => markDomainRenewedAction(id))}>
             Marcar como renovado (mais 1 ano)
-          </button>
+          </Button>
           <p className="mt-1 text-xs text-tinta-suave">Use depois de renovar no Registro.br. O vencimento sobe 1 ano e os avisos de 60 e 30 dias voltam a valer.</p>
         </div>
       ) : null}
@@ -224,7 +231,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
           className="flex flex-col gap-3 rounded-xl bg-areia p-4"
           onSubmit={(e) => {
             e.preventDefault();
-            run(() => markDomainRegisteredAction({ orderId: id, registeredAt, expiresAt }), () => setPanel(null));
+            run("register", () => markDomainRegisteredAction({ orderId: id, registeredAt, expiresAt }), () => setPanel(null));
           }}
         >
           <p className="text-sm text-tinta">Ao confirmar, o CPF/CNPJ completo é trocado pela versão escondida e o casal é avisado.</p>
@@ -240,12 +247,12 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
           />
           <Input label="Vencimento (1 ano depois)" type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} required />
           <div className="flex flex-wrap gap-2">
-            <button type="submit" disabled={pending} className={btn.primary}>
+            <Button type="submit" disabled={pending} loading={pending && running === "register"}>
               Confirmar registro
-            </button>
-            <button type="button" onClick={() => setPanel(null)} className={btn.quiet}>
+            </Button>
+            <Button type="button" variant="quiet" onClick={() => setPanel(null)} disabled={pending}>
               Voltar
-            </button>
+            </Button>
           </div>
         </form>
       ) : null}
@@ -257,13 +264,13 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
             className="flex flex-col gap-3"
             onSubmit={(e) => {
               e.preventDefault();
-              run(() => rejectDomainOrderAction({ orderId: id, reason }), () => setReason(""));
+              run("reject", () => rejectDomainOrderAction({ orderId: id, reason }), () => setReason(""));
             }}
           >
             <Textarea label="Motivo da recusa" rows={3} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} hint="O casal recebe este texto por e-mail." />
-            <button type="submit" disabled={pending || reason.trim().length < 5} className={cn(btn.secondary, DANGER, "self-start")}>
+            <Button type="submit" variant="outline" disabled={reason.trim().length < 5 || pending} loading={pending && running === "reject"} className={cn(DANGER, "self-start")}>
               Recusar com motivo
-            </button>
+            </Button>
           </form>
         </section>
       ) : null}
@@ -271,7 +278,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
       <ConfirmModal
         isOpen={panel === "online"}
         onClose={() => setPanel(null)}
-        onConfirm={() => run(() => markDomainOnlineAction(id), () => setPanel(null))}
+        onConfirm={() => run("online", () => markDomainOnlineAction(id), () => setPanel(null))}
         title="Marcar como no ar?"
         description={`Confirme só se ${order.domain} já abre o site do casal. A partir daí os links dos convidados passam a usar este endereço e o casal é avisado.`}
         confirmText="Marcar como no ar"
@@ -284,13 +291,13 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
         className="flex flex-col gap-2 border-t border-linha pt-4"
         onSubmit={(e) => {
           e.preventDefault();
-          run(() => saveDomainNoteAction({ orderId: id, note }));
+          run("note", () => saveDomainNoteAction({ orderId: id, note }));
         }}
       >
         <Textarea label="Anotação da equipe" rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} hint="O casal não vê." />
-        <button type="submit" disabled={pending || note === (order.adminNote ?? "")} className={cn(btn.secondary, btn.sm, "self-start")}>
+        <Button type="submit" variant="outline" size="sm" disabled={note === (order.adminNote ?? "") || pending} loading={pending && running === "note"} className="self-start">
           Salvar anotação
-        </button>
+        </Button>
       </form>
     </div>
   );

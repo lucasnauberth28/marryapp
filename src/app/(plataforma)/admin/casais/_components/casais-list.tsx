@@ -5,7 +5,9 @@ import { useState } from "react";
 import { Download, Flag, Megaphone } from "lucide-react";
 import { setWeddingsFlag } from "@/actions/admin-casais-actions";
 import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ExportButton } from "@/components/plataforma/export-button";
 import { InitialsAvatar } from "@/components/plataforma/initials-avatar";
 import { PlanChip } from "@/components/plataforma/status-chip";
 import { th } from "@/components/casal/ui";
@@ -90,12 +92,12 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
             <Link href={`/admin/comunicados?casais=${chosen.join(",")}`} className={cn(btn.secondary, btn.sm, "gap-1.5")}>
               <Megaphone className="size-4" aria-hidden="true" /> Enviar comunicado
             </Link>
-            <a href={`/api/admin/casais.csv?ids=${chosen.join(",")}`} className={cn(btn.secondary, btn.sm, "gap-1.5")}>
+            <ExportButton href={`/api/admin/casais.csv?ids=${chosen.join(",")}`} fallbackName="casais.csv" size="sm" className="gap-1.5">
               <Download className="size-4" aria-hidden="true" /> Exportar seleção
-            </a>
-            <button type="button" onClick={flag} disabled={pending} className={cn(btn.secondary, btn.sm, "gap-1.5")}>
+            </ExportButton>
+            <Button type="button" variant="outline" size="sm" onClick={flag} loading={pending} className="gap-1.5">
               <Flag className="size-4" aria-hidden="true" /> {anyUnflagged ? "Marcar para acompanhar" : "Deixar de acompanhar"}
-            </button>
+            </Button>
             <button type="button" onClick={() => setSelected([])} className={cn(btn.quiet, btn.sm)}>
               Limpar seleção
             </button>

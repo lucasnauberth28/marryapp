@@ -4,8 +4,9 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { confirmSubscriptionManually, rejectSubscription } from "@/actions/subscription-admin-actions";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export interface PanelSubscription {
@@ -168,34 +169,28 @@ export function SubscriptionPanel({ subscription: s, closeHref }: { subscription
                 Marcar como não recebido? A cobrança deixa de valer e {s.accountName} precisa gerar um novo Pix.
               </p>
               <div className="flex flex-wrap gap-2">
-                <button
+                <Button
                   type="button"
                   onClick={() => run("reject")}
                   disabled={isPending}
-                  className={cn(BUTTON, "bg-perigo text-papel hover:bg-perigo/90")}
+                  loading={pendingAction === "reject"}
+                  className="bg-perigo text-papel hover:bg-perigo/90"
                 >
-                  {pendingAction === "reject" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
                   Sim, não recebi
-                </button>
-                <button type="button" onClick={() => setConfirmingReject(false)} disabled={isPending} className={cn(BUTTON, "text-ameixa hover:bg-ameixa-suave")}>
+                </Button>
+                <Button type="button" variant="quiet" onClick={() => setConfirmingReject(false)} disabled={isPending}>
                   Voltar
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">
-              <button type="submit" disabled={isPending} className={cn(BUTTON, "bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}>
-                {pendingAction === "confirm" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+              <Button type="submit" disabled={isPending} loading={pendingAction === "confirm"}>
                 Confirmar e liberar o plano
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirmingReject(true)}
-                disabled={isPending}
-                className={cn(BUTTON, "text-ameixa hover:bg-ameixa-suave")}
-              >
+              </Button>
+              <Button type="button" variant="quiet" onClick={() => setConfirmingReject(true)} disabled={isPending}>
                 Não encontrei
-              </button>
+              </Button>
             </div>
           )}
         </form>

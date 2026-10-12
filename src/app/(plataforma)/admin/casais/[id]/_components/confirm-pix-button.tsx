@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { confirmSubscriptionManually } from "@/actions/subscription-admin-actions";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 
 /** "Conferir o Pix": confirma o Pix estático visto no extrato (a mesma ação de Assinaturas) e libera o plano. */
 export function ConfirmPixButton({ subscriptionId }: { subscriptionId: string }) {
@@ -31,21 +31,21 @@ export function ConfirmPixButton({ subscriptionId }: { subscriptionId: string })
 
   if (!asking) {
     return (
-      <button type="button" onClick={() => setAsking(true)} className={`${btn.primary} ${btn.sm}`}>
+      <Button type="button" size="sm" onClick={() => setAsking(true)}>
         Conferir o Pix
-      </button>
+      </Button>
     );
   }
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-linha-forte bg-papel p-3">
       <p className="text-sm leading-5 text-tinta">O dinheiro já apareceu no extrato? Ao confirmar, o plano é liberado na hora.</p>
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={confirm} disabled={pending} className={`${btn.primary} ${btn.sm}`}>
-          {pending ? "Conferindo..." : "Sim, o Pix chegou"}
-        </button>
-        <button type="button" onClick={() => setAsking(false)} disabled={pending} className={`${btn.quiet} ${btn.sm}`}>
+        <Button type="button" size="sm" onClick={confirm} loading={pending}>
+          Sim, o Pix chegou
+        </Button>
+        <Button type="button" size="sm" variant="quiet" onClick={() => setAsking(false)} disabled={pending}>
           Cancelar
-        </button>
+        </Button>
       </div>
       {error && (
         <p role="alert" className="text-sm font-semibold text-perigo">

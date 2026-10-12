@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Ban, KeyRound, RotateCcw, Trash2 } from "lucide-react";
 import { deleteWedding, resetWeddingPassword, suspendWedding, unsuspendWedding } from "@/actions/admin-casais-actions";
 import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CustomModal } from "@/components/ui/custom-modal";
 import { Input } from "@/components/ui/input";
@@ -52,7 +53,7 @@ export function CareActions({ weddingId, coupleNames, suspended }: { weddingId: 
   };
   const current = open ? copy[open] : null;
   const reasonRequired = open !== "unsuspend";
-  const canSubmit = !pending && (!reasonRequired || reason.trim().length >= 5) && (open !== "delete" || (confirmText.trim().toUpperCase() === "EXCLUIR" && sure));
+  const canSubmit = (!reasonRequired || reason.trim().length >= 5) && (open !== "delete" || (confirmText.trim().toUpperCase() === "EXCLUIR" && sure));
 
   return (
     <>
@@ -92,12 +93,12 @@ export function CareActions({ weddingId, coupleNames, suspended }: { weddingId: 
             </p>
           )}
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={submit} disabled={!canSubmit} className={cn(current?.danger ? `${btn.primary} bg-perigo hover:bg-perigo` : btn.primary)}>
-              {pending ? "Aguarde..." : current?.cta}
-            </button>
-            <button type="button" onClick={close} className={btn.quiet}>
+            <Button type="button" onClick={submit} disabled={!canSubmit} loading={pending} className={current?.danger ? "bg-perigo hover:bg-perigo" : undefined}>
+              {current?.cta}
+            </Button>
+            <Button type="button" variant="quiet" onClick={close} disabled={pending}>
               Cancelar
-            </button>
+            </Button>
           </div>
         </div>
       </CustomModal>

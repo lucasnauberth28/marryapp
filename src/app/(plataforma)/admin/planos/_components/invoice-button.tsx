@@ -4,9 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { markInvoiceIssuedAction } from "@/actions/admin-planos-actions";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 
 /** "Já emiti": marca a nota fiscal do pagamento, com o número se quiser. */
 export function InvoiceButton({ subscriptionId, payer }: { subscriptionId: string; payer: string }) {
@@ -18,10 +17,10 @@ export function InvoiceButton({ subscriptionId, payer }: { subscriptionId: strin
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className={cn(btn.secondary, btn.sm)}>
+      <Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)}>
         Já emiti
         <span className="sr-only"> a nota de {payer}</span>
-      </button>
+      </Button>
     );
   }
   return (
@@ -40,12 +39,12 @@ export function InvoiceButton({ subscriptionId, payer }: { subscriptionId: strin
       }}
     >
       <Input label="Número da nota (opcional)" value={number} onChange={(e) => setNumber(e.target.value)} maxLength={40} error={error ?? undefined} fieldClassName="min-w-[200px]" />
-      <button type="submit" disabled={pending} className={cn(btn.primary, btn.sm, "mt-1")}>
+      <Button type="submit" size="sm" loading={pending} className="mt-1">
         Confirmar
-      </button>
-      <button type="button" onClick={() => setOpen(false)} className={cn(btn.quiet, btn.sm, "mt-1")}>
+      </Button>
+      <Button type="button" variant="quiet" size="sm" onClick={() => setOpen(false)} disabled={pending} className="mt-1">
         Voltar
-      </button>
+      </Button>
     </form>
   );
 }

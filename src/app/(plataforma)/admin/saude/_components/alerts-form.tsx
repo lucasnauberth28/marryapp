@@ -5,7 +5,7 @@ import { Bell } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { FormAlert } from "@/components/ui/field";
 import { Panel } from "@/components/plataforma/panel";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { saveHealthAlerts, testHealthAlerts } from "@/actions/admin-saude-actions";
 import { ToggleRow } from "../../_sistema/toggle-row";
 import { useAdminAction } from "../../_sistema/use-admin-action";
@@ -20,9 +20,9 @@ export function AlertsForm({ initial, emailConfigured }: { initial: { mercadoPag
       title="Alertas"
       description="Você recebe um e-mail quando uma destas coisas acontecer. A verificação é feita uma vez por dia, junto da rotina diária."
       aside={
-        <button type="button" disabled={test.pending || !initial.sendTo} onClick={() => test.run(() => testHealthAlerts())} className={`${btn.secondary} ${btn.sm}`} title={initial.sendTo ? undefined : "Salve primeiro o e-mail dos alertas"}>
+        <Button type="button" variant="outline" size="sm" disabled={!initial.sendTo} loading={test.pending} onClick={() => test.run(() => testHealthAlerts())} title={initial.sendTo ? undefined : "Salve primeiro o e-mail dos alertas"}>
           <Bell className="size-4" aria-hidden="true" /> Testar os alertas
-        </button>
+        </Button>
       }
     >
       <form
@@ -43,9 +43,9 @@ export function AlertsForm({ initial, emailConfigured }: { initial: { mercadoPag
         {!emailConfigured && <p className="text-sm font-semibold text-aviso">O e-mail não está configurado no servidor: nenhum alerta sai até configurar o envio.</p>}
         {(save.formError && !Object.keys(save.errors).length && <FormAlert>{save.formError}</FormAlert>) || (test.formError && <FormAlert>{test.formError}</FormAlert>)}
         <div>
-          <button type="submit" disabled={save.pending} className={btn.primary}>
-            {save.pending ? "Salvando..." : "Salvar alertas"}
-          </button>
+          <Button type="submit" loading={save.pending}>
+            Salvar alertas
+          </Button>
         </div>
       </form>
     </Panel>

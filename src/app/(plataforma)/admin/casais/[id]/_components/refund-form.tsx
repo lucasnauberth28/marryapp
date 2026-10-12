@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { requestWeddingRefund } from "@/actions/admin-casais-actions";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -71,9 +71,9 @@ export function RefundForm({ weddingId, options }: { weddingId: string; options:
         </p>
       )}
       <div>
-        <button type="submit" disabled={pending || cents === null || reason.trim().length < 5} className={btn.secondary}>
-          {pending ? "Registrando..." : "Registrar pedido de reembolso"}
-        </button>
+        <Button type="submit" variant="outline" disabled={cents === null || reason.trim().length < 5} loading={pending}>
+          Registrar pedido de reembolso
+        </Button>
       </div>
     </form>
   );

@@ -7,6 +7,7 @@ import { Info } from "lucide-react";
 import { toast } from "sonner";
 import { saveCatalogPriceAction } from "@/actions/admin-planos-actions";
 import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -92,9 +93,9 @@ export function CatalogEditForm({
         </p>
       ) : null}
       <div className="flex flex-wrap items-center gap-3">
-        <button type="submit" disabled={pending || reason.trim().length < 5 || (!free && !Number.isFinite(cents)) || (big && !confirmBig)} className={cn(btn.primary)}>
+        <Button type="submit" disabled={reason.trim().length < 5 || (!free && !Number.isFinite(cents)) || (big && !confirmBig)} loading={pending}>
           Salvar preço
-        </button>
+        </Button>
         <Link href="/admin/planos/catalogo" scroll={false} className={cn(btn.quiet)}>
           Descartar
         </Link>

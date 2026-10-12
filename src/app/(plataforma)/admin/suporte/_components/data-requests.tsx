@@ -13,6 +13,8 @@ import { Panel } from "@/components/plataforma/panel";
 import { StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
+import { ExportButton } from "@/components/plataforma/export-button";
 import { DATA_REQUEST_TYPES, DATA_REQUEST_TYPE_LABEL } from "@/lib/platform/support";
 import { createDataRequest, fulfillDeletionRequest, updateDataRequest } from "@/actions/admin-suporte-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
@@ -137,12 +139,12 @@ function NewRequest({ onDone }: { onDone: () => void }) {
       <Textarea label="Observação" optional value={note} onChange={(e) => setNote(e.target.value)} error={errors.note} rows={2} maxLength={2000} />
       {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
       <div className="flex flex-wrap gap-3">
-        <button type="submit" disabled={pending} className={btn.primary}>
+        <Button type="submit" loading={pending}>
           Registrar pedido
-        </button>
-        <button type="button" onClick={onDone} className={btn.quiet}>
+        </Button>
+        <Button type="button" variant="quiet" onClick={onDone} disabled={pending}>
           Cancelar
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -154,6 +156,7 @@ function Handle({ item, onDone }: { item: DataRequestItem; onDone: () => void })
   const [confirmEmail, setConfirmEmail] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { pending, errors, formError, run } = useAdminAction();
+  const [running, setRunning] = useState<"review" | "done" | "refuse" | null>(null); // só o botão clicado mostra o spinner
   const closed = item.status === "DONE" || item.status === "REFUSED";
   const after = () => {
     onDone();
@@ -164,9 +167,9 @@ function Handle({ item, onDone }: { item: DataRequestItem; onDone: () => void })
       <p className="text-sm text-tinta-suave">{item.requesterEmail}</p>
       {item.type === "EXPORT" && item.linked && (
         <div>
-          <a href={`/api/admin/suporte/exportar?pedido=${item.id}`} className={`${btn.secondary} ${btn.sm}`}>
+          <ExportButton href={`/api/admin/suporte/exportar?pedido=${item.id}`} fallbackName="exportacao.json" size="sm">
             <Download className="size-4" aria-hidden="true" /> Baixar a exportação (JSON)
-          </a>
+          </ExportButton>
           <p className="mt-1 text-sm text-tinta-suave">Sem senhas nem tokens. Envie o arquivo ao titular pelo e-mail dele e marque como pronto. O download fica no registro.</p>
         </div>
       )}
@@ -175,16 +178,43 @@ function Handle({ item, onDone }: { item: DataRequestItem; onDone: () => void })
       {!closed && (
         <div className="flex flex-wrap gap-3">
           {item.status === "NEW" && (
-            <button type="button" disabled={pending} onClick={() => run(() => updateDataRequest({ id: item.id, status: "IN_REVIEW", note }), after)} className={btn.secondary}>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pending}
+              loading={pending && running === "review"}
+              onClick={() => {
+                setRunning("review");
+                run(() => updateDataRequest({ id: item.id, status: "IN_REVIEW", note }), after);
+              }}
+            >
               Marcar em análise
-            </button>
+            </Button>
           )}
-          <button type="button" disabled={pending} onClick={() => run(() => updateDataRequest({ id: item.id, status: "DONE", note }), after)} className={btn.primary}>
+          <Button
+            type="button"
+            disabled={pending}
+            loading={pending && running === "done"}
+            onClick={() => {
+              setRunning("done");
+              run(() => updateDataRequest({ id: item.id, status: "DONE", note }), after);
+            }}
+          >
             Marcar como pronto
-          </button>
-          <button type="button" disabled={pending} onClick={() => run(() => updateDataRequest({ id: item.id, status: "REFUSED", note }))} className={`${btn.quiet} text-perigo`}>
+          </Button>
+          <Button
+            type="button"
+            variant="quiet"
+            disabled={pending}
+            loading={pending && running === "refuse"}
+            onClick={() => {
+              setRunning("refuse");
+              run(() => updateDataRequest({ id: item.id, status: "REFUSED", note }));
+            }}
+            className="text-perigo"
+          >
             Recusar
-          </button>
+          </Button>
         </div>
       )}
       {item.type === "DELETE" && item.linked && !closed && (
@@ -193,9 +223,9 @@ function Handle({ item, onDone }: { item: DataRequestItem; onDone: () => void })
           <p className="text-sm leading-5 text-tinta-suave">Apaga a conta e, se for o último membro, o casamento (ou o perfil de fornecedor) com tudo dentro. Os pagamentos ficam guardados sem vínculo, para fins fiscais. Não dá para desfazer.</p>
           <Input label="Digite o e-mail do titular para confirmar" value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} error={errors.confirmEmail} autoComplete="off" />
           <div>
-            <button type="button" disabled={pending || confirmEmail.trim().length < 5} onClick={() => setConfirmOpen(true)} className={`${btn.secondary} text-perigo`}>
+            <Button type="button" variant="outline" disabled={pending || confirmEmail.trim().length < 5} onClick={() => setConfirmOpen(true)} className="text-perigo">
               Excluir a conta
-            </button>
+            </Button>
           </div>
           <ConfirmModal
             isOpen={confirmOpen}

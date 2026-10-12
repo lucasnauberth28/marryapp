@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { CustomModal } from "@/components/ui/custom-modal";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
+import { LoadingRegion, SkeletonImage } from "@/components/skeletons";
 import { reconnectWhatsapp } from "@/actions/admin-saude-actions";
 
 /** "Reconectar": gera o QR Code do WhatsApp para parear de novo. Depois de ler, a página precisa ser atualizada. */
@@ -30,12 +31,16 @@ export function ReconnectWhatsapp() {
 
   return (
     <>
-      <button type="button" onClick={start} disabled={pending} className={`${btn.quiet} ${btn.sm}`}>
+      <Button type="button" variant="quiet" size="sm" onClick={start} loading={pending}>
         Reconectar
-      </button>
+      </Button>
       <CustomModal isOpen={open} onClose={() => setOpen(false)} title="Reconectar o WhatsApp" description="No celular do número do Aceito: WhatsApp, Aparelhos conectados, Conectar um aparelho. Aponte a câmera para o código.">
         <div className="flex min-h-64 flex-col items-center justify-center gap-3">
-          {pending && <p className="text-sm text-tinta-suave">Gerando o código...</p>}
+          {pending && (
+            <LoadingRegion label="o código">
+              <SkeletonImage ratio={1} className="size-60 rounded-xl" />
+            </LoadingRegion>
+          )}
           {error && (
             <p role="alert" className="text-sm font-semibold text-perigo">
               {error}

@@ -7,7 +7,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { TimePicker } from "@/components/ui/time-picker";
 import { FormAlert } from "@/components/ui/field";
 import { StatusChip } from "@/components/plataforma/status-chip";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Wrench } from "lucide-react";
 import { saveEmailSender, saveMaintenance, saveRefundPolicy } from "@/actions/admin-config-actions";
 import { ToggleRow } from "../../_sistema/toggle-row";
@@ -47,9 +47,9 @@ export function MaintenanceForm({ initial }: { initial: { enabled: boolean; mess
       </p>
       {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
       <div>
-        <button type="submit" disabled={pending} className={btn.primary}>
-          {pending ? "Salvando..." : "Salvar"}
-        </button>
+        <Button type="submit" loading={pending}>
+          Salvar
+        </Button>
       </div>
     </form>
   );
@@ -76,9 +76,9 @@ export function EmailSenderForm({ initial }: { initial: { fromName: string; from
       </p>
       {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
       <div>
-        <button type="submit" disabled={pending} className={btn.primary}>
-          {pending ? "Salvando..." : "Salvar remetente"}
-        </button>
+        <Button type="submit" loading={pending}>
+          Salvar remetente
+        </Button>
       </div>
     </form>
   );
@@ -108,9 +108,9 @@ export function RefundPolicyForm({ initial }: { initial: { days: number; text: s
       <Textarea label="Texto para o casal" value={text} onChange={(e) => setText(e.target.value)} error={errors.text} rows={3} maxLength={1000} />
       {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
       <div>
-        <button type="submit" disabled={pending} className={btn.primary}>
-          {pending ? "Salvando..." : "Salvar política"}
-        </button>
+        <Button type="submit" loading={pending}>
+          Salvar política
+        </Button>
       </div>
     </form>
   );

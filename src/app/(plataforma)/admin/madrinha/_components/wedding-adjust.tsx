@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormAlert } from "@/components/ui/field";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { applyWeddingAdjustment, unblockWeddingMadrinha } from "@/actions/admin-madrinha-actions";
 import type { WeddingHit } from "@/lib/platform/queries/madrinha";
 import { useAdminAction } from "../../_sistema/use-admin-action";
@@ -16,6 +16,7 @@ export function WeddingAdjust() {
   const [extra, setExtra] = useState("0");
   const [reason, setReason] = useState("");
   const { pending, errors, formError, run } = useAdminAction();
+  const [running, setRunning] = useState<"apply" | "unblock" | null>(null); // só o botão clicado mostra o spinner
 
   function pick(hit: WeddingHit) {
     setPicked(hit);
@@ -29,6 +30,7 @@ export function WeddingAdjust() {
       onSubmit={(e) => {
         e.preventDefault();
         if (!picked) return;
+        setRunning("apply");
         run(() => applyWeddingAdjustment({ weddingId: picked.id, extraMessages: extra, reason }));
       }}
     >
@@ -43,17 +45,22 @@ export function WeddingAdjust() {
       <Textarea label="Motivo" value={reason} onChange={(e) => setReason(e.target.value)} error={errors.reason} disabled={!picked} rows={3} />
       {formError && <FormAlert>{formError}</FormAlert>}
       <div className="mt-auto flex flex-wrap items-center gap-3">
-        <button type="submit" disabled={pending || !picked} className={btn.secondary}>
+        <Button type="submit" variant="outline" disabled={pending || !picked} loading={pending && running === "apply"}>
           Aplicar ajuste
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="quiet"
           disabled={pending || !picked || !picked.override?.blocked}
-          onClick={() => picked && run(() => unblockWeddingMadrinha({ weddingId: picked.id }), () => setPicked({ ...picked, override: picked.override && { ...picked.override, blocked: false } }))}
-          className={btn.quiet}
+          loading={pending && running === "unblock"}
+          onClick={() => {
+            if (!picked) return;
+            setRunning("unblock");
+            run(() => unblockWeddingMadrinha({ weddingId: picked.id }), () => setPicked({ ...picked, override: picked.override && { ...picked.override, blocked: false } }));
+          }}
         >
           Desbloquear o casal
-        </button>
+        </Button>
       </div>
     </form>
   );

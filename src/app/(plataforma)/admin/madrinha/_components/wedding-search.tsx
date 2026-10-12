@@ -2,7 +2,9 @@
 
 import { useRef, useState } from "react";
 import { Search } from "lucide-react";
+import { LoadingRegion } from "@/components/skeletons";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { searchMadrinhaWeddings } from "@/actions/admin-madrinha-actions";
 import type { WeddingHit } from "@/lib/platform/queries/madrinha";
 import { cn } from "@/lib/utils";
@@ -15,6 +17,7 @@ export function WeddingSearch({ selectedId, onPick, label = "Buscar casal" }: { 
   const [text, setText] = useState("");
   const [hits, setHits] = useState<WeddingHit[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [searching, setSearching] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ticket = useRef(0);
 
@@ -22,12 +25,15 @@ export function WeddingSearch({ selectedId, onPick, label = "Buscar casal" }: { 
     setText(value);
     if (timer.current) clearTimeout(timer.current);
     if (value.trim().length < 2) {
+      ticket.current++; // descarta busca em andamento
       setHits(null);
       setError(null);
+      setSearching(false);
       return;
     }
     timer.current = setTimeout(async () => {
       const mine = ++ticket.current;
+      setSearching(true);
       try {
         const result = await searchMadrinhaWeddings({ q: value });
         if (mine !== ticket.current) return; // chegou uma busca mais nova
@@ -37,6 +43,8 @@ export function WeddingSearch({ selectedId, onPick, label = "Buscar casal" }: { 
         } else setError(result.error);
       } catch {
         if (mine === ticket.current) setError("Não foi possível buscar agora.");
+      } finally {
+        if (mine === ticket.current) setSearching(false);
       }
     }, 300);
   }
@@ -49,9 +57,15 @@ export function WeddingSearch({ selectedId, onPick, label = "Buscar casal" }: { 
           {error}
         </p>
       )}
-      {hits && hits.length === 0 && <p className="text-sm text-tinta-suave">Nenhum casal encontrado.</p>}
+      {searching && hits === null && (
+        <LoadingRegion label="os casais" className="flex flex-col gap-1">
+          <Skeleton className="h-14 rounded-xl" />
+          <Skeleton className="h-14 rounded-xl" />
+        </LoadingRegion>
+      )}
+      {hits && hits.length === 0 && !searching && <p className="text-sm text-tinta-suave">Nenhum casal encontrado.</p>}
       {hits && hits.length > 0 && (
-        <ul className="flex flex-col gap-1" aria-label="Casais encontrados">
+        <ul className={cn("flex flex-col gap-1 transition-opacity", searching && "opacity-60")} aria-busy={searching || undefined} aria-label="Casais encontrados">
           {hits.map((hit) => (
             <li key={hit.id}>
               <button

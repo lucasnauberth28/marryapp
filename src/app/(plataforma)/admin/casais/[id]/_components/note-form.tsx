@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { addWeddingNote } from "@/actions/admin-casais-actions";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useCasalAction } from "../../_components/use-casal-action";
 
@@ -31,9 +31,9 @@ export function NoteForm({ weddingId }: { weddingId: string }) {
         </p>
       )}
       <div>
-        <button type="submit" disabled={pending || body.trim().length < 2} className={`${btn.secondary} ${btn.sm}`}>
-          {pending ? "Salvando..." : "Salvar nota"}
-        </button>
+        <Button type="submit" variant="outline" size="sm" disabled={body.trim().length < 2} loading={pending}>
+          Salvar nota
+        </Button>
       </div>
     </form>
   );

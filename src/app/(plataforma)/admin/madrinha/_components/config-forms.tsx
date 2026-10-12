@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { FormAlert } from "@/components/ui/field";
-import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { card } from "@/components/casal/ui";
 import { cn } from "@/lib/utils";
 import { centsToReaisInput } from "@/lib/platform/madrinha";
@@ -93,9 +93,9 @@ export function LimitsForm({ subscription, trial }: { subscription: PlanLimits; 
       </div>
       {formError && <FormAlert>{formError}</FormAlert>}
       <div>
-        <button type="submit" disabled={pending} className={btn.primary}>
-          {pending ? "Salvando..." : "Salvar limites"}
-        </button>
+        <Button type="submit" loading={pending}>
+          Salvar limites
+        </Button>
       </div>
     </form>
   );
@@ -120,9 +120,9 @@ export function GlobalCapForm({ monthlyCostCapCents, warnPercent, pauseAtCap }: 
       <p className="text-sm leading-5 text-tinta-suave">Ao chegar no aviso, a equipe receberá um e-mail. O envio só começa quando a Liz for ativada.</p>
       {formError && <FormAlert>{formError}</FormAlert>}
       <div className="mt-auto">
-        <button type="submit" disabled={pending} className={cn(btn.secondary)}>
-          {pending ? "Salvando..." : "Salvar teto"}
-        </button>
+        <Button type="submit" variant="outline" loading={pending}>
+          Salvar teto
+        </Button>
       </div>
     </form>
   );
@@ -149,9 +149,9 @@ export function AbuseForm({ perHour, blockHours, blockOffTopic, offTopicBeforeBl
       <p className="text-sm leading-5 text-tinta-suave">Quem for bloqueado verá uma mensagem gentil e pode pedir ajuda ao suporte.</p>
       {formError && <FormAlert>{formError}</FormAlert>}
       <div className="mt-auto">
-        <button type="submit" disabled={pending} className={btn.secondary}>
-          {pending ? "Salvando..." : "Salvar bloqueio"}
-        </button>
+        <Button type="submit" variant="outline" loading={pending}>
+          Salvar bloqueio
+        </Button>
       </div>
     </form>
   );
