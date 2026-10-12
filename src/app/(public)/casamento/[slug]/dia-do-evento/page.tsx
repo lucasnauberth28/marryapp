@@ -53,10 +53,10 @@ export default async function DiaDoEventoPage({ params }: { params: Promise<{ sl
             <QrCode aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-ameixa" strokeWidth={1.75} />
             <div className="flex flex-col gap-1">
               <h2 id="ingresso-titulo" className="font-semibold leading-6">
-                Seu ingresso de entrada
+                Código QR para a entrada na festa
               </h2>
               <p className="text-sm leading-5 text-tinta-suave">
-                O QR Code aparece quando você confirma a presença. Abra o convite com o seu WhatsApp para ver ou salvar o seu.
+                O código QR aparece depois que você confirma presença e serve para o registro de entrada na festa. Abra o convite com o seu WhatsApp para ver ou salvar o seu.
               </p>
             </div>
           </div>

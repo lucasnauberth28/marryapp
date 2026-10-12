@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic"
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
-  return guestPageMetadata(slug, "Lista de presentes", undefined, "presentes")
+  return guestPageMetadata(slug, "Presentes em dinheiro", undefined, "presentes")
 }
 
 export default async function ListaPresentesPublicPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -29,7 +29,7 @@ export default async function ListaPresentesPublicPage({ params }: { params: Pro
 
   return (
     <div className="flex min-h-dvh flex-1 flex-col bg-linho text-tinta">
-      <GuestHeader slug={wedding.slug} initials={identity.initials} coupleNames={identity.coupleNames} current="presentes" title="Lista de presentes" />
+      <GuestHeader slug={wedding.slug} initials={identity.initials} coupleNames={identity.coupleNames} current="presentes" title="Presentes em dinheiro" />
       <PublicGiftsClient initialGifts={gifts} coupleNames={identity.coupleNames} cardEnabled={isCardPaymentAvailable()} />
     </div>
   )

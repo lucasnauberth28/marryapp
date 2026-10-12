@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: CheckoutPageProps): Promise<M
   const { coupleNames } = await getIdentityForWedding(gift?.wedding ?? null);
   return {
     title: { absolute: `Presentear · ${coupleNames}` },
-    description: "Pagamento seguro por Pix ou cartão.",
+    description: "Presente em dinheiro por Pix ou cartão.",
   };
 }
 
@@ -69,7 +69,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
         <div className="mx-auto flex h-[60px] max-w-[560px] items-center gap-1 px-2 sm:px-4">
           <Link
             href={giftsPath}
-            aria-label="Voltar para a lista de presentes"
+            aria-label="Voltar para os presentes em dinheiro"
             className="grid size-11 shrink-0 place-items-center rounded-[12px] text-tinta transition-colors hover:bg-areia"
           >
             <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.75} />

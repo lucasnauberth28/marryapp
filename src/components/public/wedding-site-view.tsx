@@ -460,7 +460,7 @@ export function WeddingSiteView({
             )}
             {showGiftLink && (
               <Link href={giftsHref} className={btn.secondary} {...linkProps}>
-                Ver lista de presentes
+                Ver presentes em dinheiro
               </Link>
             )}
           </div>
@@ -684,8 +684,8 @@ export function WeddingSiteView({
       {showGifts && (
         <Band id="presentes" tone={toneOf("presentes")}>
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <Heading eyebrow="Lista de presentes" title="Um carinho para a vida nova">
-              Sua presença é o nosso maior presente. Se quiser contribuir, escolha um item.
+            <Heading eyebrow="Presentes em dinheiro" title="Um carinho para a vida nova">
+              Sua presença é o nosso maior presente. Se quiser contribuir, escolha um item: cada um representa um valor em dinheiro para o casal.
             </Heading>
             <Link href={giftsHref} className={`${btn.secondary} max-md:hidden`} {...linkProps}>
               Ver todos os presentes
@@ -731,8 +731,8 @@ export function WeddingSiteView({
                 </h2>
                 <p className="m-0 mb-4 max-w-[40ch] text-tinta-suave">
                   {deadlineLabel
-                    ? `Confirme sua presença até ${deadlineLabel}. Digite seu nome como está no convite e leva menos de um minuto.`
-                    : "Digite seu nome como está no convite. Leva menos de um minuto."}
+                    ? `Confirme sua presença até ${deadlineLabel}. Digite o seu WhatsApp para achar o seu convite; leva menos de um minuto.`
+                    : "Digite o seu WhatsApp para achar o seu convite. Leva menos de um minuto."}
                 </p>
                 <Link href={rsvpHref} className={`${btn.primary} ${btn.block}`} {...linkProps}>
                   Confirmar presença
@@ -866,11 +866,11 @@ export function WeddingSiteView({
             </Link>
           ) : (
             <Link href={giftsHref} className={`${btn.primary} flex-1`}>
-              Lista de presentes
+              Presentes em dinheiro
             </Link>
           )}
           {showRsvp && showGiftLink && (
-            <Link href={giftsHref} aria-label="Lista de presentes" className={`${btn.secondary} px-3.5`}>
+            <Link href={giftsHref} aria-label="Presentes em dinheiro" className={`${btn.secondary} px-3.5`}>
               <Gift className="size-6" aria-hidden="true" />
             </Link>
           )}

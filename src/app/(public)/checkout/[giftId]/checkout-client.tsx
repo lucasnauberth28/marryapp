@@ -206,6 +206,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
         </div>
         <span className="font-display text-2xl leading-8 tabular-nums">{formatPrice(gift.amount)}</span>
       </div>
+      <p className="text-sm leading-5 text-tinta-suave">Este presente representa um valor em dinheiro para o casal.</p>
 
       {/* PASSO 1: IDENTIFICAÇÃO */}
       {step === "IDENTIFICATION" && (

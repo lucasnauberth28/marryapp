@@ -238,12 +238,12 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
       <section className="bg-salvia-suave">
         <div className={cn(container, "flex flex-col gap-6 py-10 sm:py-16")}>
           <div className="flex max-w-[720px] flex-col gap-3">
-            <p className={cn(overline, "text-salvia")}>Vitrine de fornecedores</p>
+            <p className={cn(overline, "text-salvia")}>Fornecedores para o casamento</p>
             <h1 className="font-display text-[34px] font-normal leading-[40px] tracking-[-0.02em] text-tinta sm:text-5xl sm:leading-[1.05] lg:text-6xl">
-              Quem faz o seu dia acontecer
+              Encontre fornecedores para o seu casamento
             </h1>
             <p className="text-[17px] leading-[26px] text-tinta-suave sm:text-lg sm:leading-7">
-              Fornecedores com curadoria, trabalho de verdade e preço inicial à vista.
+              Procure fotógrafos, espaços, buffets e outros profissionais, veja o trabalho de cada um e peça orçamento. O rótulo &ldquo;Com curadoria&rdquo; indica que o Aceito analisou o cadastro; ele não garante qualidade nem preço.
             </p>
           </div>
 

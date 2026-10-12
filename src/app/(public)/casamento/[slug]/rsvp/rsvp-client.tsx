@@ -207,6 +207,11 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
               <p className="mt-6">
                 {firstName}, guardamos <strong className="font-semibold">{seats === 1 ? "1 lugar" : `${seats} lugares`}</strong> para você.
               </p>
+              {guest.allowedCompanions > 0 ? (
+                <p className="mt-1 text-sm text-tinta-suave">
+                  Isso inclui você e mais {guest.allowedCompanions === 1 ? "1 acompanhante" : `${guest.allowedCompanions} acompanhantes`}.
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -220,7 +225,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
             <>
               <NativeSelect
                 id="rsvp-acompanhantes"
-                label="Quantos acompanhantes você leva?"
+                label="Além de você, quantos acompanhantes?"
                 value={companionsCount}
                 onChange={(e) => setCompanionsCount(Number(e.target.value))}
               >
@@ -273,7 +278,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
               loading={submitLoading === "CONFIRMED"}
               className="h-12 w-full rounded-[12px] px-6"
             >
-              Aceito o convite
+              Confirmar presença
             </Button>
             <Button
               type="button"
@@ -283,7 +288,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
               loading={submitLoading === "DECLINED"}
               className="h-12 w-full rounded-[12px] px-6"
             >
-              Não vou poder ir
+              Não poderei ir
             </Button>
           </div>
         </section>
@@ -306,13 +311,13 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
           </span>
 
           <div className="mt-2 flex w-full flex-col items-center gap-4 rounded-[16px] border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
-            <p className={overline}>Seu ingresso</p>
+            <p className={overline}>Código QR para a entrada</p>
             <div ref={qrRef} className="rounded-[12px] border border-linha bg-papel p-4">
               <QRCodeCanvas value={`GUEST:${guest?.id ?? ""}`} size={168} level="H" />
             </div>
             <strong className="text-lg font-semibold">{guest?.name}</strong>
             <p className="text-sm text-tinta-suave">
-              Mostre este QR Code na entrada para entrar mais rápido. Salve a imagem no celular, caso a internet falhe lá.
+              Este código QR serve para o registro de entrada na festa, se os noivos usarem esse recurso. Salve a imagem no celular, caso a internet falhe lá.
             </p>
             <button type="button" onClick={downloadQrCode} className={cn(btn.secondary, btn.block)}>
               <Download aria-hidden="true" className="size-4" />
@@ -327,7 +332,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
               className="flex min-h-12 items-center gap-3 font-semibold text-tinta no-underline"
             >
               <Gift aria-hidden="true" className="size-5 text-ameixa" strokeWidth={1.75} />
-              <span className="flex-1">Ver a lista de presentes</span>
+              <span className="flex-1">Ver os presentes em dinheiro</span>
               <ArrowRight aria-hidden="true" className="size-4 text-tinta-suave" />
             </Link>
           </div>

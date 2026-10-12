@@ -121,6 +121,6 @@ export async function guestPageMetadata(slug: string, page: string | null, descr
     title: { absolute: page ? `${page} · ${coupleNames}` : `${coupleNames}${dateLabel ? ` · ${dateLabel}` : ""}` },
     description:
       description ??
-      `Celebre com ${coupleNames}: local, horários, traje, lista de presentes e confirmação de presença.`,
+      `Celebre com ${coupleNames}: local, horários, traje, presentes em dinheiro e confirmação de presença.`,
   };
 }
