@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Selo de cera do Aceito: marca confirmação de presença e pagamento concluído, nada mais.
- * Círculo ameixa com o "a" em Bodoni itálico e um fio champanhe interno.
+ * Círculo ameixa com o "A" em Bodoni itálico e um fio champanhe interno.
  */
 export function Seal({ size = "sm", className, label = "Confirmado" }: { size?: "sm" | "lg"; className?: string; label?: string }) {
   const lg = size === "lg";
@@ -20,10 +20,10 @@ export function Seal({ size = "sm", className, label = "Confirmado" }: { size?: 
     >
       <span
         aria-hidden="true"
-        className={cn("font-display italic leading-none", lg ? "-translate-y-[3px] text-[42px]" : "-translate-y-[2px] text-2xl")}
-        style={{ fontWeight: 500 }}
+        className={cn("font-display italic leading-none", lg ? "-translate-y-[2px] text-[38px]" : "-translate-y-[1px] text-[22px]")}
+        style={{ fontWeight: 600 }}
       >
-        a
+        A
       </span>
     </span>
   );

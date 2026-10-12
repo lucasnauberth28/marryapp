@@ -10,6 +10,13 @@ const SOURCES: Record<LogoVariant, { src: string; w: number; h: number }> = {
   lockup: { src: "/brand/aceito-lockup.svg", w: 770, h: 170 },
 };
 
+// Em corpo pequeno o fio da perna esquerda do "A" some: abaixo desta altura (px) usa a versão com traço mais firme.
+const SMALL_BELOW = 40;
+const SMALL_SOURCES: Partial<Record<LogoVariant, { src: string; w: number; h: number }>> = {
+  wordmark: { src: "/brand/aceito-wordmark-small.svg", w: 617, h: 170 },
+  "wordmark-linho": { src: "/brand/aceito-wordmark-small-linho.svg", w: 617, h: 170 },
+};
+
 /** Logo do Aceito a partir dos SVGs do design system. `height` em px; a largura acompanha. */
 export function Logo({
   variant = "wordmark",
@@ -22,7 +29,7 @@ export function Logo({
   className?: string;
   priority?: boolean;
 }) {
-  const s = SOURCES[variant];
+  const s = (height < SMALL_BELOW && SMALL_SOURCES[variant]) || SOURCES[variant];
   const width = Math.round((s.w / s.h) * height);
   return (
     <Image
