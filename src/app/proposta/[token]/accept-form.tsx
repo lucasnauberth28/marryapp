@@ -2,8 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { BadgeCheck, Loader2 } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
 import { acceptLeadProposal } from "@/actions/partner-vendor-actions";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { TOKEN_CARD } from "@/components/public/token-page-shell";
@@ -80,14 +81,9 @@ export function AcceptProposalForm({ token, companyName }: { token: string; comp
           />
           <span>Li e aceito esta proposta</span>
         </label>
-        <button
-          type="submit"
-          disabled={isPending}
-          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-ameixa px-5 text-base font-semibold text-on-ameixa transition-colors hover:bg-ameixa-hover disabled:pointer-events-none disabled:opacity-60"
-        >
-          {isPending ? <Loader2 aria-hidden="true" className="size-[18px] animate-spin" /> : null}
-          {isPending ? "Registrando…" : "Aceitar proposta"}
-        </button>
+        <Button type="submit" loading={isPending} className="h-12">
+          Aceitar proposta
+        </Button>
       </form>
     </section>
   );

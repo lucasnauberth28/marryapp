@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { login } from "@/actions/auth-actions";
-import { btn, btnArrow } from "@/components/landing/styles";
-import { cn } from "@/lib/utils";
+import { btnArrow } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 
 import { FormAlert } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -101,19 +101,10 @@ export function LoginForm({
 
       {error ? <FormAlert id="login-erro">{error}</FormAlert> : null}
 
-      <button type="submit" disabled={isLoading} className={cn(btn.primary, btn.block, "mt-1 min-h-12")}>
-        {isLoading ? (
-          <>
-            <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-            Entrando…
-          </>
-        ) : (
-          <>
-            Entrar
-            <ArrowRight aria-hidden="true" className={btnArrow} />
-          </>
-        )}
-      </button>
+      <Button type="submit" loading={isLoading} className="mt-1 h-12 w-full rounded-[12px] px-6">
+        Entrar
+        <ArrowRight aria-hidden="true" className={btnArrow} />
+      </Button>
 
       <p className="text-center text-[15px] text-tinta-suave">
         Ainda não tem conta?{" "}

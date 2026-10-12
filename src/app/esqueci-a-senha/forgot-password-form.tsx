@@ -2,10 +2,11 @@
 
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowRight, Loader2, Mail, MailCheck } from "lucide-react";
+import { ArrowRight, Mail, MailCheck } from "lucide-react";
 import { requestPasswordReset } from "@/actions/password-reset-actions";
 import { ShellHeading } from "@/components/account/auth-shell";
 import { btn, btnArrow } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Field, FormAlert } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
@@ -80,19 +81,10 @@ export function ForgotPasswordForm() {
           )}
         </Field>
         {error ? <FormAlert>{error}</FormAlert> : null}
-        <button type="submit" disabled={isPending} className={cn(btn.primary, btn.block, "min-h-12")}>
-          {isPending ? (
-            <>
-              <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-              Enviando…
-            </>
-          ) : (
-            <>
-              Enviar link
-              <ArrowRight aria-hidden="true" className={btnArrow} />
-            </>
-          )}
-        </button>
+        <Button type="submit" loading={isPending} className="h-12 w-full rounded-[12px] px-6">
+          Enviar link
+          <ArrowRight aria-hidden="true" className={btnArrow} />
+        </Button>
       </form>
     </section>
   );

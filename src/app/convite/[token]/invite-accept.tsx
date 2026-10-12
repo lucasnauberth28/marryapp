@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ArrowRight, Eye, EyeOff, Heart, Loader2, Lock, LogOut, Mail, TriangleAlert, User } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Heart, Lock, LogOut, Mail, TriangleAlert, User } from "lucide-react";
 import { acceptInvite, acceptInviteWithNewAccount } from "@/actions/invite-actions";
 import { login, logout } from "@/actions/auth-actions";
 import { ShellHeading } from "@/components/account/auth-shell";
 import { btn, btnArrow } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Field, FormAlert } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
@@ -96,29 +97,19 @@ function MemberAccept({ token, viewer }: { token: string; viewer: Extract<Viewer
               : `Ao entrar neste casamento, você sai de ${confirm.currentCoupleNames}. Quem continua lá não perde nada.`}
           </p>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <button type="button" onClick={() => accept(true)} disabled={isPending} className={cn(btn.primary, "min-h-11 flex-1")}>
-              {isPending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
+            <Button type="button" onClick={() => accept(true)} loading={isPending} className="flex-1 rounded-[12px] px-6">
               Entendi, entrar mesmo assim
-            </button>
+            </Button>
             <button type="button" onClick={() => setConfirm(null)} disabled={isPending} className={cn(btn.secondary, "min-h-11")}>
               Cancelar
             </button>
           </div>
         </div>
       ) : (
-        <button type="button" onClick={() => accept(false)} disabled={isPending} className={cn(btn.primary, btn.block, "min-h-12")}>
-          {isPending ? (
-            <>
-              <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-              Entrando…
-            </>
-          ) : (
-            <>
-              Entrar neste casamento
-              <ArrowRight aria-hidden="true" className={btnArrow} />
-            </>
-          )}
-        </button>
+        <Button type="button" onClick={() => accept(false)} loading={isPending} className="h-12 w-full rounded-[12px] px-6">
+          Entrar neste casamento
+          <ArrowRight aria-hidden="true" className={btnArrow} />
+        </Button>
       )}
 
       {error ? <FormAlert>{error}</FormAlert> : null}
@@ -275,19 +266,10 @@ function AnonymousAccept({ token }: { token: string }) {
           </FormAlert>
         ) : null}
 
-        <button type="submit" disabled={isPending} className={cn(btn.primary, btn.block, "min-h-12")}>
-          {isPending ? (
-            <>
-              <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-              {mode === "criar" ? "Criando a conta…" : "Entrando…"}
-            </>
-          ) : (
-            <>
-              {mode === "criar" ? "Criar conta e entrar no casamento" : "Entrar"}
-              <ArrowRight aria-hidden="true" className={btnArrow} />
-            </>
-          )}
-        </button>
+        <Button type="submit" loading={isPending} className="h-12 w-full rounded-[12px] px-6">
+          {mode === "criar" ? "Criar conta e entrar no casamento" : "Entrar"}
+          <ArrowRight aria-hidden="true" className={btnArrow} />
+        </Button>
 
         {mode === "criar" ? (
           <p className="text-center text-sm leading-5 text-tinta-suave">

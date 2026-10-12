@@ -2,10 +2,11 @@
 
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Eye, EyeOff, Loader2, Lock } from "lucide-react";
+import { ArrowRight, CheckCircle2, Eye, EyeOff, Lock } from "lucide-react";
 import { resetPassword } from "@/actions/password-reset-actions";
 import { ShellHeading } from "@/components/account/auth-shell";
 import { btn, btnArrow } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Field, FormAlert } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
@@ -109,19 +110,10 @@ export function ResetPasswordForm({ token }: { token: string }) {
             ) : null}
           </FormAlert>
         ) : null}
-        <button type="submit" disabled={isPending} className={cn(btn.primary, btn.block, "min-h-12")}>
-          {isPending ? (
-            <>
-              <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-              Salvando…
-            </>
-          ) : (
-            <>
-              Salvar nova senha
-              <ArrowRight aria-hidden="true" className={btnArrow} />
-            </>
-          )}
-        </button>
+        <Button type="submit" loading={isPending} className="h-12 w-full rounded-[12px] px-6">
+          Salvar nova senha
+          <ArrowRight aria-hidden="true" className={btnArrow} />
+        </Button>
       </form>
     </section>
   );
