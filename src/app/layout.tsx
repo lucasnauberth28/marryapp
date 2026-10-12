@@ -4,6 +4,7 @@ import { Bodoni_Moda, IBM_Plex_Mono, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { RevealObserver } from "@/components/motion/reveal-observer";
+import { NavigationProgress } from "@/components/feedback/navigation-progress";
 
 const instrumentSans = Instrument_Sans({
   variable: "--font-sans",
@@ -65,6 +66,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-linho font-sans text-tinta">
         <RevealObserver />
+        <NavigationProgress />
         {children}
         <Toaster
           position="bottom-right"
