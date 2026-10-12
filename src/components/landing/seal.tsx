@@ -20,8 +20,9 @@ export function Seal({ size = "sm", className, label = "Confirmado" }: { size?: 
     >
       <span
         aria-hidden="true"
-        className={cn("font-display italic leading-none", lg ? "-translate-y-[2px] text-[38px]" : "-translate-y-[1px] text-[22px]")}
-        style={{ fontWeight: 600 }}
+        className={cn("font-display italic leading-none", lg ? "text-[38px]" : "text-[22px]")}
+        // Eixo óptico baixo: o fio da perna esquerda do "A" não some; leve ajuste à direita compensa o itálico.
+        style={{ fontWeight: 600, fontVariationSettings: lg ? "'opsz' 18" : "'opsz' 11", transform: "translateX(0.03em)" }}
       >
         A
       </span>

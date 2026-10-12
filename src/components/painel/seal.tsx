@@ -7,7 +7,7 @@ export function Seal({ size = 96, label }: { size?: number; label: string }) {
       style={{ width: size, height: size, boxShadow: "inset 0 0 0 4px var(--color-ameixa), inset 0 0 0 5px var(--color-champanhe)" }}
       className="inline-grid place-items-center rounded-full bg-ameixa text-on-ameixa"
     >
-      <span aria-hidden="true" className="font-display font-semibold italic leading-none" style={{ fontSize: size * 0.5, transform: "translateY(-2px)" }}>
+      <span aria-hidden="true" className="font-display font-semibold italic leading-none" style={{ fontSize: size * 0.5, fontVariationSettings: size >= 64 ? "'opsz' 18" : "'opsz' 11", transform: "translateX(0.03em)" }}>
         A
       </span>
     </span>
