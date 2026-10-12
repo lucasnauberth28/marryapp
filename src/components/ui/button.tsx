@@ -3,6 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
+import { Spinner } from "@/components/ui/spinner"
 
 // Botões do design system: um primário por tela, 44px de altura (36px compacto no computador).
 const buttonVariants = cva(
@@ -49,15 +50,26 @@ const buttonVariants = cva(
   }
 )
 
+/**
+ * Botão do design system.
+ * - loading: ação em andamento. Mostra o spinner no centro, desabilita o clique e marca `aria-busy`.
+ *   O rótulo continua no lugar (invisível), então a largura do botão não muda e nada pula.
+ *   Com `asChild` não há spinner (o filho é quem desenha): só `aria-busy` e `aria-disabled`.
+ *   Em formulário com Server Action, use <SubmitButton>, que liga o `loading` sozinho.
+ */
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
+  loading = false,
+  disabled,
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    loading?: boolean
   }) {
   const Comp = asChild ? Slot.Root : "button"
 
@@ -66,9 +78,25 @@ function Button({
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
+      data-loading={loading ? "" : undefined}
+      aria-busy={loading || undefined}
+      aria-disabled={asChild && loading ? true : undefined}
+      disabled={asChild ? disabled : disabled || loading}
+      className={cn(buttonVariants({ variant, size, className }), loading && "disabled:opacity-100 aria-disabled:opacity-100", loading && !asChild && "relative")}
       {...props}
-    />
+    >
+      {loading && !asChild ? (
+        <>
+          <span className="pointer-events-none absolute inset-0 grid place-items-center" aria-hidden="true">
+            <Spinner />
+          </span>
+          {/* Mesmo conteúdo, transparente: mantém a largura do botão e o nome acessível. */}
+          <span className="inline-flex items-center justify-center gap-[inherit] opacity-0">{children}</span>
+        </>
+      ) : (
+        children
+      )}
+    </Comp>
   )
 }
 
