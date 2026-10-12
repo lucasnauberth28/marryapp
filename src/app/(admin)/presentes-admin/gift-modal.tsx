@@ -34,17 +34,17 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
   function handleSubmit(formData: FormData) {
     setError(null)
 
-    const toastId = toast.loading("Cadastrando presente na vitrine virtual...")
+    const toastId = toast.loading("Cadastrando o presente...")
     startTransition(async () => {
       const result = await createGiftAction(formData)
 
       if (result.success) {
-        toast.success("Presente cadastrado com sucesso na vitrine! 🎁", { id: toastId })
+        toast.success("Presente cadastrado.", { id: toastId })
         setImagePreview(null)
         onClose()
       } else {
-        toast.error(result.error ?? "Erro ao criar o presente.", { id: toastId })
-        setError(result.error ?? "Erro ao criar o presente.")
+        toast.error(result.error ?? "Não deu para cadastrar o presente. Tente de novo.", { id: toastId })
+        setError(result.error ?? "Não deu para cadastrar o presente. Tente de novo.")
       }
     })
   }
@@ -54,7 +54,7 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
       isOpen={isOpen}
       onClose={onClose}
       title="Novo presente"
-      description="Ele aparece na lista de presentes do site de vocês."
+      description="Ele entra na lista de presentes do site de vocês. O convidado paga o valor por Pix ou cartão."
       size="md"
     >
       <form action={handleSubmit} className="flex flex-col gap-5 pt-2">

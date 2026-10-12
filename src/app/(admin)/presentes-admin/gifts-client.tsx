@@ -68,18 +68,17 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
   function handleDelete(id: string) {
     setConfirmAction(() => () => {
       setDeletingId(id)
-      const toastId = toast.loading("Removendo presente da vitrine...")
+      const toastId = toast.loading("Excluindo o presente...")
       startTransition(async () => {
         const result = await deleteGift(id)
         if (!result.success) {
-          toast.error(result.error || "Erro ao realizar operação.", {
+          toast.error(result.error || "Não deu para excluir o presente. Tente de novo.", {
             id: toastId,
             duration: 6000,
-            description: "Ocorreu um erro inesperado no servidor.",
           })
         } else {
           setGifts(prev => prev.filter(g => g.id !== id))
-          toast.success("Presente excluído com sucesso!", { id: toastId })
+          toast.success("Presente excluído.", { id: toastId })
           router.refresh()
         }
         setDeletingId(null)
@@ -94,7 +93,8 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
     <div className="flex flex-col gap-6">
       <PageHeader
         eyebrow="Site e presentes"
-        title="Presentes"
+        title="Presentes em dinheiro"
+        description="Cada presente tem um valor em reais. O convidado escolhe um da lista e paga por Pix ou cartão. Nenhum produto é entregue: o presente é o valor."
         actions={
           <>
             <Link href={siteGiftsHref} target="_blank" rel="noopener" className={`${btn.secondary}`}>
@@ -135,10 +135,10 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
           </span>
         </article>
         <article className={`${card} flex flex-col gap-2 p-5 sm:p-6`}>
-          <p className={overline}>Presentes ganhos</p>
+          <p className={overline}>Presentes pagos</p>
           <span className={bigNumber}>{giftedCount}</span>
           <span className="text-sm text-tinta-suave">
-            {gifts.length === 0 ? "Cadastrem o primeiro presente." : `de ${plural(gifts.length, "presente na vitrine", "presentes na vitrine")}`}
+            {gifts.length === 0 ? "Cadastrem o primeiro presente." : `de ${plural(gifts.length, "presente cadastrado", "presentes cadastrados")}`}
           </span>
         </article>
       </div>
@@ -149,9 +149,24 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
           <h2 id="recebidos-titulo" className={cardTitle}>Recebidos</h2>
         </div>
         {payments.length === 0 ? (
-          <p className="px-5 pb-6 pt-2 text-[15px] text-tinta-suave sm:px-6">
-            Quando alguém presentear vocês, o pagamento aparece aqui com o nome de quem enviou.
-          </p>
+          <div className="flex flex-col items-start gap-1 px-5 pb-6 pt-2 text-[15px] text-tinta-suave sm:px-6">
+            <p>Vocês ainda não receberam presentes pelo Aceito.</p>
+            {gifts.length === 0 ? (
+              <>
+                <p>Para receber, cadastrem o primeiro presente. Ele aparece na lista de presentes do site.</p>
+                <button type="button" onClick={() => setIsModalOpen(true)} className="inline-flex min-h-11 cursor-pointer items-center font-semibold text-ameixa hover:underline">
+                  Cadastrar presente
+                </button>
+              </>
+            ) : (
+              <>
+                <p>Quando um convidado pagar, o pagamento aparece aqui com o nome de quem enviou.</p>
+                <Link href={siteGiftsHref} target="_blank" rel="noopener" className="inline-flex min-h-11 items-center font-semibold text-ameixa hover:underline">
+                  Ver a lista como o convidado vê
+                </Link>
+              </>
+            )}
+          </div>
         ) : (
           <>
             <div className="hidden overflow-x-auto md:block">
@@ -210,14 +225,14 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
       {/* Vitrine */}
       <section aria-labelledby="vitrine-titulo" className="flex flex-col gap-3">
         <h2 id="vitrine-titulo" className={cardTitle}>
-          Vitrine · {plural(gifts.length, "presente", "presentes")}
+          Presentes no site · {gifts.length}
         </h2>
         {gifts.length === 0 ? (
           <div className={`${card} flex flex-col items-center justify-center px-4 py-16 text-center`}>
             <GiftIcon className="mb-3 size-10 text-linha-forte" aria-hidden="true" />
             <p className="font-semibold text-tinta">Vocês ainda não cadastraram presentes</p>
             <p className="mt-1 max-w-xs text-sm text-tinta-suave">
-              Cadastrem o primeiro com nome e valor. Pode ser um item da casa ou uma cota da lua de mel.
+              Cadastrem o primeiro com nome e valor em reais. Pode ser um item da casa ou uma cota da lua de mel.
             </p>
             <button type="button" onClick={() => setIsModalOpen(true)} className={`${btn.primary} mt-5`}>
               Cadastrar o primeiro presente
@@ -278,7 +293,7 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
           confirmAction?.()
         }}
         title="Excluir presente"
-        description="Deseja realmente excluir este item da vitrine?"
+        description="Excluir este presente da lista do site? Não dá para desfazer."
       />
     </div>
   )

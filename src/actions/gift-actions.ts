@@ -23,7 +23,7 @@ export async function getGifts() {
     return { success: true, data: gifts }
   } catch (error) {
     console.error("Erro ao buscar presentes:", error)
-    return { success: false, error: "Falha ao carregar presentes." }
+    return { success: false, error: "Não deu para carregar os presentes. Tente de novo." }
   }
 }
 
@@ -70,7 +70,7 @@ export async function createGiftAction(formData: FormData) {
     return { success: true, data: gift }
   } catch (error) {
     console.error("Erro ao criar presente:", error)
-    return { success: false, error: "Falha ao salvar no banco" }
+    return { success: false, error: "Não deu para cadastrar o presente. Tente de novo." }
   }
 }
 
@@ -103,6 +103,6 @@ export async function deleteGift(id: string) {
     return { success: true }
   } catch (error) {
     console.error("Erro ao deletar presente:", error)
-    return { success: false, error: "Falha ao excluir presente." }
+    return { success: false, error: "Não deu para excluir o presente. Tente de novo." }
   }
 }

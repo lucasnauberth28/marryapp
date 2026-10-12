@@ -7,8 +7,8 @@ import { requireWeddingPage } from "@/lib/security/wedding-context"
 import { weddingSitePath } from "@/lib/wedding-links"
 
 export const metadata: Metadata = {
-  title: "Vitrine de Presentes",
-  description: "Gerencie os presentes de casamento",
+  title: "Presentes em dinheiro",
+  description: "Presentes em dinheiro do casamento: o que foi cadastrado e o que já foi recebido",
 }
 
 const TZ = "America/Sao_Paulo"
