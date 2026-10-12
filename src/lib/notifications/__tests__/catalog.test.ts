@@ -154,8 +154,8 @@ test("avisos do domínio: só para o casal, levam a /dominio e citam o endereço
     assert.equal(copy.href, "/dominio");
     assert.match(copy.body, /ana-e-rafael\.com\.br/);
   }
-  assert.equal(buildCopy({ type: "domain_registered", domain: "a.com.br" }).title, "Seu domínio foi registrado");
-  assert.equal(buildCopy({ type: "domain_ready", domain: "a.com.br" }).title, "Seu domínio está no ar");
+  assert.equal(buildCopy({ type: "domain_registered", domain: "a.com.br" }).title, "Endereço do site registrado");
+  assert.equal(buildCopy({ type: "domain_ready", domain: "a.com.br" }).title, "Endereço do site no ar");
   assert.match(buildCopy({ type: "domain_rejected", domain: "a.com.br", reason: "Nome reservado." }).body, /Motivo: Nome reservado\./);
   assert.match(dedupe.domainReady("o1"), /^domain_ready:o1$/);
 });

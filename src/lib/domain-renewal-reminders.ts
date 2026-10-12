@@ -61,14 +61,14 @@ export async function sendDomainRenewalReminders(now = new Date()): Promise<Doma
 
 async function sendToAll(recipients: string[], domain: string, expiresAt: Date, day: RenewalReminderDay): Promise<number> {
   const when = dateFmt.format(expiresAt);
-  const heading = `O domínio ${domain} vence em ${when}`;
+  const heading = `O endereço ${domain} do site vence em ${when}`;
   const mail = brandedEmail({
     heading,
     paragraphs: [
       `O endereço ${domain} do site de vocês vence em ${when}, daqui a cerca de ${day} dias.`,
-      "A renovação do .com.br é feita pela nossa equipe no Registro.br. Para não correr risco de o site sair do ar, responda este aviso ou fale com a gente pelo painel que cuidamos da renovação.",
+      "A renovação do .com.br é feita no Registro.br. Para o site de vocês não sair do ar, confiram no painel as condições da renovação.",
     ],
-    cta: { label: "Abrir o meu domínio", url: appUrl("/dominio") },
+    cta: { label: "Ver o endereço do site", url: appUrl("/dominio") },
     footnotes: ["Este aviso sai uma vez aos 60 dias e outra aos 30 dias antes do vencimento."],
     preheader: `Vence em ${when}.`,
   });

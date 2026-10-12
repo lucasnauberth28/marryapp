@@ -12,7 +12,7 @@ export const GROUP_LABEL: Record<NotificationGroup, { title: string; hint: strin
   requests: { title: "Pedidos e propostas", hint: "Novos pedidos de orçamento, propostas aceitas e avaliações." },
   reminders: { title: "Lembretes", hint: "Despesas perto de vencer ou vencidas." },
   guests: { title: "Convidados", hint: "Quem confirmou ou não poderá ir." },
-  account: { title: "Plano e conta", hint: "Plano ativado, perto de vencer ou vencido, e o andamento do domínio próprio." },
+  account: { title: "Plano e conta", hint: "Plano ativado, perto de vencer ou vencido, e o andamento do endereço personalizado do site." },
 };
 
 export type NotificationTone = "success" | "info" | "warning" | "alert";
@@ -126,7 +126,7 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
       const who = clean(event.guestName, 60, "Um convidado");
       return {
         title: "Pix para conferir",
-        body: `${who} gerou um Pix de ${brl.format(event.amountCents / 100)} para "${clean(event.giftTitle, 60, "um presente")}". Quando cair na conta de vocês, confirme em Finanças.`,
+        body: `${who} gerou um Pix de ${brl.format(event.amountCents / 100)} para "${clean(event.giftTitle, 60, "um presente")}". Quando o valor aparecer no extrato de vocês, confirmem em Finanças.`,
         href: "/financas",
       };
     }
@@ -140,7 +140,7 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
     }
     case "rsvp_declined":
       return {
-        title: "Recado de um convidado",
+        title: "Resposta de um convidado",
         body: `${clean(event.guestName, 60, "Um convidado")} avisou que não poderá ir.`,
         href: "/convidados",
       };
@@ -164,20 +164,20 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
     }
     case "domain_registered":
       return {
-        title: "Seu domínio foi registrado",
+        title: "Endereço do site registrado",
         body: `${clean(event.domain, 70)} já está registrado no nome do titular. Falta ligar ao site de vocês; avisamos quando estiver no ar.`,
         href: "/dominio",
       };
     case "domain_ready":
       return {
-        title: "Seu domínio está no ar",
+        title: "Endereço do site no ar",
         body: `O site de vocês já abre em ${clean(event.domain, 70)}. Os links enviados aos convidados passam a usar este endereço.`,
         href: "/dominio",
       };
     case "domain_rejected":
       return {
-        title: "Pedido de domínio recusado",
-        body: `Não foi possível registrar ${clean(event.domain, 70)}. Motivo: ${clean(event.reason, 110, "sem detalhes")}. Vocês podem fazer um novo pedido.`,
+        title: "Pedido de endereço recusado",
+        body: `Não foi possível registrar o endereço ${clean(event.domain, 70)}. Motivo: ${clean(event.reason, 110, "sem detalhes")}. Vocês podem fazer um novo pedido.`,
         href: "/dominio",
       };
     case "lead_new": {

@@ -27,7 +27,7 @@ export default async function NotificacoesPage() {
       <PageHeader
         eyebrow="Conta"
         title="Avisos"
-        description="Presentes, confirmações e lembretes do casamento. Mostramos os últimos 100."
+        description="Presentes recebidos, respostas dos convidados e lembretes do casamento. Mostramos os últimos 100."
         actions={
           <Link
             href="/conta#avisos"
