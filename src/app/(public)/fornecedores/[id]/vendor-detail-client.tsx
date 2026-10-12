@@ -20,10 +20,10 @@ import {
   Globe,
   Sparkles,
   Camera,
-  Loader2,
   CalendarCheck,
   CalendarX,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -98,9 +98,9 @@ function AvailabilityCheck({ vendorId, todayIso }: { vendorId: string; todayIso:
           }}
           fieldClassName="flex-1"
         />
-        <button type="submit" disabled={isPending} className={cn(btn.secondary, "min-h-12 px-4")}>
-          {isPending ? <Loader2 className="size-4 animate-spin" aria-label="Consultando" /> : "Consultar"}
-        </button>
+        <Button type="submit" variant="outline" loading={isPending} className="h-12 rounded-[12px] px-4">
+          Consultar
+        </Button>
       </div>
       <div id="disponibilidade-resultado" role="status" aria-live="polite">
         {result ? (
@@ -612,9 +612,9 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                       </div>
                     </fieldset>
 
-                    <button type="submit" disabled={isPendingLead} className={cn(btn.primary, btn.block)}>
-                      {isPendingLead ? <Loader2 className="size-4 animate-spin" aria-label="Enviando" /> : "Pedir orçamento"}
-                    </button>
+                    <Button type="submit" loading={isPendingLead} className="w-full rounded-[12px] px-6">
+                      Pedir orçamento
+                    </Button>
                     {directWhatsapp ? (
                       <a
                         href={`https://wa.me/${directWhatsapp}`}

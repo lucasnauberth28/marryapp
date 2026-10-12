@@ -4,7 +4,9 @@ import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { Bell, BellRing, CheckCheck, Settings2 } from "lucide-react";
 import { toast } from "sonner";
+import { LoadingRegion } from "@/components/skeletons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { NotificationRow } from "./notification-row";
 import { useNotificationFeed } from "./use-notification-feed";
@@ -113,17 +115,19 @@ export function NotificationBell({ initialUnread, allHref, settingsHref, pushPub
                 </button>
               </div>
             ) : (
-              <ul aria-busy="true" className="divide-y divide-linha">
-                {[0, 1, 2].map((i) => (
-                  <li key={i} className="flex gap-3 px-4 py-3">
-                    <span className="size-9 shrink-0 animate-pulse rounded-xl bg-areia" />
-                    <span className="flex-1 space-y-2 pt-1">
-                      <span className="block h-3 w-2/5 animate-pulse rounded bg-areia" />
-                      <span className="block h-3 w-4/5 animate-pulse rounded bg-areia" />
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <LoadingRegion label="os avisos">
+                <ul className="divide-y divide-linha">
+                  {[0, 1, 2].map((i) => (
+                    <li key={i} className="flex gap-3 px-4 py-3">
+                      <Skeleton className="size-9 shrink-0 rounded-xl" />
+                      <span className="flex-1 space-y-2 pt-1">
+                        <Skeleton className="h-3 w-2/5 rounded" />
+                        <Skeleton className="h-3 w-4/5 rounded" />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </LoadingRegion>
             )
           ) : (
             <>

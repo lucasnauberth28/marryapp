@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowRight, Check, Copy, Heart, Hourglass, Loader2, Lock } from "lucide-react";
+import { ArrowRight, Check, Copy, Heart, Hourglass, Lock } from "lucide-react";
 import { createPixTransactionAction, checkTransactionStatusAction, processCardPaymentAction } from "@/actions/payment-actions";
+import { Button } from "@/components/ui/button";
 import { Field, FormAlert } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { maskPhone } from "@/lib/masks";
 import { Seal } from "@/components/landing/seal";
@@ -96,6 +98,13 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
   function handleProcessPayment() {
     setError(null);
 
+    // Pix: já mostra a etapa do código (com esqueleto) enquanto o servidor gera; se falhar, volta com o erro.
+    if (method === "PIX") {
+      setPixPayload("");
+      setTransactionId(null);
+      setStep("PAYMENT");
+    }
+
     startTransition(async () => {
       if (method === "PIX") {
         const result = await createPixTransactionAction({
@@ -111,6 +120,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
           setStep("PAYMENT");
         } else {
           setError(result.error ?? "Erro ao gerar o Pix.");
+          setStep("METHOD");
         }
       } else {
         if (!payerEmail || !cardNumber || !cardName || !cardExpiry || !cardCvv) {
@@ -395,10 +405,9 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
           {error ? <FormAlert>{error}</FormAlert> : null}
 
           <div className="flex flex-col gap-2">
-            <button type="button" onClick={handleProcessPayment} disabled={isPending} className={cn(btn.primary, btn.block, "min-h-12")}>
-              {isPending && <Loader2 aria-hidden="true" className="size-4 animate-spin" />}
-              {isPending ? (method === "PIX" ? "Gerando o Pix…" : "Processando o pagamento…") : method === "PIX" ? "Gerar Pix" : "Pagar com cartão"}
-            </button>
+            <Button type="button" onClick={handleProcessPayment} loading={isPending} className="h-12 w-full rounded-[12px] px-6">
+              {method === "PIX" ? "Gerar Pix" : "Pagar com cartão"}
+            </Button>
             <button type="button" onClick={() => setStep("IDENTIFICATION")} className={cn(btn.quiet, btn.block)}>
               Voltar
             </button>
@@ -416,29 +425,42 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
             </h2>
           </div>
 
-          <section aria-label="Pix" className="flex flex-col items-center gap-3 rounded-[16px] border border-linha bg-papel p-6 text-center shadow-[var(--shadow-aceito-1)]">
+          <section
+            aria-label="Pix"
+            aria-busy={pixPayload === "" || undefined}
+            className="flex flex-col items-center gap-3 rounded-[16px] border border-linha bg-papel p-6 text-center shadow-[var(--shadow-aceito-1)]"
+          >
             <span className="inline-flex min-h-7 items-center gap-1 rounded-[6px] bg-aviso-suave px-3 text-sm font-semibold text-aviso">
               <Hourglass aria-hidden="true" className="size-4" strokeWidth={2} />
-              Aguardando pagamento
+              {pixPayload === "" ? "Gerando o código" : "Aguardando pagamento"}
             </span>
+            {pixPayload === "" ? <span role="status" className="sr-only">Gerando o código do Pix...</span> : null}
             <div className="rounded-[12px] border border-linha bg-papel p-3">
-              <QRCodeSVG value={pixPayload} size={200} role="img" aria-label="QR Code do Pix" />
+              {pixPayload === "" ? (
+                <Skeleton className="size-[200px] rounded-lg" />
+              ) : (
+                <QRCodeSVG value={pixPayload} size={200} role="img" aria-label="QR Code do Pix" />
+              )}
             </div>
             <p className="text-sm text-tinta-suave">
               No celular, copie o código e cole no app do seu banco, na opção Pix copia e cola. No computador, escaneie o QR Code com o celular.
             </p>
-            <div className="flex w-full items-center gap-2 rounded-[12px] border border-linha-forte py-2 pl-3 pr-2">
-              <code className="min-w-0 flex-1 truncate text-left font-mono text-sm">{pixPayload}</code>
-              <button
-                type="button"
-                onClick={copyToClipboard}
-                aria-label={copied ? "Código copiado" : "Copiar código Pix"}
-                className={cn(btn.primary, btn.sm, "shrink-0")}
-              >
-                {copied ? <Check aria-hidden="true" className="size-4" /> : <Copy aria-hidden="true" className="size-4" />}
-                {copied ? "Copiado" : "Copiar"}
-              </button>
-            </div>
+            {pixPayload === "" ? (
+              <Skeleton className="h-[62px] w-full rounded-[12px] sm:h-[54px]" />
+            ) : (
+              <div className="flex w-full items-center gap-2 rounded-[12px] border border-linha-forte py-2 pl-3 pr-2">
+                <code className="min-w-0 flex-1 truncate text-left font-mono text-sm">{pixPayload}</code>
+                <button
+                  type="button"
+                  onClick={copyToClipboard}
+                  aria-label={copied ? "Código copiado" : "Copiar código Pix"}
+                  className={cn(btn.primary, btn.sm, "shrink-0")}
+                >
+                  {copied ? <Check aria-hidden="true" className="size-4" /> : <Copy aria-hidden="true" className="size-4" />}
+                  {copied ? "Copiado" : "Copiar"}
+                </button>
+              </div>
+            )}
             <p className="min-h-5 text-sm font-semibold text-sucesso" role="status" aria-live="polite">
               {copied ? "Agora é só colar no app do seu banco." : ""}
             </p>
@@ -458,7 +480,12 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
             )}
           </section>
 
-          {staticPix ? (
+          {pixPayload === "" ? (
+            <div aria-hidden="true" className="flex flex-col gap-2">
+              <Skeleton className="h-4 w-full rounded-md" />
+              <Skeleton className="h-4 w-2/3 rounded-md" />
+            </div>
+          ) : staticPix ? (
             <div className="flex flex-col gap-3 rounded-[16px] border border-linha bg-areia p-4 text-sm text-tinta">
               <div>
                 <p className="font-semibold">Depois de pagar, é só avisar aqui.</p>
@@ -484,7 +511,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
             </p>
           )}
 
-          <button type="button" onClick={() => setStep("METHOD")} className={cn(btn.quiet, "self-start")}>
+          <button type="button" onClick={() => setStep("METHOD")} disabled={pixPayload === ""} className={cn(btn.quiet, "self-start")}>
             Voltar
           </button>
         </div>
@@ -493,7 +520,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
       {/* PASSO 3: CARTÃO EM ANÁLISE */}
       {step === "PAYMENT" && method === "CREDIT_CARD" && (
         <div className="step-in flex flex-col items-center gap-4 rounded-[16px] border border-linha bg-papel px-6 py-10 text-center shadow-[var(--shadow-aceito-1)]">
-          <Loader2 aria-hidden="true" className="size-8 animate-spin text-ameixa" />
+          <Skeleton className="h-2 w-40 rounded-full" />
           <h2 ref={headingRef} tabIndex={-1} className={heading}>
             Pagamento em análise
           </h2>

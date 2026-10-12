@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { ArrowRight, CalendarDays, Check, Download, Gift, Loader2, MapPin, Phone } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, Download, Gift, MapPin, Phone } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 import { findGuestByPhone, publicConfirmRsvp } from "@/actions/guest-actions";
 import { btn } from "@/components/landing/styles";
 import { Seal } from "@/components/landing/seal";
+import { Button } from "@/components/ui/button";
 import { Field, FormAlert } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
@@ -165,10 +166,9 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
                 />
               )}
             </Field>
-            <button type="submit" disabled={loading} className={cn(btn.primary, btn.block, "min-h-12")}>
-              {loading ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
-              {loading ? "Procurando…" : "Encontrar meu convite"}
-            </button>
+            <Button type="submit" loading={loading} className="h-12 w-full rounded-[12px] px-6">
+              Encontrar meu convite
+            </Button>
           </form>
           <p className="text-sm text-tinta-suave">Não achou o seu convite? Fale com os noivos, eles ajudam.</p>
         </section>
@@ -266,24 +266,25 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
           {error ? <FormAlert>{error}</FormAlert> : null}
 
           <div className="flex flex-col gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => handleConfirm("CONFIRMED")}
               disabled={submitLoading !== null}
-              className={cn(btn.primary, btn.block, "min-h-12")}
+              loading={submitLoading === "CONFIRMED"}
+              className="h-12 w-full rounded-[12px] px-6"
             >
-              {submitLoading === "CONFIRMED" ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
               Aceito o convite
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="quiet"
               onClick={() => handleConfirm("DECLINED")}
               disabled={submitLoading !== null}
-              className={cn(btn.quiet, btn.block, "min-h-12")}
+              loading={submitLoading === "DECLINED"}
+              className="h-12 w-full rounded-[12px] px-6"
             >
-              {submitLoading === "DECLINED" ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
               Não vou poder ir
-            </button>
+            </Button>
           </div>
         </section>
       ) : null}

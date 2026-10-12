@@ -29,6 +29,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { createVendorLead, type PublicVendorListItem } from "@/actions/partner-vendor-actions";
 import { parseRegions } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { toast } from "sonner";
+import { startNavigationProgress } from "@/components/feedback/navigation-progress";
 import { UserImage } from "@/components/ui/user-image";
 import { cn } from "@/lib/utils";
 
@@ -177,6 +178,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
   function applyDate(value: string) {
     setDateInput(value);
     if (value && value < todayIso) return;
+    startNavigationProgress();
     startTransitionDate(() => {
       router.replace(value ? `/fornecedores?data=${value}` : "/fornecedores", { scroll: false });
     });
@@ -346,7 +348,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
 
       <main className={cn(container, "flex flex-1 flex-col gap-8 pb-20 pt-10 sm:pb-24 sm:pt-12")}>
         {/* Resultado, filtro de verificados e ordenação */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3" aria-busy={isPendingDate || undefined}>
           <p role="status" className="text-base text-tinta-suave">
             <strong className="font-semibold text-tinta">
               {selectedCategory === ALL ? "Todos os fornecedores" : selectedCategory}
@@ -447,7 +449,10 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
             ) : null}
           </div>
         ) : (
-          <ul className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+          <ul
+            aria-busy={isPendingDate || undefined}
+            className={cn("grid grid-cols-1 gap-x-6 gap-y-10 transition-opacity sm:grid-cols-2 lg:grid-cols-3", isPendingDate && "opacity-60")}
+          >
             {filteredPartners.map((partner, index) => {
               const isMaster = partner.planTier === "MASTER";
               const where = regionsLabel(partner.serviceRegions);
@@ -705,17 +710,11 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
 
             <Button
               type="submit"
-              disabled={isPendingLead}
+              loading={isPendingLead}
               className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-12 text-sm shadow-md gap-2 mt-2"
             >
-              {isPendingLead ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <Calendar className="w-4 h-4" />
-                  <span>Enviar pedido</span>
-                </>
-              )}
+              <Calendar className="w-4 h-4" />
+              <span>Enviar pedido</span>
             </Button>
           </form>
           )}

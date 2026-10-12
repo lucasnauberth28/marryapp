@@ -2,9 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { Check, Copy, Loader2, RefreshCw } from "lucide-react";
+import { Check, Copy, RefreshCw } from "lucide-react";
 import { generateSubscriptionPix, verifySubscriptionPaymentStatus } from "@/actions/subscription-actions";
 import { btn } from "@/components/landing/styles";
+import { LoadingRegion } from "@/components/skeletons";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -113,18 +116,32 @@ export function SubscriptionPix({ planId, modules, planName, couponCode, onPaid 
     return (
       <div role="alert" className="flex flex-col gap-3 rounded-[16px] border border-perigo/25 bg-perigo-suave p-5 text-sm font-semibold text-perigo">
         {error}
-        <button type="button" onClick={() => startTransition(create)} className={cn(btn.secondary, btn.sm, "self-start")}>
+        <Button type="button" variant="outline" size="sm" loading={isPending} onClick={() => startTransition(create)} className="self-start rounded-[12px]">
           Tentar de novo
-        </button>
+        </Button>
       </div>
     );
   }
 
   if (!charge) {
     return (
-      <div className="flex min-h-64 items-center justify-center gap-2 rounded-[16px] border border-linha bg-papel text-tinta-suave">
-        <Loader2 aria-hidden="true" className="size-5 animate-spin" /> Gerando o Pix…
-      </div>
+      // Esqueleto do cartão do Pix (preço, QR, validade, botão de copiar e "Já paguei"): nada pula quando o código chega.
+      <LoadingRegion label="o código do Pix" className="flex flex-col gap-4">
+        <div className="flex flex-col items-center gap-5 rounded-[16px] border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
+          <div className="flex w-full items-center justify-between gap-3">
+            <Skeleton className="h-5 w-32 rounded-md" />
+            <Skeleton className="h-9 w-28 rounded-lg" />
+          </div>
+          <Skeleton className="size-[218px] rounded-[12px]" />
+          <Skeleton className="h-5 w-32 rounded-md" />
+          <Skeleton className="h-11 w-full rounded-[12px]" />
+          <div className="flex w-full flex-col items-center gap-1">
+            <Skeleton className="h-4 w-full rounded-md" />
+            <Skeleton className="h-4 w-2/3 rounded-md" />
+          </div>
+        </div>
+        <Skeleton className="h-12 w-full rounded-[12px]" />
+      </LoadingRegion>
     );
   }
 
@@ -144,9 +161,9 @@ export function SubscriptionPix({ planId, modules, planName, couponCode, onPaid 
             : `Válido por ${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`}
         </p>
         {expired ? (
-          <button type="button" onClick={() => startTransition(create)} disabled={isPending} className={cn(btn.secondary, btn.block)}>
-            <RefreshCw aria-hidden="true" className={cn("size-4", isPending && "animate-spin")} /> Gerar novo código
-          </button>
+          <Button type="button" variant="outline" loading={isPending} onClick={() => startTransition(create)} className="w-full rounded-[12px]">
+            <RefreshCw aria-hidden="true" className="size-4" /> Gerar novo código
+          </Button>
         ) : (
           <button type="button" onClick={copy} className={cn(btn.secondary, btn.block)}>
             {copied ? <Check aria-hidden="true" className="size-4 text-sucesso" /> : <Copy aria-hidden="true" className="size-4" />}
@@ -159,10 +176,9 @@ export function SubscriptionPix({ planId, modules, planName, couponCode, onPaid 
         </p>
       </div>
       {!expired ? (
-        <button type="button" onClick={checkNow} disabled={isPending} className={cn(btn.primary, btn.block, "min-h-12")}>
-          {isPending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
+        <Button type="button" loading={isPending} onClick={checkNow} className="h-12 w-full rounded-[12px]">
           Já paguei
-        </button>
+        </Button>
       ) : null}
       {message ? (
         <p role="status" className="text-center text-sm text-tinta-suave">

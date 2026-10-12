@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useId, useState, useTransition } from "react";
-import { Loader2, TicketPercent, X } from "lucide-react";
+import { TicketPercent, X } from "lucide-react";
 import { previewSubscriptionPrice } from "@/actions/subscription-actions";
 import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -152,10 +153,9 @@ export function CouponField({ planId, modules, applied, onChange, creditLabel = 
           fieldClassName="min-w-0 flex-1"
           inputClassName="font-mono uppercase"
         />
-        <button type="submit" disabled={isPending} className={cn(btn.secondary, "min-h-12 shrink-0")}>
-          {isPending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
+        <Button type="submit" variant="outline" loading={isPending} className="h-12 shrink-0 rounded-[12px] px-6">
           Aplicar
-        </button>
+        </Button>
       </div>
     </form>
   );
