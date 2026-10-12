@@ -1,6 +1,7 @@
 // Textos, fotos e planos da tela de acesso (entrar e criar conta). Sem dependências de servidor.
 import type { PlanKey } from "@/lib/plans";
 import { defaultCatalog, customPlanPriceIn, type Catalog } from "@/lib/catalog";
+import { SIGNUP_SUMMARY, planLabel } from "@/lib/plan-copy";
 
 // Sem catálogo passado, valem os preços do código; as telas reais passam o catálogo do servidor (lib/catalog-server.ts),
 // que traz os preços editados pela administração.
@@ -25,18 +26,9 @@ export interface PlanOption {
   popular?: boolean;
 }
 
-const SUMMARY: Record<PlanKey, string> = {
-  basic: "Site, lista de presentes e confirmações.",
-  classic: "Tudo para receber os convidados sem planilha.",
-  vip: "Tudo do Classic, mesas e atendimento prioritário.",
-  start: "Seu perfil na vitrine, com curadoria.",
-  pro: "Pedidos ilimitados e WhatsApp direto com o casal.",
-  master: "Destaque nas buscas e painel de resultados.",
-};
-
 /** Nome sem o prefixo "Plano"/"Fornecedor": "Classic", "Pro", "Master Elite". */
 export function shortPlanName(name: string) {
-  return name.replace(/^(Plano|Fornecedor)\s+/, "");
+  return planLabel(name);
 }
 
 export function planOption(key: PlanKey, catalog: Catalog = fallbackCatalog()): PlanOption {
@@ -44,9 +36,9 @@ export function planOption(key: PlanKey, catalog: Catalog = fallbackCatalog()): 
   return {
     id: key,
     name: shortPlanName(plan.name),
-    summary: SUMMARY[key],
+    summary: SIGNUP_SUMMARY[key],
     price: plan.price,
-    period: plan.price === 0 ? "para sempre" : plan.type === "VENDOR" ? "por mês" : "uma vez",
+    period: plan.price === 0 ? "sem mensalidade" : plan.type === "VENDOR" ? "por mês" : "pagamento único",
     features: [...plan.features],
     popular: plan.isPopular === true,
   };
@@ -58,9 +50,9 @@ export function customPlanOption(modules: string[], catalog: Catalog = fallbackC
   return {
     id: "custom",
     name: "Adaptado",
-    summary: "O plano que vocês montaram, só com o que precisam.",
+    summary: "O plano que vocês montaram, só com os recursos que escolheram.",
     price: calc.total,
-    period: calc.total === 0 ? "para sempre" : "uma vez",
+    period: calc.total === 0 ? "sem mensalidade" : "pagamento único",
     features: calc.selectedModules.map((m) => m.name),
   };
 }
@@ -81,7 +73,7 @@ export function typeOfPlan(planId: string | undefined): AccountType | null {
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
 export function formatPrice(cents: number) {
-  return cents === 0 ? "Grátis" : brl.format(cents / 100);
+  return cents === 0 ? "R$ 0" : brl.format(cents / 100);
 }
 
 /** Foto do painel lateral para cada momento do acesso. */

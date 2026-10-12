@@ -130,7 +130,7 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
         </main>
 
         <p className="px-4 pb-8 text-center text-sm text-tinta-suave lg:px-0 lg:pb-2 lg:text-left">
-          Convidado? Você não precisa de conta: use o link do convite.
+          Foi convidado para um casamento? Use o link enviado pelo casal. Você não precisa criar uma conta.
         </p>
       </div>
 

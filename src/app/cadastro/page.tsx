@@ -5,7 +5,7 @@ import { getCatalog } from "@/lib/catalog-server";
 
 export const metadata: Metadata = {
   title: "Criar conta",
-  description: "Criem a conta do casamento no Aceito ou cadastre seu negócio na vitrine de fornecedores.",
+  description: "Criem a conta do casamento no Aceito. Fornecedores também podem cadastrar o negócio.",
 };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;

@@ -13,7 +13,7 @@ import {
   EyeOff,
   FileText,
   Heart,
-  Loader2,
+ 
   Lock,
   Mail,
   MapPin,
@@ -25,6 +25,7 @@ import { registerPlanAccount, type PlanRegistrationData } from "@/actions/subscr
 import { SubscriptionPix } from "@/components/checkout/subscription-pix";
 import { VENDOR_CATEGORIES } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { btn, btnArrow } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Field, FormAlert } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/select";
@@ -48,12 +49,33 @@ interface SignupFlowProps {
 
 type Errors = Partial<Record<"name" | "email" | "phone" | "password" | "companyName" | "city" | "document", string>>;
 
-const STEP_NUMBER: Record<SignupStep, number> = { tipo: 1, plano: 2, dados: 3, pagamento: 4, pronto: 4 };
+const STEP_LABEL: Record<SignupStep, string> = {
+  tipo: "Tipo de conta",
+  plano: "Plano",
+  dados: "Dados da conta",
+  pagamento: "Pagamento",
+  pronto: "Pronto",
+};
+
+/** Mensagem do servidor -> campo a que ela se refere (para não ficar só num aviso solto). */
+function fieldOfServerError(message: string): keyof Errors | null {
+  if (/e-?mail/i.test(message) && !/já existe/i.test(message)) return "email";
+  if (/senha/i.test(message)) return "password";
+  if (/telefone/i.test(message)) return "phone";
+  if (/nome do negócio|nome da empresa/i.test(message)) return "companyName";
+  if (/documento/i.test(message)) return "document";
+  if (/nome/i.test(message)) return "name";
+  return null;
+}
 
 export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlanId, customModules, catalog, onGoToLogin }: SignupFlowProps) {
   const plans = useMemo(() => (type ? plansFor(type, customModules, catalog) : []), [type, customModules, catalog]);
   const [planId, setPlanId] = useState<string | null>(initialPlanId ?? null);
-  const plan: PlanOption | undefined = plans.find((p) => p.id === planId) ?? plans.find((p) => p.popular) ?? plans[0];
+  // Sem plano na URL, a escolha começa pelo primeiro da lista (Básico para casais, Start para fornecedores).
+  const plan: PlanOption | undefined = plans.find((p) => p.id === planId) ?? plans[0];
+  // Etapas reais do caminho: o tipo de conta só conta se a pessoa passou por ele, e o pagamento só existe em plano pago.
+  const [startedAtType] = useState(step === "tipo");
+  const flowSteps: SignupStep[] = [...(startedAtType ? (["tipo"] as const) : []), "plano", "dados", ...(plan && plan.price > 0 ? (["pagamento"] as const) : [])];
 
   // Dados da conta
   const [name, setName] = useState("");
@@ -111,10 +133,10 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
 
   const validate = (): Errors => {
     const e: Errors = {};
-    if (name.trim().length < 3) e.name = "Informe seu nome completo.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Confira o e-mail.";
+    if (name.trim().length < 3) e.name = "Informe seu nome com pelo menos 3 letras.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Confira o e-mail. Ele deve ter um formato como nome@exemplo.com.";
     const digits = phone.replace(/\D/g, "");
-    if (digits.length < 10 || digits.length > 11) e.phone = "Informe o WhatsApp com DDD.";
+    if (digits.length < 10 || digits.length > 11) e.phone = "Informe o número com DDD, com 10 ou 11 dígitos.";
     if (password.length < 8) e.password = "Use pelo menos 8 caracteres.";
     if (isVendor) {
       if (companyName.trim().length < 2) e.companyName = "Informe o nome do negócio.";
@@ -140,8 +162,15 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
     startTransition(async () => {
       const res = await registerPlanAccount(payload());
       if (!res.success) {
-        const message = res.error || "Não conseguimos criar a conta. Tente de novo.";
-        setFormError({ message, existingAccount: /já existe uma conta/i.test(message) });
+        const message = res.error || "Não foi possível criar a conta agora. Tentem novamente.";
+        const field = fieldOfServerError(message);
+        if (field) {
+          // O que já foi preenchido fica como está; o erro aparece no campo a que se refere.
+          setErrors({ [field]: message });
+          document.getElementById(`cadastro-${field}`)?.focus();
+        } else {
+          setFormError({ message, existingAccount: /já existe uma conta/i.test(message) });
+        }
         return;
       }
       setRedirectTo(("redirectTo" in res && res.redirectTo) || null);
@@ -162,17 +191,17 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
 
   return (
     <div className="flex flex-col">
-      {step !== "pronto" ? <Progress step={step} /> : null}
+      {step !== "pronto" ? <Progress step={step} steps={flowSteps} /> : null}
 
       {/* 1. Quem está chegando */}
       {step === "tipo" ? (
         <section aria-labelledby="cadastro-titulo" className="step-in flex flex-col gap-6">
-          <Heading ref={headingRef} title="Vamos começar" text="Contem para a gente quem está chegando." />
+          <Heading ref={headingRef} title="Que conta vocês querem criar?" text="Escolham o tipo de conta. Convidados não precisam de conta: usam o link enviado pelo casal." />
           <div role="group" aria-label="Tipo de conta" className="flex flex-col gap-3">
             <TypeCard
               icon={Heart}
               title="Vamos casar"
-              text="Site do casamento, convidados, presentes e a organização num lugar só."
+              text="Site do casamento, lista de convidados e presentes em dinheiro."
               selected={type === "casal"}
               onClick={() => {
                 onTypeChange("casal");
@@ -200,8 +229,8 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
         <section aria-labelledby="cadastro-titulo" className="step-in flex flex-col gap-6">
           <Heading
             ref={headingRef}
-            title={isVendor ? "Escolha seu plano" : "Escolham o plano"}
-            text={isVendor ? "O Start é gratuito. Mude de plano quando quiser." : "Comecem de graça e mudem quando quiserem."}
+            title={isVendor ? "Escolha seu plano" : "Escolham o plano para começar."}
+            text={isVendor ? "O Start é gratuito. Você pode mudar de plano depois." : "O Básico permite começar sem mensalidade. Comparem os recursos e as taxas antes de continuar."}
           />
           <div role="radiogroup" aria-label="Planos" className="flex flex-col gap-3">
             {plans.map((p) => (
@@ -231,8 +260,8 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
         <section aria-labelledby="cadastro-titulo" className="step-in flex flex-col gap-6">
           <Heading
             ref={headingRef}
-            title={isVendor ? "Dados do seu negócio" : "Criem a conta de vocês"}
-            text={isVendor ? "Seu perfil passa pela curadoria antes de aparecer na vitrine." : "Depois vocês convidam o par para entrar junto."}
+            title={isVendor ? "Dados do seu negócio" : "Criem a conta para organizar o casamento."}
+            text={isVendor ? "Seu perfil passa pela curadoria antes de aparecer na vitrine." : "Uma pessoa pode começar o cadastro. Depois, vocês podem convidar o par para participar."}
           />
 
           <div className="flex items-center justify-between gap-3 rounded-[12px] border border-linha bg-papel px-4 py-3">
@@ -249,7 +278,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-            <Field id="cadastro-name" label={isVendor ? "Seu nome" : "Seu nome completo"} icon={User} error={errors.name}>
+            <Field id="cadastro-name" label="Seu nome" icon={User} error={errors.name}>
               {(c) => (
                 <input {...c} id="cadastro-name" name="name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
               )}
@@ -326,7 +355,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
               </>
             ) : null}
 
-            <Field id="cadastro-email" label="E-mail" icon={Mail} error={errors.email}>
+            <Field id="cadastro-email" label="E-mail" icon={Mail} error={errors.email} hint="Usaremos este e-mail para o acesso à conta.">
               {(c) => (
                 <input
                   {...c}
@@ -343,7 +372,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
               )}
             </Field>
 
-            <Field id="cadastro-phone" label="WhatsApp" icon={Phone} error={errors.phone} hint={isVendor ? undefined : "Para avisos do casamento. Nada de propaganda."}>
+            <Field id="cadastro-phone" label="WhatsApp" icon={Phone} error={errors.phone} hint="Informe com DDD, por exemplo (11) 98765-4321.">
               {(c) => (
                 <input
                   {...c}
@@ -391,7 +420,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
 
             {!isVendor ? (
               <div className="flex flex-col gap-2">
-                <Field id="cadastro-date" label="Data do casamento" icon={CalendarHeart} optional>
+                <Field id="cadastro-date" label="Data do casamento" icon={CalendarHeart} optional hint="Vocês podem adicionar ou alterar a data depois.">
                   {(c) => (
                     <input
                       {...c}
@@ -432,19 +461,10 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
 
             <div className="mt-1 flex items-center gap-3">
               <BackButton onClick={() => onStepChange("plano")} />
-              <button type="submit" disabled={isPending} className={cn(btn.primary, "min-h-12 flex-1")}>
-                {isPending ? (
-                  <>
-                    <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-                    Criando a conta…
-                  </>
-                ) : (
-                  <>
-                    {plan.price > 0 ? "Criar conta e pagar" : "Criar conta"}
-                    <ArrowRight aria-hidden="true" className={btnArrow} />
-                  </>
-                )}
-              </button>
+              <Button type="submit" loading={isPending} className="h-12 flex-1 rounded-[12px] px-6">
+                {plan.price > 0 ? "Criar conta e pagar" : "Criar conta"}
+                <ArrowRight aria-hidden="true" className={btnArrow} />
+              </Button>
             </div>
             <p className="text-center text-sm leading-5 text-tinta-suave">
               Ao criar a conta, você concorda com os{" "}
@@ -472,7 +492,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
           <SubscriptionPix planId={plan.id} modules={plan.id === "custom" ? customModules : undefined} planName={`Plano ${plan.name}`} onPaid={handlePaid} />
           <div className="flex flex-col gap-3">
             <button type="button" onClick={() => onStepChange("pronto")} className={cn(btn.quiet, "self-center")}>
-              Pagar depois e continuar no plano gratuito
+              {isVendor ? "Pagar depois e continuar no plano Start" : "Pagar depois e continuar no plano Básico"}
             </button>
           </div>
         </section>
@@ -532,25 +552,40 @@ function Heading({ ref, title, text }: { ref: React.Ref<HTMLHeadingElement>; tit
   );
 }
 
-function Progress({ step }: { step: SignupStep }) {
-  const n = STEP_NUMBER[step];
+function Progress({ step, steps }: { step: SignupStep; steps: SignupStep[] }) {
+  const index = Math.max(0, steps.indexOf(step));
+  const n = index + 1;
+  const total = steps.length;
   return (
-    <div className="mb-6 flex items-center gap-3" aria-label={`Passo ${n} de 4`}>
-      <div className="flex flex-1 gap-1.5" aria-hidden="true">
-        {[1, 2, 3, 4].map((i) => (
-          <span key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-areia">
-            <span
-              className={cn(
-                "block h-full origin-left rounded-full bg-ameixa transition-transform duration-500 ease-[var(--ease-aceito)]",
-                i <= n ? "scale-x-100" : "scale-x-0",
-              )}
-            />
+    <div className="mb-6 flex flex-col gap-2">
+      <div className="flex items-center gap-3">
+        <div className="flex flex-1 gap-1.5" aria-hidden="true">
+          {steps.map((s, i) => (
+            <span key={s} className="h-1 flex-1 overflow-hidden rounded-full bg-areia">
+              <span
+                className={cn(
+                  "block h-full origin-left rounded-full bg-ameixa transition-transform duration-500 ease-[var(--ease-aceito)]",
+                  i <= index ? "scale-x-100" : "scale-x-0",
+                )}
+              />
+            </span>
+          ))}
+        </div>
+        <span className="text-sm font-semibold tabular-nums text-tinta-suave">
+          Etapa {n} de {total}
+        </span>
+      </div>
+      <p className="sr-only">
+        Etapa {n} de {total}: {STEP_LABEL[step]}
+      </p>
+      <p aria-hidden="true" className="text-sm text-tinta-suave">
+        {steps.map((s, i) => (
+          <span key={s} className={cn(i === index && "font-semibold text-tinta")}>
+            {i > 0 ? " · " : ""}
+            {STEP_LABEL[s]}
           </span>
         ))}
-      </div>
-      <span className="text-sm font-semibold tabular-nums text-tinta-suave" aria-hidden="true">
-        {n} de 4
-      </span>
+      </p>
     </div>
   );
 }
