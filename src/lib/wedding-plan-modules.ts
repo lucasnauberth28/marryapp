@@ -34,22 +34,22 @@ export function planIncludes(modules: readonly string[], moduleId: string): bool
   return modules.includes(moduleId);
 }
 
-const FEATURE: Record<EnforcedModule, { sentence: string; short: string; plans: string; planLabel: string }> = {
+const FEATURE: Record<EnforcedModule, { sentence: string; title: string; plans: string; planLabel: string }> = {
   whatsapp: {
-    sentence: "Os envios pelo WhatsApp fazem parte",
-    short: "WhatsApp",
+    sentence: "Os convites e lembretes pelo WhatsApp, enviados pelo painel, fazem parte",
+    title: "Convites e lembretes pelo WhatsApp são do plano",
     plans: "do plano Classic, do VIP",
     planLabel: "Classic",
   },
   qrcode: {
-    sentence: "O check-in com QR Code na portaria faz parte",
-    short: "Check-in com QR Code",
+    sentence: "O registro de entrada dos convidados com código QR faz parte",
+    title: "O registro de entrada com código QR é do plano",
     plans: "do plano Classic, do VIP",
     planLabel: "Classic",
   },
   customDomain: {
-    sentence: "O domínio próprio (.com.br) faz parte",
-    short: "Domínio próprio",
+    sentence: "O endereço personalizado do site (.com.br) faz parte",
+    title: "O endereço personalizado do site é do plano",
     plans: "do plano VIP",
     planLabel: "VIP",
   },
@@ -65,6 +65,7 @@ export function requiredPlanLabel(moduleId: EnforcedModule): string {
   return FEATURE[moduleId].planLabel;
 }
 
-export function featureName(moduleId: EnforcedModule): string {
-  return FEATURE[moduleId].short;
+/** Título do aviso de upgrade: "O endereço personalizado do site é do plano VIP". */
+export function upgradeTitle(moduleId: EnforcedModule): string {
+  return `${FEATURE[moduleId].title} ${FEATURE[moduleId].planLabel}`;
 }

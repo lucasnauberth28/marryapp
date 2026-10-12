@@ -33,7 +33,7 @@ test("mensagens de upgrade existem para todo módulo bloqueado", () => {
 test("domínio próprio é bloqueado no servidor e o aviso fala do VIP, não do Classic", () => {
   assert.ok((ENFORCED_MODULES as readonly string[]).includes("customDomain"));
   const msg = upgradeMessage("customDomain");
-  assert.match(msg, /domínio próprio/i);
+  assert.match(msg, /endereço personalizado/i);
   assert.match(msg, /VIP/);
   assert.ok(!/Classic/.test(msg));
   assert.equal(requiredPlanLabel("customDomain"), "VIP");

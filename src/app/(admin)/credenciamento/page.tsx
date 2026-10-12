@@ -6,8 +6,8 @@ import { UpgradeCard } from "@/components/plan/upgrade-card";
 import { ScannerClient } from "./scanner-client";
 
 export const metadata: Metadata = {
-  title: "Check-in no dia",
-  description: "Leitor de QR Code para entrada no evento",
+  title: "Registro de entrada dos convidados",
+  description: "Leitor de código QR para registrar a entrada dos convidados na festa",
 };
 
 export const dynamic = "force-dynamic";

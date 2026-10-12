@@ -9,7 +9,7 @@ import { DomainClient } from "./domain-client";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Domínio próprio" };
+export const metadata = { title: "Endereço personalizado do site" };
 
 export default async function DominioPage() {
   const { session, weddingId } = await requireWeddingPage("/dominio");
@@ -23,7 +23,7 @@ export default async function DominioPage() {
       : prisma.user.findUnique({ where: { id: session.userId }, select: { name: true, username: true } }),
   ]);
 
-  // Quem já tem pedido vê o andamento mesmo que o plano mude; sem pedido e sem o módulo, o convite para o VIP
+  // Quem já tem pedido vê o andamento mesmo que o plano mude; sem pedido e sem o módulo, o aviso do plano que inclui o recurso
   if (!active && !hasModule) return <UpgradeCard moduleId="customDomain" />;
 
   return (

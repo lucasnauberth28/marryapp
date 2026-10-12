@@ -529,7 +529,7 @@ export async function checkInGuest(guestId: string) {
     if (!guest) return { success: false, error: "Convidado não encontrado." };
 
     if (guest.isPresent) {
-      return { success: false, error: "Atenção: Este convidado já realizou o check-in anteriormente!" };
+      return { success: false, error: "A entrada deste convidado já foi registrada antes." };
     }
 
     // Só o primeiro check-in vale (dois leitores lendo o mesmo QR ao mesmo tempo)
@@ -541,7 +541,7 @@ export async function checkInGuest(guestId: string) {
       },
     });
     if (result.count === 0) {
-      return { success: false, error: "Atenção: Este convidado já realizou o check-in anteriormente!" };
+      return { success: false, error: "A entrada deste convidado já foi registrada antes." };
     }
 
     revalidatePath("/convidados");
@@ -549,6 +549,6 @@ export async function checkInGuest(guestId: string) {
     return { success: true, guestName: guest.name };
   } catch (error) {
     console.error("[checkInGuest]", error);
-    return { success: false, error: "Erro ao realizar o check-in." };
+    return { success: false, error: "Não deu para registrar a entrada. Tente de novo." };
   }
 }

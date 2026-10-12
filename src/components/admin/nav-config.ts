@@ -54,7 +54,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { name: "Lista de convidados", href: "/convidados", icon: UsersIcon, countKey: "guests" },
       { name: "Mensagens", href: "/mensagens", icon: MessageCircle, countKey: "messages" },
       { name: "Mesas", href: "/mesas", icon: Armchair },
-      { name: "Check-in no dia", href: "/credenciamento", icon: ScanLine },
+      { name: "Registro de entrada", href: "/credenciamento", icon: ScanLine },
     ],
   },
   {
@@ -72,8 +72,8 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "Site e presentes",
     items: [
       { name: "Editar o site", href: "/site-builder", icon: LayoutTemplate },
-      { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },
-      { name: "Domínio próprio", href: "/dominio", icon: Globe },
+      { name: "Presentes em dinheiro", href: "/presentes-admin", icon: GiftIcon },
+      { name: "Endereço personalizado", href: "/dominio", icon: Globe },
     ],
   },
   {
