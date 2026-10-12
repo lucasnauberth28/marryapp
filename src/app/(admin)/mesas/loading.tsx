@@ -1,32 +1,40 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion, SkeletonPageHeader } from "@/components/skeletons";
+import { SkeletonPanel } from "@/components/painel/skeleton-parts";
 
+// Espelha as mesas: cabeçalho, painel "Sem mesa" ao lado e a planta com os cartões redondos das mesas.
 export default function MesasLoading() {
   return (
-    <div role="status" aria-label="Carregando as mesas" className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-3 w-24 rounded-md" />
-        <Skeleton className="h-10 w-40 rounded-xl" />
-        <Skeleton className="h-4 w-72 rounded-lg" />
-      </div>
+    <LoadingRegion label="as mesas" className="flex flex-col gap-6">
+      <SkeletonPageHeader actions={1} />
 
-      <div className="flex flex-col gap-6 lg:flex-row">
-        <div className="w-full space-y-3 rounded-2xl border border-linha bg-papel p-6 lg:max-w-80">
-          <Skeleton className="h-6 w-32 rounded-md" />
+      <div className="flex flex-col items-stretch gap-6 lg:flex-row lg:items-start">
+        <SkeletonPanel className="flex w-full flex-col gap-2 p-4 sm:p-6 lg:max-w-80 lg:flex-none">
+          <div className="flex h-7 items-center">
+            <Skeleton className="h-5 w-28 rounded-md" />
+          </div>
+          <div className="mt-2 flex flex-col gap-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex min-h-11 items-center gap-3 rounded-xl border border-linha pl-4 pr-3">
+                <Skeleton className="h-4 w-36 max-w-full rounded-md" />
+                <Skeleton className="ml-auto h-6 w-7 shrink-0 rounded-md" />
+              </div>
+            ))}
+          </div>
+        </SkeletonPanel>
+
+        <div className="grid min-w-0 flex-1 grid-cols-[repeat(auto-fill,minmax(240px,1fr))] items-start gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-11 w-full rounded-xl" />
-          ))}
-        </div>
-
-        <div className="grid flex-1 grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex flex-col items-center gap-3 rounded-2xl border border-linha bg-papel p-4">
+            <SkeletonPanel key={i} className="flex flex-col items-center gap-3 p-4 text-center">
               <Skeleton className="size-24 rounded-full" />
-              <Skeleton className="h-4 w-28 rounded-md" />
-              <Skeleton className="h-3 w-16 rounded-md" />
-            </div>
+              <Skeleton className="h-4 w-32 rounded-md" />
+              <Skeleton className="h-3.5 w-16 rounded-md" />
+              <Skeleton className="mt-2 h-11 w-full rounded-xl" />
+              <Skeleton className="h-11 w-full rounded-xl" />
+            </SkeletonPanel>
           ))}
         </div>
       </div>
-    </div>
+    </LoadingRegion>
   );
 }

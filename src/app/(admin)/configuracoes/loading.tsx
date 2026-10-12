@@ -1,21 +1,35 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion, SkeletonCard, SkeletonPageHeader } from "@/components/skeletons";
 
+// Espelha as configurações: cabeçalho sem descrição e cartões (casamento, prazo, WhatsApp, acesso, plano).
 export default function ConfiguracoesLoading() {
   return (
-    <div className="flex max-w-[880px] flex-col gap-6" role="status" aria-label="Carregando as configurações">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className="h-10 w-64 md:h-12" />
-      </div>
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="space-y-4 rounded-2xl border border-linha bg-papel p-6">
-          <Skeleton className="h-6 w-56" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Skeleton className="h-11 w-full" />
-            <Skeleton className="h-11 w-full" />
-          </div>
+    <LoadingRegion label="as configurações" className="flex max-w-[880px] flex-col gap-6">
+      <SkeletonPageHeader description={false} />
+
+      <SkeletonCard description className="py-6">
+        <div className="grid gap-4 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex flex-col gap-1">
+              <Skeleton className="h-3.5 w-24 rounded-md" />
+              <Skeleton className="h-5 w-40 max-w-full rounded-md" />
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+        <Skeleton className="mt-5 h-11 w-52 rounded-xl" />
+      </SkeletonCard>
+
+      <SkeletonCard>
+        <Skeleton className="h-12 w-full rounded-xl sm:max-w-[320px]" />
+        <Skeleton className="mt-4 h-11 w-32 rounded-xl" />
+      </SkeletonCard>
+
+      <SkeletonCard description>
+        <Skeleton className="h-11 w-44 rounded-xl" />
+      </SkeletonCard>
+      <SkeletonCard description>
+        <Skeleton className="h-11 w-44 rounded-xl" />
+      </SkeletonCard>
+    </LoadingRegion>
   );
 }

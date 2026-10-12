@@ -1,26 +1,38 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion, SkeletonPageHeader, SkeletonStat } from "@/components/skeletons";
+import { SkeletonPanel, SkeletonSectionTitle } from "@/components/painel/skeleton-parts";
 
+// Espelha a carteira: cabeçalho com um botão, três números e os cartões de crédito cadastrados.
 export default function CarteiraLoading() {
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
-      <div className="space-y-2 border-b border-zinc-200 pb-4">
-        <Skeleton className="h-8 w-48 rounded-xl" />
-        <Skeleton className="h-4 w-96 rounded-lg" />
+    <LoadingRegion label="a carteira" className="mx-auto flex max-w-7xl flex-col gap-6">
+      <SkeletonPageHeader actions={1} />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
+        <SkeletonStat className="p-5 sm:p-6" />
+        <SkeletonStat className="p-5 sm:p-6" />
+        <SkeletonStat className="p-5 sm:p-6" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-papel rounded-3xl p-6 border border-zinc-200 space-y-3">
-            <Skeleton className="h-4 w-28 rounded-md" />
-            <Skeleton className="h-10 w-36 rounded-xl" />
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Skeleton className="h-48 rounded-3xl" />
-        <Skeleton className="h-48 rounded-3xl" />
-      </div>
-    </div>
+      <section className="flex flex-col gap-3">
+        <SkeletonSectionTitle />
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <li key={i}>
+              <SkeletonPanel className="flex items-center gap-3 p-5">
+                <Skeleton className="h-[30px] w-11 shrink-0 rounded-md" />
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <Skeleton className="h-4 w-32 rounded-md" />
+                  <Skeleton className="h-3.5 w-44 max-w-full rounded-md" />
+                  <Skeleton className="h-3.5 w-28 rounded-md" />
+                </div>
+                <Skeleton className="size-11 shrink-0 rounded-xl" />
+                <Skeleton className="size-11 shrink-0 rounded-xl" />
+              </SkeletonPanel>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </LoadingRegion>
   );
 }
