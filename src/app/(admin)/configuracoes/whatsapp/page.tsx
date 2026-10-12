@@ -4,8 +4,8 @@ import { PageHeader } from "@/components/admin/page-header";
 import { WhatsAppConfigClient } from "./whatsapp-config-client";
 
 export const metadata: Metadata = {
-  title: "WhatsApp API",
-  description: "Gerencie a conexão da API do WhatsApp",
+  title: "Conexão do WhatsApp",
+  description: "Veja se o WhatsApp está conectado para enviar convites e lembretes",
 };
 
 export default async function WhatsAppConfigPage() {
@@ -17,7 +17,7 @@ export default async function WhatsAppConfigPage() {
         className="mb-8"
         eyebrow="Configurações"
         title="Conexão do WhatsApp"
-        description="Acompanhe o status do seu número conectado e gere um novo QR Code caso a conexão caia."
+        description="Veja se o envio de convites e lembretes pelo WhatsApp está disponível. A conexão é do Aceito e a equipe cuida dela."
       />
 
       <WhatsAppConfigClient />
