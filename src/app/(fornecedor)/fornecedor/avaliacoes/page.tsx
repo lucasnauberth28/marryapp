@@ -5,6 +5,7 @@ import { Reveal } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
+import { LinkPending } from "@/components/feedback/link-pending";
 import { Chip } from "../../_components/status-chip";
 import { formatWeddingDate } from "../../_lib/vendor-panel";
 import { ReportReview } from "./report-review";
@@ -165,7 +166,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
             </section>
           </Reveal>
 
-          <section aria-labelledby="lista-avaliacoes" className="flex flex-col gap-3">
+          <section aria-labelledby="lista-avaliacoes" className="group/lista flex flex-col gap-3">
             <h2 id="lista-avaliacoes" className="sr-only">
               {filter === "sem-resposta" ? "Avaliações sem resposta" : "Todas as avaliações"}
             </h2>
@@ -187,6 +188,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
                         )}
                       >
                         {f.label} · {f.count}
+                        <LinkPending label="Carregando as avaliações" />
                       </Link>
                     </li>
                   );
@@ -209,7 +211,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
                 </Link>
               </Reveal>
             ) : (
-              <ul className="flex flex-col gap-3">
+              <ul className="flex flex-col gap-3 transition-opacity group-has-[[data-link-pending]]/lista:opacity-60">
                 {reviews.map((review, i) => {
                   const date = formatWeddingDate(review.weddingDate);
                   const married = review.weddingDate ? review.weddingDate.getTime() <= now.getTime() : false;

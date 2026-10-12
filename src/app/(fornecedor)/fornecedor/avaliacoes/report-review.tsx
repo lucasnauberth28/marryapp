@@ -2,10 +2,11 @@
 
 import { useId, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Flag, Loader2 } from "lucide-react";
+import { Flag } from "lucide-react";
 import { toast } from "sonner";
 import { reportReview } from "@/actions/vendor-report-actions";
 import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -65,10 +66,9 @@ export function ReportReview({ reviewId, coupleNames }: { reviewId: string; coup
         <button type="button" onClick={() => setOpen(false)} disabled={pending} className={cn(btn.secondary, btn.sm, "min-h-11")}>
           Cancelar
         </button>
-        <button type="submit" disabled={pending} className={cn(btn.primary, btn.sm, "min-h-11")}>
-          {pending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
+        <Button type="submit" size="sm" loading={pending}>
           Enviar denúncia
-        </button>
+        </Button>
       </div>
     </form>
   );

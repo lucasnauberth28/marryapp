@@ -5,6 +5,7 @@ import { Reveal } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
+import { LinkPending } from "@/components/feedback/link-pending";
 import { Chip } from "../../_components/status-chip";
 import {
   effectiveVendorTier,
@@ -186,7 +187,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
 
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
           <Reveal variant="up" delay={80} className="min-w-0">
-            <section aria-labelledby="mes-titulo" className={cn(CARD, "flex min-w-0 flex-col gap-4 p-4 sm:p-6")}>
+            <section aria-labelledby="mes-titulo" className={cn(CARD, "group/agenda flex min-w-0 flex-col gap-4 p-4 sm:p-6")}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 id="mes-titulo" aria-live="polite" className="font-display text-2xl font-medium sm:text-[28px]">
                   {monthTitle}
@@ -199,6 +200,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
                     className={cn(NAV_BTN, "text-tinta-suave hover:bg-areia hover:text-tinta")}
                   >
                     <ChevronLeft aria-hidden="true" className="size-5" />
+                    <LinkPending label="Carregando o mês" />
                   </Link>
                   <Link
                     href="/fornecedor/agenda"
@@ -207,6 +209,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
                     className={cn(NAV_BTN, "border border-linha-forte bg-papel px-4 text-sm text-tinta hover:bg-areia")}
                   >
                     Hoje
+                    <LinkPending label="Carregando o mês" />
                   </Link>
                   <Link
                     href={`/fornecedor/agenda?mes=${monthParam(year, month + 1)}`}
@@ -215,11 +218,14 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
                     className={cn(NAV_BTN, "text-tinta-suave hover:bg-areia hover:text-tinta")}
                   >
                     <ChevronRight aria-hidden="true" className="size-5" />
+                    <LinkPending label="Carregando o mês" />
                   </Link>
                 </nav>
               </div>
 
-              <AgendaCalendar year={year} month={month} todayIso={todayIso} days={days} />
+              <div className="transition-opacity group-has-[[data-link-pending]]/agenda:opacity-60">
+                <AgendaCalendar year={year} month={month} todayIso={todayIso} days={days} />
+              </div>
 
               <ul aria-label="Legenda" className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-tinta-suave">
                 <li className="flex items-center gap-2">

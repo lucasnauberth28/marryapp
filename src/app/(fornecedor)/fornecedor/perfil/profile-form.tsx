@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Eye, Loader2 } from "lucide-react";
+import { Eye } from "lucide-react";
 import { toast } from "sonner";
 import { Reveal } from "@/components/motion/reveal";
 import { updateVendorProfile, type VendorProfileInput } from "@/actions/vendor-panel-actions";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
@@ -69,10 +70,9 @@ export function ProfileForm({
   }
 
   const saveButton = (
-    <button type="submit" form={FORM_ID} disabled={isPending} className={cn(BTN, "bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}>
-      {isPending ? <Loader2 aria-hidden="true" className="size-[18px] animate-spin" /> : null}
-      {isPending ? "Salvando…" : "Salvar"}
-    </button>
+    <Button type="submit" form={FORM_ID} loading={isPending}>
+      Salvar
+    </Button>
   );
 
   return (

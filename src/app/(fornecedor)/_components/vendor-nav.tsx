@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, CalendarDays, CreditCard, ExternalLink, Inbox, LogOut, Star, Store, UserRound, type LucideIcon } from "lucide-react";
+import { useFormStatus } from "react-dom";
 import { logout } from "@/actions/auth-actions";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { PLAN_HREF } from "../_lib/vendor-panel";
 
@@ -80,19 +82,33 @@ export function VendorSidebarNav({ newLeads, publicProfileHref }: { newLeads: nu
   );
 }
 
+/** Ícone do "Sair": vira spinner enquanto a saída roda (o botão fica desabilitado, sem mudar de tamanho). */
+function LogoutIcon({ className }: { className: string }) {
+  const { pending } = useFormStatus();
+  return pending ? <Spinner className={className} /> : <LogOut aria-hidden="true" className={className} />;
+}
+
+function LogoutSubmit({ className, children, ...props }: React.ComponentProps<"button">) {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" disabled={pending} aria-busy={pending || undefined} className={cn("disabled:pointer-events-none", className)} {...props}>
+      {children}
+    </button>
+  );
+}
+
 export function LogoutButton({ className }: { className?: string }) {
   return (
     <form action={logout}>
-      <button
-        type="submit"
+      <LogoutSubmit
         className={cn(
           "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-[15px] font-medium text-tinta-suave transition-colors hover:bg-areia hover:text-tinta",
           className,
         )}
       >
-        <LogOut aria-hidden="true" className="size-[18px] shrink-0" />
+        <LogoutIcon className="size-[18px] shrink-0" />
         Sair
-      </button>
+      </LogoutSubmit>
     </form>
   );
 }
@@ -101,14 +117,13 @@ export function LogoutButton({ className }: { className?: string }) {
 export function LogoutIconButton() {
   return (
     <form action={logout} className="shrink-0">
-      <button
-        type="submit"
+      <LogoutSubmit
         aria-label="Sair"
         title="Sair"
         className="grid size-11 place-items-center rounded-xl text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
       >
-        <LogOut aria-hidden="true" className="size-5" />
-      </button>
+        <LogoutIcon className="size-5" />
+      </LogoutSubmit>
     </form>
   );
 }

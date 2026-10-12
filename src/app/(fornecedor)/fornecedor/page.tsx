@@ -5,6 +5,7 @@ import { Reveal } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
+import { LinkPending } from "@/components/feedback/link-pending";
 import { LeadStatusChip } from "../_components/status-chip";
 import {
   effectiveVendorTier,
@@ -234,7 +235,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
         {isMaster ? <ResultsCard days={dailyViews} leads={windowLeads} /> : <ResultsTeaser />}
       </Reveal>
 
-      <section aria-labelledby="lista-pedidos" className="flex flex-col gap-3">
+      <section aria-labelledby="lista-pedidos" className="group/lista flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 id="lista-pedidos" className="text-lg font-semibold">
             {filter ? `Pedidos: ${FILTERS.find((f) => f.value === filter)?.label.toLowerCase()}` : "Todos os pedidos"}
@@ -258,6 +259,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
                     >
                       {f.label}
                       {f.value === "NEW" && newCount > 0 ? ` (${newCount})` : ""}
+                      <LinkPending label="Carregando os pedidos" />
                     </Link>
                   </li>
                 );
@@ -286,7 +288,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
             </Link>
           </Reveal>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-3 transition-opacity group-has-[[data-link-pending]]/lista:opacity-60">
             {sorted.map((lead, i) => {
               const status: LeadStatus = isLeadStatus(lead.status) ? lead.status : "NEW";
               const date = formatWeddingDate(lead.weddingDate);

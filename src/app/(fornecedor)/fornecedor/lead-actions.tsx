@@ -1,9 +1,10 @@
 "use client";
 
 import { useTransition } from "react";
-import { Loader2, Mail, MessageCircle } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { updateLeadStatus } from "@/actions/vendor-panel-actions";
+import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/select";
 import { LEAD_NEXT_STEP, LEAD_STATUS_LABEL, LEAD_STATUSES, type LeadStatus } from "../_lib/vendor-panel";
 
@@ -61,10 +62,9 @@ export function LeadActions({
       ) : null}
 
       {next ? (
-        <button type="button" className={btnSecondary} disabled={isPending} onClick={() => changeStatus(next.status)}>
-          {isPending ? <Loader2 aria-hidden="true" className="size-[18px] animate-spin" /> : null}
+        <Button type="button" variant="outline" loading={isPending} onClick={() => changeStatus(next.status)}>
           {next.label}
-        </button>
+        </Button>
       ) : null}
 
       <NativeSelect

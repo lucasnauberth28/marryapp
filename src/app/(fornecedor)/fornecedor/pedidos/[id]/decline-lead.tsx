@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Loader2, MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { declineLead } from "@/actions/vendor-panel-actions";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { whatsappHref } from "../../../_lib/vendor-panel";
@@ -106,10 +107,9 @@ export function DeclineLead({
             </p>
           ) : null}
           <div className="flex flex-wrap gap-2">
-            <button type="submit" disabled={isPending} className={cn(BTN, "bg-perigo text-white hover:opacity-90")}>
-              {isPending ? <Loader2 aria-hidden="true" className="size-[18px] animate-spin" /> : null}
+            <Button type="submit" loading={isPending} className="bg-perigo text-white hover:bg-perigo hover:opacity-90">
               Recusar pedido
-            </button>
+            </Button>
             <button
               type="button"
               disabled={isPending}

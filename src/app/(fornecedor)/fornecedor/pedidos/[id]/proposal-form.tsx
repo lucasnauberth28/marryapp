@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { BadgeCheck, Check, Copy, Link2, Loader2, MessageCircle, Send } from "lucide-react";
+import { BadgeCheck, Check, Copy, Link2, MessageCircle, Send } from "lucide-react";
 import { toast } from "sonner";
 import { saveLeadProposal } from "@/actions/vendor-panel-actions";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -222,14 +223,10 @@ export function ProposalForm({
         />
 
         <div className="flex justify-end">
-          <button type="submit" disabled={isPending} className={cn(BTN, "bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}>
-            {isPending ? (
-              <Loader2 aria-hidden="true" className="size-[18px] animate-spin" />
-            ) : (
-              <Send aria-hidden="true" className="size-[18px]" />
-            )}
-            {isPending ? "Salvando…" : saved ? "Atualizar proposta" : "Registrar proposta"}
-          </button>
+          <Button type="submit" loading={isPending}>
+            <Send aria-hidden="true" className="size-[18px]" />
+            {saved ? "Atualizar proposta" : "Registrar proposta"}
+          </Button>
         </div>
       </form>
     </div>

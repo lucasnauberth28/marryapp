@@ -5,6 +5,8 @@ import { ArrowDown, ArrowUp, Building2, ImagePlus, Loader2, Trash2, Upload } fro
 import { toast } from "sonner";
 import { Reveal } from "@/components/motion/reveal";
 import { updateVendorMedia, type VendorMedia, type VendorMediaInput } from "@/actions/vendor-panel-actions";
+import { SkeletonImage } from "@/components/skeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { MAX_GALLERY_IMAGES } from "../../_lib/vendor-panel";
 
@@ -140,7 +142,8 @@ export function MediaForm({ initial }: { initial: VendorMedia }) {
         {/* Logo */}
         <div className="flex flex-col gap-2">
           <p className="text-sm font-semibold text-tinta">Logo</p>
-          <div className="grid size-28 place-items-center overflow-hidden rounded-2xl border border-linha bg-areia">
+          <div className="relative grid size-28 place-items-center overflow-hidden rounded-2xl border border-linha bg-areia">
+            {busy === "logo" ? <Skeleton className="absolute inset-0 z-10 rounded-none" /> : null}
             {media.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={media.logoUrl} alt="Logo atual" className="size-full object-cover" />
@@ -172,7 +175,8 @@ export function MediaForm({ initial }: { initial: VendorMedia }) {
         {/* Capa */}
         <div className="flex min-w-0 flex-col gap-2">
           <p className="text-sm font-semibold text-tinta">Capa</p>
-          <div className="grid aspect-[16/7] w-full place-items-center overflow-hidden rounded-2xl border border-linha bg-areia">
+          <div className="relative grid aspect-[16/7] w-full place-items-center overflow-hidden rounded-2xl border border-linha bg-areia">
+            {busy === "cover" ? <Skeleton className="absolute inset-0 z-10 rounded-none" /> : null}
             {media.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={media.coverUrl} alt="Capa atual" className="size-full object-cover" />
@@ -273,6 +277,12 @@ export function MediaForm({ initial }: { initial: VendorMedia }) {
                 </div>
               </li>
             ))}
+            {busy === "gallery" ? (
+              <li aria-hidden="true" className="flex flex-col gap-2 rounded-xl border border-linha bg-linho p-2">
+                <SkeletonImage ratio="4/3" className="rounded-lg" />
+                <div className="h-11" />
+              </li>
+            ) : null}
           </ol>
         )}
       </div>

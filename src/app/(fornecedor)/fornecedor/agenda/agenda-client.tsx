@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CalendarPlus, CalendarX2, Loader2, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { createVendorEvent, deleteVendorEvent } from "@/actions/vendor-panel-actions";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
@@ -224,10 +225,9 @@ function EventForm({ request, leads, onDone }: { request: FormRequest; leads: Le
         <button type="button" onClick={onDone} disabled={isPending} className={BTN_SECONDARY}>
           Cancelar
         </button>
-        <button type="submit" disabled={isPending} className={BTN_PRIMARY}>
-          {isPending ? <Loader2 aria-hidden="true" className="size-[18px] animate-spin" /> : null}
+        <Button type="submit" loading={isPending}>
           {isMeeting ? "Marcar reunião" : "Bloquear data"}
-        </button>
+        </Button>
       </div>
     </form>
   );

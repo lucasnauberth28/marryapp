@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useTransition } from "react";
-import { Loader2, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { replyToReview } from "@/actions/vendor-review-actions";
 import { btn } from "@/components/landing/styles";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -143,10 +144,9 @@ function ReplyForm({
             Cancelar
           </button>
         ) : null}
-        <button type="submit" disabled={isPending} className={cn(btn.primary, btn.sm, "min-h-11")}>
-          {isPending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
+        <Button type="submit" size="sm" loading={isPending}>
           {isEdit ? "Salvar resposta" : "Publicar resposta"}
-        </button>
+        </Button>
       </div>
     </form>
   );
