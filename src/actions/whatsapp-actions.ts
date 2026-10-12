@@ -9,6 +9,7 @@ import { sendBulkMessages } from "@/lib/evolution";
 import { RsvpStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { notGiftOnlyWhere } from "@/lib/guest-origin";
+import { guestIdsReached, sendFailureReason, sendSummary } from "@/lib/whatsapp-results";
 
 /**
  * Dispara lembretes em massa para convidados com RSVP pendente.
@@ -29,7 +30,7 @@ export async function sendRsvpReminders() {
   });
 
   if (guests.length === 0) {
-    return { success: true, sent: 0, message: "Nenhum convidado pendente com telefone encontrado." };
+    return { success: true, sent: 0, message: "Nenhum convidado sem resposta, com telefone e convite já enviado, para lembrar agora." };
   }
 
   // Busca se existe um template customizado cadastrado para RSVP_REMINDER
@@ -69,13 +70,14 @@ export async function sendRsvpReminders() {
   const results = await sendBulkMessages(messages, 500);
   const sent = results.filter((r) => r.success).length;
   const failed = results.length - sent;
+  if (sent === 0 && failed > 0) return { success: false, error: `Nenhum lembrete foi enviado. ${sendFailureReason(results)}` };
 
   return {
     success: true,
     sent,
     failed,
     total: guests.length,
-    message: `${sent} lembrete(s) enviado(s) com sucesso. ${failed > 0 ? `${failed} falha(s).` : ""}`,
+    message: sendSummary(sent, failed, "lembrete"),
   };
 }
 
@@ -97,7 +99,7 @@ export async function sendInitialInvites() {
   });
 
   if (guests.length === 0) {
-    return { success: true, sent: 0, message: "Todos os convidados com telefone já receberam o convite." };
+    return { success: true, sent: 0, message: "Todos os convidados com telefone já receberam o convite pelo painel." };
   }
 
   // Busca se existe um template customizado cadastrado para INITIAL_INVITE
@@ -137,21 +139,26 @@ export async function sendInitialInvites() {
 
   const results = await sendBulkMessages(messages, 600);
   const sent = results.filter((r) => r.success).length;
+  const failed = results.length - sent;
 
-  const successPhones = results.filter((r) => r.success).map((r) => r.phone);
-  if (successPhones.length > 0) {
+  // Só quem teve o envio confirmado passa a constar como "já recebeu"
+  const reached = guestIdsReached(guests, results);
+  if (reached.length > 0) {
     await prisma.guest.updateMany({
-      where: { weddingId, phone: { in: successPhones } },
+      where: { weddingId, id: { in: reached } },
       data: { hasReceivedMessage: true },
     });
   }
 
   revalidatePath("/(admin)/convidados", "page");
 
+  if (sent === 0 && failed > 0) return { success: false, error: `Nenhum convite foi enviado. ${sendFailureReason(results)}` };
+
   return {
     success: true,
     sent,
+    failed,
     total: guests.length,
-    message: `${sent} convite(s) enviado(s) com sucesso.`,
+    message: sendSummary(sent, failed, "convite"),
   };
 }

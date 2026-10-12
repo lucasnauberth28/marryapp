@@ -464,7 +464,7 @@ function TemplateEditor({
           </div>
         </div>
         <p className={hint}>
-          {lastSent > 0 ? `${lastSent} ${lastSent === 1 ? "convidado já recebeu" : "convidados já receberam"} alguma mensagem.` : "Ainda não saiu nenhuma mensagem para os convidados."}
+          {lastSent > 0 ? `${lastSent} ${lastSent === 1 ? "convidado já recebeu" : "convidados já receberam"} mensagem por este painel.` : "Vocês ainda não enviaram mensagens por este painel."}
         </p>
       </section>
 
@@ -555,12 +555,12 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
               <Bell className="size-4" aria-hidden="true" />
               Envios prontos
             </h2>
-            <p className={hint}>Usam os modelos de convite inicial e de lembrete.</p>
+            <p className={hint}>Enviam na hora, usando os modelos de convite inicial e de lembrete.</p>
             <button type="button" disabled={shortcut !== null || invitesToSend === 0} onClick={() => runShortcut("invites")} className={`${btn.secondary} ${btn.sm}`}>
-              {invitesToSend === 0 ? "Todos já têm convite" : `Convite para ${invitesToSend} ${invitesToSend === 1 ? "pessoa" : "pessoas"}`}
+              {invitesToSend === 0 ? "Todos já têm convite" : `Enviar convite para ${invitesToSend} ${invitesToSend === 1 ? "pessoa" : "pessoas"}`}
             </button>
             <button type="button" disabled={shortcut !== null || remindersToSend === 0} onClick={() => runShortcut("reminders")} className={`${btn.secondary} ${btn.sm}`}>
-              {remindersToSend === 0 ? "Ninguém para lembrar" : `Lembrete para ${remindersToSend} ${remindersToSend === 1 ? "pessoa" : "pessoas"}`}
+              {remindersToSend === 0 ? "Ninguém para lembrar" : `Enviar lembrete para ${remindersToSend} ${remindersToSend === 1 ? "pessoa" : "pessoas"}`}
             </button>
           </section>
         </div>
@@ -593,10 +593,10 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
           Envios prontos
         </h2>
         <button type="button" disabled={shortcut !== null || invitesToSend === 0} onClick={() => runShortcut("invites")} className={btn.secondary}>
-          {invitesToSend === 0 ? "Todos já têm convite" : `Convite para ${invitesToSend} ${invitesToSend === 1 ? "pessoa" : "pessoas"}`}
+          {invitesToSend === 0 ? "Todos já têm convite" : `Enviar convite para ${invitesToSend} ${invitesToSend === 1 ? "pessoa" : "pessoas"}`}
         </button>
         <button type="button" disabled={shortcut !== null || remindersToSend === 0} onClick={() => runShortcut("reminders")} className={btn.secondary}>
-          {remindersToSend === 0 ? "Ninguém para lembrar" : `Lembrete para ${remindersToSend} ${remindersToSend === 1 ? "pessoa" : "pessoas"}`}
+          {remindersToSend === 0 ? "Ninguém para lembrar" : `Enviar lembrete para ${remindersToSend} ${remindersToSend === 1 ? "pessoa" : "pessoas"}`}
         </button>
       </section>
     </div>

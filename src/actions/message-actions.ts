@@ -7,6 +7,7 @@ import { defaultTemplatesToCreate } from "@/lib/default-message-templates";
 
 import prisma from "@/lib/prisma";
 import { sendBulkMessages } from "@/lib/evolution";
+import { guestIdsReached, sendFailureReason, sendSummary } from "@/lib/whatsapp-results";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -43,7 +44,7 @@ export async function getMessageTemplates() {
     return { success: true, data: templates };
   } catch (error) {
     console.error("[getMessageTemplates Error]:", error);
-    return { success: false, error: "Erro ao carregar templates." };
+    return { success: false, error: "Não deu para carregar os modelos. Tente de novo." };
   }
 }
 
@@ -58,7 +59,7 @@ export async function createMessageTemplate(formData: FormData) {
     const buttons = (formData.get("buttons") as string) || null;
 
     if (!name || !content) {
-      return { success: false, error: "Nome e conteúdo são obrigatórios." };
+      return { success: false, error: "Informem o nome do modelo e o texto da mensagem." };
     }
 
     const template = await prisma.messageTemplate.create({
@@ -69,7 +70,7 @@ export async function createMessageTemplate(formData: FormData) {
     return { success: true, data: template };
   } catch (error) {
     console.error("[createMessageTemplate Error]:", error);
-    return { success: false, error: "Erro ao criar template." };
+    return { success: false, error: "Não deu para salvar o modelo. Tente de novo." };
   }
 }
 
@@ -84,36 +85,36 @@ export async function updateMessageTemplate(id: string, formData: FormData) {
     const buttons = (formData.get("buttons") as string) || null;
 
     if (!name || !content) {
-      return { success: false, error: "Nome e conteúdo são obrigatórios." };
+      return { success: false, error: "Informem o nome do modelo e o texto da mensagem." };
     }
 
-    if (typeof id !== "string") return { success: false, error: "Template não encontrado." };
+    if (typeof id !== "string") return { success: false, error: "Modelo não encontrado." };
     const result = await prisma.messageTemplate.updateMany({
       where: { id, weddingId },
       data: { name, content, mediaUrl, mediaType, type, buttons },
     });
-    if (result.count === 0) return { success: false, error: "Template não encontrado." };
+    if (result.count === 0) return { success: false, error: "Modelo não encontrado." };
     const template = await prisma.messageTemplate.findFirst({ where: { id, weddingId } });
 
     revalidatePath("/mensagens");
     return { success: true, data: template };
   } catch (error) {
     console.error("[updateMessageTemplate Error]:", error);
-    return { success: false, error: "Erro ao editar template." };
+    return { success: false, error: "Não deu para salvar o modelo. Tente de novo." };
   }
 }
 
 export async function deleteMessageTemplate(id: string) {
   const { weddingId } = await requireWedding("/mensagens");
   try {
-    if (typeof id !== "string") return { success: false, error: "Template não encontrado." };
+    if (typeof id !== "string") return { success: false, error: "Modelo não encontrado." };
     const result = await prisma.messageTemplate.deleteMany({ where: { id, weddingId } });
-    if (result.count === 0) return { success: false, error: "Template não encontrado." };
+    if (result.count === 0) return { success: false, error: "Modelo não encontrado." };
     revalidatePath("/mensagens");
     return { success: true };
   } catch (error) {
     console.error("[deleteMessageTemplate Error]:", error);
-    return { success: false, error: "Erro ao excluir template." };
+    return { success: false, error: "Não deu para excluir o modelo. Tente de novo." };
   }
 }
 
@@ -125,16 +126,16 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
   const refusal = await moduleRefusal({ weddingId, session }, "whatsapp");
   if (refusal) return { success: false, error: refusal };
   try {
-    if (typeof templateId !== "string") return { success: false, error: "Template não encontrado." };
+    if (typeof templateId !== "string") return { success: false, error: "Modelo não encontrado." };
     const template = await prisma.messageTemplate.findFirst({ where: { id: templateId, weddingId } });
-    if (!template) return { success: false, error: "Template não encontrado." };
+    if (!template) return { success: false, error: "Modelo não encontrado." };
 
     const ids = Array.isArray(guestIds) ? guestIds.filter((id): id is string => typeof id === "string") : [];
     const guests = await prisma.guest.findMany({
       where: { id: { in: ids }, weddingId },
     });
 
-    if (guests.length === 0) return { success: false, error: "Nenhum convidado selecionado." };
+    if (guests.length === 0) return { success: false, error: "Escolham pelo menos um convidado para receber a mensagem." };
 
     // Tenta fazer parse dos botões se existirem
     let parsedButtons: Array<{ id: string; text: string }> | null = null;
@@ -180,7 +181,7 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
       .filter((r) => r.phone.length >= 8);
 
     if (recipients.length === 0) {
-      return { success: false, error: "Nenhum telefone válido encontrado na seleção." };
+      return { success: false, error: "Nenhum dos escolhidos tem telefone válido com DDD." };
     }
 
     const results = await sendBulkMessages(recipients);
@@ -189,13 +190,13 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
     const failed = results.length - sent;
 
     if (sent === 0 && failed > 0) {
-      const firstError = results.find((r) => r.error)?.error || "Erro desconhecido na API do WhatsApp.";
-      return { success: false, error: `Falha no envio: ${firstError}`, results };
+      return { success: false, error: `Nenhuma mensagem foi enviada. ${sendFailureReason(results)}`, results };
     }
 
+    // Só quem teve o envio confirmado passa a constar como "já recebeu"
     if (sent > 0) {
       await prisma.guest.updateMany({
-        where: { id: { in: guests.map((g) => g.id) }, weddingId },
+        where: { id: { in: guestIdsReached(guests, results) }, weddingId },
         data: { hasReceivedMessage: true },
       });
     }
@@ -205,11 +206,11 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
       sent,
       failed,
       results,
-      message: `${sent} mensagem(ns) enviada(s) com sucesso.${failed > 0 ? ` (${failed} falha(s))` : ""}`,
+      message: sendSummary(sent, failed, "mensagem"),
     };
   } catch (error) {
     console.error("[sendTemplateToGuests Error]:", error);
-    return { success: false, error: `Falha geral: ${(error instanceof Error ? error.message : undefined) || String(error)}` };
+    return { success: false, error: "Não deu para enviar agora. Nada foi marcado como enviado. Tentem de novo." };
   }
 }
 
@@ -226,6 +227,6 @@ export async function markGuestAsSent(guestId: string) {
     revalidatePath("/(admin)/mensagens", "page");
     return { success: true };
   } catch (e) {
-    return { success: false, error: (e instanceof Error ? e.message : undefined) || "Erro ao atualizar status." };
+    return { success: false, error: (e instanceof Error ? e.message : undefined) || "Não deu para atualizar o convidado. Tente de novo." };
   }
 }
