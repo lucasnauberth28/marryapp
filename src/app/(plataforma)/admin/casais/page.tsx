@@ -3,6 +3,7 @@ import { Download, Heart, Search } from "lucide-react";
 import { PageHeader } from "@/components/plataforma/page-header";
 import { TabsNav } from "@/components/plataforma/tabs-nav";
 import { FilterBar } from "@/components/plataforma/filter-bar";
+import { ExportButton } from "@/components/plataforma/export-button";
 import { Pagination } from "@/components/plataforma/pagination";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
@@ -77,9 +78,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
   const subtitle = hasAnyWedding ? `${plural(counts.total, "casamento", "casamentos")}, ${formatInt(counts.paid)} com plano pago.` : "Todos os casamentos do Aceito, com plano, convidados e última atividade.";
 
   const exportButton = hasAnyWedding && result.total > 0 ? (
-    <a href={exportHref} className={`${btn.secondary} gap-2`}>
+    <ExportButton href={exportHref} fallbackName="casais.csv" className="gap-2">
       <Download className="size-4" aria-hidden="true" /> Exportar CSV
-    </a>
+    </ExportButton>
   ) : (
     <span aria-disabled="true" className={`${btn.secondary} gap-2 opacity-50`}>
       <Download className="size-4" aria-hidden="true" /> Exportar CSV

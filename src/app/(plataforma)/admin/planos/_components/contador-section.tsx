@@ -1,14 +1,12 @@
-import { Download, ReceiptText } from "lucide-react";
-import { btn } from "@/components/landing/styles";
+import { ReceiptText } from "lucide-react";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { Panel } from "@/components/plataforma/panel";
 import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { StatusChip } from "@/components/plataforma/status-chip";
-import { NativeSelect } from "@/components/ui/select";
 import { formatBRL, formatDayMonth, plural } from "@/lib/platform/format";
 import { accountantMonthOptions, monthTitle } from "@/lib/platform/payments";
 import type { PendingInvoice } from "@/lib/platform/queries/receita";
-import { cn } from "@/lib/utils";
+import { ContadorExport } from "./contador-export";
 import { InvoiceButton } from "./invoice-button";
 
 /** Exportar para o contador (planilha do mês) e notas fiscais pendentes. */
@@ -16,20 +14,7 @@ export function ContadorSection({ month, now, invoices, pendingCount }: { month:
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <Panel title="Exportar para o contador">
-        {/* Formulário GET: o navegador baixa a planilha direto da rota protegida */}
-        <form method="get" action="/api/admin/contador" className="flex flex-col gap-4">
-          <NativeSelect label="Período" alwaysFloat name="mes" defaultValue={month}>
-            {accountantMonthOptions(now).map((key) => (
-              <option key={key} value={key}>
-                {monthTitle(key)}
-              </option>
-            ))}
-          </NativeSelect>
-          <p className="text-sm text-tinta-suave">Inclui data, quem pagou, plano, valor, forma de pagamento, situação (pago ou estornado) e o número da nota. Sem CPF, CNPJ nem a taxa do Mercado Pago.</p>
-          <button type="submit" className={cn(btn.primary, "self-start")}>
-            <Download className="size-4" aria-hidden="true" /> Baixar a planilha
-          </button>
-        </form>
+        <ContadorExport month={month} options={accountantMonthOptions(now).map((key) => ({ value: key, label: monthTitle(key) }))} />
       </Panel>
 
       <Panel

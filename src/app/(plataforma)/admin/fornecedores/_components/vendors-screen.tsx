@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Check, Clock, Download, Flag, Pencil, ShieldCheck, Star, Store, Ban } from "lucide-react";
 import { btn } from "@/components/landing/styles";
 import { EmptyState } from "@/components/plataforma/empty-state";
+import { ExportButton } from "@/components/plataforma/export-button";
 import { FilterBar } from "@/components/plataforma/filter-bar";
 import { PageHeader } from "@/components/plataforma/page-header";
 import { Pagination } from "@/components/plataforma/pagination";
@@ -118,9 +119,9 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
               <Link href="/admin/fornecedores/curadoria" className={btn.secondary}>
                 <ShieldCheck className="size-4" aria-hidden="true" /> Curadoria
               </Link>
-              <a href={buildHref("/api/admin/fornecedores.csv", filterParams)} className={btn.secondary}>
+              <ExportButton href={buildHref("/api/admin/fornecedores.csv", filterParams)} fallbackName="fornecedores.csv">
                 <Download className="size-4" aria-hidden="true" /> Exportar CSV
-              </a>
+              </ExportButton>
             </>
           ) : (
             <Link href="/admin/fornecedores" className={btn.secondary}>
