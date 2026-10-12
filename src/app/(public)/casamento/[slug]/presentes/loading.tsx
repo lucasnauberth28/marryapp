@@ -1,8 +1,10 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingRegion, SkeletonImage } from "@/components/skeletons";
 
+// Espelha a lista de presentes do casal: título, busca e a grade de fotos (proporção fixa, sem pulo de layout).
 export default function PresentesPublicLoading() {
   return (
-    <div className="min-h-dvh bg-linho">
+    <LoadingRegion label="a lista de presentes" className="min-h-dvh bg-linho">
       <div className="border-b border-linha px-4 py-4 sm:px-6">
         <div className="mx-auto flex max-w-[1120px] items-center justify-between">
           <Skeleton className="h-7 w-16 rounded-md" />
@@ -15,10 +17,11 @@ export default function PresentesPublicLoading() {
           <Skeleton className="h-12 w-3/4 rounded-xl" />
           <Skeleton className="h-5 w-full rounded-md" />
         </div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 lg:grid-cols-4">
+        <Skeleton className="h-11 w-full rounded-xl sm:w-[360px]" />
+        <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 md:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="space-y-2">
-              <Skeleton className="aspect-square w-full rounded-[16px]" />
+              <SkeletonImage ratio={1} className="rounded-[16px]" />
               <Skeleton className="h-5 w-3/4 rounded-md" />
               <Skeleton className="h-4 w-1/3 rounded-md" />
               <Skeleton className="h-11 w-full rounded-[12px] sm:h-9" />
@@ -26,6 +29,6 @@ export default function PresentesPublicLoading() {
           ))}
         </div>
       </div>
-    </div>
+    </LoadingRegion>
   );
 }
