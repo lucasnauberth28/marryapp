@@ -7,6 +7,7 @@ import { btn } from "@/components/landing/styles";
 
 /**
  * Cartão de sugestão da Liz: uma dica por regras (sem IA, sem chat) com uma ação principal.
+ * O texto segue "situação observada + motivo + ação": a Liz orienta, quem decide e executa é o casal.
  * "Agora não" esconde a dica por alguns dias, lembrando no navegador (localStorage).
  * Quem usa decide a dica com dados reais do casamento e passa `id` estável por tipo de dica.
  */
@@ -44,9 +45,9 @@ function adiar(id: string) {
 }
 
 interface MadrinhaCardProps {
-  /** Id estável da dica (ex.: "rsvp-pendentes"): é o que "Agora não" lembra. */
+  /** Id estável da dica (ex.: "rsvp-sem-resposta"): é o que "Agora não" lembra. */
   id: string;
-  /** O texto da sugestão, já com os números reais. */
+  /** O texto da sugestão, já com os números reais (situação e motivo). */
   text: ReactNode;
   actionLabel: string;
   actionHref: string;
@@ -74,9 +75,7 @@ export function MadrinhaCard({ id, text, actionLabel, actionHref, className = ""
         <Flower2 className="h-5 w-5" strokeWidth={1.75} />
       </span>
       <div className="min-w-0">
-        <p className="text-sm font-semibold leading-5 text-tinta">
-          Liz <span className="hidden font-normal text-tinta-suave sm:inline">· sua assistente</span>
-        </p>
+        <p className="text-sm font-semibold leading-5 text-tinta">A Liz sugere o próximo passo</p>
         <p className="mt-1 text-[15px] leading-6 text-tinta sm:text-base">{text}</p>
       </div>
       <div className="col-start-2 flex flex-wrap gap-2">

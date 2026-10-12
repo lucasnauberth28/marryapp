@@ -6,7 +6,7 @@ import { TasksBoard, type Filter } from "@/components/tarefas/tasks-board";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
 import { getWeddingIdentity } from "@/lib/wedding";
 import { daysUntil } from "@/lib/wedding-format";
-import { weddingHasModule } from "@/lib/wedding-plan";
+import { RSVP_PENDING_ACTION, RSVP_PENDING_HREF, rsvpPendingTipText } from "@/lib/liz-tips";
 import { notGiftOnlyWhere } from "@/lib/guest-origin";
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ const SP = "America/Sao_Paulo";
 const FILTROS: Record<string, Filter> = { abertas: "abertas", atrasadas: "atrasadas", concluidas: "concluidas" };
 
 export default async function PendenciasPage({ searchParams }: { searchParams: Promise<{ filtro?: string }> }) {
-  const { session, weddingId } = await requireWeddingPage("/pendencias");
+  const { weddingId } = await requireWeddingPage("/pendencias");
   const { filtro } = await searchParams;
 
   const [{ data: tasks, success }, identity] = await Promise.all([getTasks(), getWeddingIdentity()]);
@@ -43,21 +43,28 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
     suggestion = (
       <MadrinhaCard
         id="tarefas-atrasadas"
-        text={`${overdue === 1 ? "Uma tarefa passou" : `${overdue} tarefas passaram`} do prazo. Vale rever as datas ou marcar o que já foi feito.`}
+        text={`${overdue === 1 ? "Uma tarefa passou do prazo" : `${overdue} tarefas passaram do prazo`}. Rever as datas ou marcar o que já foi feito mantém a lista fiel ao que falta.`}
         actionLabel={overdue === 1 ? "Ver a atrasada" : `Ver as ${overdue} atrasadas`}
         actionHref="/pendencias?filtro=atrasadas"
       />
     );
   } else {
-    const pending = await prisma.guest.count({ where: { weddingId, rsvpStatus: "PENDING", ...notGiftOnlyWhere } });
+    const [pending, settings] = await Promise.all([
+      prisma.guest.count({ where: { weddingId, rsvpStatus: "PENDING", ...notGiftOnlyWhere } }),
+      prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } }),
+    ]);
     if (pending > 0) {
-      const canMessage = await weddingHasModule({ weddingId, session }, "whatsapp");
       suggestion = (
         <MadrinhaCard
-          id="rsvp-pendentes"
-          text={`${pending === 1 ? "Um convidado ainda não respondeu" : `${pending} convidados ainda não responderam`}.${canMessage ? " Quer preparar um lembrete?" : " Dá uma olhada em quem falta."}`}
-          actionLabel={canMessage ? "Preparar lembrete" : "Ver quem falta"}
-          actionHref={canMessage ? "/mensagens" : "/convidados"}
+          id="rsvp-sem-resposta"
+          text={rsvpPendingTipText({
+            pending,
+            deadlineKey: settings?.rsvpDeadline ? settings.rsvpDeadline.toISOString().slice(0, 10) : null,
+            todayKey,
+            weddingDays: daysLeft !== null && daysLeft >= 0 ? daysLeft : null,
+          })}
+          actionLabel={RSVP_PENDING_ACTION}
+          actionHref={RSVP_PENDING_HREF}
         />
       );
     }

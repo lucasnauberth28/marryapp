@@ -22,6 +22,8 @@ interface GuestsClientProps {
   deadlineLabel: string | null;
   /** O plano do casal inclui o WhatsApp: só então o atalho para lembrar quem não respondeu aparece. */
   canRemind: boolean;
+  /** Filtro de resposta que a lista abre já aplicado (padrão: todos). */
+  initialFilter?: Filter;
 }
 
 type Filter = "all" | "CONFIRMED" | "PENDING" | "DECLINED";
@@ -65,19 +67,21 @@ function LinkBadge({ guest }: { guest: Guest }) {
   return null;
 }
 
-export function GuestsClient({ initialGuests, deadlineLabel, canRemind }: GuestsClientProps) {
+export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialFilter = "all" }: GuestsClientProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [, startTransition] = useTransition();
 
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<Filter>(initialFilter);
   const [group, setGroup] = useState("");
   const [query, setQuery] = useState("");
   const [visible, setVisible] = useState(PAGE_SIZE);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toRemove, setToRemove] = useState<Guest | null>(null);
+  // Convidado cuja remoção está em andamento: a linha fica esmaecida e sem clique até a lista atualizar
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   const counts = useMemo(() => {
     const c = { all: initialGuests.length, CONFIRMED: 0, PENDING: 0, DECLINED: 0 };
@@ -129,6 +133,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind }: Guests
 
   function remove(id: string) {
     const toastId = toast.loading("Removendo convidado...");
+    setRemovingId(id);
     startTransition(async () => {
       const res = await deleteGuest(id);
       if (res.success) {
@@ -136,6 +141,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind }: Guests
       } else {
         toast.error(res.error || "Não deu para remover agora. Tente de novo.", { id: toastId, duration: 6000 });
       }
+      setRemovingId(null);
     });
   }
 
@@ -151,7 +157,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind }: Guests
       <PageHeader
         eyebrow="Convidados"
         title="Lista de convidados"
-        description={deadlineLabel ? `Prazo para confirmar: ${deadlineLabel}` : "Quem vocês convidam, quantos lugares cada um tem e quem já respondeu."}
+        description={deadlineLabel ? `Prazo de confirmação definido por vocês: ${deadlineLabel}.` : "Quem vocês convidam, quantos lugares cada um tem e quem já respondeu."}
         actions={
           <>
             <button type="button" onClick={() => setImportOpen(true)} className={btn.secondary}>
@@ -177,13 +183,13 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind }: Guests
           <span className="grid size-12 place-items-center rounded-full bg-ameixa-suave text-ameixa">
             <Users className="size-6" aria-hidden="true" />
           </span>
-          <h2 className="font-display text-[26px] font-medium leading-8 text-tinta">Ainda não tem ninguém aqui</h2>
+          <h2 className="font-display text-[26px] font-medium leading-8 text-tinta">A lista de vocês ainda está vazia</h2>
           <p className="max-w-md text-tinta-suave">
-            Adicionem os convidados um a um ou tragam a lista de uma planilha (CSV). Cada um recebe o convite e confirma a presença pelo link, sem criar conta.
+            Adicionem o primeiro convidado para começar a organizar as confirmações. Se a lista já existe, importem uma planilha (CSV). Os convidados respondem pelo link do convite, sem criar conta.
           </p>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
             <button type="button" onClick={openAdd} className={btn.primary}>
-              Adicionar o primeiro convidado
+              Adicionar convidado
             </button>
             <button type="button" onClick={() => setImportOpen(true)} className={btn.secondary}>
               <Upload className="size-4" aria-hidden="true" />
@@ -249,12 +255,12 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind }: Guests
           {canRemind && filter === "PENDING" && counts.PENDING > 0 && (
             <Link href="/mensagens" className={`${btn.secondary} w-full md:w-fit`}>
               <MessageCircle className="size-4" aria-hidden="true" />
-              Lembrar os {counts.PENDING} no WhatsApp
+              Abrir mensagens para os {counts.PENDING} sem resposta
             </Link>
           )}
 
           {filtered.length === 0 ? (
-            <div className={`${card} px-6 py-12 text-center text-tinta-suave`}>Ninguém com esta busca. Tente outro nome, filtro ou grupo.</div>
+            <div className={`${card} px-6 py-12 text-center text-tinta-suave`}>Nenhum convidado encontrado. Tentem outro nome, filtro ou grupo.</div>
           ) : (
             <>
               {/* Computador: tabela com linhas de 56px */}
@@ -274,7 +280,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind }: Guests
                   </thead>
                   <tbody>
                     {shown.map((g) => (
-                      <tr key={g.id} className="border-b border-linha last:border-b-0 hover:bg-ameixa-suave/40">
+                      <tr key={g.id} aria-busy={removingId === g.id || undefined} className={`border-b border-linha last:border-b-0 hover:bg-ameixa-suave/40 ${removingId === g.id ? "pointer-events-none opacity-50" : ""}`}>
                         <td className="px-4 py-3">
                           <button type="button" onClick={() => openEdit(g)} className="block cursor-pointer rounded text-left font-semibold text-tinta hover:text-ameixa">
                             {g.name}
@@ -309,12 +315,13 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind }: Guests
               {/* Celular: um cartão por convidado, o toque abre a edição */}
               <ul className="flex flex-col gap-2 md:hidden">
                 {shown.map((g) => (
-                  <li key={g.id}>
+                  <li key={g.id} aria-busy={removingId === g.id || undefined}>
                     <button
                       type="button"
                       onClick={() => openEdit(g)}
+                      disabled={removingId === g.id}
                       aria-label={`Editar ${g.name}`}
-                      className={`${card} flex min-h-14 w-full cursor-pointer items-center gap-3 px-3.5 py-3 text-left`}
+                      className={`${card} flex min-h-14 w-full cursor-pointer items-center gap-3 px-3.5 py-3 text-left disabled:opacity-50`}
                     >
                       <span className="grid size-10 shrink-0 place-items-center rounded-full bg-areia text-sm font-semibold text-tinta" aria-hidden="true">
                         {initials(g.name)}

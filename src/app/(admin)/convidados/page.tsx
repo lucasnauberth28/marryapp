@@ -14,8 +14,13 @@ export const dynamic = "force-dynamic";
 
 const deadlineFormat = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
-export default async function ConvidadosPage() {
+// Filtros da lista que um link de fora pode abrir (ex.: a sugestão da Liz em "Ver convidados sem resposta")
+const RESPOSTAS = { "sem-resposta": "PENDING", confirmados: "CONFIRMED", "nao-vao": "DECLINED" } as const;
+
+export default async function ConvidadosPage({ searchParams }: { searchParams: Promise<{ resposta?: string }> }) {
   const { session, weddingId } = await requireWeddingPage("/convidados");
+  const { resposta } = await searchParams;
+  const initialFilter = RESPOSTAS[resposta as keyof typeof RESPOSTAS] ?? "all";
 
   // Só leitura: o prazo de confirmação definido em Configurações, se houver
   const [guests, settings, canRemind] = await Promise.all([
@@ -29,6 +34,7 @@ export default async function ConvidadosPage() {
       initialGuests={guests}
       deadlineLabel={settings?.rsvpDeadline ? deadlineFormat.format(settings.rsvpDeadline) : null}
       canRemind={canRemind}
+      initialFilter={initialFilter}
     />
   );
 }
