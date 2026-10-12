@@ -150,7 +150,7 @@ export function OnboardingFlow({
   return (
     <AuthShell
       photo={step === "pronto" ? SHELL_PHOTOS.pronto : SHELL_PHOTOS.boasVindas}
-      footnote="Tudo isso pode ser alterado depois, no editor do site."
+      footnote="Nomes, data e cor do site podem ser alterados depois, em Editar o site."
     >
       {step !== "pronto" ? <Progress current={index + 1} total={STEPS.length} /> : null}
 
@@ -159,8 +159,8 @@ export function OnboardingFlow({
           <ShellHeading
             ref={headingRef}
             overline="Vamos começar"
-            title={firstName ? `Boas-vindas, ${firstName}` : "Boas-vindas"}
-            text="Vamos preparar o casamento de vocês. Leva um minuto."
+            title="Vamos preparar o casamento de vocês."
+            text={`${firstName ? `Boas-vindas, ${firstName}. ` : ""}Primeiro, os nomes. Leva um minuto.`}
           />
           <form onSubmit={submitNames} noValidate className="flex flex-col gap-5">
             <Field id="onb-yourName" label="Seu nome" icon={User} error={errors.yourName}>
@@ -190,7 +190,7 @@ export function OnboardingFlow({
             ref={headingRef}
             overline="O grande dia"
             title="Quando e onde?"
-            text="A data entra na contagem regressiva do site. A cidade ajuda a encontrar fornecedores perto de vocês."
+            text="A data entra na contagem regressiva do site e do painel. A cidade é opcional."
           />
           <form onSubmit={submitDate} noValidate className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
@@ -239,7 +239,7 @@ export function OnboardingFlow({
 
       {step === "convidados" ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-          <ShellHeading ref={headingRef} overline="Convidados" title="Quantos convidados?" text="Uma estimativa já basta, para sugerir fornecedores e o orçamento. Dá para mudar depois." />
+          <ShellHeading ref={headingRef} overline="Convidados" title="Quantos convidados?" text="Uma estimativa já basta. A lista de convidados de verdade vocês montam depois no painel." />
           <div role="radiogroup" aria-label="Número de convidados" className="grid grid-cols-2 gap-3">
             {GUEST_RANGES.map((range) => {
               const selected = guestEstimate === range;
@@ -319,7 +319,7 @@ export function OnboardingFlow({
               {isPending ? (
                 <>
                   <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-                  Preparando tudo…
+                  Preparando o site…
                 </>
               ) : (
                 <>
@@ -335,10 +335,10 @@ export function OnboardingFlow({
       {step === "pronto" && result ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
           <Seal label="Casamento criado" className="size-24 [&>span]:text-[54px]" />
-          <ShellHeading ref={headingRef} title="Tudo pronto" text={`O casamento de ${result.coupleNames} já tem endereço no Aceito.`} />
+          <ShellHeading ref={headingRef} title="Tudo pronto" text={`O site de ${result.coupleNames} já tem um endereço no Aceito.`} />
 
           <div className="flex flex-col gap-2 rounded-[16px] border border-linha bg-papel p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">Endereço do site</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">Endereço do site no Aceito</p>
             <div className="flex items-center gap-2">
               <Globe aria-hidden="true" className="size-[18px] shrink-0 text-ameixa" strokeWidth={1.75} />
               <a href={sitePath} target="_blank" rel="noopener" className="min-w-0 flex-1 break-all font-semibold text-tinta underline decoration-linha underline-offset-4 hover:decoration-ameixa">
@@ -350,15 +350,15 @@ export function OnboardingFlow({
               </button>
             </div>
             <p className="text-sm text-tinta-suave" aria-live="polite">
-              {copied ? "Endereço copiado." : "Compartilhem quando o site estiver do jeito de vocês."}
+              {copied ? "Link copiado." : "Compartilhem o endereço quando o site estiver do jeito de vocês."}
             </p>
           </div>
 
           <div className="flex flex-col gap-3">
             <p className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Primeiros passos</p>
-            <FirstStep href="/site-builder" icon={Palette} title="Personalizar o site" text="Fotos, história, local e horários." />
-            <FirstStep href="/convidados" icon={Users} title="Adicionar convidados" text="Cadastre a lista ou importe de uma planilha, e mande os convites." />
-            <FirstStep href="/dashboard" icon={LayoutDashboard} title="Ir para o painel" text="Tudo do casamento num lugar só." />
+            <FirstStep href="/site-builder" icon={Palette} title="Preparar o site" text="Fotos, história, local e horários." />
+            <FirstStep href="/convidados" icon={Users} title="Adicionar convidados" text="Cadastrem a lista ou importem uma planilha (CSV)." />
+            <FirstStep href="/dashboard" icon={LayoutDashboard} title="Ver o resumo do casamento" text="Confirmações, presentes e tarefas no painel." />
           </div>
         </section>
       ) : null}

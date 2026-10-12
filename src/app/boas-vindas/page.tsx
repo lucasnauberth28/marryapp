@@ -8,7 +8,7 @@ import { OnboardingFlow } from "./onboarding-flow";
 
 export const metadata: Metadata = {
   title: "Boas-vindas",
-  description: "Contem um pouco sobre o casamento para o Aceito preparar tudo.",
+  description: "Contem o básico do casamento para o Aceito preparar o endereço do site.",
   robots: { index: false, follow: false },
 };
 
