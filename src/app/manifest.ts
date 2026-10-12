@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "Aceito",
     short_name: "Aceito",
-    description: "Do convite ao grande dia, tudo num só sim.",
+    description: "Site do casamento, confirmações de presença e presentes em dinheiro.",
     lang: "pt-BR",
     start_url: "/login",
     scope: "/",

@@ -11,22 +11,22 @@ const LINKS: { title: string; items: { label: string; href: string }[] }[] = [
     items: [
       { label: "Como funciona", href: "/#como" },
       { label: "Planos", href: "/planos" },
-      { label: "Monte seu plano", href: "/monte-seu-plano" },
-      { label: "Criar meu casamento", href: "/cadastro" },
+      { label: "Montar o plano de vocês", href: "/monte-seu-plano" },
+      { label: "Criar conta grátis", href: "/cadastro?plano=basic" },
     ],
   },
   {
     title: "Fornecedores",
     items: [
       { label: "Encontrar fornecedores", href: "/fornecedores" },
-      { label: "Sou fornecedor", href: "/cadastro?plano=start" },
+      { label: "Você é fornecedor? Conheça o Aceito para empresas", href: "/planos#fornecedores" },
     ],
   },
   {
     title: "Conta",
     items: [
       { label: "Entrar", href: "/login" },
-      { label: "Dúvidas frequentes", href: "/#duvidas" },
+      { label: "Perguntas frequentes", href: "/#duvidas" },
     ],
   },
 ];
@@ -80,7 +80,7 @@ export function LandingFooter() {
               Privacidade
             </Link>
           </nav>
-          <p>Convidado? Você não precisa de conta: use o link do convite.</p>
+          <p>Foi convidado? Use o link enviado pelo casal. Você não precisa criar uma conta.</p>
         </div>
       </div>
     </footer>

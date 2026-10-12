@@ -13,8 +13,8 @@ type NavItem = { label: string; href: string; anchor?: boolean };
 
 const NAV: NavItem[] = [
   { label: "Como funciona", href: "/#como", anchor: true },
-  { label: "Para convidados", href: "/#convidados", anchor: true },
-  { label: "Fornecedores", href: "/fornecedores" },
+  { label: "Convidados", href: "/#convidados", anchor: true },
+  { label: "Encontrar fornecedores", href: "/fornecedores" },
   { label: "Planos", href: "/planos" },
 ];
 
@@ -139,8 +139,8 @@ export function LandingHeader() {
             <Link href="/login" className={cn(btn.quiet, "max-sm:min-h-11 max-sm:px-3 max-sm:text-sm")}>
               Entrar
             </Link>
-            <Link href="/cadastro" className={cn(btn.primary, "hidden md:inline-flex")}>
-              Criar meu casamento
+            <Link href="/cadastro?plano=basic" className={cn(btn.primary, "hidden md:inline-flex")}>
+              Criar conta grátis
               <ArrowRight aria-hidden="true" className={btnArrow} />
             </Link>
             <button
@@ -225,9 +225,9 @@ export function LandingHeader() {
           )}
           style={{ transitionDelay: open ? "320ms" : "0ms" }}
         >
-          <p className="mb-2 text-sm text-tinta-suave">Recebeu um convite? Use o link que os noivos mandaram.</p>
-          <Link href="/cadastro" onClick={close} className={cn(btn.primary, btn.block)}>
-            Criar meu casamento
+          <p className="mb-2 text-sm text-tinta-suave">Foi convidado para um casamento? Use o link enviado pelo casal. Você não precisa criar uma conta.</p>
+          <Link href="/cadastro?plano=basic" onClick={close} className={cn(btn.primary, btn.block)}>
+            Criar conta grátis
           </Link>
           <Link href="/login" onClick={close} className={cn(btn.secondary, btn.block)}>
             Entrar

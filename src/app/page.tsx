@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Check, Flower2, Gift, Globe, Heart, MapPin, MessageCircle, Store, Users } from "lucide-react";
+import { ArrowRight, Check, Copy, Flower2, Gift, Globe, Heart, LayoutGrid, MapPin, MessageCircle, NotebookPen, QrCode, Store, Users } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import { Parallax } from "@/components/motion/parallax";
 import { ScrollProgress } from "@/components/motion/scroll-progress";
 import { SmoothScroll } from "@/components/motion/smooth-scroll";
 import { AnchorLink } from "@/components/landing/anchor-link";
+import { CouplePlanCard } from "@/components/landing/couple-plan-card";
 import { FaqSection } from "@/components/landing/faq-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
@@ -15,16 +16,17 @@ import { SplitWords } from "@/components/landing/split-heading";
 import { btn, btnArrow, container, h2, lead, overline } from "@/components/landing/styles";
 import type { Catalog } from "@/lib/catalog";
 import { getCatalog } from "@/lib/catalog-server";
+import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
 import { cn } from "@/lib/utils";
-import { CountUp, RsvpDemo, ScrollDrift, VendorStrip } from "./home-landing-client";
+import { CountUp, RsvpDemo, VendorStrip } from "./home-landing-client";
 
 // Os preços vêm do catálogo da administração: a página se refaz sozinha a cada 5 minutos e na hora que um preço muda.
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: { absolute: "Aceito · Do convite ao grande dia, tudo num só sim" },
+  title: { absolute: "Aceito | Site de casamento, convidados e presentes em dinheiro" },
   description:
-    "Site do casal, confirmações pelo WhatsApp, lista de presentes em Pix e os fornecedores certos, num lugar só. Comecem de graça.",
+    "Criem o site do casamento, acompanhem confirmações de presença e recebam presentes em dinheiro com o Aceito. Conheçam os planos e as taxas.",
 };
 
 const IMG = "/images/aceito";
@@ -49,7 +51,7 @@ function ArchGlyph({ className }: { className?: string }) {
 }
 
 /* ============================================================================================ */
-/* Hero                                                                                         */
+/* 1. Primeira tela: o que é o Aceito e qual é a primeira ação                                   */
 /* ============================================================================================ */
 
 function Hero() {
@@ -58,23 +60,23 @@ function Hero() {
       <div className={cn(container, "grid items-center gap-14 pb-16 pt-8 sm:pt-14 lg:grid-cols-12 lg:gap-8 lg:pb-28 lg:pt-16")}>
         <div className="flex flex-col gap-6 lg:col-span-7 lg:pr-6">
           <Reveal variant="fade">
-            <Overline>Plataforma de casamento</Overline>
+            <Overline>Site e organização do casamento</Overline>
           </Reveal>
           <h1
             id="hero-titulo"
-            className="font-display text-[44px] font-normal leading-[48px] tracking-[-0.02em] text-tinta sm:text-[62px] sm:leading-[66px] lg:text-[clamp(64px,6vw,86px)] lg:leading-[1.02]"
+            className="font-display text-[40px] font-normal leading-[46px] tracking-[-0.02em] text-tinta sm:text-[56px] sm:leading-[62px] lg:text-[clamp(56px,5.2vw,76px)] lg:leading-[1.05]"
           >
-            <SplitWords parts={["Do convite ao grande dia, tudo num só ", { em: "sim" }, "."]} baseDelay={120} step={60} />
+            <SplitWords parts={["Criem o site do casamento e acompanhem quem vai à ", { em: "festa" }, "."]} baseDelay={120} step={60} />
           </h1>
           <Reveal delay={650}>
-            <p className={cn(lead, "max-w-[52ch] lg:text-xl lg:leading-[30px]")}>
-              Site do casal, confirmações pelo WhatsApp, lista de presentes em Pix e os fornecedores certos, num lugar só. Vocês
-              cuidam do casamento; o Aceito cuida da planilha.
+            <p className={cn(lead, "max-w-[54ch] lg:text-xl lg:leading-[30px]")}>
+              Com o Aceito, vocês reúnem as informações do casamento, compartilham o convite e acompanham as confirmações de
+              presença em um painel. Também podem receber presentes em dinheiro por Pix ou cartão.
             </p>
           </Reveal>
           <Reveal delay={780} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
             <Link href="/cadastro?plano=basic" className={btn.primary}>
-              Criar meu casamento grátis
+              Criar conta grátis
               <ArrowRight aria-hidden="true" className={btnArrow} />
             </Link>
             <AnchorLink href="/#como" className={btn.secondary}>
@@ -82,7 +84,13 @@ function Hero() {
             </AnchorLink>
           </Reveal>
           <Reveal delay={880} variant="fade">
-            <p className="text-sm text-tinta-suave">Sem cartão de crédito. O plano Básico é gratuito para sempre.</p>
+            <p className="max-w-[54ch] text-sm leading-5 text-tinta-suave">
+              Comecem pelo plano Básico, sem cartão de crédito e sem mensalidade. Nesse plano, há uma taxa de {GIFT_FEE_LABEL} por presente
+              recebido.{" "}
+              <Link href="/planos#presentes" className="font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 hover:decoration-ameixa">
+                Ver taxas e condições
+              </Link>
+            </p>
           </Reveal>
         </div>
 
@@ -114,15 +122,16 @@ function Hero() {
                 delay={1000}
                 className="w-[264px] rounded-[16px] border border-linha bg-papel p-4 shadow-[var(--shadow-aceito-2)] sm:w-[300px] sm:p-5"
               >
+                <p className="mb-3 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Exemplo do painel</p>
                 <p className="flex items-center gap-3 whitespace-nowrap text-[15px] font-semibold leading-5 text-tinta">
                   <Seal />
-                  Mariana aceitou o convite
+                  Mariana confirmou presença
                 </p>
                 <div className="mt-4 h-2 overflow-hidden rounded-full bg-areia">
                   <div className="h-full w-[61%] origin-left rounded-full bg-sucesso transition-transform delay-[1300ms] duration-[1600ms] ease-[var(--ease-aceito)] [.js_&]:scale-x-0 [.js_[data-revealed]_&]:scale-x-100" />
                 </div>
                 <p className="mt-2 text-sm text-tinta-suave">
-                  <CountUp to={86} delay={1300} /> de 140 confirmados
+                  <CountUp to={86} delay={1300} /> de 140 convidados confirmaram
                 </p>
               </Reveal>
             </Parallax>
@@ -134,75 +143,99 @@ function Hero() {
 }
 
 /* ============================================================================================ */
-/* Faixa de recursos que desliza com a rolagem                                                   */
+/* 2. As três funções principais                                                                */
 /* ============================================================================================ */
 
-const FEATURES = [
-  "Site do casal",
-  "Confirmações pelo WhatsApp",
-  "Lista de presentes em Pix",
-  "QR Code na portaria",
-  "Mural de recados",
-  "Fornecedores com curadoria",
-  "Sugestões da Liz",
+const FUNCTIONS = [
+  {
+    icon: Globe,
+    title: "Site do casamento",
+    text: "Reúnam fotos, local, data, horário e orientações para os convidados em um endereço para compartilhar.",
+  },
+  {
+    icon: Users,
+    title: "Confirmações de presença",
+    text: "Acompanhem quem vai ao casamento e quem ainda não respondeu. Os convidados confirmam pelo link, sem criar conta.",
+  },
+  {
+    icon: Gift,
+    title: "Presentes em dinheiro",
+    text: "Recebam presentes por Pix ou cartão e acompanhem os valores recebidos. As taxas dependem do plano e da forma de pagamento.",
+    link: { href: "/planos#presentes", label: "Ver taxas e condições" },
+  },
 ];
 
-function FeatureBand() {
+function Functions() {
   return (
-    <section aria-label="O que vem no Aceito" className="overflow-hidden border-y border-linha py-5 sm:py-7">
-      <ScrollDrift distance={360}>
-        <ul className="flex w-max items-center gap-7 whitespace-nowrap pl-4 font-display text-2xl leading-8 text-tinta sm:gap-10 sm:pl-6 sm:text-[30px] sm:leading-9">
-          {[...FEATURES, ...FEATURES].map((f, i) => (
-            <li key={`${f}-${i}`} aria-hidden={i >= FEATURES.length || undefined} className="flex items-center gap-7 sm:gap-10">
-              {f}
-              <ArchGlyph className="text-champanhe" />
-            </li>
+    <section id="funcoes" aria-labelledby="funcoes-titulo" className="border-y border-linha bg-papel py-16 sm:py-20 lg:py-24">
+      <div className={container}>
+        <Reveal className="max-w-[640px]">
+          <h2 id="funcoes-titulo" className={h2}>
+            O que vocês podem fazer com o Aceito
+          </h2>
+        </Reveal>
+        <ul className="mt-10 grid gap-6 md:grid-cols-3 lg:mt-14 lg:gap-8">
+          {FUNCTIONS.map(({ icon: Icon, title, text, link }, i) => (
+            <Reveal as="li" key={title} delay={i * 100} className="flex flex-col gap-3 border-t border-linha-forte pt-6">
+              <span className="grid size-12 place-items-center rounded-full bg-ameixa-suave text-ameixa">
+                <Icon aria-hidden="true" className="size-6" strokeWidth={1.75} />
+              </span>
+              <h3 className="mt-2 text-xl font-semibold leading-7 text-tinta">{title}</h3>
+              <p className="text-base leading-[26px] text-tinta-suave">{text}</p>
+              {link ? (
+                <Link
+                  href={link.href}
+                  className="mt-1 w-fit font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 transition-colors hover:decoration-ameixa"
+                >
+                  {link.label}
+                </Link>
+              ) : null}
+            </Reveal>
           ))}
         </ul>
-      </ScrollDrift>
+      </div>
     </section>
   );
 }
 
 /* ============================================================================================ */
-/* Como funciona                                                                                */
+/* 3. Como começar                                                                              */
 /* ============================================================================================ */
 
 const STEPS = [
   {
-    title: "Montem o site de vocês",
-    text: "Escolham as fotos, a história e a cor. A prévia muda enquanto vocês editam, no celular e no computador.",
+    title: "Criem a conta e preparem o site",
+    text: "Adicionem as informações do casamento e confiram como os convidados vão vê-las.",
     img: "img-04-cerimonia.webp",
     alt: "Corredor de cerimônia ao ar livre com pétalas e cadeiras de madeira",
     chip: (
       <>
-        <Globe aria-hidden="true" className="size-4 text-ameixa" strokeWidth={2} />
-        Site publicado
-        <Check aria-hidden="true" className="ml-auto size-4 text-sucesso" strokeWidth={2.25} />
+        <Globe aria-hidden="true" className="size-4 shrink-0 text-ameixa" strokeWidth={2} />
+        <span className="min-w-0 truncate">Exemplo: /casamento/ana-e-rafael</span>
       </>
     ),
   },
   {
-    title: "Convidem pelo WhatsApp",
-    text: "Cada convidado recebe um link, digita o próprio WhatsApp e responde em dois toques. Sem cadastro, sem senha.",
+    title: "Compartilhem o convite",
+    text: "Enviem o link para os convidados. Eles respondem sem precisar criar uma conta no Aceito.",
     img: "img-14-fotografia-detalhes.webp",
     alt: "Convite em papel, alianças e sapatos da noiva sobre linho",
     chip: (
       <>
-        <MessageCircle aria-hidden="true" className="size-4 text-sucesso" strokeWidth={2} />
-        Convite enviado para 140 pessoas
+        <Copy aria-hidden="true" className="size-4 shrink-0 text-ameixa" strokeWidth={2} />
+        <span className="min-w-0 truncate">Exemplo: link do convite copiado</span>
       </>
     ),
   },
   {
-    title: "Acompanhem tudo num painel",
-    text: "Quem confirmou, quem falta, quanto entrou em presentes e o que vem a seguir, em uma tela.",
+    title: "Acompanhem as respostas",
+    text: "Confiram quem confirmou presença, quem não poderá ir e quem ainda não respondeu.",
     img: "img-05-recepcao.webp",
     alt: "Salão de recepção com mesas postas e luzes suspensas",
     chip: (
       <>
-        <Users aria-hidden="true" className="size-4 text-ameixa" strokeWidth={2} />
-        86 confirmados · 32 sem resposta
+        <Users aria-hidden="true" className="size-4 shrink-0 text-ameixa" strokeWidth={2} />
+        <span className="min-w-0 truncate">Exemplo: 86 confirmaram, 32 sem resposta</span>
       </>
     ),
   },
@@ -210,19 +243,14 @@ const STEPS = [
 
 function HowItWorks() {
   return (
-    <section id="como" aria-labelledby="como-titulo" className="border-b border-linha bg-papel py-16 sm:py-24 lg:py-28">
+    <section id="como" aria-labelledby="como-titulo" className="scroll-mt-16 border-b border-linha py-16 sm:py-24 lg:py-28">
       <div className={container}>
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
-          <Reveal className="flex max-w-[640px] flex-col gap-4">
-            <Overline>Como funciona</Overline>
-            <h2 id="como-titulo" className={h2}>
-              Três passos, e o resto fica leve.
-            </h2>
-          </Reveal>
-          <Reveal delay={120} className="max-w-[38ch]">
-            <p className={lead}>Comecem pelo site, convidem pelo WhatsApp e acompanhem tudo de um lugar só.</p>
-          </Reveal>
-        </div>
+        <Reveal className="flex max-w-[640px] flex-col gap-4">
+          <Overline>Como funciona</Overline>
+          <h2 id="como-titulo" className={h2}>
+            Como começar a usar o Aceito
+          </h2>
+        </Reveal>
 
         <ol className="mt-10 grid gap-12 md:mt-16 md:grid-cols-3 md:gap-6 lg:gap-8">
           {STEPS.map((step, i) => (
@@ -247,19 +275,103 @@ function HowItWorks() {
             </Reveal>
           ))}
         </ol>
+
+        <Reveal delay={150} className="mt-10 max-w-[70ch] border-l-2 border-champanhe pl-4 text-[15px] leading-6 text-tinta-suave">
+          <p>
+            <strong className="font-semibold text-tinta">Como o convite chega.</strong> No Básico, vocês compartilham o link por onde
+            preferirem. No Classic e no VIP, também podem enviar convites e lembretes pelo WhatsApp, direto do painel.
+          </p>
+        </Reveal>
       </div>
     </section>
   );
 }
 
 /* ============================================================================================ */
-/* O site do casal: momento de galeria                                                          */
+/* 4. Demonstração de convite e confirmação                                                     */
+/* ============================================================================================ */
+
+const GUEST_POINTS = [
+  "O convidado digita o próprio WhatsApp e vê só o convite dele.",
+  "Os lugares reservados contam com o próprio convidado: 2 lugares são ele e mais 1 acompanhante.",
+  "Restrição alimentar e acompanhantes são informadas na mesma resposta.",
+];
+
+function Guests() {
+  return (
+    <section id="convidados" aria-labelledby="convidados-titulo" className="scroll-mt-16 bg-areia/45 py-16 sm:py-24 lg:py-28">
+      <div className={cn(container, "grid gap-12 lg:grid-cols-12 lg:items-center lg:gap-10")}>
+        <div className="flex flex-col gap-5 lg:order-2 lg:col-span-6 lg:pl-10">
+          <Reveal className="flex flex-col gap-4">
+            <Overline>Para os convidados</Overline>
+            <h2 id="convidados-titulo" className={h2}>
+              Seus convidados confirmam presença pelo link
+            </h2>
+          </Reveal>
+          <Reveal delay={120}>
+            <p className={lead}>
+              O convidado abre o convite e informa se vai ao casamento. A resposta aparece na lista de vocês, sem que ele precise criar
+              uma conta.
+            </p>
+          </Reveal>
+          <ul className="mt-1 flex flex-col gap-3">
+            {GUEST_POINTS.map((point, i) => (
+              <Reveal as="li" key={point} delay={200 + i * 80} className="flex items-start gap-3 text-base leading-6 text-tinta">
+                <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-sucesso-suave text-sucesso">
+                  <Check aria-hidden="true" className="size-3.5" strokeWidth={2.5} />
+                </span>
+                {point}
+              </Reveal>
+            ))}
+          </ul>
+          <Reveal delay={480} className="flex gap-4 rounded-[16px] border border-linha bg-papel p-5">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ameixa-suave text-ameixa">
+              <QrCode aria-hidden="true" className="size-5" strokeWidth={1.75} />
+            </span>
+            <div className="flex flex-col gap-1">
+              <h3 className="text-base font-semibold leading-6 text-tinta">Entrada na festa com código QR</h3>
+              <p className="text-[15px] leading-6 text-tinta-suave">
+                Depois de confirmar, o convidado recebe um código QR. Na festa, quem recebe os convidados lê o código pela câmera do painel
+                e registra a chegada. O registro de entrada faz parte do Classic e do VIP.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+
+        <div className="relative lg:order-1 lg:col-span-6 lg:min-h-[640px]">
+          <div className="w-[70%] max-w-[340px] lg:absolute lg:left-0 lg:top-0 lg:w-[56%]">
+            <Parallax strength={40}>
+              <Reveal variant="arch" className="arch relative aspect-[3/4] overflow-hidden bg-areia">
+                <Image
+                  src={`${IMG}/img-22-album-brinde.webp`}
+                  alt="Convidados brindando com taças de espumante na festa"
+                  fill
+                  sizes="(min-width: 1024px) 330px, 70vw"
+                  className="object-cover"
+                />
+              </Reveal>
+            </Parallax>
+          </div>
+          <div className="relative -mt-32 flex justify-end sm:-mt-48 lg:absolute lg:bottom-0 lg:right-0 lg:mt-0">
+            <Reveal delay={200} className="w-full max-w-[380px]">
+              <RsvpDemo />
+            </Reveal>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================================================ */
+/* 5a. Detalhes do site                                                                         */
 /* ============================================================================================ */
 
 const SITE_POINTS = [
-  { icon: Heart, text: "Fotos e a história de como tudo começou" },
-  { icon: Gift, text: "Lista de presentes com Pix e cartão" },
-  { icon: MapPin, text: "Local, horário e guia de trajes" },
+  { icon: Heart, text: "Fotos e história do casal" },
+  { icon: MapPin, text: "Local, data e horário" },
+  { icon: NotebookPen, text: "Orientações sobre o traje" },
+  { icon: Gift, text: "Confirmação de presença e presentes em dinheiro, no mesmo endereço" },
 ];
 
 function CoupleSite() {
@@ -268,15 +380,15 @@ function CoupleSite() {
       <div className={cn(container, "grid gap-14 lg:grid-cols-12 lg:items-center lg:gap-10")}>
         <div className="flex flex-col gap-5 lg:col-span-5 lg:pr-8">
           <Reveal variant="fade">
-            <Overline>O site do casal</Overline>
+            <Overline>O site do casamento</Overline>
           </Reveal>
           <h2 id="site-titulo" className={h2}>
-            <SplitWords parts={["A história de vocês, contada com ", { em: "calma" }, "."]} step={55} />
+            As informações do casamento em um site para compartilhar
           </h2>
           <Reveal delay={200}>
             <p className={lead}>
-              Um endereço só para mandar a todos os convidados, com cara de papelaria fina: fotos, o local, o traje e a lista
-              de presentes.
+              Adicionem fotos, a história de vocês, local, horário e orientações sobre o traje. Os convidados encontram essas informações
+              pelo endereço do site.
             </p>
           </Reveal>
           <ul className="mt-2 flex flex-col border-t border-linha">
@@ -289,6 +401,12 @@ function CoupleSite() {
               </Reveal>
             ))}
           </ul>
+          <Reveal delay={600}>
+            <p className="rounded-[12px] border border-linha bg-papel px-4 py-3 text-[15px] leading-6 text-tinta-suave">
+              <span className="block text-xs font-semibold uppercase leading-4 tracking-[0.08em]">Exemplo de endereço no Aceito</span>
+              <span className="break-all font-semibold text-tinta">meuaceito.com.br/casamento/ana-e-rafael</span>
+            </p>
+          </Reveal>
         </div>
 
         <div className="grid grid-cols-12 gap-3 sm:gap-6 lg:col-span-7">
@@ -336,74 +454,89 @@ function CoupleSite() {
 }
 
 /* ============================================================================================ */
-/* Para os convidados                                                                           */
+/* 5b. Detalhes dos presentes                                                                   */
 /* ============================================================================================ */
 
-const GUEST_POINTS = [
-  "Lembrete pelo WhatsApp para quem ainda não respondeu, em um toque",
-  "Restrições alimentares e acompanhantes no mesmo passo",
-  "QR Code de entrada no dia, conferido na portaria",
+const GIFT_EXAMPLES = [
+  { title: "Jantar da lua de mel", value: "R$ 350" },
+  { title: "Entrada da geladeira", value: "R$ 500" },
+  { title: "Passeio de barco", value: "R$ 220" },
 ];
 
-function Guests() {
+function Gifts() {
   return (
-    <section id="convidados" aria-labelledby="convidados-titulo" className="border-t border-linha bg-areia/45 py-16 sm:py-24 lg:py-28">
+    <section id="presentes" aria-labelledby="presentes-titulo" className="scroll-mt-16 border-t border-linha bg-papel py-16 sm:py-24 lg:py-28">
       <div className={cn(container, "grid gap-12 lg:grid-cols-12 lg:items-center lg:gap-10")}>
-        <div className="flex flex-col gap-5 lg:order-2 lg:col-span-6 lg:pl-10">
-          <Reveal className="flex flex-col gap-4">
-            <Overline>Para os convidados</Overline>
-            <h2 id="convidados-titulo" className={h2}>
-              O convite que se responde em dois toques.
-            </h2>
+        <div className="flex flex-col gap-5 lg:col-span-6 lg:pr-8">
+          <Reveal variant="fade">
+            <Overline>Presentes</Overline>
           </Reveal>
-          <Reveal delay={120}>
+          <h2 id="presentes-titulo" className={h2}>
+            Recebam presentes em dinheiro
+          </h2>
+          <Reveal delay={150}>
             <p className={lead}>
-              O convidado digita o próprio WhatsApp, vê só o convite dele, com os lugares que vocês reservaram, e responde.
-              Vocês recebem a confirmação na hora, e ele guarda o ingresso com QR Code para o dia.
+              Os convidados podem presentear vocês por Pix ou cartão. Vocês acompanham os valores pelo Aceito e consultam as condições do
+              plano.
             </p>
           </Reveal>
-          <ul className="mt-1 flex flex-col gap-3">
-            {GUEST_POINTS.map((point, i) => (
-              <Reveal as="li" key={point} delay={200 + i * 80} className="flex items-start gap-3 text-base leading-6 text-tinta">
-                <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-full bg-sucesso-suave text-sucesso">
-                  <Check aria-hidden="true" className="size-3.5" strokeWidth={2.5} />
-                </span>
-                {point}
-              </Reveal>
-            ))}
+          <ul className="mt-1 flex flex-col border-t border-linha text-base leading-6">
+            <li className="border-b border-linha py-3.5">
+              <strong className="font-semibold text-tinta">Pix:</strong>{" "}
+              <span className="text-tinta-suave">quem presenteia paga o valor do item, sem acréscimo.</span>
+            </li>
+            <li className="border-b border-linha py-3.5">
+              <strong className="font-semibold text-tinta">Cartão:</strong>{" "}
+              <span className="text-tinta-suave">a tarifa do cartão entra no total que o convidado vê antes de pagar, com parcelamento em até 12 vezes.</span>
+            </li>
+            <li className="border-b border-linha py-3.5">
+              <strong className="font-semibold text-tinta">Taxa do Aceito:</strong>{" "}
+              <span className="text-tinta-suave">
+                {GIFT_FEE_LABEL} por presente recebido no Básico. No Classic e no VIP, essa taxa não vale para presentes pagos por Pix.
+              </span>
+            </li>
           </ul>
+          <Reveal delay={250}>
+            <Link
+              href="/planos#presentes"
+              className="inline-flex min-h-11 items-center gap-2 font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 transition-colors hover:decoration-ameixa"
+            >
+              Ver taxas e condições
+              <ArrowRight aria-hidden="true" className="size-4" />
+            </Link>
+          </Reveal>
         </div>
 
-        <div className="relative lg:order-1 lg:col-span-6 lg:min-h-[640px]">
-          <div className="w-[70%] max-w-[340px] lg:absolute lg:left-0 lg:top-0 lg:w-[56%]">
-            <Parallax strength={40}>
-              <Reveal variant="arch" className="arch relative aspect-[3/4] overflow-hidden bg-areia">
-                <Image
-                  src={`${IMG}/img-22-album-brinde.webp`}
-                  alt="Convidados brindando com taças de espumante na festa"
-                  fill
-                  sizes="(min-width: 1024px) 330px, 70vw"
-                  className="object-cover"
-                />
-              </Reveal>
-            </Parallax>
+        <Reveal delay={200} className="lg:col-span-6">
+          <div className="rounded-[16px] border border-linha bg-linho p-5 shadow-[var(--shadow-aceito-1)] sm:p-7">
+            <p className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Exemplo de lista de presentes</p>
+            <ul className="mt-4 grid gap-3 sm:grid-cols-3">
+              {GIFT_EXAMPLES.map((gift) => (
+                <li key={gift.title} className="flex flex-col gap-2 rounded-[12px] border border-linha bg-papel p-4">
+                  <span className="grid size-10 place-items-center rounded-full bg-ameixa-suave text-ameixa">
+                    <Gift aria-hidden="true" className="size-5" strokeWidth={1.75} />
+                  </span>
+                  <span className="text-[15px] font-semibold leading-5 text-tinta">{gift.title}</span>
+                  <span className="font-display text-2xl leading-8 tabular-nums">{gift.value}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 border-t border-linha pt-4 text-[15px] leading-6 text-tinta-suave">
+              Cada item tem um valor definido por vocês. Para quem presenteia, o item representa um valor em dinheiro para o casal, sem
+              entrega de produto.
+            </p>
           </div>
-          <div className="relative -mt-32 flex justify-end sm:-mt-48 lg:absolute lg:bottom-0 lg:right-0 lg:mt-0">
-            <Reveal delay={200} className="w-full max-w-[380px]">
-              <RsvpDemo />
-            </Reveal>
-          </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );
 }
 
 /* ============================================================================================ */
-/* Liz                                                                                     */
+/* 6. Sugestões da Liz e recursos complementares                                                */
 /* ============================================================================================ */
 
-const MADRINHA_POINTS = ["Lembrete para quem ainda não respondeu", "Convites que ainda faltam enviar", "Despesas com vencimento atrasado"];
+const MADRINHA_POINTS = ["Convidados que ainda não responderam", "Convites que ainda faltam enviar", "Despesas com vencimento atrasado"];
 
 function Liz() {
   return (
@@ -424,12 +557,12 @@ function Liz() {
             </p>
           </Reveal>
           <h2 id="madrinha-titulo" className={cn(h2, "text-on-ameixa")}>
-            <SplitWords parts={["Um passo de cada vez, sugerido pelo painel."]} step={55} />
+            <SplitWords parts={["A Liz ajuda vocês a escolher o próximo passo"]} step={55} />
           </h2>
           <Reveal delay={200}>
             <p className="max-w-[48ch] text-[17px] leading-[26px] text-on-ameixa/90 sm:text-lg sm:leading-7">
-              A Liz olha o painel de vocês e sugere o próximo passo: lembrar quem ainda não respondeu, enviar os convites que
-              faltam, conferir uma despesa atrasada. Ela não conversa nem decide nada: só aponta o caminho, e vocês escolhem.
+              A Liz usa as informações do painel para sugerir o que merece atenção, como convidados sem resposta e convites que faltam
+              enviar. Vocês escolhem o que fazer.
             </p>
           </Reveal>
           <ul className="flex flex-col border-t border-on-ameixa/20">
@@ -442,14 +575,14 @@ function Liz() {
           </ul>
           <Reveal delay={480} className="pt-2">
             <Link href="/cadastro?plano=basic" className={cn(btn.onAmeixa, "max-sm:w-full")}>
-              Experimentar de graça
+              Criar conta grátis
               <ArrowRight aria-hidden="true" className={btnArrow} />
             </Link>
           </Reveal>
         </div>
 
         <div className="relative flex flex-col gap-4 text-tinta sm:pl-10 lg:pl-6">
-          {/* Cartão principal: sugestão da Liz */}
+          {/* Cartão principal: exemplo de sugestão da Liz */}
           <div className="relative w-full max-w-[480px]">
             <Parallax strength={60}>
               <Reveal variant="up" delay={300}>
@@ -462,17 +595,14 @@ function Liz() {
                   </span>
                   <div>
                     <p className="text-sm font-semibold leading-5">
-                      Liz <span className="font-normal text-tinta-suave">· sua assistente</span>
+                      Liz <span className="font-normal text-tinta-suave">· sugestão do painel</span>
                     </p>
                     <p className="mt-1 text-base leading-6">
-                      32 convites ainda não tiveram resposta e o prazo é em nove dias. Quer preparar um lembrete para mandar no
-                      WhatsApp?
+                      32 convidados ainda não responderam. O prazo de confirmação termina em nove dias. Vocês podem revisar a lista e
+                      preparar um lembrete.
                     </p>
                   </div>
-                  <div aria-hidden="true" className="col-start-2 flex flex-wrap gap-2">
-                    <span className={cn(btn.primary, btn.sm, "pointer-events-none")}>Preparar lembrete</span>
-                    <span className={cn(btn.quiet, btn.sm, "pointer-events-none")}>Agora não</span>
-                  </div>
+                  <p className="col-start-2 text-sm leading-5 text-tinta-suave">Exemplo com dados fictícios. A decisão é de vocês.</p>
                 </aside>
               </Reveal>
             </Parallax>
@@ -483,8 +613,38 @@ function Liz() {
   );
 }
 
+const MORE_FEATURES = [
+  { icon: MessageCircle, title: "Convites e lembretes pelo WhatsApp", text: "Enviados pelo painel, no Classic e no VIP." },
+  { icon: QrCode, title: "Registro de entrada com código QR", text: "Lido pela câmera do painel na festa, no Classic e no VIP." },
+  { icon: NotebookPen, title: "Mural de recados", text: "Os convidados deixam mensagens no site do casamento." },
+  { icon: LayoutGrid, title: "Mesas e restrições alimentares", text: "Organizem os lugares e consultem o que cada convidado informou." },
+];
+
+function MoreFeatures() {
+  return (
+    <section aria-labelledby="mais-titulo" className="border-b border-linha py-14 sm:py-20">
+      <div className={container}>
+        <Reveal className="max-w-[640px]">
+          <h2 id="mais-titulo" className="font-display text-[28px] font-normal leading-9 tracking-[-0.01em] text-tinta sm:text-[34px] sm:leading-10">
+            Recursos complementares
+          </h2>
+        </Reveal>
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {MORE_FEATURES.map(({ icon: Icon, title, text }, i) => (
+            <Reveal as="li" key={title} delay={i * 80} className="flex flex-col gap-2 rounded-[16px] border border-linha bg-papel p-5">
+              <Icon aria-hidden="true" className="size-5 text-ameixa" strokeWidth={1.75} />
+              <h3 className="text-base font-semibold leading-6 text-tinta">{title}</h3>
+              <p className="text-[15px] leading-[22px] text-tinta-suave">{text}</p>
+            </Reveal>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 /* ============================================================================================ */
-/* Fornecedores                                                                                 */
+/* 7. Fornecedores para o casal                                                                 */
 /* ============================================================================================ */
 
 const VENDORS = [
@@ -502,23 +662,23 @@ function Vendors() {
         <Reveal className="flex max-w-[660px] flex-col gap-4">
           <p className={cn(overline, "flex items-center gap-3 text-salvia")}>
             <Store aria-hidden="true" className="size-4" strokeWidth={1.75} />
-            Aceito para Fornecedores
+            Fornecedores para o casamento
           </p>
           <h2 id="fornecedores-titulo" className={h2}>
-            Fotógrafos, buffets e espaços que mostram o trabalho e o preço.
+            Encontrem fornecedores para o casamento
           </h2>
           <p className={lead}>
-            Os casais encontram quem atende na região deles e pedem orçamento direto pela plataforma. Fornecedores entram de graça,
-            com curadoria.
+            Procurem fotógrafos, espaços, buffets e outros profissionais na região do casamento. Conheçam o trabalho de cada fornecedor e
+            peçam orçamento.
+          </p>
+          <p className="text-[15px] leading-6 text-tinta-suave">
+            O rótulo &ldquo;Com curadoria&rdquo; indica que o Aceito analisou o cadastro do fornecedor. Ele não garante qualidade nem preço.
           </p>
         </Reveal>
         <Reveal delay={150} className="flex shrink-0 flex-col gap-2 sm:flex-row sm:gap-3">
           <Link href="/fornecedores" className={btn.primary}>
             Encontrar fornecedores
             <ArrowRight aria-hidden="true" className={btnArrow} />
-          </Link>
-          <Link href="/cadastro?plano=start" className={btn.secondary}>
-            Sou fornecedor
           </Link>
         </Reveal>
       </div>
@@ -545,86 +705,41 @@ function Vendors() {
 }
 
 /* ============================================================================================ */
-/* Planos                                                                                       */
+/* 8. Planos e condições (só casais; os planos de fornecedor ficam em /planos#fornecedores)      */
 /* ============================================================================================ */
 
-const reais = (cents: number) => `R$ ${(cents / 100).toLocaleString("pt-BR", { maximumFractionDigits: 0 })}`;
-
-const COUPLE_PLANS = [
-  { key: "basic", summary: "Para começar com o essencial.", cta: "Começar grátis" },
-  { key: "classic", summary: "Para deixar tudo no automático.", cta: "Escolher o Classic" },
-  { key: "vip", summary: "Para a experiência completa.", cta: "Escolher o VIP" },
-] as const;
+const COUPLE_PLAN_KEYS = ["basic", "classic", "vip"] as const;
 
 function Plans({ catalog }: { catalog: Catalog }) {
   return (
-    <section id="planos" aria-labelledby="planos-titulo" className="py-16 sm:py-24 lg:py-28">
+    <section id="planos" aria-labelledby="planos-titulo" className="scroll-mt-16 py-16 sm:py-24 lg:py-28">
       <div className={container}>
-        <Reveal className="flex max-w-[680px] flex-col gap-4">
+        <Reveal className="flex max-w-[720px] flex-col gap-4">
           <Overline>Planos para casais</Overline>
           <h2 id="planos-titulo" className={h2}>
-            Comecem de graça. Paguem uma vez, se quiserem mais.
+            Escolham o plano para o casamento de vocês
           </h2>
+          <p className={lead}>
+            O Básico não tem mensalidade. Classic e VIP têm pagamento único. As taxas sobre presentes e os recursos incluídos variam
+            conforme o plano.
+          </p>
         </Reveal>
 
         <ul className="-mx-4 mt-10 flex snap-x snap-mandatory scroll-pl-4 gap-4 overflow-x-auto px-4 pb-4 pt-3 [scrollbar-width:none] md:mx-0 md:grid md:snap-none md:grid-cols-3 md:gap-6 md:overflow-visible md:px-0 lg:mt-14 [&::-webkit-scrollbar]:hidden">
-          {COUPLE_PLANS.map(({ key, summary, cta }, i) => {
-            const plan = catalog.plans[key];
-            const popular = key === "classic";
-            return (
-              <Reveal
-                as="li"
-                key={key}
-                delay={i * 100}
-                className="w-[284px] shrink-0 snap-start md:w-auto"
-              >
-                <article
-                  className={cn(
-                    "lift flex h-full flex-col rounded-[16px] bg-papel p-6 shadow-[var(--shadow-aceito-1)] lg:p-8",
-                    popular ? "border-2 border-ameixa" : "border border-linha",
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-xl font-semibold leading-7">{plan.name.replace(/^Plano /, "")}</h3>
-                    {popular ? (
-                      <span className="inline-flex min-h-7 items-center rounded-[6px] bg-ameixa-suave px-2.5 text-sm font-semibold text-ameixa">
-                        Mais escolhido
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-1 text-[15px] text-tinta-suave">{summary}</p>
-                  <p className="mt-5 flex items-baseline gap-2">
-                    <span className="font-display text-[44px] leading-[48px] tracking-[-0.01em]">{plan.price === 0 ? "Grátis" : reais(plan.price)}</span>
-                    <span className="text-[15px] text-tinta-suave">{plan.price === 0 ? "para sempre" : "uma vez"}</span>
-                  </p>
-                  <ul className="mt-6 flex flex-1 flex-col gap-3 border-t border-linha pt-6">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-3 text-[15px] leading-[22px]">
-                        <Check aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-sucesso" strokeWidth={2.25} />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link
-                    href={`/cadastro?plano=${key}`}
-                    className={cn(popular ? btn.primary : btn.secondary, btn.block, "mt-8")}
-                    aria-label={`${cta}: plano ${plan.name.replace(/^Plano /, "")}`}
-                  >
-                    {cta}
-                  </Link>
-                </article>
-              </Reveal>
-            );
-          })}
+          {COUPLE_PLAN_KEYS.map((key, i) => (
+            <Reveal as="li" key={key} delay={i * 100} className="w-[284px] shrink-0 snap-start md:w-auto">
+              <CouplePlanCard planKey={key} plan={catalog.plans[key]} />
+            </Reveal>
+          ))}
         </ul>
 
         <Reveal delay={150} className="mt-8 flex flex-col gap-6 border-t border-linha pt-8 md:mt-12 md:flex-row md:items-center md:justify-between">
           <p className="max-w-[60ch] text-[15px] leading-6 text-tinta-suave">
-            Precisa só de algumas partes?{" "}
+            Precisam só de algumas partes?{" "}
             <Link href="/monte-seu-plano" className="font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 transition-colors hover:decoration-ameixa">
               Montem o plano de vocês
             </Link>
-            . É fornecedor? O plano Start é gratuito, e o Pro sai por {reais(catalog.plans.pro.price)} por mês.
+            . Para ver taxas e condições dos presentes, abram a comparação.
           </p>
           <Link href="/planos" className={cn(btn.secondary, "shrink-0")}>
             Comparar os planos
@@ -636,7 +751,7 @@ function Plans({ catalog }: { catalog: Catalog }) {
 }
 
 /* ============================================================================================ */
-/* Fechamento                                                                                   */
+/* 10. Convite final                                                                            */
 /* ============================================================================================ */
 
 function Closing() {
@@ -649,23 +764,29 @@ function Closing() {
           </Reveal>
           <h2
             id="fim-titulo"
-            className="font-display text-[44px] font-normal leading-[48px] tracking-[-0.02em] sm:text-[60px] sm:leading-[64px] lg:text-[72px] lg:leading-[76px]"
+            className="font-display text-[40px] font-normal leading-[46px] tracking-[-0.02em] sm:text-[54px] sm:leading-[60px] lg:text-[64px] lg:leading-[70px]"
           >
-            <SplitWords parts={["Prontos para o primeiro ", { em: "sim" }, "?"]} step={70} />
+            <SplitWords parts={["Comecem pelo ", { em: "site" }, " e pela lista de convidados"]} step={70} />
           </h2>
           <Reveal delay={300}>
             <p className={cn(lead, "max-w-[46ch]")}>
-              Criem o casamento em poucos minutos e mandem o primeiro convite ainda hoje. O plano Básico é gratuito para sempre.
+              Criem a conta de vocês e preparem as primeiras informações do casamento. É possível começar pelo plano Básico.
             </p>
           </Reveal>
           <Reveal delay={400} className="flex flex-col gap-2 sm:flex-row sm:gap-3">
             <Link href="/cadastro?plano=basic" className={btn.primary}>
-              Criar meu casamento grátis
+              Criar conta grátis
               <ArrowRight aria-hidden="true" className={btnArrow} />
             </Link>
             <Link href="/login" className={btn.quiet}>
               Já tenho conta
             </Link>
+          </Reveal>
+          <Reveal delay={480} variant="fade">
+            <p className="text-sm leading-5 text-tinta-suave">Sem mensalidade no Básico. Taxa de {GIFT_FEE_LABEL} por presente recebido.</p>
+          </Reveal>
+          <Reveal delay={560} variant="fade">
+            <p className="font-display text-xl italic leading-7 text-ameixa">Do convite ao grande dia, tudo num só sim.</p>
           </Reveal>
         </div>
         <div className="mx-auto w-full max-w-[300px] lg:col-span-5 lg:max-w-[380px]">
@@ -703,11 +824,13 @@ export default async function Home() {
       <LandingHeader />
       <main id="conteudo">
         <Hero />
-        <FeatureBand />
+        <Functions />
         <HowItWorks />
-        <CoupleSite />
         <Guests />
+        <CoupleSite />
+        <Gifts />
         <Liz />
+        <MoreFeatures />
         <Vendors />
         <Plans catalog={catalog} />
         <FaqSection />

@@ -70,25 +70,6 @@ export function CountUp({ to, duration = 1600, delay = 0 }: { to: number; durati
 }
 
 /* -------------------------------------------------------------------------------------------- */
-/* Faixa que desliza na horizontal enquanto a página rola.                                       */
-/* -------------------------------------------------------------------------------------------- */
-
-export function ScrollDrift({ children, distance = 240, className }: { children: ReactNode; distance?: number; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const x = useTransform(scrollYProgress, [0, 1], [0, -distance]);
-
-  return (
-    <LazyMotion features={domAnimation} strict>
-      <m.div ref={ref} className={className} style={reduce ? undefined : { x }}>
-        {children}
-      </m.div>
-    </LazyMotion>
-  );
-}
-
-/* -------------------------------------------------------------------------------------------- */
 /* Vitrine de fornecedores: no computador acompanha a rolagem; no toque, rola com o dedo.        */
 /* -------------------------------------------------------------------------------------------- */
 
@@ -142,7 +123,7 @@ export function VendorStrip({ children, className, trackClassName }: { children:
 }
 
 /* -------------------------------------------------------------------------------------------- */
-/* Convite de exemplo que responde de verdade (só na tela, nada é enviado).                      */
+/* Convite de exemplo que responde na tela (nada é enviado nem gravado).                         */
 /* -------------------------------------------------------------------------------------------- */
 
 type Rsvp = "idle" | "yes" | "no";
@@ -162,7 +143,7 @@ export function RsvpDemo() {
     <LazyMotion features={domAnimation} strict>
       <MotionConfig reducedMotion="user">
         <section
-          aria-label="Exemplo de convite: experimente responder"
+          aria-label="Exemplo de convite: experimentem responder"
           className="relative w-full max-w-[380px] rounded-[16px] border border-linha bg-papel px-6 pb-6 pt-8 text-center shadow-[var(--shadow-aceito-2)] before:pointer-events-none before:absolute before:inset-2 before:rounded-[10px] before:border before:border-champanhe/70 before:content-['']"
         >
           <div className="relative min-h-[296px]" aria-live="polite">
@@ -178,7 +159,7 @@ export function RsvpDemo() {
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
                 >
-                  <p className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Seu convite chegou</p>
+                  <p className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Exemplo de convite</p>
                   <p className="mb-1 mt-2 font-display text-[40px] leading-[46px] tracking-[-0.015em]">
                     Ana <em className="italic">&amp;</em> Rafael
                   </p>
@@ -193,14 +174,14 @@ export function RsvpDemo() {
                     </span>
                   </div>
                   <p className="mb-4 text-base">
-                    Mariana, guardamos <strong className="font-semibold">2 lugares</strong> para você.
+                    Mariana, guardamos <strong className="font-semibold">2 lugares</strong> para você. É você e mais 1 acompanhante.
                   </p>
                   <div className="grid gap-2">
                     <button ref={firstAction} type="button" onClick={() => choose("yes")} className={cn(btn.primary, btn.block)}>
-                      Aceito o convite
+                      Confirmar presença
                     </button>
                     <button type="button" onClick={() => choose("no")} className={cn(btn.quiet, btn.block)}>
-                      Não vou poder ir
+                      Não poderei ir
                     </button>
                   </div>
                 </m.div>
@@ -225,21 +206,24 @@ export function RsvpDemo() {
                     </m.span>
                   ) : null}
                   <p ref={result} tabIndex={-1} className="font-display text-[34px] leading-10 outline-none">
-                    {state === "yes" ? "Que alegria!" : "Que pena."}
+                    {state === "yes" ? "Presença confirmada" : "Resposta registrada"}
                   </p>
                   <p className="max-w-[28ch] text-base leading-6 text-tinta-suave">
                     {state === "yes"
-                      ? "Mariana, sua presença está confirmada. Os detalhes chegam no seu WhatsApp."
-                      : "Avisamos Ana e Rafael. Se os planos mudarem, é só responder de novo pelo mesmo link."}
+                      ? "Mariana, sua presença está confirmada. A resposta aparece na lista de Ana e Rafael."
+                      : "Ana e Rafael veem a sua resposta na lista deles. Se os planos mudarem, é só responder de novo pelo mesmo link."}
                   </p>
-                  <button type="button" onClick={() => choose("idle")} className={cn(btn.quiet, btn.sm, "mt-2")}>
+                  <p className="text-sm leading-5 text-tinta-suave">Exemplo: nenhuma resposta foi enviada.</p>
+                  <button type="button" onClick={() => choose("idle")} className={cn(btn.quiet, btn.sm, "mt-1")}>
                     Ver o convite de novo
                   </button>
                 </m.div>
               )}
             </AnimatePresence>
           </div>
-          <p className="relative mt-4 border-t border-linha pt-3 text-sm text-tinta-suave">Experimente: é só um exemplo.</p>
+          <p className="relative mt-4 border-t border-linha pt-3 text-sm text-tinta-suave">
+            Experimentem responder. Esta demonstração não envia uma confirmação real.
+          </p>
         </section>
       </MotionConfig>
     </LazyMotion>
