@@ -1,6 +1,6 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { ExternalLink } from "lucide-react";
+import { PendingLink } from "@/components/plataforma/pending";
 import { buildHref } from "@/lib/platform/list-params";
 import { formatInt } from "@/lib/platform/format";
 import { cn } from "@/lib/utils";
@@ -48,7 +48,7 @@ export function TabsNav({
           const href = tab.href ?? buildHref(basePath, { ...params, pagina: undefined, [paramKey]: tab.value === defaultValue ? undefined : tab.value });
           return (
             <li key={tab.value}>
-              <Link
+              <PendingLink
                 href={href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
@@ -61,7 +61,7 @@ export function TabsNav({
                   <span className={cn("rounded-md px-1.5 text-xs font-semibold leading-5", isActive ? "bg-areia text-tinta-suave" : "text-tinta-suave")}>{formatInt(tab.count)}</span>
                 )}
                 {tab.external && <ExternalLink className="size-4" aria-hidden="true" />}
-              </Link>
+              </PendingLink>
             </li>
           );
         })}

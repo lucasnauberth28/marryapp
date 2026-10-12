@@ -2,6 +2,8 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
+import { startNavigationProgress } from "@/components/feedback/navigation-progress";
+import { markListNavigation } from "@/components/plataforma/pending";
 import { NativeSelect } from "@/components/ui/select";
 import { PERIODS, type Period } from "@/lib/platform/overview-period";
 
@@ -25,7 +27,10 @@ export function PeriodSelect({ value }: { value: Period }) {
           if (e.target.value === "30d") next.delete("periodo");
           else next.set("periodo", e.target.value);
           const qs = next.toString();
-          startTransition(() => router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false }));
+          const href = qs ? `${pathname}?${qs}` : pathname;
+          startNavigationProgress();
+          markListNavigation(href); // os blocos que dependem do período (PendingRegion) ficam mais claros até chegar
+          startTransition(() => router.replace(href, { scroll: false }));
         }}
       >
         {PERIODS.map((p) => (

@@ -2,6 +2,8 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { startNavigationProgress } from "@/components/feedback/navigation-progress";
+import { markListNavigation } from "@/components/plataforma/pending";
 import { cn } from "@/lib/utils";
 
 interface Filter {
@@ -23,7 +25,10 @@ export function FilterChips({ filters }: { filters: Filter[] }) {
           type="button"
           aria-pressed={f.active}
           onClick={() => {
-            if (!f.active) startTransition(() => router.push(f.href, { scroll: false }));
+            if (f.active) return;
+            startNavigationProgress();
+            markListNavigation(f.href); // a lista (PendingRegion) fica mais clara até chegar
+            startTransition(() => router.push(f.href, { scroll: false }));
           }}
           className={cn(
             "inline-flex min-h-11 cursor-pointer items-center rounded-xl border px-4 text-sm font-semibold tabular-nums transition-colors",

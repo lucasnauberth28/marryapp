@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { PendingLink } from "@/components/plataforma/pending";
 import { buildHref, pageNumbers } from "@/lib/platform/list-params";
 import { formatInt } from "@/lib/platform/format";
 import { cn } from "@/lib/utils";
@@ -39,9 +39,9 @@ export function Pagination({
       {pages > 1 && (
         <nav aria-label="Páginas" className="flex flex-wrap items-center gap-1.5">
           {page > 1 ? (
-            <Link href={href(page - 1)} className={cn(edge, "border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}>
+            <PendingLink href={href(page - 1)} className={cn(edge, "border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}>
               <ChevronLeft className="size-4" aria-hidden="true" /> Anterior
-            </Link>
+            </PendingLink>
           ) : (
             <span className={cn(edge, "border-linha text-tinta-suave opacity-60")} aria-disabled="true">
               <ChevronLeft className="size-4" aria-hidden="true" /> Anterior
@@ -53,7 +53,7 @@ export function Pagination({
                 …
               </span>
             ) : (
-              <Link
+              <PendingLink
                 key={n}
                 href={href(n)}
                 aria-label={`Página ${n}`}
@@ -64,13 +64,13 @@ export function Pagination({
                 )}
               >
                 {n}
-              </Link>
+              </PendingLink>
             ),
           )}
           {page < pages ? (
-            <Link href={href(page + 1)} className={cn(edge, "border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}>
+            <PendingLink href={href(page + 1)} className={cn(edge, "border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}>
               Próxima <ChevronRight className="size-4" aria-hidden="true" />
-            </Link>
+            </PendingLink>
           ) : (
             <span className={cn(edge, "border-linha text-tinta-suave opacity-60")} aria-disabled="true">
               Próxima <ChevronRight className="size-4" aria-hidden="true" />

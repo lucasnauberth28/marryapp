@@ -6,6 +6,8 @@ import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { btn } from "@/components/landing/styles";
+import { startNavigationProgress } from "@/components/feedback/navigation-progress";
+import { markListNavigation } from "@/components/plataforma/pending";
 import { cn } from "@/lib/utils";
 
 /**
@@ -17,6 +19,7 @@ import { cn } from "@/lib/utils";
  * - Escreve na URL: ?q=texto&plano=classic (a busca espera 300 ms depois de digitar) e zera ?pagina.
  * - A página (servidor) lê os mesmos nomes com lib/platform/list-params (param, oneOf).
  * - Campos de rótulo flutuante (NativeSelect com alwaysFloat): o rótulo fica no alto e a opção sem valor mostra `allLabel`.
+ * - Enquanto a URL muda, a lista dentro de <PendingRegion> fica mais clara (sem piscar tela vazia).
  * - "Limpar filtros" aparece quando há busca ou filtro ativo e mantém a aba (?aba=).
  * - searchKey (padrão "q"); defina searchPlaceholder = undefined para esconder a busca.
  */
@@ -59,7 +62,12 @@ export function FilterBar({
   const push = (next: URLSearchParams) => {
     next.delete("pagina");
     const qs = next.toString();
-    startTransition(() => router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false }));
+    const href = qs ? `${pathname}?${qs}` : pathname;
+    // Mesma URL (mesmo filtro escolhido de novo): nada a buscar
+    if (qs === searchParams.toString()) return;
+    startNavigationProgress();
+    markListNavigation(href); // a lista (PendingRegion) fica mais clara até chegar
+    startTransition(() => router.replace(href, { scroll: false }));
   };
 
   const setParam = (key: string, value: string) => {
