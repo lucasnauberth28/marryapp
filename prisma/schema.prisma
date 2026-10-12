@@ -312,6 +312,15 @@ model User {
   // Última entrada na conta (administração: "Última atividade" e filtros de casais sem atividade)
   lastLoginAt     DateTime?
 
+  // Passo a passo do painel (por pessoa, não por casamento): o par convidado tem o próprio.
+  // panelTourVersion = última versão do passo a passo que a pessoa já resolveu (concluiu, pulou ou nasceu antes dele);
+  // 0 = ainda não viu. Contas anteriores à migration 20261012100000_panel_tour entram com 1 (não levam o tour de surpresa).
+  panelTourVersion          Int       @default(0)
+  panelTourCompletedAt      DateTime?
+  panelTourSkippedAt        DateTime?
+  // "Primeiros passos" do Resumo dispensado por esta pessoa
+  panelChecklistDismissedAt DateTime?
+
   announcementDeliveries AnnouncementRecipient[]
   supportTickets         SupportTicket[]
   dataRequests           DataRequest[]
