@@ -50,7 +50,7 @@ export async function replyToReview(reviewId: string, reply: string): Promise<Re
     return { success: true };
   } catch (error) {
     console.error("[replyToReview Error]:", error);
-    return { success: false, error: "Erro ao publicar a resposta." };
+    return { success: false, error: "Não deu para publicar a resposta. Tente de novo." };
   }
 }
 

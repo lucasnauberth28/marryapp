@@ -10,8 +10,8 @@ import { ProfileForm } from "./profile-form";
 export const metadata: Metadata = { title: "Meu perfil" };
 
 const CURATION_HINT: Record<string, string> = {
-  APPROVED: "Seu perfil está publicado na vitrine de fornecedores do Aceito.",
-  PENDING_APPROVAL: "A curadoria está revisando seu perfil. Ele aparece na vitrine assim que for aprovado.",
+  APPROVED: "Seu perfil está publicado na lista de fornecedores do Aceito.",
+  PENDING_APPROVAL: "O Aceito está analisando seu perfil. Ele aparece na lista de fornecedores assim que for aprovado.",
   REJECTED: "Ajuste os pontos indicados e salve: o perfil volta para a fila da curadoria.",
 };
 

@@ -239,7 +239,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
   // (pedidos antigos não têm as datas).
   const rank = STATUS_RANK[status];
   const steps: { label: string; done: boolean; detail?: string }[] = [
-    { label: "Pedido recebido", done: true, detail: `${capitalize(formatDateTimeBrasilia(lead.createdAt))} · pela vitrine` },
+    { label: "Pedido recebido", done: true, detail: `${capitalize(formatDateTimeBrasilia(lead.createdAt))} · pelo seu perfil` },
     {
       label: "Respondido",
       done: !!lead.respondedAt || rank >= 1,

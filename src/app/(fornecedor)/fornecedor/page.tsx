@@ -139,7 +139,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
     {
       label: "Visitas (30 dias)",
       value: views30,
-      hint: publicProfileHref ? "no seu perfil público" : "o perfil aparece após a curadoria",
+      hint: publicProfileHref ? "no seu perfil público" : "o perfil aparece depois da análise do Aceito",
     },
   ];
 
@@ -171,7 +171,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
         >
           <div className="flex min-w-0 flex-col gap-0.5">
             <strong className="font-semibold">
-              {vendor.curationStatus === "REJECTED" ? "A curadoria pediu ajustes no seu perfil" : "Seu perfil está na fila da curadoria"}
+              {vendor.curationStatus === "REJECTED" ? "O Aceito pediu ajustes no seu perfil" : "Seu perfil está em análise pelo Aceito"}
             </strong>
             <span className="text-sm text-tinta-suave">
               {vendor.curationStatus === "REJECTED"
@@ -277,7 +277,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
               {filter ? "Nenhum pedido com este status" : "Nenhum pedido por aqui ainda"}
             </p>
             <p className="max-w-md text-tinta-suave">
-              Quando um casal pedir orçamento pela sua vitrine, o pedido aparece aqui com os dados do casamento e o
+              Quando um casal pedir orçamento pelo seu perfil, o pedido aparece aqui com os dados do casamento e o
               contato do casal.
             </p>
             <Link

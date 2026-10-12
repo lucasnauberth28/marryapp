@@ -129,7 +129,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
                 <div className="text-[15px] leading-6">
                   <p className="font-semibold">Seu perfil está suspenso</p>
                   <p>
-                    Ele não aparece na vitrine e não recebe novos pedidos de orçamento.
+                    Ele não aparece na lista de fornecedores e não recebe novos pedidos de orçamento.
                     {vendor.suspendedReason ? ` Motivo: ${vendor.suspendedReason}` : ""} Para entender e resolver, fale com a equipe do Aceito.
                   </p>
                 </div>

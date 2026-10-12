@@ -144,7 +144,7 @@ export function ProfileForm({
             id="f-preco"
             label="Preço inicial"
             prefix="R$"
-            hint="Aparece no card da vitrine. Casais filtram por preço."
+            hint="Aparece no card da lista de fornecedores. Casais filtram por preço."
             name="startingPrice"
             inputMode="decimal"
             placeholder="6.800"

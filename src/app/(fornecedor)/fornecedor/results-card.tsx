@@ -18,7 +18,7 @@ function dayLabel(day: Date) {
 
 const percent = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 });
 
-/** Master: visitas ao perfil por dia (30 dias) e conversão visitas → pedidos. */
+/** Master: visitas ao perfil por dia (30 dias) e quantas viraram pedido. */
 export function ResultsCard({ days, leads }: { days: DailyViews[]; leads: number }) {
   const total = days.reduce((sum, d) => sum + d.count, 0);
   const max = Math.max(1, ...days.map((d) => d.count));
@@ -53,7 +53,7 @@ export function ResultsCard({ days, leads }: { days: DailyViews[]; leads: number
           <dd className="font-display text-3xl leading-tight">{leads}</dd>
         </div>
         <div className="flex flex-col gap-0.5">
-          <dt className={OVERLINE}>Conversão</dt>
+          <dt className={OVERLINE}>Visitas que viraram pedido</dt>
           <dd className="font-display text-3xl leading-tight">{conversion === null ? "—" : percent.format(conversion)}</dd>
           <dd className="text-sm text-tinta-suave">
             {conversion === null ? "sem visitas no período" : "das visitas viraram pedido"}
@@ -148,7 +148,7 @@ export function ResultsTeaser() {
             Resultados do seu perfil
           </h2>
           <p className="text-sm text-tinta-suave">
-            No Master você vê as visitas de cada dia, quantas viraram pedido e aparece em destaque na vitrine.
+            No Master você vê as visitas de cada dia, quantas viraram pedido e aparece em destaque na lista de fornecedores.
           </p>
         </div>
       </div>

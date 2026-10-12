@@ -66,7 +66,7 @@ export function PlanCheckout({
         <CheckCircle2 aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-sucesso" />
         <div>
           <p className="font-semibold">Pagamento confirmado. O plano {plan.name} já está ativo.</p>
-          <p className="text-[15px] text-tinta-suave">Seu perfil já aparece com os benefícios do plano na vitrine.</p>
+          <p className="text-[15px] text-tinta-suave">Seu perfil já aparece com os benefícios do plano na lista de fornecedores.</p>
         </div>
       </div>
     );

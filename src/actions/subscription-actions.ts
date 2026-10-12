@@ -265,7 +265,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
     };
   } catch (error) {
     console.error("[generateSubscriptionPix Error]:", error);
-    return { success: false, error: "Erro ao gerar cobrança Pix." };
+    return { success: false, error: "Não deu para gerar o Pix. Tente de novo." };
   }
 }
 
@@ -322,7 +322,7 @@ export async function verifySubscriptionPaymentStatus(subscriptionId: string) {
     return { success: true, paid: false, status: "pending", message: "Aguardando a confirmação do banco..." };
   } catch (error) {
     console.error("[verifySubscriptionPaymentStatus Error]:", error);
-    return { success: false, paid: false, message: "Erro ao verificar pagamento." };
+    return { success: false, paid: false, message: "Não deu para verificar o pagamento agora. Tente de novo." };
   }
 }
 

@@ -202,7 +202,7 @@ export function MediaForm({ initial }: { initial: VendorMedia }) {
               </button>
             ) : null}
           </div>
-          <p className={HINT}>Aparece no card da vitrine. Prefira uma foto horizontal.</p>
+          <p className={HINT}>Aparece no card da lista de fornecedores. Prefira uma foto horizontal.</p>
         </div>
       </div>
 

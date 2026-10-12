@@ -60,7 +60,7 @@ function parseBrlToCents(value: string): number | null {
 
 const LeadStatusSchema = z.object({
   leadId: z.string().uuid("Pedido inválido."),
-  status: z.enum(LEAD_STATUSES, { message: "Status inválido." }),
+  status: z.enum(LEAD_STATUSES, { message: "Situação do pedido inválida." }),
 });
 
 export async function updateLeadStatus(leadId: string, status: string) {
@@ -101,7 +101,7 @@ export async function updateLeadStatus(leadId: string, status: string) {
     return { success: true };
   } catch (error) {
     console.error("[updateLeadStatus Error]:", error);
-    return { success: false, error: "Erro ao atualizar o pedido." };
+    return { success: false, error: "Não deu para atualizar o pedido. Tente de novo." };
   }
 }
 
@@ -191,7 +191,7 @@ export async function saveLeadProposal(input: LeadProposalInput) {
     return { success: true };
   } catch (error) {
     console.error("[saveLeadProposal Error]:", error);
-    return { success: false, error: "Erro ao salvar a proposta." };
+    return { success: false, error: "Não deu para salvar a proposta. Tente de novo." };
   }
 }
 
@@ -238,7 +238,7 @@ export async function declineLead(input: DeclineLeadInput) {
     return { success: true };
   } catch (error) {
     console.error("[declineLead Error]:", error);
-    return { success: false, error: "Erro ao recusar o pedido." };
+    return { success: false, error: "Não deu para recusar o pedido. Tente de novo." };
   }
 }
 
@@ -282,7 +282,7 @@ export async function requestLeadReview(leadId: string): Promise<RequestLeadRevi
     return { success: true, url: reviewPublicUrl(token) };
   } catch (error) {
     console.error("[requestLeadReview Error]:", error);
-    return { success: false, error: "Erro ao gerar o link de avaliação." };
+    return { success: false, error: "Não deu para gerar o link de avaliação. Tente de novo." };
   }
 }
 
@@ -376,7 +376,7 @@ export async function createVendorEvent(input: VendorEventInput) {
     return { success: true };
   } catch (error) {
     console.error("[createVendorEvent Error]:", error);
-    return { success: false, error: "Erro ao salvar o compromisso." };
+    return { success: false, error: "Não deu para salvar o compromisso. Tente de novo." };
   }
 }
 
@@ -397,7 +397,7 @@ export async function deleteVendorEvent(eventId: string) {
     return { success: true };
   } catch (error) {
     console.error("[deleteVendorEvent Error]:", error);
-    return { success: false, error: "Erro ao excluir o compromisso." };
+    return { success: false, error: "Não deu para excluir o compromisso. Tente de novo." };
   }
 }
 
@@ -508,7 +508,7 @@ export async function updateVendorProfile(input: VendorProfileInput) {
     return { success: true };
   } catch (error) {
     console.error("[updateVendorProfile Error]:", error);
-    return { success: false, error: "Erro ao salvar o perfil." };
+    return { success: false, error: "Não deu para salvar o perfil. Tente de novo." };
   }
 }
 
@@ -577,7 +577,7 @@ export async function updateVendorMedia(input: VendorMediaInput): Promise<Vendor
         }
         const folder = op.action === "set-logo" ? "vendors/logos" : op.action === "set-cover" ? "vendors/covers" : "vendors/gallery";
         const res = await upload(op.image, folder);
-        if ("error" in res) return { success: false, error: res.error ?? "Falha ao enviar a imagem." };
+        if ("error" in res) return { success: false, error: res.error ?? "Não deu para enviar a imagem. Tente de novo." };
         if (op.action === "set-logo") media.logoUrl = res.url;
         else if (op.action === "set-cover") media.coverUrl = res.url;
         else media.gallery.push(res.url);
@@ -623,6 +623,6 @@ export async function updateVendorMedia(input: VendorMediaInput): Promise<Vendor
     return { success: true, media };
   } catch (error) {
     console.error("[updateVendorMedia Error]:", error);
-    return { success: false, error: "Erro ao salvar as fotos." };
+    return { success: false, error: "Não deu para salvar as fotos. Tente de novo." };
   }
 }
