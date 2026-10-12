@@ -147,14 +147,14 @@ export async function approvePixTransaction(
 ): Promise<{ success: boolean; error?: string }> {
   const { weddingId } = await requireWedding("/financas");
   try {
-    if (typeof transactionId !== "string") return { success: false, error: "Transação não encontrada." };
+    if (typeof transactionId !== "string") return { success: false, error: "Pagamento não encontrado." };
     // O presente é sempre o da própria transação (não confiar no giftId enviado pelo cliente)
     const transaction = await prisma.transaction.findFirst({
       where: { id: transactionId, weddingId },
       select: { giftId: true, status: true, paymentMethod: true },
     });
     if (!transaction || transaction.giftId !== giftId) {
-      return { success: false, error: "Transação não encontrada." };
+      return { success: false, error: "Pagamento não encontrado." };
     }
     if (transaction.paymentMethod !== PaymentMethod.PIX || transaction.status !== PaymentStatus.PENDING) {
       return { success: false, error: "Apenas Pix pendentes podem ser conferidos manualmente." };
@@ -184,7 +184,7 @@ export async function approvePixTransaction(
     console.error("[approvePixTransaction Error]:", error);
     return {
       success: false,
-      error: "Erro ao confirmar recebimento do Pix.",
+      error: "Não deu para confirmar o Pix. Tente de novo.",
     };
   }
 }
@@ -198,12 +198,12 @@ export async function toggleThankYouSent(
 ): Promise<{ success: boolean; error?: string }> {
   const { weddingId } = await requireWedding("/financas");
   try {
-    if (typeof transactionId !== "string") return { success: false, error: "Transação não encontrada." };
+    if (typeof transactionId !== "string") return { success: false, error: "Pagamento não encontrado." };
     const result = await prisma.transaction.updateMany({
       where: { id: transactionId, weddingId },
       data: { thankYouSent: !currentStatus },
     });
-    if (result.count === 0) return { success: false, error: "Transação não encontrada." };
+    if (result.count === 0) return { success: false, error: "Pagamento não encontrado." };
 
     revalidatePath("/financas");
     revalidatePath("/dashboard");
@@ -213,7 +213,7 @@ export async function toggleThankYouSent(
     console.error("[toggleThankYouSent Error]:", error);
     return {
       success: false,
-      error: "Erro ao atualizar status do agradecimento.",
+      error: "Não deu para atualizar o agradecimento. Tente de novo.",
     };
   }
 }

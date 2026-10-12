@@ -111,7 +111,7 @@ export async function updateSiteCustomization(data: SiteCustomizationInput) {
     return { success: true, settings: updated };
   } catch (error) {
     console.error("[updateSiteCustomization Error]:", error);
-    return { success: false, error: "Erro ao salvar as configurações do site." };
+    return { success: false, error: "Não deu para salvar o site. Tente de novo." };
   }
 }
 
@@ -167,7 +167,7 @@ export async function createStoryItem(data: {
     revalidatePath("/site-builder");
     return { success: true, item };
   } catch (error) {
-    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Erro ao criar momento da história." };
+    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Não deu para adicionar o momento. Tente de novo." };
   }
 }
 
@@ -181,7 +181,7 @@ export async function deleteStoryItem(id: string) {
     revalidatePath("/site-builder");
     return { success: true };
   } catch (error) {
-    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Erro ao excluir momento." };
+    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Não deu para remover o momento. Tente de novo." };
   }
 }
 
@@ -228,7 +228,7 @@ export async function createWeddingTip(data: {
     revalidatePath("/site-builder");
     return { success: true, tip };
   } catch (error) {
-    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Erro ao salvar dica." };
+    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Não deu para adicionar a dica. Tente de novo." };
   }
 }
 
@@ -242,7 +242,7 @@ export async function deleteWeddingTip(id: string) {
     revalidatePath("/site-builder");
     return { success: true };
   } catch (error) {
-    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Erro ao excluir dica." };
+    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Não deu para remover a dica. Tente de novo." };
   }
 }
 

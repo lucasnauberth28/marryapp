@@ -34,36 +34,36 @@ export async function createTimelineEvent(data: TimelineEventInput) {
     revalidatePath("/casamento", "layout");
     return { success: true };
   } catch {
-    return { success: false, error: "Erro ao criar evento do cronograma." };
+    return { success: false, error: "Não deu para adicionar o horário. Tente de novo." };
   }
 }
 
 export async function updateTimelineEvent(id: string, data: TimelineEventInput) {
   const { weddingId } = await requireWedding("/cronograma");
-  if (typeof id !== "string") return { success: false, error: "Evento não encontrado." };
+  if (typeof id !== "string") return { success: false, error: "Horário não encontrado." };
   const parsed = TimelineEventSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   try {
     const result = await prisma.timelineEvent.updateMany({ where: { id, weddingId }, data: parsed.data });
-    if (result.count === 0) return { success: false, error: "Evento não encontrado." };
+    if (result.count === 0) return { success: false, error: "Horário não encontrado." };
     revalidatePath("/cronograma");
     revalidatePath("/casamento", "layout");
     return { success: true };
   } catch {
-    return { success: false, error: "Erro ao atualizar evento." };
+    return { success: false, error: "Não deu para salvar o horário. Tente de novo." };
   }
 }
 
 export async function deleteTimelineEvent(id: string) {
   const { weddingId } = await requireWedding("/cronograma");
   try {
-    if (typeof id !== "string") return { success: false, error: "Evento não encontrado." };
+    if (typeof id !== "string") return { success: false, error: "Horário não encontrado." };
     const result = await prisma.timelineEvent.deleteMany({ where: { id, weddingId } });
-    if (result.count === 0) return { success: false, error: "Evento não encontrado." };
+    if (result.count === 0) return { success: false, error: "Horário não encontrado." };
     revalidatePath("/cronograma");
     revalidatePath("/casamento", "layout");
     return { success: true };
   } catch {
-    return { success: false, error: "Erro ao deletar evento." };
+    return { success: false, error: "Não deu para excluir o horário. Tente de novo." };
   }
 }

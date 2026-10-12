@@ -87,7 +87,7 @@ const SECTIONS: { id: SectionId; label: string; key?: keyof WeddingSiteSettings;
   { id: "TIPS", label: "Dicas aos convidados", key: "showTips", desc: "Hospedagem, beleza e transporte indicados." },
   { id: "RSVP", label: "Confirmação de presença", key: "showRsvp", desc: "Botão e chamada para o convidado confirmar." },
   { id: "MUSIC", label: "Playlist", key: "showMusic", desc: "Link para a playlist do casamento." },
-  { id: "GIFTS", label: "Lista de presentes", key: "showGifts", desc: "Presentes em destaque com botão para presentear." },
+  { id: "GIFTS", label: "Presentes em dinheiro", key: "showGifts", desc: "Presentes em destaque, com botão para o convidado presentear por Pix ou cartão." },
   { id: "GUESTBOOK", label: "Mural de recados", key: "showGuestbook", desc: "Espaço para os convidados deixarem mensagens." },
 ];
 
@@ -229,15 +229,15 @@ export function SiteBuilderClient({
       EDITABLE_KEYS.filter((k) => settings[k] !== undefined).map((k) => [k, settings[k]])
     ) as SiteCustomizationInput;
 
-    const toastId = toast.loading("Salvando o site...");
+    const toastId = toast.loading("Publicando as alterações...");
     startTransition(async () => {
       const res = await updateSiteCustomization(payload);
       if (res.success) {
         setDirty(false);
         setSavedAt(new Date().toISOString());
-        toast.success("Site atualizado.", { id: toastId });
+        toast.success(`Alterações publicadas. O endereço para compartilhar é ${siteAddress}.`, { id: toastId });
       } else {
-        toast.error(res.error || "Não foi possível salvar.", { id: toastId });
+        toast.error(res.error || "Não deu para publicar as alterações. Tente de novo.", { id: toastId });
       }
     });
   };
@@ -252,16 +252,16 @@ export function SiteBuilderClient({
       setUploading(null);
       if (res.success && res.url) {
         update({ [field]: res.url });
-        toast.success("Foto enviada. Salve para publicar.");
+        toast.success("Foto enviada. Para ela aparecer no site, toquem em “Publicar alterações”.");
       } else {
-        toast.error(res.error || "Não foi possível enviar a foto.");
+        toast.error(res.error || "Não deu para enviar a foto. Tente de novo.");
       }
     });
   };
 
   const handleAddStory = () => {
     if (!story.title.trim() || !story.description.trim()) {
-      toast.error("Preencha o título e a descrição do momento.");
+      toast.error("Informem o título e o que aconteceu neste momento.");
       return;
     }
     startTransition(async () => {
@@ -271,14 +271,14 @@ export function SiteBuilderClient({
         setStory({ title: "", dateLabel: "", description: "" });
         toast.success("Momento adicionado.");
       } else {
-        toast.error(res.error || "Não foi possível adicionar o momento.");
+        toast.error(res.error || "Não deu para adicionar o momento. Tente de novo.");
       }
     });
   };
 
   const handleAddTip = () => {
     if (!tip.title.trim()) {
-      toast.error("Informe o nome do lugar.");
+      toast.error("Informem o nome do lugar.");
       return;
     }
     startTransition(async () => {
@@ -288,7 +288,7 @@ export function SiteBuilderClient({
         setTip({ category: tip.category, title: "", description: "", address: "", phone: "", linkUrl: "", discountCode: "" });
         toast.success("Dica adicionada.");
       } else {
-        toast.error(res.error || "Não foi possível adicionar a dica.");
+        toast.error(res.error || "Não deu para adicionar a dica. Tente de novo.");
       }
     });
   };
@@ -303,7 +303,7 @@ export function SiteBuilderClient({
         else setTips((prev) => prev.filter((t) => t.id !== id));
         toast.success(kind === "story" ? "Momento removido." : "Dica removida.");
       } else {
-        toast.error(res.error || "Não foi possível remover.");
+        toast.error(res.error || "Não deu para remover agora. Tente de novo.");
       }
       setPendingDelete(null);
     });
@@ -316,7 +316,7 @@ export function SiteBuilderClient({
       if (res.success) toast.success(checked ? "Seção exibida no site." : "Seção ocultada do site.");
       else {
         setSettings((prev) => ({ ...prev, [key]: !checked }));
-        toast.error(res.error || "Não foi possível atualizar a seção.");
+        toast.error(res.error || "Não deu para atualizar a seção. Tente de novo.");
       }
     });
   };
@@ -407,8 +407,8 @@ export function SiteBuilderClient({
   const savedLabel = dirty
     ? "alterações ainda não publicadas"
     : savedAt
-      ? `salvo em ${savedFmt.format(new Date(savedAt)).replace(".", "")}`
-      : "tudo salvo";
+      ? `publicado em ${savedFmt.format(new Date(savedAt)).replace(".", "")}`
+      : "tudo publicado";
 
   return (
     <div className="flex flex-col gap-5">
@@ -515,7 +515,7 @@ export function SiteBuilderClient({
                 {section.id === "LOCATION" && section.key && (
                   <>
                     {visibilityToggle(section.key)}
-                    <p className="text-sm text-tinta-suave">Se você não informar os links de rota, o site cria os botões a partir do endereço.</p>
+                    <p className="text-sm text-tinta-suave">Se vocês não informarem os links de rota, o site cria os botões a partir do endereço.</p>
                     <Input id="locationName" label="Nome do local" value={settings.locationName || ""} onChange={(e) => update({ locationName: e.target.value })} />
                     <Input id="locationAddress" label="Endereço completo" value={settings.locationAddress || ""} onChange={(e) => update({ locationAddress: e.target.value })} />
                     <div className="grid grid-cols-2 gap-3">
@@ -617,7 +617,7 @@ export function SiteBuilderClient({
             ))}
           </ol>
           <p className="text-sm text-tinta-suave">
-            Ligar ou desligar uma seção vale na hora. Os textos e as fotos só vão para o site quando você toca em “Publicar alterações”.
+            Ligar ou desligar uma seção vale na hora. Os textos e as fotos só vão para o site quando vocês tocam em “Publicar alterações”.
           </p>
 
           {/* Prévia abaixo do formulário em telas menores */}

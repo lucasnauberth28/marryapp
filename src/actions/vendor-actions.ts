@@ -46,7 +46,7 @@ export async function createVendor(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error("[createVendor]", error);
-    return { success: false, error: "Erro ao criar fornecedor." };
+    return { success: false, error: "Não deu para cadastrar o fornecedor. Tente de novo." };
   }
 }
 
@@ -77,7 +77,7 @@ export async function updateVendor(id: string, formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error("[updateVendor]", error);
-    return { success: false, error: "Erro ao atualizar fornecedor." };
+    return { success: false, error: "Não deu para salvar o fornecedor. Tente de novo." };
   }
 }
 
@@ -91,6 +91,6 @@ export async function deleteVendor(id: string) {
     return { success: true };
   } catch (error) {
     console.error("[deleteVendor]", error);
-    return { success: false, error: "Erro ao excluir fornecedor. Ele pode ter despesas vinculadas." };
+    return { success: false, error: "Não deu para excluir o fornecedor. Ele pode ter despesas ligadas a ele." };
   }
 }

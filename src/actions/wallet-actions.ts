@@ -45,7 +45,7 @@ export async function updateWalletBalance(balanceInCents: number) {
     return { success: true };
   } catch (error) {
     console.error("[updateWalletBalance]", error);
-    return { success: false, error: "Erro ao atualizar saldo da carteira." };
+    return { success: false, error: "Não deu para atualizar o saldo. Tente de novo." };
   }
 }
 
@@ -76,7 +76,7 @@ export async function createCreditCard(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error("[createCreditCard]", error);
-    return { success: false, error: "Erro ao cadastrar cartão de crédito." };
+    return { success: false, error: "Não deu para cadastrar o cartão. Tente de novo." };
   }
 }
 
@@ -110,7 +110,7 @@ export async function updateCreditCard(id: string, formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error("[updateCreditCard]", error);
-    return { success: false, error: "Erro ao atualizar cartão de crédito." };
+    return { success: false, error: "Não deu para salvar o cartão. Tente de novo." };
   }
 }
 
@@ -125,6 +125,6 @@ export async function deleteCreditCard(id: string) {
     return { success: true };
   } catch (error) {
     console.error("[deleteCreditCard]", error);
-    return { success: false, error: "Erro ao excluir cartão de crédito." };
+    return { success: false, error: "Não deu para excluir o cartão. Tente de novo." };
   }
 }

@@ -82,7 +82,7 @@ export async function createExpense(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error("[createExpense]", error);
-    return { success: false, error: "Erro ao criar despesa." };
+    return { success: false, error: "Não deu para cadastrar a despesa. Tente de novo." };
   }
 }
 
@@ -90,7 +90,7 @@ export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
   const { weddingId } = await requireWedding("/financas");
   try {
     if (typeof id !== "string" || !EXPENSE_STATUSES.has(status)) {
-      return { success: false, error: "Erro ao atualizar despesa." };
+      return { success: false, error: "Não deu para salvar a despesa. Tente de novo." };
     }
     const result = await prisma.expense.updateMany({
       where: { id, weddingId },
@@ -102,7 +102,7 @@ export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
     return { success: true };
   } catch (error) {
     console.error("[updateExpenseStatus]", error);
-    return { success: false, error: "Erro ao atualizar despesa." };
+    return { success: false, error: "Não deu para salvar a despesa. Tente de novo." };
   }
 }
 
@@ -117,7 +117,7 @@ export async function deleteExpense(id: string) {
     return { success: true };
   } catch (error) {
     console.error("[deleteExpense]", error);
-    return { success: false, error: "Erro ao excluir despesa." };
+    return { success: false, error: "Não deu para excluir a despesa. Tente de novo." };
   }
 }
 
@@ -171,6 +171,6 @@ export async function createBatchExpenses(items: Array<{
     return { success: true };
   } catch (error) {
     console.error("[createBatchExpenses]", error);
-    return { success: false, error: "Erro ao criar parcelas de despesas." };
+    return { success: false, error: "Não deu para cadastrar as parcelas. Tente de novo." };
   }
 }

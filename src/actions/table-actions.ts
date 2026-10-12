@@ -52,7 +52,7 @@ export async function createTable(name: string, capacity: number) {
     revalidatePath("/(admin)/convidados", "page");
     return { success: true };
   } catch {
-    return { success: false, error: "Erro ao criar mesa." };
+    return { success: false, error: "Não deu para criar a mesa. Tente de novo." };
   }
 }
 
@@ -72,7 +72,7 @@ export async function deleteTable(id: string) {
     revalidatePath("/(admin)/convidados", "page");
     return { success: true };
   } catch {
-    return { success: false, error: "Erro ao excluir mesa." };
+    return { success: false, error: "Não deu para excluir a mesa. Tente de novo." };
   }
 }
 
@@ -98,6 +98,6 @@ export async function assignGuestToTable(guestId: string, tableId: string | null
     revalidatePath("/(admin)/convidados", "page");
     return { success: true };
   } catch {
-    return { success: false, error: "Erro ao mover convidado." };
+    return { success: false, error: "Não deu para mover o convidado. Tente de novo." };
   }
 }
