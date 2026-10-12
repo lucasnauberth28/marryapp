@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import Image from "@/components/landing/photo";
 import Link from "next/link";
 import { ArrowRight, Check, Copy, Flower2, Gift, Globe, Heart, LayoutGrid, MapPin, MessageCircle, NotebookPen, QrCode, Store, Users } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
