@@ -2,6 +2,7 @@
  * Catálogo de planos. Fonte única de preço: o servidor sempre recalcula o valor a partir daqui,
  * nunca confiando no valor enviado pelo navegador.
  */
+import { GIFT_FEE_LABEL } from "./gift-fee.ts";
 import { calculateCustomPlanPrice } from "./pricing-modules.ts";
 
 export const PLANS_CONFIG = {
@@ -13,38 +14,35 @@ export const PLANS_CONFIG = {
     period: "Gratuito",
     badge: "Para começar",
     features: [
-      "Site padrão dos noivos com subdomínio",
-      "Lista de presentes com Pix e Cartão",
-      "RSVP padrão com controle de convidados",
-      "Taxa de 2,99% por presente recebido",
+      "Site do casamento com endereço no Aceito",
+      "Lista de convidados e confirmações de presença",
+      "Presentes em dinheiro por Pix e cartão",
+      `Taxa de ${GIFT_FEE_LABEL} por presente recebido`,
     ],
   },
   classic: {
     type: "COUPLE" as const,
     name: "Plano Classic",
     price: 14900, // R$ 149,00
-    period: "Taxa única",
-    badge: "Mais escolhido",
-    isPopular: true,
+    period: "Pagamento único",
+    badge: "Convites e entrada",
+    // Só entra aqui o que o plano diferencia de fato: WhatsApp pelo painel e código QR são travados em wedding-plan-modules.
     features: [
-      "0% de taxa no Pix: vocês recebem o valor inteiro",
-      "Editor do site completo, com todos os blocos",
+      `Presentes por Pix sem a taxa de ${GIFT_FEE_LABEL} do Aceito`,
       "Convites e lembretes pelo WhatsApp, enviados pelo painel",
-      "Check-in com QR Code na portaria",
-      "Mural de recados e dicas de traje",
+      "Registro de entrada dos convidados com código QR",
     ],
   },
   vip: {
     type: "COUPLE" as const,
     name: "Plano VIP Premium",
     price: 29900, // R$ 299,00
-    period: "Taxa única",
-    badge: "Experiência VIP",
+    period: "Pagamento único",
+    badge: "Endereço próprio",
     features: [
-      "Tudo incluído no Plano Classic",
-      "Mesas organizadas e relatório de restrições para o buffet",
-      "Domínio próprio por 1 ano: registramos no nome de vocês",
-      "Atendimento VIP e suporte prioritário no WhatsApp",
+      "Todos os recursos do Classic",
+      "Endereço personalizado (.com.br): primeiro ano incluído, renovações por conta de vocês",
+      "Atendimento prioritário pelo WhatsApp",
     ],
   },
   // Fornecedores
@@ -55,9 +53,9 @@ export const PLANS_CONFIG = {
     period: "Gratuito",
     badge: "Iniciante",
     features: [
-      "Perfil no marketplace após curadoria",
+      "Perfil na vitrine de fornecedores, após curadoria",
       "1 região de atendimento",
-      "Até 3 solicitações de orçamento/mês",
+      "Até 3 pedidos de orçamento por mês",
     ],
   },
   pro: {
@@ -65,12 +63,11 @@ export const PLANS_CONFIG = {
     name: "Fornecedor Pro",
     price: 9900, // R$ 99,00
     period: "/ mês",
-    badge: "Mais popular",
-    isPopular: true,
+    badge: "Para crescer",
     features: [
       "Selo de fornecedor verificado pela curadoria",
       "Múltiplas regiões e cidades de atendimento",
-      "Orçamentos e leads ilimitados",
+      "Pedidos de orçamento ilimitados",
       "Agendamento de reuniões online e presenciais",
       "Botão de WhatsApp direto com o casal",
     ],

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { comboDiscountText } from "@/lib/catalog";
 import { calculateCustomPlanPrice, type PricingModule } from "@/lib/pricing-modules";
 import { Check, ArrowLeft, Zap } from "lucide-react";
 import { LandingHeader } from "@/components/landing/landing-header";
@@ -45,12 +46,12 @@ export function CustomPlanClient({ modules }: { modules: PricingModule[] }) {
             <ArrowLeft className="size-4" aria-hidden="true" />
             Ver planos prontos
           </Link>
-          <p className={overline}>Monte seu plano</p>
+          <p className={overline}>Plano sob medida</p>
           <h1 className="font-display text-[34px] font-normal leading-[40px] tracking-[-0.015em] sm:text-5xl sm:leading-[54px] lg:text-[56px] lg:leading-[62px]">
             Escolham só o que vão usar
           </h1>
           <p className="max-w-[60ch] text-[17px] leading-[26px] text-tinta-suave sm:text-lg sm:leading-7">
-            Com 3 recursos o plano ganha 15% de desconto; com 5 ou mais, 25%. Pagamento único, válido até o casamento.
+            {comboDiscountText()} O pagamento é único, sem mensalidade.
           </p>
         </div>
 
@@ -154,9 +155,11 @@ export function CustomPlanClient({ modules }: { modules: PricingModule[] }) {
               aria-disabled={selectedCount === 0}
               className={cn(btn.primary, btn.block, selectedCount === 0 && "pointer-events-none opacity-60")}
             >
-              Continuar para o pagamento
+              Continuar com este plano
             </Link>
-            <p className="text-sm text-tinta-suave">Sem mensalidade. Pagamento único, com liberação imediata.</p>
+            <p className="text-sm text-tinta-suave">
+              Sem mensalidade. Vocês criam a conta e pagam por Pix; os recursos são liberados depois que o pagamento é confirmado.
+            </p>
           </aside>
         </div>
       </main>

@@ -1,3 +1,5 @@
+import { GIFT_FEE_LABEL } from "./gift-fee.ts";
+
 export interface PricingModule {
   id: string;
   name: string;
@@ -23,25 +25,23 @@ export const COUPLE_MODULES: PricingModule[] = [
     id: "pixZero",
     name: "Sem taxa no Pix dos presentes",
     category: "Presentes",
-    description: "Vocês recebem o valor inteiro dos presentes, sem o desconto de 2,99%.",
+    description: `Os presentes pagos por Pix chegam sem a taxa de ${GIFT_FEE_LABEL} do Aceito.`,
     price: 5900, // R$ 59,00
     iconName: "Percent",
-    highlightBadge: "Economia Real",
   },
   {
     id: "whatsapp",
-    name: "WhatsApp para convites, lembretes e agradecimentos",
+    name: "WhatsApp para convites e lembretes",
     category: "Comunicação",
-    description: "Mande convites e lembretes de confirmação pelo painel, direto no WhatsApp dos convidados, e o agradecimento sai sozinho quando alguém presenteia.",
+    description: "Enviem convites e lembretes de confirmação pelo painel, direto no WhatsApp dos convidados.",
     price: 6900, // R$ 69,00
     iconName: "MessageCircle",
-    highlightBadge: "Mais Pedido",
   },
   {
     id: "qrcode",
-    name: "Check-in com QR Code na portaria",
+    name: "Registro de entrada com código QR",
     category: "Dia do Evento",
-    description: "Leitor de QR Code para receber os convidados rápido, marcar presença e indicar a mesa.",
+    description: "Leitor de código QR para registrar a chegada de cada convidado na festa e mostrar a mesa dele.",
     price: 3900, // R$ 39,00
     iconName: "QrCode",
   },
@@ -55,9 +55,9 @@ export const COUPLE_MODULES: PricingModule[] = [
   },
   {
     id: "customDomain",
-    name: "Domínio próprio (.com.br) por 1 ano",
-    category: "Exclusividade",
-    description: "Registramos um endereço .com.br no nome de vocês, com o primeiro ano incluso, e o site passa a abrir nele (ex: lucasegiovanna.com.br), com SSL grátis. Ótimo para convites impressos.",
+    name: "Endereço personalizado (.com.br)",
+    category: "Endereço do site",
+    description: "Registramos um endereço .com.br no nome de vocês e o site passa a abrir nele (exemplo: lucasegiovanna.com.br). O primeiro ano está incluído; as renovações ficam por conta de vocês.",
     price: 7900, // R$ 79,00
     iconName: "Compass",
     highlightBadge: "Exclusivo",
