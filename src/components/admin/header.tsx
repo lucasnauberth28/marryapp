@@ -25,6 +25,7 @@ import { hasPathAccess, isPlatformAdminPaths } from "@/lib/permissions";
 import { Logo } from "@/components/brand/logo";
 import { accountLabel } from "@/lib/account-label";
 import { TourMenuItem } from "@/components/tour/tour-restart";
+import { ThemeMenuItems, ThemeToggle } from "@/components/theme/theme-toggle";
 
 interface HeaderProps {
   role?: string;
@@ -66,6 +67,8 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
             <LayoutDashboard className="h-4 w-4" aria-hidden="true" /> Administração
           </Link>
         )}
+        {/* No celular o seletor fica no menu da conta e no "Mais" (o cabeçalho é estreito) */}
+        <ThemeToggle className="hidden md:inline-flex" />
         <NotificationBell initialUnread={unreadNotifications} allHref="/notificacoes" settingsHref="/conta#avisos" pushPublicKey={pushPublicKey} />
 
         <DropdownMenu>
@@ -124,6 +127,11 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
                   </Link>
                 </DropdownMenuItem>
               )}
+            </div>
+            {/* No computador o seletor fica no botão sol/lua do cabeçalho */}
+            <DropdownMenuSeparator className="my-0 bg-linha md:hidden" />
+            <div className="p-1.5 md:hidden">
+              <ThemeMenuItems />
             </div>
             <DropdownMenuSeparator className="my-0 bg-linha" />
             <div className="p-1.5">

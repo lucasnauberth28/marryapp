@@ -15,6 +15,7 @@ import {
   MessageCircle,
   Send,
   ShieldCheck,
+  SunMoon,
   Trash2,
   UserPlus,
   Users,
@@ -25,6 +26,7 @@ import { cancelPartnerInvite, changePassword, createPartnerInvite, deleteMyAccou
 import { btn } from "@/components/landing/styles";
 import { LoadingButton } from "@/components/painel/loading-button";
 import { Field, FormAlert } from "@/components/ui/field";
+import { ThemeSegmented } from "@/components/theme/theme-toggle";
 import { cn } from "@/lib/utils";
 import { PreferencesForm } from "@/components/notifications/preferences-form";
 import type { NotificationAudience, NotificationGroup } from "@/lib/notifications/catalog";
@@ -62,6 +64,7 @@ export function AccountSections({ kind, account, wedding, pushPublicKey, notific
     <div className="flex flex-col gap-6">
       {wedding ? <PartnerSection wedding={wedding} /> : null}
       <NotificationsSection pushPublicKey={pushPublicKey} notifications={notifications} />
+      <AppearanceSection />
       <PasswordSection />
       <DataSection kind={kind} createdAt={account.createdAt} companyName={account.companyName} coupleNames={wedding?.coupleNames ?? null} />
       {kind !== "admin" ? <DeleteSection kind={kind} isLastMember={wedding ? wedding.members.length <= 1 : false} /> : null}
@@ -139,6 +142,14 @@ function NotificationsSection({ pushPublicKey, notifications }: Pick<Props, "pus
       description="Escolha como e quando o Aceito avisa você. O sino no topo guarda tudo, aconteça o que acontecer."
     >
       <PreferencesForm initial={notifications.prefs} audience={notifications.audience} groups={notifications.groups} pushPublicKey={pushPublicKey} />
+    </Section>
+  );
+}
+
+function AppearanceSection() {
+  return (
+    <Section id="aparencia" icon={SunMoon} title="Aparência" description="Claro, escuro ou o do seu aparelho. Vale para este navegador.">
+      <ThemeSegmented />
     </Section>
   );
 }

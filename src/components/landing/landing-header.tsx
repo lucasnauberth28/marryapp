@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight, ChevronRight, Menu, X } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { ThemeSegmented, ThemeToggle } from "@/components/theme/theme-toggle";
 import { cn } from "@/lib/utils";
 import { AnchorLink } from "./anchor-link";
 import { btn, btnArrow } from "./styles";
@@ -103,7 +104,7 @@ export function LandingHeader() {
         className={cn(
           "sticky top-0 z-50 border-b transition-[background-color,border-color,box-shadow,backdrop-filter] duration-500 ease-[var(--ease-aceito)]",
           scrolled
-            ? "border-linha bg-linho/85 shadow-[0_8px_24px_-20px_rgba(35,28,36,0.35)] backdrop-blur-md backdrop-saturate-150"
+            ? "border-linha bg-linho/85 shadow-aceito-1 backdrop-blur-md backdrop-saturate-150"
             : "border-transparent bg-linho/0",
         )}
       >
@@ -136,6 +137,7 @@ export function LandingHeader() {
           </nav>
 
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
+            <ThemeToggle />
             <Link href="/login" className={cn(btn.quiet, "max-sm:min-h-11 max-sm:px-3 max-sm:text-sm")}>
               Entrar
             </Link>
@@ -225,6 +227,10 @@ export function LandingHeader() {
           )}
           style={{ transitionDelay: open ? "320ms" : "0ms" }}
         >
+          <div className="mb-2 flex flex-col gap-2">
+            <p className="text-sm font-semibold text-tinta">Aparência</p>
+            <ThemeSegmented />
+          </div>
           <p className="mb-2 text-sm text-tinta-suave">Foi convidado para um casamento? Use o link enviado pelo casal. Você não precisa criar uma conta.</p>
           <Link href="/cadastro?plano=basic" onClick={close} className={cn(btn.primary, btn.block)}>
             Criar conta grátis

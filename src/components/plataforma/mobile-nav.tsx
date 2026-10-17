@@ -90,7 +90,7 @@ export function PlatformMobileNav({
 
       {moreOpen && (
         <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-labelledby="admin-mais-titulo">
-          <button type="button" aria-label="Fechar" className="absolute inset-0 bg-tinta/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setMoreOpen(false)} />
+          <button type="button" aria-label="Fechar" className="absolute inset-0 bg-scrim/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setMoreOpen(false)} />
           <div
             id="admin-mais"
             className="absolute inset-x-0 bottom-0 flex max-h-[88vh] flex-col rounded-t-3xl bg-linho shadow-[var(--shadow-aceito-2)] animate-in slide-in-from-bottom duration-300"

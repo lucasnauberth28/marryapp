@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { DatePicker } from "@/components/ui/date-picker";
 import { PageHeader } from "@/components/admin/page-header";
 import { TourSettingsCard } from "@/components/tour/tour-restart";
+import { ThemeSegmented } from "@/components/theme/theme-toggle";
 import { toast } from "sonner";
 
 interface SettingsClientProps {
@@ -86,6 +87,16 @@ export function SettingsClient({ initialSettings, summary, canSeePlan }: Setting
               Salvar prazo
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="gap-4">
+        <CardHeader>
+          <CardTitle>Aparência</CardTitle>
+          <CardDescription>Claro, escuro ou o do seu aparelho. Vale para este navegador e não muda o site do casamento, que fica sempre claro.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ThemeSegmented />
         </CardContent>
       </Card>
 

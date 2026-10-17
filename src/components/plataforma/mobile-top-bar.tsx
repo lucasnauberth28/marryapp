@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 /** Faixa de cima da administração no celular: marca, "Administração" e a lupa que leva à busca em tudo. */
 export function PlatformMobileTopBar() {
@@ -10,9 +11,12 @@ export function PlatformMobileTopBar() {
         <Logo variant="mark" height={28} />
         <span className="truncate font-display text-xl text-tinta">Administração</span>
       </Link>
-      <Link href="/admin/suporte#busca" aria-label="Buscar em tudo" className="grid size-11 place-items-center rounded-xl text-tinta-suave transition-colors hover:bg-areia">
-        <Search className="size-5" strokeWidth={1.75} aria-hidden="true" />
-      </Link>
+      <div className="flex shrink-0 items-center">
+        <ThemeToggle />
+        <Link href="/admin/suporte#busca" aria-label="Buscar em tudo" className="grid size-11 place-items-center rounded-xl text-tinta-suave transition-colors hover:bg-areia">
+          <Search className="size-5" strokeWidth={1.75} aria-hidden="true" />
+        </Link>
+      </div>
     </header>
   );
 }

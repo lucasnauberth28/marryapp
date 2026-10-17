@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Clock } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { cn } from "@/lib/utils";
 import { LoginForm } from "./login-form";
 import { SignupFlow } from "./signup-flow";
@@ -68,6 +69,7 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
             <Logo height={24} priority className="lg:hidden" />
             <Logo height={28} priority className="hidden lg:block" />
           </Link>
+          <ThemeToggle className="ml-auto" />
         </header>
 
         {/* Faixa de foto no celular */}

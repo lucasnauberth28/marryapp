@@ -7,6 +7,7 @@ import { getVendorPageContext } from "@/lib/security/vendor-guard";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { unreadCountFor } from "@/lib/notifications/queries";
 import { vapidPublicKey } from "@/lib/notifications/push";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Chip } from "./_components/status-chip";
 import { VendorAvatar } from "./_components/vendor-avatar";
 import { LogoutButton, LogoutIconButton, VendorMobileTitle, VendorSidebarNav, VendorTabBar } from "./_components/vendor-nav";
@@ -94,8 +95,11 @@ export default async function FornecedorLayout({ children }: { children: React.R
           </span>
         </div>
         <VendorSidebarNav newLeads={newLeads} publicProfileHref={publicProfileHref} />
-        <div className="mt-auto border-t border-linha pt-3">
-          <LogoutButton />
+        <div className="mt-auto flex items-center gap-1 border-t border-linha pt-3">
+          <div className="min-w-0 flex-1">
+            <LogoutButton />
+          </div>
+          <ThemeToggle align="start" />
         </div>
       </aside>
 

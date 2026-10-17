@@ -83,11 +83,11 @@ export function ThemeSegmented({ className }: { className?: string }) {
   return (
     <fieldset className={cn("min-w-0", className)}>
       <legend className="sr-only">Aparência do aplicativo</legend>
-      <div className="inline-flex w-full flex-wrap gap-1 rounded-[12px] border border-linha bg-areia p-1 sm:w-auto">
+      <div className="grid w-full grid-cols-3 gap-1 rounded-[12px] border border-linha bg-areia p-1 sm:inline-grid sm:w-auto sm:grid-flow-col sm:grid-cols-none">
         {THEME_OPTIONS.map(({ value, label }) => {
           const Icon = OPTION_ICON[value];
           return (
-            <label key={value} className="relative flex-1 sm:flex-none">
+            <label key={value} className="relative min-w-0">
               <input
                 type="radio"
                 name="aceito-tema"
@@ -96,7 +96,7 @@ export function ThemeSegmented({ className }: { className?: string }) {
                 onChange={() => setPreference(value)}
                 className="peer sr-only"
               />
-              <span className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[8px] px-4 text-sm font-semibold text-tinta-suave transition-colors hover:text-tinta peer-checked:bg-papel peer-checked:text-ameixa peer-checked:shadow-[var(--shadow-aceito-1)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ameixa">
+              <span className="flex min-h-11 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-[8px] px-2 py-1 text-center text-sm leading-5 sm:flex-row sm:gap-2 sm:px-4 sm:py-0 font-semibold text-tinta-suave transition-colors hover:text-tinta peer-checked:bg-papel peer-checked:text-ameixa peer-checked:shadow-[var(--shadow-aceito-1)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ameixa">
                 <Icon aria-hidden="true" className="size-4" />
                 {label}
               </span>

@@ -10,6 +10,7 @@ import { MORE_TAB_ICON, isNavItemActive, visibleMobileTabs, visibleMoreGroups } 
 import { hasPathAccess } from "@/lib/permissions";
 import { TOUR_CLOSE_MORE, TOUR_OPEN_MORE } from "@/lib/tour/events";
 import { navAnchor } from "@/lib/tour/steps";
+import { ThemeSegmented } from "@/components/theme/theme-toggle";
 
 /** Cartão do topo da aba "Mais": quem está no painel; leva às Configurações quando a conta pode abri-las. */
 function AccountCard({
@@ -149,7 +150,7 @@ export function MobileTabBar({
           <button
             type="button"
             aria-label="Fechar"
-            className="absolute inset-0 bg-tinta/40 backdrop-blur-sm animate-in fade-in duration-300"
+            className="absolute inset-0 bg-scrim/40 backdrop-blur-sm animate-in fade-in duration-300"
             onClick={() => setMoreOpen(false)}
           />
           <div
@@ -174,6 +175,10 @@ export function MobileTabBar({
                 <nav aria-label="Todas as áreas">
                   <NavList allowedPaths={allowedPaths} variant="cards" groups={moreGroups} counts={counts} onNavigate={() => setMoreOpen(false)} />
                 </nav>
+                <div className="rounded-2xl border border-linha bg-papel p-4 shadow-[var(--shadow-aceito-1)]">
+                  <p className="mb-2 text-sm font-semibold text-tinta">Aparência</p>
+                  <ThemeSegmented />
+                </div>
                 <div className="rounded-2xl border border-linha bg-papel px-4 shadow-[var(--shadow-aceito-1)]">
                   <button
                     type="button"

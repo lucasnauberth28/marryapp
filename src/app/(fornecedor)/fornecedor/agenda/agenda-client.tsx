@@ -69,7 +69,7 @@ function Modal({
       ref={ref}
       aria-labelledby={titleId}
       onClose={onClose}
-      className="m-auto max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] max-w-[480px] overflow-y-auto rounded-2xl border border-linha bg-papel p-0 text-tinta shadow-[var(--shadow-aceito-2)] backdrop:bg-tinta/40"
+      className="m-auto max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] max-w-[480px] overflow-y-auto rounded-2xl border border-linha bg-papel p-0 text-tinta shadow-[var(--shadow-aceito-2)] backdrop:bg-scrim/40"
     >
       {open ? (
         <div className="flex flex-col gap-4 p-5 sm:p-6">
