@@ -118,10 +118,9 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
         });
         router.refresh();
       } else {
-        toast.error(result.error || "Erro ao realizar operação.", {
+        toast.error(result.error || "Não deu para salvar o perfil. Tente de novo.", {
           id: toastId,
-          duration: 6000,
-          description: "Ocorreu um erro inesperado no servidor.",
+          duration: 6000
         });
       }
     });
@@ -136,10 +135,9 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
           toast.success("Perfil excluído.", { id: toastId });
           router.refresh();
         } else {
-          toast.error(result.error || "Erro ao realizar operação.", {
+          toast.error(result.error || "Não deu para excluir o perfil. Tente de novo.", {
             id: toastId,
-            duration: 6000,
-            description: "Ocorreu um erro inesperado no servidor.",
+            duration: 6000
           });
         }
       });

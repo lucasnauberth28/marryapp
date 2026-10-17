@@ -51,7 +51,7 @@ export async function getTasks() {
     return { success: true, data: boardItems };
   } catch (error) {
     console.error("Failed to fetch tasks:", error);
-    return { success: false, error: "Falha ao carregar as tarefas." };
+    return { success: false, error: "Não deu para carregar as tarefas. Tente de novo." };
   }
 }
 
@@ -65,8 +65,8 @@ export async function createTask(data: {
   const { weddingId } = await requireWedding("/pendencias");
   // Só os campos da tarefa: nada do que o navegador enviar decide o casamento
   const title = typeof data?.title === "string" ? data.title.trim().slice(0, 200) : "";
-  if (!title) return { success: false, error: "Informe o título da tarefa." };
-  if (!isTaskStatus(data.status)) return { success: false, error: "Status inválido." };
+  if (!title) return { success: false, error: "Informem o que precisa ser feito." };
+  if (!isTaskStatus(data.status)) return { success: false, error: "Situação da tarefa inválida." };
 
   try {
     // Acha a maior posição atual para essa coluna
@@ -94,7 +94,7 @@ export async function createTask(data: {
     return { success: true, data: task };
   } catch (error) {
     console.error("Failed to create task:", error);
-    return { success: false, error: "Falha ao criar a tarefa." };
+    return { success: false, error: "Não deu para criar a tarefa. Tente de novo." };
   }
 }
 
@@ -106,7 +106,7 @@ export async function updateTaskStatus(
 ) {
   const { weddingId } = await requireWedding("/pendencias");
   if (typeof taskId !== "string" || !isTaskStatus(newStatus) || !Number.isFinite(Number(newPosition))) {
-    return { success: false, error: "Falha ao atualizar o status." };
+    return { success: false, error: "Não deu para atualizar a tarefa. Tente de novo." };
   }
   try {
     const result = await prisma.task.updateMany({
@@ -123,7 +123,7 @@ export async function updateTaskStatus(
     return { success: true };
   } catch (error) {
     console.error("Failed to update task status:", error);
-    return { success: false, error: "Falha ao atualizar o status." };
+    return { success: false, error: "Não deu para atualizar a tarefa. Tente de novo." };
   }
 }
 
@@ -136,14 +136,14 @@ export async function updateTask(taskId: string, data: Partial<{
 }>) {
   const { weddingId } = await requireWedding("/pendencias");
   if (typeof taskId !== "string" || !data || typeof data !== "object") {
-    return { success: false, error: "Falha ao atualizar a tarefa." };
+    return { success: false, error: "Não deu para salvar a tarefa. Tente de novo." };
   }
 
   // Só os campos editáveis da tarefa
   const update: Prisma.TaskUpdateManyMutationInput = {};
   if (data.title !== undefined) {
     const title = typeof data.title === "string" ? data.title.trim().slice(0, 200) : "";
-    if (!title) return { success: false, error: "Informe o título da tarefa." };
+    if (!title) return { success: false, error: "Informem o que precisa ser feito." };
     update.title = title;
   }
   const description = optionalText(data.description, 5000);
@@ -153,7 +153,7 @@ export async function updateTask(taskId: string, data: Partial<{
   const assignee = optionalText(data.assignee, 120);
   if (assignee !== undefined) update.assignee = assignee;
   if (data.status !== undefined) {
-    if (!isTaskStatus(data.status)) return { success: false, error: "Status inválido." };
+    if (!isTaskStatus(data.status)) return { success: false, error: "Situação da tarefa inválida." };
     update.status = data.status;
   }
 
@@ -169,7 +169,7 @@ export async function updateTask(taskId: string, data: Partial<{
     return { success: true, data: task };
   } catch (error) {
     console.error("Failed to update task:", error);
-    return { success: false, error: "Falha ao atualizar a tarefa." };
+    return { success: false, error: "Não deu para salvar a tarefa. Tente de novo." };
   }
 }
 
@@ -186,6 +186,6 @@ export async function deleteTask(taskId: string) {
     return { success: true };
   } catch (error) {
     console.error("Failed to delete task:", error);
-    return { success: false, error: "Falha ao excluir a tarefa." };
+    return { success: false, error: "Não deu para remover a tarefa. Tente de novo." };
   }
 }

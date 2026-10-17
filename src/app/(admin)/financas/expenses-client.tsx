@@ -423,10 +423,9 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
         setOpen(false);
         router.refresh();
       } else {
-        toast.error(res.error || "Erro ao realizar operação.", {
+        toast.error(res.error || "Não deu para cadastrar a despesa. Tente de novo.", {
           id: toastId,
-          duration: 6000,
-          description: "Ocorreu um erro inesperado no servidor.",
+          duration: 6000
         });
       }
     } else {
@@ -454,10 +453,9 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
         setOpen(false);
         router.refresh();
       } else {
-        toast.error(res.error || "Erro ao realizar operação.", {
+        toast.error(res.error || "Não deu para cadastrar as parcelas. Tente de novo.", {
           id: toastId,
-          duration: 6000,
-          description: "Ocorreu um erro inesperado no servidor.",
+          duration: 6000
         });
       }
     }
@@ -470,12 +468,11 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
       const res = await deleteExpense(id);
       if (res.success) {
         setExpenses(expenses.filter(e => e.id !== id));
-        toast.success("Despesa excluída com sucesso", { id: toastId });
+        toast.success("Despesa excluída.", { id: toastId });
       } else {
-        toast.error(res.error || "Erro ao realizar operação.", {
+        toast.error(res.error || "Não deu para excluir a despesa. Tente de novo.", {
           id: toastId,
-          duration: 6000,
-          description: "Ocorreu um erro inesperado no servidor.",
+          duration: 6000
         });
       }
     });
@@ -489,7 +486,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
       setExpenses(expenses.map(e => e.id === id ? { ...e, status: newStatus } : e));
       toast.success(newStatus === "PAID" ? "Parcela marcada como paga." : "Parcela marcada como pendente.");
     } else {
-      toast.error(res.error || "Erro ao atualizar status da despesa.");
+      toast.error(res.error || "Não deu para atualizar a despesa. Tente de novo.");
     }
   };
 

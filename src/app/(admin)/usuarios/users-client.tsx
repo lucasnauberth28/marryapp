@@ -87,10 +87,9 @@ export function UsersClient({ initialUsers, roles, embedded = false }: { initial
         });
         router.refresh();
       } else {
-        toast.error(result.error || "Erro ao realizar operação.", {
+        toast.error(result.error || "Não deu para salvar o usuário. Tente de novo.", {
           id: toastId,
-          duration: 6000,
-          description: "Ocorreu um erro inesperado no servidor.",
+          duration: 6000
         });
       }
     });
@@ -105,10 +104,9 @@ export function UsersClient({ initialUsers, roles, embedded = false }: { initial
           toast.success("Usuário excluído.", { id: toastId });
           router.refresh();
         } else {
-          toast.error(result.error || "Erro ao realizar operação.", {
+          toast.error(result.error || "Não deu para excluir o usuário. Tente de novo.", {
             id: toastId,
-            duration: 6000,
-            description: "Ocorreu um erro inesperado no servidor.",
+            duration: 6000
           });
         }
       });

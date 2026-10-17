@@ -86,7 +86,7 @@ export function CarteiraClient({ initialBalance, initialCards, toPayCents }: Car
       setBalanceModalOpen(false);
       toast.success("Saldo atualizado.", { id: toastId });
     } else {
-      toast.error(res.error || "Erro ao atualizar saldo.", { id: toastId });
+      toast.error(res.error || "Não deu para atualizar o saldo. Tente de novo.", { id: toastId });
     }
     setLoading(false);
   };
@@ -160,7 +160,7 @@ export function CarteiraClient({ initialBalance, initialCards, toPayCents }: Car
         setCardModalOpen(false);
         toast.success("Cartão atualizado.", { id: toastId });
       } else {
-        toast.error(res.error || "Erro ao atualizar cartão.", { id: toastId });
+        toast.error(res.error || "Não deu para salvar o cartão. Tente de novo.", { id: toastId });
       }
     } else {
       const res = await createCreditCard(formData);
@@ -169,7 +169,7 @@ export function CarteiraClient({ initialBalance, initialCards, toPayCents }: Car
         setCardModalOpen(false);
         router.refresh();
       } else {
-        toast.error(res.error || "Erro ao cadastrar cartão.", { id: toastId });
+        toast.error(res.error || "Não deu para cadastrar o cartão. Tente de novo.", { id: toastId });
       }
     }
     setLoading(false);
@@ -188,7 +188,7 @@ export function CarteiraClient({ initialBalance, initialCards, toPayCents }: Car
       setCards(cards.filter((c) => c.id !== cardToDelete));
       toast.success("Cartão excluído.", { id: toastId });
     } else {
-      toast.error(res.error || "Erro ao excluir cartão.", { id: toastId });
+      toast.error(res.error || "Não deu para excluir o cartão. Tente de novo.", { id: toastId });
     }
     setCardToDelete(null);
   };

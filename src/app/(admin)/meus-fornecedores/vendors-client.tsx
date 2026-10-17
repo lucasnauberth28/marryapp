@@ -128,7 +128,7 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
       setFormOpen(false);
       router.refresh();
     } else {
-      toast.error(res.error || "Não foi possível salvar o fornecedor.", { id: toastId });
+      toast.error(res.error || "Não deu para salvar o fornecedor. Tente de novo.", { id: toastId });
     }
     setLoading(false);
   };
@@ -141,7 +141,7 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
         setVendors((prev) => prev.filter((x) => x.id !== v.id));
         toast.success("Fornecedor removido.", { id: toastId });
       } else {
-        toast.error(res.error || "Não foi possível remover o fornecedor.", { id: toastId });
+        toast.error(res.error || "Não deu para remover o fornecedor. Tente de novo.", { id: toastId });
       }
     });
     setConfirmOpen(true);
@@ -158,7 +158,7 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
         actions={
           <>
             <Link href="/fornecedores" className={btn.secondary}>
-              Encontrar na vitrine
+              Encontrar fornecedores
             </Link>
             <button type="button" onClick={openCreate} className={btn.primary}>
               <Plus className="size-4" aria-hidden="true" /> Adicionar fornecedor
