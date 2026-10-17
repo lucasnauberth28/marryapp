@@ -7,7 +7,7 @@ test("trocar o tema pelo seletor persiste depois de recarregar", async ({ page }
   await page.goto("/configuracoes");
 
   // Configurações: seção "Aparência" com as três opções
-  await expect(page.getByRole("heading", { name: "Aparência" })).toBeVisible();
+  await expect(page.getByText("Claro, escuro ou o do seu aparelho")).toBeVisible();
   await page.locator("label", { hasText: "Escuro" }).click();
   await expect.poll(() => tema(page)).toBe("dark");
   await page.reload();
