@@ -13,6 +13,7 @@ import { MaintenanceBanner } from "@/components/admin/maintenance-banner"
 import { unreadCountFor } from "@/lib/notifications/queries"
 import { vapidPublicKey } from "@/lib/notifications/push"
 import { ImpersonationBanner } from "@/components/admin/impersonation-banner"
+import { LizAssistant } from "@/components/liz/liz-assistant"
 import { PanelTourProvider } from "@/components/tour/panel-tour-provider"
 import { loadPanelTour } from "@/lib/tour/panel-tour"
 
@@ -71,7 +72,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           unreadNotifications={unreadNotifications}
           pushPublicKey={vapidPublicKey()}
         />
-        <main id="conteudo" className="page-in flex-1 px-4 pb-32 pt-6 md:px-8 md:pb-12 md:pt-8">
+        <main id="conteudo" className="page-in flex-1 px-4 pb-32 pt-6 md:px-8 md:pb-24 md:pt-8">
           <div className="mx-auto w-full max-w-[1240px]">
             <MaintenanceBanner allowedPaths={allowedPaths} />
             {account.adminView && ctx && <MainWeddingNote coupleNames={wedding.coupleNames} />}
@@ -80,6 +81,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </main>
       </div>
       <MobileTabBar allowedPaths={allowedPaths} title={label.title} subtitle={subtitle} initials={label.initials} counts={counts} />
+      <LizAssistant allowedPaths={allowedPaths} />
     </div>
     </PanelTourProvider>
   )

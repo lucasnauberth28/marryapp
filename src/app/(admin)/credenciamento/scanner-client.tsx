@@ -192,7 +192,7 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
         )}
 
         {stage === "scanning" && (
-          <div className="flex flex-col overflow-hidden rounded-2xl bg-[#1b1620]">
+          <div data-liz-hide className="flex flex-col overflow-hidden rounded-2xl bg-[#1b1620]">
             <div className="relative flex min-h-80 items-center justify-center">
               <video ref={videoRef} onPlaying={() => setCameraReady(true)} className="absolute inset-0 size-full object-cover" playsInline autoPlay muted aria-label="Câmera para ler o código QR" />
               {!cameraReady && (

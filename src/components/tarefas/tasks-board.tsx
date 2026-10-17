@@ -261,7 +261,7 @@ export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, su
         type="button"
         onClick={openNew}
         aria-label="Nova tarefa"
-        className="fixed bottom-24 right-4 z-30 grid size-14 cursor-pointer place-items-center rounded-t-full rounded-b-2xl bg-ameixa text-on-ameixa shadow-[var(--shadow-aceito-2)] transition-colors hover:bg-ameixa-hover md:hidden"
+        className="fixed bottom-[calc(var(--liz-fab-bottom,6rem)+56px+12px)] right-4 z-30 grid size-14 cursor-pointer place-items-center rounded-t-full rounded-b-2xl bg-ameixa text-on-ameixa shadow-[var(--shadow-aceito-2)] transition-colors hover:bg-ameixa-hover md:hidden"
       >
         <Plus className="size-6" aria-hidden="true" />
       </button>

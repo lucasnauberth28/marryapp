@@ -375,8 +375,10 @@ html.lenis body {
   from { opacity: 0; transform: translate3d(0, 8px, 0); }
   to { opacity: 1; transform: none; }
 }
+/* `backwards` (e não `both`): depois da entrada o elemento volta a ficar sem transform, senão ele vira o
+   referencial dos botões fixos que estão dentro dele (adicionar convidado, nova tarefa) e eles saem do lugar. */
 .page-in {
-  animation: aceito-page-in 0.6s var(--ease-aceito) both;
+  animation: aceito-page-in 0.6s var(--ease-aceito) backwards;
 }
 
 /* Botões e cards: microinterações. */

@@ -1,0 +1,25 @@
+/* Botão fixo da Liz: ancoragem única, lida também pelos avisos (sonner) e pelos botões de adicionar do celular.
+   Celular: acima da barra inferior (56px + borda) e da área segura. Computador: canto inferior direito. */
+:root {
+  --liz-fab-bottom: calc(max(env(safe-area-inset-bottom), 8px) + 73px);
+  --liz-fab-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --liz-fab-bottom: 1.5rem;
+    --liz-fab-right: 1.5rem;
+  }
+}
+
+.liz-fab {
+  position: fixed;
+  right: var(--liz-fab-right);
+  bottom: var(--liz-fab-bottom);
+  z-index: 30;
+}
+
+/* Avisos sobem para não cobrir o botão (o sonner fixa o `bottom` em linha, por isso o !important). */
+body[data-liz-fab] [data-sonner-toaster][data-y-position="bottom"] {
+  bottom: calc(var(--liz-fab-bottom) + 56px + 12px) !important;
+}
