@@ -9,7 +9,6 @@ import {
   Plus,
   Trash2,
   Upload,
-  Loader2,
   AlertTriangle,
   Check,
   EyeOff,
@@ -22,6 +21,9 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { btn } from "@/components/landing/styles";
+import { LoadingButton } from "@/components/painel/loading-button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { UserImage } from "@/components/ui/user-image";
 import { Chip } from "@/components/casal/ui";
 import { WeddingSiteView, type WeddingSiteSettings } from "@/components/public/wedding-site-view";
 import { readableAccent } from "@/lib/wedding-format";
@@ -206,6 +208,8 @@ export function SiteBuilderClient({
     return u ? new Date(u).toISOString() : null;
   });
   const [isPending, startTransition] = useTransition();
+  // Qual ação própria está rodando, para o botão certo mostrar o carregamento (isPending vale para todas)
+  const [busyAction, setBusyAction] = useState<"publish" | "story" | "tip" | null>(null);
   const [uploading, setUploading] = useState<"heroImageUrl" | "couplePhotoUrl" | null>(null);
   const [pendingDelete, setPendingDelete] = useState<{ kind: "story" | "tip"; id: string; title: string } | null>(null);
   const [dirty, setDirty] = useState(false);
@@ -230,8 +234,10 @@ export function SiteBuilderClient({
     ) as SiteCustomizationInput;
 
     const toastId = toast.loading("Publicando as alterações...");
+    setBusyAction("publish");
     startTransition(async () => {
       const res = await updateSiteCustomization(payload);
+      setBusyAction(null);
       if (res.success) {
         setDirty(false);
         setSavedAt(new Date().toISOString());
@@ -264,8 +270,10 @@ export function SiteBuilderClient({
       toast.error("Informem o título e o que aconteceu neste momento.");
       return;
     }
+    setBusyAction("story");
     startTransition(async () => {
       const res = await createStoryItem({ ...story, position: storyItems.length });
+      setBusyAction(null);
       if (res.success && res.item) {
         setStoryItems((prev) => [...prev, res.item as StoryItem]);
         setStory({ title: "", dateLabel: "", description: "" });
@@ -281,8 +289,10 @@ export function SiteBuilderClient({
       toast.error("Informem o nome do lugar.");
       return;
     }
+    setBusyAction("tip");
     startTransition(async () => {
       const res = await createWeddingTip({ ...tip, position: tips.length });
+      setBusyAction(null);
       if (res.success && res.tip) {
         setTips((prev) => [...prev, res.tip as Tip]);
         setTip({ category: tip.category, title: "", description: "", address: "", phone: "", linkUrl: "", discountCode: "" });
@@ -326,10 +336,14 @@ export function SiteBuilderClient({
     return (
       <Field id={field} group label={label} hint={hint}>
         <div className="flex items-center gap-3">
-          <div className="grid aspect-[3/4] w-[72px] shrink-0 place-items-center overflow-hidden rounded-t-full bg-areia text-center text-[11px] text-tinta-suave">
-            {url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={url} alt={`Foto atual: ${label.toLowerCase()}`} className="size-full object-cover" />
+          <div className="relative grid aspect-[3/4] w-[72px] shrink-0 place-items-center overflow-hidden rounded-t-full bg-areia text-center text-[11px] text-tinta-suave">
+            {uploading === field ? (
+              <>
+                <span className="sr-only" role="status">Enviando a foto...</span>
+                <Skeleton className="absolute inset-0 rounded-none" />
+              </>
+            ) : url ? (
+              <UserImage src={url} alt={`Foto atual: ${label.toLowerCase()}`} sizes="72px" className="object-cover" />
             ) : (
               <span className="px-1">Sem foto</span>
             )}
@@ -342,10 +356,10 @@ export function SiteBuilderClient({
             aria-label={`Enviar ${label.toLowerCase()}`}
             onChange={(e) => handleUpload(field, e.target.files?.[0])}
           />
-          <button type="button" className={`${btn.secondary} ${btn.sm}`} disabled={uploading !== null} onClick={() => ref.current?.click()}>
-            {uploading === field ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Upload className="size-4" aria-hidden="true" />}
+          <LoadingButton className={`${btn.secondary} ${btn.sm}`} loading={uploading === field} disabled={uploading !== null} onClick={() => ref.current?.click()}>
+            <Upload className="size-4" aria-hidden="true" />
             {url ? "Trocar foto" : "Enviar foto"}
-          </button>
+          </LoadingButton>
         </div>
         <Input
           id={`${field}-link`}
@@ -425,10 +439,10 @@ export function SiteBuilderClient({
         <Link href={weddingSitePath(slug)} target="_blank" className={`${btn.secondary} ${btn.sm}`}>
           <Eye className="size-4" aria-hidden="true" /> Ver o site
         </Link>
-        <button type="button" onClick={handleSave} disabled={isPending || !dirty} className={`${btn.primary} ${btn.sm}`}>
-          {isPending ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : dirty ? null : <Check className="size-4" aria-hidden="true" />}
+        <LoadingButton onClick={handleSave} loading={busyAction === "publish"} disabled={isPending || !dirty} className={`${btn.primary} ${btn.sm}`}>
+          {dirty ? null : <Check className="size-4" aria-hidden="true" />}
           {dirty ? "Publicar alterações" : "Tudo publicado"}
-        </button>
+        </LoadingButton>
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(340px,420px)_minmax(0,1fr)] xl:items-start">
@@ -499,9 +513,9 @@ export function SiteBuilderClient({
                       <Input id="story-title" label="Título" value={story.title} onChange={(e) => setStory({ ...story, title: e.target.value })} placeholder="O primeiro encontro" />
                       <Input id="story-date" label="Quando" value={story.dateLabel} onChange={(e) => setStory({ ...story, dateLabel: e.target.value })} placeholder="Outubro de 2021" />
                       <Textarea id="story-desc" label="O que aconteceu" rows={3} value={story.description} onChange={(e) => setStory({ ...story, description: e.target.value })} />
-                      <button type="button" onClick={handleAddStory} disabled={isPending} className={`${btn.secondary} ${btn.sm} w-fit`}>
+                      <LoadingButton onClick={handleAddStory} loading={busyAction === "story"} disabled={isPending} className={`${btn.secondary} ${btn.sm} w-fit`}>
                         <Plus className="size-4" aria-hidden="true" /> Adicionar momento
-                      </button>
+                      </LoadingButton>
                     </fieldset>
                     <ItemList
                       title={`Momentos publicados (${storyItems.length})`}
@@ -592,9 +606,9 @@ export function SiteBuilderClient({
                       <Input id="tip-link" label="Site ou link de reserva" value={tip.linkUrl} onChange={(e) => setTip({ ...tip, linkUrl: e.target.value })} placeholder="https://..." />
                       <Input id="tip-discount" label="Cupom de desconto" value={tip.discountCode} onChange={(e) => setTip({ ...tip, discountCode: e.target.value.toUpperCase() })} inputClassName="font-semibold uppercase" />
                       <Textarea id="tip-desc" label="Descrição" rows={2} value={tip.description} onChange={(e) => setTip({ ...tip, description: e.target.value })} />
-                      <button type="button" onClick={handleAddTip} disabled={isPending} className={`${btn.secondary} ${btn.sm} w-fit`}>
+                      <LoadingButton onClick={handleAddTip} loading={busyAction === "tip"} disabled={isPending} className={`${btn.secondary} ${btn.sm} w-fit`}>
                         <Plus className="size-4" aria-hidden="true" /> Adicionar dica
-                      </button>
+                      </LoadingButton>
                     </fieldset>
                     <ItemList
                       title={`Dicas publicadas (${tips.length})`}

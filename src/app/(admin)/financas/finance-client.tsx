@@ -8,7 +8,6 @@ import { Chip, type ChipTone } from "@/components/casal/ui";
 import { Button } from "@/components/ui/button";
 import {
   CheckCircle2,
-  Loader2,
   CreditCard,
   QrCode,
   ArrowUpDown,
@@ -252,38 +251,28 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
                   <Button
                     size="sm"
                     onClick={() => handleApprove(tx.id, tx.gift.id)}
-                    disabled={isPending && approvingId === tx.id}
+                    loading={isPending && approvingId === tx.id}
+                    disabled={isPending}
                     className="h-11 rounded-xl bg-sucesso px-4 text-sm font-semibold text-white shadow-sm hover:bg-sucesso/90 disabled:opacity-50 sm:h-9"
                   >
-                    {isPending && approvingId === tx.id ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <>
-                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                        Confirmar
-                      </>
-                    )}
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                    Confirmar
                   </Button>
                 ) : tx.status === "APPROVED" ? (
                   <Button
                     size="sm"
                     variant={tx.thankYouSent ? "secondary" : "outline"}
                     onClick={() => handleThankYou(tx.id, tx.thankYouSent, tx.guest?.phone, tx.guest?.name, tx.gift.title)}
-                    disabled={isPending && thankingId === tx.id}
+                    loading={isPending && thankingId === tx.id}
+                    disabled={isPending}
                     className={`h-11 rounded-xl px-4 text-sm font-semibold disabled:opacity-50 sm:h-9 ${
                       tx.thankYouSent
                         ? "border-transparent bg-ameixa-suave text-ameixa hover:bg-ameixa-suave"
                         : "border-linha-forte text-tinta hover:bg-ameixa-suave"
                     }`}
                   >
-                    {isPending && thankingId === tx.id ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <>
-                        <Heart className={`w-3.5 h-3.5 mr-1 ${tx.thankYouSent ? "fill-ameixa text-ameixa" : ""}`} />
-                        {tx.thankYouSent ? "Agradecido" : "Agradecer"}
-                      </>
-                    )}
+                    <Heart className={`w-3.5 h-3.5 mr-1 ${tx.thankYouSent ? "fill-ameixa text-ameixa" : ""}`} />
+                    {tx.thankYouSent ? "Agradecido" : "Agradecer"}
                   </Button>
                 ) : (
                   <span className="text-linha text-xs">—</span>

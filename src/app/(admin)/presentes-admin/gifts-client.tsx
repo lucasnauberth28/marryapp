@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useSyncedState } from "@/hooks/use-synced-state"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Check, Clock, CreditCard, Gift as GiftIcon, ImageOff, Loader2, Plus, Trash2, Undo2 } from "lucide-react"
+import { Check, Clock, CreditCard, Gift as GiftIcon, ImageOff, Plus, Trash2, Undo2 } from "lucide-react"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { GiftLocal as Gift } from "@/types/local"
 import { deleteGift } from "@/actions/gift-actions"
@@ -13,6 +13,8 @@ import { PageHeader } from "@/components/admin/page-header"
 import { btn } from "@/components/landing/styles"
 import { Chip, bigNumber, card, cardTitle, overline, th, type ChipTone } from "@/components/casal/ui"
 import { GiftModal } from "./gift-modal"
+import { LoadingButton } from "@/components/painel/loading-button"
+import { UserImage } from "@/components/ui/user-image"
 
 export interface GiftPayment {
   id: string
@@ -242,10 +244,9 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] sm:gap-4">
             {gifts.map((gift) => (
               <li key={gift.id} className={`${card} flex flex-col gap-2 p-3`}>
-                <div className="grid aspect-square place-items-center overflow-hidden rounded-xl bg-areia text-xs text-tinta-suave">
+                <div className="relative grid aspect-square place-items-center overflow-hidden rounded-xl bg-areia text-xs text-tinta-suave">
                   {gift.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={gift.imageUrl} alt="" className="block size-full object-cover" />
+                    <UserImage src={gift.imageUrl} alt="" sizes="(min-width: 640px) 180px, 50vw" className="object-cover" />
                   ) : (
                     <span className="flex flex-col items-center gap-1">
                       <ImageOff className="size-6" aria-hidden="true" />
@@ -260,20 +261,16 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
                   <span className="text-sm text-tinta-suave">{formatPrice(gift.amount)} · disponível</span>
                 )}
                 {!gift.isPurchased && (
-                  <button
-                    type="button"
+                  <LoadingButton
                     aria-label={`Excluir ${gift.title}`}
                     onClick={() => handleDelete(gift.id)}
-                    disabled={isPending && deletingId === gift.id}
+                    loading={isPending && deletingId === gift.id}
+                    disabled={isPending}
                     className={`${btn.quiet} ${btn.sm} self-start text-perigo hover:bg-perigo-suave`}
                   >
-                    {isPending && deletingId === gift.id ? (
-                      <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                    ) : (
-                      <Trash2 className="size-4" aria-hidden="true" />
-                    )}
+                    <Trash2 className="size-4" aria-hidden="true" />
                     Excluir
-                  </button>
+                  </LoadingButton>
                 )}
               </li>
             ))}

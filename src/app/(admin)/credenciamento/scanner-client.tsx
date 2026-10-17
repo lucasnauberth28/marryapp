@@ -8,6 +8,9 @@ import { PageHeader } from "@/components/admin/page-header";
 import { Seal } from "@/components/painel/seal";
 import { StatusChip } from "@/components/painel/status-chip";
 import { btn, card, errorBox, input, overline } from "@/components/painel/styles";
+import { LoadingButton } from "@/components/painel/loading-button";
+import { SkeletonRows } from "@/components/painel/skeleton-parts";
+import { Skeleton } from "@/components/ui/skeleton";
 import { lookupGuestForCheckIn, searchGuestsForCheckIn, type CheckInGuestInfo } from "./lookup-actions";
 
 type Stage = "idle" | "scanning" | "loading" | "found";
@@ -21,6 +24,9 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
 
   const [query, setQuery] = useState("");
   const [matches, setMatches] = useState<CheckInGuestInfo[] | null>(null);
+  const [searching, setSearching] = useState(false);
+  // A câmera demora a abrir (pede permissão e liga o leitor): até o vídeo tocar, o quadro mostra um esqueleto
+  const [cameraReady, setCameraReady] = useState(false);
   const searchId = useId();
   const searchSeq = useRef(0);
 
@@ -36,6 +42,7 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
   }, []);
 
   const startScanning = async () => {
+    setCameraReady(false);
     setStage("scanning");
     setMessage(null);
     setFound(null);
@@ -107,11 +114,17 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
     const seq = ++searchSeq.current;
     if (value.trim().length < 2) {
       setMatches(null);
+      setSearching(false);
       return;
     }
-    const list = await searchGuestsForCheckIn(value);
-    // Ignora respostas antigas se a pessoa já digitou mais
-    if (seq === searchSeq.current) setMatches(list);
+    setSearching(true);
+    try {
+      const list = await searchGuestsForCheckIn(value);
+      // Ignora respostas antigas se a pessoa já digitou mais
+      if (seq === searchSeq.current) setMatches(list);
+    } finally {
+      if (seq === searchSeq.current) setSearching(false);
+    }
   };
 
   const pickGuest = (g: CheckInGuestInfo) => {
@@ -163,16 +176,31 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
         )}
 
         {stage === "loading" && (
-          <div role="status" className={`${card} flex min-h-64 flex-col items-center justify-center gap-3 p-8 text-tinta-suave`}>
-            <span className="size-8 animate-spin rounded-full border-2 border-linha border-t-ameixa" aria-hidden="true" />
-            Conferindo o convite...
-          </div>
+          <section role="status" aria-busy="true" className={`${card} flex flex-col items-center gap-4 p-6 text-center`}>
+            <span className="sr-only">Conferindo o convite...</span>
+            {/* Esqueleto do convite lido: selo, situação, nome, pessoas e mesa, botões */}
+            <Skeleton className="size-24 rounded-full" />
+            <Skeleton className="h-7 w-36 rounded-lg" />
+            <Skeleton className="h-10 w-56 max-w-full rounded-lg" />
+            <div aria-hidden="true" className="grid w-full grid-cols-2 gap-3 rounded-2xl border border-linha p-4">
+              <Skeleton className="h-[60px] rounded-lg" />
+              <Skeleton className="h-[60px] rounded-lg" />
+            </div>
+            <Skeleton className="h-11 w-full rounded-xl" />
+            <Skeleton className="h-11 w-full rounded-xl" />
+          </section>
         )}
 
         {stage === "scanning" && (
           <div className="flex flex-col overflow-hidden rounded-2xl bg-[#1b1620]">
             <div className="relative flex min-h-80 items-center justify-center">
-              <video ref={videoRef} className="absolute inset-0 size-full object-cover" playsInline autoPlay muted aria-label="Câmera para ler o QR Code" />
+              <video ref={videoRef} onPlaying={() => setCameraReady(true)} className="absolute inset-0 size-full object-cover" playsInline autoPlay muted aria-label="Câmera para ler o código QR" />
+              {!cameraReady && (
+                <div role="status" className="absolute inset-0">
+                  <span className="sr-only">Abrindo a câmera...</span>
+                  <Skeleton className="size-full rounded-none bg-[#2a2330]" />
+                </div>
+              )}
               <div aria-hidden="true" className="relative size-56 rounded-3xl border-[3px] border-papel shadow-[0_0_0_999px_rgba(27,22,32,0.45)]">
                 <div className="absolute inset-x-4 top-1/2 h-0.5 bg-petala" />
               </div>
@@ -218,9 +246,9 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
             </dl>
             <div className="flex w-full flex-col gap-2">
               {!found.alreadyIn && (
-                <button type="button" onClick={confirmEntry} disabled={confirming} className={`${btn.primary} ${btn.block}`}>
-                  {confirming ? "Registrando..." : `Confirmar entrada de ${found.people}`}
-                </button>
+                <LoadingButton onClick={confirmEntry} loading={confirming} className={`${btn.primary} ${btn.block}`}>
+                  Registrar entrada de {found.people}
+                </LoadingButton>
               )}
               <button
                 type="button"
@@ -259,8 +287,14 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-tinta-suave" aria-hidden="true" />
                 <input id={searchId} type="search" autoComplete="off" value={query} onChange={(e) => void runSearch(e.target.value)} placeholder="Digite o nome do convidado" className={`${input} pl-10`} />
               </div>
+              {searching && !matches && (
+                <div role="status" aria-busy="true">
+                  <span className="sr-only">Buscando convidados...</span>
+                  <SkeletonRows rows={2} lines={2} leading="none" className="rounded-xl border border-linha px-4" />
+                </div>
+              )}
               {matches && (
-                <ul className="flex flex-col divide-y divide-linha rounded-xl border border-linha">
+                <ul aria-busy={searching || undefined} className={`flex flex-col divide-y divide-linha rounded-xl border border-linha transition-opacity ${searching ? "opacity-60" : ""}`}>
                   {matches.length === 0 && <li className="px-4 py-4 text-sm text-tinta-suave">Ninguém com esse nome na lista.</li>}
                   {matches.map((g) => (
                     <li key={g.id}>

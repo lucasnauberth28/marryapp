@@ -2,10 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, Check, CircleAlert, Download, FileSpreadsheet, Loader2, Upload } from "lucide-react";
+import { AlertTriangle, Check, CircleAlert, Download, FileSpreadsheet, Upload } from "lucide-react";
 import { CustomModal } from "@/components/ui/custom-modal";
 import { importGuests } from "@/actions/guest-actions";
 import { btn, card, errorBox, hint, overline } from "@/components/painel/styles";
+import { LoadingButton } from "@/components/painel/loading-button";
+import { SkeletonRows } from "@/components/painel/skeleton-parts";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatPhoneBR } from "@/lib/wedding-format";
 import {
   MAX_IMPORT_ROWS,
@@ -197,10 +200,10 @@ function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose:
             onChange={(e) => void handleFile(e.target.files?.[0])}
           />
           <div className="flex flex-wrap items-center gap-2">
-            <button type="button" onClick={() => fileInput.current?.click()} disabled={reading} className={btn.primary}>
-              {reading ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Upload className="size-4" aria-hidden="true" />}
-              {reading ? "Lendo o arquivo..." : "Escolher arquivo"}
-            </button>
+            <LoadingButton onClick={() => fileInput.current?.click()} loading={reading} className={btn.primary}>
+              <Upload className="size-4" aria-hidden="true" />
+              Escolher arquivo
+            </LoadingButton>
             <button type="button" onClick={downloadSheetTemplate} className={btn.quiet}>
               <Download className="size-4" aria-hidden="true" />
               Baixar modelo de planilha
@@ -237,12 +240,20 @@ function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose:
   // ------------------------------------------------------------------ importando
   if (stage === "importando") {
     return (
-      <div className="flex flex-col items-center gap-3 py-10 text-center" role="status" aria-live="polite">
-        <Loader2 className="size-8 animate-spin text-ameixa" aria-hidden="true" />
-        <h3 ref={stageHeading} tabIndex={-1} className={headingClass}>
-          Importando a lista...
-        </h3>
-        <p className={hint}>Isso leva só um instante. Não feche esta janela.</p>
+      <div className="flex flex-col gap-5 py-4" role="status" aria-live="polite" aria-busy="true">
+        <div className="flex flex-col gap-1">
+          <h3 ref={stageHeading} tabIndex={-1} className={headingClass}>
+            Importando a lista...
+          </h3>
+          <p className={hint}>Isso leva só um instante. Não feche esta janela.</p>
+        </div>
+        {/* Esqueleto da confirmação que vem a seguir: três números e a lista de quem entrou */}
+        <div aria-hidden="true" className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-[72px] rounded-xl" />
+          ))}
+        </div>
+        <SkeletonRows rows={3} lines={1} className="rounded-xl border border-linha px-4" />
       </div>
     );
   }

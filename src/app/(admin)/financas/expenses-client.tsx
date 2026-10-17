@@ -13,12 +13,12 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { btn } from "@/components/landing/styles";
+import { UserImage } from "@/components/ui/user-image";
 import { Chip } from "@/components/casal/ui";
 import { DataTable } from "@/components/ui/data-table";
 import {
   Plus,
   Trash2,
-  Loader2,
   CheckCircle,
   Clock,
   CalendarRange,
@@ -113,6 +113,8 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
   const [expenses, setExpenses] = useSyncedState<ExpenseItem[]>(initialExpenses);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Parcelas cujo status está sendo trocado: o chip fica esmaecido e sem clique até a resposta chegar
+  const [toggling, setToggling] = useState<Record<string, true>>({});
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
@@ -480,8 +482,16 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
   };
 
   const handleToggleStatus = async (id: string, currentStatus: string) => {
+    if (toggling[id]) return;
     const newStatus = currentStatus === "PAID" ? "PENDING" : "PAID";
-    const res = await updateExpenseStatus(id, newStatus as ExpenseStatus);
+    setToggling((prev) => ({ ...prev, [id]: true }));
+    const res = await updateExpenseStatus(id, newStatus as ExpenseStatus).finally(() =>
+      setToggling((prev) => {
+        const rest = { ...prev };
+        delete rest[id];
+        return rest;
+      }),
+    );
     if (res.success) {
       setExpenses(expenses.map(e => e.id === id ? { ...e, status: newStatus } : e));
       toast.success(newStatus === "PAID" ? "Parcela marcada como paga." : "Parcela marcada como pendente.");
@@ -919,8 +929,8 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                     <Button type="button" variant="outline" onClick={() => setStep(2)} className="w-1/3">
                       Voltar
                     </Button>
-                    <Button type="submit" className={`${btn.primary} w-2/3`} disabled={loading}>
-                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : mode === "single" ? "Cadastrar despesa" : `Gerar ${generatedInstallments.length} Parcelas`}
+                    <Button type="submit" className={`${btn.primary} w-2/3`} loading={loading}>
+                      {mode === "single" ? "Cadastrar despesa" : `Gerar ${generatedInstallments.length} Parcelas`}
                     </Button>
                   </div>
                 </div>
@@ -970,11 +980,9 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                       {/* Miniatura + Info Principal */}
                       <div className="flex items-start gap-3.5 flex-1 min-w-0">
                         {group.imageUrl ? (
-                          <img
-                            src={group.imageUrl}
-                            alt={group.baseDescription}
-                            className="w-14 h-14 object-cover rounded-xl border border-linha shrink-0 shadow-xs"
-                          />
+                          <span className="relative block size-14 shrink-0 overflow-hidden rounded-xl border border-linha shadow-xs">
+                            <UserImage src={group.imageUrl} alt={group.baseDescription} sizes="56px" className="object-cover" />
+                          </span>
                         ) : (
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
                             isPurchase ? "bg-salvia-suave text-salvia border-transparent" : "bg-ameixa-suave text-ameixa border-transparent"
@@ -1055,6 +1063,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                           <Button
                             size="sm"
                             onClick={() => handleToggleStatus(group.nextDueExpenseId!, "PENDING")}
+                            loading={!!toggling[group.nextDueExpenseId]}
                             className="h-11 rounded-xl bg-sucesso px-4 text-sm font-semibold text-white shadow-sm hover:bg-sucesso/90 sm:h-9"
                             title="Marcar próxima parcela como paga"
                           >
@@ -1119,8 +1128,10 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                                       <button
                                         type="button"
                                         onClick={() => handleToggleStatus(expense.id, expense.status)}
+                                        disabled={!!toggling[expense.id]}
+                                        aria-busy={toggling[expense.id] || undefined}
                                         aria-label={isPaid ? "Pago. Tocar para marcar como pendente" : "Pendente. Tocar para marcar como paga"}
-                                        className="inline-flex min-h-11 cursor-pointer items-center rounded-lg"
+                                        className="inline-flex min-h-11 cursor-pointer items-center rounded-lg disabled:cursor-wait disabled:opacity-50"
                                       >
                                         <Chip tone={isPaid ? "sucesso" : "aviso"} icon={isPaid ? CheckCircle : Clock}>
                                           {isPaid ? "Pago" : "Pendente"}
@@ -1239,7 +1250,9 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
               cell: (exp) => (
                 <div className="flex items-center gap-2">
                   {exp.imageUrl && (
-                    <img src={exp.imageUrl} alt={exp.description} className="w-7 h-7 object-cover rounded-md border border-linha shrink-0" />
+                    <span className="relative block size-7 shrink-0 overflow-hidden rounded-md border border-linha">
+                      <UserImage src={exp.imageUrl} alt={exp.description} sizes="28px" className="object-cover" />
+                    </span>
                   )}
                   <span className={`text-sm font-medium ${exp.status === "PAID" ? "text-tinta-suave" : "text-tinta"}`}>
                     {exp.vendor?.name || exp.storeName || "Compra direta"}
@@ -1288,8 +1301,10 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                   <button
                     type="button"
                     onClick={() => handleToggleStatus(exp.id, exp.status)}
+                    disabled={!!toggling[exp.id]}
+                    aria-busy={toggling[exp.id] || undefined}
                     aria-label={isPaid ? "Pago. Tocar para marcar como pendente" : "Pendente. Tocar para marcar como paga"}
-                    className="inline-flex min-h-11 cursor-pointer items-center rounded-lg"
+                    className="inline-flex min-h-11 cursor-pointer items-center rounded-lg disabled:cursor-wait disabled:opacity-50"
                   >
                     <Chip tone={isPaid ? "sucesso" : "aviso"} icon={isPaid ? CheckCircle : Clock}>
                       {isPaid ? "Pago" : "Pendente"}
