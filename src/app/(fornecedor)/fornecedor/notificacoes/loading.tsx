@@ -14,7 +14,7 @@ export default function LoadingFornecedorAvisos() {
             <Skeleton className="h-4 w-full max-w-md rounded-md" />
           </div>
         </div>
-        <Skeleton className="h-11 w-full rounded-xl sm:w-72 md:w-72" />
+        <Skeleton className="h-11 w-64 rounded-xl" />
       </div>
       <div className="overflow-hidden rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)]">
         <div className="flex min-h-14 items-center justify-between gap-3 border-b border-linha px-4">
@@ -27,6 +27,7 @@ export default function LoadingFornecedorAvisos() {
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
               <Skeleton className="h-4 w-44 max-w-full rounded-md" />
               <Skeleton className="h-3.5 w-full max-w-md rounded-md" />
+              <Skeleton className="h-3.5 w-3/5 rounded-md sm:hidden" />
             </div>
             <Skeleton className="h-3.5 w-14 shrink-0 rounded-md" />
           </div>
