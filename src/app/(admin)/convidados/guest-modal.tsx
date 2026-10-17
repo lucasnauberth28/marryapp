@@ -10,6 +10,7 @@ import { formatPhoneBR } from "@/lib/wedding-format";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { btn, btnDanger, errorBox, hint, label } from "@/components/painel/styles";
+import { LoadingButton } from "@/components/painel/loading-button";
 
 export const GUEST_CATEGORIES = [
   "Padrinho/Madrinha",
@@ -255,9 +256,9 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
         )}
 
         <div className="flex flex-col gap-2 border-t border-linha pt-4">
-          <button type="submit" disabled={isPending} onClick={() => setAddAnother(false)} className={`${btn.primary} ${btn.block}`}>
-            {isPending ? "Salvando..." : isEditing ? "Salvar alterações" : "Salvar convidado"}
-          </button>
+          <LoadingButton type="submit" loading={isPending && !addAnother} disabled={isPending} onClick={() => setAddAnother(false)} className={`${btn.primary} ${btn.block}`}>
+            {isEditing ? "Salvar alterações" : "Salvar convidado"}
+          </LoadingButton>
           {isEditing ? (
             <>
               <button type="button" onClick={onClose} disabled={isPending} className={`${btn.quiet} ${btn.block}`}>
@@ -270,9 +271,9 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
               )}
             </>
           ) : (
-            <button type="submit" disabled={isPending} onClick={() => setAddAnother(true)} className={`${btn.quiet} ${btn.block}`}>
+            <LoadingButton type="submit" loading={isPending && addAnother} disabled={isPending} onClick={() => setAddAnother(true)} className={`${btn.quiet} ${btn.block}`}>
               Salvar e adicionar outro
-            </button>
+            </LoadingButton>
           )}
         </div>
       </form>

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
 import { btn, btnDanger } from "@/components/painel/styles";
+import { LoadingButton } from "@/components/painel/loading-button";
 
 export interface TaskFormData {
   title: string;
@@ -84,9 +85,9 @@ function TaskForm({ task, onSave, onDelete, onClose }: { task: BoardItem | null;
         </NativeSelect>
 
         <div className="flex flex-col gap-2 border-t border-linha pt-4">
-          <button type="submit" disabled={busy} className={`${btn.primary} ${btn.block}`}>
-            {busy ? "Salvando..." : task ? "Salvar alterações" : "Criar tarefa"}
-          </button>
+          <LoadingButton type="submit" loading={busy} className={`${btn.primary} ${btn.block}`}>
+            {task ? "Salvar alterações" : "Criar tarefa"}
+          </LoadingButton>
           <button type="button" onClick={onClose} disabled={busy} className={`${btn.quiet} ${btn.block}`}>
             Cancelar
           </button>

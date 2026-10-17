@@ -1,5 +1,6 @@
 "use client";
 
+import { useTransition } from "react";
 import Link from "next/link";
 import {
   Settings as SettingsIcon,
@@ -18,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/actions/auth-actions";
+import { Spinner } from "@/components/ui/spinner";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { hasPathAccess, isPlatformAdminPaths } from "@/lib/permissions";
 import { Logo } from "@/components/brand/logo";
@@ -40,6 +42,7 @@ interface HeaderProps {
 }
 
 export function Header({ role = "Admin", allowedPaths = [], coupleNames, initials, dateLabel, adminView = false, userName = null, unreadNotifications = 0, pushPublicKey = null }: HeaderProps) {
+  const [leaving, startLeave] = useTransition();
   const can = (path: string) => hasPathAccess(allowedPaths, path);
   const label = accountLabel({ adminView, coupleNames, coupleInitials: initials, userName, role });
   // Só a conta com acesso total ("*") vê o caminho de volta para a administração da plataforma
@@ -125,10 +128,16 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
             <DropdownMenuSeparator className="my-0 bg-linha" />
             <div className="p-1.5">
               <DropdownMenuItem
-                onClick={() => logout()}
+                disabled={leaving}
+                aria-busy={leaving || undefined}
+                // Fica aberto até a saída terminar, mostrando o andamento
+                onSelect={(e) => {
+                  e.preventDefault();
+                  startLeave(() => logout());
+                }}
                 className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-perigo focus:bg-perigo-suave focus:text-perigo"
               >
-                <LogOut className="h-4 w-4" /> Sair
+                {leaving ? <Spinner /> : <LogOut className="h-4 w-4" />} Sair
               </DropdownMenuItem>
             </div>
           </DropdownMenuContent>

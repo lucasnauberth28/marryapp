@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { StatusChip } from "@/components/painel/status-chip";
 import { Input } from "@/components/ui/input";
 import { btn, btnIconDanger, card, hint, errorBox } from "@/components/painel/styles";
+import { LoadingButton } from "@/components/painel/loading-button";
 import {
   DndContext,
   DragOverlay,
@@ -385,9 +386,9 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
               {newError}
             </p>
           )}
-          <button type="submit" disabled={loading} className={`${btn.primary} ${btn.block}`}>
-            {loading ? "Criando..." : "Criar mesa"}
-          </button>
+          <LoadingButton type="submit" loading={loading} className={`${btn.primary} ${btn.block}`}>
+            Criar mesa
+          </LoadingButton>
         </form>
       </CustomModal>
 

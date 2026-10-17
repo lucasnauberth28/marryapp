@@ -14,6 +14,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { AccessTabs } from "@/components/casal/access-tabs";
 import { btn } from "@/components/landing/styles";
 import { Chip, card, cardTitle } from "@/components/casal/ui";
+import { LoadingButton } from "@/components/painel/loading-button";
 
 interface UserItem {
   id: string;
@@ -204,9 +205,9 @@ export function UsersClient({ initialUsers, roles, embedded = false }: { initial
             <button type="button" className={btn.secondary} onClick={() => setIsFormOpen(false)} disabled={isPending}>
               Cancelar
             </button>
-            <button type="button" className={btn.primary} onClick={handleSave} disabled={isPending}>
-              {isPending ? "Salvando..." : "Salvar usuário"}
-            </button>
+            <LoadingButton className={btn.primary} onClick={handleSave} loading={isPending}>
+              Salvar usuário
+            </LoadingButton>
           </div>
         </section>
       ) : (

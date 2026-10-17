@@ -10,7 +10,6 @@ import {
   Eye,
   EyeOff,
   KeyRound,
-  Loader2,
   Lock,
   Mail,
   MessageCircle,
@@ -24,6 +23,7 @@ import {
 import { toast } from "sonner";
 import { cancelPartnerInvite, changePassword, createPartnerInvite, deleteMyAccount } from "@/actions/account-actions";
 import { btn } from "@/components/landing/styles";
+import { LoadingButton } from "@/components/painel/loading-button";
 import { Field, FormAlert } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 import { PreferencesForm } from "@/components/notifications/preferences-form";
@@ -207,10 +207,9 @@ function PasswordSection() {
           </div>
         ) : null}
         <div className="sm:col-span-2">
-          <button type="submit" disabled={isPending} className={cn(btn.primary, "min-h-12")}>
-            {isPending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : null}
+          <LoadingButton type="submit" loading={isPending} className={cn(btn.primary, "min-h-12")}>
             Trocar senha
-          </button>
+          </LoadingButton>
         </div>
       </form>
     </Section>
@@ -338,10 +337,10 @@ function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> })
         </Field>
         {error ? <FormAlert>{error}</FormAlert> : null}
         <div>
-          <button type="submit" disabled={isPending} className={cn(btn.primary, "min-h-12")}>
-            {isPending && !cancelling ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : <Send aria-hidden="true" className="size-4" />}
+          <LoadingButton type="submit" loading={isPending && !cancelling} disabled={isPending} className={cn(btn.primary, "min-h-12")}>
+            <Send aria-hidden="true" className="size-4" />
             Criar convite
-          </button>
+          </LoadingButton>
         </div>
       </form>
 
@@ -394,15 +393,15 @@ function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> })
                     Criado em {shortFmt.format(new Date(i.createdAt))} · vence em {shortFmt.format(new Date(i.expiresAt))}
                   </span>
                 </span>
-                <button
-                  type="button"
+                <LoadingButton
                   onClick={() => cancel(i.id)}
+                  loading={cancelling === i.id}
                   disabled={isPending}
                   className={cn(btn.quiet, btn.sm, "shrink-0 text-perigo hover:bg-perigo-suave")}
                 >
-                  {cancelling === i.id ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : <X aria-hidden="true" className="size-4" />}
+                  <X aria-hidden="true" className="size-4" />
                   Cancelar
-                </button>
+                </LoadingButton>
               </li>
             ))}
           </ul>
@@ -523,14 +522,15 @@ function DeleteSection({ kind, isLastMember }: { kind: Props["kind"]; isLastMemb
             </div>
           ) : null}
           <div className="flex flex-wrap gap-3 sm:col-span-2">
-            <button
+            <LoadingButton
               type="submit"
-              disabled={!ready || isPending}
+              loading={isPending}
+              disabled={!ready}
               className={cn(btn.primary, "min-h-12 bg-perigo hover:bg-perigo/90 hover:shadow-none")}
             >
-              {isPending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : <Trash2 aria-hidden="true" className="size-4" />}
+              <Trash2 aria-hidden="true" className="size-4" />
               Excluir minha conta
-            </button>
+            </LoadingButton>
             <button
               type="button"
               onClick={() => {

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Eye, Pencil } from "lucide-react";
 import { endImpersonation } from "@/actions/admin-impersonation-actions";
 import { btn } from "@/components/landing/styles";
+import { LoadingButton } from "@/components/painel/loading-button";
 import { minutesLeft } from "@/lib/security/impersonation-rules";
 import { cn } from "@/lib/utils";
 
@@ -60,9 +61,9 @@ export function ImpersonationBanner({ coupleNames, canEdit, expiresAt }: { coupl
           {failed && " · não conseguimos sair, tente de novo"}
         </p>
       </div>
-      <button type="button" onClick={leave} disabled={pending} className={cn(btn.onAmeixa, btn.sm, "shrink-0")}>
-        {pending ? "Saindo..." : "Sair deste casal"}
-      </button>
+      <LoadingButton onClick={leave} loading={pending} className={cn(btn.onAmeixa, btn.sm, "shrink-0")}>
+        Sair deste casal
+      </LoadingButton>
     </div>
   );
 }

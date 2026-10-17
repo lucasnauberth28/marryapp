@@ -10,11 +10,12 @@ import { createVendor, updateVendor, deleteVendor, type getVendors } from "@/act
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, ChevronRight, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import { Check, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/admin/page-header";
 import { btn } from "@/components/landing/styles";
 import { Chip, card } from "@/components/casal/ui";
+import { LoadingButton } from "@/components/painel/loading-button";
 
 type WeddingVendor = Awaited<ReturnType<typeof getVendors>>[number];
 
@@ -293,9 +294,9 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
               {fileName && <p className="mt-1 text-sm text-tinta-suave">Arquivo escolhido: {fileName}</p>}
               {editingVendor?.contractUrl && !fileName && <p className="mt-1 text-sm text-tinta-suave">Já há um contrato anexado. Escolher outro arquivo troca o atual.</p>}
             </div>
-            <button type="submit" className={`${btn.primary} ${btn.block}`} disabled={loading}>
-              {loading ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : editingVendor ? "Salvar mudanças" : "Adicionar fornecedor"}
-            </button>
+            <LoadingButton type="submit" className={`${btn.primary} ${btn.block}`} loading={loading}>
+              {editingVendor ? "Salvar mudanças" : "Adicionar fornecedor"}
+            </LoadingButton>
           </form>
         </DialogContent>
       </Dialog>

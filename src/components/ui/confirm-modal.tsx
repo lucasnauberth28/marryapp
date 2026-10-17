@@ -56,9 +56,9 @@ export function ConfirmModal({
             onClick={() => {
               onConfirm();
             }}
-            disabled={isLoading}
+            loading={isLoading}
           >
-            {isLoading ? "Aguarde…" : confirmText}
+            {confirmText}
           </Button>
         </div>
       </div>

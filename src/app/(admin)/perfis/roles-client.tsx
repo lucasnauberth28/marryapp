@@ -13,6 +13,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { AccessTabs } from "@/components/casal/access-tabs";
 import { btn } from "@/components/landing/styles";
 import { card, cardTitle } from "@/components/casal/ui";
+import { LoadingButton } from "@/components/painel/loading-button";
 
 const AVAILABLE_MODULES = [
   { id: "*", name: "Acesso total" },
@@ -247,9 +248,9 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
             <button type="button" className={btn.secondary} onClick={() => setIsFormOpen(false)} disabled={isPending}>
               Cancelar
             </button>
-            <button type="button" className={btn.primary} onClick={handleSave} disabled={isPending}>
-              {isPending ? "Salvando..." : "Salvar perfil"}
-            </button>
+            <LoadingButton className={btn.primary} onClick={handleSave} loading={isPending}>
+              Salvar perfil
+            </LoadingButton>
           </div>
         </section>
       ) : (

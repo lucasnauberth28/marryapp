@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
 import { btn, btnDanger, btnIcon, card, chipBase, chipTone, errorBox, hint, input, overline } from "@/components/painel/styles";
+import { LoadingButton } from "@/components/painel/loading-button";
+import { UserImage } from "@/components/ui/user-image";
 import { createMessageTemplate, updateMessageTemplate, deleteMessageTemplate, sendTemplateToGuests } from "@/actions/message-actions";
 import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-actions";
 import { weddingSiteUrl } from "@/lib/wedding-links";
@@ -346,9 +348,9 @@ function TemplateEditor({
           </details>
 
           <div className="flex flex-wrap gap-2">
-            <button type="submit" disabled={saving || !dirty} className={btn.primary}>
-              {saving ? "Salvando..." : template ? "Salvar alterações" : "Salvar modelo"}
-            </button>
+            <LoadingButton type="submit" loading={saving} disabled={!dirty} className={btn.primary}>
+              {template ? "Salvar alterações" : "Salvar modelo"}
+            </LoadingButton>
             {template && (
               <button type="button" onClick={() => setConfirmDelete(true)} className={btnDanger}>
                 <Trash2 className="size-4" aria-hidden="true" />
@@ -425,10 +427,10 @@ function TemplateEditor({
               )}
 
               <div>
-                <button type="button" onClick={send} disabled={sending || dirty || picked.length === 0} className={btn.primary}>
+                <LoadingButton onClick={send} loading={sending} disabled={dirty || picked.length === 0} className={btn.primary}>
                   <Send className="size-4" aria-hidden="true" />
-                  {sending ? "Enviando..." : picked.length === 0 ? "Escolha quem recebe" : `Enviar para ${picked.length} ${picked.length === 1 ? "pessoa" : "pessoas"}`}
-                </button>
+                  {picked.length === 0 ? "Escolha quem recebe" : `Enviar para ${picked.length} ${picked.length === 1 ? "pessoa" : "pessoas"}`}
+                </LoadingButton>
               </div>
             </>
           )}
@@ -445,8 +447,9 @@ function TemplateEditor({
           </div>
           <div className="max-w-[92%] self-start rounded-[4px_16px_16px_16px] bg-papel px-3 py-2.5 text-sm leading-5 text-tinta shadow-[var(--shadow-aceito-1)]">
             {mediaUrl && mediaType === "image" && (
-              // eslint-disable-next-line @next/next/no-img-element -- prévia de um endereço qualquer informado pelo casal
-              <img src={mediaUrl} alt="Imagem anexada" className="mb-2 max-h-36 w-full rounded-lg object-cover" />
+              <span className="relative mb-2 block h-36 w-full overflow-hidden rounded-lg">
+                <UserImage src={mediaUrl} alt="Imagem anexada" sizes="300px" className="object-cover" />
+              </span>
             )}
             {mediaUrl && mediaType !== "image" && <p className="mb-2 text-tinta-suave">Anexo: {mediaType === "document" ? "documento" : "áudio"}</p>}
             <p className="whitespace-pre-wrap break-words">{previewText}</p>
@@ -556,12 +559,12 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
               Envios prontos
             </h2>
             <p className={hint}>Enviam na hora, usando os modelos de convite inicial e de lembrete.</p>
-            <button type="button" disabled={shortcut !== null || invitesToSend === 0} onClick={() => runShortcut("invites")} className={`${btn.secondary} ${btn.sm}`}>
+            <LoadingButton loading={shortcut === "invites"} disabled={shortcut !== null || invitesToSend === 0} onClick={() => runShortcut("invites")} className={`${btn.secondary} ${btn.sm}`}>
               {invitesToSend === 0 ? "Todos já têm convite" : `Enviar convite para ${invitesToSend} ${invitesToSend === 1 ? "pessoa" : "pessoas"}`}
-            </button>
-            <button type="button" disabled={shortcut !== null || remindersToSend === 0} onClick={() => runShortcut("reminders")} className={`${btn.secondary} ${btn.sm}`}>
+            </LoadingButton>
+            <LoadingButton loading={shortcut === "reminders"} disabled={shortcut !== null || remindersToSend === 0} onClick={() => runShortcut("reminders")} className={`${btn.secondary} ${btn.sm}`}>
               {remindersToSend === 0 ? "Ninguém para lembrar" : `Enviar lembrete para ${remindersToSend} ${remindersToSend === 1 ? "pessoa" : "pessoas"}`}
-            </button>
+            </LoadingButton>
           </section>
         </div>
 
@@ -592,12 +595,12 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
           <Bell className="size-4" aria-hidden="true" />
           Envios prontos
         </h2>
-        <button type="button" disabled={shortcut !== null || invitesToSend === 0} onClick={() => runShortcut("invites")} className={btn.secondary}>
+        <LoadingButton loading={shortcut === "invites"} disabled={shortcut !== null || invitesToSend === 0} onClick={() => runShortcut("invites")} className={btn.secondary}>
           {invitesToSend === 0 ? "Todos já têm convite" : `Enviar convite para ${invitesToSend} ${invitesToSend === 1 ? "pessoa" : "pessoas"}`}
-        </button>
-        <button type="button" disabled={shortcut !== null || remindersToSend === 0} onClick={() => runShortcut("reminders")} className={btn.secondary}>
+        </LoadingButton>
+        <LoadingButton loading={shortcut === "reminders"} disabled={shortcut !== null || remindersToSend === 0} onClick={() => runShortcut("reminders")} className={btn.secondary}>
           {remindersToSend === 0 ? "Ninguém para lembrar" : `Enviar lembrete para ${remindersToSend} ${remindersToSend === 1 ? "pessoa" : "pessoas"}`}
-        </button>
+        </LoadingButton>
       </section>
     </div>
   );

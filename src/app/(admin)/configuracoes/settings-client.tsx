@@ -82,8 +82,8 @@ export function SettingsClient({ initialSettings, summary, canSeePlan }: Setting
             onChange={(e) => setRsvpDeadline(e.target.value)}
           />
           <div>
-            <Button onClick={handleSave} disabled={isPending} aria-busy={isPending}>
-              {isPending ? "Salvando…" : "Salvar prazo"}
+            <Button onClick={handleSave} loading={isPending}>
+              Salvar prazo
             </Button>
           </div>
         </CardContent>

@@ -10,7 +10,6 @@ import {
   Globe,
   Heart,
   LayoutDashboard,
-  Loader2,
   MapPin,
   Palette,
   User,
@@ -20,6 +19,7 @@ import { completeOnboarding } from "@/actions/onboarding-actions";
 import { AuthShell, SHELL_PHOTOS, ShellHeading } from "@/components/account/auth-shell";
 import { Seal } from "@/components/landing/seal";
 import { btn, btnArrow } from "@/components/landing/styles";
+import { LoadingButton } from "@/components/painel/loading-button";
 import { Field, FormAlert } from "@/components/ui/field";
 import { GUEST_RANGES, THEME_PRESETS, joinCoupleNames, type GuestRange } from "@/lib/onboarding-options";
 import { cn } from "@/lib/utils";
@@ -315,19 +315,10 @@ export function OnboardingFlow({
 
           <div className="flex items-center gap-3">
             <BackButton onClick={back} />
-            <button type="button" onClick={finish} disabled={isPending} className={cn(btn.primary, "min-h-12 flex-1")}>
-              {isPending ? (
-                <>
-                  <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-                  Preparando o site…
-                </>
-              ) : (
-                <>
-                  <Palette aria-hidden="true" className="size-4" />
-                  Concluir
-                </>
-              )}
-            </button>
+            <LoadingButton onClick={finish} loading={isPending} className={cn(btn.primary, "min-h-12 flex-1")}>
+              <Palette aria-hidden="true" className="size-4" />
+              Concluir
+            </LoadingButton>
           </div>
         </section>
       ) : null}

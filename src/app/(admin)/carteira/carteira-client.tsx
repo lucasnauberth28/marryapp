@@ -10,11 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/admin/page-header";
 import { btn } from "@/components/landing/styles";
+import { LoadingButton } from "@/components/painel/loading-button";
 import { Chip, bigNumber, card as cardClass, cardTitle, overline } from "@/components/casal/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Check, CreditCard as CreditCardIcon, Loader2, Lock, Pencil, Plus, Trash2, TriangleAlert } from "lucide-react";
+import { Check, CreditCard as CreditCardIcon, Lock, Pencil, Plus, Trash2, TriangleAlert } from "lucide-react";
 
 const BANKS = [
   { name: "Nubank", color: "#820AD1" },
@@ -326,9 +327,9 @@ export function CarteiraClient({ initialBalance, initialCards, toPayCents }: Car
               required
             />
 
-            <button type="submit" className={`${btn.primary} ${btn.block}`} disabled={loading}>
-              {loading ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : "Salvar saldo"}
-            </button>
+            <LoadingButton type="submit" className={`${btn.primary} ${btn.block}`} loading={loading}>
+              Salvar saldo
+            </LoadingButton>
           </form>
         </DialogContent>
       </Dialog>
@@ -417,15 +418,9 @@ export function CarteiraClient({ initialBalance, initialCards, toPayCents }: Car
               </div>
             </div>
 
-            <button type="submit" className={`${btn.primary} ${btn.block}`} disabled={loading}>
-              {loading ? (
-                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              ) : editingCard ? (
-                "Salvar alterações"
-              ) : (
-                "Adicionar cartão"
-              )}
-            </button>
+            <LoadingButton type="submit" className={`${btn.primary} ${btn.block}`} loading={loading}>
+              {editingCard ? "Salvar alterações" : "Adicionar cartão"}
+            </LoadingButton>
           </form>
         </DialogContent>
       </Dialog>

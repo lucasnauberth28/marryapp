@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BellRing, Loader2, Send, Smartphone } from "lucide-react";
+import { BellRing, Send, Smartphone } from "lucide-react";
+import { LoadingButton } from "@/components/painel/loading-button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { isMySubscription, removeSubscription, saveSubscription, sendTestPush } from "@/actions/push-actions";
 import { urlBase64ToUint8Array } from "@/lib/notifications/push-support";
@@ -83,7 +85,24 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
     };
   }, [support]);
 
-  if (!publicKey || support === "checking") return null;
+  if (!publicKey) return null;
+  if (support === "checking") {
+    // O estado do aparelho só se conhece no navegador: reserva o espaço do cartão (o sino não mostra nada)
+    if (variant === "compact") return null;
+    return (
+      <div role="status" aria-busy="true" className={cn("flex flex-col gap-4 rounded-2xl border border-linha bg-papel p-4 shadow-[var(--shadow-aceito-1)] sm:p-5", className)}>
+        <span className="sr-only">Verificando os avisos neste aparelho...</span>
+        <div className="flex items-start gap-3.5">
+          <Skeleton className="size-11 shrink-0 rounded-xl" />
+          <div className="flex min-w-0 flex-1 flex-col gap-2 pt-0.5">
+            <Skeleton className="h-4 w-44 rounded-md" />
+            <Skeleton className="h-4 w-full max-w-md rounded-md" />
+          </div>
+        </div>
+        <Skeleton className="h-11 w-60 rounded-xl" />
+      </div>
+    );
+  }
 
   async function enable() {
     if (!publicKey) return;
@@ -152,18 +171,17 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
   if (variant === "compact") {
     if (!needsActivation) return null;
     return (
-      <button
-        type="button"
+      <LoadingButton
         onClick={enable}
-        disabled={busy}
+        loading={busy}
         className={cn(
           "flex min-h-11 w-full cursor-pointer items-center gap-2.5 border-t border-linha bg-ameixa-suave/50 px-4 text-left text-sm font-semibold text-ameixa transition-colors hover:bg-ameixa-suave focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ameixa disabled:opacity-60",
           className,
         )}
       >
-        {busy ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : <BellRing aria-hidden="true" className="size-4" />}
+        <BellRing aria-hidden="true" className="size-4" />
         Ativar avisos neste aparelho
-      </button>
+      </LoadingButton>
     );
   }
 
@@ -222,22 +240,21 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
       )}
 
       {needsActivation && (
-        <button type="button" onClick={enable} disabled={busy} className={cn(BTN, "w-fit bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}>
-          {busy ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : <BellRing aria-hidden="true" className="size-4" />}
+        <LoadingButton onClick={enable} loading={busy} className={cn(BTN, "w-fit bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}>
+          <BellRing aria-hidden="true" className="size-4" />
           Ativar avisos neste aparelho
-        </button>
+        </LoadingButton>
       )}
 
       {on && (
-        <button
-          type="button"
+        <LoadingButton
           onClick={test}
-          disabled={testing}
+          loading={testing}
           className={cn(BTN, "w-fit border border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}
         >
-          {testing ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : <Send aria-hidden="true" className="size-4" />}
+          <Send aria-hidden="true" className="size-4" />
           Enviar um aviso de teste
-        </button>
+        </LoadingButton>
       )}
     </section>
   );

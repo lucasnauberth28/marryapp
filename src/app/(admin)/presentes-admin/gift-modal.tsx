@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { CustomModal } from "@/components/ui/custom-modal"
 import { createGiftAction } from "@/actions/gift-actions"
-import { ImagePlus, Loader2 } from "lucide-react"
+import { ImagePlus } from "lucide-react"
+import { LoadingButton } from "@/components/painel/loading-button"
 
 interface GiftModalProps {
   isOpen: boolean
@@ -134,10 +135,9 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
           <button type="button" onClick={onClose} disabled={isPending} className={btn.secondary}>
             Cancelar
           </button>
-          <button type="submit" disabled={isPending} className={btn.primary}>
-            {isPending && <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />}
-            {isPending ? "Salvando..." : "Adicionar presente"}
-          </button>
+          <LoadingButton type="submit" loading={isPending} className={btn.primary}>
+            Adicionar presente
+          </LoadingButton>
         </div>
       </form>
     </CustomModal>

@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { btn, btnDanger, btnIcon, btnIconDanger, card, errorBox } from "@/components/painel/styles";
+import { LoadingButton } from "@/components/painel/loading-button";
 import { useSyncedState } from "@/hooks/use-synced-state";
 import { generateTimelinePdf, type TimelineEventPdf } from "@/lib/generate-timeline-pdf";
 
@@ -91,9 +92,9 @@ function EventForm({ event, count, onClose, onSaved, onDelete }: { event: Timeli
         </p>
       )}
       <div className="flex flex-col gap-2 border-t border-linha pt-4">
-        <button type="submit" disabled={busy} className={`${btn.primary} ${btn.block}`}>
-          {busy ? "Salvando..." : event ? "Salvar alterações" : "Adicionar horário"}
-        </button>
+        <LoadingButton type="submit" loading={busy} className={`${btn.primary} ${btn.block}`}>
+          {event ? "Salvar alterações" : "Adicionar horário"}
+        </LoadingButton>
         <button type="button" onClick={onClose} disabled={busy} className={`${btn.quiet} ${btn.block}`}>
           Cancelar
         </button>

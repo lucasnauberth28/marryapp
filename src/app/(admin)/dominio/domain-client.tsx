@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { AlertCircle, Check, CheckCircle2, Clock, Copy, ExternalLink, Globe, Info, Loader2, XCircle } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, Clock, Copy, ExternalLink, Globe, Info, XCircle } from "lucide-react";
 import { cancelDomainOrderAction, checkDomainAvailabilityAction, requestDomainAction } from "@/actions/domain-actions";
 import { PageHeader } from "@/components/admin/page-header";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Chip, card, cardTitle, type ChipTone } from "@/components/casal/ui";
 import { btn } from "@/components/landing/styles";
@@ -93,9 +94,11 @@ function CheckResult({ check }: { check: Check }) {
   if (check.state === "idle") return null;
   if (check.state === "checking") {
     return (
-      <p role="status" className="flex items-center gap-2 text-sm text-tinta-suave">
-        <Loader2 className="size-4 animate-spin" aria-hidden="true" /> Conferindo se está livre…
-      </p>
+      <div role="status" aria-busy="true" className="flex flex-col gap-2">
+        <span className="sr-only">Conferindo se está livre…</span>
+        <Skeleton className="h-7 w-24 rounded-lg" />
+        <Skeleton className="h-5 w-72 max-w-full rounded-md" />
+      </div>
     );
   }
   if (check.state === "invalid" || check.state === "error") {
@@ -343,8 +346,8 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
           <p className="text-sm text-tinta-suave">
             {blocked ? "Escolham outro nome para continuar." : "Depois do pedido, acompanhem cada etapa aqui."}
           </p>
-          <Button type="submit" size="lg" disabled={pending || blocked} aria-busy={pending} className="w-full sm:w-auto">
-            {pending ? "Enviando…" : "Pedir meu domínio"}
+          <Button type="submit" size="lg" loading={pending} disabled={blocked} className="w-full sm:w-auto">
+            Pedir este endereço
           </Button>
         </div>
       </section>
@@ -370,7 +373,7 @@ function StepDot({ state }: { state: TimelineState }) {
   if (state === "current") {
     return (
       <span className={cn(base, "border-ameixa bg-ameixa-suave text-ameixa")}>
-        <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+        <Clock className="size-4" aria-hidden="true" />
       </span>
     );
   }
