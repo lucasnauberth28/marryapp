@@ -13,6 +13,8 @@ import { MaintenanceBanner } from "@/components/admin/maintenance-banner"
 import { unreadCountFor } from "@/lib/notifications/queries"
 import { vapidPublicKey } from "@/lib/notifications/push"
 import { ImpersonationBanner } from "@/components/admin/impersonation-banner"
+import { PanelTourProvider } from "@/components/tour/panel-tour-provider"
+import { loadPanelTour } from "@/lib/tour/panel-tour"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Perfil e permissões vêm do banco (não só do JWT), refletindo alterações de acesso na hora.
@@ -26,7 +28,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     getWeddingContext(),
     unreadCountFor(session.userId),
   ]);
-  const counts = ctx ? await getNavCounts(ctx.weddingId, allowedPaths.includes("*")) : undefined;
+  const [counts, tour] = await Promise.all([
+    ctx ? getNavCounts(ctx.weddingId, allowedPaths.includes("*")) : undefined,
+    loadPanelTour(session, ctx), // passo a passo do painel (null para administração, visita "Entrar como" e fornecedor)
+  ]);
   const label = accountLabel({
     adminView: account.adminView,
     coupleNames: wedding.coupleNames,
@@ -44,7 +49,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const impersonation = ctx?.impersonation ?? null;
 
   return (
-    <>
+    <PanelTourProvider config={tour}>
     {impersonation && <ImpersonationBanner coupleNames={impersonation.weddingNames} canEdit={impersonation.canEdit} expiresAt={impersonation.expiresAt.toISOString()} />}
     <div
       className={
@@ -76,6 +81,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </div>
       <MobileTabBar allowedPaths={allowedPaths} title={label.title} subtitle={subtitle} initials={label.initials} counts={counts} />
     </div>
-    </>
+    </PanelTourProvider>
   )
 }
