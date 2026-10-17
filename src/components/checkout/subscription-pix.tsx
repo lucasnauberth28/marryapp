@@ -8,6 +8,8 @@ import { btn } from "@/components/landing/styles";
 import { LoadingRegion } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QrFrame } from "@/components/ui/qr-frame";
+import { QR_COLORS } from "@/lib/qr-colors";
 import { cn } from "@/lib/utils";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
@@ -152,9 +154,9 @@ export function SubscriptionPix({ planId, modules, planName, couponCode, onPaid 
           <p className="font-semibold text-tinta">{planName}</p>
           <p className="font-display text-3xl text-tinta">{brl.format(charge.amount / 100)}</p>
         </div>
-        <div className={cn("rounded-[12px] border border-linha bg-white p-4 transition-opacity", expired && "opacity-30")}>
-          <QRCodeSVG value={charge.payload} size={184} fgColor="#231C24" aria-label="QR Code do Pix" role="img" />
-        </div>
+        <QrFrame className={cn("transition-opacity", expired && "opacity-30")}>
+          <QRCodeSVG value={charge.payload} size={184} {...QR_COLORS} marginSize={2} aria-label="QR Code do Pix" role="img" />
+        </QrFrame>
         <p aria-live="polite" className={cn("text-sm font-semibold tabular-nums", expired ? "text-perigo" : "text-tinta-suave")}>
           {expired
             ? "O código expirou."

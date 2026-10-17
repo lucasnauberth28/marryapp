@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Field, FormAlert } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QrFrame } from "@/components/ui/qr-frame";
+import { QR_COLORS } from "@/lib/qr-colors";
 import { Textarea } from "@/components/ui/textarea";
 import { maskPhone } from "@/lib/masks";
 import { Seal } from "@/components/landing/seal";
@@ -436,13 +438,13 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
               {pixPayload === "" ? "Gerando o código" : "Aguardando pagamento"}
             </span>
             {pixPayload === "" ? <span role="status" className="sr-only">Gerando o código do Pix...</span> : null}
-            <div className="rounded-[12px] border border-linha bg-papel p-3">
+            <QrFrame className="p-3">
               {pixPayload === "" ? (
                 <Skeleton className="size-[200px] rounded-lg" />
               ) : (
-                <QRCodeSVG value={pixPayload} size={200} role="img" aria-label="QR Code do Pix" />
+                <QRCodeSVG value={pixPayload} size={200} {...QR_COLORS} marginSize={2} role="img" aria-label="QR Code do Pix" />
               )}
-            </div>
+            </QrFrame>
             <p className="text-sm text-tinta-suave">
               No celular, copie o código e cole no app do seu banco, na opção Pix copia e cola. No computador, escaneie o QR Code com o celular.
             </p>
