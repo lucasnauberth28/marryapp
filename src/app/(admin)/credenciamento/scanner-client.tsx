@@ -82,7 +82,7 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
 
   const handleScannedCode = async (text: string) => {
     if (!text.startsWith("GUEST:")) {
-      setMessage({ ok: false, text: "Esse QR Code não é de um convite do Aceito." });
+      setMessage({ ok: false, text: "Esse código QR não é de um convite do Aceito." });
       setStage("idle");
       return;
     }
@@ -129,9 +129,9 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
       const res = await checkInGuest(found.id);
       if (res.success) {
         setArrived((n) => n + 1);
-        setMessage({ ok: true, text: `Entrada liberada: ${res.guestName}.` });
+        setMessage({ ok: true, text: `Entrada registrada: ${res.guestName}.` });
       } else {
-        setMessage({ ok: false, text: res.error || "Não deu para registrar a entrada." });
+        setMessage({ ok: false, text: res.error || "Não deu para registrar a entrada. Tente de novo." });
       }
     } catch {
       setMessage({ ok: false, text: "Não deu para registrar a entrada. Verifique a internet e tente de novo." });
@@ -145,8 +145,8 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
     <div className="flex flex-col gap-6">
       <PageHeader
         eyebrow="Convidados"
-        title="Check-in no dia"
-        description="Aponte a câmera para o QR Code do convite e libere a entrada de cada convidado."
+        title="Registro de entrada dos convidados"
+        description="Quem confirma presença pelo link recebe um código QR para a entrada na festa. Aponte a câmera para o código e registre a chegada de cada convidado."
         actions={
           <StatusChip tone="sucesso" icon={<Check className="size-4" aria-hidden="true" />}>
             {arrived} de {confirmed} {confirmed === 1 ? "confirmado chegou" : "confirmados chegaram"}
@@ -178,7 +178,7 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
               </div>
             </div>
             <div className="flex flex-col items-center gap-3 px-4 py-5">
-              <p className="text-base text-papel">Aponte para o QR Code do convidado</p>
+              <p className="text-base text-papel">Aponte para o código QR do convidado</p>
               <button type="button" onClick={stopScanning} className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-papel px-4 font-semibold text-papel hover:bg-white/10">
                 <X className="size-4" aria-hidden="true" />
                 Cancelar leitura
@@ -192,7 +192,7 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
             <Seal label={found.alreadyIn ? "Convite já usado" : "Convite válido"} />
             {found.alreadyIn ? (
               <StatusChip tone="aviso" icon={<Clock className="size-4" aria-hidden="true" />}>
-                Já fez o check-in
+                Entrada já registrada
               </StatusChip>
             ) : (
               <StatusChip tone="sucesso" icon={<Check className="size-4" aria-hidden="true" />}>
@@ -244,16 +244,16 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
                 <Camera className="size-9" aria-hidden="true" />
               </span>
               <h2 className="font-display text-[26px] font-medium leading-8 text-tinta">Pronto para ler</h2>
-              <p className="text-tinta-suave">Peça o QR Code do convite e aproxime da câmera.</p>
+              <p className="text-tinta-suave">Peça o código QR que o convidado recebeu ao confirmar presença e aproxime da câmera.</p>
               <button type="button" onClick={startScanning} className={`${btn.primary} ${btn.block} sm:w-auto`}>
                 <QrCode className="size-5" aria-hidden="true" />
-                Ler QR Code do convidado
+                Ler código QR do convidado
               </button>
             </section>
 
             <section className={`${card} flex flex-col gap-3 p-4`}>
               <label htmlFor={searchId} className="text-sm font-semibold text-tinta">
-                Sem QR? Buscar pelo nome
+                Sem o código QR? Busque pelo nome
               </label>
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-tinta-suave" aria-hidden="true" />

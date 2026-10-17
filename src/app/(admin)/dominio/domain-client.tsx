@@ -38,11 +38,11 @@ export function DomainClient({ coupleNames, weddingDate, order, lastClosed, defa
     <div className="flex max-w-[880px] flex-col gap-6">
       <PageHeader
         eyebrow="Site e presentes"
-        title="Domínio próprio"
+        title="Endereço personalizado do site"
         description={
           order
             ? "Acompanhem o endereço do site de vocês, do pedido até o dia em que ele entra no ar."
-            : "Um endereço só de vocês para os convites, como anaerafael.com.br. O domínio é registrado no nome do titular."
+            : "Um endereço só de vocês para o site e os convites, como anaerafael.com.br. Ele é registrado no nome do titular, com o primeiro ano incluído. As renovações seguintes ficam por conta do titular."
         }
       />
       {order ? (
@@ -67,7 +67,7 @@ function RejectedNotice({ order }: { order: DomainOrderView }) {
       <AlertCircle className="mt-0.5 size-5 shrink-0 text-aviso" aria-hidden="true" />
       <div className="flex flex-col gap-1">
         <h2 id="dominio-recusado" className="font-semibold">
-          O pedido de {order.domain} não pôde ser feito
+          O pedido de {order.domain} não foi aceito
         </h2>
         {order.rejectionReason ? <p>{order.rejectionReason}</p> : null}
         <p>Vocês podem fazer um novo pedido logo abaixo.</p>
@@ -184,7 +184,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
     startTransition(async () => {
       const result = await requestDomainAction({ domain: name, holderName, holderDocument, holderEmail, holderPhone, accepted });
       if (result.success) {
-        toast.success("Pedido enviado. Avisamos quando o domínio for registrado.");
+        toast.success("Pedido enviado. Avisaremos quando o endereço for registrado.");
         router.refresh();
         return;
       }
@@ -254,10 +254,10 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
       <section aria-labelledby="dominio-titular" className={cn(card, "flex flex-col gap-4 p-5 sm:p-6")}>
         <div className="flex flex-col gap-1">
           <h2 id="dominio-titular" className={cardTitle}>
-            Quem vai ser o dono do domínio?
+            Quem será o titular do endereço?
           </h2>
           <p className="text-[15px] text-tinta-suave">
-            O domínio fica registrado no nome do titular (uma pessoa com CPF ou uma empresa com CNPJ). O Registro.br pede esses dados.
+            O endereço fica registrado no nome do titular (uma pessoa com CPF ou uma empresa com CNPJ). O Registro.br, que cuida dos endereços .com.br, pede esses dados.
           </p>
         </div>
         <div className="grid gap-5 sm:grid-cols-2">
@@ -436,7 +436,7 @@ function OrderProgress({ order }: { order: DomainOrderView }) {
 
       <section aria-labelledby="dominio-titular-dados" className={cn(card, "flex flex-col gap-4 p-5 sm:p-6")}>
         <h2 id="dominio-titular-dados" className={cardTitle}>
-          Titular do domínio
+          Titular do endereço
         </h2>
         <dl className="grid gap-4 sm:grid-cols-2">
           <Fact label="Nome">{order.holderName}</Fact>
@@ -491,7 +491,7 @@ function CancelButton() {
         isOpen={open}
         onClose={() => setOpen(false)}
         onConfirm={confirm}
-        title="Cancelar o pedido de domínio?"
+        title="Cancelar o pedido do endereço?"
         description="Apagamos os dados do titular e liberamos o nome. Vocês podem fazer um novo pedido quando quiserem."
         confirmText="Cancelar o pedido"
         cancelText="Voltar"
