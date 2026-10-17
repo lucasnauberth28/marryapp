@@ -94,10 +94,10 @@ export function PendingLink({ onClick, ...props }: ComponentProps<typeof Link>) 
  * Envolve o que muda com o filtro: enquanto a URL não chega, fica mais clara e marcada como ocupada.
  * O efeito só começa depois de 200ms (navegação rápida não pisca) e some na hora quando termina.
  */
-export function PendingRegion({ className, children }: { className?: string; children: ReactNode }) {
+export function PendingRegion({ id, className, children }: { id?: string; className?: string; children: ReactNode }) {
   const pending = useListPending();
   return (
-    <div aria-busy={pending || undefined} className={cn("transition-opacity duration-150", pending && "opacity-60 delay-200", className)}>
+    <div id={id} aria-busy={pending || undefined} className={cn("transition-opacity duration-150", pending && "opacity-60 delay-200", className)}>
       <span role="status" className="sr-only">
         {pending ? "Atualizando a lista..." : ""}
       </span>
