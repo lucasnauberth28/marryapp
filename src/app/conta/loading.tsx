@@ -15,7 +15,9 @@ export default function ContaLoading() {
       <div className="mx-auto flex w-full max-w-[880px] flex-col gap-8 px-4 pb-16 pt-8 sm:px-6 md:pt-12">
         <div className="flex flex-col gap-1.5">
           <Skeleton className="h-3 w-28 rounded-md" />
-          <Skeleton className="h-9 w-56 rounded-lg md:h-10" />
+          <div className="flex h-[38px] items-center md:h-[46px]">
+            <Skeleton className="h-8 w-56 rounded-lg md:h-9" />
+          </div>
           <Skeleton className="h-4 w-64 rounded-md" />
         </div>
 
