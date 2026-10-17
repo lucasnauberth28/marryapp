@@ -7,7 +7,9 @@ export default function LoadingFornecedorAgenda() {
     <LoadingRegion label="a agenda" className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex max-w-2xl flex-1 flex-col gap-1">
-          <Skeleton className="hidden h-3 w-24 rounded-md md:block" />
+          <div className="hidden h-4 items-center md:flex">
+            <Skeleton className="h-3 w-24 rounded-md" />
+          </div>
           <div className="flex h-9 items-center md:h-[46px]">
             <Skeleton className="h-7 w-32 rounded-lg md:h-9" />
           </div>

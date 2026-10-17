@@ -56,11 +56,15 @@ export function AuthShellSkeleton({
 }
 
 /** Título + descrição das telas de acesso (mesma escala do ShellHeading). */
-export function AuthHeadingSkeleton({ lines = 2 }: { lines?: number }) {
+export function AuthHeadingSkeleton({ lines = 2, titleLines = 1 }: { lines?: number; titleLines?: number }) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex h-10 items-center lg:h-[50px]">
-        <Skeleton className="h-8 w-4/5 rounded-lg lg:h-10" />
+      <div className="flex flex-col">
+        {Array.from({ length: titleLines }).map((_, i) => (
+          <div key={i} className="flex h-10 items-center lg:h-[50px]">
+            <Skeleton className={i === 0 ? "h-8 w-4/5 rounded-lg lg:h-10" : "h-8 w-2/5 rounded-lg lg:h-10"} />
+          </div>
+        ))}
       </div>
       <div className="flex flex-col">
         {Array.from({ length: lines }).map((_, i) => (

@@ -134,7 +134,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
       const result = isEditing ? await updateGuest(guest.id, formData) : await createGuest(formData);
 
       if (result.success) {
-        toast.success(isEditing ? "Alterações salvas." : "Convidado adicionado à lista.", { id: toastId });
+        toast.success(isEditing ? "Informações salvas." : "Convidado adicionado à lista.", { id: toastId });
         if (!isEditing && addAnother) {
           // Fica no formulário, limpo, para o próximo convidado
           setCategory("");
@@ -156,7 +156,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
       isOpen={isOpen}
       onClose={onClose}
       title={isEditing ? "Editar convidado" : "Adicionar convidado"}
-      description={isEditing ? "Atualize as informações deste convidado." : "Só o nome é obrigatório. O resto dá para completar depois."}
+      description={isEditing ? "Atualizem as informações deste convidado." : "Só o nome é obrigatório. O resto dá para completar depois."}
       size="md"
       className="max-h-[92vh] overflow-y-auto"
     >
@@ -177,7 +177,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
           type="tel"
           inputMode="tel"
           autoComplete="off"
-          hint="Com DDD, por exemplo (11) 99999-8888. É por ele que o convite é enviado."
+          hint="Com DDD, por exemplo (11) 99999-8888. Serve para enviar convites e lembretes pelo WhatsApp, nos planos que incluem esse envio."
           placeholder="(11) 90000-0000"
           defaultValue={guest?.phone ? formatPhoneBR(guest.phone) : ""}
         />
@@ -224,7 +224,13 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
 
         {isEditing && (
           <>
-            <NativeSelect id={ids.rsvp} label="Resposta ao convite" value={rsvpStatus} onChange={(e) => setRsvpStatus(e.target.value as RsvpStatus)}>
+            <NativeSelect
+              id={ids.rsvp}
+              label="Resposta do convidado"
+              hint="O convidado responde pelo link do convite. Mudem aqui só se ele avisou por outro meio."
+              value={rsvpStatus}
+              onChange={(e) => setRsvpStatus(e.target.value as RsvpStatus)}
+            >
               <option value={RsvpStatus.PENDING}>Sem resposta</option>
               <option value={RsvpStatus.CONFIRMED}>Confirmado</option>
               <option value={RsvpStatus.DECLINED}>Não vai</option>

@@ -179,7 +179,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
       const result = await approvePixTransaction(transactionId, giftId);
       if (result.success) {
         setToast({
-          message: "Pix confirmado. O presente foi marcado como ganho.",
+          message: "Pix confirmado. O presente foi marcado como pago.",
           type: "success",
         });
       } else {
@@ -205,17 +205,17 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
         window.open(`https://wa.me/55${cleanPhone}?text=${text}`, "_blank");
         
         setToast({
-          message: "Status atualizado e WhatsApp aberto!",
+          message: "Mensagem de agradecimento preparada no WhatsApp. Falta enviar por lá.",
           type: "success",
         });
       } else if (result.success) {
         setToast({
-          message: "Status de agradecimento atualizado!",
+          message: currentStatus ? "Agradecimento desmarcado." : "Marcado como agradecido.",
           type: "success",
         });
       } else {
         setToast({
-          message: result.error || "Erro ao atualizar agradecimento.",
+          message: result.error || "Não deu para atualizar o agradecimento. Tente de novo.",
           type: "error",
         });
       }

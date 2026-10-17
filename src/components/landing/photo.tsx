@@ -10,7 +10,7 @@ type PhotoProps = React.ComponentProps<typeof Image>;
  * com esqueleto de brilho atrás até a foto carregar. O pai já tem proporção fixa e `relative`
  * (aspect-*), então nada pula. Fotos com `preload` (LCP) não levam esqueleto: já chegam com a página.
  */
-export default function Photo({ onLoad, onError, preload, priority, ...props }: PhotoProps) {
+export default function Photo({ alt, onLoad, onError, preload, priority, ...props }: PhotoProps) {
   const [done, setDone] = useState(false);
   const eager = Boolean(preload || priority);
   return (
@@ -18,6 +18,7 @@ export default function Photo({ onLoad, onError, preload, priority, ...props }: 
       {!eager && !done ? <span aria-hidden="true" className="ac-skeleton absolute inset-0 rounded-[inherit]" /> : null}
       <Image
         {...props}
+        alt={alt}
         preload={preload}
         priority={priority}
         onLoad={(e) => {

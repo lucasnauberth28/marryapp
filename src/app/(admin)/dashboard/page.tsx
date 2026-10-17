@@ -250,7 +250,7 @@ export default async function DashboardPage() {
                 Ver o site
               </Link>
             )}
-            {invites === 0 ? (
+            {firstAccess ? null : invites === 0 ? (
               <Link href="/convidados" className={btn.primary}>
                 Adicionar convidados
               </Link>

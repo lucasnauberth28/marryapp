@@ -18,14 +18,19 @@ export default function FornecedoresLoading() {
               <div className="flex h-4 items-center">
                 <Skeleton className="h-3 w-40 rounded-md bg-papel/70" />
               </div>
-              <Skeleton className="h-10 w-4/5 rounded-xl bg-papel/70 sm:h-14" />
               <div className="flex flex-col">
-                <div className="flex h-[26px] items-center sm:h-7">
-                  <Skeleton className="h-4 w-full rounded-md bg-papel/70" />
-                </div>
-                <div className="flex h-[26px] items-center sm:h-7">
-                  <Skeleton className="h-4 w-2/3 rounded-md bg-papel/70" />
-                </div>
+                {["w-4/5", "w-3/5"].map((w) => (
+                  <div key={w} className="flex h-10 items-center sm:h-[51px] lg:h-[63px]">
+                    <Skeleton className={`h-7 rounded-xl bg-papel/70 sm:h-9 lg:h-11 ${w}`} />
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-col">
+                {["w-full", "w-full", "w-2/3"].map((w, i) => (
+                  <div key={i} className="flex h-[26px] items-center sm:h-7">
+                    <Skeleton className={`h-4 rounded-md bg-papel/70 ${w}`} />
+                  </div>
+                ))}
               </div>
             </div>
             <div className="grid grid-cols-1 gap-x-3 gap-y-5 rounded-[16px] border border-linha bg-papel p-4 pt-5 shadow-aceito-1 sm:grid-cols-2 lg:grid-cols-4">

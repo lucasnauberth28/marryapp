@@ -7,7 +7,9 @@ export default function LoadingFornecedor() {
     <LoadingRegion label="seus pedidos de orçamento" className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <Skeleton className="hidden h-3 w-24 rounded-md md:block" />
+          <div className="hidden h-4 items-center md:flex">
+            <Skeleton className="h-3 w-24 rounded-md" />
+          </div>
           <Skeleton className="h-9 w-72 max-w-full rounded-lg md:h-10" />
         </div>
         <Skeleton className="hidden h-11 w-44 rounded-xl md:block" />
@@ -17,6 +19,7 @@ export default function LoadingFornecedor() {
           <SkeletonStat key={i} className="p-4 sm:p-5" />
         ))}
       </div>
+      <Skeleton className="h-[62px] w-full rounded-2xl max-md:order-last" />
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Skeleton className="h-7 w-40 rounded-md" />

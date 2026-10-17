@@ -38,7 +38,7 @@ export function SettingsClient({ initialSettings, summary, canSeePlan }: Setting
       if (res.success) {
         toast.success("Prazo de confirmação salvo.", { id: toastId });
       } else {
-        toast.error("Não foi possível salvar. Tente de novo.", { id: toastId });
+        toast.error(res.error ?? "Não deu para salvar o prazo. Tente de novo.", { id: toastId });
       }
     });
   }
@@ -74,8 +74,8 @@ export function SettingsClient({ initialSettings, summary, canSeePlan }: Setting
         <CardContent className="flex flex-col gap-4">
           <DatePicker
             id="rsvpDeadline"
-            label="Prazo para responder"
-            hint="Depois desta data, o formulário de confirmação é fechado automaticamente."
+            label="Prazo de confirmação"
+            hint="Opcional. Depois desta data, a página de confirmação do site deixa de aceitar respostas. A Liz também usa este prazo nas sugestões."
             className="sm:max-w-[320px]"
             value={rsvpDeadline}
             onChange={(e) => setRsvpDeadline(e.target.value)}

@@ -12,6 +12,10 @@ test("com prazo definido, cita a data do prazo", () => {
   );
 });
 
+test("prazo em outro ano mostra o ano", () => {
+  assert.match(rsvpPendingTipText({ ...base, deadlineKey: "2028-01-10" }), /termina em 10 de janeiro de 2028/);
+});
+
 test("prazo que já passou ou que é hoje muda o verbo", () => {
   assert.match(rsvpPendingTipText({ ...base, deadlineKey: "2027-03-01" }), /terminou em 1 de março/);
   assert.match(rsvpPendingTipText({ ...base, deadlineKey: "2027-03-06" }), /termina hoje/);
