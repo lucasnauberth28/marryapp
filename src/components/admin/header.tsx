@@ -22,6 +22,7 @@ import { NotificationBell } from "@/components/notifications/notification-bell";
 import { hasPathAccess, isPlatformAdminPaths } from "@/lib/permissions";
 import { Logo } from "@/components/brand/logo";
 import { accountLabel } from "@/lib/account-label";
+import { TourMenuItem } from "@/components/tour/tour-restart";
 
 interface HeaderProps {
   role?: string;
@@ -84,6 +85,7 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
                   <UserRound className="h-4 w-4 text-tinta-suave" /> Minha conta
                 </Link>
               </DropdownMenuItem>
+              <TourMenuItem />
               {isPlatformAdmin && (
                 <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5 text-sm text-tinta md:hidden">
                   <Link href="/admin" className="flex items-center gap-2.5">

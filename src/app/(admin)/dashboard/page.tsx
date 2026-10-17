@@ -26,6 +26,10 @@ import { Seal } from "@/components/landing/seal";
 import { NextSteps, type NextStep } from "./next-steps";
 import { isGiftOnlyPending } from "@/lib/guest-origin";
 import { weddingHasModule } from "@/lib/wedding-plan";
+import { FirstSteps } from "@/components/tour/first-steps";
+import { firstStepsView } from "@/lib/tour/first-steps";
+import { getTourUserRow, tourAccountOf } from "@/lib/tour/panel-tour";
+import { tourMayWrite } from "@/lib/tour/rules";
 import { RSVP_PENDING_ACTION, RSVP_PENDING_HREF, rsvpPendingTipText } from "@/lib/liz-tips";
 
 export const dynamic = "force-dynamic";
@@ -91,12 +95,13 @@ function SummaryCard({ href, label, className = "", children }: { href: string; 
 const bigNumber = "font-display text-[24px] leading-8 tabular-nums md:text-[40px] md:leading-[44px]";
 
 export default async function DashboardPage() {
-  const { weddingId, session } = await requireWeddingPage("/dashboard");
+  const ctx = await requireWeddingPage("/dashboard");
+  const { weddingId, session } = ctx;
   const [wedding, account] = await Promise.all([getWeddingIdentity(), getAccountView()]);
   const now = new Date();
   const today = startOfDay(now);
 
-  const [allGuests, tasks, taskCount, expenses, approvedGifts, pendingPix, settings, giftCount, recent, canWhatsApp, canQr] = await Promise.all([
+  const [allGuests, tasks, taskCount, expenses, approvedGifts, pendingPix, settings, giftCount, recent, canWhatsApp, canQr, site, tourRow] = await Promise.all([
     prisma.guest.findMany({
       where: { weddingId },
       select: { rsvpStatus: true, category: true, allowedCompanions: true, confirmedCompanions: true, phone: true, hasReceivedMessage: true },
@@ -128,6 +133,12 @@ export default async function DashboardPage() {
     // WhatsApp e leitor de entrada só são sugeridos a quem tem o recurso no plano
     weddingHasModule({ weddingId, session }, "whatsapp"),
     weddingHasModule({ weddingId, session }, "qrcode"),
+    // "Primeiros passos": o que o casal já preencheu no site e se esta pessoa dispensou a lista
+    prisma.siteCustomization.findUnique({
+      where: { weddingId },
+      select: { locationName: true, locationAddress: true, ceremonyTime: true, receptionTime: true, welcomeMessage: true, heroImageUrl: true, couplePhotoUrl: true },
+    }),
+    getTourUserRow(session.userId),
   ]);
 
   // Convidados (em pessoas, com acompanhantes). Quem só presenteou e não respondeu não é convite pendente.
@@ -155,6 +166,19 @@ export default async function DashboardPage() {
 
   // Primeiro acesso: nada foi cadastrado ainda. Em vez de caixas vazias, duas ações para começar.
   const firstAccess = invites === 0 && giftCount === 0 && taskCount === 0 && expenses.length === 0 && approvedGifts.length === 0;
+
+  // Primeiros passos: dados reais do casamento. Só para conta de casal (não para a administração nem para quem "entrou como")
+  const firstSteps = tourRow && tourMayWrite(tourAccountOf({ session, ctx, row: tourRow }))
+    ? firstStepsView({
+        allowedPaths: session.allowedPaths,
+        site,
+        guestCount: invites,
+        invitedByPanel: guests.filter((g) => g.hasReceivedMessage).length,
+        giftCount,
+        canWhatsApp,
+        dismissed: Boolean(tourRow.panelChecklistDismissedAt),
+      })
+    : null;
 
   // Próximos passos: tarefas abertas, com o prazo em chip
   const steps: NextStep[] = tasks.slice(0, 5).map((t) => {
@@ -299,6 +323,8 @@ export default async function DashboardPage() {
           </div>
         </section>
       )}
+
+      {!firstAccess && firstSteps && <FirstSteps items={firstSteps.items} doneCount={firstSteps.doneCount} />}
 
       {/* Resumo: confirmações, presentes e orçamento */}
       {!firstAccess && (

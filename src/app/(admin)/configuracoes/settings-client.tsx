@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
 import { PageHeader } from "@/components/admin/page-header";
+import { TourSettingsCard } from "@/components/tour/tour-restart";
 import { toast } from "sonner";
 
 interface SettingsClientProps {
@@ -111,6 +112,8 @@ export function SettingsClient({ initialSettings, summary, canSeePlan }: Setting
           </Button>
         </CardContent>
       </Card>
+
+      <TourSettingsCard />
 
       {canSeePlan && (
         <Card className="gap-4">

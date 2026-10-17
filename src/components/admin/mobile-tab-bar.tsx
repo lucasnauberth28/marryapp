@@ -8,6 +8,8 @@ import { logout } from "@/actions/auth-actions";
 import { NavList, type NavCounts } from "@/components/admin/nav-list";
 import { MORE_TAB_ICON, isNavItemActive, visibleMobileTabs, visibleMoreGroups } from "@/components/admin/nav-config";
 import { hasPathAccess } from "@/lib/permissions";
+import { TOUR_CLOSE_MORE, TOUR_OPEN_MORE } from "@/lib/tour/events";
+import { navAnchor } from "@/lib/tour/steps";
 
 /** Cartão do topo da aba "Mais": quem está no painel; leva às Configurações quando a conta pode abri-las. */
 function AccountCard({
@@ -77,6 +79,18 @@ export function MobileTabBar({
     setMoreOpen(false);
   }, [pathname]);
 
+  // O passo a passo do painel abre e fecha a aba "Mais" para apontar as áreas que ficam dentro dela
+  useEffect(() => {
+    const open = () => setMoreOpen(true);
+    const close = () => setMoreOpen(false);
+    window.addEventListener(TOUR_OPEN_MORE, open);
+    window.addEventListener(TOUR_CLOSE_MORE, close);
+    return () => {
+      window.removeEventListener(TOUR_OPEN_MORE, open);
+      window.removeEventListener(TOUR_CLOSE_MORE, close);
+    };
+  }, []);
+
   useEffect(() => {
     if (!moreOpen) return;
     const prev = document.body.style.overflow;
@@ -108,7 +122,7 @@ export function MobileTabBar({
           const Icon = tab.icon;
           const active = isNavItemActive(pathname, tab.href) && !moreOpen;
           return (
-            <Link key={tab.href} href={tab.href} aria-current={active ? "page" : undefined} className={tabClass(active)}>
+            <Link key={tab.href} href={tab.href} data-tour={navAnchor(tab.href)} aria-current={active ? "page" : undefined} className={tabClass(active)}>
               <span className={pillClass(active)}>
                 <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
               </span>

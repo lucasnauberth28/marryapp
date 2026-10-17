@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { isNavItemActive, visibleNavGroups, type NavCountKey, type NavGroup } from "@/components/admin/nav-config";
+import { navAnchor } from "@/lib/tour/steps";
 
 export type NavCounts = Partial<Record<NavCountKey, number>>;
 
@@ -52,6 +53,7 @@ export function NavList({ allowedPaths, collapsed = false, onNavigate, large = f
                     key={item.href}
                     href={item.href}
                     onClick={onNavigate}
+                    data-tour={navAnchor(item.href)}
                     aria-current={active ? "page" : undefined}
                     className={`flex min-h-[52px] items-center gap-3 border-b border-linha text-base last:border-b-0 ${active ? "font-semibold text-ameixa" : "text-tinta"}`}
                   >
@@ -85,6 +87,7 @@ export function NavList({ allowedPaths, collapsed = false, onNavigate, large = f
                 key={item.href}
                 href={item.href}
                 onClick={onNavigate}
+                data-tour={navAnchor(item.href)}
                 title={collapsed ? item.name : undefined}
                 aria-label={collapsed ? item.name : undefined}
                 aria-current={active ? "page" : undefined}
