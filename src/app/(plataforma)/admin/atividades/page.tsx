@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ScrollText } from "lucide-react";
 import { PageHeader } from "@/components/plataforma/page-header";
 import { FilterBar } from "@/components/plataforma/filter-bar";
+import { PendingRegion } from "@/components/plataforma/pending";
 import { Pagination } from "@/components/plataforma/pagination";
 import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { EmptyState } from "@/components/plataforma/empty-state";
@@ -49,6 +50,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
         </p>
       )}
 
+      <PendingRegion className="flex flex-col gap-6">
       <ResponsiveTable
         caption="Atividades, da mais recente para a mais antiga"
         rows={rows}
@@ -87,6 +89,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
       />
 
       <Pagination page={win.page} pageSize={DEFAULT_PAGE_SIZE} total={total} basePath="/admin/atividades" params={{ tipo: group, periodo: period, q, alvo: target ? `${target.type}:${target.id}` : undefined }} noun={["atividade", "atividades"]} />
+      </PendingRegion>
     </>
   );
 }

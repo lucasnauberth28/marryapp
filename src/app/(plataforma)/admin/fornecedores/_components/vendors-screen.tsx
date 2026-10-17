@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Check, Clock, Download, Flag, Pencil, ShieldCheck, Star, Store, Ban } from "lucide-react";
 import { btn } from "@/components/landing/styles";
@@ -6,8 +7,12 @@ import { ExportButton } from "@/components/plataforma/export-button";
 import { FilterBar } from "@/components/plataforma/filter-bar";
 import { PageHeader } from "@/components/plataforma/page-header";
 import { Pagination } from "@/components/plataforma/pagination";
+import { PendingRegion } from "@/components/plataforma/pending";
+import { SidePanelSkeleton } from "@/components/plataforma/loading-parts";
+import { SkeletonCard, SkeletonText } from "@/components/skeletons";
 import { Panel } from "@/components/plataforma/panel";
 import { ResponsiveTable } from "@/components/plataforma/responsive-table";
+import { UserImage } from "@/components/ui/user-image";
 import { PlanChip, StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
 import { TabsNav } from "@/components/plataforma/tabs-nav";
 import { formatDate, formatInt, plural, relativeDay, timeAgo } from "@/lib/platform/format";
@@ -61,18 +66,16 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
   const ordem = oneOf(searchParams, "ordem", VENDOR_SORTS) ?? "espera";
   const selectedId = param(searchParams, "id", 40);
 
-  const [counts, paidGroups, options, list, moderation] = await Promise.all([
+  const [counts, paidGroups, options, list] = await Promise.all([
     getVendorTabCounts(now),
     prisma.partnerVendor.groupBy({ by: ["planTier"], where: activePaidVendorWhere(now), _count: { _all: true } }),
     getVendorFilterOptions(),
     listAdminVendors({ tab, q, categoria, plano, curadoria, regiao, ordem, page: parsePage(searchParams) }, now),
-    mode === "lista" ? getReviewsToModerate() : Promise.resolve(null),
   ]);
 
   const pro = paidGroups.find((g) => g.planTier === "PRO")?._count._all ?? 0;
   const master = paidGroups.find((g) => g.planTier === "MASTER")?._count._all ?? 0;
   const detailId = selectedId ?? (mode === "curadoria" ? list.rows[0]?.id : undefined);
-  const detail = detailId ? await getAdminVendorDetail(detailId) : null;
 
   const filterParams = { q, categoria, regiao, plano, curadoria, ordem: ordem === "espera" ? undefined : ordem, aba: mode === "lista" && tab !== "todos" ? tab : undefined };
   const rowHref = (row: AdminVendorRow) => `${buildHref(basePath, { ...filterParams, pagina: list.page > 1 ? list.page : undefined, id: row.id })}#painel`;
@@ -143,6 +146,7 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
 
       <FilterBar searchPlaceholder="Buscar por nome, categoria ou cidade" filters={mode === "curadoria" ? filters.filter((f) => f.key === "categoria" || f.key === "ordem") : filters} />
 
+      <PendingRegion>
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="flex min-w-0 flex-col gap-4">
           <ResponsiveTable
@@ -150,7 +154,7 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
             rows={list.rows}
             rowKey={(r) => r.id}
             rowHref={rowHref}
-            selectedKey={detail?.id}
+            selectedKey={detailId}
             empty={
               <EmptyState icon={Store} title={hasFilters || tab !== "todos" ? "Nenhum fornecedor com esses filtros" : "Ainda não tem fornecedor aqui"} compact>
                 {hasFilters || tab !== "todos"
@@ -236,16 +240,44 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
         </div>
 
         <div id="painel" className="scroll-mt-6 lg:sticky lg:top-6">
-          {detail ? (
-            <VendorDetailPanel detail={detail} now={now} basePath={basePath} />
-          ) : (
-            <Panel>
-              <p className="text-sm text-tinta-suave">Escolha um fornecedor na lista para ver o perfil e decidir.</p>
-            </Panel>
-          )}
+          {/* O painel busca o fornecedor escolhido sozinho: a lista não espera por ele (key = fornecedor) */}
+          <Suspense key={detailId ?? "nenhum"} fallback={<SidePanelSkeleton photos />}>
+            <VendorDetailSlot detailId={detailId} now={now} basePath={basePath} />
+          </Suspense>
         </div>
       </div>
+      </PendingRegion>
 
+      {mode === "lista" ? (
+        <Suspense
+          fallback={
+            <SkeletonCard>
+              <SkeletonText lines={2} />
+            </SkeletonCard>
+          }
+        >
+          <ModerationBlock now={now} />
+        </Suspense>
+      ) : null}
+    </>
+  );
+}
+
+async function VendorDetailSlot({ detailId, now, basePath }: { detailId: string | undefined; now: Date; basePath: string }) {
+  const detail = detailId ? await getAdminVendorDetail(detailId) : null;
+  return detail ? (
+    <VendorDetailPanel detail={detail} now={now} basePath={basePath} />
+  ) : (
+    <Panel>
+      <p className="text-sm text-tinta-suave">Escolha um fornecedor na lista para ver o perfil e decidir.</p>
+    </Panel>
+  );
+}
+
+async function ModerationBlock({ now }: { now: Date }) {
+  const moderation = await getReviewsToModerate();
+  return (
+    <>
       {moderation ? (
         <Panel
           title="Avaliações denunciadas"
@@ -346,9 +378,8 @@ function VendorDetailPanel({ detail, now, basePath }: { detail: NonNullable<Awai
       {photos.length > 0 ? (
         <ul className="mt-4 grid grid-cols-3 gap-2" aria-label="Fotos do portfólio">
           {photos.map((url, i) => (
-            <li key={url} className="aspect-square overflow-hidden rounded-xl bg-areia">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt={`Foto ${i + 1} de ${detail.companyName}`} className="size-full object-cover" />
+            <li key={url} className="relative aspect-square overflow-hidden rounded-xl bg-areia">
+              <UserImage src={url} alt={`Foto ${i + 1} de ${detail.companyName}`} sizes="120px" className="object-cover" />
             </li>
           ))}
         </ul>

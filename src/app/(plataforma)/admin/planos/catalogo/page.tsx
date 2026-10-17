@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { PageHeader } from "@/components/plataforma/page-header";
 import { Panel } from "@/components/plataforma/panel";
@@ -16,6 +15,7 @@ import { countPendingInvoices, listPendingInvoices } from "@/lib/platform/querie
 import prisma from "@/lib/prisma";
 import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
 import { cn } from "@/lib/utils";
+import { PendingLink, PendingRegion } from "@/components/plataforma/pending";
 import { PlanosTabs } from "../_components/planos-tabs";
 import { ContadorSection } from "../_components/contador-section";
 import { CatalogEditForm } from "./_components/catalog-edit-form";
@@ -88,9 +88,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                     header: <span className="sr-only">Editar</span>,
                     mobileLabel: false,
                     cell: (id) => (
-                      <Link href={`/admin/planos/catalogo?editar=${planCatalogKey(id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
+                      <PendingLink href={`/admin/planos/catalogo?editar=${planCatalogKey(id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
                         <Pencil className="size-4" aria-hidden="true" /> Editar<span className="sr-only"> o plano {catalog.plans[id].name}</span>
-                      </Link>
+                      </PendingLink>
                     ),
                   },
                 ]}
@@ -116,9 +116,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                     header: <span className="sr-only">Editar</span>,
                     mobileLabel: false,
                     cell: (m) => (
-                      <Link href={`/admin/planos/catalogo?editar=${moduleCatalogKey(m.id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
+                      <PendingLink href={`/admin/planos/catalogo?editar=${moduleCatalogKey(m.id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
                         <Pencil className="size-4" aria-hidden="true" /> Editar<span className="sr-only"> o módulo {m.name}</span>
-                      </Link>
+                      </PendingLink>
                     ),
                   },
                 ]}
@@ -128,7 +128,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
           </Panel>
         </div>
 
-        <div id="editar" className="flex scroll-mt-6 flex-col gap-6 lg:sticky lg:top-6">
+        <PendingRegion id="editar" className="flex scroll-mt-6 flex-col gap-6 lg:sticky lg:top-6">
           <Panel>
             {form ? (
               <CatalogEditForm key={form.key} itemKey={form.key} title={form.title} currentName={form.name} currentPriceCents={form.price} free={form.free} />
@@ -159,7 +159,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
               </ul>
             )}
           </Panel>
-        </div>
+        </PendingRegion>
       </div>
 
       <ContadorSection month={accountantMonth(undefined, now)} now={now} invoices={invoices} pendingCount={pendingInvoices} />

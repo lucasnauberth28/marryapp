@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -5,6 +6,7 @@ import { AlertTriangle, Ban, CheckCircle2, Clock, Eye, Globe, Lock, LogIn, Mail,
 import { PageHeader } from "@/components/plataforma/page-header";
 import { Panel } from "@/components/plataforma/panel";
 import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
+import { PendingRegion } from "@/components/plataforma/pending";
 import { TabsNav } from "@/components/plataforma/tabs-nav";
 import { PlanChip, StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
 import { EmptyState } from "@/components/plataforma/empty-state";
@@ -30,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { SituationChip } from "../_components/situation-chip";
 import { LinkRow } from "./_components/copy-link";
 import { CareActions } from "./_components/care-actions";
+import { CasalTabSkeleton } from "./_components/skeletons";
 import { ConfirmPixButton } from "./_components/confirm-pix-button";
 import { GrantPlanForm } from "./_components/grant-plan-form";
 import { NoteForm } from "./_components/note-form";
@@ -204,13 +207,18 @@ export default async function Page({ params, searchParams }: { params: Promise<{
         ]}
       />
 
-      {tab === "visao" && <VisaoTab header={header} sideColumn={sideColumn} />}
-      {tab === "pagamentos" && <PagamentosTab header={header} sideColumn={sideColumn} />}
-      {tab === "convidados" && <ConvidadosTab id={id} />}
-      {tab === "atividade" && <AtividadeTab id={id} />}
-      {tab === "dominio" && <DominioTab id={id} />}
-      {tab === "madrinha" && <MadrinhaTab id={id} />}
-      {tab === "suporte" && <SuporteTab id={id} />}
+      {/* Cada aba busca os próprios dados: o cabeçalho e os números ficam na tela e só o corpo mostra o esqueleto (key = aba) */}
+      <PendingRegion>
+        <Suspense key={tab} fallback={<CasalTabSkeleton tab={tab} />}>
+          {tab === "visao" && <VisaoTab header={header} sideColumn={sideColumn} />}
+          {tab === "pagamentos" && <PagamentosTab header={header} sideColumn={sideColumn} />}
+          {tab === "convidados" && <ConvidadosTab id={id} />}
+          {tab === "atividade" && <AtividadeTab id={id} />}
+          {tab === "dominio" && <DominioTab id={id} />}
+          {tab === "madrinha" && <MadrinhaTab id={id} />}
+          {tab === "suporte" && <SuporteTab id={id} />}
+        </Suspense>
+      </PendingRegion>
     </>
   );
 }

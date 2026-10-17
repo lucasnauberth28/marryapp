@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Clock, Download, Pencil, ReceiptText, RotateCcw, TicketPercent, TrendingUp } from "lucide-react";
 import { btn } from "@/components/landing/styles";
@@ -32,7 +33,9 @@ import {
 import { getPlatformSetting } from "@/lib/platform/settings";
 import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
 import { ContadorSection } from "./_components/contador-section";
+import { PendingRegion } from "@/components/plataforma/pending";
 import { PlanosTabs } from "./_components/planos-tabs";
+import { ContadorSkeleton, ReembolsosSkeleton, ResumoSkeleton } from "./_components/skeletons";
 import { RefundsSection } from "./_components/refunds-section";
 
 export const dynamic = "force-dynamic";
@@ -64,7 +67,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
         }
       />
       <PlanosTabs active={aba} />
-      {aba === "resumo" ? <Resumo now={now} /> : aba === "reembolsos" ? <Reembolsos now={now} /> : <Contador now={now} month={accountantMonth(typeof query.mes === "string" ? query.mes : undefined, now)} />}
+      {/* Cada aba busca os próprios dados: abas e cabeçalho ficam, só o corpo mostra o esqueleto (key = aba) */}
+      <PendingRegion className="flex flex-col gap-6">
+        <Suspense key={aba} fallback={aba === "resumo" ? <ResumoSkeleton /> : aba === "reembolsos" ? <ReembolsosSkeleton /> : <ContadorSkeleton />}>
+          {aba === "resumo" ? <Resumo now={now} /> : aba === "reembolsos" ? <Reembolsos now={now} /> : <Contador now={now} month={accountantMonth(typeof query.mes === "string" ? query.mes : undefined, now)} />}
+        </Suspense>
+      </PendingRegion>
     </>
   );
 }

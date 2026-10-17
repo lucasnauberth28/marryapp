@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { PageHeader } from "@/components/plataforma/page-header";
 import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
 import { type SearchParams, param } from "@/lib/platform/list-params";
@@ -5,6 +6,7 @@ import { isEmailConfigured } from "@/lib/email";
 import { audienceSchema, parseWeddingIdsParam, parseAudience, type Audience } from "@/lib/platform/announcement";
 import { listDrafts, listHistory, previewAudience } from "@/lib/platform/queries/comunicados";
 import { formatDateTime } from "@/lib/platform/format";
+import { TablePanelSkeleton } from "@/components/plataforma/loading-parts";
 import { Compose, type ComposeInitial } from "./_components/compose";
 import { History } from "./_components/history";
 
@@ -15,7 +17,7 @@ export const maxDuration = 300;
 export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
   await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
-  const [drafts, history] = await Promise.all([listDrafts(), listHistory(20)]);
+  const drafts = await listDrafts();
 
   const draftId = param(query, "rascunho", 40);
   const draft = draftId ? drafts.find((d) => d.id === draftId) : undefined;
@@ -47,7 +49,14 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
         drafts={drafts.map((d) => ({ id: d.id, title: d.title, updatedAtLabel: `Salvo em ${formatDateTime(d.updatedAt)}` }))}
         emailConfigured={isEmailConfigured()}
       />
-      <History rows={history} />
+      {/* O histórico é a parte mais pesada e fica abaixo do formulário: chega depois, com esqueleto */}
+      <Suspense fallback={<TablePanelSkeleton columns={6} rows={3} />}>
+        <HistoryBlock />
+      </Suspense>
     </>
   );
+}
+
+async function HistoryBlock() {
+  return <History rows={await listHistory(20)} />;
 }

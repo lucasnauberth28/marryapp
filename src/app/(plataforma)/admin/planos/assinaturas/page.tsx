@@ -17,6 +17,7 @@ import { isStaticPix, paymentMethodOf, paymentStatusOf } from "@/lib/platform/pa
 import { activePaidVendorWhere, getMonthRevenue, getPixToCheck, pixToCheckWhere } from "@/lib/platform/queries/receita";
 import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
 import { cn } from "@/lib/utils";
+import { PendingLink, PendingRegion } from "@/components/plataforma/pending";
 import { PlanosTabs } from "../_components/planos-tabs";
 import { FilterChips } from "../_components/filter-chips";
 import { SubscriptionPanel, type PanelSubscription } from "../_components/subscription-panel";
@@ -127,6 +128,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
         />
       </StatGrid>
 
+      <PendingRegion>
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_auto]">
         <section aria-labelledby="lista-titulo" className="flex min-w-0 flex-col gap-4">
           <h2 id="lista-titulo" className="sr-only">
@@ -198,7 +200,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
                           Recibo<span className="sr-only"> do pagamento de {who}</span>
                         </Link>
                       ) : null}
-                      <Link
+                      <PendingLink
                         href={hrefFor(filter, r.id, window.page)}
                         scroll={false}
                         aria-current={r.id === selected?.id ? "true" : undefined}
@@ -209,7 +211,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
                       >
                         {checkable ? "Conferir" : "Detalhes"}
                         <span className="sr-only"> o pagamento de {who}</span>
-                      </Link>
+                      </PendingLink>
                     </span>
                   );
                 },
@@ -223,6 +225,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
           {panel ? <SubscriptionPanel key={panel.id} subscription={panel} closeHref={hrefFor(filter, undefined, window.page)} /> : null}
         </div>
       </div>
+      </PendingRegion>
     </>
   );
 }

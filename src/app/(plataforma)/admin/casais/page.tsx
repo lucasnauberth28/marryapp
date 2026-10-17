@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/plataforma/page-header";
 import { TabsNav } from "@/components/plataforma/tabs-nav";
 import { FilterBar } from "@/components/plataforma/filter-bar";
 import { ExportButton } from "@/components/plataforma/export-button";
+import { PendingRegion } from "@/components/plataforma/pending";
 import { Pagination } from "@/components/plataforma/pagination";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
@@ -133,6 +134,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
             ]}
           />
 
+          <PendingRegion className="flex flex-col gap-6">
           {rows.length === 0 ? (
             <div className="rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)]">
               <EmptyState
@@ -152,6 +154,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
           )}
 
           <Pagination page={result.page} pageSize={DEFAULT_PAGE_SIZE} total={result.total} basePath="/admin/casais" params={{ aba: tab === "todos" ? undefined : tab, ...active }} noun={["casal", "casais"]} />
+          </PendingRegion>
         </>
       )}
     </>
