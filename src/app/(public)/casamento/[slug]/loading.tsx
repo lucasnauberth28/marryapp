@@ -24,7 +24,10 @@ export default function SiteDoCasalLoading() {
         </div>
         <div className="flex w-full flex-col items-center gap-3 pt-2 md:pt-0">
           <Skeleton className="h-4 w-32 rounded-md" />
-          <Skeleton className="h-[54px] w-4/5 max-w-lg rounded-xl md:h-24" />
+          <div className="flex w-full flex-col items-center gap-2 md:gap-0">
+            <Skeleton className="h-[46px] w-4/5 max-w-lg rounded-xl md:h-24" />
+            <Skeleton className="h-[46px] w-3/5 rounded-xl md:hidden" />
+          </div>
           <Skeleton className="h-5 w-64 max-w-full rounded-md md:h-6" />
         </div>
         <div className="flex flex-wrap justify-center gap-3">

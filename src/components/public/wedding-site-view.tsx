@@ -27,6 +27,7 @@ import { brandThemeStyle, getCoupleInitials } from "@/lib/wedding-format";
 import { weddingSitePath } from "@/lib/wedding-links";
 import { toast } from "sonner";
 import { Reveal } from "@/components/motion/reveal";
+import { Button } from "@/components/ui/button";
 import { UserImage } from "@/components/ui/user-image";
 import { WeddingCountdown, weddingInstant } from "@/components/public/wedding-site-countdown";
 
@@ -811,9 +812,9 @@ export function WeddingSiteView({
                 maxLength={1000}
                 disabled={preview}
               />
-              <button type="submit" disabled={isPending || preview} className={btn.primary}>
-                {isPending ? "Enviando..." : "Enviar recado"}
-              </button>
+              <Button type="submit" disabled={preview} loading={isPending} className="rounded-[12px] px-6">
+                Enviar recado
+              </Button>
             </form>
           )}
 

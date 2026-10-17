@@ -16,14 +16,22 @@ export default function RsvpLoading() {
           <div className="flex h-4 items-center">
             <Skeleton className="h-3 w-44 rounded-md" />
           </div>
-          <div className="flex h-10 items-center">
-            <Skeleton className="h-8 w-4/5 rounded-xl" />
+          <div className="flex flex-col">
+            <div className="flex h-10 items-center">
+              <Skeleton className="h-8 w-4/5 rounded-xl" />
+            </div>
+            <div className="flex h-10 items-center min-[500px]:hidden">
+              <Skeleton className="h-8 w-2/5 rounded-xl" />
+            </div>
           </div>
           <div className="flex flex-col">
             <div className="flex h-6 items-center">
               <Skeleton className="h-4 w-full rounded-md" />
             </div>
             <div className="flex h-6 items-center">
+              <Skeleton className="h-4 w-full rounded-md" />
+            </div>
+            <div className="flex h-6 items-center min-[500px]:hidden">
               <Skeleton className="h-4 w-3/5 rounded-md" />
             </div>
           </div>
