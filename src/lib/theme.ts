@@ -13,9 +13,9 @@ export const THEME_OPTIONS: ReadonlyArray<{ value: ThemePreference; label: strin
   { value: "system", label: "Do aparelho" },
 ];
 
-/** Qualquer valor desconhecido (cookie velho, lixo) vira "system". */
+/** O tema claro é o principal: sem escolha gravada (ou valor desconhecido) vale "light". "Do aparelho" só por escolha explícita. */
 export function parseThemePreference(value: unknown): ThemePreference {
-  return value === "light" || value === "dark" ? value : "system";
+  return value === "dark" || value === "system" ? value : "light";
 }
 
 /** Lê a preferência de um cabeçalho Cookie (ou document.cookie). null = nada gravado. */
@@ -46,7 +46,7 @@ export function isLightOnlyPath(pathname: string | null | undefined): boolean {
   return !!pathname && LIGHT_ONLY.test(pathname);
 }
 
-/** Tema que vai para o <html>: rota só-clara > escolha explícita > preferência do sistema. */
+/** Tema que vai para o <html>: rota só-clara > escolha explícita > (só em "Do aparelho") preferência do sistema. */
 export function resolveTheme(input: {
   preference: ThemePreference;
   systemDark: boolean;
@@ -65,5 +65,5 @@ export function resolveTheme(input: {
 export const THEME_INIT_SCRIPT =
   `(function(){try{var d=document.documentElement,k="${THEME_KEY}",p=null,m=document.cookie.match(new RegExp("(?:^|; )"+k+"=([^;]*)"));` +
   `if(m)p=m[1];else{try{p=localStorage.getItem(k)}catch(e){}}` +
-  `var t=new RegExp(${JSON.stringify(LIGHT_ONLY_SOURCE)}).test(location.pathname)?"light":p==="light"||p==="dark"?p:matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";` +
+  `var t=new RegExp(${JSON.stringify(LIGHT_ONLY_SOURCE)}).test(location.pathname)?"light":p==="dark"?"dark":p==="system"&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";` +
   `d.setAttribute("data-theme",t)}catch(e){}})()`;

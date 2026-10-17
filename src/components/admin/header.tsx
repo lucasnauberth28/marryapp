@@ -67,8 +67,8 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
             <LayoutDashboard className="h-4 w-4" aria-hidden="true" /> Administração
           </Link>
         )}
-        {/* No celular o seletor fica no menu da conta e no "Mais" (o cabeçalho é estreito) */}
-        <ThemeToggle className="hidden md:inline-flex" />
+        {/* Seletor de tema sempre à mão no cabeçalho (claro é o padrão; escuro por escolha) */}
+        <ThemeToggle />
         <NotificationBell initialUnread={unreadNotifications} allHref="/notificacoes" settingsHref="/conta#avisos" pushPublicKey={pushPublicKey} />
 
         <DropdownMenu>

@@ -1,6 +1,6 @@
 # Tema escuro
 
-O Aceito tem três opções de aparência: **Claro**, **Escuro** e **Do aparelho** (padrão, segue o sistema).
+O Aceito tem três opções de aparência: **Claro**, **Escuro** e **Do aparelho** (segue o sistema). O padrão é o tema **Claro**: o claro é o principal, e o escuro só vale por escolha de quem usa.
 O tema aplicado vai no atributo `data-theme="light|dark"` do `<html>`. Os tokens do design system
 trocam de valor por esse atributo; por isso o código de tela usa só tokens (`bg-papel`, `text-tinta`,
 `border-linha`, `bg-ameixa text-on-ameixa`...) e não precisa de classes `dark:`.

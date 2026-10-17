@@ -15,8 +15,8 @@ test("preferência desconhecida vira Do aparelho", () => {
   assert.equal(parseThemePreference("dark"), "dark");
   assert.equal(parseThemePreference("light"), "light");
   assert.equal(parseThemePreference("system"), "system");
-  assert.equal(parseThemePreference("escuro"), "system");
-  assert.equal(parseThemePreference(null), "system");
+  assert.equal(parseThemePreference("escuro"), "light");
+  assert.equal(parseThemePreference(null), "light");
 });
 
 test("lê a preferência do cabeçalho Cookie entre outros cookies", () => {
@@ -89,11 +89,13 @@ test("script do head aplica o mesmo tema que resolveTheme", () => {
   }
 });
 
-test("script do head: sem cookie usa o localStorage; sem nada ou com erro, o sistema", () => {
+test("script do head: sem cookie usa o localStorage; sem nada ou com erro, o claro (padrão)", () => {
   assert.equal(runInitScript({ stored: "dark", systemDark: false, pathname: "/" }), "dark");
-  assert.equal(runInitScript({ systemDark: true, pathname: "/" }), "dark");
+  // O claro é o padrão: sem escolha gravada, o sistema escuro NÃO muda o tema
+  assert.equal(runInitScript({ systemDark: true, pathname: "/" }), "light");
+  assert.equal(runInitScript({ cookie: "aceito-theme=system", systemDark: true, pathname: "/" }), "dark");
   assert.equal(runInitScript({ systemDark: false, pathname: "/" }), "light");
-  assert.equal(runInitScript({ storageThrows: true, systemDark: true, pathname: "/" }), "dark");
-  // Cookie lixo é ignorado como "system".
-  assert.equal(runInitScript({ cookie: "aceito-theme=roxo", systemDark: true, pathname: "/" }), "dark");
+  assert.equal(runInitScript({ storageThrows: true, systemDark: true, pathname: "/" }), "light");
+  // Cookie lixo é ignorado: vale o claro.
+  assert.equal(runInitScript({ cookie: "aceito-theme=roxo", systemDark: true, pathname: "/" }), "light");
 });

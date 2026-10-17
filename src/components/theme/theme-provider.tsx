@@ -37,7 +37,7 @@ function readStoredPreference(): ThemePreference {
   try {
     return parseThemePreference(localStorage.getItem(THEME_KEY));
   } catch {
-    return "system";
+    return "light";
   }
 }
 
@@ -69,9 +69,9 @@ const noopSubscribe = () => () => {};
  */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  // Na hidratação o servidor devolve "system"/claro; só depois de montar valem os valores do navegador.
+  // Na hidratação o servidor devolve o padrão (claro); só depois de montar valem os valores do navegador.
   const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
-  const preference = useSyncExternalStore(subscribePreference, readStoredPreference, () => "system" as const);
+  const preference = useSyncExternalStore(subscribePreference, readStoredPreference, () => "light" as const);
   const systemDark = useSyncExternalStore(subscribeSystem, () => window.matchMedia(DARK_QUERY).matches, () => false);
   const [locks, setLocks] = useState(0);
 
@@ -104,9 +104,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Tema atual e como trocá-lo. Fora do provider devolve o padrão ("Do aparelho") e não faz nada. */
+/** Tema atual e como trocá-lo. Fora do provider devolve o padrão ("Claro") e não faz nada. */
 export function useTheme(): ThemeContextValue {
-  return useContext(ThemeContext) ?? { preference: "system", resolvedTheme: "light", setPreference: () => {} };
+  return useContext(ThemeContext) ?? { preference: "light", resolvedTheme: "light", setPreference: () => {} };
 }
 
 /**

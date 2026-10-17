@@ -112,6 +112,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
           <Chip tone="salvia">
             {isFree ? `Start · ${Math.min(monthLeads, START_MONTHLY_LEAD_LIMIT)} de ${START_MONTHLY_LEAD_LIMIT}` : planLabel}
           </Chip>
+          <ThemeToggle />
           <NotificationBell
             initialUnread={unreadNotifications}
             allHref="/fornecedor/notificacoes"
