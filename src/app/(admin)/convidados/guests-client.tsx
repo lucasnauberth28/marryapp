@@ -170,10 +170,13 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
                 Exportar CSV
               </a>
             )}
-            <button type="button" onClick={openAdd} className={`${btn.primary} max-md:hidden`}>
-              <Plus className="size-4" aria-hidden="true" />
-              Adicionar convidado
-            </button>
+            {/* Com a lista vazia, a ação fica no próprio estado vazio (um só botão com este nome) */}
+            {initialGuests.length > 0 && (
+              <button type="button" onClick={openAdd} className={`${btn.primary} max-md:hidden`}>
+                <Plus className="size-4" aria-hidden="true" />
+                Adicionar convidado
+              </button>
+            )}
           </>
         }
       />

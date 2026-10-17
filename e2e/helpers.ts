@@ -52,7 +52,7 @@ export async function cadastrarCasal(page: Page, email: string) {
   await page.getByRole("button", { name: /^Criar conta/ }).click();
   await page.getByRole("link", { name: "Preparar o nosso casamento" }).click();
   await page.waitForURL(/\/boas-vindas/);
-  await expect(page.getByRole("heading", { name: /Boas-vindas/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Vamos preparar o casamento de vocês/ })).toBeVisible();
 }
 
 /** Faz o onboarding ("Ana" e "Bia", sem data) e devolve o caminho público do site, ex.: /casamento/ana-e-bia-x1. */
