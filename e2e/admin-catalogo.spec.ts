@@ -16,6 +16,8 @@ async function salvarPreco(page: Page, chave: string, preco: string, motivo: str
 async function abrirPagamento(page: Page, nome: string) {
   for (let pagina = 1; pagina <= 8; pagina++) {
     await page.goto(`/admin/planos/assinaturas?status=a-conferir&pagina=${pagina}`);
+    // A lista chega por streaming (Suspense) depois do carregamento da página: espera a rede aquietar
+    await page.waitForLoadState("networkidle");
     const link = page.getByRole("link", { name: `Conferir o pagamento de ${nome}` });
     if (await link.count()) {
       await link.click();
