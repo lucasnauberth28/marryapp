@@ -4,6 +4,7 @@ import { useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
 import { Flower2 } from "lucide-react";
 import { btn } from "@/components/landing/styles";
+import { openLiz } from "@/lib/liz/events";
 
 /**
  * Cartão de sugestão da Liz: uma dica por regras (sem IA, sem chat) com uma ação principal.
@@ -84,6 +85,9 @@ export function MadrinhaCard({ id, text, actionLabel, actionHref, className = ""
         </Link>
         <button type="button" onClick={() => adiar(id)} className={`${btn.quiet} ${btn.sm}`}>
           Agora não
+        </button>
+        <button type="button" onClick={openLiz} className={`${btn.quiet} ${btn.sm}`}>
+          Perguntar à Liz
         </button>
       </div>
     </aside>

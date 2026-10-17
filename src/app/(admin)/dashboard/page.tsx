@@ -30,7 +30,7 @@ import { FirstSteps } from "@/components/tour/first-steps";
 import { firstStepsView } from "@/lib/tour/first-steps";
 import { getTourUserRow, tourAccountOf } from "@/lib/tour/panel-tour";
 import { tourMayWrite } from "@/lib/tour/rules";
-import { RSVP_PENDING_ACTION, RSVP_PENDING_HREF, rsvpPendingTipText } from "@/lib/liz-tips";
+import { decideLizTip } from "@/lib/liz/tip";
 
 export const dynamic = "force-dynamic";
 
@@ -195,29 +195,18 @@ export default async function DashboardPage() {
   const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: SP }).format(now);
   const deadlineKey = settings?.rsvpDeadline ? new Date(settings.rsvpDeadline).toISOString().slice(0, 10) : null;
   const invitePendingText = `${notInvitedYet} ${notInvitedYet === 1 ? "convidado com telefone ainda não recebeu" : "convidados com telefone ainda não receberam"} o convite pelo WhatsApp do painel.`;
-  let tip: Tip | null = null;
-  if (pendingGuests > 0) {
-    tip = {
-      id: "rsvp-sem-resposta",
-      text: rsvpPendingTipText({ pending: pendingGuests, deadlineKey, todayKey, weddingDays: days !== null && days >= 0 ? days : null }),
-      action: RSVP_PENDING_ACTION,
-      href: RSVP_PENDING_HREF,
-    };
-  } else if (notInvitedYet > 0 && canWhatsApp) {
-    tip = {
-      id: "convites-por-enviar",
-      text: `${invitePendingText} O convite leva o link para confirmar presença.`,
-      action: "Escolher quem recebe o convite",
-      href: "/mensagens",
-    };
-  } else if (overdue > 0) {
-    tip = {
-      id: "despesa-vencida",
-      text: `${overdue === 1 ? "Uma despesa está com o vencimento atrasado" : `${overdue} despesas estão com o vencimento atrasado`}. Marcar como paga o que já foi quitado mantém o orçamento certo.`,
-      action: "Ver despesas",
-      href: "/financas",
-    };
-  }
+  // A mesma regra do painel da Liz (lib/liz/tip). Aqui as tarefas atrasadas têm o próprio cartão, em Tarefas.
+  const tip: Tip | null = decideLizTip({
+    pendingGuests,
+    deadlineKey,
+    todayKey,
+    weddingDays: days !== null && days >= 0 ? days : null,
+    notInvitedYet,
+    canWhatsApp,
+    overdueExpenses: overdue,
+    overdueTasks: 0,
+    allowedPaths: ["*"],
+  });
 
   // Avisos do sistema que não cabem na sugestão da Liz
   const notices: Notice[] = [];
