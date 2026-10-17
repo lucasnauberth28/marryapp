@@ -153,7 +153,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
                 <span
                   className={cn(
                     "grid size-6 shrink-0 place-items-center rounded-full text-xs font-semibold",
-                    state === "done" ? "bg-sucesso text-papel" : state === "todo" ? "border border-linha-forte text-tinta-suave" : "bg-ameixa text-on-ameixa",
+                    state === "done" ? "bg-sucesso text-on-ameixa" : state === "todo" ? "border border-linha-forte text-tinta-suave" : "bg-ameixa text-on-ameixa",
                   )}
                   aria-hidden="true"
                 >

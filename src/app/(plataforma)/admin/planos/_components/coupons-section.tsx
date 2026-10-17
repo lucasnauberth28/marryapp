@@ -152,7 +152,7 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
     <>
       {deleting === c.id ? (
         <span role="group" aria-label={`Confirmar exclusão do cupom ${c.code}`} className="inline-flex items-center gap-1">
-          <Button type="button" size="sm" onClick={() => remove(c)} loading={isPending} className="bg-perigo text-papel hover:bg-perigo/90">
+          <Button type="button" size="sm" onClick={() => remove(c)} loading={isPending} className="bg-perigo text-on-ameixa hover:bg-perigo/90">
             Excluir
           </Button>
           <Button type="button" variant="quiet" size="sm" onClick={() => setDeleting(null)} disabled={isPending}>

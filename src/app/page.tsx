@@ -544,7 +544,7 @@ function Liz() {
       {/* Arco ornamental em fio champanhe. */}
       <div aria-hidden="true" className="pointer-events-none absolute -right-24 top-16 hidden w-[520px] lg:block">
         <Parallax strength={50}>
-          <div className="arch aspect-[3/4] border border-champanhe/45" />
+          <div className="arch aspect-[3/4] border border-champanhe/45 dark:border-on-ameixa/30" />
         </Parallax>
       </div>
 
@@ -568,7 +568,7 @@ function Liz() {
           <ul className="flex flex-col border-t border-on-ameixa/20">
             {MADRINHA_POINTS.map((p, i) => (
               <Reveal as="li" key={p} delay={260 + i * 80} className="flex items-center gap-3 border-b border-on-ameixa/20 py-3.5 text-base">
-                <ArchGlyph className="text-champanhe" />
+                <ArchGlyph className="text-champanhe dark:text-on-ameixa/70" />
                 {p}
               </Reveal>
             ))}

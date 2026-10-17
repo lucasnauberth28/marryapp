@@ -57,7 +57,7 @@ function Toast({
       className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl px-5 py-3 shadow-xl border text-sm font-medium animate-in slide-in-from-bottom-4 fade-in duration-300 ${
         type === "success"
           ? "bg-sucesso-suave text-sucesso border-sucesso/30"
-          : "bg-perigo-suave text-red-800 border-perigo/40"
+          : "bg-perigo-suave text-perigo border-perigo/40"
       }`}
     >
       {type === "success" ? (
@@ -239,7 +239,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
         className={`w-3 h-3 transition-colors ${
           sortField === field
             ? "text-tinta"
-            : "text-linha group-hover:text-tinta-suave"
+            : "text-linha-forte group-hover:text-tinta-suave"
         }`}
       />
     </button>
@@ -275,7 +275,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
                     {tx.thankYouSent ? "Agradecido" : "Agradecer"}
                   </Button>
                 ) : (
-                  <span className="text-linha text-xs">—</span>
+                  <span className="text-tinta-suave text-xs">—</span>
                 )}
               </div>
   );

@@ -25,6 +25,7 @@ import { LoadingButton } from "@/components/painel/loading-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserImage } from "@/components/ui/user-image";
 import { Chip } from "@/components/casal/ui";
+import { LightScope } from "@/components/theme/light-scope";
 import { WeddingSiteView, type WeddingSiteSettings } from "@/components/public/wedding-site-view";
 import { readableAccent } from "@/lib/wedding-format";
 import { weddingSitePath, weddingSiteUrl } from "@/lib/wedding-links";
@@ -384,7 +385,8 @@ export function SiteBuilderClient({
         <span className="ml-3 min-w-0 flex-1 truncate text-xs text-tinta-suave">{siteAddress}</span>
         {dirty && <span className="shrink-0 text-xs font-semibold text-aviso">Alterações não publicadas</span>}
       </div>
-      <div className="h-[72vh] overflow-y-auto">
+      {/* O site do casal é sempre claro: a prévia não segue o tema do painel */}
+      <LightScope className="h-[72vh] overflow-y-auto">
         <div className="pointer-events-none select-none" style={{ zoom: 0.5 }} aria-hidden="true">
           <WeddingSiteView
             slug={slug}
@@ -397,7 +399,7 @@ export function SiteBuilderClient({
             preview
           />
         </div>
-      </div>
+      </LightScope>
     </div>
   );
 

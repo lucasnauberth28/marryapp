@@ -357,7 +357,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
                     className={cn(
                       CARD,
                       "relative flex flex-col gap-4 p-4 transition-colors hover:border-linha-forte sm:flex-row sm:items-start sm:p-6",
-                      status === "NEW" && "border-2 border-ameixa",
+                      status === "NEW" && "border-2 border-ameixa dark:border-ameixa/55",
                     )}
                   >
                     <div className="flex min-w-0 flex-1 flex-col gap-1.5">

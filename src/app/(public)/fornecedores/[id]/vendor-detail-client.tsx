@@ -459,7 +459,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                           <Star
                             key={i}
                             aria-hidden="true"
-                            className={cn("size-4", i < rev.rating ? "fill-champanhe text-champanhe" : "text-linha")}
+                            className={cn("size-4", i < rev.rating ? "fill-champanhe text-champanhe" : "text-linha-forte")}
                           />
                         ))}
                       </div>

@@ -262,7 +262,7 @@ export function CarteiraClient({ initialBalance, initialCards, toPayCents }: Car
                 <li key={card.id} className={`${cardClass} flex items-center gap-3 p-5`}>
                   <span
                     style={{ background: card.color || "#231C24" }}
-                    className="grid h-[30px] w-11 shrink-0 place-items-center rounded-md text-linho"
+                    className="grid h-[30px] w-11 shrink-0 place-items-center rounded-md text-[#f7f3ec]"
                     aria-hidden="true"
                   >
                     <CreditCardIcon className="size-4" />

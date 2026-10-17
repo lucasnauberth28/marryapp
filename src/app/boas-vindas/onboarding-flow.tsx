@@ -268,8 +268,10 @@ export function OnboardingFlow({
       {step === "cor" ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
           <ShellHeading ref={headingRef} overline="O site de vocês" title="Escolham a cor" text="Ela aparece nos botões e nos detalhes do site do casamento." />
+          {/* Prévia do site do casal: sempre clara, como o site (escopo claro sem mexer na página) */}
           <div
-            className="flex flex-col items-center rounded-[999px_999px_16px_16px] border border-linha bg-papel px-6 pb-6 pt-14 text-center"
+            data-theme="light"
+            className="flex flex-col items-center rounded-[999px_999px_16px_16px] border border-linha bg-papel px-6 pb-6 pt-14 text-center text-tinta"
             aria-hidden="true"
           >
             <span className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Prévia</span>

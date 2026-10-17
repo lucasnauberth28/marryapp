@@ -26,7 +26,7 @@ export function Stars({
           width={size}
           height={size}
           fill="currentColor"
-          className={i < filled ? "text-champanhe" : "text-linha"}
+          className={i < filled ? "text-champanhe" : "text-linha-forte"}
         >
           <path d={STAR_PATH} />
         </svg>

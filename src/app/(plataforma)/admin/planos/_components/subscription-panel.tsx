@@ -174,7 +174,7 @@ export function SubscriptionPanel({ subscription: s, closeHref }: { subscription
                   onClick={() => run("reject")}
                   disabled={isPending}
                   loading={pendingAction === "reject"}
-                  className="bg-perigo text-papel hover:bg-perigo/90"
+                  className="bg-perigo text-on-ameixa hover:bg-perigo/90"
                 >
                   Sim, não recebi
                 </Button>
