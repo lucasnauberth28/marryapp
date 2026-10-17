@@ -177,74 +177,77 @@
 }
 
 /* Tema escuro (tokens do design system Aceito: berinjela no lugar do linho, ameixa clareada).
-   Texto sobre ameixa usa on-ameixa, nunca branco. Ver docs/tema-escuro.md. */
-[data-theme="dark"] {
-  color-scheme: dark;
+   Texto sobre ameixa usa on-ameixa, nunca branco. Ver docs/tema-escuro.md.
+   Na impressão (recibo, PDF do navegador) vale sempre a paleta clara. */
+@media not print {
+  [data-theme="dark"] {
+    color-scheme: dark;
 
-  --color-linho: #18131A;
-  --color-papel: #221B24;
-  --color-areia: #2C242E;
-  --color-linha: #3A3039;
-  --color-linha-forte: #8A7D88;
-  --color-tinta: #F3ECEF;
-  --color-tinta-suave: #B9AEB7;
-  --color-ameixa: #D9A5C6;
-  --color-ameixa-hover: #E6BFD7;
-  --color-ameixa-suave: #3A2434;
-  --color-on-ameixa: #2A1424;
-  --color-petala: #E9B8C2;
-  --color-salvia: #A9BEA0;
-  --color-salvia-suave: #26302A;
-  --color-champanhe: #CFAE7A;
-  --color-scrim: #000000;
-  --color-sucesso: #7CC4C9;
-  --color-sucesso-suave: #173032;
-  --color-aviso: #E0B25C;
-  --color-aviso-suave: #33280F;
-  --color-perigo: #F08F9F;
-  --color-perigo-suave: #3A1A20;
+    --color-linho: #18131A;
+    --color-papel: #221B24;
+    --color-areia: #2C242E;
+    --color-linha: #3A3039;
+    --color-linha-forte: #8A7D88;
+    --color-tinta: #F3ECEF;
+    --color-tinta-suave: #B9AEB7;
+    --color-ameixa: #D9A5C6;
+    --color-ameixa-hover: #E6BFD7;
+    --color-ameixa-suave: #3A2434;
+    --color-on-ameixa: #2A1424;
+    --color-petala: #E9B8C2;
+    --color-salvia: #A9BEA0;
+    --color-salvia-suave: #26302A;
+    --color-champanhe: #CFAE7A;
+    --color-scrim: #000000;
+    --color-sucesso: #7CC4C9;
+    --color-sucesso-suave: #173032;
+    --color-aviso: #E0B25C;
+    --color-aviso-suave: #33280F;
+    --color-perigo: #F08F9F;
+    --color-perigo-suave: #3A1A20;
 
-  /* Escala legado/cor do casal: acompanha a ameixa clara. */
-  --color-brand-50: #2B1B27;
-  --color-brand-100: #3A2434;
-  --color-brand-300: #7A4F6C;
-  --color-brand-400: #B98AA8;
-  --color-brand: #D9A5C6;
-  --color-brand-500: #D9A5C6;
-  --color-brand-600: #E6BFD7;
-  --color-ivory: #18131A;
-  --color-paper: #221B24;
-  --color-line: #3A3039;
+    /* Escala legado/cor do casal: acompanha a ameixa clara. */
+    --color-brand-50: #2B1B27;
+    --color-brand-100: #3A2434;
+    --color-brand-300: #7A4F6C;
+    --color-brand-400: #B98AA8;
+    --color-brand: #D9A5C6;
+    --color-brand-500: #D9A5C6;
+    --color-brand-600: #E6BFD7;
+    --color-ivory: #18131A;
+    --color-paper: #221B24;
+    --color-line: #3A3039;
 
-  --shadow-aceito-1: 0 1px 2px 0 var(--sombra-1a), 0 1px 1px 0 var(--sombra-1b);
-  --shadow-aceito-2: 0 16px 40px -12px var(--sombra-2);
-  --sombra-1a: rgba(0, 0, 0, 0.4);
-  --sombra-1b: rgba(0, 0, 0, 0.25);
-  --sombra-2: rgba(0, 0, 0, 0.6);
+    --shadow-aceito-1: 0 1px 2px 0 var(--sombra-1a), 0 1px 1px 0 var(--sombra-1b);
+    --shadow-aceito-2: 0 16px 40px -12px var(--sombra-2);
+    --sombra-1a: rgba(0, 0, 0, 0.4);
+    --sombra-1b: rgba(0, 0, 0, 0.25);
+    --sombra-2: rgba(0, 0, 0, 0.6);
 
-  /* shadcn */
-  --background: #18131A;
-  --foreground: #F3ECEF;
-  --card: #221B24;
-  --card-foreground: #F3ECEF;
-  --popover: #221B24;
-  --popover-foreground: #F3ECEF;
-  --primary: #D9A5C6;
-  --primary-foreground: #2A1424;
-  --secondary: #3A2434;
-  --secondary-foreground: #D9A5C6;
-  --muted: #2C242E;
-  --muted-foreground: #B9AEB7;
-  --accent: #3A2434;
-  --accent-foreground: #D9A5C6;
-  --destructive: #F08F9F;
-  --destructive-foreground: #2A1424;
-  --border: #3A3039;
-  --input: #8A7D88;
-  --ring: #D9A5C6;
-  --logo-marca: #F7F3EC; /* versões -linho do design: logotipo claro sobre berinjela */
-  --logo-contra: #5E2B4E;
-  --logo-sobre-ameixa: #2A1424;
+    /* shadcn */
+    --background: #18131A;
+    --foreground: #F3ECEF;
+    --card: #221B24;
+    --card-foreground: #F3ECEF;
+    --popover: #221B24;
+    --popover-foreground: #F3ECEF;
+    --primary: #D9A5C6;
+    --primary-foreground: #2A1424;
+    --secondary: #3A2434;
+    --secondary-foreground: #D9A5C6;
+    --muted: #2C242E;
+    --muted-foreground: #B9AEB7;
+    --accent: #3A2434;
+    --accent-foreground: #D9A5C6;
+    --destructive: #F08F9F;
+    --destructive-foreground: #2A1424;
+    --border: #3A3039;
+    --input: #8A7D88;
+    --ring: #D9A5C6;
+    --logo-marca: #F7F3EC; /* versões -linho do design: logotipo claro sobre berinjela */
+    --logo-contra: #5E2B4E;
+    --logo-sobre-ameixa: #2A1424;
+  }
 }
 
 @layer base {
@@ -302,6 +305,15 @@
     background: var(--color-ameixa);
     background-clip: padding-box;
   }
+}
+
+/* Foco visível: no Tailwind 4, "outline-none" zera o estilo do contorno (--tw-outline-style: none) e
+   "focus-visible:outline-2" só define a largura, então o anel nunca aparecia em botões, caixas e
+   interruptores. Fora de camada para vencer os utilitários. */
+.focus-visible\:outline-1:focus-visible,
+.focus-visible\:outline-2:focus-visible,
+.focus-within\:outline-2:focus-within {
+  outline-style: solid;
 }
 
 /* Lenis (rolagem suave nas páginas públicas). */
