@@ -32,8 +32,9 @@ export function useTour(): TourApi {
 
 type Phase = "idle" | "welcome" | "steps";
 
+/** O elemento existe na página? (o botão da Liz fica `hidden` durante o passo a passo, mas continua nela) */
 function anchorExists(anchor: string) {
-  return Array.from(document.querySelectorAll(`[data-tour="${anchor}"]`)).some((el) => el.getClientRects().length > 0);
+  return document.querySelector(`[data-tour="${anchor}"]`) !== null;
 }
 
 export function PanelTourProvider({ config, children }: { config: PanelTourConfig | null; children: ReactNode }) {
@@ -51,7 +52,7 @@ export function PanelTourProvider({ config, children }: { config: PanelTourConfi
 
   const open = useCallback(
     (steps: TourStep[]) => {
-      // Passo da Liz só entra se o botão estiver na tela agora
+      // Passo da Liz só entra se o botão dela existir nesta tela
       const usable = steps.filter((s) => !s.floating || anchorExists(s.anchor));
       if (usable.length === 0) return;
       const active = document.activeElement;

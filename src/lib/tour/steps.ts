@@ -113,7 +113,7 @@ const DEFS: readonly StepDef[] = [
     floating: "liz",
     title: "Liz",
     what: "A Liz usa as informações do painel para sugerir o que merece atenção, como convidados sem resposta. Vocês escolhem o que fazer.",
-    where: "Fica no botão da Liz, no canto da tela.",
+    where: "Fora do passo a passo, o botão da Liz fica no canto da tela.",
   },
 ];
 

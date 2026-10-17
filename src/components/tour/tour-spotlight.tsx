@@ -49,7 +49,8 @@ const sameBox = (a: Box, b: Box) => Math.abs(a.top - b.top) < 0.5 && Math.abs(a.
 
 interface Resolved {
   key: string;
-  box: Box;
+  /** Retângulo do item destacado; null quando o passo só explica (sem destaque). */
+  box: Box | null;
   place: Placement;
 }
 
@@ -92,13 +93,13 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
 
   /** Calcula onde ficam o destaque e o balão para o item atual. */
   const place = useCallback(
-    (el: HTMLElement, forKey: string) => {
-      const box = boxOf(el);
+    (el: HTMLElement | null, forKey: string) => {
+      const box = el ? boxOf(el) : null;
       const dialog = dialogRef.current;
       const width = dialog?.offsetWidth ?? 340;
       const height = dialog?.offsetHeight ?? 320;
       const vw = { width: window.innerWidth, height: window.innerHeight };
-      const prefer = mobile ? (box.top + box.height / 2 > vw.height * 0.55 ? "top" : "bottom") : "right";
+      const prefer = mobile && box ? (box.top + box.height / 2 > vw.height * 0.55 ? "top" : "bottom") : "right";
       setResolved({ key: forKey, box, place: placeBalloon({ target: box, viewport: vw, balloon: { width, height }, prefer }) });
     },
     [mobile],
@@ -125,6 +126,12 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
 
     const tick = () => {
       if (stopped) return;
+      // Passo sem item para destacar (o botão da Liz fica escondido durante o passo a passo): balão no centro
+      if (step.floating) {
+        anchorRef.current = null;
+        place(null, key);
+        return;
+      }
       const el = findAnchor(step.anchor);
       const sheet = document.getElementById("painel-mais");
       let usable = Boolean(el);
@@ -176,7 +183,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         const el = anchorRef.current;
-        if (el?.isConnected) place(el, key);
+        if (!step?.floating && el?.isConnected) place(el, key);
       });
     };
     window.addEventListener("resize", update);
@@ -186,7 +193,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
     };
-  }, [ready, key, place]);
+  }, [ready, key, place, step?.floating]);
 
   // Foco no balão a cada passo. O navegador só aceita o foco quando o balão já está visível, o que pode levar
   // alguns quadros depois de o passo ficar pronto: tenta de novo até pegar (no máximo meio segundo).
@@ -245,7 +252,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
   const where = whereText(step, placeInfo, device);
   // O destaque fica no item anterior até o novo chegar (e então desliza); o balão só aparece com o item pronto
   const shown = ready ? resolved : null;
-  const hole = resolved;
+  const hole = resolved?.box ? { ...resolved, box: resolved.box } : null;
 
   return (
     <div className="fixed inset-0 z-[80]">

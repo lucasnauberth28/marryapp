@@ -58,7 +58,7 @@ test("casal novo vê o passo a passo, conclui e não vê de novo ao recarregar",
   await cartao.getByRole("button", { name: "Ver o passo a passo" }).click();
   const titulos = await percorrer(page);
   // Só o que um casal no plano Básico pode abrir: sem Mensagens (WhatsApp é de plano) e sem áreas de administração
-  expect(titulos).toEqual(expect.arrayContaining(["Resumo do casamento", "Convidados", "Site do casamento", "Presentes em dinheiro", "Mesas", "Finanças", "Fornecedores", "Configurações"]));
+  expect(titulos).toEqual(expect.arrayContaining(["Resumo do casamento", "Convidados", "Site do casamento", "Presentes em dinheiro", "Mesas", "Finanças", "Fornecedores", "Configurações", "Liz"]));
   expect(titulos).not.toContain("Mensagens");
 
   await gravando(page, () => balao(page).getByRole("button", { name: "Concluir" }).click());
