@@ -6,7 +6,7 @@ import { SkeletonPanel, SkeletonSectionTitle } from "@/components/painel/skeleto
 export default function LoadingPresentesAdmin() {
   return (
     <LoadingRegion label="os presentes" className="flex w-full flex-1 flex-col gap-6">
-      <SkeletonPageHeader description={false} actions={2} />
+      <SkeletonPageHeader actions={2} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
         <SkeletonStat className="p-5 sm:p-6" />

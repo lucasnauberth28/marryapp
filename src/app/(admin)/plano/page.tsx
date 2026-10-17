@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Clock, FileText, Receipt } from "lucide-react";
 import { PaymentStatus } from "@prisma/client";
@@ -9,6 +10,8 @@ import { requireWeddingPage } from "@/lib/security/wedding-context";
 import { planOption, shortPlanName, type PlanOption } from "@/app/login/auth-config";
 import { PageHeader } from "@/components/admin/page-header";
 import { Reveal } from "@/components/motion/reveal";
+import { LoadingRegion } from "@/components/skeletons";
+import { PlanoBodySkeleton } from "./skeletons";
 import { UpgradeSection } from "./upgrade-section";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +38,29 @@ export default async function PlanoPage() {
   // Plano de casal vale para o casamento (os dois do casal), não para a conta
   const { session, weddingId } = await requireWeddingPage("/plano");
 
-  const isSuperAdmin = session.userId === SUPER_ADMIN_USER_ID;
+  // O cabeçalho sai logo; planos, taxas e recibos (várias consultas) entram quando ficam prontos.
+  return (
+    <div className="flex flex-col gap-7">
+      <PageHeader
+        eyebrow="Conta"
+        title="Plano e pagamentos"
+        description="O plano vale para o casamento inteiro. Pagamento único, sem mensalidade."
+      />
+      <Suspense
+        fallback={
+          <LoadingRegion label="o plano e os pagamentos" className="flex flex-col gap-7">
+            <PlanoBodySkeleton />
+          </LoadingRegion>
+        }
+      >
+        <PlanoBody userId={session.userId} weddingId={weddingId} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: string }) {
+  const isSuperAdmin = userId === SUPER_ADMIN_USER_ID;
   const now = new Date();
   const catalog = await getCatalog();
 
@@ -82,13 +107,7 @@ export default async function PlanoPage() {
   const feeTotal = gifts._sum.fee ?? 0;
 
   return (
-    <div className="flex flex-col gap-7">
-      <PageHeader
-        eyebrow="Conta"
-        title="Plano e pagamentos"
-        description="O plano vale para o casamento inteiro. Pagamento único, sem mensalidade."
-      />
-
+    <>
       <Reveal className="grid gap-4 md:grid-cols-2">
         <section aria-labelledby="plano-atual-titulo" className="flex flex-col gap-2 rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6">
           <h2 id="plano-atual-titulo" className="text-sm text-tinta-suave">
@@ -188,6 +207,6 @@ export default async function PlanoPage() {
           </ul>
         )}
       </section>
-    </div>
+    </>
   );
 }
