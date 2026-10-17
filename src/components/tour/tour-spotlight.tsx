@@ -188,9 +188,20 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
     };
   }, [ready, key, place]);
 
-  // Foco no balão a cada passo
+  // Foco no balão a cada passo. O navegador só aceita o foco quando o balão já está visível, o que pode levar
+  // alguns quadros depois de o passo ficar pronto: tenta de novo até pegar (no máximo meio segundo).
   useEffect(() => {
-    if (ready) dialogRef.current?.focus({ preventScroll: true });
+    if (!ready) return;
+    let frame = 0;
+    let tries = 0;
+    const focusDialog = () => {
+      const dialog = dialogRef.current;
+      if (!dialog) return;
+      dialog.focus({ preventScroll: true });
+      if (document.activeElement !== dialog && tries++ < 30) frame = requestAnimationFrame(focusDialog);
+    };
+    frame = requestAnimationFrame(focusDialog);
+    return () => cancelAnimationFrame(frame);
   }, [ready, key]);
 
   // Teclado: Esc sai, setas andam, Tab fica dentro do balão
