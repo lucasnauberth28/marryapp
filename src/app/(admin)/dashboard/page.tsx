@@ -20,6 +20,7 @@ import { daysLeftLabel, daysUntil, greetingForHour } from "@/lib/wedding-format"
 import { weddingSitePath } from "@/lib/wedding-links";
 import { PageHeader, OVERLINE_CLASS } from "@/components/admin/page-header";
 import { MadrinhaCard } from "@/components/admin/madrinha-card";
+import { LizIllustration } from "@/components/liz/liz-illustration";
 import { Badge } from "@/components/ui/badge";
 import { btn } from "@/components/landing/styles";
 import { Seal } from "@/components/landing/seal";
@@ -31,6 +32,7 @@ import { firstStepsView } from "@/lib/tour/first-steps";
 import { getTourUserRow, tourAccountOf } from "@/lib/tour/panel-tour";
 import { tourMayWrite } from "@/lib/tour/rules";
 import { decideLizTip } from "@/lib/liz/tip";
+import { lizTipPose } from "@/lib/liz/pose";
 
 export const dynamic = "force-dynamic";
 
@@ -56,6 +58,7 @@ interface Tip {
   text: string;
   action: string;
   href: string;
+  urgent: boolean;
 }
 
 const people = (n: number) => `${n} ${n === 1 ? "pessoa" : "pessoas"}`;
@@ -295,14 +298,19 @@ export default async function DashboardPage() {
       )}
 
       {firstAccess && (
-        <section aria-labelledby="primeiro-acesso" className="flex flex-col gap-4 rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] md:p-8">
+        <section
+          aria-labelledby="primeiro-acesso"
+          className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 gap-y-4 rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] md:items-center md:gap-x-8 md:p-8"
+        >
           <div className="flex flex-col gap-1.5">
             <h2 id="primeiro-acesso" className="font-display text-[26px] font-medium leading-8 text-tinta md:text-[32px] md:leading-10">
               Vamos preparar o casamento de vocês.
             </h2>
             <p className="max-w-xl text-base leading-6 text-tinta-suave">Comecem pelas informações do site ou pela lista de convidados.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          {/* A Liz dá as boas-vindas: pequena ao lado do título no celular, para os botões ficarem à vista */}
+          <LizIllustration pose="boas-vindas" height={200} className="h-[120px] w-auto md:row-span-2 md:h-[200px]" />
+          <div className="col-span-2 flex flex-wrap gap-2 md:col-span-1">
             <Link href="/site-builder" className={btn.primary}>
               Preparar o site
             </Link>
@@ -384,7 +392,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {tip && <MadrinhaCard id={tip.id} text={tip.text} actionLabel={tip.action} actionHref={tip.href} className="md:max-w-none" />}
+      {tip && <MadrinhaCard id={tip.id} text={tip.text} actionLabel={tip.action} actionHref={tip.href} pose={lizTipPose(tip)} className="md:max-w-none" />}
 
       {!firstAccess && (
         <div className="grid items-start gap-4 md:gap-6 lg:grid-cols-2">

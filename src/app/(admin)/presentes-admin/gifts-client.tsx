@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useSyncedState } from "@/hooks/use-synced-state"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Check, Clock, CreditCard, Gift as GiftIcon, ImageOff, Plus, Trash2, Undo2 } from "lucide-react"
+import { Check, Clock, CreditCard, ImageOff, Plus, Trash2, Undo2 } from "lucide-react"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { GiftLocal as Gift } from "@/types/local"
 import { deleteGift } from "@/actions/gift-actions"
@@ -15,6 +15,7 @@ import { Chip, bigNumber, card, cardTitle, overline, th, type ChipTone } from "@
 import { GiftModal } from "./gift-modal"
 import { LoadingButton } from "@/components/painel/loading-button"
 import { UserImage } from "@/components/ui/user-image"
+import { LizIllustration } from "@/components/liz/liz-illustration"
 
 export interface GiftPayment {
   id: string
@@ -230,8 +231,9 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
           Presentes no site · {gifts.length}
         </h2>
         {gifts.length === 0 ? (
-          <div className={`${card} flex flex-col items-center justify-center px-4 py-16 text-center`}>
-            <GiftIcon className="mb-3 size-10 text-linha-forte" aria-hidden="true" />
+          <div className={`${card} flex flex-col items-center justify-center px-4 pb-16 pt-8 text-center`}>
+            {/* Vitrine vazia: a Liz tranquila (decorativa); a área de valores recebidos fica sem ela */}
+            <LizIllustration pose="tranquila" height={104} decorative className="mb-3 h-[104px] w-auto" />
             <p className="font-semibold text-tinta">Vocês ainda não cadastraram presentes</p>
             <p className="mt-1 max-w-xs text-sm text-tinta-suave">
               Cadastrem o primeiro com nome e valor em reais. Pode ser um item da casa ou uma cota da lua de mel.

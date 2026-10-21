@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, MousePointerClick } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LizIllustration } from "@/components/liz/liz-illustration";
 import { TOUR_CLOSE_MORE, TOUR_OPEN_MORE } from "@/lib/tour/events";
 import { placeBalloon, type Box, type Placement } from "@/lib/tour/positioning";
 import { whereText, type StepPlace, type TourStep } from "@/lib/tour/steps";
@@ -303,13 +304,17 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
           </Button>
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          <h2 id="tour-passo-titulo" className="font-display text-[22px] font-medium leading-7 text-tinta">
-            {step.title}
-          </h2>
-          <p id="tour-passo-texto" className="text-base leading-6 text-tinta-suave">
-            {step.what}
-          </p>
+        <div className="flex items-start gap-3">
+          {/* Passo da Liz: ela mesma cumprimenta (decorativa, o título já diz "Liz") */}
+          {step.id === "liz" && <LizIllustration pose="cumprimentando" height={112} decorative className="h-28 w-auto shrink-0" />}
+          <div className="flex min-w-0 flex-col gap-1.5">
+            <h2 id="tour-passo-titulo" className="font-display text-[22px] font-medium leading-7 text-tinta">
+              {step.title}
+            </h2>
+            <p id="tour-passo-texto" className="text-base leading-6 text-tinta-suave">
+              {step.what}
+            </p>
+          </div>
         </div>
 
         {where && (

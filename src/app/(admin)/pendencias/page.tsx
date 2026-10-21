@@ -6,7 +6,8 @@ import { TasksBoard, type Filter } from "@/components/tarefas/tasks-board";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
 import { getWeddingIdentity } from "@/lib/wedding";
 import { daysUntil } from "@/lib/wedding-format";
-import { RSVP_PENDING_ACTION, RSVP_PENDING_HREF, rsvpPendingTipText } from "@/lib/liz-tips";
+import { RSVP_PENDING_ACTION, RSVP_PENDING_HREF, rsvpPendingTipText, rsvpTipUrgent } from "@/lib/liz-tips";
+import { lizTipPose } from "@/lib/liz/pose";
 import { notGiftOnlyWhere } from "@/lib/guest-origin";
 
 export const metadata: Metadata = {
@@ -46,6 +47,7 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
         text={`${overdue === 1 ? "Uma tarefa passou do prazo" : `${overdue} tarefas passaram do prazo`}. Rever as datas ou marcar o que já foi feito mantém a lista fiel ao que falta.`}
         actionLabel={overdue === 1 ? "Ver a atrasada" : `Ver as ${overdue} atrasadas`}
         actionHref="/pendencias?filtro=atrasadas"
+        pose={lizTipPose({ urgent: true })}
       />
     );
   } else {
@@ -54,17 +56,18 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
       prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } }),
     ]);
     if (pending > 0) {
+      const when = {
+        deadlineKey: settings?.rsvpDeadline ? settings.rsvpDeadline.toISOString().slice(0, 10) : null,
+        todayKey,
+        weddingDays: daysLeft !== null && daysLeft >= 0 ? daysLeft : null,
+      };
       suggestion = (
         <MadrinhaCard
           id="rsvp-sem-resposta"
-          text={rsvpPendingTipText({
-            pending,
-            deadlineKey: settings?.rsvpDeadline ? settings.rsvpDeadline.toISOString().slice(0, 10) : null,
-            todayKey,
-            weddingDays: daysLeft !== null && daysLeft >= 0 ? daysLeft : null,
-          })}
+          text={rsvpPendingTipText({ pending, ...when })}
           actionLabel={RSVP_PENDING_ACTION}
           actionHref={RSVP_PENDING_HREF}
+          pose={lizTipPose({ urgent: rsvpTipUrgent(when) })}
         />
       );
     }
