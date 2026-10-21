@@ -39,6 +39,23 @@ export function rsvpPendingTipText({ pending, deadlineKey, todayKey, weddingDays
   return reason ? `${situation} ${reason}` : situation;
 }
 
+/** A partir de quantos dias antes do prazo (ou do casamento, sem prazo) a sugestão pede atenção. */
+export const RSVP_PRAZO_PERTO_DIAS = 7;
+
+/** Dias de calendário entre duas chaves "AAAA-MM-DD" (negativo quando `to` já passou). */
+function daysBetween(from: string, to: string): number {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
+}
+
+/**
+ * O motivo da sugestão de convidados sem resposta é um prazo apertado? Usa o mesmo motivo do texto:
+ * o prazo do casal quando existe, senão a data do casamento. Prazo vencido também conta.
+ */
+export function rsvpTipUrgent({ deadlineKey, todayKey, weddingDays }: Omit<RsvpTipInput, "pending">): boolean {
+  if (deadlineKey) return daysBetween(todayKey, deadlineKey) <= RSVP_PRAZO_PERTO_DIAS;
+  return weddingDays !== null && weddingDays >= 0 && weddingDays <= RSVP_PRAZO_PERTO_DIAS;
+}
+
 /** Para onde a ação "Ver convidados sem resposta" leva: a lista já filtrada. */
 export const RSVP_PENDING_HREF = "/convidados?resposta=sem-resposta";
 export const RSVP_PENDING_ACTION = "Ver convidados sem resposta";
