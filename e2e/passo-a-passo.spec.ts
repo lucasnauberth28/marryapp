@@ -22,6 +22,8 @@ async function percorrer(page: Page): Promise<string[]> {
     const caixa = balao(page);
     await expect(caixa).toBeVisible();
     titulos.push((await caixa.getByRole("heading").innerText()).trim());
+    // No passo da Liz, ela mesma aparece cumprimentando
+    if (titulos[titulos.length - 1] === "Liz") await expect(caixa.locator('img[data-liz-pose="cumprimentando"]')).toBeVisible();
     const concluir = caixa.getByRole("button", { name: "Concluir" });
     if (await concluir.isVisible()) return titulos;
     await caixa.getByRole("button", { name: "Próximo" }).click();

@@ -41,6 +41,10 @@ test("aparece no resumo, abre, busca 'convidado', abre o artigo e o link navega"
   await abrirResumo(page);
   await expect(botao(page)).toBeVisible();
   await expect(botao(page)).toHaveAttribute("aria-expanded", "false");
+  // O botão mostra o rosto da Liz: imagem decorativa (o nome vem do botão) e carregada de verdade
+  const rosto = botao(page).locator('img[data-liz-pose="rosto"]');
+  await expect(rosto).toHaveAttribute("alt", "");
+  await expect.poll(() => rosto.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
 
   await botao(page).click();
   await expect(painel(page)).toBeVisible();
@@ -48,6 +52,8 @@ test("aparece no resumo, abre, busca 'convidado', abre o artigo e o link navega"
   await expect(painel(page).getByRole("heading", { name: "Sugestão para agora" })).toBeVisible();
   // Casamento recém-criado: nada pedindo atenção, e a Liz diz isso sem inventar
   await expect(painel(page).getByText("Não vi nada pedindo atenção agora")).toBeVisible();
+  // Sem nada pendente, a pose é a tranquila
+  await expect(painel(page).locator('img[data-liz-pose="tranquila"]')).toBeVisible();
 
   await painel(page).getByLabel("Pergunte sobre o painel").fill("convidado");
   const resultados = painel(page).getByRole("list", { name: "Respostas do guia" });
@@ -121,6 +127,8 @@ test("não aparece na administração da plataforma nem na vitrine pública", as
   await aberta.goto(sitePath);
   await expect(aberta.getByRole("heading", { level: 1 }).first()).toBeVisible();
   await expect(botao(aberta)).toHaveCount(0);
+  // Páginas do convidado ficam sem a Liz
+  await expect(aberta.locator("img[data-liz-pose]")).toHaveCount(0);
   await publico.close();
 });
 
