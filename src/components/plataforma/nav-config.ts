@@ -33,6 +33,8 @@ export interface PlatformNavItem {
   name: string;
   href: string;
   icon: LucideIcon;
+  /** Ícone ilustrado da marca no lugar do lucide (o menu desenha o da Liz em cores próprias). */
+  brand?: "liz";
   /** Número à direita do item (só quando maior que zero). */
   countKey?: PlatformCountKey;
   /** Item de segundo nível (recuado), como "Curadoria" sob "Fornecedores". */
@@ -72,7 +74,7 @@ export const PLATFORM_NAV_GROUPS: PlatformNavGroup[] = [
   },
   {
     title: "Liz",
-    items: [{ name: "Liz", href: "/admin/madrinha", icon: Flower2 }],
+    items: [{ name: "Liz", href: "/admin/madrinha", icon: Flower2, brand: "liz" }],
   },
   {
     title: "Comunicação",

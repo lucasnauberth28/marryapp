@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
-import { Flower2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { LIZ_OPEN_EVENT } from "@/lib/liz/events";
 import { shouldShowLizFab } from "@/lib/liz/visibility";
+import { LizAvatar } from "./liz-illustration";
 import { LizPanel } from "./liz-panel";
 import { useLizHidden } from "./use-liz-hidden";
 import "./liz.css";
@@ -114,9 +115,12 @@ export function LizAssistant({ allowedPaths }: { allowedPaths: readonly string[]
         aria-haspopup="dialog"
         hidden={hidden}
         onClick={() => (open ? close(false) : setOpenAt(pathname))}
-        className="liz-fab grid size-14 cursor-pointer place-items-center rounded-full bg-ameixa text-on-ameixa shadow-[var(--shadow-aceito-2)] transition-colors hover:bg-ameixa-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa"
+        className={`liz-fab grid size-14 cursor-pointer place-items-center rounded-full shadow-[var(--shadow-aceito-2)] transition-[background-color,transform] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ameixa ${
+          open ? "bg-ameixa text-on-ameixa hover:bg-ameixa-hover" : "ring-2 ring-ameixa motion-safe:hover:scale-105"
+        }`}
       >
-        {open ? <X className="size-6" aria-hidden="true" /> : <Flower2 className="size-6" strokeWidth={1.75} aria-hidden="true" />}
+        {/* Fechado: o rosto da Liz (o nome acessível vem do botão); aberto: o X para fechar */}
+        {open ? <X className="size-6" aria-hidden="true" /> : <LizAvatar size={56} decorative />}
       </button>
 
       {open && (

@@ -9,6 +9,7 @@ import {
   type PlatformCountKey,
   type PlatformNavGroup,
 } from "@/components/plataforma/nav-config";
+import { LizIcon } from "@/components/liz/liz-illustration";
 
 /**
  * Lista do menu da administração.
@@ -48,7 +49,7 @@ export function PlatformNavList({ counts = {}, groups = PLATFORM_NAV_GROUPS, var
             {group.title && <p className="px-1 pb-2 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">{group.title}</p>}
             <div className="rounded-2xl border border-linha bg-papel px-4 shadow-[var(--shadow-aceito-1)]">
               {group.items.map((item) => {
-                const Icon = item.icon;
+                const Icon = item.brand === "liz" ? LizIcon : item.icon;
                 const active = isPlatformItemActive(pathname, item);
                 const count = item.countKey ? (counts[item.countKey] ?? 0) : 0;
                 return (
@@ -78,7 +79,7 @@ export function PlatformNavList({ counts = {}, groups = PLATFORM_NAV_GROUPS, var
         <div key={group.title ?? `grupo-${index}`} className="flex flex-col gap-0.5">
           {group.title && <p className={GROUP_TITLE}>{group.title}</p>}
           {group.items.map((item) => {
-            const Icon = item.icon;
+            const Icon = item.brand === "liz" ? LizIcon : item.icon;
             const active = isPlatformItemActive(pathname, item);
             const count = item.countKey ? (counts[item.countKey] ?? 0) : 0;
             return (

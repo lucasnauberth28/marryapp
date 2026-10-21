@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Flower2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/skeletons";
 import { btn } from "@/components/landing/styles";
@@ -12,6 +12,7 @@ import { commonArticles, HELP_ARTICLES } from "@/lib/liz/help-articles";
 import { visibleArticles } from "@/lib/liz/help-search";
 import { hasPathAccess } from "@/lib/permissions";
 import { HelpItem } from "./help-item";
+import { LizAvatar, LizIllustration } from "./liz-illustration";
 
 /** Respondedor que passa a pergunta ao servidor (provedor de IA). Só é usado quando a administração liga a Liz. */
 const serverAnswerer: LizAnswerer = {
@@ -102,9 +103,7 @@ export function LizPanel({
   return (
     <>
       <header className="flex items-center gap-3 border-b border-linha px-4 py-3">
-        <span aria-hidden="true" className="grid h-11 w-9 shrink-0 place-items-center rounded-t-full rounded-b-md bg-salvia-suave text-salvia">
-          <Flower2 className="size-5" strokeWidth={1.75} />
-        </span>
+        <LizAvatar size={44} decorative className="ring-1 ring-linha" />
         <h2 id={titleId} className="min-w-0 flex-1 font-display text-xl font-medium leading-7 text-tinta">
           Liz, sua assistente
         </h2>
@@ -155,9 +154,12 @@ export function LizPanel({
             </div>
           )}
           {data && !data.tip && (
-            <p className="rounded-xl border border-linha bg-linho p-3.5 text-[15px] leading-6 text-tinta-suave">
-              Não vi nada pedindo atenção agora. Quando algo precisar de vocês, a sugestão aparece aqui.
-            </p>
+            <div className="flex items-center gap-3 rounded-xl border border-linha bg-linho p-3.5">
+              <p className="min-w-0 flex-1 text-[15px] leading-6 text-tinta-suave">
+                Não vi nada pedindo atenção agora. Quando algo precisar de vocês, a sugestão aparece aqui.
+              </p>
+              <LizIllustration pose="tranquila" height={100} decorative className="h-[100px] w-auto shrink-0" />
+            </div>
           )}
         </section>
 

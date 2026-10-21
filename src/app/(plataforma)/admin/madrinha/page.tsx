@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CheckCircle2, Circle, Info, Lock, Pause, ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/plataforma/page-header";
+import { LizAvatar } from "@/components/liz/liz-illustration";
 import { Panel } from "@/components/plataforma/panel";
 import { Notice, NotActiveTag } from "@/components/plataforma/notices";
 import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
@@ -40,7 +41,12 @@ export default async function Page() {
     <>
       <PageHeader
         eyebrow="Liz"
-        title="Liz"
+        title={
+          <span className="flex items-center gap-3">
+            <LizAvatar size={56} decorative className="ring-2 ring-ameixa" />
+            Liz
+          </span>
+        }
         description="A assistente do Aceito para os casais: só responde sobre casamento e sobre o Aceito."
         actions={
           <button type="button" disabled className={`${btn.secondary} text-perigo`} title="Só dá para pausar depois que a Liz for ativada">
