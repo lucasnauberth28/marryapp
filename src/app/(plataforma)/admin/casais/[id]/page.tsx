@@ -28,6 +28,7 @@ import {
   type CasalHeader,
 } from "@/lib/platform/queries/casais";
 import { weddingSiteUrl } from "@/lib/wedding-links";
+import { getPayoutAccountView } from "@/lib/payout-account-view";
 import { cn } from "@/lib/utils";
 import { SituationChip } from "../_components/situation-chip";
 import { LinkRow } from "./_components/copy-link";
@@ -427,6 +428,8 @@ async function PagamentosTab({ header, sideColumn }: { header: CasalHeader; side
           )}
         </Panel>
 
+        <PayoutPanel weddingId={wedding.id} />
+
         <Panel>
           <GrantPlanForm weddingId={wedding.id} currentPlanId={plan?.planId ?? null} />
         </Panel>
@@ -449,6 +452,43 @@ async function PagamentosTab({ header, sideColumn }: { header: CasalHeader; side
       </div>
       {sideColumn}
     </div>
+  );
+}
+
+// Dados de recebimento do casal: SOMENTE a máscara, sem botão que decifre. A página já passou por requirePlatformAdminPage.
+async function PayoutPanel({ weddingId }: { weddingId: string }) {
+  const account = await getPayoutAccountView(weddingId);
+  return (
+    <Panel
+      title="Dados de recebimento"
+      aside={
+        account ? (
+          <StatusChip tone={account.verifiedAt ? "sucesso" : "aviso"} icon={account.verifiedAt ? CheckCircle2 : Clock}>
+            {account.verifiedAt ? "Confirmado pelo casal" : "Falta o casal confirmar"}
+          </StatusChip>
+        ) : (
+          <StatusChip tone="neutro">Não cadastrados</StatusChip>
+        )
+      }
+    >
+      {account ? (
+        <Rows
+          items={[
+            { label: "Cadastrados", value: "Sim" },
+            { label: "Tipo", value: account.type === "PIX_KEY" ? "Chave Pix" : "Conta bancária" },
+            { label: "Destino", value: account.keyHint },
+            { label: "Titular", value: `${account.holderName} (${account.holderDocumentHint})` },
+            { label: "Verificado em", value: account.verifiedAt ? formatDateTime(account.verifiedAt) : "Ainda não" },
+            { label: "Atualizado em", value: formatDateTime(account.updatedAt) },
+          ]}
+        />
+      ) : (
+        <p className="text-tinta-suave">O casal ainda não cadastrou onde receber os presentes.</p>
+      )}
+      <Notice tone="neutro" icon={Lock} className="mt-4">
+        Os dados ficam criptografados e esta tela mostra só a máscara. Nenhuma ação daqui decifra o dado, e o repasse ainda não é automático.
+      </Notice>
+    </Panel>
   );
 }
 

@@ -102,6 +102,18 @@ export function SettingsClient({ initialSettings, summary, canSeePlan }: Setting
 
       <Card className="gap-4">
         <CardHeader>
+          <CardTitle>Onde receber os presentes</CardTitle>
+          <CardDescription>A chave Pix ou a conta que vocês escolhem para receber o dinheiro dos presentes. Os dados ficam criptografados.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button asChild variant="outline">
+            <Link href="/configuracoes/recebimento">Cadastrar ou ver o destino</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="gap-4">
+        <CardHeader>
           <CardTitle>WhatsApp</CardTitle>
           <CardDescription>Conexão do número que envia convites e lembretes aos convidados.</CardDescription>
         </CardHeader>
