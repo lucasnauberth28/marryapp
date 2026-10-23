@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { normalizeText } from "@/lib/security/sanitize";
-import { GUEST_RANGES, THEME_PRESETS, joinCoupleNames } from "@/lib/onboarding-options";
+import { DEFAULT_THEME_COLOR, GUEST_RANGES, THEME_PRESETS, joinCoupleNames } from "@/lib/onboarding-options";
 import {
   classifyAccount,
   isAutoSlug,
@@ -39,7 +39,8 @@ const OnboardingSchema = z.object({
     .transform((v) => normalizeText(v))
     .optional(),
   guestEstimate: z.enum(GUEST_RANGES).nullable().optional(),
-  themeColor: z.enum(THEME_HEXES),
+  // Cor, cidade e faixa de convidados saíram do onboarding (ficam em Editar o site); seguem aceitos se vierem.
+  themeColor: z.enum(THEME_HEXES).optional(),
 });
 
 export type OnboardingInput = z.input<typeof OnboardingSchema>;
@@ -65,8 +66,8 @@ class OnboardingConflict extends Error {}
  * Conclui o onboarding do casamento da conta logada.
  * - Conta de casal sem casamento (cadastros antigos "aguardando ativação"): cria o casamento e
  *   troca o perfil para "Casal".
- * - Atualiza nomes, data, cidade, faixa de convidados e cor; o endereço do site é refeito a partir
- *   dos nomes enquanto ainda for o automático. Marca onboardedAt.
+ * - Atualiza nomes e data (e cidade, faixa de convidados e cor, só se vierem); o endereço do site é
+ *   refeito a partir dos nomes enquanto ainda for o automático. Marca onboardedAt.
  */
 export async function completeOnboarding(input: OnboardingInput): Promise<OnboardingResult> {
   const session = await getSession();
@@ -105,9 +106,12 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
   if (user.wedding?.onboardedAt) return { success: false, error: "O casamento já está configurado.", redirectTo: "/dashboard" };
 
   const coupleNames = joinCoupleNames(data.yourName, data.partnerName);
-  const city = data.city || null;
-  const guestEstimate = data.guestEstimate ?? null;
-  const themeColor = data.themeColor;
+  // Campo que não veio fica como está (o onboarding curto não pergunta cidade, convidados nem cor).
+  const optional = {
+    ...(data.city !== undefined ? { city: data.city || null } : {}),
+    ...(data.guestEstimate !== undefined ? { guestEstimate: data.guestEstimate } : {}),
+    ...(data.themeColor ? { themeColor: data.themeColor } : {}),
+  };
   // Cadastros antigos ficaram com um perfil sem módulos: passam ao perfil "Casal".
   const paths = Array.isArray(user.role.allowedPaths) ? (user.role.allowedPaths as string[]) : [];
   const needsCoupleRole = kind === "couple" && paths.length === 0;
@@ -142,20 +146,20 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
 
         const updated = await tx.wedding.updateMany({
           where: { id: weddingId, onboardedAt: null },
-          data: { coupleNames, slug, weddingDate, city, guestEstimate, themeColor, onboardedAt: new Date() },
+          data: { coupleNames, slug, weddingDate, ...optional, onboardedAt: new Date() },
         });
         if (updated.count !== 1) throw new OnboardingConflict();
 
         await tx.siteCustomization.upsert({
           where: { weddingId },
-          update: { title: coupleNames, slug, weddingDate, themeColor },
+          update: { title: coupleNames, slug, weddingDate, ...(data.themeColor ? { themeColor: data.themeColor } : {}) },
           create: {
             weddingId,
             slug,
             title: coupleNames,
             subtitle: "",
             weddingDate,
-            themeColor,
+            themeColor: data.themeColor ?? DEFAULT_THEME_COLOR,
             ceremonyTime: null,
             receptionTime: null,
             locationName: null,

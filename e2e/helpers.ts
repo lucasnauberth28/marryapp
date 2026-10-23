@@ -50,23 +50,18 @@ export async function cadastrarCasal(page: Page, email: string) {
   await page.getByLabel("WhatsApp").fill("(11) 98765-4321");
   await page.getByLabel("Crie uma senha").fill(SENHA);
   await page.getByRole("button", { name: /^Criar conta/ }).click();
-  await page.getByRole("link", { name: "Preparar o nosso casamento" }).click();
+  // Plano gratuito: do cadastro direto para as boas-vindas, sem tela de "conta criada" no meio.
   await page.waitForURL(/\/boas-vindas/);
-  await expect(page.getByRole("heading", { name: /Vamos preparar o casamento de vocês/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Quem vai casar, e quando/ })).toBeVisible();
+  // A data não é pedida no cadastro: ela vem uma vez só, aqui.
+  await expect(page.getByLabel("Data do casamento")).toBeVisible();
 }
 
-/** Faz o onboarding ("Ana" e "Bia", sem data) e devolve o caminho público do site, ex.: /casamento/ana-e-bia-x1. */
+/** Faz o onboarding ("Ana" e "Bia", sem data: ela é opcional) e devolve o caminho público do site, ex.: /casamento/ana-e-bia-x1. */
 export async function concluirOnboarding(page: Page): Promise<string> {
   await page.getByLabel("Seu nome", { exact: true }).fill("Ana");
   await page.getByLabel("Nome de quem vai casar com você").fill("Bia");
-  await page.getByRole("button", { name: "Continuar" }).click();
-
-  await page.getByLabel("Ainda não temos a data").check();
-  await page.getByLabel("Cidade").fill("Campinas");
-  await page.getByRole("button", { name: "Continuar" }).click();
-
-  await page.getByRole("button", { name: /Pular|Continuar/ }).click();
-  await page.getByRole("button", { name: "Concluir" }).click();
+  await page.getByRole("button", { name: "Criar o site de vocês" }).click();
 
   await expect(page.getByRole("heading", { name: "Tudo pronto" })).toBeVisible();
   const sitePath = await page.getByRole("link", { name: /\/casamento\// }).getAttribute("href");

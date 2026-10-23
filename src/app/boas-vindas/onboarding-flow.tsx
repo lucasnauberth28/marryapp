@@ -1,41 +1,28 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CalendarHeart,
-  Check,
-  Copy,
-  Globe,
-  Heart,
-  LayoutDashboard,
-  MapPin,
-  Palette,
-  User,
-  Users,
-} from "lucide-react";
+import { ArrowRight, CalendarHeart, Check, Copy, Globe, Heart, Palette, User } from "lucide-react";
 import { completeOnboarding } from "@/actions/onboarding-actions";
 import { AuthShell, SHELL_PHOTOS, ShellHeading } from "@/components/account/auth-shell";
 import { Seal } from "@/components/landing/seal";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { LoadingButton } from "@/components/painel/loading-button";
 import { Field, FormAlert } from "@/components/ui/field";
-import { GUEST_RANGES, THEME_PRESETS, joinCoupleNames, type GuestRange } from "@/lib/onboarding-options";
+import { joinCoupleNames, validateOnboardingBasics, type OnboardingBasicsErrors } from "@/lib/onboarding-options";
 import { cn } from "@/lib/utils";
 
-type Step = "nomes" | "data" | "convidados" | "cor" | "pronto";
-const STEPS: Exclude<Step, "pronto">[] = ["nomes", "data", "convidados", "cor"];
+type Step = "dados" | "pronto";
 
 interface Initial {
   yourName: string;
   partnerName: string;
   weddingDate: string | null;
-  city: string;
-  guestEstimate: GuestRange | null;
-  themeColor: string;
 }
 
+/**
+ * Uma tela só: nomes e data (a data é opcional). Cidade, faixa de convidados e cor do site não são
+ * mais perguntadas aqui; a cor e o local ficam em Editar o site, quando o casal for preparar o site.
+ */
 export function OnboardingFlow({
   firstName,
   initial,
@@ -46,16 +33,12 @@ export function OnboardingFlow({
   /** Casamento recém-configurado: abre direto na tela final. */
   done: { slug: string; coupleNames: string } | null;
 }) {
-  const [step, setStep] = useState<Step>(done ? "pronto" : "nomes");
+  const [step, setStep] = useState<Step>(done ? "pronto" : "dados");
   const [yourName, setYourName] = useState(initial.yourName);
   const [partnerName, setPartnerName] = useState(initial.partnerName);
   const [weddingDate, setWeddingDate] = useState(initial.weddingDate ?? "");
-  const [noDateYet, setNoDateYet] = useState(false);
-  const [city, setCity] = useState(initial.city);
-  const [guestEstimate, setGuestEstimate] = useState<GuestRange | null>(initial.guestEstimate);
-  const [themeColor, setThemeColor] = useState(initial.themeColor);
 
-  const [errors, setErrors] = useState<Partial<Record<"yourName" | "partnerName" | "date", string>>>({});
+  const [errors, setErrors] = useState<OnboardingBasicsErrors>({});
   const [formError, setFormError] = useState("");
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<{ slug: string; coupleNames: string } | null>(done);
@@ -73,54 +56,17 @@ export function OnboardingFlow({
   }, [step]);
 
   const coupleNames = joinCoupleNames(yourName, partnerName) || "Vocês dois";
-  const previewNames = coupleNames.split(" & ");
-  // "17 de abril de 2027 · Itu": só o que já foi preenchido
-  const previewDate =
-    !noDateYet && weddingDate
-      ? new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" }).format(new Date(`${weddingDate}T12:00:00Z`))
-      : "";
-  const previewLine = [previewDate, city.trim()].filter(Boolean).join(" · ");
-  const index = STEPS.indexOf(step as Exclude<Step, "pronto">);
-  const go = (to: Step) => {
-    setFormError("");
-    setStep(to);
-  };
-  const next = () => go(STEPS[index + 1] ?? "cor");
-  const back = () => go(STEPS[index - 1] ?? "nomes");
 
-  const submitNames = (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    const found: typeof errors = {};
-    if (yourName.trim().length < 2) found.yourName = "Informe o seu nome.";
-    if (partnerName.trim().length < 2) found.partnerName = "Informe o nome de quem vai casar com você.";
+    setFormError("");
+    const found = validateOnboardingBasics({ yourName, partnerName, weddingDate });
     setErrors(found);
-    if (found.yourName) return document.getElementById("onb-yourName")?.focus();
-    if (found.partnerName) return document.getElementById("onb-partnerName")?.focus();
-    next();
-  };
+    const first = (["yourName", "partnerName", "weddingDate"] as const).find((k) => found[k]);
+    if (first) return document.getElementById(`onb-${first}`)?.focus();
 
-  const submitDate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!noDateYet && !weddingDate) {
-      setErrors({ date: "Escolham a data ou marquem que ainda não têm." });
-      document.getElementById("onb-date")?.focus();
-      return;
-    }
-    setErrors({});
-    next();
-  };
-
-  const finish = () => {
-    setFormError("");
     startTransition(async () => {
-      const res = await completeOnboarding({
-        yourName,
-        partnerName,
-        weddingDate: noDateYet || !weddingDate ? null : weddingDate,
-        city,
-        guestEstimate,
-        themeColor,
-      });
+      const res = await completeOnboarding({ yourName, partnerName, weddingDate: weddingDate || null });
       if (!res.success) {
         if (res.redirectTo) {
           window.location.href = res.redirectTo;
@@ -130,7 +76,7 @@ export function OnboardingFlow({
         return;
       }
       setResult({ slug: res.slug, coupleNames: res.coupleNames });
-      go("pronto");
+      setStep("pronto");
     });
   };
 
@@ -150,19 +96,17 @@ export function OnboardingFlow({
   return (
     <AuthShell
       photo={step === "pronto" ? SHELL_PHOTOS.pronto : SHELL_PHOTOS.boasVindas}
-      footnote="Nomes, data e cor do site podem ser alterados depois, em Editar o site."
+      footnote="Nomes e data podem ser alterados depois, em Editar o site."
     >
-      {step !== "pronto" ? <Progress current={index + 1} total={STEPS.length} /> : null}
-
-      {step === "nomes" ? (
+      {step === "dados" ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
           <ShellHeading
             ref={headingRef}
             overline="Vamos começar"
-            title="Vamos preparar o casamento de vocês."
-            text={`${firstName ? `Boas-vindas, ${firstName}. ` : ""}Primeiro, os nomes. Leva um minuto.`}
+            title="Quem vai casar, e quando?"
+            text={`${firstName ? `Boas-vindas, ${firstName}. ` : ""}É só isso para abrir o site de vocês. Cor, local e fotos ficam para depois, em Editar o site.`}
           />
-          <form onSubmit={submitNames} noValidate className="flex flex-col gap-5">
+          <form onSubmit={submit} noValidate className="flex flex-col gap-5">
             <Field id="onb-yourName" label="Seu nome" icon={User} error={errors.yourName}>
               {(c) => (
                 <input {...c} id="onb-yourName" autoComplete="given-name" maxLength={60} value={yourName} onChange={(e) => setYourName(e.target.value)} />
@@ -173,155 +117,27 @@ export function OnboardingFlow({
                 <input {...c} id="onb-partnerName" autoComplete="off" maxLength={60} value={partnerName} onChange={(e) => setPartnerName(e.target.value)} />
               )}
             </Field>
+            <Field
+              id="onb-weddingDate"
+              label="Data do casamento"
+              icon={CalendarHeart}
+              optional
+              error={errors.weddingDate}
+              hint="Se ainda não têm a data, deixem em branco. A contagem regressiva aparece quando vocês a escolherem."
+            >
+              {(c) => <input {...c} id="onb-weddingDate" type="date" value={weddingDate} onChange={(e) => setWeddingDate(e.target.value)} />}
+            </Field>
             <p className="rounded-[12px] border border-linha bg-papel px-4 py-3 text-[15px] text-tinta-suave">
               No site vai aparecer <strong className="font-display text-lg font-normal text-tinta">{coupleNames}</strong>
             </p>
-            <button type="submit" className={cn(btn.primary, btn.block, "min-h-12")}>
-              Continuar
+
+            {formError ? <FormAlert id="onb-erro">{formError}</FormAlert> : null}
+
+            <LoadingButton type="submit" loading={isPending} className={cn(btn.primary, btn.block, "min-h-12")}>
+              Criar o site de vocês
               <ArrowRight aria-hidden="true" className={btnArrow} />
-            </button>
-          </form>
-        </section>
-      ) : null}
-
-      {step === "data" ? (
-        <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-          <ShellHeading
-            ref={headingRef}
-            overline="O grande dia"
-            title="Quando e onde?"
-            text="A data entra na contagem regressiva do site e do painel. A cidade é opcional."
-          />
-          <form onSubmit={submitDate} noValidate className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <Field id="onb-date" label="Data do casamento" icon={CalendarHeart} error={errors.date}>
-                {(c) => (
-                  <input
-                    {...c}
-                    id="onb-date"
-                    type="date"
-                    value={weddingDate}
-                    disabled={noDateYet}
-                    onChange={(e) => setWeddingDate(e.target.value)}
-                  />
-                )}
-              </Field>
-              <label className="flex min-h-11 cursor-pointer items-center gap-3 text-[15px] text-tinta">
-                <input
-                  type="checkbox"
-                  checked={noDateYet}
-                  onChange={(e) => {
-                    setNoDateYet(e.target.checked);
-                    setErrors({});
-                  }}
-                  className="size-5 cursor-pointer rounded-[6px] accent-[var(--color-ameixa)]"
-                />
-                Ainda não temos a data
-              </label>
-            </div>
-            <Field id="onb-city" label="Cidade" icon={MapPin} optional>
-              {(c) => (
-                <input
-                  {...c}
-                  id="onb-city"
-                  autoComplete="address-level2"
-                  placeholder="Ex.: Campinas, SP"
-                  maxLength={80}
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                />
-              )}
-            </Field>
-            <StepButtons onBack={back} />
-          </form>
-        </section>
-      ) : null}
-
-      {step === "convidados" ? (
-        <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-          <ShellHeading ref={headingRef} overline="Convidados" title="Quantos convidados?" text="Uma estimativa já basta. A lista de convidados de verdade vocês montam depois no painel." />
-          <div role="radiogroup" aria-label="Número de convidados" className="grid grid-cols-2 gap-3">
-            {GUEST_RANGES.map((range) => {
-              const selected = guestEstimate === range;
-              return (
-                <button
-                  key={range}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  onClick={() => setGuestEstimate(range)}
-                  className={cn(
-                    "flex min-h-16 cursor-pointer items-center gap-3 rounded-[16px] bg-papel px-4 text-left transition-[border-color,box-shadow] duration-300 ease-[var(--ease-aceito)] hover:shadow-[var(--shadow-aceito-1)]",
-                    selected ? "border-2 border-ameixa px-[15px]" : "border border-linha hover:border-linha-forte",
-                  )}
-                >
-                  <Users aria-hidden="true" className={cn("size-5 shrink-0", selected ? "text-ameixa" : "text-tinta-suave")} strokeWidth={1.75} />
-                  <span className="font-semibold text-tinta">{range}</span>
-                </button>
-              );
-            })}
-          </div>
-          <StepButtons onBack={back} onNext={next} label={guestEstimate ? "Continuar" : "Pular por enquanto"} />
-        </section>
-      ) : null}
-
-      {step === "cor" ? (
-        <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-          <ShellHeading ref={headingRef} overline="O site de vocês" title="Escolham a cor" text="Ela aparece nos botões e nos detalhes do site do casamento." />
-          {/* Prévia do site do casal: sempre clara, como o site (escopo claro sem mexer na página) */}
-          <div
-            data-theme="light"
-            className="flex flex-col items-center rounded-[999px_999px_16px_16px] border border-linha bg-papel px-6 pb-6 pt-14 text-center text-tinta"
-            aria-hidden="true"
-          >
-            <span className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Prévia</span>
-            <span className="mt-2 font-display text-[34px] leading-10">
-              {previewNames.length === 2 ? (
-                <>
-                  {previewNames[0]} <em className="italic transition-colors duration-500" style={{ color: themeColor }}>&amp;</em> {previewNames[1]}
-                </>
-              ) : (
-                coupleNames
-              )}
-            </span>
-            {previewLine ? <span className="mb-4 mt-1 text-tinta-suave">{previewLine}</span> : <span className="mb-4" />}
-            <span className="inline-flex min-h-10 items-center rounded-[12px] px-4 text-sm font-semibold text-on-ameixa transition-colors duration-500" style={{ backgroundColor: themeColor }}>
-              Confirmar presença
-            </span>
-          </div>
-          <div role="radiogroup" aria-label="Cor do site" className="grid grid-cols-2 gap-3 min-[420px]:grid-cols-3">
-            {THEME_PRESETS.map((preset) => {
-              const selected = themeColor === preset.hex;
-              return (
-                <button
-                  key={preset.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  onClick={() => setThemeColor(preset.hex)}
-                  className={cn(
-                    "flex min-h-12 cursor-pointer items-center gap-2.5 rounded-[12px] bg-papel px-3 text-left text-sm font-semibold text-tinta transition-[border-color,box-shadow] duration-300",
-                    selected ? "border-2 border-ameixa px-[11px]" : "border border-linha hover:border-linha-forte",
-                  )}
-                >
-                  <span className="grid size-6 shrink-0 place-items-center rounded-full" style={{ backgroundColor: preset.hex }}>
-                    {selected ? <Check aria-hidden="true" className="size-3.5 text-on-ameixa" strokeWidth={3} /> : null}
-                  </span>
-                  <span>{preset.name}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {formError ? <FormAlert id="onb-erro">{formError}</FormAlert> : null}
-
-          <div className="flex items-center gap-3">
-            <BackButton onClick={back} />
-            <LoadingButton onClick={finish} loading={isPending} className={cn(btn.primary, "min-h-12 flex-1")}>
-              <Palette aria-hidden="true" className="size-4" />
-              Concluir
             </LoadingButton>
-          </div>
+          </form>
         </section>
       ) : null}
 
@@ -347,75 +163,19 @@ export function OnboardingFlow({
             </p>
           </div>
 
+          {/* Navegação completa: o painel precisa ler o cookie de sessão atualizado no onboarding. */}
           <div className="flex flex-col gap-3">
-            <p className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Primeiros passos</p>
-            <FirstStep href="/site-builder" icon={Palette} title="Preparar o site" text="Fotos, história, local e horários." />
-            <FirstStep href="/convidados" icon={Users} title="Adicionar convidados" text="Cadastrem a lista ou importem uma planilha (CSV)." />
-            <FirstStep href="/dashboard" icon={LayoutDashboard} title="Ver o resumo do casamento" text="Confirmações, presentes e tarefas no painel." />
+            <a href="/dashboard" className={cn(btn.primary, btn.block, "min-h-12")}>
+              Ir para o painel
+              <ArrowRight aria-hidden="true" className={btnArrow} />
+            </a>
+            <a href="/site-builder" className={cn(btn.secondary, btn.block, "min-h-12")}>
+              <Palette aria-hidden="true" className="size-4" />
+              Escolher cor e fotos do site
+            </a>
           </div>
         </section>
       ) : null}
     </AuthShell>
-  );
-}
-
-function Progress({ current, total }: { current: number; total: number }) {
-  return (
-    <div className="mb-6 flex items-center gap-3" aria-label={`Passo ${current} de ${total}`}>
-      <div className="flex flex-1 gap-1.5" aria-hidden="true">
-        {Array.from({ length: total }, (_, i) => i + 1).map((i) => (
-          <span key={i} className="h-1 flex-1 overflow-hidden rounded-full bg-areia">
-            <span
-              className={cn(
-                "block h-full origin-left rounded-full bg-ameixa transition-transform duration-500 ease-[var(--ease-aceito)]",
-                i <= current ? "scale-x-100" : "scale-x-0",
-              )}
-            />
-          </span>
-        ))}
-      </div>
-      <span className="text-sm font-semibold tabular-nums text-tinta-suave" aria-hidden="true">
-        {current} de {total}
-      </span>
-    </div>
-  );
-}
-
-function BackButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} aria-label="Voltar" className={cn(btn.secondary, "min-h-12 w-12 shrink-0 px-0")}>
-      <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.75} />
-    </button>
-  );
-}
-
-function StepButtons({ onBack, onNext, label = "Continuar" }: { onBack: () => void; onNext?: () => void; label?: string }) {
-  return (
-    <div className="flex items-center gap-3">
-      <BackButton onClick={onBack} />
-      <button type={onNext ? "button" : "submit"} onClick={onNext} className={cn(btn.primary, "min-h-12 flex-1")}>
-        {label}
-        <ArrowRight aria-hidden="true" className={btnArrow} />
-      </button>
-    </div>
-  );
-}
-
-function FirstStep({ href, icon: Icon, title, text }: { href: string; icon: typeof Users; title: string; text: string }) {
-  // Navegação completa: o painel precisa ler o cookie de sessão atualizado no onboarding.
-  return (
-    <a
-      href={href}
-      className="group flex items-center gap-4 rounded-[16px] border border-linha bg-papel p-4 transition-[border-color,box-shadow,transform] duration-300 ease-[var(--ease-aceito)] hover:-translate-y-0.5 hover:border-ameixa hover:shadow-[var(--shadow-aceito-2)]"
-    >
-      <span className="grid size-11 shrink-0 place-items-center rounded-[12px] bg-ameixa-suave text-ameixa">
-        <Icon aria-hidden="true" className="size-5" strokeWidth={1.75} />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block font-semibold text-tinta">{title}</span>
-        <span className="block text-sm text-tinta-suave">{text}</span>
-      </span>
-      <ArrowRight aria-hidden="true" className="size-5 shrink-0 text-tinta-suave transition-transform duration-300 group-hover:translate-x-1 group-hover:text-ameixa" />
-    </a>
   );
 }

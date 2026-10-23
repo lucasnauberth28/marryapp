@@ -23,7 +23,6 @@ async function criarCasalPronto(page: Page, prefixo: string) {
   await page.getByLabel("WhatsApp").fill("(11) 98765-4321");
   await page.getByLabel("Crie uma senha").fill(SENHA);
   await page.getByRole("button", { name: /^Criar conta/ }).click();
-  await page.getByRole("link", { name: "Preparar o nosso casamento" }).click();
   await page.waitForURL(/\/boas-vindas/);
   return { sitePath: await concluirOnboarding(page) };
 }

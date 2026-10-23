@@ -3,12 +3,12 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { getSession, SUPER_ADMIN_USER_ID, redirectToLogin } from "@/lib/security/auth-guard";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
-import { DEFAULT_THEME_COLOR, GUEST_RANGES, THEME_PRESETS, splitCoupleNames, type GuestRange } from "@/lib/onboarding-options";
+import { splitCoupleNames } from "@/lib/onboarding-options";
 import { OnboardingFlow } from "./onboarding-flow";
 
 export const metadata: Metadata = {
   title: "Boas-vindas",
-  description: "Contem o básico do casamento para o Aceito preparar o endereço do site.",
+  description: "Os nomes e a data do casamento para o Aceito abrir o site de vocês.",
   robots: { index: false, follow: false },
 };
 
@@ -37,7 +37,7 @@ export default async function BoasVindasPage() {
       partnerVendorId: true,
       role: { select: { name: true, allowedPaths: true } },
       wedding: {
-        select: { slug: true, coupleNames: true, weddingDate: true, city: true, guestEstimate: true, themeColor: true, onboardedAt: true },
+        select: { slug: true, coupleNames: true, weddingDate: true, onboardedAt: true },
       },
     },
   });
@@ -58,11 +58,6 @@ export default async function BoasVindasPage() {
   const yourName = b ? a : firstName || a;
   const partnerName = b;
 
-  const guestEstimate = (GUEST_RANGES as readonly string[]).includes(user.wedding?.guestEstimate ?? "")
-    ? (user.wedding?.guestEstimate as GuestRange)
-    : null;
-  const themeColor = THEME_PRESETS.some((p) => p.hex === user.wedding?.themeColor) ? user.wedding!.themeColor : DEFAULT_THEME_COLOR;
-
   return (
     <OnboardingFlow
       firstName={firstName}
@@ -71,9 +66,6 @@ export default async function BoasVindasPage() {
         yourName,
         partnerName,
         weddingDate: toDateInput(user.wedding?.weddingDate ?? null),
-        city: user.wedding?.city ?? "",
-        guestEstimate,
-        themeColor,
       }}
     />
   );
