@@ -102,7 +102,7 @@ export default async function Page() {
             <dl className="divide-y divide-linha text-[15px]">
               <div className="flex flex-wrap justify-between gap-2 py-2.5">
                 <dt className="text-tinta-suave">Plano Básico</dt>
-                <dd className="font-semibold text-tinta">2,99% por presente recebido</dd>
+                <dd className="font-semibold text-tinta">3,99% por presente recebido</dd>
               </div>
               <div className="flex flex-wrap justify-between gap-2 py-2.5">
                 <dt className="text-tinta-suave">Planos pagos (Classic e VIP)</dt>

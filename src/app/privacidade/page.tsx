@@ -13,7 +13,7 @@ const CONTROLLER = (
     <Placeholder>[ENDEREÇO]</Placeholder>
   </>
 );
-const DPO_EMAIL = <Placeholder>[E-MAIL DO ENCARREGADO]</Placeholder>;
+const DPO_EMAIL = <a href="mailto:contato@meuaceito.com.br">contato@meuaceito.com.br</a>;
 
 const sections: LegalSection[] = [
   {

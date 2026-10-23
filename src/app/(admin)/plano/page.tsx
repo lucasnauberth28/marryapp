@@ -117,7 +117,7 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
           <p className="text-[15px] text-tinta">
             {current
               ? `Pagamento único de ${money(current.amount)}${current.paidAt ? ` · pago em ${dateFmt.format(current.paidAt)}` : ""}`
-              : "Gratuito · taxa de 2,99% por presente recebido"}
+              : "Gratuito · taxa de 3,99% por presente recebido"}
           </p>
         </section>
 

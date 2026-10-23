@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Catálogo e preços" };
 
 const PLAN_ORDER: PlanKey[] = ["basic", "classic", "vip", "start", "pro", "master"];
-const GIFT_FEE: Partial<Record<PlanKey, string>> = { basic: "2,99%", classic: "0% no Pix", vip: "0% no Pix" };
+const GIFT_FEE: Partial<Record<PlanKey, string>> = { basic: "3,99%", classic: "0% no Pix", vip: "0% no Pix" };
 const BILLING = (id: PlanKey) => (isFreePlan(id) ? "Grátis" : PLANS_CONFIG[id].type === "VENDOR" ? "Por mês" : "Pagamento único");
 
 interface AuditDetails {

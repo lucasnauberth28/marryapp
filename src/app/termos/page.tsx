@@ -12,7 +12,7 @@ const CONTROLLER = (
     <Placeholder>[RAZÃO SOCIAL]</Placeholder>, CNPJ <Placeholder>[CNPJ]</Placeholder>, com sede em <Placeholder>[ENDEREÇO]</Placeholder>
   </>
 );
-const CONTACT_EMAIL = <Placeholder>[E-MAIL DO ENCARREGADO]</Placeholder>;
+const CONTACT_EMAIL = <a href="mailto:contato@meuaceito.com.br">contato@meuaceito.com.br</a>;
 
 const sections: LegalSection[] = [
   {
@@ -119,7 +119,7 @@ const sections: LegalSection[] = [
           </li>
           <li>
             Nas contratações pela internet, você pode desistir em até 7 dias da contratação, com reembolso integral, conforme o art. 49 do
-            Código de Defesa do Consumidor. Pedidos de reembolso: <Placeholder>[CANAL DE ATENDIMENTO]</Placeholder>.
+            Código de Defesa do Consumidor. Pedidos de reembolso: <a href="mailto:contato@meuaceito.com.br">contato@meuaceito.com.br</a>.
           </li>
         </ul>
       </>
