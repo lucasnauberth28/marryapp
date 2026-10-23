@@ -64,6 +64,8 @@ model Guest {
   confirmedCompanions Int          @default(0)
   companionsNames    String?       @db.Text
   hasReceivedMessage Boolean       @default(false) 
+  // Última vez que o casal enviou o convite a este convidado pelo WhatsApp do próprio aparelho (envio manual)
+  inviteSharedAt     DateTime?
   
   // Vínculo entre convidados (Titular / Familiar vinculado)
   parentGuestId      String?

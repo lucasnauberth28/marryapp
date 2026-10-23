@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE "guests" ADD COLUMN "inviteSharedAt" TIMESTAMP(3);
+
+COMMIT;
