@@ -1,48 +1,90 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { LoadingRegion, SkeletonCard, SkeletonPageHeader } from "@/components/skeletons";
-import { SkeletonPanel, SkeletonRows } from "@/components/painel/skeleton-parts";
+import { LoadingRegion } from "@/components/skeletons";
 
-/** Cartão-resumo: sobretítulo, número grande, barra e linhas de apoio (as de baixo só no computador). */
-function SummarySkeleton({ className, bar = true }: { className?: string; bar?: boolean }) {
+/** Bloco do Resumo: a mesma caixa (borda, raio 12, margens) e a mesma altura aproximada, para a página não pular ao chegar. */
+function BlockSkeleton({ className = "", children }: { className?: string; children: React.ReactNode }) {
   return (
-    <SkeletonPanel className={`flex flex-col gap-2.5 p-4 md:gap-3 md:p-6 ${className ?? ""}`}>
-      <div className="flex h-4 items-center">
-        <Skeleton className="h-3 w-28 rounded-md" />
+    <div className={`flex min-w-0 flex-col gap-4 rounded-[12px] border border-linha bg-papel px-4 pb-[18px] pt-4 md:px-6 md:pb-6 md:pt-5 ${className}`}>
+      <div className="flex min-h-8 items-center justify-between gap-3">
+        <Skeleton className="h-5 w-40 rounded-md" />
+        <Skeleton className="h-4 w-20 rounded-md" />
       </div>
-      <div className="flex h-8 items-center md:h-11">
-        <Skeleton className="h-7 w-24 rounded-lg md:h-9" />
-      </div>
-      {bar && <Skeleton className="h-2 w-full rounded-full" />}
-      <div className="flex h-5 items-center">
-        <Skeleton className="h-3.5 w-3/4 rounded-md" />
-      </div>
-      <div className="hidden h-10 md:block">
-        <Skeleton className="h-3.5 w-full rounded-md" />
-      </div>
-    </SkeletonPanel>
+      {children}
+    </div>
   );
 }
 
-// Espelha o início: cabeçalho (botões só no computador), três cartões-resumo e duas listas lado a lado.
-// Avisos e a sugestão da Liz dependem dos dados e ficam de fora do esqueleto.
+function Rows({ count, avatar = true }: { count: number; avatar?: boolean }) {
+  return (
+    <div>
+      {Array.from({ length: count }, (_, i) => (
+        <div key={i} className="flex min-h-[60px] items-center gap-3 border-t border-linha py-2 first:border-t-0">
+          {avatar && <Skeleton className="size-10 shrink-0 rounded-full" />}
+          <div className="grid flex-1 gap-1.5">
+            <Skeleton className="h-4 w-3/5 rounded-md" />
+            <Skeleton className="h-3.5 w-2/5 rounded-md" />
+          </div>
+          <Skeleton className="h-6 w-20 rounded-full" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Espelha o Resumo: cabeçalho, convite e fila lado a lado, confirmações e respostas, dinheiro e orçamento.
+// Os dados (convites, fila, números) só chegam com a página; aqui só as caixas, na mesma grade.
 export default function DashboardLoading() {
   return (
-    <LoadingRegion label="o início" className="flex flex-col gap-5 md:gap-8">
-      <SkeletonPageHeader description={false} actions={2} className="max-md:[&>div:last-child]:hidden" />
-
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
-        <SummarySkeleton className="col-span-2 md:col-span-1" />
-        <SummarySkeleton bar={false} />
-        <SummarySkeleton />
+    <LoadingRegion label="o resumo" className="flex flex-col gap-5 md:gap-6">
+      <div className="grid gap-2">
+        <Skeleton className="h-7 w-28 rounded-lg md:h-8" />
+        <Skeleton className="h-4 w-full max-w-[560px] rounded-md" />
       </div>
-
-      <div className="grid items-start gap-4 md:gap-6 lg:grid-cols-2">
-        <SkeletonCard className="p-4 md:p-6">
-          <SkeletonRows rows={4} leading="check" trailing="chip" lines={1} />
-        </SkeletonCard>
-        <SkeletonCard className="p-4 md:p-6">
-          <SkeletonRows rows={4} trailing="chip" />
-        </SkeletonCard>
+      <div className="grid items-start gap-4 min-[1200px]:grid-cols-12">
+        <BlockSkeleton className="min-[1200px]:col-span-7">
+          <div className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-3.5 md:grid-cols-[104px_minmax(0,1fr)] md:gap-5">
+            <Skeleton className="aspect-[4/5] w-full rounded-[10px]" />
+            <Skeleton className="h-16 w-full rounded-[8px]" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-11 w-48 rounded-full max-md:flex-1" />
+            <Skeleton className="h-11 w-32 rounded-full max-md:flex-1" />
+            <Skeleton className="h-11 w-44 rounded-full max-md:flex-1" />
+          </div>
+          <div className="grid gap-2 border-t border-linha pt-4">
+            <Skeleton className="h-4 w-2/3 rounded-md" />
+            <Skeleton className="h-2 w-full rounded-full" />
+          </div>
+        </BlockSkeleton>
+        <BlockSkeleton className="min-[1200px]:col-span-5">
+          <Rows count={3} />
+        </BlockSkeleton>
+        <BlockSkeleton className="min-[1200px]:col-span-7">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="grid gap-2">
+                <Skeleton className="h-4 w-28 rounded-md" />
+                <Skeleton className="h-8 w-16 rounded-md" />
+                <Skeleton className="h-4 w-24 rounded-md" />
+              </div>
+            ))}
+          </div>
+          <Skeleton className="h-2.5 w-full rounded-full" />
+        </BlockSkeleton>
+        <BlockSkeleton className="min-[1200px]:col-span-5">
+          <Rows count={4} />
+        </BlockSkeleton>
+        <BlockSkeleton className="min-[1200px]:col-span-7">
+          <Skeleton className="h-4 w-32 rounded-md" />
+          <Skeleton className="h-10 w-44 rounded-lg" />
+          <Rows count={4} avatar={false} />
+        </BlockSkeleton>
+        <BlockSkeleton className="min-[1200px]:col-span-5">
+          <Skeleton className="h-4 w-28 rounded-md" />
+          <Skeleton className="h-8 w-48 rounded-md" />
+          <Skeleton className="h-2 w-full rounded-full" />
+          <Rows count={3} avatar={false} />
+        </BlockSkeleton>
       </div>
     </LoadingRegion>
   );
