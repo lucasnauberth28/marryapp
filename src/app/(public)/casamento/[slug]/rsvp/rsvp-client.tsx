@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { maskPhone } from "@/lib/masks";
 import { weddingSitePath } from "@/lib/wedding-links";
+import { rememberGuest } from "@/lib/use-saved-guest";
 import { lookupMessage, type PublicRsvpGuest } from "@/lib/rsvp-lookup";
 import { cn } from "@/lib/utils";
 
@@ -109,6 +110,8 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
         dietary,
       );
       if (res.success) {
+        // Quem respondeu ao convite não precisa digitar nome e WhatsApp de novo se for dar um presente (só nesta aba).
+        rememberGuest(slug, { name: guest.name, phone });
         setSuccessStatus(status);
       } else {
         setError(res.error || "Não conseguimos salvar a sua resposta. Tente de novo.");

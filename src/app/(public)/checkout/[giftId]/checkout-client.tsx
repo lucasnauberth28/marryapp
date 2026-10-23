@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowRight, Check, Copy, Heart, Hourglass, Lock } from "lucide-react";
+import { ArrowRight, Check, Copy, Gift as GiftIcon, Heart, Hourglass, Lock } from "lucide-react";
 import { createPixTransactionAction, checkTransactionStatusAction, processCardPaymentAction } from "@/actions/payment-actions";
 import { Button } from "@/components/ui/button";
 import { Field, FormAlert } from "@/components/ui/field";
@@ -13,6 +13,8 @@ import { QrFrame } from "@/components/ui/qr-frame";
 import { QR_COLORS } from "@/lib/qr-colors";
 import { Textarea } from "@/components/ui/textarea";
 import { maskPhone } from "@/lib/masks";
+import { phoneEnding } from "@/lib/saved-guest";
+import { useSavedGuest } from "@/lib/use-saved-guest";
 import { Seal } from "@/components/landing/seal";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { UserImage } from "@/components/ui/user-image";
@@ -28,19 +30,26 @@ interface CheckoutClientProps {
   slug: string;
   /** Falso quando o cartão não está disponível: só o Pix é oferecido. */
   cardEnabled?: boolean;
+  /** Valor cobrado no cartão (presente mais a tarifa do cartão), calculado no servidor com a mesma conta da cobrança. */
+  cardAmount: number;
 }
 
 type CheckoutStep = "IDENTIFICATION" | "METHOD" | "PAYMENT" | "SUCCESS";
 type PaymentMethod = "PIX" | "CREDIT_CARD";
 
-export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: CheckoutClientProps) {
+export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, cardAmount }: CheckoutClientProps) {
   const [step, setStep] = useState<CheckoutStep>("IDENTIFICATION");
   const [method, setMethod] = useState<PaymentMethod>("PIX");
   const [isPending, startTransition] = useTransition();
 
-  // Dados do Convidado
-  const [guestName, setGuestName] = useState("");
-  const [guestPhone, setGuestPhone] = useState("");
+  // Dados do Convidado. Quem confirmou presença nesta aba já vem identificado; ele só segue depois de confirmar "sim, sou eu".
+  const { guest: knownGuest, forget: forgetKnownGuest } = useSavedGuest(slug);
+  const [typedName, setTypedName] = useState("");
+  const [typedPhone, setTypedPhone] = useState("");
+  const [recognizedDismissed, setRecognizedDismissed] = useState(false);
+  const recognized = knownGuest && !recognizedDismissed ? knownGuest : null;
+  const guestName = recognized ? recognized.name : typedName;
+  const guestPhone = recognized ? maskPhone(recognized.phone) : typedPhone;
 
   // Dados do Pix Gerado
   const [pixPayload, setPixPayload] = useState("");
@@ -83,13 +92,13 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
     }).format(amount / 100);
   }
 
-  // Taxa do Cartão (Fórmula: ValorFinal = ValorPresente / (1 - 0.0499))
-  const feePercent = 0.0499;
-  const cardFinalAmount = Math.round(gift.amount / (1 - feePercent));
+  // No cartão a tarifa do cartão entra no valor cobrado; a conta vem do servidor, a mesma da cobrança.
+  const cardFinalAmount = cardAmount;
+  const cardFeeAmount = cardFinalAmount - gift.amount;
 
   function handleIdentificationNext(e: React.FormEvent) {
     e.preventDefault();
-    if (guestName.length < 3 || guestPhone.replace(/\D/g, "").length < 10) {
+    if (guestName.trim().length < 3 || guestPhone.replace(/\D/g, "").length < 10) {
       setError("Confira o nome completo e o WhatsApp com DDD para continuar.");
       return;
     }
@@ -216,47 +225,80 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
           <div className="flex flex-col gap-2">
             <p className={overline}>Passo 1 de 3</p>
             <h2 ref={headingRef} tabIndex={-1} className={heading}>
-              Quem está presenteando?
+              {recognized ? "Confirme quem presenteia" : "Quem está presenteando?"}
             </h2>
-            <p className="text-tinta-suave">Para os noivos saberem quem presenteou.</p>
+            <p className="text-tinta-suave">
+              {recognized ? "Você se identificou na confirmação de presença. Usamos esses dados para não pedir de novo." : "Para os noivos saberem quem presenteou."}
+            </p>
           </div>
 
-          <Field id="checkout-nome" label="Seu nome completo">
-            {(c) => (
-              <input
-                {...c}
-                id="checkout-nome"
-                name="name"
-                autoComplete="name"
-                value={guestName}
-                onChange={(e) => setGuestName(e.target.value)}
-                placeholder="Como os noivos conhecem você"
-                required
-              />
-            )}
-          </Field>
+          {recognized ? (
+            <div className="flex flex-col gap-3 rounded-[16px] border border-linha bg-papel p-4 shadow-[var(--shadow-aceito-1)]">
+              <div className="min-w-0">
+                <p className={overline}>Presente de</p>
+                <p className="truncate text-lg font-semibold leading-7 text-tinta">{recognized.name}</p>
+                <p className="text-sm leading-5 text-tinta-suave">WhatsApp {phoneEnding(recognized.phone)}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  // Outra pessoa no aparelho: esquece o que veio da confirmação de presença e abre o formulário vazio.
+                  forgetKnownGuest();
+                  setRecognizedDismissed(true);
+                }}
+                className={cn(btn.quiet, "min-h-11 self-start px-0")}
+              >
+                Não sou essa pessoa
+              </button>
+            </div>
+          ) : (
+            <>
+              <Field id="checkout-nome" label="Seu nome completo">
+                {(c) => (
+                  <input
+                    {...c}
+                    id="checkout-nome"
+                    name="name"
+                    autoComplete="name"
+                    value={typedName}
+                    onChange={(e) => setTypedName(e.target.value)}
+                    placeholder="Como os noivos conhecem você"
+                    required
+                  />
+                )}
+              </Field>
 
-          <Field id="checkout-telefone" label="Seu WhatsApp com DDD">
-            {(c) => (
-              <input
-                {...c}
-                id="checkout-telefone"
-                name="phone"
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel-national"
-                value={guestPhone}
-                onChange={(e) => setGuestPhone(maskPhone(e.target.value))}
-                placeholder="(11) 99999-9999"
-                required
-              />
-            )}
-          </Field>
+              <Field id="checkout-telefone" label="Seu WhatsApp com DDD">
+                {(c) => (
+                  <input
+                    {...c}
+                    id="checkout-telefone"
+                    name="phone"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel-national"
+                    value={typedPhone}
+                    onChange={(e) => setTypedPhone(maskPhone(e.target.value))}
+                    placeholder="(11) 99999-9999"
+                    required
+                  />
+                )}
+              </Field>
+            </>
+          )}
+
+          <p className="text-sm leading-5 text-tinta-suave">
+            Usamos seu nome e WhatsApp só para avisar {coupleNames} de quem presenteou e para confirmar o pagamento. Veja a{" "}
+            <Link href="/privacidade" target="_blank" className="font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 hover:decoration-ameixa">
+              política de privacidade
+            </Link>
+            .
+          </p>
 
           {error ? <FormAlert>{error}</FormAlert> : null}
 
           <button type="submit" className={cn(btn.primary, btn.block, "min-h-12")}>
-            Continuar para o pagamento
+            {recognized ? "Sim, sou eu. Continuar" : "Continuar para o pagamento"}
             <ArrowRight aria-hidden="true" className={btnArrow} />
           </button>
         </form>
@@ -404,6 +446,48 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true }: 
               </NativeSelect>
             </div>
           )}
+
+          {/* Antes de pagar: para quem vai o presente, quanto será cobrado e o que o Aceito retém. */}
+          <section aria-labelledby="checkout-resumo" className="flex flex-col gap-3 rounded-[16px] border border-linha bg-areia p-4">
+            <div className="flex items-start gap-3">
+              <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-[12px] bg-papel text-ameixa">
+                <GiftIcon className="size-5" strokeWidth={1.75} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <h3 id="checkout-resumo" className="font-semibold leading-6 text-tinta">
+                  O presente é para {coupleNames}
+                </h3>
+                <p className="text-sm leading-5 text-tinta-suave">
+                  {guestName.trim() ? `De ${guestName.trim()}. ` : ""}
+                  {gift.title}.
+                </p>
+              </div>
+            </div>
+            <dl className="flex flex-col gap-1.5 border-t border-linha pt-3 text-[15px] leading-6">
+              {method === "CREDIT_CARD" ? (
+                <>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-tinta-suave">Presente</dt>
+                    <dd className="tabular-nums text-tinta">{formatPrice(gift.amount)}</dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-tinta-suave">Tarifa do cartão</dt>
+                    <dd className="tabular-nums text-tinta">{formatPrice(cardFeeAmount)}</dd>
+                  </div>
+                </>
+              ) : null}
+              <div className="flex items-baseline justify-between gap-3 font-semibold">
+                <dt className="text-tinta">Você paga</dt>
+                <dd className="font-display text-2xl leading-8 tabular-nums text-tinta">{formatPrice(method === "CREDIT_CARD" ? cardFinalAmount : gift.amount)}</dd>
+              </div>
+            </dl>
+            <p className="text-sm leading-5 text-tinta-suave">
+              {method === "CREDIT_CARD"
+                ? "Esse é o valor que será cobrado no cartão, já com a tarifa. "
+                : "Esse é o valor do Pix, sem acréscimo. "}
+              Se o plano do casal tiver taxa, o Aceito a retém do valor do presente. Ela não é somada ao que você paga.
+            </p>
+          </section>
 
           {error ? <FormAlert>{error}</FormAlert> : null}
 

@@ -5,7 +5,7 @@ import { weddingSitePath } from "@/lib/wedding-links";
 import { notFound } from "next/navigation";
 import { SiteUnavailable } from "@/components/public/site-unavailable";
 import { CheckoutClient } from "./checkout-client";
-import { isCardPaymentAvailable } from "@/lib/mercadopago";
+import { calculateCardFee, isCardPaymentAvailable } from "@/lib/mercadopago";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 
@@ -82,7 +82,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
       </header>
 
       <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col px-4 pb-6 pt-5">
-        <CheckoutClient gift={gift} coupleNames={coupleNames} slug={wedding.slug} cardEnabled={isCardPaymentAvailable()} />
+        <CheckoutClient gift={gift} coupleNames={coupleNames} slug={wedding.slug} cardEnabled={isCardPaymentAvailable()} cardAmount={calculateCardFee(gift.amount).finalAmount} />
       </div>
 
       <p className="px-4 pb-6 text-center text-sm text-tinta-suave">{coupleNames} · Feito com Aceito</p>
