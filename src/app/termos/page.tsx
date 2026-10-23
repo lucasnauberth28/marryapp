@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage, Placeholder, type LegalSection } from "@/components/legal/legal-page";
+import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
 
 export const metadata: Metadata = {
   title: "Termos de uso",
@@ -114,8 +115,18 @@ const sections: LegalSection[] = [
           </li>
           <li>Os pagamentos são processados pelo Mercado Pago. O Aceito não armazena dados completos de cartão.</li>
           <li>
-            Presentes em dinheiro pagos por convidados ficam na carteira do casal, descontadas as tarifas informadas na plataforma, e podem
-            ser resgatados conforme as regras da carteira.
+            Presentes em dinheiro pagos por convidados passam pelo Aceito (o pagamento é processado pelo Mercado Pago). Quando o plano do
+            casal prevê, o Aceito retém {GIFT_FEE_LABEL} de cada presente, conforme informado na página de planos.
+          </li>
+          <li>
+            O valor que sobra é repassado ao destino que o casal cadastrar em Configurações (chave Pix ou conta bancária em nome de uma
+            pessoa ou empresa do casal). O repasse é liberado pela equipe do Aceito; o prazo e a forma serão informados antes de o recurso
+            ser ativado, e o Aceito não promete repasse automático ou em prazo fixo enquanto isso não for informado.
+          </li>
+          <li>
+            Os dados de recebimento ficam guardados criptografados e são usados só para fazer o repasse. Trocar ou remover esses dados exige
+            a senha do casal, e as pessoas do casamento são avisadas a cada mudança. O casal é responsável por informar dados corretos e de
+            sua titularidade.
           </li>
           <li>
             Nas contratações pela internet, você pode desistir em até 7 dias da contratação, com reembolso integral, conforme o art. 49 do

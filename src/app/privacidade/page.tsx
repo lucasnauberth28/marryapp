@@ -56,6 +56,10 @@ const sections: LegalSection[] = [
             banco, bandeira, apelido e últimos dígitos, nunca o número completo) e saldo da carteira.
           </li>
           <li>Dados de assinatura: plano escolhido, valores, cupons e situação dos pagamentos.</li>
+          <li>
+            Dados de recebimento dos presentes, se o casal cadastrar: nome e CPF ou CNPJ do titular e a chave Pix ou os dados da conta
+            bancária (banco, agência e conta). São guardados criptografados; a plataforma mostra só uma parte (por exemplo, o final da conta).
+          </li>
         </ul>
         <p>
           <strong>Convidados:</strong>
@@ -97,6 +101,12 @@ const sections: LegalSection[] = [
           <li>
             <strong>Prestar o serviço contratado</strong> (criar a conta, montar o site, enviar convites e lembretes, registrar confirmações,
             processar presentes, conectar casais e fornecedores): execução de contrato (art. 7º, V, da LGPD).
+          </li>
+          <li>
+            <strong>Receber e repassar os presentes ao casal</strong> (guardar, de forma criptografada, o nome, o documento e a chave Pix
+            ou a conta que o casal cadastra, e usá-los somente para fazer o repasse dos presentes e conferir a quem o dinheiro é devido):
+            execução de contrato (art. 7º, V, da LGPD). Não usamos esses dados para outra finalidade, nem os mostramos inteiros em telas,
+            e-mails ou registros.
           </li>
           <li>
             <strong>Cobrar planos e repassar presentes:</strong> execução de contrato e cumprimento de obrigação legal ou regulatória, como
@@ -165,6 +175,7 @@ const sections: LegalSection[] = [
           <li>Dados da conta e do casamento: enquanto a conta existir. Ao excluir a conta, apagamos os dados em até 30 dias, salvo as exceções abaixo.</li>
           <li>Registros de acesso à aplicação: 6 meses, como exige o Marco Civil da Internet (Lei 12.965/2014, art. 15).</li>
           <li>Dados de pagamentos e notas fiscais: pelo prazo exigido pela legislação fiscal e tributária (em geral, 5 anos).</li>
+          <li>Dados de recebimento dos presentes: até o casal removê-los em Configurações ou excluir a conta; depois disso são apagados, salvo o que a legislação fiscal exigir sobre repasses já feitos.</li>
           <li>Cópias de segurança (backups) são sobrescritas periodicamente e podem manter dados por até <Placeholder>[PRAZO DOS BACKUPS]</Placeholder>.</li>
         </ul>
       </>
