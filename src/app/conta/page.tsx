@@ -62,7 +62,7 @@ export default async function ContaPage() {
       <header className="sticky top-0 z-30 border-b border-linha bg-linho/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 w-full max-w-[880px] items-center justify-between gap-3 px-4 sm:px-6">
           <Link href="/" aria-label="Aceito, início" className="-m-2 rounded-[12px] p-2 transition-opacity hover:opacity-80">
-            <Logo height={24} priority />
+            <Logo height={26} priority />
           </Link>
           <Link
             href={panelHref}

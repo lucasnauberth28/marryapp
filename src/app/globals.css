@@ -124,8 +124,7 @@
   --ring: #5E2B4E;
   /* Logotipo (components/brand/logo.tsx): marca sobre linho/papel, "a" do selo e versão sobre ameixa */
   --logo-marca: #5E2B4E;
-  --logo-contra: #F7F3EC;
-  --logo-sobre-ameixa: #F7F3EC;
+  --logo-sobre-ameixa: #FFFFFF;
   /* Cor das sombras: --shadow-aceito-1/2 (e shadow-aceito-1/2) as usam, então trocam com o tema */
   --sombra-1a: rgba(35, 28, 36, 0.06);
   --sombra-1b: rgba(35, 28, 36, 0.04);
@@ -244,9 +243,8 @@
     --border: #3A3039;
     --input: #8A7D88;
     --ring: #D9A5C6;
-    --logo-marca: #F7F3EC; /* versões -linho do design: logotipo claro sobre berinjela */
-    --logo-contra: #5E2B4E;
-    --logo-sobre-ameixa: #2A1424;
+    --logo-marca: #D9A5C6; /* ameixa noturno do Manual de Marca (uma única cor) */
+    --logo-sobre-ameixa: #2E1226; /* sobre fundo ameixa (rosa no escuro): o profundo */
   }
 }
 

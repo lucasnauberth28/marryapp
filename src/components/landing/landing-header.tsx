@@ -176,7 +176,7 @@ export function LandingHeader() {
       >
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-linha pl-4 pr-2">
           <Link href="/" aria-label="Aceito, início" onClick={close} className="-m-2 flex rounded-[12px] p-2">
-            <Logo height={24} />
+            <Logo height={26} />
           </Link>
           <button
             ref={closeButton}

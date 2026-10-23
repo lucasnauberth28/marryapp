@@ -25,7 +25,7 @@ export function Sidebar({ allowedPaths = [], counts, planName = null, siteHref =
   return (
     <aside className="sticky top-[var(--faixa)] hidden h-[calc(100svh-var(--faixa))] w-60 shrink-0 flex-col gap-5 overflow-y-auto px-3 pb-24 pt-5 md:flex" data-lenis-prevent>
       <Link href="/dashboard" aria-label="Aceito, Resumo do casamento" className="flex min-h-11 w-max items-center rounded-lg px-2">
-        <Logo variant="wordmark" height={22} priority />
+        <Logo height={26} priority />
       </Link>
 
       <nav aria-label="Menu principal">

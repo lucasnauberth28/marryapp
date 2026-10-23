@@ -52,8 +52,10 @@ Na impressão (`@media print`) vale sempre a paleta clara.
 ## Logotipo
 
 `Logo` (`src/components/brand/logo.tsx`) é SVG inline (sem requisição de imagem) e usa as variáveis
-`--logo-marca`, `--logo-contra` e `--logo-sobre-ameixa`: ameixa no claro, linho no escuro (as versões `-linho`
-do design). `variant="wordmark-linho"` / `"mark-linho"` são para fundo `bg-ameixa`. Os SVGs de
+`--logo-marca` e `--logo-sobre-ameixa`: cada logo tem uma única cor (Manual de Marca v2.0), ameixa no claro e rosa
+noturno (`#D9A5C6`) no escuro. As versões `-linho` (`variant="lockup-linho"`, `"wordmark-linho"`, `"mark-linho"`) são
+para fundo `bg-ameixa`. A assinatura padrão é `lockup` (símbolo e nome na horizontal, mínimo de 160 px de largura);
+`wordmark` é só o nome (96 px), `mark` só o símbolo (32 px) e `vertical` o uso institucional. Os SVGs de
 `public/brand` continuam para e-mail, PDF e imagens; o teste `logo-paths.test.ts` garante que os
 contornos inline são os mesmos.
 

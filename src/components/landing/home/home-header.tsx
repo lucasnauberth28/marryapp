@@ -101,7 +101,7 @@ export function HomeHeader() {
       <div ref={dialog} id="lp-menu" className="lp-menu" role="dialog" aria-modal="true" aria-label="Menu" data-lenis-prevent inert={!open} data-aberto={open ? "" : undefined}>
         <div className="lp-menu-topo">
           <Link href="/" className="lp-marca" aria-label="Aceito, início" onClick={close}>
-            <Logo height={24} />
+            <Logo height={26} />
           </Link>
           <button
             ref={closeButton}

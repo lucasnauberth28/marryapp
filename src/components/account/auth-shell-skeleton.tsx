@@ -25,7 +25,7 @@ export function AuthShellSkeleton({
         <div className="flex h-16 items-center gap-1 px-2 lg:h-auto lg:px-0">
           <Skeleton className="size-11 rounded-[12px] lg:hidden" />
           <span className="-m-2.5 p-2.5">
-            <Logo height={24} className="lg:hidden" />
+            <Logo height={26} className="lg:hidden" />
             <Logo height={28} className="hidden lg:block" />
           </span>
         </div>

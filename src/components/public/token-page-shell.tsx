@@ -6,7 +6,7 @@ export function TokenPageShell({ children, className }: { children: React.ReactN
   return (
     <div className="flex min-h-dvh flex-col bg-linho text-tinta">
       <header className="flex h-16 items-center justify-center border-b border-linha px-4">
-        <Logo height={24} />
+        <Logo height={26} />
       </header>
       <main id="conteudo" className={cn("mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12", className)}>
         {children}

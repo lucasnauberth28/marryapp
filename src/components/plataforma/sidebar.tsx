@@ -24,7 +24,7 @@ export function PlatformSidebar({
   return (
     <aside className="sticky top-0 hidden h-screen w-[264px] shrink-0 flex-col gap-5 border-r border-linha bg-linho px-4 pb-4 pt-6 md:flex">
       <Link href="/admin" aria-label="Aceito, início da administração" className="px-3">
-        <Logo variant="wordmark" height={22} priority />
+        <Logo height={26} priority />
       </Link>
 
       <div className="flex flex-col gap-0.5 rounded-xl border border-linha bg-papel p-3">

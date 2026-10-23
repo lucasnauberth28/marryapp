@@ -1,39 +1,31 @@
-import { MARK_ARCH_PATH, MARK_LETTER_PATH, WORDMARK_PATH, WORDMARK_SMALL_PATH } from "./logo-paths";
+import { LOCKUP_SHAPE, MARK_SHAPE, VERTICAL_SHAPE, WORDMARK_SHAPE, type LogoShape } from "./logo-paths";
 
-type LogoVariant = "wordmark" | "wordmark-linho" | "mark" | "mark-linho" | "lockup";
+type LogoBase = "lockup" | "wordmark" | "mark" | "vertical";
+type LogoVariant = LogoBase | `${LogoBase}-linho`;
 
-// Proporção (largura x altura em px) de cada versão, a mesma dos SVGs em public/brand.
-const SIZES: Record<LogoVariant, { w: number; h: number; viewBox: string }> = {
-  wordmark: { w: 610, h: 170, viewBox: "0.38 -79.97 304.82 84.97" },
-  "wordmark-linho": { w: 610, h: 170, viewBox: "0.38 -79.97 304.82 84.97" },
-  mark: { w: 128, h: 176, viewBox: "0 0 64 88" },
-  "mark-linho": { w: 128, h: 176, viewBox: "0 0 64 88" },
-  lockup: { w: 770, h: 170, viewBox: "-4 -81 384.82 85" },
-};
-
-// Em corpo pequeno o fio da perna esquerda do "A" some: abaixo desta altura (px) usa a versão com traço mais firme.
-const SMALL_BELOW = 40;
-const SMALL_SIZES: Partial<Record<LogoVariant, { w: number; h: number; viewBox: string }>> = {
-  wordmark: { w: 617, h: 170, viewBox: "0.38 -79.97 308.39 84.97" },
-  "wordmark-linho": { w: 617, h: 170, viewBox: "0.38 -79.97 308.39 84.97" },
+const SHAPES: Record<LogoBase, LogoShape> = {
+  lockup: LOCKUP_SHAPE,
+  wordmark: WORDMARK_SHAPE,
+  mark: MARK_SHAPE,
+  vertical: VERTICAL_SHAPE,
 };
 
 // Cores por tema (definidas em globals.css): o logotipo sai inline, sem requisição de imagem, e
-// acompanha o tema sem trocar de arquivo. "marca" = ameixa no claro, linho no escuro (as versões
-// -linho do design); "sobre ameixa" = para quando o fundo é a própria ameixa.
+// acompanha o tema sem trocar de arquivo. Cada logo usa uma única cor (Manual de Marca, "Uma única cor").
+// "marca" = ameixa no claro, rosa noturno no escuro; "sobre ameixa" = para quando o fundo é a própria ameixa.
 const MARCA = "var(--logo-marca)";
-const CONTRA = "var(--logo-contra)";
 const SOBRE_AMEIXA = "var(--logo-sobre-ameixa)";
-const AMEIXA = "var(--color-ameixa)";
 
 /**
- * Logo do Aceito, inline e nas cores do tema. `height` em px; a largura acompanha.
- * - wordmark / mark / lockup: sobre linho, papel ou areia (ameixa no claro, linho no escuro).
- * - wordmark-linho / mark-linho: sobre fundo `bg-ameixa` (cor do texto sobre ameixa em cada tema).
+ * Logo do Aceito, inline e nas cores do tema. `height` em px; a largura acompanha a proporção do desenho.
+ * - lockup (padrão): símbolo e nome na horizontal, a assinatura principal. Largura mínima recomendada: 160 px.
+ * - wordmark: só o nome, para espaço compacto (mínimo 96 px). mark: só o símbolo, para avatar e cabeçalho estreito (mínimo 32 px).
+ * - vertical: uso institucional (mínimo 240 px de largura de peça).
+ * - "-linho": versão clara, para fundo `bg-ameixa` (a cor certa sobre ameixa em cada tema).
  * `priority` é aceito por compatibilidade e não faz nada: não há imagem para pré-carregar.
  */
 export function Logo({
-  variant = "wordmark",
+  variant = "lockup",
   height = 28,
   className,
 }: {
@@ -42,38 +34,14 @@ export function Logo({
   className?: string;
   priority?: boolean;
 }) {
-  const small = height < SMALL_BELOW ? SMALL_SIZES[variant] : undefined;
-  const s = small ?? SIZES[variant];
-  const width = Math.round((s.w / s.h) * height);
-  const wordmarkPath = small ? WORDMARK_SMALL_PATH : WORDMARK_PATH;
-
-  let shapes: React.ReactNode;
-  if (variant === "mark" || variant === "mark-linho") {
-    const onAmeixa = variant === "mark-linho";
-    shapes = (
-      <>
-        <path style={{ fill: onAmeixa ? SOBRE_AMEIXA : MARCA }} d={MARK_ARCH_PATH} />
-        <path style={{ fill: onAmeixa ? AMEIXA : CONTRA }} d={MARK_LETTER_PATH} />
-      </>
-    );
-  } else if (variant === "lockup") {
-    shapes = (
-      <>
-        <g transform="translate(0 -76) scale(0.8750)">
-          <path style={{ fill: MARCA }} d={MARK_ARCH_PATH} />
-          <path style={{ fill: CONTRA }} d={MARK_LETTER_PATH} />
-        </g>
-        <path style={{ fill: MARCA }} transform="translate(67.62 0)" d={WORDMARK_PATH} />
-      </>
-    );
-  } else {
-    shapes = <path style={{ fill: variant === "wordmark-linho" ? SOBRE_AMEIXA : MARCA }} d={wordmarkPath} />;
-  }
+  const onAmeixa = variant.endsWith("-linho");
+  const shape = SHAPES[variant.replace("-linho", "") as LogoBase];
+  const width = Math.round((shape.width / shape.height) * height);
 
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox={s.viewBox}
+      viewBox={shape.viewBox}
       width={width}
       height={height}
       role="img"
@@ -83,7 +51,9 @@ export function Logo({
       className={`shrink-0 ${className ?? ""}`}
       style={{ height, width }}
     >
-      {shapes}
+      {shape.paths.map((d, i) => (
+        <path key={i} style={{ fill: onAmeixa ? SOBRE_AMEIXA : MARCA }} d={d} />
+      ))}
     </svg>
   );
 }
