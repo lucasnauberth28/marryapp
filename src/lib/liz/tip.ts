@@ -19,6 +19,8 @@ export interface LizTip {
 export interface LizTipInput {
   /** Convites sem resposta (um por convidado; quem só presenteou fica de fora). */
   pendingGuests: number;
+  /** Pessoas nesses convites (convidado e acompanhantes), para a frase dizer convites e pessoas. */
+  pendingPeople?: number;
   /** Prazo de confirmação definido pelo casal, "AAAA-MM-DD", ou null quando não definiu. */
   deadlineKey: string | null;
   /** Hoje no fuso do casal, "AAAA-MM-DD". */
@@ -45,7 +47,7 @@ export function decideLizTip(input: LizTipInput): LizTip | null {
     const when = { deadlineKey: input.deadlineKey, todayKey: input.todayKey, weddingDays: input.weddingDays };
     return {
       id: "rsvp-sem-resposta",
-      text: rsvpPendingTipText({ pending: input.pendingGuests, ...when }),
+      text: rsvpPendingTipText({ pending: input.pendingGuests, pendingPeople: input.pendingPeople, ...when }),
       action: RSVP_PENDING_ACTION,
       href: RSVP_PENDING_HREF,
       urgent: rsvpTipUrgent(when),

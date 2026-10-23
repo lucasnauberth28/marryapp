@@ -15,8 +15,13 @@ test("sem nada pendente a Liz não inventa sugestão", () => {
 test("convidados sem resposta vêm primeiro e não inventam prazo", () => {
   const tip = decideLizTip({ ...base, pendingGuests: 3, overdueTasks: 2 });
   assert.equal(tip?.id, "rsvp-sem-resposta");
-  assert.equal(tip?.text, "3 convidados ainda não responderam.");
+  assert.equal(tip?.text, "3 convites ainda sem resposta.");
   assert.equal(tip?.href, "/convidados?resposta=sem-resposta");
+});
+
+test("com as pessoas, a sugestão diz convites e pessoas", () => {
+  const tip = decideLizTip({ ...base, pendingGuests: 42, pendingPeople: 68, deadlineKey: "2027-03-15" });
+  assert.equal(tip?.text, "42 convites ainda sem resposta (68 pessoas). O prazo definido por vocês termina em 15 de março.");
 });
 
 test("convite pelo WhatsApp só é sugerido a quem tem o recurso no plano", () => {

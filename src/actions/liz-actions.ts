@@ -50,10 +50,11 @@ export async function getLizPanelData(): Promise<LizPanelResult> {
     ]);
 
     // Só consulta o que o perfil pode abrir: a dica nunca aponta para uma tela sem acesso.
-    const [pendingGuests, notInvitedYet, settings, overdueExpenses, overdueTasks] = await Promise.all([
+    const [pending, notInvitedYet, settings, overdueExpenses, overdueTasks] = await Promise.all([
+      // Convites sem resposta e os acompanhantes que eles trazem (a sugestão diz convites e pessoas)
       can("/convidados")
-        ? prisma.guest.count({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING, ...notGiftOnlyWhere } })
-        : 0,
+        ? prisma.guest.aggregate({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING, ...notGiftOnlyWhere }, _count: { _all: true }, _sum: { allowedCompanions: true } })
+        : null,
       can("/mensagens") && whatsapp
         ? prisma.guest.count({
             where: { weddingId, hasReceivedMessage: false, phone: { not: null }, NOT: { phone: "" }, ...notGiftOnlyWhere },
@@ -70,10 +71,14 @@ export async function getLizPanelData(): Promise<LizPanelResult> {
         : 0,
     ]);
 
+    const pendingGuests = pending?._count._all ?? 0;
+    const pendingPeople = pendingGuests + (pending?._sum.allowedCompanions ?? 0);
+
     const { weddingDate } = await getWeddingIdentity();
     const days = weddingDate ? daysUntil(weddingDate) : null;
     const tip = decideLizTip({
       pendingGuests,
+      pendingPeople,
       deadlineKey: settings?.rsvpDeadline ? settings.rsvpDeadline.toISOString().slice(0, 10) : null,
       todayKey,
       weddingDays: days !== null && days >= 0 ? days : null,

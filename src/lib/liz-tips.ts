@@ -14,6 +14,8 @@ function dayLabel(key: string, todayKey: string): string {
 export interface RsvpTipInput {
   /** Convites sem resposta (um por convidado; quem só presenteou fica de fora). */
   pending: number;
+  /** Pessoas nesses convites (o convidado e os acompanhantes); quando vem, a frase diz as duas unidades. */
+  pendingPeople?: number;
   /** Prazo de confirmação definido pelo casal, "AAAA-MM-DD", ou null quando não definiu. */
   deadlineKey: string | null;
   /** Hoje no fuso do casal, "AAAA-MM-DD". */
@@ -23,11 +25,14 @@ export interface RsvpTipInput {
 }
 
 /**
- * "[N] convidados ainda não responderam. O prazo definido por vocês termina em [data]."
+ * "[N] convites ainda sem resposta ([M] pessoas). O prazo definido por vocês termina em [data]."
+ * Sempre com a unidade: convite é a quem cobrar a resposta, pessoa é o número para o buffet.
  * Sem prazo definido, não inventa um: usa a data do casamento se existir, ou só a situação.
  */
-export function rsvpPendingTipText({ pending, deadlineKey, todayKey, weddingDays }: RsvpTipInput): string {
-  const situation = pending === 1 ? "1 convidado ainda não respondeu." : `${pending} convidados ainda não responderam.`;
+export function rsvpPendingTipText({ pending, pendingPeople, deadlineKey, todayKey, weddingDays }: RsvpTipInput): string {
+  const invites = pending === 1 ? "1 convite" : `${pending.toLocaleString("pt-BR")} convites`;
+  const people = pendingPeople === undefined ? "" : ` (${pendingPeople === 1 ? "1 pessoa" : `${pendingPeople.toLocaleString("pt-BR")} pessoas`})`;
+  const situation = `${invites} ainda sem resposta${people}.`;
   let reason = "";
   if (deadlineKey) {
     if (deadlineKey < todayKey) reason = `O prazo definido por vocês terminou em ${dayLabel(deadlineKey, todayKey)}.`;
@@ -51,7 +56,7 @@ function daysBetween(from: string, to: string): number {
  * O motivo da sugestão de convidados sem resposta é um prazo apertado? Usa o mesmo motivo do texto:
  * o prazo do casal quando existe, senão a data do casamento. Prazo vencido também conta.
  */
-export function rsvpTipUrgent({ deadlineKey, todayKey, weddingDays }: Omit<RsvpTipInput, "pending">): boolean {
+export function rsvpTipUrgent({ deadlineKey, todayKey, weddingDays }: Omit<RsvpTipInput, "pending" | "pendingPeople">): boolean {
   if (deadlineKey) return daysBetween(todayKey, deadlineKey) <= RSVP_PRAZO_PERTO_DIAS;
   return weddingDays !== null && weddingDays >= 0 && weddingDays <= RSVP_PRAZO_PERTO_DIAS;
 }
