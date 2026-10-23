@@ -3,10 +3,11 @@
 /**
  * Versão do passo a passo. Ao acrescentar uma novidade, suba este número e marque os passos novos com
  * `since` igual a ele (lib/tour/steps): quem já viu a versão anterior vê só o que é novo.
- * Contas que existiam quando o recurso nasceu entram no banco com a versão 1 (migration panel_tour):
- * o passo a passo não aparece de surpresa para elas, e continua em "Ver o passo a passo".
+ * Versão 2: o menu virou 5 áreas (Resumo, Convidados, Site e convite, Presentes e dinheiro, Organização). Quem já tinha
+ * resolvido a versão 1 vê só os passos novos ("Tem novidade no painel"), para saber onde cada tela foi parar.
+ * Contas que existiam quando o recurso nasceu entram no banco com a versão 1 (migration panel_tour).
  */
-export const PANEL_TOUR_VERSION = 1;
+export const PANEL_TOUR_VERSION = 2;
 
 export interface TourAccount {
   /** Acesso total ("*") ou conta de emergência: administração da plataforma. */

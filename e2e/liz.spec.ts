@@ -40,6 +40,11 @@ test("aparece no resumo, abre, busca 'convidado', abre o artigo e o link navega"
   await abrirResumo(page);
   await expect(botao(page)).toBeVisible();
   await expect(botao(page)).toHaveAttribute("aria-expanded", "false");
+  // No computador o botão é uma pílula com o nome, sobre a barra lateral (à esquerda), e não cobre o conteúdo da página
+  await expect(botao(page)).toContainText("Perguntar à Liz");
+  const lateral = await botao(page).boundingBox();
+  const conteudo = await page.locator("#conteudo").boundingBox();
+  expect(lateral!.x + lateral!.width).toBeLessThanOrEqual(conteudo!.x);
   // O botão mostra o rosto da Liz: imagem decorativa (o nome vem do botão) e carregada de verdade
   const rosto = botao(page).locator('img[data-liz-pose="rosto"]');
   await expect(rosto).toHaveAttribute("alt", "");
@@ -99,8 +104,8 @@ test("o botão fica acima da barra inferior no celular e some com uma janela abe
   expect(fab!.width).toBeGreaterThanOrEqual(44);
   expect(fab!.y + fab!.height).toBeLessThanOrEqual(barra!.y);
 
-  // A aba "Mais" é uma janela: o botão da Liz se esconde enquanto ela está aberta
-  await page.getByRole("button", { name: "Mais", exact: true }).click();
+  // O menu da conta é uma janela: o botão da Liz se esconde enquanto ela está aberta
+  await page.getByRole("button", { name: "Menu da conta" }).click();
   await expect(botao(page)).toBeHidden();
   await context.close();
 });

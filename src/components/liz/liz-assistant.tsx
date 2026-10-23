@@ -12,8 +12,9 @@ import "./liz.css";
 
 /**
  * Acesso rápido fixo à Liz: botão flutuante no painel do casal e o painel que ele abre.
- * Posição: canto inferior direito (a mão que segura o celular), 56px, acima da barra inferior e da área segura.
- * No computador o painel é um popover de 400px ancorado ao botão; no celular, uma folha inferior.
+ * Posição: no celular, canto inferior direito (a mão que segura o celular), 56px, acima da barra inferior e da área segura.
+ * No computador é uma pílula com o rosto e o nome, sobre o canto de baixo da barra lateral, e o painel é um popover de 400px
+ * ancorado a ela; no celular, uma folha inferior.
  * Hoje a Liz sugere o próximo passo e responde dúvidas pelo guia de ajuda; não é IA nem conversa.
  */
 
@@ -115,12 +116,21 @@ export function LizAssistant({ allowedPaths }: { allowedPaths: readonly string[]
         aria-haspopup="dialog"
         hidden={hidden}
         onClick={() => (open ? close(false) : setOpenAt(pathname))}
-        className={`liz-fab grid size-14 cursor-pointer place-items-center rounded-full shadow-[var(--shadow-aceito-2)] transition-[background-color,transform] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ameixa ${
-          open ? "bg-ameixa text-on-ameixa hover:bg-ameixa-hover" : "ring-2 ring-ameixa motion-safe:hover:scale-105"
+        className={`liz-fab flex size-14 cursor-pointer items-center justify-center gap-2 rounded-full shadow-[var(--shadow-aceito-2)] transition-[background-color,transform] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ameixa md:size-auto md:h-[52px] md:justify-start md:border md:border-linha md:p-1.5 md:pr-4 md:shadow-[var(--shadow-aceito-1)] ${
+          open ? "bg-ameixa text-on-ameixa hover:bg-ameixa-hover md:border-ameixa" : "bg-papel text-tinta ring-2 ring-ameixa motion-safe:hover:scale-105 md:ring-0 md:hover:border-linha-forte md:motion-safe:hover:scale-100"
         }`}
       >
         {/* Fechado: o rosto da Liz (o nome acessível vem do botão); aberto: o X para fechar */}
-        {open ? <X className="size-6" aria-hidden="true" /> : <LizAvatar size={56} decorative />}
+        {open ? (
+          <span className="grid size-10 place-items-center">
+            <X className="size-6" aria-hidden="true" />
+          </span>
+        ) : (
+          <LizAvatar size={40} decorative className="max-md:size-[52px]!" />
+        )}
+        <span className="hidden text-sm font-semibold md:inline" aria-hidden="true">
+          Perguntar à Liz
+        </span>
       </button>
 
       {open && (
@@ -135,7 +145,7 @@ export function LizAssistant({ allowedPaths }: { allowedPaths: readonly string[]
             aria-modal={mobile ? true : undefined}
             aria-labelledby={titleId}
             tabIndex={-1}
-            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[88dvh] flex-col rounded-t-3xl border-t border-linha bg-papel text-tinta shadow-[var(--shadow-aceito-2)] outline-none animate-in fade-in slide-in-from-bottom-4 duration-200 md:inset-x-auto md:right-6 md:bottom-[calc(1.5rem+56px+12px)] md:max-h-[min(640px,calc(100dvh-8rem))] md:w-[400px] md:rounded-2xl md:border"
+            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[88dvh] flex-col rounded-t-3xl border-t border-linha bg-papel text-tinta shadow-[var(--shadow-aceito-2)] outline-none animate-in fade-in slide-in-from-bottom-4 duration-200 md:inset-x-auto md:left-4 md:right-auto md:bottom-[calc(1rem+52px+12px)] md:max-h-[min(640px,calc(100dvh-8rem))] md:w-[400px] md:rounded-2xl md:border"
           >
             <LizPanel
               allowedPaths={allowedPaths}

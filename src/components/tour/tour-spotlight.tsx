@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, MousePointerClick } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LizIllustration } from "@/components/liz/liz-illustration";
-import { TOUR_CLOSE_MORE, TOUR_OPEN_MORE } from "@/lib/tour/events";
 import { placeBalloon, type Box, type Placement } from "@/lib/tour/positioning";
 import { whereText, type StepPlace, type TourStep } from "@/lib/tour/steps";
 
@@ -106,13 +105,11 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
     [mobile],
   );
 
-  // Acha o item do passo: no celular, abre/fecha a aba "Mais" conforme a área; espera o item parar de mexer.
+  // Acha o item do passo (a barra de baixo do celular mostra as 5 áreas, sem "Mais"); espera o item parar de mexer.
   useEffect(() => {
     if (!step) return;
     let stopped = false;
     let frame = 0;
-    let openedMore = false;
-    let closedMore = false;
     let last: Box | null = null;
     let stable = 0;
     let scrolled = false;
@@ -134,21 +131,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
         return;
       }
       const el = findAnchor(step.anchor);
-      const sheet = document.getElementById("painel-mais");
-      let usable = Boolean(el);
-      if (el && mobile && sheet && !sheet.contains(el)) {
-        // A aba "Mais" está aberta e o item está na barra de baixo: fecha primeiro
-        usable = false;
-        if (!closedMore) {
-          closedMore = true;
-          window.dispatchEvent(new Event(TOUR_CLOSE_MORE));
-        }
-      }
-      if (!el && mobile && !step.floating && !openedMore) {
-        openedMore = true;
-        window.dispatchEvent(new Event(TOUR_OPEN_MORE));
-      }
-      if (el && usable) {
+      if (el) {
         if (!scrolled) {
           scrolled = true;
           el.scrollIntoView({ block: "center", inline: "nearest", behavior: reducedMotion() ? "auto" : "smooth" });
@@ -176,7 +159,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  // Redesenha se a janela mudar de tamanho ou algo rolar (inclusive dentro da aba "Mais")
+  // Redesenha se a janela mudar de tamanho ou algo rolar
   useEffect(() => {
     if (!ready) return;
     let frame = 0;

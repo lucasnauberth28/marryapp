@@ -6,7 +6,7 @@ import type { WeddingContext } from "@/lib/security/wedding-context";
 import { isPlatformAdminPaths } from "@/lib/permissions";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
 import { weddingHasModule } from "@/lib/wedding-plan";
-import { MOBILE_TABS, NAV_GROUPS } from "@/components/admin/nav-config";
+import { PANEL_AREAS } from "@/lib/panel-nav";
 import { buildTourSteps, type StepPlace, type TourModule, type TourStep } from "./steps";
 import { decideTourMode, stepsForMode, tourEligible, type TourAccount, type TourMode } from "./rules";
 
@@ -59,12 +59,13 @@ export interface PanelTourConfig {
 const TOUR_MODULES: TourModule[] = ["whatsapp", "qrcode", "customDomain"];
 
 function placesFor(steps: TourStep[]): Record<string, StepPlace> {
-  const tabs = new Map(MOBILE_TABS.map((t) => [t.href, t.name]));
-  const labels = new Map(NAV_GROUPS.flatMap((g) => g.items).map((i) => [i.href, i.name]));
+  // O item do menu de cada passo é a área a que a tela pertence (lib/panel-nav)
+  const areaOf = (href: string) => PANEL_AREAS.find((a) => a.screens.some((sc) => sc.href === href));
   const out: Record<string, StepPlace> = {};
   for (const s of steps) {
     if (!s.href || out[s.href]) continue;
-    out[s.href] = { menuLabel: labels.get(s.href) ?? s.title, tabLabel: tabs.get(s.href) ?? null };
+    const area = areaOf(s.href);
+    out[s.href] = { menuLabel: area?.name ?? s.title, tabLabel: area?.shortName ?? null };
   }
   return out;
 }

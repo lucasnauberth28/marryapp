@@ -1,135 +1,81 @@
 import {
-  LayoutDashboard,
-  Users as UsersIcon,
   Armchair,
-  ScanLine,
-  ListChecks,
-  CalendarClock,
-  Store,
-  Compass,
-  Globe,
-  Link2,
-  Receipt,
-  Wallet,
-  CreditCard,
   BadgeDollarSign,
+  CalendarClock,
+  Compass,
   Gift as GiftIcon,
-  LayoutTemplate,
-  MessageCircle,
-  Settings as SettingsIcon,
-  ShieldCheck,
+  Globe,
   KeyRound,
-  UserCog,
+  Landmark,
+  LayoutDashboard,
+  LayoutTemplate,
+  Link2,
+  ListChecks,
+  MessageCircle,
+  Receipt,
+  ScanLine,
   ScrollText,
-  Menu,
+  ShieldCheck,
+  Store,
+  UserCog,
+  Users as UsersIcon,
   type LucideIcon,
 } from "lucide-react";
 import { hasPathAccess } from "@/lib/permissions";
+import { isScreenActive, type NavCountKey } from "@/lib/panel-nav";
 
-/** Contadores reais que o menu pode mostrar ao lado do item (ver lib/nav-counts). */
-export type NavCountKey = "guests" | "messages" | "tasks" | "domains";
+export type { NavCountKey };
+export { PANEL_AREAS, visibleAreas, areaOfPath, ACCOUNT_SCREENS } from "@/lib/panel-nav";
 
-export interface NavItem {
+/** Ícone de cada área e tela (a estrutura e os nomes ficam em lib/panel-nav). */
+const ICONS: Record<string, LucideIcon> = {
+  resumo: LayoutDashboard,
+  convidados: UsersIcon,
+  mensagens: MessageCircle,
+  mesas: Armchair,
+  entrada: ScanLine,
+  site: Globe,
+  "editar-site": LayoutTemplate,
+  endereco: Link2,
+  presentes: GiftIcon,
+  receber: Landmark,
+  organizacao: ListChecks,
+  tarefas: ListChecks,
+  cronograma: CalendarClock,
+  despesas: Receipt,
+  "meus-fornecedores": Store,
+  encontrar: Compass,
+};
+
+export function navIcon(key: string): LucideIcon {
+  return ICONS[key] ?? LayoutDashboard;
+}
+
+export interface AdminNavItem {
   name: string;
   href: string;
   icon: LucideIcon;
-  /** Número exibido à direita (só quando maior que zero). */
   countKey?: NavCountKey;
 }
 
-export interface NavGroup {
-  /** Sem título: o grupo aparece no topo, sem cabeçalho. */
-  title?: string;
-  items: NavItem[];
-}
-
-// Fonte única do menu do painel do casal (barra lateral, aba "Mais" e barra inferior).
-export const NAV_GROUPS: NavGroup[] = [
-  {
-    items: [{ name: "Início", href: "/dashboard", icon: LayoutDashboard }],
-  },
-  {
-    title: "Convidados",
-    items: [
-      { name: "Lista de convidados", href: "/convidados", icon: UsersIcon, countKey: "guests" },
-      { name: "Mensagens", href: "/mensagens", icon: MessageCircle, countKey: "messages" },
-      { name: "Mesas", href: "/mesas", icon: Armchair },
-      { name: "Registro de entrada", href: "/credenciamento", icon: ScanLine },
-    ],
-  },
-  {
-    title: "Organização",
-    items: [
-      { name: "Tarefas", href: "/pendencias", icon: ListChecks, countKey: "tasks" },
-      { name: "Cronograma do dia", href: "/cronograma", icon: CalendarClock },
-      { name: "Meus fornecedores", href: "/meus-fornecedores", icon: Store },
-      { name: "Encontrar fornecedores", href: "/fornecedores", icon: Compass },
-      { name: "Finanças", href: "/financas", icon: Receipt },
-      { name: "Carteira", href: "/carteira", icon: Wallet },
-    ],
-  },
-  {
-    title: "Site e presentes",
-    items: [
-      { name: "Editar o site", href: "/site-builder", icon: LayoutTemplate },
-      { name: "Presentes em dinheiro", href: "/presentes-admin", icon: GiftIcon },
-      { name: "Endereço personalizado", href: "/dominio", icon: Globe },
-    ],
-  },
-  {
-    title: "Conta",
-    items: [
-      { name: "Configurações", href: "/configuracoes", icon: SettingsIcon },
-      { name: "Plano e pagamentos", href: "/plano", icon: CreditCard },
-    ],
-  },
-  {
-    title: "Administração",
-    items: [
-      { name: "Curadoria", href: "/curadoria", icon: ShieldCheck },
-      { name: "Assinaturas", href: "/assinaturas", icon: BadgeDollarSign },
-      // Só quem tem acesso total ("*") entra: a página confere de novo no servidor.
-      { name: "Domínios", href: "/dominios", icon: Link2, countKey: "domains" },
-      { name: "Usuários", href: "/usuarios", icon: KeyRound },
-      { name: "Perfis de acesso", href: "/perfis", icon: UserCog },
-      // Só quem tem acesso total ("*") entra: a página confere de novo no servidor.
-      { name: "Registro de atividades", href: "/atividades", icon: ScrollText },
-    ],
-  },
+// Ferramentas de administração que moram no painel (só aparecem para quem tem a permissão): a mesma lista de antes,
+// agora fora do menu principal. A barra lateral da administração da plataforma (/admin) é outra e não mudou.
+export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
+  { name: "Curadoria", href: "/curadoria", icon: ShieldCheck },
+  { name: "Assinaturas", href: "/assinaturas", icon: BadgeDollarSign },
+  // Só quem tem acesso total ("*") entra: a página confere de novo no servidor.
+  { name: "Domínios", href: "/dominios", icon: Link2, countKey: "domains" },
+  { name: "Usuários", href: "/usuarios", icon: KeyRound },
+  { name: "Perfis de acesso", href: "/perfis", icon: UserCog },
+  // Só quem tem acesso total ("*") entra: a página confere de novo no servidor.
+  { name: "Registro de atividades", href: "/atividades", icon: ScrollText },
 ];
 
-/** Barra inferior no celular: as quatro áreas mais usadas + "Mais" (abre todas as áreas). */
-export const MOBILE_TABS: NavItem[] = [
-  { name: "Início", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Convidados", href: "/convidados", icon: UsersIcon },
-  { name: "Presentes", href: "/presentes-admin", icon: GiftIcon },
-  { name: "Site", href: "/site-builder", icon: LayoutTemplate },
-];
-
-export const MORE_TAB_ICON = Menu;
-
-/**
- * Grupos visíveis para o perfil: itens sem permissão somem, e grupos vazios também.
- */
-export function visibleNavGroups(allowedPaths: string[]): NavGroup[] {
-  return NAV_GROUPS.map((group) => ({
-    ...group,
-    items: group.items.filter((item) => hasPathAccess(allowedPaths, item.href)),
-  })).filter((group) => group.items.length > 0);
-}
-
-/** Aba "Mais": as áreas que não estão na barra inferior (como no design). */
-export function visibleMoreGroups(allowedPaths: string[]): NavGroup[] {
-  const inTabs = new Set(MOBILE_TABS.map((t) => t.href));
-  return visibleNavGroups(allowedPaths)
-    .map((group) => ({ ...group, items: group.items.filter((item) => !inTabs.has(item.href)) }))
-    .filter((group) => group.items.length > 0);
-}
-
-export function visibleMobileTabs(allowedPaths: string[]): NavItem[] {
-  return MOBILE_TABS.filter((item) => hasPathAccess(allowedPaths, item.href));
+export function visibleAdminItems(allowedPaths: readonly string[]): AdminNavItem[] {
+  const paths = [...allowedPaths];
+  return ADMIN_NAV_ITEMS.filter((item) => hasPathAccess(paths, item.href));
 }
 
 export function isNavItemActive(pathname: string, href: string) {
-  return pathname === href || pathname.startsWith(`${href}/`);
+  return isScreenActive(pathname, href);
 }

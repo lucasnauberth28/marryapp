@@ -1,9 +1,4 @@
-// Sinais entre o passo a passo e a barra inferior do celular (sem estado compartilhado).
-
-/** O passo a passo pede para abrir a aba "Mais" (onde ficam as áreas que não cabem na barra). */
-export const TOUR_OPEN_MORE = "aceito:tour-abrir-mais";
-/** O passo a passo pede para fechar a aba "Mais". */
-export const TOUR_CLOSE_MORE = "aceito:tour-fechar-mais";
+// Constantes do passo a passo compartilhadas entre o passo a passo e o botão da Liz.
 
 /**
  * Enquanto o passo a passo está na tela (cartão de boas-vindas ou balões), o <body> leva

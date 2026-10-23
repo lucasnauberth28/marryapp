@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { completePanelTour, restartPanelTour, skipPanelTour } from "@/actions/tour-actions";
-import { TOUR_ACTIVE_ATTR, TOUR_CLOSE_MORE } from "@/lib/tour/events";
+import { TOUR_ACTIVE_ATTR } from "@/lib/tour/events";
 import type { PanelTourConfig } from "@/lib/tour/panel-tour";
 import type { TourStep } from "@/lib/tour/steps";
 import { TourWelcomeCard } from "./tour-welcome-card";
@@ -101,7 +101,6 @@ export function PanelTourProvider({ config, children }: { config: PanelTourConfi
     (done: TourDone) => {
       setPhase("idle");
       setRun([]);
-      window.dispatchEvent(new Event(TOUR_CLOSE_MORE));
       void (done.outcome === "completed" ? completePanelTour() : skipPanelTour()).catch(() => {});
       // Indo para outra tela, o foco é da tela nova
       if (done.navigated) returnFocus.current = null;

@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import { PANEL_TOUR_VERSION, decideTourMode, stepsForMode, tourEligible, tourMayWrite, tourWrite } from "../tour/rules.ts";
 import { buildTourSteps, navAnchor, whereText } from "../tour/steps.ts";
 import { placeBalloon } from "../tour/positioning.ts";
+import { visibleAreas } from "../panel-nav.ts";
 import { firstStepsView, siteInfoFilled, type FirstStepsData } from "../tour/first-steps.ts";
 
 const COUPLE = [
@@ -13,15 +14,17 @@ const COUPLE = [
 ];
 const ids = (allowedPaths: string[], modules: string[] = []) => buildTourSteps({ allowedPaths, modules }).map((s) => s.id);
 
-test("casal com plano completo vê todos os passos, na ordem do menu de uso", () => {
+test("casal com plano completo vê todos os passos, na ordem do menu de 5 áreas", () => {
   assert.deepEqual(ids(COUPLE, ["whatsapp", "qrcode", "customDomain"]), [
-    "resumo", "convidados", "site", "presentes", "mensagens", "mesas", "financas", "fornecedores", "configuracoes", "liz",
+    "resumo", "convidados", "site", "presentes", "organizacao", "configuracoes", "liz",
   ]);
 });
 
-test("passo de uma tela fechada pelo plano não aparece (Mensagens exige WhatsApp no plano)", () => {
-  assert.ok(!ids(COUPLE, []).includes("mensagens"));
-  assert.ok(ids(COUPLE, ["whatsapp"]).includes("mensagens"));
+test("o texto de Convidados só cita Mensagens e Registro de entrada quando o plano e o perfil abrem", () => {
+  const what = (modules: string[]) => buildTourSteps({ allowedPaths: COUPLE, modules }).find((s) => s.id === "convidados")!.what;
+  assert.doesNotMatch(what([]), /Mensagens|Registro de entrada/);
+  assert.match(what(["whatsapp"]), /as Mensagens e as Mesas/);
+  assert.match(what(["whatsapp", "qrcode"]), /as Mensagens, as Mesas e o Registro de entrada/);
 });
 
 test("perfil restrito só ouve falar do que pode abrir", () => {
@@ -29,23 +32,24 @@ test("perfil restrito só ouve falar do que pode abrir", () => {
   // Sem /dashboard nem nada do resto: nenhum passo
   assert.deepEqual(ids(["/usuarios"], ["whatsapp"]), []);
   // Prefixo de caminho não vaza: "/fornecedores-admin" não libera "/fornecedores"
-  assert.ok(!ids(["/dashboard", "/fornecedores-admin"]).includes("fornecedores"));
+  assert.ok(!ids(["/dashboard", "/fornecedores-admin"]).includes("organizacao"));
 });
 
-test("fornecedores: cai para Meus fornecedores quando só essa área abre, e o texto acompanha", () => {
-  const onlyMine = buildTourSteps({ allowedPaths: ["/meus-fornecedores"], modules: [] }).find((s) => s.id === "fornecedores")!;
+test("Organização: o passo aponta para a primeira tela que o perfil abre, e o texto acompanha", () => {
+  const onlyMine = buildTourSteps({ allowedPaths: ["/meus-fornecedores"], modules: [] }).find((s) => s.id === "organizacao")!;
   assert.equal(onlyMine.href, "/meus-fornecedores");
   assert.equal(onlyMine.anchor, "nav-meus-fornecedores");
-  assert.equal(onlyMine.cta, "Ir para Meus fornecedores");
-  assert.doesNotMatch(onlyMine.what, /orçamento/);
-  const both = buildTourSteps({ allowedPaths: COUPLE, modules: [] }).find((s) => s.id === "fornecedores")!;
-  assert.equal(both.href, "/fornecedores");
-  assert.match(both.what, /Meus fornecedores/);
+  assert.doesNotMatch(onlyMine.what, /orçamento|despesas|tarefas|cronograma/);
+  assert.equal(onlyMine.what, "Aqui ficam os fornecedores.");
+  const all = buildTourSteps({ allowedPaths: COUPLE, modules: [] }).find((s) => s.id === "organizacao")!;
+  assert.equal(all.href, "/pendencias");
+  assert.match(all.what, /^Aqui ficam as tarefas, o cronograma do dia, as despesas e os fornecedores\. Nas despesas, vocês anotam/);
+  assert.match(all.what, /Encontrar fornecedores/);
 });
 
 test("acesso total ('*') abre tudo; o botão da Liz não aponta para o menu", () => {
   const all = buildTourSteps({ allowedPaths: ["*"], modules: ["whatsapp"] });
-  assert.equal(all.length, 10);
+  assert.equal(all.length, 7);
   const liz = all.find((s) => s.id === "liz")!;
   assert.equal(liz.floating, true);
   assert.equal(liz.href, null);
@@ -53,23 +57,35 @@ test("acesso total ('*') abre tudo; o botão da Liz não aponta para o menu", ()
   assert.ok(liz.where);
 });
 
+test("Configurações aponta para o botão do menu da conta, não para o menu principal", () => {
+  const step = buildTourSteps({ allowedPaths: COUPLE, modules: [] }).find((s) => s.id === "configuracoes")!;
+  assert.equal(step.anchor, "conta");
+  assert.equal(step.href, "/configuracoes");
+  assert.match(step.where ?? "", /menu da conta/);
+  assert.equal(buildTourSteps({ allowedPaths: ["/dashboard"], modules: [] }).some((s) => s.id === "configuracoes"), false);
+});
+
 test("âncora do menu: caminho vira data-tour", () => {
   assert.equal(navAnchor("/site-builder"), "nav-site-builder");
   assert.equal(navAnchor("/configuracoes"), "nav-configuracoes");
 });
 
-test("todo passo do menu aponta para um item que existe no menu (nav-config)", () => {
-  const nav = readFileSync(new URL("../../components/admin/nav-config.ts", import.meta.url), "utf8");
+test("todo passo do menu aponta para uma tela que existe no menu (panel-nav) e o item da área leva para a mesma âncora", () => {
+  const nav = readFileSync(new URL("../panel-nav.ts", import.meta.url), "utf8");
   for (const step of buildTourSteps({ allowedPaths: ["*"], modules: ["whatsapp"] })) {
     if (step.href) assert.match(nav, new RegExp(`href: "${step.href}"`), `${step.id}: ${step.href} não está no menu`);
+    if (step.href && !step.where) {
+      // o item do menu (e da barra de baixo) usa data-tour="nav-<primeira tela da área que o perfil abre>"
+      const area = visibleAreas(["*"]).find((a) => a.screens.some((sc) => sc.href === step.href));
+      assert.equal(step.anchor, navAnchor(area!.href), `${step.id}: âncora diferente da do item do menu`);
+    }
   }
 });
 
-test("onde clicar: nomes do menu no computador, barra de baixo ou 'Mais' no celular", () => {
+test("onde clicar: nome da área no menu do computador e na barra de baixo do celular", () => {
   const step = { where: null };
-  assert.equal(whereText(step, { menuLabel: "Lista de convidados", tabLabel: "Convidados" }, "desktop"), "No menu ao lado, clique em “Lista de convidados”.");
-  assert.equal(whereText(step, { menuLabel: "Lista de convidados", tabLabel: "Convidados" }, "mobile"), "Na barra de baixo, toque em “Convidados”.");
-  assert.equal(whereText(step, { menuLabel: "Mesas", tabLabel: null }, "mobile"), "Toque em “Mais” e depois em “Mesas”.");
+  assert.equal(whereText(step, { menuLabel: "Site e convite", tabLabel: "Site" }, "desktop"), "No menu ao lado, clique em “Site e convite”.");
+  assert.equal(whereText(step, { menuLabel: "Site e convite", tabLabel: "Site" }, "mobile"), "Na barra de baixo, toque em “Site”.");
   assert.equal(whereText({ where: "No botão da Liz." }, null, "mobile"), "No botão da Liz.");
 });
 

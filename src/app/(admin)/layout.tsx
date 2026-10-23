@@ -1,4 +1,6 @@
 // src/app/(admin)/layout.tsx
+import { preload } from "react-dom"
+import "./painel.css"
 import { Sidebar } from "@/components/admin/sidebar"
 import { Header } from "@/components/admin/header"
 import { MobileTabBar } from "@/components/admin/mobile-tab-bar"
@@ -6,7 +8,6 @@ import { getSession, redirectToLogin } from "@/lib/security/auth-guard"
 import { getAccountView, getWeddingIdentity } from "@/lib/wedding"
 import { getWeddingContext } from "@/lib/security/wedding-context"
 import { getNavCounts } from "@/lib/nav-counts"
-import { accountLabel } from "@/lib/account-label"
 import { daysUntil, daysLeftLabel } from "@/lib/wedding-format"
 import { MainWeddingNote } from "@/components/admin/main-wedding-note"
 import { MaintenanceBanner } from "@/components/admin/maintenance-banner"
@@ -16,8 +17,16 @@ import { ImpersonationBanner } from "@/components/admin/impersonation-banner"
 import { LizAssistant } from "@/components/liz/liz-assistant"
 import { PanelTourProvider } from "@/components/tour/panel-tour-provider"
 import { loadPanelTour } from "@/lib/tour/panel-tour"
+import { AreaTabs } from "@/components/admin/area-tabs"
+import { getWeddingPlan } from "@/lib/wedding-plan"
+import { planShortName } from "@/lib/panel-nav"
+import { weddingSiteUrl } from "@/lib/wedding-links"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  // Fontes do painel (Geist e Urbanist, em public/fonts): carregam já com o HTML, sem esperar o CSS
+  preload("/fonts/geist-latin.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" })
+  preload("/fonts/urbanist-latin.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" })
+
   // Perfil e permissões vêm do banco (não só do JWT), refletindo alterações de acesso na hora.
   const session = await getSession();
   if (!session) return redirectToLogin();
@@ -29,22 +38,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     getWeddingContext(),
     unreadCountFor(session.userId),
   ]);
-  const [counts, tour] = await Promise.all([
+  const [counts, tour, plan] = await Promise.all([
     ctx ? getNavCounts(ctx.weddingId, allowedPaths.includes("*")) : undefined,
     loadPanelTour(session, ctx), // passo a passo do painel (null para administração, visita "Entrar como" e fornecedor)
+    ctx && !account.adminView ? getWeddingPlan(ctx.weddingId) : null,
   ]);
-  const label = accountLabel({
-    adminView: account.adminView,
-    coupleNames: wedding.coupleNames,
-    coupleInitials: wedding.initials,
-    userName: account.userName,
-    role,
-  });
-  // Cartão da barra lateral: "17 abr 2027 · faltam 191 dias" (casal) ou a descrição da administração.
+  // Cabeçalho: "17 abr 2027 · faltam 191 dias" (casal); a administração não mostra data
   const daysLeft = daysLeftLabel(wedding.weddingDate ? daysUntil(wedding.weddingDate) : null);
-  const subtitle = account.adminView
-    ? "Gestão da plataforma"
-    : [wedding.shortDateLabel, daysLeft].filter(Boolean).join(" · ") || null;
+  const subtitle = account.adminView ? null : [wedding.shortDateLabel, daysLeft].filter(Boolean).join(" · ") || null;
+  const planName = plan ? planShortName(plan.planId) : null;
+  const siteHref = !account.adminView && ctx && wedding.slug ? weddingSiteUrl(wedding.slug, undefined, ctx.wedding.customDomain) : null;
 
   // "Entrar como este casal": faixa fixa no topo de TODAS as telas do painel; a barra lateral e o cabeçalho descem a altura dela
   const impersonation = ctx?.impersonation ?? null;
@@ -52,35 +55,33 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <PanelTourProvider config={tour}>
     {impersonation && <ImpersonationBanner coupleNames={impersonation.weddingNames} canEdit={impersonation.canEdit} expiresAt={impersonation.expiresAt.toISOString()} />}
-    <div
-      className={
-        impersonation
-          ? "flex min-h-screen bg-linho md:[&>aside]:top-14 md:[&>aside]:h-[calc(100vh-3.5rem)] [&>div>header]:top-[68px] md:[&>div>header]:top-14"
-          : "flex min-h-screen bg-linho"
-      }
-    >
-      <Sidebar allowedPaths={allowedPaths} title={label.title} subtitle={subtitle} counts={counts} />
-      <div className="flex min-w-0 flex-1 flex-col">
+    {/* --faixa: altura da faixa "Vocês estão vendo como..." (0 sem ela); a barra lateral e o cabeçalho descem por ela */}
+    <div className={`painel-raiz flex min-h-screen bg-linho ${impersonation ? "[--faixa:68px] md:[--faixa:56px]" : "[--faixa:0px]"}`}>
+      <Sidebar allowedPaths={allowedPaths} counts={counts} planName={planName} siteHref={siteHref} />
+      {/* A folha: caixa clara com o cabeçalho e o conteúdo (no celular ocupa a tela toda) */}
+      <div className="relative flex min-w-0 flex-1 flex-col bg-papel md:m-2 md:ml-0 md:rounded-2xl md:border md:border-linha">
         <Header
           role={role}
           allowedPaths={allowedPaths}
           coupleNames={wedding.coupleNames}
           initials={wedding.initials}
-          dateLabel={wedding.dateLabel}
+          subtitle={subtitle}
           adminView={account.adminView}
           userName={account.userName}
+          planName={planName}
           unreadNotifications={unreadNotifications}
           pushPublicKey={vapidPublicKey()}
         />
-        <main id="conteudo" className="page-in flex-1 px-4 pb-32 pt-6 md:px-8 md:pb-24 md:pt-8">
+        <main id="conteudo" className="page-in flex-1 px-4 pb-32 pt-6 md:px-8 md:pb-24 md:pt-7">
           <div className="mx-auto w-full max-w-[1240px]">
             <MaintenanceBanner allowedPaths={allowedPaths} />
             {account.adminView && ctx && <MainWeddingNote coupleNames={wedding.coupleNames} />}
+            <AreaTabs allowedPaths={allowedPaths} counts={counts} />
             {children}
           </div>
         </main>
       </div>
-      <MobileTabBar allowedPaths={allowedPaths} title={label.title} subtitle={subtitle} initials={label.initials} counts={counts} />
+      <MobileTabBar allowedPaths={allowedPaths} />
       <LizAssistant allowedPaths={allowedPaths} />
     </div>
     </PanelTourProvider>

@@ -59,9 +59,8 @@ test("casal novo vê o passo a passo, conclui e não vê de novo ao recarregar",
 
   await cartao.getByRole("button", { name: "Ver o passo a passo" }).click();
   const titulos = await percorrer(page);
-  // Só o que um casal no plano Básico pode abrir: sem Mensagens (WhatsApp é de plano) e sem áreas de administração
-  expect(titulos).toEqual(expect.arrayContaining(["Resumo do casamento", "Convidados", "Site do casamento", "Presentes em dinheiro", "Mesas", "Finanças", "Fornecedores", "Configurações", "Liz"]));
-  expect(titulos).not.toContain("Mensagens");
+  // As 5 áreas do menu, as Configurações (no menu da conta) e a Liz; sem áreas de administração
+  expect(titulos).toEqual(["Resumo do casamento", "Convidados", "Site e convite", "Presentes e dinheiro", "Organização", "Configurações", "Liz"]);
 
   await gravando(page, () => balao(page).getByRole("button", { name: "Concluir" }).click());
   await expect(balao(page)).toHaveCount(0);
@@ -176,11 +175,13 @@ test("'Ver o passo a passo' no menu da conta e nas Configurações refaz o passo
   await expect(page.getByRole("dialog")).toHaveCount(0);
 });
 
-test("no celular o passo a passo abre a aba Mais e fica dentro da tela", async ({ browser }) => {
+test("no celular o passo a passo aponta a barra de baixo (5 áreas, sem aba Mais) e fica dentro da tela", async ({ browser }) => {
   const contexto = await novoContexto(browser, { viewport: { width: 390, height: 844 } });
   const page = await contexto.newPage();
   await criarCasalPronto(page, "tour-celular");
   await abrirPainel(page);
+  await expect(page.getByRole("navigation", { name: "Navegação principal" }).getByRole("link")).toHaveCount(5);
+  await expect(page.getByRole("button", { name: "Mais", exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "Ver o passo a passo" }).click();
 
   const caixa = balao(page);
@@ -193,18 +194,21 @@ test("no celular o passo a passo abre a aba Mais e fica dentro da tela", async (
     expect(area!.x + area!.width, titulo).toBeLessThanOrEqual(390);
     expect(area!.y, titulo).toBeGreaterThanOrEqual(0);
     expect(area!.y + area!.height, titulo).toBeLessThanOrEqual(844);
-    if (titulo === "Mesas") {
-      // Área que fica dentro de "Mais": a folha abre e o destaque está sobre o item
-      await expect(page.locator("#painel-mais")).toBeVisible();
-      await expect(caixa).toContainText("Toque em “Mais” e depois em “Mesas”");
+    if (titulo === "Organização") {
+      // A área está na barra de baixo: o balão diz onde tocar, sem abrir folha nenhuma
+      await expect(caixa).toContainText("Na barra de baixo, toque em “Organização”");
+      await expect(page.locator("#painel-mais")).toHaveCount(0);
+      break;
+    }
+    if (titulo === "Configurações") {
+      await expect(caixa).toContainText("menu da conta");
       break;
     }
     await caixa.getByRole("button", { name: "Próximo" }).click();
   }
-  await expect(caixa.getByRole("heading")).toHaveText("Mesas");
+  await expect(caixa.getByRole("heading")).toHaveText("Organização");
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await expect(page.locator("#painel-mais")).toHaveCount(0);
   await contexto.close();
 });
 
