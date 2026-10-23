@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Building2,
-  CalendarHeart,
   Check,
   CheckCircle2,
   Eye,
@@ -83,8 +82,6 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [weddingDate, setWeddingDate] = useState("");
-  const [noDateYet, setNoDateYet] = useState(false);
   // Fornecedor
   const [companyName, setCompanyName] = useState("");
   const [category, setCategory] = useState<string>(VENDOR_CATEGORIES[0]);
@@ -96,6 +93,8 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
   const [formError, setFormError] = useState<{ message: string; existingAccount?: boolean } | null>(null);
   const [isPending, startTransition] = useTransition();
   const [redirectTo, setRedirectTo] = useState<string | null>(null);
+  // Casal no plano gratuito vai direto ao onboarding: o botão fica carregando até a página trocar.
+  const [leaving, setLeaving] = useState(false);
 
   const [paid, setPaid] = useState(false);
 
@@ -123,7 +122,6 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
     email: email.trim().toLowerCase(),
     phone,
     password,
-    weddingDate: !isVendor && weddingDate && !noDateYet ? new Date(`${weddingDate}T12:00:00`) : null,
     companyName: isVendor ? companyName : undefined,
     vendorCategory: isVendor ? category : undefined,
     vendorRegion: isVendor ? city : undefined,
@@ -173,9 +171,14 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
         }
         return;
       }
-      setRedirectTo(("redirectTo" in res && res.redirectTo) || null);
+      const next = ("redirectTo" in res && res.redirectTo) || null;
+      setRedirectTo(next);
       if (plan && plan.price > 0) {
         onStepChange("pagamento");
+      } else if (!isVendor) {
+        // Sem tela de "conta criada" entre o cadastro e as boas-vindas. Navegação completa: lê o cookie de sessão novo.
+        setLeaving(true);
+        window.location.assign(next ?? "/boas-vindas");
       } else {
         onStepChange("pronto");
       }
@@ -418,32 +421,6 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
               )}
             </Field>
 
-            {!isVendor ? (
-              <div className="flex flex-col gap-2">
-                <Field id="cadastro-date" label="Data do casamento" icon={CalendarHeart} optional hint="Vocês podem adicionar ou alterar a data depois.">
-                  {(c) => (
-                    <input
-                      {...c}
-                      id="cadastro-date"
-                      type="date"
-                      value={weddingDate}
-                      disabled={noDateYet}
-                      onChange={(e) => setWeddingDate(e.target.value)}
-                    />
-                  )}
-                </Field>
-                <label className="flex min-h-11 cursor-pointer items-center gap-3 text-[15px] text-tinta">
-                  <input
-                    type="checkbox"
-                    checked={noDateYet}
-                    onChange={(e) => setNoDateYet(e.target.checked)}
-                    className="size-5 cursor-pointer rounded-[6px] accent-[var(--color-ameixa)]"
-                  />
-                  Ainda não temos a data
-                </label>
-              </div>
-            ) : null}
-
             {formError ? (
               <FormAlert id="cadastro-erro">
                 <p>{formError.message}</p>
@@ -461,7 +438,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
 
             <div className="mt-1 flex items-center gap-3">
               <BackButton onClick={() => onStepChange("plano")} />
-              <Button type="submit" loading={isPending} className="h-12 flex-1 rounded-[12px] px-6">
+              <Button type="submit" loading={isPending || leaving} className="h-12 flex-1 rounded-[12px] px-6">
                 {plan.price > 0 ? "Criar conta e pagar" : "Criar conta"}
                 <ArrowRight aria-hidden="true" className={btnArrow} />
               </Button>
@@ -491,7 +468,16 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
           />
           <SubscriptionPix planId={plan.id} modules={plan.id === "custom" ? customModules : undefined} planName={`Plano ${plan.name}`} onPaid={handlePaid} />
           <div className="flex flex-col gap-3">
-            <button type="button" onClick={() => onStepChange("pronto")} className={cn(btn.quiet, "self-center")}>
+            <button
+              type="button"
+              onClick={() => {
+                if (isVendor) return onStepChange("pronto");
+                setLeaving(true);
+                window.location.assign(redirectTo ?? "/boas-vindas");
+              }}
+              disabled={leaving}
+              className={cn(btn.quiet, "self-center")}
+            >
               {isVendor ? "Pagar depois e continuar no plano Start" : "Pagar depois e continuar no plano Básico"}
             </button>
           </div>
@@ -521,11 +507,11 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
               <Heading
                 ref={headingRef}
                 title={firstName ? `Tudo certo, ${firstName}` : "Conta criada"}
-                text={`A conta de vocês está criada${paid ? " e o pagamento foi confirmado" : ""}. Agora contem um pouco sobre o casamento: leva um minuto e o site já fica com a cara de vocês.`}
+                text={`A conta de vocês está criada${paid ? " e o pagamento foi confirmado" : ""}. Falta só dizer os nomes e a data: leva menos de um minuto.`}
               />
               {/* Navegação completa: a próxima tela lê o cookie de sessão recém-criado. */}
               <a href={redirectTo ?? "/boas-vindas"} className={cn(btn.primary, btn.block, "min-h-12")}>
-                Preparar o nosso casamento
+                Continuar para o casamento
                 <ArrowRight aria-hidden="true" className={btnArrow} />
               </a>
             </>
