@@ -89,6 +89,7 @@ jobs:
       PIX_KEY: pix-ci@aceito.com.br
       CRON_SECRET: ci-cron-somente-para-testes
       MERCADOPAGO_WEBHOOK_SECRET: ci-webhook-somente-para-testes
+      PAYOUT_ENCRYPTION_KEY: YmkVrf9RTqlRvSKBMSJwbYaRbXQV2EaJ5+jTSgNdqiE=  # chave descartável, só para os testes
       NEXT_PUBLIC_BASE_URL: http://localhost:3000
       E2E_BASE_URL: http://localhost:3000
       NEXT_TELEMETRY_DISABLED: "1"
