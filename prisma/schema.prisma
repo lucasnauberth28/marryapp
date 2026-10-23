@@ -29,6 +29,25 @@ enum PaymentMethod {
   CREDIT_CARD
 }
 
+// Onde o casal recebe os presentes: chave Pix ou conta bancária (dados cifrados em WeddingPayoutAccount)
+enum PayoutAccountType {
+  PIX_KEY
+  BANK_ACCOUNT
+}
+
+enum PayoutPixKeyType {
+  CPF
+  CNPJ
+  EMAIL
+  PHONE
+  RANDOM
+}
+
+enum PayoutDocumentKind {
+  CPF
+  CNPJ
+}
+
 enum ExpenseStatus {
   PENDING
   PAID
@@ -326,6 +345,7 @@ model User {
   announcementDeliveries AnnouncementRecipient[]
   supportTickets         SupportTicket[]
   dataRequests           DataRequest[]
+  payoutAccountsRegistered WeddingPayoutAccount[]
 
   @@map("users")
 }
@@ -774,10 +794,42 @@ model Wedding {
   madrinhaOverride MadrinhaWeddingOverride?
   supportTickets SupportTicket[]
   dataRequests  DataRequest[]
+  payoutAccount WeddingPayoutAccount?
 
   @@index([createdAt])
   @@index([weddingDate])
   @@map("weddings")
+}
+
+// Onde o casal recebe os presentes (um por casamento). NADA bancário em texto puro: documento do titular,
+// chave Pix e banco/agência/conta ficam em colunas *Enc, cifradas com AES-256-GCM (lib/security/payout-crypto).
+// `keyHint` e `holderDocumentLast4` são as máscaras que a tela mostra sem decifrar. `verifiedAt` fica nulo até o casal
+// confirmar que os dados estão certos; qualquer troca de dados volta a deixá-lo nulo. Não há repasse automático
+// ligado a esta tabela: ela só guarda o destino que o casal informou.
+model WeddingPayoutAccount {
+  id                  String             @id @default(uuid())
+  weddingId           String             @unique
+  wedding             Wedding            @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  type                PayoutAccountType
+  holderName          String
+  holderDocumentKind  PayoutDocumentKind
+  holderDocumentEnc   String             @db.Text
+  holderDocumentLast4 String
+  pixKeyType          PayoutPixKeyType?
+  pixKeyEnc           String?            @db.Text
+  bankAccountEnc      String?            @db.Text
+  keyHint             String
+  // Versão da chave de criptografia usada (também vai dentro de cada valor cifrado); serve para achar o que falta recifrar
+  encKeyVersion       Int                @default(1)
+  verifiedAt          DateTime?
+  // Última pessoa que cadastrou ou trocou os dados (fica nulo se a conta for excluída)
+  registeredByUserId  String?
+  registeredBy        User?              @relation(fields: [registeredByUserId], references: [id], onDelete: SetNull)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([registeredByUserId])
+  @@map("wedding_payout_accounts")
 }
 
 // Convite para o par entrar no mesmo casamento.
