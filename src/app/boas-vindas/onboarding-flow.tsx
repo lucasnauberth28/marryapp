@@ -56,6 +56,11 @@ export function OnboardingFlow({
   }, [step]);
 
   const coupleNames = joinCoupleNames(yourName, partnerName) || "Vocês dois";
+  // O erro some assim que a pessoa mexe no campo a que ele se refere.
+  const edit = (key: keyof OnboardingBasicsErrors, set: (v: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    set(e.target.value);
+    setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,12 +114,12 @@ export function OnboardingFlow({
           <form onSubmit={submit} noValidate className="flex flex-col gap-5">
             <Field id="onb-yourName" label="Seu nome" icon={User} error={errors.yourName}>
               {(c) => (
-                <input {...c} id="onb-yourName" autoComplete="given-name" maxLength={60} value={yourName} onChange={(e) => setYourName(e.target.value)} />
+                <input {...c} id="onb-yourName" autoComplete="given-name" maxLength={60} value={yourName} onChange={edit("yourName", setYourName)} />
               )}
             </Field>
             <Field id="onb-partnerName" label="Nome de quem vai casar com você" icon={Heart} error={errors.partnerName}>
               {(c) => (
-                <input {...c} id="onb-partnerName" autoComplete="off" maxLength={60} value={partnerName} onChange={(e) => setPartnerName(e.target.value)} />
+                <input {...c} id="onb-partnerName" autoComplete="off" maxLength={60} value={partnerName} onChange={edit("partnerName", setPartnerName)} />
               )}
             </Field>
             <Field
@@ -123,9 +128,9 @@ export function OnboardingFlow({
               icon={CalendarHeart}
               optional
               error={errors.weddingDate}
-              hint="Se ainda não têm a data, deixem em branco. A contagem regressiva aparece quando vocês a escolherem."
+              hint="Se ainda não têm a data, deixem em branco."
             >
-              {(c) => <input {...c} id="onb-weddingDate" type="date" value={weddingDate} onChange={(e) => setWeddingDate(e.target.value)} />}
+              {(c) => <input {...c} id="onb-weddingDate" type="date" value={weddingDate} onChange={edit("weddingDate", setWeddingDate)} />}
             </Field>
             <p className="rounded-[12px] border border-linha bg-papel px-4 py-3 text-[15px] text-tinta-suave">
               No site vai aparecer <strong className="font-display text-lg font-normal text-tinta">{coupleNames}</strong>
