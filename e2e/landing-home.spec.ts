@@ -6,8 +6,10 @@ test("home mostra a oferta, os planos e os links de cadastro", async ({ page }) 
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Um convite para cada convidado");
-  // A taxa vem da fonte única (3,99%): aparece no título, nos planos e no simulador.
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("3,99%");
+  // O banner não fala da taxa: ela aparece na hora de escolher o plano (e no simulador), vinda da fonte única (3,99%).
+  await expect(page.getByRole("heading", { level: 1 })).not.toContainText("3,99%");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Comece grátis");
+  await expect(page.locator("#planos")).toContainText("3,99%");
   for (const plano of ["basic", "classic", "vip"]) {
     await expect(page.locator(`main a[href="/cadastro?plano=${plano}"]`).first()).toBeVisible();
   }

@@ -1,5 +1,4 @@
 import { Check } from "lucide-react";
-import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
 import { Reveal } from "@/components/motion/reveal";
 import { HeroDemo } from "./hero-demo";
 import { LinkButton } from "./home-ui";
@@ -12,7 +11,7 @@ export function Hero() {
         <Reveal className="lp-hero-texto">
           <h1 className="lp-titulo lp-h1" id="lp-h1">
             <span>Um convite para cada convidado.</span>
-            <span className="lp-cor">Presentes com taxa de {GIFT_FEE_LABEL}.</span>
+            <span className="lp-cor">Comece grátis, sem cartão.</span>
           </h1>
           <p className="lp-lead">O site do casamento, as confirmações de presença e os presentes em dinheiro, num painel só.</p>
           <div className="lp-acoes">
@@ -30,7 +29,7 @@ export function Hero() {
             </li>
             <li>
               <Check aria-hidden="true" className="lp-ico" />
-              Básico sem mensalidade
+              Sem mensalidade
             </li>
           </ul>
         </Reveal>
