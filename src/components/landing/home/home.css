@@ -50,7 +50,7 @@
 .lp-moldura{max-width:calc(var(--max) + 2*var(--g));margin-inline:auto;padding-left:max(var(--g), env(safe-area-inset-left,0px));padding-right:max(var(--g), env(safe-area-inset-right,0px))}
 .lp-trilho{position:relative}
 .lp-sec{padding-block:clamp(96px,12vw,176px)}
-.lp-dentro{padding-inline:clamp(16px,4vw,56px)}
+.lp-dentro{padding-inline:0}
 
 /* Tipografia */
 .lp-titulo{font-family:var(--f-titulo);font-weight:var(--titulo-peso);letter-spacing:var(--titulo-track);line-height:1.08;text-wrap:balance}

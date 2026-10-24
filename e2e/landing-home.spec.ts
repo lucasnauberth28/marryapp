@@ -67,6 +67,23 @@ test("a home aparece com animação ao rolar e usa rolagem suave", async ({ page
   await expect(page.locator(".lp [data-reveal]").first()).toBeAttached();
   const cab = page.locator("#planos .lp-cab");
   await cab.scrollIntoViewIfNeeded();
-  await expect(cab).toHaveAttribute("data-revealed", "");
+  await expect.poll(() => cab.evaluate((el) => el.hasAttribute("data-revealed"))).toBe(true);
   await expect.poll(() => page.evaluate(() => document.documentElement.classList.contains("lenis"))).toBe(true);
+});
+
+test("o banner e os blocos de imagem têm a largura do grid, a mesma da faixa de funções", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  // Mede o layout (offset), não a caixa na tela: antes de aparecer, os blocos estão levemente reduzidos pela animação
+  const medida = (seletor: string) => page.locator(seletor).first().evaluate((el: HTMLElement) => {
+    let x = 0;
+    for (let n: HTMLElement | null = el; n; n = n.offsetParent as HTMLElement | null) x += n.offsetLeft;
+    return { x, largura: el.offsetWidth };
+  });
+  const faixa = await medida(".lp-quatro");
+  for (const seletor of [".lp-hero-bloco", ".lp-3d-palco", ".lp-cena", ".lp-recorte-pc"]) {
+    const caixa = await medida(seletor);
+    expect(caixa.x, seletor).toBe(faixa.x);
+    expect(caixa.largura, seletor).toBe(faixa.largura);
+  }
 });
