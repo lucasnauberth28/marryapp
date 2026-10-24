@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import { LOCKUP_PNG_BASE64, LOCKUP_PNG_RATIO } from "@/lib/brand/lockup-png";
+import { timelinePdfFileName } from "@/lib/timeline-pdf-name";
 
 export interface TimelineEventPdf {
   id: string;
@@ -69,71 +70,75 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
   const contentX = 45; // Posição X do conteúdo dos eventos
   const maxContentWidth = pageWidth - marginX - contentX; // Largura do texto (210 - 20 - 45 = 145mm)
 
-  let startYForPage = currentY;
+  // Centro do ponto anterior na página atual: a linha liga um ponto ao próximo, por fora dos anéis, para nunca cortar um ponto.
+  const dotRing = 3.2;
+  let previousDotY: number | null = null;
 
-  sortedEvents.forEach((event, index) => {
-    // Estimar a altura necessária para este evento
+  sortedEvents.forEach((event) => {
+    // Título e descrição quebram dentro da margem; o título começa depois do horário
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
-    
+    const timeWidth = doc.getTextWidth(event.time);
+    const titleX = contentX + timeWidth + 4;
+    doc.setFontSize(12);
+    const titleLines: string[] = doc.splitTextToSize(event.title, pageWidth - marginX - titleX);
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9.5);
-    const descLines = event.description
-      ? doc.splitTextToSize(event.description, maxContentWidth)
-      : [];
+    const descLines: string[] = event.description ? doc.splitTextToSize(event.description, maxContentWidth) : [];
 
-    const itemHeight = 12 + descLines.length * 4.5 + 8; // Altura total estimada do card/bloco
+    const itemHeight = 8 + (titleLines.length - 1) * 5.5 + (descLines.length ? 1.5 + descLines.length * 4.5 : 0) + 8; // altura do bloco
 
     // Verificar se estouro de página
     if (currentY + itemHeight > pageHeight - 25) {
-      // Desenhar linha vertical restante da página atual antes de quebrar
-      doc.setDrawColor(232, 226, 229);
-      doc.setLineWidth(0.8);
-      doc.line(lineX, startYForPage - 2, lineX, currentY);
-
       doc.addPage();
       currentY = 25;
-      startYForPage = currentY;
+      previousDotY = null;
 
       // Redesenhar um cabeçalho simples de continuação
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
       doc.setTextColor(94, 43, 78);
-      doc.text(`${coupleNames} - Cronograma (Continuação)`, marginX, currentY - 8);
-      
+      doc.text(`${coupleNames} · Cronograma, continuação`, marginX, currentY - 8);
+
       doc.setDrawColor(232, 226, 229); // linha
       doc.setLineWidth(0.3);
       doc.line(marginX, currentY - 5, pageWidth - marginX, currentY - 5);
     }
 
     const eventStartY = currentY;
+    const dotY = eventStartY + 3;
 
-    // 1. Ponto na linha vertical (Timeline Dot)
+    // 1. Linha vertical desde o ponto anterior (só entre os anéis) e depois o ponto
+    if (previousDotY !== null) {
+      doc.setDrawColor(232, 226, 229);
+      doc.setLineWidth(0.8);
+      doc.line(lineX, previousDotY + dotRing, lineX, dotY - dotRing);
+    }
     doc.setFillColor(94, 43, 78); // #5E2B4E
-    doc.circle(lineX, eventStartY + 3, 2.5, "F");
-
-    // Borda clara ao redor do ponto
+    doc.circle(lineX, dotY, 2.5, "F");
     doc.setDrawColor(244, 234, 241); // ameixa-suave
     doc.setLineWidth(0.6);
-    doc.circle(lineX, eventStartY + 3, 3.2, "S");
+    doc.circle(lineX, dotY, dotRing, "S");
+    previousDotY = dotY;
 
-    // 2. Horário (Badge ou texto destacado)
+    // 2. Horário
     doc.setFont("helvetica", "bold"); // algarismos do Helvetica já são tabulares
     doc.setFontSize(11);
     doc.setTextColor(94, 43, 78);
     doc.text(event.time, contentX, eventStartY + 4);
 
-    // 3. Título do Evento
-    const timeWidth = doc.getTextWidth(event.time);
+    // 3. Título do evento
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(31, 26, 29); // tinta
-    doc.text(event.title, contentX + timeWidth + 4, eventStartY + 4);
+    titleLines.forEach((line, i) => doc.text(line, titleX, eventStartY + 4 + i * 5.5));
 
-    currentY += 8;
+    currentY += 8 + (titleLines.length - 1) * 5.5;
 
     // 4. Descrição (se houver)
     if (descLines.length > 0) {
+      currentY += 1.5;
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9.5);
       doc.setTextColor(95, 88, 92); // grafite
@@ -144,14 +149,6 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
     }
 
     currentY += 6; // Espaçamento entre eventos
-
-    // Desenhar segmento de linha vertical conectando ao próximo evento
-    const isLast = index === sortedEvents.length - 1;
-    const endYLine = isLast ? currentY - 4 : currentY;
-    
-    doc.setDrawColor(232, 226, 229);
-    doc.setLineWidth(0.8);
-    doc.line(lineX, eventStartY + 6, lineX, endYLine);
   });
 
   // --- RODAPÉ EM TODAS AS PÁGINAS ---
@@ -169,7 +166,7 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
 
     // Texto rodapé
     doc.text(
-      `${coupleNames} • Cronograma Oficial`,
+      `${coupleNames} • Cronograma do dia`,
       marginX,
       pageHeight - 10
     );
@@ -183,6 +180,6 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
   }
 
   // Salvar PDF
-  doc.save("cronograma-casamento-lucas-e-giovanna.pdf");
+  doc.save(timelinePdfFileName(coupleNames));
   return true;
 }
