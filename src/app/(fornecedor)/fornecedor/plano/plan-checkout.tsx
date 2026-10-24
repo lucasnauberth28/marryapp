@@ -119,7 +119,7 @@ export function PlanCheckout({
                   <span className="block text-[15px] text-tinta-suave">{o.summary}</span>
                 </span>
                 <span className="shrink-0 text-right">
-                  <span className="block font-display text-[28px] leading-8">{formatPrice(o.price)}</span>
+                  <span className="block font-num text-[28px] leading-8">{formatPrice(o.price)}</span>
                   <span className="block text-sm text-tinta-suave">{o.period}</span>
                 </span>
               </span>

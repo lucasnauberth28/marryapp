@@ -1,5 +1,4 @@
 // src/app/(admin)/layout.tsx
-import { preload } from "react-dom"
 import "./painel.css"
 import { Sidebar } from "@/components/admin/sidebar"
 import { Header } from "@/components/admin/header"
@@ -23,10 +22,6 @@ import { planShortName } from "@/lib/panel-nav"
 import { weddingSiteUrl } from "@/lib/wedding-links"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  // Fontes do painel (Geist e Urbanist, em public/fonts): carregam já com o HTML, sem esperar o CSS
-  preload("/fonts/geist-latin.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" })
-  preload("/fonts/urbanist-latin.woff2", { as: "font", type: "font/woff2", crossOrigin: "anonymous" })
-
   // Perfil e permissões vêm do banco (não só do JWT), refletindo alterações de acesso na hora.
   const session = await getSession();
   if (!session) return redirectToLogin();

@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic"; // sempre medir na hora
 function Metric({ value, label }: { value: string; label: string }) {
   return (
     <div>
-      <p className="font-display text-[34px] leading-10 tabular-nums text-tinta">{value}</p>
+      <p className="font-num text-[34px] leading-10 tabular-nums text-tinta">{value}</p>
       <p className="text-sm leading-5 text-tinta-suave">{label}</p>
     </div>
   );

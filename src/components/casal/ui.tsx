@@ -16,7 +16,7 @@ export const cardTitle = "text-xl font-semibold leading-7 text-tinta"
 export const overline = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave"
 
 /** Número de destaque em fonte display. */
-export const bigNumber = "font-display text-[36px] leading-10 tabular-nums text-tinta md:text-[40px] md:leading-[44px]"
+export const bigNumber = "font-num text-[36px] leading-10 tabular-nums text-tinta md:text-[40px] md:leading-[44px]"
 
 /** Cabeçalho de coluna de tabela do design. */
 export const th = "px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave first:pl-6 last:pr-6"

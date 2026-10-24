@@ -331,7 +331,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                     <UserImage src={vendor.logoUrl} alt="" sizes="64px" className="object-cover" />
                   </div>
                 ) : null}
-                <h1 className="font-display text-[34px] font-normal leading-10 tracking-[-0.015em] text-tinta sm:text-5xl sm:leading-[54px]">
+                <h1 className="font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta sm:text-5xl sm:leading-[54px]">
                   {vendor.companyName}
                 </h1>
               </div>
@@ -463,7 +463,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                           />
                         ))}
                       </div>
-                      <blockquote className="m-0 font-display text-xl italic leading-7 text-tinta">“{rev.comment}”</blockquote>
+                      <blockquote className="m-0 font-display text-xl leading-7 text-tinta">“{rev.comment}”</blockquote>
                       <figcaption className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-tinta-suave">
                         <span>
                           {rev.coupleNames}
@@ -497,7 +497,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
             <div className="flex flex-col gap-5 rounded-[16px] border border-linha bg-papel p-6 shadow-aceito-2">
               <p className="flex flex-col">
                 <span className="text-tinta-suave">{price ? "A partir de" : "Preço"}</span>
-                <span className="font-display text-[34px] leading-10 text-tinta">{price ?? "Sob consulta"}</span>
+                <span className="font-num text-[34px] leading-10 text-tinta">{price ?? "Sob consulta"}</span>
                 {vendor.averageTicket ? (
                   <span className="mt-1 text-sm text-tinta-suave">Valor médio dos serviços: {brl.format(vendor.averageTicket / 100)}</span>
                 ) : null}
@@ -636,7 +636,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
         <div className="sticky bottom-0 z-40 -mx-4 mt-auto flex items-center justify-between gap-4 border-t border-linha bg-papel px-4 py-3 sm:-mx-6 sm:px-6 lg:hidden">
           <p className="flex flex-col leading-tight">
             <span className="text-sm text-tinta-suave">{price ? "A partir de" : "Preço"}</span>
-            <span className="font-display text-xl text-tinta">{price ?? "Sob consulta"}</span>
+            <span className="font-num text-xl text-tinta">{price ?? "Sob consulta"}</span>
           </p>
           <a href="#orcamento" className={cn(btn.primary, "flex-1 max-w-[240px]")}>
             Pedir orçamento

@@ -150,7 +150,7 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-0.5 sm:col-span-2">
             <dt className={TOKEN_OVERLINE}>Valor</dt>
-            <dd className="font-display text-4xl leading-tight">{formatBrl(lead.proposalAmount)}</dd>
+            <dd className="font-num text-4xl leading-tight">{formatBrl(lead.proposalAmount)}</dd>
           </div>
           <div className="flex flex-col gap-0.5">
             <dt className={TOKEN_OVERLINE}>Data do casamento</dt>

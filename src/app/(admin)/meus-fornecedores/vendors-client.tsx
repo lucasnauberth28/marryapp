@@ -247,7 +247,7 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto rounded-2xl bg-papel">
           <DialogHeader>
-            <DialogTitle className="font-display text-2xl font-normal text-tinta">
+            <DialogTitle className="font-display text-2xl font-medium text-tinta">
               {editingVendor ? "Editar fornecedor" : "Adicionar fornecedor"}
             </DialogTitle>
             <DialogDescription>Quem vocês contrataram e como falar com a pessoa.</DialogDescription>

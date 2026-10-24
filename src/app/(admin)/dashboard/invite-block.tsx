@@ -126,9 +126,9 @@ export function InviteBlock(props: InviteBlockProps) {
           {coverUrl && <UserImage src={coverUrl} alt={`Foto de capa do site de ${coupleNames}`} sizes="104px" className="object-cover object-[50%_30%]" />}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" aria-hidden="true" />
           {/* Sem foto de capa, o monograma ocupa a prévia também no celular */}
-          {!coverUrl && <span className="absolute inset-0 grid place-items-center font-titulo text-xl font-semibold text-[#FFFDF9] md:hidden" aria-hidden="true">{initials}</span>}
-          <p className="absolute inset-x-2 bottom-2.5 hidden text-center text-[11px] leading-[1.3] text-[#FFFDF9] md:block">
-            <b className="block whitespace-nowrap font-titulo text-[13px] font-semibold tracking-[0.01em]">{coupleNames}</b>
+          {!coverUrl && <span className="absolute inset-0 grid place-items-center font-display text-xl font-semibold text-[#FFFFFF] md:hidden" aria-hidden="true">{initials}</span>}
+          <p className="absolute inset-x-2 bottom-2.5 hidden text-center text-[11px] leading-[1.3] text-[#FFFFFF] md:block">
+            <b className="block whitespace-nowrap font-display text-[13px] font-semibold tracking-[0.01em]">{coupleNames}</b>
             {dateShort}
           </p>
         </div>

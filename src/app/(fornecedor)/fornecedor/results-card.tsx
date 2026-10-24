@@ -46,15 +46,15 @@ export function ResultsCard({ days, leads }: { days: DailyViews[]; leads: number
       <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="flex flex-col gap-0.5">
           <dt className={OVERLINE}>Visitas</dt>
-          <dd className="font-display text-3xl leading-tight">{total}</dd>
+          <dd className="font-num text-3xl leading-tight">{total}</dd>
         </div>
         <div className="flex flex-col gap-0.5">
           <dt className={OVERLINE}>Pedidos no período</dt>
-          <dd className="font-display text-3xl leading-tight">{leads}</dd>
+          <dd className="font-num text-3xl leading-tight">{leads}</dd>
         </div>
         <div className="flex flex-col gap-0.5">
           <dt className={OVERLINE}>Visitas que viraram pedido</dt>
-          <dd className="font-display text-3xl leading-tight">{conversion === null ? "—" : percent.format(conversion)}</dd>
+          <dd className="font-num text-3xl leading-tight">{conversion === null ? "—" : percent.format(conversion)}</dd>
           <dd className="text-sm text-tinta-suave">
             {conversion === null ? "sem visitas no período" : "das visitas viraram pedido"}
           </dd>

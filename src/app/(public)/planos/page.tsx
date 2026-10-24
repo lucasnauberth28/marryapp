@@ -40,7 +40,7 @@ export default async function PlanosPage() {
           <p className={overline}>Planos para casais</p>
           <h1
             id="planos-titulo"
-            className="max-w-[20ch] font-display text-[40px] font-normal leading-[1.05] tracking-[-0.02em] text-balance sm:text-[clamp(40px,5vw,60px)]"
+            className="max-w-[20ch] font-display text-[40px] font-medium leading-[1.05] tracking-[-0.02em] text-balance sm:text-[clamp(40px,5vw,60px)]"
           >
             Escolham o plano para o casamento de vocês
           </h1>
@@ -71,7 +71,7 @@ export default async function PlanosPage() {
           <div className={cn(container, "grid gap-8 py-14 lg:grid-cols-[5fr_7fr] lg:gap-16")}>
             <div className="flex flex-col gap-3">
               <p className={overline}>Presentes em dinheiro</p>
-              <h2 id="presentes-titulo" className="font-display text-[32px] font-normal leading-10 tracking-[-0.015em] sm:text-[40px] sm:leading-[46px]">
+              <h2 id="presentes-titulo" className="font-display text-[32px] font-medium leading-10 tracking-[-0.015em] sm:text-[40px] sm:leading-[46px]">
                 Taxas e condições dos presentes
               </h2>
               <p className="text-base leading-6 text-tinta-suave">
@@ -117,7 +117,7 @@ export default async function PlanosPage() {
           <div className={cn(container, "flex flex-col gap-8 py-16")}>
             <div className="flex flex-col gap-2">
               <p className={cn(overline, "text-salvia")}>Aceito para empresas</p>
-              <h2 id="fornecedores-titulo" className="max-w-[24ch] font-display text-[34px] font-normal leading-10 tracking-[-0.015em] sm:text-[40px] sm:leading-[46px]">
+              <h2 id="fornecedores-titulo" className="max-w-[24ch] font-display text-[34px] font-medium leading-10 tracking-[-0.015em] sm:text-[40px] sm:leading-[46px]">
                 Planos para fornecedores
               </h2>
               <p className="max-w-[60ch] text-base leading-6 text-tinta-suave">
@@ -133,7 +133,7 @@ export default async function PlanosPage() {
                     <article className="flex h-full flex-col gap-3 rounded-[16px] border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
                       <h3 className="text-xl font-semibold leading-7">{planLabel(plan.name)}</h3>
                       <p className="flex items-baseline gap-2">
-                        <span className="font-display text-[40px] leading-[44px]">{plan.price === 0 ? "R$ 0" : formatReais(plan.price)}</span>
+                        <span className="font-num text-[40px] leading-[44px]">{plan.price === 0 ? "R$ 0" : formatReais(plan.price)}</span>
                         <span className="text-tinta-suave">{plan.price === 0 ? "sem mensalidade" : "por mês"}</span>
                       </p>
                       <ul className="flex flex-1 flex-col gap-2 text-[15px] leading-[22px]">

@@ -1,32 +1,4 @@
-/* Tipografia do painel do casal: Geist na interface (com algarismos tabulares) e Urbanist nos títulos.
-   Aditivo: só vale enquanto o painel está na tela (a raiz leva .painel-raiz); o resto do app segue como estava.
-   O body também recebe a regra (via :has) para os menus que o Radix abre fora da raiz usarem a mesma fonte. */
-@font-face {
-  font-family: "Geist";
-  src: url("/fonts/geist-latin.woff2") format("woff2");
-  font-weight: 400 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Urbanist";
-  src: url("/fonts/urbanist-latin.woff2") format("woff2");
-  font-weight: 600 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-.painel-raiz,
-body:has(.painel-raiz) {
-  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-titulo: "Urbanist", "Geist", ui-sans-serif, system-ui, sans-serif;
-}
-
-/* Títulos de página e de bloco (Urbanist 600). Números e dados ficam em Geist com tabulares. */
-.font-titulo {
-  font-family: var(--font-titulo, "Urbanist", system-ui, sans-serif);
-}
+/* Estilos próprios do painel do casal. As fontes (Geist e Urbanist) vêm do layout raiz (next/font/local). */
 
 /* O selo "A" que carimba o Pix conferido: o único momento autoral do painel (340 ms, só com movimento permitido). */
 @keyframes carimbo {

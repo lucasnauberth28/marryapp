@@ -29,7 +29,7 @@ interface RsvpClientProps {
 type Guest = PublicRsvpGuest;
 
 const overline = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
-const title = "font-display text-[34px] font-normal leading-10 tracking-[-0.015em] text-tinta outline-none";
+const title = "font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta outline-none";
 
 export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpClientProps) {
   const [phone, setPhone] = useState("");
@@ -187,7 +187,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
                 ref={headingRef}
                 id="titulo"
                 tabIndex={-1}
-                className="mb-1 mt-2 font-display text-[36px] font-normal leading-[42px] tracking-[-0.015em] text-balance text-tinta outline-none"
+                className="mb-1 mt-2 font-display text-[36px] font-medium leading-[42px] tracking-[-0.015em] text-balance text-tinta outline-none"
               >
                 {coupleNames}
               </h1>
@@ -300,7 +300,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
       {stage === "CONFIRMED" ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col items-center gap-4 pt-4 text-center">
           <Seal label="Selo de confirmação" className="size-24 [&>span]:text-[54px]" />
-          <h1 ref={headingRef} id="titulo" tabIndex={-1} className="mt-2 font-display text-[40px] font-normal leading-[46px] tracking-[-0.015em] text-tinta outline-none">
+          <h1 ref={headingRef} id="titulo" tabIndex={-1} className="mt-2 font-display text-[40px] font-medium leading-[46px] tracking-[-0.015em] text-tinta outline-none">
             Que alegria!
           </h1>
           <p className="max-w-[32ch] text-tinta-suave">

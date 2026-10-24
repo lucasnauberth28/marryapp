@@ -100,7 +100,7 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
             {mode === "entrar" ? (
               <div key="entrar" className="step-in flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
-                  <h1 className="font-display text-[34px] font-normal leading-10 tracking-[-0.015em] lg:text-[44px] lg:leading-[50px]">
+                  <h1 className="font-display text-[34px] font-medium leading-10 tracking-[-0.015em] lg:text-[44px] lg:leading-[50px]">
                     Que bom ver vocês
                   </h1>
                   <p className="text-base leading-6 text-tinta-suave">Entrem para continuar organizando o casamento.</p>

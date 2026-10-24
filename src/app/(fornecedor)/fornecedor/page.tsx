@@ -225,7 +225,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
         {kpis.map((kpi, i) => (
           <Reveal key={kpi.label} variant="up" delay={80 * (i + 1)} className={cn(CARD, "flex flex-col gap-1 p-4 sm:p-5")}>
             <p className={OVERLINE}>{kpi.label}</p>
-            <span className="font-display text-4xl leading-tight">{kpi.value}</span>
+            <span className="font-num text-4xl leading-tight">{kpi.value}</span>
             <span className="text-sm text-tinta-suave">{kpi.hint}</span>
           </Reveal>
         ))}

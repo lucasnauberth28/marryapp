@@ -129,7 +129,7 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
             <p className="text-[15px]">Nenhum presente recebido ainda. Quando chegar o primeiro, as taxas aparecem aqui.</p>
           ) : (
             <>
-              <p className="font-display text-[40px] leading-[44px] tabular-nums">{money(feeTotal)}</p>
+              <p className="font-num text-[40px] leading-[44px] tabular-nums">{money(feeTotal)}</p>
               <p className="text-[15px]">
                 {plural(giftCount, "presente recebido", "presentes recebidos")}
                 {feeTotal === 0 ? ", sem taxa até agora." : "."}

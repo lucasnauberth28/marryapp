@@ -1,8 +1,9 @@
+import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 
 /**
- * Selo de cera do Aceito: marca confirmação de presença e pagamento concluído, nada mais.
- * Círculo ameixa com o "A" em Bodoni itálico e um fio champanhe interno.
+ * Selo do Aceito: marca confirmação de presença e pagamento concluído, nada mais.
+ * Círculo ameixa com o símbolo da marca (arte em curvas) e um fio rosa interno.
  */
 export function Seal({ size = "sm", className, label = "Confirmado" }: { size?: "sm" | "lg"; className?: string; label?: string }) {
   const lg = size === "lg";
@@ -18,13 +19,8 @@ export function Seal({ size = "sm", className, label = "Confirmado" }: { size?: 
         className,
       )}
     >
-      <span
-        aria-hidden="true"
-        className={cn("font-display italic leading-none", lg ? "text-[38px]" : "text-[22px]")}
-        // Eixo óptico baixo: o fio da perna esquerda do "A" não some; leve ajuste à direita compensa o itálico.
-        style={{ fontWeight: 600, fontVariationSettings: lg ? "'opsz' 18" : "'opsz' 11", transform: "translateX(0.03em)" }}
-      >
-        A
+      <span aria-hidden="true" className="grid place-items-center">
+        <Logo variant="mark-linho" height={lg ? 36 : 20} />
       </span>
     </span>
   );

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { urbanist } from "@/app/fonts/urbanist";
 import { Closing, HomeFaq } from "@/components/landing/home/faq-closing";
 import { LizSection, PartySection, VendorsSection } from "@/components/landing/home/extras";
 import { GiftsSection } from "@/components/landing/home/gifts";
@@ -35,7 +34,7 @@ export default async function Home() {
   const classic = planLabel(catalog.plans.classic.name);
   const vip = planLabel(catalog.plans.vip.name);
   return (
-    <div className={`lp ${urbanist.variable}`}>
+    <div className="lp">
       <a href="#conteudo" className="lp-pular">
         Pular para o conteúdo
       </a>

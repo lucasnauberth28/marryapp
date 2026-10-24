@@ -94,7 +94,7 @@ export function UpgradeSection({ plans, canPay }: UpgradeSectionProps) {
                     <span className="text-[15px] text-tinta-suave">{p.summary}</span>
                   </span>
                   <span className="shrink-0 text-right">
-                    <span className="block font-display text-[30px] leading-[34px] text-tinta">{formatPrice(p.price)}</span>
+                    <span className="block font-num text-[30px] leading-[34px] text-tinta">{formatPrice(p.price)}</span>
                     <span className="text-sm text-tinta-suave">{p.period}</span>
                   </span>
                 </span>

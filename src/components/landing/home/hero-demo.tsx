@@ -238,7 +238,7 @@ export function HeroDemo() {
                   />
                 ) : null}
                 <div className={`lp-selo${novo ? " lp-carimba" : ""}`} aria-hidden="true">
-                  A
+                  <Logo variant="mark-linho" height={30} />
                 </div>
                 <p className="lp-t">Resposta registrada no exemplo</p>
                 <p>{resp === "sim" ? (pessoas === 1 ? "Marina vai, 1 pessoa." : "Marina vai com mais 1 pessoa.") : "Marina não poderá ir."}</p>

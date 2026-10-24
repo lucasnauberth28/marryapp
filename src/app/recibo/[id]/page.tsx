@@ -196,7 +196,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
               ) : null}
               <div className="mt-1 flex items-baseline justify-between gap-4 border-t border-linha pt-3">
                 <dt className="font-semibold">Total pago</dt>
-                <dd className="font-display text-[28px] leading-8 tabular-nums">{money(sub.amount)}</dd>
+                <dd className="font-num text-[28px] leading-8 tabular-nums">{money(sub.amount)}</dd>
               </div>
             </dl>
           </section>

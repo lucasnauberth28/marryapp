@@ -1,6 +1,6 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
-import { Bodoni_Moda, IBM_Plex_Mono, Instrument_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { RevealObserver } from "@/components/motion/reveal-observer";
 import { NavigationProgress } from "@/components/feedback/navigation-progress";
@@ -8,26 +8,36 @@ import { ThemeProvider } from "@/components/theme/theme-provider";
 import { ThemedToaster } from "@/components/theme/themed-toaster";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
-const instrumentSans = Instrument_Sans({
+// Fontes do Manual de Marca (p.12), todas locais: o build não depende de rede. Geist e Urbanist são variáveis
+// no peso (100 a 900), só o subconjunto latino. Interface em Geist 400/500/600; títulos em Urbanist 500/600.
+const geist = localFont({
+  src: "./fonts/geist-latin.woff2",
   variable: "--font-sans",
-  subsets: ["latin"],
+  weight: "100 900",
   display: "swap",
+  adjustFontFallback: "Arial",
+  fallback: ["ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
 });
 
-// Display: só a partir de 24px. Variável com eixo óptico (opsz) para nomes e títulos.
-const bodoniModa = Bodoni_Moda({
+// Títulos e nomes. Urbanist não tem algarismos tabulares: números e dinheiro usam a classe font-num (Geist).
+const urbanist = localFont({
+  src: "./fonts/urbanist-latin.woff2",
   variable: "--font-display",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  axes: ["opsz"],
+  weight: "100 900",
   display: "swap",
+  adjustFontFallback: "Arial",
+  fallback: ["ui-sans-serif", "system-ui", "sans-serif"],
 });
 
-const plexMono = IBM_Plex_Mono({
+// Só para códigos (cupom, chave Pix, ids). Fora do manual, de uso técnico.
+const plexMono = localFont({
+  src: [
+    { path: "./fonts/ibm-plex-mono-400-latin.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/ibm-plex-mono-500-latin.woff2", weight: "500", style: "normal" },
+  ],
   variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
   display: "swap",
+  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
 });
 
 export const metadata: Metadata = {
@@ -63,7 +73,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${instrumentSans.variable} ${bodoniModa.variable} ${plexMono.variable} antialiased`}
+      className={`${geist.variable} ${urbanist.variable} ${plexMono.variable} antialiased`}
       suppressHydrationWarning
     >
       <head>

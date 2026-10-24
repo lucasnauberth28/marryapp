@@ -339,7 +339,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
               {lead.message ? (
                 <div className="flex flex-col gap-1.5 border-t border-linha pt-4">
                   <p className={OVERLINE}>Mensagem do casal</p>
-                  <p className="font-display text-[19px] leading-7 whitespace-pre-line break-words italic sm:text-[22px] sm:leading-8">
+                  <p className="font-display text-[19px] leading-7 whitespace-pre-line break-words sm:text-[22px] sm:leading-8">
                     “{lead.message}”
                   </p>
                 </div>

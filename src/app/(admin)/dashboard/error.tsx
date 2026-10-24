@@ -12,7 +12,7 @@ export default function DashboardError({ error, unstable_retry }: { error: Error
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="font-titulo text-[24px] font-semibold leading-[1.15] tracking-[-0.02em] text-tinta md:text-[28px]">Resumo</h1>
+      <h1 className="font-display text-[24px] font-semibold leading-[1.15] tracking-[-0.02em] text-tinta md:text-[28px]">Resumo</h1>
       <Block title="Não deu para carregar o Resumo">
         <div role="alert" className="grid max-w-[60ch] gap-3">
           <p className="flex items-start gap-2 text-pretty text-tinta-suave">

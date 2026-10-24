@@ -42,7 +42,7 @@ export function Block({
   return (
     <section id={id} aria-labelledby={headingId} className={`flex min-w-0 scroll-mt-24 flex-col gap-4 rounded-[12px] border border-linha bg-papel px-4 pb-[18px] pt-4 md:px-6 md:pb-6 md:pt-5 ${className}`}>
       <div className="flex min-h-8 flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <h2 id={headingId} className="font-titulo text-[19px] font-semibold leading-[1.25] tracking-[-0.01em] text-tinta">
+        <h2 id={headingId} className="font-display text-[19px] font-semibold leading-[1.25] tracking-[-0.01em] text-tinta">
           {title}
         </h2>
         {aside && <div className="flex flex-wrap items-center gap-2 text-[13px] text-tinta-suave">{aside}</div>}

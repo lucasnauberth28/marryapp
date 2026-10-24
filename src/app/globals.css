@@ -396,10 +396,24 @@ html.lenis body {
   transform: scale(1.04);
 }
 
-/* Texto display: Bodoni Moda com eixo óptico. */
-.font-display {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
+/* Tipografia do Manual de Marca (p.12). Títulos em Urbanist 500/600 (peso padrão 500; font-semibold sobe para 600).
+   Urbanist não tem algarismos tabulares: números e dinheiro usam font-num (Geist, tabular). Sem itálico: o arquivo
+   não tem itálico verdadeiro e o navegador deformaria o desenho. */
+@layer components {
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 500;
+  }
+  .font-display em,
+  .font-display i {
+    font-style: normal;
+  }
+  .font-num {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: -0.01em;
+  }
 }
 
 /* Arco: a forma-assinatura do Aceito (moldura de foto). */

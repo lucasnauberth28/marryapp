@@ -77,7 +77,7 @@ export function TimelinePublicClient({
     <>
       <div className="flex flex-col gap-1 text-center">
         {dateLabel ? <p className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">{dateLabel}</p> : null}
-        <h1 className="font-display text-[40px] font-normal leading-[46px] tracking-[-0.015em] text-tinta">
+        <h1 className="font-display text-[40px] font-medium leading-[46px] tracking-[-0.015em] text-tinta">
           {isToday ? (
             <>
               É <em className="italic text-ameixa">hoje</em>!

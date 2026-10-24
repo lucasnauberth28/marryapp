@@ -228,7 +228,7 @@ async function UpcomingBlock({ period, now }: { period: Period; now: Date }) {
             <li key={w.id} className="relative flex items-center gap-4 border-b border-linha py-3 first:pt-0 last:border-b-0 last:pb-0">
               <span className="w-12 shrink-0 text-center leading-tight" aria-label={relativeDay(w.weddingDate, now)}>
                 <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">{formatDayMonth(w.weddingDate).split(" ")[1]}</span>
-                <span className="block font-display text-2xl text-tinta">{formatDayMonth(w.weddingDate).split(" ")[0]}</span>
+                <span className="block font-num text-2xl text-tinta">{formatDayMonth(w.weddingDate).split(" ")[0]}</span>
               </span>
               <span className="min-w-0 flex-1">
                 <Link href={`/admin/casais/${w.id}`} className="font-semibold text-tinta after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa">

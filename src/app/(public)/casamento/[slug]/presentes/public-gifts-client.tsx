@@ -48,7 +48,7 @@ export function PublicGiftsClient({ initialGifts, coupleNames, cardEnabled = tru
         <p className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Presentes em dinheiro</p>
         <h1
           id="presentes-titulo"
-          className="font-display text-[36px] font-normal leading-[1.08] tracking-[-0.015em] text-balance text-tinta sm:text-[clamp(36px,4.5vw,56px)]"
+          className="font-display text-[36px] font-medium leading-[1.08] tracking-[-0.015em] text-balance text-tinta sm:text-[clamp(36px,4.5vw,56px)]"
         >
           Um carinho para a vida nova
         </h1>

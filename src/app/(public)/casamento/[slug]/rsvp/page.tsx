@@ -43,7 +43,7 @@ export default async function RsvpPage({ params }: { params: Promise<{ slug: str
         <div className="mx-auto flex w-full max-w-[460px] flex-1 flex-col gap-6 px-4 py-8 sm:py-14">
           <div className="flex flex-col gap-2">
             <p className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">Confirmação de presença</p>
-            <h1 className="font-display text-[34px] font-normal leading-10 tracking-[-0.015em]">As confirmações foram encerradas</h1>
+            <h1 className="font-display text-[34px] font-medium leading-10 tracking-[-0.015em]">As confirmações foram encerradas</h1>
             <p className="text-tinta-suave">
               O prazo para confirmar presença no casamento de {wedding.coupleNames} já passou. Se precisar de ajuda, fale
               diretamente com os noivos.

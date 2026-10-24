@@ -60,7 +60,7 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
           <Logo variant="mark" height={30} />
         </Link>
         <p className="flex min-w-0 flex-col md:flex-row md:items-baseline md:gap-3">
-          <span className="truncate font-titulo text-base font-semibold leading-5 tracking-[-0.01em] text-tinta md:text-lg md:leading-6">{label.title}</span>
+          <span className="truncate font-display text-base font-semibold leading-5 tracking-[-0.01em] text-tinta md:text-lg md:leading-6">{label.title}</span>
           {!adminView && subtitle && <span className="truncate text-xs leading-4 text-tinta-suave tabular-nums md:text-[13px]">{subtitle}</span>}
         </p>
       </div>
@@ -90,7 +90,7 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-72 overflow-hidden rounded-[12px] border-linha bg-papel p-0 shadow-[var(--shadow-aceito-2)]" align="end">
             <div className="border-b border-linha px-4 py-3">
-              <p className="truncate font-titulo text-base font-semibold text-tinta">{label.menuTitle}</p>
+              <p className="truncate font-display text-base font-semibold text-tinta">{label.menuTitle}</p>
               <p className="text-sm text-tinta-suave">{label.menuSubtitle}</p>
             </div>
             <div className="space-y-0.5 p-1.5">

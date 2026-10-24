@@ -47,7 +47,7 @@ export function CustomPlanClient({ modules }: { modules: PricingModule[] }) {
             Ver planos prontos
           </Link>
           <p className={overline}>Plano sob medida</p>
-          <h1 className="font-display text-[34px] font-normal leading-[40px] tracking-[-0.015em] sm:text-5xl sm:leading-[54px] lg:text-[56px] lg:leading-[62px]">
+          <h1 className="font-display text-[34px] font-medium leading-[40px] tracking-[-0.015em] sm:text-5xl sm:leading-[54px] lg:text-[56px] lg:leading-[62px]">
             Escolham só o que vão usar
           </h1>
           <p className="max-w-[60ch] text-[17px] leading-[26px] text-tinta-suave sm:text-lg sm:leading-7">
@@ -139,7 +139,7 @@ export function CustomPlanClient({ modules }: { modules: PricingModule[] }) {
               ) : null}
               <p className="mt-2 flex items-end justify-between gap-3">
                 <span className="font-semibold">Total</span>
-                <span className="font-display text-[40px] leading-[44px] tabular-nums">
+                <span className="font-num text-[40px] leading-[44px] tabular-nums">
                   {calculation.total === 0 ? "Grátis" : brl.format(calculation.total / 100)}
                 </span>
               </p>

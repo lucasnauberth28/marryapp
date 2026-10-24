@@ -213,7 +213,7 @@ export function CarteiraClient({ initialBalance, initialCards, toPayCents }: Car
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
         <article className="flex flex-col gap-2 rounded-2xl bg-ameixa p-5 text-on-ameixa shadow-[var(--shadow-aceito-2)] sm:p-6">
           <p className="text-xs font-semibold uppercase tracking-[0.08em]">Para gastar</p>
-          <span className="font-display text-[40px] leading-[44px] tabular-nums md:text-[44px] md:leading-[48px]">{formatCurrency(totalAssets)}</span>
+          <span className="font-num text-[40px] leading-[44px] tabular-nums md:text-[44px] md:leading-[48px]">{formatCurrency(totalAssets)}</span>
           <span className="text-sm">Saldo em conta somado ao limite dos cartões</span>
         </article>
 

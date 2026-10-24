@@ -153,7 +153,7 @@ function TableCard({
         </button>
       </div>
       <div
-        className={`grid size-24 place-items-center rounded-full bg-areia font-display text-[28px] text-tinta [font-variant-numeric:lining-nums] ${
+        className={`grid size-24 place-items-center rounded-full bg-areia font-num text-[28px] text-tinta [font-variant-numeric:lining-nums] ${
           full ? "border-4 border-dotted border-sucesso" : over ? "border-4 border-dotted border-perigo" : ""
         }`}
         aria-hidden="true"

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Check } from "lucide-react";
+import { Logo } from "@/components/brand/logo";
 import { Hatch, SectionHead } from "./home-ui";
 import { ScreenInPhoto } from "./screen-in-photo";
 
@@ -41,7 +42,9 @@ export function GuestsSection({ classic, vip }: { classic: string; vip: string }
                 </p>
               </div>
               <div className="lp-tc-corpo">
-                <div className="lp-selo">A</div>
+                <div className="lp-selo" aria-hidden="true">
+                  <Logo variant="mark-linho" height={48} />
+                </div>
                 <p className="lp-tc-t">Presença confirmada</p>
                 <p className="lp-tc-s">Marina Alves e mais 1 pessoa</p>
                 <span className="lp-chip lp-chip-ok">

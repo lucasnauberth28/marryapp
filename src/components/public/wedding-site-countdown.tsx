@@ -38,7 +38,7 @@ function plural(n: number, one: string, many: string) {
 const unitClass =
   "flex min-w-[72px] flex-col items-center rounded-b-[6px] rounded-t-full border border-linha bg-papel px-2 py-3 text-center md:min-w-20";
 const numClass =
-  "block pt-2 font-display text-[32px] font-medium leading-9 text-ameixa tabular-nums [font-variant-numeric:lining-nums_tabular-nums] md:text-[40px] md:leading-[44px]";
+  "block pt-2 font-num text-[32px] font-medium leading-9 text-ameixa tabular-nums [font-variant-numeric:lining-nums_tabular-nums] md:text-[40px] md:leading-[44px]";
 const labelClass = "mt-1 block text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
 
 /** Contagem regressiva em dias, horas e minutos. No próprio dia mostra "É hoje!"; depois disso, nada. */
@@ -47,7 +47,7 @@ export function WeddingCountdown({ target }: { target: number }) {
 
   if (now !== null && target - now <= 0) {
     if (now - target > DAY) return null;
-    return <p className="font-display text-3xl italic text-ameixa md:text-4xl">É hoje!</p>;
+    return <p className="font-display text-3xl text-ameixa md:text-4xl">É hoje!</p>;
   }
 
   const remaining = now === null ? null : target - now;

@@ -227,15 +227,15 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
                 Convite válido
               </StatusChip>
             )}
-            <h2 className="font-display text-[34px] font-normal leading-10 text-tinta">{found.name}</h2>
+            <h2 className="font-display text-[34px] font-medium leading-10 text-tinta">{found.name}</h2>
             <dl className="grid w-full grid-cols-2 gap-3 rounded-2xl border border-linha p-4 text-left">
               <div>
                 <dt className={overline}>Pessoas</dt>
-                <dd className="mt-1 font-display text-[28px] leading-8 text-tinta">{found.people}</dd>
+                <dd className="mt-1 font-num text-[28px] leading-8 text-tinta">{found.people}</dd>
               </div>
               <div>
                 <dt className={overline}>Mesa</dt>
-                <dd className={`mt-1 font-display text-[28px] leading-8 ${found.table ? "text-ameixa" : "text-tinta-suave"}`}>{found.table ?? "Sem mesa"}</dd>
+                <dd className={`mt-1 font-num text-[28px] leading-8 ${found.table ? "text-ameixa" : "text-tinta-suave"}`}>{found.table ?? "Sem mesa"}</dd>
               </div>
               {found.note && (
                 <div className="col-span-2">

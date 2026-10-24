@@ -529,7 +529,7 @@ function Heading({ ref, title, text }: { ref: React.Ref<HTMLHeadingElement>; tit
         ref={ref}
         id="cadastro-titulo"
         tabIndex={-1}
-        className="font-display text-[34px] font-normal leading-10 tracking-[-0.015em] text-tinta outline-none lg:text-[44px] lg:leading-[50px]"
+        className="font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta outline-none lg:text-[44px] lg:leading-[50px]"
       >
         {title}
       </h1>
@@ -653,7 +653,7 @@ function PlanCard({ plan, selected, onSelect }: { plan: PlanOption; selected: bo
           <span className="block text-[15px] leading-[22px] text-tinta-suave">{plan.summary}</span>
         </span>
         <span className="shrink-0 text-right">
-          <span className="block font-display text-[28px] leading-8 text-tinta">{formatPrice(plan.price)}</span>
+          <span className="block font-num text-[28px] leading-8 text-tinta">{formatPrice(plan.price)}</span>
           <span className="block text-sm text-tinta-suave">{plan.period}</span>
         </span>
       </span>

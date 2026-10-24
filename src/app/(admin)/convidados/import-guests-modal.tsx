@@ -308,15 +308,15 @@ function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose:
       <dl className="grid grid-cols-1 gap-2 sm:grid-cols-3">
         <div className="rounded-xl border border-linha bg-sucesso-suave px-4 py-3">
           <dt className="text-sm font-semibold text-sucesso">Serão adicionados</dt>
-          <dd className="font-display text-[28px] leading-8 text-tinta tabular-nums">{addCount}</dd>
+          <dd className="font-num text-[28px] leading-8 text-tinta tabular-nums">{addCount}</dd>
         </div>
         <div className="rounded-xl border border-linha bg-areia px-4 py-3">
           <dt className="text-sm font-semibold text-tinta-suave">Já estão na lista</dt>
-          <dd className="font-display text-[28px] leading-8 text-tinta tabular-nums">{plan.duplicates.length}</dd>
+          <dd className="font-num text-[28px] leading-8 text-tinta tabular-nums">{plan.duplicates.length}</dd>
         </div>
         <div className={`rounded-xl border border-linha px-4 py-3 ${plan.invalid.length > 0 ? "bg-aviso-suave" : "bg-areia"}`}>
           <dt className={`text-sm font-semibold ${plan.invalid.length > 0 ? "text-aviso" : "text-tinta-suave"}`}>Com problema</dt>
-          <dd className="font-display text-[28px] leading-8 text-tinta tabular-nums">{plan.invalid.length}</dd>
+          <dd className="font-num text-[28px] leading-8 text-tinta tabular-nums">{plan.invalid.length}</dd>
         </div>
       </dl>
 

@@ -19,7 +19,7 @@ export function CouplePlanCard({ planKey, plan, href, className }: { planKey: Co
       <h3 className="text-xl font-semibold leading-7">{label}</h3>
       <p className="mt-1 text-[15px] leading-[22px] text-tinta-suave">{copy.summary}</p>
       <p className="mt-5 flex flex-wrap items-baseline gap-x-2">
-        <span className="font-display text-[44px] leading-[48px] tracking-[-0.01em]">{plan.price === 0 ? "R$ 0" : formatReais(plan.price)}</span>
+        <span className="font-num text-[44px] leading-[48px] tracking-[-0.01em]">{plan.price === 0 ? "R$ 0" : formatReais(plan.price)}</span>
         <span className="text-[15px] text-tinta-suave">{couplePriceNote(planKey)}</span>
       </p>
       <ul className="mt-6 flex flex-1 flex-col gap-3 border-t border-linha pt-6">

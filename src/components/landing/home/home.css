@@ -18,9 +18,8 @@
   --sombra-1:0 1px 2px rgba(31,26,29,.05), 0 6px 18px -6px rgba(31,26,29,.12);
   --sombra-2:0 2px 6px rgba(45,25,38,.06), 0 30px 60px -24px rgba(45,25,38,.32);
   --hachura:repeating-linear-gradient(135deg, var(--fio) 0 1px, transparent 1px 9px);
-  --f-display:var(--font-display), "Didot", Georgia, serif;
-  --f-titulo:var(--font-urbanist), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  --f-script:var(--font-display), Georgia, serif;
+  --f-display:var(--font-display), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --f-titulo:var(--font-display), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --f-texto:var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-mono:var(--font-mono), ui-monospace, Menlo, monospace;
   --titulo-peso:600; --titulo-track:-.025em;
@@ -67,7 +66,6 @@
 .lp-lead{font-size:1.0625rem;line-height:1.6;color:var(--grafite);max-width:52ch;text-wrap:pretty}
 .lp-mudo{color:var(--grafite)}
 .lp-mono{font-family:var(--f-mono);font-size:.875em}
-.lp-script{font-family:var(--f-script);font-weight:400;font-size:1.45em;line-height:.5;letter-spacing:0;color:var(--ameixa)}
 .lp-cab{display:grid;justify-items:center;text-align:center;gap:16px;max-width:780px;margin:0 auto clamp(40px,5vw,56px)}
 .lp-chip-sec{display:inline-flex;align-items:center;height:28px;padding:0 12px;border-radius:var(--r-pilula);border:1px solid var(--fio);background:var(--branco);font-size:12.5px;font-weight:500;color:var(--tinta)}
 
@@ -149,9 +147,9 @@
 .lp-cel-cab img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
 .lp-cel-cab::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(24,17,20,.7),rgba(24,17,20,.05) 70%)}
 .lp-cel-cab p{position:absolute;left:0;right:0;bottom:10px;z-index:1;text-align:center;color:#FFFFFF}
-.lp-nomes{font-family:var(--f-display);font-weight:400;letter-spacing:.06em;text-transform:uppercase;font-size:21px;line-height:1.1}
-.lp-nomes .lp-amp{font-family:var(--f-script);font-style:italic;text-transform:none;letter-spacing:0;font-size:1.5em;vertical-align:-.12em}
-.lp-cel-cab .lp-data{font-family:var(--f-display);font-size:9px;letter-spacing:.2em;text-transform:uppercase;display:block;margin-top:4px;color:#F3EEE9}
+.lp-nomes{font-family:var(--f-display);font-weight:500;letter-spacing:0;font-size:24px;line-height:1.1}
+.lp-nomes .lp-amp{font-style:normal}
+.lp-cel-cab .lp-data{font-family:var(--f-texto);font-size:10px;font-weight:500;display:block;margin-top:4px;color:#F3EEE9}
 .lp-cel-corpo{flex:1;padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;font-size:13.5px;line-height:1.45}
 .lp-cel-corpo .lp-ola b{font-weight:600}
 .lp-cel .lp-btn{min-height:44px;width:100%;font-size:14px;padding:0 12px}
@@ -164,10 +162,10 @@
 .lp-opcoes button[aria-pressed="true"]{border-color:#5E2B4E;background:#F4EAF1;box-shadow:inset 0 0 0 1px #5E2B4E}
 .lp-voltar{border:0;background:none;color:#6A6266;font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:40px}
 .lp-feito{display:grid;justify-items:center;text-align:center;gap:8px;padding-top:6px;position:relative}
-.lp-selo{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:#5E2B4E;color:#FFFFFF;font-family:var(--f-display);font-style:italic;font-size:28px;box-shadow:inset 0 0 0 3px #5E2B4E,inset 0 0 0 4px rgba(255,255,255,.55)}
+.lp-selo{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:#5E2B4E;color:#FFFFFF;--logo-sobre-ameixa:#FFFFFF;box-shadow:inset 0 0 0 3px #5E2B4E,inset 0 0 0 4px rgba(255,255,255,.55)}
 .lp-carimba{animation:lp-carimbo .32s var(--ease) both}
 @keyframes lp-carimbo{from{transform:scale(1.06);filter:blur(2px);opacity:0}to{transform:none;filter:none;opacity:1}}
-.lp-feito .lp-t{font-family:var(--f-display);font-size:18px;line-height:1.2}
+.lp-feito .lp-t{font-family:var(--f-display);font-weight:500;font-size:18px;line-height:1.2}
 .lp-liz-festa{position:absolute;right:-6px;top:-58px;width:62px;height:auto;pointer-events:none;filter:drop-shadow(0 8px 10px rgba(45,25,38,.25))}
 .lp-liz-festa.lp-entra{animation:lp-festa .55s var(--ease) both}
 @keyframes lp-festa{from{transform:translateY(12px) rotate(-6deg) scale(.9)}to{transform:none}}
@@ -229,10 +227,10 @@
 .lp-ms-capa::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(24,17,20,.65),rgba(24,17,20,0) 60%)}
 .lp-ms-capa p{position:absolute;left:0;right:0;bottom:18px;text-align:center;color:#FFF;z-index:1}
 .lp-ms-capa .lp-nomes{font-size:30px}
-.lp-ms-capa .lp-data{font-family:var(--f-display);font-size:10px;letter-spacing:.2em;text-transform:uppercase;display:block;margin-top:8px}
+.lp-ms-capa .lp-data{font-family:var(--f-texto);font-size:11px;font-weight:500;display:block;margin-top:8px}
 .lp-ms-linha{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;text-align:center}
 .lp-ms-linha div{background:#F4EAF1;border-radius:14px;padding:12px 6px;font-size:11.5px;color:#5A5357}
-.lp-ms-linha b{display:block;font-family:var(--f-display);font-weight:400;font-size:20px;color:#1F1A1D}
+.lp-ms-linha b{display:block;font-family:var(--f-display);font-weight:500;font-size:20px;color:#1F1A1D}
 .lp-endereco-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:var(--r-pilula);background:var(--branco);box-shadow:var(--sombra-1);font-family:var(--f-mono);font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lp-endereco-chip .lp-ico{color:var(--entrada);width:15px;height:15px}
 
@@ -392,10 +390,10 @@
 .lp-tc-cab::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(24,17,20,.72),rgba(24,17,20,0) 70%)}
 .lp-tc-cab p{position:absolute;left:0;right:0;bottom:20px;text-align:center;color:#FFF;z-index:1}
 .lp-tc-cab .lp-nomes{font-size:34px}
-.lp-tc-cab .lp-data{display:block;margin-top:8px;font-family:var(--f-display);font-size:13px;letter-spacing:.2em;text-transform:uppercase}
+.lp-tc-cab .lp-data{display:block;margin-top:8px;font-family:var(--f-texto);font-size:14px;font-weight:500}
 .lp-tc-corpo{flex:1;display:grid;justify-items:center;align-content:start;gap:14px;padding:34px 26px;text-align:center}
-.lp-tc-corpo .lp-selo{width:96px;height:96px;font-size:46px}
-.lp-tc-t{font-family:var(--f-display);font-size:34px;line-height:1.1}
+.lp-tc-corpo .lp-selo{width:96px;height:96px}
+.lp-tc-t{font-family:var(--f-display);font-weight:500;font-size:34px;line-height:1.1}
 .lp-tc-s{font-size:22px;color:#5F585C}
 .lp-tela-cel .lp-chip{height:40px;font-size:19px;padding:0 18px}
 .lp-tela-cel .lp-chip .lp-ico{width:18px;height:18px}

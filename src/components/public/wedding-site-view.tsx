@@ -169,7 +169,7 @@ type Tone = "papel" | "linho" | "areia";
 /** Cartão do design: papel, borda linha e raio de 16px. Dentro de faixa papel, usa o linho. */
 const card = "rounded-2xl border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)] group-data-[tone=papel]/band:bg-linho";
 
-const h2Class = "font-display text-[34px] font-normal leading-10 tracking-[-0.015em] text-tinta text-balance md:text-5xl md:leading-[54px]";
+const h2Class = "font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta text-balance md:text-5xl md:leading-[54px]";
 
 /** Faixa de seção do site: conteúdo de até 1120px, 48px de respiro no celular e 96px no computador. */
 function Band({
@@ -444,7 +444,7 @@ export function WeddingSiteView({
 
         <div className="flex max-w-full flex-col items-center gap-3 pt-2 md:pt-0">
           {s.subtitle?.trim() && <p className={overline}>{s.subtitle.trim()}</p>}
-          <h1 className="m-0 max-w-full font-display text-[52px] font-normal leading-[54px] tracking-[-0.02em] text-tinta text-balance md:[font-size:clamp(56px,8vw,96px)] md:leading-none">
+          <h1 className="m-0 max-w-full font-display text-[52px] font-medium leading-[54px] tracking-[-0.02em] text-tinta text-balance md:[font-size:clamp(56px,8vw,96px)] md:leading-none">
             <CoupleNames names={coupleNames} />
           </h1>
           <p className="m-0 text-[17px] leading-7 text-tinta-suave md:text-xl">{whenWhere}</p>
@@ -573,13 +573,13 @@ export function WeddingSiteView({
                     {ceremonyTime && (
                       <div>
                         <dt className={overline}>Cerimônia</dt>
-                        <dd className="m-0 font-display text-4xl leading-[44px] text-ameixa tabular-nums">{ceremonyTime}</dd>
+                        <dd className="m-0 font-num text-4xl leading-[44px] text-ameixa tabular-nums">{ceremonyTime}</dd>
                       </div>
                     )}
                     {receptionTime && (
                       <div>
                         <dt className={overline}>Recepção</dt>
-                        <dd className="m-0 font-display text-4xl leading-[44px] text-ameixa tabular-nums">{receptionTime}</dd>
+                        <dd className="m-0 font-num text-4xl leading-[44px] text-ameixa tabular-nums">{receptionTime}</dd>
                       </div>
                     )}
                   </dl>
@@ -727,7 +727,7 @@ export function WeddingSiteView({
               <span className="pointer-events-none absolute inset-2 rounded-[10px] border border-champanhe" aria-hidden="true" />
               <div className="relative flex flex-col items-center gap-2">
                 <p className={overline}>Confirmação de presença</p>
-                <h2 className="m-0 mt-2 font-display text-[34px] font-normal leading-10 tracking-[-0.015em] text-balance md:text-[40px] md:leading-[46px]">
+                <h2 className="m-0 mt-2 font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-balance md:text-[40px] md:leading-[46px]">
                   Contamos com você?
                 </h2>
                 <p className="m-0 mb-4 max-w-[40ch] text-tinta-suave">
@@ -768,7 +768,7 @@ export function WeddingSiteView({
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="flex flex-col gap-3">
               <p className={overline}>Mural de recados</p>
-              <h2 className="m-0 font-display text-[34px] font-normal leading-10 text-tinta text-balance md:text-[40px] md:leading-[46px]">
+              <h2 className="m-0 font-display text-[34px] font-medium leading-10 text-tinta text-balance md:text-[40px] md:leading-[46px]">
                 Deixe um recado para os noivos
               </h2>
             </div>
@@ -831,7 +831,7 @@ export function WeddingSiteView({
                 {visibleEntries.map((item) => (
                   <li key={item.id} className="contents">
                     <figure className="m-0 flex flex-col gap-3 rounded-2xl border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
-                      <blockquote className="m-0 whitespace-pre-line break-words font-display text-xl italic leading-7 text-tinta">{item.message}</blockquote>
+                      <blockquote className="m-0 whitespace-pre-line break-words font-display text-xl leading-7 text-tinta">{item.message}</blockquote>
                       <figcaption className="text-sm text-tinta-suave">
                         {item.authorName}
                         <span aria-hidden="true"> · </span>

@@ -188,7 +188,7 @@ export default async function DashboardPage() {
     <div className="flex flex-col gap-5 md:gap-6">
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
         <div className="min-w-0">
-          <h1 className="font-titulo text-[24px] font-semibold leading-[1.15] tracking-[-0.02em] text-tinta md:text-[28px]">Resumo</h1>
+          <h1 className="font-display text-[24px] font-semibold leading-[1.15] tracking-[-0.02em] text-tinta md:text-[28px]">Resumo</h1>
           <p className="mt-1.5 max-w-[72ch] text-pretty text-sm text-tinta-suave">
             {today}.{" "}
             {weddingLine ? (

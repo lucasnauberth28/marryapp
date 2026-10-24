@@ -21,11 +21,11 @@ export function StatusScreen({ eyebrow, title, description, actions, glyph = "?"
         </Link>
       </header>
       <main className="mx-auto flex w-full max-w-[560px] flex-1 flex-col items-center gap-5 px-4 py-12 text-center sm:px-6 sm:py-16">
-        <div aria-hidden="true" className="arch flex h-[160px] w-[120px] items-center justify-center border border-champanhe">
-          <span className="font-display text-[64px] italic leading-none text-ameixa">{glyph}</span>
+        <div aria-hidden="true" className="arch flex h-[160px] w-[120px] items-center justify-center border border-rosa">
+          <span className="font-display text-[64px] leading-none text-ameixa">{glyph}</span>
         </div>
         <p className="text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">{eyebrow}</p>
-        <h1 className="font-display text-[34px] font-normal leading-10 tracking-[-0.015em] text-balance text-tinta sm:text-[40px] sm:leading-[46px]">
+        <h1 className="font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-balance text-tinta sm:text-[40px] sm:leading-[46px]">
           {title}
         </h1>
         <p className="text-tinta-suave">{description}</p>

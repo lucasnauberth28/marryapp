@@ -136,7 +136,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
             >
               <div className="flex min-w-[180px] flex-col gap-1.5">
                 <span
-                  className="font-display text-[56px] leading-[56px] sm:text-[64px] sm:leading-[64px]"
+                  className="font-num text-[56px] leading-[56px] sm:text-[64px] sm:leading-[64px]"
                   aria-hidden="true"
                 >
                   {averageLabel}
@@ -246,7 +246,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
                             <Stars rating={review.rating} label={`${review.rating} de 5 estrelas`} />
                           </div>
                         </div>
-                        <p className="font-display text-lg leading-7 whitespace-pre-line break-words italic sm:text-xl sm:leading-[30px]">
+                        <p className="font-display text-lg leading-7 whitespace-pre-line break-words sm:text-xl sm:leading-[30px]">
                           “{review.comment}”
                         </p>
                         {!review.reportedAt || review.moderatedAt ? <ReportReview reviewId={review.id} coupleNames={review.coupleNames} /> : null}

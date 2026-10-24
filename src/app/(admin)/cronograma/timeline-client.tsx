@@ -182,7 +182,7 @@ export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { init
         <ol className="flex flex-col gap-3">
           {sorted.map((e) => (
             <li key={e.id} className={`${card} grid grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:grid-cols-[88px_minmax(0,1fr)_auto] sm:gap-4 sm:px-5 sm:py-4`}>
-              <span className="font-display text-[22px] leading-8 text-ameixa [font-variant-numeric:lining-nums] sm:text-[26px]">{timeLabel(e.time)}</span>
+              <span className="font-num text-[22px] leading-8 text-ameixa [font-variant-numeric:lining-nums] sm:text-[26px]">{timeLabel(e.time)}</span>
               <div className="min-w-0">
                 <strong className="block font-semibold text-tinta">{e.title}</strong>
                 {e.description && <p className="mt-0.5 whitespace-pre-wrap break-words text-sm text-tinta-suave">{e.description}</p>}

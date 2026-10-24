@@ -133,7 +133,7 @@ export function OnboardingFlow({
               {(c) => <input {...c} id="onb-weddingDate" type="date" value={weddingDate} onChange={edit("weddingDate", setWeddingDate)} />}
             </Field>
             <p className="rounded-[12px] border border-linha bg-papel px-4 py-3 text-[15px] text-tinta-suave">
-              No site vai aparecer <strong className="font-display text-lg font-normal text-tinta">{coupleNames}</strong>
+              No site vai aparecer <strong className="font-display text-lg font-medium text-tinta">{coupleNames}</strong>
             </p>
 
             {formError ? <FormAlert id="onb-erro">{formError}</FormAlert> : null}

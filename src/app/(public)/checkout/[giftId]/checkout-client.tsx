@@ -195,7 +195,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
   }, [step]);
 
   const overline = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
-  const heading = "font-display text-[30px] font-normal leading-[36px] tracking-[-0.015em] text-tinta outline-none";
+  const heading = "font-display text-[30px] font-medium leading-[36px] tracking-[-0.015em] text-tinta outline-none";
 
   const methodOptions: { id: PaymentMethod; label: string; hint: string; value: string }[] = [
     { id: "PIX", label: "Pix", hint: "À vista, sem juros", value: formatPrice(gift.amount) },
@@ -215,7 +215,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
           <strong className="font-semibold leading-6">{gift.title}</strong>
           <span className="truncate text-sm leading-5 text-tinta-suave">Para {coupleNames}</span>
         </div>
-        <span className="font-display text-2xl leading-8 tabular-nums">{formatPrice(gift.amount)}</span>
+        <span className="font-num text-2xl leading-8 tabular-nums">{formatPrice(gift.amount)}</span>
       </div>
       <p className="text-sm leading-5 text-tinta-suave">Este presente representa um valor em dinheiro para o casal.</p>
 
@@ -478,7 +478,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
               ) : null}
               <div className="flex items-baseline justify-between gap-3 font-semibold">
                 <dt className="text-tinta">Você paga</dt>
-                <dd className="font-display text-2xl leading-8 tabular-nums text-tinta">{formatPrice(method === "CREDIT_CARD" ? cardFinalAmount : gift.amount)}</dd>
+                <dd className="font-num text-2xl leading-8 tabular-nums text-tinta">{formatPrice(method === "CREDIT_CARD" ? cardFinalAmount : gift.amount)}</dd>
               </div>
             </dl>
             <p className="text-sm leading-5 text-tinta-suave">
@@ -628,7 +628,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
           ) : (
             <Seal label="Selo de pagamento" className="size-24 [&>span]:text-[54px]" />
           )}
-          <h2 ref={headingRef} tabIndex={-1} className="mt-2 font-display text-[40px] font-normal leading-[46px] tracking-[-0.015em] text-tinta outline-none">
+          <h2 ref={headingRef} tabIndex={-1} className="mt-2 font-display text-[40px] font-medium leading-[46px] tracking-[-0.015em] text-tinta outline-none">
             Obrigado pelo carinho!
           </h2>
           <p className="max-w-[34ch] text-tinta-suave">
@@ -639,7 +639,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
 
           <div className="flex w-full flex-col items-center gap-1 rounded-[16px] border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
             <span className={overline}>{pixAcknowledged ? "Valor do Pix" : "Valor do presente"}</span>
-            <span className="font-display text-[44px] leading-[48px] tabular-nums text-tinta">{formatPrice(gift.amount)}</span>
+            <span className="font-num text-[44px] leading-[48px] tabular-nums text-tinta">{formatPrice(gift.amount)}</span>
           </div>
 
           <div className="mt-2 flex w-full flex-col gap-2">

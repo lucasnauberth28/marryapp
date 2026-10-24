@@ -193,7 +193,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
             <button type="button" aria-label="Menos um lugar" disabled={seats <= 1} onClick={() => setSeats((n) => Math.max(1, n - 1))} className={`${btn.secondary} w-12 !px-0`}>
               <Minus className="size-4" aria-hidden="true" />
             </button>
-            <output aria-live="polite" className="min-w-12 text-center font-display text-[28px] leading-8 text-tinta [font-variant-numeric:lining-nums]">
+            <output aria-live="polite" className="min-w-12 text-center font-num text-[28px] leading-8 text-tinta [font-variant-numeric:lining-nums]">
               {seats}
             </output>
             <button type="button" aria-label="Mais um lugar" disabled={seats >= MAX_SEATS} onClick={() => setSeats((n) => Math.min(MAX_SEATS, n + 1))} className={`${btn.secondary} w-12 !px-0`}>

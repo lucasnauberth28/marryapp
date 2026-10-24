@@ -119,7 +119,7 @@ export function ShellHeading({
         ref={ref}
         id={id}
         tabIndex={-1}
-        className="font-display text-[34px] font-normal leading-10 tracking-[-0.015em] text-tinta outline-none lg:text-[44px] lg:leading-[50px]"
+        className="font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta outline-none lg:text-[44px] lg:leading-[50px]"
       >
         {title}
       </h1>

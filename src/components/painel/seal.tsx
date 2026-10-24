@@ -1,4 +1,6 @@
-/** Selo de cera do design: marca confirmação de presença (aqui, o convite válido na portaria). */
+import { Logo } from "@/components/brand/logo";
+
+/** Selo do design: marca confirmação de presença (aqui, o convite válido na portaria). */
 export function Seal({ size = 96, label }: { size?: number; label: string }) {
   return (
     <span
@@ -7,8 +9,8 @@ export function Seal({ size = 96, label }: { size?: number; label: string }) {
       style={{ width: size, height: size, boxShadow: "inset 0 0 0 4px var(--color-ameixa), inset 0 0 0 5px var(--color-champanhe)" }}
       className="inline-grid place-items-center rounded-full bg-ameixa text-on-ameixa"
     >
-      <span aria-hidden="true" className="font-display font-semibold italic leading-none" style={{ fontSize: size * 0.5, fontVariationSettings: size >= 64 ? "'opsz' 18" : "'opsz' 11", transform: "translateX(0.03em)" }}>
-        A
+      <span aria-hidden="true" className="grid place-items-center">
+        <Logo variant="mark-linho" height={Math.round(size * 0.5)} />
       </span>
     </span>
   );
