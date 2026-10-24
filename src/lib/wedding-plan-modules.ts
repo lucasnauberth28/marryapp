@@ -15,7 +15,7 @@ const CLASSIC_MODULES = ["site", "pixZero", "whatsapp", "qrcode"];
  * O domínio próprio (.com.br, no nome do titular) é pedido em /dominio e só o plano VIP
  * (ou um plano adaptado com o módulo) libera o pedido.
  */
-export const ENFORCED_MODULES = ["whatsapp", "qrcode", "customDomain"] as const;
+export const ENFORCED_MODULES = ["whatsapp", "qrcode", "customDomain", "tables3d"] as const;
 export type EnforcedModule = (typeof ENFORCED_MODULES)[number];
 
 const ALL_MODULE_IDS = COUPLE_MODULES.map((m) => m.id);
@@ -46,6 +46,12 @@ const FEATURE: Record<EnforcedModule, { sentence: string; title: string; plans: 
     title: "O registro de entrada com código QR é do plano",
     plans: "do plano Classic, do VIP",
     planLabel: "Classic",
+  },
+  tables3d: {
+    sentence: "As mesas em 3D, com o link de visualização para os convidados, fazem parte",
+    title: "As mesas em 3D são do plano",
+    plans: "do plano VIP",
+    planLabel: "VIP",
   },
   customDomain: {
     sentence: "O endereço personalizado do site (.com.br) faz parte",

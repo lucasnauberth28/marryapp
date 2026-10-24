@@ -54,6 +54,15 @@ export const COUPLE_MODULES: PricingModule[] = [
     iconName: "Users",
   },
   {
+    id: "tables3d",
+    name: "Mesas em 3D com link para compartilhar",
+    category: "Organização",
+    description: "Escolham o cenário do casamento e sentem os convidados nas mesas em 3D. O link para ver o mapa é só leitura: só o casal altera.",
+    price: 5900, // R$ 59,00
+    iconName: "Box",
+    highlightBadge: "Exclusivo VIP",
+  },
+  {
     id: "customDomain",
     name: "Endereço personalizado (.com.br)",
     category: "Endereço do site",

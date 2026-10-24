@@ -41,6 +41,7 @@ export const PLANS_CONFIG = {
     badge: "Endereço próprio",
     features: [
       "Todos os recursos do Classic",
+      "Mesas em 3D, com link de visualização para os convidados",
       "Endereço personalizado (.com.br): primeiro ano incluído, renovações por conta de vocês",
       "Atendimento prioritário pelo WhatsApp",
     ],

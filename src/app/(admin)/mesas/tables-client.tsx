@@ -24,7 +24,8 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { createTable, deleteTable, assignGuestToTable } from "@/actions/table-actions";
-import { ArrowRightLeft, Check, GripVertical, Plus, Trash2, TriangleAlert, Users as UsersIcon } from "lucide-react";
+import Link from "next/link";
+import { ArrowRightLeft, Box, Check, GripVertical, Plus, Trash2, TriangleAlert, Users as UsersIcon } from "lucide-react";
 
 // --- Tipos ---
 
@@ -331,10 +332,16 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
           title="Mesas"
           description={summary}
           actions={
-            <button type="button" onClick={() => setNewOpen(true)} className={btn.primary}>
-              <Plus className="size-4" aria-hidden="true" />
-              Nova mesa
-            </button>
+            <>
+              <Link href="/mesas/3d" className={btn.secondary}>
+                <Box className="size-4" aria-hidden="true" />
+                Ver em 3D
+              </Link>
+              <button type="button" onClick={() => setNewOpen(true)} className={btn.primary}>
+                <Plus className="size-4" aria-hidden="true" />
+                Nova mesa
+              </button>
+            </>
           }
         />
 

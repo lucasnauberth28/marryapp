@@ -41,3 +41,13 @@ test("domínio próprio é bloqueado no servidor e o aviso fala do VIP, não do 
   assert.ok(!planIncludes(modulesForPlan("classic"), "customDomain"));
   assert.ok(planIncludes(modulesForPlan("custom", ["customDomain"]), "customDomain"));
 });
+
+test("mesas em 3D são só do VIP (ou de um plano adaptado com o módulo)", () => {
+  assert.ok((ENFORCED_MODULES as readonly string[]).includes("tables3d"));
+  assert.ok(planIncludes(modulesForPlan("vip"), "tables3d"));
+  assert.ok(!planIncludes(modulesForPlan("classic"), "tables3d"));
+  assert.ok(!planIncludes(modulesForPlan("basic"), "tables3d"));
+  assert.ok(planIncludes(modulesForPlan("custom", ["tables3d"]), "tables3d"));
+  assert.equal(requiredPlanLabel("tables3d"), "VIP");
+  assert.match(upgradeMessage("tables3d"), /3D/);
+});

@@ -765,6 +765,10 @@ model Wedding {
   flaggedAt       DateTime?
   // Última visita ao painel do casal (gravada no máximo a cada 30 min)
   lastActiveAt    DateTime?
+  // Mesas em 3D: cenário escolhido (id em lib/mesas3d/scenarios) e o código do link somente leitura que o casal compartilha
+  // (nulo = sem link). Quem tem o código só vê as mesas; quem altera é só o casal, pelo painel.
+  tables3dScene      String?
+  tables3dShareToken String?  @unique
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

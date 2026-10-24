@@ -25,6 +25,7 @@ export const PUBLIC_PATHS = [
   "/privacidade",
   "/proposta", // casal aceita a proposta do fornecedor pelo link
   "/avaliar", // casal avalia o fornecedor pelo link do pedido fechado
+  "/mapa-das-mesas", // mesas em 3D só para ver, pelo link que o casal compartilha
 ];
 
 /**
