@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { LOCKUP_PNG_BASE64, LOCKUP_PNG_RATIO } from "@/lib/brand/lockup-png";
 
 export interface TimelineEventPdf {
   id: string;
@@ -26,7 +27,10 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
   const pageHeight = doc.internal.pageSize.getHeight(); // 297
 
   const marginX = 20;
-  let currentY = 20;
+  // Assinatura Aceito no topo (manual p.8: horizontal com no mínimo 35 mm de largura); o resto desce junto.
+  const logoWidth = 40;
+  doc.addImage(`data:image/png;base64,${LOCKUP_PNG_BASE64}`, "PNG", (pageWidth - logoWidth) / 2, 12, logoWidth, logoWidth / LOCKUP_PNG_RATIO);
+  let currentY = 32;
 
   // --- CABEÇALHO ---
   // Título do Casamento
@@ -38,12 +42,12 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
   currentY += 8;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(14);
-  doc.setTextColor(100, 100, 100);
+  doc.setTextColor(95, 88, 92); // grafite
   doc.text("Cronograma do Dia do Evento", pageWidth / 2, currentY, { align: "center" });
 
   currentY += 6;
   doc.setFontSize(9);
-  doc.setTextColor(150, 150, 150);
+  doc.setTextColor(95, 88, 92);
   const dateStr = new Date().toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "long",
@@ -54,7 +58,7 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
   currentY += 6;
 
   // Linha divisória do cabeçalho
-  doc.setDrawColor(225, 215, 200);
+  doc.setDrawColor(232, 226, 229); // linha
   doc.setLineWidth(0.5);
   doc.line(marginX, currentY, pageWidth - marginX, currentY);
 
@@ -83,7 +87,7 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
     // Verificar se estouro de página
     if (currentY + itemHeight > pageHeight - 25) {
       // Desenhar linha vertical restante da página atual antes de quebrar
-      doc.setDrawColor(210, 195, 175);
+      doc.setDrawColor(232, 226, 229);
       doc.setLineWidth(0.8);
       doc.line(lineX, startYForPage - 2, lineX, currentY);
 
@@ -92,12 +96,12 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
       startYForPage = currentY;
 
       // Redesenhar um cabeçalho simples de continuação
-      doc.setFont("helvetica", "italic");
+      doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.setTextColor(140, 109, 69);
+      doc.setTextColor(94, 43, 78);
       doc.text(`${coupleNames} - Cronograma (Continuação)`, marginX, currentY - 8);
       
-      doc.setDrawColor(225, 215, 200);
+      doc.setDrawColor(232, 226, 229); // linha
       doc.setLineWidth(0.3);
       doc.line(marginX, currentY - 5, pageWidth - marginX, currentY - 5);
     }
@@ -109,21 +113,21 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
     doc.circle(lineX, eventStartY + 3, 2.5, "F");
 
     // Borda clara ao redor do ponto
-    doc.setDrawColor(243, 236, 227);
+    doc.setDrawColor(244, 234, 241); // ameixa-suave
     doc.setLineWidth(0.6);
     doc.circle(lineX, eventStartY + 3, 3.2, "S");
 
     // 2. Horário (Badge ou texto destacado)
-    doc.setFont("courier", "bold");
+    doc.setFont("helvetica", "bold"); // algarismos do Helvetica já são tabulares
     doc.setFontSize(11);
-    doc.setTextColor(140, 109, 69);
+    doc.setTextColor(94, 43, 78);
     doc.text(event.time, contentX, eventStartY + 4);
 
     // 3. Título do Evento
     const timeWidth = doc.getTextWidth(event.time);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    doc.setTextColor(24, 24, 27); // Zinc-900
+    doc.setTextColor(31, 26, 29); // tinta
     doc.text(event.title, contentX + timeWidth + 4, eventStartY + 4);
 
     currentY += 8;
@@ -132,7 +136,7 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
     if (descLines.length > 0) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9.5);
-      doc.setTextColor(82, 82, 91); // Zinc-600
+      doc.setTextColor(95, 88, 92); // grafite
       descLines.forEach((line: string) => {
         doc.text(line, contentX, currentY);
         currentY += 4.5;
@@ -145,7 +149,7 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
     const isLast = index === sortedEvents.length - 1;
     const endYLine = isLast ? currentY - 4 : currentY;
     
-    doc.setDrawColor(210, 195, 175);
+    doc.setDrawColor(232, 226, 229);
     doc.setLineWidth(0.8);
     doc.line(lineX, eventStartY + 6, lineX, endYLine);
   });
@@ -156,10 +160,10 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
     doc.setPage(i);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.setTextColor(160, 160, 160);
+    doc.setTextColor(95, 88, 92);
 
     // Linha superior do rodapé
-    doc.setDrawColor(240, 240, 240);
+    doc.setDrawColor(232, 226, 229);
     doc.setLineWidth(0.3);
     doc.line(marginX, pageHeight - 15, pageWidth - marginX, pageHeight - 15);
 
@@ -175,6 +179,7 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
       pageHeight - 10,
       { align: "right" }
     );
+    doc.text("Aceito · meuaceito.com.br", marginX, pageHeight - 6);
   }
 
   // Salvar PDF

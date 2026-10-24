@@ -10,6 +10,7 @@ import { FunctionsStrip, Steps } from "@/components/landing/home/intro";
 import { PlansSection } from "@/components/landing/home/plans";
 import { GuestsSection, PanelSection, SiteSection } from "@/components/landing/home/product";
 import { getCatalog } from "@/lib/catalog-server";
+import { brandShare } from "@/lib/brand-meta";
 import { planLabel } from "@/lib/plan-copy";
 import "@/components/landing/home/home.css";
 
@@ -25,8 +26,7 @@ export const metadata: Metadata = {
   title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/" },
-  openGraph: { type: "website", locale: "pt_BR", siteName: "Aceito", url: "/", title: TITLE, description: DESCRIPTION },
-  twitter: { card: "summary", title: TITLE, description: DESCRIPTION },
+  ...brandShare({ title: TITLE, description: DESCRIPTION, url: "/" }),
 };
 
 export default async function Home() {

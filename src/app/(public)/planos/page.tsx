@@ -6,6 +6,7 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 import { FaqSection } from "@/components/landing/faq-section";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { btn, container, lead, overline } from "@/components/landing/styles";
+import { brandShare } from "@/lib/brand-meta";
 import { getCatalog } from "@/lib/catalog-server";
 import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
 import { GIFT_CONDITIONS, formatReais, planLabel } from "@/lib/plan-copy";
@@ -17,6 +18,11 @@ export const revalidate = 300;
 export const metadata: Metadata = {
   title: "Planos",
   description: "Escolham o plano do casamento: o Básico não tem mensalidade, Classic e VIP têm pagamento único. Veja os recursos e as taxas sobre presentes.",
+  ...brandShare({
+    title: "Planos · Aceito",
+    description: "Escolham o plano do casamento: o Básico não tem mensalidade, Classic e VIP têm pagamento único.",
+    url: "/planos",
+  }),
 };
 
 const COUPLE_PLAN_KEYS = ["basic", "classic", "vip"] as const;

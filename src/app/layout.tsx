@@ -41,9 +41,11 @@ const plexMono = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? "https://meuaceito.com.br"),
   title: { default: "Aceito", template: "%s · Aceito" },
   description: "Criem o site do casamento, acompanhem confirmações de presença e recebam presentes em dinheiro com o Aceito. Conheçam os planos e as taxas.",
   applicationName: "Aceito",
+  openGraph: { type: "website", locale: "pt_BR", siteName: "Aceito" },
   // Declarar `icons` aqui substitui o ícone por arquivo (app/icon.svg): por isso o favicon é listado também.
   // SVG para navegadores modernos, PNG de reserva (Safari) e o ícone da tela de início do iPhone.
   icons: {
