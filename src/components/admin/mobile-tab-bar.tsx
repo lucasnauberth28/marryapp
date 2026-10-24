@@ -35,7 +35,7 @@ export function MobileTabBar({ allowedPaths }: { allowedPaths: string[] }) {
             }`}
           >
             <span className={`grid h-7 w-[52px] place-items-center rounded-full transition-colors duration-200 ${active ? "bg-ameixa-suave" : "bg-transparent"}`}>
-              <Icon className="size-[21px]" strokeWidth={1.75} aria-hidden="true" />
+              <Icon className="size-[21px]" strokeWidth={1.6} aria-hidden="true" />
             </span>
             {area.shortName}
           </Link>

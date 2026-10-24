@@ -61,9 +61,9 @@
   appearance: none;
   -webkit-appearance: none;
   transition:
-    border-color 150ms var(--ease-aceito),
-    box-shadow 150ms var(--ease-aceito),
-    background-color 150ms var(--ease-aceito);
+    border-color 160ms var(--ease-aceito),
+    box-shadow 160ms var(--ease-aceito),
+    background-color 160ms var(--ease-aceito);
 }
 
 textarea.ac-float__control {
@@ -111,7 +111,7 @@ select.ac-float__control[data-float="always"]:has(option[value=""]:checked) {
 /* Placeholder real: só aparece com foco (o rótulo já está no alto). */
 .ac-float__control::placeholder {
   color: transparent;
-  transition: color 150ms var(--ease-aceito);
+  transition: color 160ms var(--ease-aceito);
 }
 .ac-float__control:focus::placeholder {
   color: color-mix(in srgb, var(--color-tinta-suave) 80%, transparent);
@@ -174,8 +174,8 @@ select.ac-float__control[data-float="always"]:has(option[value=""]:checked) {
   caret-color: var(--color-tinta);
   transition:
     background-color 600000s ease-in-out 0s,
-    border-color 150ms var(--ease-aceito),
-    box-shadow 150ms var(--ease-aceito);
+    border-color 160ms var(--ease-aceito),
+    box-shadow 160ms var(--ease-aceito);
 }
 
 /* Datas e horas nativas ocupam o campo todo. */
@@ -217,10 +217,10 @@ input.ac-float__control[type="month"] {
   transform-origin: left center;
   pointer-events: none;
   transition:
-    top 180ms var(--ease-aceito),
-    transform 180ms var(--ease-aceito),
-    color 180ms var(--ease-aceito),
-    font-weight 180ms var(--ease-aceito);
+    top 240ms var(--ease-aceito),
+    transform 240ms var(--ease-aceito),
+    color 240ms var(--ease-aceito),
+    font-weight 240ms var(--ease-aceito);
 }
 
 /* No alto: centro do rótulo sobre a linha da borda (1px), a 85%. */
@@ -289,7 +289,7 @@ input.ac-float__control[type="month"] {
   color: var(--color-tinta-suave);
   transform: translateY(-50%);
   pointer-events: none;
-  transition: transform 180ms var(--ease-aceito);
+  transition: transform 240ms var(--ease-aceito);
 }
 .ac-float__control:is([aria-expanded="true"], [data-state="open"]) ~ .ac-float__chevron {
   transform: translateY(-50%) rotate(180deg);
@@ -305,7 +305,7 @@ input.ac-float__control[type="month"] {
   opacity: 0;
   transform: translateY(-50%);
   pointer-events: none;
-  transition: opacity 150ms var(--ease-aceito);
+  transition: opacity 160ms var(--ease-aceito);
 }
 .ac-float__affix--prefix { left: var(--ac-float-lead); }
 .ac-float__affix--suffix { right: 16px; }
@@ -359,6 +359,6 @@ input.ac-float__control[type="month"] {
   .ac-float__control[aria-expanded="true"],
   .ac-float__control[data-state="open"] {
     outline: 2px solid Highlight;
-    outline-offset: 2px;
+    outline-offset: 3px;
   }
 }

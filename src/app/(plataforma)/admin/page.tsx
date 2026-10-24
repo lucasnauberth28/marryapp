@@ -231,7 +231,7 @@ async function UpcomingBlock({ period, now }: { period: Period; now: Date }) {
                 <span className="block font-num text-2xl text-tinta">{formatDayMonth(w.weddingDate).split(" ")[0]}</span>
               </span>
               <span className="min-w-0 flex-1">
-                <Link href={`/admin/casais/${w.id}`} className="font-semibold text-tinta after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa">
+                <Link href={`/admin/casais/${w.id}`} className="font-semibold text-tinta after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa">
                   {w.coupleNames}
                 </Link>
                 <span className="mt-0.5 flex flex-wrap items-center gap-x-2 text-sm text-tinta-suave">

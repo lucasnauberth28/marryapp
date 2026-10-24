@@ -235,7 +235,7 @@ export function MediaForm({ initial }: { initial: VendorMedia }) {
           <ol className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {media.gallery.map((url, i) => (
               <li key={`${i}-${url.slice(-24)}`} className="flex flex-col gap-2 rounded-xl border border-linha bg-linho p-2">
-                <div className={cn("relative aspect-[4/3] overflow-hidden rounded-lg bg-areia", i === 0 && "outline-2 outline-offset-2 outline-ameixa")}>
+                <div className={cn("relative aspect-[4/3] overflow-hidden rounded-lg bg-areia", i === 0 && "outline-2 outline-offset-[3px] outline-ameixa")}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={url} alt={`Foto ${i + 1} da galeria`} className="size-full object-cover" />
                   <span className="absolute top-1.5 left-1.5 rounded-full bg-papel/95 px-2 py-0.5 text-xs font-semibold">{i + 1}</span>

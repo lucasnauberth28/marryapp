@@ -103,7 +103,7 @@ function Section({
             tone === "danger" ? "bg-perigo-suave text-perigo" : "bg-ameixa-suave text-ameixa",
           )}
         >
-          <Icon aria-hidden="true" className="size-5" strokeWidth={1.75} />
+          <Icon aria-hidden="true" className="size-5" strokeWidth={1.6} />
         </span>
         <div className="min-w-0">
           <h2 id={`${id}-titulo`} className="font-display text-2xl leading-8 text-tinta">
@@ -126,7 +126,7 @@ function PasswordToggle({ show, onToggle }: { show: boolean; onToggle: () => voi
       aria-pressed={show}
       className="grid size-11 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
     >
-      {show ? <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.75} /> : <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />}
+      {show ? <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.6} /> : <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.6} />}
     </button>
   );
 }

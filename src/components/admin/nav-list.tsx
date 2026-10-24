@@ -40,7 +40,7 @@ export function NavList({ allowedPaths, counts = {} }: { allowedPaths: string[];
           return (
             <li key={area.id}>
               <Link href={area.href} data-tour={navAnchor(area.href)} aria-current={active ? "page" : undefined} className={rowClass(active)}>
-                <Icon className="size-[18px] shrink-0" strokeWidth={1.75} aria-hidden="true" />
+                <Icon className="size-[18px] shrink-0" strokeWidth={1.6} aria-hidden="true" />
                 <span className="min-w-0 flex-1 truncate">{area.name}</span>
               </Link>
             </li>
@@ -59,7 +59,7 @@ export function NavList({ allowedPaths, counts = {} }: { allowedPaths: string[];
             const count = item.countKey ? (counts[item.countKey] ?? 0) : 0;
             return (
               <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={rowClass(active)}>
-                <Icon className="size-[18px] shrink-0" strokeWidth={1.75} aria-hidden="true" />
+                <Icon className="size-[18px] shrink-0" strokeWidth={1.6} aria-hidden="true" />
                 <span className="min-w-0 flex-1 truncate">{item.name}</span>
                 {count > 0 && item.countKey && <CountMark n={count} kind={item.countKey} />}
               </Link>

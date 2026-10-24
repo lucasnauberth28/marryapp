@@ -26,7 +26,7 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg px-4 text-[15px] font-semibold whitespace-nowrap text-tinta-suave transition-colors outline-none hover:text-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-papel data-[state=active]:text-ameixa data-[state=active]:shadow-[var(--shadow-aceito-1)] sm:min-h-9 [&_svg]:size-4 [&_svg]:shrink-0",
+        "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg px-4 text-[15px] font-semibold whitespace-nowrap text-tinta-suave transition-colors outline-none hover:text-tinta focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-papel data-[state=active]:text-ameixa data-[state=active]:shadow-[var(--shadow-aceito-1)] sm:min-h-9 [&_svg]:size-4 [&_svg]:shrink-0",
         className
       )}
       {...props}
@@ -38,7 +38,7 @@ function TabsContent({ className, ...props }: React.ComponentProps<typeof TabsPr
   return (
     <TabsPrimitive.Content
       data-slot="tabs-content"
-      className={cn("outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa", className)}
+      className={cn("outline-none focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa", className)}
       {...props}
     />
   )

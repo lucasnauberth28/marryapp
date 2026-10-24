@@ -64,7 +64,7 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
             Foto do presente <span className="font-normal text-tinta-suave">(opcional)</span>
           </span>
           <div className="flex items-center justify-center w-full">
-            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-linha-forte border-dashed rounded-xl cursor-pointer hover:bg-linho transition-colors relative overflow-hidden focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ameixa">
+            <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-linha-forte border-dashed rounded-xl cursor-pointer hover:bg-linho transition-colors relative overflow-hidden focus-within:outline-2 focus-within:outline-offset-[3px] focus-within:outline-ameixa">
               {imagePreview ? (
                 <img
                   src={imagePreview}

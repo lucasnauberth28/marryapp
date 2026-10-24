@@ -84,7 +84,7 @@ function GuestRow({ guest, tables, currentTableId, onMove }: { guest: SeatGuest;
       <span className="inline-flex min-w-7 items-center justify-center rounded-md bg-areia px-2 text-sm font-semibold leading-6 text-tinta-suave" title={`${seats} ${seats === 1 ? "lugar" : "lugares"}`}>
         {seats}
       </span>
-      <span className="relative grid size-11 shrink-0 place-items-center rounded-xl text-tinta-suave has-[select:focus-visible]:outline-2 has-[select:focus-visible]:outline-offset-2 has-[select:focus-visible]:outline-ameixa">
+      <span className="relative grid size-11 shrink-0 place-items-center rounded-xl text-tinta-suave has-[select:focus-visible]:outline-2 has-[select:focus-visible]:outline-offset-[3px] has-[select:focus-visible]:outline-ameixa">
         <ArrowRightLeft className="size-4" aria-hidden="true" />
         <select
           aria-label={`Escolher a mesa de ${guest.name}`}
@@ -144,7 +144,7 @@ function TableCard({
       ref={setNodeRef}
       aria-label={`Mesa ${table.name}`}
       className={`${card} relative flex flex-col items-center gap-2 p-4 text-center transition-[outline-color] ${
-        isOver ? "outline-2 outline-offset-2 outline-dashed outline-ameixa" : ""
+        isOver ? "outline-2 outline-offset-[3px] outline-dashed outline-ameixa" : ""
       }`}
     >
       <div className="absolute right-1 top-1">
@@ -197,7 +197,7 @@ function UnassignedPanel({ guests, tables, totalConfirmed, onMove }: { guests: S
     <section
       ref={setNodeRef}
       aria-labelledby="sem-mesa"
-      className={`${card} flex w-full flex-col gap-2 p-4 sm:p-6 lg:sticky lg:top-24 lg:max-w-80 lg:flex-none ${isOver ? "outline-2 outline-offset-2 outline-dashed outline-ameixa" : ""}`}
+      className={`${card} flex w-full flex-col gap-2 p-4 sm:p-6 lg:sticky lg:top-24 lg:max-w-80 lg:flex-none ${isOver ? "outline-2 outline-offset-[3px] outline-dashed outline-ameixa" : ""}`}
     >
       <h2 id="sem-mesa" className="text-lg font-semibold leading-7 text-tinta">
         Sem mesa · {guests.length}

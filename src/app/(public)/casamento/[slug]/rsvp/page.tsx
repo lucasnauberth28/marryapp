@@ -50,7 +50,7 @@ export default async function RsvpPage({ params }: { params: Promise<{ slug: str
             </p>
           </div>
           <p className="flex items-center gap-2 text-sm text-tinta-suave">
-            <Clock aria-hidden="true" className="size-4" strokeWidth={1.75} />
+            <Clock aria-hidden="true" className="size-4" strokeWidth={1.6} />
             Quem já respondeu não precisa fazer mais nada.
           </p>
           <Link href={weddingSitePath(weddingRow.slug)} className={btn.secondary}>

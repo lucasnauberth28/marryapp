@@ -72,7 +72,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
             aria-label="Voltar para os presentes em dinheiro"
             className="grid size-11 shrink-0 place-items-center rounded-[12px] text-tinta transition-colors hover:bg-areia"
           >
-            <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.75} />
+            <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.6} />
           </Link>
           <span className="font-semibold">Presentear</span>
           <span className="ml-auto inline-flex min-h-7 items-center gap-1 rounded-[6px] bg-sucesso-suave px-2.5 text-sm font-semibold text-sucesso">

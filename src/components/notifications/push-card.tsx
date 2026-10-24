@@ -194,7 +194,7 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
     >
       <div className="flex items-start gap-3.5">
         <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-xl bg-ameixa-suave text-ameixa">
-          <Smartphone className="size-5" strokeWidth={1.75} />
+          <Smartphone className="size-5" strokeWidth={1.6} />
         </span>
         <div className="min-w-0 flex-1">
           <h3 id="push-card-titulo" className="text-base font-semibold text-tinta">

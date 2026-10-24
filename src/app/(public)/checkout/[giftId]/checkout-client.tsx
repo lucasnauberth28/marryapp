@@ -451,7 +451,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
           <section aria-labelledby="checkout-resumo" className="flex flex-col gap-3 rounded-[16px] border border-linha bg-areia p-4">
             <div className="flex items-start gap-3">
               <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-[12px] bg-papel text-ameixa">
-                <GiftIcon className="size-5" strokeWidth={1.75} />
+                <GiftIcon className="size-5" strokeWidth={1.6} />
               </span>
               <div className="min-w-0 flex-1">
                 <h3 id="checkout-resumo" className="font-semibold leading-6 text-tinta">
@@ -593,7 +593,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
             </div>
           ) : (
             <p className="flex gap-2 text-sm text-tinta-suave">
-              <Lock aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={1.75} />
+              <Lock aria-hidden="true" className="mt-0.5 size-4 shrink-0" strokeWidth={1.6} />
               Quando o pagamento cair, esta tela muda sozinha e os noivos são avisados.
             </p>
           )}

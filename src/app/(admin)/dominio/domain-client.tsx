@@ -243,7 +243,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
                   <button
                     type="button"
                     onClick={() => pick(domain)}
-                    className="inline-flex min-h-11 items-center rounded-xl border border-linha-forte bg-papel px-4 text-[15px] font-semibold text-tinta transition-colors hover:border-ameixa hover:bg-ameixa-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa"
+                    className="inline-flex min-h-11 items-center rounded-xl border border-linha-forte bg-papel px-4 text-[15px] font-semibold text-tinta transition-colors hover:border-ameixa hover:bg-ameixa-suave focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa"
                   >
                     {domain}
                   </button>

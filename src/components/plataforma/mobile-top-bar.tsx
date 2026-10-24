@@ -14,7 +14,7 @@ export function PlatformMobileTopBar() {
       <div className="flex shrink-0 items-center">
         <ThemeToggle />
         <Link href="/admin/suporte#busca" aria-label="Buscar em tudo" className="grid size-11 place-items-center rounded-xl text-tinta-suave transition-colors hover:bg-areia">
-          <Search className="size-5" strokeWidth={1.75} aria-hidden="true" />
+          <Search className="size-5" strokeWidth={1.6} aria-hidden="true" />
         </Link>
       </div>
     </header>

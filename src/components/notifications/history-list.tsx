@@ -64,7 +64,7 @@ export function HistoryList({ initialItems, nowIso }: Props) {
       {items.length === 0 ? (
         <div className="flex flex-col items-center gap-2 px-6 py-14 text-center">
           <span aria-hidden="true" className="grid size-12 place-items-center rounded-full bg-ameixa-suave text-ameixa">
-            <Bell className="size-5" strokeWidth={1.75} />
+            <Bell className="size-5" strokeWidth={1.6} />
           </span>
           <p className="font-display text-xl text-tinta">Tudo em dia por aqui</p>
           <p className="max-w-sm text-sm text-tinta-suave">

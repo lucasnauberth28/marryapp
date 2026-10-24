@@ -154,7 +154,7 @@ export function OnboardingFlow({
           <div className="flex flex-col gap-2 rounded-[16px] border border-linha bg-papel p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">Endereço do site no Aceito</p>
             <div className="flex items-center gap-2">
-              <Globe aria-hidden="true" className="size-[18px] shrink-0 text-ameixa" strokeWidth={1.75} />
+              <Globe aria-hidden="true" className="size-[18px] shrink-0 text-ameixa" strokeWidth={1.6} />
               <a href={sitePath} target="_blank" rel="noopener" className="min-w-0 flex-1 break-all font-semibold text-tinta underline decoration-linha underline-offset-4 hover:decoration-ameixa">
                 {origin ? `${origin.replace(/^https?:\/\//, "")}${sitePath}` : sitePath}
               </a>

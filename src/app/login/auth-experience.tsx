@@ -63,7 +63,7 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
             aria-label="Voltar para o início"
             className="grid size-11 place-items-center rounded-[12px] text-tinta transition-colors hover:bg-areia lg:hidden"
           >
-            <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.75} />
+            <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.6} />
           </Link>
           <Link href="/" aria-label="Aceito, início" className="-m-2.5 rounded-[12px] p-2.5 transition-opacity hover:opacity-80">
             <Logo height={26} priority className="lg:hidden" />
@@ -110,7 +110,7 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
                     role="status"
                     className="flex items-start gap-2.5 rounded-[12px] border border-linha bg-areia px-4 py-3 text-[15px] leading-6 text-tinta"
                   >
-                    <Clock aria-hidden="true" className="mt-0.5 size-[18px] shrink-0 text-tinta-suave" strokeWidth={1.75} />
+                    <Clock aria-hidden="true" className="mt-0.5 size-[18px] shrink-0 text-tinta-suave" strokeWidth={1.6} />
                     Sua sessão expirou. Entre de novo para continuar.
                   </p>
                 ) : null}

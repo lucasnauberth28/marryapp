@@ -66,7 +66,7 @@ export function PlatformMobileNav({
           return (
             <Link key={tab.href} href={tab.href} aria-current={active ? "page" : undefined} className={tabClass(active)}>
               <span className={pillClass(active)}>
-                <Icon className="size-5" strokeWidth={1.75} aria-hidden="true" />
+                <Icon className="size-5" strokeWidth={1.6} aria-hidden="true" />
               </span>
               <span className="max-w-full truncate">{tab.name}</span>
             </Link>
@@ -80,7 +80,7 @@ export function PlatformMobileNav({
           className={tabClass(moreOpen || !inTabs)}
         >
           <span className={pillClass(moreOpen || !inTabs)}>
-            <MoreIcon className="size-5" strokeWidth={1.75} aria-hidden="true" />
+            <MoreIcon className="size-5" strokeWidth={1.6} aria-hidden="true" />
             {hiddenCount > 0 && <span className="absolute right-2 top-0.5 size-2 rounded-full bg-ameixa" aria-hidden="true" />}
           </span>
           Mais
@@ -123,7 +123,7 @@ export function PlatformMobileNav({
                 </nav>
                 <form action={logout} className="rounded-2xl border border-linha bg-papel px-4 shadow-[var(--shadow-aceito-1)]">
                   <button type="submit" className="flex min-h-[52px] w-full cursor-pointer items-center gap-3 text-base text-perigo">
-                    <LogOut className="size-5" strokeWidth={1.75} aria-hidden="true" /> Sair
+                    <LogOut className="size-5" strokeWidth={1.6} aria-hidden="true" /> Sair
                   </button>
                 </form>
               </div>

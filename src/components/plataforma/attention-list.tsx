@@ -30,7 +30,7 @@ export function AttentionList({ items, className }: { items: AttentionItem[]; cl
         return (
           <li key={item.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-linha py-4 first:pt-0 last:border-b-0 last:pb-0">
             <span className={cn("grid size-10 shrink-0 place-items-center rounded-full", ICON_TONE[item.tone ?? "aviso"])}>
-              <Icon className="size-5" strokeWidth={1.75} aria-hidden="true" />
+              <Icon className="size-5" strokeWidth={1.6} aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1 basis-56">
               <p className="font-semibold leading-6 text-tinta">{item.title}</p>

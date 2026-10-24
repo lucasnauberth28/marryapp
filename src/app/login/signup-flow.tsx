@@ -404,7 +404,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                   aria-pressed={showPassword}
                   className="grid size-11 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
                 >
-                  {showPassword ? <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.75} /> : <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />}
+                  {showPassword ? <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.6} /> : <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.6} />}
                 </button>
               }
             >
@@ -488,7 +488,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
       {step === "pronto" ? (
         <section aria-labelledby="cadastro-titulo" className="step-in flex flex-col gap-6">
           <span className="grid size-14 place-items-center rounded-full bg-sucesso-suave text-sucesso">
-            <CheckCircle2 aria-hidden="true" className="size-7" strokeWidth={1.75} />
+            <CheckCircle2 aria-hidden="true" className="size-7" strokeWidth={1.6} />
           </span>
           {isVendor ? (
             <>
@@ -579,7 +579,7 @@ function Progress({ step, steps }: { step: SignupStep; steps: SignupStep[] }) {
 function BackButton({ onClick }: { onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} aria-label="Voltar" className={cn(btn.secondary, "min-h-12 w-12 shrink-0 px-0")}>
-      <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.75} />
+      <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.6} />
     </button>
   );
 }
@@ -608,7 +608,7 @@ function TypeCard({
       )}
     >
       <span className="grid size-12 shrink-0 place-items-center rounded-[12px] bg-ameixa-suave text-ameixa">
-        <Icon aria-hidden="true" className="size-6" strokeWidth={1.75} />
+        <Icon aria-hidden="true" className="size-6" strokeWidth={1.6} />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block font-display text-2xl leading-8 text-tinta">{title}</span>

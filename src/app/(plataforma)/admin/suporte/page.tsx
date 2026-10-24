@@ -103,7 +103,7 @@ async function SearchResults({ searchText, userId }: { searchText: string; userI
               {results.hits.map((h) => (
                 <li key={`${h.kind}-${h.id}`} className="flex items-center justify-between gap-3 py-3">
                   {h.href ? (
-                    <Link href={h.href} className="flex min-w-0 flex-1 items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa">
+                    <Link href={h.href} className="flex min-w-0 flex-1 items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa">
                       <InitialsAvatar name={h.title} />
                       <span className="min-w-0">
                         <span className="block truncate font-semibold leading-5 text-tinta">{h.title}</span>

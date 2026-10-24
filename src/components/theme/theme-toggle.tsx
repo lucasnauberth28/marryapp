@@ -96,7 +96,7 @@ export function ThemeSegmented({ className }: { className?: string }) {
                 onChange={() => setPreference(value)}
                 className="peer sr-only"
               />
-              <span className="flex min-h-11 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-[8px] px-2 py-1 text-center text-sm leading-5 sm:flex-row sm:gap-2 sm:px-4 sm:py-0 font-semibold text-tinta-suave transition-colors hover:text-tinta peer-checked:bg-papel peer-checked:text-ameixa peer-checked:shadow-[var(--shadow-aceito-1)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ameixa">
+              <span className="flex min-h-11 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-[8px] px-2 py-1 text-center text-sm leading-5 sm:flex-row sm:gap-2 sm:px-4 sm:py-0 font-semibold text-tinta-suave transition-colors hover:text-tinta peer-checked:bg-papel peer-checked:text-ameixa peer-checked:shadow-[var(--shadow-aceito-1)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-[3px] peer-focus-visible:outline-ameixa">
                 <Icon aria-hidden="true" className="size-4" />
                 {label}
               </span>

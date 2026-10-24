@@ -60,7 +60,7 @@ export function NotificationBell({ initialUnread, allHref, settingsHref, pushPub
             className,
           )}
         >
-          {feed.unread > 0 ? <BellRing aria-hidden="true" className="size-5" strokeWidth={1.75} /> : <Bell aria-hidden="true" className="size-5" strokeWidth={1.75} />}
+          {feed.unread > 0 ? <BellRing aria-hidden="true" className="size-5" strokeWidth={1.6} /> : <Bell aria-hidden="true" className="size-5" strokeWidth={1.6} />}
           {feed.unread > 0 && (
             <span
               aria-hidden="true"
@@ -134,7 +134,7 @@ export function NotificationBell({ initialUnread, allHref, settingsHref, pushPub
               {feed.items.length === 0 ? (
                 <div className="flex flex-col items-center gap-2 px-6 py-8 text-center">
                   <span aria-hidden="true" className="grid size-11 place-items-center rounded-full bg-ameixa-suave text-ameixa">
-                    <Bell className="size-5" strokeWidth={1.75} />
+                    <Bell className="size-5" strokeWidth={1.6} />
                   </span>
                   <p className="text-sm font-semibold text-tinta">Tudo em dia por aqui</p>
                   <p className="text-sm text-tinta-suave">Quando algo acontecer, o aviso aparece neste lugar.</p>

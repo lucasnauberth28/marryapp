@@ -63,7 +63,7 @@ export function QueueBlock({
               <li key={item.id} className="grid grid-cols-[40px_minmax(0,1fr)] gap-x-3.5 gap-y-1 border-t border-linha py-3.5 first:border-t-0 first:pt-0 last:pb-0">
                 {Icon ? (
                   <span className={`grid size-10 place-items-center rounded-full ${item.kind === "pix" || item.kind === "despesa" ? "bg-aviso-suave text-aviso" : "bg-areia text-tinta-suave"}`}>
-                    <Icon className="size-[19px]" strokeWidth={1.75} aria-hidden="true" />
+                    <Icon className="size-[19px]" strokeWidth={1.6} aria-hidden="true" />
                   </span>
                 ) : (
                   <LizAvatar size={40} decorative />

@@ -97,7 +97,7 @@ export function FilterBar({
     <div className={cn("flex flex-col gap-4", className)} aria-busy={pending}>
       {searchPlaceholder && (
         <div className="relative max-w-[560px]">
-          <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-tinta-suave" strokeWidth={1.75} aria-hidden="true" />
+          <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-tinta-suave" strokeWidth={1.6} aria-hidden="true" />
           <Input
             type="search"
             value={text}

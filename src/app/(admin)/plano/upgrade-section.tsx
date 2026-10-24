@@ -71,7 +71,7 @@ export function UpgradeSection({ plans, canPay }: UpgradeSectionProps) {
               <label
                 key={p.id}
                 className={cn(
-                  "flex cursor-pointer flex-col gap-4 rounded-2xl bg-papel p-5 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ameixa has-[:disabled]:cursor-default sm:p-[22px]",
+                  "flex cursor-pointer flex-col gap-4 rounded-2xl bg-papel p-5 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[3px] has-[:focus-visible]:outline-ameixa has-[:disabled]:cursor-default sm:p-[22px]",
                   checked ? "border-2 border-ameixa" : "border border-linha p-[21px] hover:border-linha-forte sm:p-[23px]",
                 )}
               >

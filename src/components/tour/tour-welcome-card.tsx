@@ -34,7 +34,7 @@ export function TourWelcomeCard({ news, onStart, onDismiss }: { news: boolean; o
     >
       <div className="flex items-start gap-3">
         <span className="grid size-11 shrink-0 place-items-center rounded-full bg-ameixa-suave text-ameixa" aria-hidden="true">
-          <Compass className="size-5" strokeWidth={1.75} />
+          <Compass className="size-5" strokeWidth={1.6} />
         </span>
         <div className="flex min-w-0 flex-col gap-1.5">
           <h2 id="tour-boas-vindas-titulo" className="font-display text-[24px] font-medium leading-8 text-tinta">

@@ -420,7 +420,7 @@ export function WeddingSiteView({
 
       {/* CAPA */}
       <section id="inicio" className="mx-auto flex max-w-[1120px] flex-col items-center gap-5 px-4 pb-12 pt-8 text-center md:gap-8 md:px-6 md:pb-24 md:pt-16">
-        <div className="arch relative aspect-[3/4] w-[260px] max-w-[80%] bg-areia outline outline-1 outline-offset-[6px] outline-champanhe md:w-[360px] md:outline-offset-8">
+        <div className="arch relative aspect-[3/4] w-[260px] max-w-[80%] bg-areia outline outline-1 outline-offset-[6px] outline-rosa md:w-[360px] md:outline-offset-8">
           {coverUrl ? (
             <div className="arch absolute inset-0 overflow-hidden">
               <UserImage

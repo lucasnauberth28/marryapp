@@ -109,7 +109,7 @@ export function PreferencesForm({ initial, audience, groups, pushPublicKey }: Pr
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-start gap-3">
             <span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-ameixa-suave text-ameixa">
-              <Moon className="size-[18px]" strokeWidth={1.75} />
+              <Moon className="size-[18px]" strokeWidth={1.6} />
             </span>
             <div className="min-w-0">
               <p className="text-[15px] font-semibold text-tinta" aria-hidden="true">

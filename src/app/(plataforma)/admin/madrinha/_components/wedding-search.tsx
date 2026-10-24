@@ -73,7 +73,7 @@ export function WeddingSearch({ selectedId, onPick, label = "Buscar casal" }: { 
                 onClick={() => onPick(hit)}
                 aria-pressed={selectedId === hit.id}
                 className={cn(
-                  "flex min-h-11 w-full flex-col items-start rounded-xl border px-3 py-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa",
+                  "flex min-h-11 w-full flex-col items-start rounded-xl border px-3 py-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa",
                   selectedId === hit.id ? "border-ameixa bg-ameixa-suave" : "border-linha bg-papel hover:border-linha-forte",
                 )}
               >

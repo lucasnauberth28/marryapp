@@ -128,7 +128,7 @@ export function LandingHeader() {
                     {item.label}
                     <span
                       aria-hidden="true"
-                      className="absolute inset-x-0 bottom-2.5 h-px origin-left scale-x-0 bg-champanhe transition-transform duration-500 ease-[var(--ease-aceito)] group-hover/nav:scale-x-100"
+                      className="absolute inset-x-0 bottom-2.5 h-px origin-left scale-x-0 bg-rosa transition-transform duration-500 ease-[var(--ease-aceito)] group-hover/nav:scale-x-100"
                     />
                   </NavLink>
                 </li>
@@ -154,7 +154,7 @@ export function LandingHeader() {
               aria-controls="menu-publico"
               className="grid size-11 cursor-pointer place-items-center rounded-[12px] text-tinta transition-colors duration-200 hover:bg-areia lg:hidden"
             >
-              <Menu aria-hidden="true" className="size-5" strokeWidth={1.75} />
+              <Menu aria-hidden="true" className="size-5" strokeWidth={1.6} />
             </button>
           </div>
         </div>
@@ -188,7 +188,7 @@ export function LandingHeader() {
             aria-label="Fechar menu"
             className="grid size-11 cursor-pointer place-items-center rounded-[12px] text-tinta transition-colors duration-200 hover:bg-areia"
           >
-            <X aria-hidden="true" className="size-5" strokeWidth={1.75} />
+            <X aria-hidden="true" className="size-5" strokeWidth={1.6} />
           </button>
         </div>
 
@@ -212,7 +212,7 @@ export function LandingHeader() {
                   <ChevronRight
                     aria-hidden="true"
                     className="size-5 text-tinta-suave transition-transform duration-300 group-hover/item:translate-x-1"
-                    strokeWidth={1.75}
+                    strokeWidth={1.6}
                   />
                 </NavLink>
               </li>

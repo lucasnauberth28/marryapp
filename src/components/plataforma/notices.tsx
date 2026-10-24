@@ -35,7 +35,7 @@ export function Notice({
 }) {
   return (
     <div role="status" className={cn("flex flex-wrap items-start gap-3 rounded-2xl border px-4 py-3.5", NOTICE[tone], className)}>
-      <Icon className="mt-0.5 size-5 shrink-0 text-tinta" strokeWidth={1.75} aria-hidden="true" />
+      <Icon className="mt-0.5 size-5 shrink-0 text-tinta" strokeWidth={1.6} aria-hidden="true" />
       <div className="min-w-0 flex-1">
         {title && <p className="font-semibold leading-6 text-tinta">{title}</p>}
         {children && <div className="text-sm leading-5 text-tinta">{children}</div>}

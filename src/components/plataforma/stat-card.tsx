@@ -52,7 +52,7 @@ export function StatCard({
       )}
     </>
   );
-  const classes = cn(card, "block p-5", highlight && "border-2 border-aviso", href && "transition-shadow hover:shadow-[var(--shadow-aceito-2)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa", className);
+  const classes = cn(card, "block p-5", highlight && "border-2 border-aviso", href && "transition-shadow hover:shadow-[var(--shadow-aceito-2)] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa", className);
   return href ? (
     <Link href={href} className={classes}>
       {body}

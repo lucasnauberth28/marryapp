@@ -133,7 +133,7 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
                   <Checkbox checked={chosen.includes(row.id)} onCheckedChange={(v) => toggle(row.id, v === true)} aria-label={`Selecionar ${row.coupleNames}`} />
                 </td>
                 <td className="max-w-[300px] px-3 py-3 align-middle">
-                  <Link href={`/admin/casais/${row.id}`} className="block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa">
+                  <Link href={`/admin/casais/${row.id}`} className="block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa">
                     <CoupleCell row={row} />
                   </Link>
                 </td>
@@ -166,7 +166,7 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
           <li key={row.id} className={cn("rounded-2xl border border-linha bg-papel p-4 shadow-[var(--shadow-aceito-1)]", chosen.includes(row.id) && "border-ameixa bg-ameixa-suave/60")}>
             <div className="flex items-start gap-3">
               <Checkbox className="mt-3" checked={chosen.includes(row.id)} onCheckedChange={(v) => toggle(row.id, v === true)} aria-label={`Selecionar ${row.coupleNames}`} />
-              <Link href={`/admin/casais/${row.id}`} className="min-w-0 flex-1 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa">
+              <Link href={`/admin/casais/${row.id}`} className="min-w-0 flex-1 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa">
                 <CoupleCell row={row} />
               </Link>
             </div>

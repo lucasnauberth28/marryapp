@@ -31,7 +31,7 @@ export function AreaTabs({ allowedPaths, counts = {} }: { allowedPaths: string[]
                   active ? "border-ameixa font-semibold text-ameixa" : "border-transparent font-medium text-tinta-suave hover:text-tinta"
                 }`}
               >
-                <Icon className="size-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+                <Icon className="size-4 shrink-0" strokeWidth={1.6} aria-hidden="true" />
                 {screen.name}
                 {count > 0 && screen.countKey && <CountMark n={count} kind={screen.countKey} />}
               </Link>

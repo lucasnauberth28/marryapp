@@ -47,7 +47,7 @@ export function ForgotPasswordForm() {
     return (
       <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
         <span className="grid size-14 place-items-center rounded-full bg-ameixa-suave text-ameixa">
-          <MailCheck aria-hidden="true" className="size-7" strokeWidth={1.75} />
+          <MailCheck aria-hidden="true" className="size-7" strokeWidth={1.6} />
         </span>
         <ShellHeading ref={headingRef} title="Confira seu e-mail" text={sent} />
         <Link href="/login" className={cn(btn.secondary, btn.block, "min-h-12")}>

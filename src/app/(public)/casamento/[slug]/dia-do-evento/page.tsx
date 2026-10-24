@@ -50,7 +50,7 @@ export default async function DiaDoEventoPage({ params }: { params: Promise<{ sl
 
         <section aria-labelledby="ingresso-titulo" className="flex flex-col gap-3 rounded-[16px] border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)]">
           <div className="flex items-start gap-3">
-            <QrCode aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-ameixa" strokeWidth={1.75} />
+            <QrCode aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-ameixa" strokeWidth={1.6} />
             <div className="flex flex-col gap-1">
               <h2 id="ingresso-titulo" className="font-semibold leading-6">
                 Código QR para a entrada na festa

@@ -27,7 +27,7 @@ export function FirstAccessQueue({ canAddGuests, className = "" }: { canAddGuest
         </li>
         <li className="grid grid-cols-[40px_minmax(0,1fr)] gap-x-3.5 gap-y-1 border-t border-linha py-3.5">
           <span className="grid size-10 place-items-center rounded-full bg-areia text-tinta-suave">
-            <UserPlus className="size-[19px]" strokeWidth={1.75} aria-hidden="true" />
+            <UserPlus className="size-[19px]" strokeWidth={1.6} aria-hidden="true" />
           </span>
           <p className="grid min-h-10 content-center text-[14.5px] leading-[1.45] text-tinta">Adicionar a primeira pessoa</p>
           {canAddGuests && (
@@ -44,7 +44,7 @@ export function FirstAccessQueue({ canAddGuests, className = "" }: { canAddGuest
         </li>
         <li className="grid grid-cols-[40px_minmax(0,1fr)] gap-x-3.5 gap-y-1 border-t border-linha py-3.5 last:pb-0">
           <span className="grid size-10 place-items-center rounded-full bg-areia text-tinta-suave">
-            <MessageCircle className="size-[19px]" strokeWidth={1.75} aria-hidden="true" />
+            <MessageCircle className="size-[19px]" strokeWidth={1.6} aria-hidden="true" />
           </span>
           <p className="grid min-h-10 content-center text-[14.5px] leading-[1.45] text-tinta">Mandar o convite para ela</p>
           <div className="col-start-2">

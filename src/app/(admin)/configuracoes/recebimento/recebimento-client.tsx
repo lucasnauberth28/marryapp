@@ -327,7 +327,7 @@ function PayoutForm({ replacing, onCancel, onSaved }: { replacing: boolean; onCa
       <span
         className={cn(
           "flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-[8px] px-4 text-center text-base font-semibold text-tinta-suave transition-colors hover:text-tinta",
-          "peer-checked:bg-papel peer-checked:text-ameixa peer-checked:shadow-[var(--shadow-aceito-1)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ameixa",
+          "peer-checked:bg-papel peer-checked:text-ameixa peer-checked:shadow-[var(--shadow-aceito-1)] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-[3px] peer-focus-visible:outline-ameixa",
         )}
       >
         <Icon className="size-4" aria-hidden="true" />

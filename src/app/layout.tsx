@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { LucideProvider } from "lucide-react";
 import "./globals.css";
 import { RevealObserver } from "@/components/motion/reveal-observer";
 import { NavigationProgress } from "@/components/feedback/navigation-progress";
@@ -85,12 +86,15 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-screen bg-linho font-sans text-tinta">
+        {/* Ícones: traço de 1,6 px com pontas arredondadas (manual p.14); quem precisa de outro traço passa strokeWidth. */}
+        <LucideProvider strokeWidth={1.6}>
         <ThemeProvider>
           <RevealObserver />
           <NavigationProgress />
           {children}
           <ThemedToaster />
         </ThemeProvider>
+        </LucideProvider>
       </body>
     </html>
   );

@@ -26,7 +26,7 @@ function formatPrice(amount: number) {
 }
 
 const fieldClass =
-  "min-h-11 rounded-[12px] border border-linha-forte bg-papel text-base leading-6 text-tinta transition-[border-color,box-shadow] duration-200 placeholder:text-tinta-suave/80 hover:border-tinta-suave focus:border-ameixa focus:shadow-[0_0_0_3px_var(--color-ameixa-suave)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa";
+  "min-h-11 rounded-[12px] border border-linha-forte bg-papel text-base leading-6 text-tinta transition-[border-color,box-shadow] duration-200 placeholder:text-tinta-suave/80 hover:border-tinta-suave focus:border-ameixa focus:shadow-[0_0_0_3px_var(--color-ameixa-suave)] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa";
 
 export function PublicGiftsClient({ initialGifts, coupleNames, cardEnabled = true }: PublicGiftsClientProps) {
   const [search, setSearch] = useState("");
@@ -59,17 +59,17 @@ export function PublicGiftsClient({ initialGifts, coupleNames, cardEnabled = tru
         </p>
         <ul className="mt-1 flex flex-wrap gap-x-5 gap-y-2 text-sm text-tinta-suave">
           <li className="flex items-center gap-1.5">
-            <QrCode aria-hidden="true" className="size-4 text-sucesso" strokeWidth={1.75} />
+            <QrCode aria-hidden="true" className="size-4 text-sucesso" strokeWidth={1.6} />
             Pix sem taxa para quem presenteia
           </li>
           {cardEnabled ? (
             <li className="flex items-center gap-1.5">
-              <CreditCard aria-hidden="true" className="size-4 text-ameixa" strokeWidth={1.75} />
+              <CreditCard aria-hidden="true" className="size-4 text-ameixa" strokeWidth={1.6} />
               Cartão em até 12x
             </li>
           ) : null}
           <li className="flex items-center gap-1.5">
-            <ShieldCheck aria-hidden="true" className="size-4 text-ameixa" strokeWidth={1.75} />
+            <ShieldCheck aria-hidden="true" className="size-4 text-ameixa" strokeWidth={1.6} />
             Pagamento seguro
           </li>
         </ul>
@@ -85,7 +85,7 @@ export function PublicGiftsClient({ initialGifts, coupleNames, cardEnabled = tru
         <>
           <div className="flex flex-col gap-3 pb-6 pt-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="relative sm:w-[360px]">
-              <Search aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-tinta-suave" strokeWidth={1.75} />
+              <Search aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-tinta-suave" strokeWidth={1.6} />
               <input
                 type="search"
                 aria-label="Buscar presente por nome"

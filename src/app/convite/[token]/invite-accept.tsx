@@ -19,7 +19,7 @@ export function InviteAccept({ token, coupleNames, viewer }: { token: string; co
   return (
     <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
       <span className="grid size-14 place-items-center rounded-full bg-ameixa-suave text-ameixa">
-        <Heart aria-hidden="true" className="size-7" strokeWidth={1.75} />
+        <Heart aria-hidden="true" className="size-7" strokeWidth={1.6} />
       </span>
       <div className="flex flex-col gap-2">
         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">Você foi convidado para organizar</p>
@@ -185,7 +185,7 @@ function AnonymousAccept({ token }: { token: string }) {
       aria-pressed={show}
       className="grid size-11 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
     >
-      {show ? <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.75} /> : <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />}
+      {show ? <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.6} /> : <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.6} />}
     </button>
   );
 

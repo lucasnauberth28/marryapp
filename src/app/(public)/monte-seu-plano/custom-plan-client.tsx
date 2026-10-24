@@ -68,7 +68,7 @@ export function CustomPlanClient({ modules }: { modules: PricingModule[] }) {
                     <label
                       htmlFor={inputId}
                       className={cn(
-                        "relative flex w-full cursor-pointer gap-4 rounded-[16px] border bg-papel p-5 shadow-aceito-1 transition-colors duration-150 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ameixa",
+                        "relative flex w-full cursor-pointer gap-4 rounded-[16px] border bg-papel p-5 shadow-aceito-1 transition-colors duration-150 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-[3px] has-[:focus-visible]:outline-ameixa",
                         isSelected ? "border-2 border-ameixa p-[19px]" : "border-linha hover:border-linha-forte",
                       )}
                     >

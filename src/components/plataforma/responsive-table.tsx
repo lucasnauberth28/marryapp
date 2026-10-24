@@ -123,7 +123,7 @@ export function ResponsiveTable<T>({
                 <li key={key} className={cn("relative rounded-2xl border border-linha bg-papel p-4 shadow-[var(--shadow-aceito-1)]", selectedKey === key && "border-ameixa bg-ameixa-suave")}>
                   <div className="font-semibold leading-6 text-tinta">
                     {href ? (
-                      <Link href={href} className="after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa">
+                      <Link href={href} className="after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa">
                         {primary.cell(row)}
                       </Link>
                     ) : (

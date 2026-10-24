@@ -29,7 +29,7 @@ export default async function ConvitePage({ params }: { params: Promise<{ token:
       <AuthShell photo={SHELL_PHOTOS.convite}>
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
           <span className="grid size-14 place-items-center rounded-full bg-aviso-suave text-aviso">
-            <CircleAlert aria-hidden="true" className="size-7" strokeWidth={1.75} />
+            <CircleAlert aria-hidden="true" className="size-7" strokeWidth={1.6} />
           </span>
           <ShellHeading title={TITLES[lookup.status]} text={INVITE_STATUS_MESSAGE[lookup.status]} />
           <Link href="/login" className={cn(btn.primary, btn.block, "min-h-12")}>

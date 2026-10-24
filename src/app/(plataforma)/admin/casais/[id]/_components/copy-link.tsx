@@ -18,7 +18,7 @@ export function LinkRow({ label, url }: { label: string; url: string }) {
     }
   }
 
-  const iconButton = "grid size-11 place-items-center rounded-xl text-tinta-suave transition-colors hover:bg-ameixa-suave hover:text-ameixa focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa sm:size-10";
+  const iconButton = "grid size-11 place-items-center rounded-xl text-tinta-suave transition-colors hover:bg-ameixa-suave hover:text-ameixa focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa sm:size-10";
   return (
     <li className="flex items-center gap-2 border-b border-linha py-3 first:pt-0 last:border-b-0 last:pb-0">
       <div className="min-w-0 flex-1">

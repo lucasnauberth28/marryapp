@@ -84,9 +84,9 @@ export function LoginForm({
               className="grid size-11 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors duration-200 hover:bg-areia hover:text-tinta"
             >
               {showPassword ? (
-                <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
+                <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.6} />
               ) : (
-                <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
+                <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.6} />
               )}
             </button>
           }

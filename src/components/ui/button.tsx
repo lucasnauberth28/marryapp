@@ -5,9 +5,10 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 import { Spinner } from "@/components/ui/spinner"
 
-// Botões do design system: um primário por tela, 44px de altura (36px compacto no computador).
+// Botões do design system (Manual de Marca p.14 a 16): pílula, um primário por tela, 48px de altura no celular
+// (44px no computador, onde o painel é mais denso; 36px compacto). Foco: linha de 2px afastada 3px.
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-xl border border-transparent bg-clip-padding text-base font-semibold whitespace-nowrap transition-colors duration-150 outline-none select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-transparent bg-clip-padding text-base font-semibold whitespace-nowrap transition-colors duration-[160ms] outline-none select-none focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -31,11 +32,11 @@ const buttonVariants = cva(
       },
       size: {
         default:
-          "h-11 gap-2 px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
+          "h-12 gap-2 px-5 md:h-11 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
         xs: "h-9 gap-1 rounded-lg px-2.5 text-xs in-data-[slot=button-group]:rounded-lg sm:h-7 [&_svg:not([class*='size-'])]:size-3",
         sm: "h-11 gap-1.5 px-4 text-sm in-data-[slot=button-group]:rounded-lg sm:h-9 [&_svg:not([class*='size-'])]:size-3.5",
         lg: "h-12 gap-2 px-6 has-data-[icon=inline-end]:pr-5 has-data-[icon=inline-start]:pl-5",
-        icon: "size-11",
+        icon: "size-12 md:size-11",
         "icon-xs":
           "size-9 rounded-lg in-data-[slot=button-group]:rounded-lg sm:size-6 [&_svg:not([class*='size-'])]:size-3",
         "icon-sm":

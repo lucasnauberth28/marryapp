@@ -56,7 +56,7 @@ export function GuestHeader({
           aria-label="Voltar ao site do casal"
           className="-ml-2 grid size-11 shrink-0 place-items-center rounded-[12px] text-tinta transition-colors hover:bg-areia"
         >
-          <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.75} />
+          <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.6} />
         </Link>
         <div className="flex min-w-0 flex-col">
           <span className="truncate font-semibold leading-6 text-tinta">{title}</span>

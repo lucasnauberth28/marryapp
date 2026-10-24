@@ -151,7 +151,7 @@ function FloatField({
           {label}
           {optional ? " (opcional)" : null}
         </label>
-        {Icon ? <Icon aria-hidden="true" className="ac-float__icon" strokeWidth={1.75} /> : null}
+        {Icon ? <Icon aria-hidden="true" className="ac-float__icon" strokeWidth={1.6} /> : null}
         {prefix ? (
           <span aria-hidden="true" className="ac-float__affix ac-float__affix--prefix">
             {prefix}

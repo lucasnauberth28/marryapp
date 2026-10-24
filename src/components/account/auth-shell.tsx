@@ -62,7 +62,7 @@ export function AuthShell({
             aria-label={backLabel}
             className="grid size-11 place-items-center rounded-[12px] text-tinta transition-colors hover:bg-areia lg:hidden"
           >
-            <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.75} />
+            <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.6} />
           </Link>
           <Link href="/" aria-label="Aceito, início" className="-m-2.5 rounded-[12px] p-2.5 transition-opacity hover:opacity-80">
             <Logo height={26} priority className="lg:hidden" />

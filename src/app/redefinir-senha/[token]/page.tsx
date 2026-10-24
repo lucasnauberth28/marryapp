@@ -34,7 +34,7 @@ export default async function RedefinirSenhaPage({ params }: { params: Promise<{
       ) : (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
           <span className="grid size-14 place-items-center rounded-full bg-aviso-suave text-aviso">
-            <CircleAlert aria-hidden="true" className="size-7" strokeWidth={1.75} />
+            <CircleAlert aria-hidden="true" className="size-7" strokeWidth={1.6} />
           </span>
           <ShellHeading title="Este link não vale mais" text="Ele expirou ou já foi usado. Peça um novo link: ele chega em instantes." />
           <Link href="/esqueci-a-senha" className={cn(btn.primary, btn.block, "min-h-12")}>

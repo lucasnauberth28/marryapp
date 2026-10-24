@@ -150,7 +150,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
             const Icon = TEMPLATE_ICON[t.id as keyof typeof TEMPLATE_ICON] ?? Megaphone;
             return (
               <li key={t.id}>
-                <button type="button" onClick={() => applyTemplate(t.id)} className={cn(card, "flex min-h-16 w-full items-center gap-3 p-4 text-left transition-shadow hover:shadow-[var(--shadow-aceito-2)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa")}>
+                <button type="button" onClick={() => applyTemplate(t.id)} className={cn(card, "flex min-h-16 w-full items-center gap-3 p-4 text-left transition-shadow hover:shadow-[var(--shadow-aceito-2)] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa")}>
                   <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ameixa-suave text-ameixa">
                     <Icon className="size-5" aria-hidden="true" />
                   </span>
@@ -431,7 +431,7 @@ function DeleteDraft({ id, current }: { id: string; current: boolean }) {
           },
         )
       }
-      className="grid size-11 shrink-0 place-items-center rounded-xl text-tinta-suave hover:bg-areia hover:text-perigo focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa"
+      className="grid size-11 shrink-0 place-items-center rounded-xl text-tinta-suave hover:bg-areia hover:text-perigo focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa"
     >
       {pending ? <Spinner /> : <Trash2 className="size-4" aria-hidden="true" />}
     </button>

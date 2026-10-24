@@ -60,7 +60,7 @@ export function PlatformNavList({ counts = {}, groups = PLATFORM_NAV_GROUPS, var
                     aria-current={active ? "page" : undefined}
                     className={`flex min-h-[52px] items-center gap-3 border-b border-linha text-base last:border-b-0 ${active ? "font-semibold text-ameixa" : "text-tinta"}`}
                   >
-                    <Icon className={`size-5 shrink-0 ${active ? "text-ameixa" : "text-tinta-suave"}`} strokeWidth={1.75} aria-hidden="true" />
+                    <Icon className={`size-5 shrink-0 ${active ? "text-ameixa" : "text-tinta-suave"}`} strokeWidth={1.6} aria-hidden="true" />
                     <span className="min-w-0 flex-1 truncate">{item.name}</span>
                     {count > 0 && item.countKey && <CountMark n={count} kind={item.countKey} />}
                   </Link>
@@ -92,7 +92,7 @@ export function PlatformNavList({ counts = {}, groups = PLATFORM_NAV_GROUPS, var
                   item.child ? "ml-5 min-h-9 text-sm" : "min-h-10 text-[15px]"
                 } ${active ? "bg-ameixa-suave font-semibold text-ameixa" : "font-medium text-tinta-suave hover:bg-areia hover:text-tinta"}`}
               >
-                <Icon className={`size-5 shrink-0 ${active ? "text-ameixa" : "text-tinta-suave"}`} strokeWidth={1.75} aria-hidden="true" />
+                <Icon className={`size-5 shrink-0 ${active ? "text-ameixa" : "text-tinta-suave"}`} strokeWidth={1.6} aria-hidden="true" />
                 <span className="min-w-0 flex-1 leading-5">{item.name}</span>
                 {count > 0 && item.countKey && <CountMark n={count} kind={item.countKey} />}
               </Link>

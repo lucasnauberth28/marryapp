@@ -36,7 +36,7 @@ export function PlatformSidebar({
         href="/admin/suporte#busca"
         className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-linha-forte bg-papel px-3.5 text-[15px] font-medium text-tinta-suave transition-colors hover:border-ameixa hover:bg-ameixa-suave"
       >
-        <Search className="size-5 shrink-0" strokeWidth={1.75} aria-hidden="true" />
+        <Search className="size-5 shrink-0" strokeWidth={1.6} aria-hidden="true" />
         Buscar em tudo
       </Link>
 
@@ -60,9 +60,9 @@ export function PlatformSidebar({
             type="submit"
             aria-label="Sair"
             title="Sair"
-            className="grid size-11 cursor-pointer place-items-center rounded-xl text-perigo transition-colors hover:bg-perigo-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa"
+            className="grid size-11 cursor-pointer place-items-center rounded-xl text-perigo transition-colors hover:bg-perigo-suave focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa"
           >
-            <LogOut className="size-5" strokeWidth={1.75} aria-hidden="true" />
+            <LogOut className="size-5" strokeWidth={1.6} aria-hidden="true" />
           </button>
         </form>
       </div>

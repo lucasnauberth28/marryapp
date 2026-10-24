@@ -69,7 +69,7 @@ export default async function Page() {
           <ul className="flex gap-1 lg:flex-col">
             {SECTIONS.map((s) => (
               <li key={s.id} className="shrink-0">
-                <a href={`#${s.id}`} className="inline-flex min-h-11 items-center rounded-xl px-3 text-[15px] font-semibold text-tinta-suave hover:bg-areia hover:text-tinta focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa lg:w-full">
+                <a href={`#${s.id}`} className="inline-flex min-h-11 items-center rounded-xl px-3 text-[15px] font-semibold text-tinta-suave hover:bg-areia hover:text-tinta focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa lg:w-full">
                   {s.label}
                 </a>
               </li>

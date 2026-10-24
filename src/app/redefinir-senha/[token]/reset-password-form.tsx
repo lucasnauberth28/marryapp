@@ -49,7 +49,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
     return (
       <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
         <span className="grid size-14 place-items-center rounded-full bg-sucesso-suave text-sucesso">
-          <CheckCircle2 aria-hidden="true" className="size-7" strokeWidth={1.75} />
+          <CheckCircle2 aria-hidden="true" className="size-7" strokeWidth={1.6} />
         </span>
         <ShellHeading ref={headingRef} title="Senha trocada" text="Pronto. Agora é só entrar com a senha nova." />
         <Link href="/login" className={cn(btn.primary, btn.block, "min-h-12")}>
@@ -68,7 +68,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       aria-pressed={show}
       className="grid size-11 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
     >
-      {show ? <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.75} /> : <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />}
+      {show ? <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.6} /> : <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.6} />}
     </button>
   );
 

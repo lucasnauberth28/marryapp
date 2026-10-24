@@ -27,7 +27,7 @@ export function EmptyState({
     <div className={cn("flex flex-col items-center text-center", compact ? "gap-2 px-4 py-8" : "gap-3 px-6 py-12 md:py-16", className)}>
       {Icon && (
         <span className="mb-1 grid size-14 place-items-center rounded-full bg-areia text-tinta-suave">
-          <Icon className="size-6" strokeWidth={1.75} aria-hidden="true" />
+          <Icon className="size-6" strokeWidth={1.6} aria-hidden="true" />
         </span>
       )}
       <h3 className="font-display text-2xl font-medium leading-8 text-tinta text-balance">{title}</h3>

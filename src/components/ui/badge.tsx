@@ -20,11 +20,11 @@ const badgeVariants = cva(
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
         // Chips de status do design system: sempre com ícone e palavra (o ícone vai como filho).
-        sucesso: "h-7 rounded-md bg-sucesso-suave px-2.5 text-sm font-semibold text-sucesso",
-        aviso: "h-7 rounded-md bg-aviso-suave px-2.5 text-sm font-semibold text-aviso",
-        perigo: "h-7 rounded-md bg-perigo-suave px-2.5 text-sm font-semibold text-perigo",
-        neutro: "h-7 rounded-md bg-areia px-2.5 text-sm font-semibold text-tinta-suave",
-        categoria: "h-7 rounded-md bg-salvia-suave px-2.5 text-sm font-semibold text-salvia",
+        sucesso: "h-7 rounded-full bg-sucesso-suave px-2.5 text-sm font-semibold text-sucesso",
+        aviso: "h-7 rounded-full bg-aviso-suave px-2.5 text-sm font-semibold text-aviso",
+        perigo: "h-7 rounded-full bg-perigo-suave px-2.5 text-sm font-semibold text-perigo",
+        neutro: "h-7 rounded-full bg-areia px-2.5 text-sm font-semibold text-tinta-suave",
+        categoria: "h-7 rounded-full bg-salvia-suave px-2.5 text-sm font-semibold text-salvia",
       },
     },
     defaultVariants: {

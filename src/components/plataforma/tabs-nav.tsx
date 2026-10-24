@@ -52,7 +52,7 @@ export function TabsNav({
                 href={href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-lg px-4 text-[15px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa sm:min-h-9",
+                  "inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-lg px-4 text-[15px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa sm:min-h-9",
                   isActive ? "bg-papel text-ameixa shadow-[var(--shadow-aceito-1)]" : "text-tinta-suave hover:text-tinta",
                 )}
               >

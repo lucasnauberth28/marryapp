@@ -195,13 +195,13 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
                 <div className="mt-4 flex flex-col gap-1 text-sm leading-5 text-tinta-suave">
                   {dateLabel ? (
                     <span className="inline-flex items-center justify-center gap-2">
-                      <CalendarDays aria-hidden="true" className="size-4 shrink-0" strokeWidth={1.75} />
+                      <CalendarDays aria-hidden="true" className="size-4 shrink-0" strokeWidth={1.6} />
                       {dateLabel}
                     </span>
                   ) : null}
                   {locationName ? (
                     <span className="inline-flex items-center justify-center gap-2">
-                      <MapPin aria-hidden="true" className="size-4 shrink-0" strokeWidth={1.75} />
+                      <MapPin aria-hidden="true" className="size-4 shrink-0" strokeWidth={1.6} />
                       {locationName}
                     </span>
                   ) : null}
@@ -334,7 +334,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
               href={weddingSitePath(slug, "presentes")}
               className="flex min-h-12 items-center gap-3 font-semibold text-tinta no-underline"
             >
-              <Gift aria-hidden="true" className="size-5 text-ameixa" strokeWidth={1.75} />
+              <Gift aria-hidden="true" className="size-5 text-ameixa" strokeWidth={1.6} />
               <span className="flex-1">Ver os presentes em dinheiro</span>
               <ArrowRight aria-hidden="true" className="size-4 text-tinta-suave" />
             </Link>

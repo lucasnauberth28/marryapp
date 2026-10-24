@@ -68,7 +68,7 @@ const SORTS: { value: SortKey; label: string }[] = [
 
 // Campos do design: 44px de altura, borda forte, raio de 12px.
 const field =
-  "min-h-11 w-full rounded-[12px] border border-linha-forte bg-papel px-4 text-base leading-6 text-tinta transition-colors duration-150 hover:border-tinta-suave focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ameixa";
+  "min-h-11 w-full rounded-[12px] border border-linha-forte bg-papel px-4 text-base leading-6 text-tinta transition-colors duration-150 hover:border-tinta-suave focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa";
 
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
