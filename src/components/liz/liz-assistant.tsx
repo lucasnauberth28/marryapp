@@ -11,11 +11,11 @@ import { useLizHidden } from "./use-liz-hidden";
 import "./liz.css";
 
 /**
- * Acesso rápido fixo à Liz: botão flutuante no painel do casal e o painel que ele abre.
- * Posição: no celular, canto inferior direito (a mão que segura o celular), 56px, acima da barra inferior e da área segura.
- * No computador é uma pílula com o rosto e o nome, sobre o canto de baixo da barra lateral, e o painel é um popover de 400px
- * ancorado a ela; no celular, uma folha inferior.
- * Hoje a Liz sugere o próximo passo e responde dúvidas pelo guia de ajuda; não é IA nem conversa.
+ * Acesso rápido fixo à Liz: botão flutuante no painel do casal e a conversa que ele abre.
+ * Posição: sempre no canto inferior direito. No celular é redondo (56px), acima da barra inferior e da área segura;
+ * no computador é uma pílula com o rosto e o nome. A conversa é um popover de 400px ancorado ao botão no computador
+ * e uma folha inferior no celular.
+ * Hoje a Liz conversa por assuntos prontos: sugere o próximo passo e responde dúvidas pelo guia de ajuda; não é IA livre.
  */
 
 const MOBILE_QUERY = "(max-width: 767px)";
@@ -109,8 +109,8 @@ export function LizAssistant({ allowedPaths }: { allowedPaths: readonly string[]
         ref={fabRef}
         type="button"
         data-tour="liz"
-        aria-label="Perguntar à Liz"
-        title="Perguntar à Liz"
+        aria-label="Falar com a Liz"
+        title="Falar com a Liz"
         aria-expanded={open}
         aria-controls={panelId}
         aria-haspopup="dialog"
@@ -129,7 +129,7 @@ export function LizAssistant({ allowedPaths }: { allowedPaths: readonly string[]
           <LizAvatar size={40} decorative className="max-md:size-[52px]!" />
         )}
         <span className="hidden text-sm font-semibold md:inline" aria-hidden="true">
-          Perguntar à Liz
+          Falar com a Liz
         </span>
       </button>
 
@@ -145,7 +145,7 @@ export function LizAssistant({ allowedPaths }: { allowedPaths: readonly string[]
             aria-modal={mobile ? true : undefined}
             aria-labelledby={titleId}
             tabIndex={-1}
-            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[88dvh] flex-col rounded-t-3xl border-t border-linha bg-papel text-tinta shadow-[var(--shadow-aceito-2)] outline-none animate-in fade-in slide-in-from-bottom-4 duration-200 md:inset-x-auto md:left-4 md:right-auto md:bottom-[calc(1rem+52px+12px)] md:max-h-[min(640px,calc(100dvh-8rem))] md:w-[400px] md:rounded-2xl md:border"
+            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[88dvh] flex-col rounded-t-3xl border-t border-linha bg-papel text-tinta shadow-[var(--shadow-aceito-2)] outline-none animate-in fade-in slide-in-from-bottom-4 duration-200 md:inset-x-auto md:left-auto md:right-6 md:bottom-[calc(1.25rem+52px+12px)] md:h-[min(640px,calc(100dvh-8rem))] md:max-h-none md:w-[400px] md:rounded-2xl md:border"
           >
             <LizPanel
               allowedPaths={allowedPaths}

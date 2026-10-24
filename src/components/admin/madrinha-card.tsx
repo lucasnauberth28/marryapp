@@ -92,7 +92,7 @@ export function MadrinhaCard({ id, text, actionLabel, actionHref, pose = "sugeri
           Agora não
         </button>
         <button type="button" onClick={openLiz} className={`${btn.quiet} ${btn.sm}`}>
-          Perguntar à Liz
+          Falar com a Liz
         </button>
       </div>
     </aside>

@@ -30,7 +30,7 @@ test("convidado presenteia no site do casal e recebe um Pix copia e cola", async
   await expect(resumo).toContainText("Se o plano do casal tiver taxa");
   await expect(resumo).not.toContainText(/repasse|prazo|dias úteis/i);
   // O botão da Liz é do painel do casal: não aparece no checkout
-  await expect(pagina.getByRole("button", { name: "Perguntar à Liz" })).toHaveCount(0);
+  await expect(pagina.getByRole("button", { name: "Falar com a Liz" })).toHaveCount(0);
 
   await pagina.getByRole("button", { name: "Gerar Pix" }).click();
 

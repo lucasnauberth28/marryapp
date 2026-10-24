@@ -24,7 +24,7 @@ export interface LizPanelData {
   /** Sugestão para agora, ou null quando não há nada a sugerir. */
   tip: LizTip | null;
   /** O que o plano do casamento inclui, para o guia avisar "é do plano Classic". */
-  planModules: { whatsapp: boolean; qrcode: boolean; customDomain: boolean };
+  planModules: { whatsapp: boolean; qrcode: boolean; customDomain: boolean; tables3d: boolean };
   /** As perguntas vão a um provedor de IA? Hoje é sempre false: a Liz responde pelo guia de ajuda. */
   chatEnabled: boolean;
 }
@@ -42,10 +42,11 @@ export async function getLizPanelData(): Promise<LizPanelResult> {
     const now = new Date();
     const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: SP }).format(now);
 
-    const [whatsapp, qrcode, customDomain, chatEnabled] = await Promise.all([
+    const [whatsapp, qrcode, customDomain, tables3d, chatEnabled] = await Promise.all([
       weddingHasModule({ weddingId, session }, "whatsapp"),
       weddingHasModule({ weddingId, session }, "qrcode"),
       weddingHasModule({ weddingId, session }, "customDomain"),
+      weddingHasModule({ weddingId, session }, "tables3d"),
       readLizChatEnabled(),
     ]);
 
@@ -89,7 +90,7 @@ export async function getLizPanelData(): Promise<LizPanelResult> {
       allowedPaths: session.allowedPaths,
     });
 
-    return { success: true, data: { tip, planModules: { whatsapp, qrcode, customDomain }, chatEnabled } };
+    return { success: true, data: { tip, planModules: { whatsapp, qrcode, customDomain, tables3d }, chatEnabled } };
   } catch (error) {
     if (!(error instanceof AuthorizationError)) console.error("[getLizPanelData Error]:", error);
     return { success: false, error: LOAD_ERROR };
@@ -120,6 +121,7 @@ export async function askLiz(input: unknown): Promise<AskLizResult> {
         whatsapp: await weddingHasModule({ weddingId, session }, "whatsapp"),
         qrcode: await weddingHasModule({ weddingId, session }, "qrcode"),
         customDomain: await weddingHasModule({ weddingId, session }, "customDomain"),
+        tables3d: await weddingHasModule({ weddingId, session }, "tables3d"),
       },
     };
     const provider = getLizProvider();

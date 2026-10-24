@@ -167,11 +167,11 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     title: "Como envio convites e lembretes pelo WhatsApp?",
     keywords: ["whatsapp", "mensagem", "modelo", "convite inicial", "lembrete de confirmacao", "enviar convite", "disparo", "texto"],
     answer:
-      "Em Mensagens, vocês escrevem modelos e enviam convites e lembretes pelo WhatsApp do painel. O envio só acontece quando vocês tocam no botão de enviar: o Aceito não manda nada sozinho.",
+      "Em Mensagens, vocês escrevem mensagens e enviam convites e lembretes pelo WhatsApp do painel. O envio só acontece quando vocês tocam no botão de enviar: o Aceito não manda nada sozinho.",
     steps: [
-      "Abram Mensagens. Os modelos Convite inicial e Lembrete de confirmação já vêm prontos.",
-      "Editem o texto, se quiserem. O {nome} vira o nome de cada convidado. Salvem o modelo antes de enviar.",
-      "Toquem em Enviar convite ou em Enviar lembrete, ou escolham quem recebe em Enviar pelo WhatsApp. Só entra quem tem telefone cadastrado.",
+      "Abram Mensagens. Os envios rápidos mandam o convite e o lembrete com um toque; as mensagens de convite e de lembrete já vêm prontas.",
+      "Para mudar o texto, toquem em Editar na mensagem. O {nome} vira o nome de cada convidado, e a prévia mostra como chega.",
+      "Para enviar a quem quiserem, toquem em Enviar na mensagem e escolham quem recebe. Só entra quem tem telefone cadastrado.",
       "Em Configurações, Conexão do WhatsApp mostra se o envio está disponível.",
     ],
     action: { label: "Ir para Mensagens", href: "/mensagens" },
@@ -188,7 +188,7 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     steps: [
       "Abram a Lista de convidados e escolham o filtro Sem resposta.",
       "Toquem em Abrir mensagens para os sem resposta.",
-      "Em Mensagens, conferam o modelo Lembrete de confirmação e toquem em Enviar lembrete.",
+      "Em Mensagens, toquem em Enviar lembrete nos envios rápidos, ou em Enviar na mensagem de lembrete para escolher quem recebe.",
     ],
     action: { label: "Ir para Mensagens", href: "/mensagens" },
     path: "/mensagens",
@@ -207,6 +207,21 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     ],
     action: { label: "Ir para Mesas", href: "/mesas" },
     path: "/mesas",
+  },
+  {
+    id: "mesas-3d",
+    title: "Como uso as mesas em 3D e compartilho com os convidados?",
+    keywords: ["3d", "tres d", "cenario", "mapa das mesas", "link", "compartilhar mesas", "visualizar", "salao", "jardim", "rustico"],
+    answer:
+      "Nas mesas em 3D, vocês escolhem o cenário do casamento e sentam os convidados vendo o salão. O link de visualização é só para ver: os convidados acham a própria mesa, e só vocês alteram as mesas.",
+    steps: [
+      "Em Mesas, toquem em Ver em 3D e escolham o cenário.",
+      "Arrastem o convidado até a mesa. No celular, toquem no nome e depois na mesa.",
+      "Toquem em Compartilhar para criar o link do mapa. Se ele vazar, gerem um novo: o antigo para de funcionar.",
+    ],
+    action: { label: "Ir para as mesas em 3D", href: "/mesas/3d" },
+    path: "/mesas",
+    planModule: "tables3d",
   },
   {
     id: "financas",
@@ -376,11 +391,11 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     title: "O que a Liz faz?",
     keywords: ["liz", "assistente", "madrinha", "sugestao", "inteligencia artificial", "ia", "chat", "robo"],
     answer:
-      "A Liz sugere o próximo passo com base no que está no painel de vocês e responde dúvidas sobre o painel, pelo guia de ajuda. Ela não conversa livremente e nunca faz nada por vocês: vocês escolhem o que fazer.",
+      "A Liz é uma conversa com assuntos prontos: sugere o próximo passo com base no que está no painel de vocês e responde dúvidas pelo guia de ajuda. Ela não conversa livremente e nunca faz nada por vocês: vocês escolhem o que fazer.",
     steps: [
-      "Em Sugestão para agora, a Liz mostra o que merece atenção, com os números reais do casamento.",
-      "Em Pergunte sobre o painel, vocês procuram uma dúvida no guia de ajuda.",
-      "Em Dúvidas comuns, vocês abrem as respostas mais pedidas e vão direto à tela certa.",
+      "Toquem no botão da Liz, fixo no canto da tela, para abrir a conversa.",
+      "Escolham um assunto, ou O que fazer agora?, para ver o que merece atenção, com os números reais do casamento.",
+      "Dentro do assunto, toquem na dúvida para abrir a resposta com os passos e ir direto à tela certa. Também dá para escrever a dúvida.",
     ],
     action: { label: "Ir para o Início", href: "/dashboard" },
     path: "/dashboard",

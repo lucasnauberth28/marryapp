@@ -1,15 +1,17 @@
-/* Botão fixo da Liz: ancoragem única, lida também pelos avisos (sonner) e pelos botões de adicionar do celular.
-   Celular: redondo, no canto direito, acima da barra inferior (56px + borda) e da área segura.
-   Computador: pílula com o nome, no canto de baixo da barra lateral (sobre ela, para não cobrir dados da página). */
+/* Botão fixo da Liz: ancoragem única, no canto inferior direito, lida também pelos avisos (sonner) e pelos botões de adicionar do celular.
+   Celular: redondo (56px), acima da barra inferior (borda inclusa) e da área segura.
+   Computador: pílula com o rosto e o nome (52px de altura). */
 :root {
   --liz-fab-bottom: calc(max(env(safe-area-inset-bottom), 8px) + 73px);
   --liz-fab-right: 1rem;
+  --liz-fab-size: 56px;
 }
 
 @media (min-width: 768px) {
   :root {
-    --liz-fab-bottom: 1rem;
-    --liz-fab-left: 1rem;
+    --liz-fab-bottom: 1.25rem;
+    --liz-fab-right: 1.5rem;
+    --liz-fab-size: 52px;
   }
 }
 
@@ -20,17 +22,7 @@
   z-index: 30;
 }
 
-@media (min-width: 768px) {
-  .liz-fab {
-    right: auto;
-    left: var(--liz-fab-left);
-  }
-}
-
-/* Celular: os avisos (sonner) sobem para não cobrir o botão (o sonner fixa o `bottom` em linha, por isso o !important).
-   No computador o botão fica à esquerda e os avisos à direita. */
-@media (max-width: 767px) {
-  body[data-liz-fab] [data-sonner-toaster][data-y-position="bottom"] {
-    bottom: calc(var(--liz-fab-bottom) + 56px + 12px) !important;
-  }
+/* Os avisos (sonner) sobem para não cobrir o botão (o sonner fixa o `bottom` em linha, por isso o !important). */
+body[data-liz-fab] [data-sonner-toaster][data-y-position="bottom"] {
+  bottom: calc(var(--liz-fab-bottom) + var(--liz-fab-size) + 12px) !important;
 }
