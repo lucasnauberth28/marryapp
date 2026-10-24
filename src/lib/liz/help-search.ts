@@ -45,7 +45,7 @@ function stem(word: string): string {
 }
 
 /** Palavras úteis de um texto, normalizadas e sem plural. */
-export function searchTokens(text: string): string[] {
+function searchTokens(text: string): string[] {
   return normalizeSearchText(text)
     .split(" ")
     .filter((w) => w && !STOPWORDS.has(w))
@@ -65,7 +65,7 @@ const W_BODY = 1;
 const ALL_WORDS_BONUS = 3;
 
 /** Pontos de um artigo para a pergunta; 0 quando nada combina. */
-export function scoreArticle(queryWords: readonly string[], article: HelpArticle): number {
+function scoreArticle(queryWords: readonly string[], article: HelpArticle): number {
   if (queryWords.length === 0) return 0;
   const title = searchTokens(article.title);
   const keywords = article.keywords.flatMap(searchTokens);

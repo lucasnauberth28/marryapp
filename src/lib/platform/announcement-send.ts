@@ -28,7 +28,7 @@ const BATCH = 40;
 const EMAIL_CONCURRENCY = 3;
 const STALE_CLAIM_MS = 3 * 60 * 1000;
 
-export interface AnnouncementContent {
+interface AnnouncementContent {
   id: string;
   title: string;
   emailSubject: string | null;

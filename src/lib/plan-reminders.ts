@@ -1,7 +1,7 @@
 // Regras puras dos avisos de vencimento do plano do fornecedor (sem banco nem Next), testáveis isoladamente.
 
 /** Avisos enviados antes do fim do período pago, em dias. Cada um sai uma vez por período. */
-export const PLAN_REMINDER_DAYS = [7, 1] as const;
+const PLAN_REMINDER_DAYS = [7, 1] as const;
 export type PlanReminderDay = (typeof PLAN_REMINDER_DAYS)[number];
 
 const DAY_MS = 24 * 60 * 60 * 1000;

@@ -6,13 +6,10 @@ import { moduleRefusal } from "@/lib/wedding-plan";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { sendTextMessage, sendBulkMessages } from "@/lib/evolution";
 import { RsvpStatus } from "@prisma/client";
 import { rateLimitByIp } from "@/lib/security/rate-limiter";
-import { weddingSiteUrl } from "@/lib/wedding-links";
 import { deferNotify } from "@/lib/notifications/service";
 import { notifyRsvp } from "@/lib/notifications/events";
-import { notGiftOnlyWhere } from "@/lib/guest-origin";
 import { TOO_MANY_ATTEMPTS_MESSAGE } from "@/lib/rate-limit-message";
 import type { GuestLookup } from "@/lib/rsvp-lookup";
 import { logAudit } from "@/lib/audit";
@@ -97,16 +94,6 @@ export async function getGuests(filter?: RsvpStatus) {
     orderBy: { createdAt: "desc" },
   });
 }
-
-export async function getGuestById(id: string) {
-  const { weddingId } = await requireWeddingRead("/convidados");
-  if (typeof id !== "string") return null;
-  return prisma.guest.findFirst({
-    where: { id, weddingId },
-    include: { parentGuest: true, linkedGuests: true, table: true },
-  });
-}
-
 /** O titular vinculado precisa ser um convidado do mesmo casamento. */
 async function resolveParentGuestId(weddingId: string, parentGuestId: string | null, selfId?: string) {
   if (!parentGuestId || parentGuestId === selfId) return { ok: true as const, value: null };
@@ -320,100 +307,6 @@ export async function deleteGuest(id: string) {
     return { success: false, error: "Erro ao excluir convidado." };
   }
 }
-
-// ==========================================
-// COMUNICAÇÃO WHATSAPP
-// ==========================================
-
-/**
- * Envia o convite individual para um convidado via WhatsApp.
- * Inclui botões interativos para confirmar presença e ver lista de presentes.
- */
-export async function sendInvite(guestId: string) {
-  const { weddingId, wedding, session } = await requireWedding("/convidados");
-  const refusal = await moduleRefusal({ weddingId, session }, "whatsapp");
-  if (refusal) return { success: false, error: refusal };
-  if (typeof guestId !== "string") return { success: false, error: "Convidado não encontrado." };
-  const guest = await prisma.guest.findFirst({ where: { id: guestId, weddingId } });
-  if (!guest?.phone) {
-    return { success: false, error: "Convidado sem telefone cadastrado." };
-  }
-
-  const message = `💍 *Você está convidado!*\n\nOlá, *${guest.name}*!\n\nTemos a honra de convidá-lo(a) para o nosso casamento.\n\nPor favor, confirme sua presença e veja nossa lista de presentes acessando os links abaixo:\n\n✅ *Confirmar Presença:* ${weddingSiteUrl(wedding.slug, "rsvp", wedding.customDomain)}\n🎁 *Lista de Presentes:* ${weddingSiteUrl(wedding.slug, "presentes", wedding.customDomain)}\n\nAguardamos você! ❤️`;
-
-  const result = await sendTextMessage({
-    phone: guest.phone,
-    text: message,
-  });
-
-  if (result.success) {
-    await prisma.guest.updateMany({
-      where: { id: guest.id, weddingId },
-      data: { hasReceivedMessage: true },
-    });
-    revalidatePath("/convidados");
-  }
-
-  return result;
-}
-
-/**
- * Dispara lembretes em massa.
- *
- * Filtro PENDING → Lembrete inicial de RSVP.
- * Filtro CONFIRMED_CLOSE → Reconfirmação para casamento em ≤ 15 dias.
- */
-export async function sendBulkReminders(
-  filter: "PENDING" | "CONFIRMED_CLOSE",
-  weddingDate?: Date
-) {
-  const { weddingId, wedding, session } = await requireWedding("/convidados");
-  const refusal = await moduleRefusal({ weddingId, session }, "whatsapp");
-  if (refusal) return { success: false, error: refusal };
-  let guests;
-
-  if (filter === "PENDING") {
-    guests = await prisma.guest.findMany({
-      where: { weddingId, rsvpStatus: RsvpStatus.PENDING, phone: { not: null }, ...notGiftOnlyWhere },
-    });
-  } else {
-    const now = new Date();
-    const threshold = weddingDate ?? new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000);
-    guests = await prisma.guest.findMany({
-      where: {
-        weddingId,
-        rsvpStatus: RsvpStatus.CONFIRMED,
-        phone: { not: null },
-      },
-    });
-    // Filtra por data do casamento (threshold)
-    guests = guests.filter(() => {
-      const daysUntil = Math.ceil(
-        (threshold.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      return daysUntil <= 15;
-    });
-  }
-
-  if (guests.length === 0) {
-    return { success: true, sent: 0, message: "Nenhum convidado encontrado para esse filtro." };
-  }
-
-  const rsvpUrl = weddingSiteUrl(wedding.slug, "rsvp", wedding.customDomain);
-  const messages = guests.map((g) => ({
-    phone: g.phone!,
-    message:
-      filter === "PENDING"
-        ? `Olá, ${g.name}! 💌 Ainda não recebemos sua confirmação de presença para o nosso casamento. Confirme pelo link: ${rsvpUrl}`
-        : `Olá, ${g.name}! 🎉 O grande dia está chegando! Sua presença está confirmada. Aguardamos você com muito carinho!`,
-  }));
-
-  const results = await sendBulkMessages(messages);
-  const sentCount = results.filter((r) => r.success).length;
-
-  return { success: true, sent: sentCount, total: guests.length };
-}
-
 // ==========================================
 // RSVP PÚBLICO
 // ==========================================

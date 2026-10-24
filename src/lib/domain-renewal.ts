@@ -1,7 +1,7 @@
 // Regras puras do aviso de renovação do domínio próprio (sem banco nem Next, testadas isoladamente).
 // O domínio do plano VIP vale 1 ano no Registro.br; avisamos o casal 60 e 30 dias antes do vencimento, uma vez cada.
 
-export const RENEWAL_REMINDER_DAYS = [60, 30] as const;
+const RENEWAL_REMINDER_DAYS = [60, 30] as const;
 export type RenewalReminderDay = (typeof RENEWAL_REMINDER_DAYS)[number];
 
 const DAY_MS = 24 * 60 * 60 * 1000;

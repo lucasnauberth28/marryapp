@@ -29,7 +29,7 @@ import {
 
 export type PlatformCountKey = "curadoria" | "planos" | "dominios" | "suporte" | "saude";
 
-export interface PlatformNavItem {
+interface PlatformNavItem {
   name: string;
   href: string;
   icon: LucideIcon;

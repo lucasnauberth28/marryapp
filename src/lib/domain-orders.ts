@@ -53,7 +53,7 @@ type OrderRow = {
   rejectionReason: string | null;
 };
 
-export function toOrderView(row: OrderRow): DomainOrderView {
+function toOrderView(row: OrderRow): DomainOrderView {
   return {
     id: row.id,
     domain: row.domain,

@@ -3,7 +3,6 @@
 import { getWeddingBySlug, requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
 import {
   ensureSiteCustomization,
-  getApprovedGuestBookEntries,
   getWeddingStoryItems,
   getWeddingTipsList,
 } from "@/lib/wedding-data";
@@ -245,20 +244,6 @@ export async function deleteWeddingTip(id: string) {
     return { success: false, error: (error instanceof Error ? error.message : undefined) || "Não deu para remover a dica. Tente de novo." };
   }
 }
-
-/**
- * Mural de Recados dos Convidados (Guestbook)
- */
-export async function getGuestBookEntries() {
-  const { weddingId } = await requireWeddingRead("/site-builder");
-  try {
-    return await getApprovedGuestBookEntries(weddingId);
-  } catch (error) {
-    console.error("[getGuestBookEntries Error]:", error);
-    return [];
-  }
-}
-
 const GuestBookSchema = z.object({
   authorName: z.string().trim().min(2, "Informe seu nome.").max(80),
   message: z.string().trim().min(2, "Escreva uma mensagem.").max(1000, "Mensagem muito longa (máx. 1000 caracteres)."),

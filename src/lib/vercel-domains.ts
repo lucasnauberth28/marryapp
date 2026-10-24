@@ -3,7 +3,7 @@ import { connectDomain, verifyDomain, type ConnectionResult, type VercelConfig }
 
 // Variáveis (Vercel > Settings): VERCEL_API_TOKEN, VERCEL_PROJECT_ID e, se o projeto for de um time,
 // VERCEL_TEAM_ID. VERCEL_API_BASE só serve para testes locais com um servidor de mentira.
-export function vercelConfigFromEnv(): VercelConfig | null {
+function vercelConfigFromEnv(): VercelConfig | null {
   const token = process.env.VERCEL_API_TOKEN?.trim();
   const projectId = process.env.VERCEL_PROJECT_ID?.trim();
   if (!token || !projectId) return null;

@@ -187,7 +187,7 @@ const looksLikePhone = (v: string) => /^[+()\d\s.-]+$/.test(v) && v.replace(/\D/
 const looksLikeSmallNumber = (v: string) => /^\d{1,2}$/.test(v);
 
 /** Mapeia as colunas pelo título; só vale como cabeçalho se acharmos a coluna de nome. */
-export function detectHeader(cells: string[]): ColumnMap | null {
+function detectHeader(cells: string[]): ColumnMap | null {
   // Uma linha com telefone ou e-mail é de convidado, não de títulos (mesmo que o nome pareça um título)
   if (cells.some((c) => looksLikeEmail(c) || looksLikePhone(c))) return null;
   const map: ColumnMap = {};
@@ -199,7 +199,7 @@ export function detectHeader(cells: string[]): ColumnMap | null {
 }
 
 /** Sem cabeçalho: descobre o papel de cada coluna olhando o conteúdo (e-mail, telefone, número, texto). */
-export function inferColumns(rows: string[][]): ColumnMap {
+function inferColumns(rows: string[][]): ColumnMap {
   const width = Math.max(0, ...rows.map((r) => r.length));
   const map: ColumnMap = {};
   const used = new Set<number>();
@@ -241,7 +241,7 @@ export function inferColumns(rows: string[][]): ColumnMap {
 // ---------------------------------------------------------------------------
 
 /** Como a linha vai para o servidor: já limpa e normalizada. */
-export interface ImportGuest {
+interface ImportGuest {
   line: number;
   name: string;
   /** Só dígitos, DDD + número (10 ou 11 dígitos), ou null. */
@@ -293,7 +293,7 @@ function parseCount(raw: string): number | null {
 }
 
 /** Limpa uma linha de dados e aponta o problema, se houver. */
-export function buildImportRow(row: DelimitedRow, columns: ColumnMap): ImportRow {
+function buildImportRow(row: DelimitedRow, columns: ColumnMap): ImportRow {
   const name = cell(row.cells, columns.name).replace(/\s+/g, " ");
   const rawPhone = cell(row.cells, columns.phone);
   const rawEmail = cell(row.cells, columns.email);
@@ -378,7 +378,7 @@ export interface ExistingGuest {
   phone: string | null;
 }
 
-export type DuplicateReason = "existing" | "in_file";
+type DuplicateReason = "existing" | "in_file";
 
 export interface ImportPlan {
   toAdd: ImportRow[];

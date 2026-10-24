@@ -15,7 +15,7 @@ export interface LizAskContext extends HelpAudience {
 }
 
 /** Referência a um artigo do guia, com o aviso do plano quando o recurso não está incluído. */
-export type LizAnswerHit = HelpHit;
+type LizAnswerHit = HelpHit;
 
 export type LizAnswer =
   /** Resposta do guia: artigos que combinam com a pergunta (lista vazia = não sei responder). */

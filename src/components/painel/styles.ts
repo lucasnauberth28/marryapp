@@ -26,10 +26,6 @@ export const hint = "text-sm leading-5 text-tinta-suave";
 
 export const input =
   "min-h-11 w-full rounded-xl border border-linha-forte bg-papel px-4 text-base leading-6 text-tinta transition-colors placeholder:text-tinta-suave hover:border-tinta-suave disabled:opacity-60 aria-[invalid=true]:border-2 aria-[invalid=true]:border-perigo";
-
-export const textarea =
-  "w-full rounded-xl border border-linha-forte bg-papel px-4 py-3 text-base leading-6 text-tinta transition-colors placeholder:text-tinta-suave hover:border-tinta-suave disabled:opacity-60";
-
 export const overline = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
 
 export const errorBox = "flex items-start gap-2 rounded-xl border border-perigo/40 bg-perigo-suave px-3 py-2 text-sm font-semibold text-perigo";

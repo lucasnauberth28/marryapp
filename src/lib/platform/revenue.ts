@@ -25,7 +25,7 @@ export function shiftMonthKey(key: string, delta: number): string {
 }
 
 /** "Out" para "2026-10". */
-export function monthShortLabel(key: string): string {
+function monthShortLabel(key: string): string {
   return MONTHS[Number(key.split("-")[1]) - 1] ?? key;
 }
 

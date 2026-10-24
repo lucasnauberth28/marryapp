@@ -12,8 +12,8 @@ export type AuthMode = "entrar" | "criar";
 export type AccountType = "casal" | "fornecedor";
 export type SignupStep = "tipo" | "plano" | "dados" | "pagamento" | "pronto";
 
-export const COUPLE_PLAN_KEYS = ["basic", "classic", "vip"] as const satisfies readonly PlanKey[];
-export const VENDOR_PLAN_KEYS = ["start", "pro", "master"] as const satisfies readonly PlanKey[];
+const COUPLE_PLAN_KEYS = ["basic", "classic", "vip"] as const satisfies readonly PlanKey[];
+const VENDOR_PLAN_KEYS = ["start", "pro", "master"] as const satisfies readonly PlanKey[];
 
 /** Plano mostrado na tela: os do catálogo ou o adaptado (montado em /monte-seu-plano). */
 export interface PlanOption {
@@ -44,7 +44,7 @@ export function planOption(key: PlanKey, catalog: Catalog = fallbackCatalog()): 
   };
 }
 
-export function customPlanOption(modules: string[], catalog: Catalog = fallbackCatalog()): PlanOption | null {
+function customPlanOption(modules: string[], catalog: Catalog = fallbackCatalog()): PlanOption | null {
   const calc = customPlanPriceIn(catalog, modules);
   if (calc.selectedModules.length === 0) return null;
   return {
@@ -84,7 +84,7 @@ export interface AuthPhoto {
   position?: string;
 }
 
-export const PHOTOS = {
+const PHOTOS = {
   entrar: {
     src: "/images/acesso/convite-aliancas.webp",
     alt: "Convite com selo de cera ameixa, alianças num pratinho e peônias rosa sobre uma mesa de madeira",

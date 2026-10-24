@@ -7,7 +7,7 @@ import { navAnchor } from "@/lib/tour/steps";
 
 export type NavCounts = Partial<Record<NavCountKey, number>>;
 
-export const COUNT_HINT: Record<NavCountKey, string> = { guests: "no total", messages: "sem resposta", tasks: "em aberto", domains: "aguardando" };
+const COUNT_HINT: Record<NavCountKey, string> = { guests: "no total", messages: "sem resposta", tasks: "em aberto", domains: "aguardando" };
 
 /** Número ao lado do nome; o complemento fica só para leitores de tela. */
 export function CountMark({ n, kind, className = "" }: { n: number; kind: NavCountKey; className?: string }) {

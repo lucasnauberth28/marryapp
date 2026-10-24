@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
  */
 
 /** "9,6 mil" a partir de R$ 1.000; abaixo disso, reais inteiros. */
-export function compactBRL(cents: number): string {
+function compactBRL(cents: number): string {
   if (cents >= 100_000) return `${(cents / 100_000).toFixed(1).replace(".", ",").replace(/,0$/, "")} mil`;
   return `R$ ${Math.round(cents / 100)}`;
 }

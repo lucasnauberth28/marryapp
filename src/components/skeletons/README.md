@@ -139,9 +139,7 @@ Barras no desenho do `RevenueChart`. `height=190`, `bars=6`, `variant: "bars"|"a
 
 - `<Button loading>`: spinner no centro, desabilitado, `aria-busy`; o rótulo fica invisível no lugar, então a largura não muda.
   Com `asChild` só marca `aria-busy`/`aria-disabled` (sem spinner).
-- `<SubmitButton>` (`@/components/ui/submit-button`): `Button type="submit"` que liga `loading` sozinho enquanto o
-  `<form action={serverAction}>` roda (`useFormStatus`). Formulário com `onSubmit`/estado próprio usa
-  `<Button loading={pendente}>`.
+- Formulário com `<form action={serverAction}>` ou estado próprio usa `<Button loading={pendente}>`.
 
 ## Imagens
 

@@ -98,7 +98,7 @@ export const ACTION_LABEL: Record<string, string> = {
   "whatsapp.reconnect": "Gerou o código para reconectar o WhatsApp",
 };
 
-export const TARGET_LABEL: Record<string, string> = {
+const TARGET_LABEL: Record<string, string> = {
   subscription: "Assinatura",
   coupon: "Cupom",
   partner_vendor: "Fornecedor",
@@ -126,7 +126,7 @@ export const TARGET_LABEL: Record<string, string> = {
 };
 
 /** Nome das configurações da plataforma (targetId de platform_setting.update). */
-export const SETTING_LABEL: Record<string, string> = {
+const SETTING_LABEL: Record<string, string> = {
   maintenance: "Modo de manutenção",
   refundPolicy: "Política de reembolso",
   emailSender: "Remetente dos e-mails",

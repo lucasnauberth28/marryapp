@@ -2,8 +2,8 @@
 import { z } from "zod";
 
 /** Prazo para responder a pedidos de titulares. CONFIRME COM O JURÍDICO antes de tratar como regra definitiva. */
-export const DATA_REQUEST_DAYS = 15;
-export const DATA_REQUEST_ALERT_DAYS = 5;
+const DATA_REQUEST_DAYS = 15;
+const DATA_REQUEST_ALERT_DAYS = 5;
 const DAY_MS = 86_400_000;
 
 export const TICKET_STATUSES = ["NEW", "IN_PROGRESS", "ANSWERED", "CLOSED"] as const;
@@ -22,13 +22,6 @@ export const DATA_REQUEST_TYPE_LABEL: Record<(typeof DATA_REQUEST_TYPES)[number]
   OTHER: "Outro pedido",
 };
 export const DATA_REQUEST_STATUSES = ["NEW", "IN_REVIEW", "DONE", "REFUSED"] as const;
-export const DATA_REQUEST_STATUS_LABEL: Record<(typeof DATA_REQUEST_STATUSES)[number], string> = {
-  NEW: "Novo",
-  IN_REVIEW: "Em análise",
-  DONE: "Pronto",
-  REFUSED: "Recusado",
-};
-
 /** Prazo legal = recebimento + 15 dias (mesmo instante, em milissegundos). */
 export function dataRequestDueAt(receivedAt: Date): Date {
   return new Date(receivedAt.getTime() + DATA_REQUEST_DAYS * DAY_MS);

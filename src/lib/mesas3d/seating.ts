@@ -17,7 +17,7 @@ export interface Group {
 }
 
 const NO_GROUP = "__sem_grupo";
-export const GROUP_COLORS = ["#B2467F", "#5E2B4E", "#D18DB8", "#5F7FA6", "#6F9A6B", "#C8963E", "#7A6AA8", "#C06A5A"] as const;
+const GROUP_COLORS = ["#B2467F", "#5E2B4E", "#D18DB8", "#5F7FA6", "#6F9A6B", "#C8963E", "#7A6AA8", "#C06A5A"] as const;
 const NEUTRAL_COLOR = "#8E878B";
 
 /** Lugares de um convidado: ele e quem ele pode levar. */
@@ -25,7 +25,7 @@ export function seatsOfGuest(allowedCompanions: number | null | undefined): numb
   return 1 + Math.max(0, Math.round(allowedCompanions ?? 0));
 }
 
-export function groupKey(category: string | null | undefined): string {
+function groupKey(category: string | null | undefined): string {
   const c = (category ?? "").trim();
   return c ? c.toLowerCase() : NO_GROUP;
 }
@@ -80,7 +80,7 @@ export function seatColors(occ: TableOccupancy, groups: Group[], chairs: number)
   return colors.slice(0, chairs);
 }
 
-export function normalizeName(s: string): string {
+function normalizeName(s: string): string {
   return s
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")

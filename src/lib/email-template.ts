@@ -26,7 +26,7 @@ const COR = { papel: "#FCFBFA", branco: "#FFFFFF", linha: "#E8E2E5", tinta: "#1F
 const SANS = "Arial,Helvetica,sans-serif";
 
 /** Assinatura horizontal em PNG (e-mail não aceita SVG de forma confiável), com endereço absoluto. 160 px é a largura mínima do manual. */
-export const EMAIL_LOGO_PATH = "/brand/aceito-lockup-email.png";
+const EMAIL_LOGO_PATH = "/brand/aceito-lockup-email.png";
 
 /**
  * Modelo simples com a identidade do Aceito (papel, branco, ameixa), em tabelas e estilos inline

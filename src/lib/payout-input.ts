@@ -62,7 +62,7 @@ const HolderShape = {
   holderDocument: z.string().trim().min(1, "Informe o CPF ou CNPJ do titular.").max(30, "Esse documento está longo demais."),
 };
 
-export const PayoutInputSchema = z.discriminatedUnion("type", [
+const PayoutInputSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("PIX_KEY"),
     ...HolderShape,
@@ -79,8 +79,6 @@ export const PayoutInputSchema = z.discriminatedUnion("type", [
     accountKind: z.enum(BANK_ACCOUNT_KINDS, { error: "Escolha o tipo da conta." }),
   }),
 ]);
-export type PayoutInput = z.infer<typeof PayoutInputSchema>;
-
 /** Dado já conferido: o que vai cifrado (`*Secret`) e o que pode ser gravado e mostrado (campos abertos). */
 export interface ValidPayout {
   type: "PIX_KEY" | "BANK_ACCOUNT";

@@ -10,7 +10,7 @@ import { notifyEvent } from "./service.ts";
 
 const SP_OFFSET_MS = 3 * 60 * 60 * 1000; // Brasília (UTC-3)
 /** Dia em Brasília, "2026-10-10": a chave de "um aviso por dia". */
-export const dayKeyBrasilia = (d: Date) => new Date(d.getTime() - SP_OFFSET_MS).toISOString().slice(0, 10);
+const dayKeyBrasilia = (d: Date) => new Date(d.getTime() - SP_OFFSET_MS).toISOString().slice(0, 10);
 
 /** Presente pago (cartão aprovado, Pix confirmado pelo Mercado Pago). Repetições caem na chave. */
 export async function notifyGiftPaid(transactionId: string): Promise<void> {

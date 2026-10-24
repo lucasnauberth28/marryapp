@@ -24,14 +24,14 @@ export interface ServiceCounts {
   failed: number;
 }
 
-export interface RecentEvent {
+interface RecentEvent {
   at: Date;
   ok: boolean;
   kind: string;
   message: string | null;
 }
 
-export interface CronRow {
+interface CronRow {
   job: string;
   state: CronState;
   lastAt: Date | null;

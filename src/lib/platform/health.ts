@@ -7,7 +7,7 @@ export const CRON_LABEL: Record<string, string> = {
 };
 
 /** Uma rotina é considerada em dia se rodou com sucesso nas últimas 36 horas (roda uma vez por dia). */
-export const CRON_FRESH_MS = 36 * 60 * 60 * 1000;
+const CRON_FRESH_MS = 36 * 60 * 60 * 1000;
 
 /** "/api/cron/avisos" -> "avisos". Ignora caminhos que não são de rotina. */
 export function jobsFromCrons(crons: { path: string }[] | undefined): string[] {

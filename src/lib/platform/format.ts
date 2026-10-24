@@ -37,7 +37,7 @@ export function plural(n: number, one: string, many: string): string {
 }
 
 /** Dia no calendário de Brasília como número (dias desde 1970), para comparar dias sem erro de fuso. */
-export function brasiliaDayNumber(date: Date): number {
+function brasiliaDayNumber(date: Date): number {
   return Math.floor((date.getTime() - SP_OFFSET_MS) / DAY_MS);
 }
 

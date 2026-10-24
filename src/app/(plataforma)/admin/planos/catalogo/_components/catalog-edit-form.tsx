@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
 /** "159,00", "1.249,90" ou "159" em centavos; NaN se não for um valor em reais. */
-export function parseReais(text: string): number {
+function parseReais(text: string): number {
   const clean = text.replace(/\s|R\$/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".");
   if (!/^\d+(\.\d{1,2})?$/.test(clean)) return Number.NaN;
   return Math.round(Number(clean) * 100);

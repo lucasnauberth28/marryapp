@@ -6,6 +6,3 @@
  * `body[data-tour-active] .meu-botao { display: none }`, ou no Tailwind: `group-data-[tour-active]:hidden`.
  */
 export const TOUR_ACTIVE_ATTR = "data-tour-active";
-
-/** `data-tour` do botão flutuante da Liz (o passo da Liz só aparece se um elemento com este valor estiver na tela). */
-export const TOUR_LIZ_ANCHOR = "liz";

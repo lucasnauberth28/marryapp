@@ -3,7 +3,7 @@
 // cookie nem para o servidor sozinho: só segue quando a pessoa confirma "sim, sou eu" no checkout.
 // Sem dependências: usado no navegador e nos testes.
 
-export const SAVED_GUEST_PREFIX = "aceito:convidado:";
+const SAVED_GUEST_PREFIX = "aceito:convidado:";
 /** Quanto tempo o dado vale dentro da mesma aba. */
 export const SAVED_GUEST_TTL_MS = 2 * 60 * 60 * 1000;
 

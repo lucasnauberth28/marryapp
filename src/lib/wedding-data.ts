@@ -125,7 +125,7 @@ export function getWeddingTipsList(weddingId: string) {
   return prisma.weddingTip.findMany({ where: { weddingId }, orderBy: { position: "asc" } });
 }
 
-export function getApprovedGuestBookEntries(weddingId: string) {
+function getApprovedGuestBookEntries(weddingId: string) {
   return prisma.guestBookEntry.findMany({
     where: { weddingId, isApproved: true },
     orderBy: { createdAt: "desc" },

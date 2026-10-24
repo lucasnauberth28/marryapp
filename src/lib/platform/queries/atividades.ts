@@ -7,7 +7,7 @@ import { groupPrefixes } from "@/lib/platform/activity";
 /** Registro de atividades (AuditLog) com filtro por tipo, período, pessoa e alvo. Só leitura; os detalhes são resumidos na tela. */
 
 export const PERIODS = ["7d", "30d", "90d"] as const;
-export type Period = (typeof PERIODS)[number];
+type Period = (typeof PERIODS)[number];
 const DAY_MS = 86_400_000;
 
 export interface ActivityFilters {
@@ -27,7 +27,7 @@ export interface ActivityRow {
   details: unknown;
 }
 
-export function activityWhere(f: ActivityFilters, now = new Date()): Prisma.AuditLogWhereInput {
+function activityWhere(f: ActivityFilters, now = new Date()): Prisma.AuditLogWhereInput {
   const and: Prisma.AuditLogWhereInput[] = [];
   const prefixes = groupPrefixes(f.group);
   if (prefixes.length) and.push({ OR: prefixes.map((p) => ({ action: { startsWith: p } })) });

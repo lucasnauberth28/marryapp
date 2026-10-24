@@ -5,7 +5,7 @@ export type ThemePreference = "light" | "dark" | "system";
 export type AppliedTheme = "light" | "dark";
 
 export const THEME_KEY = "aceito-theme";
-export const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 export const THEME_OPTIONS: ReadonlyArray<{ value: ThemePreference; label: string }> = [
   { value: "light", label: "Claro" },

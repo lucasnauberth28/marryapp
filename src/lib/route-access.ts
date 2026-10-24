@@ -3,7 +3,7 @@
 // route-access.test.ts confere isso olhando as pastas, então uma rota nova sem lista falha no CI.
 
 /** Acessíveis sem login. */
-export const PUBLIC_PATHS = [
+const PUBLIC_PATHS = [
   "/login",
   "/cadastro",
   "/assinar",
@@ -32,10 +32,10 @@ export const PUBLIC_PATHS = [
  * Rotas de qualquer conta logada, sem depender de módulo do perfil: o onboarding do casamento,
  * a área "Minha conta", os recibos (a própria página confere a quem pertencem) e os avisos.
  */
-export const SESSION_PATHS = ["/boas-vindas", "/conta", "/recibo", "/notificacoes"];
+const SESSION_PATHS = ["/boas-vindas", "/conta", "/recibo", "/notificacoes"];
 
 /** Painel do casal, painel do fornecedor e rotas de API da conta: exigem sessão e módulo liberado. */
-export const PROTECTED_PATHS = [
+const PROTECTED_PATHS = [
   // Administração da plataforma: só a conta com acesso total ("*"); cada página, Server Action e rota
   // de API confere de novo com requirePlatformAdmin (lib/security/platform-admin.ts).
   "/admin",

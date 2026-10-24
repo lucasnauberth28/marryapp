@@ -8,7 +8,7 @@ import { CustomModal } from "@/components/ui/custom-modal";
 import { btn } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 
-export const SHARE_PATH = "/mapa-das-mesas/";
+const SHARE_PATH = "/mapa-das-mesas/";
 
 /** Link de visualização das mesas: só leitura, o casal liga, troca ou desliga. */
 export function ShareDialog({ open, onClose, token, onChange }: { open: boolean; onClose: () => void; token: string | null; onChange: (token: string | null) => void }) {

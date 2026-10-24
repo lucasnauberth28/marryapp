@@ -11,9 +11,9 @@ export const DEFAULT_MADRINHA_INSTRUCTIONS = [
   "Fale por vocês, com frases curtas e carinho. Sem exagero de emojis.",
 ].join("\n");
 
-export const INSTRUCTIONS_MAX = 8000;
-export const ARTICLE_TITLE_MAX = 120;
-export const ARTICLE_CONTENT_MAX = 8000;
+const INSTRUCTIONS_MAX = 8000;
+const ARTICLE_TITLE_MAX = 120;
+const ARTICLE_CONTENT_MAX = 8000;
 
 /** "12,00" -> 1200, "1.200,5" -> 120050, "300" -> 30000. Devolve null se não for um valor em reais válido. */
 export function parseReaisToCents(input: string): number | null {

@@ -51,7 +51,7 @@ interface ImportGuestsModalProps {
   existing: ExistingGuest[];
 }
 
-export function downloadSheetTemplate() {
+function downloadSheetTemplate() {
   const blob = new Blob([sheetTemplateCsv()], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");

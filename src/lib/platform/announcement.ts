@@ -3,13 +3,13 @@
 import { z } from "zod";
 import { isQuietNow, type NotificationPrefs } from "../notifications/preferences.ts";
 
-export const ANNOUNCEMENT_TITLE_MAX = 90;
-export const ANNOUNCEMENT_SUBJECT_MAX = 120;
-export const ANNOUNCEMENT_BODY_MAX = 1000;
+const ANNOUNCEMENT_TITLE_MAX = 90;
+const ANNOUNCEMENT_SUBJECT_MAX = 120;
+const ANNOUNCEMENT_BODY_MAX = 1000;
 /** Mais pessoas que isto não saem de uma vez: reduza o público (proteção contra envio em massa por engano). */
 export const MAX_RECIPIENTS = 5000;
 
-export const AUDIENCE_KINDS = ["couples", "vendors", "all"] as const;
+const AUDIENCE_KINDS = ["couples", "vendors", "all"] as const;
 export const COUPLE_PLAN_GROUPS = ["all", "basic", "classic", "vip", "custom", "classic_vip", "paid"] as const;
 export const VENDOR_PLAN_GROUPS = ["all", "free", "pro", "master", "pro_master", "paid"] as const;
 export const WEDDING_WINDOWS = ["all", "30", "60", "90", "past"] as const;
@@ -27,7 +27,7 @@ export const audienceSchema = z.object({
 });
 export type Audience = z.infer<typeof audienceSchema>;
 
-export const CHANNELS = ["PANEL", "PUSH", "EMAIL"] as const;
+const CHANNELS = ["PANEL", "PUSH", "EMAIL"] as const;
 export type Channel = (typeof CHANNELS)[number];
 
 export const CHANNEL_LABEL: Record<Channel | "WHATSAPP", string> = {
@@ -189,7 +189,7 @@ export const SKIP_TEXT: Record<SkipReason | "no_device", string> = {
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-export const looksLikeEmail = (value: string | null | undefined): value is string => !!value && EMAIL_RE.test(value);
+const looksLikeEmail = (value: string | null | undefined): value is string => !!value && EMAIL_RE.test(value);
 
 /**
  * Cada pessoa e canal começam PENDING ou já saem SKIPPED com o motivo.

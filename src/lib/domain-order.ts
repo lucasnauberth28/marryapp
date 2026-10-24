@@ -11,7 +11,7 @@ export type DomainOrderStatusName = (typeof DOMAIN_ORDER_STATUSES)[number];
 /** Pedido que ainda vale: ocupa o nome e é o único do casamento. */
 export const ACTIVE_STATUSES = ["REQUESTED", "REGISTERING", "REGISTERED", "CONNECTED"] as const satisfies readonly DomainOrderStatusName[];
 /** Pedido que ainda não foi concluído: o documento completo fica guardado só nestes. */
-export const OPEN_STATUSES = ["REQUESTED", "REGISTERING"] as const satisfies readonly DomainOrderStatusName[];
+const OPEN_STATUSES = ["REQUESTED", "REGISTERING"] as const satisfies readonly DomainOrderStatusName[];
 
 export const isActiveStatus = (status: string): boolean => (ACTIVE_STATUSES as readonly string[]).includes(status);
 export const isOpenStatus = (status: string): boolean => (OPEN_STATUSES as readonly string[]).includes(status);
@@ -91,7 +91,7 @@ const cleanText = (value: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-export const domainRequestSchema = z.object({
+const domainRequestSchema = z.object({
   domain: z.string().max(300, "O nome do endereço está longo demais.").transform((value, ctx) => {
     const result = normalizeDomainName(value);
     if (!result.ok) {
@@ -129,8 +129,6 @@ export const domainRequestSchema = z.object({
     }),
   accepted: z.literal(true, { error: "Para continuar, aceite as condições." }),
 });
-
-export type DomainRequestInput = z.input<typeof domainRequestSchema>;
 export type DomainRequestData = z.output<typeof domainRequestSchema>;
 
 export type DomainRequestField = "domain" | "holderName" | "holderDocument" | "holderEmail" | "holderPhone" | "accepted";

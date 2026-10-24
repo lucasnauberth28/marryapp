@@ -143,7 +143,7 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
   return items;
 }
 
-export const SERVICE_LABEL: Record<string, string> = {
+const SERVICE_LABEL: Record<string, string> = {
   mercadopago: "Mercado Pago",
   whatsapp: "WhatsApp",
   email: "E-mail",
@@ -246,7 +246,7 @@ export async function getUpcomingWeddings(now: Date = new Date(), take = 5): Pro
 
 // ---------- Erros e falhas nas últimas 24 horas ----------
 
-export interface ServiceHealthRow {
+interface ServiceHealthRow {
   service: string;
   label: string;
   total: number;

@@ -7,7 +7,7 @@ const DAY_MS = 86_400_000;
 /** Pix pendente com o código vencido há mais que isto sai da fila de conferência. */
 export const PIX_REVIEW_WINDOW_MS = 3 * DAY_MS;
 /** Prazo, em dias, para responder um pedido de reembolso. */
-export const REFUND_RESPONSE_DAYS = 7;
+const REFUND_RESPONSE_DAYS = 7;
 
 export const isStaticPix = (gatewayId: string | null | undefined) => Boolean(gatewayId?.startsWith(STATIC_PIX_PREFIX));
 

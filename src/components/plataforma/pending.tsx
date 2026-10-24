@@ -61,7 +61,7 @@ function settle(pathname: string, search: string) {
 }
 
 /** true enquanto a mesma página troca de filtro, aba ou página. */
-export function useListPending(): boolean {
+function useListPending(): boolean {
   const pathname = usePathname();
   const search = useSearchParams().toString();
   const pendingTarget = useSyncExternalStore(subscribe, getTarget, getServerTarget);

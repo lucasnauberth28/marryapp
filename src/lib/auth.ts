@@ -1,13 +1,13 @@
 import { SignJWT, jwtVerify } from "jose";
 
 export const SESSION_COOKIE_NAME = "marryapp_admin_session";
-export const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 dias
+const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 dias
 
 // Marca de que esta pessoa já esteve logada neste navegador. O cookie da sessão some sozinho quando
 // vence; com esta marca o login consegue avisar "sua sessão expirou" em vez de parecer um primeiro acesso.
 // O logout a apaga. Não dá acesso a nada.
 export const SESSION_SEEN_COOKIE_NAME = "aceito_sessao_vista";
-export const SESSION_SEEN_MAX_AGE = 60 * 60 * 24 * 30; // 30 dias
+const SESSION_SEEN_MAX_AGE = 60 * 60 * 24 * 30; // 30 dias
 
 /** Cabeçalho (só entre o proxy e o servidor) com o caminho que a pessoa abriu, para voltar a ele depois do login. */
 export const CURRENT_PATH_HEADER = "x-aceito-caminho";

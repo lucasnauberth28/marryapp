@@ -2,8 +2,8 @@
 // Nesta versão só registramos .com.br.
 
 export const DOMAIN_SUFFIX = ".com.br";
-export const DOMAIN_LABEL_MIN = 2;
-export const DOMAIN_LABEL_MAX = 63;
+const DOMAIN_LABEL_MIN = 2;
+const DOMAIN_LABEL_MAX = 63;
 
 export type DomainNameResult =
   | { ok: true; /** Só o nome, sem ".com.br": "ana-e-rafael" */ label: string; /** Nome completo: "ana-e-rafael.com.br" */ domain: string }

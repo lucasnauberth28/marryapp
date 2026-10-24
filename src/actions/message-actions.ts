@@ -32,22 +32,6 @@ export async function ensureDefaultTemplates() {
     console.error("[ensureDefaultTemplates Error]:", err);
   }
 }
-
-export async function getMessageTemplates() {
-  const { weddingId } = await requireWeddingRead("/mensagens");
-  try {
-    await ensureDefaultTemplates();
-    const templates = await prisma.messageTemplate.findMany({
-      where: { weddingId },
-      orderBy: { createdAt: "desc" },
-    });
-    return { success: true, data: templates };
-  } catch (error) {
-    console.error("[getMessageTemplates Error]:", error);
-    return { success: false, error: "Não deu para carregar os modelos. Tente de novo." };
-  }
-}
-
 export async function createMessageTemplate(formData: FormData) {
   const { weddingId } = await requireWedding("/mensagens");
   try {
@@ -211,22 +195,5 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
   } catch (error) {
     console.error("[sendTemplateToGuests Error]:", error);
     return { success: false, error: "Não deu para enviar agora. Nada foi marcado como enviado. Tentem de novo." };
-  }
-}
-
-export async function markGuestAsSent(guestId: string) {
-  const { weddingId } = await requireWedding("/mensagens");
-  try {
-    if (typeof guestId !== "string") return { success: false, error: "Convidado não encontrado." };
-    const result = await prisma.guest.updateMany({
-      where: { id: guestId, weddingId },
-      data: { hasReceivedMessage: true },
-    });
-    if (result.count === 0) return { success: false, error: "Convidado não encontrado." };
-    revalidatePath("/(admin)/convidados", "page");
-    revalidatePath("/(admin)/mensagens", "page");
-    return { success: true };
-  } catch (e) {
-    return { success: false, error: (e instanceof Error ? e.message : undefined) || "Não deu para atualizar o convidado. Tente de novo." };
   }
 }

@@ -15,7 +15,7 @@ import { GuestModal, GUEST_CATEGORIES } from "./guest-modal";
 import { ImportGuestsModal } from "./import-guests-modal";
 import { LizIllustration } from "@/components/liz/liz-illustration";
 
-export type GuestRow = Guest & { table?: { name: string } | null };
+type GuestRow = Guest & { table?: { name: string } | null };
 
 interface GuestsClientProps {
   initialGuests: GuestRow[];

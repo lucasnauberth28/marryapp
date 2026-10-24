@@ -1,22 +1,3 @@
-/**
- * Sanitização de Entradas de Usuário (Proteção contra XSS e Injeções)
- */
-
-/**
- * Escapa caracteres HTML perigosos de strings de texto livre.
- */
-export function sanitizeHtmlText(str: string | null | undefined): string {
-  if (!str) return "";
-
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#x27;")
-    .replace(/\//g, "&#x2F;")
-    .trim();
-}
 
 /**
  * Sanitiza e normaliza URLs garantindo que apenas protocolos seguros (http, https, whatsapp) sejam aceitos.

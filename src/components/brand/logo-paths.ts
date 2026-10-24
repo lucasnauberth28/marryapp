@@ -4,7 +4,7 @@
 // Cada forma tem duas geometrias: `paths` (cores escuras e médias sobre fundo claro, como a ameixa) e `light` (branco e tons claros
 // sobre fundo escuro, com a compensação óptica do desenho que o manual pede).
 
-export type LogoPath = { d: string; transform?: string };
+type LogoPath = { d: string; transform?: string };
 export type LogoShape = { viewBox: string; width: number; height: number; paths: readonly LogoPath[]; light: readonly LogoPath[] };
 
 export const MARK_SHAPE: LogoShape = {

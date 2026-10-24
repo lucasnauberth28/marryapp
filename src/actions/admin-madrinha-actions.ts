@@ -324,27 +324,6 @@ export async function applyWeddingAdjustment(input: unknown): Promise<Ok | Fail>
     return platformAdminFailure(error, "applyWeddingAdjustment");
   }
 }
-
-export async function blockWeddingMadrinha(input: unknown): Promise<Ok | Fail> {
-  try {
-    await requirePlatformAdmin();
-    const data = z.object({ weddingId, reason: z.string().trim().max(300) }).parse(input);
-    if (data.reason.length < 3) return fieldFail({ reason: "Conte o motivo do bloqueio (fica no registro)." });
-    const wedding = await ensureWedding(data.weddingId);
-    if (!wedding) return { success: false, error: "Casal não encontrado." };
-    await prisma.madrinhaWeddingOverride.upsert({
-      where: { weddingId: wedding.id },
-      create: { weddingId: wedding.id, blockedAt: new Date(), blockedReason: data.reason },
-      update: { blockedAt: new Date(), blockedReason: data.reason },
-    });
-    await logAudit({ action: "madrinha.override_block", targetType: "wedding", targetId: wedding.id, details: { reason: data.reason } });
-    refresh();
-    return { success: true, message: `${wedding.coupleNames} ficará sem a Liz quando ela for ativada.` };
-  } catch (error) {
-    return platformAdminFailure(error, "blockWeddingMadrinha");
-  }
-}
-
 export async function unblockWeddingMadrinha(input: unknown): Promise<Ok | Fail> {
   try {
     await requirePlatformAdmin();

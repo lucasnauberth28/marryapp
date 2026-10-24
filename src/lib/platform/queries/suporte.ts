@@ -8,7 +8,7 @@ import { normalizeSearch, phoneDigits } from "@/lib/platform/support";
  * senha, tokens, chaves nem documento (CPF/CNPJ) de ninguém.
  */
 
-export interface SearchHit {
+interface SearchHit {
   kind: "wedding" | "user" | "vendor";
   id: string;
   title: string;

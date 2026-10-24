@@ -103,7 +103,7 @@ function orderBy(order: CasaisOrder): Prisma.WeddingOrderByWithRelationInput[] {
   }
 }
 
-export interface CasalRow {
+interface CasalRow {
   id: string;
   coupleNames: string;
   ownerEmail: string | null;
@@ -248,7 +248,7 @@ export async function listCasaisForExport(input: { filters: CasaisFilters; order
 
 // ---------- Detalhe do casal ----------
 
-export interface PendingPix {
+interface PendingPix {
   id: string;
   planId: string;
   planName: string;

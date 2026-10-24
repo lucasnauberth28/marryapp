@@ -1,7 +1,7 @@
 // Regras puras das assinaturas (sem banco nem Next), para poderem ser testadas isoladamente.
 
 /** Prefixo do external_reference dos pagamentos de assinatura no Mercado Pago. */
-export const SUBSCRIPTION_REF_PREFIX = "assinatura:";
+const SUBSCRIPTION_REF_PREFIX = "assinatura:";
 
 /** Planos de fornecedor são mensais: cada pagamento libera este número de dias. */
 export const VENDOR_PERIOD_DAYS = 30;

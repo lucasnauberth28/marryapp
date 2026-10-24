@@ -15,7 +15,7 @@ const ICONS: Record<NotificationIcon, LucideIcon> = {
 };
 
 /** Cores dos tons: sempre com ícone e texto, nunca só cor. */
-export const TONE_CLASS: Record<NotificationTone, string> = {
+const TONE_CLASS: Record<NotificationTone, string> = {
   success: "bg-sucesso-suave text-sucesso",
   info: "bg-ameixa-suave text-ameixa",
   warning: "bg-aviso-suave text-aviso",

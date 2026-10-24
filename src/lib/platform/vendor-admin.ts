@@ -25,9 +25,6 @@ export const REJECTION_REASONS = [
   { value: "description", label: "Descrição incompleta", message: "Conte um pouco mais sobre o seu serviço na descrição do perfil. Assim que ajustar, a gente analisa de novo." },
   { value: "other", label: "Outro motivo", message: "" },
 ] as const;
-
-export type RejectionReasonValue = (typeof REJECTION_REASONS)[number]["value"];
-
 export function rejectionMessageFor(value: string): string {
   return REJECTION_REASONS.find((r) => r.value === value)?.message ?? "";
 }
@@ -72,12 +69,6 @@ export function galleryPhotos(raw: string | null | undefined, cover: string | nu
   if (photos.length === 0 && cover?.startsWith("https://")) photos = [cover];
   return photos.slice(0, max);
 }
-
-/** Nota exibida: "Sem nota" sem avaliações visíveis. */
-export function hasRating(reviewCount: number): boolean {
-  return reviewCount > 0;
-}
-
 /** Plano pago em vigor (mesma regra de /assinaturas): não-gratuito e sem data ou com data no futuro. */
 export function isPaidActive(vendor: { planTier: string; planExpiresAt: Date | null }, now: Date): boolean {
   return vendor.planTier !== "FREE" && (vendor.planExpiresAt === null || vendor.planExpiresAt.getTime() > now.getTime());

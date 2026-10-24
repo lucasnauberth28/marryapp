@@ -40,10 +40,6 @@ const UserSchema = z.object({
   roleId: z.string().uuid("Perfil inválido."),
 });
 
-function isFullAccess(paths: unknown) {
-  return Array.isArray(paths) && paths.includes("*");
-}
-
 /**
  * Impede escalada de privilégio: só quem tem acesso total pode criar/atribuir perfis com acesso total
  * ou conceder módulos que ele próprio não possui.

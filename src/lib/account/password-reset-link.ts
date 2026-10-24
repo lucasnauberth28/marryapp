@@ -4,7 +4,7 @@ import { generateLinkToken } from "@/lib/account/tokens";
 import { brandedEmail, sendEmail } from "@/lib/email";
 import { appUrl } from "@/lib/app-url";
 
-export const RESET_TTL_MS = 60 * 60 * 1000; // 1 hora
+const RESET_TTL_MS = 60 * 60 * 1000; // 1 hora
 
 /**
  * Cria o link de nova senha (só o hash vai ao banco, 1 h de validade, um por vez) e envia ao e-mail da conta.

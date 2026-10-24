@@ -12,7 +12,7 @@ export const PAYMENT_PROBLEM_DAYS = 7;
 export const WEDDING_SOON_DAYS = 14;
 export const INACTIVE_DAYS = 14;
 /** Cadastro sem onboarding concluído há mais que isto aparece como "Onboarding parado". */
-export const ONBOARDING_STALLED_DAYS = 2;
+const ONBOARDING_STALLED_DAYS = 2;
 
 export interface CasalFacts {
   suspendedAt: Date | null;
@@ -24,7 +24,7 @@ export interface CasalFacts {
   lastActiveAt: Date | null;
 }
 
-export type ProblemCode = "suspended" | "payment_failed" | "onboarding_close";
+type ProblemCode = "suspended" | "payment_failed" | "onboarding_close";
 export interface CasalProblem {
   code: ProblemCode;
   title: string;

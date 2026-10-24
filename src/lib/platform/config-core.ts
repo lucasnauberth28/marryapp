@@ -51,7 +51,7 @@ export function describeLimit(limit: number, windowMs: number): string {
   return `${limit} por ${h === 1 ? "hora" : `${h} horas`}`;
 }
 
-export const maintenanceInput = z.object({
+const maintenanceInput = z.object({
   enabled: z.boolean(),
   message: z.string().trim().max(300, "Use até 300 caracteres."),
   backDate: z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/, "Use uma data válida.").default(""),

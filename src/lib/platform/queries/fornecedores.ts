@@ -49,9 +49,9 @@ export async function getVendorPlansExpiring(now: Date = new Date(), days = 7, t
 }
 
 export const CURATION_FILTERS = ["aprovado", "analise", "ajustes", "suspenso"] as const;
-export type CurationFilter = (typeof CURATION_FILTERS)[number];
+type CurationFilter = (typeof CURATION_FILTERS)[number];
 export const PLAN_FILTERS = ["FREE", "PRO", "MASTER"] as const;
-export type PlanFilter = (typeof PLAN_FILTERS)[number];
+type PlanFilter = (typeof PLAN_FILTERS)[number];
 
 export interface VendorListParams {
   tab: VendorTab;
@@ -67,7 +67,7 @@ export interface VendorListParams {
 const reportedWhere: Prisma.VendorReviewWhereInput = { reportedAt: { not: null }, moderatedAt: null, hiddenAt: null };
 
 /** Condição do Prisma de cada aba (a contagem e a lista usam a mesma). */
-export function tabWhere(tab: VendorTab, now: Date): Prisma.PartnerVendorWhereInput {
+function tabWhere(tab: VendorTab, now: Date): Prisma.PartnerVendorWhereInput {
   switch (tab) {
     case "curadoria":
       return { curationStatus: "PENDING_APPROVAL" };

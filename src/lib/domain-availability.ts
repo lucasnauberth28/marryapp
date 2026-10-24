@@ -16,7 +16,7 @@ export type DomainAvailability =
   | "unknown";
 
 export const DEFAULT_RDAP_BASE = "https://rdap.registro.br";
-export const RDAP_TIMEOUT_MS = 5000;
+const RDAP_TIMEOUT_MS = 5000;
 
 export interface AvailabilityOptions {
   fetch?: typeof fetch;

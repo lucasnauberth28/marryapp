@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
+import { requireWeddingRead } from "@/lib/security/wedding-context";
 import { moduleRefusal } from "@/lib/wedding-plan";
 
 // Consultas só de leitura da portaria: nada é gravado aqui (a entrada é registrada por checkInGuest).

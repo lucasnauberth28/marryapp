@@ -33,7 +33,7 @@ export function rememberGuest(slug: string, guest: SavedGuest) {
   listeners.forEach((l) => l());
 }
 
-export function forgetGuest(slug: string) {
+function forgetGuest(slug: string) {
   try {
     window.sessionStorage.removeItem(savedGuestKey(slug));
   } catch {

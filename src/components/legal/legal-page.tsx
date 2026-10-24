@@ -84,8 +84,3 @@ export function LegalPage({
     </div>
   );
 }
-
-/** Marcador visível de um dado a preencher antes de publicar. */
-export function Placeholder({ children }: { children: ReactNode }) {
-  return <mark className="rounded-[4px] bg-aviso-suave px-1 font-semibold text-aviso">{children}</mark>;
-}

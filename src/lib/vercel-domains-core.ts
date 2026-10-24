@@ -30,7 +30,7 @@ export interface DnsRecord {
   source: "vercel" | "default";
 }
 
-export type ConnectionState =
+type ConnectionState =
   /** Domínio no projeto e apontado: dá para marcar como no ar. */
   | "ready"
   /** Domínio no projeto, mas o DNS ainda não aponta para a Vercel. */
@@ -42,7 +42,7 @@ export type ConnectionResult =
   | { ok: true; state: ConnectionState; added: boolean; records: DnsRecord[]; message: string }
   | { ok: false; reason: "not_configured" | "auth" | "api" | "network"; message: string };
 
-export const DEFAULT_VERCEL_API = "https://api.vercel.com";
+const DEFAULT_VERCEL_API = "https://api.vercel.com";
 /** Valores padrão da Vercel, usados só se a resposta não trouxer os recomendados. */
 export const DEFAULT_A_RECORD = "76.76.21.21";
 export const DEFAULT_CNAME = "cname.vercel-dns.com";

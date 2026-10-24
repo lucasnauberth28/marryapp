@@ -10,7 +10,6 @@ const pill =
 
 export const btnPrimary = `${pill} bg-ameixa text-on-ameixa hover:bg-ameixa-hover`;
 export const btnSecondary = `${pill} border border-linha-forte bg-papel text-tinta hover:bg-areia/60`;
-export const btnQuiet = `${pill} px-3 text-ameixa hover:bg-ameixa-suave`;
 /** Botão de linha de tabela e de lista: mesma pílula, um pouco mais baixa no mouse e 44px no toque. */
 export const btnRow = `${btnSecondary} min-h-10 px-3.5 pointer-coarse:min-h-11`;
 

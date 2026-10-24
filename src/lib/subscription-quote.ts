@@ -12,7 +12,7 @@ import {
   type PriceBreakdown,
 } from "@/lib/checkout-pricing";
 
-export interface SubscriptionQuote {
+interface SubscriptionQuote {
   planId: string;
   modules: string[] | undefined;
   plan: { type: "COUPLE" | "VENDOR"; name: string; price: number };

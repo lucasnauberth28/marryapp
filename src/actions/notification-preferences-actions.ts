@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { NOTIFICATION_GROUPS } from "@/lib/notifications/catalog";
-import { NOTIFICATION_CHANNELS, resolvePrefs, sanitizeStoredPrefs, type NotificationPrefs } from "@/lib/notifications/preferences";
+import { NOTIFICATION_CHANNELS, sanitizeStoredPrefs, type NotificationPrefs } from "@/lib/notifications/preferences";
 
 // Escolhas de avisos da própria conta. O id do usuário vem sempre da sessão.
 
@@ -48,12 +48,4 @@ export async function saveNotificationPreferences(input: NotificationPrefs): Pro
     console.error("[saveNotificationPreferences Error]:", error instanceof Error ? error.message : error);
     return { success: false, error: "Não conseguimos salvar agora. Tente de novo." };
   }
-}
-
-/** Escolhas atuais da conta da sessão (padrão para quem nunca mexeu). */
-export async function getNotificationPreferences(): Promise<NotificationPrefs | null> {
-  const session = await getSession();
-  if (!session || session.userId === SUPER_ADMIN_USER_ID) return null;
-  const row = await prisma.notificationPreference.findUnique({ where: { userId: session.userId }, select: { settings: true } });
-  return resolvePrefs(row?.settings);
 }

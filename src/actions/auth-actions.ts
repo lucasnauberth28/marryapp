@@ -10,7 +10,7 @@ import { signToken, sessionCookieOptions, hasPathAccess, SESSION_COOKIE_NAME, SE
 import { isPlatformAdminPaths } from "@/lib/permissions";
 import { PLATFORM_ADMIN_HOME, resolvePostLoginPath } from "@/lib/login-redirect";
 import { checkRateLimit, rateLimitByIp, SecurityLimits } from "@/lib/security/rate-limiter";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
 
 // Hash válido usado quando o usuário não existe, para que o tempo de resposta
@@ -127,15 +127,4 @@ export async function logout() {
   // Saiu de propósito: não é sessão expirada
   cookieStore.delete(SESSION_SEEN_COOKIE_NAME);
   redirect("/login");
-}
-
-/**
- * Usado por páginas do painel: redireciona ao login se a sessão não for válida.
- */
-export async function verifyAdminSession() {
-  const session = await getSession();
-  if (!session) {
-    redirect("/login");
-  }
-  return true;
 }

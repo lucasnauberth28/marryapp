@@ -27,7 +27,7 @@ export interface StoredPrefs {
   quietHours?: Partial<QuietHours>;
 }
 
-export const QUIET_TIME_ZONE = "America/Sao_Paulo";
+const QUIET_TIME_ZONE = "America/Sao_Paulo";
 
 /**
  * Padrões: push ligado em tudo; WhatsApp só em dinheiro e pedidos (o tipo ainda precisa permitir WhatsApp,

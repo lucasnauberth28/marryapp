@@ -95,14 +95,6 @@ export const getAccountView = cache(async (): Promise<AccountView> => {
     return { adminView: false, userName: null };
   }
 });
-
-/** Identidade de um casamento pelo endereço público (páginas do convidado). Null se o slug não existe. */
-export const getWeddingIdentityBySlug = cache(async (slug: string): Promise<WeddingIdentity | null> => {
-  const wedding = await getWeddingBySlug(slug).catch(() => null);
-  if (!wedding) return null;
-  return getIdentityForWedding(wedding);
-});
-
 /**
  * Metadados das páginas públicas do convidado: "Página · Nomes do casal".
  */

@@ -126,7 +126,7 @@ export function seatsOf(g: Pick<GuestRow, "allowedCompanions">): number {
 export type DeadlineState = "none" | "far" | "soon" | "today" | "passed";
 
 /** Dias para o prazo em que ele passa a "chegando" (a mesma régua da sugestão da Liz). */
-export const DEADLINE_SOON_DAYS = 7;
+const DEADLINE_SOON_DAYS = 7;
 
 export function deadlineInfo(todayKey: string, deadlineKey: string | null): { state: DeadlineState; days: number } {
   if (!deadlineKey) return { state: "none", days: 0 };
@@ -246,7 +246,7 @@ export function expenseLabel(description: string): { name: string; detail: strin
   return { name: name.trim() || description.trim(), detail: `${n}ª parcela de ${total}` };
 }
 
-export interface BudgetUpcoming {
+interface BudgetUpcoming {
   id: string;
   name: string;
   detail: string | null;

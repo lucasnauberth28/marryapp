@@ -60,7 +60,7 @@ export interface AdminNavItem {
 
 // Ferramentas de administração que moram no painel (só aparecem para quem tem a permissão): a mesma lista de antes,
 // agora fora do menu principal. A barra lateral da administração da plataforma (/admin) é outra e não mudou.
-export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
+const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { name: "Curadoria", href: "/curadoria", icon: ShieldCheck },
   { name: "Assinaturas", href: "/assinaturas", icon: BadgeDollarSign },
   // Só quem tem acesso total ("*") entra: a página confere de novo no servidor.

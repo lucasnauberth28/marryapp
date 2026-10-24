@@ -53,12 +53,3 @@ export function NotActiveTag({ children = "Desligada" }: { children?: ReactNode 
     </StatusChip>
   );
 }
-
-/** Texto de "ainda não medimos": no lugar de um número que não tem fonte de dados. */
-export function NotMeasured({ children, className }: { children?: ReactNode; className?: string }) {
-  return (
-    <p className={cn("text-sm leading-5 text-tinta-suave", className)}>
-      <strong className="font-semibold text-tinta">Ainda não medimos.</strong> {children}
-    </p>
-  );
-}

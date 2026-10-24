@@ -12,8 +12,6 @@ export const THEME_PRESETS = [
 export const DEFAULT_THEME_COLOR = THEME_PRESETS[0].hex;
 
 export const GUEST_RANGES = ["Até 50", "50 a 100", "100 a 200", "Mais de 200"] as const;
-export type GuestRange = (typeof GUEST_RANGES)[number];
-
 /** "Ana & Rafael" -> ["Ana", "Rafael"]; um nome só -> [nome, ""]. */
 export function splitCoupleNames(coupleNames: string): [string, string] {
   const parts = coupleNames.split(/\s+&\s+/).map((p) => p.trim()).filter(Boolean);

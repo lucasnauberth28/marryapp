@@ -6,7 +6,7 @@ import { fanOut, type FanOutItem } from "./fanout.ts";
 import type { NotificationChannel } from "./preferences.ts";
 import { realFanOutDeps } from "./senders.ts";
 
-export interface NotifyInput {
+interface NotifyInput {
   /** Quem recebe: exatamente um destes. `weddingId` e `vendorId` viram um aviso por usuário da conta. */
   userIds?: string[];
   weddingId?: string;
@@ -21,7 +21,7 @@ export interface NotifyInput {
   channels?: NotificationChannel[];
 }
 
-export interface NotifyResult {
+interface NotifyResult {
   /** Avisos novos guardados (os repetidos, barrados pela chave, não contam). */
   created: number;
 }
@@ -63,7 +63,7 @@ export function deferNotify(task: () => Promise<unknown>) {
  * Pode lançar erro de banco: nos fluxos reais use `notifyEvent`, que nunca lança, dentro de `deferNotify`
  * quando houver uma pessoa esperando a resposta.
  */
-export async function notify(input: NotifyInput): Promise<NotifyResult> {
+async function notify(input: NotifyInput): Promise<NotifyResult> {
   const userIds = await resolveRecipients(input);
   if (userIds.length === 0) return { created: 0 };
 

@@ -30,25 +30,6 @@ export async function getWalletData() {
     cards,
   };
 }
-
-export async function updateWalletBalance(balanceInCents: number) {
-  const { weddingId } = await requireWedding("/carteira");
-  try {
-    const balance = Math.max(0, Math.round(Number(balanceInCents) || 0));
-    await prisma.walletBalance.upsert({
-      where: { weddingId },
-      update: { balance },
-      create: { weddingId, balance },
-    });
-    revalidatePath("/(admin)/carteira", "page");
-    revalidatePath("/(admin)/financas", "page");
-    return { success: true };
-  } catch (error) {
-    console.error("[updateWalletBalance]", error);
-    return { success: false, error: "Não deu para atualizar o saldo. Tente de novo." };
-  }
-}
-
 export async function createCreditCard(formData: FormData) {
   const { weddingId } = await requireWedding("/carteira");
   const limitAmount = Math.round(parseFloat((formData.get("limit") as string || "0").replace(',', '.')) * 100);

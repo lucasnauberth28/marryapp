@@ -4,7 +4,7 @@
 // devolva `{ kind: "registered", ... }` em `register` e troque o retorno de `getRegistrar()`.
 // As telas e as ações só falam com esta interface, nunca com um provedor específico.
 
-export interface RegistrarOrder {
+interface RegistrarOrder {
   id: string;
   domain: string;
   holderName: string;
@@ -14,7 +14,7 @@ export interface RegistrarOrder {
   holderPhone: string;
 }
 
-export type RegistrarResult =
+type RegistrarResult =
   /** O pedido fica na fila: uma pessoa registra à mão e marca como registrado. */
   | { kind: "manual" }
   /** O provedor já registrou (compra automática). */
@@ -29,7 +29,7 @@ export interface DomainRegistrar {
 }
 
 /** Registro manual: não faz nada além de deixar o pedido na fila. */
-export const manualRegistrar: DomainRegistrar = {
+const manualRegistrar: DomainRegistrar = {
   id: "manual",
   async register() {
     return { kind: "manual" };

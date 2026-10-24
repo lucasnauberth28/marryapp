@@ -1,10 +1,8 @@
 "use server";
 
 import { createHmac, createHash } from "node:crypto";
-import { requirePathPermission } from "@/lib/security/auth-guard";
-
 import prisma from "@/lib/prisma";
-import { CurationStatus, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { checkRateLimit, getClientIp, rateLimitByIp } from "@/lib/security/rate-limiter";
 import { normalizeText } from "@/lib/security/sanitize";
@@ -12,7 +10,6 @@ import { deferNotify } from "@/lib/notifications/service";
 import { notifyLeadNew, notifyProposalAccepted } from "@/lib/notifications/events";
 import { getUnavailableVendorIds, isVendorAvailable } from "@/lib/vendor-availability";
 import { vitrineRank } from "@/lib/platform/vendor-admin";
-import { approveVendor, rejectVendor } from "@/lib/vendor-curation";
 import {
   effectiveVendorTier,
   LEAD_BUDGET_OPTIONS,
@@ -387,86 +384,5 @@ export async function acceptLeadProposal(input: AcceptProposalInput): Promise<Ac
   } catch (error) {
     console.error("[acceptLeadProposal Error]:", error);
     return { success: false, error: "Não foi possível registrar o aceite. Tente novamente." };
-  }
-}
-
-/**
- * ============================================================================
- * SERVER ACTIONS DE CURADORIA (EXCLUSIVO ADMIN / BACKOFFICE)
- * ============================================================================
- */
-
-/**
- * Retorna todos os fornecedores cadastrados para auditoria da Curadoria
- */
-export async function getAllVendorsForCurationAction(filterStatus?: string) {
-  await requirePathPermission("/curadoria");
-  try {
-
-    const whereClause: Prisma.PartnerVendorWhereInput = {};
-    const status = Object.values(CurationStatus).find((s) => s === filterStatus);
-    if (status) {
-      whereClause.curationStatus = status;
-    }
-
-    const vendors = await prisma.partnerVendor.findMany({
-      where: whereClause,
-      include: {
-        reviews: true,
-        // Só o necessário para a curadoria: tokens e dados de aceite dos pedidos não saem daqui.
-        leads: { select: { id: true, status: true, createdAt: true } },
-      },
-      orderBy: [
-        { curationStatus: "asc" },
-        { createdAt: "desc" },
-      ],
-    });
-
-    const pendingCount = await prisma.partnerVendor.count({ where: { curationStatus: "PENDING_APPROVAL" } });
-    const approvedCount = await prisma.partnerVendor.count({ where: { curationStatus: "APPROVED" } });
-    const rejectedCount = await prisma.partnerVendor.count({ where: { curationStatus: "REJECTED" } });
-
-    return {
-      vendors,
-      counts: {
-        total: vendors.length,
-        pending: pendingCount,
-        approved: approvedCount,
-        rejected: rejectedCount,
-      },
-    };
-  } catch (error) {
-    console.error("[getAllVendorsForCurationAction Error]:", error);
-    return { vendors: [], counts: { total: 0, pending: 0, approved: 0, rejected: 0 } };
-  }
-}
-
-/**
- * Aprova um fornecedor na Curadoria e o publica no Marketplace
- */
-export async function approveVendorAction(vendorId: string) {
-  await requirePathPermission("/curadoria");
-  try {
-    await approveVendor(vendorId);
-
-    return { success: true, message: "Fornecedor aprovado e publicado com sucesso no marketplace! ✨" };
-  } catch (error) {
-    console.error("[approveVendorAction Error]:", error);
-    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Erro ao aprovar fornecedor." };
-  }
-}
-
-/**
- * Rejeita ou solicita ajustes para um fornecedor
- */
-export async function rejectVendorAction(vendorId: string, reason?: string) {
-  await requirePathPermission("/curadoria");
-  try {
-    await rejectVendor(vendorId, reason);
-
-    return { success: true, message: "Status de curadoria atualizado para recusado." };
-  } catch (error) {
-    console.error("[rejectVendorAction Error]:", error);
-    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Erro ao recusar fornecedor." };
   }
 }

@@ -165,7 +165,7 @@ export async function getPendingRefunds(): Promise<RefundSummary> {
 }
 
 /** Notas fiscais pendentes: pagamento aprovado, com valor, sem nota emitida. */
-export const pendingInvoiceWhere: Prisma.SubscriptionWhereInput = { status: PaymentStatus.APPROVED, amount: { gt: 0 }, invoiceIssuedAt: null };
+const pendingInvoiceWhere: Prisma.SubscriptionWhereInput = { status: PaymentStatus.APPROVED, amount: { gt: 0 }, invoiceIssuedAt: null };
 
 export async function countPendingInvoices(): Promise<number> {
   return prisma.subscription.count({ where: pendingInvoiceWhere });

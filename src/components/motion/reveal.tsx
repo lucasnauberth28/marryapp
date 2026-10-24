@@ -1,6 +1,6 @@
-import { Fragment, type CSSProperties, type ElementType, type ReactNode } from "react";
+import { type CSSProperties, type ElementType, type ReactNode } from "react";
 
-export type RevealVariant = "up" | "fade" | "scale" | "arch" | "left" | "right";
+type RevealVariant = "up" | "fade" | "scale" | "arch" | "left" | "right";
 
 interface RevealProps {
   children: ReactNode;
@@ -34,42 +34,5 @@ export function Reveal({ children, as: Tag = "div", variant = "up", delay = 0, c
     >
       {children}
     </Tag>
-  );
-}
-
-/**
- * Título que entra palavra por palavra. Use em títulos display curtos.
- */
-export function RevealWords({
-  text,
-  className,
-  baseDelay = 0,
-  step = 70,
-}: {
-  text: string;
-  className?: string;
-  baseDelay?: number;
-  step?: number;
-}) {
-  const words = text.split(" ");
-  return (
-    <span className={className} aria-label={text}>
-      {words.map((word, i) => (
-        <Fragment key={`${word}-${i}`}>
-          <span aria-hidden="true" className="inline-block overflow-hidden pb-[0.12em] align-bottom">
-            <span
-              data-reveal="word"
-              suppressHydrationWarning
-              className="inline-block"
-              style={{ ["--reveal-delay" as string]: `${baseDelay + i * step}ms` }}
-            >
-              {word}
-            </span>
-          </span>
-          {/* O espaço fica fora do inline-block: dentro dele, o navegador o descartaria. */}
-          {i < words.length - 1 ? " " : null}
-        </Fragment>
-      ))}
-    </span>
   );
 }

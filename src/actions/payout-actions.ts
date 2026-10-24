@@ -5,7 +5,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { AuthorizationError, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { requireWedding, requireWeddingRead, type WeddingContext } from "@/lib/security/wedding-context";
+import { requireWedding, type WeddingContext } from "@/lib/security/wedding-context";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { encryptPayoutSecret, isPayoutCryptoConfigured, payoutCurrentKeyVersion, PayoutCryptoError } from "@/lib/security/payout-crypto";
 import { logAudit } from "@/lib/audit";
@@ -61,19 +61,6 @@ async function authorizeWrite(password: unknown, action: string): Promise<{ ctx:
   }
   return { ctx, userId: user.id, name: user.name };
 }
-
-/** Máscara dos dados de recebimento do casamento (ou null se ainda não há). Só leitura. */
-export async function getMyPayoutAccount(): Promise<PayoutAccountView | null> {
-  const { weddingId } = await requireWeddingRead("/configuracoes");
-  return getPayoutAccountView(weddingId);
-}
-
-/** O cadastro está disponível? (A chave de criptografia precisa estar configurada no servidor.) */
-export async function isPayoutRegistrationAvailable(): Promise<boolean> {
-  await requireWeddingRead("/configuracoes");
-  return isPayoutCryptoConfigured();
-}
-
 /**
  * Cadastra ou troca os dados de recebimento. Pede a senha atual. Trocar deixa os dados "sem confirmação" de novo,
  * grava no AuditLog (sem o dado) e avisa as pessoas do casamento.

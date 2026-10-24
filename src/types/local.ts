@@ -15,20 +15,7 @@ export const ExpenseStatus = {
 } as const;
 export type ExpenseStatus = (typeof ExpenseStatus)[keyof typeof ExpenseStatus];
 
-export const PaymentStatus = {
-  PENDING: "PENDING",
-  APPROVED: "APPROVED",
-  FAILED: "FAILED",
-  REFUNDED: "REFUNDED",
-  REJECTED: "REJECTED",
-} as const;
-export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus];
 
-export const PaymentMethod = {
-  PIX: "PIX",
-  CREDIT_CARD: "CREDIT_CARD",
-} as const;
-export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod];
 
 export interface GuestLocal {
   id: string;
@@ -60,7 +47,7 @@ export interface GiftLocal {
   createdAt: Date;
 }
 
-export interface VendorLocal {
+interface VendorLocal {
   id: string;
   name: string;
   category: string;
@@ -71,7 +58,7 @@ export interface VendorLocal {
   expenses?: ExpenseLocal[];
 }
 
-export interface ExpenseLocal {
+interface ExpenseLocal {
   id: string;
   description: string;
   amount: number;

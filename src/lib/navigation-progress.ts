@@ -3,7 +3,7 @@
  * Sem React e sem DOM: o estado muda por eventos, e o componente só liga timers e cliques a ele.
  */
 
-export type ProgressPhase = "idle" | "waiting" | "loading" | "done";
+type ProgressPhase = "idle" | "waiting" | "loading" | "done";
 
 export interface ProgressState {
   phase: ProgressPhase;

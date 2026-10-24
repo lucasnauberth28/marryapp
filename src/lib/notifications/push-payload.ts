@@ -19,8 +19,8 @@ export interface PushSource {
   dedupeKey: string;
 }
 
-export const PUSH_ICON = "/icons/icon-192.png";
-export const PUSH_BADGE = "/icons/badge-96.png";
+const PUSH_ICON = "/icons/icon-192.png";
+const PUSH_BADGE = "/icons/badge-96.png";
 
 // O push aceita cerca de 4 KB no total; textos longos são cortados bem abaixo disso.
 const MAX_TITLE = 80;

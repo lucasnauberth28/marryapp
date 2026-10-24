@@ -57,7 +57,7 @@ async function copyText(text: string, done: string) {
 }
 
 /** Texto honesto da última situação lida da Vercel (sem inventar horário: só guardamos a situação). */
-export function vercelStateText(state: string | null): string | null {
+function vercelStateText(state: string | null): string | null {
   if (!state) return null;
   if (state === "ready") return "A Vercel confirmou: domínio verificado e apontado.";
   if (state === "pending_dns") return "A Vercel ainda não encontra o DNS apontado. A propagação pode levar até 48 horas.";

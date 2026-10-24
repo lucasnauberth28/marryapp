@@ -64,7 +64,7 @@ export function startNavigationProgress() {
 }
 
 /** Encerra a barra. O componente chama sozinho quando a rota muda. */
-export function finishNavigationProgress() {
+function finishNavigationProgress() {
   if (state.phase === "idle" || state.phase === "done") return;
   clearTimers();
   dispatch("finish");

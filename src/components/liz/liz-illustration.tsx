@@ -14,7 +14,7 @@ import { LIZ_ASSETS, lizAssetSrc, type LizPose } from "@/lib/liz/pose";
  * Alt: "Liz, assistente do Aceito"; `decorative` quando o texto ao lado já nomeia a Liz.
  */
 
-export const LIZ_ALT = "Liz, assistente do Aceito";
+const LIZ_ALT = "Liz, assistente do Aceito";
 
 function loaderFor(pose: LizPose): ImageLoader {
   return ({ width }) => lizAssetSrc(pose, width);

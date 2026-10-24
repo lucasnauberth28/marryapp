@@ -47,18 +47,10 @@ interface SendMessageOptions {
   phone: string; // Formato E.164, ex: "5511999998888"
   text: string;
 }
-
-interface SendInteractiveOptions {
-  phone: string;
-  title: string;
-  body: string;
-  buttons: { id: string; text: string }[];
-}
-
 /**
  * Verifica se um número existe no WhatsApp e obtém o número canônico verificado.
  */
-export async function resolveWhatsappJid(phone: string): Promise<{ exists: boolean; number: string }> {
+async function resolveWhatsappJid(phone: string): Promise<{ exists: boolean; number: string }> {
   const cleanNumber = formatPhoneNumber(phone);
   try {
     const res = await fetch(`${EVOLUTION_URL}/chat/whatsappNumbers/${EVOLUTION_INSTANCE}`, {
@@ -136,66 +128,6 @@ async function sendTextMessageRaw({ phone, text }: SendMessageOptions) {
     return { success: false, error: (error instanceof Error ? error.message : undefined) || "Falha ao enviar mensagem de texto." };
   }
 }
-
-/**
- * Envia uma mensagem com botões interativos via WhatsApp.
- * A Evolution API usa o formato de "buttons" do WhatsApp Business.
- */
-async function sendInteractiveMessageRaw({
-  phone,
-  title,
-  body,
-  buttons,
-}: SendInteractiveOptions) {
-  if (!isConfigured()) {
-    console.warn("[Evolution API] Serviço não configurado. Mensagem interativa não enviada.");
-    return { success: false, error: "Evolution API não configurada." };
-  }
-
-  const cleanNumber = formatPhoneNumber(phone);
-
-  const formattedButtons = buttons.map((b) => ({
-    type: "reply",
-    displayText: b.text,
-    id: b.id,
-    reply: {
-      id: b.id,
-      title: b.text,
-    },
-  }));
-
-  try {
-    const response = await fetch(
-      `${EVOLUTION_URL}/message/sendButtons/${EVOLUTION_INSTANCE}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: EVOLUTION_KEY!,
-        },
-        body: JSON.stringify({
-          number: cleanNumber,
-          title: title || "Nosso casamento",
-          description: body,
-          buttons: formattedButtons,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("[Evolution API] Erro ao enviar botões:", response.status, err);
-      return { success: false, error: `HTTP ${response.status}: ${err}` };
-    }
-
-    const data = await response.json();
-    return { success: true, data };
-  } catch (error) {
-    console.error("[Evolution API] Exceção ao enviar botões:", error);
-    return { success: false, error: (error instanceof Error ? error.message : undefined) || "Falha ao enviar mensagem com botões." };
-  }
-}
-
 /**
  * Busca o status de conexão da instância do Evolution API.
  */
@@ -226,7 +158,7 @@ export async function getConnectionState() {
 /**
  * Cria a instância caso ela não exista no servidor da Evolution API.
  */
-export async function createInstance() {
+async function createInstance() {
   if (!isConfigured()) return null;
   try {
     const response = await fetch(`${EVOLUTION_URL}/instance/create`, {
@@ -250,7 +182,7 @@ export async function createInstance() {
   }
 }
 
-export async function logoutInstance() {
+async function logoutInstance() {
   if (!isConfigured()) return null;
   try {
     const response = await fetch(`${EVOLUTION_URL}/instance/logout/${EVOLUTION_INSTANCE}`, {
@@ -436,8 +368,7 @@ async function tracked<T extends SendResult>(kind: string, run: () => Promise<T>
 }
 
 export const sendTextMessage = (options: Parameters<typeof sendTextMessageRaw>[0]) => tracked("send", () => sendTextMessageRaw(options));
-export const sendInteractiveMessage = (options: Parameters<typeof sendInteractiveMessageRaw>[0]) => tracked("send", () => sendInteractiveMessageRaw(options));
-export const sendMediaMessage = (options: Parameters<typeof sendMediaMessageRaw>[0]) => tracked("send", () => sendMediaMessageRaw(options));
+const sendMediaMessage = (options: Parameters<typeof sendMediaMessageRaw>[0]) => tracked("send", () => sendMediaMessageRaw(options));
 
 /**
  * Dispara mensagens para uma lista de convidados com rate limiting anti-ban.

@@ -45,7 +45,7 @@ export function rsvpPendingTipText({ pending, pendingPeople, deadlineKey, todayK
 }
 
 /** A partir de quantos dias antes do prazo (ou do casamento, sem prazo) a sugestão pede atenção. */
-export const RSVP_PRAZO_PERTO_DIAS = 7;
+const RSVP_PRAZO_PERTO_DIAS = 7;
 
 /** Dias de calendário entre duas chaves "AAAA-MM-DD" (negativo quando `to` já passou). */
 function daysBetween(from: string, to: string): number {
