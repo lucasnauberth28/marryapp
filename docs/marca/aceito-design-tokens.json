@@ -1,0 +1,138 @@
+{
+  "version": "2.0",
+  "source": "Aceito Landing.zip; evolução B Esculpido",
+  "palette": {
+    "light": {
+      "papel": "#FCFBFA",
+      "branco": "#FFFFFF",
+      "nevoa": "#F7F1F5",
+      "tinta": "#1F1A1D",
+      "grafite": "#5F585C",
+      "fio": "#E8E2E5",
+      "fio-forte": "#8E878B",
+      "ameixa": "#5E2B4E",
+      "ameixa-hover": "#4A2140",
+      "sobre-ameixa": "#FFFFFF",
+      "ameixa-suave": "#F4EAF1",
+      "ameixa-viva": "#8C3F74",
+      "rosa": "#F2D7E7",
+      "profundo": "#2E1226",
+      "profundo-2": "#43203A",
+      "sobre-profundo": "#FBF4F8",
+      "sobre-profundo-2": "#D9C2D1",
+      "acento-profundo": "#F0B8DA",
+      "entrada": "#1C7A4A",
+      "entrada-suave": "#E4F2E9",
+      "neutro": "#5B5559",
+      "neutro-suave": "#F0EDEE",
+      "neutro-fraco": "#D5CFD2"
+    },
+    "dark_overrides": {
+      "papel": "#141113",
+      "branco": "#1D181B",
+      "nevoa": "#1F181D",
+      "tinta": "#F2EEF0",
+      "grafite": "#B9B1B6",
+      "fio": "#30292E",
+      "fio-forte": "#756D72",
+      "ameixa": "#D9A5C6",
+      "ameixa-hover": "#E8C3DA",
+      "sobre-ameixa": "#2A1424",
+      "ameixa-suave": "#35222F",
+      "ameixa-viva": "#E8B4D5",
+      "rosa": "#4A2A40",
+      "profundo": "#241020",
+      "profundo-2": "#3A1B32",
+      "entrada": "#6CC596",
+      "entrada-suave": "#1B2E24",
+      "neutro": "#B9B1B6",
+      "neutro-suave": "#2A2427",
+      "neutro-fraco": "#4A4347"
+    }
+  },
+  "spacing": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64,
+    96
+  ],
+  "radii": {
+    "control": 12,
+    "card": 20,
+    "editorial": 28,
+    "pill": 999
+  },
+  "typography": {
+    "display": {
+      "family": "Urbanist",
+      "weight": 500,
+      "sizeDesktop": 64,
+      "sizeMobile": 40,
+      "lineHeight": 1.08
+    },
+    "h1": {
+      "family": "Urbanist",
+      "weight": 600,
+      "sizeDesktop": 48,
+      "sizeMobile": 34,
+      "lineHeight": 1.12
+    },
+    "h2": {
+      "family": "Urbanist",
+      "weight": 600,
+      "sizeDesktop": 32,
+      "sizeMobile": 28,
+      "lineHeight": 1.2
+    },
+    "body": {
+      "family": "Geist",
+      "weight": 400,
+      "size": 16,
+      "lineHeight": 1.5
+    },
+    "label": {
+      "family": "Geist",
+      "weight": 500,
+      "size": 14,
+      "lineHeight": 1.4
+    },
+    "caption": {
+      "family": "Geist",
+      "weight": 400,
+      "size": 12,
+      "lineHeight": 1.4
+    }
+  },
+  "layout": {
+    "desktopMax": 1280,
+    "desktopColumns": 12,
+    "mobileColumns": 4,
+    "gap": 24,
+    "mobileMargin": 20
+  },
+  "motion": {
+    "feedbackMs": 160,
+    "transitionMs": 240,
+    "brandMs": 700,
+    "easing": "cubic-bezier(.2,0,0,1)",
+    "translationPx": 8,
+    "reducedMotion": "none"
+  },
+  "functionalAdditions": {
+    "error": "#A12B42",
+    "errorSurface": "#FAE9ED",
+    "errorDark": "#FFB3C3",
+    "errorSurfaceDark": "#3C1D27"
+  },
+  "focus": {
+    "widthPx": 2,
+    "offsetPx": 3,
+    "colorToken": "ameixa"
+  },
+  "controlMinHeight": 48
+}

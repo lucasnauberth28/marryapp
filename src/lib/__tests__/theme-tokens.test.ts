@@ -117,14 +117,14 @@ test("tema escuro usa as cores noturnas do manual (p.10)", () => {
   const esperado: Record<string, string> = {
     "--color-linho": "#141113", // página
     "--color-papel": "#1D181B", // cartão
-    "--color-areia": "#35222F", // destaque suave
+    "--color-areia": "#1F181D", // névoa noturna (Kit v2, tokens JSON)
     "--color-tinta": "#F2EEF0",
     "--color-tinta-suave": "#D9C2D1", // texto secundário
     "--color-ameixa": "#D9A5C6", // ameixa noturno
     "--color-ameixa-hover": "#E8C3DA",
     "--color-ameixa-viva": "#E8B4D5",
     "--color-profundo": "#241020", // sobre-profundo-suave
-    "--color-ameixa-suave": "#3A1B32", // acento-profundo
+    "--color-ameixa-suave": "#35222F", // destaque suave
   };
   for (const [k, v] of Object.entries(esperado)) assert.equal(dark[k]?.toUpperCase(), v, k);
 });

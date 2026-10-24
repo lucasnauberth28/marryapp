@@ -83,12 +83,12 @@
   --color-scrim: #2E1226;
 
   /* Estados: sempre com ícone e palavra */
-  --color-sucesso: #22696F;
-  --color-sucesso-suave: #DCECEC;
+  --color-sucesso: #1C7A4A;
+  --color-sucesso-suave: #E4F2E9;
   --color-aviso: #8A5A00;
   --color-aviso-suave: #F6EAD2;
-  --color-perigo: #A3263B;
-  --color-perigo-suave: #F6E0E3;
+  --color-perigo: #A12B42;
+  --color-perigo-suave: #FAE9ED;
 
   /* Escala "brand" (legado e cor do casal). Por padrão = ameixa. */
   --color-brand-50: #F7F1F5;
@@ -126,7 +126,7 @@
   --muted-foreground: #5F585C; /* grafite: 7:1 sobre papel */
   --accent: #F4EAF1;
   --accent-foreground: #5E2B4E;
-  --destructive: #A3263B;
+  --destructive: #A12B42;
   --destructive-foreground: #FFFFFF;
   --border: #E8E2E5; /* linha */
   --input: #8E878B; /* linha-forte: 3:1 nas bordas de campo */
@@ -168,12 +168,12 @@
   --color-salvia-suave: #F4EAF1;
   --color-champanhe: #B8935A;
   --color-scrim: #2E1226;
-  --color-sucesso: #22696F;
-  --color-sucesso-suave: #DCECEC;
+  --color-sucesso: #1C7A4A;
+  --color-sucesso-suave: #E4F2E9;
   --color-aviso: #8A5A00;
   --color-aviso-suave: #F6EAD2;
-  --color-perigo: #A3263B;
-  --color-perigo-suave: #F6E0E3;
+  --color-perigo: #A12B42;
+  --color-perigo-suave: #FAE9ED;
   --color-brand-50: #F7F1F5;
   --color-brand-100: #F4EAF1;
   --color-brand-300: #C9A2BB;
@@ -198,16 +198,16 @@
 
     --color-linho: #141113;
     --color-papel: #1D181B;
-    --color-areia: #35222F;
-    --color-linha: #3A3036;
-    --color-linha-forte: #8A7D88;
+    --color-areia: #1F181D; /* névoa noturna */
+    --color-linha: #30292E; /* fio */
+    --color-linha-forte: #756D72;
     --color-tinta: #F2EEF0;
     --color-tinta-suave: #D9C2D1;
     --color-ameixa: #D9A5C6;
     --color-ameixa-hover: #E8C3DA;
     --color-ameixa-viva: #E8B4D5;
-    --color-ameixa-suave: #3A1B32; /* acento-profundo */
-    --color-on-ameixa: #2E1226;
+    --color-ameixa-suave: #35222F;
+    --color-on-ameixa: #2A1424;
     --color-rosa: #4A2A40;
     --color-petala: #4A2A40;
     --color-profundo: #241020; /* sobre-profundo-suave */
@@ -216,12 +216,12 @@
     --color-salvia-suave: #3A1B32;
     --color-champanhe: #CFAE7A;
     --color-scrim: #000000;
-    --color-sucesso: #7CC4C9;
-    --color-sucesso-suave: #173032;
+    --color-sucesso: #6CC596;
+    --color-sucesso-suave: #1B2E24;
     --color-aviso: #E0B25C;
     --color-aviso-suave: #33280F;
-    --color-perigo: #F08F9F;
-    --color-perigo-suave: #3A1A20;
+    --color-perigo: #FFB3C3;
+    --color-perigo-suave: #3C1D27;
 
     /* Escala legado/cor do casal: acompanha a ameixa clara. */
     --color-brand-50: #241020;
@@ -233,7 +233,7 @@
     --color-brand-600: #E8C3DA;
     --color-ivory: #141113;
     --color-paper: #1D181B;
-    --color-line: #3A3036;
+    --color-line: #30292E;
 
     --shadow-aceito-1: 0 1px 2px 0 var(--sombra-1a), 0 1px 1px 0 var(--sombra-1b);
     --shadow-aceito-2: 0 16px 40px -12px var(--sombra-2);
@@ -249,20 +249,20 @@
     --popover: #1D181B;
     --popover-foreground: #F2EEF0;
     --primary: #D9A5C6;
-    --primary-foreground: #2E1226;
-    --secondary: #3A1B32;
+    --primary-foreground: #2A1424;
+    --secondary: #35222F;
     --secondary-foreground: #D9A5C6;
-    --muted: #35222F;
+    --muted: #1F181D;
     --muted-foreground: #D9C2D1;
-    --accent: #3A1B32;
+    --accent: #35222F;
     --accent-foreground: #D9A5C6;
-    --destructive: #F08F9F;
-    --destructive-foreground: #2E1226;
-    --border: #3A3036;
-    --input: #8A7D88;
+    --destructive: #FFB3C3;
+    --destructive-foreground: #2A1424;
+    --border: #30292E;
+    --input: #756D72;
     --ring: #D9A5C6;
     --logo-marca: #D9A5C6; /* ameixa noturno do Manual de Marca (uma única cor) */
-    --logo-sobre-ameixa: #2E1226; /* sobre fundo ameixa (rosa no escuro): o profundo */
+    --logo-sobre-ameixa: #2A1424; /* sobre fundo ameixa (rosa no escuro) */
   }
 }
 

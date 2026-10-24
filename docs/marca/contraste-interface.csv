@@ -1,0 +1,11 @@
+tema,uso,frente,fundo,contraste,meta_4_5
+light,texto,#1F1A1D,#FCFBFA,16.60,True
+light,secundario,#5F585C,#FCFBFA,6.69,True
+light,acao,#FFFFFF,#5E2B4E,10.87,True
+light,sucesso,#1C7A4A,#E4F2E9,4.62,True
+dark,texto,#F2EEF0,#141113,16.32,True
+dark,secundario,#B9B1B6,#141113,8.96,True
+dark,acao,#2A1424,#D9A5C6,8.29,True
+dark,sucesso,#6CC596,#1B2E24,6.88,True
+light,erro,#A12B42,#FAE9ED,6.10,True
+dark,erro,#FFB3C3,#3C1D27,8.94,True

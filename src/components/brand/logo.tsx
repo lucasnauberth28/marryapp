@@ -51,8 +51,9 @@ export function Logo({
       className={`shrink-0 ${className ?? ""}`}
       style={{ height, width }}
     >
-      {shape.paths.map((d, i) => (
-        <path key={i} style={{ fill: onAmeixa ? SOBRE_AMEIXA : MARCA }} d={d} />
+      {/* Versão clara usa a geometria própria do manual (compensação óptica sobre fundo escuro) */}
+      {(onAmeixa ? shape.light : shape.paths).map((p, i) => (
+        <path key={i} style={{ fill: onAmeixa ? SOBRE_AMEIXA : MARCA }} d={p.d} transform={p.transform} />
       ))}
     </svg>
   );
