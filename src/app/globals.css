@@ -52,26 +52,32 @@
 /* Tokens Aceito (design system "Aceito"). Fora do "inline" para que uma seção possa
    trocar a cor redefinindo as variáveis: o site do casal usa a cor escolhida pelos noivos. */
 @theme {
-  /* Neutros */
-  --color-linho: #F7F3EC;
-  --color-papel: #FFFDF9;
-  --color-areia: #EAE3D8;
-  --color-linha: #DDD4C7;
-  --color-linha-forte: #8F8290;
-  --color-tinta: #231C24;
-  --color-tinta-suave: #5F5560;
+  /* Neutros (Manual de Marca p.9: "papel e branco como base"). Os nomes dos tokens ficaram; os valores são do manual. */
+  --color-linho: #FCFBFA; /* papel: fundo de página */
+  --color-papel: #FFFFFF; /* branco: cartões e superfícies */
+  --color-areia: #F7F1F5; /* névoa: superfície de apoio */
+  --color-linha: #E8E2E5;
+  --color-linha-forte: #8E878B;
+  --color-tinta: #1F1A1D;
+  --color-tinta-suave: #5F585C; /* grafite */
 
   /* Marca */
   --color-ameixa: #5E2B4E;
   --color-ameixa-hover: #4A2140;
-  --color-ameixa-suave: #F1E6EC;
-  --color-on-ameixa: #FFFDF9;
-  --color-petala: #E9B8C2;
-  --color-salvia: #4E5F49;
-  --color-salvia-suave: #E3E9DD;
+  --color-ameixa-viva: #8C3F74;
+  --color-ameixa-suave: #F4EAF1;
+  --color-on-ameixa: #FFFFFF;
+  --color-rosa: #F2D7E7; /* apoio: fios, selos, realces. Nunca texto */
+  --color-petala: #F2D7E7;
+  --color-profundo: #2E1226;
+  --color-profundo-2: #43203A;
+  /* Antigo verde-sálvia e champanhe: o manual só admite verde como estado e dourado "não faz parte do mestre".
+     "salvia" agora é ameixa-viva (apoio de categoria); "champanhe" ficou só nas estrelas de avaliação (ver docs/tema-escuro.md). */
+  --color-salvia: #8C3F74;
+  --color-salvia-suave: #F4EAF1;
   --color-champanhe: #B8935A;
   /* Véu atrás de diálogos e gavetas: escuro nos dois temas (bg-scrim/40, nunca bg-tinta/..) */
-  --color-scrim: #231C24;
+  --color-scrim: #2E1226;
 
   /* Estados: sempre com ícone e palavra */
   --color-sucesso: #22696F;
@@ -82,16 +88,16 @@
   --color-perigo-suave: #F6E0E3;
 
   /* Escala "brand" (legado e cor do casal). Por padrão = ameixa. */
-  --color-brand-50: #F8F1F5;
-  --color-brand-100: #F1E6EC;
+  --color-brand-50: #F7F1F5;
+  --color-brand-100: #F4EAF1;
   --color-brand-300: #C9A2BB;
-  --color-brand-400: #8C5A7C;
+  --color-brand-400: #8C3F74;
   --color-brand: #5E2B4E;
   --color-brand-500: #5E2B4E;
   --color-brand-600: #4A2140;
-  --color-ivory: #F7F3EC;
-  --color-paper: #FFFDF9;
-  --color-line: #DDD4C7;
+  --color-ivory: #FCFBFA;
+  --color-paper: #FFFFFF;
+  --color-line: #E8E2E5;
 
   --ease-aceito: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-aceito-in-out: cubic-bezier(0.65, 0, 0.35, 1);
@@ -103,32 +109,32 @@
 :root,
 [data-theme="light"] {
   color-scheme: light;
-  --background: #F7F3EC; /* linho */
-  --foreground: #231C24; /* tinta */
-  --card: #FFFDF9; /* papel */
-  --card-foreground: #231C24;
-  --popover: #FFFDF9;
-  --popover-foreground: #231C24;
+  --background: #FCFBFA; /* papel */
+  --foreground: #1F1A1D; /* tinta */
+  --card: #FFFFFF; /* branco */
+  --card-foreground: #1F1A1D;
+  --popover: #FFFFFF;
+  --popover-foreground: #1F1A1D;
   --primary: #5E2B4E; /* ameixa */
-  --primary-foreground: #FFFDF9;
-  --secondary: #F1E6EC; /* ameixa-suave */
+  --primary-foreground: #FFFFFF;
+  --secondary: #F4EAF1; /* ameixa-suave */
   --secondary-foreground: #5E2B4E;
-  --muted: #EAE3D8; /* areia */
-  --muted-foreground: #5F5560; /* tinta-suave: 6,3:1 sobre linho */
-  --accent: #F1E6EC;
+  --muted: #F7F1F5; /* névoa */
+  --muted-foreground: #5F585C; /* grafite: 7:1 sobre papel */
+  --accent: #F4EAF1;
   --accent-foreground: #5E2B4E;
   --destructive: #A3263B;
-  --destructive-foreground: #FFFDF9;
-  --border: #DDD4C7; /* linha */
-  --input: #8F8290; /* linha-forte: 3:1 nas bordas de campo */
+  --destructive-foreground: #FFFFFF;
+  --border: #E8E2E5; /* linha */
+  --input: #8E878B; /* linha-forte: 3:1 nas bordas de campo */
   --ring: #5E2B4E;
   /* Logotipo (components/brand/logo.tsx): marca sobre linho/papel, "a" do selo e versão sobre ameixa */
   --logo-marca: #5E2B4E;
   --logo-sobre-ameixa: #FFFFFF;
   /* Cor das sombras: --shadow-aceito-1/2 (e shadow-aceito-1/2) as usam, então trocam com o tema */
-  --sombra-1a: rgba(35, 28, 36, 0.06);
-  --sombra-1b: rgba(35, 28, 36, 0.04);
-  --sombra-2: rgba(35, 28, 36, 0.22);
+  --sombra-1a: rgba(31, 26, 29, 0.06);
+  --sombra-1b: rgba(31, 26, 29, 0.04);
+  --sombra-2: rgba(31, 26, 29, 0.22);
 }
 
 :root {
@@ -139,63 +145,72 @@
    data-theme="light" dentro de uma página escura (site do casal) volte à paleta clara. O teste
    src/lib/__tests__/theme-tokens.test.ts garante que os dois blocos não divergem. */
 [data-theme="light"] {
-  --color-linho: #F7F3EC;
-  --color-papel: #FFFDF9;
-  --color-areia: #EAE3D8;
-  --color-linha: #DDD4C7;
-  --color-linha-forte: #8F8290;
-  --color-tinta: #231C24;
-  --color-tinta-suave: #5F5560;
+  --color-linho: #FCFBFA;
+  --color-papel: #FFFFFF;
+  --color-areia: #F7F1F5;
+  --color-linha: #E8E2E5;
+  --color-linha-forte: #8E878B;
+  --color-tinta: #1F1A1D;
+  --color-tinta-suave: #5F585C;
   --color-ameixa: #5E2B4E;
   --color-ameixa-hover: #4A2140;
-  --color-ameixa-suave: #F1E6EC;
-  --color-on-ameixa: #FFFDF9;
-  --color-petala: #E9B8C2;
-  --color-salvia: #4E5F49;
-  --color-salvia-suave: #E3E9DD;
+  --color-ameixa-viva: #8C3F74;
+  --color-ameixa-suave: #F4EAF1;
+  --color-on-ameixa: #FFFFFF;
+  --color-rosa: #F2D7E7;
+  --color-petala: #F2D7E7;
+  --color-profundo: #2E1226;
+  --color-profundo-2: #43203A;
+  --color-salvia: #8C3F74;
+  --color-salvia-suave: #F4EAF1;
   --color-champanhe: #B8935A;
-  --color-scrim: #231C24;
+  --color-scrim: #2E1226;
   --color-sucesso: #22696F;
   --color-sucesso-suave: #DCECEC;
   --color-aviso: #8A5A00;
   --color-aviso-suave: #F6EAD2;
   --color-perigo: #A3263B;
   --color-perigo-suave: #F6E0E3;
-  --color-brand-50: #F8F1F5;
-  --color-brand-100: #F1E6EC;
+  --color-brand-50: #F7F1F5;
+  --color-brand-100: #F4EAF1;
   --color-brand-300: #C9A2BB;
-  --color-brand-400: #8C5A7C;
+  --color-brand-400: #8C3F74;
   --color-brand: #5E2B4E;
   --color-brand-500: #5E2B4E;
   --color-brand-600: #4A2140;
-  --color-ivory: #F7F3EC;
-  --color-paper: #FFFDF9;
-  --color-line: #DDD4C7;
+  --color-ivory: #FCFBFA;
+  --color-paper: #FFFFFF;
+  --color-line: #E8E2E5;
   --shadow-aceito-1: 0 1px 2px 0 var(--sombra-1a), 0 1px 1px 0 var(--sombra-1b);
   --shadow-aceito-2: 0 16px 40px -12px var(--sombra-2);
 }
 
-/* Tema escuro (tokens do design system Aceito: berinjela no lugar do linho, ameixa clareada).
-   Texto sobre ameixa usa on-ameixa, nunca branco. Ver docs/tema-escuro.md.
+/* Tema escuro do Manual de Marca (p.10): página #141113, cartão #1D181B, destaque suave #35222F, texto #F2EEF0,
+   secundário #D9C2D1, ameixa-noturno #D9A5C6 (hover #E8C3DA, viva #E8B4D5). Cores noturnas próprias, sem inversão
+   automática. Texto sobre ameixa usa on-ameixa, nunca branco. Ver docs/tema-escuro.md.
    Na impressão (recibo, PDF do navegador) vale sempre a paleta clara. */
 @media not print {
   [data-theme="dark"] {
     color-scheme: dark;
 
-    --color-linho: #18131A;
-    --color-papel: #221B24;
-    --color-areia: #2C242E;
-    --color-linha: #3A3039;
+    --color-linho: #141113;
+    --color-papel: #1D181B;
+    --color-areia: #35222F;
+    --color-linha: #3A3036;
     --color-linha-forte: #8A7D88;
-    --color-tinta: #F3ECEF;
-    --color-tinta-suave: #B9AEB7;
+    --color-tinta: #F2EEF0;
+    --color-tinta-suave: #D9C2D1;
     --color-ameixa: #D9A5C6;
-    --color-ameixa-hover: #E6BFD7;
-    --color-ameixa-suave: #3A2434;
-    --color-on-ameixa: #2A1424;
-    --color-petala: #E9B8C2;
-    --color-salvia: #A9BEA0;
-    --color-salvia-suave: #26302A;
+    --color-ameixa-hover: #E8C3DA;
+    --color-ameixa-viva: #E8B4D5;
+    --color-ameixa-suave: #3A1B32; /* acento-profundo */
+    --color-on-ameixa: #2E1226;
+    --color-rosa: #4A2A40;
+    --color-petala: #4A2A40;
+    --color-profundo: #241020; /* sobre-profundo-suave */
+    --color-profundo-2: #3A1B32;
+    --color-salvia: #E8B4D5;
+    --color-salvia-suave: #3A1B32;
     --color-champanhe: #CFAE7A;
     --color-scrim: #000000;
     --color-sucesso: #7CC4C9;
@@ -206,16 +221,16 @@
     --color-perigo-suave: #3A1A20;
 
     /* Escala legado/cor do casal: acompanha a ameixa clara. */
-    --color-brand-50: #2B1B27;
-    --color-brand-100: #3A2434;
+    --color-brand-50: #241020;
+    --color-brand-100: #3A1B32;
     --color-brand-300: #7A4F6C;
-    --color-brand-400: #B98AA8;
+    --color-brand-400: #E8B4D5;
     --color-brand: #D9A5C6;
     --color-brand-500: #D9A5C6;
-    --color-brand-600: #E6BFD7;
-    --color-ivory: #18131A;
-    --color-paper: #221B24;
-    --color-line: #3A3039;
+    --color-brand-600: #E8C3DA;
+    --color-ivory: #141113;
+    --color-paper: #1D181B;
+    --color-line: #3A3036;
 
     --shadow-aceito-1: 0 1px 2px 0 var(--sombra-1a), 0 1px 1px 0 var(--sombra-1b);
     --shadow-aceito-2: 0 16px 40px -12px var(--sombra-2);
@@ -224,23 +239,23 @@
     --sombra-2: rgba(0, 0, 0, 0.6);
 
     /* shadcn */
-    --background: #18131A;
-    --foreground: #F3ECEF;
-    --card: #221B24;
-    --card-foreground: #F3ECEF;
-    --popover: #221B24;
-    --popover-foreground: #F3ECEF;
+    --background: #141113;
+    --foreground: #F2EEF0;
+    --card: #1D181B;
+    --card-foreground: #F2EEF0;
+    --popover: #1D181B;
+    --popover-foreground: #F2EEF0;
     --primary: #D9A5C6;
-    --primary-foreground: #2A1424;
-    --secondary: #3A2434;
+    --primary-foreground: #2E1226;
+    --secondary: #3A1B32;
     --secondary-foreground: #D9A5C6;
-    --muted: #2C242E;
-    --muted-foreground: #B9AEB7;
-    --accent: #3A2434;
+    --muted: #35222F;
+    --muted-foreground: #D9C2D1;
+    --accent: #3A1B32;
     --accent-foreground: #D9A5C6;
     --destructive: #F08F9F;
-    --destructive-foreground: #2A1424;
-    --border: #3A3039;
+    --destructive-foreground: #2E1226;
+    --border: #3A3036;
     --input: #8A7D88;
     --ring: #D9A5C6;
     --logo-marca: #D9A5C6; /* ameixa noturno do Manual de Marca (uma única cor) */
@@ -393,7 +408,7 @@ html.lenis body {
   transition: transform 1.2s var(--ease-aceito);
 }
 .zoom-media:hover img {
-  transform: scale(1.04);
+  transform: scale(1.02);
 }
 
 /* Tipografia do Manual de Marca (p.12). Títulos em Urbanist 500/600 (peso padrão 500; font-semibold sobe para 600).
@@ -423,7 +438,7 @@ html.lenis body {
 
 /* Capa: a foto assenta devagar ao abrir a página. */
 @keyframes aceito-hero-settle {
-  from { transform: scale(1.08); }
+  from { transform: scale(1.03); }
   to { transform: scale(1); }
 }
 .hero-settle {
@@ -441,7 +456,7 @@ html.lenis body {
 
 /* Foto do painel de acesso: troca com um esmaecer lento. */
 @keyframes aceito-photo-in {
-  from { opacity: 0; transform: scale(1.04); }
+  from { opacity: 0; transform: scale(1.02); }
   to { opacity: 1; transform: none; }
 }
 .photo-in {

@@ -180,7 +180,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
       {stage === "convite" && guest ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
           <div className="relative rounded-[16px] border border-linha bg-papel px-5 pb-6 pt-8 text-center shadow-[var(--shadow-aceito-2)]">
-            <span aria-hidden="true" className="pointer-events-none absolute inset-2 rounded-[10px] border border-champanhe" />
+            <span aria-hidden="true" className="pointer-events-none absolute inset-2 rounded-[10px] border border-rosa" />
             <div className="relative">
               <p className={overline}>Seu convite chegou</p>
               <h1

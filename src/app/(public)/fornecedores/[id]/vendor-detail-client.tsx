@@ -480,7 +480,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                       </figcaption>
 
                       {rev.reply ? (
-                        <div className="rounded-[12px] border-l-2 border-champanhe bg-areia/60 px-4 py-3">
+                        <div className="rounded-[12px] border-l-2 border-rosa bg-areia/60 px-4 py-3">
                           <p className="text-sm font-semibold text-tinta-suave">Resposta de {vendor.companyName}</p>
                           <p className="whitespace-pre-line break-words text-base leading-6 text-tinta">{rev.reply}</p>
                         </div>

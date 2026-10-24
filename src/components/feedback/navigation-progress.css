@@ -16,9 +16,9 @@
   height: 100%;
   transform: scaleX(0);
   transform-origin: left center;
-  background-image: linear-gradient(90deg, var(--color-ameixa) 0%, var(--color-ameixa) 55%, var(--color-champanhe) 100%);
+  background-image: linear-gradient(90deg, var(--color-ameixa) 0%, var(--color-ameixa) 55%, var(--color-ameixa-viva) 100%);
   border-radius: 0 3px 3px 0;
-  box-shadow: 0 0 10px color-mix(in srgb, var(--color-champanhe) 55%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-ameixa-viva) 55%, transparent);
 }
 
 .ac-nav-progress[data-phase="loading"] {

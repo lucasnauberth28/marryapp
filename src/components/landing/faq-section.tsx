@@ -89,7 +89,7 @@ export async function FaqSection() {
       <div className={cn(container, "grid gap-10 lg:grid-cols-[5fr_7fr] lg:gap-20")}>
         <Reveal className="flex flex-col gap-4 lg:sticky lg:top-28 lg:self-start">
           <p className={cn(overline, "flex items-center gap-3")}>
-            <span aria-hidden="true" className="h-px w-8 shrink-0 bg-champanhe" />
+            <span aria-hidden="true" className="h-px w-8 shrink-0 bg-rosa" />
             Dúvidas
           </p>
           <h2 id="duvidas-titulo" className={h2}>

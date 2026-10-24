@@ -39,7 +39,7 @@ export default function DiaDoEventoLoading() {
           <div className="flex h-7 items-center">
             <Skeleton className="h-5 w-28 rounded-md" />
           </div>
-          <ol className="m-0 flex list-none flex-col gap-5 border-l border-champanhe py-1 pl-5">
+          <ol className="m-0 flex list-none flex-col gap-5 border-l border-rosa py-1 pl-5">
             {Array.from({ length: 5 }).map((_, i) => (
               <li key={i} className="relative">
                 <span aria-hidden="true" className="absolute -left-[26px] top-[7px] size-[11px] rounded-full bg-linha" />

@@ -98,7 +98,7 @@ export function TimelinePublicClient({
             O cronograma ainda está sendo preparado pelos noivos.
           </p>
         ) : (
-          <ol className="m-0 flex list-none flex-col gap-5 border-l border-champanhe py-1 pl-5">
+          <ol className="m-0 flex list-none flex-col gap-5 border-l border-rosa py-1 pl-5">
             {events.map((event) => {
               const current = event.id === currentId;
               return (

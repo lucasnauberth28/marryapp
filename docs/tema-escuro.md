@@ -2,7 +2,7 @@
 
 O Aceito tem três opções de aparência: **Claro**, **Escuro** e **Do aparelho** (segue o sistema). O padrão é o tema **Claro**: o claro é o principal, e o escuro só vale por escolha de quem usa.
 O tema aplicado vai no atributo `data-theme="light|dark"` do `<html>`. Os tokens do design system
-trocam de valor por esse atributo; por isso o código de tela usa só tokens (`bg-papel`, `text-tinta`,
+trocam de valor por esse atributo (valores do Manual de Marca v2.0, ver "Paleta" abaixo); por isso o código de tela usa só tokens (`bg-papel`, `text-tinta`,
 `border-linha`, `bg-ameixa text-on-ameixa`...) e não precisa de classes `dark:`.
 
 ## Como funciona
@@ -69,3 +69,26 @@ contornos inline são os mesmos.
 - Texto sobre foto: `text-[#fff]` com véu escuro, não `text-papel` (que escurece no escuro).
 - Sombras: `shadow-[var(--shadow-aceito-1|2)]` ou `shadow-aceito-1|2`; elas trocam com o tema.
 - Foco: `focus-visible:outline-2` agora funciona junto de `outline-none` (ver `globals.css`).
+
+## Paleta do Manual de Marca v2.0
+
+Os nomes dos tokens são os de sempre; só os valores seguem o manual (p.9 a 11). Claro: `linho` é o papel `#FCFBFA`
+(fundo da página), `papel` é o branco `#FFFFFF` (cartões), `areia` é a névoa `#F7F1F5`, `ameixa-suave` `#F4EAF1`,
+`tinta` `#1F1A1D`, `tinta-suave` é o grafite `#5F585C`, e há `ameixa-viva` `#8C3F74`, `rosa` `#F2D7E7` (apoio, nunca
+texto), `profundo` `#2E1226` e `profundo-2` `#43203A`. Escuro (sem inversão automática): página `#141113`, cartão
+`#1D181B`, destaque suave (`areia`) `#35222F`, texto `#F2EEF0`, secundário `#D9C2D1`, ameixa noturno `#D9A5C6`
+(hover `#E8C3DA`, viva `#E8B4D5`), `profundo` `#241020` e `ameixa-suave` `#3A1B32` (acento profundo).
+
+- `salvia` (antigo verde-sálvia de apoio) virou ameixa-viva: o manual só admite verde como estado.
+- `champanhe` não é mais decoração (o manual diz que dourado não faz parte do mestre): fios, arcos e selos usam `rosa`.
+  Sobrou só nas estrelas de avaliação, que são dado funcional (a nota vai sempre no texto também).
+- Cores de estado (`sucesso`, `aviso`, `perigo`) não mudaram.
+- `theme-tokens.test.ts` confere os valores do manual e a tabela de contraste da p.11.
+
+## Tipografia e números
+
+Títulos em Urbanist (`font-display`, 500 por padrão, `font-semibold` para 600) e interface em Geist 400/500/600
+(`font-sans`). Os dois são variáveis, subconjunto latino, carregados com `next/font/local` a partir de
+`src/app/fonts` (o build não usa rede). Urbanist não tem algarismos tabulares: números e dinheiro usam `font-num`
+(Geist, tabular). IBM Plex Mono (`font-mono`) só aparece em códigos (cupom, chave Pix, ids).
+O nome "aceito" nunca é digitado como logotipo: use o componente `Logo`.

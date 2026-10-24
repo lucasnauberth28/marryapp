@@ -391,7 +391,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
         {featuredPartners.length > 0 ? (
           <section aria-labelledby="em-destaque" className="flex flex-col gap-3">
             <h2 id="em-destaque" className="flex items-center gap-2 font-display text-[22px] font-medium leading-7 text-tinta">
-              <Sparkles className="size-5 text-champanhe" aria-hidden="true" />
+              <Sparkles className="size-5 text-ameixa" aria-hidden="true" />
               Em destaque
             </h2>
             <ul className="-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:-mx-6 sm:px-6">

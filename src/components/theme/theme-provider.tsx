@@ -13,7 +13,7 @@ import {
 } from "@/lib/theme";
 
 // Cor da barra do navegador (meta theme-color) por tema: é o `linho` de cada paleta.
-const THEME_COLOR: Record<AppliedTheme, string> = { light: "#F7F3EC", dark: "#18131A" };
+const THEME_COLOR: Record<AppliedTheme, string> = { light: "#FCFBFA", dark: "#141113" };
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
 type ThemeContextValue = {

@@ -11,7 +11,7 @@ interface StatusScreenProps {
   glyph?: string;
 }
 
-// Tela cheia para erros e páginas não encontradas: arco champanhe com o sinal, no tema do app.
+// Tela cheia para erros e páginas não encontradas: arco rosa com o sinal, no tema do app.
 export function StatusScreen({ eyebrow, title, description, actions, glyph = "?" }: StatusScreenProps) {
   return (
     <div className="flex min-h-dvh w-full flex-col bg-linho text-tinta">

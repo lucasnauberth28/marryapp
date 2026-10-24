@@ -79,7 +79,7 @@ export function AuthShell({
 
       <div className="relative hidden flex-1 items-center justify-center overflow-hidden border-l border-linha bg-areia lg:flex">
         <div className="relative w-[min(420px,64%)]">
-          <span aria-hidden="true" className="arch pointer-events-none absolute -inset-2.5 border border-champanhe" />
+          <span aria-hidden="true" className="arch pointer-events-none absolute -inset-2.5 border border-rosa" />
           <div className="arch relative aspect-[2/3] overflow-hidden bg-papel">
             <Image
               src={photo.src}

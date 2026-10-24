@@ -14,8 +14,8 @@ export function Seal({ size = "sm", className, label = "Confirmado" }: { size?: 
       className={cn(
         "inline-grid shrink-0 place-items-center rounded-full bg-ameixa text-on-ameixa",
         lg
-          ? "size-[72px] shadow-[inset_0_0_0_4px_var(--color-ameixa),inset_0_0_0_5px_var(--color-champanhe)]"
-          : "size-10 shadow-[inset_0_0_0_3px_var(--color-ameixa),inset_0_0_0_4px_var(--color-champanhe)]",
+          ? "size-[72px] shadow-[inset_0_0_0_4px_var(--color-ameixa),inset_0_0_0_5px_var(--color-rosa)]"
+          : "size-10 shadow-[inset_0_0_0_3px_var(--color-ameixa),inset_0_0_0_4px_var(--color-rosa)]",
         className,
       )}
     >

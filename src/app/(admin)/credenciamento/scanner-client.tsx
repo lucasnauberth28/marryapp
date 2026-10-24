@@ -201,13 +201,13 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
                   <Skeleton className="size-full rounded-none bg-[#2a2330]" />
                 </div>
               )}
-              <div aria-hidden="true" className="relative size-56 rounded-3xl border-[3px] border-[#fffdf9] shadow-[0_0_0_999px_rgba(27,22,32,0.45)]">
+              <div aria-hidden="true" className="relative size-56 rounded-3xl border-[3px] border-[#ffffff] shadow-[0_0_0_999px_rgba(27,22,32,0.45)]">
                 <div className="absolute inset-x-4 top-1/2 h-0.5 bg-petala" />
               </div>
             </div>
             <div className="flex flex-col items-center gap-3 px-4 py-5">
-              <p className="text-base text-[#fffdf9]">Aponte para o código QR do convidado</p>
-              <button type="button" onClick={stopScanning} className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-[#fffdf9] px-4 font-semibold text-[#fffdf9] hover:bg-[#fff]/10">
+              <p className="text-base text-[#ffffff]">Aponte para o código QR do convidado</p>
+              <button type="button" onClick={stopScanning} className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-[#ffffff] px-4 font-semibold text-[#ffffff] hover:bg-[#fff]/10">
                 <X className="size-4" aria-hidden="true" />
                 Cancelar leitura
               </button>

@@ -62,7 +62,7 @@ test("no tema escuro o QR do Pix mantém fundo branco e margem clara", async ({ 
   // Fundo do próprio desenho branco e módulos escuros
   const [fundo, modulos] = await qr.locator("path").evaluateAll((ps) => ps.map((p) => p.getAttribute("fill")));
   expect(fundo?.toLowerCase()).toBe("#ffffff");
-  expect(modulos?.toLowerCase()).toBe("#231c24");
+  expect(modulos?.toLowerCase()).toBe("#1f1a1d");
   // Margem clara ao redor do desenho (zona de silêncio)
   const caixa = await moldura.boundingBox();
   const interno = await qr.boundingBox();

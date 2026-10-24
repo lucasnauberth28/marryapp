@@ -60,8 +60,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   // Segue o sistema no primeiro quadro; o ThemeProvider acerta a cor quando a pessoa escolhe outro tema.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F7F3EC" },
-    { media: "(prefers-color-scheme: dark)", color: "#18131A" },
+    { media: "(prefers-color-scheme: light)", color: "#FCFBFA" },
+    { media: "(prefers-color-scheme: dark)", color: "#141113" },
   ],
 };
 

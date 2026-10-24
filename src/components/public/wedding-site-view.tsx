@@ -433,11 +433,11 @@ export function WeddingSiteView({
             </div>
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-ameixa">
-              <span className="block h-px w-12 bg-champanhe" aria-hidden="true" />
+              <span className="block h-px w-12 bg-rosa" aria-hidden="true" />
               <span className="font-display text-6xl leading-none md:text-7xl" aria-hidden="true">
                 <InitialsText initials={initials} />
               </span>
-              <span className="block h-px w-12 bg-champanhe" aria-hidden="true" />
+              <span className="block h-px w-12 bg-rosa" aria-hidden="true" />
             </div>
           )}
         </div>
@@ -504,7 +504,7 @@ export function WeddingSiteView({
                 </p>
               )}
               {storyItems.length > 0 && (
-                <ol className="m-0 mt-2 flex list-none flex-col gap-5 border-l border-champanhe p-0 pl-6">
+                <ol className="m-0 mt-2 flex list-none flex-col gap-5 border-l border-rosa p-0 pl-6">
                   {storyItems.map((item) => (
                     <li key={item.id} className="flex items-start gap-4">
                       {item.imageUrl && !archItemIds.has(item.id) && (
@@ -724,7 +724,7 @@ export function WeddingSiteView({
         <section id="confirmar" data-tone={toneOf("rsvp")} className={`group/band ${toneOf("rsvp") === "papel" ? "border-y border-linha bg-papel" : ""}`}>
           <Reveal variant="scale" className="mx-auto flex max-w-[1120px] justify-center px-4 py-12 md:px-6 md:py-24">
             <div className="relative w-full max-w-[560px] rounded-2xl border border-linha bg-papel px-6 py-10 text-center shadow-[var(--shadow-aceito-2)] md:px-8 md:py-12">
-              <span className="pointer-events-none absolute inset-2 rounded-[10px] border border-champanhe" aria-hidden="true" />
+              <span className="pointer-events-none absolute inset-2 rounded-[10px] border border-rosa" aria-hidden="true" />
               <div className="relative flex flex-col items-center gap-2">
                 <p className={overline}>Confirmação de presença</p>
                 <h2 className="m-0 mt-2 font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-balance md:text-[40px] md:leading-[46px]">

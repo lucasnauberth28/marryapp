@@ -30,8 +30,8 @@
   -webkit-font-smoothing:antialiased;overflow-x:clip;
 }
 [data-theme="dark"] .lp{
-  --papel:var(--color-linho); --branco:var(--color-papel); --nevoa:#2A2230; --fio:var(--color-linha); --fio-forte:var(--color-linha-forte);
-  --ameixa-suave:var(--color-ameixa-suave); --rosa:#4A2A40;
+  --papel:var(--color-linho); --branco:var(--color-papel); --nevoa:var(--color-areia); --fio:var(--color-linha); --fio-forte:var(--color-linha-forte);
+  --ameixa-suave:var(--color-ameixa-suave); --rosa:var(--color-rosa);
   --profundo:#241020;
   --neutro:#B9AEB7; --neutro-suave:#2C242E; --neutro-fraco:#4A4347;
   --vidro:rgba(34,27,36,.82); --vidro-borda:rgba(255,255,255,.08);
