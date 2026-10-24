@@ -529,7 +529,7 @@ function Heading({ ref, title, text }: { ref: React.Ref<HTMLHeadingElement>; tit
         ref={ref}
         id="cadastro-titulo"
         tabIndex={-1}
-        className="font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta outline-none lg:text-[44px] lg:leading-[50px]"
+        className="font-display text-[30px] font-medium leading-9 tracking-[-0.015em] text-tinta outline-none lg:text-[36px] lg:leading-[42px]"
       >
         {title}
       </h1>

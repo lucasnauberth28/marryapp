@@ -1,11 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { ArrowLeft, Clock } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { Clock } from "lucide-react";
+import { AuthStage } from "@/components/account/auth-stage";
 import { cn } from "@/lib/utils";
 import { LoginForm } from "./login-form";
 import { SignupFlow } from "./signup-flow";
@@ -54,109 +51,55 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
   const photo = photoFor(mode, step, type);
 
   return (
-    <div className="flex min-h-dvh bg-linho text-tinta">
-      {/* Coluna do formulário */}
-      <div className="flex min-w-0 flex-1 flex-col lg:px-[clamp(24px,5vw,80px)] lg:py-8">
-        <header className="flex h-16 items-center gap-1 px-2 lg:h-auto lg:px-0">
-          <Link
-            href="/"
-            aria-label="Voltar para o início"
-            className="grid size-11 place-items-center rounded-[12px] text-tinta transition-colors hover:bg-areia lg:hidden"
-          >
-            <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.6} />
-          </Link>
-          <Link href="/" aria-label="Aceito, início" className="-m-2.5 rounded-[12px] p-2.5 transition-opacity hover:opacity-80">
-            <Logo height={26} priority className="lg:hidden" />
-            <Logo height={28} priority className="hidden lg:block" />
-          </Link>
-          <ThemeToggle className="ml-auto" />
-        </header>
-
-        {/* Faixa de foto no celular */}
-        <div key={`m-${photo.src}`} className="photo-in relative mx-4 h-36 overflow-hidden rounded-[16px] bg-areia sm:h-48 lg:hidden">
-          <Image
-            src={photo.src}
-            alt={photo.alt}
-            fill
-            sizes="(min-width: 1024px) 1px, 100vw"
-            className="object-cover"
-            style={{ objectPosition: photo.position ?? "50% 45%" }}
-          />
+    <AuthStage
+      photo={photo}
+      footnote="Foi convidado para um casamento? Use o link enviado pelo casal. Você não precisa criar uma conta."
+    >
+      {!accountCreated ? (
+        <div role="tablist" aria-label="Acesso" className="mb-8 grid grid-cols-2 gap-1 rounded-[12px] bg-areia p-1">
+          <TabButton id="aba-entrar" controls="painel-acesso" active={mode === "entrar"} onClick={() => setMode("entrar")}>
+            Entrar
+          </TabButton>
+          <TabButton id="aba-criar" controls="painel-acesso" active={mode === "criar"} onClick={() => setMode("criar")}>
+            Criar conta
+          </TabButton>
         </div>
+      ) : null}
 
-        <main id="conteudo" className="mx-auto flex w-full max-w-[460px] flex-1 flex-col justify-center px-4 pb-8 pt-6 lg:px-0 lg:py-12">
-          {!accountCreated ? (
-            <div role="tablist" aria-label="Acesso" className="mb-8 grid grid-cols-2 gap-1 rounded-[12px] bg-areia p-1">
-              <TabButton id="aba-entrar" controls="painel-acesso" active={mode === "entrar"} onClick={() => setMode("entrar")}>
-                Entrar
-              </TabButton>
-              <TabButton id="aba-criar" controls="painel-acesso" active={mode === "criar"} onClick={() => setMode("criar")}>
-                Criar conta
-              </TabButton>
+      <div id="painel-acesso" role="tabpanel" aria-labelledby={mode === "entrar" ? "aba-entrar" : "aba-criar"}>
+        {mode === "entrar" ? (
+          <div key="entrar" className="step-in flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
+              <h1 className="font-display text-[30px] font-medium leading-9 tracking-[-0.015em] lg:text-[36px] lg:leading-[42px]">
+                Que bom ver vocês
+              </h1>
+              <p className="text-base leading-6 text-tinta-suave">Entrem para continuar organizando o casamento.</p>
             </div>
-          ) : null}
-
-          <div id="painel-acesso" role="tabpanel" aria-labelledby={mode === "entrar" ? "aba-entrar" : "aba-criar"}>
-            {mode === "entrar" ? (
-              <div key="entrar" className="step-in flex flex-col gap-6">
-                <div className="flex flex-col gap-2">
-                  <h1 className="font-display text-[34px] font-medium leading-10 tracking-[-0.015em] lg:text-[44px] lg:leading-[50px]">
-                    Que bom ver vocês
-                  </h1>
-                  <p className="text-base leading-6 text-tinta-suave">Entrem para continuar organizando o casamento.</p>
-                </div>
-                {sessionExpired ? (
-                  <p
-                    role="status"
-                    className="flex items-start gap-2.5 rounded-[12px] border border-linha bg-areia px-4 py-3 text-[15px] leading-6 text-tinta"
-                  >
-                    <Clock aria-hidden="true" className="mt-0.5 size-[18px] shrink-0 text-tinta-suave" strokeWidth={1.6} />
-                    Sua sessão expirou. Entre de novo para continuar.
-                  </p>
-                ) : null}
-                <LoginForm key={loginEmail} initialEmail={loginEmail} nextPath={nextPath} onCreateAccount={() => setMode("criar")} />
-              </div>
-            ) : (
-              <SignupFlow
-                step={step}
-                type={type}
-                onStepChange={setStep}
-                onTypeChange={setType}
-                initialPlanId={initialPlanId}
-                customModules={customModules}
-                catalog={catalog}
-                onGoToLogin={goToLogin}
-              />
-            )}
+            {sessionExpired ? (
+              <p
+                role="status"
+                className="flex items-start gap-2.5 rounded-[12px] border border-linha bg-areia px-4 py-3 text-[15px] leading-6 text-tinta"
+              >
+                <Clock aria-hidden="true" className="mt-0.5 size-[18px] shrink-0 text-tinta-suave" strokeWidth={1.6} />
+                Sua sessão expirou. Entre de novo para continuar.
+              </p>
+            ) : null}
+            <LoginForm key={loginEmail} initialEmail={loginEmail} nextPath={nextPath} onCreateAccount={() => setMode("criar")} />
           </div>
-        </main>
-
-        <p className="px-4 pb-8 text-center text-sm text-tinta-suave lg:px-0 lg:pb-2 lg:text-left">
-          Foi convidado para um casamento? Use o link enviado pelo casal. Você não precisa criar uma conta.
-        </p>
+        ) : (
+          <SignupFlow
+            step={step}
+            type={type}
+            onStepChange={setStep}
+            onTypeChange={setType}
+            initialPlanId={initialPlanId}
+            customModules={customModules}
+            catalog={catalog}
+            onGoToLogin={goToLogin}
+          />
+        )}
       </div>
-
-      {/* Painel da foto no computador: muda conforme a etapa */}
-      <div className="relative hidden flex-1 items-center justify-center overflow-hidden border-l border-linha bg-areia lg:flex">
-        <div className="relative w-[min(420px,64%)]">
-          <span aria-hidden="true" className="arch pointer-events-none absolute -inset-2.5 border border-rosa" />
-          <div className="arch relative aspect-[2/3] overflow-hidden bg-papel">
-            <Image
-              key={photo.src}
-              src={photo.src}
-              alt={photo.alt}
-              fill
-              sizes="(min-width: 1024px) 420px, 1px"
-              className="photo-in object-cover"
-              style={{ objectPosition: photo.position ?? "50% 50%" }}
-            />
-          </div>
-        </div>
-        <p key={photo.caption} className="step-in absolute inset-x-0 bottom-8 px-6 text-center font-display text-2xl text-tinta-suave">
-          {photo.caption}
-        </p>
-      </div>
-    </div>
+    </AuthStage>
   );
 }
 

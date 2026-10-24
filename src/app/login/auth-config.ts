@@ -86,32 +86,34 @@ export interface AuthPhoto {
 
 export const PHOTOS = {
   entrar: {
-    src: "/images/aceito/img-21-papelaria.webp",
-    alt: "Convite em papel algodão com envelope ameixa e selo de cera",
-    caption: "Do convite ao grande dia.",
+    src: "/images/acesso/convite-aliancas.webp",
+    alt: "Convite com selo de cera ameixa, alianças num pratinho e peônias rosa sobre uma mesa de madeira",
+    caption: "Um sim. Muitos próximos passos.",
+    position: "15% 60%",
   },
   tipo: {
-    src: "/images/aceito/img-19-fotografia-pre-wedding.webp",
-    alt: "Casal sorrindo numa estrada de terra ao pôr do sol",
+    src: "/images/acesso/maos-xicara.webp",
+    alt: "Duas pessoas de mãos dadas em volta de uma xícara, uma delas com aliança dourada",
     caption: "Todo grande dia começa com um sim.",
-    position: "50% 35%",
+    position: "50% 60%",
   },
   casal: {
-    src: "/images/aceito/img-01-casal-capa.webp",
-    alt: "Noivos se olhando no campo ao entardecer",
+    src: "/images/acesso/maos-xicara.webp",
+    alt: "Duas pessoas de mãos dadas em volta de uma xícara, uma delas com aliança dourada",
     caption: "Comecem pelo site e pela lista de convidados.",
-    position: "50% 30%",
+    position: "50% 60%",
   },
   fornecedor: {
-    src: "/images/aceito/img-24-fotografo-retrato.webp",
-    alt: "Fotógrafo de casamento segurando a câmera",
+    src: "/images/acesso/cafe-croissant.webp",
+    alt: "Duas xícaras de cerâmica, um croissant e flores secas numa mesa de madeira clara",
     caption: "Mostre seu trabalho para quem está casando.",
-    position: "50% 30%",
+    position: "45% 60%",
   },
   pronto: {
-    src: "/images/aceito/img-22-album-brinde.webp",
-    alt: "Convidados brindando com taças de espumante",
-    caption: "Que comece a festa.",
+    src: "/images/acesso/croche-peonia.webp",
+    alt: "Peônia de crochê rosa num vaso branco, ao lado de uma xícara fumegante",
+    caption: "Tudo pronto. Agora é só começar.",
+    position: "35% 60%",
   },
 } satisfies Record<string, AuthPhoto>;
 

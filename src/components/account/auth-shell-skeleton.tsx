@@ -4,14 +4,13 @@ import { LoadingRegion } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
- * Esqueleto da moldura de acesso (AuthShell / AuthExperience): logo de verdade no topo, formulário à
- * esquerda e a foto em arco à direita (a partir de lg). O conteúdo da coluna entra como `children`.
- * - mobilePhoto: faixa de foto no celular (login e cadastro têm; as telas avulsas não).
+ * Esqueleto do palco de acesso (AuthStage): faixa de foto no topo no celular, fundo inteiro no computador,
+ * com a logo de verdade e o cartão do formulário por cima. O conteúdo do cartão entra como `children`.
+ * - mobilePhoto e footnote existem por compatibilidade: o palco sempre tem foto e o rodapé ocupa a mesma altura.
  */
 export function AuthShellSkeleton({
   label,
   children,
-  mobilePhoto = false,
   footnote = false,
 }: {
   label: string;
@@ -20,36 +19,20 @@ export function AuthShellSkeleton({
   footnote?: boolean;
 }) {
   return (
-    <LoadingRegion label={label} className="flex min-h-dvh bg-linho text-tinta">
-      <div className="flex min-w-0 flex-1 flex-col lg:px-[clamp(24px,5vw,80px)] lg:py-8">
-        <div className="flex h-16 items-center gap-1 px-2 lg:h-auto lg:px-0">
-          <Skeleton className="size-11 rounded-[12px] lg:hidden" />
-          <span className="-m-2.5 p-2.5">
-            <Logo height={26} className="lg:hidden" />
-            <Logo height={28} className="hidden lg:block" />
-          </span>
-        </div>
-        {mobilePhoto ? <Skeleton className="mx-4 h-36 rounded-[16px] sm:h-48 lg:hidden" /> : null}
-        <div
-          className={
-            "mx-auto flex w-full max-w-[460px] flex-1 flex-col px-4 pb-8 pt-6 lg:px-0 lg:py-12 " +
-            (mobilePhoto ? "justify-center" : "justify-start lg:justify-center")
-          }
-        >
-          {children}
-        </div>
-        {footnote ? (
-          <div className="flex flex-col items-center gap-1 px-4 pb-8 lg:items-start lg:px-0 lg:pb-2">
-            <Skeleton className="h-3.5 w-72 max-w-full rounded-md" />
-          </div>
-        ) : null}
+    <LoadingRegion
+      label={label}
+      className="relative isolate flex min-h-dvh flex-col bg-linho text-tinta lg:flex-row lg:items-center lg:justify-end lg:py-10 lg:pr-[clamp(24px,6vw,104px)]"
+    >
+      <div className="relative h-60 w-full shrink-0 overflow-hidden bg-areia sm:h-80 lg:absolute lg:inset-0 lg:-z-10 lg:h-auto" />
+      <div className="absolute inset-x-0 top-0 z-20 flex items-center gap-2 px-3 pt-3 lg:px-[clamp(24px,6vw,104px)] lg:pt-8">
+        <Skeleton className="size-11 rounded-full lg:hidden" />
+        <span className="flex h-11 items-center rounded-full bg-papel/80 px-5 shadow-aceito-1">
+          <Logo height={24} />
+        </span>
       </div>
-      <div className="relative hidden flex-1 items-center justify-center overflow-hidden border-l border-linha bg-areia lg:flex">
-        <div className="relative w-[min(420px,64%)]">
-          <div className="arch relative aspect-[2/3] overflow-hidden">
-            <Skeleton className="size-full rounded-none bg-papel" />
-          </div>
-        </div>
+      <div className="relative z-10 -mt-7 flex w-full flex-1 flex-col rounded-t-[28px] bg-papel px-5 pb-8 pt-7 shadow-aceito-2 sm:mx-auto sm:max-w-[520px] lg:mx-0 lg:mt-0 lg:w-[480px] lg:max-w-none lg:flex-none lg:rounded-[28px] lg:px-10 lg:py-10">
+        {children}
+        {footnote ? <Skeleton className="mt-8 h-10 w-full rounded-md" /> : null}
       </div>
     </LoadingRegion>
   );
@@ -61,8 +44,8 @@ export function AuthHeadingSkeleton({ lines = 2, titleLines = 1 }: { lines?: num
     <div className="flex flex-col gap-2">
       <div className="flex flex-col">
         {Array.from({ length: titleLines }).map((_, i) => (
-          <div key={i} className="flex h-10 items-center lg:h-[50px]">
-            <Skeleton className={i === 0 ? "h-8 w-4/5 rounded-lg lg:h-10" : "h-8 w-2/5 rounded-lg lg:h-10"} />
+          <div key={i} className="flex h-9 items-center lg:h-[42px]">
+            <Skeleton className={i === 0 ? "h-7 w-4/5 rounded-lg lg:h-8" : "h-7 w-2/5 rounded-lg lg:h-8"} />
           </div>
         ))}
       </div>

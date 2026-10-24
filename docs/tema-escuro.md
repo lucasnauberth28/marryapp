@@ -67,7 +67,7 @@ contornos inline são os mesmos.
 - Véu de diálogo/gaveta: `bg-scrim/40` (nunca `bg-tinta/40`, que clareia no escuro).
 - Branco de verdade (QR Code, cartão de banco): valor literal, ex.: `bg-[#fff]`.
 - Texto sobre foto: `text-[#fff]` com véu escuro, não `text-papel` (que escurece no escuro).
-- Sombras: `shadow-[var(--shadow-aceito-1|2)]` ou `shadow-aceito-1|2`; elas trocam com o tema.
+- Sombras: `shadow-aceito-1` e `shadow-aceito-2` (ou `shadow-[var(--shadow-aceito-1)]`); elas trocam com o tema.
 - Foco: `focus-visible:outline-2` agora funciona junto de `outline-none` (ver `globals.css`).
 
 ## Paleta do Manual de Marca v2.0
