@@ -6,7 +6,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { Check, Clock, Gift, Home, Minus, Store, Users, LayoutTemplate } from "lucide-react";
+import { Check, Clock, Minus } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 
 type Resposta = "sim" | "nao";
@@ -39,32 +39,12 @@ function Chip({ tipo }: { tipo: "sim" | "nao" | "sem" }) {
   );
 }
 
-/** Número que desliza quando muda (a chave refaz o elemento e dispara a animação). */
-function Roll({ value }: { value: number }) {
-  return (
-    <span key={value} className="lp-roll">
-      {value}
-    </span>
-  );
-}
-
-const SIDE = [
-  { icon: Home, label: "Resumo", active: true },
-  { icon: Users, label: "Convidados" },
-  { icon: Gift, label: "Presentes" },
-  { icon: LayoutTemplate, label: "Site" },
-  { icon: Store, label: "Fornecedores" },
-];
-
-const GRAFICO = "M0 92 L30 88 L60 84 L90 70 L120 72 L150 56 L180 50 L210 38 L240 34 L270 22 L300 16";
-
 export function HeroDemo() {
   const [passo, setPasso] = useState<Passo>("inicio");
   const [resp, setResp] = useState<Resposta | null>(null);
   const [pessoas, setPessoas] = useState<1 | 2>(2);
   const [enviado, setEnviado] = useState(false);
   const [novo, setNovo] = useState(false);
-  const [mexeu, setMexeu] = useState(false);
   const corpo = useRef<HTMLElement>(null);
   const foco = useRef<string | null>(null);
 
@@ -82,7 +62,6 @@ export function HeroDemo() {
 
   const responder = (r: Resposta) => {
     setResp(r);
-    setMexeu(true);
     if (r === "sim") {
       setPasso("pessoas");
       foco.current = '[data-a="p2"]';
@@ -93,7 +72,6 @@ export function HeroDemo() {
     }
   };
   const enviar = () => {
-    setMexeu(true);
     setEnviado(true);
     setNovo(true);
     setPasso("inicio");
@@ -106,99 +84,8 @@ export function HeroDemo() {
     foco.current = '[data-a="sim"]';
   };
 
-  const linhas: { nome: string; tipo: "sim" | "nao" | "sem"; nota: string; destaque?: boolean }[] = [
-    enviado && resp
-      ? { nome: "Marina Alves", tipo: resp, nota: resp === "sim" ? `${pessoas} ${pessoas === 1 ? "pessoa" : "pessoas"}` : "", destaque: novo }
-      : { nome: "Marina Alves", tipo: "sem", nota: "" },
-    { nome: "Carlos Mendes", tipo: "sim", nota: "2 pessoas" },
-    { nome: "Família Souza", tipo: "sim", nota: "4 pessoas" },
-  ];
-
   return (
-    <div className="lp-hero-visual" data-mexeu={mexeu ? "" : undefined} role="group" aria-label="Exemplo do produto, com dados fictícios">
-      <div className="lp-pc" aria-hidden="true">
-        <div className="lp-pc-lado">
-          <Logo height={18} className="lp-pc-logo" />
-          {SIDE.map(({ icon: Icon, label, active }) => (
-            <span key={label} className={active ? "lp-ativo" : undefined}>
-              <Icon className="lp-ico" />
-              {label}
-            </span>
-          ))}
-        </div>
-        <div className="lp-pc-main">
-          <div className="lp-pc-topo">
-            <b>Resumo · Ana &amp; Rafael</b>
-            <span className="lp-chip lp-chip-neutro">Exemplo com dados fictícios</span>
-          </div>
-          <div className="lp-kpis">
-            <div>
-              <span className="lp-r">Confirmados</span>
-              <span className="lp-v">
-                <Roll value={totais.confirmados} /> <small>de {TOTAL_CONVITES}</small>
-              </span>
-              <span className="lp-c">convites</span>
-            </div>
-            <div>
-              <span className="lp-r">Sem resposta</span>
-              <span className="lp-v">
-                <Roll value={totais.semResposta} />
-              </span>
-              <span className="lp-c">convites</span>
-            </div>
-            <div>
-              <span className="lp-r">Presentes recebidos</span>
-              <span className="lp-v">
-                <small>R$</small> 3.850<small>,00</small>
-              </span>
-              <span className="lp-c">12 presentes</span>
-            </div>
-          </div>
-          <div className="lp-pc-meio">
-            <div className="lp-grafico">
-              <span className="lp-r lp-mudo">Respostas por semana</span>
-              <svg viewBox="0 0 300 110" aria-hidden="true">
-                <defs>
-                  <linearGradient id="lp-gg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stopColor="#C680AE" stopOpacity=".45" />
-                    <stop offset="1" stopColor="#C680AE" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <g stroke="var(--fio)" strokeWidth="1">
-                  <line x1="0" y1="20" x2="300" y2="20" />
-                  <line x1="0" y1="55" x2="300" y2="55" />
-                  <line x1="0" y1="90" x2="300" y2="90" />
-                </g>
-                <path d={`${GRAFICO} L300 110 L0 110 Z`} fill="url(#lp-gg)" />
-                <path d={GRAFICO} fill="none" stroke="#8C3F74" strokeWidth="2.2" />
-                <circle cx="300" cy="16" r="3.5" fill="#8C3F74" />
-              </svg>
-            </div>
-            <div className="lp-pc-site">
-              <div className="lp-pc-foto">
-                <Image src="/landing/fotos/foto-casal-campo.webp" alt="" fill sizes="260px" className="lp-cobre" />
-              </div>
-              <span className="lp-chip lp-chip-ok">
-                <Check aria-hidden="true" className="lp-ico" />
-                Site publicado
-              </span>
-              <span className="lp-mono">meuaceito.com.br/casamento/ana-e-rafael</span>
-            </div>
-          </div>
-          <div className="lp-pc-lista">
-            {linhas.map((l) => (
-              <div key={l.nome} className={l.destaque ? "lp-novo" : undefined}>
-                <span>{l.nome}</span>
-                <span className="lp-pc-direita">
-                  <span className="lp-mudo">{l.nota}</span>
-                  <Chip tipo={l.tipo} />
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
+    <div className="lp-hero-visual" role="group" aria-label="Exemplo do produto, com dados fictícios">
       <div className="lp-cel">
         <div className="lp-cel-tela">
           <span className="lp-cel-ilha" aria-hidden="true" />

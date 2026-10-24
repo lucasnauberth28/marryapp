@@ -87,52 +87,20 @@
 
 /* 1. Primeira dobra */
 .lp-hero{padding-top:clamp(24px,4vw,56px)}
-.lp-hero-bloco{position:relative;border-radius:var(--r-3);overflow:hidden;background:var(--branco);box-shadow:var(--sombra-1);display:grid;grid-template-columns:minmax(0,5.6fr) minmax(0,6.4fr);min-height:620px}
-.lp-hero-bloco::before{content:"";position:absolute;inset:auto 0 0 0;height:62%;background:var(--grad-base);pointer-events:none}
-.lp-hero-texto{position:relative;z-index:1;padding:clamp(40px,5vw,72px) 0 clamp(32px,4vw,56px) clamp(24px,4.5vw,64px);display:flex;flex-direction:column;gap:22px;justify-content:center}
+.lp-hero-bloco{position:relative;border-radius:var(--r-3);overflow:hidden;background:radial-gradient(70% 90% at 76% 48%,var(--rosa) 0%,transparent 72%),var(--branco);box-shadow:var(--sombra-1);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;min-height:620px}
+.lp-hero-texto{position:relative;z-index:1;padding:clamp(48px,6vw,96px) 32px clamp(48px,6vw,96px) clamp(24px,5vw,80px);display:flex;flex-direction:column;gap:28px;justify-content:center}
 .lp-h1{font-size:clamp(2.25rem,1.4rem + 2.4vw,3.375rem);line-height:1.05}
 .lp-h1 span{display:block}
 .lp-hero-texto .lp-lead{max-width:36ch}
-@media (min-width:1101px){.lp-hero-texto{padding-right:32px}.lp-cel{left:0}}
 .lp-acoes{display:flex;flex-wrap:wrap;gap:10px}
-.lp-beneficios{display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;margin-top:6px;max-width:500px}
-.lp-beneficios li{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:center;padding:10px 14px 10px 10px;border-radius:var(--r-2);background:var(--vidro);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:var(--sombra-1)}
-.lp-beneficios .lp-bola{grid-row:span 2;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--ameixa-suave);color:var(--ameixa)}
-.lp-beneficios b{font-size:14.5px;font-weight:600;line-height:1.3}
-.lp-beneficios span{font-size:13px;color:var(--grafite);line-height:1.35}
-.lp-hero-visual{position:relative;min-height:560px}
+.lp-hero-visual{position:relative;display:grid;justify-items:center;align-content:center;gap:20px;padding:48px 24px}
+.lp-garantias{display:flex;flex-wrap:wrap;gap:8px 28px;font-size:14.5px;color:var(--grafite)}
+.lp-garantias li{display:inline-flex;align-items:center;gap:8px}
+.lp-garantias .lp-ico{color:var(--entrada);width:16px;height:16px;stroke-width:2.2}
 
-/* Mockup: painel do casal no computador */
-.lp-pc{position:absolute;left:12%;top:48px;width:780px;height:560px;border-radius:var(--r-2);background:var(--branco);box-shadow:var(--sombra-2),inset 0 0 0 1px var(--fio);overflow:hidden;display:grid;grid-template-columns:168px 1fr;font-size:12.5px;line-height:1.4}
-.lp-pc-lado{background:var(--papel);border-right:1px solid var(--fio);padding:16px 12px;display:grid;align-content:start;gap:4px}
-.lp-pc-lado .lp-pc-logo{margin:2px 6px 14px;width:auto}
-.lp-pc-lado span{display:flex;align-items:center;gap:8px;height:30px;padding:0 8px;border-radius:8px;color:var(--grafite)}
-.lp-pc-lado span.ativo{background:var(--ameixa-suave);color:var(--ameixa);font-weight:600}
-.lp-pc-lado .lp-ico{width:15px;height:15px}
-.lp-pc-main{padding:18px 20px;display:grid;gap:14px;align-content:start}
-.lp-pc-topo{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.lp-pc-topo b{font-size:15px}
-.lp-kpis{display:grid;grid-template-columns:1.3fr 1fr 1.2fr;border-radius:var(--r-1);box-shadow:inset 0 0 0 1px var(--fio)}
-.lp-kpis > div{padding:12px 14px;border-left:1px solid var(--fio);display:grid;gap:2px}
-.lp-kpis > div:first-child{border-left:0}
-.lp-kpis .lp-r{color:var(--grafite);font-size:12px}
-.lp-kpis .lp-v{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.2}
-.lp-kpis .lp-v small{font-size:.5em;color:var(--grafite);font-weight:500;letter-spacing:0}
-.lp-kpis .lp-c{font-size:11.5px;color:var(--grafite)}
-.lp-pc-meio{display:grid;grid-template-columns:1.5fr 1fr;gap:14px}
-.lp-grafico{border-radius:var(--r-1);box-shadow:inset 0 0 0 1px var(--fio);padding:12px 14px}
-.lp-grafico svg{width:100%;height:auto;display:block;margin-top:6px}
-.lp-pc-site{border-radius:var(--r-1);box-shadow:inset 0 0 0 1px var(--fio);padding:10px;display:grid;gap:8px}
-.lp-pc-foto{position:relative;width:100%;aspect-ratio:16/10;border-radius:8px;overflow:hidden}
-.lp-pc-site .lp-mono{font-size:10.5px;color:var(--grafite);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lp-pc-lista{border-radius:var(--r-1);box-shadow:inset 0 0 0 1px var(--fio);padding:4px 14px}
-.lp-pc-lista div{display:flex;justify-content:space-between;align-items:center;gap:10px;height:38px;border-top:1px solid var(--fio)}
-.lp-pc-lista div:first-child{border-top:0}
-.lp-pc-lista .lp-novo{animation:lp-novo 1.4s var(--ease) both}
-@keyframes lp-novo{from{background:var(--ameixa-suave)}to{background:transparent}}
 
 /* Mockup: celular com o convite (funcional) */
-.lp-cel{position:absolute;left:-2%;top:110px;width:276px;height:500px;border-radius:44px;background:#1B1619;padding:9px;box-shadow:var(--sombra-2);z-index:3}
+.lp-cel{position:relative;width:276px;height:500px;border-radius:44px;background:#1B1619;padding:9px;box-shadow:var(--sombra-2);z-index:3}
 .lp-cel-tela{position:relative;width:100%;height:100%;border-radius:36px;background:#FFFFFF;color:#1F1A1D;overflow:hidden;display:flex;flex-direction:column}
 .lp-cel-status{display:flex;justify-content:space-between;align-items:center;padding:12px 22px 6px;font-size:12px;font-weight:600}
 .lp-cel-ilha{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:84px;height:24px;border-radius:14px;background:#1B1619}
@@ -164,7 +132,7 @@
 @keyframes lp-festa{from{transform:translateY(12px) rotate(-6deg) scale(.9)}to{transform:none}}
 .lp-balao{position:absolute;z-index:4;padding:10px 14px;border-radius:var(--r-1);background:var(--vidro);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:var(--sombra-2),inset 0 0 0 1px var(--vidro-borda);font-size:12.5px;display:flex;align-items:center;gap:8px;white-space:nowrap}
 .lp-balao b{font-weight:600}
-.lp-balao-evento{right:6%;bottom:40px}
+.lp-balao-evento{position:relative}
 .lp-num{display:inline-block;overflow:hidden;vertical-align:bottom;height:1.2em;line-height:1.2em}
 .lp-num span{display:block;height:1.2em;line-height:1.2em}
 .lp-num > span{height:auto}
@@ -320,10 +288,8 @@
 /* Responsivo */
 @media (max-width:1100px){
   .lp-hero-bloco{grid-template-columns:minmax(0,1fr)}
-  .lp-hero-texto{padding:40px 28px 8px;align-items:flex-start}
-  .lp-hero-visual{min-height:600px}
-  .lp-pc{left:24%;top:30px}
-  .lp-cel{left:6%;top:70px}
+  .lp-hero-texto{padding:48px 28px 8px;align-items:flex-start}
+  .lp-hero-bloco{background:radial-gradient(90% 60% at 50% 78%,var(--rosa) 0%,transparent 72%),var(--branco)}
 }
 @media (max-width:900px){
   .lp-quatro{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -342,12 +308,8 @@
 }
 @media (max-width:640px){
   .lp-hero-texto{padding:32px 20px 4px}
-  .lp-beneficios{grid-template-columns:minmax(0,1fr)}
   .lp-acoes .lp-btn{flex:1 1 100%}
-  .lp-hero-visual{min-height:640px}
-  .lp-pc{display:none}
-  .lp-cel{left:50%;transform:translateX(-50%);top:36px}
-  .lp-balao-evento{right:auto;left:50%;transform:translateX(-50%);bottom:auto;top:8px}
+  .lp-hero-visual{padding:32px 16px 40px}
   .lp-quatro{grid-template-columns:minmax(0,1fr)}
   .lp-foto-chips{height:480px}
   .lp-foto-chips .lp-balao{max-width:220px;font-size:12px}
@@ -444,8 +406,6 @@
 .lp-nota{font-size:14px}
 .lp-sec-curta{padding-top:clamp(48px,6vw,80px)}
 .lp-selo-exemplo{position:absolute;left:16px;top:16px;z-index:3;display:inline-flex;align-items:center;height:26px;padding:0 12px;border-radius:var(--r-pilula);background:var(--vidro);box-shadow:inset 0 0 0 1px var(--vidro-borda),var(--sombra-1);font-size:12px;font-weight:600;color:var(--tinta)}
-.lp-pc-direita{display:flex;gap:10px;align-items:center}
-.lp-pc-logo{display:block}
 .lp-sim-erro{margin-top:8px;font-size:13px;color:var(--acento-profundo)}
 .lp-link-claro{color:var(--sobre-profundo);font-weight:600;text-decoration:underline;text-underline-offset:4px;display:inline-block;padding-block:12px}
 .lp-link-claro:hover{color:var(--acento-profundo)}
@@ -453,9 +413,6 @@
 .lp-link{display:inline-flex;align-items:center;min-height:44px}
 .lp-compensa .lp-link{min-height:0;display:inline}
 .lp-compensa + .lp-compensa{margin-top:8px}
-.lp-roll{display:inline-block}
-.lp-hero-visual[data-mexeu] .lp-roll{animation:lp-rola .32s var(--ease) both}
-@keyframes lp-rola{from{transform:translateY(60%);opacity:0}to{transform:none;opacity:1}}
 .lp-tela-foto > img{width:100%;height:auto}
 .lp-fim{padding-bottom:clamp(48px,6vw,80px)}
 

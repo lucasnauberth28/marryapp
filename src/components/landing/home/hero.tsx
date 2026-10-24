@@ -1,4 +1,4 @@
-import { CircleDollarSign, Mail } from "lucide-react";
+import { Check } from "lucide-react";
 import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
 import { Reveal } from "@/components/motion/reveal";
 import { HeroDemo } from "./hero-demo";
@@ -23,20 +23,14 @@ export function Hero() {
               Ver como funciona
             </LinkButton>
           </div>
-          <ul className="lp-beneficios">
+          <ul className="lp-garantias">
             <li>
-              <span className="lp-bola" aria-hidden="true">
-                <Mail className="lp-ico" />
-              </span>
-              <b>Convidado sem conta</b>
-              <span>Responde pelo próprio convite.</span>
+              <Check aria-hidden="true" className="lp-ico" />
+              Convidado sem conta
             </li>
             <li>
-              <span className="lp-bola" aria-hidden="true">
-                <CircleDollarSign className="lp-ico" />
-              </span>
-              <b>Básico sem mensalidade</b>
-              <span>Taxa de {GIFT_FEE_LABEL} por presente.</span>
+              <Check aria-hidden="true" className="lp-ico" />
+              Básico sem mensalidade
             </li>
           </ul>
         </Reveal>
