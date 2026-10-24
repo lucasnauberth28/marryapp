@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LegalPage, Placeholder, type LegalSection } from "@/components/legal/legal-page";
+import { LegalPage, type LegalSection } from "@/components/legal/legal-page";
 import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 const CONTROLLER = (
   <>
-    <Placeholder>[RAZÃO SOCIAL]</Placeholder>, CNPJ <Placeholder>[CNPJ]</Placeholder>, com sede em <Placeholder>[ENDEREÇO]</Placeholder>
+    Lucas Nauberth Souza Protasio Treinamentos, CNPJ 53.012.541/0001-04, com sede na Rua Dona Leopolda, 166, apto. 56, Vila São Paulo, Ferraz de Vasconcelos (SP)
   </>
 );
 const CONTACT_EMAIL = <a href="mailto:contato@meuaceito.com.br">contato@meuaceito.com.br</a>;
@@ -218,7 +218,7 @@ export default function TermosPage() {
   return (
     <LegalPage
       title="Termos de uso"
-      updatedAt={<Placeholder>[DATA DA PUBLICAÇÃO]</Placeholder>}
+      updatedAt="24 de outubro de 2026"
       intro={<p>As regras para usar o Aceito, escritas para serem lidas: o que oferecemos, o que esperamos de cada um e como resolvemos problemas.</p>}
       sections={sections}
       related={{ href: "/privacidade", label: "Política de privacidade" }}

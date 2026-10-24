@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LegalPage, Placeholder, type LegalSection } from "@/components/legal/legal-page";
+import { LegalPage, type LegalSection } from "@/components/legal/legal-page";
 
 export const metadata: Metadata = {
   title: "Política de privacidade",
@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 
 const CONTROLLER = (
   <>
-    <Placeholder>[RAZÃO SOCIAL]</Placeholder>, inscrita no CNPJ sob o nº <Placeholder>[CNPJ]</Placeholder>, com sede em{" "}
-    <Placeholder>[ENDEREÇO]</Placeholder>
+    Lucas Nauberth Souza Protasio Treinamentos, inscrita no CNPJ sob o nº 53.012.541/0001-04, com sede na Rua Dona Leopolda, 166, apto. 56, Vila São Paulo,
+    Ferraz de Vasconcelos (SP)
   </>
 );
 const DPO_EMAIL = <a href="mailto:contato@meuaceito.com.br">contato@meuaceito.com.br</a>;
@@ -176,7 +176,7 @@ const sections: LegalSection[] = [
           <li>Registros de acesso à aplicação: 6 meses, como exige o Marco Civil da Internet (Lei 12.965/2014, art. 15).</li>
           <li>Dados de pagamentos e notas fiscais: pelo prazo exigido pela legislação fiscal e tributária (em geral, 5 anos).</li>
           <li>Dados de recebimento dos presentes: até o casal removê-los em Configurações ou excluir a conta; depois disso são apagados, salvo o que a legislação fiscal exigir sobre repasses já feitos.</li>
-          <li>Cópias de segurança (backups) são sobrescritas periodicamente e podem manter dados por até <Placeholder>[PRAZO DOS BACKUPS]</Placeholder>.</li>
+          <li>Cópias de segurança (backups) são sobrescritas periodicamente e podem manter dados por um período limitado, definido pelo provedor de hospedagem do banco de dados, e depois são descartadas.</li>
         </ul>
       </>
     ),
@@ -284,7 +284,7 @@ export default function PrivacidadePage() {
   return (
     <LegalPage
       title="Política de privacidade"
-      updatedAt={<Placeholder>[DATA DA PUBLICAÇÃO]</Placeholder>}
+      updatedAt="24 de outubro de 2026"
       intro={
         <p>
           Esta política explica, em linguagem direta, quais dados pessoais o Aceito trata, por que, com quem compartilha e como você exerce
