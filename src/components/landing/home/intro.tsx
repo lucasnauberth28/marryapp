@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Check, Gift, Globe, Mail } from "lucide-react";
-import { Hatch, SectionHead } from "./home-ui";
+import { Reveal } from "@/components/motion/reveal";
+import { SectionHead } from "./home-ui";
 
 const FUNCOES = [
   { icon: Globe, titulo: "Site do casamento", texto: "Fotos, local, horário e traje num endereço só." },
@@ -13,19 +14,17 @@ const FUNCOES = [
 export function FunctionsStrip() {
   return (
     <>
-      <div aria-hidden="true" className="lp-divisa lp-cruz" style={{ marginTop: 16 }} />
       <ul className="lp-quatro" aria-label="O que o Aceito reúne">
-        {FUNCOES.map(({ icon: Icon, titulo, texto }) => (
-          <li key={titulo}>
+        {FUNCOES.map(({ icon: Icon, titulo, texto }, i) => (
+          <Reveal as="li" key={titulo} delay={i * 80}>
             <span className="lp-ic" aria-hidden="true">
               <Icon className="lp-ico" />
             </span>
             <h2>{titulo}</h2>
             <p>{texto}</p>
-          </li>
+          </Reveal>
         ))}
       </ul>
-      <Hatch />
     </>
   );
 }
@@ -49,8 +48,8 @@ export function Steps({ classic, vip }: { classic: string; vip: string }) {
       <section className="lp-sec" id="como" aria-labelledby="lp-t-como">
         <SectionHead id="lp-t-como" chip="Como funciona" title="Três passos até" accent="a primeira resposta." padded />
         <ol className="lp-passos">
-          {passos.map((p) => (
-            <li key={p.n} className="lp-passo">
+          {passos.map((p, i) => (
+            <Reveal as="li" key={p.n} className="lp-passo" delay={i * 100}>
               <div className="lp-palco" aria-hidden="true">
                 <Image className="lp-ic3d" src={`/landing/icones/${p.icone}.webp`} alt="" width={p.w} height={p.h} sizes="132px" />
               </div>
@@ -59,11 +58,10 @@ export function Steps({ classic, vip }: { classic: string; vip: string }) {
                 <h3>{p.titulo}</h3>
                 <p>{p.texto}</p>
               </div>
-            </li>
+            </Reveal>
           ))}
         </ol>
       </section>
-      <Hatch />
     </>
   );
 }

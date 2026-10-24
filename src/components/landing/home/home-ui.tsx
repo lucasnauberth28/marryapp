@@ -1,19 +1,15 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { Reveal } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
 
-/** Moldura com linhas-guia: a página clara emoldurada por um fio tracejado dos dois lados. */
+/** Moldura de largura: centraliza o conteúdo e dá o respiro lateral. Sem linhas-guia: as seções se separam só pelo espaço. */
 export function Frame({ children }: { children: React.ReactNode }) {
   return (
     <div className="lp-moldura">
       <div className="lp-trilho">{children}</div>
     </div>
   );
-}
-
-/** Faixa de hachura entre blocos. */
-export function Hatch() {
-  return <div aria-hidden="true" className="lp-hachura" />;
 }
 
 /** Cabeçalho centrado de seção: etiqueta, título curto (com a segunda linha em ameixa) e uma frase. */
@@ -33,7 +29,7 @@ export function SectionHead({
   padded?: boolean;
 }) {
   return (
-    <div className={cn("lp-cab", padded && "lp-dentro")}>
+    <Reveal className={cn("lp-cab", padded && "lp-dentro")}>
       {chip ? <span className="lp-chip-sec">{chip}</span> : null}
       <h2 id={id} className="lp-titulo lp-h2">
         {title}
@@ -45,7 +41,7 @@ export function SectionHead({
         ) : null}
       </h2>
       {lead ? <p className="lp-lead">{lead}</p> : null}
-    </div>
+    </Reveal>
   );
 }
 

@@ -1,5 +1,6 @@
 import { CircleDollarSign, Mail } from "lucide-react";
 import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
+import { Reveal } from "@/components/motion/reveal";
 import { HeroDemo } from "./hero-demo";
 import { LinkButton } from "./home-ui";
 
@@ -8,7 +9,7 @@ export function Hero() {
   return (
     <section className="lp-hero lp-dentro" aria-labelledby="lp-h1">
       <div className="lp-hero-bloco">
-        <div className="lp-hero-texto">
+        <Reveal className="lp-hero-texto">
           <h1 className="lp-titulo lp-h1" id="lp-h1">
             <span>Um convite para cada convidado.</span>
             <span className="lp-cor">Presentes com taxa de {GIFT_FEE_LABEL}.</span>
@@ -38,8 +39,10 @@ export function Hero() {
               <span>Taxa de {GIFT_FEE_LABEL} por presente.</span>
             </li>
           </ul>
-        </div>
-        <HeroDemo />
+        </Reveal>
+        <Reveal variant="right" delay={160} className="lp-hero-visual-reveal">
+          <HeroDemo />
+        </Reveal>
       </div>
     </section>
   );

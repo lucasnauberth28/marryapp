@@ -61,7 +61,7 @@ export function HomeFooter() {
             </ul>
           </nav>
         </div>
-        <div className="lp-rodape-base lp-divisa">
+        <div className="lp-rodape-base">
           <p>© {new Date().getFullYear()} Aceito. Feito no Brasil para quem vai dizer sim.</p>
           <ThemeSegmented />
         </div>

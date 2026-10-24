@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import { Closing, HomeFaq } from "@/components/landing/home/faq-closing";
-import { LizSection, PartySection, VendorsSection } from "@/components/landing/home/extras";
+import { LizSection, PartySection, TablesSection, VendorsSection } from "@/components/landing/home/extras";
 import { GiftsSection } from "@/components/landing/home/gifts";
 import { HomeFooter } from "@/components/landing/home/home-footer";
 import { HomeHeader } from "@/components/landing/home/home-header";
-import { Frame, Hatch } from "@/components/landing/home/home-ui";
+import { Frame } from "@/components/landing/home/home-ui";
 import { Hero } from "@/components/landing/home/hero";
 import { FunctionsStrip, Steps } from "@/components/landing/home/intro";
 import { PlansSection } from "@/components/landing/home/plans";
 import { GuestsSection, PanelSection, SiteSection } from "@/components/landing/home/product";
+import { SmoothScroll } from "@/components/motion/smooth-scroll";
 import { getCatalog } from "@/lib/catalog-server";
 import { brandShare } from "@/lib/brand-meta";
 import { planLabel } from "@/lib/plan-copy";
@@ -35,6 +36,7 @@ export default async function Home() {
   const vip = planLabel(catalog.plans.vip.name);
   return (
     <div className="lp">
+      <SmoothScroll />
       <a href="#conteudo" className="lp-pular">
         Pular para o conteúdo
       </a>
@@ -50,15 +52,13 @@ export default async function Home() {
         </Frame>
         <GiftsSection classic={classic} vip={vip} />
         <Frame>
-          <Hatch />
           <LizSection />
+          <TablesSection vip={vip} />
           <PartySection classic={classic} vip={vip} />
           <VendorsSection />
           <PlansSection catalog={catalog} />
-          <div aria-hidden="true" className="lp-divisa lp-cruz" />
           <HomeFaq catalog={catalog} />
           <Closing />
-          <Hatch />
         </Frame>
       </main>
       <HomeFooter />

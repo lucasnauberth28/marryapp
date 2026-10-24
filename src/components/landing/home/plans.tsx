@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import type { Catalog } from "@/lib/catalog";
 import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
 import { couplePriceNote, planLabel, type CouplePlanKey } from "@/lib/plan-copy";
+import { Reveal } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
 import { breakEvenCents, formatBRL, splitPrice } from "./home-money";
 import { LinkButton, SectionHead } from "./home-ui";
@@ -23,14 +24,14 @@ export function PlansSection({ catalog }: { catalog: Catalog }) {
     <section className="lp-sec lp-dentro" id="planos" aria-labelledby="lp-t-planos">
       <SectionHead id="lp-t-planos" chip="Planos" title="Comecem grátis." accent="Paguem uma vez, se quiserem." />
       <div className="lp-planos">
-        {KEYS.map((key) => {
+        {KEYS.map((key, idx) => {
           const plan = catalog.plans[key];
           const label = planLabel(plan.name);
           const { reais, centavos } = splitPrice(plan.price);
           const rec = key === "classic";
           const features = key === "basic" ? plan.features.filter((f) => !/^Taxa de /.test(f)) : plan.features;
           return (
-            <article key={key} className={cn("lp-plano", rec && "lp-rec")} aria-labelledby={`lp-p-${key}`}>
+            <Reveal as="article" key={key} delay={idx * 100} className={cn("lp-plano", rec && "lp-rec")} aria-labelledby={`lp-p-${key}`}>
               <div className="lp-plano-cab">
                 <h3 id={`lp-p-${key}`}>{label}</h3>
                 {rec ? <span className="lp-chip lp-chip-ameixa">Recomendado</span> : null}
@@ -56,7 +57,7 @@ export function PlansSection({ catalog }: { catalog: Catalog }) {
               <LinkButton href={`/cadastro?plano=${key}`} tone={rec ? "ameixa" : "branco"}>
                 {key === "basic" ? "Criar conta grátis" : `Escolher ${label}`}
               </LinkButton>
-            </article>
+            </Reveal>
           );
         })}
       </div>

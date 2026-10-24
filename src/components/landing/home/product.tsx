@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { Check } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
-import { Hatch, SectionHead } from "./home-ui";
+import { Reveal } from "@/components/motion/reveal";
+import { SectionHead } from "./home-ui";
 import { ScreenInPhoto } from "./screen-in-photo";
 
 const NOMES = (
@@ -16,7 +17,7 @@ export function GuestsSection({ classic, vip }: { classic: string; vip: string }
     <>
       <section className="lp-sec lp-dentro" id="convidados" aria-labelledby="lp-t-conv">
         <SectionHead id="lp-t-conv" chip="Convidados" title="Cada convidado acha" accent="o próprio convite." lead="Pelo número de WhatsApp, sem criar conta." />
-        <div className="lp-cena">
+        <Reveal variant="scale" className="lp-cena">
           <Image
             className="lp-liz-envelope"
             src="/brand/liz/envelope-460.webp"
@@ -72,10 +73,9 @@ export function GuestsSection({ classic, vip }: { classic: string; vip: string }
               <b>Código QR</b> na entrada · {classic} e {vip}
             </span>
           </p>
-        </div>
+        </Reveal>
         <p className="lp-exemplo">Imagem ilustrativa, com dados fictícios.</p>
       </section>
-      <div aria-hidden="true" className="lp-divisa lp-cruz" />
     </>
   );
 }
@@ -86,7 +86,7 @@ export function PanelSection() {
     <>
       <section className="lp-sec lp-dentro lp-sec-curta" id="painel" aria-labelledby="lp-t-painel">
         <SectionHead id="lp-t-painel" chip="Painel do casal" title="Tudo num painel só," accent="no sofá de casa." lead="Respostas, presentes e o que falta fazer." />
-        <div className="lp-recorte lp-recorte-pc">
+        <Reveal variant="scale" className="lp-recorte lp-recorte-pc">
           <ScreenInPhoto
             src="/landing/fotos/foto-casal-notebook.webp"
             alt="Casal sorrindo no sofá enquanto olha o painel do casamento no notebook"
@@ -131,10 +131,9 @@ export function PanelSection() {
               </p>
             </div>
           </ScreenInPhoto>
-        </div>
+        </Reveal>
         <p className="lp-exemplo">Imagem ilustrativa, com dados fictícios.</p>
       </section>
-      <Hatch />
     </>
   );
 }
@@ -143,7 +142,7 @@ export function PanelSection() {
 export function SiteSection({ vip }: { vip: string }) {
   return (
     <section className="lp-meia" aria-labelledby="lp-t-site">
-      <div className="lp-meia-visual" role="img" aria-label="Exemplo ilustrado de um site de casamento, com a capa do casal e os horários da cerimônia e da recepção">
+      <Reveal variant="left" className="lp-meia-visual" role="img" aria-label="Exemplo ilustrado de um site de casamento, com a capa do casal e os horários da cerimônia e da recepção">
         <div className="lp-navegador" aria-hidden="true">
           <div className="lp-nav-barra">
             <i />
@@ -173,8 +172,8 @@ export function SiteSection({ vip }: { vip: string }) {
           </div>
         </div>
         <span className="lp-selo-exemplo">Exemplo</span>
-      </div>
-      <div className="lp-meia-texto">
+      </Reveal>
+      <Reveal variant="right" delay={120} className="lp-meia-texto">
         <h2 className="lp-titulo lp-h2" id="lp-t-site">
           O site do casamento,
           <br />
@@ -188,7 +187,7 @@ export function SiteSection({ vip }: { vip: string }) {
           </span>
         </span>
         <p className="lp-mudo lp-nota">No {vip}, com endereço .com.br próprio.</p>
-      </div>
+      </Reveal>
     </section>
   );
 }

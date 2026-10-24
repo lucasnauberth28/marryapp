@@ -48,3 +48,25 @@ for (const [largura, altura] of [
     expect(scroll).toBeLessThanOrEqual(janela);
   });
 }
+
+test("a home mostra as mesas em 3D com o link de compartilhamento e não tem mais linhas-guia entre as seções", async ({ page }) => {
+  await page.goto("/");
+  const secao = page.locator("#mesas-3d");
+  await secao.scrollIntoViewIfNeeded();
+  await expect(secao.getByRole("heading", { level: 2, name: /Sentem os convidados/ })).toBeVisible();
+  await expect(secao.getByText(/só de leitura/i).first()).toBeVisible();
+  await expect(secao.getByRole("link", { name: /Quero as mesas em 3D/ })).toHaveAttribute("href", "/cadastro?plano=vip");
+  // Sem hachura, divisórias, cruzes nem trilho tracejado
+  await expect(page.locator(".lp-hachura, .lp-divisa, .lp-cruz")).toHaveCount(0);
+  const trilho = await page.locator(".lp-trilho").first().evaluate((el) => getComputedStyle(el).borderLeftWidth);
+  expect(trilho).toBe("0px");
+});
+
+test("a home aparece com animação ao rolar e usa rolagem suave", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".lp [data-reveal]").first()).toBeAttached();
+  const cab = page.locator("#planos .lp-cab");
+  await cab.scrollIntoViewIfNeeded();
+  await expect(cab).toHaveAttribute("data-revealed", "");
+  await expect.poll(() => page.evaluate(() => document.documentElement.classList.contains("lenis"))).toBe(true);
+});

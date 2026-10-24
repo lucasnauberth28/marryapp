@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import type { Catalog } from "@/lib/catalog";
 import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
 import { formatReais, planLabel } from "@/lib/plan-copy";
+import { Reveal } from "@/components/motion/reveal";
 import { LinkButton } from "./home-ui";
 
 /** Perguntas mais comuns, em acordeão nativo (<details>, sem JavaScript). Preços, taxa e nomes vêm do catálogo. */
@@ -32,7 +33,11 @@ export function HomeFaq({ catalog }: { catalog: Catalog }) {
         </>
       ),
     },
-    { q: "O que a Liz faz?", a: "Sugere o próximo passo com base no painel. Ela não conversa nem age sozinha." },
+    { q: "O que a Liz faz?", a: "Sugere o próximo passo e responde dúvidas por assuntos prontos, com base no painel. Ela não conversa livremente nem age sozinha." },
+    {
+      q: "O que são as mesas em 3D?",
+      a: `Um recurso do ${vip}: vocês escolhem o cenário do casamento e sentam os convidados vendo o salão. Dá para compartilhar o mapa por um link só de leitura, e só vocês alteram as mesas.`,
+    },
     {
       q: "Como funciona a entrada com código QR?",
       a: `Quem confirma recebe um código QR. Na festa, a equipe lê o código pela câmera do painel. Faz parte do ${classic} e do ${vip}.`,
@@ -42,14 +47,14 @@ export function HomeFaq({ catalog }: { catalog: Catalog }) {
     <>
       <section className="lp-sec lp-dentro" id="duvidas" aria-labelledby="lp-t-faq">
         <div className="lp-faq">
-          <div>
+          <Reveal>
             <h2 className="lp-titulo lp-h2" id="lp-t-faq">
               Dúvidas?
               <br />
               <span className="lp-cor">Aqui estão as respostas.</span>
             </h2>
-          </div>
-          <div className="lp-faq-lista">
+          </Reveal>
+          <Reveal variant="right" delay={120} className="lp-faq-lista">
             {faqs.map((f) => (
               <details key={f.q} name="lp-faq">
                 <summary>
@@ -59,7 +64,7 @@ export function HomeFaq({ catalog }: { catalog: Catalog }) {
                 <div className="lp-resp">{f.a}</div>
               </details>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
     </>
@@ -70,7 +75,7 @@ export function HomeFaq({ catalog }: { catalog: Catalog }) {
 export function Closing() {
   return (
     <section className="lp-dentro lp-fim" aria-labelledby="lp-t-final">
-      <div className="lp-final">
+      <Reveal variant="scale" className="lp-final">
         <div className="lp-final-txt">
           <h2 className="lp-titulo lp-h2" id="lp-t-final">
             Vocês chegaram
@@ -85,7 +90,7 @@ export function Closing() {
         <figure className="lp-final-liz">
           <Image src="/brand/liz/voando-820.webp" alt="Liz, a fada flor do Aceito, voando com um rastro de brilho" width={820} height={542} sizes="(min-width: 900px) 460px, 300px" />
         </figure>
-      </div>
+      </Reveal>
     </section>
   );
 }

@@ -11,6 +11,9 @@ interface RevealProps {
   className?: string;
   style?: CSSProperties;
   id?: string;
+  role?: string;
+  "aria-label"?: string;
+  "aria-labelledby"?: string;
 }
 
 /**
@@ -18,10 +21,11 @@ interface RevealProps {
  * só marca o elemento; o RevealObserver (no layout raiz) cuida da animação.
  * Sem JavaScript ou com movimento reduzido, o conteúdo aparece direto.
  */
-export function Reveal({ children, as: Tag = "div", variant = "up", delay = 0, className, style, id }: RevealProps) {
+export function Reveal({ children, as: Tag = "div", variant = "up", delay = 0, className, style, id, ...aria }: RevealProps) {
   return (
     <Tag
       id={id}
+      {...aria}
       data-reveal={variant}
       // O RevealObserver marca data-revealed fora do React; isso pode acontecer antes da hidratação.
       suppressHydrationWarning
