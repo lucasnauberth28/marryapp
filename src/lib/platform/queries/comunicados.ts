@@ -1,7 +1,8 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { MAXIMO_DE_DESTINATARIOS, chavesDePlanoDoCasal, interpretarPublico, chavesDeNivelDoFornecedor, intervaloDaJanelaDeCasamento, type Publico } from "@/lib/platform/announcement";
+import { MAXIMO_DE_DESTINATARIOS } from "@/lib/platform/announcement";
+import { chavesDePlanoDoCasal, interpretarPublico, chavesDeNivelDoFornecedor, intervaloDaJanelaDeCasamento, type Publico } from "@/lib/platform/announcement-audience";
 
 /**
  * Público dos comunicados, sempre resolvido no servidor a partir do filtro (nunca de uma lista vinda do navegador).

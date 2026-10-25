@@ -1,4 +1,4 @@
-import type { Canal, Publico } from "@/lib/platform/announcement";
+import type { Canal, Publico } from "@/lib/platform/announcement-audience";
 
 export interface ValoresIniciaisDaRedacao {
   id?: string;

@@ -1,6 +1,6 @@
 import { Clock, Megaphone, Settings } from "lucide-react";
 import { estiloDoCartao } from "@/components/casal/ui";
-import { MODELOS_DE_COMUNICADO } from "@/lib/platform/announcement";
+import { MODELOS_DE_COMUNICADO } from "@/lib/platform/announcement-models";
 import { cn } from "@/lib/utils";
 
 const ICONE_DO_MODELO = { manutencao: Settings, novidade: Megaphone, plano: Clock } as const;

@@ -1,4 +1,3 @@
-import "server-only";
 import prisma from "@/lib/prisma";
 import { urlDoApp } from "@/lib/app-url";
 import { emailDaMarca, enviarEmail } from "@/lib/email";
@@ -6,13 +5,8 @@ import { enviarPushParaAPessoa } from "@/lib/notifications/push";
 import { montarConteudoDoPush } from "@/lib/notifications/push-payload";
 import { carregarPreferencias } from "@/lib/notifications/senders";
 import { PREFERENCIAS_PADRAO, type PreferenciasDeNotificacao } from "@/lib/notifications/preferences";
-import {
-  TEXTO_DO_PULO,
-  paragrafosDoCorpo,
-  decidirEntrega,
-  interpretarPublico,
-  type Canal,
-} from "@/lib/platform/announcement";
+import { TEXTO_DO_PULO, paragrafosDoCorpo, decidirEntrega } from "@/lib/platform/announcement";
+import { interpretarPublico, type Canal } from "@/lib/platform/announcement-audience";
 import type { PessoaDestinataria } from "@/lib/platform/queries/comunicados";
 
 /**
@@ -65,9 +59,9 @@ export async function liberarReservasAntigas(announcementId: string): Promise<nu
   return res.count;
 }
 
-const textoDaFalha = (reason: string) => (reason === "not_configured" ? "E-mail não configurado no servidor" : reason === "invalid_recipient" ? TEXTO_DO_PULO.no_email : "Falha no envio");
+export const textoDaFalha = (reason: string) => (reason === "not_configured" ? "E-mail não configurado no servidor" : reason === "invalid_recipient" ? TEXTO_DO_PULO.no_email : "Falha no envio");
 
-function emailPara(content: Pick<ConteudoDoComunicado, "title" | "body" | "linkUrl">, service: boolean) {
+export function emailPara(content: Pick<ConteudoDoComunicado, "title" | "body" | "linkUrl">, service: boolean) {
   const { html, text } = emailDaMarca({
     heading: content.title,
     preheader: content.body.slice(0, 100),
@@ -89,15 +83,72 @@ async function concluirReserva(id: string, status: "SENT" | "FAILED", error?: st
   });
 }
 
+type DadosDoComunicado = { title: string; body: string; linkUrl: string | null };
+
+/** Reserva as linhas do lote (se outro processo reservou antes, o updateMany não pega e a linha é pulada). */
+async function reservarLote(pending: Reservado[]): Promise<Reservado[]> {
+  const claimed: Reservado[] = [];
+  for (const row of pending) {
+    const res = await prisma.announcementRecipient.updateMany({ where: { id: row.id, status: "PENDING", sentAt: null }, data: { sentAt: new Date() } });
+    if (res.count === 1) claimed.push(row);
+  }
+  return claimed;
+}
+
+/** Aviso no painel: uma gravação só para o lote (a chave única protege de repetição). */
+async function entregarNoPainel(panel: Reservado[], announcementId: string, announcement: DadosDoComunicado) {
+  if (panel.length === 0) return;
+  const ids = panel.map((r) => r.id);
+  try {
+    await prisma.notification.createMany({
+      data: panel.map((r) => ({
+        userId: r.userId,
+        type: "announcement",
+        title: announcement.title.slice(0, 200),
+        body: announcement.body.slice(0, 1000),
+        href: announcement.linkUrl,
+        dedupeKey: `announcement:${announcementId}`,
+      })),
+      skipDuplicates: true,
+    });
+    await prisma.announcementRecipient.updateMany({ where: { id: { in: ids } }, data: { status: "SENT", error: null, sentAt: new Date() } });
+  } catch (error) {
+    console.error("[comunicados] painel:", error instanceof Error ? error.message : error);
+    await prisma.announcementRecipient.updateMany({ where: { id: { in: ids } }, data: { status: "FAILED", error: "Falha ao gravar o aviso", sentAt: new Date() } });
+  }
+}
+
+/** Notificação no celular: uma pessoa por vez (cada uma pode ter vários aparelhos). */
+async function entregarPorPush(rows: Reservado[], announcementId: string, announcement: DadosDoComunicado) {
+  for (const row of rows) {
+    const report = await enviarPushParaAPessoa(row.userId, montarConteudoDoPush({ title: announcement.title, body: announcement.body, href: announcement.linkUrl, dedupeKey: `announcement:${announcementId}` }));
+    if (report.devices === 0) await prisma.announcementRecipient.update({ where: { id: row.id }, data: { status: "SKIPPED", error: TEXTO_DO_PULO.no_device, sentAt: new Date() } });
+    else if (report.sent > 0) await concluirReserva(row.id, "SENT");
+    else await concluirReserva(row.id, "FAILED", "Falha no envio");
+  }
+}
+
+/** E-mail: poucos de cada vez, para respeitar o limite do serviço. */
+async function entregarPorEmail(emails: Reservado[], subject: string, mail: { html: string; text: string }) {
+  for (let i = 0; i < emails.length; i += ENVIOS_DE_EMAIL_AO_MESMO_TEMPO) {
+    await Promise.all(
+      emails.slice(i, i + ENVIOS_DE_EMAIL_AO_MESMO_TEMPO).map(async (row) => {
+        const result = await enviarEmail({ to: row.user.username, subject, html: mail.html, text: mail.text });
+        if (result.sent) await concluirReserva(row.id, "SENT");
+        else await concluirReserva(row.id, "FAILED", textoDaFalha(result.reason));
+      }),
+    );
+  }
+}
+
 /** Processa tudo o que está PENDING deste comunicado, em lotes. Nunca lança: erros ficam na linha de cada pessoa. */
 export async function processarComunicado(announcementId: string): Promise<void> {
   try {
     const announcement = await prisma.announcement.findUnique({ where: { id: announcementId } });
     if (!announcement || announcement.status === "DRAFT" || announcement.status === "CANCELED") return;
     const service = interpretarPublico(announcement.audience).service;
-    const content = { title: announcement.title, body: announcement.body, linkUrl: announcement.linkUrl };
     const subject = announcement.emailSubject?.trim() || announcement.title;
-    const mail = emailPara(content, service);
+    const mail = emailPara({ title: announcement.title, body: announcement.body, linkUrl: announcement.linkUrl }, service);
 
     for (;;) {
       const pending = await prisma.announcementRecipient.findMany({
@@ -108,54 +159,10 @@ export async function processarComunicado(announcementId: string): Promise<void>
       });
       if (pending.length === 0) break;
 
-      // Reserva as linhas deste lote (se outro processo reservou antes, o updateMany não pega e a linha é pulada)
-      const claimed: Reservado[] = [];
-      for (const row of pending) {
-        const res = await prisma.announcementRecipient.updateMany({ where: { id: row.id, status: "PENDING", sentAt: null }, data: { sentAt: new Date() } });
-        if (res.count === 1) claimed.push(row);
-      }
-
-      // Aviso no painel: uma gravação só para o lote (a chave única protege de repetição)
-      const panel = claimed.filter((r) => r.channel === "PANEL");
-      if (panel.length > 0) {
-        try {
-          await prisma.notification.createMany({
-            data: panel.map((r) => ({
-              userId: r.userId,
-              type: "announcement",
-              title: announcement.title.slice(0, 200),
-              body: announcement.body.slice(0, 1000),
-              href: announcement.linkUrl,
-              dedupeKey: `announcement:${announcementId}`,
-            })),
-            skipDuplicates: true,
-          });
-          await prisma.announcementRecipient.updateMany({ where: { id: { in: panel.map((r) => r.id) } }, data: { status: "SENT", error: null, sentAt: new Date() } });
-        } catch (error) {
-          console.error("[comunicados] painel:", error instanceof Error ? error.message : error);
-          await prisma.announcementRecipient.updateMany({ where: { id: { in: panel.map((r) => r.id) } }, data: { status: "FAILED", error: "Falha ao gravar o aviso", sentAt: new Date() } });
-        }
-      }
-
-      // Notificação no celular: uma pessoa por vez (cada uma pode ter vários aparelhos)
-      for (const row of claimed.filter((r) => r.channel === "PUSH")) {
-        const report = await enviarPushParaAPessoa(row.userId, montarConteudoDoPush({ title: announcement.title, body: announcement.body, href: announcement.linkUrl, dedupeKey: `announcement:${announcementId}` }));
-        if (report.devices === 0) await prisma.announcementRecipient.update({ where: { id: row.id }, data: { status: "SKIPPED", error: TEXTO_DO_PULO.no_device, sentAt: new Date() } });
-        else if (report.sent > 0) await concluirReserva(row.id, "SENT");
-        else await concluirReserva(row.id, "FAILED", "Falha no envio");
-      }
-
-      // E-mail: poucos de cada vez, para respeitar o limite do serviço
-      const emails = claimed.filter((r) => r.channel === "EMAIL");
-      for (let i = 0; i < emails.length; i += ENVIOS_DE_EMAIL_AO_MESMO_TEMPO) {
-        await Promise.all(
-          emails.slice(i, i + ENVIOS_DE_EMAIL_AO_MESMO_TEMPO).map(async (row) => {
-            const result = await enviarEmail({ to: row.user.username, subject, html: mail.html, text: mail.text });
-            if (result.sent) await concluirReserva(row.id, "SENT");
-            else await concluirReserva(row.id, "FAILED", textoDaFalha(result.reason));
-          }),
-        );
-      }
+      const claimed = await reservarLote(pending);
+      await entregarNoPainel(claimed.filter((r) => r.channel === "PANEL"), announcementId, announcement);
+      await entregarPorPush(claimed.filter((r) => r.channel === "PUSH"), announcementId, announcement);
+      await entregarPorEmail(claimed.filter((r) => r.channel === "EMAIL"), subject, mail);
     }
 
     await atualizarTotaisDoComunicado(announcementId);
@@ -174,34 +181,4 @@ export async function atualizarTotaisDoComunicado(announcementId: string): Promi
     where: { id: announcementId, status: { in: ["SENDING", "SENT"] } },
     data: { recipientCount: people.length, deliveredCount: n("SENT"), failedCount: n("FAILED"), ...(done ? { status: "SENT", sentAt: new Date() } : {}) },
   });
-}
-
-/** Teste: manda só para a pessoa da administração, sem registrar destinatários nem contar no histórico. */
-export async function enviarTesteDoComunicado(
-  admin: { userId: string },
-  input: { title: string; emailSubject: string; body: string; linkUrl: string | null; channels: Canal[]; service: boolean },
-): Promise<{ done: string[]; notes: string[] }> {
-  const done: string[] = [];
-  const notes: string[] = [];
-  const user = await prisma.user.findUnique({ where: { id: admin.userId }, select: { id: true, username: true } });
-  if (!user) return { done, notes: ["A conta de emergência não é um usuário cadastrado, então não recebe testes. Entre com uma conta da equipe."] };
-  const title = `[Teste] ${input.title}`.slice(0, 200);
-  if (input.channels.includes("PANEL")) {
-    await prisma.notification.create({
-      data: { userId: user.id, type: "announcement", title, body: input.body.slice(0, 1000), href: input.linkUrl, dedupeKey: `announcement-test:${crypto.randomUUID()}` },
-    });
-    done.push("aviso no painel");
-  }
-  if (input.channels.includes("PUSH")) {
-    const report = await enviarPushParaAPessoa(user.id, montarConteudoDoPush({ title, body: input.body, href: input.linkUrl, dedupeKey: "announcement-test" }));
-    if (report.sent > 0) done.push("notificação no celular");
-    else notes.push(report.devices === 0 ? "Notificação: você não tem aparelho com avisos ativados." : "Notificação: não foi possível enviar.");
-  }
-  if (input.channels.includes("EMAIL")) {
-    const mail = emailPara({ title, body: input.body, linkUrl: input.linkUrl }, input.service);
-    const result = await enviarEmail({ to: user.username, subject: `[Teste] ${input.emailSubject.trim() || input.title}`, html: mail.html, text: mail.text });
-    if (result.sent) done.push("e-mail");
-    else notes.push(`E-mail: ${textoDaFalha(result.reason)}.`);
-  }
-  return { done, notes };
 }

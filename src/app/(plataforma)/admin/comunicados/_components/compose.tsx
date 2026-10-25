@@ -5,7 +5,7 @@ import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
-import { ROTULO_DO_CANAL } from "@/lib/platform/announcement";
+import { ROTULO_DO_CANAL } from "@/lib/platform/announcement-audience";
 import { pluralizar } from "@/lib/formatacao/plural";
 import type { PrevisaoDoPublico } from "@/lib/platform/queries/comunicados";
 import { ModelosProntos } from "../_redacao/modelos-prontos";

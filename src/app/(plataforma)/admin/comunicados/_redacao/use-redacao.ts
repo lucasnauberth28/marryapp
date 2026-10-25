@@ -1,7 +1,9 @@
 // O estado da redação de um comunicado: campos, público (com prévia recalculada), erros, rascunho e envio.
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MODELOS_DE_COMUNICADO, entradaDoComunicado, validarUrlDoLink, type Canal, type Publico } from "@/lib/platform/announcement";
+import { MODELOS_DE_COMUNICADO } from "@/lib/platform/announcement-models";
+import { entradaDoComunicado, validarUrlDoLink } from "@/lib/platform/announcement";
+import type { Canal, Publico } from "@/lib/platform/announcement-audience";
 import { preverPublicoDoComunicado, salvarRascunhoDoComunicado, enviarComunicadoAgora, enviarTesteDoComunicadoParaMim } from "@/actions/admin-comunicados-actions";
 import type { PrevisaoDoPublico } from "@/lib/platform/queries/comunicados";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";

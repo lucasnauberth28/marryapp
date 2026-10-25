@@ -8,9 +8,11 @@ import { registrarAuditoria } from "@/lib/audit";
 import { emailEstaConfigurado } from "@/lib/email";
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { MAXIMO_DE_DESTINATARIOS, entradaDoComunicado, rotuloDoPublico, esquemaDoPublico, validarUrlDoLink, type EntradaDoComunicado } from "@/lib/platform/announcement";
+import { MAXIMO_DE_DESTINATARIOS, entradaDoComunicado, validarUrlDoLink, type EntradaDoComunicado } from "@/lib/platform/announcement";
+import { rotuloDoPublico, esquemaDoPublico } from "@/lib/platform/announcement-audience";
 import { preverPublico, resolverPessoasDoPublico, type PrevisaoDoPublico } from "@/lib/platform/queries/comunicados";
-import { processarComunicado, enfileirarDestinatarios, atualizarTotaisDoComunicado, liberarReservasAntigas, enviarTesteDoComunicado } from "@/lib/platform/announcement-send";
+import { processarComunicado, enfileirarDestinatarios, atualizarTotaisDoComunicado, liberarReservasAntigas } from "@/lib/platform/announcement-send";
+import { enviarTesteDoComunicado } from "@/lib/platform/announcement-test";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 /**

@@ -1,6 +1,6 @@
 import { CaixaDeSelecao } from "@/components/ui/checkbox";
 import { Rotulo } from "@/components/ui/label";
-import { MOTIVO_DO_WHATSAPP_DESLIGADO, ROTULO_DO_CANAL, type Canal } from "@/lib/platform/announcement";
+import { MOTIVO_DO_WHATSAPP_DESLIGADO, ROTULO_DO_CANAL, type Canal } from "@/lib/platform/announcement-audience";
 
 function CanalDoWhatsappDesligado() {
   return (

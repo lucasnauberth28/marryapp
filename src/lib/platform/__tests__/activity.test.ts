@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ROTULO_DA_ACAO, GRUPOS_DE_ATIVIDADE, rotuloDaAcao, grupoDe, prefixosDoGrupo, interpretarAlvo, resumirDetalhes, linkDoAlvo, rotuloDoAlvo } from "../activity.ts";
+import { ROTULO_DA_ACAO } from "../activity-labels.ts";
+import { GRUPOS_DE_ATIVIDADE, rotuloDaAcao, grupoDe, prefixosDoGrupo, interpretarAlvo, resumirDetalhes, linkDoAlvo, rotuloDoAlvo } from "../activity.ts";
 
 // Ações novas da administração que precisam de frase em português (nunca o código bruto na tela)
 const NEW_ACTIONS = [

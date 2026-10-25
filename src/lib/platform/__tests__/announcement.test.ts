@@ -1,20 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { PREFERENCIAS_PADRAO } from "../../notifications/preferences.ts";
-import {
-  entradaDoComunicado,
-  rotuloDoPublico,
-  esquemaDoPublico,
-  paragrafosDoCorpo,
-  chavesDePlanoDoCasal,
-  decidirEntrega,
-  taxaDeEntrega,
-  interpretarPublico,
-  interpretarParametroDeIdsDeCasamento,
-  validarUrlDoLink,
-  chavesDeNivelDoFornecedor,
-  intervaloDaJanelaDeCasamento,
-} from "../announcement.ts";
+import { entradaDoComunicado, paragrafosDoCorpo, decidirEntrega, taxaDeEntrega, interpretarParametroDeIdsDeCasamento, validarUrlDoLink } from "../announcement.ts";
+import { rotuloDoPublico, esquemaDoPublico, chavesDePlanoDoCasal, interpretarPublico, chavesDeNivelDoFornecedor, intervaloDaJanelaDeCasamento } from "../announcement-audience.ts";
 
 test("link do botão: só https com endereço de verdade", () => {
   assert.deepEqual(validarUrlDoLink(""), { ok: true, url: null });

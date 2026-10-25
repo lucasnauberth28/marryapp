@@ -1,7 +1,7 @@
 import { Esqueleto } from "@/components/ui/skeleton";
 import { SelecaoNativa } from "@/components/ui/select";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
-import { GRUPOS_DE_PLANO_DO_CASAL, GRUPOS_DE_PLANO_DO_FORNECEDOR, JANELAS_DE_CASAMENTO, ROTULO_DA_JANELA, ROTULO_DO_GRUPO_DE_PLANO, type Publico } from "@/lib/platform/announcement";
+import { GRUPOS_DE_PLANO_DO_CASAL, GRUPOS_DE_PLANO_DO_FORNECEDOR, JANELAS_DE_CASAMENTO, ROTULO_DA_JANELA, ROTULO_DO_GRUPO_DE_PLANO, type Publico } from "@/lib/platform/announcement-audience";
 import { formatarInteiro } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { cn } from "@/lib/utils";
