@@ -11,27 +11,29 @@ interface EntradaDoConvite {
   identity: IdentidadeDoCasamento;
   wedding: ContextoDaPagina["wedding"];
   rsvpDeadline: Date | null;
+  /** Link do convite digital de cada convidado, nos planos que o têm (Classic e VIP). */
+  linkDoConvite?: ((guestId: string) => string) | null;
 }
 
 /** Uma pessoa da lista de envio, com o link do WhatsApp e a mensagem pessoal prontos. */
-function linhaDeConvite(g: LinhaDeConvidado, kind: LinhaDeConvite["kind"], { identity, rsvpDeadline, rsvpUrl }: Pick<EntradaDoConvite, "identity" | "rsvpDeadline"> & { rsvpUrl: string }): LinhaDeConvite {
+function linhaDeConvite(g: LinhaDeConvidado, kind: LinhaDeConvite["kind"], { identity, rsvpDeadline, rsvpUrl, linkDoConvite }: Pick<EntradaDoConvite, "identity" | "rsvpDeadline" | "linkDoConvite"> & { rsvpUrl: string }): LinhaDeConvite {
   const text =
     kind === "reminder"
       ? textoDoLembrete({ guestName: g.name, coupleNames: identity.coupleNames, deadline: rsvpDeadline, url: rsvpUrl })
-      : textoDoConvitePessoal({ guestName: g.name, coupleNames: identity.coupleNames, weddingDate: identity.weddingDate, url: rsvpUrl });
+      : textoDoConvitePessoal({ guestName: g.name, coupleNames: identity.coupleNames, weddingDate: identity.weddingDate, url: linkDoConvite?.(g.id) ?? rsvpUrl, digital: Boolean(linkDoConvite) });
   const status = !conviteChegou(g) ? "convite ainda não enviado" : g.inviteSharedAt ? `convite enviado em ${rotuloCurtoDoDia(chaveDoDiaDe(g.inviteSharedAt))}` : "convite enviado";
   return { id: g.id, name: g.name, detail: `${textoDosLugares(lugaresDe(g))} · ${g.phone ? status : "sem telefone cadastrado"}`, whatsappUrl: linkDoWhatsapp(g.phone, text), kind };
 }
 
 /** O que o bloco do convite precisa: endereços, mensagem geral e as listas de quem convidar e de quem lembrar. */
 export function montarConviteDoResumo(contas: ContasDoResumo, dados: DadosDoResumo, entrada: Omit<EntradaDoConvite, "rsvpDeadline">) {
-  const { identity, wedding } = entrada;
+  const { identity, wedding, linkDoConvite } = entrada;
   const rsvpDeadline = dados.settings?.rsvpDeadline ?? null;
   const slug = identity.slug ?? wedding.slug;
   const siteUrl = urlDoSiteDoCasamento(slug, undefined, wedding.customDomain);
   const rsvpUrl = urlDoSiteDoCasamento(slug, "rsvp", wedding.customDomain);
   const generalMessage = textoDoConviteGeral({ coupleNames: identity.coupleNames, weddingDate: identity.weddingDate, city: wedding.city, url: siteUrl });
-  const linha = (g: LinhaDeConvidado, kind: LinhaDeConvite["kind"]) => linhaDeConvite(g, kind, { identity, rsvpDeadline, rsvpUrl });
+  const linha = (g: LinhaDeConvidado, kind: LinhaDeConvite["kind"]) => linhaDeConvite(g, kind, { identity, rsvpDeadline, rsvpUrl, linkDoConvite });
   const toInvite = convidadosParaConvidar(contas.guests);
   const toRemind = convidadosParaLembrar(contas.guests);
   const { deadline } = contas;

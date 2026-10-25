@@ -9,6 +9,7 @@ import { enviarMensagensEmLote } from "@/lib/whatsapp/mensagens";
 import { idsDeConvidadosAlcancados, motivoDaFalhaNoEnvio, resumoDoEnvio } from "@/lib/convidados/whatsapp-results";
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import { ERROS } from "@/lib/mensagens-de-erro";
+import { geradorDeLinksDoConvite, linhaDoConviteNaMensagem } from "@/lib/convidados/convite-digital";
 
 type BotaoDoModelo = { id: string; text: string };
 
@@ -24,9 +25,10 @@ function interpretarBotoes(buttons: string | null): BotaoDoModelo[] | null {
 }
 
 /** Cada botão vira uma linha com o link certo (presentes, recusar ou confirmar). */
-function textoComOsLinks(texto: string, botoes: BotaoDoModelo[] | null, urls: { rsvp: string; gifts: string }): string {
-  if (!botoes || botoes.length === 0) return texto;
-  let messageText = `${texto}\n\n👇 *Acesse abaixo:*`;
+function textoComOsLinks(texto: string, botoes: BotaoDoModelo[] | null, urls: { rsvp: string; gifts: string }, convite: string | null = null): string {
+  const comConvite = convite ? `${texto}\n\n${linhaDoConviteNaMensagem(convite)}` : texto;
+  if (!botoes || botoes.length === 0) return comConvite;
+  let messageText = `${comConvite}\n\n👇 *Acesse abaixo:*`;
   for (const btn of botoes) {
     const label = btn.text || "";
     const lower = label.toLowerCase();
@@ -96,11 +98,14 @@ export async function enviarModeloAosConvidados(templateId: string, guestIds: st
       gifts: urlDoSiteDoCasamento(wedding.slug, "presentes", wedding.customDomain),
     };
 
+    // O convite digital vai só na mensagem de convite inicial, e só nos planos que o têm
+    const linkDoConvite = template.type === "INITIAL_INVITE" ? await geradorDeLinksDoConvite({ weddingId, session }, wedding) : null;
+
     // Mapeia os convidados para o formato esperado pela Evolution API
     const recipients = guests
       .map((g) => ({
         phone: g.phone ? somenteDigitos(g.phone) : "",
-        message: textoComOsLinks(template.content.replace(/\{nome\}/gi, g.name), parsedButtons, urls),
+        message: textoComOsLinks(template.content.replace(/\{nome\}/gi, g.name), parsedButtons, urls, linkDoConvite?.(g.id) ?? null),
         mediaUrl: template.mediaUrl,
         mediaType: template.mediaType,
       }))

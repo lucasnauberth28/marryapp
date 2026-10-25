@@ -1,11 +1,12 @@
 "use client";
 // A página de mensagens: envios rápidos, as mensagens salvas e as janelas de escrever/editar e de enviar.
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import type { Guest } from "@prisma/client";
 import { Plus } from "lucide-react";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { estiloDoBotao } from "@/components/painel/styles";
 import { ModalPersonalizado } from "@/components/ui/custom-modal";
+import { CartaoDoConvite } from "./componentes/cartao-do-convite";
 import { EnviosRapidos } from "./componentes/envios-rapidos";
 import { FluxoDeEnvio } from "./componentes/fluxo-de-envio";
 import { FormularioDoEditor } from "./componentes/formulario-do-editor";
@@ -23,6 +24,8 @@ interface PropriedadesDasMensagensCliente {
   slug: string;
   /** Domínio próprio conectado: os links das mensagens passam a usá-lo */
   customDomain?: string | null;
+  /** Convite digital animado: se o plano tem, as escolhas do casal e o endereço para ver como fica. */
+  convite: ComponentProps<typeof CartaoDoConvite>;
 }
 
 function descricaoDaPagina(convidados: Guest[]) {
@@ -31,7 +34,7 @@ function descricaoDaPagina(convidados: Guest[]) {
   return `${comTelefone} ${comTelefone === 1 ? "convidado tem" : "convidados têm"} telefone cadastrado${parteDosEnvios}.`;
 }
 
-export function MensagensCliente({ initialTemplates, initialGuests, coupleNames, slug, customDomain }: PropriedadesDasMensagensCliente) {
+export function MensagensCliente({ initialTemplates, initialGuests, coupleNames, slug, customDomain, convite }: PropriedadesDasMensagensCliente) {
   const [modelos, setModelos] = useState<ModeloDeMensagem[]>(initialTemplates);
   // "novo" = escrevendo uma mensagem nova
   const [editando, setEditando] = useState<ModeloDeMensagem | "novo" | null>(null);
@@ -52,6 +55,7 @@ export function MensagensCliente({ initialTemplates, initialGuests, coupleNames,
         }
       />
       <EnviosRapidos convidados={initialGuests} />
+      <CartaoDoConvite {...convite} />
       <ListaDeMensagens modelos={modelos} nomeDeExemplo={nomeDeExemplo} aoCriar={() => setEditando("novo")} aoEnviar={setEnviando} aoEditar={setEditando} />
       <ModalPersonalizado isOpen={editando !== null} onClose={() => setEditando(null)} title={editando === "novo" ? "Nova mensagem" : "Editar mensagem"} description="Escrevam o texto e vejam, ao lado, como ele chega no WhatsApp." size="xl" className="max-h-[92dvh] overflow-y-auto">
         {editando !== null ? (

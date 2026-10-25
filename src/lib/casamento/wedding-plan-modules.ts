@@ -14,14 +14,17 @@ import { MODULOS_DO_CASAL, MODULOS_DO_CLASSIC } from "../pagamento/pricing-modul
  * O domínio próprio (.com.br, no nome do titular) é pedido em /dominio e só o plano VIP
  * (ou um plano adaptado com o módulo) libera o pedido.
  */
-export const MODULOS_COM_BLOQUEIO = ["whatsapp", "qrcode", "customDomain", "tables3d"] as const;
+export const MODULOS_COM_BLOQUEIO = ["whatsapp", "qrcode", "customDomain", "tables3d", "convite"] as const;
 export type ModuloComBloqueio = (typeof MODULOS_COM_BLOQUEIO)[number];
 
 const TODOS_OS_IDS_DE_MODULO = MODULOS_DO_CASAL.map((m) => m.id);
 
+/** O convite digital animado não é um módulo avulso do catálogo: vem junto dos planos prontos Classic e VIP. */
+export const MODULO_DO_CONVITE_DIGITAL = "convite";
+
 export function modulosDoPlano(planId: string | null, customModules?: unknown): string[] {
-  if (planId === "vip") return TODOS_OS_IDS_DE_MODULO;
-  if (planId === "classic") return MODULOS_DO_CLASSIC;
+  if (planId === "vip") return [...TODOS_OS_IDS_DE_MODULO, MODULO_DO_CONVITE_DIGITAL];
+  if (planId === "classic") return [...MODULOS_DO_CLASSIC, MODULO_DO_CONVITE_DIGITAL];
   if (planId === "custom") {
     const chosen = Array.isArray(customModules) ? customModules.filter((m): m is string => typeof m === "string") : [];
     return TODOS_OS_IDS_DE_MODULO.filter((id) => chosen.includes(id));
@@ -52,6 +55,12 @@ const RECURSOS: Record<ModuloComBloqueio, { sentence: string; title: string; pla
     plans: "do plano VIP",
     planLabel: "VIP",
   },
+  convite: {
+    sentence: "O convite digital animado e personalizado, com o nome de cada convidado, faz parte",
+    title: "O convite digital é do plano",
+    plans: "do plano Classic, do VIP",
+    planLabel: "Classic",
+  },
   customDomain: {
     sentence: "O endereço personalizado do site (.com.br) faz parte",
     title: "O endereço personalizado do site é do plano",
@@ -62,6 +71,7 @@ const RECURSOS: Record<ModuloComBloqueio, { sentence: string; title: string; pla
 
 /** Texto simples para quando o plano do casamento não inclui o módulo. */
 export function mensagemDeUpgrade(moduleId: ModuloComBloqueio): string {
+  if (moduleId === MODULO_DO_CONVITE_DIGITAL) return `${RECURSOS[moduleId].sentence} ${RECURSOS[moduleId].plans}. Vejam as opções em Plano e pagamentos.`;
   return `${RECURSOS[moduleId].sentence} ${RECURSOS[moduleId].plans} ou de um plano adaptado com este módulo. Vejam as opções em Plano e pagamentos.`;
 }
 

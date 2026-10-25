@@ -4,6 +4,7 @@ import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/casamento/wedding";
 import { temAcessoAoCaminho } from "@/lib/permissions";
 import { obterPlanoDoCasamento } from "@/lib/casamento/wedding-plan";
+import { geradorDeLinksDoConvite } from "@/lib/convidados/convite-digital";
 import { AtalhoDoCredenciamento } from "./resumo/atalho-do-credenciamento";
 import { CabecalhoDoResumo } from "./resumo/cabecalho";
 import { carregarDadosDoResumo } from "./resumo/carregar-dados";
@@ -26,7 +27,8 @@ export default async function DashboardPage() {
   const dados = await carregarDadosDoResumo(ctx);
   const contas = calcularContas(dados, { plan, identity, now });
   const fila = montarFilaDoResumo(dados, contas, { session, can });
-  const convite = montarConviteDoResumo(contas, dados, { identity, wedding });
+  const linkDoConvite = await geradorDeLinksDoConvite({ weddingId, session }, wedding);
+  const convite = montarConviteDoResumo(contas, dados, { identity, wedding, linkDoConvite });
   const { weddingDays } = contas;
   const naSemanaDoCasamento = weddingDays !== null && weddingDays <= 7 && weddingDays >= 0;
 

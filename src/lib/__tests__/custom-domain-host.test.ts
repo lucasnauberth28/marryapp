@@ -242,3 +242,10 @@ test("cache com validade e teto de entradas", () => {
   cache.clear();
   assert.equal(cache.size, 0);
 });
+
+test("o convite digital abre no endereço curto do domínio do casal; o convite do par continua no principal", () => {
+  assert.deepEqual(rotearCaminhoDoDominioPersonalizado("/convite", "ana-e-rafael"), { action: "rewrite", pathname: "/casamento/ana-e-rafael/convite" });
+  assert.deepEqual(rotearCaminhoDoDominioPersonalizado("/casamento/ana-e-rafael/convite", "ana-e-rafael"), { action: "pass" });
+  assert.deepEqual(rotearCaminhoDoDominioPersonalizado("/casamento/outro/convite", "ana-e-rafael"), { action: "not-found" });
+  assert.deepEqual(rotearCaminhoDoDominioPersonalizado("/convite/abc", "ana-e-rafael"), { action: "redirect-main", pathname: "/convite/abc" });
+});

@@ -48,6 +48,13 @@ export async function casamentoTemModulo(
   return planoInclui(plan.modules, moduleId);
 }
 
+/** Versão para páginas públicas (sem sessão): o casamento principal e os planos que incluem o módulo. */
+export async function casamentoPublicoTemModulo(weddingId: string, moduleId: ModuloComBloqueio): Promise<boolean> {
+  const principal = await obterCasamentoPrincipal();
+  if (principal?.id === weddingId) return true;
+  return planoInclui((await obterPlanoDoCasamento(weddingId)).modules, moduleId);
+}
+
 /** Para Server Actions: texto de recusa quando o plano não inclui o módulo, ou null se pode seguir. */
 export async function recusaDeModulo(
   ctx: { weddingId: string; session: ContextoDeAutenticacaoSegura },

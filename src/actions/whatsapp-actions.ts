@@ -9,6 +9,7 @@ import { enviarMensagensEmLote } from "@/lib/whatsapp/mensagens";
 import { RsvpStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { filtroSemSoPresente } from "@/lib/convidados/guest-origin";
+import { geradorDeLinksDoConvite, linhaDoConviteNaMensagem } from "@/lib/convidados/convite-digital";
 import { idsDeConvidadosAlcancados, motivoDaFalhaNoEnvio, resumoDoEnvio } from "@/lib/convidados/whatsapp-results";
 
 type ModeloDeMensagem = { content: string; buttons: string | null; mediaUrl: string | null; mediaType: string | null } | null;
@@ -29,7 +30,7 @@ const BOTOES_DE_RSVP = [
 ];
 
 /** Um modelo cadastrado vale no lugar do texto de fábrica; `{nome}` vira o nome do convidado. */
-function mensagensParaOsConvidados(guests: { name: string; phone: string | null }[], modelo: ModeloDeMensagem, textoPadrao: (nome: string) => string) {
+function mensagensParaOsConvidados(guests: { id: string; name: string; phone: string | null }[], modelo: ModeloDeMensagem, textoPadrao: (nome: string) => string, linkDoConvite: ((guestId: string) => string) | null = null) {
   let botoes: Array<{ id: string; text: string }> | null = null;
   if (modelo?.buttons) {
     try {
@@ -38,7 +39,7 @@ function mensagensParaOsConvidados(guests: { name: string; phone: string | null 
   }
   return guests.map((g) => ({
     phone: g.phone!,
-    message: modelo ? modelo.content.replace(/\{nome\}/gi, g.name) : textoPadrao(g.name),
+    message: (modelo ? modelo.content.replace(/\{nome\}/gi, g.name) : textoPadrao(g.name)) + (linkDoConvite ? `\n\n${linhaDoConviteNaMensagem(linkDoConvite(g.id))}` : ""),
     mediaUrl: modelo?.mediaUrl,
     mediaType: modelo?.mediaType,
     buttons: botoes || BOTOES_DE_RSVP,
@@ -116,6 +117,8 @@ export async function enviarConvitesIniciais(): Promise<ResultadoDoDisparo> {
   const inviteTemplate = await prisma.messageTemplate.findFirst({ where: { weddingId, type: "INITIAL_INVITE" } });
   const linkRsvp = urlDoSiteDoCasamento(wedding.slug, "rsvp", wedding.customDomain);
   const linkPresentes = urlDoSiteDoCasamento(wedding.slug, "presentes", wedding.customDomain);
+  // O convite digital animado vai junto, nos planos que o têm (Classic e VIP)
+  const linkDoConvite = await geradorDeLinksDoConvite({ weddingId, session }, wedding);
   const messages = mensagensParaOsConvidados(
     guests,
     inviteTemplate,
@@ -127,6 +130,7 @@ export async function enviarConvitesIniciais(): Promise<ResultadoDoDisparo> {
       `✅ *Confirme sua presença:* ${linkRsvp}\n` +
       `🎁 *Veja nossa lista de presentes:* ${linkPresentes}\n\n` +
       `Mal podemos esperar para te ver! ❤️`,
+    linkDoConvite,
   );
 
   const results = await enviarMensagensEmLote(messages, 600);

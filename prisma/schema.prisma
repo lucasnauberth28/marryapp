@@ -512,6 +512,10 @@ model SiteCustomization {
   // Galeria de fotos: JSON com até 8 endereços de imagem, na ordem em que aparecem
   galleryUrls        String?  @db.Text
 
+  // Convite digital animado (Classic e VIP): o nome do convidado vai no convite? e a frase do casal no convite
+  inviteGuestName    Boolean  @default(true)
+  inviteMessage      String?  @db.Text
+
   updatedAt          DateTime @updatedAt
 
   @@map("site_customization")

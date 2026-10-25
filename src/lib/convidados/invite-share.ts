@@ -41,10 +41,12 @@ export function textoDoConviteGeral({ coupleNames, weddingDate, city, url }: Ent
 }
 
 /** Mensagem pessoal, com o primeiro nome de quem recebe. */
-export function textoDoConvitePessoal({ guestName, coupleNames, weddingDate, url }: Omit<EntradaDoTextoDoConvite, "city"> & { guestName: string }): string {
+export function textoDoConvitePessoal({ guestName, coupleNames, weddingDate, url, digital = false }: Omit<EntradaDoTextoDoConvite, "city"> & { guestName: string; digital?: boolean }): string {
   const when = dataDoCasamentoNaFrase(weddingDate);
   const date = when ? `, no ${when}` : "";
-  return `Olá, ${primeiroNome(guestName)}! ${nomesNaFrase(coupleNames)} convidam você para o casamento${date}. Para confirmar, abra o link e informe o seu WhatsApp:\n${url}`;
+  // O convite digital já leva à confirmação; o link da página de confirmação pede o WhatsApp
+  const pedido = digital ? "Abra o seu convite:" : "Para confirmar, abra o link e informe o seu WhatsApp:";
+  return `Olá, ${primeiroNome(guestName)}! ${nomesNaFrase(coupleNames)} convidam você para o casamento${date}. ${pedido}\n${url}`;
 }
 
 /** Lembrete para quem ainda não respondeu; cita o prazo só quando o casal definiu um. */

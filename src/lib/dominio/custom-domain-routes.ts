@@ -59,12 +59,14 @@ export function rotearCaminhoDoDominioPersonalizado(pathname: string, slug: stri
   for (const page of PAGINAS_DO_CONVIDADO) {
     if (path === `/${page}`) return { action: "rewrite", pathname: `/casamento/${slug}/${page}` };
   }
+  // O convite digital: só o endereço exato (/convite/<código> é o convite do par e vive no domínio principal)
+  if (path === "/convite") return { action: "rewrite", pathname: `/casamento/${slug}/convite` };
 
   // Os links internos do site usam /casamento/<slug>/...: valem só para o casamento deste domínio
   if (path === "/casamento" || path.startsWith("/casamento/")) {
     const own = `/casamento/${slug}`;
     if (path === own) return { action: "pass" };
-    if (PAGINAS_DO_CONVIDADO.some((page) => path === `${own}/${page}`)) return { action: "pass" };
+    if ([...PAGINAS_DO_CONVIDADO, "convite"].some((page) => path === `${own}/${page}`)) return { action: "pass" };
     return { action: "not-found" };
   }
 

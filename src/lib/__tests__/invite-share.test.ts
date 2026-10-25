@@ -46,3 +46,10 @@ test("link do WhatsApp: com telefone abre a conversa da pessoa; sem, deixa o cas
   assert.equal(linkDoWhatsapp(null, "olá & tudo\nbem"), "https://wa.me/?text=ol%C3%A1%20%26%20tudo%0Abem");
   assert.equal(linkDoWhatsapp("123", "x"), "https://wa.me/?text=x");
 });
+
+test("convite pessoal com convite digital pede para abrir o convite, não para informar o WhatsApp", () => {
+  const url = "https://meuaceito.com.br/casamento/ana-e-rafael/convite?c=abc";
+  const texto = textoDoConvitePessoal({ guestName: "Maria Souza", coupleNames: "Ana & Rafael", weddingDate: null, url, digital: true });
+  assert.match(texto, /Abra o seu convite:\nhttps:\/\/meuaceito\.com\.br\/casamento\/ana-e-rafael\/convite\?c=abc$/);
+  assert.doesNotMatch(texto, /informe o seu WhatsApp/);
+});

@@ -6,6 +6,8 @@ import { CartaoDeUpgrade } from "@/components/plan/upgrade-card";
 import { MensagensCliente } from "./mensagens-cliente";
 import { garantirModelosPadrao } from "@/actions/mensagens/modelos";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/casamento/wedding";
+import { escolhasDoConvite } from "@/lib/convidados/convite-digital";
+import { urlDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 
 export const metadata = { title: "Mensagens" };
 
@@ -29,6 +31,7 @@ export default async function MensagensPage() {
   });
 
   const { coupleNames } = await obterIdentidadeDoCasamentoPrincipal();
+  const [conviteDisponivel, escolhas] = await Promise.all([casamentoTemModulo({ weddingId, session }, "convite"), escolhasDoConvite(weddingId)]);
 
   return (
     <MensagensCliente
@@ -37,6 +40,7 @@ export default async function MensagensPage() {
       customDomain={wedding.customDomain ?? null}
       initialTemplates={JSON.parse(JSON.stringify(templates))} 
       initialGuests={JSON.parse(JSON.stringify(convidados))} 
+      convite={{ disponivel: conviteDisponivel, guestName: escolhas.guestName, message: escolhas.message, linkDeExemplo: urlDoSiteDoCasamento(wedding.slug, "convite", wedding.customDomain) }}
     />
   );
 }

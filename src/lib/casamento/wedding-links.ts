@@ -1,6 +1,6 @@
 // Endereços públicos de cada casamento (sem banco; pode ser usado no cliente).
 
-export type PaginaDoConvidadoNoCasamento = "rsvp" | "presentes" | "dia-do-evento";
+export type PaginaDoConvidadoNoCasamento = "rsvp" | "presentes" | "dia-do-evento" | "convite";
 
 /** "/casamento/<slug>" ou "/casamento/<slug>/rsvp" etc. */
 export function caminhoDoSiteDoCasamento(slug: string, page?: PaginaDoConvidadoNoCasamento): string {

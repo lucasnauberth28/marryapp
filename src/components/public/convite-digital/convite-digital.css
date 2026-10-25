@@ -1,0 +1,145 @@
+/* Convite digital animado: o envelope abre, o selo some, a carta sobe e o texto aparece em sequência.
+   Cores e letras vêm das variáveis do modelo do site (modelos/estilo.ts). */
+
+.cd-palco {
+  position: relative;
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 24px 16px;
+  background: radial-gradient(120% 80% at 50% 0%, color-mix(in oklab, var(--color-ameixa) 14%, var(--color-linho)) 0%, var(--color-linho) 70%);
+  overflow: hidden;
+}
+
+.cd-envelope {
+  position: relative;
+  width: min(88vw, 460px);
+  aspect-ratio: 3 / 2;
+  perspective: 1400px;
+  cursor: pointer;
+  border: 0;
+  background: none;
+  padding: 0;
+  animation: cd-flutua 4.5s ease-in-out infinite;
+}
+.cd-envelope:focus-visible { outline: 3px solid var(--color-ameixa); outline-offset: 8px; border-radius: 8px; }
+
+.cd-corpo {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  border: 1px solid color-mix(in oklab, var(--color-ameixa) 40%, var(--color-linha));
+  background: var(--color-areia);
+  box-shadow: 0 24px 48px -24px color-mix(in oklab, var(--color-tinta) 45%, transparent);
+}
+
+/* A carta dentro do envelope: sobe quando a aba abre */
+.cd-papel {
+  position: absolute;
+  inset: 10% 6% 6% 6%;
+  z-index: 1;
+  border-radius: 4px;
+  border: 1px solid color-mix(in oklab, var(--color-ameixa) 40%, var(--color-linha));
+  background: var(--color-papel);
+  transition: transform 800ms 450ms cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+/* A frente do envelope (o bolso em V), por cima da carta */
+.cd-bolso {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--color-papel) 55%, var(--color-areia));
+  clip-path: polygon(0 36%, 50% 68%, 100% 36%, 100% 100%, 0 100%);
+  filter: drop-shadow(0 -1px 0 color-mix(in oklab, var(--color-ameixa) 45%, var(--color-linha)));
+}
+
+.cd-aba {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 58%;
+  transform-origin: top center;
+  background: var(--color-areia);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  border-radius: 8px 8px 0 0;
+  transition: transform 900ms cubic-bezier(0.3, 0.7, 0.2, 1);
+  backface-visibility: hidden;
+  z-index: 3;
+}
+
+.cd-selo {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  z-index: 4;
+  display: grid;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-ameixa);
+  color: var(--color-on-ameixa);
+  font-family: var(--font-display), serif;
+  font-size: 22px;
+  box-shadow: 0 6px 16px -6px color-mix(in oklab, var(--color-ameixa) 70%, black), inset 0 -3px 6px rgb(0 0 0 / 0.18);
+  transform: translate(-50%, -50%);
+  transition: opacity 350ms ease, transform 350ms ease;
+}
+
+.cd-para {
+  position: absolute;
+  z-index: 3;
+  inset: auto 8% 12% 8%;
+  text-align: center;
+  font-family: var(--font-display), serif;
+  font-size: clamp(18px, 4.6vw, 24px);
+  color: var(--color-tinta);
+  text-wrap: balance;
+}
+
+.cd-palco[data-fase="abrindo"] .cd-aba { transform: rotateX(180deg); z-index: 0; }
+.cd-palco[data-fase="abrindo"] .cd-papel { transform: translateY(-46%); }
+.cd-palco[data-fase="abrindo"] .cd-selo { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+.cd-palco[data-fase="abrindo"] .cd-envelope { animation: cd-sai 700ms 900ms ease-in forwards; }
+.cd-palco[data-fase="abrindo"] .cd-dica { opacity: 0; }
+.cd-dica { transition: opacity 250ms; letter-spacing: 0.14em; }
+
+@keyframes cd-flutua { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes cd-sai { to { transform: translateY(40px) scale(0.92); opacity: 0; } }
+
+/* A carta: tudo entra de baixo para cima, um item depois do outro */
+.cd-carta { position: relative; overflow: hidden; background: var(--color-linho); }
+.cd-entra { opacity: 0; animation: cd-entra 800ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards; animation-delay: calc(var(--i, 0) * 140ms + 100ms); }
+@keyframes cd-entra { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+.cd-zoom { animation: cd-zoom 14s ease-out forwards; }
+@keyframes cd-zoom { from { transform: scale(1.08); } to { transform: scale(1); } }
+
+/* Pétalas caindo ao fundo */
+.cd-petala {
+  position: absolute;
+  top: -24px;
+  left: var(--x);
+  width: var(--t);
+  height: calc(var(--t) * 1.4);
+  border-radius: 100% 0 100% 0;
+  background: color-mix(in oklab, var(--color-ameixa) 55%, var(--color-linho));
+  opacity: 0;
+  pointer-events: none;
+  animation: cd-cai var(--d) linear var(--atraso) infinite;
+}
+@keyframes cd-cai {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(0deg); }
+  10% { opacity: 0.55; }
+  100% { opacity: 0; transform: translate3d(var(--vento), 105vh, 0) rotate(260deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cd-envelope, .cd-zoom, .cd-petala { animation: none; }
+  .cd-petala { display: none; }
+  .cd-entra { animation: none; opacity: 1; }
+  .cd-aba, .cd-selo, .cd-papel { transition: none; }
+}
