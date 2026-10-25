@@ -11,6 +11,20 @@ export type PropriedadesDaAreaDeTexto = React.ComponentProps<"textarea"> &
     inputClassName?: string
   }
 
+/** A textarea simples, sem rótulo flutuante. */
+function AreaDeTextoSimples({ className, ...props }: React.ComponentProps<"textarea">) {
+  return (
+    <textarea
+      data-slot="textarea"
+      className={cn(
+        "flex min-h-[96px] w-full rounded-xl border border-linha-forte bg-papel px-4 py-3 text-base text-tinta transition-colors outline-none placeholder:text-tinta-suave hover:border-tinta-suave focus-visible:border-ameixa focus-visible:ring-2 focus-visible:ring-ameixa/25 disabled:cursor-not-allowed disabled:bg-areia disabled:opacity-50 aria-invalid:border-2 aria-invalid:border-perigo aria-invalid:ring-0",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
 /**
  * Área de texto.
  *  - Com `label`: campo de formulário com rótulo flutuante (o rótulo repousa na primeira linha).
@@ -31,19 +45,7 @@ function AreaDeTexto({
 }: PropriedadesDaAreaDeTexto) {
   const autoId = React.useId()
 
-  if (label === undefined || label === null) {
-    return (
-      <textarea
-        id={id}
-        data-slot="textarea"
-        className={cn(
-          "flex min-h-[96px] w-full rounded-xl border border-linha-forte bg-papel px-4 py-3 text-base text-tinta transition-colors outline-none placeholder:text-tinta-suave hover:border-tinta-suave focus-visible:border-ameixa focus-visible:ring-2 focus-visible:ring-ameixa/25 disabled:cursor-not-allowed disabled:bg-areia disabled:opacity-50 aria-invalid:border-2 aria-invalid:border-perigo aria-invalid:ring-0",
-          className
-        )}
-        {...props}
-      />
-    )
-  }
+  if (label === undefined || label === null) return <AreaDeTextoSimples id={id} className={className} {...props} />
 
   const fieldId = id ?? autoId
   const { "aria-describedby": describedBy, "aria-invalid": ariaInvalid, placeholder, required, ...rest } = props

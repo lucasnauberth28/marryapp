@@ -13,46 +13,30 @@ export type PropriedadesDaEntrada = PropriedadesDaEntradaNativa &
     inputClassName?: string
   }
 
+/** O input simples, sem rótulo flutuante. */
+function EntradaSimples({ className, ...props }: Omit<PropriedadesDaEntradaNativa, "size">) {
+  return (
+    <input
+      data-slot="input"
+      className={cn(
+        "h-11 w-full min-w-0 rounded-xl border border-linha-forte bg-papel px-4 py-2 text-base text-tinta transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-tinta-suave hover:border-tinta-suave focus-visible:border-ameixa focus-visible:ring-2 focus-visible:ring-ameixa/25 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-areia disabled:opacity-50 aria-invalid:border-2 aria-invalid:border-perigo aria-invalid:ring-0",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
 /**
  * Campo de texto.
  *  - Com `label`: campo de formulário com rótulo flutuante (use este nos formulários).
  *  - Sem `label`: o input simples de antes, para casos que não são campo de formulário
  *    (células editáveis, buscas com lupa, etiquetas pequenas).
  */
-function Entrada({
-  label,
-  hint,
-  error,
-  optional,
-  icon,
-  prefix,
-  suffix,
-  trailing,
-  size,
-  invalid,
-  fieldClassName,
-  inputClassName,
-  className,
-  id,
-  type,
-  ...props
-}: PropriedadesDaEntrada) {
+function Entrada({ label, hint, error, optional, icon, prefix, suffix, trailing, size, invalid, fieldClassName, inputClassName, className, id, type, ...props }: PropriedadesDaEntrada) {
   const autoId = React.useId()
 
-  if (label === undefined || label === null) {
-    return (
-      <input
-        id={id}
-        type={type}
-        data-slot="input"
-        className={cn(
-          "h-11 w-full min-w-0 rounded-xl border border-linha-forte bg-papel px-4 py-2 text-base text-tinta transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-tinta-suave hover:border-tinta-suave focus-visible:border-ameixa focus-visible:ring-2 focus-visible:ring-ameixa/25 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-areia disabled:opacity-50 aria-invalid:border-2 aria-invalid:border-perigo aria-invalid:ring-0",
-          className
-        )}
-        {...props}
-      />
-    )
-  }
+  if (label === undefined || label === null) return <EntradaSimples id={id} type={type} className={className} {...props} />
 
   const fieldId = id ?? autoId
   const { "aria-describedby": describedBy, "aria-invalid": ariaInvalid, placeholder, required, ...rest } = props

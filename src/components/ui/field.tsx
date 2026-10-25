@@ -1,9 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { CircleAlert } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { AdornosDoCampo, RodapeDoCampo } from "@/components/ui/campo-pecas"
 
 /*
  * CAMPO COM RÓTULO FLUTUANTE (comportamento da variante "on" do FloatLabel do PrimeVue).
@@ -98,29 +98,9 @@ export function Campo(props: PropriedadesDoCampo) {
   return <CampoFlutuante {...props} />
 }
 
-function CampoFlutuante({
-  id,
-  label,
-  hint,
-  error,
-  optional,
-  required,
-  invalid,
-  icon: Icon,
-  prefix,
-  suffix,
-  trailing,
-  size = "default",
-  multiline,
-  chevron,
-  control = "text",
-  className,
-  extra,
-  children,
-}: PropriedadesDoCampo) {
+function CampoFlutuante({ id, label, hint, error, optional, required, invalid, icon: Icon, prefix, suffix, trailing, size = "default", multiline, chevron, control = "text", className, extra, children }: PropriedadesDoCampo) {
   const hasError = Boolean(error) || Boolean(invalid)
-  const showHint = Boolean(hint) && !error
-  const describedBy = juntarIds(showHint && `${id}-dica`, error ? `${id}-erro` : false)
+  const describedBy = juntarIds(Boolean(hint) && !error && `${id}-dica`, error ? `${id}-erro` : false)
 
   const boxStyle: React.CSSProperties = {}
   if (prefix) (boxStyle as Record<string, string>)["--ac-float-prefix"] = `calc(${[...prefix].length}ch + 6px)`
@@ -151,45 +131,13 @@ function CampoFlutuante({
           {label}
           {optional ? " (opcional)" : null}
         </label>
-        {Icon ? <Icon aria-hidden="true" className="ac-float__icon" strokeWidth={1.6} /> : null}
-        {prefix ? (
-          <span aria-hidden="true" className="ac-float__affix ac-float__affix--prefix">
-            {prefix}
-          </span>
-        ) : null}
-        {suffix ? (
-          <span aria-hidden="true" className="ac-float__affix ac-float__affix--suffix">
-            {suffix}
-          </span>
-        ) : null}
+        <AdornosDoCampo icon={Icon} prefix={prefix} suffix={suffix} />
         {extra}
         {trailing ? <div className="ac-float__trailing">{trailing}</div> : null}
       </div>
-      {showHint ? (
-        <p id={`${id}-dica`} className="ac-float__hint">
-          {hint}
-        </p>
-      ) : null}
-      {error ? (
-        <p id={`${id}-erro`} role="alert" className="ac-float__error">
-          <CircleAlert aria-hidden="true" strokeWidth={2} />
-          <span>{error}</span>
-        </p>
-      ) : null}
+      <RodapeDoCampo id={id} hint={hint} error={error} />
     </div>
   )
 }
 
-/** Aviso de erro geral do formulário. */
-export function AvisoDoFormulario({ id, children }: { id?: string; children: React.ReactNode }) {
-  return (
-    <div
-      id={id}
-      role="alert"
-      className="flex items-start gap-2.5 rounded-[12px] border border-perigo/25 bg-perigo-suave px-4 py-3 text-sm font-semibold leading-5 text-perigo"
-    >
-      <CircleAlert aria-hidden="true" className="mt-px size-[18px] shrink-0" strokeWidth={2} />
-      <div className="min-w-0">{children}</div>
-    </div>
-  )
-}
+export { AvisoDoFormulario } from "@/components/ui/campo-pecas"
