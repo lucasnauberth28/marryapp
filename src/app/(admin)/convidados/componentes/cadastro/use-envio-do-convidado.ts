@@ -1,7 +1,7 @@
 // Envia o convidado (novo ou editado) e decide se fecha o modal ou deixa o formulário limpo para o próximo.
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { atualizarConvidado, criarConvidado } from "@/actions/guest-actions";
+import { atualizarConvidado, criarConvidado } from "@/actions/convidados/lista";
 import type { ConvidadoLocal } from "@/types/local";
 import type { CamposDoConvidado } from "./use-campos-do-convidado";
 

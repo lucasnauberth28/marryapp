@@ -1,4 +1,4 @@
-import { importarConvidados } from "@/actions/guest-actions";
+import { importarConvidados } from "@/actions/convidados/importacao";
 import type { PlanoDaImportacao } from "@/lib/importacao-de-convidados/repetidos";
 import { NOME_DO_ARQUIVO_MODELO_DA_PLANILHA, csvDaPlanilhaModelo } from "@/lib/importacao-de-convidados/modelo";
 import { decodificarBytesDaPlanilha } from "@/lib/importacao-de-convidados/arquivo";

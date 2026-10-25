@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { obterConvidados } from "@/actions/guest-actions";
+import { obterConvidados } from "@/actions/convidados/lista";
 import { ConvidadosCliente } from "./convidados-cliente";
 import prisma from "@/lib/prisma";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";

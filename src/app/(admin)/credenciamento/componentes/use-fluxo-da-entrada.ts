@@ -1,6 +1,6 @@
 // O passo a passo da entrada: ler o convite, conferir quem é e registrar a chegada.
 import { useState } from "react";
-import { registrarEntradaDoConvidado } from "@/actions/guest-actions";
+import { registrarEntradaDoConvidado } from "@/actions/convidados/entrada";
 import { buscarConvidadoParaEntrada, type InformacoesDoConvidadoNaEntrada } from "../lookup-actions";
 import type { EtapaDoFluxo, MensagemDaEntrada } from "./tipos";
 

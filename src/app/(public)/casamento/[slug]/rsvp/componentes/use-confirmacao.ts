@@ -1,6 +1,6 @@
 // O fluxo de confirmação de presença: achar o convite pelo WhatsApp e responder (com acompanhantes e restrições).
 import { useState } from "react";
-import { acharConvidadoPeloTelefone, confirmarPresencaPublica } from "@/actions/guest-actions";
+import { acharConvidadoPeloTelefone, confirmarPresencaPublica } from "@/actions/convidados/rsvp";
 import { lembrarConvidado } from "@/lib/use-saved-guest";
 import { mensagemDaBusca } from "@/lib/rsvp-lookup";
 import type { ConvidadoDaConfirmacao, RespostaDoConvite } from "./tipos";

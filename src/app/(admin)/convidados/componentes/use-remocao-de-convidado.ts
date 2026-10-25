@@ -1,7 +1,7 @@
 // Pede a confirmação e remove o convidado; a linha fica esmaecida até a lista atualizar.
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { excluirConvidado } from "@/actions/guest-actions";
+import { excluirConvidado } from "@/actions/convidados/lista";
 import type { ConvidadoLocal } from "@/types/local";
 
 export function useRemocaoDeConvidado() {
