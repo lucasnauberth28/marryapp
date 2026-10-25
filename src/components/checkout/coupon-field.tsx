@@ -1,24 +1,17 @@
 "use client";
 
-import { useEffect, useId, useState, useTransition } from "react";
-import { TicketPercent, X } from "lucide-react";
+import { useId, useState, useTransition } from "react";
+import { TicketPercent } from "lucide-react";
 import { previaDoPrecoDaAssinatura } from "@/actions/subscription-actions";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { Botao } from "@/components/ui/button";
 import { Entrada } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { ResumoDoCupom } from "./cupom/resumo-do-cupom";
+import type { CupomAplicado } from "./cupom/tipos";
+import { interpretarPrevia, useReconferirCupomAoTrocarDePlano } from "./cupom/use-conferir-cupom";
 
-
-import { formatarReais } from "@/lib/formatacao/dinheiro";
-export interface CupomAplicado {
-  code: string;
-  /** Plano para o qual o cupom foi conferido. */
-  planId: string;
-  price: number;
-  credit: number;
-  discount: number;
-  total: number;
-}
+export type { CupomAplicado } from "./cupom/tipos";
 
 interface PropriedadesDoCampoDeCupom {
   planId: string;
@@ -29,98 +22,26 @@ interface PropriedadesDoCampoDeCupom {
   creditLabel?: string;
 }
 
-/**
- * Campo de cupom do checkout: "Aplicar" confere o código no servidor e mostra o novo total.
- * O servidor confere de novo ao gerar o Pix; aqui é só a prévia.
- */
-export function CampoDeCupom({ planId, modules, applied, onChange, creditLabel = "Crédito do plano atual" }: PropriedadesDoCampoDeCupom) {
+interface PropriedadesDoFormulario {
+  code: string;
+  setCode: (c: string) => void;
+  error: string;
+  setError: (e: string) => void;
+  isPending: boolean;
+  aoAplicar: (code: string) => void;
+}
+
+function BotaoTenhoCupom({ aoAbrir }: { aoAbrir: () => void }) {
+  return (
+    <button type="button" onClick={aoAbrir} className={cn(estiloDoBotao.quiet, "-ml-3 min-h-11 self-start")}>
+      <TicketPercent aria-hidden="true" className="size-4" />
+      Tenho um cupom de desconto
+    </button>
+  );
+}
+
+function FormularioDeCupom({ code, setCode, error, setError, isPending, aoAplicar }: PropriedadesDoFormulario) {
   const inputId = useId();
-  const [open, setOpen] = useState(Boolean(applied));
-  const [code, setCode] = useState(applied?.code ?? "");
-  const [error, setError] = useState("");
-  const [isPending, startTransition] = useTransition();
-
-  const check = (couponCode: string) =>
-    previaDoPrecoDaAssinatura({ planId, modules, couponCode }).then((res) => {
-      if (res.success && res.couponCode) {
-        setError("");
-        onChange({ code: res.couponCode, planId, price: res.price, credit: res.credit, discount: res.discount, total: res.total });
-      } else {
-        onChange(null);
-        setError(res.success ? "Confira o código do cupom." : res.error);
-      }
-    });
-
-  // Trocou de plano com um cupom aplicado: confere de novo para o plano escolhido.
-  useEffect(() => {
-    if (!applied || applied.planId === planId) return;
-    let cancelled = false;
-    previaDoPrecoDaAssinatura({ planId, modules, couponCode: applied.code }).then((res) => {
-      if (cancelled) return;
-      if (res.success && res.couponCode) {
-        onChange({ code: res.couponCode, planId, price: res.price, credit: res.credit, discount: res.discount, total: res.total });
-      } else {
-        onChange(null);
-        setError(res.success ? "Confira o código do cupom." : res.error);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [planId, modules, applied, onChange]);
-
-  if (!open) {
-    return (
-      <button type="button" onClick={() => setOpen(true)} className={cn(estiloDoBotao.quiet, "-ml-3 min-h-11 self-start")}>
-        <TicketPercent aria-hidden="true" className="size-4" />
-        Tenho um cupom de desconto
-      </button>
-    );
-  }
-
-  if (applied && applied.planId === planId) {
-    return (
-      <div className="flex flex-col gap-3 rounded-2xl border border-sucesso/30 bg-sucesso-suave p-4" role="status">
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-[15px] text-tinta">
-            Cupom <strong className="font-mono font-semibold">{applied.code}</strong> aplicado.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              onChange(null);
-              setCode("");
-            }}
-            className="-mr-2 -mt-2 inline-flex min-h-11 shrink-0 items-center gap-1 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave"
-          >
-            <X aria-hidden="true" className="size-4" />
-            Remover
-          </button>
-        </div>
-        <dl className="flex flex-col gap-1 text-[15px]">
-          <div className="flex justify-between gap-4">
-            <dt className="text-tinta-suave">Valor do plano</dt>
-            <dd className="tabular-nums">{formatarReais(applied.price)}</dd>
-          </div>
-          {applied.credit > 0 ? (
-            <div className="flex justify-between gap-4">
-              <dt className="text-tinta-suave">{creditLabel}</dt>
-              <dd className="tabular-nums">- {formatarReais(applied.credit)}</dd>
-            </div>
-          ) : null}
-          <div className="flex justify-between gap-4">
-            <dt className="text-tinta-suave">Cupom {applied.code}</dt>
-            <dd className="tabular-nums">- {formatarReais(applied.discount)}</dd>
-          </div>
-          <div className="flex justify-between gap-4 border-t border-sucesso/20 pt-1.5 font-semibold">
-            <dt>Total no Pix</dt>
-            <dd className="tabular-nums">{formatarReais(applied.total)}</dd>
-          </div>
-        </dl>
-      </div>
-    );
-  }
-
   return (
     <form
       className="flex flex-col gap-1.5 pt-2"
@@ -131,7 +52,7 @@ export function CampoDeCupom({ planId, modules, applied, onChange, creditLabel =
           setError("Digite o código do cupom.");
           return;
         }
-        startTransition(() => check(value));
+        aoAplicar(value);
       }}
     >
       <div className="flex items-start gap-2">
@@ -157,5 +78,55 @@ export function CampoDeCupom({ planId, modules, applied, onChange, creditLabel =
         </Botao>
       </div>
     </form>
+  );
+}
+
+/**
+ * Campo de cupom do checkout: "Aplicar" confere o código no servidor e mostra o novo total.
+ * O servidor confere de novo ao gerar o Pix; aqui é só a prévia.
+ */
+export function CampoDeCupom({ planId, modules, applied, onChange, creditLabel = "Crédito do plano atual" }: PropriedadesDoCampoDeCupom) {
+  const [open, setOpen] = useState(Boolean(applied));
+  const [code, setCode] = useState(applied?.code ?? "");
+  const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  const check = (couponCode: string) =>
+    previaDoPrecoDaAssinatura({ planId, modules, couponCode }).then((res) => {
+      const r = interpretarPrevia(res, planId);
+      if ("applied" in r) {
+        setError("");
+        return onChange(r.applied);
+      }
+      onChange(null);
+      setError(r.error);
+    });
+
+  useReconferirCupomAoTrocarDePlano(planId, modules, applied, onChange, setError);
+
+  if (!open) return <BotaoTenhoCupom aoAbrir={() => setOpen(true)} />;
+
+  if (applied && applied.planId === planId) {
+    return (
+      <ResumoDoCupom
+        applied={applied}
+        creditLabel={creditLabel}
+        aoRemover={() => {
+          onChange(null);
+          setCode("");
+        }}
+      />
+    );
+  }
+
+  return (
+    <FormularioDeCupom
+      code={code}
+      setCode={setCode}
+      error={error}
+      setError={setError}
+      isPending={isPending}
+      aoAplicar={(value) => startTransition(() => check(value))}
+    />
   );
 }

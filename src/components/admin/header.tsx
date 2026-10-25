@@ -1,25 +1,13 @@
 "use client";
 
-import { useTransition } from "react";
 import Link from "next/link";
-import { Settings as SettingsIcon, LogOut, CreditCard as CreditCardIcon, UserRound, LayoutDashboard, ChevronDown } from "lucide-react";
-import {
-  MenuSuspenso,
-  ConteudoDoMenuSuspenso,
-  ItemDoMenuSuspenso,
-  RotuloDoMenuSuspenso,
-  SeparadorDoMenuSuspenso,
-  GatilhoDoMenuSuspenso,
-} from "@/components/ui/dropdown-menu";
-import { sair } from "@/actions/auth-actions";
-import { IndicadorDeCarregamento } from "@/components/ui/spinner";
+import { LayoutDashboard } from "lucide-react";
 import { SinoDeNotificacoes } from "@/components/notifications/notification-bell";
-import { temAcessoAoCaminho, ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
+import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
 import { Logotipo } from "@/components/brand/logo";
 import { rotuloDaConta } from "@/lib/account-label";
-import { ItemDeMenuDoTour } from "@/components/tour/tour-restart";
-import { ItensDeMenuDoTema, AlternadorDeTema } from "@/components/theme/theme-toggle";
-import { itensVisiveisDoAdmin } from "@/components/admin/nav-config";
+import { AlternadorDeTema } from "@/components/theme/theme-toggle";
+import { MenuDaConta } from "./cabecalho/menu-da-conta";
 
 interface PropriedadesDoCabecalho {
   role?: string;
@@ -39,19 +27,14 @@ interface PropriedadesDoCabecalho {
   pushPublicKey?: string | null;
 }
 
-const classeDoItemDoMenu = "cursor-pointer rounded-[8px] px-3 py-2.5 text-sm text-tinta";
-
 /**
  * Cabeçalho da folha: quem é o casal e quando é o casamento à esquerda; tema, avisos e menu da conta à direita,
  * sempre no mesmo lugar. Configurações, plano, conta e sair moram no menu da conta (saíram do menu principal).
  */
 export function Cabecalho({ role = "Admin", allowedPaths = [], coupleNames, initials, subtitle, adminView = false, userName = null, planName = null, unreadNotifications = 0, pushPublicKey = null }: PropriedadesDoCabecalho) {
-  const [leaving, startLeave] = useTransition();
-  const can = (path: string) => temAcessoAoCaminho(allowedPaths, path);
   const label = rotuloDaConta({ adminView, coupleNames, coupleInitials: initials, userName, role });
   // Só a conta com acesso total ("*") vê o caminho de volta para a administração da plataforma
   const isPlatformAdmin = ehAcessoDeAdminDaPlataforma(allowedPaths);
-  const adminItems = itensVisiveisDoAdmin(allowedPaths);
 
   return (
     <header className="sticky top-[var(--faixa)] z-40 flex min-h-[60px] items-center justify-between gap-3 border-b border-linha bg-papel/95 px-4 backdrop-blur-md md:min-h-16 md:rounded-t-2xl md:pl-8 md:pr-6">
@@ -74,96 +57,7 @@ export function Cabecalho({ role = "Admin", allowedPaths = [], coupleNames, init
         {/* Seletor de tema sempre à mão no cabeçalho (claro é o padrão; escuro por escolha) */}
         <AlternadorDeTema />
         <SinoDeNotificacoes initialUnread={unreadNotifications} allHref="/notificacoes" settingsHref="/conta#avisos" pushPublicKey={pushPublicKey} />
-
-        <MenuSuspenso>
-          <GatilhoDoMenuSuspenso asChild>
-            <button
-              className="flex h-11 cursor-pointer items-center gap-1 rounded-full pl-1 pr-1 text-tinta-suave md:pr-1.5 transition-colors hover:bg-areia/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ameixa data-[state=open]:bg-areia/70"
-              aria-label="Menu da conta"
-              data-tour="conta"
-            >
-              <span className="grid size-9 place-items-center rounded-full bg-ameixa-suave text-xs font-semibold tracking-[0.02em] text-ameixa" aria-hidden="true">
-                {label.initials}
-              </span>
-              <ChevronDown className="hidden size-4 md:block" aria-hidden="true" />
-            </button>
-          </GatilhoDoMenuSuspenso>
-          <ConteudoDoMenuSuspenso className="w-72 overflow-hidden rounded-[12px] border-linha bg-papel p-0 shadow-[var(--shadow-aceito-2)]" align="end">
-            <div className="border-b border-linha px-4 py-3">
-              <p className="truncate font-display text-base font-semibold text-tinta">{label.menuTitle}</p>
-              <p className="text-sm text-tinta-suave">{label.menuSubtitle}</p>
-            </div>
-            <div className="space-y-0.5 p-1.5">
-              {can("/configuracoes") && (
-                <ItemDoMenuSuspenso asChild className={classeDoItemDoMenu}>
-                  <Link href="/configuracoes" className="flex items-center gap-2.5">
-                    <SettingsIcon className="h-4 w-4 text-tinta-suave" /> Configurações
-                  </Link>
-                </ItemDoMenuSuspenso>
-              )}
-              {can("/plano") && (
-                <ItemDoMenuSuspenso asChild className={classeDoItemDoMenu}>
-                  <Link href="/plano" className="flex items-center gap-2.5">
-                    <CreditCardIcon className="h-4 w-4 text-tinta-suave" /> Plano e pagamentos
-                    {planName && <span className="ml-auto text-xs text-tinta-suave">{planName}</span>}
-                  </Link>
-                </ItemDoMenuSuspenso>
-              )}
-              <ItemDoMenuSuspenso asChild className={classeDoItemDoMenu}>
-                <Link href="/conta" className="flex items-center gap-2.5">
-                  <UserRound className="h-4 w-4 text-tinta-suave" /> Minha conta
-                </Link>
-              </ItemDoMenuSuspenso>
-              <ItemDeMenuDoTour />
-              {isPlatformAdmin && (
-                <ItemDoMenuSuspenso asChild className={`${classeDoItemDoMenu} md:hidden`}>
-                  <Link href="/admin" className="flex items-center gap-2.5">
-                    <LayoutDashboard className="h-4 w-4 text-tinta-suave" /> Administração
-                  </Link>
-                </ItemDoMenuSuspenso>
-              )}
-            </div>
-            {/* No computador as ferramentas de administração ficam na barra lateral */}
-            {adminItems.length > 0 && (
-              <div className="md:hidden">
-                <SeparadorDoMenuSuspenso className="my-0 bg-linha" />
-                <div className="space-y-0.5 p-1.5">
-                  <RotuloDoMenuSuspenso className="text-xs font-medium text-tinta-suave">Gestão da plataforma</RotuloDoMenuSuspenso>
-                  {adminItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <ItemDoMenuSuspenso key={item.href} asChild className={classeDoItemDoMenu}>
-                        <Link href={item.href} className="flex items-center gap-2.5">
-                          <Icon className="h-4 w-4 text-tinta-suave" /> {item.name}
-                        </Link>
-                      </ItemDoMenuSuspenso>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            {/* No computador o seletor fica no botão sol/lua do cabeçalho */}
-            <SeparadorDoMenuSuspenso className="my-0 bg-linha md:hidden" />
-            <div className="p-1.5 md:hidden">
-              <ItensDeMenuDoTema />
-            </div>
-            <SeparadorDoMenuSuspenso className="my-0 bg-linha" />
-            <div className="p-1.5">
-              <ItemDoMenuSuspenso
-                disabled={leaving}
-                aria-busy={leaving || undefined}
-                // Fica aberto até a saída terminar, mostrando o andamento
-                onSelect={(e) => {
-                  e.preventDefault();
-                  startLeave(() => sair());
-                }}
-                className="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-perigo focus:bg-perigo-suave focus:text-perigo"
-              >
-                {leaving ? <IndicadorDeCarregamento /> : <LogOut className="h-4 w-4" />} Sair
-              </ItemDoMenuSuspenso>
-            </div>
-          </ConteudoDoMenuSuspenso>
-        </MenuSuspenso>
+        <MenuDaConta allowedPaths={allowedPaths} isPlatformAdmin={isPlatformAdmin} planName={planName} label={label} />
       </div>
     </header>
   );

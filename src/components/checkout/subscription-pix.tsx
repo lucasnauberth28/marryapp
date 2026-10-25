@@ -1,19 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { QRCodeSVG } from "qrcode.react";
-import { Check, Copy, RefreshCw } from "lucide-react";
-import { gerarPixDaAssinatura, verificarSituacaoDoPagamentoDaAssinatura } from "@/actions/subscription-actions";
-import { estiloDoBotao } from "@/components/landing/styles";
-import { RegiaoDeCarregamento } from "@/components/skeletons";
 import { Botao } from "@/components/ui/button";
-import { Esqueleto } from "@/components/ui/skeleton";
-import { MolduraDoQr } from "@/components/ui/qr-frame";
-import { CORES_DO_QR } from "@/lib/qr-colors";
-import { cn } from "@/lib/utils";
+import { CartaoDoPix } from "./pix/cartao";
+import { EsqueletoDoPix } from "./pix/esqueleto";
+import { useCobrancaDoPix } from "./pix/use-cobranca";
 
-
-import { formatarReais } from "@/lib/formatacao/dinheiro";
 interface PropriedadesDoPixDaAssinatura {
   planId: string;
   modules?: string[];
@@ -24,167 +15,36 @@ interface PropriedadesDoPixDaAssinatura {
   onPaid: () => void;
 }
 
-type CobrancaDoPix = { subscriptionId: string; payload: string; expiresAt: number; amount: number; isDynamic: boolean };
-
 /**
  * Cobrança Pix de um plano: gera o código para a conta logada, mostra QR e copia e cola,
  * conta os 10 minutos e confere o pagamento sozinha a cada 5 segundos.
  */
 export function PixDaAssinatura({ planId, modules, planName, couponCode, onPaid }: PropriedadesDoPixDaAssinatura) {
-  const [charge, setCharge] = useState<CobrancaDoPix | null>(null);
-  const [error, setError] = useState("");
-  const [now, setNow] = useState(() => Date.now());
-  const [copied, setCopied] = useState(false);
-  const [message, setMessage] = useState("");
-  const [isPending, startTransition] = useTransition();
-  const paidRef = useRef(false);
+  const p = useCobrancaDoPix({ planId, modules, couponCode, onPaid });
 
-  const markPaid = useCallback(() => {
-    if (paidRef.current) return;
-    paidRef.current = true;
-    onPaid();
-  }, [onPaid]);
-
-  const create = useCallback(async () => {
-    setError("");
-    setMessage("");
-    const res = await gerarPixDaAssinatura({ planId, modules, couponCode });
-    if (res.success && res.pixPayload && res.subscriptionId) {
-      setCharge({
-        subscriptionId: res.subscriptionId,
-        payload: res.pixPayload,
-        expiresAt: res.expiresAt ?? Date.now(),
-        amount: res.amount ?? 0,
-        isDynamic: Boolean(res.isDynamic),
-      });
-      setNow(Date.now());
-    } else {
-      setError(res.error || "Não conseguimos gerar o Pix agora.");
-    }
-  }, [planId, modules, couponCode]);
-
-  // Gera a cobrança ao abrir. O ref evita duas cobranças no modo estrito do React em desenvolvimento.
-  const started = useRef(false);
-  useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-    startTransition(create);
-  }, [create]);
-
-  const secondsLeft = charge ? Math.max(0, Math.floor((charge.expiresAt - now) / 1000)) : 0;
-  const expired = !!charge && secondsLeft === 0;
-
-  useEffect(() => {
-    if (!charge || expired) return;
-    const tick = setInterval(() => setNow(Date.now()), 1000);
-    // O Pix estático não tem confirmação automática: não adianta consultar.
-    const poll = charge.isDynamic
-      ? setInterval(async () => {
-          const res = await verificarSituacaoDoPagamentoDaAssinatura(charge.subscriptionId);
-          if (res.paid) markPaid();
-        }, 5000)
-      : null;
-    return () => {
-      clearInterval(tick);
-      if (poll) clearInterval(poll);
-    };
-  }, [charge, expired, markPaid]);
-
-  const copy = async () => {
-    if (!charge) return;
-    try {
-      await navigator.clipboard.writeText(charge.payload);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      setMessage("Não deu para copiar automaticamente. Selecione o código abaixo e copie.");
-    }
-  };
-
-  const checkNow = () =>
-    startTransition(async () => {
-      if (!charge) return;
-      const res = await verificarSituacaoDoPagamentoDaAssinatura(charge.subscriptionId);
-      if (res.paid) markPaid();
-      else
-        setMessage(
-          charge.isDynamic
-            ? res.message || "Ainda não recebemos a confirmação. Ela costuma chegar em alguns segundos."
-            : "Recebemos seu aviso. Este Pix é conferido pela nossa equipe e o plano é liberado em até 1 dia útil.",
-        );
-    });
-
-  if (error && !charge) {
+  if (p.error && !p.charge) {
     return (
       <div role="alert" className="flex flex-col gap-3 rounded-[16px] border border-perigo/25 bg-perigo-suave p-5 text-sm font-semibold text-perigo">
-        {error}
-        <Botao type="button" variant="outline" size="sm" loading={isPending} onClick={() => startTransition(create)} className="self-start rounded-[12px]">
+        {p.error}
+        <Botao type="button" variant="outline" size="sm" loading={p.isPending} onClick={p.regenerate} className="self-start rounded-[12px]">
           Tentar de novo
         </Botao>
       </div>
     );
   }
-
-  if (!charge) {
-    return (
-      // Esqueleto do cartão do Pix (preço, QR, validade, botão de copiar e "Já paguei"): nada pula quando o código chega.
-      <RegiaoDeCarregamento label="o código do Pix" className="flex flex-col gap-4">
-        <div className="flex flex-col items-center gap-5 rounded-[16px] border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
-          <div className="flex w-full items-center justify-between gap-3">
-            <Esqueleto className="h-5 w-32 rounded-md" />
-            <Esqueleto className="h-9 w-28 rounded-lg" />
-          </div>
-          <Esqueleto className="size-[218px] rounded-[12px]" />
-          <Esqueleto className="h-5 w-32 rounded-md" />
-          <Esqueleto className="h-11 w-full rounded-[12px]" />
-          <div className="flex w-full flex-col items-center gap-1">
-            <Esqueleto className="h-4 w-full rounded-md" />
-            <Esqueleto className="h-4 w-2/3 rounded-md" />
-          </div>
-        </div>
-        <Esqueleto className="h-12 w-full rounded-[12px]" />
-      </RegiaoDeCarregamento>
-    );
-  }
+  if (!p.charge) return <EsqueletoDoPix />;
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col items-center gap-5 rounded-[16px] border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
-        <div className="flex w-full items-baseline justify-between gap-3">
-          <p className="font-semibold text-tinta">{planName}</p>
-          <p className="font-num text-3xl text-tinta">{formatarReais(charge.amount)}</p>
-        </div>
-        <MolduraDoQr className={cn("transition-opacity", expired && "opacity-30")}>
-          <QRCodeSVG value={charge.payload} size={184} {...CORES_DO_QR} marginSize={2} aria-label="QR Code do Pix" role="img" />
-        </MolduraDoQr>
-        <p aria-live="polite" className={cn("text-sm font-semibold tabular-nums", expired ? "text-perigo" : "text-tinta-suave")}>
-          {expired
-            ? "O código expirou."
-            : `Válido por ${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`}
-        </p>
-        {expired ? (
-          <Botao type="button" variant="outline" loading={isPending} onClick={() => startTransition(create)} className="w-full rounded-[12px]">
-            <RefreshCw aria-hidden="true" className="size-4" /> Gerar novo código
-          </Botao>
-        ) : (
-          <button type="button" onClick={copy} className={cn(estiloDoBotao.secondary, estiloDoBotao.block)}>
-            {copied ? <Check aria-hidden="true" className="size-4 text-sucesso" /> : <Copy aria-hidden="true" className="size-4" />}
-            {copied ? "Código copiado" : "Copiar código Pix"}
-          </button>
-        )}
-        <p className="text-center text-sm leading-5 text-tinta-suave">
-          Abra o app do banco, escolha Pix copia e cola e cole o código.
-          {charge.isDynamic ? " Conferimos o pagamento sozinhos." : null}
-        </p>
-      </div>
-      {!expired ? (
-        <Botao type="button" loading={isPending} onClick={checkNow} className="h-12 w-full rounded-[12px]">
+      <CartaoDoPix planName={planName} charge={p.charge} expired={p.expired} secondsLeft={p.secondsLeft} copied={p.copied} isPending={p.isPending} aoCopiar={p.copy} aoGerarNovo={p.regenerate} />
+      {!p.expired ? (
+        <Botao type="button" loading={p.isPending} onClick={p.checkNow} className="h-12 w-full rounded-[12px]">
           Já paguei
         </Botao>
       ) : null}
-      {message ? (
+      {p.message ? (
         <p role="status" className="text-center text-sm text-tinta-suave">
-          {message}
+          {p.message}
         </p>
       ) : null}
     </div>

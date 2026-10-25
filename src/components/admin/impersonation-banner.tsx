@@ -8,14 +8,8 @@ import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { minutosRestantes } from "@/lib/security/impersonation-rules";
 import { cn } from "@/lib/utils";
 
-/**
- * Faixa fixa "Você está vendo como ..." do "Entrar como este casal" (administração).
- * Aparece em todas as telas do painel do casal enquanto a sessão vale. Mostra os minutos que faltam e sai sozinha
- * no fim dos 30 minutos (o servidor também deixa de aceitar a sessão: esta contagem é só o aviso).
- */
-export function FaixaDePersonificacao({ coupleNames, canEdit, expiresAt }: { coupleNames: string; canEdit: boolean; expiresAt: string }) {
-  const end = new Date(expiresAt);
-  const [left, setLeft] = useState(() => minutosRestantes(end));
+/** Sai do "Entrar como": uma vez só, e mostra o erro se o servidor recusar. */
+function useSairDoCasal() {
   const [pending, startTransition] = useTransition();
   const [failed, setFailed] = useState(false);
   const leaving = useRef(false);
@@ -37,8 +31,15 @@ export function FaixaDePersonificacao({ coupleNames, canEdit, expiresAt }: { cou
       setFailed(true);
     });
   }
+  return { pending, failed, leave };
+}
+
+/** Conta os minutos que faltam e sai sozinho quando acaba. */
+function useMinutosRestantes(expiresAt: string, leave: () => void) {
+  const [left, setLeft] = useState(() => minutosRestantes(new Date(expiresAt)));
 
   useEffect(() => {
+    const end = new Date(expiresAt);
     const tick = () => {
       const remaining = end.getTime() - Date.now();
       setLeft(minutosRestantes(end));
@@ -49,6 +50,17 @@ export function FaixaDePersonificacao({ coupleNames, canEdit, expiresAt }: { cou
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- a contagem depende só do horário de término
   }, [expiresAt]);
+  return left;
+}
+
+/**
+ * Faixa fixa "Você está vendo como ..." do "Entrar como este casal" (administração).
+ * Aparece em todas as telas do painel do casal enquanto a sessão vale. Mostra os minutos que faltam e sai sozinha
+ * no fim dos 30 minutos (o servidor também deixa de aceitar a sessão: esta contagem é só o aviso).
+ */
+export function FaixaDePersonificacao({ coupleNames, canEdit, expiresAt }: { coupleNames: string; canEdit: boolean; expiresAt: string }) {
+  const { pending, failed, leave } = useSairDoCasal();
+  const left = useMinutosRestantes(expiresAt, leave);
 
   const Icon = canEdit ? Pencil : Eye;
   return (
