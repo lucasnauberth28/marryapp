@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Info } from "lucide-react";
 import { toast } from "sonner";
-import { salvarPrecoDoCatalogo } from "@/actions/admin-planos-actions";
+import { salvarPrecoDoCatalogo } from "@/actions/planos-admin/catalogo";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { Botao } from "@/components/ui/button";
 import { Entrada } from "@/components/ui/input";

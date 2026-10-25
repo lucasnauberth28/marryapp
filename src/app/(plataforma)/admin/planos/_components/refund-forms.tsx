@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { decidirReembolso, registrarPedidoDeReembolso, type ResultadoDaAcaoDePlanos } from "@/actions/admin-planos-actions";
+import { decidirReembolso, registrarPedidoDeReembolso } from "@/actions/planos-admin/reembolsos";
+import type { ResultadoDaAcaoDePlanos } from "@/actions/planos-admin/comum";
 import { Botao } from "@/components/ui/button";
 import { Entrada } from "@/components/ui/input";
 import { SelecaoNativa } from "@/components/ui/select";

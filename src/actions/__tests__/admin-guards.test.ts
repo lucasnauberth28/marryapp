@@ -8,7 +8,8 @@ import { fileURLToPath } from "node:url";
 
 const FILES = [
   "admin-fornecedores-actions.ts",
-  "admin-planos-actions.ts",
+  "planos-admin/reembolsos.ts",
+  "planos-admin/catalogo.ts",
   "dominio-admin/registro.ts",
   "dominio-admin/conexao.ts",
   "coupon-actions.ts",

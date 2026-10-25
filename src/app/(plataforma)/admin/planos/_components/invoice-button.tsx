@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { marcarNotaComoEmitida } from "@/actions/admin-planos-actions";
+import { marcarNotaComoEmitida } from "@/actions/planos-admin/reembolsos";
 import { Botao } from "@/components/ui/button";
 import { Entrada } from "@/components/ui/input";
 
