@@ -1,6 +1,8 @@
 import { importarConvidados } from "@/actions/guest-actions";
-import type { PlanoDaImportacao } from "@/lib/guest-import";
-import { NOME_DO_ARQUIVO_MODELO_DA_PLANILHA, csvDaPlanilhaModelo, decodificarBytesDaPlanilha, interpretarPlanilhaDeConvidados } from "@/lib/guest-import";
+import type { PlanoDaImportacao } from "@/lib/importacao-de-convidados/repetidos";
+import { NOME_DO_ARQUIVO_MODELO_DA_PLANILHA, csvDaPlanilhaModelo } from "@/lib/importacao-de-convidados/modelo";
+import { decodificarBytesDaPlanilha } from "@/lib/importacao-de-convidados/arquivo";
+import { interpretarPlanilhaDeConvidados } from "@/lib/importacao-de-convidados/planilha";
 import type { PlanilhaLida } from "./tipos";
 
 const TAMANHO_MAXIMO_DO_ARQUIVO_EM_BYTES = 2 * 1024 * 1024;

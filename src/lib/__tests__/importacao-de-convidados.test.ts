@@ -1,15 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {
-  MAXIMO_DE_LINHAS_NA_IMPORTACAO,
-  decodificarBytesDaPlanilha,
-  normalizarTelefoneBR,
-  interpretarTextoDelimitado,
-  interpretarPlanilhaDeConvidados,
-  planejarImportacao,
-  csvDaPlanilhaModelo,
-  type LinhaImportada,
-} from "../guest-import.ts";
+import { MAXIMO_DE_LINHAS_NA_IMPORTACAO } from "../importacao-de-convidados/limites.ts";
+import { decodificarBytesDaPlanilha, interpretarTextoDelimitado } from "../importacao-de-convidados/arquivo.ts";
+import { normalizarTelefoneBR, type LinhaImportada } from "../importacao-de-convidados/linhas.ts";
+import { interpretarPlanilhaDeConvidados } from "../importacao-de-convidados/planilha.ts";
+import { planejarImportacao } from "../importacao-de-convidados/repetidos.ts";
+import { csvDaPlanilhaModelo } from "../importacao-de-convidados/modelo.ts";
 
 const cells = (text: string) => interpretarTextoDelimitado(text).map((r) => r.cells);
 

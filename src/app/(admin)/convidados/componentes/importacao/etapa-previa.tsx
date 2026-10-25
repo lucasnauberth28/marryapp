@@ -2,7 +2,8 @@ import { AlertTriangle, CircleAlert } from "lucide-react";
 import { estiloDaCaixaDeErro, estiloDaDicaDoPainel, estiloDoBotao, estiloDoSobretitulo } from "@/components/painel/styles";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
-import type { CampoDaImportacao, PlanoDaImportacao } from "@/lib/guest-import";
+import type { CampoDaImportacao } from "@/lib/importacao-de-convidados/colunas";
+import type { PlanoDaImportacao } from "@/lib/importacao-de-convidados/repetidos";
 import { CLASSE_DO_TITULO, ROTULO_DO_CAMPO, type PlanilhaLida } from "./tipos";
 import type { FluxoDeImportacao } from "./use-fluxo-de-importacao";
 

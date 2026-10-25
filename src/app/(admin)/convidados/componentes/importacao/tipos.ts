@@ -1,4 +1,5 @@
-import type { CampoDaImportacao, LinhaImportada, MapaDeColunas } from "@/lib/guest-import";
+import type { CampoDaImportacao, MapaDeColunas } from "@/lib/importacao-de-convidados/colunas";
+import type { LinhaImportada } from "@/lib/importacao-de-convidados/linhas";
 
 export const ROTULO_DO_CAMPO: Record<CampoDaImportacao, string> = {
   name: "Nome",

@@ -1,7 +1,7 @@
 // O passo a passo da importação: escolher o arquivo, conferir a prévia, importar e ver o resultado.
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { toast } from "sonner";
-import { planejarImportacao, type ConvidadoExistente } from "@/lib/guest-import";
+import { planejarImportacao, type ConvidadoExistente } from "@/lib/importacao-de-convidados/repetidos";
 import { pluralizar } from "@/lib/formatacao/plural";
 import type { EtapaDoFluxo, PlanilhaLida, ResultadoDaImportacao } from "./tipos";
 import { enviarPlanoDaImportacao, lerArquivoDaPlanilha } from "./utilitarios";

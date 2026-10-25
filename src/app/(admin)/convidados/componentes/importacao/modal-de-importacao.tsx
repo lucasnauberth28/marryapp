@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { ModalPersonalizado } from "@/components/ui/custom-modal";
-import type { ConvidadoExistente } from "@/lib/guest-import";
+import type { ConvidadoExistente } from "@/lib/importacao-de-convidados/repetidos";
 import { EtapaEscolher } from "./etapa-escolher";
 import { EtapaImportando } from "./etapa-importando";
 import { EtapaPrevia } from "./etapa-previa";

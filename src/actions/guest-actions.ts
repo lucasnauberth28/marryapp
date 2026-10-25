@@ -13,17 +13,9 @@ import { avisarConfirmacao } from "@/lib/notifications/events";
 import { MENSAGEM_DE_MUITAS_TENTATIVAS } from "@/lib/rate-limit-message";
 import type { BuscaDeConvidado } from "@/lib/rsvp-lookup";
 import { registrarAuditoria } from "@/lib/audit";
-import {
-  TAMANHO_MAXIMO_DA_CATEGORIA,
-  MAXIMO_DE_ACOMPANHANTES,
-  TAMANHO_MAXIMO_DA_RESTRICAO_ALIMENTAR,
-  TAMANHO_MAXIMO_DO_EMAIL,
-  MAXIMO_DE_CONVIDADOS_POR_CASAMENTO,
-  MAXIMO_DE_LINHAS_NA_IMPORTACAO,
-  TAMANHO_MAXIMO_DO_NOME,
-  normalizarTelefoneBR,
-  planejarImportacao,
-} from "@/lib/guest-import";
+import { TAMANHO_MAXIMO_DA_CATEGORIA, MAXIMO_DE_ACOMPANHANTES, TAMANHO_MAXIMO_DA_RESTRICAO_ALIMENTAR, TAMANHO_MAXIMO_DO_EMAIL, MAXIMO_DE_CONVIDADOS_POR_CASAMENTO, MAXIMO_DE_LINHAS_NA_IMPORTACAO, TAMANHO_MAXIMO_DO_NOME } from "@/lib/importacao-de-convidados/limites";
+import { normalizarTelefoneBR } from "@/lib/importacao-de-convidados/linhas";
+import { planejarImportacao } from "@/lib/importacao-de-convidados/repetidos";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import { ERROS } from "@/lib/mensagens-de-erro";

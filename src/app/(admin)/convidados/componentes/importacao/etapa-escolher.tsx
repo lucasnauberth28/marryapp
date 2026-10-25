@@ -1,7 +1,7 @@
 import { CircleAlert, Download, FileSpreadsheet, Upload } from "lucide-react";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { estiloDaCaixaDeErro, estiloDaDicaDoPainel, estiloDoBotao, estiloDoCartao, estiloDoSobretitulo } from "@/components/painel/styles";
-import { MAXIMO_DE_LINHAS_NA_IMPORTACAO } from "@/lib/guest-import";
+import { MAXIMO_DE_LINHAS_NA_IMPORTACAO } from "@/lib/importacao-de-convidados/limites";
 import type { FluxoDeImportacao } from "./use-fluxo-de-importacao";
 import { baixarPlanilhaModelo } from "./utilitarios";
 
