@@ -1,8 +1,6 @@
-import {
-  obterPersonalizacaoDoSite,
-  obterItensDaHistoria,
-  obterDicasParaEdicao,
-} from "@/actions/site-builder-actions";
+import { obterPersonalizacaoDoSite } from "@/actions/site/personalizacao";
+import { obterItensDaHistoria } from "@/actions/site/historia";
+import { obterDicasParaEdicao } from "@/actions/site/dicas";
 import { obterConfiguracoes } from "@/actions/settings-actions";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterPresentesEmDestaque } from "@/lib/wedding-data";

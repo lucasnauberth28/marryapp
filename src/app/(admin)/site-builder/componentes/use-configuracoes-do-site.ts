@@ -1,7 +1,7 @@
 // O estado das configurações do site: edição, publicação, envio de fotos e liga/desliga das seções.
 import { useState, type TransitionStartFunction } from "react";
 import { toast } from "sonner";
-import { atualizarPersonalizacaoDoSite, enviarImagemDoSite, type EntradaDaPersonalizacaoDoSite } from "@/actions/site-builder-actions";
+import { atualizarPersonalizacaoDoSite, enviarImagemDoSite, type EntradaDaPersonalizacaoDoSite } from "@/actions/site/personalizacao";
 import type { ConfiguracoesDoSiteDoCasamento } from "@/components/public/site-do-casamento/tipos";
 import { CHAVES_EDITAVEIS, type CampoDeFoto, type ChaveDaConfiguracao } from "./tipos";
 

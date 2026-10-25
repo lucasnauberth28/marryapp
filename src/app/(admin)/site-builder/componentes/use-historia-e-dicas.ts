@@ -1,7 +1,8 @@
 // Os momentos da história e as dicas aos convidados: listas, formulários de novo item e remoção.
 import { useState, type TransitionStartFunction } from "react";
 import { toast } from "sonner";
-import { criarDicaDoCasamento, criarItemDaHistoria, excluirDicaDoCasamento, excluirItemDaHistoria } from "@/actions/site-builder-actions";
+import { criarDicaDoCasamento, excluirDicaDoCasamento } from "@/actions/site/dicas";
+import { criarItemDaHistoria, excluirItemDaHistoria } from "@/actions/site/historia";
 import { NOVA_DICA, NOVO_MOMENTO, type Dica, type ItemDaHistoria, type ItemParaExcluir } from "./tipos";
 
 export function useHistoria(inicial: ItemDaHistoria[], iniciar: TransitionStartFunction) {

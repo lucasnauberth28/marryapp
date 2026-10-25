@@ -1,7 +1,7 @@
 // O mural de recados: lista, formulário (aberto ou não) e o envio de um novo recado.
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { criarRecadoNoLivro } from "@/actions/site-builder-actions";
+import { criarRecadoNoLivro } from "@/actions/site/recados";
 import { PREVIA_DO_LIVRO_DE_RECADOS, type RecadoDoLivro } from "./tipos";
 
 export function useRecados(slug: string, recadosIniciais: RecadoDoLivro[], preview: boolean) {
