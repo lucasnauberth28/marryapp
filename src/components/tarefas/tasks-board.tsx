@@ -1,18 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
-import { Check, ListChecks, Plus, TriangleAlert } from "lucide-react";
-import type { ReactNode } from "react";
-import { ItemDoQuadro, SituacaoDaTarefa } from "@/types/kanban";
-import { criarTarefa, excluirTarefa, atualizarTarefa, atualizarSituacaoDaTarefa } from "@/actions/tasks";
+import { useState, type ReactNode } from "react";
+import { Plus } from "lucide-react";
+import type { ItemDoQuadro } from "@/types/kanban";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
-import { EtiquetaDeSituacao } from "@/components/painel/status-chip";
-import { estiloDoBotao, estiloDoCartao, estiloDoSobretitulo } from "@/components/painel/styles";
-import { ModalDaTarefa, type DadosDoFormularioDaTarefa } from "./task-form-modal";
+import { estiloDoBotao } from "@/components/painel/styles";
+import { ModalDaTarefa } from "./task-form-modal";
+import { FiltrosDeTarefas, SemTarefas } from "./quadro/filtros-e-vazio";
+import { ListaDeTarefas } from "./quadro/lista-de-tarefas";
+import { agruparTarefas, tarefaEstaConcluida, tarefasAtrasadas, type FiltroDeTarefas } from "./quadro/prazos";
+import { useTarefas } from "./quadro/use-tarefas";
 
-import { formatarDataCivilCurta } from "@/lib/formatacao/data";
-export type FiltroDeTarefas = "abertas" | "atrasadas" | "concluidas";
+export type { FiltroDeTarefas } from "./quadro/prazos";
 
 interface PropriedadesDoQuadroDeTarefas {
   initialTasks: ItemDoQuadro[];
@@ -25,151 +24,47 @@ interface PropriedadesDoQuadroDeTarefas {
   suggestion?: ReactNode;
 }
 
-const UM_DIA_EM_MS = 86_400_000;
-const milissegundosDoDia = (key: string) => Date.parse(`${key}T00:00:00Z`);
-// As datas das tarefas são guardadas à meia-noite UTC do dia escolhido: lemos o dia em UTC.
-const chaveDoPrazo = (t: ItemDoQuadro) => (t.dueDate ? new Date(t.dueDate).toISOString().slice(0, 10) : null);
-
-const formatoDoMesCurto = new Intl.DateTimeFormat("pt-BR", { month: "short", timeZone: "UTC" });
-const formatoDoMesEAno = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "numeric", timeZone: "UTC" });
-// "5 de out." vira "5 out"; "nov." vira "Nov"
-const dataCurtaDaChave = (formatar: (data: Date) => string, key: string) => {
-  const text = formatar(new Date(`${key}T00:00:00Z`)).replace(".", "").replace(" de ", " ");
-  return /^\d/.test(text) ? text : text.charAt(0).toUpperCase() + text.slice(1);
-};
-
-function tarefaEstaConcluida(t: ItemDoQuadro) {
-  return t.status === SituacaoDaTarefa.DONE;
+function textoDosDiasQueFaltam(daysLeft: number | null) {
+  if (daysLeft === null) return "";
+  if (daysLeft > 0) return daysLeft === 1 ? " · falta 1 dia" : ` · faltam ${daysLeft} dias`;
+  return daysLeft === 0 ? " · o casamento é hoje" : "";
 }
 
-function EtiquetaDePrazo({ task, todayKey }: { task: ItemDoQuadro; todayKey: string }) {
-  const key = chaveDoPrazo(task);
-  if (!key || tarefaEstaConcluida(task)) return null;
-  const diff = Math.round((milissegundosDoDia(key) - milissegundosDoDia(todayKey)) / UM_DIA_EM_MS);
-  if (diff < 0) {
-    return (
-      <EtiquetaDeSituacao tone="perigo" icon={<TriangleAlert className="size-4" aria-hidden="true" />}>
-        Venceu {dataCurtaDaChave(formatarDataCivilCurta, key)}
-      </EtiquetaDeSituacao>
-    );
-  }
-  if (diff <= 7) return <EtiquetaDeSituacao tone={diff <= 3 ? "aviso" : "neutro"}>{diff === 0 ? "Hoje" : `Até ${dataCurtaDaChave(formatarDataCivilCurta, key)}`}</EtiquetaDeSituacao>;
-  const sameYear = key.slice(0, 4) === todayKey.slice(0, 4);
-  return <EtiquetaDeSituacao tone="neutro">{dataCurtaDaChave((d) => (sameYear ? formatoDoMesCurto : formatoDoMesEAno).format(d), key)}</EtiquetaDeSituacao>;
+/** No celular, o botão redondo de "Nova tarefa" fica acima do atalho da Liz. */
+function BotaoFlutuanteDeNovaTarefa({ aoClicar }: { aoClicar: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={aoClicar}
+      aria-label="Nova tarefa"
+      className="fixed bottom-[calc(var(--liz-fab-bottom,6rem)+56px+12px)] right-4 z-30 grid size-14 cursor-pointer place-items-center rounded-t-full rounded-b-2xl bg-ameixa text-on-ameixa shadow-[var(--shadow-aceito-2)] transition-colors hover:bg-ameixa-hover md:hidden"
+    >
+      <Plus className="size-6" aria-hidden="true" />
+    </button>
+  );
 }
 
 export function QuadroDeTarefas({ initialTasks, todayKey, daysLeft, initialFilter, suggestion }: PropriedadesDoQuadroDeTarefas) {
-  const [tasks, setTasks] = useState<ItemDoQuadro[]>(initialTasks);
+  const t = useTarefas(initialTasks);
   const [filter, setFilter] = useState<FiltroDeTarefas>(initialFilter);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<ItemDoQuadro | null>(null);
 
-  const done = tasks.filter(tarefaEstaConcluida).length;
-  const total = tasks.length;
-  const open = tasks.filter((t) => !tarefaEstaConcluida(t));
-  const overdue = open.filter((t) => {
-    const k = chaveDoPrazo(t);
-    return !!k && k < todayKey;
-  });
+  const done = t.tasks.filter(tarefaEstaConcluida).length;
+  const total = t.tasks.length;
+  const overdue = tarefasAtrasadas(
+    t.tasks.filter((x) => !tarefaEstaConcluida(x)),
+    todayKey,
+  );
   const percent = total === 0 ? 0 : Math.round((done / total) * 100);
-
-  const groups = useMemo(() => {
-    const byDue = (a: ItemDoQuadro, b: ItemDoQuadro) => (chaveDoPrazo(a) ?? "9999").localeCompare(chaveDoPrazo(b) ?? "9999") || a.position - b.position;
-    const key = (t: ItemDoQuadro) => chaveDoPrazo(t);
-    const weekEnd = new Date(milissegundosDoDia(todayKey) + 7 * UM_DIA_EM_MS).toISOString().slice(0, 10);
-
-    if (filter === "concluidas") {
-      return [{ id: "concluidas", title: "Concluídas", tone: "normal" as const, items: tasks.filter(tarefaEstaConcluida).sort(byDue) }];
-    }
-    const list = filter === "atrasadas" ? overdue : open;
-    const g = [
-      { id: "atrasadas", title: "Atrasadas", tone: "perigo" as const, items: list.filter((t) => (key(t) ?? "9") < todayKey && key(t) !== null).sort(byDue) },
-      { id: "semana", title: "Esta semana", tone: "normal" as const, items: list.filter((t) => key(t) !== null && key(t)! >= todayKey && key(t)! <= weekEnd).sort(byDue) },
-      { id: "depois", title: "Próximos meses", tone: "normal" as const, items: list.filter((t) => key(t) !== null && key(t)! > weekEnd).sort(byDue) },
-      { id: "sem-data", title: "Sem prazo", tone: "normal" as const, items: list.filter((t) => key(t) === null).sort(byDue) },
-    ];
-    return g.filter((x) => x.items.length > 0);
-  }, [tasks, filter, open, overdue, todayKey]);
-
-  async function toggle(task: ItemDoQuadro) {
-    const next = tarefaEstaConcluida(task) ? SituacaoDaTarefa.TODO : SituacaoDaTarefa.DONE;
-    setTasks((cur) => cur.map((t) => (t.id === task.id ? { ...t, status: next } : t)));
-    const res = await atualizarSituacaoDaTarefa(task.id, next, task.position, task.type);
-    if (!res.success) {
-      setTasks((cur) => cur.map((t) => (t.id === task.id ? { ...t, status: task.status } : t)));
-      toast.error(res.error || "Não deu para atualizar a tarefa. Tente de novo.");
-    } else if (next === SituacaoDaTarefa.DONE) {
-      toast.success("Tarefa concluída.", { action: { label: "Desfazer", onClick: () => void toggle({ ...task, status: SituacaoDaTarefa.DONE }) } });
-    }
-  }
-
-  function openNew() {
-    setEditing(null);
-    setModalOpen(true);
-  }
-
-  function openEdit(task: ItemDoQuadro) {
-    setEditing(task);
-    setModalOpen(true);
-  }
-
-  async function save(data: DadosDoFormularioDaTarefa): Promise<boolean> {
-    const toastId = toast.loading(editing ? "Salvando a tarefa..." : "Criando a tarefa...");
-    if (editing) {
-      const res = await atualizarTarefa(editing.id, data);
-      if (res.success && res.data) {
-        const updated: ItemDoQuadro = { ...res.data, type: "MANUAL" };
-        setTasks((cur) => cur.map((t) => (t.id === updated.id ? updated : t)));
-        toast.success("Tarefa salva.", { id: toastId });
-        return true;
-      }
-      toast.error(res.error || "Não deu para salvar a tarefa. Tente de novo.", { id: toastId });
-      return false;
-    }
-    const res = await criarTarefa({
-      title: data.title,
-      status: data.status,
-      description: data.description ?? undefined,
-      assignee: data.assignee ?? undefined,
-      dueDate: data.dueDate ?? undefined,
-    });
-    if (res.success && res.data) {
-      setTasks((cur) => [...cur, { ...res.data, type: "MANUAL" }]);
-      toast.success("Tarefa criada.", { id: toastId });
-      return true;
-    }
-    toast.error(res.error || "Não deu para criar a tarefa. Tente de novo.", { id: toastId });
-    return false;
-  }
-
-  async function remove(id: string) {
-    const toastId = toast.loading("Removendo a tarefa...");
-    const res = await excluirTarefa(id);
-    if (res.success) {
-      setTasks((cur) => cur.filter((t) => t.id !== id));
-      toast.success("Tarefa removida.", { id: toastId });
-      return true;
-    }
-    toast.error(res.error || "Não deu para remover agora. Tente de novo.", { id: toastId });
-    return false;
-  }
-
-  const left = daysLeft !== null && daysLeft > 0 ? (daysLeft === 1 ? " · falta 1 dia" : ` · faltam ${daysLeft} dias`) : daysLeft === 0 ? " · o casamento é hoje" : "";
-
-  const chips: Array<{ value: FiltroDeTarefas; label: string; tone: string }> = [
-    { value: "abertas", label: `Abertas · ${open.length}`, tone: "bg-areia text-tinta" },
-    { value: "atrasadas", label: `Atrasadas · ${overdue.length}`, tone: "bg-perigo-suave text-perigo" },
-    { value: "concluidas", label: `Concluídas · ${done}`, tone: "bg-areia text-tinta-suave" },
-  ];
+  const groups = agruparTarefas(t.tasks, filter, todayKey);
 
   return (
     <div className="flex flex-col gap-6">
       <CabecalhoDaPagina
         eyebrow="Organização"
         title="Tarefas"
-        description={total === 0 ? "O que falta fazer até o grande dia, num só lugar." : `${done} de ${total} ${total === 1 ? "concluída" : "concluídas"}${left}`}
+        description={total === 0 ? "O que falta fazer até o grande dia, num só lugar." : `${done} de ${total} ${total === 1 ? "concluída" : "concluídas"}${textoDosDiasQueFaltam(daysLeft)}`}
         actions={
-          <button type="button" onClick={openNew} className={`${estiloDoBotao.primary} max-md:hidden`}>
+          <button type="button" onClick={() => t.abrirModal(null)} className={`${estiloDoBotao.primary} max-md:hidden`}>
             <Plus className="size-4" aria-hidden="true" />
             Nova tarefa
           </button>
@@ -183,90 +78,17 @@ export function QuadroDeTarefas({ initialTasks, todayKey, daysLeft, initialFilte
       )}
 
       {total === 0 ? (
-        <div className={`${estiloDoCartao} flex flex-col items-center gap-3 px-6 py-14 text-center`}>
-          <span className="grid size-12 place-items-center rounded-full bg-ameixa-suave text-ameixa">
-            <ListChecks className="size-6" aria-hidden="true" />
-          </span>
-          <h2 className="font-display text-[26px] font-medium leading-8 text-tinta">Nenhuma tarefa ainda</h2>
-          <p className="max-w-md text-tinta-suave">Anotem o que não pode ser esquecido, como escolher o local, fechar o buffet e montar a lista de convidados. Cada tarefa pode ter prazo e um responsável.</p>
-          <button type="button" onClick={openNew} className={`${estiloDoBotao.primary} mt-2`}>
-            Criar a primeira tarefa
-          </button>
-        </div>
+        <SemTarefas aoCriar={() => t.abrirModal(null)} />
       ) : (
         <>
-          <div role="group" aria-label="Filtrar tarefas" className="flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible md:pb-0">
-            {chips.map((c) => {
-              const active = filter === c.value;
-              return (
-                <button
-                  key={c.value}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setFilter(c.value)}
-                  className={`inline-flex min-h-11 shrink-0 cursor-pointer items-center whitespace-nowrap rounded-md px-4 text-sm font-semibold transition-colors md:min-h-10 ${active ? "bg-ameixa text-on-ameixa" : `${c.tone} hover:brightness-95`}`}
-                >
-                  {c.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {groups.length === 0 ? (
-            <div className={`${estiloDoCartao} flex items-center gap-3 px-6 py-10 text-tinta-suave`}>
-              <Check className="size-5 shrink-0 text-sucesso" aria-hidden="true" />
-              {filter === "atrasadas" ? "Nada atrasado. Está tudo em dia." : filter === "concluidas" ? "Ainda não há tarefas concluídas." : "Não há tarefas abertas. Que alegria!"}
-            </div>
-          ) : (
-            <div className={`${estiloDoCartao} p-4 sm:p-6`}>
-              {groups.map((g, gi) => (
-                <section key={g.id} aria-labelledby={`grupo-${g.id}`} className={gi > 0 ? "mt-6" : ""}>
-                  <h2 id={`grupo-${g.id}`} className={`${estiloDoSobretitulo} mb-2 ${g.tone === "perigo" ? "!text-perigo" : ""}`}>
-                    {g.title}
-                  </h2>
-                  <ul>
-                    {g.items.map((t) => {
-                      const isDone = tarefaEstaConcluida(t);
-                      const meta = [t.assignee ? `Responsável: ${t.assignee}` : null, t.status === SituacaoDaTarefa.IN_PROGRESS ? "Em andamento" : null].filter(Boolean).join(" · ");
-                      return (
-                        <li key={t.id} className="flex min-h-14 items-center gap-1 border-b border-linha last:border-b-0">
-                          <label className="grid size-11 shrink-0 cursor-pointer place-items-center">
-                            <input type="checkbox" checked={isDone} onChange={() => void toggle(t)} aria-label={isDone ? `Reabrir ${t.title}` : `Concluir ${t.title}`} className="size-5 accent-[var(--color-ameixa)]" />
-                          </label>
-                          <button type="button" onClick={() => openEdit(t)} className="flex min-w-0 flex-1 cursor-pointer flex-col py-2 text-left" aria-label={`Editar ${t.title}`}>
-                            <span className={`font-semibold ${isDone ? "text-tinta-suave line-through" : "text-tinta"}`}>{t.title}</span>
-                            {(meta || t.description) && <span className="line-clamp-1 text-sm text-tinta-suave">{[meta, t.description?.split("\n")[0]].filter(Boolean).join(" · ")}</span>}
-                            {/* Celular: o prazo fica embaixo do texto */}
-                            <span className="mt-1 w-fit sm:hidden">
-                              <EtiquetaDePrazo task={t} todayKey={todayKey} />
-                            </span>
-                          </button>
-                          <span className="shrink-0 pr-1 max-sm:hidden">
-                            <EtiquetaDePrazo task={t} todayKey={todayKey} />
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </section>
-              ))}
-            </div>
-          )}
+          <FiltrosDeTarefas filter={filter} aoMudar={setFilter} abertas={total - done} atrasadas={overdue.length} concluidas={done} />
+          <ListaDeTarefas groups={groups} filter={filter} todayKey={todayKey} aoAlternar={(x) => void t.toggle(x)} aoEditar={t.abrirModal} />
         </>
       )}
 
       {suggestion}
-
-      <button
-        type="button"
-        onClick={openNew}
-        aria-label="Nova tarefa"
-        className="fixed bottom-[calc(var(--liz-fab-bottom,6rem)+56px+12px)] right-4 z-30 grid size-14 cursor-pointer place-items-center rounded-t-full rounded-b-2xl bg-ameixa text-on-ameixa shadow-[var(--shadow-aceito-2)] transition-colors hover:bg-ameixa-hover md:hidden"
-      >
-        <Plus className="size-6" aria-hidden="true" />
-      </button>
-
-      <ModalDaTarefa open={modalOpen} onOpenChange={setModalOpen} task={editing} onSave={save} onDelete={remove} />
+      <BotaoFlutuanteDeNovaTarefa aoClicar={() => t.abrirModal(null)} />
+      <ModalDaTarefa open={t.modalOpen} onOpenChange={t.setModalOpen} task={t.editing} onSave={t.save} onDelete={t.remove} />
     </div>
   );
 }
