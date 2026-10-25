@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { NavegacaoDeAbas } from "@/components/plataforma/tabs-nav";
-import { obterPixParaConferir, obterReembolsosPendentes } from "@/lib/platform/queries/receita";
+import { obterPixParaConferir } from "@/lib/platform/queries/receita/resumo";
+import { obterReembolsosPendentes } from "@/lib/platform/queries/receita/pendencias";
 
 export type AbaDePlanos = "resumo" | "assinaturas" | "cupons" | "reembolsos" | "catalogo" | "contador";
 

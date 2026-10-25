@@ -2,7 +2,7 @@ import { Star } from "lucide-react";
 import { EtiquetaDePlano, EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { formatarData, diaRelativo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
-import type { LinhaDeFornecedorDoAdmin } from "@/lib/platform/queries/fornecedores";
+import type { LinhaDeFornecedorDoAdmin } from "@/lib/platform/queries/fornecedores/lista";
 import { ROTULO_DA_CURADORIA, visaoDaCuradoria, tomDoVencimentoDoPlano } from "@/lib/platform/vendor-admin";
 import { ETIQUETA_DA_VISAO } from "./etiquetas";
 

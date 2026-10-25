@@ -3,7 +3,7 @@ import { formatarNomeDoMes } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
 import { rotuloPercentual } from "@/lib/platform/revenue";
-import type { obterCasaisQuePagaramNesteMes, obterNaoRenovacoes, obterReceitaDoMes, obterReceitaRecorrente } from "@/lib/platform/queries/receita";
+import type { obterCasaisQuePagaramNesteMes, obterNaoRenovacoes, obterReceitaDoMes, obterReceitaRecorrente } from "@/lib/platform/queries/receita/resumo";
 
 interface Propriedades {
   month: Awaited<ReturnType<typeof obterReceitaDoMes>>;

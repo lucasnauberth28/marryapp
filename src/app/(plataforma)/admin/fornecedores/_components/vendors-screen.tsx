@@ -8,7 +8,7 @@ import { EsqueletoDeCartao, EsqueletoDeTexto } from "@/components/skeletons";
 import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
 import { NavegacaoDeAbas } from "@/components/plataforma/tabs-nav";
 import type { ParametrosDeBusca } from "@/lib/platform/list-params";
-import { TAMANHO_DA_PAGINA_DE_FORNECEDORES } from "@/lib/platform/queries/fornecedores";
+import { TAMANHO_DA_PAGINA_DE_FORNECEDORES } from "@/lib/platform/queries/fornecedores/lista";
 import { ABAS_DE_FORNECEDORES } from "@/lib/platform/vendor-admin";
 import { CabecalhoDeFornecedores, FiltrosDeFornecedores } from "../_lista/cabecalho";
 import { colunasDosFornecedores } from "../_lista/colunas";

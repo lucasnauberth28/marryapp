@@ -6,8 +6,8 @@ import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
 import type { obterCatalogo } from "@/lib/catalog-server";
 import { formatarData, formatarInteiro, diaRelativo } from "@/lib/platform/format";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-import type { obterPlanosDeFornecedorPrestesAVencer } from "@/lib/platform/queries/fornecedores";
-import type { listarCuponsEmUso } from "@/lib/platform/queries/receita";
+import type { obterPlanosDeFornecedorPrestesAVencer } from "@/lib/platform/queries/fornecedores/curadoria";
+import type { listarCuponsEmUso } from "@/lib/platform/queries/receita/pendencias";
 
 type Vencimento = Awaited<ReturnType<typeof obterPlanosDeFornecedorPrestesAVencer>>[number];
 type Cupom = Awaited<ReturnType<typeof listarCuponsEmUso>>[number];

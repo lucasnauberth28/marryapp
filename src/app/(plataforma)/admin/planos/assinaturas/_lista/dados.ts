@@ -8,7 +8,7 @@ import { formatarDiaEMes, formatarDataEHora, haQuantoTempo } from "@/lib/platfor
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { montarLink, janelaDaPagina, interpretarPagina, parametroDaBusca, umDosValores, type ParametrosDeBusca } from "@/lib/platform/list-params";
 import { ehPixEstatico, formaDoPagamentoDe, situacaoDoPagamentoDe } from "@/lib/platform/payments";
-import { filtroDeFornecedorPagoAtivo, obterReceitaDoMes, obterPixParaConferir, filtroDePixParaConferir } from "@/lib/platform/queries/receita";
+import { filtroDeFornecedorPagoAtivo, obterReceitaDoMes, obterPixParaConferir, filtroDePixParaConferir } from "@/lib/platform/queries/receita/resumo";
 import type { AssinaturaDoPainel } from "../../_assinatura/tipos";
 
 export const FILTROS = [

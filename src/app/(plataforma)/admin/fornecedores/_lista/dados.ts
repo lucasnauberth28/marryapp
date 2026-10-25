@@ -1,14 +1,8 @@
 // Lê os filtros da URL e busca tudo que a tela de fornecedores precisa (lista, contagens, opções e resumo dos planos).
 import { montarLink, umDosValores, parametroDaBusca, interpretarPagina, type ParametrosDeBusca } from "@/lib/platform/list-params";
-import {
-  FILTROS_DE_CURADORIA,
-  FILTROS_DE_PLANO,
-  obterOpcoesDeFiltroDeFornecedores,
-  obterContagensDasAbasDeFornecedores,
-  listarFornecedoresDoAdmin,
-  type LinhaDeFornecedorDoAdmin,
-} from "@/lib/platform/queries/fornecedores";
-import { filtroDeFornecedorPagoAtivo } from "@/lib/platform/queries/receita";
+import { FILTROS_DE_CURADORIA, FILTROS_DE_PLANO, obterContagensDasAbasDeFornecedores, listarFornecedoresDoAdmin, type LinhaDeFornecedorDoAdmin } from "@/lib/platform/queries/fornecedores/lista";
+import { obterOpcoesDeFiltroDeFornecedores } from "@/lib/platform/queries/fornecedores/exportacao";
+import { filtroDeFornecedorPagoAtivo } from "@/lib/platform/queries/receita/resumo";
 import { ORDENACOES_DE_FORNECEDORES, ABAS_DE_FORNECEDORES } from "@/lib/platform/vendor-admin";
 import prisma from "@/lib/prisma";
 

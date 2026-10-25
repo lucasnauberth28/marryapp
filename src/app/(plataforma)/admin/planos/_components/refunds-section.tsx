@@ -7,7 +7,7 @@ import { EtiquetaDeSituacao, type TomDaSituacao } from "@/components/plataforma/
 import { formatarData, diaRelativo } from "@/lib/platform/format";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { ROTULO_DA_VISAO_DO_REEMBOLSO, visaoDoReembolso, type VisaoDoReembolso } from "@/lib/platform/payments";
-import type { LinhaDeReembolso } from "@/lib/platform/queries/receita";
+import type { LinhaDeReembolso } from "@/lib/platform/queries/receita/pendencias";
 import { DecisaoDeReembolso, FormularioDeRegistrarReembolso } from "./refund-forms";
 
 const TONS_DA_ETIQUETA: Record<VisaoDoReembolso, TomDaSituacao> = { decide: "aviso", waiting_refund: "aviso", refunded: "neutro", denied: "neutro" };

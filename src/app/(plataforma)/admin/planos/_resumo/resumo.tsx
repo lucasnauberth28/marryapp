@@ -4,19 +4,9 @@ import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { Painel } from "@/components/plataforma/panel";
 import { GraficoDeReceita } from "@/components/plataforma/revenue-chart";
 import { obterCatalogo } from "@/lib/catalog-server";
-import { obterPlanosDeFornecedorPrestesAVencer } from "@/lib/platform/queries/fornecedores";
-import {
-  contarNotasPendentes,
-  obterCasaisQuePagaramNesteMes,
-  obterReceitaDoMes,
-  obterNaoRenovacoes,
-  obterReembolsosPendentes,
-  obterPixParaConferir,
-  obterReceitaRecorrente,
-  obterReceitaPorMes,
-  listarCuponsEmUso,
-  listarReembolsos,
-} from "@/lib/platform/queries/receita";
+import { obterPlanosDeFornecedorPrestesAVencer } from "@/lib/platform/queries/fornecedores/curadoria";
+import { contarNotasPendentes, obterReembolsosPendentes, listarCuponsEmUso, listarReembolsos } from "@/lib/platform/queries/receita/pendencias";
+import { obterCasaisQuePagaramNesteMes, obterReceitaDoMes, obterNaoRenovacoes, obterPixParaConferir, obterReceitaRecorrente, obterReceitaPorMes } from "@/lib/platform/queries/receita/resumo";
 import { SecaoDeReembolsos } from "../_components/refunds-section";
 import { itensParaResolver } from "./atencao";
 import { IndicadoresDeReceita } from "./indicadores";

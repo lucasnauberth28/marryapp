@@ -3,7 +3,7 @@ import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { haQuantoTempo } from "@/lib/platform/format";
-import { obterAvaliacoesParaModerar } from "@/lib/platform/queries/fornecedores";
+import { obterAvaliacoesParaModerar } from "@/lib/platform/queries/fornecedores/detalhe";
 import { ModeracaoDeAvaliacao } from "../_components/review-moderation";
 
 type Moderacao = NonNullable<Awaited<ReturnType<typeof obterAvaliacoesParaModerar>>>;

@@ -7,7 +7,7 @@ import { formatarDiaEMes } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { opcoesDeMesDoContador, tituloDoMes } from "@/lib/platform/payments";
-import type { NotaPendente } from "@/lib/platform/queries/receita";
+import type { NotaPendente } from "@/lib/platform/queries/receita/pendencias";
 import { ExportacaoDoContador } from "./contador-export";
 import { BotaoDeNota } from "./invoice-button";
 

@@ -2,7 +2,7 @@ import { Check, Clock } from "lucide-react";
 import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDePlano, EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { formatarDiaEMes, diaRelativo } from "@/lib/platform/format";
-import { obterPlanosDeFornecedorPrestesAVencer } from "@/lib/platform/queries/fornecedores";
+import { obterPlanosDeFornecedorPrestesAVencer } from "@/lib/platform/queries/fornecedores/curadoria";
 
 export async function BlocoDeVencimentos({ now }: { now: Date }) {
   const expiring = await obterPlanosDeFornecedorPrestesAVencer(now, 7, 5);

@@ -6,7 +6,7 @@ import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { RegiaoPendente } from "@/components/plataforma/pending";
 import { umDosValores, type ParametrosDeBusca } from "@/lib/platform/list-params";
 import { mesDoContador } from "@/lib/platform/payments";
-import { contarNotasPendentes, listarPagamentosReembolsaveis, listarNotasPendentes, listarReembolsos } from "@/lib/platform/queries/receita";
+import { contarNotasPendentes, listarPagamentosReembolsaveis, listarNotasPendentes, listarReembolsos } from "@/lib/platform/queries/receita/pendencias";
 import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { SecaoDoContador } from "./_components/contador-section";

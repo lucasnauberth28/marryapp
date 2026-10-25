@@ -3,7 +3,8 @@ import type { ItemDeAtencao } from "@/components/plataforma/attention-list";
 import { formatarData, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-import type { obterPixParaConferir, obterReembolsosPendentes } from "@/lib/platform/queries/receita";
+import type { obterPixParaConferir } from "@/lib/platform/queries/receita/resumo";
+import type { obterReembolsosPendentes } from "@/lib/platform/queries/receita/pendencias";
 
 interface Entrada {
   pix: Awaited<ReturnType<typeof obterPixParaConferir>>;

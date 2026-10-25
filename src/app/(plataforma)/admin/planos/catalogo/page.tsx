@@ -4,7 +4,7 @@ import { RegiaoPendente } from "@/components/plataforma/pending";
 import { obterCatalogo } from "@/lib/catalog-server";
 import { parametroDaBusca, type ParametrosDeBusca } from "@/lib/platform/list-params";
 import { mesDoContador } from "@/lib/platform/payments";
-import { contarNotasPendentes, listarNotasPendentes } from "@/lib/platform/queries/receita";
+import { contarNotasPendentes, listarNotasPendentes } from "@/lib/platform/queries/receita/pendencias";
 import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { AbasDePlanos } from "../_components/planos-tabs";

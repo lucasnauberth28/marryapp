@@ -5,7 +5,7 @@ import { estiloDoBotao } from "@/components/landing/styles";
 import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { formatarData, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
-import { obterDetalheDoFornecedorDoAdmin } from "@/lib/platform/queries/fornecedores";
+import { obterDetalheDoFornecedorDoAdmin } from "@/lib/platform/queries/fornecedores/detalhe";
 import { ROTULO_DA_CURADORIA, visaoDaCuradoria, fotosDaGaleria } from "@/lib/platform/vendor-admin";
 import { cn } from "@/lib/utils";
 import { PainelDeAcoesDoFornecedor } from "../_components/vendor-actions-panel";

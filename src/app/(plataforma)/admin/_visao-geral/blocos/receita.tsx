@@ -6,7 +6,7 @@ import { GraficoDeReceita } from "@/components/plataforma/revenue-chart";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { formatarNomeDoMes } from "@/lib/platform/format";
 import { formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
-import { obterReceitaPorMes } from "@/lib/platform/queries/receita";
+import { obterReceitaPorMes } from "@/lib/platform/queries/receita/resumo";
 
 export async function BlocoDeReceita({ now }: { now: Date }) {
   const months = await obterReceitaPorMes(now, 7);

@@ -4,7 +4,8 @@ import { protecaoDaApiDeAdminDaPlataforma } from "@/lib/security/platform-admin"
 import { umDosValores, parametroDaBusca, type ParametrosDeBusca } from "@/lib/platform/list-params";
 import { linhaCsv } from "@/lib/platform/csv";
 import { ROTULO_DA_CURADORIA, ORDENACOES_DE_FORNECEDORES, ABAS_DE_FORNECEDORES, visaoDaCuradoria } from "@/lib/platform/vendor-admin";
-import { FILTROS_DE_CURADORIA, FILTROS_DE_PLANO, listarFornecedoresDoAdminParaExportar } from "@/lib/platform/queries/fornecedores";
+import { FILTROS_DE_CURADORIA, FILTROS_DE_PLANO } from "@/lib/platform/queries/fornecedores/lista";
+import { listarFornecedoresDoAdminParaExportar } from "@/lib/platform/queries/fornecedores/exportacao";
 
 const MAXIMO_DE_LINHAS = 5000;
 
