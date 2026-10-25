@@ -1,6 +1,8 @@
 // A máquina de etapas do pagamento: identificação, forma, Pix/cartão e sucesso, com a conferência automática do Pix.
 import { useEffect, useState, useTransition } from "react";
-import { criarTransacaoPix, conferirSituacaoDaTransacao, processarPagamentoComCartao } from "@/actions/payment-actions";
+import { criarTransacaoPix } from "@/actions/checkout/pix";
+import { conferirSituacaoDaTransacao } from "@/actions/checkout/situacao";
+import { processarPagamentoComCartao } from "@/actions/checkout/cartao";
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import { tokenizarCartao } from "@/lib/mercadopago-client";
 import { useCartaoDigitado, useIdentificacao, usePixGerado, type CartaoDigitado, type PixGerado } from "./use-dados-do-pagamento";
