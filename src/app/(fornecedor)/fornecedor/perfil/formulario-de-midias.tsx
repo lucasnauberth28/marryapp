@@ -2,7 +2,7 @@
 
 import { Building2, ImagePlus } from "lucide-react";
 import { Aparicao } from "@/components/motion/reveal";
-import type { MidiasDoFornecedor } from "@/actions/vendor-panel-actions";
+import type { MidiasDoFornecedor } from "@/actions/fornecedor/midias";
 import { cn } from "@/lib/utils";
 import { Galeria } from "./_perfil/galeria";
 import { BlocoDeImagem } from "./_perfil/bloco-de-imagem";

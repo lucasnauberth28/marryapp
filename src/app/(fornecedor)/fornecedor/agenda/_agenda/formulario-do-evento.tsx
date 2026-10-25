@@ -2,7 +2,7 @@
 
 import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { criarEventoDoFornecedor } from "@/actions/vendor-panel-actions";
+import { criarEventoDoFornecedor } from "@/actions/fornecedor/agenda";
 import { Botao } from "@/components/ui/button";
 import { Entrada } from "@/components/ui/input";
 import { SelecaoNativa } from "@/components/ui/select";

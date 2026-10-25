@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
-import { salvarPropostaDoPedido } from "@/actions/vendor-panel-actions";
+import { salvarPropostaDoPedido } from "@/actions/fornecedor/pedidos";
 import { Botao } from "@/components/ui/button";
 import { Entrada } from "@/components/ui/input";
 import { AreaDeTexto } from "@/components/ui/textarea";

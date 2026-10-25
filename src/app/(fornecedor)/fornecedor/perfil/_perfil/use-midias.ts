@@ -1,7 +1,7 @@
 // As imagens do perfil (logo, capa, galeria): cada mudança é salva na hora.
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { atualizarMidiasDoFornecedor, type EntradaDasMidiasDoFornecedor, type MidiasDoFornecedor } from "@/actions/vendor-panel-actions";
+import { atualizarMidiasDoFornecedor, type EntradaDasMidiasDoFornecedor, type MidiasDoFornecedor } from "@/actions/fornecedor/midias";
 import { LADO_MAXIMO, LADO_MAXIMO_DO_LOGOTIPO, comprimirImagem, erroDeCompressao } from "./comprimir-imagem";
 
 type TipoDeImagem = "logo" | "cover" | "gallery";

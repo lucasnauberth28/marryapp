@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Aparicao } from "@/components/motion/reveal";
-import { atualizarPerfilDoFornecedor, type EntradaDoPerfilDoFornecedor } from "@/actions/vendor-panel-actions";
+import { atualizarPerfilDoFornecedor, type EntradaDoPerfilDoFornecedor } from "@/actions/fornecedor/perfil";
 import { Botao } from "@/components/ui/button";
 import { BotaoDePrevia } from "./_perfil/botao-de-previa";
 import { ContatoERedes, SobreONegocio, type MudarCampoDoPerfil, type ValoresDoFormulario } from "./_perfil/campos-do-perfil";

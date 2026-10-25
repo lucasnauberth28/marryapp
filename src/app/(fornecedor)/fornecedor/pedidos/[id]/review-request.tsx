@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Link2, Loader2, MessageCircle, Star } from "lucide-react";
 import { toast } from "sonner";
-import { pedirAvaliacaoDoPedido } from "@/actions/vendor-panel-actions";
+import { pedirAvaliacaoDoPedido } from "@/actions/fornecedor/pedidos-resposta";
 import { Entrada } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { linkDoWhatsapp } from "../../../_lib/links-publicos";

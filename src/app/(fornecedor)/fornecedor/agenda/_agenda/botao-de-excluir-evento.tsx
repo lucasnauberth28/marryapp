@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { excluirEventoDoFornecedor } from "@/actions/vendor-panel-actions";
+import { excluirEventoDoFornecedor } from "@/actions/fornecedor/agenda";
 import { cn } from "@/lib/utils";
 import { ESTILO_DO_BOTAO } from "./tipos";
 

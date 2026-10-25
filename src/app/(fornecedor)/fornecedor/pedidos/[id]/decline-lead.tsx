@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { MessageCircle } from "lucide-react";
 import { toast } from "sonner";
-import { recusarPedido } from "@/actions/vendor-panel-actions";
+import { recusarPedido } from "@/actions/fornecedor/pedidos-resposta";
 import { Botao } from "@/components/ui/button";
 import { AreaDeTexto } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
