@@ -1,6 +1,7 @@
 // O estado do cadastro: campos da conta, validação, envio ao servidor e para onde ir depois.
 import { useState, useTransition } from "react";
-import { cadastrarContaDoPlano, type DadosDoCadastroDoPlano } from "@/actions/subscription-actions";
+import { cadastrarContaDoPlano } from "@/actions/assinatura/cadastro";
+import type { DadosDoCadastroDoPlano } from "@/actions/assinatura/cadastro-comum";
 import { CATEGORIAS_DE_FORNECEDOR } from "@/app/(fornecedor)/_lib/perfil-do-fornecedor";
 import type { EtapaDoCadastro, OpcaoDePlano } from "../auth-config";
 import { campoDoErroDoServidor, validarCadastro, type CamposDoCadastro, type Erros } from "./validacao";

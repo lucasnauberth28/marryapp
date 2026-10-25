@@ -2,7 +2,8 @@
 
 // A cobrança Pix da assinatura: gera ao abrir, conta o tempo, confere o pagamento e copia o código.
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { gerarPixDaAssinatura, verificarSituacaoDoPagamentoDaAssinatura } from "@/actions/subscription-actions";
+import { gerarPixDaAssinatura } from "@/actions/assinatura/pix";
+import { verificarSituacaoDoPagamentoDaAssinatura } from "@/actions/assinatura/pagamento";
 
 export type CobrancaDoPix = { subscriptionId: string; payload: string; expiresAt: number; amount: number; isDynamic: boolean };
 

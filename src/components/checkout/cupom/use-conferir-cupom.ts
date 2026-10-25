@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { previaDoPrecoDaAssinatura } from "@/actions/subscription-actions";
+import { previaDoPrecoDaAssinatura } from "@/actions/assinatura/pagamento";
 import type { CupomAplicado } from "./tipos";
 
 type Resposta = Awaited<ReturnType<typeof previaDoPrecoDaAssinatura>>;

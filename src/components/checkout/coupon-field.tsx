@@ -2,7 +2,7 @@
 
 import { useId, useState, useTransition } from "react";
 import { TicketPercent } from "lucide-react";
-import { previaDoPrecoDaAssinatura } from "@/actions/subscription-actions";
+import { previaDoPrecoDaAssinatura } from "@/actions/assinatura/pagamento";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { Botao } from "@/components/ui/button";
 import { Entrada } from "@/components/ui/input";
