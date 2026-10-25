@@ -6,6 +6,7 @@ import { GiftsClient, type GiftPayment } from "./gifts-client"
 import { requireWeddingPage } from "@/lib/security/wedding-context"
 import { weddingSitePath } from "@/lib/wedding-links"
 
+import { formatarDataBrasiliaCurtaComAno } from "@/lib/formatacao/data";
 export const metadata: Metadata = {
   title: "Presentes em dinheiro",
   description: "Presentes em dinheiro do casamento: o que foi cadastrado e o que já foi recebido",
@@ -15,7 +16,6 @@ const TZ = "America/Sao_Paulo"
 const dayKey = new Intl.DateTimeFormat("en-CA", { timeZone: TZ })
 const timeFmt = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: TZ })
 const shortDateFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", timeZone: TZ })
-const longDateFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", year: "numeric", timeZone: TZ })
 
 /** "hoje, 10:42", "ontem", "2 out" ou "2 out 2025" (de anos anteriores). */
 function whenLabel(date: Date, now: Date) {
@@ -23,7 +23,7 @@ function whenLabel(date: Date, now: Date) {
   if (day === dayKey.format(now)) return `hoje, ${timeFmt.format(date)}`
   if (day === dayKey.format(new Date(now.getTime() - 24 * 60 * 60 * 1000))) return "ontem"
   const sameYear = day.slice(0, 4) === dayKey.format(now).slice(0, 4)
-  return (sameYear ? shortDateFmt : longDateFmt).format(date).replace(".", "")
+  return (sameYear ? shortDateFmt.format(date) : formatarDataBrasiliaCurtaComAno(date)).replace(".", "")
 }
 
 export default async function PresentesAdminPage() {

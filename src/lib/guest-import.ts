@@ -2,6 +2,7 @@
 // roda no navegador (ler o arquivo e mostrar a prévia), na Server Action (validar de novo) e nos testes.
 import { getPhoneVariations } from "./phone-variations.ts";
 
+import { somenteDigitos } from "./formatacao/telefone.ts";
 export const MAX_IMPORT_ROWS = 500;
 /** Teto de convidados por casamento: protege contra importações repetidas em excesso. */
 export const MAX_GUESTS_PER_WEDDING = 5000;
@@ -183,7 +184,7 @@ function fieldForHeader(header: string): ImportField | null {
 }
 
 const looksLikeEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-const looksLikePhone = (v: string) => /^[+()\d\s.-]+$/.test(v) && v.replace(/\D/g, "").length >= 8;
+const looksLikePhone = (v: string) => /^[+()\d\s.-]+$/.test(v) && somenteDigitos(v).length >= 8;
 const looksLikeSmallNumber = (v: string) => /^\d{1,2}$/.test(v);
 
 /** Mapeia as colunas pelo título; só vale como cabeçalho se acharmos a coluna de nome. */
@@ -269,7 +270,7 @@ export function normalizePhoneBR(raw: string): PhoneCheck {
   if (/^\d+([.,]\d+)?e\+?\d+$/i.test(text)) {
     return { ok: false, reason: "Telefone em notação científica (a planilha trocou os números). Formate a coluna como texto." };
   }
-  let digits = text.replace(/\D/g, "");
+  let digits = somenteDigitos(text);
   if (digits.startsWith("55") && (digits.length === 12 || digits.length === 13)) digits = digits.slice(2);
   // Zero de chamada nacional (011...) e código de operadora
   if (digits.length >= 11 && digits.startsWith("0")) digits = digits.replace(/^0+/, "");

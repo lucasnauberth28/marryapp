@@ -14,6 +14,7 @@ import { isWeddingSuspended, SITE_UNAVAILABLE_MESSAGE } from "@/lib/wedding-susp
 import { deferNotify } from "@/lib/notifications/service";
 import { notifyGiftPaid, notifyPixToCheck } from "@/lib/notifications/events";
 
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 // Ações públicas usadas pelo checkout de presentes. Nenhuma delas pode aprovar
 // pagamento por conta própria: aprovação só vem do Mercado Pago (webhook/consulta)
 // ou da conferência manual do casal em /financas.
@@ -23,7 +24,7 @@ const GuestIdentitySchema = z.object({
   guestName: z.string().trim().min(3, "Informe seu nome.").max(120),
   guestPhone: z
     .string()
-    .transform((v) => v.replace(/\D/g, ""))
+    .transform((v) => somenteDigitos(v))
     .refine((v) => v.length >= 10 && v.length <= 13, "Telefone inválido."),
   guestEmail: z.string().trim().email().max(200).optional().or(z.literal("")),
 });

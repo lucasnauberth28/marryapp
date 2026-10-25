@@ -17,10 +17,11 @@ import { LoadingButton } from "@/components/painel/loading-button";
 import { createMessageTemplate, updateMessageTemplate, deleteMessageTemplate, sendTemplateToGuests } from "@/actions/message-actions";
 import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-actions";
 import { weddingSiteUrl } from "@/lib/wedding-links";
-import { formatPhoneBR } from "@/lib/wedding-format";
+import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { isGiftOnlyPending } from "@/lib/guest-origin";
 import { cn } from "@/lib/utils";
 
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 export interface MessageTemplate {
   id: string;
   name: string;
@@ -71,7 +72,7 @@ function parseLinks(raw?: string | null): LinkItem[] {
   }
 }
 
-const hasPhone = (g: Guest) => !!g.phone && g.phone.replace(/\D/g, "").length >= 8;
+const hasPhone = (g: Guest) => !!g.phone && somenteDigitos(g.phone).length >= 8;
 
 type Audience = "pending" | "unsent" | "confirmed" | "all" | "custom";
 
@@ -403,8 +404,8 @@ function SendFlow({ template, guests, slug, customDomain, coupleNames, onDone }:
   const shownGuests = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return guests;
-    const digits = q.replace(/\D/g, "");
-    return guests.filter((g) => g.name.toLowerCase().includes(q) || (digits.length >= 3 && !!g.phone && g.phone.replace(/\D/g, "").includes(digits)));
+    const digits = somenteDigitos(q);
+    return guests.filter((g) => g.name.toLowerCase().includes(q) || (digits.length >= 3 && !!g.phone && somenteDigitos(g.phone).includes(digits)));
   }, [guests, search]);
 
   function changeAudience(next: Audience) {
@@ -496,7 +497,7 @@ function SendFlow({ template, guests, slug, customDomain, coupleNames, onDone }:
                       <input type="checkbox" disabled={!ok} checked={picked.includes(g.id)} onChange={() => toggleGuest(g.id)} className="size-5 shrink-0 accent-[var(--color-ameixa)]" />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-semibold text-tinta">{g.name}</span>
-                        <span className="block text-sm text-tinta-suave">{g.phone ? formatPhoneBR(g.phone) : "Sem telefone"}</span>
+                        <span className="block text-sm text-tinta-suave">{g.phone ? formatarTelefone(g.phone) : "Sem telefone"}</span>
                       </span>
                       <span className="flex shrink-0 flex-col items-end gap-1 sm:flex-row sm:items-center">
                         <RsvpChip status={g.rsvpStatus} />

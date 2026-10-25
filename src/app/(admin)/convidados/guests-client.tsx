@@ -10,11 +10,12 @@ import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { PageHeader } from "@/components/admin/page-header";
 import { RsvpChip } from "@/components/painel/status-chip";
 import { btn, btnIconDanger, card, input, overline } from "@/components/painel/styles";
-import { formatPhoneBR } from "@/lib/wedding-format";
+import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { GuestModal, GUEST_CATEGORIES } from "./guest-modal";
 import { ImportGuestsModal } from "./import-guests-modal";
 import { LizIllustration } from "@/components/liz/liz-illustration";
 
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 type GuestRow = Guest & { table?: { name: string } | null };
 
 interface GuestsClientProps {
@@ -98,7 +99,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
 
   const filtered = useMemo(() => {
     const q = plain(query.trim());
-    const digits = query.replace(/\D/g, "");
+    const digits = somenteDigitos(query);
     return initialGuests.filter((g) => {
       if (filter !== "all" && g.rsvpStatus !== filter) return false;
       if (group && g.category !== group) return false;
@@ -106,7 +107,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
       if (plain(g.name).includes(q)) return true;
       if (g.email && plain(g.email).includes(q)) return true;
       if (g.companionsNames && plain(g.companionsNames).includes(q)) return true;
-      return digits.length >= 3 && !!g.phone && g.phone.replace(/\D/g, "").includes(digits);
+      return digits.length >= 3 && !!g.phone && somenteDigitos(g.phone).includes(digits);
     });
   }, [initialGuests, filter, group, query]);
 
@@ -288,7 +289,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
                           <button type="button" onClick={() => openEdit(g)} className="block cursor-pointer rounded text-left font-semibold text-tinta hover:text-ameixa">
                             {g.name}
                           </button>
-                          <span className="block text-sm text-tinta-suave tabular-nums">{g.phone ? formatPhoneBR(g.phone) : "Sem telefone"}</span>
+                          <span className="block text-sm text-tinta-suave tabular-nums">{g.phone ? formatarTelefone(g.phone) : "Sem telefone"}</span>
                           <LinkBadge guest={g} />
                           {g.companionsNames && <span className="block text-sm text-tinta-suave">Acompanhantes: {g.companionsNames}</span>}
                           {g.dietaryRestrictions && <span className="block text-sm text-aviso">Restrição: {g.dietaryRestrictions}</span>}

@@ -7,21 +7,8 @@ import { cn } from "@/lib/utils";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
 import { LinkPending } from "@/components/feedback/link-pending";
 import { LeadStatusChip } from "../_components/status-chip";
-import {
-  effectiveVendorTier,
-  firstNameOf,
-  formatRelative,
-  formatWeddingDate,
-  formatPhone,
-  isLeadLocked,
-  isLeadStatus,
-  PLAN_HREF,
-  START_MONTHLY_LEAD_LIMIT,
-  startOfMonthBrasilia,
-  todayBrasilia,
-  whatsappHref,
-  type LeadStatus,
-} from "../_lib/vendor-panel";
+import { effectiveVendorTier, firstNameOf, formatRelative, formatWeddingDate, isLeadLocked, isLeadStatus, PLAN_HREF, START_MONTHLY_LEAD_LIMIT, startOfMonthBrasilia, todayBrasilia, whatsappHref, type LeadStatus } from "../_lib/vendor-panel";
+import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { LeadActions } from "./lead-actions";
 import { ResultsCard, ResultsTeaser, type DailyViews } from "./results-card";
 
@@ -385,7 +372,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
                         <p className="mt-1 text-[15px] whitespace-pre-line break-words sm:text-base">“{lead.message}”</p>
                       ) : null}
                       <p className="mt-1 text-sm text-tinta-suave">
-                        {formatPhone(lead.couplePhone)}
+                        {formatarTelefone(lead.couplePhone)}
                         {lead.coupleEmail ? ` · ${lead.coupleEmail}` : ""}
                       </p>
                       <span aria-hidden="true" className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-ameixa">

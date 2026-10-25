@@ -21,6 +21,7 @@ import { formatDocument } from "@/lib/document-br";
 import { DOMAIN_TERMS_CHECKBOX, DOMAIN_TERMS_TEXT } from "@/lib/domain-terms";
 import type { DomainOrderView } from "@/lib/domain-orders";
 
+import { formatarDataBrasiliaLonga, formatarDataCivilLonga } from "@/lib/formatacao/data";
 interface Props {
   coupleNames: string;
   weddingDate: string | null;
@@ -29,10 +30,8 @@ interface Props {
   defaults: { name: string; email: string };
 }
 
-const dateTime = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "America/Sao_Paulo" });
 // Vencimento e registro são datas de calendário, gravadas à meia-noite UTC
-const calendarDate = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
-const fmt = (iso: string | null, calendar = false) => (iso ? (calendar ? calendarDate : dateTime).format(new Date(iso)) : null);
+const fmt = (iso: string | null, calendar = false) => (iso ? (calendar ? formatarDataCivilLonga : formatarDataBrasiliaLonga)(new Date(iso)) : null);
 
 export function DomainClient({ coupleNames, weddingDate, order, lastClosed, defaults }: Props) {
   return (

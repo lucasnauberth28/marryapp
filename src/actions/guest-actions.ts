@@ -25,6 +25,7 @@ import {
   planImport,
 } from "@/lib/guest-import";
 
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 // ==========================================
 // VALIDAÇÕES ZOD
 // ==========================================
@@ -35,7 +36,7 @@ const GuestSchema = z.object({
     .unknown()
     .transform((v) => {
       if (!v || typeof v !== "string") return null;
-      const clean = v.replace(/\D/g, "");
+      const clean = somenteDigitos(v);
       return clean || null;
     })
     .refine((val) => !val || val.length >= 10, {
@@ -317,7 +318,7 @@ export async function deleteGuest(id: string) {
  */
 export async function findGuestByPhone(slug: string, phone: string): Promise<GuestLookup> {
   if (typeof slug !== "string" || typeof phone !== "string") return { status: "not_found" };
-  const cleanPhone = phone.replace(/\D/g, "");
+  const cleanPhone = somenteDigitos(phone);
   if (cleanPhone.length < 10 || cleanPhone.length > 13) return { status: "invalid_phone" };
 
   // Limite de tentativas: resposta própria (não pode parecer "convite não encontrado")

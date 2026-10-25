@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { PrintButton } from "./print-button";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
+import { formatarDataBrasiliaLonga } from "@/lib/formatacao/data";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
@@ -23,7 +24,6 @@ export const metadata: Metadata = {
 
 const TZ = "America/Sao_Paulo";
 const DAY_MS = 24 * 60 * 60 * 1000;
-const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: TZ });
 const dateTimeFmt = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeStyle: "short", timeZone: TZ });
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -88,7 +88,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
 
   const period =
     isVendor && sub.periodEnd
-      ? `${dateFmt.format(new Date(sub.periodEnd.getTime() - VENDOR_PERIOD_DAYS * DAY_MS))} a ${dateFmt.format(sub.periodEnd)}`
+      ? `${formatarDataBrasiliaLonga(new Date(sub.periodEnd.getTime() - VENDOR_PERIOD_DAYS * DAY_MS))} a ${formatarDataBrasiliaLonga(sub.periodEnd)}`
       : isVendor
         ? "Mensal (30 dias)"
         : "Pagamento único, vale para o casamento";
@@ -205,7 +205,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
               <strong className="font-semibold text-tinta">Este documento é um recibo de pagamento, não é nota fiscal.</strong> Ele
               comprova o Pix recebido pelo Aceito.
             </p>
-            <p>Emitido em {dateFmt.format(new Date())}.</p>
+            <p>Emitido em {formatarDataBrasiliaLonga(new Date())}.</p>
           </footer>
         </article>
       </div>

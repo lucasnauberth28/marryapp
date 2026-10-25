@@ -1,3 +1,4 @@
+import { somenteDigitos } from "../formatacao/telefone.ts";
 /**
  * Utilitários de Mascaramento e Anonimização de Dados (LGPD Compliance)
  * Protege PII (Personally Identifiable Information) de vazamento em logs e telas.
@@ -8,7 +9,7 @@
  */
 export function maskPhone(phone: string | null | undefined): string {
   if (!phone) return "";
-  const clean = phone.replace(/\D/g, "");
+  const clean = somenteDigitos(phone);
   if (clean.length < 8) return "***";
 
   const ddd = clean.slice(0, 2);
@@ -40,7 +41,7 @@ export function maskEmail(email: string | null | undefined): string {
  */
 export function maskCardNumber(cardNumber: string | null | undefined): string {
   if (!cardNumber) return "**** **** **** ****";
-  const clean = cardNumber.replace(/\D/g, "");
+  const clean = somenteDigitos(cardNumber);
   const lastFour = clean.slice(-4);
   return `**** **** **** ${lastFour}`;
 }

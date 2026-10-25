@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
 import { weddingHasModule } from "@/lib/wedding-plan";
 
+import { formatarDataCivilLonga } from "@/lib/formatacao/data";
 export const metadata: Metadata = {
   title: "Convidados",
   description: "Gerencie a lista de convidados do casamento",
@@ -12,7 +13,6 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const deadlineFormat = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 // Filtros da lista que um link de fora pode abrir (ex.: a sugestão da Liz em "Ver convidados sem resposta")
 const RESPOSTAS = { "sem-resposta": "PENDING", confirmados: "CONFIRMED", "nao-vao": "DECLINED" } as const;
@@ -32,7 +32,7 @@ export default async function ConvidadosPage({ searchParams }: { searchParams: P
   return (
     <GuestsClient
       initialGuests={guests}
-      deadlineLabel={settings?.rsvpDeadline ? deadlineFormat.format(settings.rsvpDeadline) : null}
+      deadlineLabel={settings?.rsvpDeadline ? formatarDataCivilLonga(settings.rsvpDeadline) : null}
       canRemind={canRemind}
       initialFilter={initialFilter}
     />

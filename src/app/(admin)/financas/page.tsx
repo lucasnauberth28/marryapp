@@ -13,11 +13,11 @@ import { ExpensesClient } from "./expenses-client";
 import { ExpensesSkeleton, PaymentsSkeleton, StatsSkeleton } from "./skeletons";
 
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
+import { formatarDataCivilCurta } from "@/lib/formatacao/data";
 // ==========================================
 // UTILS
 // ==========================================
 
-const dueFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", timeZone: "UTC" });
 
 // ==========================================
 // METADATA
@@ -133,7 +133,7 @@ async function Stats({ metrics: metricsPromise, expenses: expensesPromise }: { m
         <span className={bigNumber}>{nextDue ? formatarReaisEnxuto(nextDue.amount) : "R$ 0"}</span>
         <span className={`text-sm ${nextDue ? "font-semibold text-aviso" : "text-tinta-suave"}`}>
           {nextDue
-            ? `${nextDueName} · vence ${dueFmt.format(nextDue.dueDate).replace(".", "")}${metrics.countDespesasPendentes > 1 ? ` (mais ${metrics.countDespesasPendentes - 1} a vencer)` : ""}`
+            ? `${nextDueName} · vence ${formatarDataCivilCurta(nextDue.dueDate).replace(".", "")}${metrics.countDespesasPendentes > 1 ? ` (mais ${metrics.countDespesasPendentes - 1} a vencer)` : ""}`
             : "Nenhuma conta a pagar."}
         </span>
       </article>

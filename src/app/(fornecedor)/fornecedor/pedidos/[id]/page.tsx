@@ -7,33 +7,14 @@ import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
 import { LeadStatusChip } from "../../../_components/status-chip";
-import {
-  centsToBrlInput,
-  effectiveVendorTier,
-  firstNameOf,
-  isLeadLocked,
-  PLAN_HREF,
-  proposalPublicUrl,
-  reviewPublicUrl,
-  START_MONTHLY_LEAD_LIMIT,
-  formatBrl,
-  formatDateTimeBrasilia,
-  formatPhone,
-  formatRelative,
-  formatTime,
-  formatWeddingDate,
-  formatWeddingDateLong,
-  isLeadStatus,
-  toIsoDate,
-  todayBrasilia,
-  whatsappHref,
-  type LeadStatus,
-} from "../../../_lib/vendor-panel";
+import { centsToBrlInput, effectiveVendorTier, firstNameOf, isLeadLocked, PLAN_HREF, proposalPublicUrl, reviewPublicUrl, START_MONTHLY_LEAD_LIMIT, formatBrl, formatDateTimeBrasilia, formatRelative, formatTime, formatWeddingDate, formatWeddingDateLong, isLeadStatus, toIsoDate, todayBrasilia, whatsappHref, type LeadStatus } from "../../../_lib/vendor-panel";
+import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { DeclineLead } from "./decline-lead";
 import { ProposalForm, type SavedProposal } from "./proposal-form";
 import { ReviewRequest } from "./review-request";
 import { StatusSelect } from "./status-select";
 
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 export const metadata: Metadata = { title: "Pedido de orçamento" };
 
 const CARD = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
@@ -393,8 +374,8 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
               ) : null}
               <ul className="flex flex-col gap-1 text-[15px]">
                 <li>
-                  <a href={`tel:${lead.couplePhone.replace(/\D/g, "")}`} className="inline-flex min-h-11 items-center underline-offset-2 hover:underline">
-                    {formatPhone(lead.couplePhone)}
+                  <a href={`tel:${somenteDigitos(lead.couplePhone)}`} className="inline-flex min-h-11 items-center underline-offset-2 hover:underline">
+                    {formatarTelefone(lead.couplePhone)}
                   </a>
                 </li>
                 {lead.coupleEmail ? (

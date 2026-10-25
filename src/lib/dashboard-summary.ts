@@ -5,6 +5,7 @@ import { giftAmounts, type GiftAmounts, type GiftFeeMethod, type GiftFeePlan } f
 import { isGiftOnlyPending } from "./guest-origin.ts";
 
 import { pluralizar } from "./formatacao/plural.ts";
+import { formatarDataCivilCurta, formatarDataCivilLonga, formatarDataCivilSemAno } from "./formatacao/data.ts";
 // ---------- Datas de calendário ("AAAA-MM-DD") ----------
 
 export const SP_TZ = "America/Sao_Paulo";
@@ -26,19 +27,16 @@ export function daysBetweenKeys(from: string, to: string): number {
   return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
 }
 
-const DAY_MONTH = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", timeZone: "UTC" });
-const DAY_MONTH_YEAR = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
-const SHORT = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", timeZone: "UTC" });
 
 /** "26 de outubro"; com o ano quando não é o ano de hoje. */
 export function dayLabel(key: string, todayKey: string): string {
   const date = new Date(`${key}T00:00:00Z`);
-  return key.slice(0, 4) === todayKey.slice(0, 4) ? DAY_MONTH.format(date) : DAY_MONTH_YEAR.format(date);
+  return key.slice(0, 4) === todayKey.slice(0, 4) ? formatarDataCivilSemAno(date) : formatarDataCivilLonga(date);
 }
 
 /** "26 out" (sem ponto). */
 export function shortDayLabel(key: string): string {
-  return SHORT.format(new Date(`${key}T00:00:00Z`)).replace(" de ", " ").replace(".", "");
+  return formatarDataCivilCurta(new Date(`${key}T00:00:00Z`)).replace(" de ", " ").replace(".", "");
 }
 
 export const invitesLabel = (n: number) => pluralizar(n, "convite", "convites");

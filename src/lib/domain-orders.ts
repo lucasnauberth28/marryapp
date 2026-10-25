@@ -2,7 +2,8 @@ import "server-only";
 import { cache } from "react";
 import prisma from "@/lib/prisma";
 import { maskDocument } from "@/lib/document-br";
-import { ACTIVE_STATUSES, formatPhoneBr, isActiveStatus, type DomainOrderStatusName } from "@/lib/domain-order";
+import { ACTIVE_STATUSES, isActiveStatus, type DomainOrderStatusName } from "@/lib/domain-order";
+import { formatarTelefone } from "./formatacao/telefone.ts";
 
 /**
  * Pedido de domínio como a tela do casal vê: o documento do titular SEMPRE escondido,
@@ -61,7 +62,7 @@ function toOrderView(row: OrderRow): DomainOrderView {
     holderName: row.holderName,
     holderDocumentMasked: maskDocument(row.holderDocument),
     holderEmail: row.holderEmail,
-    holderPhone: formatPhoneBr(row.holderPhone),
+    holderPhone: formatarTelefone(row.holderPhone),
     requestedAt: row.requestedAt.toISOString(),
     registeredAt: row.registeredAt?.toISOString() ?? null,
     expiresAt: row.expiresAt?.toISOString() ?? null,

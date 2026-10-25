@@ -6,7 +6,7 @@ import { Minus, Plus } from "lucide-react";
 import { GuestLocal as Guest, RsvpStatus } from "@/types/local";
 import { CustomModal } from "@/components/ui/custom-modal";
 import { createGuest, updateGuest } from "@/actions/guest-actions";
-import { formatPhoneBR } from "@/lib/wedding-format";
+import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { btn, btnDanger, errorBox, hint, label } from "@/components/painel/styles";
@@ -180,7 +180,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
           autoComplete="off"
           hint="Com DDD, por exemplo (11) 99999-8888. Serve para enviar convites e lembretes pelo WhatsApp, nos planos que incluem esse envio."
           placeholder="(11) 90000-0000"
-          defaultValue={guest?.phone ? formatPhoneBR(guest.phone) : ""}
+          defaultValue={guest?.phone ? formatarTelefone(guest.phone) : ""}
         />
 
         <Field label="E-mail (opcional)" name="email" type="email" inputMode="email" autoComplete="off" placeholder="nome@exemplo.com" defaultValue={guest?.email ?? ""} />

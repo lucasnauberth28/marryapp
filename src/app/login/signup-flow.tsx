@@ -28,10 +28,12 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Field, FormAlert } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/select";
-import { maskDocument, maskPhone } from "@/lib/masks";
+import { mascararDocumentoDigitando } from "@/lib/formatacao/documento";
+import { mascararTelefone } from "@/lib/formatacao/telefone";
 import { formatPrice, plansFor, type AccountType, type PlanOption, type SignupStep } from "./auth-config";
 import type { Catalog } from "@/lib/catalog";
 
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 interface SignupFlowProps {
   step: SignupStep;
   type: AccountType | null;
@@ -133,13 +135,13 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
     const e: Errors = {};
     if (name.trim().length < 3) e.name = "Informe seu nome com pelo menos 3 letras.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Confira o e-mail. Ele deve ter um formato como nome@exemplo.com.";
-    const digits = phone.replace(/\D/g, "");
+    const digits = somenteDigitos(phone);
     if (digits.length < 10 || digits.length > 11) e.phone = "Informe o número com DDD, com 10 ou 11 dígitos.";
     if (password.length < 8) e.password = "Use pelo menos 8 caracteres.";
     if (isVendor) {
       if (companyName.trim().length < 2) e.companyName = "Informe o nome do negócio.";
       if (city.trim().length < 2) e.city = "Informe a cidade onde você atende.";
-      const doc = documentNumber.replace(/\D/g, "");
+      const doc = somenteDigitos(documentNumber);
       if (doc.length !== (documentType === "CPF" ? 11 : 14)) e.document = `Confira o ${documentType}.`;
     }
     return e;
@@ -331,7 +333,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                         aria-checked={documentType === t}
                         onClick={() => {
                           setDocumentType(t);
-                          setDocumentNumber((v) => maskDocument(v, t));
+                          setDocumentNumber((v) => mascararDocumentoDigitando(v, t));
                         }}
                         className={cn(
                           "min-h-9 rounded-[8px] px-4 text-sm font-semibold transition-colors",
@@ -349,7 +351,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                         id="cadastro-document"
                         inputMode="numeric"
                         value={documentNumber}
-                        onChange={(e) => setDocumentNumber(maskDocument(e.target.value, documentType))}
+                        onChange={(e) => setDocumentNumber(mascararDocumentoDigitando(e.target.value, documentType))}
                         placeholder={documentType === "CPF" ? "000.000.000-00" : "00.000.000/0000-00"}
                       />
                     )}
@@ -385,7 +387,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                   autoComplete="tel-national"
                   placeholder="(11) 98765-4321"
                   value={phone}
-                  onChange={(e) => setPhone(maskPhone(e.target.value))}
+                  onChange={(e) => setPhone(mascararTelefone(e.target.value))}
                 />
               )}
             </Field>

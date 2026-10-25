@@ -1,9 +1,9 @@
+import { somenteDigitos } from "./formatacao/telefone.ts";
+import { formatarDataCivilLonga, formatarDataCivilSemAno } from "./formatacao/data.ts";
 // Compartilhar o convite pelo WhatsApp do próprio casal (sem Evolution API, em todos os planos).
 // Puro (sem banco nem Next): os textos e o link saem daqui para o Resumo e para os testes dizerem a mesma coisa.
 
 const WEEKDAY = new Intl.DateTimeFormat("pt-BR", { weekday: "long", timeZone: "UTC" });
-const LONG_DATE = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
-const DAY_MONTH = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", timeZone: "UTC" });
 
 /** "Ana & Rafael" vira "Ana e Rafael" para ler numa frase. */
 export function namesInSentence(coupleNames: string): string {
@@ -13,13 +13,13 @@ export function namesInSentence(coupleNames: string): string {
 /** "sábado, 17 de abril de 2027" (a data é de calendário: vale o dia gravado, sem fuso). */
 export function weddingDateInSentence(date: Date | null): string | null {
   if (!date || Number.isNaN(date.getTime())) return null;
-  return `${WEEKDAY.format(date)}, ${LONG_DATE.format(date)}`;
+  return `${WEEKDAY.format(date)}, ${formatarDataCivilLonga(date)}`;
 }
 
 /** "15 de março" (prazo de confirmação). */
 export function deadlineInSentence(date: Date | null): string | null {
   if (!date || Number.isNaN(date.getTime())) return null;
-  return DAY_MONTH.format(date);
+  return formatarDataCivilSemAno(date);
 }
 
 const firstName = (name: string) => name.trim().split(/\s+/)[0] || name.trim();
@@ -59,7 +59,7 @@ export function reminderText({ guestName, coupleNames, deadline, url }: { guestN
  * da pessoa; sem telefone, abre o WhatsApp para o casal escolher a pessoa ou o grupo.
  */
 export function whatsappLink(phone: string | null | undefined, text: string): string {
-  const digits = (phone ?? "").replace(/\D/g, "");
+  const digits = somenteDigitos(phone);
   const full = digits.length === 10 || digits.length === 11 ? `55${digits}` : digits.startsWith("55") && (digits.length === 12 || digits.length === 13) ? digits : "";
   return `https://wa.me/${full}?text=${encodeURIComponent(text)}`;
 }

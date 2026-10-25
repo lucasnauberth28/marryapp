@@ -32,6 +32,7 @@ import { PreferencesForm } from "@/components/notifications/preferences-form";
 import type { NotificationAudience, NotificationGroup } from "@/lib/notifications/catalog";
 import type { NotificationPrefs } from "@/lib/notifications/preferences";
 
+import { formatarDataBrasiliaLonga } from "@/lib/formatacao/data";
 interface Member {
   id: string;
   name: string;
@@ -56,7 +57,6 @@ interface Props {
   notifications: { prefs: NotificationPrefs; audience: NotificationAudience; groups: NotificationGroup[] };
 }
 
-const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "America/Sao_Paulo" });
 const shortFmt = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" });
 
 export function AccountSections({ kind, account, wedding, pushPublicKey, notifications }: Props) {
@@ -358,7 +358,7 @@ function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> })
       {created ? (
         <div className="step-in flex flex-col gap-3 rounded-[16px] border border-ameixa/30 bg-ameixa-suave/50 p-4" aria-live="polite">
           <p className="text-sm font-semibold text-tinta">
-            Convite criado. Vale até {dateFmt.format(new Date(created.expiresAt))}.
+            Convite criado. Vale até {formatarDataBrasiliaLonga(new Date(created.expiresAt))}.
             {created.email
               ? created.emailSent
                 ? ` Enviamos também para ${created.email}.`
@@ -449,7 +449,7 @@ function DataSection({
       title="Seus dados"
       description={
         <>
-          Conta criada em {dateFmt.format(new Date(createdAt))}. Baixe uma cópia de tudo o que guardamos: dados da conta e {what}.
+          Conta criada em {formatarDataBrasiliaLonga(new Date(createdAt))}. Baixe uma cópia de tudo o que guardamos: dados da conta e {what}.
         </>
       }
     >

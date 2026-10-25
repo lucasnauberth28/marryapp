@@ -4,6 +4,7 @@
 import { z } from "zod";
 import { isValidCnpj, isValidCpf, normalizeDocument } from "./document-br.ts";
 
+import { somenteDigitos } from "./formatacao/telefone.ts";
 export const PIX_KEY_TYPES = ["CPF", "CNPJ", "EMAIL", "PHONE", "RANDOM"] as const;
 export type PixKeyType = (typeof PIX_KEY_TYPES)[number];
 
@@ -41,7 +42,7 @@ export function normalizePixKey(type: PixKeyType, raw: string): Result<string> {
       return ok ? { ok: true, value: email } : fail("Esse e-mail não parece certo. Confira antes de salvar.");
     }
     case "PHONE": {
-      let digits = text.replace(/\D/g, "");
+      let digits = somenteDigitos(text);
       if ((digits.length === 12 || digits.length === 13) && digits.startsWith("55")) digits = digits.slice(2);
       const ok = /^[1-9][1-9]9\d{8}$/.test(digits);
       return ok ? { ok: true, value: `+55${digits}` } : fail("Informe o celular com DDD, por exemplo (11) 98765-4321.");

@@ -16,11 +16,11 @@ import { UpgradeSection } from "./upgrade-section";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { pluralizar } from "@/lib/formatacao/plural";
+import { formatarDataBrasiliaCurtaComAno } from "@/lib/formatacao/data";
 export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Plano e pagamentos" };
 
-const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", year: "numeric", timeZone: "America/Sao_Paulo" });
 
 /** Ordem dos planos de casal: só mostramos como opção de mudança os que ficam acima do atual. */
 const PLAN_RANK: Record<string, number> = { basic: 0, custom: 1, classic: 2, vip: 3 };
@@ -112,7 +112,7 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
           <p className="font-display text-4xl leading-10 text-tinta">{currentName}</p>
           <p className="text-[15px] text-tinta">
             {current
-              ? `Pagamento único de ${formatarReais(current.amount)}${current.paidAt ? ` · pago em ${dateFmt.format(current.paidAt)}` : ""}`
+              ? `Pagamento único de ${formatarReais(current.amount)}${current.paidAt ? ` · pago em ${formatarDataBrasiliaCurtaComAno(current.paidAt)}` : ""}`
               : "Gratuito · taxa de 3,99% por presente recebido"}
           </p>
         </section>
@@ -141,7 +141,7 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
           <p>
             Há um Pix de {formatarReais(awaitingReview.amount)} do plano{" "}
             {isPlanKey(awaitingReview.planId) ? planOption(awaitingReview.planId, catalog).name : shortPlanName(awaitingReview.planName)} gerado em{" "}
-            {dateFmt.format(awaitingReview.createdAt)}. Se vocês já pagaram, nossa equipe confere no extrato e libera o plano em até 1
+            {formatarDataBrasiliaCurtaComAno(awaitingReview.createdAt)}. Se vocês já pagaram, nossa equipe confere no extrato e libera o plano em até 1
             dia útil.
           </p>
         </Reveal>
@@ -179,7 +179,7 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
                     {isPlanKey(s.planId) ? planOption(s.planId, catalog).name : shortPlanName(s.planName)}
                   </p>
                   <p className="text-sm text-tinta-suave">
-                    {s.paidAt ? `Pago em ${dateFmt.format(s.paidAt)}` : `Gerado em ${dateFmt.format(s.createdAt)}`} · Pix
+                    {s.paidAt ? `Pago em ${formatarDataBrasiliaCurtaComAno(s.paidAt)}` : `Gerado em ${formatarDataBrasiliaCurtaComAno(s.createdAt)}`} · Pix
                   </p>
                 </div>
                 <div className="flex items-center gap-3">

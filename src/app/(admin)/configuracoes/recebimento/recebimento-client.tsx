@@ -12,6 +12,7 @@ import { NativeSelect } from "@/components/ui/select";
 import { BANK_ACCOUNT_KIND_LABEL, BANK_ACCOUNT_KINDS, PIX_KEY_TYPE_LABEL, PIX_KEY_TYPES, type BankAccountKind, type PixKeyType } from "@/lib/payout-input";
 import { cn } from "@/lib/utils";
 
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 interface AccountMask {
   type: "PIX_KEY" | "BANK_ACCOUNT";
   holderName: string;
@@ -395,9 +396,9 @@ function PayoutForm({ replacing, onCancel, onSaved }: { replacing: boolean; onCa
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              <Input id={`${uid}-banco`} label="Código do banco" inputMode="numeric" autoComplete="off" value={bankCode} onChange={(e) => setBankCode(e.target.value.replace(/\D/g, "").slice(0, 3))} required hint="3 números, como 260 ou 001." />
-              <Input id={`${uid}-agencia`} label="Agência" inputMode="numeric" autoComplete="off" value={agency} onChange={(e) => setAgency(e.target.value.replace(/\D/g, "").slice(0, 5))} required hint="Sem o dígito." />
-              <Input id={`${uid}-conta`} label="Conta" inputMode="numeric" autoComplete="off" value={account} onChange={(e) => setAccount(e.target.value.replace(/\D/g, "").slice(0, 12))} required hint="Sem o dígito." />
+              <Input id={`${uid}-banco`} label="Código do banco" inputMode="numeric" autoComplete="off" value={bankCode} onChange={(e) => setBankCode(somenteDigitos(e.target.value).slice(0, 3))} required hint="3 números, como 260 ou 001." />
+              <Input id={`${uid}-agencia`} label="Agência" inputMode="numeric" autoComplete="off" value={agency} onChange={(e) => setAgency(somenteDigitos(e.target.value).slice(0, 5))} required hint="Sem o dígito." />
+              <Input id={`${uid}-conta`} label="Conta" inputMode="numeric" autoComplete="off" value={account} onChange={(e) => setAccount(somenteDigitos(e.target.value).slice(0, 12))} required hint="Sem o dígito." />
               <Input id={`${uid}-digito`} label="Dígito da conta" autoComplete="off" value={accountDigit} onChange={(e) => setAccountDigit(e.target.value.slice(0, 2))} optional />
               <NativeSelect id={`${uid}-tipoconta`} label="Tipo da conta" value={accountKind} onChange={(e) => setAccountKind(e.target.value as BankAccountKind)}>
                 {BANK_ACCOUNT_KINDS.map((t) => (

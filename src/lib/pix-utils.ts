@@ -1,3 +1,4 @@
+import { somenteDigitos } from "./formatacao/telefone.ts";
 /**
  * Utilitários para geração de Payload Pix Estático (BR Code)
  * Baseado na especificação oficial do Banco Central do Brasil (EMV QRCPS / BR Code).
@@ -48,10 +49,10 @@ function cleanPixKey(rawKey: string): string {
 
   // Se já possui DDI + (ex: +5511967794744)
   if (trimmed.startsWith("+")) {
-    return "+" + trimmed.replace(/\D/g, "");
+    return "+" + somenteDigitos(trimmed);
   }
 
-  const digitsOnly = trimmed.replace(/\D/g, "");
+  const digitsOnly = somenteDigitos(trimmed);
 
   // Se for telefone celular brasileiro (10 ou 11 dígitos iniciados com DDD válido)
   // No Banco Central DICT, chaves de telefone são OBRIGATORIAMENTE formatadas com +55

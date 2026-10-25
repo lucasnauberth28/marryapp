@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FormAlert } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
-import { maskPhone } from "@/lib/masks";
+import { mascararTelefone } from "@/lib/formatacao/telefone";
 import { weddingSitePath } from "@/lib/wedding-links";
 import { rememberGuest } from "@/lib/use-saved-guest";
 import { lookupMessage, type PublicRsvpGuest } from "@/lib/rsvp-lookup";
@@ -164,7 +164,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
                   autoComplete="tel-national"
                   placeholder="(11) 99999-9999"
                   value={phone}
-                  onChange={(e) => setPhone(maskPhone(e.target.value))}
+                  onChange={(e) => setPhone(mascararTelefone(e.target.value))}
                   required
                 />
               )}

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 // ==========================================
 // UTILS
 // ==========================================
@@ -192,7 +193,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
       const result = await toggleThankYouSent(transactionId, currentStatus);
       if (result.success && !currentStatus && phone) {
         // Se acabou de marcar como enviado e tem telefone, abre o WhatsApp
-        const cleanPhone = phone.replace(/\D/g, "");
+        const cleanPhone = somenteDigitos(phone);
         const firstName = guestName ? guestName.split(" ")[0] : "Querido(a)";
         const text = encodeURIComponent(`Oi, ${firstName}! Passando para agradecer pelo presente (${giftName}). Foi muito especial para nós. Obrigado de coração!`);
         window.open(`https://wa.me/55${cleanPhone}?text=${text}`, "_blank");

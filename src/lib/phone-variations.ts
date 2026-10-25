@@ -1,5 +1,7 @@
 // Sem dependências do servidor: usado na busca de convidados, no RSVP e na importação de planilhas.
 
+import { somenteDigitos } from "./formatacao/telefone.ts";
+
 /**
  * Normaliza um número de telefone brasileiro para todas as suas variações possíveis.
  * Exemplo:
@@ -11,7 +13,7 @@
  * - "1157305051" (DDD + 8 dígitos)
  */
 export function getPhoneVariations(rawPhone: string): string[] {
-  const clean = rawPhone.replace(/\D/g, "");
+  const clean = somenteDigitos(rawPhone);
   if (!clean) return [];
 
   const variations = new Set<string>();

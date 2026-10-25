@@ -11,6 +11,7 @@ import { StatusChip } from "@/components/painel/status-chip";
 import { btn, card, overline } from "@/components/painel/styles";
 import { TaskFormModal, type TaskFormData } from "./task-form-modal";
 
+import { formatarDataCivilCurta } from "@/lib/formatacao/data";
 export type Filter = "abertas" | "atrasadas" | "concluidas";
 
 interface TasksBoardProps {
@@ -29,12 +30,11 @@ const dayMs = (key: string) => Date.parse(`${key}T00:00:00Z`);
 // As datas das tarefas são guardadas à meia-noite UTC do dia escolhido: lemos o dia em UTC.
 const dueKey = (t: BoardItem) => (t.dueDate ? new Date(t.dueDate).toISOString().slice(0, 10) : null);
 
-const dayMonth = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", timeZone: "UTC" });
 const monthShort = new Intl.DateTimeFormat("pt-BR", { month: "short", timeZone: "UTC" });
 const monthYear = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "numeric", timeZone: "UTC" });
 // "5 de out." vira "5 out"; "nov." vira "Nov"
-const short = (d: Intl.DateTimeFormat, key: string) => {
-  const text = d.format(new Date(`${key}T00:00:00Z`)).replace(".", "").replace(" de ", " ");
+const short = (formatar: (data: Date) => string, key: string) => {
+  const text = formatar(new Date(`${key}T00:00:00Z`)).replace(".", "").replace(" de ", " ");
   return /^\d/.test(text) ? text : text.charAt(0).toUpperCase() + text.slice(1);
 };
 
@@ -49,13 +49,13 @@ function DueChip({ task, todayKey }: { task: BoardItem; todayKey: string }) {
   if (diff < 0) {
     return (
       <StatusChip tone="perigo" icon={<TriangleAlert className="size-4" aria-hidden="true" />}>
-        Venceu {short(dayMonth, key)}
+        Venceu {short(formatarDataCivilCurta, key)}
       </StatusChip>
     );
   }
-  if (diff <= 7) return <StatusChip tone={diff <= 3 ? "aviso" : "neutro"}>{diff === 0 ? "Hoje" : `Até ${short(dayMonth, key)}`}</StatusChip>;
+  if (diff <= 7) return <StatusChip tone={diff <= 3 ? "aviso" : "neutro"}>{diff === 0 ? "Hoje" : `Até ${short(formatarDataCivilCurta, key)}`}</StatusChip>;
   const sameYear = key.slice(0, 4) === todayKey.slice(0, 4);
-  return <StatusChip tone="neutro">{short(sameYear ? monthShort : monthYear, key)}</StatusChip>;
+  return <StatusChip tone="neutro">{short((d) => (sameYear ? monthShort : monthYear).format(d), key)}</StatusChip>;
 }
 
 export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, suggestion }: TasksBoardProps) {

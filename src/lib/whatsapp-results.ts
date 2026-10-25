@@ -1,3 +1,4 @@
+import { somenteDigitos } from "./formatacao/telefone.ts";
 // Resultado dos envios pelo WhatsApp em linguagem simples, e quem realmente recebeu.
 // Puro (sem banco nem Next): as telas só dizem "enviado" quando o envio foi confirmado.
 
@@ -7,7 +8,7 @@ export interface SendOutcome {
   error?: string;
 }
 
-const digits = (value: string | null | undefined) => (value ?? "").replace(/\D/g, "");
+const digits = (value: string | null | undefined) => somenteDigitos(value);
 
 /** Ids dos convidados cujo número recebeu a mensagem (envio confirmado). Quem falhou fica de fora. */
 export function guestIdsReached(guests: Array<{ id: string; phone: string | null }>, results: SendOutcome[]): string[] {

@@ -11,7 +11,8 @@ import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
 import { PlanChip, StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
 import { TabsNav } from "@/components/plataforma/tabs-nav";
-import { STATUS_LABEL, formatPhoneBr, type DomainOrderStatusName } from "@/lib/domain-order";
+import { STATUS_LABEL, type DomainOrderStatusName } from "@/lib/domain-order";
+import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { renewalReminderStatus } from "@/lib/domain-renewal";
 import { formatDate, formatDateTime, relativeDay, timeAgo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
@@ -228,7 +229,7 @@ async function DomainDetailSlot({ selectedId, summary }: { selectedId: string | 
             <dt className="text-tinta-suave">E-mail</dt>
             <dd className="break-all text-tinta">{detail.holderEmail}</dd>
             <dt className="text-tinta-suave">Telefone</dt>
-            <dd className="text-tinta">{formatPhoneBr(detail.holderPhone)}</dd>
+            <dd className="text-tinta">{formatarTelefone(detail.holderPhone)}</dd>
             <dt className="text-tinta-suave">Vence</dt>
             <dd className="text-tinta">{detail.expiresAt ? formatDate(detail.expiresAt) : "Sem data"}</dd>
             {detail.rejectionReason ? (

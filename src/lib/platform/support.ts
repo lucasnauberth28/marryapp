@@ -1,6 +1,7 @@
 // Regras puras de Suporte e LGPD: situações, prazo de 15 dias, formulários. Sem banco nem Next: roda nos testes.
 import { z } from "zod";
 
+import { somenteDigitos } from "../formatacao/telefone.ts";
 /** Prazo para responder a pedidos de titulares. CONFIRME COM O JURÍDICO antes de tratar como regra definitiva. */
 const DATA_REQUEST_DAYS = 15;
 const DATA_REQUEST_ALERT_DAYS = 5;
@@ -45,7 +46,7 @@ export function normalizeSearch(q: string | undefined): string | null {
 
 /** Só os dígitos de um telefone digitado ("(11) 98765-4321" -> "11987654321"); null se tiver menos de 4. */
 export function phoneDigits(q: string): string | null {
-  const digits = q.replace(/\D/g, "");
+  const digits = somenteDigitos(q);
   return digits.length >= 4 && digits.length <= 15 ? digits : null;
 }
 

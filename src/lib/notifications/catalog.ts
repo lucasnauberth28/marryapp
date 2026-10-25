@@ -1,4 +1,5 @@
 import { formatarReais } from "../formatacao/dinheiro.ts";
+import { formatarDataCivilSemAno } from "../formatacao/data.ts";
 // Catálogo dos avisos do Aceito: quais existem, para quem, em que grupo ficam e o texto de cada um.
 // Arquivo puro (sem banco nem Next), usado no servidor e no navegador, e testado isoladamente.
 
@@ -100,7 +101,6 @@ export interface NotificationCopy {
 
 // Datas de vencimento e de casamento ficam gravadas à meia-noite UTC: formatar em UTC evita voltar um dia.
 const shortDate = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
-const longDate = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", timeZone: "UTC" });
 
 /** Nomes digitados por convidados e casais entram no texto: limita o tamanho e tira quebras de linha. */
 export function clean(value: string | null | undefined, max = 60, fallback = ""): string {
@@ -153,7 +153,7 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
     case "plan_activated": {
       const plan = clean(event.planName, 40, "novo plano");
       if (event.audience === "vendor") {
-        const until = event.periodEnd ? ` até ${longDate.format(event.periodEnd)}` : "";
+        const until = event.periodEnd ? ` até ${formatarDataCivilSemAno(event.periodEnd)}` : "";
         return {
           title: "Plano ativado",
           body: `Pagamento confirmado. O plano ${plan} já está valendo${until}.`,
@@ -189,7 +189,7 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
           href,
         };
       }
-      const when = event.weddingDate ? ` para ${longDate.format(event.weddingDate)}` : "";
+      const when = event.weddingDate ? ` para ${formatarDataCivilSemAno(event.weddingDate)}` : "";
       return {
         title: "Novo pedido de orçamento",
         body: `${clean(event.coupleName, 60, "Um casal")} quer um orçamento${when}. Quem responde rápido sai na frente.`,

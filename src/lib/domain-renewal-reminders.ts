@@ -5,9 +5,9 @@ import { brandedEmail, sendEmail } from "@/lib/email";
 import { dueRenewalReminder, renewalWindowEnd, type RenewalReminderDay } from "@/lib/domain-renewal";
 import { logAudit } from "@/lib/audit";
 
+import { formatarDataCivilLonga } from "./formatacao/data.ts";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // O vencimento é uma data de calendário (meia-noite UTC): formatar em UTC evita voltar um dia.
-const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 export interface DomainReminderResult {
   checked: number;
@@ -60,7 +60,7 @@ export async function sendDomainRenewalReminders(now = new Date()): Promise<Doma
 }
 
 async function sendToAll(recipients: string[], domain: string, expiresAt: Date, day: RenewalReminderDay): Promise<number> {
-  const when = dateFmt.format(expiresAt);
+  const when = formatarDataCivilLonga(expiresAt);
   const heading = `O endereço ${domain} do site vence em ${when}`;
   const mail = brandedEmail({
     heading,

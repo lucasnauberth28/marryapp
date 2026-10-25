@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { QrFrame } from "@/components/ui/qr-frame";
 import { QR_COLORS } from "@/lib/qr-colors";
 import { Textarea } from "@/components/ui/textarea";
-import { maskPhone } from "@/lib/masks";
+import { mascararTelefone } from "@/lib/formatacao/telefone";
 import { phoneEnding } from "@/lib/saved-guest";
 import { useSavedGuest } from "@/lib/use-saved-guest";
 import { Seal } from "@/components/landing/seal";
@@ -24,6 +24,7 @@ import { GiftLocal as Gift } from "@/types/local";
 import { cn } from "@/lib/utils";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 interface CheckoutClientProps {
   gift: Gift;
   coupleNames: string;
@@ -50,7 +51,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
   const [recognizedDismissed, setRecognizedDismissed] = useState(false);
   const recognized = knownGuest && !recognizedDismissed ? knownGuest : null;
   const guestName = recognized ? recognized.name : typedName;
-  const guestPhone = recognized ? maskPhone(recognized.phone) : typedPhone;
+  const guestPhone = recognized ? mascararTelefone(recognized.phone) : typedPhone;
 
   // Dados do Pix Gerado
   const [pixPayload, setPixPayload] = useState("");
@@ -91,7 +92,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
 
   function handleIdentificationNext(e: React.FormEvent) {
     e.preventDefault();
-    if (guestName.trim().length < 3 || guestPhone.replace(/\D/g, "").length < 10) {
+    if (guestName.trim().length < 3 || somenteDigitos(guestPhone).length < 10) {
       setError("Confira o nome completo e o WhatsApp com DDD para continuar.");
       return;
     }
@@ -271,7 +272,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                     inputMode="tel"
                     autoComplete="tel-national"
                     value={typedPhone}
-                    onChange={(e) => setTypedPhone(maskPhone(e.target.value))}
+                    onChange={(e) => setTypedPhone(mascararTelefone(e.target.value))}
                     placeholder="(11) 99999-9999"
                     required
                   />
@@ -376,7 +377,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                     inputMode="numeric"
                     autoComplete="cc-number"
                     value={cardNumber.replace(/(\d{4})(?=\d)/g, "$1 ")}
-                    onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, "").substring(0, 16))}
+                    onChange={(e) => setCardNumber(somenteDigitos(e.target.value).substring(0, 16))}
                     placeholder="0000 0000 0000 0000"
                     maxLength={19}
                     className={cn(c.className, "font-mono tracking-wider")}
@@ -393,7 +394,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                     autoComplete="cc-exp"
                     value={cardExpiry}
                     onChange={(e) => {
-                      const raw = e.target.value.replace(/\D/g, "").substring(0, 4);
+                      const raw = somenteDigitos(e.target.value).substring(0, 4);
                       setCardExpiry(raw.length >= 3 ? `${raw.slice(0, 2)}/${raw.slice(2)}` : raw);
                     }}
                     placeholder="MM/AA"
@@ -412,7 +413,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                     inputMode="numeric"
                     autoComplete="cc-csc"
                     value={cardCvv}
-                    onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, "").substring(0, 4))}
+                    onChange={(e) => setCardCvv(somenteDigitos(e.target.value).substring(0, 4))}
                     placeholder="123"
                     maxLength={4}
                     className={cn(c.className, "font-mono")}

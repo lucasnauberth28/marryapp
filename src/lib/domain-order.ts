@@ -5,6 +5,7 @@ import { z } from "zod";
 import { isValidCpf, isValidCnpj, normalizeDocument } from "./document-br.ts";
 import { normalizeDomainName } from "./domain-name.ts";
 
+import { somenteDigitos } from "./formatacao/telefone.ts";
 export const DOMAIN_ORDER_STATUSES = ["REQUESTED", "REGISTERING", "REGISTERED", "CONNECTED", "REJECTED", "CANCELED"] as const;
 export type DomainOrderStatusName = (typeof DOMAIN_ORDER_STATUSES)[number];
 
@@ -64,7 +65,7 @@ export function timelineStates(status: string): TimelineState[] | null {
 
 /** Telefone brasileiro só com DDD e número (10 ou 11 dígitos), ou null se não for válido. */
 export function normalizePhoneBr(input: string): string | null {
-  let digits = String(input ?? "").replace(/\D/g, "");
+  let digits = somenteDigitos(input);
   if ((digits.length === 12 || digits.length === 13) && digits.startsWith("55")) digits = digits.slice(2);
   if (digits.length !== 10 && digits.length !== 11) return null;
   const ddd = Number(digits.slice(0, 2));
@@ -73,14 +74,6 @@ export function normalizePhoneBr(input: string): string | null {
   if (/^(\d)\1+$/.test(digits.slice(2))) return null;
   return digits;
 }
-
-export function formatPhoneBr(digits: string): string {
-  const d = String(digits ?? "").replace(/\D/g, "");
-  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
-  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
-  return String(digits ?? "");
-}
-
 // ==========================================
 // FORMULÁRIO
 // ==========================================

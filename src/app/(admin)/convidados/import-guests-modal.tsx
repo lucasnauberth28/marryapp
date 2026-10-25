@@ -9,7 +9,7 @@ import { btn, card, errorBox, hint, overline } from "@/components/painel/styles"
 import { LoadingButton } from "@/components/painel/loading-button";
 import { SkeletonRows } from "@/components/painel/skeleton-parts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatPhoneBR } from "@/lib/wedding-format";
+import { formatarTelefone } from "@/lib/formatacao/telefone";
 import {
   MAX_IMPORT_ROWS,
   SHEET_TEMPLATE_FILENAME,
@@ -357,7 +357,7 @@ function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose:
             {plan.duplicates.map(({ row, reason }) => (
               <li key={row.line}>
                 {row.name}
-                {row.phone ? `, ${formatPhoneBR(row.phone)}` : ""}
+                {row.phone ? `, ${formatarTelefone(row.phone)}` : ""}
                 {reason === "in_file" ? " (aparece mais de uma vez na planilha)" : ""}
               </li>
             ))}
@@ -374,7 +374,7 @@ function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose:
             {plan.toAdd.slice(0, 100).map((r) => (
               <li key={r.line}>
                 <span className="font-semibold text-tinta">{r.name}</span>
-                {r.phone ? `, ${formatPhoneBR(r.phone)}` : ", sem telefone"}
+                {r.phone ? `, ${formatarTelefone(r.phone)}` : ", sem telefone"}
                 {r.companions > 0 ? `, ${pluralizar(r.companions, "acompanhante", "acompanhantes")}` : ""}
                 {r.category ? `, ${r.category}` : ""}
               </li>

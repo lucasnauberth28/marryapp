@@ -20,6 +20,7 @@ import {
   todayBrasilia,
 } from "@/app/(fornecedor)/_lib/vendor-panel";
 
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 const PUBLIC_VENDOR_SELECT = {
   id: true,
   companyName: true,
@@ -217,7 +218,7 @@ const LeadSchema = z.object({
   coupleName: z.string().trim().min(3, "Informe seu nome.").max(120),
   couplePhone: z
     .string()
-    .transform((v) => v.replace(/\D/g, ""))
+    .transform((v) => somenteDigitos(v))
     .refine((v) => v.length >= 10 && v.length <= 13, "Telefone inválido."),
   coupleEmail: z.string().trim().email("E-mail inválido.").max(200).optional().or(z.literal("")),
   weddingDate: z.coerce.date().optional().nullable(),

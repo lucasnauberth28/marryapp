@@ -20,6 +20,7 @@ import { subscriptionReference } from "@/lib/subscription-period";
 import { quoteSubscription } from "@/lib/subscription-quote";
 import { isUniqueViolation, provisionWedding, upsertCoupleRole, withSlugRetry } from "@/lib/account/wedding-provisioning";
 
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 /** Perfil das contas de fornecedor (o mesmo criado pelo seed). */
 const VENDOR_ROLE_NAME = "Fornecedor";
 const VENDOR_PANEL_PATH = "/fornecedor";
@@ -64,7 +65,7 @@ const RegistrationSchema = z.object({
   email: z.string().trim().toLowerCase().email("E-mail inválido.").max(200),
   phone: z
     .string()
-    .transform((v) => v.replace(/\D/g, ""))
+    .transform((v) => somenteDigitos(v))
     .refine((v) => v.length >= 10 && v.length <= 13, "Telefone inválido."),
   password: z.string().min(8, "A senha deve ter ao menos 8 caracteres.").max(200),
   slug: optionalText(100),

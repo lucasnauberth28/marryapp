@@ -1,3 +1,4 @@
+import { somenteDigitos } from "./formatacao/telefone.ts";
 // Quem acabou de confirmar presença no site do casal não precisa digitar nome e WhatsApp de novo no presente.
 // O dado fica só no sessionStorage do navegador da própria pessoa (some ao fechar a aba), nunca vai para
 // cookie nem para o servidor sozinho: só segue quando a pessoa confirma "sim, sou eu" no checkout.
@@ -20,7 +21,7 @@ export function savedGuestKey(slug: string) {
 /** Texto a gravar no sessionStorage; null se nome ou telefone não servirem. */
 export function serializeSavedGuest(guest: SavedGuest, now = Date.now()): string | null {
   const name = guest.name.replace(/\s+/g, " ").trim();
-  const phone = guest.phone.replace(/\D/g, "");
+  const phone = somenteDigitos(guest.phone);
   if (name.length < 3 || name.length > 120) return null;
   if (phone.length < 10 || phone.length > 13) return null;
   return JSON.stringify({ v: 1, name, phone, savedAt: now });
@@ -41,13 +42,13 @@ export function parseSavedGuest(raw: string | null | undefined, now = Date.now()
 
 function parseFields(name: string, phone: string): SavedGuest | null {
   const n = name.replace(/\s+/g, " ").trim();
-  const p = phone.replace(/\D/g, "");
+  const p = somenteDigitos(phone);
   if (n.length < 3 || n.length > 120 || p.length < 10 || p.length > 13) return null;
   return { name: n, phone: p };
 }
 
 /** "final 4321": o telefone inteiro não precisa aparecer na tela. */
 export function phoneEnding(phone: string) {
-  const digits = phone.replace(/\D/g, "");
+  const digits = somenteDigitos(phone);
   return digits.length >= 4 ? `final ${digits.slice(-4)}` : "";
 }

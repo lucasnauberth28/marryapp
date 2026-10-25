@@ -8,11 +8,11 @@ import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
 import { CouponsSection, type CouponRow } from "../_components/coupons-section";
 import { PlanosTabs } from "../_components/planos-tabs";
 
+import { formatarDataBrasiliaCurtaComAno } from "@/lib/formatacao/data";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Cupons" };
 
 const SP_OFFSET_MS = 3 * 60 * 60 * 1000;
-const dateOnly = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", year: "numeric", timeZone: "America/Sao_Paulo" });
 const dayKey = (d: Date) => new Date(d.getTime() - SP_OFFSET_MS).toISOString().slice(0, 10);
 
 export default async function CuponsPage() {
@@ -29,7 +29,7 @@ export default async function CuponsPage() {
     maxRedemptions: c.maxRedemptions,
     redemptions: c.redemptions,
     expiresOn: c.expiresAt ? dayKey(c.expiresAt) : null,
-    expiresLabel: c.expiresAt ? dateOnly.format(c.expiresAt).replace(/\./g, "") : null,
+    expiresLabel: c.expiresAt ? formatarDataBrasiliaCurtaComAno(c.expiresAt).replace(/\./g, "") : null,
     expired: c.expiresAt !== null && c.expiresAt.getTime() <= now.getTime(),
     active: c.active,
   }));

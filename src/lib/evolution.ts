@@ -9,6 +9,7 @@
 import "server-only";
 import { recordServiceEvent } from "@/lib/platform/system-records";
 
+import { somenteDigitos } from "./formatacao/telefone.ts";
 // Sem valores padrão: URL, chave e instância precisam vir do ambiente.
 const EVOLUTION_URL = (process.env.EVOLUTION_API_URL || "").trim().replace(/\/+$/, "");
 const EVOLUTION_KEY = (process.env.EVOLUTION_API_KEY || "").trim();
@@ -33,7 +34,7 @@ function formatQrCode(rawQr?: string | null): string | null {
 }
 
 function formatPhoneNumber(phone: string): string {
-  const clean = phone.replace(/\D/g, "");
+  const clean = somenteDigitos(phone);
   if (clean.startsWith("55") && (clean.length === 12 || clean.length === 13)) {
     return clean;
   }

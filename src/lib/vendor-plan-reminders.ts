@@ -9,9 +9,9 @@ import { notifyPlanExpiring } from "@/lib/notifications/cron";
 import { DEFAULT_PREFS, decideChannels } from "@/lib/notifications/preferences";
 import { loadPrefsFor } from "@/lib/notifications/senders";
 
+import { formatarDataBrasiliaSemAno } from "./formatacao/data.ts";
 const TIER_NAME: Record<string, string> = { PRO: "Pro", MASTER: "Master Elite" };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", timeZone: "America/Sao_Paulo" });
 const timeFmt = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
 
 function isWhatsappConfigured() {
@@ -25,7 +25,7 @@ function reminderTexts(day: PlanReminderDay, planName: string, companyName: stri
   const link = appUrl("/fornecedor/plano");
   const relative = dayKey(expiresAt) === dayKey(now) ? "hoje" : "amanhã";
   const when =
-    day === 1 ? `${relative}, ${dateFmt.format(expiresAt)}, às ${timeFmt.format(expiresAt)}` : `em ${dateFmt.format(expiresAt)}`;
+    day === 1 ? `${relative}, ${formatarDataBrasiliaSemAno(expiresAt)}, às ${timeFmt.format(expiresAt)}` : `em ${formatarDataBrasiliaSemAno(expiresAt)}`;
   const daysLeft = Math.ceil((expiresAt.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
   const heading = day === 1 ? `Seu plano ${planName} vence ${relative}` : `Seu plano ${planName} vence em ${daysLeft} dias`;
   const body = `O plano ${planName} de ${companyName} no Aceito vence ${when}. Depois disso o perfil volta ao Start, com até 3 pedidos por mês.`;

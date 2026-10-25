@@ -10,6 +10,7 @@ import { sendBulkMessages } from "@/lib/evolution";
 import { guestIdsReached, sendFailureReason, sendSummary } from "@/lib/whatsapp-results";
 import { revalidatePath } from "next/cache";
 
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 /**
  * Dá os modelos padrão (convite e lembrete) a um casamento que ainda não tem nenhum.
  * Seguro para rodar a cada visita e em paralelo: um bloqueio por casamento (advisory lock da transação)
@@ -137,7 +138,7 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
     // Mapeia os convidados para o formato esperado pela Evolution API
     const recipients = guests
       .map((g) => {
-        const cleanPhone = g.phone ? g.phone.replace(/\D/g, "") : "";
+        const cleanPhone = g.phone ? somenteDigitos(g.phone) : "";
         let messageText = template.content.replace(/\{nome\}/gi, g.name);
 
         if (parsedButtons && parsedButtons.length > 0) {

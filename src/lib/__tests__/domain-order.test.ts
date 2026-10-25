@@ -4,7 +4,6 @@ import assert from "node:assert/strict";
 import {
   ACTIVE_STATUSES,
   DOMAIN_ORDER_STATUSES,
-  formatPhoneBr,
   isActiveStatus,
   isOpenStatus,
   normalizePhoneBr,
@@ -81,8 +80,6 @@ test("telefone brasileiro", () => {
   for (const bad of ["", "123", "(11) 81234-5678", "(00) 91234-5678", "(10) 91234-5678", "11 99999999999", "(11) 99999-9999 99"]) {
     assert.equal(normalizePhoneBr(bad), null, bad);
   }
-  assert.equal(formatPhoneBr("11912345678"), "(11) 91234-5678");
-  assert.equal(formatPhoneBr("1131234567"), "(11) 3123-4567");
 });
 
 test("situações: ativas, abertas e rótulos", () => {

@@ -1,3 +1,4 @@
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 // Constantes e formatação do painel do fornecedor. Sem dependências de servidor:
 // usado por páginas, componentes de cliente e pelas Server Actions.
 
@@ -166,20 +167,11 @@ export function startOfMonthBrasilia(now: Date = new Date()): Date {
 
 /** Link do WhatsApp para um telefone brasileiro (com ou sem 55), com mensagem pronta. */
 export function whatsappHref(phone: string, text?: string): string | null {
-  let digits = phone.replace(/\D/g, "");
+  let digits = somenteDigitos(phone);
   if (digits.length === 10 || digits.length === 11) digits = `55${digits}`;
   if (digits.length < 12 || digits.length > 13) return null;
   return `https://wa.me/${digits}${text ? `?text=${encodeURIComponent(text)}` : ""}`;
 }
-
-/** "11998765432" -> "(11) 99876-5432"; outros formatos voltam como vieram. */
-export function formatPhone(phone: string): string {
-  const d = phone.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
-  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
-  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
-  return phone;
-}
-
 /** Centavos para "6.800" ou "6.800,50" (sem o "R$"), para preencher o campo de preço. */
 export function centsToBrlInput(cents: number | null): string {
   if (cents == null) return "";

@@ -3,6 +3,7 @@ import { Guest, Prisma } from "@prisma/client";
 import { giftOnlyGuestDefaults } from "@/lib/guest-origin";
 import { getPhoneVariations } from "@/lib/phone-variations";
 
+import { somenteDigitos } from "./formatacao/telefone.ts";
 export { getPhoneVariations };
 
 interface FindOrCreateGuestInput {
@@ -54,7 +55,7 @@ export async function findOrCreateGuest({
   }
 
   // 2. Se não encontrou nenhum convidado correspondente, cria um novo de forma padronizada
-  const cleanPhone = phone.replace(/\D/g, "");
+  const cleanPhone = somenteDigitos(phone);
   const formattedPhone = cleanPhone.length === 10 || cleanPhone.length === 11 ? `55${cleanPhone}` : cleanPhone;
 
   return await prisma.guest.create({

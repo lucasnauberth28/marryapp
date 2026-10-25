@@ -23,6 +23,7 @@ import {
   VENDOR_EVENT_KINDS,
 } from "@/app/(fornecedor)/_lib/vendor-panel";
 
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 // Painel do fornecedor: toda escrita é limitada ao fornecedor vinculado à sessão.
 const VENDOR_PANEL_LIMIT = { limit: 60, windowMs: 1000 * 60 }; // 60 alterações / minuto por conta
 
@@ -436,7 +437,7 @@ const VendorProfileSchema = z.object({
   whatsapp: z
     .string()
     .optional()
-    .transform((v) => (v ?? "").replace(/\D/g, ""))
+    .transform((v) => somenteDigitos(v))
     .refine((v) => v === "" || (v.length >= 10 && v.length <= 13), "WhatsApp inválido. Inclua o DDD."),
   instagram: z
     .string()

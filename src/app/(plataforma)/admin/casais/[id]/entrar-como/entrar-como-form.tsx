@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { IMPERSONATION_MAX_MINUTES, IMPERSONATION_REASONS } from "@/lib/security/impersonation-rules";
 
+import { somenteDigitos } from "@/lib/formatacao/telefone";
 /** Confirmação para "Entrar como este casal": motivo obrigatório, chamado opcional e, para editar, uma segunda confirmação. */
 export function EntrarComoForm({ weddingId, coupleNames, backHref }: { weddingId: string; coupleNames: string; backHref: string }) {
   const [reason, setReason] = useState<string>(IMPERSONATION_REASONS[0]);
@@ -22,7 +23,7 @@ export function EntrarComoForm({ weddingId, coupleNames, backHref }: { weddingId
   // Depois do sucesso a página recarrega por inteiro: o botão continua ocupado até lá (sem segundo clique)
   const [redirecting, setRedirecting] = useState(false);
 
-  const ticketDigits = ticket.replace(/\D/g, "");
+  const ticketDigits = somenteDigitos(ticket);
   const ticketNumber = ticketDigits ? Number(ticketDigits) : null;
   const ticketInvalid = ticket.trim() !== "" && (ticketNumber === null || ticketNumber < 1 || ticketNumber > 2_000_000_000);
 

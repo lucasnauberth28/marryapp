@@ -1,5 +1,7 @@
 "use client";
 
+import { somenteDigitos } from "./formatacao/telefone.ts";
+
 /**
  * Tokenização de cartão no navegador via SDK oficial do Mercado Pago (MercadoPago.js v2).
  * Os dados do cartão vão direto do navegador para o Mercado Pago: nosso servidor recebe
@@ -64,7 +66,7 @@ export async function tokenizeCard(input: {
   securityCode: string;
 }): Promise<{ token: string; paymentMethodId: string }> {
   const mp = await getInstance();
-  const cardNumber = input.cardNumber.replace(/\D/g, "");
+  const cardNumber = somenteDigitos(input.cardNumber);
   const [month = "", yearRaw = ""] = input.cardExpiry.split("/").map((p) => p.trim());
   const year = yearRaw.length === 2 ? `20${yearRaw}` : yearRaw;
 
@@ -77,7 +79,7 @@ export async function tokenizeCard(input: {
     cardholderName: input.cardholderName.trim().toUpperCase(),
     cardExpirationMonth: month.padStart(2, "0"),
     cardExpirationYear: year,
-    securityCode: input.securityCode.replace(/\D/g, ""),
+    securityCode: somenteDigitos(input.securityCode),
   });
 
   return { token: id, paymentMethodId };
