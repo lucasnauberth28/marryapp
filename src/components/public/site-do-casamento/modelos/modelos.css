@@ -1,0 +1,45 @@
+/* Modelos do site do casal: forma das fotos, cantos, vidro do modelo Noturno e a borda de papel rasgado.
+   As cores e as letras vêm das variáveis que o site define na raiz (modelos/estilo.ts). */
+
+/* Forma das fotos: .arch é a classe das fotos em arco; cada modelo escolhe a forma pelo atributo data-fotos. */
+[data-fotos="reta"] .arch { border-radius: 0; }
+[data-fotos="suave"] .arch { border-radius: 28px; }
+[data-fotos="oval"] .arch { border-radius: 999px; }
+[data-fotos="reta"] { --radius-2xl: 2px; --radius-xl: 2px; }
+[data-fotos="suave"] { --radius-2xl: 24px; }
+[data-fotos="oval"] { --radius-2xl: 20px; }
+.foto-da-galeria { border-radius: var(--radius-2xl); }
+[data-fotos="arco"] .foto-da-galeria:first-child { border-radius: 999px 999px var(--radius-2xl) var(--radius-2xl); }
+[data-fotos="oval"] .foto-da-galeria { border-radius: 999px; }
+
+/* Botões de canto reto nos modelos de revista */
+[data-modelo="editorial"] :is(a, button).rounded-full,
+[data-modelo="monocromo"] :is(a, button).rounded-full { border-radius: 2px; }
+
+/* Noturno: cartões de vidro com fio dourado */
+[data-modelo="noturno"] .cartao-do-site {
+  background: color-mix(in oklab, #fff 5%, transparent);
+  border-color: color-mix(in oklab, var(--color-ameixa) 35%, transparent);
+  backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, #fff 8%, transparent);
+}
+
+/* Papel rasgado: cada faixa começa com uma borda irregular na cor da faixa */
+[data-divisor="rasgado"] section[data-tone] { position: relative; border-color: transparent; --cor-da-faixa: var(--color-linho); }
+[data-divisor="rasgado"] section[data-tone="papel"] { --cor-da-faixa: var(--color-papel); }
+[data-divisor="rasgado"] section[data-tone="areia"] { --cor-da-faixa: var(--color-areia); }
+[data-divisor="rasgado"] section[data-tone]::before,
+[data-divisor="rasgado"] .borda-rasgada::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 18px;
+  background: var(--cor-da-faixa, var(--color-linho));
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 18' preserveAspectRatio='none'%3E%3Cpath d='M0%2018L0%209L24%205L50%2013L65%204L82%208L97%2011L117%203L133%209L160%204L181%204L208%203L225%206L240%2012L266%203L287%203L305%207L332%205L349%2012L372%2011L391%204L411%208L428%2011L444%2012L459%2012L479%2010L506%208L534%2012L562%208L585%206L600%209L600%2018Z'/%3E%3C/svg%3E") bottom / 600px 100% repeat-x;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 18' preserveAspectRatio='none'%3E%3Cpath d='M0%2018L0%209L24%205L50%2013L65%204L82%208L97%2011L117%203L133%209L160%204L181%204L208%203L225%206L240%2012L266%203L287%203L305%207L332%205L349%2012L372%2011L391%204L411%208L428%2011L444%2012L459%2012L479%2010L506%208L534%2012L562%208L585%206L600%209L600%2018Z'/%3E%3C/svg%3E") bottom / 600px 100% repeat-x;
+  pointer-events: none;
+}
+[data-divisor="rasgado"] section[data-tone]::before { top: -17px; }
+[data-divisor="rasgado"] .borda-rasgada { --cor-da-faixa: var(--color-linho); }
+[data-divisor="rasgado"] .borda-rasgada::after { bottom: -1px; }

@@ -505,6 +505,12 @@ model SiteCustomization {
   showRsvp           Boolean  @default(true)
   showGuestbook      Boolean  @default(true)
   showMusic          Boolean  @default(true)
+  showGallery        Boolean  @default(true)
+
+  // Modelo do site (lib de modelos: classico, arco, floral, editorial, monocromo, noturno, campo, papel)
+  template           String   @default("classico")
+  // Galeria de fotos: JSON com até 8 endereços de imagem, na ordem em que aparecem
+  galleryUrls        String?  @db.Text
 
   updatedAt          DateTime @updatedAt
 

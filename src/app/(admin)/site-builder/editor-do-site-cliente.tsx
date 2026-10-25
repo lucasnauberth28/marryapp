@@ -10,6 +10,7 @@ import { LinhaDaSecao } from "./componentes/linha-da-secao";
 import { PreviaDoSite } from "./componentes/previa-do-site";
 import { SECOES, type Dica, type IdDaSecao, type ItemDaHistoria, type PresenteDaPrevia } from "./componentes/tipos";
 import { useConfiguracoesDoSite, useEnvioDeFoto } from "./componentes/use-configuracoes-do-site";
+import { useGaleria } from "./componentes/use-galeria";
 import { useDicas, useExclusaoDeItem, useHistoria } from "./componentes/use-historia-e-dicas";
 
 interface PropriedadesDoEditorDoSiteCliente {
@@ -41,12 +42,13 @@ function NotaEPreviaDoCelular({ previa }: { previa: ReactNode }) {
 
 export function EditorDoSiteCliente({ initialSettings, initialStoryItems, initialTips, previewGifts, rsvpDeadline, slug, customDomain }: PropriedadesDoEditorDoSiteCliente) {
   const [ocupado, iniciar] = useTransition();
-  const [secaoAberta, setSecaoAberta] = useState<IdDaSecao | null>("COVER");
+  const [secaoAberta, setSecaoAberta] = useState<IdDaSecao | null>("TEMPLATE");
   const endereco = urlDoSiteDoCasamento(slug, undefined, customDomain).replace(/^https?:\/\//, "");
   const site = useConfiguracoesDoSite(initialSettings, endereco, iniciar);
   const foto = useEnvioDeFoto(site.atualizar, iniciar);
   const historia = useHistoria(initialStoryItems, iniciar);
   const dicas = useDicas(initialTips, iniciar);
+  const galeria = useGaleria(site, iniciar);
   const exclusao = useExclusaoDeItem(historia.remover, dicas.remover, iniciar);
   const previa = <PreviaDoSite slug={slug} endereco={endereco} alterado={site.alterado} configuracoes={site.configuracoes} momentos={historia.itens} dicas={dicas.itens} presentes={previewGifts} rsvpDeadline={rsvpDeadline} />;
 
@@ -65,7 +67,7 @@ export function EditorDoSiteCliente({ initialSettings, initialStoryItems, initia
                 open={secaoAberta === secao.id}
                 onToggle={() => setSecaoAberta((atual) => (atual === secao.id ? null : secao.id))}
               >
-                <ConteudoDaSecao id={secao.id} chave={secao.key} descricao={secao.desc} site={site} foto={foto} historia={historia} dicas={dicas} ocupado={ocupado} pedirExclusao={exclusao.setPendente} />
+                <ConteudoDaSecao id={secao.id} chave={secao.key} descricao={secao.desc} site={site} foto={foto} historia={historia} dicas={dicas} galeria={galeria} ocupado={ocupado} pedirExclusao={exclusao.setPendente} />
               </LinhaDaSecao>
             ))}
           </ol>

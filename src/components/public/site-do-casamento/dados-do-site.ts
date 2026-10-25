@@ -6,6 +6,8 @@ import { instanteDoCasamento } from "@/components/public/wedding-site-countdown"
 import { estiloDoTemaDaMarca, obterIniciaisDoCasal } from "@/lib/casamento/wedding-format";
 import { caminhoDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import type { ConfiguracoesDoSiteDoCasamento, DicaDoSite, ItemDaHistoria, PresenteDoSite, TomDaFaixa } from "./tipos";
+import { fotosDaGaleria, modeloDoSite, type ModeloDoSite } from "./modelos/catalogo";
+import { destaqueParaFundoEscuro, estiloDoModelo } from "./modelos/estilo";
 import { diaDoCasamento, formatarHoraDoSite, interpretarPaleta, linhaDeDataELocal } from "./utilitarios";
 
 interface EntradaDoSite {
@@ -17,10 +19,10 @@ interface EntradaDoSite {
   rsvpDeadline?: Date | string | null;
 }
 
-/** O design usa a ameixa como destaque; no site do casal, o destaque é a cor que os noivos escolheram. */
-function estiloDoTema(themeColor?: string | null): CSSProperties {
-  const accent = estiloDoTemaDaMarca(themeColor);
-  return { ...accent, "--color-ameixa": accent["--color-brand"], "--color-ameixa-hover": accent["--color-brand-600"], "--color-ameixa-suave": accent["--color-brand-100"] } as CSSProperties;
+/** O design usa a ameixa como destaque; no site do casal, o destaque é a cor que os noivos escolheram, sobre as cores do modelo. */
+function estiloDoTema(themeColor: string | null | undefined, modelo: ModeloDoSite): CSSProperties {
+  const destaque = modelo.escuro ? destaqueParaFundoEscuro(themeColor || modelo.destaque) : estiloDoTemaDaMarca(themeColor || modelo.destaque);
+  return estiloDoModelo(modelo.id, destaque);
 }
 
 function linksDoLocal(s: ConfiguracoesDoSiteDoCasamento) {
@@ -44,6 +46,7 @@ function secoesVisiveis(s: ConfiguracoesDoSiteDoCasamento, e: EntradaDoSite, loc
     showRsvp: s.showRsvp !== false,
     showMusic: s.showMusic !== false && !!s.spotifyPlaylistUrl,
     showGuestbook: s.showGuestbook !== false,
+    showGallery: s.showGallery !== false && fotosDaGaleria(s.galleryUrls).length > 0,
     showGifts: s.showGifts !== false && e.gifts.length > 0,
     showGiftLink: s.showGifts !== false,
   };
@@ -53,13 +56,14 @@ type Secoes = ReturnType<typeof secoesVisiveis>;
 
 /** As faixas alternam papel e linho na ordem em que aparecem; o mural fecha em areia. */
 function faixasEmOrdem(v: Secoes) {
-  const ids = [v.showStory && "historia", (v.showLocation || v.showDress) && "cerimonia", v.showTips && "dicas", v.showGifts && "presentes", v.showRsvp && "rsvp", v.showMusic && "musica"].filter(Boolean) as string[];
+  const ids = [v.showStory && "historia", v.showGallery && "galeria", (v.showLocation || v.showDress) && "cerimonia", v.showTips && "dicas", v.showGifts && "presentes", v.showRsvp && "rsvp", v.showMusic && "musica"].filter(Boolean) as string[];
   return (id: string): TomDaFaixa => (ids.indexOf(id) % 2 === 0 ? "papel" : "linho");
 }
 
 function linksDoMenu(v: Secoes) {
   return [
     v.showStory && { href: "#historia", label: "Nossa história" },
+    v.showGallery && { href: "#galeria", label: "Fotos" },
     v.showLocation && { href: "#cerimonia", label: "Cerimônia" },
     !v.showLocation && v.showDress && { href: "#cerimonia", label: "Traje" },
     v.showTips && { href: "#dicas", label: "Dicas" },
@@ -86,11 +90,12 @@ export function prepararDadosDoSite(e: EntradaDoSite) {
   const datas = textosDeData(s, e.rsvpDeadline);
   // Foto da capa; sem ela, a foto do casal ocupa o arco (e não se repete em "Nossa história").
   const storyCouplePhoto = s.heroImageUrl ? s.couplePhotoUrl || null : null;
+  const modelo = modeloDoSite(s.template);
   const visiveis = secoesVisiveis(s, e, locationName, local.address, storyCouplePhoto);
   return {
     s, coupleNames: nomes, initials: obterIniciaisDoCasal(nomes), ...datas, ...local, ...visiveis, locationName,
     countdownTarget: s.weddingDate ? instanteDoCasamento(new Date(s.weddingDate), s.ceremonyTime) : null,
-    palette: interpretarPaleta(s.dressCodePalette), themeStyle: estiloDoTema(s.themeColor),
+    palette: interpretarPaleta(s.dressCodePalette), themeStyle: estiloDoTema(s.themeColor, modelo), modelo, galleryPhotos: fotosDaGaleria(s.galleryUrls),
     coverUrl: s.heroImageUrl || s.couplePhotoUrl || null, storyCouplePhoto,
     toneOf: faixasEmOrdem(visiveis), navLinks: linksDoMenu(visiveis),
     rsvpHref: caminhoDoSiteDoCasamento(e.slug, "rsvp"), giftsHref: caminhoDoSiteDoCasamento(e.slug, "presentes"),

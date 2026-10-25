@@ -28,6 +28,11 @@ export interface ConfiguracoesDoSiteDoCasamento {
   showRsvp?: boolean;
   showGuestbook?: boolean;
   showMusic?: boolean;
+  showGallery?: boolean;
+  /** Modelo do site (modelos/catalogo.ts). */
+  template?: string | null;
+  /** Fotos da galeria, em JSON (lista de endereços). */
+  galleryUrls?: string | null;
 }
 
 export interface ItemDaHistoria {

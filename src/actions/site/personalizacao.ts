@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { enviarArquivoDeImagem } from "@/lib/supabase";
 import { ehImagemPermitidaNoSite } from "@/lib/image-source";
+import { fotosDaGaleria, ehIdDeModelo, textoDaGaleria } from "@/components/public/site-do-casamento/modelos/catalogo";
 
 /**
  * Obtém ou inicializa as configurações visuais e seções do site do casamento da sessão.
@@ -70,6 +71,15 @@ const EsquemaDaPersonalizacaoDoSite = z
     showRsvp: z.boolean(),
     showGuestbook: z.boolean(),
     showMusic: z.boolean(),
+    showGallery: z.boolean(),
+    template: z.string().refine(ehIdDeModelo, "Modelo inválido."),
+    galleryUrls: z
+      .string()
+      .max(20_000)
+      .refine((bruto) => fotosDaGaleria(bruto).every(ehImagemPermitidaNoSite), "Use fotos enviadas pelo editor ou links começando com https://.")
+      .transform((bruto) => textoDaGaleria(fotosDaGaleria(bruto)))
+      .optional()
+      .nullable(),
   })
   .partial();
 

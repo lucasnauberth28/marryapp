@@ -7,7 +7,7 @@ import type { TomDaFaixa } from "./tipos";
 import { separarNomes } from "./utilitarios";
 
 /** Cartão do design: papel, borda linha e raio de 16px. Dentro de faixa papel, usa o linho. */
-export const estiloDoCartao = "rounded-2xl border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)] group-data-[tone=papel]/band:bg-linho";
+export const estiloDoCartao = "cartao-do-site rounded-2xl border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)] group-data-[tone=papel]/band:bg-linho";
 
 export const classeDoTitulo = "font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta text-balance md:text-5xl md:leading-[54px]";
 
