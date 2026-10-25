@@ -1,5 +1,5 @@
 import { obterMesasComConvidados, obterConvidadosSemMesa } from "@/actions/table-actions";
-import { MesasCliente } from "./tables-client";
+import { MesasCliente } from "./mesas-cliente";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 
 export const dynamic = "force-dynamic";
