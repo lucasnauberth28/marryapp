@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/pagamento/gift-fee";
 import { SimuladorDePresentes } from "./gift-simulator";
 import { Aparicao } from "@/components/motion/reveal";
 import { CabecalhoDaSecao } from "./home-ui";
@@ -20,9 +19,9 @@ export function SecaoDePresentes({ classic, vip }: { classic: string; vip: strin
           <SimuladorDePresentes classicLabel={classic} vipLabel={vip} />
         </Aparicao>
         <p className="lp-sim-nota">
-          No {classic} e no {vip}, a taxa de {ROTULO_DA_TAXA_DO_PRESENTE} não vale para Pix, só para cartão.{" "}
+          No {classic} e no {vip}, o Pix não tem tarifa do Aceito. As condições de cada plano aparecem na hora de escolher.{" "}
           <Link href="/planos#presentes" className="lp-link-claro">
-            Ver taxas e condições
+            Comparar os planos
           </Link>
         </p>
       </div>

@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import type { Catalogo } from "@/lib/pagamento/catalog";
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/pagamento/gift-fee";
 import { CONDICOES_DO_PRESENTE, rotuloDoPlano } from "@/lib/pagamento/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 
@@ -21,7 +20,7 @@ const perguntasDeComeco = (catalog: Catalogo): Pergunta[] => {
     },
     {
       q: "Preciso pagar para começar?",
-      a: `Vocês podem começar pelo plano Básico, sem mensalidade e sem cartão de crédito. Nesse plano, há uma taxa de ${ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido. O ${classic} (${formatarReaisEnxuto(catalog.plans.classic.price)}) e o ${vip} (${formatarReaisEnxuto(catalog.plans.vip.price)}) têm pagamento único e outras condições.`,
+      a: `Não. Vocês podem começar grátis, sem mensalidade e sem cartão de crédito. Na hora de escolher o plano, as condições de cada um aparecem lado a lado, inclusive a tarifa sobre presentes do plano gratuito. O ${classic} (${formatarReaisEnxuto(catalog.plans.classic.price)}) e o ${vip} (${formatarReaisEnxuto(catalog.plans.vip.price)}) têm pagamento único e outras condições.`,
     },
     {
       q: "Os convidados precisam criar conta?",

@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import type { Catalogo } from "@/lib/pagamento/catalog";
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/pagamento/gift-fee";
 import { rotuloDoPlano } from "@/lib/pagamento/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { Aparicao } from "@/components/motion/reveal";
@@ -17,7 +16,7 @@ function perguntasDaHome(catalog: Catalogo): Pergunta[] {
   return [
     {
       q: "Preciso pagar para começar?",
-      a: `Não. O Básico não tem mensalidade nem pede cartão. Há uma taxa de ${ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido. ${classic} (${formatarReaisEnxuto(catalog.plans.classic.price)}) e ${vip} (${formatarReaisEnxuto(catalog.plans.vip.price)}) têm pagamento único.`,
+      a: `Não. Vocês começam grátis, sem mensalidade e sem cartão. Na hora de escolher o plano, as condições de cada um aparecem lado a lado. ${classic} (${formatarReaisEnxuto(catalog.plans.classic.price)}) e ${vip} (${formatarReaisEnxuto(catalog.plans.vip.price)}) têm pagamento único.`,
     },
     { q: "Os convidados precisam criar conta?", a: "Não. Eles abrem o link, digitam o próprio WhatsApp e respondem." },
     {

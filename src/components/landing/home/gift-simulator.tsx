@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ROTULO_DA_TAXA_DO_PRESENTE, calcularValoresDoPresente, type PlanoDaTaxaDoPresente } from "@/lib/pagamento/gift-fee";
+import { calcularValoresDoPresente, type PlanoDaTaxaDoPresente } from "@/lib/pagamento/gift-fee";
 import { formatarCentavos, interpretarCentavos } from "./home-money";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 
@@ -49,7 +49,7 @@ function ResultadoDoSimulador({ plano, valor, feeCents, netCents }: { plano: Pla
       </p>
       <div className="lp-sim-linhas">
         <div>
-          <span>{plano === "basic" ? `Taxa do Aceito (${ROTULO_DA_TAXA_DO_PRESENTE})` : "Taxa do Aceito no Pix"}</span>
+          <span>{plano === "basic" ? "Tarifa do plano Básico" : "Tarifa no Pix"}</span>
           <b>{feeCents ? `− ${formatarReais(feeCents)}` : formatarReais(0)}</b>
         </div>
         <div>
