@@ -6,7 +6,7 @@ import { NavegacaoDeAbas } from "@/components/plataforma/tabs-nav";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { umDosValores, type ParametrosDeBusca } from "@/lib/platform/list-params";
 import { diasEntre } from "@/lib/platform/format";
-import { obterCabecalhoDoCasal } from "@/lib/platform/queries/casais";
+import { obterCabecalhoDoCasal } from "@/lib/platform/queries/casais/cabecalho";
 import { AbaPagamentos } from "./_abas/aba-pagamentos";
 import { AbaSuporte } from "./_abas/aba-suporte";
 import { AbaVisaoGeral } from "./_abas/aba-visao-geral";

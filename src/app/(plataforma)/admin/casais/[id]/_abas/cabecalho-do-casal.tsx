@@ -8,7 +8,7 @@ import { estiloDoBotao } from "@/components/landing/styles";
 import { formatarData, formatarDataEHora, formatarDataPorExtenso, formatarDiaDaSemana, formatarInteiro, formatarPercentual, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-import type { CabecalhoDoCasal } from "@/lib/platform/queries/casais";
+import type { CabecalhoDoCasal } from "@/lib/platform/queries/casais/cabecalho";
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import { cn } from "@/lib/utils";
 import { EtiquetaDeSituacaoDoCasal } from "../../_components/situation-chip";

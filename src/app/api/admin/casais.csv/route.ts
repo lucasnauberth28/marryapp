@@ -4,7 +4,8 @@ import { registrarAuditoria } from "@/lib/audit";
 import { protecaoDaApiDeAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { umDosValores, parametroDaBusca, type ParametrosDeBusca } from "@/lib/platform/list-params";
 import { FILTROS_DE_ATIVIDADE, ABAS_DE_CASAIS, FILTROS_DE_DATA, FILTROS_DE_DOMINIO, FILTROS_DE_INICIO, FILTROS_DE_PLANO, type FiltrosDeCasais } from "@/lib/platform/casais-filters";
-import { ORDENACOES_DE_CASAIS, listarCasaisParaExportar, idsDeCasamentoDoPlano } from "@/lib/platform/queries/casais";
+import { ORDENACOES_DE_CASAIS, listarCasaisParaExportar } from "@/lib/platform/queries/casais/lista";
+import { idsDeCasamentoDoPlano } from "@/lib/platform/queries/casais/planos";
 import { linhaCsv } from "@/lib/platform/csv";
 import { ROTULO_DA_SITUACAO } from "@/lib/platform/casal-status";
 

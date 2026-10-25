@@ -9,7 +9,8 @@ import {
   FILTROS_DE_PLANO,
   type FiltrosDeCasais,
 } from "@/lib/platform/casais-filters";
-import { ORDENACOES_DE_CASAIS, obterContagensDeCasais, listarCasais, idsDeCasamentoDoPlano } from "@/lib/platform/queries/casais";
+import { ORDENACOES_DE_CASAIS, obterContagensDeCasais, listarCasais } from "@/lib/platform/queries/casais/lista";
+import { idsDeCasamentoDoPlano } from "@/lib/platform/queries/casais/planos";
 import type { LinhaDaListaDeCasais } from "../_components/casais-list";
 
 const ACOMPANHAR_DE_PERTO = ["marcados"] as const;

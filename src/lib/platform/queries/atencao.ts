@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { filtroSemSoPresente } from "@/lib/guest-origin";
 import { assinaturaDoCasal, filtroDosProximos30Dias, filtroDeProblema } from "@/lib/platform/casais-filters";
-import { obterUltimosPlanos } from "@/lib/platform/queries/casais";
+import { obterUltimosPlanos } from "@/lib/platform/queries/casais/planos";
 import { obterReembolsosPendentes, obterPixParaConferir } from "@/lib/platform/queries/receita";
 import { obterFilaDeCuradoria } from "@/lib/platform/queries/fornecedores";
 import { montarItensDeAtencao, type EntradaDeAtencao } from "@/lib/platform/queries/atencao-itens";

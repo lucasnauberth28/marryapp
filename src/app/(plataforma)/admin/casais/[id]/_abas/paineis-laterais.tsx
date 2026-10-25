@@ -6,7 +6,7 @@ import { estiloDoBotao } from "@/components/landing/styles";
 import { formatarData, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-import type { CabecalhoDoCasal } from "@/lib/platform/queries/casais";
+import type { CabecalhoDoCasal } from "@/lib/platform/queries/casais/cabecalho";
 import { cn } from "@/lib/utils";
 import { AcoesDeCuidado } from "../_components/care-actions";
 import { BotaoDeConfirmarPix } from "../_components/confirm-pix-button";

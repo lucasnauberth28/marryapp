@@ -4,7 +4,7 @@ import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { formatarData } from "@/lib/platform/format";
-import { obterSuporteDoCasal } from "@/lib/platform/queries/casais";
+import { obterSuporteDoCasal } from "@/lib/platform/queries/casais/abas";
 import { cn } from "@/lib/utils";
 import { FormularioDeNota } from "../_components/note-form";
 

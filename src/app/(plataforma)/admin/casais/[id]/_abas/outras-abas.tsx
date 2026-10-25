@@ -9,7 +9,7 @@ import { Interruptor } from "@/components/ui/switch";
 import { formatarData, formatarDataEHora } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-import { obterAtividadeDoCasal, obterDominioDoCasal, obterLinhaDoTempoDoCasal, obterMadrinhaDoCasal, obterNumerosDeConvidadosDoCasal } from "@/lib/platform/queries/casais";
+import { obterAtividadeDoCasal, obterDominioDoCasal, obterLinhaDoTempoDoCasal, obterMadrinhaDoCasal, obterNumerosDeConvidadosDoCasal } from "@/lib/platform/queries/casais/abas";
 import { cn } from "@/lib/utils";
 import { LinhaDoTempo } from "./aba-visao-geral";
 import { LinhasDoDetalhe } from "./linhas-do-detalhe";

@@ -1,7 +1,8 @@
 import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { formatarDataEHora } from "@/lib/platform/format";
-import { obterLinhaDoTempoDoCasal, type CabecalhoDoCasal } from "@/lib/platform/queries/casais";
+import { obterLinhaDoTempoDoCasal } from "@/lib/platform/queries/casais/abas";
+import type { CabecalhoDoCasal } from "@/lib/platform/queries/casais/cabecalho";
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import { LinhaDeLink } from "../_components/copy-link";
 import { LinhasDoDetalhe } from "./linhas-do-detalhe";
