@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
-import { ConfiguracaoDoWhatsappCliente } from "./whatsapp-config-client";
+import { ConfiguracaoDoWhatsappCliente } from "./configuracao-do-whatsapp-cliente";
 
 export const metadata: Metadata = {
   title: "Conexão do WhatsApp",

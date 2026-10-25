@@ -6,7 +6,7 @@ import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { cifraDoRepasseEstaConfigurada } from "@/lib/security/payout-crypto";
 import { obterVisaoDaContaDeRepasse } from "@/lib/payout-account-view";
 import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
-import { RecebimentoCliente } from "./recebimento-client";
+import { RecebimentoCliente } from "./recebimento-cliente";
 
 export const metadata: Metadata = {
   title: "Onde receber os presentes",

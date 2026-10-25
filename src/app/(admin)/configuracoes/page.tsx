@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { obterConfiguracoes } from "@/actions/settings-actions";
-import { ConfiguracoesCliente } from "./settings-client";
+import { ConfiguracoesCliente } from "./configuracoes-cliente";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
