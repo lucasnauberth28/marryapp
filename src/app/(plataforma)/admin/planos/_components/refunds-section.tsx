@@ -12,6 +12,46 @@ import { DecisaoDeReembolso, FormularioDeRegistrarReembolso } from "./refund-for
 
 const TONS_DA_ETIQUETA: Record<VisaoDoReembolso, TomDaSituacao> = { decide: "aviso", waiting_refund: "aviso", refunded: "neutro", denied: "neutro" };
 
+function CelulaDeAcao({ r }: { r: LinhaDeReembolso }) {
+  const view = visaoDoReembolso(r);
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="max-w-[340px] text-sm text-tinta-suave">Motivo: {r.reason}</p>
+      {r.decisionNote ? <p className="max-w-[340px] text-sm text-tinta-suave">Decisão: {r.decisionNote}</p> : null}
+      {view === "decide" ? <DecisaoDeReembolso refundId={r.id} payer={r.payer} /> : null}
+      <Link href={`/admin/planos/assinaturas?id=${r.subscriptionId}#painel`} className="text-sm font-semibold text-ameixa underline underline-offset-2">
+        Ver o pagamento
+      </Link>
+    </div>
+  );
+}
+
+function prazoDoReembolso(r: LinhaDeReembolso, now: Date) {
+  const view = visaoDoReembolso(r);
+  if (view === "decide" && r.dueAt) return `responder até ${formatarData(r.dueAt)} (${diaRelativo(r.dueAt, now)})`;
+  return r.decidedAt ? `decidido em ${formatarData(r.decidedAt)}` : <span className="text-tinta-suave">Sem prazo</span>;
+}
+
+function colunasDeReembolsos(now: Date) {
+  return [
+    {
+      key: "quem",
+      header: "Quem",
+      primary: true,
+      cell: (r: LinhaDeReembolso) => (
+        <>
+          <span className="block">{r.payer}</span>
+          <span className="block text-sm font-normal text-tinta-suave">{r.planType === "VENDOR" ? "Fornecedor" : "Casal"} · {r.planName.replace(/^(Plano|Fornecedor)\s+/, "")}</span>
+        </>
+      ),
+    },
+    { key: "valor", header: "Valor", align: "right" as const, cell: (r: LinhaDeReembolso) => formatarReais(r.amount) },
+    { key: "prazo", header: "Prazo", cell: (r: LinhaDeReembolso) => prazoDoReembolso(r, now) },
+    { key: "situacao", header: "Situação", cell: (r: LinhaDeReembolso) => <EtiquetaDeSituacao tone={TONS_DA_ETIQUETA[visaoDoReembolso(r)]}>{ROTULO_DA_VISAO_DO_REEMBOLSO[visaoDoReembolso(r)]}</EtiquetaDeSituacao> },
+    { key: "acao", header: <span className="sr-only">Ação</span>, mobileLabel: false as const, cell: (r: LinhaDeReembolso) => <CelulaDeAcao r={r} /> },
+  ];
+}
+
 /** Reembolsos: pedidos, decisão e o aviso de que o estorno de verdade é feito no Mercado Pago. */
 export function SecaoDeReembolsos({ refunds, payments, now, preview = false, policyText }: { refunds: LinhaDeReembolso[]; payments?: { id: string; label: string; amount: number }[]; now: Date; preview?: boolean; policyText?: string }) {
   const rows = preview ? refunds.slice(0, 5) : refunds;
@@ -33,55 +73,7 @@ export function SecaoDeReembolsos({ refunds, payments, now, preview = false, pol
                 Quando alguém pedir o dinheiro de volta, registre o pedido aqui para decidir e deixar no registro.
               </EstadoVazio>
             }
-            columns={[
-              {
-                key: "quem",
-                header: "Quem",
-                primary: true,
-                cell: (r) => (
-                  <>
-                    <span className="block">{r.payer}</span>
-                    <span className="block text-sm font-normal text-tinta-suave">{r.planType === "VENDOR" ? "Fornecedor" : "Casal"} · {r.planName.replace(/^(Plano|Fornecedor)\s+/, "")}</span>
-                  </>
-                ),
-              },
-              { key: "valor", header: "Valor", align: "right", cell: (r) => formatarReais(r.amount) },
-              {
-                key: "prazo",
-                header: "Prazo",
-                cell: (r) => {
-                  const view = visaoDoReembolso(r);
-                  if (view === "decide" && r.dueAt) return `responder até ${formatarData(r.dueAt)} (${diaRelativo(r.dueAt, now)})`;
-                  return r.decidedAt ? `decidido em ${formatarData(r.decidedAt)}` : <span className="text-tinta-suave">Sem prazo</span>;
-                },
-              },
-              {
-                key: "situacao",
-                header: "Situação",
-                cell: (r) => {
-                  const view = visaoDoReembolso(r);
-                  return <EtiquetaDeSituacao tone={TONS_DA_ETIQUETA[view]}>{ROTULO_DA_VISAO_DO_REEMBOLSO[view]}</EtiquetaDeSituacao>;
-                },
-              },
-              {
-                key: "acao",
-                header: <span className="sr-only">Ação</span>,
-                mobileLabel: false,
-                cell: (r) => {
-                  const view = visaoDoReembolso(r);
-                  return (
-                    <div className="flex flex-col gap-2">
-                      <p className="max-w-[340px] text-sm text-tinta-suave">Motivo: {r.reason}</p>
-                      {r.decisionNote ? <p className="max-w-[340px] text-sm text-tinta-suave">Decisão: {r.decisionNote}</p> : null}
-                      {view === "decide" ? <DecisaoDeReembolso refundId={r.id} payer={r.payer} /> : null}
-                      <Link href={`/admin/planos/assinaturas?id=${r.subscriptionId}#painel`} className="text-sm font-semibold text-ameixa underline underline-offset-2">
-                        Ver o pagamento
-                      </Link>
-                    </div>
-                  );
-                },
-              },
-            ]}
+            columns={colunasDeReembolsos(now)}
           />
         </div>
       </Painel>

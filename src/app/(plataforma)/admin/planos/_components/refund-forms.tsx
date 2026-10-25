@@ -77,8 +77,35 @@ export function DecisaoDeReembolso({ refundId, payer }: { refundId: string; paye
 }
 
 
+function reaisEmCentavos(text: string) {
+  const clean = text.replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
+  const n = Number(clean);
+  return Number.isFinite(n) ? Math.round(n * 100) : Number.NaN;
+}
+
+type PagamentoReembolsavel = { id: string; label: string; amount: number };
+
+function EscolhaDoPagamento({ payments, value, aoEscolher }: { payments: PagamentoReembolsavel[]; value: string; aoEscolher: (id: string, amount: number | null) => void }) {
+  return (
+    <SelecaoNativa
+      label="Pagamento"
+      alwaysFloat
+      value={value}
+      onChange={(e) => aoEscolher(e.target.value, payments.find((x) => x.id === e.target.value)?.amount ?? null)}
+      required
+    >
+      <option value="">Escolha o pagamento</option>
+      {payments.map((p) => (
+        <option key={p.id} value={p.id}>
+          {p.label} · {formatarReais(p.amount)}
+        </option>
+      ))}
+    </SelecaoNativa>
+  );
+}
+
 /** Registrar um pedido de reembolso que chegou por WhatsApp ou e-mail. */
-export function FormularioDeRegistrarReembolso({ payments }: { payments: { id: string; label: string; amount: number }[] }) {
+export function FormularioDeRegistrarReembolso({ payments }: { payments: PagamentoReembolsavel[] }) {
   const { pending, error, run } = useExecutar();
   const [subscriptionId, setSubscriptionId] = useState("");
   const [amount, setAmount] = useState("");
@@ -89,42 +116,26 @@ export function FormularioDeRegistrarReembolso({ payments }: { payments: { id: s
     return <p className="text-sm text-tinta-suave">Quando houver pagamentos aprovados, você pode registrar aqui um pedido de reembolso que chegou por WhatsApp ou e-mail.</p>;
   }
 
-  const toCents = (text: string) => {
-    const clean = text.replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
-    const n = Number(clean);
-    return Number.isFinite(n) ? Math.round(n * 100) : Number.NaN;
-  };
-
   return (
     <form
       className="grid gap-4 md:grid-cols-2"
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => registrarPedidoDeReembolso({ subscriptionId, amountCents: toCents(amount), reason }), () => {
+        run(() => registrarPedidoDeReembolso({ subscriptionId, amountCents: reaisEmCentavos(amount), reason }), () => {
           setSubscriptionId("");
           setAmount("");
           setReason("");
         });
       }}
     >
-      <SelecaoNativa
-        label="Pagamento"
-        alwaysFloat
+      <EscolhaDoPagamento
+        payments={payments}
         value={subscriptionId}
-        onChange={(e) => {
-          setSubscriptionId(e.target.value);
-          const p = payments.find((x) => x.id === e.target.value);
-          if (p) setAmount((p.amount / 100).toFixed(2).replace(".", ","));
+        aoEscolher={(id, valor) => {
+          setSubscriptionId(id);
+          if (valor !== null) setAmount((valor / 100).toFixed(2).replace(".", ","));
         }}
-        required
-      >
-        <option value="">Escolha o pagamento</option>
-        {payments.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.label} · {formatarReais(p.amount)}
-          </option>
-        ))}
-      </SelecaoNativa>
+      />
       <Entrada label="Valor a devolver (R$)" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} hint={chosen ? `Pago: ${formatarReais(chosen.amount)}` : undefined} required />
       <div className="md:col-span-2">
         <AreaDeTexto label="Motivo do pedido" rows={2} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} error={error ?? undefined} required />
