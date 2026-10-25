@@ -1,8 +1,10 @@
 // Contas do Resumo do casamento (sem banco nem Next): convites e pessoas, convites enviados, extrato dos presentes,
 // orçamento, prazo e a fila "O que fazer agora". A página só lê o banco e desenha; as regras ficam aqui, com testes.
+import { formatarReais } from "./formatacao/dinheiro.ts";
 import { giftAmounts, type GiftAmounts, type GiftFeeMethod, type GiftFeePlan } from "./gift-fee.ts";
 import { isGiftOnlyPending } from "./guest-origin.ts";
 
+import { pluralizar } from "./formatacao/plural.ts";
 // ---------- Datas de calendário ("AAAA-MM-DD") ----------
 
 export const SP_TZ = "America/Sao_Paulo";
@@ -39,9 +41,8 @@ export function shortDayLabel(key: string): string {
   return SHORT.format(new Date(`${key}T00:00:00Z`)).replace(" de ", " ").replace(".", "");
 }
 
-const plural = (n: number, one: string, many: string) => `${n.toLocaleString("pt-BR")} ${n === 1 ? one : many}`;
-export const invitesLabel = (n: number) => plural(n, "convite", "convites");
-export const peopleLabel = (n: number) => plural(n, "pessoa", "pessoas");
+export const invitesLabel = (n: number) => pluralizar(n, "convite", "convites");
+export const peopleLabel = (n: number) => pluralizar(n, "pessoa", "pessoas");
 
 // ---------- Convidados: convites e pessoas ----------
 
@@ -292,12 +293,11 @@ export function summarizeBudget(expenses: readonly ExpenseRow[], todayKey: strin
 
 // ---------- Dinheiro escrito ----------
 
-const NBSP = " ";
 const reaisFmt = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /** "R$ 3.850,00": sempre com centavos. */
 export function formatBRL(cents: number): string {
-  return `R$${NBSP}${reaisFmt.format(Math.abs(cents) / 100)}`;
+  return formatarReais(Math.abs(cents));
 }
 
 /** Saída com sinal de menos verdadeiro: "−R$ 193,90". */
@@ -369,7 +369,7 @@ export function buildQueue(input: QueueInput, max = 3): QueueItem[] {
         ? `A despesa ${what} está com o vencimento atrasado desde ${when}.`
         : next.days === 0
           ? `A despesa ${what} vence hoje.`
-          : `A despesa ${what} vence em ${when}, daqui a ${plural(next.days, "dia", "dias")}.`;
+          : `A despesa ${what} vence em ${when}, daqui a ${pluralizar(next.days, "dia", "dias")}.`;
     items.push({ id: "despesa", kind: "despesa", text, action: can("/financas") ? { label: "Ver despesa", href: "#orcamento" } : undefined });
   }
 

@@ -23,6 +23,7 @@ import {
   type ImportRow,
 } from "@/lib/guest-import";
 
+import { pluralizar } from "@/lib/formatacao/plural";
 const MAX_FILE_BYTES = 2 * 1024 * 1024;
 
 const FIELD_LABEL: Record<ImportField, string> = {
@@ -62,8 +63,6 @@ function downloadSheetTemplate() {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
-
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 export function ImportGuestsModal({ isOpen, onClose, existing }: ImportGuestsModalProps) {
   return (
@@ -156,7 +155,7 @@ function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose:
         // Repetidos: os que a prévia já tirou mais os que o servidor achou na hora de gravar
         setResult({ added: res.added, duplicates: plan.duplicates.length + res.duplicates, invalid: plan.invalid.length });
         setStage("pronto");
-        toast.success(`${plural(res.added, "convidado adicionado", "convidados adicionados")}.`, { id: toastId });
+        toast.success(`${pluralizar(res.added, "convidado adicionado", "convidados adicionados")}.`, { id: toastId });
       } else {
         setError(res.error);
         setStage("previa");
@@ -267,12 +266,12 @@ function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose:
         </span>
         <div className="flex flex-col gap-1" role="status" aria-live="polite">
           <h3 ref={stageHeading} tabIndex={-1} className={headingClass}>
-            {result.added === 0 ? "Nenhum convidado novo" : `${plural(result.added, "convidado adicionado", "convidados adicionados")}`}
+            {result.added === 0 ? "Nenhum convidado novo" : `${pluralizar(result.added, "convidado adicionado", "convidados adicionados")}`}
           </h3>
           <p className="text-tinta-suave">
             {[
-              result.duplicates > 0 ? plural(result.duplicates, "já estava na lista e foi pulado", "já estavam na lista e foram pulados") : null,
-              result.invalid > 0 ? plural(result.invalid, "linha com problema ficou de fora", "linhas com problema ficaram de fora") : null,
+              result.duplicates > 0 ? pluralizar(result.duplicates, "já estava na lista e foi pulado", "já estavam na lista e foram pulados") : null,
+              result.invalid > 0 ? pluralizar(result.invalid, "linha com problema ficou de fora", "linhas com problema ficaram de fora") : null,
             ]
               .filter(Boolean)
               .join(". ") || "Todos já aparecem na lista de convidados."}
@@ -376,7 +375,7 @@ function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose:
               <li key={r.line}>
                 <span className="font-semibold text-tinta">{r.name}</span>
                 {r.phone ? `, ${formatPhoneBR(r.phone)}` : ", sem telefone"}
-                {r.companions > 0 ? `, ${plural(r.companions, "acompanhante", "acompanhantes")}` : ""}
+                {r.companions > 0 ? `, ${pluralizar(r.companions, "acompanhante", "acompanhantes")}` : ""}
                 {r.category ? `, ${r.category}` : ""}
               </li>
             ))}
@@ -411,7 +410,7 @@ function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose:
           Escolher outro arquivo
         </button>
         <button type="button" onClick={() => void runImport()} disabled={addCount === 0} className={btn.primary}>
-          Importar {plural(addCount, "convidado", "convidados")}
+          Importar {pluralizar(addCount, "convidado", "convidados")}
         </button>
       </div>
     </div>

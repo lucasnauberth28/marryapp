@@ -13,7 +13,8 @@ import { PlanChip, StatusChip, type StatusTone } from "@/components/plataforma/s
 import { TabsNav } from "@/components/plataforma/tabs-nav";
 import { STATUS_LABEL, formatPhoneBr, type DomainOrderStatusName } from "@/lib/domain-order";
 import { renewalReminderStatus } from "@/lib/domain-renewal";
-import { formatDate, formatDateTime, plural, relativeDay, timeAgo } from "@/lib/platform/format";
+import { formatDate, formatDateTime, relativeDay, timeAgo } from "@/lib/platform/format";
+import { pluralizar } from "@/lib/formatacao/plural";
 import { oneOf, param, parsePage, type SearchParams } from "@/lib/platform/list-params";
 import {
   DOMAIN_PAGE_SIZE,
@@ -258,7 +259,7 @@ async function DomainDetailSlot({ selectedId, summary }: { selectedId: string | 
         <Panel>
           <p className="text-sm text-tinta-suave">Escolha um pedido na lista para ver os dados do titular, as etapas e as ações.</p>
           <p className="mt-2 flex items-center gap-2 text-sm text-tinta-suave">
-            <Link2 className="size-4" aria-hidden="true" /> {plural(summary.requested + summary.registered, "pedido espera", "pedidos esperam")} uma ação sua.
+            <Link2 className="size-4" aria-hidden="true" /> {pluralizar(summary.requested + summary.registered, "pedido espera", "pedidos esperam")} uma ação sua.
           </p>
         </Panel>
       )}

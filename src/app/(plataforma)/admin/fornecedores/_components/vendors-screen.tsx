@@ -15,7 +15,8 @@ import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { UserImage } from "@/components/ui/user-image";
 import { PlanChip, StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
 import { TabsNav } from "@/components/plataforma/tabs-nav";
-import { formatDate, formatInt, plural, relativeDay, timeAgo } from "@/lib/platform/format";
+import { formatDate, formatInt, relativeDay, timeAgo } from "@/lib/platform/format";
+import { pluralizar } from "@/lib/formatacao/plural";
 import { buildHref, oneOf, param, parsePage, type SearchParams } from "@/lib/platform/list-params";
 import {
   CURATION_FILTERS,
@@ -86,8 +87,8 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
     mode === "curadoria"
       ? counts.curadoria === 0
         ? "Nenhum cadastro esperando análise."
-        : `${plural(counts.curadoria, "cadastro esperando", "cadastros esperando")} análise${oldest ? `, o mais antigo ${timeAgo(oldest.createdAt, now)}` : ""}.`
-      : `${plural(counts.todos, "fornecedor", "fornecedores")}, ${formatInt(pro + master)} com plano pago (${formatInt(pro)} Pro e ${formatInt(master)} Master).`;
+        : `${pluralizar(counts.curadoria, "cadastro esperando", "cadastros esperando")} análise${oldest ? `, o mais antigo ${timeAgo(oldest.createdAt, now)}` : ""}.`
+      : `${pluralizar(counts.todos, "fornecedor", "fornecedores")}, ${formatInt(pro + master)} com plano pago (${formatInt(pro)} Pro e ${formatInt(master)} Master).`;
 
   const filters = [
     { key: "categoria", label: "Categoria", allLabel: "Todas", options: options.categories.map((c) => ({ value: c, label: c })) },
@@ -200,8 +201,8 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
                     <span className="text-tinta-suave">Sem dados</span>
                   ) : (
                     <>
-                      <span className="block">{plural(v.visits, "visita", "visitas")}</span>
-                      <span className="block text-sm text-tinta-suave">{plural(v.leads, "pedido", "pedidos")}</span>
+                      <span className="block">{pluralizar(v.visits, "visita", "visitas")}</span>
+                      <span className="block text-sm text-tinta-suave">{pluralizar(v.leads, "pedido", "pedidos")}</span>
                     </>
                   ),
               },
@@ -365,7 +366,7 @@ function VendorDetailPanel({ detail, now, basePath }: { detail: NonNullable<Awai
       <h2 className="mt-3 font-display text-[28px] leading-8 text-tinta">{detail.companyName}</h2>
       <p className="mt-1 text-sm text-tinta-suave">
         {detail.document ? `${detail.documentType ?? "Documento"} ${detail.document}` : "Documento não informado"}
-        {detail.regions.length > 0 ? ` · ${detail.regions.slice(0, 2).join(", ")}` : ""} · cadastro {days === 0 ? "hoje" : `há ${plural(days, "dia", "dias")}`}
+        {detail.regions.length > 0 ? ` · ${detail.regions.slice(0, 2).join(", ")}` : ""} · cadastro {days === 0 ? "hoje" : `há ${pluralizar(days, "dia", "dias")}`}
       </p>
       {detail.curationStatus === "REJECTED" && detail.curationNotes ? <p className="mt-3 rounded-xl bg-areia p-3 text-sm text-tinta">Mensagem enviada ao fornecedor: {detail.curationNotes}</p> : null}
       {detail.suspendedAt ? <p className="mt-3 rounded-xl bg-perigo-suave p-3 text-sm text-perigo">Suspenso {timeAgo(detail.suspendedAt, now)}{detail.suspendedReason ? `. Motivo: ${detail.suspendedReason}` : ""}</p> : null}

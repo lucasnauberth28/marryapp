@@ -18,16 +18,10 @@ import {
   Undo2,
 } from "lucide-react";
 
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 // ==========================================
 // UTILS
 // ==========================================
-
-function formatCurrency(centavos: number): string {
-  return (centavos / 100).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
-}
 
 function formatDate(date: Date): string {
   return new Date(date).toLocaleDateString("pt-BR", {
@@ -291,7 +285,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
                 <p className="font-semibold text-tinta">{tx.guest?.name || tx.guestName || "Convidado sem nome"}</p>
                 <p className="text-sm text-tinta-suave">{formatDate(tx.createdAt)}</p>
               </div>
-              <span className="shrink-0 font-semibold tabular-nums text-tinta">{formatCurrency(tx.netAmount || tx.amount)}</span>
+              <span className="shrink-0 font-semibold tabular-nums text-tinta">{formatarReais(tx.netAmount || tx.amount)}</span>
             </div>
             <p className="text-[15px] text-tinta">{tx.gift.title}</p>
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -357,7 +351,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
             accessor: (tx) => tx.netAmount || tx.amount,
             cell: (tx) => (
               <span className="text-sm font-semibold text-tinta">
-                {formatCurrency(tx.netAmount || tx.amount)}
+                {formatarReais(tx.netAmount || tx.amount)}
               </span>
             ),
           },

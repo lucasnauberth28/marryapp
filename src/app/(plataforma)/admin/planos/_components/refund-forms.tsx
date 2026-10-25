@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 function useRun() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -75,7 +76,6 @@ export function RefundDecision({ refundId, payer }: { refundId: string; payer: s
   );
 }
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
 /** Registrar um pedido de reembolso que chegou por WhatsApp ou e-mail. */
 export function RegisterRefundForm({ payments }: { payments: { id: string; label: string; amount: number }[] }) {
@@ -121,11 +121,11 @@ export function RegisterRefundForm({ payments }: { payments: { id: string; label
         <option value="">Escolha o pagamento</option>
         {payments.map((p) => (
           <option key={p.id} value={p.id}>
-            {p.label} · {brl.format(p.amount / 100)}
+            {p.label} · {formatarReais(p.amount)}
           </option>
         ))}
       </NativeSelect>
-      <Input label="Valor a devolver (R$)" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} hint={chosen ? `Pago: ${brl.format(chosen.amount / 100)}` : undefined} required />
+      <Input label="Valor a devolver (R$)" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} hint={chosen ? `Pago: ${formatarReais(chosen.amount)}` : undefined} required />
       <div className="md:col-span-2">
         <Textarea label="Motivo do pedido" rows={2} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} error={error ?? undefined} required />
       </div>

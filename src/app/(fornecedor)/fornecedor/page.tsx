@@ -25,6 +25,7 @@ import {
 import { LeadActions } from "./lead-actions";
 import { ResultsCard, ResultsTeaser, type DailyViews } from "./results-card";
 
+import { pluralizar } from "@/lib/formatacao/plural";
 export const metadata: Metadata = { title: "Pedidos de orçamento" };
 
 const CARD = "rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)]";
@@ -38,10 +39,6 @@ const FILTERS: { value: LeadStatus | null; label: string }[] = [
   { value: "CLOSED", label: "Fechados" },
   { value: "DECLINED", label: "Recusados" },
 ];
-
-function plural(n: number, one: string, many: string) {
-  return `${n} ${n === 1 ? one : many}`;
-}
 
 const DAY_MS = 86_400_000;
 const RESULTS_DAYS = 30;
@@ -129,7 +126,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
   const publicProfileHref = vendor.curationStatus === "APPROVED" ? `/fornecedores/${vendor.id}` : null;
 
   const kpis = [
-    { label: "Pedidos no mês", value: monthCount, hint: `${plural(totalCount, "pedido", "pedidos")} no total` },
+    { label: "Pedidos no mês", value: monthCount, hint: `${pluralizar(totalCount, "pedido", "pedidos")} no total` },
     { label: "Sem resposta", value: newCount, hint: newCount > 0 ? "aguardando seu retorno" : totalCount > 0 ? "tudo respondido" : "nenhum pedido ainda" },
     {
       label: "Fechados",
@@ -198,7 +195,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
           <div className="flex min-w-0 flex-col gap-0.5">
             <strong className="font-semibold">
               {monthLocked > 0
-                ? `${plural(monthLocked, "pedido bloqueado", "pedidos bloqueados")} este mês`
+                ? `${pluralizar(monthLocked, "pedido bloqueado", "pedidos bloqueados")} este mês`
                 : remaining > 0
                   ? `${used} de ${START_MONTHLY_LEAD_LIMIT} pedidos usados este mês`
                   : `Você usou os ${START_MONTHLY_LEAD_LIMIT} pedidos do Plano Start este mês`}
@@ -346,7 +343,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
 
               const details = [
                 date ? { icon: CalendarDays, text: date } : null,
-                lead.guestCount ? { icon: Users, text: plural(lead.guestCount, "convidado", "convidados") } : null,
+                lead.guestCount ? { icon: Users, text: pluralizar(lead.guestCount, "convidado", "convidados") } : null,
               ].filter((d) => d !== null);
               const waText = `Olá, ${lead.coupleName}! Aqui é ${vendor.companyName}, pelo Aceito. Recebi seu pedido de orçamento${date ? ` para ${date}` : ""} e quero conversar com vocês.`;
 

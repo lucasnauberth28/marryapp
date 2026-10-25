@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { GIFT_FEE_LABEL, giftAmounts, type GiftFeePlan } from "@/lib/gift-fee";
-import { formatBRL, formatCents, parseCents } from "./home-money";
+import { formatCents, parseCents } from "./home-money";
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 
 /**
  * Simulador de presente por Pix. A conta é a mesma do painel e do checkout (giftAmounts):
@@ -57,11 +58,11 @@ export function GiftSimulator({ classicLabel, vipLabel }: { classicLabel: string
         <div className="lp-sim-linhas">
           <div>
             <span>{plano === "basic" ? `Taxa do Aceito (${GIFT_FEE_LABEL})` : "Taxa do Aceito no Pix"}</span>
-            <b>{feeCents ? `− ${formatBRL(feeCents)}` : formatBRL(0)}</b>
+            <b>{feeCents ? `− ${formatarReais(feeCents)}` : formatarReais(0)}</b>
           </div>
           <div>
             <span>Quem presenteia paga</span>
-            <b>{formatBRL(valor)}</b>
+            <b>{formatarReais(valor)}</b>
           </div>
         </div>
       </div>

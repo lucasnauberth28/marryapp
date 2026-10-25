@@ -11,7 +11,9 @@ import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { RevenueChart } from "@/components/plataforma/revenue-chart";
 import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
 import { getCatalog } from "@/lib/catalog-server";
-import { formatBRL, formatBRLWhole, formatDate, formatInt, formatMonthName, plural, relativeDay, timeAgo } from "@/lib/platform/format";
+import { formatDate, formatInt, formatMonthName, relativeDay, timeAgo } from "@/lib/platform/format";
+import { pluralizar } from "@/lib/formatacao/plural";
+import { formatarReais, formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
 import { oneOf, type SearchParams } from "@/lib/platform/list-params";
 import { accountantMonth } from "@/lib/platform/payments";
 import { percentLabel } from "@/lib/platform/revenue";
@@ -101,8 +103,8 @@ async function Resumo({ now }: { now: Date }) {
       id: "pix",
       icon: Clock,
       tone: "aviso",
-      title: `${plural(pix.count, "Pix para conferir", "Pix para conferir")}`,
-      detail: `${formatBRL(pix.totalCents)} no total.${pix.oldestAt ? ` O mais antigo é ${timeAgo(pix.oldestAt, now)}.` : ""}`,
+      title: `${pluralizar(pix.count, "Pix para conferir", "Pix para conferir")}`,
+      detail: `${formatarReais(pix.totalCents)} no total.${pix.oldestAt ? ` O mais antigo é ${timeAgo(pix.oldestAt, now)}.` : ""}`,
       actionLabel: "Conferir",
       href: "/admin/planos/assinaturas?status=a-conferir",
     });
@@ -111,8 +113,8 @@ async function Resumo({ now }: { now: Date }) {
       id: "reembolso",
       icon: RotateCcw,
       tone: "aviso",
-      title: plural(refunds.count, "reembolso para decidir", "reembolsos para decidir"),
-      detail: `${formatBRL(refunds.totalCents)} no total.${refunds.nextDueAt ? ` Responder até ${formatDate(refunds.nextDueAt)}.` : ""}`,
+      title: pluralizar(refunds.count, "reembolso para decidir", "reembolsos para decidir"),
+      detail: `${formatarReais(refunds.totalCents)} no total.${refunds.nextDueAt ? ` Responder até ${formatDate(refunds.nextDueAt)}.` : ""}`,
       actionLabel: "Analisar",
       href: "/admin/planos?aba=reembolsos",
     });
@@ -121,7 +123,7 @@ async function Resumo({ now }: { now: Date }) {
       id: "notas",
       icon: ReceiptText,
       tone: "aviso",
-      title: plural(invoiceCount, "nota fiscal pendente", "notas fiscais pendentes"),
+      title: pluralizar(invoiceCount, "nota fiscal pendente", "notas fiscais pendentes"),
       detail: "Pagamentos aprovados sem nota emitida.",
       actionLabel: "Ver notas",
       href: "/admin/planos?aba=contador",
@@ -132,11 +134,11 @@ async function Resumo({ now }: { now: Date }) {
       <StatGrid>
         <StatCard
           label={`Receita de ${monthName}`}
-          value={formatBRLWhole(month.cents)}
+          value={formatarReaisInteiros(month.cents)}
           trend={month.change === null ? null : { value: month.change, label: percentLabel(month.change) }}
-          hint={month.payments === 0 ? "nenhum pagamento até agora" : `até hoje, ${plural(month.payments, "pagamento", "pagamentos")}`}
+          hint={month.payments === 0 ? "nenhum pagamento até agora" : `até hoje, ${pluralizar(month.payments, "pagamento", "pagamentos")}`}
         />
-        <StatCard label="Mensalidades" value={formatBRLWhole(recurring.cents)} hint={`${recurring.pro} Pro e ${recurring.master} Master em vigor`} />
+        <StatCard label="Mensalidades" value={formatarReaisInteiros(recurring.cents)} hint={`${recurring.pro} Pro e ${recurring.master} Master em vigor`} />
         <StatCard
           label={`Não renovaram em ${monthName}`}
           value={nonRenewals.of === 0 ? "0" : `${nonRenewals.count} de ${nonRenewals.of}`}
@@ -144,8 +146,8 @@ async function Resumo({ now }: { now: Date }) {
         />
         <StatCard
           label="Valor médio por casal"
-          value={couples.averageCents === null ? "Sem dados" : formatBRLWhole(couples.averageCents)}
-          hint={couples.payments === 0 ? `nenhum casal pagou em ${monthName}` : `${plural(couples.payments, "casal pagou", "casais pagaram")} em ${monthName}`}
+          value={couples.averageCents === null ? "Sem dados" : formatarReaisInteiros(couples.averageCents)}
+          hint={couples.payments === 0 ? `nenhum casal pagou em ${monthName}` : `${pluralizar(couples.payments, "casal pagou", "casais pagaram")} em ${monthName}`}
         />
       </StatGrid>
 
@@ -176,7 +178,7 @@ async function Resumo({ now }: { now: Date }) {
                 { key: "nome", header: "Fornecedor", primary: true, cell: (v) => v.companyName },
                 { key: "plano", header: "Plano", cell: (v) => <PlanChip plan={v.planTier} /> },
                 { key: "vence", header: "Vence", cell: (v) => `${formatDate(v.planExpiresAt)} (${relativeDay(v.planExpiresAt, now)})` },
-                { key: "valor", header: "Valor", align: "right", cell: (v) => formatBRL(catalog.plans[v.planTier === "PRO" ? "pro" : "master"].price) },
+                { key: "valor", header: "Valor", align: "right", cell: (v) => formatarReais(catalog.plans[v.planTier === "PRO" ? "pro" : "master"].price) },
                 {
                   key: "aviso",
                   header: "Aviso",
@@ -195,7 +197,7 @@ async function Resumo({ now }: { now: Date }) {
               empty={<EmptyState icon={TicketPercent} title="Nenhum cupom valendo" compact>Crie um cupom em Gerenciar cupons.</EmptyState>}
               columns={[
                 { key: "codigo", header: "Código", primary: true, cell: (c) => <span className="font-mono">{c.code}</span> },
-                { key: "desconto", header: "Desconto", cell: (c) => (c.percentOff ? `${c.percentOff}%` : c.amountOff ? formatBRL(c.amountOff) : "Sem desconto") },
+                { key: "desconto", header: "Desconto", cell: (c) => (c.percentOff ? `${c.percentOff}%` : c.amountOff ? formatarReais(c.amountOff) : "Sem desconto") },
                 { key: "usos", header: "Usos", align: "right", cell: (c) => (c.maxRedemptions ? `${formatInt(c.redemptions)} de ${formatInt(c.maxRedemptions)}` : formatInt(c.redemptions)) },
                 { key: "ate", header: "Vale até", cell: (c) => (c.expiresAt ? formatDate(c.expiresAt) : "Sem prazo") },
               ]}

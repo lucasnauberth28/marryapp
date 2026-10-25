@@ -13,6 +13,7 @@ import { VENDOR_PERIOD_DAYS } from "@/lib/subscription-period";
 import { cn } from "@/lib/utils";
 import { PrintButton } from "./print-button";
 
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
@@ -22,8 +23,6 @@ export const metadata: Metadata = {
 
 const TZ = "America/Sao_Paulo";
 const DAY_MS = 24 * 60 * 60 * 1000;
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-const money = (cents: number) => brl.format(cents / 100);
 const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", year: "numeric", timeZone: TZ });
 const dateTimeFmt = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeStyle: "short", timeZone: TZ });
 
@@ -142,7 +141,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
 
           <p className="text-[15px] leading-6">
             Recebemos de <strong className="font-semibold">{vendor?.companyName && isVendor ? vendor.companyName : (sub.user?.name ?? "cliente")}</strong>{" "}
-            o valor de <strong className="font-semibold">{money(sub.amount)}</strong> pelo plano {sub.planName} no Aceito.
+            o valor de <strong className="font-semibold">{formatarReais(sub.amount)}</strong> pelo plano {sub.planName} no Aceito.
           </p>
 
           <section aria-labelledby="cliente-titulo" className="flex flex-col gap-3">
@@ -180,23 +179,23 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
             <dl className="flex flex-col gap-2 text-[15px]">
               <div className="flex justify-between gap-4">
                 <dt>Valor do plano</dt>
-                <dd className="tabular-nums">{money(listPrice)}</dd>
+                <dd className="tabular-nums">{formatarReais(listPrice)}</dd>
               </div>
               {discount > 0 ? (
                 <div className="flex justify-between gap-4">
                   <dt>Desconto do cupom{sub.couponCode ? ` ${sub.couponCode}` : ""}</dt>
-                  <dd className="tabular-nums">- {money(discount)}</dd>
+                  <dd className="tabular-nums">- {formatarReais(discount)}</dd>
                 </div>
               ) : null}
               {credit > 0 ? (
                 <div className="flex justify-between gap-4">
                   <dt>Crédito do plano anterior</dt>
-                  <dd className="tabular-nums">- {money(credit)}</dd>
+                  <dd className="tabular-nums">- {formatarReais(credit)}</dd>
                 </div>
               ) : null}
               <div className="mt-1 flex items-baseline justify-between gap-4 border-t border-linha pt-3">
                 <dt className="font-semibold">Total pago</dt>
-                <dd className="font-num text-[28px] leading-8 tabular-nums">{money(sub.amount)}</dd>
+                <dd className="font-num text-[28px] leading-8 tabular-nums">{formatarReais(sub.amount)}</dd>
               </div>
             </dl>
           </section>

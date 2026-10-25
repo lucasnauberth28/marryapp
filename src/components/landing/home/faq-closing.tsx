@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import type { Catalog } from "@/lib/catalog";
 import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
-import { formatReais, planLabel } from "@/lib/plan-copy";
+import { planLabel } from "@/lib/plan-copy";
+import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { Reveal } from "@/components/motion/reveal";
 import { LinkButton } from "./home-ui";
 
@@ -14,7 +15,7 @@ export function HomeFaq({ catalog }: { catalog: Catalog }) {
   const faqs: { q: string; a: React.ReactNode }[] = [
     {
       q: "Preciso pagar para começar?",
-      a: `Não. O Básico não tem mensalidade nem pede cartão. Há uma taxa de ${GIFT_FEE_LABEL} por presente recebido. ${classic} (${formatReais(catalog.plans.classic.price)}) e ${vip} (${formatReais(catalog.plans.vip.price)}) têm pagamento único.`,
+      a: `Não. O Básico não tem mensalidade nem pede cartão. Há uma taxa de ${GIFT_FEE_LABEL} por presente recebido. ${classic} (${formatarReaisEnxuto(catalog.plans.classic.price)}) e ${vip} (${formatarReaisEnxuto(catalog.plans.vip.price)}) têm pagamento único.`,
     },
     { q: "Os convidados precisam criar conta?", a: "Não. Eles abrem o link, digitam o próprio WhatsApp e respondem." },
     {

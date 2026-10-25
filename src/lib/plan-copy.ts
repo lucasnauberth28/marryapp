@@ -7,13 +7,6 @@ import type { PlanKey } from "./plans.ts";
 export function planLabel(name: string): string {
   return name.replace(/^(Plano|Fornecedor)\s+/, "");
 }
-
-/** "R$ 149", sem centavos quando o valor é redondo. */
-export function formatReais(cents: number): string {
-  const value = cents / 100;
-  return `R$ ${value.toLocaleString("pt-BR", { minimumFractionDigits: Number.isInteger(value) ? 0 : 2, maximumFractionDigits: 2 })}`;
-}
-
 export type CouplePlanKey = "basic" | "classic" | "vip";
 
 /** Resumo de uma linha e texto do botão de cada plano de casal. */

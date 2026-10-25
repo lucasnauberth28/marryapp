@@ -10,7 +10,8 @@ import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
 import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
 import { type SearchParams, buildHref, oneOf, param, parsePage, DEFAULT_PAGE_SIZE } from "@/lib/platform/list-params";
-import { formatInt, plural } from "@/lib/platform/format";
+import { formatInt } from "@/lib/platform/format";
+import { pluralizar } from "@/lib/formatacao/plural";
 import {
   ATIVIDADE_FILTERS,
   CASAIS_TABS,
@@ -76,7 +77,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
   }));
 
   const hasAnyWedding = counts.total > 0;
-  const subtitle = hasAnyWedding ? `${plural(counts.total, "casamento", "casamentos")}, ${formatInt(counts.paid)} com plano pago.` : "Todos os casamentos do Aceito, com plano, convidados e última atividade.";
+  const subtitle = hasAnyWedding ? `${pluralizar(counts.total, "casamento", "casamentos")}, ${formatInt(counts.paid)} com plano pago.` : "Todos os casamentos do Aceito, com plano, convidados e última atividade.";
 
   const exportButton = hasAnyWedding && result.total > 0 ? (
     <ExportButton href={exportHref} fallbackName="casais.csv" className="gap-2">

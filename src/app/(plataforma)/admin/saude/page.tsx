@@ -8,7 +8,8 @@ import { getPlatformSetting } from "@/lib/platform/settings";
 import { isEmailConfigured } from "@/lib/email";
 import { getHealthSnapshot, type ServiceCounts } from "@/lib/platform/queries/saude";
 import { CRON_LABEL, CRON_STATE_LABEL } from "@/lib/platform/health";
-import { formatDateTime, formatInt, formatTime, plural, timeAgo } from "@/lib/platform/format";
+import { formatDateTime, formatInt, formatTime, timeAgo } from "@/lib/platform/format";
+import { pluralizar } from "@/lib/formatacao/plural";
 import { AlertsForm } from "./_components/alerts-form";
 import { ReconnectWhatsapp } from "./_components/reconnect-whatsapp";
 
@@ -69,7 +70,7 @@ export default async function Page() {
       <PageHeader eyebrow="Sistema" title="Saúde do sistema" description={`O que faz o Aceito funcionar, num lugar só. Atualizado às ${formatTime(now)}.`} />
 
       {h.attention.length > 0 ? (
-        <Notice tone="aviso" icon={AlertTriangle} title={`${plural(h.attention.length, "coisa pede", "coisas pedem")} atenção`}>
+        <Notice tone="aviso" icon={AlertTriangle} title={`${pluralizar(h.attention.length, "coisa pede", "coisas pedem")} atenção`}>
           {h.attention.map((a) => `${a.title}: ${a.detail}`).join(" ")}
         </Notice>
       ) : nothingMeasured ? (

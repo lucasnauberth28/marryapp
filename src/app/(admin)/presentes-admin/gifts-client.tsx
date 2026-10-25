@@ -17,6 +17,8 @@ import { LoadingButton } from "@/components/painel/loading-button"
 import { UserImage } from "@/components/ui/user-image"
 import { LizIllustration } from "@/components/liz/liz-illustration"
 
+import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
+import { pluralizar } from "@/lib/formatacao/plural";
 export interface GiftPayment {
   id: string
   from: string
@@ -40,16 +42,6 @@ interface GiftsClientProps {
   payments: GiftPayment[]
   summary: GiftsSummary
   siteGiftsHref: string
-}
-
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
-// Centavos para "R$ 4.870" (sem centavos quando redondo) ou "R$ 4.870,50".
-function formatPrice(cents: number) {
-  return brl.format(cents / 100).replace(/,00$/, "").replace(/ /g, " ")
-}
-
-function plural(n: number, one: string, many: string) {
-  return `${n} ${n === 1 ? one : many}`
 }
 
 const SITUATION: Record<GiftPayment["situation"], { tone: ChipTone; icon: typeof Check; label: string }> = {
@@ -114,16 +106,16 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
         <article className={`${card} flex flex-col gap-2 p-5 sm:p-6`}>
           <p className={overline}>Total recebido</p>
-          <span className={bigNumber}>{formatPrice(summary.receivedCents)}</span>
+          <span className={bigNumber}>{formatarReaisEnxuto(summary.receivedCents)}</span>
           <span className="text-sm text-tinta-suave">
             {summary.receivedCount === 0
               ? "Os presentes pagos aparecem aqui."
-              : `${plural(summary.receivedCount, "presente", "presentes")} de ${plural(summary.receivedPeople, "pessoa", "pessoas")}`}
+              : `${pluralizar(summary.receivedCount, "presente", "presentes")} de ${pluralizar(summary.receivedPeople, "pessoa", "pessoas")}`}
           </span>
         </article>
         <article className={`${card} flex flex-col gap-2 p-5 sm:p-6 ${summary.toCheckCount > 0 ? "border-2 border-aviso/50" : ""}`}>
           <p className={overline}>A conferir</p>
-          <span className={bigNumber}>{formatPrice(summary.toCheckCents)}</span>
+          <span className={bigNumber}>{formatarReaisEnxuto(summary.toCheckCents)}</span>
           <span className="text-sm text-tinta-suave">
             {summary.toCheckCount === 0 ? (
               "Nenhum Pix esperando conferência."
@@ -141,7 +133,7 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
           <p className={overline}>Presentes pagos</p>
           <span className={bigNumber}>{giftedCount}</span>
           <span className="text-sm text-tinta-suave">
-            {gifts.length === 0 ? "Cadastrem o primeiro presente." : `de ${plural(gifts.length, "presente cadastrado", "presentes cadastrados")}`}
+            {gifts.length === 0 ? "Cadastrem o primeiro presente." : `de ${pluralizar(gifts.length, "presente cadastrado", "presentes cadastrados")}`}
           </span>
         </article>
       </div>
@@ -193,7 +185,7 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
                           <span className="text-sm text-tinta-suave">{p.when}</span>
                         </td>
                         <td className="px-3 py-3.5 text-tinta">{p.giftTitle}</td>
-                        <td className="px-3 py-3.5 font-semibold tabular-nums text-tinta">{formatPrice(p.amount)}</td>
+                        <td className="px-3 py-3.5 font-semibold tabular-nums text-tinta">{formatarReaisEnxuto(p.amount)}</td>
                         <td className="py-3.5 pl-3 pr-6">
                           <Chip tone={s.tone} icon={s.icon}>{s.label}</Chip>
                         </td>
@@ -213,7 +205,7 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
                         <p className="font-semibold text-tinta">{p.from}</p>
                         <p className="text-sm text-tinta-suave">{p.when}</p>
                       </div>
-                      <span className="shrink-0 font-semibold tabular-nums text-tinta">{formatPrice(p.amount)}</span>
+                      <span className="shrink-0 font-semibold tabular-nums text-tinta">{formatarReaisEnxuto(p.amount)}</span>
                     </div>
                     <p className="text-[15px] text-tinta">{p.giftTitle}</p>
                     <Chip tone={s.tone} icon={s.icon}>{s.label}</Chip>
@@ -258,9 +250,9 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
                 </div>
                 <strong className="line-clamp-2 text-[15px] font-semibold leading-5 text-tinta">{gift.title}</strong>
                 {gift.isPurchased ? (
-                  <span className="text-sm font-semibold text-sucesso">Presenteado · {formatPrice(gift.amount)}</span>
+                  <span className="text-sm font-semibold text-sucesso">Presenteado · {formatarReaisEnxuto(gift.amount)}</span>
                 ) : (
-                  <span className="text-sm text-tinta-suave">{formatPrice(gift.amount)} · disponível</span>
+                  <span className="text-sm text-tinta-suave">{formatarReaisEnxuto(gift.amount)} · disponível</span>
                 )}
                 {!gift.isPurchased && (
                   <LoadingButton

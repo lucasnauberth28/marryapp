@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
+import { pluralizar } from "@/lib/formatacao/plural";
 const MINUTE = 60_000;
 const DAY = 24 * 60 * MINUTE;
 
@@ -31,10 +32,6 @@ export function weddingInstant(date: Date, ceremonyTime?: string | null): number
   return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hours + 3, minutes);
 }
 
-function plural(n: number, one: string, many: string) {
-  return `${n} ${n === 1 ? one : many}`;
-}
-
 const unitClass =
   "flex min-w-[72px] flex-col items-center rounded-b-[6px] rounded-t-full border border-linha bg-papel px-2 py-3 text-center md:min-w-20";
 const numClass =
@@ -59,7 +56,7 @@ export function WeddingCountdown({ target }: { target: number }) {
   const label =
     days === null || hours === null || minutes === null
       ? "Contagem regressiva para o casamento"
-      : `Faltam ${plural(days, "dia", "dias")}, ${plural(hours, "hora", "horas")} e ${plural(minutes, "minuto", "minutos")}`;
+      : `Faltam ${pluralizar(days, "dia", "dias")}, ${pluralizar(hours, "hora", "horas")} e ${pluralizar(minutes, "minuto", "minutos")}`;
 
   return (
     <div role="timer" aria-label={label} className="inline-flex items-stretch gap-2">

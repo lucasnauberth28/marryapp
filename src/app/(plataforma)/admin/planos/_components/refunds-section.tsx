@@ -4,7 +4,8 @@ import { EmptyState } from "@/components/plataforma/empty-state";
 import { Panel } from "@/components/plataforma/panel";
 import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
-import { formatBRL, formatDate, relativeDay } from "@/lib/platform/format";
+import { formatDate, relativeDay } from "@/lib/platform/format";
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { REFUND_VIEW_LABEL, refundView, type RefundView } from "@/lib/platform/payments";
 import type { RefundRow } from "@/lib/platform/queries/receita";
 import { RefundDecision, RegisterRefundForm } from "./refund-forms";
@@ -44,7 +45,7 @@ export function RefundsSection({ refunds, payments, now, preview = false, policy
                   </>
                 ),
               },
-              { key: "valor", header: "Valor", align: "right", cell: (r) => formatBRL(r.amount) },
+              { key: "valor", header: "Valor", align: "right", cell: (r) => formatarReais(r.amount) },
               {
                 key: "prazo",
                 header: "Prazo",

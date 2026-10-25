@@ -3,6 +3,7 @@ import type { PlanKey } from "@/lib/plans";
 import { defaultCatalog, customPlanPriceIn, type Catalog } from "@/lib/catalog";
 import { SIGNUP_SUMMARY, planLabel } from "@/lib/plan-copy";
 
+import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 // Sem catálogo passado, valem os preços do código; as telas reais passam o catálogo do servidor (lib/catalog-server.ts),
 // que traz os preços editados pela administração.
 let codeCatalog: Catalog | null = null;
@@ -70,10 +71,8 @@ export function typeOfPlan(planId: string | undefined): AccountType | null {
   return null;
 }
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0, maximumFractionDigits: 2 });
-
 export function formatPrice(cents: number) {
-  return cents === 0 ? "R$ 0" : brl.format(cents / 100);
+  return formatarReaisEnxuto(cents);
 }
 
 /** Foto do painel lateral para cada momento do acesso. */

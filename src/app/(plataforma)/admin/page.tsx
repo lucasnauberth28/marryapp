@@ -12,7 +12,9 @@ import { PlanChip, StatusChip } from "@/components/plataforma/status-chip";
 import { btn } from "@/components/landing/styles";
 import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
 import { type SearchParams, oneOf } from "@/lib/platform/list-params";
-import { formatBRLWhole, formatDayMonth, formatInt, formatLongDate, formatMonthName, formatPercent, plural, relativeDay, timeAgo, formatTime } from "@/lib/platform/format";
+import { formatDayMonth, formatInt, formatLongDate, formatMonthName, formatPercent, relativeDay, timeAgo, formatTime } from "@/lib/platform/format";
+import { pluralizar } from "@/lib/formatacao/plural";
+import { formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
 import { PERIODS, periodWindows, type Period } from "@/lib/platform/overview-period";
 import { percentLabel } from "@/lib/platform/revenue";
 import { getRevenueByMonth } from "@/lib/platform/queries/receita";
@@ -101,9 +103,9 @@ async function NumbersBlock({ period, now }: { period: Period; now: Date }) {
       <StatGrid>
         <StatCard
           label={revenueTitle}
-          value={formatBRLWhole(numbers.revenue.cents)}
+          value={formatarReaisInteiros(numbers.revenue.cents)}
           trend={numbers.revenue.trend === null ? null : { value: numbers.revenue.trend, label: percentLabel(numbers.revenue.trend) }}
-          hint={numbers.revenue.payments === 0 ? "nenhum pagamento ainda" : `${period === "mes" ? "até hoje, " : ""}${plural(numbers.revenue.payments, "pagamento", "pagamentos")}`}
+          hint={numbers.revenue.payments === 0 ? "nenhum pagamento ainda" : `${period === "mes" ? "até hoje, " : ""}${pluralizar(numbers.revenue.payments, "pagamento", "pagamentos")}`}
           href="/admin/planos"
         />
         <StatCard
@@ -140,7 +142,7 @@ async function AttentionBlock({ now }: { now: Date }) {
       aside={
         attentionItems.length > 0 ? (
           <StatusChip tone="aviso" icon={Bell}>
-            {plural(attentionItems.length, "item", "itens")}
+            {pluralizar(attentionItems.length, "item", "itens")}
           </StatusChip>
         ) : undefined
       }
@@ -166,7 +168,7 @@ async function RevenueBlock({ now }: { now: Date }) {
         <>
           <RevenueChart months={months} />
           <p className="mt-4 text-sm leading-6 text-tinta-suave">
-            Em {formatMonthName(now)}, até hoje: casais {formatBRLWhole(current.couple)} e fornecedores {formatBRLWhole(current.vendor)}.
+            Em {formatMonthName(now)}, até hoje: casais {formatarReaisInteiros(current.couple)} e fornecedores {formatarReaisInteiros(current.vendor)}.
           </p>
         </>
       ) : (
@@ -301,7 +303,7 @@ async function ErrorsBlock({ now }: { now: Date }) {
               <span>
                 <span className="block font-semibold text-tinta">{s.label}</span>
                 <span className="block text-sm text-tinta-suave">
-                  {s.total === 0 ? "Sem registros nas últimas 24 horas" : s.failures === 0 ? `Nenhuma falha em ${plural(s.total, "registro", "registros")}` : `${plural(s.failures, "falha", "falhas")}${s.lastFailureAt ? `, a última às ${formatTime(s.lastFailureAt)}` : ""}`}
+                  {s.total === 0 ? "Sem registros nas últimas 24 horas" : s.failures === 0 ? `Nenhuma falha em ${pluralizar(s.total, "registro", "registros")}` : `${pluralizar(s.failures, "falha", "falhas")}${s.lastFailureAt ? `, a última às ${formatTime(s.lastFailureAt)}` : ""}`}
                 </span>
               </span>
               {s.total > 0 &&

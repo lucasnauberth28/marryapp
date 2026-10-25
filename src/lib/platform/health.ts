@@ -1,3 +1,4 @@
+import { pluralizar } from "../formatacao/plural.ts";
 // Regras puras da Saúde do sistema: estado das rotinas, falhas seguidas, texto dos resultados. Sem banco nem Next.
 // Regra de honestidade: sem registro nunca vira "tudo certo"; o estado é "ainda não rodou" ou "sem registros".
 
@@ -75,16 +76,14 @@ export interface AttentionInput {
   crons: { job: string; state: CronState }[];
 }
 
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-
 /** O que pede atenção agora, só com o que foi medido. Lista vazia não quer dizer "tudo certo" se nada foi medido. */
 export function attentionItems(i: AttentionInput): AttentionItem[] {
   const items: AttentionItem[] = [];
-  if (i.mercadopago.failed24h > 0) items.push({ key: "mercadopago", title: "Mercado Pago", detail: `${plural(i.mercadopago.failed24h, "aviso não foi aplicado", "avisos não foram aplicados")} nas últimas 24 horas.` });
-  if (i.email.failed24h > 0) items.push({ key: "email", title: "E-mail", detail: `${plural(i.email.failed24h, "envio falhou", "envios falharam")} nas últimas 24 horas.` });
+  if (i.mercadopago.failed24h > 0) items.push({ key: "mercadopago", title: "Mercado Pago", detail: `${pluralizar(i.mercadopago.failed24h, "aviso não foi aplicado", "avisos não foram aplicados")} nas últimas 24 horas.` });
+  if (i.email.failed24h > 0) items.push({ key: "email", title: "E-mail", detail: `${pluralizar(i.email.failed24h, "envio falhou", "envios falharam")} nas últimas 24 horas.` });
   if (i.whatsapp.configured && i.whatsapp.connected === false) items.push({ key: "whatsapp-off", title: "WhatsApp", detail: "A instância está desconectada: convites e lembretes não saem." });
-  else if (i.whatsapp.failed24h > 0) items.push({ key: "whatsapp", title: "WhatsApp", detail: `${plural(i.whatsapp.failed24h, "mensagem não saiu", "mensagens não saíram")} nas últimas 24 horas.` });
-  if (i.push.failed24h > 0) items.push({ key: "push", title: "Notificações no celular", detail: `${plural(i.push.failed24h, "envio falhou", "envios falharam")} nas últimas 24 horas.` });
+  else if (i.whatsapp.failed24h > 0) items.push({ key: "whatsapp", title: "WhatsApp", detail: `${pluralizar(i.whatsapp.failed24h, "mensagem não saiu", "mensagens não saíram")} nas últimas 24 horas.` });
+  if (i.push.failed24h > 0) items.push({ key: "push", title: "Notificações no celular", detail: `${pluralizar(i.push.failed24h, "envio falhou", "envios falharam")} nas últimas 24 horas.` });
   for (const c of i.crons) {
     if (c.state === "failed") items.push({ key: `cron-${c.job}`, title: CRON_LABEL[c.job] ?? c.job, detail: "A última execução da rotina falhou." });
     else if (c.state === "late") items.push({ key: `cron-${c.job}`, title: CRON_LABEL[c.job] ?? c.job, detail: "A rotina não roda há mais de 36 horas." });

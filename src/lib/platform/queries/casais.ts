@@ -5,6 +5,7 @@ import { notGiftOnlyWhere } from "@/lib/guest-origin";
 import { casaisWhere, coupleSubscription, inactiveWhere, next30DaysWhere, problemWhere, type CasaisFilters, type PlanoFilter } from "@/lib/platform/casais-filters";
 import { casalProblems, casalSituation, PAYMENT_PROBLEM_DAYS, type CasalFacts } from "@/lib/platform/casal-status";
 
+import { formatarReais } from "../../formatacao/dinheiro.ts";
 /**
  * Consultas dos casais para a administração (Casais, Casal e Visão geral). Dono: tela Casais.
  * Atravessam casamentos de propósito (é o dono), mas o `select` nunca traz senha, token, documento
@@ -369,16 +370,15 @@ export async function getCasalTimeline(id: string, limit = 8): Promise<TimelineI
     prisma.domainOrder.findMany({ where: { weddingId: id }, orderBy: { requestedAt: "desc" }, take: 3, select: { id: true, domain: true, requestedAt: true, connectedAt: true } }),
   ]);
 
-  const brl = (cents: number) => (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   const items: TimelineItem[] = [];
   for (const a of audits) items.push({ id: `a-${a.id}`, at: a.createdAt, text: AUDIT_TEXT[a.action] ?? `Registro: ${a.action}` });
   for (const s of subs) {
     const pix = s.gatewayId?.startsWith(STATIC_PIX_PREFIX);
-    if (s.status === "APPROVED" && s.paidAt) items.push({ id: `sp-${s.id}`, at: s.paidAt, text: `Pagou o plano ${s.planName} (${brl(s.amount)})`, badge: { tone: "sucesso", label: "Pago" } });
-    if (s.status === "PENDING") items.push({ id: `sg-${s.id}`, at: s.createdAt, text: `Gerou o ${pix ? "Pix" : "pagamento"} do plano ${s.planName} (${brl(s.amount)})`, badge: pix ? { tone: "aviso", label: "Aguardando conferência" } : { tone: "aviso", label: "Aguardando" } });
-    if (s.status === "REJECTED" || s.status === "FAILED") items.push({ id: `sf-${s.id}`, at: s.createdAt, text: `Pagamento do plano ${s.planName} (${brl(s.amount)}) não passou`, badge: { tone: "perigo", label: "Recusado" } });
+    if (s.status === "APPROVED" && s.paidAt) items.push({ id: `sp-${s.id}`, at: s.paidAt, text: `Pagou o plano ${s.planName} (${formatarReais(s.amount)})`, badge: { tone: "sucesso", label: "Pago" } });
+    if (s.status === "PENDING") items.push({ id: `sg-${s.id}`, at: s.createdAt, text: `Gerou o ${pix ? "Pix" : "pagamento"} do plano ${s.planName} (${formatarReais(s.amount)})`, badge: pix ? { tone: "aviso", label: "Aguardando conferência" } : { tone: "aviso", label: "Aguardando" } });
+    if (s.status === "REJECTED" || s.status === "FAILED") items.push({ id: `sf-${s.id}`, at: s.createdAt, text: `Pagamento do plano ${s.planName} (${formatarReais(s.amount)}) não passou`, badge: { tone: "perigo", label: "Recusado" } });
   }
-  for (const g of gifts) items.push({ id: `g-${g.id}`, at: g.createdAt, text: `Recebeu um presente de ${brl(g.amount)}${g.paymentMethod === "PIX" ? " por Pix" : ""}` });
+  for (const g of gifts) items.push({ id: `g-${g.id}`, at: g.createdAt, text: `Recebeu um presente de ${formatarReais(g.amount)}${g.paymentMethod === "PIX" ? " por Pix" : ""}` });
   for (const o of orders) {
     items.push({ id: `d-${o.id}`, at: o.requestedAt, text: `Pediu o domínio ${o.domain}` });
     if (o.connectedAt) items.push({ id: `dc-${o.id}`, at: o.connectedAt, text: `Domínio ${o.domain} no ar` });

@@ -1,22 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { daysBetween, formatBRL, formatBRLWhole, formatDate, formatDateTime, formatInt, formatPercent, initialsOf, plural, relativeDay, timeAgo } from "../format.ts";
+import { daysBetween, formatDate, formatDateTime, formatInt, formatPercent, initialsOf, relativeDay, timeAgo } from "../format.ts";
 
-test("dinheiro em reais, com e sem centavos", () => {
-  assert.equal(formatBRL(14900), "R$ 149,00");
-  assert.equal(formatBRL(0), "R$ 0,00");
-  assert.equal(formatBRL(7460), "R$ 74,60");
-  assert.equal(formatBRLWhole(423700), "R$ 4.237");
+test("número com separador de milhar", () => {
   assert.equal(formatInt(1236), "1.236");
 });
 
-test("percentual e plural", () => {
+test("percentual", () => {
   assert.equal(formatPercent(86, 140), "61%");
   assert.equal(formatPercent(1, 3), "33%");
   assert.equal(formatPercent(5, 0), null, "sem base não inventa percentual");
-  assert.equal(plural(1, "casal", "casais"), "1 casal");
-  assert.equal(plural(1236, "casal", "casais"), "1.236 casais");
-  assert.equal(plural(0, "casal", "casais"), "0 casais");
 });
 
 test("datas no horário de Brasília", () => {

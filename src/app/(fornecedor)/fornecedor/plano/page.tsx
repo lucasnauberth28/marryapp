@@ -14,9 +14,9 @@ import { upgradeCredit } from "@/lib/upgrade-credit";
 import { formatWeddingDate, START_MONTHLY_LEAD_LIMIT, startOfMonthBrasilia } from "../../_lib/vendor-panel";
 import { PlanCheckout } from "./plan-checkout";
 
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 export const metadata: Metadata = { title: "Plano" };
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 const DAY_MS = 24 * 60 * 60 * 1000;
 const SP_OFFSET_MS = 3 * 60 * 60 * 1000; // Brasília (UTC-3, sem horário de verão desde 2019)
 
@@ -184,7 +184,7 @@ export default async function PlanoPage() {
                         {refunded ? " · Estornado" : ""}
                       </span>
                     </span>
-                    <span className="tabular-nums">{brl.format(p.amount / 100)}</span>
+                    <span className="tabular-nums">{formatarReais(p.amount)}</span>
                     {refunded ? null : (
                       <Link
                         href={`/recibo/${p.id}`}
@@ -237,7 +237,7 @@ export default async function PlanoPage() {
                         <td className="px-5 py-3.5 text-tinta-suave">{period}</td>
                         <td className="px-5 py-3.5 text-right whitespace-nowrap tabular-nums">
                           {refunded ? <span className="mr-2 text-sm font-semibold text-aviso">Estornado</span> : null}
-                          {brl.format(p.amount / 100)}
+                          {formatarReais(p.amount)}
                         </td>
                         <td className="px-3 py-1.5 text-right">
                           {refunded ? null : (

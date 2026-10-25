@@ -9,7 +9,8 @@ import { btn, container, lead, overline } from "@/components/landing/styles";
 import { brandShare } from "@/lib/brand-meta";
 import { getCatalog } from "@/lib/catalog-server";
 import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
-import { GIFT_CONDITIONS, formatReais, planLabel } from "@/lib/plan-copy";
+import { GIFT_CONDITIONS, planLabel } from "@/lib/plan-copy";
+import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { cn } from "@/lib/utils";
 
 // Os preços vêm do catálogo da administração: a página se refaz sozinha a cada 5 minutos e na hora que um preço muda.
@@ -139,7 +140,7 @@ export default async function PlanosPage() {
                     <article className="flex h-full flex-col gap-3 rounded-[16px] border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
                       <h3 className="text-xl font-semibold leading-7">{planLabel(plan.name)}</h3>
                       <p className="flex items-baseline gap-2">
-                        <span className="font-num text-[40px] leading-[44px]">{plan.price === 0 ? "R$ 0" : formatReais(plan.price)}</span>
+                        <span className="font-num text-[40px] leading-[44px]">{plan.price === 0 ? "R$ 0" : formatarReaisEnxuto(plan.price)}</span>
                         <span className="text-tinta-suave">{plan.price === 0 ? "sem mensalidade" : "por mês"}</span>
                       </p>
                       <ul className="flex flex-1 flex-col gap-2 text-[15px] leading-[22px]">

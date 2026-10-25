@@ -12,6 +12,7 @@ import { ReportReview } from "./report-review";
 import { ReviewReply } from "./review-reply";
 import { Stars } from "./stars";
 
+import { pluralizar } from "@/lib/formatacao/plural";
 export const metadata: Metadata = { title: "Avaliações" };
 
 const CARD = "rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)]";
@@ -29,10 +30,6 @@ function formatShortDate(date: Date, now: Date): string {
     new Date(date.getTime() - SP_OFFSET_MS).getUTCFullYear() ===
     new Date(now.getTime() - SP_OFFSET_MS).getUTCFullYear();
   return sameYear ? label.replace(/ \d{4}$/, "") : label;
-}
-
-function plural(n: number, one: string, many: string) {
-  return `${n} ${n === 1 ? one : many}`;
 }
 
 const oneDecimal = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -143,13 +140,13 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
                 </span>
                 <Stars rating={average} label={`Nota média ${averageLabel} de 5`} />
                 <span className="text-sm text-tinta-suave">
-                  {plural(total, "avaliação", "avaliações")} · {unansweredCount} sem resposta
+                  {pluralizar(total, "avaliação", "avaliações")} · {unansweredCount} sem resposta
                 </span>
               </div>
               <ul aria-label="Distribuição das notas" className="flex min-w-0 flex-[1_1_280px] flex-col gap-2">
                 {distribution.map(({ stars, count }) => (
                   <li key={stars} className="grid grid-cols-[4.5rem_1fr_2rem] items-center gap-2.5 text-sm">
-                    <span>{plural(stars, "estrela", "estrelas")}</span>
+                    <span>{pluralizar(stars, "estrela", "estrelas")}</span>
                     <span aria-hidden="true" className="h-2 overflow-hidden rounded-full bg-areia">
                       <span
                         className="block h-full rounded-full bg-champanhe"

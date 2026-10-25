@@ -6,7 +6,9 @@ import { coupleSubscription, next30DaysWhere, problemWhere } from "@/lib/platfor
 import { getLatestPlans } from "@/lib/platform/queries/casais";
 import { getPendingRefunds, getPixToCheck } from "@/lib/platform/queries/receita";
 import { getVendorCurationQueue } from "@/lib/platform/queries/fornecedores";
-import { formatBRL, plural, relativeDay, timeAgo, daysBetween } from "@/lib/platform/format";
+import { relativeDay, timeAgo, daysBetween } from "@/lib/platform/format";
+import { pluralizar } from "@/lib/formatacao/plural";
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { percentChange } from "@/lib/platform/revenue";
 import type { PeriodWindows } from "@/lib/platform/overview-period";
 
@@ -55,8 +57,8 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
       id: "pix",
       tone: "aviso",
       icon: "clock",
-      title: `Conferir ${plural(pix.count, "Pix de plano", "Pix de plano")}`,
-      detail: `${formatBRL(pix.totalCents)} no total${pix.oldestAt ? `, o mais antigo gerado ${timeAgo(pix.oldestAt, now)}` : ""}.`,
+      title: `Conferir ${pluralizar(pix.count, "Pix de plano", "Pix de plano")}`,
+      detail: `${formatarReais(pix.totalCents)} no total${pix.oldestAt ? `, o mais antigo gerado ${timeAgo(pix.oldestAt, now)}` : ""}.`,
       actionLabel: "Conferir",
       href: "/admin/planos/assinaturas",
     });
@@ -77,7 +79,7 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
       id: "curadoria",
       tone: "aviso",
       icon: "shield",
-      title: `${plural(curation.count, "fornecedor espera", "fornecedores esperam")} a curadoria`,
+      title: `${pluralizar(curation.count, "fornecedor espera", "fornecedores esperam")} a curadoria`,
       detail: curation.oldestAt ? `O mais antigo chegou ${timeAgo(curation.oldestAt, now)}.` : "Veja quem está na fila.",
       actionLabel: "Analisar",
       href: "/admin/fornecedores/curadoria",
@@ -99,8 +101,8 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
       id: "reembolso",
       tone: "aviso",
       icon: "wallet",
-      title: `${plural(refunds.count, "reembolso para decidir", "reembolsos para decidir")}`,
-      detail: `${formatBRL(refunds.totalCents)} no total${refunds.nextDueAt ? `, responder ${relativeDay(refunds.nextDueAt, now)}` : ""}.`,
+      title: `${pluralizar(refunds.count, "reembolso para decidir", "reembolsos para decidir")}`,
+      detail: `${formatarReais(refunds.totalCents)} no total${refunds.nextDueAt ? `, responder ${relativeDay(refunds.nextDueAt, now)}` : ""}.`,
       actionLabel: "Decidir",
       href: "/admin/planos?aba=reembolsos",
     });
@@ -113,7 +115,7 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
       tone: left < 0 ? "perigo" : "aviso",
       icon: "life",
       title: left < 0 ? "Pedido sobre dados pessoais com o prazo vencido" : `Pedido sobre dados pessoais vence ${relativeDay(first, now)}`,
-      detail: `${plural(dataRequests.length, "pedido aberto perto do prazo", "pedidos abertos perto do prazo")}. Confirme o prazo com o jurídico.`,
+      detail: `${pluralizar(dataRequests.length, "pedido aberto perto do prazo", "pedidos abertos perto do prazo")}. Confirme o prazo com o jurídico.`,
       actionLabel: "Abrir pedido",
       href: "/admin/suporte",
     });
@@ -123,7 +125,7 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
       id: "chamados",
       tone: "aviso",
       icon: "message",
-      title: `${plural(tickets, "chamado novo", "chamados novos")}`,
+      title: `${pluralizar(tickets, "chamado novo", "chamados novos")}`,
       detail: "Pedidos de ajuda que a equipe registrou e ainda não começou.",
       actionLabel: "Ver chamados",
       href: "/admin/suporte",
@@ -134,7 +136,7 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
       id: `falha-${f.service}`,
       tone: "aviso",
       icon: "activity",
-      title: `${SERVICE_LABEL[f.service] ?? f.service} falhou ${plural(f._count._all, "vez", "vezes")}`,
+      title: `${SERVICE_LABEL[f.service] ?? f.service} falhou ${pluralizar(f._count._all, "vez", "vezes")}`,
       detail: "Nas últimas 24 horas. Confira o que não foi concluído.",
       actionLabel: "Ver detalhes",
       href: "/admin/saude",
@@ -303,7 +305,7 @@ export async function getSetupChecklist(): Promise<SetupItem[]> {
   const mercadoPago = Boolean(process.env.MERCADOPAGO_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN);
   return [
     { id: "mp", title: "Conectar o Mercado Pago", detail: "Pagamentos e presentes já entram sozinhos.", done: mercadoPago, actionLabel: "Ver a saúde", href: "/admin/saude" },
-    { id: "equipe", title: "Convidar a equipe", detail: team > 1 ? `Você e mais ${plural(team - 1, "pessoa", "pessoas")} com acesso.` : "Hoje só uma pessoa tem acesso total.", done: team > 1, actionLabel: "Usuários e perfis", href: "/usuarios" },
+    { id: "equipe", title: "Convidar a equipe", detail: team > 1 ? `Você e mais ${pluralizar(team - 1, "pessoa", "pessoas")} com acesso.` : "Hoje só uma pessoa tem acesso total.", done: team > 1, actionLabel: "Usuários e perfis", href: "/usuarios" },
     { id: "whatsapp", title: "Conectar o WhatsApp", detail: "Sem isso, convites e lembretes não saem.", done: isWhatsappConfigured(), actionLabel: "Conectar", href: "/admin/saude" },
     { id: "cupom", title: "Criar um cupom de lançamento", detail: "Opcional, para os primeiros casais.", done: coupons > 0, actionLabel: "Criar cupom", href: "/admin/planos/cupons" },
   ];

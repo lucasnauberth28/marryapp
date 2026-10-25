@@ -5,7 +5,8 @@ import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
 import { couplePriceNote, planLabel, type CouplePlanKey } from "@/lib/plan-copy";
 import { Reveal } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
-import { breakEvenCents, formatBRL, splitPrice } from "./home-money";
+import { breakEvenCents, splitPrice } from "./home-money";
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { LinkButton, SectionHead } from "./home-ui";
 
 const KEYS: CouplePlanKey[] = ["basic", "classic", "vip"];
@@ -62,7 +63,7 @@ export function PlansSection({ catalog }: { catalog: Catalog }) {
         })}
       </div>
       <p className="lp-compensa">
-        O {classic} compensa a partir de <b>{formatBRL(aPartirDe)}</b> em presentes por Pix.
+        O {classic} compensa a partir de <b>{formatarReais(aPartirDe)}</b> em presentes por Pix.
       </p>
       <p className="lp-compensa">
         Precisam só de algumas partes?{" "}

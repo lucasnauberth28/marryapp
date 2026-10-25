@@ -12,16 +12,10 @@ import { FinanceTable } from "./finance-client";
 import { ExpensesClient } from "./expenses-client";
 import { ExpensesSkeleton, PaymentsSkeleton, StatsSkeleton } from "./skeletons";
 
+import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 // ==========================================
 // UTILS
 // ==========================================
-
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-
-/** Centavos em "R$ 4.870" (com centavos só quando houver). */
-function money(centavos: number): string {
-  return brl.format(centavos / 100).replace(/,00$/, "").replace(/ /g, " ");
-}
 
 const dueFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", timeZone: "UTC" });
 
@@ -108,10 +102,10 @@ async function Stats({ metrics: metricsPromise, expenses: expensesPromise }: { m
     <Reveal className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <article className={`${card} flex flex-col gap-2 p-5 sm:p-6`}>
         <p className={overline}>Presentes recebidos</p>
-        <span className={bigNumber}>{money(metrics.totalLiquido)}</span>
+        <span className={bigNumber}>{formatarReaisEnxuto(metrics.totalLiquido)}</span>
         <span className="text-sm text-tinta-suave">
           {metrics.totalPendente > 0
-            ? `Mais ${money(metrics.totalPendente)} em Pix a conferir`
+            ? `Mais ${formatarReaisEnxuto(metrics.totalPendente)} em Pix a conferir`
             : metrics.totalLiquido > 0
               ? "Tudo conferido"
               : "Os presentes pagos entram aqui."}
@@ -120,23 +114,23 @@ async function Stats({ metrics: metricsPromise, expenses: expensesPromise }: { m
 
       <article className={`${card} flex flex-col gap-2 p-5 sm:p-6`}>
         <p className={overline}>Despesas</p>
-        <span className={bigNumber}>{money(metrics.totalDespesas)}</span>
+        <span className={bigNumber}>{formatarReaisEnxuto(metrics.totalDespesas)}</span>
         <span className="text-sm text-tinta-suave">
           {metrics.totalDespesas > 0
-            ? `${paidPercent}% pago · já saíram ${money(metrics.totalDespesasPagas)}`
+            ? `${paidPercent}% pago · já saíram ${formatarReaisEnxuto(metrics.totalDespesasPagas)}`
             : "Cadastrem a primeira despesa."}
         </span>
       </article>
 
       <article className={`${card} flex flex-col gap-2 p-5 sm:p-6`}>
         <p className={overline}>Saldo previsto</p>
-        <span className={isSaldoPositivo ? bigNumber : bigNumber.replace("text-tinta", "text-perigo")}>{money(metrics.saldoPrevisto)}</span>
+        <span className={isSaldoPositivo ? bigNumber : bigNumber.replace("text-tinta", "text-perigo")}>{formatarReaisEnxuto(metrics.saldoPrevisto)}</span>
         <span className="text-sm text-tinta-suave">Presentes recebidos menos as despesas</span>
       </article>
 
       <article className={`${card} flex flex-col gap-2 p-5 sm:p-6 ${nextDue ? "border-2 border-aviso" : ""}`}>
         <p className={overline}>Próxima parcela</p>
-        <span className={bigNumber}>{nextDue ? money(nextDue.amount) : "R$ 0"}</span>
+        <span className={bigNumber}>{nextDue ? formatarReaisEnxuto(nextDue.amount) : "R$ 0"}</span>
         <span className={`text-sm ${nextDue ? "font-semibold text-aviso" : "text-tinta-suave"}`}>
           {nextDue
             ? `${nextDueName} · vence ${dueFmt.format(nextDue.dueDate).replace(".", "")}${metrics.countDespesasPendentes > 1 ? ` (mais ${metrics.countDespesasPendentes - 1} a vencer)` : ""}`

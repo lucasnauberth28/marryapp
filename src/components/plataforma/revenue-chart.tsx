@@ -1,5 +1,5 @@
 import { chartScale, type MonthBucket } from "@/lib/platform/revenue";
-import { formatBRL } from "@/lib/platform/format";
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { cn } from "@/lib/utils";
 
 /**
@@ -18,7 +18,7 @@ function compactBRL(cents: number): string {
 
 export function RevenueChart({ months, className }: { months: MonthBucket[]; className?: string }) {
   const { max, ticks } = chartScale(months);
-  const summary = months.map((m) => `${m.label}: ${formatBRL(m.total)} (casais ${formatBRL(m.couple)}, fornecedores ${formatBRL(m.vendor)})${m.inProgress ? ", em andamento" : ""}`).join("; ");
+  const summary = months.map((m) => `${m.label}: ${formatarReais(m.total)} (casais ${formatarReais(m.couple)}, fornecedores ${formatarReais(m.vendor)})${m.inProgress ? ", em andamento" : ""}`).join("; ");
   const HEIGHT = 190;
 
   return (

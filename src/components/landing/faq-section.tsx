@@ -5,7 +5,8 @@ import { Reveal } from "@/components/motion/reveal";
 import { getCatalog } from "@/lib/catalog-server";
 import type { Catalog } from "@/lib/catalog";
 import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
-import { GIFT_CONDITIONS, formatReais, planLabel } from "@/lib/plan-copy";
+import { GIFT_CONDITIONS, planLabel } from "@/lib/plan-copy";
+import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { cn } from "@/lib/utils";
 import { container, h2, lead, overline } from "./styles";
 
@@ -21,7 +22,7 @@ const faqs = (catalog: Catalog): { q: string; a: ReactNode }[] => {
     },
     {
       q: "Preciso pagar para começar?",
-      a: `Vocês podem começar pelo plano Básico, sem mensalidade e sem cartão de crédito. Nesse plano, há uma taxa de ${GIFT_FEE_LABEL} por presente recebido. O ${classic} (${formatReais(catalog.plans.classic.price)}) e o ${vip} (${formatReais(catalog.plans.vip.price)}) têm pagamento único e outras condições.`,
+      a: `Vocês podem começar pelo plano Básico, sem mensalidade e sem cartão de crédito. Nesse plano, há uma taxa de ${GIFT_FEE_LABEL} por presente recebido. O ${classic} (${formatarReaisEnxuto(catalog.plans.classic.price)}) e o ${vip} (${formatarReaisEnxuto(catalog.plans.vip.price)}) têm pagamento único e outras condições.`,
     },
     {
       q: "Os convidados precisam criar conta?",

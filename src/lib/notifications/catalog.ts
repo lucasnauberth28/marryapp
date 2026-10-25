@@ -1,3 +1,4 @@
+import { formatarReais } from "../formatacao/dinheiro.ts";
 // Catálogo dos avisos do Aceito: quais existem, para quem, em que grupo ficam e o texto de cada um.
 // Arquivo puro (sem banco nem Next), usado no servidor e no navegador, e testado isoladamente.
 
@@ -97,7 +98,6 @@ export interface NotificationCopy {
   href: string;
 }
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 // Datas de vencimento e de casamento ficam gravadas à meia-noite UTC: formatar em UTC evita voltar um dia.
 const shortDate = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
 const longDate = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "long", timeZone: "UTC" });
@@ -118,7 +118,7 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
       const who = clean(event.guestName, 60, "Um convidado");
       return {
         title: "Presente recebido",
-        body: `${who} deu "${clean(event.giftTitle, 60, "um presente")}" para vocês (${brl.format(event.amountCents / 100)}).`,
+        body: `${who} deu "${clean(event.giftTitle, 60, "um presente")}" para vocês (${formatarReais(event.amountCents)}).`,
         href: "/financas",
       };
     }
@@ -126,7 +126,7 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
       const who = clean(event.guestName, 60, "Um convidado");
       return {
         title: "Pix para conferir",
-        body: `${who} gerou um Pix de ${brl.format(event.amountCents / 100)} para "${clean(event.giftTitle, 60, "um presente")}". Quando o valor aparecer no extrato de vocês, confirmem em Finanças.`,
+        body: `${who} gerou um Pix de ${formatarReais(event.amountCents)} para "${clean(event.giftTitle, 60, "um presente")}". Quando o valor aparecer no extrato de vocês, confirmem em Finanças.`,
         href: "/financas",
       };
     }
@@ -145,7 +145,7 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
         href: "/convidados",
       };
     case "expense_due": {
-      const what = `"${clean(event.description, 60, "Despesa")}" (${brl.format(event.amountCents / 100)})`;
+      const what = `"${clean(event.description, 60, "Despesa")}" (${formatarReais(event.amountCents)})`;
       return event.overdue
         ? { title: "Despesa vencida", body: `${what} venceu em ${shortDate.format(event.dueDate)}.`, href: "/financas" }
         : { title: "Despesa perto de vencer", body: `${what} vence em ${shortDate.format(event.dueDate)}.`, href: "/financas" };

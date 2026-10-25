@@ -33,7 +33,8 @@ import {
   type Audience,
   type Channel,
 } from "@/lib/platform/announcement";
-import { formatInt, plural } from "@/lib/platform/format";
+import { formatInt } from "@/lib/platform/format";
+import { pluralizar } from "@/lib/formatacao/plural";
 import {
   deleteAnnouncementDraft,
   previewAnnouncementAudience,
@@ -129,10 +130,10 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
 
   const audienceText = preview
     ? audience.kind === "couples"
-      ? `${plural(preview.couples.matched, "casal", "casais")} de ${formatInt(preview.couples.total)}`
+      ? `${pluralizar(preview.couples.matched, "casal", "casais")} de ${formatInt(preview.couples.total)}`
       : audience.kind === "vendors"
-        ? `${plural(preview.vendors.matched, "fornecedor", "fornecedores")} de ${formatInt(preview.vendors.total)}`
-        : `${plural(preview.couples.matched, "casal", "casais")} e ${plural(preview.vendors.matched, "fornecedor", "fornecedores")}`
+        ? `${pluralizar(preview.vendors.matched, "fornecedor", "fornecedores")} de ${formatInt(preview.vendors.total)}`
+        : `${pluralizar(preview.couples.matched, "casal", "casais")} e ${pluralizar(preview.vendors.matched, "fornecedor", "fornecedores")}`
     : null;
 
   const planOptions = audience.kind === "vendors" ? VENDOR_PLAN_GROUPS : COUPLE_PLAN_GROUPS;
@@ -245,7 +246,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
                 {preview ? (
                   <>
                     <StatusChip tone={preview.people === 0 || preview.tooMany ? "aviso" : "salvia"}>Chega a {audienceText}</StatusChip>
-                    <span>{preview.tooMany ? "Passa do limite de 5.000 pessoas por envio." : `${plural(preview.people, "pessoa", "pessoas")} com conta.`}</span>
+                    <span>{preview.tooMany ? "Passa do limite de 5.000 pessoas por envio." : `${pluralizar(preview.people, "pessoa", "pessoas")} com conta.`}</span>
                   </>
                 ) : (
                   <>
@@ -395,7 +396,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
         onClose={() => setConfirmOpen(false)}
         variant="default"
         title="Enviar o comunicado agora?"
-        description={`Vai para ${preview ? plural(preview.people, "pessoa", "pessoas") : "o público escolhido"} por ${channelNames || "nenhum canal"}. Não dá para desfazer nem agendar.`}
+        description={`Vai para ${preview ? pluralizar(preview.people, "pessoa", "pessoas") : "o público escolhido"} por ${channelNames || "nenhum canal"}. Não dá para desfazer nem agendar.`}
         confirmText="Enviar agora"
         isLoading={send.pending}
         onConfirm={() =>

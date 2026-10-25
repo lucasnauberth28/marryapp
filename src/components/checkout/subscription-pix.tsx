@@ -12,8 +12,8 @@ import { QrFrame } from "@/components/ui/qr-frame";
 import { QR_COLORS } from "@/lib/qr-colors";
 import { cn } from "@/lib/utils";
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 interface SubscriptionPixProps {
   planId: string;
   modules?: string[];
@@ -152,7 +152,7 @@ export function SubscriptionPix({ planId, modules, planName, couponCode, onPaid 
       <div className="flex flex-col items-center gap-5 rounded-[16px] border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
         <div className="flex w-full items-baseline justify-between gap-3">
           <p className="font-semibold text-tinta">{planName}</p>
-          <p className="font-num text-3xl text-tinta">{brl.format(charge.amount / 100)}</p>
+          <p className="font-num text-3xl text-tinta">{formatarReais(charge.amount)}</p>
         </div>
         <QrFrame className={cn("transition-opacity", expired && "opacity-30")}>
           <QRCodeSVG value={charge.payload} size={184} {...QR_COLORS} marginSize={2} aria-label="QR Code do Pix" role="img" />

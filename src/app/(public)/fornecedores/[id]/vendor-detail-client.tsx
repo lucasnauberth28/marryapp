@@ -34,13 +34,13 @@ import { LEAD_BUDGET_OPTIONS, parseGallery, parseRegions } from "@/app/(forneced
 import { UserImage } from "@/components/ui/user-image";
 import { cn } from "@/lib/utils";
 
+import { formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
 interface VendorDetailClientProps {
   vendor: PublicVendor;
   /** Hoje em Brasília ("AAAA-MM-DD"), mínimo da consulta de disponibilidade. */
   todayIso: string;
 }
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 // Campos do design: 44px, borda forte, raio de 12px, texto de 16px.
 const labelCls = "text-sm font-semibold leading-5 text-tinta";
@@ -195,7 +195,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
       ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
       : vendor.rating.toFixed(1);
 
-  const price = vendor.startingPrice && vendor.startingPrice > 0 ? brl.format(vendor.startingPrice / 100) : null;
+  const price = vendor.startingPrice && vendor.startingPrice > 0 ? formatarReaisInteiros(vendor.startingPrice) : null;
   const mosaic = galleryImages.slice(0, 5);
   const showWhere = serviceRegions.length > 0 ? serviceRegions.join(", ") : null;
 
@@ -499,7 +499,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                 <span className="text-tinta-suave">{price ? "A partir de" : "Preço"}</span>
                 <span className="font-num text-[34px] leading-10 text-tinta">{price ?? "Sob consulta"}</span>
                 {vendor.averageTicket ? (
-                  <span className="mt-1 text-sm text-tinta-suave">Valor médio dos serviços: {brl.format(vendor.averageTicket / 100)}</span>
+                  <span className="mt-1 text-sm text-tinta-suave">Valor médio dos serviços: {formatarReaisInteiros(vendor.averageTicket)}</span>
                 ) : null}
               </p>
 

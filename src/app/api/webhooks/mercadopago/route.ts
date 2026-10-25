@@ -11,6 +11,7 @@ import { deferNotify } from "@/lib/notifications/service";
 import { notifyGiftPaid } from "@/lib/notifications/events";
 import { recordServiceEvent } from "@/lib/platform/system-records";
 
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 async function handleWebhook(req: Request) {
   try {
     const url = new URL(req.url);
@@ -113,10 +114,7 @@ async function handleWebhook(req: Request) {
 
       const guest = transaction.guest;
       if (guest?.phone) {
-        const amountFormatted = ((transaction.netAmount ?? transaction.amount) / 100).toLocaleString("pt-BR", {
-          style: "currency",
-          currency: "BRL",
-        });
+        const amountFormatted = formatarReais(transaction.netAmount ?? transaction.amount);
 
         const message =
           `💍 *Muito obrigado pelo presente!*\n\n` +

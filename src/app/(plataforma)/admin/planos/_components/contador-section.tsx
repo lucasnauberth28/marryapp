@@ -3,7 +3,9 @@ import { EmptyState } from "@/components/plataforma/empty-state";
 import { Panel } from "@/components/plataforma/panel";
 import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { StatusChip } from "@/components/plataforma/status-chip";
-import { formatBRL, formatDayMonth, plural } from "@/lib/platform/format";
+import { formatDayMonth } from "@/lib/platform/format";
+import { pluralizar } from "@/lib/formatacao/plural";
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { accountantMonthOptions, monthTitle } from "@/lib/platform/payments";
 import type { PendingInvoice } from "@/lib/platform/queries/receita";
 import { ContadorExport } from "./contador-export";
@@ -22,7 +24,7 @@ export function ContadorSection({ month, now, invoices, pendingCount }: { month:
         aside={
           pendingCount > 0 ? (
             <StatusChip tone="aviso" icon={ReceiptText}>
-              {plural(pendingCount, "pendente", "pendentes")}
+              {pluralizar(pendingCount, "pendente", "pendentes")}
             </StatusChip>
           ) : undefined
         }
@@ -41,7 +43,7 @@ export function ContadorSection({ month, now, invoices, pendingCount }: { month:
             columns={[
               { key: "quem", header: "Quem pagou", primary: true, cell: (i) => <>{i.payer} <span className="font-normal text-tinta-suave">({i.planName.replace(/^(Plano|Fornecedor)\s+/, "")})</span></> },
               { key: "pago", header: "Pago em", cell: (i) => (i.paidAt ? formatDayMonth(i.paidAt) : "Sem data") },
-              { key: "valor", header: "Valor", align: "right", cell: (i) => formatBRL(i.amount) },
+              { key: "valor", header: "Valor", align: "right", cell: (i) => formatarReais(i.amount) },
               { key: "acao", header: <span className="sr-only">Ação</span>, mobileLabel: false, cell: (i) => <InvoiceButton subscriptionId={i.id} payer={i.payer} /> },
             ]}
           />

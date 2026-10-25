@@ -33,6 +33,7 @@ import { startNavigationProgress } from "@/components/feedback/navigation-progre
 import { UserImage } from "@/components/ui/user-image";
 import { cn } from "@/lib/utils";
 
+import { formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
 const ALL = "TODOS";
 
 const CATEGORIES = [ALL, "Espaço", "Fotografia", "Buffet", "Decoração", "DJ & Som", "Vestidos", "Doces & Bolo"];
@@ -70,7 +71,6 @@ const SORTS: { value: SortKey; label: string }[] = [
 const field =
   "min-h-11 w-full rounded-[12px] border border-linha-forte bg-papel px-4 text-base leading-6 text-tinta transition-colors duration-150 hover:border-tinta-suave focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa";
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 interface PublicVendorsViewProps {
   /** Já filtrados pelo servidor quando há data do casamento (sem quem está ocupado nela). */
@@ -456,7 +456,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
             {filteredPartners.map((partner, index) => {
               const isMaster = partner.planTier === "MASTER";
               const where = regionsLabel(partner.serviceRegions);
-              const price = partner.startingPrice && partner.startingPrice > 0 ? brl.format(partner.startingPrice / 100) : null;
+              const price = partner.startingPrice && partner.startingPrice > 0 ? formatarReaisInteiros(partner.startingPrice) : null;
 
               return (
                 <Reveal as="li" key={partner.id} delay={(index % 3) * 90} className="flex">

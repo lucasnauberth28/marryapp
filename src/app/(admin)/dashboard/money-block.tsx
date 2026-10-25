@@ -6,8 +6,7 @@ import { formatBRL, formatBRLOut, shortDayLabel, dayKeyOf, type GiftLine, type G
 import { Block, Chip, Money, TextLink, btnPrimary, hintClass, labelClass } from "./ui";
 import { ConferirButton, PixSeal } from "./conferir-button";
 
-const plural = (n: number, one: string, many: string) => `${n.toLocaleString("pt-BR")} ${n === 1 ? one : many}`;
-
+import { pluralizar } from "@/lib/formatacao/plural";
 /** Em que a taxa se aplica no plano, em uma frase. */
 function feeNote(plan: GiftFeePlan): string {
   if (plan === "basic") return `${GIFT_FEE_LABEL} por presente no plano Básico`;
@@ -115,7 +114,7 @@ export function MoneyBlock({
         <span className={hintClass}>
           {statement.approvedCount === 0
             ? "Nenhum presente conferido ainda"
-            : `${plural(statement.approvedCount, "presente recebido", "presentes recebidos")} · ${statement.pixCount} por Pix e ${statement.cardCount} por cartão`}
+            : `${pluralizar(statement.approvedCount, "presente recebido", "presentes recebidos")} · ${statement.pixCount} por Pix e ${statement.cardCount} por cartão`}
         </span>
       </div>
 
@@ -123,7 +122,7 @@ export function MoneyBlock({
         label="Extrato dos presentes"
         rows={
           <>
-            <Row term="Recebido (bruto)" note="O que os convidados pagaram" meta={plural(statement.approvedCount, "presente", "presentes")} value={formatBRL(statement.grossCents)} />
+            <Row term="Recebido (bruto)" note="O que os convidados pagaram" meta={pluralizar(statement.approvedCount, "presente", "presentes")} value={formatBRL(statement.grossCents)} />
             <Row term="Taxa do Aceito" note={feeNote(plan)} value={statement.feeCents > 0 ? formatBRLOut(statement.feeCents) : formatBRL(0)} tone="saida" />
             <Row term="Líquido para vocês" value={formatBRL(statement.netCents)} total />
             <Row

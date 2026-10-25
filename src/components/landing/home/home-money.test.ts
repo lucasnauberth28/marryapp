@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { giftAmounts } from "../../../lib/gift-fee.ts";
-import { breakEvenCents, formatBRL, formatCents, parseCents, splitPrice } from "./home-money.ts";
+import { breakEvenCents, formatCents, parseCents, splitPrice } from "./home-money.ts";
 
 test("parseCents entende os formatos digitados", () => {
   assert.equal(parseCents("200"), 20000);
@@ -13,9 +13,8 @@ test("parseCents entende os formatos digitados", () => {
   assert.equal(parseCents("abc"), null);
 });
 
-test("formatCents e formatBRL usam vírgula e milhar", () => {
+test("formatCents usa vírgula e milhar", () => {
   assert.equal(formatCents(125050), "1.250,50");
-  assert.equal(formatBRL(20000), "R$ 200,00");
 });
 
 test("breakEvenCents: a taxa do Básico alcança o preço do plano", () => {

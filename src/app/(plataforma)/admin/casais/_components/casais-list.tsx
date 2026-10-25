@@ -11,7 +11,8 @@ import { ExportButton } from "@/components/plataforma/export-button";
 import { InitialsAvatar } from "@/components/plataforma/initials-avatar";
 import { PlanChip } from "@/components/plataforma/status-chip";
 import { th } from "@/components/casal/ui";
-import { formatBRL, formatDate, formatInt, formatPercent, timeAgo } from "@/lib/platform/format";
+import { formatDate, formatInt, formatPercent, timeAgo } from "@/lib/platform/format";
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 import type { CasalSituation } from "@/lib/platform/casal-status";
 import { cn } from "@/lib/utils";
 import { SituationChip } from "./situation-chip";
@@ -149,7 +150,7 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
                 <td className="px-3 py-3 align-middle">
                   <GuestsCell row={row} />
                 </td>
-                <td className="px-3 py-3 align-middle tabular-nums">{formatBRL(row.giftsCents)}</td>
+                <td className="px-3 py-3 align-middle tabular-nums">{formatarReais(row.giftsCents)}</td>
                 <td className="px-3 py-3 align-middle text-tinta-suave">{when(row)}</td>
                 <td className="py-3 pl-3 pr-6 align-middle">
                   <SituationChip situation={row.situation} />
@@ -180,7 +181,7 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
               <dt className="text-tinta-suave">Convidados</dt>
               <dd>{row.guests === 0 ? "Lista vazia" : `${formatInt(row.guests)} · ${formatPercent(row.confirmed, row.guests)} confirmaram`}</dd>
               <dt className="text-tinta-suave">Presentes</dt>
-              <dd className="tabular-nums">{formatBRL(row.giftsCents)}</dd>
+              <dd className="tabular-nums">{formatarReais(row.giftsCents)}</dd>
               <dt className="text-tinta-suave">Atividade</dt>
               <dd>{when(row)}</dd>
               <dt className="sr-only">Situação</dt>

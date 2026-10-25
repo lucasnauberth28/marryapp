@@ -4,6 +4,7 @@
 import { hasPathAccess } from "../permissions.ts";
 import { RSVP_PENDING_ACTION, RSVP_PENDING_HREF, rsvpPendingTipText, rsvpTipUrgent } from "../liz-tips.ts";
 
+import { escolherPlural } from "../formatacao/plural.ts";
 export interface LizTip {
   /** Id estável por tipo de dica (o cartão do Início lembra o "Agora não" por ele). */
   id: string;
@@ -37,8 +38,6 @@ export interface LizTipInput {
   allowedPaths: readonly string[];
 }
 
-const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
-
 /** Primeira dica que se aplica, na ordem de importância; null quando não há nada a sugerir. */
 export function decideLizTip(input: LizTipInput): LizTip | null {
   const can = (path: string) => hasPathAccess([...input.allowedPaths], path);
@@ -58,7 +57,7 @@ export function decideLizTip(input: LizTipInput): LizTip | null {
     const n = input.notInvitedYet;
     return {
       id: "convites-por-enviar",
-      text: `${n} ${plural(n, "convidado com telefone ainda não recebeu", "convidados com telefone ainda não receberam")} o convite pelo WhatsApp do painel. O convite leva o link para confirmar presença.`,
+      text: `${n} ${escolherPlural(n, "convidado com telefone ainda não recebeu", "convidados com telefone ainda não receberam")} o convite pelo WhatsApp do painel. O convite leva o link para confirmar presença.`,
       action: "Escolher quem recebe o convite",
       href: "/mensagens",
       urgent: false,

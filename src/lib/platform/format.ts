@@ -5,21 +5,7 @@ const TZ = "America/Sao_Paulo";
 const MONTHS = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 const SP_OFFSET_MS = 3 * 60 * 60 * 1000; // Brasília é UTC-3 o ano todo (sem horário de verão desde 2019)
 const DAY_MS = 86_400_000;
-
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-const brlWhole = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 const integer = new Intl.NumberFormat("pt-BR");
-
-/** Centavos em reais: 14900 -> "R$ 149,00". */
-export function formatBRL(cents: number): string {
-  return brl.format(cents / 100).replace(/ /g, " ");
-}
-
-/** Centavos em reais inteiros, para números grandes de destaque: 423700 -> "R$ 4.237". */
-export function formatBRLWhole(cents: number): string {
-  return brlWhole.format(cents / 100).replace(/ /g, " ");
-}
-
 /** Número com separador de milhar: 1236 -> "1.236". */
 export function formatInt(n: number): string {
   return integer.format(n);
@@ -29,11 +15,6 @@ export function formatInt(n: number): string {
 export function formatPercent(part: number, total: number): string | null {
   if (!total) return null;
   return `${Math.round((part / total) * 100)}%`;
-}
-
-/** "1 casal", "2 casais". */
-export function plural(n: number, one: string, many: string): string {
-  return `${formatInt(n)} ${n === 1 ? one : many}`;
 }
 
 /** Dia no calendário de Brasília como número (dias desde 1970), para comparar dias sem erro de fuso. */

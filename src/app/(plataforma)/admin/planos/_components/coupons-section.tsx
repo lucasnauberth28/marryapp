@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 export interface CouponRow {
   id: string;
   code: string;
@@ -34,7 +35,6 @@ interface PlanChoice {
 const BUTTON =
   "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60";
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
 /** "10,50" ou "10.50" -> 1050 centavos; null se não for um valor. */
 function reaisToCents(value: string): number | null {
@@ -49,7 +49,7 @@ function centsToReais(cents: number) {
 
 function discountLabel(c: Pick<CouponRow, "percentOff" | "amountOff">) {
   if (c.percentOff) return `${c.percentOff}% de desconto`;
-  if (c.amountOff) return `${brl.format(c.amountOff / 100)} de desconto`;
+  if (c.amountOff) return `${formatarReais(c.amountOff)} de desconto`;
   return "Sem desconto";
 }
 

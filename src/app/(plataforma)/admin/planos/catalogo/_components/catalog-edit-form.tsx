@@ -12,8 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 /** "159,00", "1.249,90" ou "159" em centavos; NaN se não for um valor em reais. */
 function parseReais(text: string): number {
   const clean = text.replace(/\s|R\$/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".");
@@ -84,7 +84,7 @@ export function CatalogEditForm({
       {big ? (
         <label className="flex min-h-11 cursor-pointer items-start gap-3 text-[15px] text-tinta">
           <input type="checkbox" checked={confirmBig} onChange={(e) => setConfirmBig(e.target.checked)} className="mt-0.5 size-5 shrink-0 cursor-pointer accent-ameixa" />
-          Confirmo a mudança de {brl.format(currentPriceCents / 100)} para {brl.format(cents / 100)}.
+          Confirmo a mudança de {formatarReais(currentPriceCents)} para {formatarReais(cents)}.
         </label>
       ) : null}
       {error ? (

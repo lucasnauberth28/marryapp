@@ -15,7 +15,9 @@ import { btn } from "@/components/landing/styles";
 import { Switch } from "@/components/ui/switch";
 import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
 import { oneOf, type SearchParams } from "@/lib/platform/list-params";
-import { daysBetween, formatBRL, formatDate, formatDateTime, formatInt, formatLongDate, formatPercent, formatWeekday, plural, timeAgo } from "@/lib/platform/format";
+import { daysBetween, formatDate, formatDateTime, formatInt, formatLongDate, formatPercent, formatWeekday, timeAgo } from "@/lib/platform/format";
+import { pluralizar } from "@/lib/formatacao/plural";
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 import {
   getCasalActivity,
   getCasalDomain,
@@ -166,7 +168,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
               <li key={p.code}>
                 {p.title}
                 {p.code === "suspended" && wedding.suspendedReason ? `: ${wedding.suspendedReason}` : ""}
-                {p.code === "onboarding_close" && daysLeft !== null ? ` (faltam ${plural(daysLeft, "dia", "dias")})` : ""}
+                {p.code === "onboarding_close" && daysLeft !== null ? ` (faltam ${pluralizar(daysLeft, "dia", "dias")})` : ""}
               </li>
             ))}
           </ul>
@@ -177,7 +179,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
         <StatCard
           label="Casamento"
           value={wedding.weddingDate ? formatDate(wedding.weddingDate) : "Sem data"}
-          hint={wedding.weddingDate ? `${formatWeekday(wedding.weddingDate)} · ${daysLeft! >= 0 ? `faltam ${plural(daysLeft!, "dia", "dias")}` : `foi há ${plural(-daysLeft!, "dia", "dias")}`}` : "O casal ainda não informou"}
+          hint={wedding.weddingDate ? `${formatWeekday(wedding.weddingDate)} · ${daysLeft! >= 0 ? `faltam ${pluralizar(daysLeft!, "dia", "dias")}` : `foi há ${pluralizar(-daysLeft!, "dia", "dias")}`}` : "O casal ainda não informou"}
           highlight={closeToWedding && problems.length > 0}
         />
         <StatCard
@@ -185,7 +187,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
           value={formatInt(guests.total)}
           hint={guests.total === 0 ? "Lista vazia" : `${formatInt(guests.confirmed)} confirmaram (${formatPercent(guests.confirmed, guests.total)})`}
         />
-        <StatCard label="Presentes" value={formatBRL(gifts.cents)} hint={gifts.count === 0 ? "Nenhum presente recebido" : `${plural(gifts.count, "presente recebido", "presentes recebidos")}`} />
+        <StatCard label="Presentes" value={formatarReais(gifts.cents)} hint={gifts.count === 0 ? "Nenhum presente recebido" : `${pluralizar(gifts.count, "presente recebido", "presentes recebidos")}`} />
         <StatCard
           label="Última atividade"
           value={wedding.lastActiveAt ? timeAgo(wedding.lastActiveAt) : "—"}
@@ -234,15 +236,15 @@ function PlanPanel({ header }: { header: CasalHeader }) {
       <p className="mt-1 text-sm leading-5 text-tinta-suave">
         {plan
           ? plan.amount > 0
-            ? `Pago em ${plan.paidAt ? formatDate(plan.paidAt) : "data não registrada"} · ${formatBRL(plan.amount)} · sem mensalidade`
+            ? `Pago em ${plan.paidAt ? formatDate(plan.paidAt) : "data não registrada"} · ${formatarReais(plan.amount)} · sem mensalidade`
             : "Liberado como cortesia · sem cobrança"
           : "Gratuito"}
-        {` · taxas de presentes até agora ${formatBRL(gifts.feeCents)}`}
+        {` · taxas de presentes até agora ${formatarReais(gifts.feeCents)}`}
       </p>
       {pix && (
         <div className="mt-4 flex flex-col gap-3">
           <Notice tone="aviso" icon={Clock}>
-            <strong>Pix do {pix.planName.replace(/^Plano /, "")} a conferir.</strong> {formatBRL(pix.amount)}, gerado {timeAgo(pix.createdAt)}.
+            <strong>Pix do {pix.planName.replace(/^Plano /, "")} a conferir.</strong> {formatarReais(pix.amount)}, gerado {timeAgo(pix.createdAt)}.
           </Notice>
           <div>
             <ConfirmPixButton subscriptionId={pix.id} />
@@ -265,11 +267,11 @@ function HealthPanel({ header }: { header: CasalHeader }) {
     suspended
       ? { ok: false, title: "Site fora do ar", detail: `suspenso em ${formatDate(wedding.suspendedAt!)}` }
       : { ok: true, title: "Site no ar", detail: `desde o cadastro, em ${formatDate(wedding.createdAt)}` },
-    guests.total > 0 ? { ok: true, title: "Lista de convidados", detail: `${plural(guests.total, "convidado cadastrado", "convidados cadastrados")}` } : { ok: false, title: "Lista de convidados", detail: "ainda sem convidados" },
+    guests.total > 0 ? { ok: true, title: "Lista de convidados", detail: `${pluralizar(guests.total, "convidado cadastrado", "convidados cadastrados")}` } : { ok: false, title: "Lista de convidados", detail: "ainda sem convidados" },
     guests.total === 0
       ? { ok: true, title: "Confirmações", detail: "nada a responder ainda" }
       : guests.pending > 0
-        ? { ok: false, title: "Confirmações", detail: `${plural(guests.pending, "convidado ainda sem resposta", "convidados ainda sem resposta")}` }
+        ? { ok: false, title: "Confirmações", detail: `${pluralizar(guests.pending, "convidado ainda sem resposta", "convidados ainda sem resposta")}` }
         : { ok: true, title: "Confirmações", detail: "todos já responderam" },
   ];
   return (
@@ -353,7 +355,7 @@ async function PagamentosTab({ header, sideColumn }: { header: CasalHeader; side
   const payments = await getCasalPayments(wedding.id);
   const refundable = payments
     .filter((p) => p.status === "APPROVED" && p.amount > 0 && !p.refundRequests.some((r) => r.status === "REQUESTED"))
-    .map((p) => ({ id: p.id, amountCents: p.amount, label: `${p.planName.replace(/^Plano /, "")}, ${p.paidAt ? formatDate(p.paidAt) : formatDate(p.createdAt)}, ${formatBRL(p.amount)}` }));
+    .map((p) => ({ id: p.id, amountCents: p.amount, label: `${p.planName.replace(/^Plano /, "")}, ${p.paidAt ? formatDate(p.paidAt) : formatDate(p.createdAt)}, ${formatarReais(p.amount)}` }));
   const refunds = payments.flatMap((p) => p.refundRequests.map((r) => ({ ...r, planName: p.planName })));
   const STATUS: Record<string, { tone: StatusTone; label: string }> = {
     APPROVED: { tone: "sucesso", label: "Pago" },
@@ -389,7 +391,7 @@ async function PagamentosTab({ header, sideColumn }: { header: CasalHeader; side
                       <tr key={p.id} className="border-b border-linha last:border-b-0">
                         <td className="px-2 py-3">{formatDateTime(p.paidAt ?? p.createdAt)}</td>
                         <td className="px-2 py-3">{p.planName.replace(/^Plano /, "")}</td>
-                        <td className="px-2 py-3 text-right tabular-nums">{formatBRL(p.amount)}</td>
+                        <td className="px-2 py-3 text-right tabular-nums">{formatarReais(p.amount)}</td>
                         <td className="px-2 py-3">{p.method}</td>
                         <td className="px-2 py-3">
                           <StatusChip tone={STATUS[p.status]?.tone ?? "neutro"}>{STATUS[p.status]?.label ?? p.status}</StatusChip>
@@ -412,7 +414,7 @@ async function PagamentosTab({ header, sideColumn }: { header: CasalHeader; side
                 {payments.map((p) => (
                   <li key={p.id} className="rounded-xl border border-linha p-3">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-semibold">{p.planName.replace(/^Plano /, "")} · {formatBRL(p.amount)}</p>
+                      <p className="font-semibold">{p.planName.replace(/^Plano /, "")} · {formatarReais(p.amount)}</p>
                       <StatusChip tone={STATUS[p.status]?.tone ?? "neutro"}>{STATUS[p.status]?.label ?? p.status}</StatusChip>
                     </div>
                     <p className="mt-1 text-sm text-tinta-suave">{formatDateTime(p.paidAt ?? p.createdAt)} · {p.method}</p>
@@ -441,7 +443,7 @@ async function PagamentosTab({ header, sideColumn }: { header: CasalHeader; side
               {refunds.map((r) => (
                 <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
                   <span>
-                    {formatBRL(r.amount)} do plano {r.planName.replace(/^Plano /, "")}, pedido em {formatDate(r.createdAt)}
+                    {formatarReais(r.amount)} do plano {r.planName.replace(/^Plano /, "")}, pedido em {formatDate(r.createdAt)}
                   </span>
                   <StatusChip tone={r.status === "REQUESTED" ? "aviso" : "neutro"}>{REFUND_STATUS[r.status] ?? r.status}</StatusChip>
                 </li>
@@ -501,7 +503,7 @@ async function ConvidadosTab({ id }: { id: string }) {
         Nomes, telefones e restrições dos convidados ficam escondidos. A privacidade deles é do casal.
       </Notice>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="text-lg font-semibold">{plural(n.total, "convidado", "convidados")}</p>
+        <p className="text-lg font-semibold">{pluralizar(n.total, "convidado", "convidados")}</p>
         {n.total > 0 && (
           <p className="text-sm text-tinta-suave">
             {n.confirmed} vão · {n.declined} não vão · {n.pending} sem resposta
@@ -516,9 +518,9 @@ async function ConvidadosTab({ id }: { id: string }) {
         <Rows
           items={[
             { label: "Convites enviados", value: n.total === 0 ? "Nenhum convidado ainda" : `${n.invited} de ${n.total}` },
-            { label: "Sem telefone cadastrado", value: plural(n.noPhone, "convidado", "convidados") },
-            { label: "Presentes", value: n.giftsCount === 0 ? "Nenhum presente recebido" : `${formatBRL(n.giftsCents)} em ${plural(n.giftsCount, "presente", "presentes")}` },
-            { label: "Taxas pagas", value: formatBRL(n.feesCents) },
+            { label: "Sem telefone cadastrado", value: pluralizar(n.noPhone, "convidado", "convidados") },
+            { label: "Presentes", value: n.giftsCount === 0 ? "Nenhum presente recebido" : `${formatarReais(n.giftsCents)} em ${pluralizar(n.giftsCount, "presente", "presentes")}` },
+            { label: "Taxas pagas", value: formatarReais(n.feesCents) },
           ]}
         />
       </div>

@@ -10,9 +10,8 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 import { btn, container, overline } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-const brlShort = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
+import { formatarReais, formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
 export function CustomPlanClient({ modules }: { modules: PricingModule[] }) {
   const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>(["site", "pixZero", "whatsapp"]);
 
@@ -93,7 +92,7 @@ export function CustomPlanClient({ modules }: { modules: PricingModule[] }) {
                         <span className="text-lg font-semibold leading-6">{mod.name}</span>
                         <span className="text-base leading-6 text-tinta-suave">{mod.description}</span>
                         <span className="mt-1 font-semibold">
-                          {mod.isIncludedInBase ? "Grátis" : brlShort.format(mod.price / 100)}
+                          {mod.isIncludedInBase ? "Grátis" : formatarReaisInteiros(mod.price)}
                           <span className="font-normal text-tinta-suave"> · pagamento único</span>
                         </span>
                       </span>
@@ -117,7 +116,7 @@ export function CustomPlanClient({ modules }: { modules: PricingModule[] }) {
                 {calculation.selectedModules.map((m) => (
                   <li key={m.id} className="flex items-baseline justify-between gap-3">
                     <span>{m.name}</span>
-                    <span className="shrink-0 tabular-nums">{m.price === 0 ? "Grátis" : brl.format(m.price / 100)}</span>
+                    <span className="shrink-0 tabular-nums">{m.price === 0 ? "Grátis" : formatarReais(m.price)}</span>
                   </li>
                 ))}
               </ul>
@@ -126,7 +125,7 @@ export function CustomPlanClient({ modules }: { modules: PricingModule[] }) {
             <div className="flex flex-col gap-2 border-t border-linha pt-4" aria-live="polite">
               <p className="flex items-center justify-between text-tinta-suave">
                 <span>Subtotal</span>
-                <span className="tabular-nums">{brl.format(calculation.subtotal / 100)}</span>
+                <span className="tabular-nums">{formatarReais(calculation.subtotal)}</span>
               </p>
               {calculation.discountAmount > 0 ? (
                 <p className="flex items-center justify-between gap-3">
@@ -134,13 +133,13 @@ export function CustomPlanClient({ modules }: { modules: PricingModule[] }) {
                     <Zap className="size-4" aria-hidden="true" />
                     {calculation.paidCount >= 5 ? "Combo de 5 · 25%" : "Combo de 3 · 15%"}
                   </span>
-                  <span className="font-semibold tabular-nums text-sucesso">− {brl.format(calculation.discountAmount / 100)}</span>
+                  <span className="font-semibold tabular-nums text-sucesso">− {formatarReais(calculation.discountAmount)}</span>
                 </p>
               ) : null}
               <p className="mt-2 flex items-end justify-between gap-3">
                 <span className="font-semibold">Total</span>
                 <span className="font-num text-[40px] leading-[44px] tabular-nums">
-                  {calculation.total === 0 ? "Grátis" : brl.format(calculation.total / 100)}
+                  {calculation.total === 0 ? "Grátis" : formatarReais(calculation.total)}
                 </span>
               </p>
               {nextStep ? (

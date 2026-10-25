@@ -1,3 +1,4 @@
+import { formatarReais } from "../formatacao/dinheiro.ts";
 // Registro de atividades (AuditLog) em português: frase de cada ação, grupo para o filtro por tipo e resumo dos detalhes.
 // Sem banco nem Next: roda nos testes. Ação nova que ainda não tem frase aparece pelo código (nunca some).
 
@@ -211,8 +212,6 @@ const DETAIL_LABEL: Record<string, string> = {
   sent: "Enviado",
 };
 
-const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-
 /** Resumo curto dos detalhes: só chaves conhecidas e valores simples, no máximo cinco. Nunca mostra o que não está na lista. */
 export function summarizeDetails(details: unknown, action?: string, targetId?: string | null): string {
   const parts: string[] = [];
@@ -222,7 +221,7 @@ export function summarizeDetails(details: unknown, action?: string, targetId?: s
       const label = DETAIL_LABEL[key];
       if (!label || value === null || value === "" || value === undefined) continue;
       if (typeof value === "boolean") parts.push(`${label}: ${value ? "sim" : "não"}`);
-      else if (key === "amount" && typeof value === "number") parts.push(`${label}: ${BRL.format(value / 100).replace(/\s/g, " ")}`);
+      else if (key === "amount" && typeof value === "number") parts.push(`${label}: ${formatarReais(value).replace(/\s/g, " ")}`);
       else if (Array.isArray(value) && value.every((v) => typeof v === "string")) parts.push(`${label}: ${value.join(", ")}`);
       else if (typeof value === "string" || typeof value === "number") parts.push(`${label}: ${String(value).slice(0, 120)}`);
       if (parts.length >= 5) break;

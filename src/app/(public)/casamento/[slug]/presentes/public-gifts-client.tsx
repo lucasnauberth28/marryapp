@@ -8,6 +8,7 @@ import { GiftLocal as Gift } from "@/types/local";
 import { UserImage } from "@/components/ui/user-image";
 import { cn } from "@/lib/utils";
 
+import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 interface PublicGiftsClientProps {
   initialGifts: Gift[];
   coupleNames: string;
@@ -16,14 +17,6 @@ interface PublicGiftsClientProps {
 }
 
 type Sort = "default" | "asc" | "desc";
-
-const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-const moneyRound = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0, maximumFractionDigits: 0 });
-
-/** "R$ 350" quando o valor é redondo, "R$ 350,50" quando não. */
-function formatPrice(amount: number) {
-  return amount % 100 === 0 ? moneyRound.format(amount / 100) : money.format(amount / 100);
-}
 
 const fieldClass =
   "min-h-11 rounded-[12px] border border-linha-forte bg-papel text-base leading-6 text-tinta transition-[border-color,box-shadow] duration-200 placeholder:text-tinta-suave/80 hover:border-tinta-suave focus:border-ameixa focus:shadow-[0_0_0_3px_var(--color-ameixa-suave)] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa";
@@ -132,7 +125,7 @@ export function PublicGiftsClient({ initialGifts, coupleNames, cardEnabled = tru
                       )}
                     </div>
                     <h2 className="text-[15px] font-semibold leading-5 text-tinta sm:text-base sm:leading-6">{gift.title}</h2>
-                    <p className="text-sm text-tinta-suave sm:text-base">{formatPrice(gift.amount)}</p>
+                    <p className="text-sm text-tinta-suave sm:text-base">{formatarReaisEnxuto(gift.amount)}</p>
                     {gift.description ? <p className="line-clamp-2 text-sm leading-5 text-tinta-suave">{gift.description}</p> : null}
                     <div className="mt-auto pt-1">
                       {gift.isPurchased ? (

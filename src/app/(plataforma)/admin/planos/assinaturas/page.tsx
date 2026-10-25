@@ -11,7 +11,9 @@ import { Pagination } from "@/components/plataforma/pagination";
 import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
 import { StatusChip } from "@/components/plataforma/status-chip";
-import { formatBRL, formatBRLWhole, formatDayMonth, formatDateTime, formatInt, formatMonthName, plural, timeAgo } from "@/lib/platform/format";
+import { formatDayMonth, formatDateTime, formatInt, formatMonthName, timeAgo } from "@/lib/platform/format";
+import { pluralizar } from "@/lib/formatacao/plural";
+import { formatarReais, formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
 import { buildHref, oneOf, pageWindow, param, parsePage, type SearchParams } from "@/lib/platform/list-params";
 import { isStaticPix, paymentMethodOf, paymentStatusOf } from "@/lib/platform/payments";
 import { activePaidVendorWhere, getMonthRevenue, getPixToCheck, pixToCheckWhere } from "@/lib/platform/queries/receita";
@@ -90,7 +92,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
         companyName: selected.user?.partnerVendor?.companyName ?? null,
         accountType: selected.planType === "VENDOR" ? "Fornecedor" : "Casal",
         planName: planLabel(selected.planId, selected.planName),
-        amount: formatBRL(selected.amount),
+        amount: formatarReais(selected.amount),
         gatewayId: selected.gatewayId,
         createdAt: timeAgo(selected.createdAt, now),
         paidAt: selected.paidAt ? formatDateTime(selected.paidAt) : null,
@@ -115,8 +117,8 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
       <StatGrid>
         <StatCard
           label={`Recebido em ${formatMonthName(now)}`}
-          value={formatBRLWhole(month.cents)}
-          hint={month.payments === 0 ? "nenhum pagamento ainda" : plural(month.payments, "pagamento", "pagamentos")}
+          value={formatarReaisInteiros(month.cents)}
+          hint={month.payments === 0 ? "nenhum pagamento ainda" : pluralizar(month.payments, "pagamento", "pagamentos")}
         />
         <StatCard label="Fornecedores pagantes" value={formatInt(pro + master)} hint={`${pro} Pro e ${master} Master`} />
         <StatCard label="Vencem em 7 dias" value={formatInt(expiringSoon)} hint="planos de fornecedor" />
@@ -167,7 +169,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
                 ),
               },
               { key: "plano", header: "Plano", cell: (r) => planLabel(r.planId, r.planName) },
-              { key: "valor", header: "Valor", align: "right", cell: (r) => formatBRL(r.amount) },
+              { key: "valor", header: "Valor", align: "right", cell: (r) => formatarReais(r.amount) },
               {
                 key: "status",
                 header: "Status",

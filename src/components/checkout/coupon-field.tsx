@@ -8,9 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-const money = (cents: number) => brl.format(cents / 100);
 
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 export interface AppliedCoupon {
   code: string;
   /** Plano para o qual o cupom foi conferido. */
@@ -101,21 +100,21 @@ export function CouponField({ planId, modules, applied, onChange, creditLabel = 
         <dl className="flex flex-col gap-1 text-[15px]">
           <div className="flex justify-between gap-4">
             <dt className="text-tinta-suave">Valor do plano</dt>
-            <dd className="tabular-nums">{money(applied.price)}</dd>
+            <dd className="tabular-nums">{formatarReais(applied.price)}</dd>
           </div>
           {applied.credit > 0 ? (
             <div className="flex justify-between gap-4">
               <dt className="text-tinta-suave">{creditLabel}</dt>
-              <dd className="tabular-nums">- {money(applied.credit)}</dd>
+              <dd className="tabular-nums">- {formatarReais(applied.credit)}</dd>
             </div>
           ) : null}
           <div className="flex justify-between gap-4">
             <dt className="text-tinta-suave">Cupom {applied.code}</dt>
-            <dd className="tabular-nums">- {money(applied.discount)}</dd>
+            <dd className="tabular-nums">- {formatarReais(applied.discount)}</dd>
           </div>
           <div className="flex justify-between gap-4 border-t border-sucesso/20 pt-1.5 font-semibold">
             <dt>Total no Pix</dt>
-            <dd className="tabular-nums">{money(applied.total)}</dd>
+            <dd className="tabular-nums">{formatarReais(applied.total)}</dd>
           </div>
         </dl>
       </div>

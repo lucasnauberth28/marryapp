@@ -8,6 +8,7 @@ import { getWeddingContext } from "@/lib/security/wedding-context";
 import { unreadCountFor } from "@/lib/notifications/queries";
 import { notGiftOnlyWhere } from "@/lib/guest-origin";
 
+import { pluralizar } from "@/lib/formatacao/plural";
 // Central de avisos. Tudo aqui vale só para o usuário da sessão: o id do usuário nunca vem do navegador,
 // e um aviso de outra pessoa simplesmente não é encontrado (userId faz parte de todo filtro).
 
@@ -77,13 +78,12 @@ async function coupleReminders(weddingId: string): Promise<ReminderItem[]> {
     prisma.guest.count({ where: { weddingId, hasReceivedMessage: false, phone: { not: null }, ...notGiftOnlyWhere } }),
   ]);
 
-  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
   const reminders: ReminderItem[] = [];
   if (pixToCheck > 0) {
     reminders.push({
       id: "pix_pending",
       title: "Pix para conferir",
-      description: `${plural(pixToCheck, "pagamento aguarda", "pagamentos aguardam")} a conferência no extrato.`,
+      description: `${pluralizar(pixToCheck, "pagamento aguarda", "pagamentos aguardam")} a conferência no extrato.`,
       href: "/financas",
       category: "finance",
     });
@@ -92,7 +92,7 @@ async function coupleReminders(weddingId: string): Promise<ReminderItem[]> {
     reminders.push({
       id: "expenses_due",
       title: "Despesas para acompanhar",
-      description: `${plural(dueExpenses, "despesa vence", "despesas vencem")} nos próximos 7 dias ou já venceu.`,
+      description: `${pluralizar(dueExpenses, "despesa vence", "despesas vencem")} nos próximos 7 dias ou já venceu.`,
       href: "/financas",
       category: "expense",
     });
@@ -101,7 +101,7 @@ async function coupleReminders(weddingId: string): Promise<ReminderItem[]> {
     reminders.push({
       id: "rsvp_pending",
       title: "Confirmações de presença pendentes",
-      description: `${plural(pendingRsvp, "convidado ainda não respondeu", "convidados ainda não responderam")} ao convite.`,
+      description: `${pluralizar(pendingRsvp, "convidado ainda não respondeu", "convidados ainda não responderam")} ao convite.`,
       href: "/convidados",
       category: "guest",
     });
@@ -110,7 +110,7 @@ async function coupleReminders(weddingId: string): Promise<ReminderItem[]> {
     reminders.push({
       id: "whatsapp_uninvited",
       title: "Convites por enviar",
-      description: `${plural(uninvited, "convidado com telefone ainda não recebeu", "convidados com telefone ainda não receberam")} o convite por WhatsApp.`,
+      description: `${pluralizar(uninvited, "convidado com telefone ainda não recebeu", "convidados com telefone ainda não receberam")} o convite por WhatsApp.`,
       href: "/mensagens",
       category: "whatsapp",
     });

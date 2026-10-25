@@ -1,4 +1,5 @@
 // Contas e formatos de dinheiro da home (simulador de presentes e comparação de planos). Puro: roda nos testes.
+import { formatarValorSemSimbolo } from "../../../lib/formatacao/dinheiro.ts";
 import { GIFT_FEE_BASIS_POINTS } from "../../../lib/gift-fee.ts";
 
 /** Texto digitado ("1.250,50", "200", "200,5") em centavos; null se não for um valor válido. */
@@ -12,14 +13,7 @@ export function parseCents(text: string): number | null {
 }
 
 /** Centavos em "1.250,50" (sem o R$). */
-export function formatCents(cents: number): string {
-  return (cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-/** Centavos em "R$ 1.250,50". Espaço sem quebra entre o R$ e o número. */
-export function formatBRL(cents: number): string {
-  return `R$ ${formatCents(cents)}`;
-}
+export const formatCents = formatarValorSemSimbolo;
 
 /**
  * Valor em presentes por Pix a partir do qual pagar o plano (preço único) sai mais barato

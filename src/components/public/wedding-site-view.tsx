@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { UserImage } from "@/components/ui/user-image";
 import { WeddingCountdown, weddingInstant } from "@/components/public/wedding-site-countdown";
 
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 export interface WeddingSiteSettings {
   title?: string | null;
   subtitle?: string | null;
@@ -114,7 +115,6 @@ const TIP_CATEGORIES: Record<string, { label: string; icon: typeof Hotel }> = {
   DRESS: { label: "Trajes", icon: Shirt },
 };
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
 /** Recados mostrados antes do "Ver todos". */
 const GUESTBOOK_PREVIEW = 6;
@@ -707,7 +707,7 @@ export function WeddingSiteView({
                     )}
                   </span>
                   <strong className="line-clamp-2 text-[15px] font-semibold leading-5 md:text-base md:leading-6">{gift.title}</strong>
-                  <span className="text-sm text-tinta-suave tabular-nums md:text-base">{brl.format(gift.amount / 100)}</span>
+                  <span className="text-sm text-tinta-suave tabular-nums md:text-base">{formatarReais(gift.amount)}</span>
                   <span className="text-sm font-semibold text-ameixa group-hover/gift:underline">Presentear</span>
                 </Link>
               </li>

@@ -8,7 +8,8 @@ import { getCatalog } from "@/lib/catalog-server";
 import { comboDiscountText, isFreePlan, moduleCatalogKey, planCatalogKey } from "@/lib/catalog";
 import { PLANS_CONFIG, type PlanKey } from "@/lib/plans";
 import { COUPLE_MODULES } from "@/lib/pricing-modules";
-import { formatBRL, formatDateTime } from "@/lib/platform/format";
+import { formatDateTime } from "@/lib/platform/format";
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { param, type SearchParams } from "@/lib/platform/list-params";
 import { accountantMonth } from "@/lib/platform/payments";
 import { countPendingInvoices, listPendingInvoices } from "@/lib/platform/queries/receita";
@@ -80,7 +81,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                 columns={[
                   { key: "plano", header: "Plano", primary: true, cell: (id) => <>{catalog.plans[id].name.replace(/^(Plano|Fornecedor)\s+/, "")}{edited.has(planCatalogKey(id)) ? <span className="ml-2 align-middle"><StatusChip tone="ameixa">Editado</StatusChip></span> : null}</> },
                   { key: "para", header: "Para quem", cell: (id) => (catalog.plans[id].type === "VENDOR" ? "Fornecedor" : "Casal") },
-                  { key: "preco", header: "Preço", align: "right", className: "whitespace-nowrap", cell: (id) => formatBRL(catalog.plans[id].price) },
+                  { key: "preco", header: "Preço", align: "right", className: "whitespace-nowrap", cell: (id) => formatarReais(catalog.plans[id].price) },
                   { key: "cobranca", header: "Cobrança", cell: (id) => BILLING(id) },
                   { key: "taxa", header: "Taxa nos presentes", mobileLabel: "Taxa nos presentes", cell: (id) => GIFT_FEE[id] ?? <span className="text-tinta-suave">Não se aplica</span> },
                   {
@@ -110,7 +111,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                 selectedKey={editing?.startsWith("module:") ? editing.slice(7) : null}
                 columns={[
                   { key: "nome", header: "Módulo", primary: true, cell: (m) => <>{m.category}: {m.name}{edited.has(moduleCatalogKey(m.id)) ? <span className="ml-2 align-middle"><StatusChip tone="ameixa">Editado</StatusChip></span> : null}</> },
-                  { key: "preco", header: "Preço", align: "right", className: "whitespace-nowrap", cell: (m) => formatBRL(m.price) },
+                  { key: "preco", header: "Preço", align: "right", className: "whitespace-nowrap", cell: (m) => formatarReais(m.price) },
                   {
                     key: "editar",
                     header: <span className="sr-only">Editar</span>,
@@ -147,7 +148,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                     <li key={h.id} className="border-b border-linha py-3 text-sm first:pt-0 last:border-b-0 last:pb-0">
                       <p className="font-semibold text-tinta">{itemLabel(h.targetId)}</p>
                       <p className="text-tinta">
-                        {typeof d.before?.priceCents === "number" ? formatBRL(d.before.priceCents) : "?"} para {typeof d.after?.priceCents === "number" ? formatBRL(d.after.priceCents) : "?"}
+                        {typeof d.before?.priceCents === "number" ? formatarReais(d.before.priceCents) : "?"} para {typeof d.after?.priceCents === "number" ? formatarReais(d.after.priceCents) : "?"}
                       </p>
                       {d.reason ? <p className="text-tinta-suave">Motivo: {d.reason}</p> : null}
                       <p className={cn("text-tinta-suave")}>

@@ -14,12 +14,12 @@ import { LoadingRegion } from "@/components/skeletons";
 import { PlanoBodySkeleton } from "./skeletons";
 import { UpgradeSection } from "./upgrade-section";
 
+import { formatarReais } from "@/lib/formatacao/dinheiro";
+import { pluralizar } from "@/lib/formatacao/plural";
 export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Plano e pagamentos" };
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-const money = (cents: number) => brl.format(cents / 100);
 const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", year: "numeric", timeZone: "America/Sao_Paulo" });
 
 /** Ordem dos planos de casal: só mostramos como opção de mudança os que ficam acima do atual. */
@@ -29,10 +29,6 @@ const UPGRADE_KEYS = ["classic", "vip"] as const;
 /** Pix estático fica "em conferência" por até 3 dias depois de vencer o código (mesma regra de /assinaturas). */
 const STATIC_PIX_PREFIX = "ASSIN";
 const STATIC_PIX_REVIEW_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
-
-function plural(n: number, one: string, many: string) {
-  return `${n} ${n === 1 ? one : many}`;
-}
 
 export default async function PlanoPage() {
   // Plano de casal vale para o casamento (os dois do casal), não para a conta
@@ -116,7 +112,7 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
           <p className="font-display text-4xl leading-10 text-tinta">{currentName}</p>
           <p className="text-[15px] text-tinta">
             {current
-              ? `Pagamento único de ${money(current.amount)}${current.paidAt ? ` · pago em ${dateFmt.format(current.paidAt)}` : ""}`
+              ? `Pagamento único de ${formatarReais(current.amount)}${current.paidAt ? ` · pago em ${dateFmt.format(current.paidAt)}` : ""}`
               : "Gratuito · taxa de 3,99% por presente recebido"}
           </p>
         </section>
@@ -129,9 +125,9 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
             <p className="text-[15px]">Nenhum presente recebido ainda. Quando chegar o primeiro, as taxas aparecem aqui.</p>
           ) : (
             <>
-              <p className="font-num text-[40px] leading-[44px] tabular-nums">{money(feeTotal)}</p>
+              <p className="font-num text-[40px] leading-[44px] tabular-nums">{formatarReais(feeTotal)}</p>
               <p className="text-[15px]">
-                {plural(giftCount, "presente recebido", "presentes recebidos")}
+                {pluralizar(giftCount, "presente recebido", "presentes recebidos")}
                 {feeTotal === 0 ? ", sem taxa até agora." : "."}
               </p>
             </>
@@ -143,7 +139,7 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
         <Reveal className="flex items-start gap-3 rounded-2xl border border-aviso/30 bg-aviso-suave p-4 text-[15px] text-tinta">
           <Clock className="mt-0.5 h-5 w-5 shrink-0 text-aviso" aria-hidden="true" />
           <p>
-            Há um Pix de {money(awaitingReview.amount)} do plano{" "}
+            Há um Pix de {formatarReais(awaitingReview.amount)} do plano{" "}
             {isPlanKey(awaitingReview.planId) ? planOption(awaitingReview.planId, catalog).name : shortPlanName(awaitingReview.planName)} gerado em{" "}
             {dateFmt.format(awaitingReview.createdAt)}. Se vocês já pagaram, nossa equipe confere no extrato e libera o plano em até 1
             dia útil.
@@ -192,7 +188,7 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
                       Estornado
                     </span>
                   ) : null}
-                  <span className="font-semibold tabular-nums text-tinta">{money(s.amount)}</span>
+                  <span className="font-semibold tabular-nums text-tinta">{formatarReais(s.amount)}</span>
                   {s.status === PaymentStatus.APPROVED ? (
                     <Link
                       href={`/recibo/${s.id}`}

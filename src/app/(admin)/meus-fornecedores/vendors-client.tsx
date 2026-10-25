@@ -17,6 +17,7 @@ import { btn } from "@/components/landing/styles";
 import { Chip, card } from "@/components/casal/ui";
 import { LoadingButton } from "@/components/painel/loading-button";
 
+import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 type WeddingVendor = Awaited<ReturnType<typeof getVendors>>[number];
 
 interface VendorsClientProps {
@@ -26,8 +27,6 @@ interface VendorsClientProps {
 /** Categorias comuns de casamento (as mesmas da vitrine) para lembrar o que ainda falta escolher. */
 const COMMON_CATEGORIES = ["Espaço", "Buffet", "Fotografia", "Decoração", "DJ & Som", "Doces & Bolo", "Vestidos"];
 
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-const money = (cents: number) => brl.format(cents / 100).replace(/,00$/, "").replace(/ /g, " ");
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
 
 interface VendorForm {
@@ -45,9 +44,9 @@ function paymentSummary(v: WeddingVendor) {
   if (list.length === 0) return "Sem despesas lançadas";
   const total = list.reduce((acc, e) => acc + e.amount, 0);
   const paid = list.filter((e) => e.status === "PAID").length;
-  if (paid === list.length) return `${money(total)} · pago`;
-  if (list.length === 1) return `${money(total)} · a pagar`;
-  return `${money(total)} · ${paid} de ${list.length} parcelas pagas`;
+  if (paid === list.length) return `${formatarReaisEnxuto(total)} · pago`;
+  if (list.length === 1) return `${formatarReaisEnxuto(total)} · a pagar`;
+  return `${formatarReaisEnxuto(total)} · ${paid} de ${list.length} parcelas pagas`;
 }
 
 export function VendorsClient({ initialVendors }: VendorsClientProps) {

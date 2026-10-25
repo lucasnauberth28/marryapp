@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 interface InstallmentBlock {
   id: number;
   count: number;
@@ -168,10 +169,6 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
     setBlocks([{ id: 1, count: 3, amount: "300", startDate: new Date().toISOString().split("T")[0] }]);
     setFormKey(prev => prev + 1);
     if (imageInputRef.current) imageInputRef.current.value = "";
-  };
-
-  const formatCurrency = (amount: number) => {
-    return (amount / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -905,7 +902,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                               Prévia ({generatedInstallments.length} parcelas)
                             </span>
                             <span className="font-bold text-brand">
-                              Total: {formatCurrency(totalInstallmentsAmount)}
+                              Total: {formatarReais(totalInstallmentsAmount)}
                             </span>
                           </div>
 
@@ -915,7 +912,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                                 <span className="text-tinta font-medium">{inst.description}</span>
                                 <div className="flex items-center gap-3">
                                   <span className="text-tinta-suave">{new Date(inst.dueDate).toLocaleDateString('pt-BR')}</span>
-                                  <span className="font-bold text-tinta">{formatCurrency(inst.amount)}</span>
+                                  <span className="font-bold text-tinta">{formatarReais(inst.amount)}</span>
                                 </div>
                               </div>
                             ))}
@@ -1031,7 +1028,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                                 {group.paidCount} de {group.totalCount} parcelas pagas ({percentPaid}%)
                               </span>
                               <span className="font-semibold text-tinta">
-                                {formatCurrency(group.paidAmount)} de {formatCurrency(group.totalAmount)}
+                                {formatarReais(group.paidAmount)} de {formatarReais(group.totalAmount)}
                               </span>
                             </div>
                             <div className="w-full h-2 bg-areia rounded-full overflow-hidden border border-linha/50">
@@ -1053,7 +1050,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                             <span className="text-tinta-suave block">Próximo vencimento</span>
                             <span className="font-bold text-aviso flex items-center gap-1 md:justify-end">
                               <Calendar className="w-3.5 h-3.5 text-aviso" />
-                              {new Date(group.nextDueDate).toLocaleDateString('pt-BR')} ({formatCurrency(group.nextDueAmount || 0)})
+                              {new Date(group.nextDueDate).toLocaleDateString('pt-BR')} ({formatarReais(group.nextDueAmount || 0)})
                             </span>
                           </div>
                         )}
@@ -1122,7 +1119,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                                       {expense.paymentMethod || "—"}
                                     </TableCell>
                                     <TableCell className={`text-xs font-bold ${isPaid ? "text-tinta-suave" : "text-tinta"}`}>
-                                      {formatCurrency(expense.amount)}
+                                      {formatarReais(expense.amount)}
                                     </TableCell>
                                     <TableCell>
                                       <button
@@ -1286,7 +1283,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
               accessor: (exp) => exp.amount,
               cell: (exp) => (
                 <span className={`text-sm font-bold ${exp.status === "PAID" ? "text-tinta-suave" : "text-tinta"}`}>
-                  {formatCurrency(exp.amount)}
+                  {formatarReais(exp.amount)}
                 </span>
               ),
             },

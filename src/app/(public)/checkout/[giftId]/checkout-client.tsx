@@ -23,6 +23,7 @@ import { weddingSitePath } from "@/lib/wedding-links";
 import { GiftLocal as Gift } from "@/types/local";
 import { cn } from "@/lib/utils";
 
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 interface CheckoutClientProps {
   gift: Gift;
   coupleNames: string;
@@ -83,14 +84,6 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
 
     return () => clearInterval(interval);
   }, [step, transactionId]);
-
-  // Conversão para Real
-  function formatPrice(amount: number) {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(amount / 100);
-  }
 
   // No cartão a tarifa do cartão entra no valor cobrado; a conta vem do servidor, a mesma da cobrança.
   const cardFinalAmount = cardAmount;
@@ -198,9 +191,9 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
   const heading = "font-display text-[30px] font-medium leading-[36px] tracking-[-0.015em] text-tinta outline-none";
 
   const methodOptions: { id: PaymentMethod; label: string; hint: string; value: string }[] = [
-    { id: "PIX", label: "Pix", hint: "À vista, sem juros", value: formatPrice(gift.amount) },
+    { id: "PIX", label: "Pix", hint: "À vista, sem juros", value: formatarReais(gift.amount) },
     ...(cardEnabled
-      ? [{ id: "CREDIT_CARD" as const, label: "Cartão", hint: "Em até 12x, com juros do cartão", value: formatPrice(cardFinalAmount) }]
+      ? [{ id: "CREDIT_CARD" as const, label: "Cartão", hint: "Em até 12x, com juros do cartão", value: formatarReais(cardFinalAmount) }]
       : []),
   ];
 
@@ -215,7 +208,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
           <strong className="font-semibold leading-6">{gift.title}</strong>
           <span className="truncate text-sm leading-5 text-tinta-suave">Para {coupleNames}</span>
         </div>
-        <span className="font-num text-2xl leading-8 tabular-nums">{formatPrice(gift.amount)}</span>
+        <span className="font-num text-2xl leading-8 tabular-nums">{formatarReais(gift.amount)}</span>
       </div>
       <p className="text-sm leading-5 text-tinta-suave">Este presente representa um valor em dinheiro para o casal.</p>
 
@@ -439,7 +432,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                   const count = i + 1;
                   return (
                     <option key={count} value={count}>
-                      {count}x de {formatPrice(Math.round(cardFinalAmount / count))}
+                      {count}x de {formatarReais(Math.round(cardFinalAmount / count))}
                     </option>
                   );
                 })}
@@ -468,17 +461,17 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                 <>
                   <div className="flex items-baseline justify-between gap-3">
                     <dt className="text-tinta-suave">Presente</dt>
-                    <dd className="tabular-nums text-tinta">{formatPrice(gift.amount)}</dd>
+                    <dd className="tabular-nums text-tinta">{formatarReais(gift.amount)}</dd>
                   </div>
                   <div className="flex items-baseline justify-between gap-3">
                     <dt className="text-tinta-suave">Tarifa do cartão</dt>
-                    <dd className="tabular-nums text-tinta">{formatPrice(cardFeeAmount)}</dd>
+                    <dd className="tabular-nums text-tinta">{formatarReais(cardFeeAmount)}</dd>
                   </div>
                 </>
               ) : null}
               <div className="flex items-baseline justify-between gap-3 font-semibold">
                 <dt className="text-tinta">Você paga</dt>
-                <dd className="font-num text-2xl leading-8 tabular-nums text-tinta">{formatPrice(method === "CREDIT_CARD" ? cardFinalAmount : gift.amount)}</dd>
+                <dd className="font-num text-2xl leading-8 tabular-nums text-tinta">{formatarReais(method === "CREDIT_CARD" ? cardFinalAmount : gift.amount)}</dd>
               </div>
             </dl>
             <p className="text-sm leading-5 text-tinta-suave">
@@ -639,7 +632,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
 
           <div className="flex w-full flex-col items-center gap-1 rounded-[16px] border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
             <span className={overline}>{pixAcknowledged ? "Valor do Pix" : "Valor do presente"}</span>
-            <span className="font-num text-[44px] leading-[48px] tabular-nums text-tinta">{formatPrice(gift.amount)}</span>
+            <span className="font-num text-[44px] leading-[48px] tabular-nums text-tinta">{formatarReais(gift.amount)}</span>
           </div>
 
           <div className="mt-2 flex w-full flex-col gap-2">
