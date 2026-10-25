@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Guest } from "@prisma/client";
 import { toast } from "sonner";
-import { enviarModeloAosConvidados } from "@/actions/message-actions";
+import { enviarModeloAosConvidados } from "@/actions/mensagens/envio";
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import type { ModeloDeMensagem, Publico } from "./tipos";
 import { idsPara } from "./utilitarios";

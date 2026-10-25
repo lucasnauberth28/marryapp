@@ -1,7 +1,7 @@
 // O estado do editor de uma mensagem: campos, links, salvar, excluir e inserir o {nome} no texto.
 import { useState, type RefObject } from "react";
 import { toast } from "sonner";
-import { atualizarModeloDeMensagem, criarModeloDeMensagem, excluirModeloDeMensagem } from "@/actions/message-actions";
+import { atualizarModeloDeMensagem, criarModeloDeMensagem, excluirModeloDeMensagem } from "@/actions/mensagens/modelos";
 import { LINKS_PADRAO, MAXIMO_DE_LINKS, type ItemDeLink, type ModeloDeMensagem } from "./tipos";
 import { interpretarLinks } from "./utilitarios";
 

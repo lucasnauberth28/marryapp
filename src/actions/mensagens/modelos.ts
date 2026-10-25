@@ -1,17 +1,12 @@
 "use server";
 
+// Mensagens do casal: modelos (criar, atualizar, excluir e os padrão).
 import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
-import { recusaDeModulo } from "@/lib/wedding-plan";
-import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import { modelosPadraoParaCriar } from "@/lib/default-message-templates";
-
 import prisma from "@/lib/prisma";
-import { enviarMensagensEmLote } from "@/lib/whatsapp/mensagens";
-import { idsDeConvidadosAlcancados, motivoDaFalhaNoEnvio, resumoDoEnvio } from "@/lib/whatsapp-results";
 import { revalidatePath } from "next/cache";
-
-import { somenteDigitos } from "@/lib/formatacao/telefone";
 import { ERROS } from "@/lib/mensagens-de-erro";
+
 /**
  * Dá os modelos padrão (convite e lembrete) a um casamento que ainda não tem nenhum.
  * Seguro para rodar a cada visita e em paralelo: um bloqueio por casamento (advisory lock da transação)
@@ -101,101 +96,5 @@ export async function excluirModeloDeMensagem(id: string) {
   } catch (error) {
     console.error("[deleteMessageTemplate Error]:", error);
     return { success: false, error: "Não deu para excluir o modelo. Tente de novo." };
-  }
-}
-
-/**
- * Dispara um template para vários convidados
- */
-export async function enviarModeloAosConvidados(templateId: string, guestIds: string[]) {
-  const { weddingId, wedding, session } = await exigirCasamento("/mensagens");
-  const refusal = await recusaDeModulo({ weddingId, session }, "whatsapp");
-  if (refusal) return { success: false, error: refusal };
-  try {
-    if (typeof templateId !== "string") return { success: false, error: ERROS.modeloNaoEncontrado };
-    const template = await prisma.messageTemplate.findFirst({ where: { id: templateId, weddingId } });
-    if (!template) return { success: false, error: ERROS.modeloNaoEncontrado };
-
-    const ids = Array.isArray(guestIds) ? guestIds.filter((id): id is string => typeof id === "string") : [];
-    const guests = await prisma.guest.findMany({
-      where: { id: { in: ids }, weddingId },
-    });
-
-    if (guests.length === 0) return { success: false, error: "Escolham pelo menos um convidado para receber a mensagem." };
-
-    // Tenta fazer parse dos botões se existirem
-    let parsedButtons: Array<{ id: string; text: string }> | null = null;
-    if (template.buttons) {
-      try {
-        parsedButtons = JSON.parse(template.buttons);
-      } catch (e) {
-        console.error("Erro ao fazer parse dos botões do template:", e);
-      }
-    }
-
-    const rsvpUrl = urlDoSiteDoCasamento(wedding.slug, "rsvp", wedding.customDomain);
-    const giftsUrl = urlDoSiteDoCasamento(wedding.slug, "presentes", wedding.customDomain);
-
-    // Mapeia os convidados para o formato esperado pela Evolution API
-    const recipients = guests
-      .map((g) => {
-        const cleanPhone = g.phone ? somenteDigitos(g.phone) : "";
-        let messageText = template.content.replace(/\{nome\}/gi, g.name);
-
-        if (parsedButtons && parsedButtons.length > 0) {
-          messageText += "\n\n👇 *Acesse abaixo:*";
-          parsedButtons.forEach((btn) => {
-            const label = btn.text || "";
-            const lower = label.toLowerCase();
-            if (lower.includes("presente") || btn.id === "gifts") {
-              messageText += `\n🎁 *${label}:*\n${giftsUrl}`;
-            } else if (lower.includes("recusar") || lower.includes("não") || btn.id === "decline") {
-              messageText += `\n❌ *${label}:*\n${rsvpUrl}`;
-            } else {
-              messageText += `\n✅ *${label}:*\n${rsvpUrl}`;
-            }
-          });
-        }
-
-        return {
-          phone: cleanPhone,
-          message: messageText,
-          mediaUrl: template.mediaUrl,
-          mediaType: template.mediaType,
-        };
-      })
-      .filter((r) => r.phone.length >= 8);
-
-    if (recipients.length === 0) {
-      return { success: false, error: "Nenhum dos escolhidos tem telefone válido com DDD." };
-    }
-
-    const results = await enviarMensagensEmLote(recipients);
-
-    const sent = results.filter((r) => r.success).length;
-    const failed = results.length - sent;
-
-    if (sent === 0 && failed > 0) {
-      return { success: false, error: `Nenhuma mensagem foi enviada. ${motivoDaFalhaNoEnvio(results)}`, results };
-    }
-
-    // Só quem teve o envio confirmado passa a constar como "já recebeu"
-    if (sent > 0) {
-      await prisma.guest.updateMany({
-        where: { id: { in: idsDeConvidadosAlcancados(guests, results) }, weddingId },
-        data: { hasReceivedMessage: true },
-      });
-    }
-
-    return {
-      success: true,
-      sent,
-      failed,
-      results,
-      message: resumoDoEnvio(sent, failed, "mensagem"),
-    };
-  } catch (error) {
-    console.error("[sendTemplateToGuests Error]:", error);
-    return { success: false, error: "Não deu para enviar agora. Nada foi marcado como enviado. Tentem de novo." };
   }
 }

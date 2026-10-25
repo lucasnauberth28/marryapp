@@ -4,7 +4,7 @@ import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
 import { CartaoDeUpgrade } from "@/components/plan/upgrade-card";
 import { MensagensCliente } from "./mensagens-cliente";
-import { garantirModelosPadrao } from "@/actions/message-actions";
+import { garantirModelosPadrao } from "@/actions/mensagens/modelos";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 
 export const metadata = { title: "Mensagens" };
