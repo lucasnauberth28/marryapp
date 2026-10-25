@@ -16,6 +16,28 @@ export interface ItemDeAlternanciaDoCasamento {
   blocked: boolean;
 }
 
+function ItemDaAlternancia({ item, pending, aoAlterar }: { item: ItemDeAlternanciaDoCasamento; pending: boolean; aoAlterar: (enabled: boolean | null) => void }) {
+  return (
+    <li className="flex items-center justify-between gap-3 py-3">
+      <div className="min-w-0">
+        <p className="text-[15px] font-semibold leading-5 text-tinta" id={`w-${item.id}`}>
+          {item.coupleNames}
+        </p>
+        <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-tinta-suave">
+          {item.blocked && <EtiquetaDeSituacao tone="perigo">Bloqueada</EtiquetaDeSituacao>}
+          {item.enabled === null ? "Segue o padrão" : item.enabled ? "Ligada à mão" : "Desligada à mão"}
+          {item.enabled !== null && (
+            <button type="button" disabled={pending} onClick={() => aoAlterar(null)} className="font-semibold text-ameixa underline underline-offset-2">
+              Voltar ao padrão
+            </button>
+          )}
+        </p>
+      </div>
+      <Interruptor checked={item.enabled === true} disabled={pending} onCheckedChange={(v) => aoAlterar(v)} aria-labelledby={`w-${item.id}`} />
+    </li>
+  );
+}
+
 /** Ligar ou desligar a Liz por casal. Lista os casais com ajuste e o que a busca encontrar. */
 export function AlternanciasDoCasamento({ initial }: { initial: ItemDeAlternanciaDoCasamento[] }) {
   const [items, setItems] = useState(initial);
@@ -46,23 +68,7 @@ export function AlternanciasDoCasamento({ initial }: { initial: ItemDeAlternanci
       ) : (
         <ul className="mt-4 divide-y divide-linha">
           {items.map((item) => (
-            <li key={item.id} className="flex items-center justify-between gap-3 py-3">
-              <div className="min-w-0">
-                <p className="text-[15px] font-semibold leading-5 text-tinta" id={`w-${item.id}`}>
-                  {item.coupleNames}
-                </p>
-                <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-tinta-suave">
-                  {item.blocked && <EtiquetaDeSituacao tone="perigo">Bloqueada</EtiquetaDeSituacao>}
-                  {item.enabled === null ? "Segue o padrão" : item.enabled ? "Ligada à mão" : "Desligada à mão"}
-                  {item.enabled !== null && (
-                    <button type="button" disabled={pending} onClick={() => setEnabled(item, null)} className="font-semibold text-ameixa underline underline-offset-2">
-                      Voltar ao padrão
-                    </button>
-                  )}
-                </p>
-              </div>
-              <Interruptor checked={item.enabled === true} disabled={pending} onCheckedChange={(v) => setEnabled(item, v)} aria-labelledby={`w-${item.id}`} />
-            </li>
+            <ItemDaAlternancia key={item.id} item={item} pending={pending} aoAlterar={(enabled) => setEnabled(item, enabled)} />
           ))}
         </ul>
       )}

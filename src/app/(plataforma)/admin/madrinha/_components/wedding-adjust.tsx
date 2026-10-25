@@ -10,6 +10,15 @@ import type { ResultadoDeCasamento } from "@/lib/platform/queries/madrinha";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 import { BuscaDeCasamento } from "./wedding-search";
 
+function CasalEscolhido({ picked }: { picked: ResultadoDeCasamento }) {
+  return (
+    <p className="rounded-xl bg-areia px-3 py-2 text-sm leading-5 text-tinta">
+      Casal escolhido: <strong className="font-semibold">{picked.coupleNames}</strong>
+      {picked.override?.blocked ? " (hoje bloqueado)" : ""}
+    </p>
+  );
+}
+
 /** "Ajuste para um casal": mensagens a mais neste mês (com motivo) e desbloqueio. Só configuração salva. */
 export function AjusteDoCasamento() {
   const [picked, setPicked] = useState<ResultadoDeCasamento | null>(null);
@@ -24,6 +33,12 @@ export function AjusteDoCasamento() {
     setReason(hit.override?.note ?? "");
   }
 
+  function unblock() {
+    if (!picked) return;
+    setRunning("unblock");
+    run(() => desbloquearMadrinhaDoCasamento({ weddingId: picked.id }), () => setPicked({ ...picked, override: picked.override && { ...picked.override, blocked: false } }));
+  }
+
   return (
     <form
       className="flex flex-1 flex-col gap-4"
@@ -35,12 +50,7 @@ export function AjusteDoCasamento() {
       }}
     >
       <BuscaDeCasamento selectedId={picked?.id ?? null} onPick={pick} />
-      {picked && (
-        <p className="rounded-xl bg-areia px-3 py-2 text-sm leading-5 text-tinta">
-          Casal escolhido: <strong className="font-semibold">{picked.coupleNames}</strong>
-          {picked.override?.blocked ? " (hoje bloqueado)" : ""}
-        </p>
-      )}
+      {picked && <CasalEscolhido picked={picked} />}
       <Entrada label="Mensagens a mais neste mês" inputMode="numeric" value={extra} onChange={(e) => setExtra(e.target.value)} error={errors.extraMessages} disabled={!picked} />
       <AreaDeTexto label="Motivo" value={reason} onChange={(e) => setReason(e.target.value)} error={errors.reason} disabled={!picked} rows={3} />
       {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
@@ -48,17 +58,7 @@ export function AjusteDoCasamento() {
         <Botao type="submit" variant="outline" disabled={pending || !picked} loading={pending && running === "apply"}>
           Aplicar ajuste
         </Botao>
-        <Botao
-          type="button"
-          variant="quiet"
-          disabled={pending || !picked || !picked.override?.blocked}
-          loading={pending && running === "unblock"}
-          onClick={() => {
-            if (!picked) return;
-            setRunning("unblock");
-            run(() => desbloquearMadrinhaDoCasamento({ weddingId: picked.id }), () => setPicked({ ...picked, override: picked.override && { ...picked.override, blocked: false } }));
-          }}
-        >
+        <Botao type="button" variant="quiet" disabled={pending || !picked || !picked.override?.blocked} loading={pending && running === "unblock"} onClick={unblock}>
           Desbloquear o casal
         </Botao>
       </div>
