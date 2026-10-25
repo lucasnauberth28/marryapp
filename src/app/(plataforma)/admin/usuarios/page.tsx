@@ -3,8 +3,8 @@ import { NavegacaoDeAbas } from "@/components/plataforma/tabs-nav";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type ParametrosDeBusca, umDosValores } from "@/lib/platform/list-params";
 import { obterPerfis, obterPessoas } from "@/actions/rbac-actions";
-import { PessoasCliente } from "@/app/(admin)/usuarios/users-client";
-import { PerfisCliente } from "@/app/(admin)/perfis/roles-client";
+import { PessoasCliente } from "@/app/(admin)/usuarios/pessoas-cliente";
+import { PerfisCliente } from "@/app/(admin)/perfis/perfis-cliente";
 
 export const metadata = { title: "Usuários e perfis" };
 

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { obterPessoas, obterPerfis } from "@/actions/rbac-actions";
 import { obterSessao } from "@/lib/security/auth-guard";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
-import { PessoasCliente } from "./users-client";
+import { PessoasCliente } from "./pessoas-cliente";
 
 export const metadata: Metadata = {
   title: "Usuários",

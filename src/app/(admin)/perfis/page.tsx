@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { obterPerfis } from "@/actions/rbac-actions";
 import { obterSessao } from "@/lib/security/auth-guard";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
-import { PerfisCliente } from "./roles-client";
+import { PerfisCliente } from "./perfis-cliente";
 
 export const metadata: Metadata = {
   title: "Perfis de acesso",
