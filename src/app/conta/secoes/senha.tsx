@@ -6,7 +6,8 @@ import { estiloDoBotao } from "@/components/landing/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
-import { AlternarSenha, Secao } from "./secao";
+import { AlternarVisibilidadeDaSenha } from "@/components/account/password-toggle";
+import { Secao } from "./secao";
 
 type ErrosDaSenha = { current?: string; next?: string; confirm?: string };
 
@@ -53,7 +54,7 @@ export function SecaoDeSenha() {
   return (
     <Secao id="senha" icon={KeyRound} title="Senha" description="Troque a senha de acesso. Use uma que você não usa em outros sites.">
       <form onSubmit={t.submit} noValidate className="grid gap-5 sm:grid-cols-2">
-        <Campo id="senha-current" label="Senha atual" icon={Lock} error={t.errors.current} className="sm:col-span-2" trailing={<AlternarSenha show={show} onToggle={() => setShow((v) => !v)} />}>
+        <Campo id="senha-current" label="Senha atual" icon={Lock} error={t.errors.current} className="sm:col-span-2" trailing={<AlternarVisibilidadeDaSenha show={show} onToggle={() => setShow((v) => !v)} varias />}>
           {(c) => <input {...c} id="senha-current" type={tipo} autoComplete="current-password" value={t.current} onChange={(e) => t.setCurrent(e.target.value)} />}
         </Campo>
         <Campo id="senha-next" label="Nova senha" icon={Lock} error={t.errors.next} hint="Pelo menos 8 caracteres.">

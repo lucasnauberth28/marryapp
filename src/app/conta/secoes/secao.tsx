@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Eye, EyeOff, type Lock } from "lucide-react";
+import type { Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Propriedades {
@@ -27,19 +27,5 @@ export function Secao({ id, icon: Icon, title, description, tone = "default", ch
       </div>
       {children}
     </section>
-  );
-}
-
-export function AlternarSenha({ show, onToggle }: { show: boolean; onToggle: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-label={show ? "Ocultar senhas" : "Mostrar senhas"}
-      aria-pressed={show}
-      className="grid size-11 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
-    >
-      {show ? <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.6} /> : <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.6} />}
-    </button>
   );
 }

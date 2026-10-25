@@ -6,7 +6,8 @@ import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { formatarDataBrasiliaLonga } from "@/lib/formatacao/data";
 import { cn } from "@/lib/utils";
-import { AlternarSenha, Secao } from "./secao";
+import { AlternarVisibilidadeDaSenha } from "@/components/account/password-toggle";
+import { Secao } from "./secao";
 import type { TipoDeConta } from "./tipos";
 
 interface PropriedadesDosDados {
@@ -69,7 +70,7 @@ function FormularioDeExclusao({ aoCancelar }: { aoCancelar: () => void }) {
       <Campo id="excluir-confirmacao" label='Digite "EXCLUIR" para confirmar'>
         {(c) => <input {...c} id="excluir-confirmacao" autoComplete="off" autoCapitalize="characters" spellCheck={false} value={confirmation} onChange={(e) => setConfirmation(e.target.value)} />}
       </Campo>
-      <Campo id="excluir-senha" label="Sua senha" icon={Lock} trailing={<AlternarSenha show={show} onToggle={() => setShow((v) => !v)} />}>
+      <Campo id="excluir-senha" label="Sua senha" icon={Lock} trailing={<AlternarVisibilidadeDaSenha show={show} onToggle={() => setShow((v) => !v)} varias />}>
         {(c) => <input {...c} id="excluir-senha" type={show ? "text" : "password"} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />}
       </Campo>
       {error ? (

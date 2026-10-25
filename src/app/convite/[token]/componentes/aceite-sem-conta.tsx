@@ -1,7 +1,8 @@
 import { useState, useTransition } from "react";
-import { ArrowRight, Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import { ArrowRight, Lock, Mail, User } from "lucide-react";
 import { aceitarConviteComContaNova } from "@/actions/invite-actions";
 import { entrar } from "@/actions/auth-actions";
+import { AlternarVisibilidadeDaSenha } from "@/components/account/password-toggle";
 import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { Botao } from "@/components/ui/button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
@@ -72,14 +73,6 @@ function useAceiteSemConta(token: string) {
   return { mode, switchMode, name, setName, email, setEmail, password, setPassword, errors, error, isPending, handleSubmit };
 }
 
-function AlternarVisibilidade({ show, onToggle }: { show: boolean; onToggle: () => void }) {
-  return (
-    <button type="button" onClick={onToggle} aria-label={show ? "Ocultar senha" : "Mostrar senha"} aria-pressed={show} className="grid size-11 cursor-pointer place-items-center rounded-[10px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta">
-      {show ? <EyeOff aria-hidden="true" className="size-[18px]" strokeWidth={1.6} /> : <Eye aria-hidden="true" className="size-[18px]" strokeWidth={1.6} />}
-    </button>
-  );
-}
-
 function EscolhaDoModo({ mode, aoEscolher }: { mode: Modo; aoEscolher: (m: Modo) => void }) {
   return (
     <div role="tablist" aria-label="Como continuar" className="grid grid-cols-2 gap-1 rounded-[12px] bg-areia p-1">
@@ -114,7 +107,7 @@ function CamposDoAceite({ f, criando }: { f: ReturnType<typeof useAceiteSemConta
   <Campo id="convite-email" label="E-mail" icon={Mail} error={f.errors.email}>
     {(c) => <input {...c} id="convite-email" type="email" autoComplete={criando ? "email" : "username"} autoCapitalize="none" spellCheck={false} placeholder="voce@email.com" value={f.email} onChange={(e) => f.setEmail(e.target.value)} />}
   </Campo>
-  <Campo id="convite-password" label={criando ? "Crie uma senha" : "Senha"} icon={Lock} error={f.errors.password} hint={criando ? "Pelo menos 8 caracteres." : undefined} trailing={<AlternarVisibilidade show={show} onToggle={() => setShow((v) => !v)} />}>
+  <Campo id="convite-password" label={criando ? "Crie uma senha" : "Senha"} icon={Lock} error={f.errors.password} hint={criando ? "Pelo menos 8 caracteres." : undefined} trailing={<AlternarVisibilidadeDaSenha show={show} onToggle={() => setShow((v) => !v)} />}>
     {(c) => <input {...c} id="convite-password" type={show ? "text" : "password"} autoComplete={criando ? "new-password" : "current-password"} value={f.password} onChange={(e) => f.setPassword(e.target.value)} />}
   </Campo>
     </>
