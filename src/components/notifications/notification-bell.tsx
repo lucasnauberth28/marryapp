@@ -1,18 +1,12 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import Link from "next/link";
-import { Bell, BellRing, CheckCheck, Settings2 } from "lucide-react";
 import { toast } from "sonner";
-import { RegiaoDeCarregamento } from "@/components/skeletons";
-import { JanelaFlutuante, ConteudoDaJanelaFlutuante, GatilhoDaJanelaFlutuante } from "@/components/ui/popover";
-import { Esqueleto } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
-import { LinhaDeNotificacao } from "./notification-row";
+import { JanelaFlutuante, GatilhoDaJanelaFlutuante } from "@/components/ui/popover";
 import { useFluxoDeNotificacoes } from "./use-notification-feed";
 import { useAgora } from "./use-now";
-import { IconeDeLembrete } from "./reminder-icon";
-import { CartaoDoPush } from "./push-card";
+import { PainelDosAvisos } from "./painel-dos-avisos";
+import { BotaoDoSino } from "./sino-partes";
 
 interface Propriedades {
   /** Contagem de não lidos já calculada no servidor (evita o sino piscar vazio). */
@@ -40,8 +34,7 @@ export function SinoDeNotificacoes({ initialUnread, allHref, settingsHref, pushP
     setOpen(next);
     feed.setOpen(next);
   };
-
-  const label = feed.unread > 0 ? `Avisos, ${feed.unread} ${feed.unread === 1 ? "novo" : "novos"}` : "Avisos";
+  const fechar = () => onOpenChange(false);
 
   async function onMarkAll() {
     const ok = await feed.markAll();
@@ -51,25 +44,7 @@ export function SinoDeNotificacoes({ initialUnread, allHref, settingsHref, pushP
   return (
     <JanelaFlutuante open={open} onOpenChange={onOpenChange}>
       <GatilhoDaJanelaFlutuante asChild>
-        <button
-          ref={triggerRef}
-          type="button"
-          aria-label={label}
-          className={cn(
-            "relative grid size-11 shrink-0 cursor-pointer place-items-center rounded-xl text-tinta-suave transition-colors hover:bg-areia/70 hover:text-ameixa focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ameixa data-[state=open]:bg-areia/70 data-[state=open]:text-ameixa",
-            className,
-          )}
-        >
-          {feed.unread > 0 ? <BellRing aria-hidden="true" className="size-5" strokeWidth={1.6} /> : <Bell aria-hidden="true" className="size-5" strokeWidth={1.6} />}
-          {feed.unread > 0 && (
-            <span
-              aria-hidden="true"
-              className="absolute right-1.5 top-1.5 grid h-4 min-w-4 place-items-center rounded-full border-2 border-linho bg-perigo px-1 text-[10px] font-bold leading-none text-on-ameixa"
-            >
-              {feed.unread > 99 ? "99+" : feed.unread}
-            </span>
-          )}
-        </button>
+        <BotaoDoSino triggerRef={triggerRef} unread={feed.unread} className={className} />
       </GatilhoDaJanelaFlutuante>
 
       {/* Anuncia mudanças no contador para leitores de tela, sem tirar o foco de onde está. */}
@@ -77,133 +52,17 @@ export function SinoDeNotificacoes({ initialUnread, allHref, settingsHref, pushP
         {feed.unread > 0 ? `${feed.unread} ${feed.unread === 1 ? "aviso novo" : "avisos novos"}` : ""}
       </span>
 
-      <ConteudoDaJanelaFlutuante
+      <PainelDosAvisos
+        feed={feed}
+        now={now}
         align={align}
         side={side}
-        sideOffset={8}
-        collisionPadding={16}
-        aria-label="Avisos"
-        className="w-[calc(100vw-32px)] max-w-[400px] overflow-hidden rounded-2xl border-linha p-0 shadow-[var(--shadow-aceito-2)]"
-      >
-        <div className="flex min-h-12 items-center justify-between gap-2 border-b border-linha pl-4 pr-2">
-          <p className="text-sm font-semibold text-tinta">Avisos</p>
-          {/* Fica na tela (desligado) depois de marcar tudo: o foco do teclado não se perde. */}
-          {feed.items && feed.items.length > 0 && (
-            <button
-              type="button"
-              onClick={onMarkAll}
-              disabled={feed.unread === 0}
-              className="inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-sm font-semibold text-ameixa transition-colors hover:bg-ameixa-suave focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ameixa disabled:cursor-default disabled:text-tinta-suave disabled:hover:bg-transparent"
-            >
-              <CheckCheck aria-hidden="true" className="size-4" />
-              Marcar todas como lidas
-            </button>
-          )}
-        </div>
-
-        <div className="max-h-[min(60vh,420px)] overflow-y-auto" data-lenis-prevent>
-          {feed.items === null ? (
-            feed.failed ? (
-              <div className="flex flex-col items-center gap-2 px-4 py-8 text-center text-sm text-tinta-suave">
-                <p>Não conseguimos carregar os avisos.</p>
-                <button
-                  type="button"
-                  onClick={() => void feed.loadList()}
-                  className="min-h-11 cursor-pointer rounded-lg px-3 font-semibold text-ameixa hover:bg-ameixa-suave focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ameixa"
-                >
-                  Tentar de novo
-                </button>
-              </div>
-            ) : (
-              <RegiaoDeCarregamento label="os avisos">
-                <ul className="divide-y divide-linha">
-                  {[0, 1, 2].map((i) => (
-                    <li key={i} className="flex gap-3 px-4 py-3">
-                      <Esqueleto className="size-9 shrink-0 rounded-xl" />
-                      <span className="flex-1 space-y-2 pt-1">
-                        <Esqueleto className="h-3 w-2/5 rounded" />
-                        <Esqueleto className="h-3 w-4/5 rounded" />
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </RegiaoDeCarregamento>
-            )
-          ) : (
-            <>
-              {feed.items.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 px-6 py-8 text-center">
-                  <span aria-hidden="true" className="grid size-11 place-items-center rounded-full bg-ameixa-suave text-ameixa">
-                    <Bell className="size-5" strokeWidth={1.6} />
-                  </span>
-                  <p className="text-sm font-semibold text-tinta">Tudo em dia por aqui</p>
-                  <p className="text-sm text-tinta-suave">Quando algo acontecer, o aviso aparece neste lugar.</p>
-                </div>
-              ) : (
-                <ul className="divide-y divide-linha">
-                  {feed.items.map((item) => (
-                    <li key={item.id}>
-                      <LinhaDeNotificacao
-                        item={item}
-                        now={now}
-                        onOpen={(n) => {
-                          if (!n.readAt) void feed.markRead(n.id, true);
-                          setOpen(false);
-                          feed.setOpen(false);
-                        }}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {feed.reminders.length > 0 && (
-                <section aria-label="Lembretes" className="border-t border-linha bg-linho/60">
-                  <p className="px-4 pb-1 pt-3 text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">Lembretes</p>
-                  <ul>
-                    {feed.reminders.map((r) => (
-                      <li key={r.id}>
-                        <Link
-                          href={r.href}
-                          onClick={() => onOpenChange(false)}
-                          className="flex min-h-12 items-start gap-3 px-4 py-2.5 transition-colors hover:bg-areia/60 focus-visible:bg-areia focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ameixa"
-                        >
-                          <IconeDeLembrete category={r.category} />
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-medium text-tinta">{r.title}</span>
-                            <span className="line-clamp-2 block text-sm leading-5 text-tinta-suave">{r.description}</span>
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-            </>
-          )}
-        </div>
-
-        <CartaoDoPush publicKey={pushPublicKey} variant="compact" />
-
-        <div className="flex items-center justify-between gap-2 border-t border-linha px-2 py-1">
-          <Link
-            href={allHref}
-            onClick={() => onOpenChange(false)}
-            className="inline-flex min-h-11 items-center rounded-lg px-2.5 text-sm font-semibold text-ameixa transition-colors hover:bg-ameixa-suave focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ameixa"
-          >
-            Ver todos os avisos
-          </Link>
-          <Link
-            href={settingsHref}
-            onClick={() => onOpenChange(false)}
-            aria-label="Escolher quais avisos receber"
-            title="Escolher quais avisos receber"
-            className="grid size-11 place-items-center rounded-lg text-tinta-suave transition-colors hover:bg-areia/70 hover:text-ameixa focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ameixa"
-          >
-            <Settings2 aria-hidden="true" className="size-[18px]" />
-          </Link>
-        </div>
-      </ConteudoDaJanelaFlutuante>
+        pushPublicKey={pushPublicKey}
+        allHref={allHref}
+        settingsHref={settingsHref}
+        aoFechar={fechar}
+        aoMarcarTodas={onMarkAll}
+      />
     </JanelaFlutuante>
   );
 }
