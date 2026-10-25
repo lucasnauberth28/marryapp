@@ -2,7 +2,8 @@ import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { NavegacaoDeAbas } from "@/components/plataforma/tabs-nav";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type ParametrosDeBusca, umDosValores } from "@/lib/platform/list-params";
-import { obterPerfis, obterPessoas } from "@/actions/rbac-actions";
+import { obterPerfis } from "@/actions/acesso/perfis";
+import { obterPessoas } from "@/actions/acesso/pessoas";
 import { PessoasCliente } from "@/app/(admin)/usuarios/pessoas-cliente";
 import { PerfisCliente } from "@/app/(admin)/perfis/perfis-cliente";
 

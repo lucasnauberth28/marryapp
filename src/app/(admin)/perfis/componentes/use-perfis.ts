@@ -2,7 +2,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { atualizarPerfil, criarPerfil, excluirPerfil } from "@/actions/rbac-actions";
+import { atualizarPerfil, criarPerfil, excluirPerfil } from "@/actions/acesso/perfis";
 import { useConfirmacaoDeExclusao } from "@/components/casal/acesso/use-confirmacao-de-exclusao";
 import { alternarCaminho, paraCaminhos, type DadosDoPerfil, type ItemDePerfil } from "./tipos";
 

@@ -1,37 +1,16 @@
 "use server";
 
+// Acesso: pessoas da equipe e o perfil de cada uma.
 import { registrarAuditoria } from "@/lib/audit";
-import { exigirSessaoAutenticada, exigirPermissaoDoCaminho, ErroDeAutorizacao } from "@/lib/security/auth-guard";
-import { temAcessoAoCaminho } from "@/lib/auth";
-
+import { exigirPermissaoDoCaminho } from "@/lib/security/auth-guard";
 import prisma from "@/lib/prisma";
 import { ehViolacaoDeUnicidade } from "@/lib/prisma-erros";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
-
 import { ERROS } from "@/lib/mensagens-de-erro";
-// ==========================================
-// ROLES (PERFIS)
-// ==========================================
-
-export async function obterPerfis() {
-  await exigirSessaoAutenticada();
-  return prisma.role.findMany({
-    orderBy: { name: "asc" },
-    include: {
-      _count: {
-        select: { users: true },
-      },
-    },
-  });
-}
-
-const EsquemaDoPerfil = z.object({
-  name: z.string().trim().min(2, "Informe o nome do perfil.").max(60),
-  allowedPaths: z.array(z.string().regex(/^(\*|\/[a-z0-9\-/]*)$/, "Módulo inválido.")).max(50),
-});
+import { garantirQuePodeConceder } from "@/actions/acesso/comum";
 
 const REGRA_DA_SENHA = z.string().min(8, "A senha deve ter ao menos 8 caracteres.").max(200);
 
@@ -46,90 +25,6 @@ const EsquemaDaPessoa = z.object({
  * Impede escalada de privilégio: só quem tem acesso total pode criar/atribuir perfis com acesso total
  * ou conceder módulos que ele próprio não possui.
  */
-function garantirQuePodeConceder(sessionPaths: string[], grantedPaths: unknown) {
-  if (sessionPaths.includes("*")) return;
-  const granted = Array.isArray(grantedPaths) ? (grantedPaths as string[]) : [];
-  if (granted.some((p) => !temAcessoAoCaminho(sessionPaths, p))) {
-    throw new ErroDeAutorizacao("Acesso negado: você não pode conceder permissões que não possui.");
-  }
-}
-
-export async function criarPerfil(data: { name: string; allowedPaths: string[] }) {
-  const session = await exigirPermissaoDoCaminho("/perfis");
-  const parsed = EsquemaDoPerfil.safeParse(data);
-  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
-  garantirQuePodeConceder(session.allowedPaths, parsed.data.allowedPaths);
-
-  try {
-    const role = await prisma.role.create({ data: parsed.data });
-    await registrarAuditoria({
-      action: "role.create",
-      targetType: "role",
-      targetId: role.id,
-      details: { name: role.name, allowedPaths: parsed.data.allowedPaths },
-    });
-    revalidatePath("/perfis");
-    revalidatePath("/admin/usuarios");
-    return { success: true, role };
-  } catch (error) {
-    if (ehViolacaoDeUnicidade(error)) {
-      return { success: false, error: "Já existe um perfil com esse nome." };
-    }
-    return { success: false, error: "Erro ao criar perfil." };
-  }
-}
-
-export async function atualizarPerfil(id: string, data: { name: string; allowedPaths: string[] }) {
-  const session = await exigirPermissaoDoCaminho("/perfis");
-  const parsed = EsquemaDoPerfil.safeParse(data);
-  if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
-
-  const current = await prisma.role.findUnique({ where: { id }, select: { name: true, allowedPaths: true } });
-  if (!current) return { success: false, error: ERROS.perfilNaoEncontrado };
-  garantirQuePodeConceder(session.allowedPaths, current.allowedPaths);
-  garantirQuePodeConceder(session.allowedPaths, parsed.data.allowedPaths);
-
-  try {
-    const role = await prisma.role.update({ where: { id }, data: parsed.data });
-    await registrarAuditoria({
-      action: "role.update",
-      targetType: "role",
-      targetId: id,
-      details: {
-        name: role.name,
-        previousName: current.name,
-        previousPaths: Array.isArray(current.allowedPaths) ? (current.allowedPaths as string[]) : [],
-        allowedPaths: parsed.data.allowedPaths,
-      },
-    });
-    revalidatePath("/perfis");
-    revalidatePath("/admin/usuarios");
-    return { success: true, role };
-  } catch {
-    return { success: false, error: "Erro ao atualizar perfil." };
-  }
-}
-
-export async function excluirPerfil(id: string) {
-  const session = await exigirPermissaoDoCaminho("/perfis");
-  const current = await prisma.role.findUnique({ where: { id }, select: { name: true, allowedPaths: true } });
-  if (!current) return { success: false, error: ERROS.perfilNaoEncontrado };
-  garantirQuePodeConceder(session.allowedPaths, current.allowedPaths);
-
-  try {
-    await prisma.role.delete({ where: { id } });
-    await registrarAuditoria({ action: "role.delete", targetType: "role", targetId: id, details: { name: current.name } });
-    revalidatePath("/perfis");
-    revalidatePath("/admin/usuarios");
-    return { success: true };
-  } catch {
-    return { success: false, error: "Erro ao excluir perfil. Pode haver usuários vinculados." };
-  }
-}
-
-// ==========================================
-// USERS (USUÁRIOS)
-// ==========================================
 
 export async function obterPessoas() {
   await exigirPermissaoDoCaminho("/usuarios");
@@ -225,21 +120,13 @@ export async function atualizarPessoa(id: string, data: { name: string; username
       action: "user.update",
       targetType: "user",
       targetId: id,
-      details: {
-        username: parsed.data.username,
-        previousUsername: target.username,
-        roleId: parsed.data.roleId,
-        previousRoleId: target.roleId,
-        passwordChanged: Boolean(updateData.password),
-      },
+      details: { username: parsed.data.username, previousUsername: target.username, roleId: parsed.data.roleId, previousRoleId: target.roleId, passwordChanged: Boolean(updateData.password) },
     });
     revalidatePath("/usuarios");
     revalidatePath("/admin/usuarios");
     return { success: true };
   } catch (error) {
-    if (ehViolacaoDeUnicidade(error)) {
-      return { success: false, error: "Já existe um usuário com este login." };
-    }
+    if (ehViolacaoDeUnicidade(error)) return { success: false, error: "Já existe um usuário com este login." };
     return { success: false, error: "Erro ao atualizar usuário." };
   }
 }

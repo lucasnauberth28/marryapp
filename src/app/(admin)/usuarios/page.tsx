@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { obterPessoas, obterPerfis } from "@/actions/rbac-actions";
+import { obterPessoas } from "@/actions/acesso/pessoas";
+import { obterPerfis } from "@/actions/acesso/perfis";
 import { obterSessao } from "@/lib/security/auth-guard";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
 import { PessoasCliente } from "./pessoas-cliente";
