@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import prisma from "@/lib/prisma";
+import { JANELA_DE_CONFERENCIA_DO_PIX_EM_MS, PREFIXO_DO_PIX_ESTATICO } from "@/lib/platform/payments";
 
 /** Números do menu da administração (ver components/plataforma/nav-config.ts). Sempre reais; zero some do menu. */
 export interface ContagensDoMenuDaPlataforma {
@@ -18,10 +19,6 @@ export interface ContagensDoMenuDaPlataforma {
 
 const CONTAGENS_VAZIAS: ContagensDoMenuDaPlataforma = { curadoria: 0, planos: 0, dominios: 0, suporte: 0, saude: 0 };
 const UM_DIA_EM_MS = 24 * 60 * 60 * 1000;
-/** Pix estático: o txid gerado em generateSubscriptionPix começa assim (mesma regra de /assinaturas). */
-const PREFIXO_DO_PIX_ESTATICO = "ASSIN";
-/** Pix pendente mais velho que isto já expirou sem ser conferido: não entra na fila (mesma janela de /assinaturas). */
-const JANELA_DE_CONFERENCIA_DO_PIX_EM_MS = 3 * UM_DIA_EM_MS;
 
 export const obterContagensDoMenuDaPlataforma = cache(async (): Promise<ContagensDoMenuDaPlataforma> => {
   try {

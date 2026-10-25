@@ -3,7 +3,8 @@ import "server-only";
 import prisma from "@/lib/prisma";
 import { filtroSemSoPresente } from "@/lib/guest-origin";
 import { casalProblems, situacaoDoCasal, type FatosDoCasal } from "@/lib/platform/casal-status";
-import { JANELA_DE_CONFERENCIA_DO_PIX_EM_MS, PREFIXO_DO_PIX_ESTATICO, obterUltimosPlanos, pagamentosFalhosRecentes } from "@/lib/platform/queries/casais/planos";
+import { JANELA_DE_CONFERENCIA_DO_PIX_EM_MS, PREFIXO_DO_PIX_ESTATICO } from "@/lib/platform/payments";
+import { obterUltimosPlanos, pagamentosFalhosRecentes } from "@/lib/platform/queries/casais/planos";
 
 interface PixPendente {
   id: string;

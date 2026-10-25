@@ -1,9 +1,7 @@
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { JANELA_DE_CONFERENCIA_DO_PIX_EM_MS, PREFIXO_DO_PIX_ESTATICO } from "@/lib/platform/payments";
 
-/** Pix estático fica "em conferência" por até 3 dias depois de vencer o código (mesma regra de /assinaturas). */
-const PREFIXO_DO_PIX_ESTATICO = "ASSIN";
-const JANELA_DE_CONFERENCIA_DO_PIX_ESTATICO_EM_MS = 3 * 24 * 60 * 60 * 1000;
 
 /** Pagamentos do plano (recibos), Pix esperando conferência e as taxas já cobradas nos presentes. */
 export async function carregarDadosDoPlano(weddingId: string, isSuperAdmin: boolean, now: Date) {
@@ -23,7 +21,7 @@ export async function carregarDadosDoPlano(weddingId: string, isSuperAdmin: bool
             planType: "COUPLE",
             status: PaymentStatus.PENDING,
             gatewayId: { startsWith: PREFIXO_DO_PIX_ESTATICO },
-            expiresAt: { gte: new Date(now.getTime() - JANELA_DE_CONFERENCIA_DO_PIX_ESTATICO_EM_MS) },
+            expiresAt: { gte: new Date(now.getTime() - JANELA_DE_CONFERENCIA_DO_PIX_EM_MS) },
           },
           orderBy: { createdAt: "desc" },
           select: { planId: true, planName: true, amount: true, createdAt: true },

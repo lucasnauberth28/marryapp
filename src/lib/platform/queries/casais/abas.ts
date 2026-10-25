@@ -3,7 +3,7 @@ import "server-only";
 import prisma from "@/lib/prisma";
 import { filtroSemSoPresente } from "@/lib/guest-origin";
 import { formatarReais } from "../../../formatacao/dinheiro.ts";
-import { PREFIXO_DO_PIX_ESTATICO } from "@/lib/platform/queries/casais/planos";
+import { ehPixEstatico } from "@/lib/platform/payments";
 
 export interface ItemDaLinhaDoTempo {
   id: string;
@@ -47,7 +47,7 @@ export async function obterLinhaDoTempoDoCasal(id: string, limit = 8): Promise<I
   const items: ItemDaLinhaDoTempo[] = [];
   for (const a of audits) items.push({ id: `a-${a.id}`, at: a.createdAt, text: TEXTO_DA_AUDITORIA[a.action] ?? `Registro: ${a.action}` });
   for (const s of subs) {
-    const pix = s.gatewayId?.startsWith(PREFIXO_DO_PIX_ESTATICO);
+    const pix = ehPixEstatico(s.gatewayId);
     if (s.status === "APPROVED" && s.paidAt) items.push({ id: `sp-${s.id}`, at: s.paidAt, text: `Pagou o plano ${s.planName} (${formatarReais(s.amount)})`, badge: { tone: "sucesso", label: "Pago" } });
     if (s.status === "PENDING") items.push({ id: `sg-${s.id}`, at: s.createdAt, text: `Gerou o ${pix ? "Pix" : "pagamento"} do plano ${s.planName} (${formatarReais(s.amount)})`, badge: pix ? { tone: "aviso", label: "Aguardando conferência" } : { tone: "aviso", label: "Aguardando" } });
     if (s.status === "REJECTED" || s.status === "FAILED") items.push({ id: `sf-${s.id}`, at: s.createdAt, text: `Pagamento do plano ${s.planName} (${formatarReais(s.amount)}) não passou`, badge: { tone: "perigo", label: "Recusado" } });
@@ -61,6 +61,11 @@ export async function obterLinhaDoTempoDoCasal(id: string, limit = 8): Promise<I
   items.push({ id: "created", at: w.createdAt, text: "Criou a conta" });
 
   return items.sort((a, b) => b.at.getTime() - a.at.getTime()).slice(0, limit);
+}
+
+function metodoDaAssinatura(gatewayId: string | null) {
+  if (ehPixEstatico(gatewayId)) return "Pix" as const;
+  return gatewayId?.startsWith("MANUAL") ? ("Cortesia" as const) : ("Mercado Pago" as const);
 }
 
 export async function obterPagamentosDoCasal(id: string) {
@@ -82,7 +87,7 @@ export async function obterPagamentosDoCasal(id: string) {
   });
   return subs.map((s) => ({
     ...s,
-    method: s.gatewayId?.startsWith(PREFIXO_DO_PIX_ESTATICO) ? ("Pix" as const) : s.gatewayId?.startsWith("MANUAL") ? ("Cortesia" as const) : ("Mercado Pago" as const),
+    method: metodoDaAssinatura(s.gatewayId),
   }));
 }
 

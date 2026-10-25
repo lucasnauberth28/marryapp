@@ -6,10 +6,8 @@ import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
+import { ehPixEstatico } from "@/lib/platform/payments";
 import { aplicarPagamentoAprovado, marcarPagamentoComoFalho } from "@/lib/subscriptions";
-
-/** Pix estático (sem confirmação automática): o txid gerado em generateSubscriptionPix começa assim. */
-const PREFIXO_DO_PIX_ESTATICO = "ASSIN";
 
 const EsquemaDoId = z.string().uuid();
 
@@ -23,7 +21,7 @@ async function acharAssinaturaConferivel(subscriptionId: string) {
   });
   if (!sub) return { error: "Cobrança não encontrada." } as const;
   if (sub.status !== PaymentStatus.PENDING) return { error: "Esta cobrança já foi resolvida. Atualize a página." } as const;
-  if (!sub.gatewayId?.startsWith(PREFIXO_DO_PIX_ESTATICO)) {
+  if (!sub.gatewayId || !ehPixEstatico(sub.gatewayId)) {
     return { error: "Só o Pix estático é conferido à mão. Pagamentos do Mercado Pago entram sozinhos." } as const;
   }
   return { sub: { ...sub, gatewayId: sub.gatewayId } } as const;

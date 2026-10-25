@@ -18,6 +18,7 @@ import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { aplicarPagamentoAprovado, marcarPagamentoComoFalho } from "@/lib/subscriptions";
 import { referenciaDaAssinatura } from "@/lib/subscription-period";
 import { cotarAssinatura } from "@/lib/subscription-quote";
+import { PREFIXO_DO_PIX_ESTATICO } from "@/lib/platform/payments";
 import { ehViolacaoDeUnicidade, prepararCasamento, criarOuAtualizarPapelDoCasal, comNovaTentativaDeEndereco } from "@/lib/account/wedding-provisioning";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
@@ -245,7 +246,7 @@ export async function gerarPixDaAssinatura(input: EntradaDoPagamentoDaAssinatura
       return { success: false, error: "Pagamento via Pix indisponível no momento." };
     }
 
-    const txId = `ASSIN${Date.now().toString(36).toUpperCase()}`.substring(0, 18);
+    const txId = `${PREFIXO_DO_PIX_ESTATICO}${Date.now().toString(36).toUpperCase()}`.substring(0, 18);
     const pixPayload = gerarCodigoPix({
       pixKey,
       merchantName: (process.env.PIX_MERCHANT_NAME || "ACEITO BRASIL").trim(),

@@ -6,9 +6,6 @@ import type { FiltroDePlano } from "@/lib/platform/casais-filters";
 import { DIAS_DE_PROBLEMA_NO_PAGAMENTO } from "@/lib/platform/casal-status";
 
 const UM_DIA_EM_MS = 86_400_000;
-/** Pix estático: o txid gerado em generateSubscriptionPix começa assim (mesma regra de /assinaturas). */
-export const PREFIXO_DO_PIX_ESTATICO = "ASSIN";
-export const JANELA_DE_CONFERENCIA_DO_PIX_EM_MS = 3 * UM_DIA_EM_MS;
 
 export interface UltimoPlano {
   weddingId: string;
