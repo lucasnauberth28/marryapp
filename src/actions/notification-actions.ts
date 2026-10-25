@@ -68,54 +68,19 @@ async function lembretesDoCasal(weddingId: string): Promise<ItemDeLembrete[]> {
 
   const [pixToCheck, dueExpenses, pendingRsvp, uninvited] = await Promise.all([
     // Pix estático (sem gatewayId): só o casal sabe se caiu na conta
-    prisma.transaction.count({
-      where: { weddingId, status: PaymentStatus.PENDING, paymentMethod: PaymentMethod.PIX, gatewayId: null },
-    }),
-    prisma.expense.count({
-      where: { weddingId, status: { in: [ExpenseStatus.PENDING, ExpenseStatus.OVERDUE] }, dueDate: { lte: soon } },
-    }),
+    prisma.transaction.count({ where: { weddingId, status: PaymentStatus.PENDING, paymentMethod: PaymentMethod.PIX, gatewayId: null } }),
+    prisma.expense.count({ where: { weddingId, status: { in: [ExpenseStatus.PENDING, ExpenseStatus.OVERDUE] }, dueDate: { lte: soon } } }),
     prisma.guest.count({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING, ...filtroSemSoPresente } }),
     prisma.guest.count({ where: { weddingId, hasReceivedMessage: false, phone: { not: null }, ...filtroSemSoPresente } }),
   ]);
 
-  const reminders: ItemDeLembrete[] = [];
-  if (pixToCheck > 0) {
-    reminders.push({
-      id: "pix_pending",
-      title: "Pix para conferir",
-      description: `${pluralizar(pixToCheck, "pagamento aguarda", "pagamentos aguardam")} a conferência no extrato.`,
-      href: "/financas",
-      category: "finance",
-    });
-  }
-  if (dueExpenses > 0) {
-    reminders.push({
-      id: "expenses_due",
-      title: "Despesas para acompanhar",
-      description: `${pluralizar(dueExpenses, "despesa vence", "despesas vencem")} nos próximos 7 dias ou já venceu.`,
-      href: "/financas",
-      category: "expense",
-    });
-  }
-  if (pendingRsvp > 0) {
-    reminders.push({
-      id: "rsvp_pending",
-      title: "Confirmações de presença pendentes",
-      description: `${pluralizar(pendingRsvp, "convidado ainda não respondeu", "convidados ainda não responderam")} ao convite.`,
-      href: "/convidados",
-      category: "guest",
-    });
-  }
-  if (uninvited > 0) {
-    reminders.push({
-      id: "whatsapp_uninvited",
-      title: "Convites por enviar",
-      description: `${pluralizar(uninvited, "convidado com telefone ainda não recebeu", "convidados com telefone ainda não receberam")} o convite por WhatsApp.`,
-      href: "/mensagens",
-      category: "whatsapp",
-    });
-  }
-  return reminders;
+  const candidatos: Array<[number, ItemDeLembrete]> = [
+    [pixToCheck, { id: "pix_pending", title: "Pix para conferir", description: `${pluralizar(pixToCheck, "pagamento aguarda", "pagamentos aguardam")} a conferência no extrato.`, href: "/financas", category: "finance" }],
+    [dueExpenses, { id: "expenses_due", title: "Despesas para acompanhar", description: `${pluralizar(dueExpenses, "despesa vence", "despesas vencem")} nos próximos 7 dias ou já venceu.`, href: "/financas", category: "expense" }],
+    [pendingRsvp, { id: "rsvp_pending", title: "Confirmações de presença pendentes", description: `${pluralizar(pendingRsvp, "convidado ainda não respondeu", "convidados ainda não responderam")} ao convite.`, href: "/convidados", category: "guest" }],
+    [uninvited, { id: "whatsapp_uninvited", title: "Convites por enviar", description: `${pluralizar(uninvited, "convidado com telefone ainda não recebeu", "convidados com telefone ainda não receberam")} o convite por WhatsApp.`, href: "/mensagens", category: "whatsapp" }],
+  ];
+  return candidatos.filter(([quantos]) => quantos > 0).map(([, lembrete]) => lembrete);
 }
 
 /** Últimos avisos (sino) e, no painel do casal, os lembretes. */

@@ -61,6 +61,26 @@ async function autorizarEscrita(password: unknown, action: string): Promise<{ ct
   }
   return { ctx, userId: user.id, name: user.name };
 }
+type RepasseValido = Extract<ReturnType<typeof validarEntradaDeRepasse>, { ok: true }>["value"];
+
+/** As colunas do banco: documento, chave Pix e conta cifrados (cada um com o seu contexto), "sem confirmação" de novo. */
+function colunasDoRepasse(data: RepasseValido, weddingId: string, userId: string) {
+  return {
+    type: data.type,
+    holderName: data.holderName,
+    holderDocumentKind: data.holderDocumentKind,
+    holderDocumentEnc: cifrarSegredoDoRepasse(data.documentSecret, contextoDaCifraDoRepasse(weddingId, "document")),
+    holderDocumentLast4: data.documentLast4,
+    pixKeyType: data.pixKeyType,
+    pixKeyEnc: data.pixKeySecret ? cifrarSegredoDoRepasse(data.pixKeySecret, contextoDaCifraDoRepasse(weddingId, "pix")) : null,
+    bankAccountEnc: data.bankSecret ? cifrarSegredoDoRepasse(data.bankSecret, contextoDaCifraDoRepasse(weddingId, "bank")) : null,
+    keyHint: data.keyHint,
+    encKeyVersion: versaoAtualDaChaveDoRepasse(),
+    verifiedAt: null,
+    registeredByUserId: userId,
+  };
+}
+
 /**
  * Cadastra ou troca os dados de recebimento. Pede a senha atual. Trocar deixa os dados "sem confirmação" de novo,
  * grava no AuditLog (sem o dado) e avisa as pessoas do casamento.
@@ -81,21 +101,7 @@ export async function salvarContaDeRepasse(input: unknown): Promise<RespostaDoRe
   const data = valid.value;
 
   try {
-    const encKeyVersion = versaoAtualDaChaveDoRepasse();
-    const columns = {
-      type: data.type,
-      holderName: data.holderName,
-      holderDocumentKind: data.holderDocumentKind,
-      holderDocumentEnc: cifrarSegredoDoRepasse(data.documentSecret, contextoDaCifraDoRepasse(weddingId, "document")),
-      holderDocumentLast4: data.documentLast4,
-      pixKeyType: data.pixKeyType,
-      pixKeyEnc: data.pixKeySecret ? cifrarSegredoDoRepasse(data.pixKeySecret, contextoDaCifraDoRepasse(weddingId, "pix")) : null,
-      bankAccountEnc: data.bankSecret ? cifrarSegredoDoRepasse(data.bankSecret, contextoDaCifraDoRepasse(weddingId, "bank")) : null,
-      keyHint: data.keyHint,
-      encKeyVersion,
-      verifiedAt: null,
-      registeredByUserId: userId,
-    };
+    const columns = colunasDoRepasse(data, weddingId, userId);
 
     const previous = await prisma.weddingPayoutAccount.findUnique({ where: { weddingId }, select: { id: true, type: true } });
     const saved = await prisma.weddingPayoutAccount.upsert({
