@@ -10,7 +10,20 @@ import { cn } from "@/lib/utils";
 import { CARTAO_DA_PAGINA_COM_TOKEN } from "@/components/public/token-page-shell";
 
 
-export function FormularioDeAceiteDaProposta({ token, companyName }: { token: string; companyName: string }) {
+function AceiteRegistrado({ nome, companyName }: { nome: string; companyName: string }) {
+  return (
+    <section role="status" className="flex flex-col gap-2 rounded-2xl bg-sucesso-suave p-5 sm:p-6">
+      <h2 className="flex items-center gap-2 text-lg font-semibold text-sucesso">
+        <BadgeCheck aria-hidden="true" className="size-5" />
+        Proposta aceita!
+      </h2>
+      <p>Obrigado, {nome}. O aceite foi registrado.</p>
+      <p>{companyName} vai entrar em contato para o contrato.</p>
+    </section>
+  );
+}
+
+function useAceiteDaProposta(token: string) {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -26,24 +39,18 @@ export function FormularioDeAceiteDaProposta({ token, companyName }: { token: st
       if (res.success) {
         setDone(res.name);
         router.refresh();
-      } else {
-        setError(res.error);
-      }
+      } else setError(res.error);
     });
   }
 
-  if (done) {
-    return (
-      <section role="status" className="flex flex-col gap-2 rounded-2xl bg-sucesso-suave p-5 sm:p-6">
-        <h2 className="flex items-center gap-2 text-lg font-semibold text-sucesso">
-          <BadgeCheck aria-hidden="true" className="size-5" />
-          Proposta aceita!
-        </h2>
-        <p>Obrigado, {done}. O aceite foi registrado.</p>
-        <p>{companyName} vai entrar em contato para o contrato.</p>
-      </section>
-    );
-  }
+  return { fullName, setFullName, agreed, setAgreed, error, done, isPending, onSubmit };
+}
+
+export function FormularioDeAceiteDaProposta({ token, companyName }: { token: string; companyName: string }) {
+  const f = useAceiteDaProposta(token);
+  const { done, error } = f;
+
+  if (done) return <AceiteRegistrado nome={done} companyName={companyName} />;
 
   return (
     <section aria-labelledby="aceitar-titulo" className={cn(CARTAO_DA_PAGINA_COM_TOKEN, "flex flex-col gap-4")}>
@@ -56,7 +63,7 @@ export function FormularioDeAceiteDaProposta({ token, companyName }: { token: st
           fornecedor.
         </p>
       </div>
-      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5" aria-describedby={error ? "aceitar-erro" : undefined}>
+      <form onSubmit={f.onSubmit} noValidate className="flex flex-col gap-5" aria-describedby={error ? "aceitar-erro" : undefined}>
         {error ? (
           <p id="aceitar-erro" role="alert" className="rounded-xl bg-perigo-suave px-4 py-3 text-sm font-medium text-perigo">
             {error}
@@ -69,19 +76,19 @@ export function FormularioDeAceiteDaProposta({ token, companyName }: { token: st
           required
           autoComplete="name"
           maxLength={120}
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
+          value={f.fullName}
+          onChange={(e) => f.setFullName(e.target.value)}
         />
         <label className="flex min-h-11 cursor-pointer items-start gap-3 text-[15px]">
           <input
             type="checkbox"
-            checked={agreed}
-            onChange={(e) => setAgreed(e.target.checked)}
+            checked={f.agreed}
+            onChange={(e) => f.setAgreed(e.target.checked)}
             className="mt-0.5 size-5 shrink-0 cursor-pointer accent-[var(--color-ameixa)]"
           />
           <span>Li e aceito esta proposta</span>
         </label>
-        <Botao type="submit" loading={isPending} className="h-12">
+        <Botao type="submit" loading={f.isPending} className="h-12">
           Aceitar proposta
         </Botao>
       </form>

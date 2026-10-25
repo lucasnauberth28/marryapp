@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { BadgeCheck, CalendarX, CircleX, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import prisma from "@/lib/prisma";
-import { cn } from "@/lib/utils";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
-import { CARTAO_DA_PAGINA_COM_TOKEN, SOBRETITULO_DA_PAGINA_COM_TOKEN, MoldeDaPaginaComToken } from "@/components/public/token-page-shell";
+import { SOBRETITULO_DA_PAGINA_COM_TOKEN, MoldeDaPaginaComToken } from "@/components/public/token-page-shell";
 import { formatarDataEHoraEmBrasilia, formatarDataDoCasamento, formatarDataDoCasamentoPorExtenso, hojeEmBrasilia } from "@/app/(fornecedor)/_lib/datas-do-painel";
 import { PADRAO_DO_TOKEN_PUBLICO } from "@/app/(fornecedor)/_lib/links-publicos";
-import { formatarReaisDoPainel } from "@/app/(fornecedor)/_lib/perfil-do-fornecedor";
 import { FormularioDeAceiteDaProposta } from "./accept-form";
+import { ResumoDaProposta } from "./_proposta/resumo";
+import { CartaoDeSituacao, PropostaAceita, PropostaExpirada, PropostaIndisponivel } from "./_proposta/situacao";
 
 export const metadata: Metadata = {
   title: "Proposta",
@@ -18,61 +18,9 @@ export const metadata: Metadata = {
 
 const LIMITE_DE_VISUALIZACOES = { limit: 60, windowMs: 1000 * 60 * 10 }; // 60 aberturas / 10 min por IP
 
-function CartaoDeSituacao({
-  icon: Icon,
-  tone,
-  title,
-  children,
-}: {
-  icon: typeof Clock;
-  tone: "sucesso" | "aviso" | "perigo";
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section
-      role="status"
-      className={cn(
-        "flex flex-col gap-2 rounded-2xl p-5 sm:p-6",
-        tone === "sucesso" && "bg-sucesso-suave",
-        tone === "aviso" && "bg-aviso-suave",
-        tone === "perigo" && "bg-perigo-suave",
-      )}
-    >
-      <h2
-        className={cn(
-          "flex items-center gap-2 text-lg font-semibold",
-          tone === "sucesso" && "text-sucesso",
-          tone === "aviso" && "text-aviso",
-          tone === "perigo" && "text-perigo",
-        )}
-      >
-        <Icon aria-hidden="true" className="size-5 shrink-0" />
-        {title}
-      </h2>
-      <div className="flex flex-col gap-2 text-[15px] text-tinta">{children}</div>
-    </section>
-  );
-}
-
-export default async function PropostaPage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = await params;
-  if (!PADRAO_DO_TOKEN_PUBLICO.test(token)) notFound();
-
-  const ip = await obterIpDoCliente();
-  const rateLimit = await conferirLimiteDeUso({ key: `PROPOSAL_VIEW:${ip}`, ...LIMITE_DE_VISUALIZACOES });
-  if (!rateLimit.success) {
-    return (
-      <MoldeDaPaginaComToken>
-        <CartaoDeSituacao icon={Clock} tone="aviso" title="Muitas tentativas">
-          <p>Você abriu muitas propostas em pouco tempo. Tente novamente daqui a alguns minutos.</p>
-        </CartaoDeSituacao>
-      </MoldeDaPaginaComToken>
-    );
-  }
-
-  // Só o que o casal precisa ver: nada de contato do casal nem dados internos do pedido.
-  const lead = await prisma.vendorLead.findUnique({
+/** Só o que o casal precisa ver: nada de contato do casal nem dados internos do pedido. */
+function buscarProposta(token: string) {
+  return prisma.vendorLead.findUnique({
     where: { proposalToken: token },
     select: {
       coupleName: true,
@@ -89,44 +37,39 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
       vendor: { select: { companyName: true, category: true } },
     },
   });
+}
+
+function MuitasPropostasAbertas() {
+  return (
+    <MoldeDaPaginaComToken>
+      <CartaoDeSituacao icon={Clock} tone="aviso" title="Muitas tentativas">
+        <p>Você abriu muitas propostas em pouco tempo. Tente novamente daqui a alguns minutos.</p>
+      </CartaoDeSituacao>
+    </MoldeDaPaginaComToken>
+  );
+}
+
+export default async function PropostaPage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params;
+  if (!PADRAO_DO_TOKEN_PUBLICO.test(token)) notFound();
+
+  const ip = await obterIpDoCliente();
+  const rateLimit = await conferirLimiteDeUso({ key: `PROPOSAL_VIEW:${ip}`, ...LIMITE_DE_VISUALIZACOES });
+  if (!rateLimit.success) return <MuitasPropostasAbertas />;
+
+  const lead = await buscarProposta(token);
   if (!lead || lead.locked || !lead.proposalSentAt || lead.proposalAmount == null) notFound();
 
   const expired = !!lead.proposalValidUntil && lead.proposalValidUntil < hojeEmBrasilia();
   const dateLong = formatarDataDoCasamentoPorExtenso(lead.weddingDate);
   const validUntil = formatarDataDoCasamento(lead.proposalValidUntil);
 
+  const nome = lead.vendor.companyName;
   let state: React.ReactNode;
-  if (lead.proposalAcceptedAt) {
-    state = (
-      <CartaoDeSituacao icon={BadgeCheck} tone="sucesso" title="Proposta aceita">
-        <p>
-          Aceita por <strong className="font-semibold">{lead.proposalAcceptedName}</strong> em{" "}
-          {formatarDataEHoraEmBrasilia(lead.proposalAcceptedAt)}.
-        </p>
-        <p className="font-semibold">Próximos passos</p>
-        <ul className="list-disc space-y-1 pl-5">
-          <li>{lead.vendor.companyName} vai entrar em contato para o contrato.</li>
-          <li>Combinem a forma de pagamento e os detalhes do dia direto com o fornecedor.</li>
-        </ul>
-      </CartaoDeSituacao>
-    );
-  } else if (lead.status === "DECLINED") {
-    state = (
-      <CartaoDeSituacao icon={CircleX} tone="perigo" title="Proposta indisponível">
-        <p>Esta proposta não está mais disponível. Se ainda tiver interesse, fale com {lead.vendor.companyName}.</p>
-      </CartaoDeSituacao>
-    );
-  } else if (expired) {
-    state = (
-      <CartaoDeSituacao icon={CalendarX} tone="aviso" title="Proposta expirada">
-        <p>
-          O prazo desta proposta terminou em {validUntil}. Peça a {lead.vendor.companyName} uma proposta atualizada.
-        </p>
-      </CartaoDeSituacao>
-    );
-  } else {
-    state = <FormularioDeAceiteDaProposta token={token} companyName={lead.vendor.companyName} />;
-  }
+  if (lead.proposalAcceptedAt) state = <PropostaAceita nome={lead.proposalAcceptedName} quando={formatarDataEHoraEmBrasilia(lead.proposalAcceptedAt)} companyName={nome} />;
+  else if (lead.status === "DECLINED") state = <PropostaIndisponivel companyName={nome} />;
+  else if (expired) state = <PropostaExpirada validUntil={validUntil} companyName={nome} />;
+  else state = <FormularioDeAceiteDaProposta token={token} companyName={nome} />;
 
   return (
     <MoldeDaPaginaComToken>
@@ -138,40 +81,7 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
         <p className="text-tinta-suave">Para {lead.coupleName}</p>
       </div>
 
-      <section aria-labelledby="proposta-resumo" className={cn(CARTAO_DA_PAGINA_COM_TOKEN, "flex flex-col gap-4")}>
-        <h2 id="proposta-resumo" className="sr-only">
-          Resumo da proposta
-        </h2>
-        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-0.5 sm:col-span-2">
-            <dt className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>Valor</dt>
-            <dd className="font-num text-4xl leading-tight">{formatarReaisDoPainel(lead.proposalAmount)}</dd>
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <dt className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>Data do casamento</dt>
-            <dd className="text-[17px] font-semibold">{dateLong ?? "A definir"}</dd>
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <dt className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>Validade</dt>
-            <dd className={cn("text-[17px] font-semibold", expired && "text-perigo")}>
-              {validUntil ? `Até ${validUntil}` : "Sem prazo definido"}
-            </dd>
-          </div>
-          {lead.location ? (
-            <div className="flex flex-col gap-0.5 sm:col-span-2">
-              <dt className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>Cidade</dt>
-              <dd className="text-[17px] font-semibold">{lead.location}</dd>
-            </div>
-          ) : null}
-        </dl>
-        {lead.proposalDetails ? (
-          <div className="flex flex-col gap-1.5 border-t border-linha pt-4">
-            <p className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>O que está incluído</p>
-            <p className="text-[15px] whitespace-pre-line break-words sm:text-base">{lead.proposalDetails}</p>
-          </div>
-        ) : null}
-        <p className="text-[13px] text-tinta-suave">Enviada {formatarDataEHoraEmBrasilia(lead.proposalSentAt)}.</p>
-      </section>
+      <ResumoDaProposta amount={lead.proposalAmount} dateLong={dateLong} validUntil={validUntil} expired={expired} location={lead.location} details={lead.proposalDetails} sentAt={lead.proposalSentAt} />
 
       {state}
     </MoldeDaPaginaComToken>
