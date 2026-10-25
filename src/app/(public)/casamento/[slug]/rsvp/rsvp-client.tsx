@@ -18,7 +18,7 @@ import { lembrarConvidado } from "@/lib/use-saved-guest";
 import { mensagemDaBusca, type ConvidadoDaConfirmacaoPublica } from "@/lib/rsvp-lookup";
 import { cn } from "@/lib/utils";
 
-interface RsvpClientProps {
+interface PropriedadesDaConfirmacaoCliente {
   /** Casamento do endereço: a busca e a confirmação ficam restritas a ele */
   slug: string;
   coupleNames: string;
@@ -26,16 +26,16 @@ interface RsvpClientProps {
   locationName: string | null;
 }
 
-type Guest = ConvidadoDaConfirmacaoPublica;
+type ConvidadoDaConfirmacao = ConvidadoDaConfirmacaoPublica;
 
-const overline = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
-const title = "font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta outline-none";
+const estiloDoSobretitulo = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
+const estiloDoTitulo = "font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta outline-none";
 
-export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpClientProps) {
+export function ConfirmacaoCliente({ slug, coupleNames, dateLabel, locationName }: PropriedadesDaConfirmacaoCliente) {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [guest, setGuest] = useState<Guest | null>(null);
+  const [guest, setGuest] = useState<ConvidadoDaConfirmacao | null>(null);
 
   const [companionsCount, setCompanionsCount] = useState(0);
   const [companionsNames, setCompanionsNames] = useState<string[]>([]);
@@ -146,8 +146,8 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
       {stage === "busca" ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
           <div className="flex flex-col gap-2">
-            <p className={overline}>Confirmação de presença</p>
-            <h1 ref={headingRef} id="titulo" tabIndex={-1} className={title}>
+            <p className={estiloDoSobretitulo}>Confirmação de presença</p>
+            <h1 ref={headingRef} id="titulo" tabIndex={-1} className={estiloDoTitulo}>
               Vamos achar o seu convite
             </h1>
             <p className="text-tinta-suave">Digite o seu WhatsApp com DDD, o mesmo que os noivos têm de você. Você verá só o seu convite.</p>
@@ -182,7 +182,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
           <div className="relative rounded-[16px] border border-linha bg-papel px-5 pb-6 pt-8 text-center shadow-[var(--shadow-aceito-2)]">
             <span aria-hidden="true" className="pointer-events-none absolute inset-2 rounded-[10px] border border-rosa" />
             <div className="relative">
-              <p className={overline}>Seu convite chegou</p>
+              <p className={estiloDoSobretitulo}>Seu convite chegou</p>
               <h1
                 ref={headingRef}
                 id="titulo"
@@ -314,7 +314,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
           </span>
 
           <div className="mt-2 flex w-full flex-col items-center gap-4 rounded-[16px] border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
-            <p className={overline}>Código QR para a entrada</p>
+            <p className={estiloDoSobretitulo}>Código QR para a entrada</p>
             <div ref={qrRef} className="rounded-[12px] border border-linha bg-papel p-4">
               <QRCodeCanvas value={`GUEST:${guest?.id ?? ""}`} size={168} level="H" />
             </div>
@@ -329,7 +329,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
           </div>
 
           <div className="flex w-full flex-col rounded-[16px] border border-linha bg-papel px-6 py-4 text-left shadow-[var(--shadow-aceito-1)]">
-            <p className={cn(overline, "mb-1")}>E agora?</p>
+            <p className={cn(estiloDoSobretitulo, "mb-1")}>E agora?</p>
             <Link
               href={caminhoDoSiteDoCasamento(slug, "presentes")}
               className="flex min-h-12 items-center gap-3 font-semibold text-tinta no-underline"
@@ -348,7 +348,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
 
       {stage === "DECLINED" ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col items-center gap-4 pt-8 text-center">
-          <h1 ref={headingRef} id="titulo" tabIndex={-1} className={cn(title, "text-balance")}>
+          <h1 ref={headingRef} id="titulo" tabIndex={-1} className={cn(estiloDoTitulo, "text-balance")}>
             Que pena, vamos sentir sua falta
           </h1>
           <p className="max-w-[34ch] text-tinta-suave">

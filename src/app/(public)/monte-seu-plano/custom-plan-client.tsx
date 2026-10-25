@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 
 import { formatarReais, formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
-export function CustomPlanClient({ modules }: { modules: ModuloDePreco[] }) {
+export function PlanoPersonalizadoCliente({ modules }: { modules: ModuloDePreco[] }) {
   const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>(["site", "pixZero", "whatsapp"]);
 
   const toggleModule = (id: string) => {

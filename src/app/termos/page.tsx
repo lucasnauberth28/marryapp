@@ -8,21 +8,21 @@ export const metadata: Metadata = {
   description: "Regras de uso do Aceito para casais, convidados e fornecedores.",
 };
 
-const CONTROLLER = (
+const CONTROLADOR = (
   <>
     Lucas Nauberth Souza Protasio Treinamentos, CNPJ 53.012.541/0001-04, com sede na Rua Dona Leopolda, 166, apto. 56, Vila São Paulo, Ferraz de Vasconcelos (SP)
   </>
 );
-const CONTACT_EMAIL = <a href="mailto:contato@meuaceito.com.br">contato@meuaceito.com.br</a>;
+const EMAIL_DE_CONTATO = <a href="mailto:contato@meuaceito.com.br">contato@meuaceito.com.br</a>;
 
-const sections: SecaoLegal[] = [
+const secoes: SecaoLegal[] = [
   {
     id: "aceitacao",
     title: "Sobre estes termos",
     body: (
       <>
         <p>
-          Estes termos regulam o uso do Aceito, plataforma oferecida por {CONTROLLER} (&quot;Aceito&quot;). Ao criar uma conta ou usar a
+          Estes termos regulam o uso do Aceito, plataforma oferecida por {CONTROLADOR} (&quot;Aceito&quot;). Ao criar uma conta ou usar a
           plataforma, você declara que leu e concorda com estes termos e com a <Link href="/privacidade">Política de privacidade</Link>.
         </p>
         <p>Se não concordar, não use a plataforma. Convidados que só confirmam presença ou dão presentes não precisam de conta.</p>
@@ -208,7 +208,7 @@ const sections: SecaoLegal[] = [
         <p>
           Estes termos seguem as leis brasileiras. Fica eleito o foro do domicílio do consumidor para resolver eventuais conflitos.
         </p>
-        <p>Dúvidas sobre estes termos: {CONTACT_EMAIL}.</p>
+        <p>Dúvidas sobre estes termos: {EMAIL_DE_CONTATO}.</p>
       </>
     ),
   },
@@ -220,7 +220,7 @@ export default function TermosPage() {
       title="Termos de uso"
       updatedAt="24 de outubro de 2026"
       intro={<p>As regras para usar o Aceito, escritas para serem lidas: o que oferecemos, o que esperamos de cada um e como resolvemos problemas.</p>}
-      sections={sections}
+      sections={secoes}
       related={{ href: "/privacidade", label: "Política de privacidade" }}
     />
   );

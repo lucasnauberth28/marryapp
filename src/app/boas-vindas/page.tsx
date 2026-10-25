@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { obterSessao, ID_DO_SUPER_ADMIN, redirecionarParaOLogin } from "@/lib/security/auth-guard";
 import { classificarConta } from "@/lib/account/wedding-provisioning";
 import { separarNomesDoCasal } from "@/lib/onboarding-options";
-import { OnboardingFlow } from "./onboarding-flow";
+import { FluxoDeBoasVindas } from "./onboarding-flow";
 
 export const metadata: Metadata = {
   title: "Boas-vindas",
@@ -12,14 +12,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const JUST_FINISHED_MS = 30 * 60 * 1000;
+const TEMPO_DE_RECEM_CONCLUIDO_EM_MS = 30 * 60 * 1000;
 
-function finishedRecently(onboardedAt: Date | null | undefined) {
-  return onboardedAt ? Date.now() - onboardedAt.getTime() < JUST_FINISHED_MS : false;
+function concluiuHaPouco(onboardedAt: Date | null | undefined) {
+  return onboardedAt ? Date.now() - onboardedAt.getTime() < TEMPO_DE_RECEM_CONCLUIDO_EM_MS : false;
 }
 
 /** "2027-10-11" no fuso de Brasília. */
-function toDateInput(date: Date | null) {
+function paraCampoDeData(date: Date | null) {
   if (!date) return null;
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
 }
@@ -48,7 +48,7 @@ export default async function BoasVindasPage() {
   // Concluir o onboarding grava a sessão nova, e isso recarrega esta página: logo depois de concluir
   // ela mostra a tela "pronto" (endereço do site e primeiros passos) em vez de pular para o painel.
   const onboardedAt = user.wedding?.onboardedAt;
-  const justFinished = finishedRecently(onboardedAt);
+  const justFinished = concluiuHaPouco(onboardedAt);
   if (onboardedAt && !justFinished) redirect("/dashboard");
   if (kind === "admin" && !user.wedding) redirect(session.allowedPaths.includes("*") ? "/admin" : "/dashboard");
 
@@ -59,13 +59,13 @@ export default async function BoasVindasPage() {
   const partnerName = b;
 
   return (
-    <OnboardingFlow
+    <FluxoDeBoasVindas
       firstName={firstName}
       done={justFinished && user.wedding ? { slug: user.wedding.slug, coupleNames: user.wedding.coupleNames } : null}
       initial={{
         yourName,
         partnerName,
-        weddingDate: toDateInput(user.wedding?.weddingDate ?? null),
+        weddingDate: paraCampoDeData(user.wedding?.weddingDate ?? null),
       }}
     />
   );

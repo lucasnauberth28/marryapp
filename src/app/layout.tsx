@@ -11,7 +11,7 @@ import { SCRIPT_INICIAL_DO_TEMA } from "@/lib/theme";
 
 // Fontes do Manual de Marca (p.12), todas locais: o build não depende de rede. Geist e Urbanist são variáveis
 // no peso (100 a 900), só o subconjunto latino. Interface em Geist 400/500/600; títulos em Urbanist 500/600.
-const geist = localFont({
+const fonteGeist = localFont({
   src: "./fonts/geist-latin.woff2",
   variable: "--font-sans",
   weight: "100 900",
@@ -21,7 +21,7 @@ const geist = localFont({
 });
 
 // Títulos e nomes. Urbanist não tem algarismos tabulares: números e dinheiro usam a classe font-num (Geist).
-const urbanist = localFont({
+const fonteUrbanist = localFont({
   src: "./fonts/urbanist-latin.woff2",
   variable: "--font-display",
   weight: "100 900",
@@ -31,7 +31,7 @@ const urbanist = localFont({
 });
 
 // Só para códigos (cupom, chave Pix, ids). Fora do manual, de uso técnico.
-const plexMono = localFont({
+const fontePlexMono = localFont({
   src: [
     { path: "./fonts/ibm-plex-mono-400-latin.woff2", weight: "400", style: "normal" },
     { path: "./fonts/ibm-plex-mono-500-latin.woff2", weight: "500", style: "normal" },
@@ -76,7 +76,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geist.variable} ${urbanist.variable} ${plexMono.variable} antialiased`}
+      className={`${fonteGeist.variable} ${fonteUrbanist.variable} ${fontePlexMono.variable} antialiased`}
       suppressHydrationWarning
     >
       <head>

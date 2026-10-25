@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Check, CircleCheck, Info } from "lucide-react";
 import { CampoDeCupom, type CupomAplicado } from "@/components/checkout/coupon-field";
 import { PixDaAssinatura } from "@/components/checkout/subscription-pix";
-import { formatPrice, type PlanOption } from "@/app/login/auth-config";
+import { formatarPrecoDoPlano, type OpcaoDePlano } from "@/app/login/auth-config";
 import { cn } from "@/lib/utils";
 
 interface UpgradeSectionProps {
   /** Planos acima do atual, já filtrados no servidor (vazio quando já estão no VIP). */
-  plans: PlanOption[];
+  plans: OpcaoDePlano[];
   /** false na conta de emergência (super-admin): ela não tem conta própria para pagar. */
   canPay: boolean;
 }
@@ -94,7 +94,7 @@ export function UpgradeSection({ plans, canPay }: UpgradeSectionProps) {
                     <span className="text-[15px] text-tinta-suave">{p.summary}</span>
                   </span>
                   <span className="shrink-0 text-right">
-                    <span className="block font-num text-[30px] leading-[34px] text-tinta">{formatPrice(p.price)}</span>
+                    <span className="block font-num text-[30px] leading-[34px] text-tinta">{formatarPrecoDoPlano(p.price)}</span>
                     <span className="text-sm text-tinta-suave">{p.period}</span>
                   </span>
                 </span>

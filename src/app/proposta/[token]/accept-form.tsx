@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { CARTAO_DA_PAGINA_COM_TOKEN } from "@/components/public/token-page-shell";
 
 
-export function AcceptProposalForm({ token, companyName }: { token: string; companyName: string }) {
+export function FormularioDeAceiteDaProposta({ token, companyName }: { token: string; companyName: string }) {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [agreed, setAgreed] = useState(false);

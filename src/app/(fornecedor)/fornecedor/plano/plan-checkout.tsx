@@ -6,7 +6,7 @@ import { ArrowRight, Check, CheckCircle2 } from "lucide-react";
 import { CampoDeCupom, type CupomAplicado } from "@/components/checkout/coupon-field";
 import { PixDaAssinatura } from "@/components/checkout/subscription-pix";
 import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
-import { formatPrice, type PlanOption } from "@/app/login/auth-config";
+import { formatarPrecoDoPlano, type OpcaoDePlano } from "@/app/login/auth-config";
 import { cn } from "@/lib/utils";
 
 const TIER_OF: Record<string, string> = { pro: "PRO", master: "MASTER" };
@@ -30,7 +30,7 @@ export function PlanCheckout({
   /** Preço, crédito dos dias que sobraram e total de cada plano (crédito só ao subir de plano). */
   credits: Record<string, { price: number; credit: number; total: number }>;
   currentPlanName: string;
-  options: PlanOption[];
+  options: OpcaoDePlano[];
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState<string>(currentTier === "MASTER" ? "master" : "pro");
@@ -46,7 +46,7 @@ export function PlanCheckout({
   const creditInfo = credits[plan.id];
   const creditNote =
     creditInfo && creditInfo.credit > 0
-      ? `Você tem ${formatPrice(creditInfo.credit)} de crédito dos dias que sobraram do ${currentPlanName}: o Pix sai por ${formatPrice(creditInfo.total)}.`
+      ? `Você tem ${formatarPrecoDoPlano(creditInfo.credit)} de crédito dos dias que sobraram do ${currentPlanName}: o Pix sai por ${formatarPrecoDoPlano(creditInfo.total)}.`
       : null;
   const periodNote = isRenewal
     ? `Renovar soma 30 dias ${remaining}: o ${plan.name} passa a valer até ${endLabel}.`
@@ -119,7 +119,7 @@ export function PlanCheckout({
                   <span className="block text-[15px] text-tinta-suave">{o.summary}</span>
                 </span>
                 <span className="shrink-0 text-right">
-                  <span className="block font-num text-[28px] leading-8">{formatPrice(o.price)}</span>
+                  <span className="block font-num text-[28px] leading-8">{formatarPrecoDoPlano(o.price)}</span>
                   <span className="block text-sm text-tinta-suave">{o.period}</span>
                 </span>
               </span>

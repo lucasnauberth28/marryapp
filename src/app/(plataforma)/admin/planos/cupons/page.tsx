@@ -2,7 +2,7 @@ import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { ehChaveDePlano } from "@/lib/plans";
 import { PLANOS_ACEITOS_PELO_CUPOM, planosDoCupom } from "@/lib/checkout-pricing";
 import { obterCatalogo } from "@/lib/catalog-server";
-import { planOption, shortPlanName } from "@/app/login/auth-config";
+import { opcaoDePlano, nomeCurtoDoPlano } from "@/app/login/auth-config";
 import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { CouponsSection, type CouponRow } from "../_components/coupons-section";
@@ -33,7 +33,7 @@ export default async function CuponsPage() {
     expired: c.expiresAt !== null && c.expiresAt.getTime() <= now.getTime(),
     active: c.active,
   }));
-  const label = (id: string) => (id === "custom" ? "Adaptado" : ehChaveDePlano(id) ? planOption(id, catalog).name : shortPlanName(id));
+  const label = (id: string) => (id === "custom" ? "Adaptado" : ehChaveDePlano(id) ? opcaoDePlano(id, catalog).name : nomeCurtoDoPlano(id));
   return (
     <>
       <CabecalhoDaPagina eyebrow="Dinheiro" title="Cupons" description="Descontos para quem assina um plano. O servidor confere o cupom de novo na hora de gerar o Pix." />

@@ -5,7 +5,7 @@ import { obterIdentidadeDoCasamento, metadadosDaPaginaDoConvidado } from "@/lib/
 import { obterPresentesDoCasamento } from "@/lib/wedding-data"
 import { exigirCasamentoPublico } from "@/lib/wedding-redirect"
 import { pagamentoPorCartaoEstaDisponivel } from "@/lib/mercadopago"
-import { PublicGiftsClient } from "./public-gifts-client"
+import { PresentesPublicosCliente } from "./public-gifts-client"
 
 // Lê o banco a cada acesso: nunca pré-renderizar no build (dados congelados e build dependente do banco)
 export const dynamic = "force-dynamic"
@@ -30,7 +30,7 @@ export default async function ListaPresentesPublicPage({ params }: { params: Pro
   return (
     <div className="flex min-h-dvh flex-1 flex-col bg-linho text-tinta">
       <CabecalhoDoConvidado slug={wedding.slug} initials={identity.initials} coupleNames={identity.coupleNames} current="presentes" title="Presentes em dinheiro" />
-      <PublicGiftsClient initialGifts={gifts} coupleNames={identity.coupleNames} cardEnabled={pagamentoPorCartaoEstaDisponivel()} />
+      <PresentesPublicosCliente initialGifts={gifts} coupleNames={identity.coupleNames} cardEnabled={pagamentoPorCartaoEstaDisponivel()} />
     </div>
   )
 }

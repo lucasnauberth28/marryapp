@@ -4,14 +4,14 @@ import { useCallback, useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import { PalcoDeAcesso } from "@/components/account/auth-stage";
 import { cn } from "@/lib/utils";
-import { LoginForm } from "./login-form";
-import { SignupFlow } from "./signup-flow";
-import { photoFor, typeOfPlan, type AccountType, type AuthMode, type SignupStep } from "./auth-config";
+import { FormularioDeLogin } from "./login-form";
+import { FluxoDeCadastro } from "./signup-flow";
+import { fotoPara, tipoDoPlano, type TipoDeConta, type ModoDeAcesso, type EtapaDoCadastro } from "./auth-config";
 import type { Catalogo } from "@/lib/catalog";
 
-interface AuthExperienceProps {
-  initialMode: AuthMode;
-  initialType?: AccountType | null;
+interface PropriedadesDaExperienciaDeAcesso {
+  initialMode: ModoDeAcesso;
+  initialType?: TipoDeConta | null;
   initialPlanId?: string;
   customModules?: string[];
   /** Preços vigentes (catálogo do servidor); sem ele valem os do código. */
@@ -26,12 +26,12 @@ interface AuthExperienceProps {
  * Tela única de acesso: entrar e criar conta lado a lado, sem recarregar a página.
  * /login abre na aba Entrar e /cadastro na aba Criar conta.
  */
-export function AuthExperience({ initialMode, initialType = null, initialPlanId, customModules, catalog, nextPath = null, sessionExpired = false }: AuthExperienceProps) {
-  const planType = typeOfPlan(initialPlanId);
-  const [mode, setMode] = useState<AuthMode>(initialMode);
-  const [type, setType] = useState<AccountType | null>(initialType ?? planType);
+export function ExperienciaDeAcesso({ initialMode, initialType = null, initialPlanId, customModules, catalog, nextPath = null, sessionExpired = false }: PropriedadesDaExperienciaDeAcesso) {
+  const planType = tipoDoPlano(initialPlanId);
+  const [mode, setMode] = useState<ModoDeAcesso>(initialMode);
+  const [type, setType] = useState<TipoDeConta | null>(initialType ?? planType);
   // Com o tipo já conhecido (vindo de um plano da landing), o cadastro começa na escolha do plano.
-  const [step, setStep] = useState<SignupStep>(initialType || planType ? "plano" : "tipo");
+  const [step, setStep] = useState<EtapaDoCadastro>(initialType || planType ? "plano" : "tipo");
   const [loginEmail, setLoginEmail] = useState("");
 
   const accountCreated = step === "pagamento" || step === "pronto";
@@ -48,7 +48,7 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
     setMode("entrar");
   }, []);
 
-  const photo = photoFor(mode, step, type);
+  const photo = fotoPara(mode, step, type);
 
   return (
     <PalcoDeAcesso
@@ -57,12 +57,12 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
     >
       {!accountCreated ? (
         <div role="tablist" aria-label="Acesso" className="mb-8 grid grid-cols-2 gap-1 rounded-[12px] bg-areia p-1">
-          <TabButton id="aba-entrar" controls="painel-acesso" active={mode === "entrar"} onClick={() => setMode("entrar")}>
+          <BotaoDeAba id="aba-entrar" controls="painel-acesso" active={mode === "entrar"} onClick={() => setMode("entrar")}>
             Entrar
-          </TabButton>
-          <TabButton id="aba-criar" controls="painel-acesso" active={mode === "criar"} onClick={() => setMode("criar")}>
+          </BotaoDeAba>
+          <BotaoDeAba id="aba-criar" controls="painel-acesso" active={mode === "criar"} onClick={() => setMode("criar")}>
             Criar conta
-          </TabButton>
+          </BotaoDeAba>
         </div>
       ) : null}
 
@@ -84,10 +84,10 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
                 Sua sessão expirou. Entre de novo para continuar.
               </p>
             ) : null}
-            <LoginForm key={loginEmail} initialEmail={loginEmail} nextPath={nextPath} onCreateAccount={() => setMode("criar")} />
+            <FormularioDeLogin key={loginEmail} initialEmail={loginEmail} nextPath={nextPath} onCreateAccount={() => setMode("criar")} />
           </div>
         ) : (
-          <SignupFlow
+          <FluxoDeCadastro
             step={step}
             type={type}
             onStepChange={setStep}
@@ -103,7 +103,7 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
   );
 }
 
-function TabButton({
+function BotaoDeAba({
   id,
   controls,
   active,

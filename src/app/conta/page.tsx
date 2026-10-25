@@ -9,7 +9,7 @@ import { classificarConta } from "@/lib/account/wedding-provisioning";
 import { gruposPara } from "@/lib/notifications/catalog";
 import { resolverPreferencias } from "@/lib/notifications/preferences";
 import { chavePublicaVapid } from "@/lib/notifications/push";
-import { AccountSections } from "./account-sections";
+import { SecoesDaConta } from "./account-sections";
 
 export const metadata: Metadata = {
   title: "Minha conta",
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const KIND_LABEL = { couple: "Conta de casal", vendor: "Conta de fornecedor", admin: "Conta da administração" } as const;
+const ROTULO_DO_TIPO = { couple: "Conta de casal", vendor: "Conta de fornecedor", admin: "Conta da administração" } as const;
 
 export default async function ContaPage() {
   const session = await obterSessao();
@@ -76,14 +76,14 @@ export default async function ContaPage() {
 
       <main id="conteudo" className="page-in mx-auto flex w-full max-w-[880px] flex-col gap-8 px-4 pb-16 pt-8 sm:px-6 md:pt-12">
         <div className="flex flex-col gap-1.5">
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">{KIND_LABEL[kind]}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">{ROTULO_DO_TIPO[kind]}</p>
           <h1 className="font-display text-[32px] leading-[38px] tracking-[-0.01em] text-balance md:text-[40px] md:leading-[46px]">Minha conta</h1>
           <p className="text-[15px] text-tinta-suave">
             {user.name} · {user.username}
           </p>
         </div>
 
-        <AccountSections
+        <SecoesDaConta
           kind={kind}
           pushPublicKey={chavePublicaVapid()}
           notifications={{

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
-export function LoginForm({
+export function FormularioDeLogin({
   initialEmail = "",
   nextPath = null,
   onCreateAccount,

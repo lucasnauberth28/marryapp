@@ -2,7 +2,7 @@ import { Logotipo } from "@/components/brand/logo";
 import { LoadingRegion, SkeletonText } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function Rows({ count }: { count: number }) {
+function Linhas({ count }: { count: number }) {
   return (
     <div className="grid gap-x-6 gap-y-2 sm:grid-cols-[180px_1fr]">
       {Array.from({ length: count }).map((_, i) => (
@@ -43,7 +43,7 @@ export default function ReciboLoading() {
           {[4, 5].map((n, i) => (
             <div key={i} className="flex flex-col gap-3">
               <Skeleton className="h-3 w-20 rounded-md" />
-              <Rows count={n} />
+              <Linhas count={n} />
             </div>
           ))}
           <div className="flex flex-col gap-3">

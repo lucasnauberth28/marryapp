@@ -10,12 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
-export type Viewer =
+export type Visitante =
   | { kind: "anonymous" }
   | { kind: "blocked"; name: string; reason: string }
   | { kind: "member"; name: string; email: string; alreadyIn: boolean };
 
-export function InviteAccept({ token, coupleNames, viewer }: { token: string; coupleNames: string; viewer: Viewer }) {
+export function AceiteDoConvite({ token, coupleNames, viewer }: { token: string; coupleNames: string; viewer: Visitante }) {
   return (
     <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
       <span className="grid size-14 place-items-center rounded-full bg-ameixa-suave text-ameixa">
@@ -26,8 +26,8 @@ export function InviteAccept({ token, coupleNames, viewer }: { token: string; co
         <TituloDoMolde title={coupleNames} text="Entre no casamento para ver e editar tudo junto: convidados, site, presentes e finanças." />
       </div>
 
-      {viewer.kind === "member" ? <MemberAccept token={token} viewer={viewer} /> : null}
-      {viewer.kind === "anonymous" ? <AnonymousAccept token={token} /> : null}
+      {viewer.kind === "member" ? <AceiteDeQuemTemConta token={token} viewer={viewer} /> : null}
+      {viewer.kind === "anonymous" ? <AceiteDeQuemNaoTemConta token={token} /> : null}
       {viewer.kind === "blocked" ? (
         <div className="flex flex-col gap-4">
           <AvisoDoFormulario>{viewer.reason}</AvisoDoFormulario>
@@ -42,7 +42,7 @@ export function InviteAccept({ token, coupleNames, viewer }: { token: string; co
   );
 }
 
-function MemberAccept({ token, viewer }: { token: string; viewer: Extract<Viewer, { kind: "member" }> }) {
+function AceiteDeQuemTemConta({ token, viewer }: { token: string; viewer: Extract<Visitante, { kind: "member" }> }) {
   const [error, setError] = useState("");
   const [confirm, setConfirm] = useState<{ currentCoupleNames: string; willDeleteCurrent: boolean } | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -121,7 +121,7 @@ function MemberAccept({ token, viewer }: { token: string; viewer: Extract<Viewer
   );
 }
 
-function AnonymousAccept({ token }: { token: string }) {
+function AceiteDeQuemNaoTemConta({ token }: { token: string }) {
   const [mode, setMode] = useState<"criar" | "entrar">("criar");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

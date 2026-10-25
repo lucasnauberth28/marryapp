@@ -8,7 +8,7 @@ import { obterIdentidadeDoCasamento, metadadosDaPaginaDoConvidado } from "@/lib/
 import { obterLinhaDoTempoDoCasamento } from "@/lib/wedding-data";
 import { exigirCasamentoPublico } from "@/lib/wedding-redirect";
 import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
-import { TimelinePublicClient } from "./timeline-public-client";
+import { LinhaDoTempoPublicaCliente } from "./timeline-public-client";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -18,16 +18,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 // Lê o banco a cada acesso: nunca pré-renderizar no build (dados congelados e build dependente do banco)
 export const dynamic = "force-dynamic";
 
-const BRASILIA = "America/Sao_Paulo";
+const FUSO_DE_BRASILIA = "America/Sao_Paulo";
 
 /** "2027-10-11" no fuso de Brasília: o dia do casamento, sem depender do fuso do servidor. */
-function dayKey(date: Date) {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: BRASILIA, year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
+function chaveDoDia(date: Date) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: FUSO_DE_BRASILIA, year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
 }
 
 /** "Segunda-feira, 11 de outubro" */
-function weekdayLabel(date: Date) {
-  const text = new Intl.DateTimeFormat("pt-BR", { timeZone: BRASILIA, weekday: "long", day: "numeric", month: "long" }).format(date);
+function rotuloDoDiaDaSemana(date: Date) {
+  const text = new Intl.DateTimeFormat("pt-BR", { timeZone: FUSO_DE_BRASILIA, weekday: "long", day: "numeric", month: "long" }).format(date);
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
@@ -42,10 +42,10 @@ export default async function DiaDoEventoPage({ params }: { params: Promise<{ sl
     <div className="flex min-h-dvh flex-1 flex-col bg-linho text-tinta">
       <CabecalhoDoConvidado slug={wedding.slug} initials={identity.initials} coupleNames={identity.coupleNames} current="dia-do-evento" title="Dia do casamento" />
       <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col gap-8 px-4 py-8 sm:py-14">
-        <TimelinePublicClient
+        <LinhaDoTempoPublicaCliente
           events={events.map((e) => ({ id: e.id, title: e.title, time: e.time, description: e.description }))}
-          dayKey={date ? dayKey(date) : null}
-          dateLabel={date ? weekdayLabel(date) : null}
+          dayKey={date ? chaveDoDia(date) : null}
+          dateLabel={date ? rotuloDoDiaDaSemana(date) : null}
         />
 
         <section aria-labelledby="ingresso-titulo" className="flex flex-col gap-3 rounded-[16px] border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)]">

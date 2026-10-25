@@ -35,5 +35,5 @@ test("QR Code: módulos escuros sobre branco, contraste de 7:1 ou mais", () => {
 test("telas que desenham QR Code usam a moldura de fundo branco fixo", () => {
   const withQr = sources.filter(({ text, path }) => /QRCode(?:SVG|Canvas)/.test(text) && !path.endsWith("qr-frame.tsx") && !path.endsWith("qr-colors.ts") && !path.includes("rsvp-client"));
   assert.ok(withQr.length >= 3);
-  for (const { path, text } of withQr) assert.ok(text.includes("QrFrame"), `${path} deve usar QrFrame`);
+  for (const { path, text } of withQr) assert.ok(text.includes("MolduraDoQr"), `${path} deve usar MolduraDoQr`);
 });

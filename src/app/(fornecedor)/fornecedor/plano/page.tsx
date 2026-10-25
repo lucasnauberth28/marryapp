@@ -6,7 +6,7 @@ import { Aparicao } from "@/components/motion/reveal";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
-import { planOption, shortPlanName } from "@/app/login/auth-config";
+import { opcaoDePlano, nomeCurtoDoPlano } from "@/app/login/auth-config";
 import { obterCatalogo } from "@/lib/catalog-server";
 import { proximoFimDoPeriodoDoFornecedor, DIAS_DO_PERIODO_DO_FORNECEDOR, nivelDoFornecedorParaOPlano } from "@/lib/subscription-period";
 import { detalharPreco } from "@/lib/checkout-pricing";
@@ -52,9 +52,9 @@ export default async function PlanoPage() {
   const expiresAt = vendor.planExpiresAt;
   const hasActivePeriod = expiresAt !== null && expiresAt.getTime() > now.getTime();
   const daysLeft = isPaid && expiresAt ? Math.max(0, Math.ceil((expiresAt.getTime() - now.getTime()) / DAY_MS)) : null;
-  const planName = shortPlanName(planOption(TIER_PLAN[vendor.planTier] ?? "start", catalog).name);
+  const planName = nomeCurtoDoPlano(opcaoDePlano(TIER_PLAN[vendor.planTier] ?? "start", catalog).name);
 
-  const options = [planOption("pro", catalog), planOption("master", catalog)];
+  const options = [opcaoDePlano("pro", catalog), opcaoDePlano("master", catalog)];
   // Até quando vale cada plano se pago agora (mesma regra do webhook de confirmação).
   const endLabels = Object.fromEntries(
     options.map((o) => {
@@ -178,7 +178,7 @@ export default async function PlanoPage() {
                 return (
                   <li key={p.id} className="flex min-h-14 items-center gap-3 border-t border-linha px-4 py-2 first:border-t-0">
                     <span className="flex min-w-0 flex-1 flex-col">
-                      <strong className="font-semibold">{shortPlanName(p.planName)}</strong>
+                      <strong className="font-semibold">{nomeCurtoDoPlano(p.planName)}</strong>
                       <span className="text-sm text-tinta-suave">
                         {p.paidAt ? `Pago em ${formatDate(p.paidAt, now)}` : "Pagamento sem data"}
                         {refunded ? " · Estornado" : ""}
@@ -232,7 +232,7 @@ export default async function PlanoPage() {
                         : "—";
                     return (
                       <tr key={p.id} className="border-t border-linha">
-                        <td className="px-5 py-3.5 font-semibold">{shortPlanName(p.planName)}</td>
+                        <td className="px-5 py-3.5 font-semibold">{nomeCurtoDoPlano(p.planName)}</td>
                         <td className="px-5 py-3.5">{p.paidAt ? formatDate(p.paidAt, now) : "—"}</td>
                         <td className="px-5 py-3.5 text-tinta-suave">{period}</td>
                         <td className="px-5 py-3.5 text-right whitespace-nowrap tabular-nums">

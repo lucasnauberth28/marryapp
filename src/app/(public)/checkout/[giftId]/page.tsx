@@ -4,13 +4,13 @@ import { obterIdentidadeDoCasamento } from "@/lib/wedding";
 import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
 import { notFound } from "next/navigation";
 import { SiteIndisponivel } from "@/components/public/site-unavailable";
-import { CheckoutClient } from "./checkout-client";
+import { PagamentoCliente } from "./checkout-client";
 import { calcularTarifaDoCartao, pagamentoPorCartaoEstaDisponivel } from "@/lib/mercadopago";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 
 /** O casamento vem sempre do presente. */
-async function loadGift(giftId: string) {
+async function carregarPresente(giftId: string) {
   if (!/^[0-9a-f-]{36}$/i.test(giftId)) return null;
   return prisma.gift.findUnique({
     where: { id: giftId },
@@ -29,9 +29,9 @@ async function loadGift(giftId: string) {
   });
 }
 
-export async function generateMetadata({ params }: CheckoutPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PropriedadesDaPaginaDePagamento): Promise<Metadata> {
   const { giftId } = await params;
-  const gift = await loadGift(giftId);
+  const gift = await carregarPresente(giftId);
   if (gift?.wedding.suspendedAt) return { title: { absolute: "Site indisponível" }, robots: { index: false, follow: false } };
   const { coupleNames } = await obterIdentidadeDoCasamento(gift?.wedding ?? null);
   return {
@@ -40,17 +40,17 @@ export async function generateMetadata({ params }: CheckoutPageProps): Promise<M
   };
 }
 
-interface CheckoutPageProps {
+interface PropriedadesDaPaginaDePagamento {
   params: Promise<{
     giftId: string;
   }>;
 }
 
-export default async function CheckoutPage({ params }: CheckoutPageProps) {
+export default async function CheckoutPage({ params }: PropriedadesDaPaginaDePagamento) {
   const resolvedParams = await params;
   const giftId = resolvedParams.giftId;
 
-  const giftWithWedding = await loadGift(giftId);
+  const giftWithWedding = await carregarPresente(giftId);
 
   if (!giftWithWedding) {
     notFound();
@@ -82,7 +82,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
       </header>
 
       <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col px-4 pb-6 pt-5">
-        <CheckoutClient gift={gift} coupleNames={coupleNames} slug={wedding.slug} cardEnabled={pagamentoPorCartaoEstaDisponivel()} cardAmount={calcularTarifaDoCartao(gift.amount).finalAmount} />
+        <PagamentoCliente gift={gift} coupleNames={coupleNames} slug={wedding.slug} cardEnabled={pagamentoPorCartaoEstaDisponivel()} cardAmount={calcularTarifaDoCartao(gift.amount).finalAmount} />
       </div>
 
       <p className="px-4 pb-6 text-center text-sm text-tinta-suave">{coupleNames} · Feito com Aceito</p>

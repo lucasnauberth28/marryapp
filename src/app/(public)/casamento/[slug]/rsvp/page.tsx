@@ -1,5 +1,5 @@
 import { SiteIndisponivel } from "@/components/public/site-unavailable";
-import { RsvpClient } from "./rsvp-client";
+import { ConfirmacaoCliente } from "./rsvp-client";
 import Link from "next/link";
 import { Clock } from "lucide-react";
 import { isAfter, startOfDay } from "date-fns";
@@ -58,7 +58,7 @@ export default async function RsvpPage({ params }: { params: Promise<{ slug: str
           </Link>
         </div>
       ) : (
-        <RsvpClient slug={weddingRow.slug} coupleNames={wedding.coupleNames} dateLabel={wedding.dateLabel} locationName={wedding.locationName} />
+        <ConfirmacaoCliente slug={weddingRow.slug} coupleNames={wedding.coupleNames} dateLabel={wedding.dateLabel} locationName={wedding.locationName} />
       )}
     </div>
   );

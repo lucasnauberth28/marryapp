@@ -12,7 +12,7 @@ import { avisarPresentePago } from "@/lib/notifications/events";
 import { registrarEventoDeServico } from "@/lib/platform/system-records";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-async function handleWebhook(req: Request) {
+async function tratarAviso(req: Request) {
   try {
     const url = new URL(req.url);
     const body = await req.json().catch(() => ({}));
@@ -53,7 +53,7 @@ async function handleWebhook(req: Request) {
     // Assinaturas de plano têm referência própria ("assinatura:<id>"); o resto é presente.
     const subscriptionId = interpretarReferenciaDaAssinatura(internalTxId);
     if (subscriptionId) {
-      return handleSubscriptionPayment(subscriptionId, paymentId, status, mpResponse.transaction_amount);
+      return tratarPagamentoDeAssinatura(subscriptionId, paymentId, status, mpResponse.transaction_amount);
     }
 
     if (!internalTxId) {
@@ -159,7 +159,7 @@ async function handleWebhook(req: Request) {
  * Saúde do sistema (sem corpo da notificação nem dados de pagamento: só o resultado e o id numérico do pagamento).
  */
 export async function POST(req: Request) {
-  const response = await handleWebhook(req);
+  const response = await tratarAviso(req);
   try {
     const paymentId = new URL(req.url).searchParams.get("data.id");
     const body = (await response.clone().json().catch(() => null)) as { error?: string; success?: boolean; ignored?: string } | null;
@@ -180,7 +180,7 @@ export async function POST(req: Request) {
 }
 
 /** Pagamento de assinatura: libera, recusa ou estorna o plano. Repetições do webhook não mudam nada. */
-async function handleSubscriptionPayment(
+async function tratarPagamentoDeAssinatura(
   subscriptionId: string,
   paymentId: string,
   status: string | undefined,

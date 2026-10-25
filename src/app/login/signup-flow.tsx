@@ -30,15 +30,15 @@ import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/select";
 import { mascararDocumentoDigitando } from "@/lib/formatacao/documento";
 import { mascararTelefone } from "@/lib/formatacao/telefone";
-import { formatPrice, plansFor, type AccountType, type PlanOption, type SignupStep } from "./auth-config";
+import { formatarPrecoDoPlano, planosPara, type TipoDeConta, type OpcaoDePlano, type EtapaDoCadastro } from "./auth-config";
 import type { Catalogo } from "@/lib/catalog";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
-interface SignupFlowProps {
-  step: SignupStep;
-  type: AccountType | null;
-  onStepChange: (step: SignupStep) => void;
-  onTypeChange: (type: AccountType) => void;
+interface PropriedadesDoFluxoDeCadastro {
+  step: EtapaDoCadastro;
+  type: TipoDeConta | null;
+  onStepChange: (step: EtapaDoCadastro) => void;
+  onTypeChange: (type: TipoDeConta) => void;
   /** Plano vindo da URL (?plano=classic) ou do plano adaptado. */
   initialPlanId?: string;
   customModules?: string[];
@@ -48,9 +48,9 @@ interface SignupFlowProps {
   onGoToLogin: (email: string) => void;
 }
 
-type Errors = Partial<Record<"name" | "email" | "phone" | "password" | "companyName" | "city" | "document", string>>;
+type Erros = Partial<Record<"name" | "email" | "phone" | "password" | "companyName" | "city" | "document", string>>;
 
-const STEP_LABEL: Record<SignupStep, string> = {
+const ROTULO_DA_ETAPA: Record<EtapaDoCadastro, string> = {
   tipo: "Tipo de conta",
   plano: "Plano",
   dados: "Dados da conta",
@@ -59,7 +59,7 @@ const STEP_LABEL: Record<SignupStep, string> = {
 };
 
 /** Mensagem do servidor -> campo a que ela se refere (para não ficar só num aviso solto). */
-function fieldOfServerError(message: string): keyof Errors | null {
+function campoDoErroDoServidor(message: string): keyof Erros | null {
   if (/e-?mail/i.test(message) && !/já existe/i.test(message)) return "email";
   if (/senha/i.test(message)) return "password";
   if (/telefone/i.test(message)) return "phone";
@@ -69,14 +69,14 @@ function fieldOfServerError(message: string): keyof Errors | null {
   return null;
 }
 
-export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlanId, customModules, catalog, onGoToLogin }: SignupFlowProps) {
-  const plans = useMemo(() => (type ? plansFor(type, customModules, catalog) : []), [type, customModules, catalog]);
+export function FluxoDeCadastro({ step, type, onStepChange, onTypeChange, initialPlanId, customModules, catalog, onGoToLogin }: PropriedadesDoFluxoDeCadastro) {
+  const plans = useMemo(() => (type ? planosPara(type, customModules, catalog) : []), [type, customModules, catalog]);
   const [planId, setPlanId] = useState<string | null>(initialPlanId ?? null);
   // Sem plano na URL, a escolha começa pelo primeiro da lista (Básico para casais, Start para fornecedores).
-  const plan: PlanOption | undefined = plans.find((p) => p.id === planId) ?? plans[0];
+  const plan: OpcaoDePlano | undefined = plans.find((p) => p.id === planId) ?? plans[0];
   // Etapas reais do caminho: o tipo de conta só conta se a pessoa passou por ele, e o pagamento só existe em plano pago.
   const [startedAtType] = useState(step === "tipo");
-  const flowSteps: SignupStep[] = [...(startedAtType ? (["tipo"] as const) : []), "plano", "dados", ...(plan && plan.price > 0 ? (["pagamento"] as const) : [])];
+  const flowSteps: EtapaDoCadastro[] = [...(startedAtType ? (["tipo"] as const) : []), "plano", "dados", ...(plan && plan.price > 0 ? (["pagamento"] as const) : [])];
 
   // Dados da conta
   const [name, setName] = useState("");
@@ -91,7 +91,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
   const [documentType, setDocumentType] = useState<"CNPJ" | "CPF">("CNPJ");
   const [documentNumber, setDocumentNumber] = useState("");
 
-  const [errors, setErrors] = useState<Errors>({});
+  const [errors, setErrors] = useState<Erros>({});
   const [formError, setFormError] = useState<{ message: string; existingAccount?: boolean } | null>(null);
   const [isPending, startTransition] = useTransition();
   const [redirectTo, setRedirectTo] = useState<string | null>(null);
@@ -131,8 +131,8 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
     documentNumber: isVendor ? documentNumber : undefined,
   });
 
-  const validate = (): Errors => {
-    const e: Errors = {};
+  const validate = (): Erros => {
+    const e: Erros = {};
     if (name.trim().length < 3) e.name = "Informe seu nome com pelo menos 3 letras.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Confira o e-mail. Ele deve ter um formato como nome@exemplo.com.";
     const digits = somenteDigitos(phone);
@@ -163,7 +163,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
       const res = await cadastrarContaDoPlano(payload());
       if (!res.success) {
         const message = res.error || "Não foi possível criar a conta agora. Tentem novamente.";
-        const field = fieldOfServerError(message);
+        const field = campoDoErroDoServidor(message);
         if (field) {
           // O que já foi preenchido fica como está; o erro aparece no campo a que se refere.
           setErrors({ [field]: message });
@@ -196,32 +196,32 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
 
   return (
     <div className="flex flex-col">
-      {step !== "pronto" ? <Progress step={step} steps={flowSteps} /> : null}
+      {step !== "pronto" ? <Progresso step={step} steps={flowSteps} /> : null}
 
       {/* 1. Quem está chegando */}
       {step === "tipo" ? (
         <section aria-labelledby="cadastro-titulo" className="step-in flex flex-col gap-6">
-          <Heading ref={headingRef} title="Que conta vocês querem criar?" text="Escolham o tipo de conta. Convidados não precisam de conta: usam o link enviado pelo casal." />
+          <Titulo ref={headingRef} title="Que conta vocês querem criar?" text="Escolham o tipo de conta. Convidados não precisam de conta: usam o link enviado pelo casal." />
           <div role="group" aria-label="Tipo de conta" className="flex flex-col gap-3">
-            <TypeCard
+            <CartaoDeTipo
               icon={Heart}
               title="Vamos casar"
               text="Site do casamento, lista de convidados e presentes em dinheiro."
               selected={type === "casal"}
               onClick={() => {
                 onTypeChange("casal");
-                if (planId && !plansFor("casal", customModules, catalog).some((p) => p.id === planId)) setPlanId(null);
+                if (planId && !planosPara("casal", customModules, catalog).some((p) => p.id === planId)) setPlanId(null);
                 onStepChange("plano");
               }}
             />
-            <TypeCard
+            <CartaoDeTipo
               icon={Store}
               title="Sou fornecedor"
               text="Sua vitrine para casais da sua região, com pedidos de orçamento no painel."
               selected={type === "fornecedor"}
               onClick={() => {
                 onTypeChange("fornecedor");
-                if (planId && !plansFor("fornecedor", undefined, catalog).some((p) => p.id === planId)) setPlanId(null);
+                if (planId && !planosPara("fornecedor", undefined, catalog).some((p) => p.id === planId)) setPlanId(null);
                 onStepChange("plano");
               }}
             />
@@ -232,18 +232,18 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
       {/* 2. Plano */}
       {step === "plano" && type ? (
         <section aria-labelledby="cadastro-titulo" className="step-in flex flex-col gap-6">
-          <Heading
+          <Titulo
             ref={headingRef}
             title={isVendor ? "Escolha seu plano" : "Escolham o plano para começar."}
             text={isVendor ? "O Start é gratuito. Você pode mudar de plano depois." : "O Básico permite começar sem mensalidade. Comparem os recursos e as taxas antes de continuar."}
           />
           <div role="radiogroup" aria-label="Planos" className="flex flex-col gap-3">
             {plans.map((p) => (
-              <PlanCard key={p.id} plan={p} selected={plan?.id === p.id} onSelect={() => setPlanId(p.id)} />
+              <CartaoDePlano key={p.id} plan={p} selected={plan?.id === p.id} onSelect={() => setPlanId(p.id)} />
             ))}
           </div>
           <div className="flex items-center gap-3">
-            <BackButton onClick={() => onStepChange("tipo")} />
+            <BotaoVoltar onClick={() => onStepChange("tipo")} />
             <button type="button" onClick={() => onStepChange("dados")} className={cn(estiloDoBotao.primary, "min-h-12 flex-1")}>
               Continuar com o {plan?.name}
               <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
@@ -263,7 +263,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
       {/* 3. Dados */}
       {step === "dados" && type && plan ? (
         <section aria-labelledby="cadastro-titulo" className="step-in flex flex-col gap-6">
-          <Heading
+          <Titulo
             ref={headingRef}
             title={isVendor ? "Dados do seu negócio" : "Criem a conta para organizar o casamento."}
             text={isVendor ? "Seu perfil passa pela curadoria antes de aparecer na vitrine." : "Uma pessoa pode começar o cadastro. Depois, vocês podem convidar o par para participar."}
@@ -273,7 +273,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">Plano escolhido</p>
               <p className="truncate font-semibold text-tinta">
-                {plan.name} · {formatPrice(plan.price)}
+                {plan.name} · {formatarPrecoDoPlano(plan.price)}
                 {plan.price > 0 ? <span className="font-normal text-tinta-suave"> {plan.period}</span> : null}
               </p>
             </div>
@@ -439,7 +439,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
             ) : null}
 
             <div className="mt-1 flex items-center gap-3">
-              <BackButton onClick={() => onStepChange("plano")} />
+              <BotaoVoltar onClick={() => onStepChange("plano")} />
               <Button type="submit" loading={isPending || leaving} className="h-12 flex-1 rounded-[12px] px-6">
                 {plan.price > 0 ? "Criar conta e pagar" : "Criar conta"}
                 <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
@@ -463,7 +463,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
       {/* 4. Pagamento */}
       {step === "pagamento" && plan ? (
         <section aria-labelledby="cadastro-titulo" className="step-in flex flex-col gap-6">
-          <Heading
+          <Titulo
             ref={headingRef}
             title="Falta só o Pix"
             text="A conta já está criada. O plano é ativado assim que o pagamento for confirmado."
@@ -494,7 +494,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
           </span>
           {isVendor ? (
             <>
-              <Heading
+              <Titulo
                 ref={headingRef}
                 title={firstName ? `Boas-vindas, ${firstName}` : "Cadastro recebido"}
                 text="Seu perfil já está na fila da curadoria. Enquanto isso, complete as informações no painel: perfis completos são aprovados mais rápido."
@@ -506,7 +506,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
             </>
           ) : (
             <>
-              <Heading
+              <Titulo
                 ref={headingRef}
                 title={firstName ? `Tudo certo, ${firstName}` : "Conta criada"}
                 text={`A conta de vocês está criada${paid ? " e o pagamento foi confirmado" : ""}. Falta só dizer os nomes e a data: leva menos de um minuto.`}
@@ -524,7 +524,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
   );
 }
 
-function Heading({ ref, title, text }: { ref: React.Ref<HTMLHeadingElement>; title: string; text: string }) {
+function Titulo({ ref, title, text }: { ref: React.Ref<HTMLHeadingElement>; title: string; text: string }) {
   return (
     <div className="flex flex-col gap-2">
       <h1
@@ -540,7 +540,7 @@ function Heading({ ref, title, text }: { ref: React.Ref<HTMLHeadingElement>; tit
   );
 }
 
-function Progress({ step, steps }: { step: SignupStep; steps: SignupStep[] }) {
+function Progresso({ step, steps }: { step: EtapaDoCadastro; steps: EtapaDoCadastro[] }) {
   const index = Math.max(0, steps.indexOf(step));
   const n = index + 1;
   const total = steps.length;
@@ -564,13 +564,13 @@ function Progress({ step, steps }: { step: SignupStep; steps: SignupStep[] }) {
         </span>
       </div>
       <p className="sr-only">
-        Etapa {n} de {total}: {STEP_LABEL[step]}
+        Etapa {n} de {total}: {ROTULO_DA_ETAPA[step]}
       </p>
       <p aria-hidden="true" className="text-sm text-tinta-suave">
         {steps.map((s, i) => (
           <span key={s} className={cn(i === index && "font-semibold text-tinta")}>
             {i > 0 ? " · " : ""}
-            {STEP_LABEL[s]}
+            {ROTULO_DA_ETAPA[s]}
           </span>
         ))}
       </p>
@@ -578,7 +578,7 @@ function Progress({ step, steps }: { step: SignupStep; steps: SignupStep[] }) {
   );
 }
 
-function BackButton({ onClick }: { onClick: () => void }) {
+function BotaoVoltar({ onClick }: { onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} aria-label="Voltar" className={cn(estiloDoBotao.secondary, "min-h-12 w-12 shrink-0 px-0")}>
       <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.6} />
@@ -586,7 +586,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-function TypeCard({
+function CartaoDeTipo({
   icon: Icon,
   title,
   text,
@@ -621,7 +621,7 @@ function TypeCard({
   );
 }
 
-function PlanCard({ plan, selected, onSelect }: { plan: PlanOption; selected: boolean; onSelect: () => void }) {
+function CartaoDePlano({ plan, selected, onSelect }: { plan: OpcaoDePlano; selected: boolean; onSelect: () => void }) {
   return (
     <button
       type="button"
@@ -655,7 +655,7 @@ function PlanCard({ plan, selected, onSelect }: { plan: PlanOption; selected: bo
           <span className="block text-[15px] leading-[22px] text-tinta-suave">{plan.summary}</span>
         </span>
         <span className="shrink-0 text-right">
-          <span className="block font-num text-[28px] leading-8 text-tinta">{formatPrice(plan.price)}</span>
+          <span className="block font-num text-[28px] leading-8 text-tinta">{formatarPrecoDoPlano(plan.price)}</span>
           <span className="block text-sm text-tinta-suave">{plan.period}</span>
         </span>
       </span>

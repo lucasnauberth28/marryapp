@@ -13,7 +13,7 @@ import {
   PUBLIC_TOKEN_RE,
   todayBrasilia,
 } from "@/app/(fornecedor)/_lib/vendor-panel";
-import { AcceptProposalForm } from "./accept-form";
+import { FormularioDeAceiteDaProposta } from "./accept-form";
 
 export const metadata: Metadata = {
   title: "Proposta",
@@ -21,9 +21,9 @@ export const metadata: Metadata = {
   referrer: "no-referrer",
 };
 
-const VIEW_LIMIT = { limit: 60, windowMs: 1000 * 60 * 10 }; // 60 aberturas / 10 min por IP
+const LIMITE_DE_VISUALIZACOES = { limit: 60, windowMs: 1000 * 60 * 10 }; // 60 aberturas / 10 min por IP
 
-function StateCard({
+function CartaoDeSituacao({
   icon: Icon,
   tone,
   title,
@@ -65,13 +65,13 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
   if (!PUBLIC_TOKEN_RE.test(token)) notFound();
 
   const ip = await obterIpDoCliente();
-  const rateLimit = await conferirLimiteDeUso({ key: `PROPOSAL_VIEW:${ip}`, ...VIEW_LIMIT });
+  const rateLimit = await conferirLimiteDeUso({ key: `PROPOSAL_VIEW:${ip}`, ...LIMITE_DE_VISUALIZACOES });
   if (!rateLimit.success) {
     return (
       <MoldeDaPaginaComToken>
-        <StateCard icon={Clock} tone="aviso" title="Muitas tentativas">
+        <CartaoDeSituacao icon={Clock} tone="aviso" title="Muitas tentativas">
           <p>Você abriu muitas propostas em pouco tempo. Tente novamente daqui a alguns minutos.</p>
-        </StateCard>
+        </CartaoDeSituacao>
       </MoldeDaPaginaComToken>
     );
   }
@@ -103,7 +103,7 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
   let state: React.ReactNode;
   if (lead.proposalAcceptedAt) {
     state = (
-      <StateCard icon={BadgeCheck} tone="sucesso" title="Proposta aceita">
+      <CartaoDeSituacao icon={BadgeCheck} tone="sucesso" title="Proposta aceita">
         <p>
           Aceita por <strong className="font-semibold">{lead.proposalAcceptedName}</strong> em{" "}
           {formatDateTimeBrasilia(lead.proposalAcceptedAt)}.
@@ -113,24 +113,24 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
           <li>{lead.vendor.companyName} vai entrar em contato para o contrato.</li>
           <li>Combinem a forma de pagamento e os detalhes do dia direto com o fornecedor.</li>
         </ul>
-      </StateCard>
+      </CartaoDeSituacao>
     );
   } else if (lead.status === "DECLINED") {
     state = (
-      <StateCard icon={CircleX} tone="perigo" title="Proposta indisponível">
+      <CartaoDeSituacao icon={CircleX} tone="perigo" title="Proposta indisponível">
         <p>Esta proposta não está mais disponível. Se ainda tiver interesse, fale com {lead.vendor.companyName}.</p>
-      </StateCard>
+      </CartaoDeSituacao>
     );
   } else if (expired) {
     state = (
-      <StateCard icon={CalendarX} tone="aviso" title="Proposta expirada">
+      <CartaoDeSituacao icon={CalendarX} tone="aviso" title="Proposta expirada">
         <p>
           O prazo desta proposta terminou em {validUntil}. Peça a {lead.vendor.companyName} uma proposta atualizada.
         </p>
-      </StateCard>
+      </CartaoDeSituacao>
     );
   } else {
-    state = <AcceptProposalForm token={token} companyName={lead.vendor.companyName} />;
+    state = <FormularioDeAceiteDaProposta token={token} companyName={lead.vendor.companyName} />;
   }
 
   return (

@@ -35,7 +35,7 @@ import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { cn } from "@/lib/utils";
 
 import { formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
-interface VendorDetailClientProps {
+interface PropriedadesDoDetalheDoFornecedor {
   vendor: FornecedorPublico;
   /** Hoje em Brasília ("AAAA-MM-DD"), mínimo da consulta de disponibilidade. */
   todayIso: string;
@@ -43,11 +43,11 @@ interface VendorDetailClientProps {
 
 
 // Campos do design: 44px, borda forte, raio de 12px, texto de 16px.
-const labelCls = "text-sm font-semibold leading-5 text-tinta";
-const sectionTitle = "font-display text-2xl font-medium leading-8 text-tinta sm:text-[26px]";
+const classeDoRotulo = "text-sm font-semibold leading-5 text-tinta";
+const estiloDoTituloDaSecao = "font-display text-2xl font-medium leading-8 text-tinta sm:text-[26px]";
 
 /** Com menos de 5 fotos, as pequenas crescem para o mosaico não ficar com buraco. */
-function mosaicCell(index: number, total: number) {
+function celulaDoMosaico(index: number, total: number) {
   if (index === 0) return "col-span-2 row-span-2 bg-salvia-suave";
   if (total === 2) return "col-span-2 row-span-2";
   if (total === 3) return "col-span-2";
@@ -56,7 +56,7 @@ function mosaicCell(index: number, total: number) {
 }
 
 /** "Ver disponibilidade": consulta só sim/não na agenda do fornecedor. */
-function AvailabilityCheck({ vendorId, todayIso }: { vendorId: string; todayIso: string }) {
+function ConferenciaDeDisponibilidade({ vendorId, todayIso }: { vendorId: string; todayIso: string }) {
   const [date, setDate] = useState("");
   const [result, setResult] = useState<{ date: string; available: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -122,7 +122,7 @@ function AvailabilityCheck({ vendorId, todayIso }: { vendorId: string; todayIso:
   );
 }
 
-export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps) {
+export function DetalheDoFornecedorCliente({ vendor, todayIso }: PropriedadesDoDetalheDoFornecedor) {
   let galleryImages = parseGallery(vendor.galleryImages);
   if (galleryImages.length === 0 && vendor.coverUrl) {
     galleryImages = [vendor.coverUrl];
@@ -232,7 +232,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
           <section aria-label="Fotos do trabalho">
             <div className="hidden md:grid md:auto-rows-[200px] md:grid-cols-4 md:gap-2 md:overflow-hidden md:rounded-[16px]">
               {mosaic.map((img, i) => (
-                <div key={i} className={cn("relative bg-areia", mosaicCell(i, mosaic.length))}>
+                <div key={i} className={cn("relative bg-areia", celulaDoMosaico(i, mosaic.length))}>
                   <button
                     type="button"
                     onClick={() => setLightbox(i)}
@@ -361,7 +361,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
             {/* Sobre */}
             {vendor.description ? (
               <section className="flex flex-col gap-3">
-                <h2 className={sectionTitle}>Sobre</h2>
+                <h2 className={estiloDoTituloDaSecao}>Sobre</h2>
                 <p className="max-w-[68ch] whitespace-pre-line text-[17px] leading-7 text-tinta-suave sm:text-lg">{vendor.description}</p>
               </section>
             ) : null}
@@ -369,7 +369,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
             {/* Atendimento */}
             {serviceRegions.length > 0 || vendor.offersOnlineMeet || (vendor.hasPhysicalSpace && vendor.address) || vendor.instagram || vendor.website ? (
               <section className="flex flex-col gap-4">
-                <h2 className={sectionTitle}>Como atende</h2>
+                <h2 className={estiloDoTituloDaSecao}>Como atende</h2>
                 {serviceRegions.length > 0 ? (
                   <ul className="flex flex-wrap gap-2" aria-label="Regiões atendidas">
                     {serviceRegions.map((region) => (
@@ -440,7 +440,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
             {/* Avaliações */}
             <section className="flex flex-col gap-4" aria-labelledby="avaliacoes">
               <div className="flex flex-col gap-1">
-                <h2 id="avaliacoes" className={sectionTitle}>
+                <h2 id="avaliacoes" className={estiloDoTituloDaSecao}>
                   O que os casais dizem
                 </h2>
                 <p className="text-sm text-tinta-suave">Só quem fechou pelo Aceito recebe o link para avaliar.</p>
@@ -503,7 +503,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                 ) : null}
               </p>
 
-              <AvailabilityCheck vendorId={vendor.id} todayIso={todayIso} />
+              <ConferenciaDeDisponibilidade vendorId={vendor.id} todayIso={todayIso} />
 
               <div id="orcamento" className="scroll-mt-24 border-t border-linha pt-5">
                 <h2 className="font-display text-[22px] font-medium leading-7 text-tinta">Pedir orçamento</h2>
@@ -585,7 +585,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                     </NativeSelect>
 
                     <fieldset className="flex flex-col gap-2">
-                      <legend className={cn(labelCls, "mb-2")}>Como prefere conversar?</legend>
+                      <legend className={cn(classeDoRotulo, "mb-2")}>Como prefere conversar?</legend>
                       <div className="grid grid-cols-2 gap-2">
                         {(
                           [

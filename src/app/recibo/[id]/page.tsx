@@ -11,7 +11,7 @@ import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
 import { obterSessao, ID_DO_SUPER_ADMIN, redirecionarParaOLogin } from "@/lib/security/auth-guard";
 import { DIAS_DO_PERIODO_DO_FORNECEDOR } from "@/lib/subscription-period";
 import { cn } from "@/lib/utils";
-import { PrintButton } from "./print-button";
+import { BotaoDeImprimir } from "./print-button";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { formatarDataBrasiliaLonga } from "@/lib/formatacao/data";
@@ -22,11 +22,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const TZ = "America/Sao_Paulo";
-const DAY_MS = 24 * 60 * 60 * 1000;
-const dateTimeFmt = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeStyle: "short", timeZone: TZ });
+const FUSO = "America/Sao_Paulo";
+const UM_DIA_EM_MS = 24 * 60 * 60 * 1000;
+const formatoDeDataEHora = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeStyle: "short", timeZone: FUSO });
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const PADRAO_DE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Recibo de uma assinatura paga. Só o dono vê (a conta que pagou; nos planos de casal, as duas
@@ -37,7 +37,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
   if (!session) return redirecionarParaOLogin();
 
   const { id } = await params;
-  if (!UUID.test(id)) notFound();
+  if (!PADRAO_DE_UUID.test(id)) notFound();
 
   const sub = await prisma.subscription.findUnique({
     where: { id },
@@ -88,7 +88,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
 
   const period =
     isVendor && sub.periodEnd
-      ? `${formatarDataBrasiliaLonga(new Date(sub.periodEnd.getTime() - DIAS_DO_PERIODO_DO_FORNECEDOR * DAY_MS))} a ${formatarDataBrasiliaLonga(sub.periodEnd)}`
+      ? `${formatarDataBrasiliaLonga(new Date(sub.periodEnd.getTime() - DIAS_DO_PERIODO_DO_FORNECEDOR * UM_DIA_EM_MS))} a ${formatarDataBrasiliaLonga(sub.periodEnd)}`
       : isVendor
         ? "Mensal (30 dias)"
         : "Pagamento único, vale para o casamento";
@@ -107,7 +107,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
     ...(moduleNames.length > 0 ? [{ label: "Módulos", value: moduleNames.join(", ") }] : []),
     { label: "Período", value: period },
     { label: "Forma de pagamento", value: "Pix" },
-    { label: "Pago em", value: sub.paidAt ? dateTimeFmt.format(sub.paidAt) : "—" },
+    { label: "Pago em", value: sub.paidAt ? formatoDeDataEHora.format(sub.paidAt) : "—" },
     { label: "Identificador do pagamento", value: sub.gatewayId ?? "—", mono: true },
   ];
 
@@ -119,7 +119,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
             <ArrowLeft aria-hidden="true" className="size-4" />
             Voltar
           </Link>
-          <PrintButton />
+          <BotaoDeImprimir />
         </div>
 
         <article

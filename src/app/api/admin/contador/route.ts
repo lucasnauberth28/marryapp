@@ -6,7 +6,7 @@ import { protecaoDaApiDeAdminDaPlataforma } from "@/lib/security/platform-admin"
 import { linhaCsv } from "@/lib/platform/csv";
 import { mesDoContador, intervaloDoMes, formaDoPagamentoDe } from "@/lib/platform/payments";
 
-const MAX_ROWS = 10_000;
+const MAXIMO_DE_LINHAS = 10_000;
 
 /**
  * Planilha do mês para o contador: ?mes=AAAA-MM. Pagamentos de plano aprovados (e os estornados) pela data do pagamento.
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   const rows = await prisma.subscription.findMany({
     where: { status: { in: [PaymentStatus.APPROVED, PaymentStatus.REFUNDED] }, amount: { gt: 0 }, paidAt: { gte: start, lt: end } },
     orderBy: { paidAt: "asc" },
-    take: MAX_ROWS,
+    take: MAXIMO_DE_LINHAS,
     select: {
       planName: true,
       planType: true,

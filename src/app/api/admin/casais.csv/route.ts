@@ -8,7 +8,7 @@ import { ORDENACOES_DE_CASAIS, listarCasaisParaExportar, idsDeCasamentoDoPlano }
 import { linhaCsv } from "@/lib/platform/csv";
 import { ROTULO_DA_SITUACAO } from "@/lib/platform/casal-status";
 
-const MAX_ROWS = 5000;
+const MAXIMO_DE_LINHAS = 5000;
 
 /** Exporta os casais (da lista filtrada ou só os selecionados) em CSV. Nunca traz documento, telefone nem dado de convidado. */
 export async function GET(request: NextRequest) {
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     acompanhar: parametroDaBusca(query, "acompanhar") === "marcados",
     planIds: plano ? await idsDeCasamentoDoPlano(plano) : undefined,
   };
-  const rows = await listarCasaisParaExportar({ filters, order: umDosValores(query, "ordem", ORDENACOES_DE_CASAIS) ?? "recentes", ids: ids.data.length ? ids.data : undefined, limit: MAX_ROWS });
+  const rows = await listarCasaisParaExportar({ filters, order: umDosValores(query, "ordem", ORDENACOES_DE_CASAIS) ?? "recentes", ids: ids.data.length ? ids.data : undefined, limit: MAXIMO_DE_LINHAS });
 
   const fmt = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : "");
   const lines = [

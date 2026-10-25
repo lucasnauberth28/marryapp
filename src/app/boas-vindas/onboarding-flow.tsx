@@ -11,9 +11,9 @@ import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { juntarNomesDoCasal, validarDadosBasicosDoInicio, type ErrosDosDadosBasicosDoInicio } from "@/lib/onboarding-options";
 import { cn } from "@/lib/utils";
 
-type Step = "dados" | "pronto";
+type Etapa = "dados" | "pronto";
 
-interface Initial {
+interface ValoresIniciais {
   yourName: string;
   partnerName: string;
   weddingDate: string | null;
@@ -23,17 +23,17 @@ interface Initial {
  * Uma tela só: nomes e data (a data é opcional). Cidade, faixa de convidados e cor do site não são
  * mais perguntadas aqui; a cor e o local ficam em Editar o site, quando o casal for preparar o site.
  */
-export function OnboardingFlow({
+export function FluxoDeBoasVindas({
   firstName,
   initial,
   done,
 }: {
   firstName: string;
-  initial: Initial;
+  initial: ValoresIniciais;
   /** Casamento recém-configurado: abre direto na tela final. */
   done: { slug: string; coupleNames: string } | null;
 }) {
-  const [step, setStep] = useState<Step>(done ? "pronto" : "dados");
+  const [step, setStep] = useState<Etapa>(done ? "pronto" : "dados");
   const [yourName, setYourName] = useState(initial.yourName);
   const [partnerName, setPartnerName] = useState(initial.partnerName);
   const [weddingDate, setWeddingDate] = useState(initial.weddingDate ?? "");

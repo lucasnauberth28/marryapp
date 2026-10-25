@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
 import { SOBRETITULO_DA_PAGINA_COM_TOKEN, MoldeDaPaginaComToken } from "@/components/public/token-page-shell";
 import { formatWeddingDate, PUBLIC_TOKEN_RE } from "@/app/(fornecedor)/_lib/vendor-panel";
-import { ReviewForm } from "./review-form";
+import { FormularioDeAvaliacao } from "./review-form";
 
 export const metadata: Metadata = {
   title: "Avaliar fornecedor",
@@ -13,14 +13,14 @@ export const metadata: Metadata = {
   referrer: "no-referrer",
 };
 
-const VIEW_LIMIT = { limit: 60, windowMs: 1000 * 60 * 10 }; // 60 aberturas / 10 min por IP
+const LIMITE_DE_VISUALIZACOES = { limit: 60, windowMs: 1000 * 60 * 10 }; // 60 aberturas / 10 min por IP
 
 export default async function AvaliarPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   if (!PUBLIC_TOKEN_RE.test(token)) notFound();
 
   const ip = await obterIpDoCliente();
-  const rateLimit = await conferirLimiteDeUso({ key: `REVIEW_VIEW:${ip}`, ...VIEW_LIMIT });
+  const rateLimit = await conferirLimiteDeUso({ key: `REVIEW_VIEW:${ip}`, ...LIMITE_DE_VISUALIZACOES });
   if (!rateLimit.success) {
     return (
       <MoldeDaPaginaComToken>
@@ -72,7 +72,7 @@ export default async function AvaliarPage({ params }: { params: Promise<{ token:
           <p>Obrigado! A avaliação deste casamento já está publicada no perfil de {lead.vendor.companyName}.</p>
         </section>
       ) : (
-        <ReviewForm token={token} companyName={lead.vendor.companyName} />
+        <FormularioDeAvaliacao token={token} companyName={lead.vendor.companyName} />
       )}
     </MoldeDaPaginaComToken>
   );

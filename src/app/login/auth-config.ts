@@ -6,18 +6,18 @@ import { RESUMO_DO_CADASTRO, rotuloDoPlano } from "@/lib/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 // Sem catálogo passado, valem os preços do código; as telas reais passam o catálogo do servidor (lib/catalog-server.ts),
 // que traz os preços editados pela administração.
-let codeCatalog: Catalogo | null = null;
-const fallbackCatalog = () => (codeCatalog ??= catalogoPadrao());
+let catalogoPorCodigo: Catalogo | null = null;
+const catalogoDeApoio = () => (catalogoPorCodigo ??= catalogoPadrao());
 
-export type AuthMode = "entrar" | "criar";
-export type AccountType = "casal" | "fornecedor";
-export type SignupStep = "tipo" | "plano" | "dados" | "pagamento" | "pronto";
+export type ModoDeAcesso = "entrar" | "criar";
+export type TipoDeConta = "casal" | "fornecedor";
+export type EtapaDoCadastro = "tipo" | "plano" | "dados" | "pagamento" | "pronto";
 
-const COUPLE_PLAN_KEYS = ["basic", "classic", "vip"] as const satisfies readonly ChaveDoPlano[];
-const VENDOR_PLAN_KEYS = ["start", "pro", "master"] as const satisfies readonly ChaveDoPlano[];
+const CHAVES_DOS_PLANOS_DO_CASAL = ["basic", "classic", "vip"] as const satisfies readonly ChaveDoPlano[];
+const CHAVES_DOS_PLANOS_DE_FORNECEDOR = ["start", "pro", "master"] as const satisfies readonly ChaveDoPlano[];
 
 /** Plano mostrado na tela: os do catálogo ou o adaptado (montado em /monte-seu-plano). */
-export interface PlanOption {
+export interface OpcaoDePlano {
   id: ChaveDoPlano | "custom";
   name: string;
   summary: string;
@@ -28,15 +28,15 @@ export interface PlanOption {
 }
 
 /** Nome sem o prefixo "Plano"/"Fornecedor": "Classic", "Pro", "Master Elite". */
-export function shortPlanName(name: string) {
+export function nomeCurtoDoPlano(name: string) {
   return rotuloDoPlano(name);
 }
 
-export function planOption(key: ChaveDoPlano, catalog: Catalogo = fallbackCatalog()): PlanOption {
+export function opcaoDePlano(key: ChaveDoPlano, catalog: Catalogo = catalogoDeApoio()): OpcaoDePlano {
   const plan = catalog.plans[key];
   return {
     id: key,
-    name: shortPlanName(plan.name),
+    name: nomeCurtoDoPlano(plan.name),
     summary: RESUMO_DO_CADASTRO[key],
     price: plan.price,
     period: plan.price === 0 ? "sem mensalidade" : plan.type === "VENDOR" ? "por mês" : "pagamento único",
@@ -45,7 +45,7 @@ export function planOption(key: ChaveDoPlano, catalog: Catalogo = fallbackCatalo
   };
 }
 
-function customPlanOption(modules: string[], catalog: Catalogo = fallbackCatalog()): PlanOption | null {
+function opcaoDePlanoPersonalizado(modules: string[], catalog: Catalogo = catalogoDeApoio()): OpcaoDePlano | null {
   const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, modules);
   if (calc.selectedModules.length === 0) return null;
   return {
@@ -58,32 +58,32 @@ function customPlanOption(modules: string[], catalog: Catalogo = fallbackCatalog
   };
 }
 
-export function plansFor(type: AccountType, customModules?: string[], catalog: Catalogo = fallbackCatalog()): PlanOption[] {
-  if (type === "fornecedor") return VENDOR_PLAN_KEYS.map((key) => planOption(key, catalog));
-  const custom = customModules?.length ? customPlanOption(customModules, catalog) : null;
-  return [...(custom ? [custom] : []), ...COUPLE_PLAN_KEYS.map((key) => planOption(key, catalog))];
+export function planosPara(type: TipoDeConta, customModules?: string[], catalog: Catalogo = catalogoDeApoio()): OpcaoDePlano[] {
+  if (type === "fornecedor") return CHAVES_DOS_PLANOS_DE_FORNECEDOR.map((key) => opcaoDePlano(key, catalog));
+  const custom = customModules?.length ? opcaoDePlanoPersonalizado(customModules, catalog) : null;
+  return [...(custom ? [custom] : []), ...CHAVES_DOS_PLANOS_DO_CASAL.map((key) => opcaoDePlano(key, catalog))];
 }
 
-export function typeOfPlan(planId: string | undefined): AccountType | null {
+export function tipoDoPlano(planId: string | undefined): TipoDeConta | null {
   if (!planId) return null;
-  if ((VENDOR_PLAN_KEYS as readonly string[]).includes(planId)) return "fornecedor";
-  if ((COUPLE_PLAN_KEYS as readonly string[]).includes(planId) || planId === "custom") return "casal";
+  if ((CHAVES_DOS_PLANOS_DE_FORNECEDOR as readonly string[]).includes(planId)) return "fornecedor";
+  if ((CHAVES_DOS_PLANOS_DO_CASAL as readonly string[]).includes(planId) || planId === "custom") return "casal";
   return null;
 }
 
-export function formatPrice(cents: number) {
+export function formatarPrecoDoPlano(cents: number) {
   return formatarReaisEnxuto(cents);
 }
 
 /** Foto do painel lateral para cada momento do acesso. */
-export interface AuthPhoto {
+export interface FotoDeAcesso {
   src: string;
   alt: string;
   caption: string;
   position?: string;
 }
 
-const PHOTOS = {
+const FOTOS = {
   entrar: {
     src: "/images/acesso/convite-aliancas.webp",
     alt: "Convite com selo de cera ameixa, alianças num pratinho e peônias rosa sobre uma mesa de madeira",
@@ -114,11 +114,11 @@ const PHOTOS = {
     caption: "Tudo pronto. Agora é só começar.",
     position: "35% 60%",
   },
-} satisfies Record<string, AuthPhoto>;
+} satisfies Record<string, FotoDeAcesso>;
 
-export function photoFor(mode: AuthMode, step: SignupStep, type: AccountType | null): AuthPhoto {
-  if (mode === "entrar") return PHOTOS.entrar;
-  if (step === "pronto") return PHOTOS.pronto;
-  if (step === "tipo" || !type) return PHOTOS.tipo;
-  return type === "fornecedor" ? PHOTOS.fornecedor : PHOTOS.casal;
+export function fotoPara(mode: ModoDeAcesso, step: EtapaDoCadastro, type: TipoDeConta | null): FotoDeAcesso {
+  if (mode === "entrar") return FOTOS.entrar;
+  if (step === "pronto") return FOTOS.pronto;
+  if (step === "tipo" || !type) return FOTOS.tipo;
+  return type === "fornecedor" ? FOTOS.fornecedor : FOTOS.casal;
 }

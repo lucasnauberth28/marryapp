@@ -6,7 +6,7 @@ import { linhaCsv } from "@/lib/platform/csv";
 import { ROTULO_DA_CURADORIA, ORDENACOES_DE_FORNECEDORES, ABAS_DE_FORNECEDORES, visaoDaCuradoria } from "@/lib/platform/vendor-admin";
 import { FILTROS_DE_CURADORIA, FILTROS_DE_PLANO, listarFornecedoresDoAdminParaExportar } from "@/lib/platform/queries/fornecedores";
 
-const MAX_ROWS = 5000;
+const MAXIMO_DE_LINHAS = 5000;
 
 /** Exporta os fornecedores (com os filtros da lista) em CSV. Nunca traz CPF/CNPJ, telefone nem e-mail. */
 export async function GET(request: NextRequest) {
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       curadoria: umDosValores(query, "curadoria", FILTROS_DE_CURADORIA),
       ordem: umDosValores(query, "ordem", ORDENACOES_DE_FORNECEDORES) ?? "espera",
     },
-    MAX_ROWS,
+    MAXIMO_DE_LINHAS,
   );
 
   const day = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : "");

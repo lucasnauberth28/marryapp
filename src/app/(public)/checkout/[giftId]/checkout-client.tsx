@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { somenteDigitos } from "@/lib/formatacao/telefone";
-interface CheckoutClientProps {
+interface PropriedadesDoPagamentoCliente {
   gift: Gift;
   coupleNames: string;
   /** Casamento do presente (/casamento/<slug>) */
@@ -36,12 +36,12 @@ interface CheckoutClientProps {
   cardAmount: number;
 }
 
-type CheckoutStep = "IDENTIFICATION" | "METHOD" | "PAYMENT" | "SUCCESS";
-type PaymentMethod = "PIX" | "CREDIT_CARD";
+type EtapaDoPagamento = "IDENTIFICATION" | "METHOD" | "PAYMENT" | "SUCCESS";
+type FormaDePagamento = "PIX" | "CREDIT_CARD";
 
-export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, cardAmount }: CheckoutClientProps) {
-  const [step, setStep] = useState<CheckoutStep>("IDENTIFICATION");
-  const [method, setMethod] = useState<PaymentMethod>("PIX");
+export function PagamentoCliente({ gift, coupleNames, slug, cardEnabled = true, cardAmount }: PropriedadesDoPagamentoCliente) {
+  const [step, setStep] = useState<EtapaDoPagamento>("IDENTIFICATION");
+  const [method, setMethod] = useState<FormaDePagamento>("PIX");
   const [isPending, startTransition] = useTransition();
 
   // Dados do Convidado. Quem confirmou presença nesta aba já vem identificado; ele só segue depois de confirmar "sim, sou eu".
@@ -191,7 +191,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
   const overline = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
   const heading = "font-display text-[30px] font-medium leading-[36px] tracking-[-0.015em] text-tinta outline-none";
 
-  const methodOptions: { id: PaymentMethod; label: string; hint: string; value: string }[] = [
+  const methodOptions: { id: FormaDePagamento; label: string; hint: string; value: string }[] = [
     { id: "PIX", label: "Pix", hint: "À vista, sem juros", value: formatarReais(gift.amount) },
     ...(cardEnabled
       ? [{ id: "CREDIT_CARD" as const, label: "Cartão", hint: "Em até 12x, com juros do cartão", value: formatarReais(cardFinalAmount) }]

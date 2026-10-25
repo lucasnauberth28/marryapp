@@ -18,16 +18,16 @@ import "@/components/landing/home/home.css";
 // Os preços vêm do catálogo da administração: a página se refaz sozinha a cada 5 minutos e na hora que um preço muda.
 export const revalidate = 300;
 
-const TITLE = "Aceito | Site de casamento, convidados e presentes em dinheiro";
-const DESCRIPTION =
+const TITULO = "Aceito | Site de casamento, convidados e presentes em dinheiro";
+const DESCRICAO =
   "Criem o site do casamento, acompanhem confirmações de presença e recebam presentes em dinheiro com o Aceito. Conheçam os planos e as taxas.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL ?? "https://meuaceito.com.br"),
-  title: { absolute: TITLE },
-  description: DESCRIPTION,
+  title: { absolute: TITULO },
+  description: DESCRICAO,
   alternates: { canonical: "/" },
-  ...compartilhamentoDaMarca({ title: TITLE, description: DESCRIPTION, url: "/" }),
+  ...compartilhamentoDaMarca({ title: TITULO, description: DESCRICAO, url: "/" }),
 };
 
 export default async function Home() {

@@ -33,46 +33,46 @@ import type { PublicoDaNotificacao, GrupoDeNotificacao } from "@/lib/notificatio
 import type { PreferenciasDeNotificacao } from "@/lib/notifications/preferences";
 
 import { formatarDataBrasiliaLonga } from "@/lib/formatacao/data";
-interface Member {
+interface Integrante {
   id: string;
   name: string;
   email: string;
   isYou: boolean;
   since: string;
 }
-interface Invite {
+interface ConviteDaConta {
   id: string;
   email: string | null;
   createdAt: string;
   expiresAt: string;
 }
 
-interface Props {
+interface Propriedades {
   kind: "couple" | "vendor" | "admin";
   account: { name: string; email: string; createdAt: string; companyName: string | null };
-  wedding: { coupleNames: string; slug: string; members: Member[]; invites: Invite[] } | null;
+  wedding: { coupleNames: string; slug: string; members: Integrante[]; invites: ConviteDaConta[] } | null;
   /** Chave pública do push (null com o push desligado no servidor). */
   pushPublicKey: string | null;
   /** Escolhas de avisos da conta e o que a tela oferece para este tipo de conta. */
   notifications: { prefs: PreferenciasDeNotificacao; audience: PublicoDaNotificacao; groups: GrupoDeNotificacao[] };
 }
 
-const shortFmt = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" });
+const formatoCurto = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" });
 
-export function AccountSections({ kind, account, wedding, pushPublicKey, notifications }: Props) {
+export function SecoesDaConta({ kind, account, wedding, pushPublicKey, notifications }: Propriedades) {
   return (
     <div className="flex flex-col gap-6">
-      {wedding ? <PartnerSection wedding={wedding} /> : null}
-      <NotificationsSection pushPublicKey={pushPublicKey} notifications={notifications} />
-      <AppearanceSection />
-      <PasswordSection />
-      <DataSection kind={kind} createdAt={account.createdAt} companyName={account.companyName} coupleNames={wedding?.coupleNames ?? null} />
-      {kind !== "admin" ? <DeleteSection kind={kind} isLastMember={wedding ? wedding.members.length <= 1 : false} /> : null}
+      {wedding ? <SecaoDaPessoaParceira wedding={wedding} /> : null}
+      <SecaoDeNotificacoes pushPublicKey={pushPublicKey} notifications={notifications} />
+      <SecaoDeAparencia />
+      <SecaoDeSenha />
+      <SecaoDeDados kind={kind} createdAt={account.createdAt} companyName={account.companyName} coupleNames={wedding?.coupleNames ?? null} />
+      {kind !== "admin" ? <SecaoDeExclusao kind={kind} isLastMember={wedding ? wedding.members.length <= 1 : false} /> : null}
     </div>
   );
 }
 
-function Section({
+function Secao({
   id,
   icon: Icon,
   title,
@@ -117,7 +117,7 @@ function Section({
   );
 }
 
-function PasswordToggle({ show, onToggle }: { show: boolean; onToggle: () => void }) {
+function AlternarSenha({ show, onToggle }: { show: boolean; onToggle: () => void }) {
   return (
     <button
       type="button"
@@ -133,28 +133,28 @@ function PasswordToggle({ show, onToggle }: { show: boolean; onToggle: () => voi
 
 // ---------------------------------------------------------------------------
 
-function NotificationsSection({ pushPublicKey, notifications }: Pick<Props, "pushPublicKey" | "notifications">) {
+function SecaoDeNotificacoes({ pushPublicKey, notifications }: Pick<Propriedades, "pushPublicKey" | "notifications">) {
   return (
-    <Section
+    <Secao
       id="avisos"
       icon={Bell}
       title="Avisos"
       description="Escolha como e quando o Aceito avisa você. O sino no topo guarda tudo, aconteça o que acontecer."
     >
       <FormularioDePreferencias initial={notifications.prefs} audience={notifications.audience} groups={notifications.groups} pushPublicKey={pushPublicKey} />
-    </Section>
+    </Secao>
   );
 }
 
-function AppearanceSection() {
+function SecaoDeAparencia() {
   return (
-    <Section id="aparencia" icon={SunMoon} title="Aparência" description="Claro, escuro ou o do seu aparelho. Vale para este navegador.">
+    <Secao id="aparencia" icon={SunMoon} title="Aparência" description="Claro, escuro ou o do seu aparelho. Vale para este navegador.">
       <SeletorSegmentadoDoTema />
-    </Section>
+    </Secao>
   );
 }
 
-function PasswordSection() {
+function SecaoDeSenha() {
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -190,7 +190,7 @@ function PasswordSection() {
   };
 
   return (
-    <Section id="senha" icon={KeyRound} title="Senha" description="Troque a senha de acesso. Use uma que você não usa em outros sites.">
+    <Secao id="senha" icon={KeyRound} title="Senha" description="Troque a senha de acesso. Use uma que você não usa em outros sites.">
       <form onSubmit={submit} noValidate className="grid gap-5 sm:grid-cols-2">
         <Campo
           id="senha-current"
@@ -198,7 +198,7 @@ function PasswordSection() {
           icon={Lock}
           error={errors.current}
           className="sm:col-span-2"
-          trailing={<PasswordToggle show={show} onToggle={() => setShow((v) => !v)} />}
+          trailing={<AlternarSenha show={show} onToggle={() => setShow((v) => !v)} />}
         >
           {(c) => (
             <input {...c} id="senha-current" type={show ? "text" : "password"} autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
@@ -223,13 +223,13 @@ function PasswordSection() {
           </BotaoComCarregamento>
         </div>
       </form>
-    </Section>
+    </Secao>
   );
 }
 
 // ---------------------------------------------------------------------------
 
-function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> }) {
+function SecaoDaPessoaParceira({ wedding }: { wedding: NonNullable<Propriedades["wedding"]> }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -292,7 +292,7 @@ function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> })
     : "";
 
   return (
-    <Section
+    <Secao
       id="par"
       icon={UserPlus}
       title="Convidar seu par"
@@ -401,7 +401,7 @@ function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> })
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[15px] text-tinta">{i.email ?? "Convite por link"}</span>
                   <span className="block text-sm text-tinta-suave">
-                    Criado em {shortFmt.format(new Date(i.createdAt))} · vence em {shortFmt.format(new Date(i.expiresAt))}
+                    Criado em {formatoCurto.format(new Date(i.createdAt))} · vence em {formatoCurto.format(new Date(i.expiresAt))}
                   </span>
                 </span>
                 <BotaoComCarregamento
@@ -418,19 +418,19 @@ function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> })
           </ul>
         </div>
       ) : null}
-    </Section>
+    </Secao>
   );
 }
 
 // ---------------------------------------------------------------------------
 
-function DataSection({
+function SecaoDeDados({
   kind,
   createdAt,
   companyName,
   coupleNames,
 }: {
-  kind: Props["kind"];
+  kind: Propriedades["kind"];
   createdAt: string;
   companyName: string | null;
   coupleNames: string | null;
@@ -443,7 +443,7 @@ function DataSection({
         : "os dados da sua conta";
 
   return (
-    <Section
+    <Secao
       id="dados"
       icon={ShieldCheck}
       title="Seus dados"
@@ -462,13 +462,13 @@ function DataSection({
           Política de privacidade
         </a>
       </div>
-    </Section>
+    </Secao>
   );
 }
 
 // ---------------------------------------------------------------------------
 
-function DeleteSection({ kind, isLastMember }: { kind: Props["kind"]; isLastMember: boolean }) {
+function SecaoDeExclusao({ kind, isLastMember }: { kind: Propriedades["kind"]; isLastMember: boolean }) {
   const [open, setOpen] = useState(false);
   const [confirmation, setConfirmation] = useState("");
   const [password, setPassword] = useState("");
@@ -500,7 +500,7 @@ function DeleteSection({ kind, isLastMember }: { kind: Props["kind"]; isLastMemb
   };
 
   return (
-    <Section id="excluir" icon={Trash2} tone="danger" title="Excluir conta" description={`Apaga a sua conta de vez. ${consequence} Não dá para desfazer.`}>
+    <Secao id="excluir" icon={Trash2} tone="danger" title="Excluir conta" description={`Apaga a sua conta de vez. ${consequence} Não dá para desfazer.`}>
       {!open ? (
         <div>
           <button type="button" onClick={() => setOpen(true)} className={cn(estiloDoBotao.secondary, "min-h-12 text-perigo hover:border-perigo hover:bg-perigo-suave")}>
@@ -522,7 +522,7 @@ function DeleteSection({ kind, isLastMember }: { kind: Props["kind"]; isLastMemb
               />
             )}
           </Campo>
-          <Campo id="excluir-senha" label="Sua senha" icon={Lock} trailing={<PasswordToggle show={show} onToggle={() => setShow((v) => !v)} />}>
+          <Campo id="excluir-senha" label="Sua senha" icon={Lock} trailing={<AlternarSenha show={show} onToggle={() => setShow((v) => !v)} />}>
             {(c) => (
               <input {...c} id="excluir-senha" type={show ? "text" : "password"} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
             )}
@@ -557,6 +557,6 @@ function DeleteSection({ kind, isLastMember }: { kind: Props["kind"]; isLastMemb
           </div>
         </form>
       )}
-    </Section>
+    </Secao>
   );
 }

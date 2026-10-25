@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MoldeDeAcesso, FOTOS_DO_MOLDE } from "@/components/account/auth-shell";
-import { ForgotPasswordForm } from "./forgot-password-form";
+import { FormularioDeEsqueciASenha } from "./forgot-password-form";
 
 export const metadata: Metadata = {
   title: "Esqueci a senha",
@@ -24,7 +24,7 @@ export default function EsqueciASenhaPage() {
         </>
       }
     >
-      <ForgotPasswordForm />
+      <FormularioDeEsqueciASenha />
     </MoldeDeAcesso>
   );
 }

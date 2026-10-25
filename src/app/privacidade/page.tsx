@@ -7,15 +7,15 @@ export const metadata: Metadata = {
   description: "Como o Aceito trata os dados de casais, convidados e fornecedores, de acordo com a LGPD.",
 };
 
-const CONTROLLER = (
+const CONTROLADOR = (
   <>
     Lucas Nauberth Souza Protasio Treinamentos, inscrita no CNPJ sob o nº 53.012.541/0001-04, com sede na Rua Dona Leopolda, 166, apto. 56, Vila São Paulo,
     Ferraz de Vasconcelos (SP)
   </>
 );
-const DPO_EMAIL = <a href="mailto:contato@meuaceito.com.br">contato@meuaceito.com.br</a>;
+const EMAIL_DO_ENCARREGADO = <a href="mailto:contato@meuaceito.com.br">contato@meuaceito.com.br</a>;
 
-const sections: SecaoLegal[] = [
+const secoes: SecaoLegal[] = [
   {
     id: "quem-somos",
     title: "Quem cuida dos seus dados",
@@ -23,11 +23,11 @@ const sections: SecaoLegal[] = [
       <>
         <p>
           O Aceito é uma plataforma para organizar casamentos: site do casal, lista de convidados, confirmações de presença, lista de
-          presentes e uma vitrine de fornecedores. O controlador dos dados pessoais tratados na plataforma é {CONTROLLER} (&quot;Aceito&quot;,
+          presentes e uma vitrine de fornecedores. O controlador dos dados pessoais tratados na plataforma é {CONTROLADOR} (&quot;Aceito&quot;,
           &quot;nós&quot;).
         </p>
         <p>
-          O nosso encarregado pelo tratamento de dados pessoais (DPO) pode ser contatado pelo e-mail {DPO_EMAIL}.
+          O nosso encarregado pelo tratamento de dados pessoais (DPO) pode ser contatado pelo e-mail {EMAIL_DO_ENCARREGADO}.
         </p>
         <p>
           <strong>Papel do casal.</strong> Quando o casal cadastra convidados no Aceito, ele decide quem convidar e quais dados informar.
@@ -203,7 +203,7 @@ const sections: SecaoLegal[] = [
         </p>
         <p>
           <strong>Convidados</strong> podem pedir correção ou exclusão ao casal que os convidou ou diretamente ao encarregado, pelo e-mail{" "}
-          {DPO_EMAIL}. Respondemos em até 15 dias. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).
+          {EMAIL_DO_ENCARREGADO}. Respondemos em até 15 dias. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).
         </p>
       </>
     ),
@@ -273,7 +273,7 @@ const sections: SecaoLegal[] = [
     body: (
       <>
         <p>
-          Dúvidas, pedidos ou reclamações sobre privacidade: escreva para o encarregado pelo e-mail {DPO_EMAIL}. Controlador: {CONTROLLER}.
+          Dúvidas, pedidos ou reclamações sobre privacidade: escreva para o encarregado pelo e-mail {EMAIL_DO_ENCARREGADO}. Controlador: {CONTROLADOR}.
         </p>
       </>
     ),
@@ -291,7 +291,7 @@ export default function PrivacidadePage() {
           seus direitos pela Lei Geral de Proteção de Dados (Lei 13.709/2018, &quot;LGPD&quot;).
         </p>
       }
-      sections={sections}
+      sections={secoes}
       related={{ href: "/termos", label: "Termos de uso" }}
     />
   );

@@ -8,7 +8,7 @@ import { estiloDoBotao } from "@/components/landing/styles";
 import { MENSAGEM_DA_SITUACAO_DO_CONVITE, buscarConvite } from "@/lib/account/invites";
 import { classificarConta } from "@/lib/account/wedding-provisioning";
 import { cn } from "@/lib/utils";
-import { InviteAccept, type Viewer } from "./invite-accept";
+import { AceiteDoConvite, type Visitante } from "./invite-accept";
 
 export const metadata: Metadata = {
   title: "Convite",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   referrer: "no-referrer",
 };
 
-const TITLES = { invalid: "Convite não encontrado", expired: "Este convite expirou", used: "Este convite já foi usado" } as const;
+const TITULOS = { invalid: "Convite não encontrado", expired: "Este convite expirou", used: "Este convite já foi usado" } as const;
 
 export default async function ConvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -31,7 +31,7 @@ export default async function ConvitePage({ params }: { params: Promise<{ token:
           <span className="grid size-14 place-items-center rounded-full bg-aviso-suave text-aviso">
             <CircleAlert aria-hidden="true" className="size-7" strokeWidth={1.6} />
           </span>
-          <TituloDoMolde title={TITLES[lookup.status]} text={MENSAGEM_DA_SITUACAO_DO_CONVITE[lookup.status]} />
+          <TituloDoMolde title={TITULOS[lookup.status]} text={MENSAGEM_DA_SITUACAO_DO_CONVITE[lookup.status]} />
           <Link href="/login" className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}>
             Entrar na minha conta
           </Link>
@@ -44,7 +44,7 @@ export default async function ConvitePage({ params }: { params: Promise<{ token:
   }
 
   const session = await obterSessao();
-  let viewer: Viewer = { kind: "anonymous" };
+  let viewer: Visitante = { kind: "anonymous" };
   if (session?.userId === ID_DO_SUPER_ADMIN) {
     viewer = { kind: "blocked", name: "Super Admin", reason: "A conta de emergência não pode entrar em um casamento." };
   } else if (session) {
@@ -73,7 +73,7 @@ export default async function ConvitePage({ params }: { params: Promise<{ token:
 
   return (
     <MoldeDeAcesso photo={FOTOS_DO_MOLDE.convite} footnote="O convite vale por 7 dias e só pode ser usado uma vez.">
-      <InviteAccept token={token} coupleNames={lookup.invite.coupleNames} viewer={viewer} />
+      <AceiteDoConvite token={token} coupleNames={lookup.invite.coupleNames} viewer={viewer} />
     </MoldeDeAcesso>
   );
 }

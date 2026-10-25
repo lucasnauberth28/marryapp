@@ -9,9 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { CARTAO_DA_PAGINA_COM_TOKEN } from "@/components/public/token-page-shell";
 
-const STAR_LABEL = ["", "Ruim", "Regular", "Bom", "Muito bom", "Excelente"];
+const ROTULO_DAS_ESTRELAS = ["", "Ruim", "Regular", "Bom", "Muito bom", "Excelente"];
 
-export function ReviewForm({ token, companyName }: { token: string; companyName: string }) {
+export function FormularioDeAvaliacao({ token, companyName }: { token: string; companyName: string }) {
   const router = useRouter();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
@@ -83,12 +83,12 @@ export function ReviewForm({ token, companyName }: { token: string; companyName:
                   className={cn("size-9 transition-colors", n <= rating ? "fill-amber-400 text-amber-400" : "text-linha-forte")}
                 />
                 <span className="sr-only">
-                  {n} {n === 1 ? "estrela" : "estrelas"} ({STAR_LABEL[n]})
+                  {n} {n === 1 ? "estrela" : "estrelas"} ({ROTULO_DAS_ESTRELAS[n]})
                 </span>
               </label>
             ))}
             <span className="ml-2 text-sm font-semibold text-tinta-suave" aria-hidden="true">
-              {rating > 0 ? STAR_LABEL[rating] : ""}
+              {rating > 0 ? ROTULO_DAS_ESTRELAS[rating] : ""}
             </span>
           </div>
         </fieldset>

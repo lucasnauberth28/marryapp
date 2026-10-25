@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface PublicTimelineEvent {
+interface EventoPublicoDaLinhaDoTempo {
   id: string;
   title: string;
   /** "16:30" */
@@ -13,18 +13,18 @@ interface PublicTimelineEvent {
 }
 
 /** Assina um relógio de um minuto: no servidor devolve null, e a tela só marca "Agora" no navegador. */
-function subscribeClock(onTick: () => void) {
+function assinarRelogio(onTick: () => void) {
   const id = setInterval(onTick, 60_000);
   return () => clearInterval(id);
 }
-const minuteNow = () => Math.floor(Date.now() / 60_000);
-const noClock = () => null;
+const minutoAtual = () => Math.floor(Date.now() / 60_000);
+const semRelogio = () => null;
 
-const BRASILIA = "America/Sao_Paulo";
+const FUSO_DE_BRASILIA = "America/Sao_Paulo";
 
-function brasiliaNow(minute: number) {
+function agoraEmBrasilia(minute: number) {
   const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: BRASILIA,
+    timeZone: FUSO_DE_BRASILIA,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -36,40 +36,40 @@ function brasiliaNow(minute: number) {
   return { day: `${get("year")}-${get("month")}-${get("day")}`, minutes: Number(get("hour")) * 60 + Number(get("minute")) };
 }
 
-function toMinutes(time: string) {
+function emMinutos(time: string) {
   const [h, m] = time.split(":").map(Number);
   return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : null;
 }
 
 /** "16:30" vira "16h30" e "16:00" vira "16h", como no design. */
-function shortTime(time: string) {
+function horaCurta(time: string) {
   const [h, m] = time.split(":");
   if (h === undefined || m === undefined) return time;
   return m === "00" ? `${Number(h)}h` : `${Number(h)}h${m}`;
 }
 
-export function TimelinePublicClient({
+export function LinhaDoTempoPublicaCliente({
   events,
   dayKey,
   dateLabel,
 }: {
-  events: PublicTimelineEvent[];
+  events: EventoPublicoDaLinhaDoTempo[];
   /** Dia do casamento ("2027-10-11"), para saber se é hoje. */
   dayKey: string | null;
   dateLabel: string | null;
 }) {
-  const minute = useSyncExternalStore(subscribeClock, minuteNow, noClock);
-  const now = minute === null ? null : brasiliaNow(minute);
+  const minute = useSyncExternalStore(assinarRelogio, minutoAtual, semRelogio);
+  const now = minute === null ? null : agoraEmBrasilia(minute);
   const isToday = now !== null && dayKey !== null && now.day === dayKey;
 
   // Programação do dia: o item de agora é o último cujo horário já passou.
   let currentId: string | null = null;
   if (isToday && now) {
     const started = events.filter((e) => {
-      const t = toMinutes(e.time);
+      const t = emMinutos(e.time);
       return t !== null && t <= now.minutes;
     });
-    const last = [...started].sort((a, b) => (toMinutes(a.time) ?? 0) - (toMinutes(b.time) ?? 0)).pop();
+    const last = [...started].sort((a, b) => (emMinutos(a.time) ?? 0) - (emMinutos(b.time) ?? 0)).pop();
     currentId = last?.id ?? null;
   }
 
@@ -111,7 +111,7 @@ export function TimelinePublicClient({
                     )}
                   />
                   <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 leading-6">
-                    <strong className={cn("font-semibold", current && "text-ameixa")}>{shortTime(event.time)}</strong>
+                    <strong className={cn("font-semibold", current && "text-ameixa")}>{horaCurta(event.time)}</strong>
                     <span aria-hidden="true" className="text-tinta-suave">
                       ·
                     </span>

@@ -7,7 +7,7 @@ import { ehChaveDePlano } from "@/lib/plans";
 import { obterCatalogo } from "@/lib/catalog-server";
 import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { planOption, shortPlanName, type PlanOption } from "@/app/login/auth-config";
+import { opcaoDePlano, nomeCurtoDoPlano, type OpcaoDePlano } from "@/app/login/auth-config";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { Aparicao } from "@/components/motion/reveal";
 import { LoadingRegion } from "@/components/skeletons";
@@ -94,9 +94,9 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
 
   const current = subscriptions.find((s) => s.status === PaymentStatus.APPROVED) ?? null;
   const currentRank = current ? (PLAN_RANK[current.planId] ?? 0) : 0;
-  const currentName = current ? (ehChaveDePlano(current.planId) ? planOption(current.planId, catalog).name : shortPlanName(current.planName)) : "Básico";
+  const currentName = current ? (ehChaveDePlano(current.planId) ? opcaoDePlano(current.planId, catalog).name : nomeCurtoDoPlano(current.planName)) : "Básico";
 
-  const upgrades: PlanOption[] = UPGRADE_KEYS.filter((key) => PLAN_RANK[key] > currentRank).map((key) => planOption(key, catalog));
+  const upgrades: OpcaoDePlano[] = UPGRADE_KEYS.filter((key) => PLAN_RANK[key] > currentRank).map((key) => opcaoDePlano(key, catalog));
   const awaitingReview = pendingStatic && (PLAN_RANK[pendingStatic.planId] ?? 0) > currentRank ? pendingStatic : null;
 
   const giftCount = gifts._count._all;
@@ -140,7 +140,7 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
           <Clock className="mt-0.5 h-5 w-5 shrink-0 text-aviso" aria-hidden="true" />
           <p>
             Há um Pix de {formatarReais(awaitingReview.amount)} do plano{" "}
-            {ehChaveDePlano(awaitingReview.planId) ? planOption(awaitingReview.planId, catalog).name : shortPlanName(awaitingReview.planName)} gerado em{" "}
+            {ehChaveDePlano(awaitingReview.planId) ? opcaoDePlano(awaitingReview.planId, catalog).name : nomeCurtoDoPlano(awaitingReview.planName)} gerado em{" "}
             {formatarDataBrasiliaCurtaComAno(awaitingReview.createdAt)}. Se vocês já pagaram, nossa equipe confere no extrato e libera o plano em até 1
             dia útil.
           </p>
@@ -176,7 +176,7 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
                 <Receipt className="h-4 w-4 shrink-0 text-tinta-suave" aria-hidden="true" />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold text-tinta">
-                    {ehChaveDePlano(s.planId) ? planOption(s.planId, catalog).name : shortPlanName(s.planName)}
+                    {ehChaveDePlano(s.planId) ? opcaoDePlano(s.planId, catalog).name : nomeCurtoDoPlano(s.planName)}
                   </p>
                   <p className="text-sm text-tinta-suave">
                     {s.paidAt ? `Pago em ${formatarDataBrasiliaCurtaComAno(s.paidAt)}` : `Gerado em ${formatarDataBrasiliaCurtaComAno(s.createdAt)}`} · Pix

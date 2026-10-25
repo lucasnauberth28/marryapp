@@ -9,21 +9,21 @@ import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { cn } from "@/lib/utils";
 
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
-interface PublicGiftsClientProps {
+interface PropriedadesDosPresentesPublicos {
   initialGifts: Gift[];
   coupleNames: string;
   /** Falso quando o cartão não está disponível: a tela só fala de Pix. */
   cardEnabled?: boolean;
 }
 
-type Sort = "default" | "asc" | "desc";
+type Ordenacao = "default" | "asc" | "desc";
 
-const fieldClass =
+const classeDoCampo =
   "min-h-11 rounded-[12px] border border-linha-forte bg-papel text-base leading-6 text-tinta transition-[border-color,box-shadow] duration-200 placeholder:text-tinta-suave/80 hover:border-tinta-suave focus:border-ameixa focus:shadow-[0_0_0_3px_var(--color-ameixa-suave)] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa";
 
-export function PublicGiftsClient({ initialGifts, coupleNames, cardEnabled = true }: PublicGiftsClientProps) {
+export function PresentesPublicosCliente({ initialGifts, coupleNames, cardEnabled = true }: PropriedadesDosPresentesPublicos) {
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<Sort>("default");
+  const [sortBy, setSortBy] = useState<Ordenacao>("default");
 
   // Filtra e ordena a lista
   const q = search.trim().toLowerCase();
@@ -85,14 +85,14 @@ export function PublicGiftsClient({ initialGifts, coupleNames, cardEnabled = tru
                 placeholder="Buscar presente por nome"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className={cn(fieldClass, "w-full pl-10 pr-4")}
+                className={cn(classeDoCampo, "w-full pl-10 pr-4")}
               />
             </div>
             <select
               aria-label="Ordenar"
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as Sort)}
-              className={cn(fieldClass, "cursor-pointer px-4 sm:w-auto")}
+              onChange={(e) => setSortBy(e.target.value as Ordenacao)}
+              className={cn(classeDoCampo, "cursor-pointer px-4 sm:w-auto")}
             >
               <option value="default">Mais recentes</option>
               <option value="asc">Menor valor</option>

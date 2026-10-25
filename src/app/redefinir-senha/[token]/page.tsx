@@ -6,7 +6,7 @@ import { MoldeDeAcesso, FOTOS_DO_MOLDE, TituloDoMolde } from "@/components/accou
 import { estiloDoBotao } from "@/components/landing/styles";
 import { calcularHashDoTokenDeLink, tokenDeLinkTemFormatoValido } from "@/lib/account/tokens";
 import { cn } from "@/lib/utils";
-import { ResetPasswordForm } from "./reset-password-form";
+import { FormularioDeRedefinicaoDeSenha } from "./reset-password-form";
 
 export const metadata: Metadata = {
   title: "Nova senha",
@@ -30,7 +30,7 @@ export default async function RedefinirSenhaPage({ params }: { params: Promise<{
   return (
     <MoldeDeAcesso photo={FOTOS_DO_MOLDE.senha} backHref="/login" backLabel="Voltar para o login">
       {valid ? (
-        <ResetPasswordForm token={token} />
+        <FormularioDeRedefinicaoDeSenha token={token} />
       ) : (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
           <span className="grid size-14 place-items-center rounded-full bg-aviso-suave text-aviso">

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
-export function ForgotPasswordForm() {
+export function FormularioDeEsqueciASenha() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [fieldError, setFieldError] = useState("");

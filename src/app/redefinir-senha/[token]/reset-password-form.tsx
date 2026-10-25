@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
-export function ResetPasswordForm({ token }: { token: string }) {
+export function FormularioDeRedefinicaoDeSenha({ token }: { token: string }) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [show, setShow] = useState(false);

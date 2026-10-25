@@ -26,15 +26,15 @@ export const metadata: Metadata = {
   }),
 };
 
-const COUPLE_PLAN_KEYS = ["basic", "classic", "vip"] as const;
+const CHAVES_DOS_PLANOS_DO_CASAL = ["basic", "classic", "vip"] as const;
 
-const VENDOR_PLANS = [
+const PLANOS_DE_FORNECEDOR = [
   { key: "start", cta: "Cadastrar meu negócio" },
   { key: "pro", cta: "Assinar o Pro" },
   { key: "master", cta: "Assinar o Master" },
 ] as const;
 
-const textLink = "font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 transition-colors hover:decoration-ameixa";
+const estiloDoLinkDeTexto = "font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 transition-colors hover:decoration-ameixa";
 
 export default async function PlanosPage() {
   const catalog = await obterCatalogo();
@@ -59,7 +59,7 @@ export default async function PlanosPage() {
 
         <section id="casais" aria-label="Planos para casais" className={cn(estiloDoContainerDaLanding, "scroll-mt-24 pb-12 pt-6")}>
           <ul className="grid gap-6 md:grid-cols-3">
-            {COUPLE_PLAN_KEYS.map((key) => (
+            {CHAVES_DOS_PLANOS_DO_CASAL.map((key) => (
               <li key={key}>
                 <CartaoDoPlanoDoCasal planKey={key} plan={catalog.plans[key]} href={`/cadastro?tipo=casal&plano=${key}`} />
               </li>
@@ -67,7 +67,7 @@ export default async function PlanosPage() {
           </ul>
           <p className="mt-8 text-[15px] leading-6 text-tinta-suave">
             Precisam só de algumas partes?{" "}
-            <Link href="/monte-seu-plano" className={textLink}>
+            <Link href="/monte-seu-plano" className={estiloDoLinkDeTexto}>
               Montem o plano de vocês
             </Link>
             .
@@ -108,7 +108,7 @@ export default async function PlanosPage() {
                 <dt className="font-semibold">Recebimento</dt>
                 <dd className="text-tinta-suave">
                   A forma e o prazo para os valores chegarem ao casal seguem as regras da carteira descritas nos{" "}
-                  <Link href="/termos#pagamentos" className={textLink}>
+                  <Link href="/termos#pagamentos" className={estiloDoLinkDeTexto}>
                     termos de uso
                   </Link>
                   .
@@ -133,7 +133,7 @@ export default async function PlanosPage() {
               </p>
             </div>
             <ul className="grid gap-6 md:grid-cols-3">
-              {VENDOR_PLANS.map(({ key, cta }) => {
+              {PLANOS_DE_FORNECEDOR.map(({ key, cta }) => {
                 const plan = catalog.plans[key];
                 return (
                   <li key={key}>

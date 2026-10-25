@@ -4,7 +4,7 @@ import { CreditCard } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { ehChaveDePlano } from "@/lib/plans";
 import { obterCatalogo } from "@/lib/catalog-server";
-import { planOption, shortPlanName } from "@/app/login/auth-config";
+import { opcaoDePlano, nomeCurtoDoPlano } from "@/app/login/auth-config";
 import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { Paginacao } from "@/components/plataforma/pagination";
@@ -46,7 +46,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
   const selectedId = idParam && /^[0-9a-f-]{36}$/i.test(idParam) ? idParam : null;
   const now = new Date();
   const catalog = await obterCatalogo();
-  const planLabel = (planId: string, planName: string) => (ehChaveDePlano(planId) ? planOption(planId, catalog).name : shortPlanName(planName));
+  const planLabel = (planId: string, planName: string) => (ehChaveDePlano(planId) ? opcaoDePlano(planId, catalog).name : nomeCurtoDoPlano(planName));
 
   const listWhere: Record<FilterValue, Prisma.SubscriptionWhereInput> = {
     todos: {},

@@ -6,7 +6,7 @@ import { exigirCasamento } from "@/lib/security/wedding-context";
 /**
  * Escapa um valor para CSV e neutraliza injeção de fórmulas (=, +, -, @) ao abrir no Excel/Sheets.
  */
-function csvCell(value: string | number | null | undefined) {
+function celulaCsv(value: string | number | null | undefined) {
   if (value === null || value === undefined) return "";
   let str = String(value);
   if (/^[=+\-@\t\r]/.test(str)) str = `'${str}`;
@@ -31,11 +31,11 @@ export async function GET() {
       orderBy: { name: "asc" },
     });
 
-    const header = ["Nome", "Telefone", "Status RSVP", "Acompanhantes (Permitidos)", "Mesa"].map(csvCell).join(",");
+    const header = ["Nome", "Telefone", "Status RSVP", "Acompanhantes (Permitidos)", "Mesa"].map(celulaCsv).join(",");
     const rows = guests.map((guest) => {
       const status = guest.rsvpStatus === "CONFIRMED" ? "Confirmado" : guest.rsvpStatus === "DECLINED" ? "Declinou" : "Pendente";
       return [guest.name, guest.phone, status, guest.allowedCompanions || 0, guest.table?.name ?? "Sem Mesa"]
-        .map(csvCell)
+        .map(celulaCsv)
         .join(",");
     });
 
