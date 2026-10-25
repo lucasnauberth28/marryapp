@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Catalogo } from "@/lib/catalog";
+import type { Catalogo } from "@/lib/pagamento/catalog";
 import { planosPara, type TipoDeConta, type OpcaoDePlano, type EtapaDoCadastro } from "./auth-config";
 import { EtapaDosDados } from "./cadastro/etapa-dados";
 import { EtapaDoPagamento, EtapaPronta } from "./cadastro/etapas-finais";

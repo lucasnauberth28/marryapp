@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 
-import { TEXTO_DA_DISPONIBILIDADE, verificarDisponibilidadeDoDominio, BASE_RDAP_PADRAO, estaPendenteDeExclusao } from "../domain-availability.ts";
+import { TEXTO_DA_DISPONIBILIDADE, verificarDisponibilidadeDoDominio, BASE_RDAP_PADRAO, estaPendenteDeExclusao } from "../dominio/domain-availability.ts";
 
 type Fake = (url: string, init?: RequestInit) => Promise<Response>;
 const asFetch = (fn: Fake) => fn as unknown as typeof fetch;

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { CAMINHOS_DO_ATALHO_DA_LIZ, deveMostrarOAtalhoDaLiz } from "../visibility.ts";
-import { CAMINHOS_DO_CASAL } from "../../wedding-rules.ts";
+import { CAMINHOS_DO_CASAL } from "../../casamento/wedding-rules.ts";
 
 test("aparece nas telas do painel do casal e nas subpáginas delas", () => {
   for (const p of ["/dashboard", "/convidados", "/presentes-admin", "/configuracoes/whatsapp", "/notificacoes"]) {

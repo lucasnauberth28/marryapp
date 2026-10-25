@@ -1,8 +1,8 @@
 // Filtros, consulta e o painel da assinatura escolhida na tela de Assinaturas e Pix.
 import { PaymentStatus, type Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { ehChaveDePlano } from "@/lib/plans";
-import { obterCatalogo } from "@/lib/catalog-server";
+import { ehChaveDePlano } from "@/lib/pagamento/plans";
+import { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { opcaoDePlano, nomeCurtoDoPlano } from "@/app/login/auth-config";
 import { formatarDiaEMes, formatarDataEHora, haQuantoTempo } from "@/lib/platform/format";
 import { formatarReais } from "@/lib/formatacao/dinheiro";

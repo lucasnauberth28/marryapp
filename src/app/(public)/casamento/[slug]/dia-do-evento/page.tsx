@@ -4,10 +4,10 @@ import Link from "next/link";
 import { QrCode } from "lucide-react";
 import { CabecalhoDoConvidado } from "@/components/public/guest-header";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { obterIdentidadeDoCasamento, metadadosDaPaginaDoConvidado } from "@/lib/wedding";
-import { obterLinhaDoTempoDoCasamento } from "@/lib/wedding-data";
-import { exigirCasamentoPublico } from "@/lib/wedding-redirect";
-import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
+import { obterIdentidadeDoCasamento, metadadosDaPaginaDoConvidado } from "@/lib/casamento/wedding";
+import { obterLinhaDoTempoDoCasamento } from "@/lib/casamento/wedding-data";
+import { exigirCasamentoPublico } from "@/lib/casamento/wedding-redirect";
+import { caminhoDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import { LinhaDoTempoPublicaCliente } from "./timeline-public-client";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

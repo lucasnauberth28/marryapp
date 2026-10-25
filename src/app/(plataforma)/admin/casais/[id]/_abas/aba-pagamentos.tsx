@@ -7,7 +7,7 @@ import { formatarData, formatarDataEHora } from "@/lib/platform/format";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { obterPagamentosDoCasal } from "@/lib/platform/queries/casais/abas";
 import type { CabecalhoDoCasal } from "@/lib/platform/queries/casais/cabecalho";
-import { obterVisaoDaContaDeRepasse } from "@/lib/payout-account-view";
+import { obterVisaoDaContaDeRepasse } from "@/lib/repasse/payout-account-view";
 import { cn } from "@/lib/utils";
 import { FormularioDeConcederPlano } from "../_components/grant-plan-form";
 import { FormularioDeReembolso } from "../_components/refund-form";

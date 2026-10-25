@@ -4,8 +4,8 @@ import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { recusaDeEscritaNoCasamento } from "@/lib/security/impersonation-rules";
 import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { cifraDoRepasseEstaConfigurada } from "@/lib/security/payout-crypto";
-import { obterVisaoDaContaDeRepasse } from "@/lib/payout-account-view";
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
+import { obterVisaoDaContaDeRepasse } from "@/lib/repasse/payout-account-view";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/pagamento/gift-fee";
 import { RecebimentoCliente } from "./recebimento-cliente";
 
 export const metadata: Metadata = {

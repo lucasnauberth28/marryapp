@@ -1,7 +1,7 @@
 import { AlertTriangle } from "lucide-react";
 import { SeletorDeData } from "@/components/ui/date-picker";
 import { Entrada } from "@/components/ui/input";
-import { destaqueLegivel } from "@/lib/wedding-format";
+import { destaqueLegivel } from "@/lib/casamento/wedding-format";
 import { CampoDeFoto } from "../campo-de-foto";
 import { CampoDoEditor } from "../campo-do-editor";
 import { paraCampoDeData } from "../utilitarios";

@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { estiloDoSobretituloDaLanding } from "@/components/landing/styles";
 import { formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
-import type { ModuloDePreco } from "@/lib/pricing-modules";
+import type { ModuloDePreco } from "@/lib/pagamento/pricing-modules";
 import { cn } from "@/lib/utils";
 
 function CartaoDeRecurso({ mod, selecionado, aoAlternar }: { mod: ModuloDePreco; selecionado: boolean; aoAlternar: () => void }) {

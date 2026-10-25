@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { mascararTelefone } from "@/lib/formatacao/telefone";
-import { finalDoTelefone } from "@/lib/saved-guest";
+import { finalDoTelefone } from "@/lib/convidados/saved-guest";
 import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 import { ESTILO_DO_SOBRETITULO, ESTILO_DO_TITULO, type PropriedadesDoPasso } from "./tipos";

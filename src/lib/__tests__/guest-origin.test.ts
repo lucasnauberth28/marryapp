@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { CATEGORIA_SO_PRESENTE, padroesDoConvidadoSoPresente, ehSoPresentePendente, filtroSemSoPresente } from "../guest-origin.ts";
+import { CATEGORIA_SO_PRESENTE, padroesDoConvidadoSoPresente, ehSoPresentePendente, filtroSemSoPresente } from "../convidados/guest-origin.ts";
 
 test("convidado criado por presente nasce pendente e marcado, nunca confirmado", () => {
   const d = padroesDoConvidadoSoPresente();

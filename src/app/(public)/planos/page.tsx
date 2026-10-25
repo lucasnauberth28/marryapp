@@ -6,7 +6,7 @@ import { SecaoDePerguntasFrequentes } from "@/components/landing/faq-section";
 import { CabecalhoDaLanding } from "@/components/landing/landing-header";
 import { estiloDoContainerDaLanding, estiloDoTextoDeApoio, estiloDoSobretituloDaLanding } from "@/components/landing/styles";
 import { compartilhamentoDaMarca } from "@/lib/brand-meta";
-import { obterCatalogo } from "@/lib/catalog-server";
+import { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { cn } from "@/lib/utils";
 import { SecaoDePlanosDeFornecedor } from "./componentes/planos-de-fornecedor";
 import { SecaoDeTaxasDosPresentes, estiloDoLinkDeTexto } from "./componentes/presentes-e-taxas";

@@ -1,7 +1,7 @@
 import { AlertCircle } from "lucide-react";
 import { estiloDoCartao, estiloDoTituloDoCartao } from "@/components/casal/ui";
 import { Botao } from "@/components/ui/button";
-import { TEXTO_DOS_TERMOS_DE_DOMINIO } from "@/lib/domain-terms";
+import { TEXTO_DOS_TERMOS_DE_DOMINIO } from "@/lib/dominio/domain-terms";
 import { cn } from "@/lib/utils";
 import { AceiteDosTermos } from "./aceite-dos-termos";
 import { SecaoDoEndereco } from "./secao-do-endereco";

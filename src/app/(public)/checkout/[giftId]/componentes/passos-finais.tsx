@@ -4,7 +4,7 @@ import { Esqueleto } from "@/components/ui/skeleton";
 import { Selo } from "@/components/landing/seal";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
+import { caminhoDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import { cn } from "@/lib/utils";
 import { ESTILO_DO_SOBRETITULO, ESTILO_DO_TITULO, type PropriedadesDoPasso } from "./tipos";
 

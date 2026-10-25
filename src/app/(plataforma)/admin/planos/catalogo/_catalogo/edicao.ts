@@ -1,8 +1,8 @@
-import { chaveDoModuloNoCatalogo } from "@/lib/catalog";
-import { ehPlanoGratis } from "@/lib/catalog";
-import type { obterCatalogo } from "@/lib/catalog-server";
-import { CONFIGURACAO_DOS_PLANOS, type ChaveDoPlano } from "@/lib/plans";
-import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
+import { chaveDoModuloNoCatalogo } from "@/lib/pagamento/catalog";
+import { ehPlanoGratis } from "@/lib/pagamento/catalog";
+import type { obterCatalogo } from "@/lib/pagamento/catalog-server";
+import { CONFIGURACAO_DOS_PLANOS, type ChaveDoPlano } from "@/lib/pagamento/plans";
+import { MODULOS_DO_CASAL } from "@/lib/pagamento/pricing-modules";
 
 export const ORDEM_DOS_PLANOS: ChaveDoPlano[] = ["basic", "classic", "vip", "start", "pro", "master"];
 

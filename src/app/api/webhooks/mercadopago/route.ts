@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { pagamentoDoMercadoPago } from "@/lib/mercadopago";
-import { interpretarReferenciaDaAssinatura } from "@/lib/subscription-period";
+import { pagamentoDoMercadoPago } from "@/lib/pagamento/mercadopago";
+import { interpretarReferenciaDaAssinatura } from "@/lib/pagamento/subscription-period";
 import { conferirAssinaturaDoAviso } from "./_webhook/autenticidade";
 import { tratarPagamentoDeAssinatura } from "./_webhook/assinatura-de-plano";
 import { tratarPagamentoDePresente } from "./_webhook/presente";

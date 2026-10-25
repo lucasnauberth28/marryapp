@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { aplicarPagamentoAprovado, marcarPagamentoComoFalho, reembolsarAssinatura } from "@/lib/subscriptions";
+import { aplicarPagamentoAprovado, marcarPagamentoComoFalho, reembolsarAssinatura } from "@/lib/pagamento/subscriptions";
 
 /** Pagamento de assinatura: libera, recusa ou estorna o plano. Repetições do webhook não mudam nada. */
 export async function tratarPagamentoDeAssinatura(subscriptionId: string, paymentId: string, status: string | undefined, amountInReais: number | undefined) {

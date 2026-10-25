@@ -3,7 +3,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { pedirDominio } from "@/actions/domain-actions";
-import { SUFIXO_DO_DOMINIO } from "@/lib/domain-name";
+import { SUFIXO_DO_DOMINIO } from "@/lib/dominio/domain-name";
 import type { DadosDoPedido, ErrosDoPedido } from "./tipos";
 import { useConferenciaDoDominio } from "./use-conferencia-do-dominio";
 

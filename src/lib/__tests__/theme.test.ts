@@ -9,7 +9,7 @@ import {
   resolverTema,
   serializarCookieDoTema,
   type PreferenciaDeTema,
-} from "../theme.ts";
+} from "../painel/theme.ts";
 
 test("preferência desconhecida vira Do aparelho", () => {
   assert.equal(interpretarPreferenciaDeTema("dark"), "dark");

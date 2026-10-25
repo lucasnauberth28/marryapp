@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { filtroSemSoPresente } from "@/lib/guest-origin";
+import { filtroSemSoPresente } from "@/lib/convidados/guest-origin";
 import { assinaturaDoCasal, filtroDosProximos30Dias, filtroDeProblema } from "@/lib/platform/casais-filters";
 import { obterUltimosPlanos } from "@/lib/platform/queries/casais/planos";
 import { obterReembolsosPendentes } from "@/lib/platform/queries/receita/pendencias";

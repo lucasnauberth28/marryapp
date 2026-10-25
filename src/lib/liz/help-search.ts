@@ -1,8 +1,8 @@
 // Busca no guia de ajuda da Liz. Puro (sem banco, sem Next): roda no navegador e nos testes.
 // Sem acento e sem maiúsculas; pontuação simples: título pesa mais que palavra-chave, que pesa mais que o texto.
 import { temAcessoAoCaminho } from "../permissions.ts";
-import { classificarCaminho } from "../route-access.ts";
-import type { ModuloComBloqueio } from "../wedding-plan-modules.ts";
+import { classificarCaminho } from "../painel/route-access.ts";
+import type { ModuloComBloqueio } from "../casamento/wedding-plan-modules.ts";
 import type { ArtigoDeAjuda } from "./help-articles.ts";
 
 /** Quem pergunta: o que o perfil abre e o que o plano do casamento inclui. */

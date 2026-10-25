@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { TELAS_DA_CONTA, AREAS_DO_PAINEL, areaDoCaminho, nomeCurtoDoPlano, areasVisiveis } from "../panel-nav.ts";
-import { classificarCaminho } from "../route-access.ts";
+import { TELAS_DA_CONTA, AREAS_DO_PAINEL, areaDoCaminho, nomeCurtoDoPlano, areasVisiveis } from "../painel/panel-nav.ts";
+import { classificarCaminho } from "../painel/route-access.ts";
 
 const COUPLE = [
   "/dashboard", "/convidados", "/mensagens", "/mesas", "/credenciamento", "/pendencias", "/cronograma", "/meus-fornecedores",

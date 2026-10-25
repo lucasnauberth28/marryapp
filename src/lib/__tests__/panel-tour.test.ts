@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { VERSAO_DO_TOUR_DO_PAINEL, decidirModoDoTour, passosDoModo, tourElegivel, tourPodeGravar, gravacaoDoTour } from "../tour/rules.ts";
 import { montarPassosDoTour, ancoraDoMenu, textoDoLugar } from "../tour/steps.ts";
 import { posicionarBalao } from "../tour/positioning.ts";
-import { areasVisiveis } from "../panel-nav.ts";
+import { areasVisiveis } from "../painel/panel-nav.ts";
 import { visaoDosPrimeirosPassos, dadosDoSitePreenchidos, type DadosDosPrimeirosPassos } from "../tour/first-steps.ts";
 
 const COUPLE = [
@@ -71,7 +71,7 @@ test("âncora do menu: caminho vira data-tour", () => {
 });
 
 test("todo passo do menu aponta para uma tela que existe no menu (panel-nav) e o item da área leva para a mesma âncora", () => {
-  const nav = readFileSync(new URL("../panel-nav.ts", import.meta.url), "utf8");
+  const nav = readFileSync(new URL("../painel/panel-nav.ts", import.meta.url), "utf8");
   for (const step of montarPassosDoTour({ allowedPaths: ["*"], modules: ["whatsapp"] })) {
     if (step.href) assert.match(nav, new RegExp(`href: "${step.href}"`), `${step.id}: ${step.href} não está no menu`);
     if (step.href && !step.where) {

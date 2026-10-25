@@ -2,7 +2,7 @@ import { KeyRound, Landmark, Lock } from "lucide-react";
 import { Entrada } from "@/components/ui/input";
 import { SelecaoNativa } from "@/components/ui/select";
 import { somenteDigitos } from "@/lib/formatacao/telefone";
-import { ROTULO_DO_TIPO_DE_CHAVE_PIX, ROTULO_DO_TIPO_DE_CONTA_BANCARIA, TIPOS_DE_CHAVE_PIX, TIPOS_DE_CONTA_BANCARIA, type TipoDeChavePix, type TipoDeContaBancaria } from "@/lib/payout-input";
+import { ROTULO_DO_TIPO_DE_CHAVE_PIX, ROTULO_DO_TIPO_DE_CONTA_BANCARIA, TIPOS_DE_CHAVE_PIX, TIPOS_DE_CONTA_BANCARIA, type TipoDeChavePix, type TipoDeContaBancaria } from "@/lib/repasse/payout-input";
 import { cn } from "@/lib/utils";
 import type { FormularioDeRepasseEmEdicao } from "./use-formulario-de-repasse";
 

@@ -1,5 +1,5 @@
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
-import { ROTULO_DA_SITUACAO, type NomeDaSituacaoDoPedidoDeDominio } from "@/lib/domain-order";
+import { ROTULO_DA_SITUACAO, type NomeDaSituacaoDoPedidoDeDominio } from "@/lib/dominio/domain-order";
 import { formatarData, diaRelativo } from "@/lib/platform/format";
 import type { listarPedidosDeDominio } from "@/lib/platform/queries/dominios";
 import { etiquetaDaSituacao } from "./etiquetas";

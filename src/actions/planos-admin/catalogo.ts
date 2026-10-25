@@ -6,9 +6,9 @@ import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
 import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { PRECO_MAXIMO_EM_CENTAVOS, TAMANHO_MAXIMO_DO_NOME, TAMANHO_MINIMO_DO_NOME, PRECO_MINIMO_PAGO_EM_CENTAVOS, limparNome, catalogoPadrao, ehChaveDePlanoDoCatalogo, ehPlanoGratis, mesclarCatalogo } from "@/lib/catalog";
-import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
-import { CONFIGURACAO_DOS_PLANOS } from "@/lib/plans";
+import { PRECO_MAXIMO_EM_CENTAVOS, TAMANHO_MAXIMO_DO_NOME, TAMANHO_MINIMO_DO_NOME, PRECO_MINIMO_PAGO_EM_CENTAVOS, limparNome, catalogoPadrao, ehChaveDePlanoDoCatalogo, ehPlanoGratis, mesclarCatalogo } from "@/lib/pagamento/catalog";
+import { MODULOS_DO_CASAL } from "@/lib/pagamento/pricing-modules";
+import { CONFIGURACAO_DOS_PLANOS } from "@/lib/pagamento/plans";
 import { type ResultadoDaAcaoDePlanos, TextoValido, falhar } from "@/actions/planos-admin/comum";
 
 const EsquemaDaChave = z.string().regex(/^(plan|module):[A-Za-z0-9_-]{1,40}$/, "Item inválido.");

@@ -1,5 +1,5 @@
 // Guia de ajuda da Liz: endereço próprio, planos, entrada, tarefas, cronograma, avisos e a conta.
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "../../gift-fee.ts";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "../../pagamento/gift-fee.ts";
 import type { ArtigoDeAjuda } from "../help-articles.ts";
 
 export const ARTIGOS_DA_CONTA_E_EXTRAS: readonly ArtigoDeAjuda[] = [

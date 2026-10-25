@@ -2,7 +2,7 @@
 
 // Site do casal: momentos da história do casal (storytelling).
 import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
-import { obterItensDaHistoriaDoCasamento } from "@/lib/wedding-data";
+import { obterItensDaHistoriaDoCasamento } from "@/lib/casamento/wedding-data";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 

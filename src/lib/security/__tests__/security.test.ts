@@ -50,7 +50,7 @@ test("verifyMercadoPagoSignature valida o HMAC do manifest", () => {
 });
 
 test("readableAccent escurece cores claras até contraste AA", async () => {
-  const { destaqueLegivel: readableAccent } = await import("../../wedding-format.ts");
+  const { destaqueLegivel: readableAccent } = await import("../../casamento/wedding-format.ts");
   assert.deepEqual(readableAccent("#5B3A6E"), { color: "#5b3a6e", adjusted: false });
   assert.equal(readableAccent("#8C6D45").adjusted, true);
   const light = readableAccent("#F5D0A9");
@@ -59,7 +59,7 @@ test("readableAccent escurece cores claras até contraste AA", async () => {
 });
 
 test("getCoupleInitials", async () => {
-  const { obterIniciaisDoCasal: getCoupleInitials } = await import("../../wedding-format.ts");
+  const { obterIniciaisDoCasal: getCoupleInitials } = await import("../../casamento/wedding-format.ts");
   assert.equal(getCoupleInitials("Lucas & Giovanna"), "L&G");
   assert.equal(getCoupleInitials("Ana e Bia"), "A&B");
   assert.equal(getCoupleInitials("Nosso Casamento"), "NC");

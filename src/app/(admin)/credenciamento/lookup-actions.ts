@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
-import { recusaDeModulo } from "@/lib/wedding-plan";
+import { recusaDeModulo } from "@/lib/casamento/wedding-plan";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 // Consultas só de leitura da portaria: nada é gravado aqui (a entrada é registrada por checkInGuest).

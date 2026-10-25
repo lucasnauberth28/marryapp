@@ -1,8 +1,8 @@
 import { CheckCircle2, Clock } from "lucide-react";
 import { Etiqueta, estiloDoCartao, estiloDoTituloDoCartao } from "@/components/casal/ui";
-import { ETAPAS_DA_LINHA_DO_TEMPO, ROTULO_DA_SITUACAO, situacoesDasEtapas } from "@/lib/domain-order";
-import type { VisaoDoPedidoDeDominio } from "@/lib/domain-orders";
-import { TEXTO_DOS_TERMOS_DE_DOMINIO } from "@/lib/domain-terms";
+import { ETAPAS_DA_LINHA_DO_TEMPO, ROTULO_DA_SITUACAO, situacoesDasEtapas } from "@/lib/dominio/domain-order";
+import type { VisaoDoPedidoDeDominio } from "@/lib/dominio/domain-orders";
+import { TEXTO_DOS_TERMOS_DE_DOMINIO } from "@/lib/dominio/domain-terms";
 import { cn } from "@/lib/utils";
 import { BotaoDeCancelar } from "./botao-de-cancelar";
 import { CartaoDoDominioConectado } from "./cartao-do-dominio-conectado";

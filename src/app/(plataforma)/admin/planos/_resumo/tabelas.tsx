@@ -3,7 +3,7 @@ import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDePlano, EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
-import type { obterCatalogo } from "@/lib/catalog-server";
+import type { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { formatarData, formatarInteiro, diaRelativo } from "@/lib/platform/format";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import type { obterPlanosDeFornecedorPrestesAVencer } from "@/lib/platform/queries/fornecedores/curadoria";

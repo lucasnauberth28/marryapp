@@ -1,7 +1,7 @@
 // Textos, fotos e planos da tela de acesso (entrar e criar conta). Sem dependências de servidor.
-import type { ChaveDoPlano } from "@/lib/plans";
-import { catalogoPadrao, precoDoPlanoPersonalizadoNoCatalogo, type Catalogo } from "@/lib/catalog";
-import { RESUMO_DO_CADASTRO, rotuloDoPlano } from "@/lib/plan-copy";
+import type { ChaveDoPlano } from "@/lib/pagamento/plans";
+import { catalogoPadrao, precoDoPlanoPersonalizadoNoCatalogo, type Catalogo } from "@/lib/pagamento/catalog";
+import { RESUMO_DO_CADASTRO, rotuloDoPlano } from "@/lib/pagamento/plan-copy";
 
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 // Sem catálogo passado, valem os preços do código; as telas reais passam o catálogo do servidor (lib/catalog-server.ts),

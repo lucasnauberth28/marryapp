@@ -2,7 +2,7 @@
 
 // Mensagens do casal: modelos (criar, atualizar, excluir e os padrão).
 import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
-import { modelosPadraoParaCriar } from "@/lib/default-message-templates";
+import { modelosPadraoParaCriar } from "@/lib/convidados/default-message-templates";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ERROS } from "@/lib/mensagens-de-erro";

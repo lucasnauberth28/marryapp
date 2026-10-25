@@ -1,4 +1,4 @@
-import { obterCatalogo } from "@/lib/catalog-server";
+import { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { PlanoPersonalizadoCliente } from "./custom-plan-client";
 
 // Os preços dos recursos vêm do catálogo da administração: a página se refaz a cada 5 minutos e na hora que um preço muda.

@@ -9,7 +9,7 @@ import { formatarData, formatarDataEHora, formatarDataPorExtenso, formatarDiaDaS
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import type { CabecalhoDoCasal } from "@/lib/platform/queries/casais/cabecalho";
-import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
+import { urlDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import { cn } from "@/lib/utils";
 import { EtiquetaDeSituacaoDoCasal } from "../../_components/situation-chip";
 import { BotaoDeConfirmarPix } from "../_components/confirm-pix-button";

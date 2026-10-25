@@ -8,7 +8,7 @@ import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { assinarToken, opcoesDoCookieDeSessao, temAcessoAoCaminho, NOME_DO_COOKIE_DE_SESSAO, NOME_DO_COOKIE_DE_SESSAO_VISTA } from "@/lib/auth";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
-import { INICIO_DO_ADMIN_DA_PLATAFORMA, resolverCaminhoPosLogin } from "@/lib/login-redirect";
+import { INICIO_DO_ADMIN_DA_PLATAFORMA, resolverCaminhoPosLogin } from "@/lib/painel/login-redirect";
 import { conferirLimiteDeUso, limitarUsoPorIp, LimitesDeSeguranca } from "@/lib/security/rate-limiter";
 import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { classificarConta } from "@/lib/account/wedding-provisioning";

@@ -3,7 +3,7 @@
 // (webhook/consulta) ou da conferência manual do casal em /financas.
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { casamentoEstaSuspenso, MENSAGEM_DE_SITE_INDISPONIVEL } from "@/lib/wedding-suspension";
+import { casamentoEstaSuspenso, MENSAGEM_DE_SITE_INDISPONIVEL } from "@/lib/casamento/wedding-suspension";
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import { ERROS } from "@/lib/mensagens-de-erro";
 

@@ -4,7 +4,7 @@
 import "server-only";
 import { PaymentStatus, VendorPlanTier, type Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { obterCatalogo } from "@/lib/catalog-server";
+import { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { JANELA_DE_CONFERENCIA_DO_PIX_EM_MS, PREFIXO_DO_PIX_ESTATICO } from "@/lib/platform/payments";
 import { pagamentoMedio, chaveDoMesEmBrasilia, agruparReceita, chavesDosUltimosMeses, recorrenciaMensal, inicioDoMesDe, variacaoPercentual, janelaDoMesAnterior, type BalaioDoMes } from "@/lib/platform/revenue";
 

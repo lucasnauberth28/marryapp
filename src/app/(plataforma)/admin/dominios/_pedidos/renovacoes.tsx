@@ -1,7 +1,7 @@
 import { Check, Clock } from "lucide-react";
 import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
-import { situacaoDoLembreteDeRenovacao } from "@/lib/domain-renewal";
+import { situacaoDoLembreteDeRenovacao } from "@/lib/dominio/domain-renewal";
 import { formatarData } from "@/lib/platform/format";
 import { listarRenovacoes } from "@/lib/platform/queries/dominios";
 import { BotaoDeRenovacao } from "../_components/renewal-button";

@@ -1,7 +1,7 @@
 import { chaveDoDiaDe, rotuloCurtoDoDia } from "@/lib/resumo/datas";
 import { convidadosParaConvidar, convidadosParaLembrar, conviteChegou, lugaresDe, type LinhaDeConvidado } from "@/lib/resumo/convidados";
-import { linkDoWhatsapp, textoDoConviteGeral, textoDoConvitePessoal, textoDoLembrete } from "@/lib/invite-share";
-import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
+import { linkDoWhatsapp, textoDoConviteGeral, textoDoConvitePessoal, textoDoLembrete } from "@/lib/convidados/invite-share";
+import { urlDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import type { LinhaDeConvite } from "../blocos/convite/tipos";
 import type { DadosDoResumo } from "./carregar-dados";
 import type { ContasDoResumo } from "./contas";

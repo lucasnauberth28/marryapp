@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import type { NomeDaSituacaoDoPedidoDeDominio } from "@/lib/domain-order";
+import type { NomeDaSituacaoDoPedidoDeDominio } from "@/lib/dominio/domain-order";
 
 export interface DadosDoPainelDoDominio {
   id: string;

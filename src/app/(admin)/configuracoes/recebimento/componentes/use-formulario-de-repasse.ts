@@ -2,7 +2,7 @@
 import { useState, useTransition, type FormEvent } from "react";
 import { toast } from "sonner";
 import { salvarContaDeRepasse, type RespostaDoRepasse } from "@/actions/payout-actions";
-import type { TipoDeChavePix, TipoDeContaBancaria } from "@/lib/payout-input";
+import type { TipoDeChavePix, TipoDeContaBancaria } from "@/lib/repasse/payout-input";
 
 export interface CamposDoRepasse {
   kind: "PIX_KEY" | "BANK_ACCOUNT";

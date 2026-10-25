@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import type { Catalogo } from "@/lib/catalog";
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
-import { CONDICOES_DO_PRESENTE, rotuloDoPlano } from "@/lib/plan-copy";
+import type { Catalogo } from "@/lib/pagamento/catalog";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/pagamento/gift-fee";
+import { CONDICOES_DO_PRESENTE, rotuloDoPlano } from "@/lib/pagamento/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 
 const classeDoLinkDasPerguntas = "font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 hover:decoration-ameixa";

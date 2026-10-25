@@ -5,8 +5,8 @@ import prisma from "@/lib/prisma";
 import { ehViolacaoDeUnicidade } from "@/lib/prisma-erros";
 import { temAcessoAoCaminho, opcoesDoCookieDeSessao, assinarToken, NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
 import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
-import { CAMINHOS_DO_CASAL, NOME_DO_PAPEL_DO_CASAL, gerarEnderecoDosNomesDoCasal } from "@/lib/wedding-rules";
-import { COR_PADRAO_DO_TEMA } from "@/lib/onboarding-options";
+import { CAMINHOS_DO_CASAL, NOME_DO_PAPEL_DO_CASAL, gerarEnderecoDosNomesDoCasal } from "@/lib/casamento/wedding-rules";
+import { COR_PADRAO_DO_TEMA } from "@/lib/painel/onboarding-options";
 
 /**
  * Criação de casamento e ajustes de conta compartilhados pelo cadastro, onboarding e convite do par.

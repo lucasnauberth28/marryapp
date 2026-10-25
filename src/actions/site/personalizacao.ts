@@ -2,7 +2,7 @@
 
 // Site do casal: personalização visual, seções e envio de imagens.
 import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
-import { garantirPersonalizacaoDoSite } from "@/lib/wedding-data";
+import { garantirPersonalizacaoDoSite } from "@/lib/casamento/wedding-data";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";

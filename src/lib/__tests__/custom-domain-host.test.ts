@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { classificarHost, ehDominioReservado, hostPrincipalDe, urlDeRedirecionamentoPrincipal, interpretarCabecalhoHost } from "../custom-domain-host.ts";
-import { limparCaminho, rotearCaminhoDoDominioPersonalizado } from "../custom-domain-routes.ts";
+import { classificarHost, ehDominioReservado, hostPrincipalDe, urlDeRedirecionamentoPrincipal, interpretarCabecalhoHost } from "../dominio/custom-domain-host.ts";
+import { limparCaminho, rotearCaminhoDoDominioPersonalizado } from "../dominio/custom-domain-routes.ts";
 import { criarCacheComValidade } from "../memory-cache.ts";
 
 const BASE = "https://meuaceito.com.br";

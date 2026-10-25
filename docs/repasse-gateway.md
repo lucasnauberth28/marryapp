@@ -1,6 +1,6 @@
 # Repasse dos presentes: o que os gateways permitem
 
-Consulta feita em **23/10/2026**. Decisão do dono: **nada daqui está implementado**. Existe só o destino cadastrado pelo casal (`WeddingPayoutAccount`) e a interface `PayoutExecutor` (`src/lib/payout-executor.ts`), sem implementação ativa.
+Consulta feita em **23/10/2026**. Decisão do dono: **nada daqui está implementado**. Existe só o destino cadastrado pelo casal (`WeddingPayoutAccount`) e a interface `PayoutExecutor` (`src/lib/repasse/payout-executor.ts`), sem implementação ativa.
 
 ## Limite desta pesquisa (leia primeiro)
 

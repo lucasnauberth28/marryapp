@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ROTULO_DA_TAXA_DO_PRESENTE, calcularValoresDoPresente } from "../gift-fee.ts";
+import { ROTULO_DA_TAXA_DO_PRESENTE, calcularValoresDoPresente } from "../pagamento/gift-fee.ts";
 
 test("o texto da taxa e a conta usam o mesmo número", () => {
   assert.equal(ROTULO_DA_TAXA_DO_PRESENTE, "3,99%");

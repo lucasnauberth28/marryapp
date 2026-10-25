@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { CONFIGURACAO_DOS_PLANOS } from "../plans.ts";
-import { MODULOS_DO_CASAL, calcularPrecoDoPlanoPersonalizado } from "../pricing-modules.ts";
+import { CONFIGURACAO_DOS_PLANOS } from "../pagamento/plans.ts";
+import { MODULOS_DO_CASAL, calcularPrecoDoPlanoPersonalizado } from "../pagamento/pricing-modules.ts";
 import {
   PRECO_MAXIMO_EM_CENTAVOS,
   PRECO_MINIMO_PAGO_EM_CENTAVOS,
@@ -14,7 +14,7 @@ import {
   chaveDoModuloNoCatalogo,
   chaveDoPlanoNoCatalogo,
   resolverPlanoNoCatalogo,
-} from "../catalog.ts";
+} from "../pagamento/catalog.ts";
 
 const ov = (key: string, priceCents: number, name: string | null = null) => ({ key, priceCents, name });
 

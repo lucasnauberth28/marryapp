@@ -1,7 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { urlDoApp } from "@/lib/app-url";
-import { emailDaMarca, emailEstaConfigurado, enviarEmail } from "@/lib/email";
+import { emailDaMarca, emailEstaConfigurado, enviarEmail } from "@/lib/email/email";
 import { whatsappEstaConfigurado } from "@/lib/whatsapp/config";
 import { enviarMensagemDeTexto } from "@/lib/whatsapp/mensagens";
 import { conteudoDoEmail, textoDoWhatsapp } from "./channel-texts.ts";

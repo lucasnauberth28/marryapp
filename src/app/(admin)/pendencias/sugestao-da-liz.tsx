@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { CartaoDaMadrinha } from "@/components/admin/madrinha-card";
 import { ACAO_DAS_CONFIRMACOES_PENDENTES, LINK_DAS_CONFIRMACOES_PENDENTES, dicaDeConfirmacaoUrgente, textoDaDicaDeConfirmacaoPendente } from "@/lib/liz-tips";
 import { poseDaDicaDaLiz } from "@/lib/liz/pose";
-import { filtroSemSoPresente } from "@/lib/guest-origin";
+import { filtroSemSoPresente } from "@/lib/convidados/guest-origin";
 
 function SugestaoDeTarefasAtrasadas({ overdue }: { overdue: number }) {
   return (

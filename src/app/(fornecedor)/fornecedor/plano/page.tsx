@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Aparicao } from "@/components/motion/reveal";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
-import { obterCatalogo } from "@/lib/catalog-server";
+import { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { AvisoDeRenovacao, CartaoDoPlanoAtual } from "./_plano/aviso-de-renovacao";
 import { carregarPagamentosEPedidos, situacaoDoPlano } from "./_plano/dados";
 import { HistoricoDePagamentos } from "./_plano/historico-de-pagamentos";

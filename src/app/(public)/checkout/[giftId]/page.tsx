@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 import prisma from "@/lib/prisma";
-import { obterIdentidadeDoCasamento } from "@/lib/wedding";
-import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
+import { obterIdentidadeDoCasamento } from "@/lib/casamento/wedding";
+import { caminhoDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import { notFound } from "next/navigation";
 import { SiteIndisponivel } from "@/components/public/site-unavailable";
 import { PagamentoCliente } from "./checkout-client";
-import { calcularTarifaDoCartao, pagamentoPorCartaoEstaDisponivel } from "@/lib/mercadopago";
+import { calcularTarifaDoCartao, pagamentoPorCartaoEstaDisponivel } from "@/lib/pagamento/mercadopago";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 

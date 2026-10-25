@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import prisma from "@/lib/prisma";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { casamentoTemModulo } from "@/lib/wedding-plan";
+import { casamentoTemModulo } from "@/lib/casamento/wedding-plan";
 import { CartaoDeUpgrade } from "@/components/plan/upgrade-card";
 import { VisaoDasMesas3D } from "@/components/mesas3d/mesas-3d-view";
 import { ehIdDeCenario } from "@/lib/mesas3d/scenarios";

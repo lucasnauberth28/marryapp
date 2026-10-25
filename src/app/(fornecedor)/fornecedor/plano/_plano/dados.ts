@@ -1,10 +1,10 @@
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { opcaoDePlano, nomeCurtoDoPlano, type OpcaoDePlano } from "@/app/login/auth-config";
-import type { obterCatalogo } from "@/lib/catalog-server";
-import { detalharPreco } from "@/lib/checkout-pricing";
-import { proximoFimDoPeriodoDoFornecedor, nivelDoFornecedorParaOPlano } from "@/lib/subscription-period";
-import { creditoDeUpgrade } from "@/lib/upgrade-credit";
+import type { obterCatalogo } from "@/lib/pagamento/catalog-server";
+import { detalharPreco } from "@/lib/pagamento/checkout-pricing";
+import { proximoFimDoPeriodoDoFornecedor, nivelDoFornecedorParaOPlano } from "@/lib/pagamento/subscription-period";
+import { creditoDeUpgrade } from "@/lib/pagamento/upgrade-credit";
 import { inicioDoMesEmBrasilia } from "../../../_lib/datas-do-painel";
 import { LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL } from "../../../_lib/planos-do-fornecedor";
 import { UM_DIA_EM_MS, formatarData } from "./datas";

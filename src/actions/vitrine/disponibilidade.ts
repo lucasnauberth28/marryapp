@@ -4,7 +4,7 @@
 import prisma from "@/lib/prisma";
 import { z } from "zod";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
-import { fornecedorEstaDisponivel } from "@/lib/vendor-availability";
+import { fornecedorEstaDisponivel } from "@/lib/fornecedor/vendor-availability";
 import { hojeEmBrasilia } from "@/app/(fornecedor)/_lib/datas-do-painel";
 import { ERROS } from "@/lib/mensagens-de-erro";
 import { interpretarDiaDoCasamento } from "@/actions/vitrine/comum";

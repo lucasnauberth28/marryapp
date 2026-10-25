@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { SecaoLegal } from "@/components/legal/legal-page";
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/pagamento/gift-fee";
 import { EMAIL_DE_CONTATO } from "./comuns";
 
 export const secoesDeResponsabilidades: SecaoLegal[] = [

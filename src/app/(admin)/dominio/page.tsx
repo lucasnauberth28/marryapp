@@ -1,9 +1,9 @@
 import prisma from "@/lib/prisma";
 import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { obterPedidosDeDominioDoCasamento } from "@/lib/domain-orders";
-import { casamentoTemModulo } from "@/lib/wedding-plan";
-import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
+import { obterPedidosDeDominioDoCasamento } from "@/lib/dominio/domain-orders";
+import { casamentoTemModulo } from "@/lib/casamento/wedding-plan";
+import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/casamento/wedding";
 import { CartaoDeUpgrade } from "@/components/plan/upgrade-card";
 import { DominioCliente } from "./dominio-cliente";
 

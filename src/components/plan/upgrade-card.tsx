@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Lock } from "lucide-react";
 import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
-import { mensagemDeUpgrade, tituloDeUpgrade, type ModuloComBloqueio } from "@/lib/wedding-plan-modules";
+import { mensagemDeUpgrade, tituloDeUpgrade, type ModuloComBloqueio } from "@/lib/casamento/wedding-plan-modules";
 
 /** Aviso amigável no lugar de um recurso que o plano do casamento ainda não inclui. */
 export function CartaoDeUpgrade({ moduleId }: { moduleId: ModuloComBloqueio }) {

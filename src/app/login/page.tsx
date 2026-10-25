@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
-import { caminhoSeguroDeRetorno } from "@/lib/login-redirect";
+import { caminhoSeguroDeRetorno } from "@/lib/painel/login-redirect";
 import { obterSessao } from "@/lib/security/auth-guard";
-import { obterCatalogo } from "@/lib/catalog-server";
+import { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { ExperienciaDeAcesso } from "./auth-experience";
 
 export const metadata: Metadata = {

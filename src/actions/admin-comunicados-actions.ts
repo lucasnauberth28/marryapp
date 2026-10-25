@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
-import { emailEstaConfigurado } from "@/lib/email";
+import { emailEstaConfigurado } from "@/lib/email/email";
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { MAXIMO_DE_DESTINATARIOS, entradaDoComunicado, validarUrlDoLink, type EntradaDoComunicado } from "@/lib/platform/announcement";

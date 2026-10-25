@@ -1,6 +1,6 @@
 // Passos do passo a passo do painel do casal. Puro (sem banco nem Next): a ordem, o texto e quem vê cada passo.
 import { temAcessoAoCaminho } from "../permissions.ts";
-import { AREAS_DO_PAINEL, type IdDaArea } from "../panel-nav.ts";
+import { AREAS_DO_PAINEL, type IdDaArea } from "../painel/panel-nav.ts";
 
 /** Módulos de plano que fecham uma tela inteira (o resto do painel abre para todos os planos). */
 export type ModuloDoTour = "whatsapp" | "qrcode" | "customDomain";

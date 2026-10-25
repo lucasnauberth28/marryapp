@@ -1,7 +1,7 @@
 // Início do casamento (onboarding): validação, tipos e ajudas (não são ações).
 import { z } from "zod";
 import { normalizarTexto } from "@/lib/security/sanitize";
-import { FAIXAS_DE_CONVIDADOS, TEMAS_PRONTOS } from "@/lib/onboarding-options";
+import { FAIXAS_DE_CONVIDADOS, TEMAS_PRONTOS } from "@/lib/painel/onboarding-options";
 
 const nomeDaPessoa = (label: string) =>
   z

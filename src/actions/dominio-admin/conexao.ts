@@ -6,9 +6,9 @@ import { registrarAuditoria } from "@/lib/audit";
 import { formatarDocumento, ehDocumentoEscondido } from "@/lib/document-br";
 import { avisarDepois } from "@/lib/notifications/service";
 import { avisarPedidoDeDominio } from "@/lib/notifications/events";
-import { somarUmAno } from "@/lib/domain-renewal";
-import { ehSituacaoEmAberto } from "@/lib/domain-order";
-import { conectarDominioAoProjeto, verificarDominioDoProjeto } from "@/lib/vercel-domains";
+import { somarUmAno } from "@/lib/dominio/domain-renewal";
+import { ehSituacaoEmAberto } from "@/lib/dominio/domain-order";
+import { conectarDominioAoProjeto, verificarDominioDoProjeto } from "@/lib/dominio/vercel-domains";
 import { ERROS } from "@/lib/mensagens-de-erro";
 import { DESATUALIZADO, EsquemaDoId, type Falha, NAO_PERMITIDO, type ResultadoDaAcaoDeAdmin, type ResultadoDaAcaoDeConectarDominio, atualizarPaginas, somenteAdmin } from "@/actions/dominio-admin/comum";
 

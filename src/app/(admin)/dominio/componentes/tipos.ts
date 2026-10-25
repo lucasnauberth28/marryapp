@@ -1,5 +1,5 @@
-import type { DisponibilidadeDoDominio } from "@/lib/domain-availability";
-import type { CampoDoPedidoDeDominio } from "@/lib/domain-order";
+import type { DisponibilidadeDoDominio } from "@/lib/dominio/domain-availability";
+import type { CampoDoPedidoDeDominio } from "@/lib/dominio/domain-order";
 
 export type ConferenciaDeDominio =
   | { state: "idle" }

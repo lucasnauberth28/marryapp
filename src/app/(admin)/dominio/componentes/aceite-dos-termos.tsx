@@ -1,6 +1,6 @@
 import { AlertCircle } from "lucide-react";
 import { CaixaDeSelecao } from "@/components/ui/checkbox";
-import { TEXTO_DO_ACEITE_DOS_TERMOS_DE_DOMINIO } from "@/lib/domain-terms";
+import { TEXTO_DO_ACEITE_DOS_TERMOS_DE_DOMINIO } from "@/lib/dominio/domain-terms";
 import type { PedidoDeDominio } from "./use-pedido-de-dominio";
 
 export function AceiteDosTermos({ pedido }: { pedido: PedidoDeDominio }) {

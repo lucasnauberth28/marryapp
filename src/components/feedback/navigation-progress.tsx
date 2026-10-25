@@ -13,7 +13,7 @@ import {
   redutorDoProgresso,
   type EventoDoProgresso,
   type EstadoDoProgresso,
-} from "@/lib/navigation-progress";
+} from "@/lib/painel/navigation-progress";
 
 /*
  * Fio de progresso no topo da tela em TODA troca de rota (painéis, /admin, páginas públicas).

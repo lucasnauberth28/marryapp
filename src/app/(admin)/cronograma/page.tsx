@@ -4,7 +4,7 @@ import { ptBR } from "date-fns/locale";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterEventosDaLinhaDoTempo } from "@/actions/timeline-actions";
 import { LinhaDoTempoCliente } from "./linha-do-tempo-cliente";
-import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
+import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/casamento/wedding";
 
 export const metadata: Metadata = {
   title: "Cronograma do dia",

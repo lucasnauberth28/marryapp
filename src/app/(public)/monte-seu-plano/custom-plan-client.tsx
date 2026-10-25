@@ -3,8 +3,8 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { textoDoDescontoDoCombo } from "@/lib/catalog";
-import { calcularPrecoDoPlanoPersonalizado, type ModuloDePreco } from "@/lib/pricing-modules";
+import { textoDoDescontoDoCombo } from "@/lib/pagamento/catalog";
+import { calcularPrecoDoPlanoPersonalizado, type ModuloDePreco } from "@/lib/pagamento/pricing-modules";
 import { CabecalhoDaLanding } from "@/components/landing/landing-header";
 import { RodapeDaLanding } from "@/components/landing/landing-footer";
 import { estiloDoBotao, estiloDoContainerDaLanding, estiloDoSobretituloDaLanding } from "@/components/landing/styles";

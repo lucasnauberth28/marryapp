@@ -1,9 +1,9 @@
 // Resumo do casamento: convite, o que fazer agora, confirmações, dinheiro dos presentes (extrato único) e orçamento.
 // Só dados reais do banco; o que ainda não medimos fica de fora (ex.: gráfico de confirmações ao longo do tempo).
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
+import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/casamento/wedding";
 import { temAcessoAoCaminho } from "@/lib/permissions";
-import { obterPlanoDoCasamento } from "@/lib/wedding-plan";
+import { obterPlanoDoCasamento } from "@/lib/casamento/wedding-plan";
 import { AtalhoDoCredenciamento } from "./resumo/atalho-do-credenciamento";
 import { CabecalhoDoResumo } from "./resumo/cabecalho";
 import { carregarDadosDoResumo } from "./resumo/carregar-dados";

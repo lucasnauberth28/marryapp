@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { estiloDoBotao } from "@/components/landing/styles";
 import type { ResultadoDaAjuda } from "@/lib/liz/help-search";
-import { rotuloDoPlanoNecessario } from "@/lib/wedding-plan-modules";
+import { rotuloDoPlanoNecessario } from "@/lib/casamento/wedding-plan-modules";
 
 export function CorpoDoArtigo({ hit, canOpenPlans, onNavigate }: { hit: ResultadoDaAjuda | undefined; canOpenPlans: boolean; onNavigate: () => void }) {
   if (!hit) return <p>Não achei essa dúvida agora.</p>;

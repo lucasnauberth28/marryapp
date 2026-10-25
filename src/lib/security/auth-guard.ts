@@ -4,7 +4,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { verificarToken, temAcessoAoCaminho, NOME_DO_COOKIE_DE_SESSAO, NOME_DO_COOKIE_DE_SESSAO_VISTA, CABECALHO_DO_CAMINHO_ATUAL } from "@/lib/auth";
-import { urlDeLogin, caminhoSeguroDeRetorno } from "@/lib/login-redirect";
+import { urlDeLogin, caminhoSeguroDeRetorno } from "@/lib/painel/login-redirect";
 import { ErroDeAutorizacao } from "@/lib/security/authorization-error";
 
 export const ID_DO_SUPER_ADMIN = "super-admin";

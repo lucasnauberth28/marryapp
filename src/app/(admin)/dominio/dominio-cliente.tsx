@@ -1,7 +1,7 @@
 "use client";
 // O endereço personalizado do site: formulário do pedido ou o andamento dele, até o site entrar no ar.
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
-import type { VisaoDoPedidoDeDominio } from "@/lib/domain-orders";
+import type { VisaoDoPedidoDeDominio } from "@/lib/dominio/domain-orders";
 import { AndamentoDoPedido } from "./componentes/andamento-do-pedido";
 import { AvisoDeRecusa } from "./componentes/aviso-de-recusa";
 import { FormularioDoPedido } from "./componentes/formulario-do-pedido";

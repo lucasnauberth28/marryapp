@@ -1,7 +1,7 @@
 import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
-import { ehChaveDePlano } from "@/lib/plans";
-import { PLANOS_ACEITOS_PELO_CUPOM, planosDoCupom } from "@/lib/checkout-pricing";
-import { obterCatalogo } from "@/lib/catalog-server";
+import { ehChaveDePlano } from "@/lib/pagamento/plans";
+import { PLANOS_ACEITOS_PELO_CUPOM, planosDoCupom } from "@/lib/pagamento/checkout-pricing";
+import { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { opcaoDePlano, nomeCurtoDoPlano } from "@/app/login/auth-config";
 import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";

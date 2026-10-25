@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { ARTIGOS_DE_AJUDA, artigosComuns, type ArtigoDeAjuda } from "../help-articles.ts";
 import { normalizarTextoDaBusca, buscarAjuda, artigosVisiveis } from "../help-search.ts";
-import { classificarCaminho } from "../../route-access.ts";
+import { classificarCaminho } from "../../painel/route-access.ts";
 
 const COUPLE = ["/dashboard", "/convidados", "/mensagens", "/mesas", "/presentes-admin", "/site-builder", "/fornecedores", "/plano"];
 

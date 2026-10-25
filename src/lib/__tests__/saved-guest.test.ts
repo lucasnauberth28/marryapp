@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { VALIDADE_DO_CONVIDADO_SALVO_EM_MS, interpretarConvidadoSalvo, finalDoTelefone, chaveDoConvidadoSalvo, serializarConvidadoSalvo } from "../saved-guest.ts";
+import { VALIDADE_DO_CONVIDADO_SALVO_EM_MS, interpretarConvidadoSalvo, finalDoTelefone, chaveDoConvidadoSalvo, serializarConvidadoSalvo } from "../convidados/saved-guest.ts";
 
 const agora = 1_800_000_000_000;
 

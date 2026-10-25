@@ -1,7 +1,7 @@
 "use server";
 
 import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
-import { obterLinhaDoTempoDoCasamento } from "@/lib/wedding-data";
+import { obterLinhaDoTempoDoCasamento } from "@/lib/casamento/wedding-data";
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";

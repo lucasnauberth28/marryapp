@@ -1,5 +1,5 @@
 // Guia de ajuda da Liz: presentes recebidos, mensagens, mesas, finanças, fornecedores e o par.
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "../../gift-fee.ts";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "../../pagamento/gift-fee.ts";
 import type { ArtigoDeAjuda } from "../help-articles.ts";
 
 export const ARTIGOS_DO_DIA_A_DIA: readonly ArtigoDeAjuda[] = [

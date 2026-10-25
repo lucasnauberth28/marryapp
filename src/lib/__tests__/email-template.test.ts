@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { emailDaMarca } from "../email-template.ts";
+import { emailDaMarca } from "../email/email-template.ts";
 
 test("e-mail da marca usa a assinatura em PNG com endereço absoluto e as cores do manual", () => {
   const { html, text } = emailDaMarca({

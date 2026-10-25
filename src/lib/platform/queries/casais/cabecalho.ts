@@ -1,7 +1,7 @@
 // Consultas dos casais para a administração: o cabeçalho do casal (números, plano, Pix a conferir e problemas).
 import "server-only";
 import prisma from "@/lib/prisma";
-import { filtroSemSoPresente } from "@/lib/guest-origin";
+import { filtroSemSoPresente } from "@/lib/convidados/guest-origin";
 import { casalProblems, situacaoDoCasal, type FatosDoCasal } from "@/lib/platform/casal-status";
 import { JANELA_DE_CONFERENCIA_DO_PIX_EM_MS, PREFIXO_DO_PIX_ESTATICO } from "@/lib/platform/payments";
 import { obterUltimosPlanos, pagamentosFalhosRecentes } from "@/lib/platform/queries/casais/planos";

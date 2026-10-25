@@ -1,4 +1,4 @@
-import { ROTULO_DA_TAXA_DO_PRESENTE, type PlanoDaTaxaDoPresente } from "@/lib/gift-fee";
+import { ROTULO_DA_TAXA_DO_PRESENTE, type PlanoDaTaxaDoPresente } from "@/lib/pagamento/gift-fee";
 
 /** Em que a taxa se aplica no plano, em uma frase. */
 export function notaDaTaxa(plan: PlanoDaTaxaDoPresente): string {

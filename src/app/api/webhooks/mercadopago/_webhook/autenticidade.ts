@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verificarAssinaturaDoMercadoPago } from "@/lib/mercadopago";
+import { verificarAssinaturaDoMercadoPago } from "@/lib/pagamento/mercadopago";
 
 /**
  * Autenticidade da notificação (x-signature). O status real é sempre reconsultado na API do MP.

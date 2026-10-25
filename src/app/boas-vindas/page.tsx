@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { obterSessao, ID_DO_SUPER_ADMIN, redirecionarParaOLogin } from "@/lib/security/auth-guard";
 import { classificarConta } from "@/lib/account/wedding-provisioning";
-import { separarNomesDoCasal } from "@/lib/onboarding-options";
+import { separarNomesDoCasal } from "@/lib/painel/onboarding-options";
 import { FluxoDeBoasVindas } from "./onboarding-flow";
 
 export const metadata: Metadata = {

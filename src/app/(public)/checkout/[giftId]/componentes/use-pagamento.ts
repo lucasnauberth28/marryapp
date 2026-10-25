@@ -4,7 +4,7 @@ import { criarTransacaoPix } from "@/actions/checkout/pix";
 import { conferirSituacaoDaTransacao } from "@/actions/checkout/situacao";
 import { processarPagamentoComCartao } from "@/actions/checkout/cartao";
 import { somenteDigitos } from "@/lib/formatacao/telefone";
-import { tokenizarCartao } from "@/lib/mercadopago-client";
+import { tokenizarCartao } from "@/lib/pagamento/mercadopago-client";
 import { useCartaoDigitado, useIdentificacao, usePixGerado, type CartaoDigitado, type PixGerado } from "./use-dados-do-pagamento";
 import type { EtapaDoPagamento, FormaDePagamento } from "./tipos";
 

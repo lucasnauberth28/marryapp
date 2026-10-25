@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { normalizarNomeDeDominio, sugerirNomesDeDominio, paraDominio } from "../domain-name.ts";
+import { normalizarNomeDeDominio, sugerirNomesDeDominio, paraDominio } from "../dominio/domain-name.ts";
 
 const ok = (input: string) => {
   const r = normalizarNomeDeDominio(input);

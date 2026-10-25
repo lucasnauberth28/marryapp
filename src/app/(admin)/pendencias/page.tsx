@@ -2,8 +2,8 @@ import { Metadata } from "next";
 import { obterTarefas } from "@/actions/tasks";
 import { QuadroDeTarefas, type FiltroDeTarefas } from "@/components/tarefas/tasks-board";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
-import { diasAte } from "@/lib/wedding-format";
+import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/casamento/wedding";
+import { diasAte } from "@/lib/casamento/wedding-format";
 import { sugestaoDaLiz } from "./sugestao-da-liz";
 
 export const metadata: Metadata = {

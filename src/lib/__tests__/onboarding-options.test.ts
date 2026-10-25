@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { juntarNomesDoCasal, separarNomesDoCasal, validarDadosBasicosDoInicio } from "../onboarding-options.ts";
+import { juntarNomesDoCasal, separarNomesDoCasal, validarDadosBasicosDoInicio } from "../painel/onboarding-options.ts";
 
 const hoje = new Date("2026-10-23T12:00:00Z");
 const base = { yourName: "Ana", partnerName: "Bia", weddingDate: "" };

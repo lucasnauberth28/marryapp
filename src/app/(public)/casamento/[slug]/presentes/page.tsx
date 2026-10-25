@@ -1,10 +1,10 @@
 import { SiteIndisponivel } from "@/components/public/site-unavailable"
 import { Metadata } from "next"
 import { CabecalhoDoConvidado } from "@/components/public/guest-header"
-import { obterIdentidadeDoCasamento, metadadosDaPaginaDoConvidado } from "@/lib/wedding"
-import { obterPresentesDoCasamento } from "@/lib/wedding-data"
-import { exigirCasamentoPublico } from "@/lib/wedding-redirect"
-import { pagamentoPorCartaoEstaDisponivel } from "@/lib/mercadopago"
+import { obterIdentidadeDoCasamento, metadadosDaPaginaDoConvidado } from "@/lib/casamento/wedding"
+import { obterPresentesDoCasamento } from "@/lib/casamento/wedding-data"
+import { exigirCasamentoPublico } from "@/lib/casamento/wedding-redirect"
+import { pagamentoPorCartaoEstaDisponivel } from "@/lib/pagamento/mercadopago"
 import { PresentesPublicosCliente } from "./public-gifts-client"
 
 // Lê o banco a cada acesso: nunca pré-renderizar no build (dados congelados e build dependente do banco)

@@ -1,7 +1,7 @@
 import { CheckCircle2, Clock, Copy } from "lucide-react";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
-import type { ResultadoDaConexao } from "@/lib/vercel-domains-core";
+import type { ResultadoDaConexao } from "@/lib/dominio/vercel-domains-core";
 import { cn } from "@/lib/utils";
 import { copiarTexto, textoDaSituacaoNaVercel } from "./tipos-e-textos";
 

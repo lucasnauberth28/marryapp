@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PaymentStatus } from "@prisma/client";
-import { ehChaveDePlano } from "@/lib/plans";
-import { obterCatalogo } from "@/lib/catalog-server";
+import { ehChaveDePlano } from "@/lib/pagamento/plans";
+import { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { opcaoDePlano, nomeCurtoDoPlano, type OpcaoDePlano } from "@/app/login/auth-config";
 import { AvisoDePixEmConferencia, CartoesDoPlano } from "./cartoes-do-plano";

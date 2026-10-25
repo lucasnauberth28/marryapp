@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { somarUmAno, lembreteDeRenovacaoDevido, proximoLembreteDeRenovacao, situacaoDoLembreteDeRenovacao, fimDaJanelaDeRenovacao } from "../domain-renewal.ts";
+import { somarUmAno, lembreteDeRenovacaoDevido, proximoLembreteDeRenovacao, situacaoDoLembreteDeRenovacao, fimDaJanelaDeRenovacao } from "../dominio/domain-renewal.ts";
 
 const NOW = new Date("2026-10-11T11:00:00Z");
 const inDays = (n: number) => new Date(NOW.getTime() + n * 86_400_000);

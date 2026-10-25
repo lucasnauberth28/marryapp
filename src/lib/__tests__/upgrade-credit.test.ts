@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { creditoDeUpgrade } from "../upgrade-credit.ts";
+import { creditoDeUpgrade } from "../pagamento/upgrade-credit.ts";
 
 const DAY = 24 * 60 * 60 * 1000;
 const now = new Date("2026-10-10T12:00:00Z");

@@ -22,10 +22,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { temAcessoAoCaminho } from "@/lib/permissions";
-import { telaEstaAtiva, type ChaveDeContagemDoMenu } from "@/lib/panel-nav";
+import { telaEstaAtiva, type ChaveDeContagemDoMenu } from "@/lib/painel/panel-nav";
 
 export type { ChaveDeContagemDoMenu };
-export { AREAS_DO_PAINEL, areasVisiveis, areaDoCaminho, TELAS_DA_CONTA } from "@/lib/panel-nav";
+export { AREAS_DO_PAINEL, areasVisiveis, areaDoCaminho, TELAS_DA_CONTA } from "@/lib/painel/panel-nav";
 
 /** Ícone de cada área e tela (a estrutura e os nomes ficam em lib/panel-nav). */
 const ICONES_DO_MENU: Record<string, LucideIcon> = {

@@ -1,7 +1,7 @@
 import { PaymentStatus, RsvpStatus, TaskStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { filtroSemSoPresente } from "@/lib/guest-origin";
-import { casamentoTemModulo } from "@/lib/wedding-plan";
+import { filtroSemSoPresente } from "@/lib/convidados/guest-origin";
+import { casamentoTemModulo } from "@/lib/casamento/wedding-plan";
 import type { ContextoDaPagina } from "./tipos";
 
 /** Tudo o que o Resumo lê do banco, numa só rodada. */

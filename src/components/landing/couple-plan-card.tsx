@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Check, Info } from "lucide-react";
-import type { PlanoDoCatalogo } from "@/lib/catalog";
-import { TEXTOS_DO_PLANO_DO_CASAL, notaDoPrecoDoCasal, rotuloDoPlano, type ChaveDoPlanoDoCasal } from "@/lib/plan-copy";
+import type { PlanoDoCatalogo } from "@/lib/pagamento/catalog";
+import { TEXTOS_DO_PLANO_DO_CASAL, notaDoPrecoDoCasal, rotuloDoPlano, type ChaveDoPlanoDoCasal } from "@/lib/pagamento/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { cn } from "@/lib/utils";
 import { estiloDoBotao } from "./styles";

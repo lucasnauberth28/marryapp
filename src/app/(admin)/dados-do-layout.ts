@@ -1,13 +1,13 @@
 import type { ContextoDeAutenticacaoSegura } from "@/lib/security/auth-guard";
-import { obterVisaoDaConta, obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
+import { obterVisaoDaConta, obterIdentidadeDoCasamentoPrincipal } from "@/lib/casamento/wedding";
 import { obterContextoDoCasamento } from "@/lib/security/wedding-context";
-import { obterContagensDoMenu } from "@/lib/nav-counts";
-import { diasAte, rotuloDosDiasRestantes } from "@/lib/wedding-format";
+import { obterContagensDoMenu } from "@/lib/painel/nav-counts";
+import { diasAte, rotuloDosDiasRestantes } from "@/lib/casamento/wedding-format";
 import { quantidadeNaoLidaDe } from "@/lib/notifications/queries";
 import { carregarTourDoPainel } from "@/lib/tour/panel-tour";
-import { obterPlanoDoCasamento } from "@/lib/wedding-plan";
-import { nomeCurtoDoPlano } from "@/lib/panel-nav";
-import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
+import { obterPlanoDoCasamento } from "@/lib/casamento/wedding-plan";
+import { nomeCurtoDoPlano } from "@/lib/painel/panel-nav";
+import { urlDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 
 /** Tudo o que o cabeçalho, a barra lateral e o passo a passo do painel precisam saber do casamento e da pessoa. */
 export async function carregarDadosDoLayout(session: ContextoDeAutenticacaoSegura) {

@@ -2,7 +2,7 @@
 
 // Convidados: registrar a entrada na festa (credenciamento por QR Code ou nome).
 import { exigirCasamento } from "@/lib/security/wedding-context";
-import { recusaDeModulo } from "@/lib/wedding-plan";
+import { recusaDeModulo } from "@/lib/casamento/wedding-plan";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ERROS } from "@/lib/mensagens-de-erro";

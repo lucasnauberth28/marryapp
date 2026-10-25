@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { whatsappEstaConfigurado } from "@/lib/whatsapp/config";
 import { obterEstadoDaConexao } from "@/lib/whatsapp/instancia";
-import { emailEstaConfigurado } from "@/lib/email";
+import { emailEstaConfigurado } from "@/lib/email/email";
 import { pushEstaConfigurado } from "@/lib/notifications/push";
 import vercelConfig from "../../../../vercel.json";
 import { itensDeAtencao, falhasSeguidas, situacaoDaTarefaAgendada, descreverResumoDaTarefaAgendada, tarefasDosAgendamentos, type ItemDeAtencao, type SituacaoDaTarefaAgendada } from "@/lib/platform/health";

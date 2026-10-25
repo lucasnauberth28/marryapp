@@ -5,8 +5,8 @@ import { ID_DO_SUPER_ADMIN, type ContextoDeAutenticacaoSegura } from "@/lib/secu
 import type { ContextoDoCasamento } from "@/lib/security/wedding-context";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
 import { classificarConta } from "@/lib/account/wedding-provisioning";
-import { casamentoTemModulo } from "@/lib/wedding-plan";
-import { AREAS_DO_PAINEL } from "@/lib/panel-nav";
+import { casamentoTemModulo } from "@/lib/casamento/wedding-plan";
+import { AREAS_DO_PAINEL } from "@/lib/painel/panel-nav";
 import { montarPassosDoTour, type LugarDoPasso, type ModuloDoTour, type PassoDoTour } from "./steps";
 import { decidirModoDoTour, passosDoModo, tourElegivel, type ContaDoTour, type ModoDoTour } from "./rules";
 

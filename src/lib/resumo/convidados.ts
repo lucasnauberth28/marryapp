@@ -1,5 +1,5 @@
 // Resumo do casamento: convites e pessoas, convites enviados e prazo de confirmação.
-import { ehSoPresentePendente } from "../guest-origin.ts";
+import { ehSoPresentePendente } from "../convidados/guest-origin.ts";
 import { diasEntreChaves } from "./datas.ts";
 
 export interface LinhaDeConvidado {

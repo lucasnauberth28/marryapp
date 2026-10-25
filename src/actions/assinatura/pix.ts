@@ -3,14 +3,14 @@
 // Assinatura de plano: gera a cobrança Pix da conta logada (Mercado Pago, ou Pix estático como alternativa).
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { mercadoPagoEstaConfigurado, pagamentoDoMercadoPago } from "@/lib/mercadopago";
-import { gerarCodigoPix } from "@/lib/pix-utils";
+import { mercadoPagoEstaConfigurado, pagamentoDoMercadoPago } from "@/lib/pagamento/mercadopago";
+import { gerarCodigoPix } from "@/lib/pagamento/pix-utils";
 import { limitarUsoPorIp } from "@/lib/security/rate-limiter";
 import { normalizarTexto } from "@/lib/security/sanitize";
 import { PaymentStatus } from "@prisma/client";
 import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
-import { referenciaDaAssinatura } from "@/lib/subscription-period";
-import { cotarAssinatura } from "@/lib/subscription-quote";
+import { referenciaDaAssinatura } from "@/lib/pagamento/subscription-period";
+import { cotarAssinatura } from "@/lib/pagamento/subscription-quote";
 import { PREFIXO_DO_PIX_ESTATICO } from "@/lib/platform/payments";
 import type { EntradaDoPagamentoDaAssinatura } from "@/actions/assinatura/pagamento";
 

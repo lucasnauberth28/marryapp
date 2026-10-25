@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
-import type { Catalogo } from "@/lib/catalog";
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
-import { notaDoPrecoDoCasal, rotuloDoPlano, type ChaveDoPlanoDoCasal } from "@/lib/plan-copy";
+import type { Catalogo } from "@/lib/pagamento/catalog";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/pagamento/gift-fee";
+import { notaDoPrecoDoCasal, rotuloDoPlano, type ChaveDoPlanoDoCasal } from "@/lib/pagamento/plan-copy";
 import { Aparicao } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
 import { centavosDoPontoDeEquilibrio, separarPreco } from "./home-money";

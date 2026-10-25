@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { obterPresentes } from "@/actions/gift-actions";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
+import { caminhoDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import { carregarPagamentosDosPresentes, pagamentosParaATela, resumoDosPagamentos } from "./dados-dos-pagamentos";
 import { PresentesCliente } from "./presentes-cliente";
 

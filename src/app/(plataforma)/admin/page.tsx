@@ -4,7 +4,7 @@ import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type ParametrosDeBusca, umDosValores } from "@/lib/platform/list-params";
 import { formatarDataPorExtenso } from "@/lib/platform/format";
 import { PERIODOS, type Periodo } from "@/lib/platform/overview-period";
-import { saudacaoParaAHora } from "@/lib/wedding-format";
+import { saudacaoParaAHora } from "@/lib/casamento/wedding-format";
 import prisma from "@/lib/prisma";
 import { BlocoDeAtencao } from "./_visao-geral/blocos/atencao";
 import { BlocoDeErros } from "./_visao-geral/blocos/erros";

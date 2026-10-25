@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { primeiroDestinoPermitido, urlDeLogin, INICIO_DO_ADMIN_DA_PLATAFORMA, resolverCaminhoPosLogin, caminhoSeguroDeRetorno } from "../login-redirect.ts";
+import { primeiroDestinoPermitido, urlDeLogin, INICIO_DO_ADMIN_DA_PLATAFORMA, resolverCaminhoPosLogin, caminhoSeguroDeRetorno } from "../painel/login-redirect.ts";
 
 test("aceita caminho interno, com query", () => {
   assert.equal(caminhoSeguroDeRetorno("/convidados"), "/convidados");

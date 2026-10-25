@@ -1,7 +1,7 @@
 // Comunicados: o envio de teste, só para a pessoa da administração (não registra destinatários nem conta no histórico).
 import "server-only";
 import prisma from "@/lib/prisma";
-import { enviarEmail } from "@/lib/email";
+import { enviarEmail } from "@/lib/email/email";
 import { enviarPushParaAPessoa } from "@/lib/notifications/push";
 import { montarConteudoDoPush } from "@/lib/notifications/push-payload";
 import type { Canal } from "@/lib/platform/announcement-audience";

@@ -3,7 +3,7 @@ import { obterConvidados } from "@/actions/convidados/lista";
 import { ConvidadosCliente } from "./convidados-cliente";
 import prisma from "@/lib/prisma";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { casamentoTemModulo } from "@/lib/wedding-plan";
+import { casamentoTemModulo } from "@/lib/casamento/wedding-plan";
 
 import { formatarDataCivilLonga } from "@/lib/formatacao/data";
 export const metadata: Metadata = {

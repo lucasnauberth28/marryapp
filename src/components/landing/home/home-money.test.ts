@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { calcularValoresDoPresente } from "../../../lib/gift-fee.ts";
+import { calcularValoresDoPresente } from "../../../lib/pagamento/gift-fee.ts";
 import { centavosDoPontoDeEquilibrio, formatarCentavos, interpretarCentavos, separarPreco } from "./home-money.ts";
 
 test("parseCents entende os formatos digitados", () => {

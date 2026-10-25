@@ -10,7 +10,7 @@ import { limitarUsoPorIp } from "@/lib/security/rate-limiter";
 import { avisarDepois } from "@/lib/notifications/service";
 import { avisarConfirmacao } from "@/lib/notifications/events";
 import { MENSAGEM_DE_MUITAS_TENTATIVAS } from "@/lib/rate-limit-message";
-import type { BuscaDeConvidado } from "@/lib/rsvp-lookup";
+import type { BuscaDeConvidado } from "@/lib/convidados/rsvp-lookup";
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import { ERROS } from "@/lib/mensagens-de-erro";
 

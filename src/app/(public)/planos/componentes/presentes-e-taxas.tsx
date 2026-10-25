@@ -1,8 +1,8 @@
 import Link from "next/link";
-import type { obterCatalogo } from "@/lib/catalog-server";
+import type { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { estiloDoContainerDaLanding, estiloDoSobretituloDaLanding } from "@/components/landing/styles";
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
-import { CONDICOES_DO_PRESENTE, rotuloDoPlano } from "@/lib/plan-copy";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/pagamento/gift-fee";
+import { CONDICOES_DO_PRESENTE, rotuloDoPlano } from "@/lib/pagamento/plan-copy";
 import { cn } from "@/lib/utils";
 
 export const estiloDoLinkDeTexto = "font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 transition-colors hover:decoration-ameixa";

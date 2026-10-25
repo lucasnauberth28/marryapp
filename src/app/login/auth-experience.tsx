@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { FormularioDeLogin } from "./login-form";
 import { FluxoDeCadastro } from "./signup-flow";
 import { fotoPara, tipoDoPlano, type TipoDeConta, type ModoDeAcesso, type EtapaDoCadastro } from "./auth-config";
-import type { Catalogo } from "@/lib/catalog";
+import type { Catalogo } from "@/lib/pagamento/catalog";
 
 interface PropriedadesDaExperienciaDeAcesso {
   initialMode: ModoDeAcesso;

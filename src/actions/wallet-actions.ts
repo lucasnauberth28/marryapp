@@ -1,7 +1,7 @@
 "use server";
 
 import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
-import { garantirSaldoDaCarteira } from "@/lib/wedding-data";
+import { garantirSaldoDaCarteira } from "@/lib/casamento/wedding-data";
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";

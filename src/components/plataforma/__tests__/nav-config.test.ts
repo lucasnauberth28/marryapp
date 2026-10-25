@@ -9,7 +9,7 @@ import {
   itemDaPlataformaEstaAtivo,
   gruposDeMaisDaPlataforma,
 } from "../nav-config.ts";
-import { classificarCaminho } from "../../../lib/route-access.ts";
+import { classificarCaminho } from "../../../lib/painel/route-access.ts";
 
 const APP = fileURLToPath(new URL("../../../app", import.meta.url));
 const items = GRUPOS_DO_MENU_DA_PLATAFORMA.flatMap((g) => g.items);

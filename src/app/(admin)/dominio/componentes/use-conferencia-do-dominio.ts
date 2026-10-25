@@ -1,7 +1,7 @@
 // Confere se o nome do endereço está livre, depois de uma pausa na digitação (ou na hora, ao escolher uma sugestão).
 import { useEffect, useRef, useState } from "react";
 import { verificarDisponibilidadeDoDominioAcao } from "@/actions/domain-actions";
-import { normalizarNomeDeDominio } from "@/lib/domain-name";
+import { normalizarNomeDeDominio } from "@/lib/dominio/domain-name";
 import type { ConferenciaDeDominio } from "./tipos";
 
 export function useConferenciaDoDominio() {

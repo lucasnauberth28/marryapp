@@ -10,7 +10,7 @@ import {
   OpcaoDoMenuSuspenso,
   GatilhoDoMenuSuspenso,
 } from "@/components/ui/dropdown-menu";
-import { OPCOES_DE_TEMA, interpretarPreferenciaDeTema } from "@/lib/theme";
+import { OPCOES_DE_TEMA, interpretarPreferenciaDeTema } from "@/lib/painel/theme";
 import { cn } from "@/lib/utils";
 import { useTema } from "./theme-provider";
 

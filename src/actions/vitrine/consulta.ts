@@ -4,7 +4,7 @@
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { obterIdsDeFornecedoresIndisponiveis } from "@/lib/vendor-availability";
+import { obterIdsDeFornecedoresIndisponiveis } from "@/lib/fornecedor/vendor-availability";
 import { posicaoNaVitrine } from "@/lib/platform/vendor-admin";
 import { SELECAO_PUBLICA_DA_AVALIACAO, SELECAO_PUBLICA_DO_FORNECEDOR, interpretarDiaDoCasamento, paraFornecedorPublico } from "@/actions/vitrine/comum";
 

@@ -3,7 +3,7 @@ import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { Aviso } from "@/components/plataforma/notices";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
-import { emailEstaConfigurado } from "@/lib/email";
+import { emailEstaConfigurado } from "@/lib/email/email";
 import { obterFotoDaSaude } from "@/lib/platform/queries/saude";
 import { formatarHora } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";

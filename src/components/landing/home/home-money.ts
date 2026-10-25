@@ -1,6 +1,6 @@
 // Contas e formatos de dinheiro da home (simulador de presentes e comparação de planos). Puro: roda nos testes.
 import { formatarValorSemSimbolo } from "../../../lib/formatacao/dinheiro.ts";
-import { TAXA_DO_PRESENTE_EM_PONTOS_BASE } from "../../../lib/gift-fee.ts";
+import { TAXA_DO_PRESENTE_EM_PONTOS_BASE } from "../../../lib/pagamento/gift-fee.ts";
 
 /** Texto digitado ("1.250,50", "200", "200,5") em centavos; null se não for um valor válido. */
 export function interpretarCentavos(text: string): number | null {

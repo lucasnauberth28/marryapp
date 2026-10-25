@@ -1,7 +1,7 @@
 // O estado de cada parte do pagamento: quem presenteia, o Pix gerado e o cartão digitado.
 import { useState } from "react";
 import { mascararTelefone } from "@/lib/formatacao/telefone";
-import { useConvidadoSalvo } from "@/lib/use-saved-guest";
+import { useConvidadoSalvo } from "@/lib/convidados/use-saved-guest";
 
 /**
  * Quem confirmou presença nesta aba já vem identificado; segue depois de confirmar "sim, sou eu".

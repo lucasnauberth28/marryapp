@@ -9,9 +9,9 @@ import { exigirCasamento, type ContextoDoCasamento } from "@/lib/security/weddin
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { cifrarSegredoDoRepasse, cifraDoRepasseEstaConfigurada, versaoAtualDaChaveDoRepasse, ErroDeCifraDoRepasse } from "@/lib/security/payout-crypto";
 import { registrarAuditoria } from "@/lib/audit";
-import { contextoDaCifraDoRepasse, validarEntradaDeRepasse } from "@/lib/payout-input";
-import { obterVisaoDaContaDeRepasse, type VisaoDaContaDeRepasse } from "@/lib/payout-account-view";
-import { avisarMudancaNoRepasse } from "@/lib/payout-notify";
+import { contextoDaCifraDoRepasse, validarEntradaDeRepasse } from "@/lib/repasse/payout-input";
+import { obterVisaoDaContaDeRepasse, type VisaoDaContaDeRepasse } from "@/lib/repasse/payout-account-view";
+import { avisarMudancaNoRepasse } from "@/lib/repasse/payout-notify";
 
 // Dados de recebimento do casal (onde o Aceito deve repassar os presentes). Regras de todas as actions daqui:
 //  - o casamento vem SEMPRE da sessão (requireWedding), nunca do navegador;

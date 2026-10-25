@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Check, Eye } from "lucide-react";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
-import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
+import { caminhoDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import { rotuloDaPublicacao } from "./utilitarios";
 import type { EditorDoSite } from "./use-configuracoes-do-site";
 

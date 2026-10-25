@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { MODELOS_DE_MENSAGEM_PADRAO, modelosPadraoParaCriar } from "../default-message-templates.ts";
+import { MODELOS_DE_MENSAGEM_PADRAO, modelosPadraoParaCriar } from "../convidados/default-message-templates.ts";
 
 test("casamento sem modelos recebe o convite e o lembrete", () => {
   const criar = modelosPadraoParaCriar(0);

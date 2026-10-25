@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { urlDoApp } from "@/lib/app-url";
-import { emailDaMarca, enviarEmail } from "@/lib/email";
+import { emailDaMarca, enviarEmail } from "@/lib/email/email";
 import { enviarPushParaAPessoa } from "@/lib/notifications/push";
 import { montarConteudoDoPush } from "@/lib/notifications/push-payload";
 import { carregarPreferencias } from "@/lib/notifications/senders";

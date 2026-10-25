@@ -1,5 +1,5 @@
 import { AlertCircle } from "lucide-react";
-import type { VisaoDoPedidoDeDominio } from "@/lib/domain-orders";
+import type { VisaoDoPedidoDeDominio } from "@/lib/dominio/domain-orders";
 
 export function AvisoDeRecusa({ order }: { order: VisaoDoPedidoDeDominio }) {
   return (

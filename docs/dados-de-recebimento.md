@@ -2,7 +2,7 @@
 
 Onde o casal diz que quer receber os presentes (chave Pix ou conta bancária). Tela: `/configuracoes/recebimento`.
 
-**Estado atual, sem enfeite:** o Aceito só GUARDA o destino. Não existe repasse automático: o dinheiro dos presentes chega ao Aceito e o repasse é liberado pela equipe. A interface `PayoutExecutor` (`src/lib/payout-executor.ts`) está documentada e sem implementação. A escolha do gateway está em `docs/repasse-gateway.md`.
+**Estado atual, sem enfeite:** o Aceito só GUARDA o destino. Não existe repasse automático: o dinheiro dos presentes chega ao Aceito e o repasse é liberado pela equipe. A interface `PayoutExecutor` (`src/lib/repasse/payout-executor.ts`) está documentada e sem implementação. A escolha do gateway está em `docs/repasse-gateway.md`.
 
 ## O que fica no banco
 
@@ -20,7 +20,7 @@ Tabela `wedding_payout_accounts`, uma linha por casamento.
 
 Nada bancário em texto puro no banco, em log, no AuditLog, em e-mail, em aviso ou em mensagem de erro. O AuditLog guarda só ator, ação (`payout.account_create`, `_update`, `_verify`, `_delete`), alvo e o tipo (Pix ou conta). As telas leem por `getPayoutAccountView`, que não seleciona as colunas `*Enc`.
 
-A agência e o código do banco aparecem na máscara da conta (como pediu o dono). Sozinhos não movimentam dinheiro, mas se isso for um incômodo, a máscara pode esconder a agência em `bankHint` (`src/lib/payout-input.ts`).
+A agência e o código do banco aparecem na máscara da conta (como pediu o dono). Sozinhos não movimentam dinheiro, mas se isso for um incômodo, a máscara pode esconder a agência em `bankHint` (`src/lib/repasse/payout-input.ts`).
 
 ## A variável `PAYOUT_ENCRYPTION_KEY`
 
@@ -56,4 +56,4 @@ Se a chave vazar: gire na hora, recife, e avise os casais afetados (a LGPD pode 
 
 ## Saldo a repassar
 
-`getPayoutBalance(weddingId)` em `src/lib/payout-balance-server.ts` soma, por casamento, os presentes aprovados e devolve bruto, taxa, líquido e "a conferir" (Pix gerado e ainda não confirmado). Usa `netAmount` e `fee` gravados quando fecham com o valor pago; senão calcula com `giftAmounts` pelo plano vigente. É só leitura: não cria repasse nem move dinheiro.
+`getPayoutBalance(weddingId)` em `src/lib/repasse/payout-balance-server.ts` soma, por casamento, os presentes aprovados e devolve bruto, taxa, líquido e "a conferir" (Pix gerado e ainda não confirmado). Usa `netAmount` e `fee` gravados quando fecham com o valor pago; senão calcula com `giftAmounts` pelo plano vigente. É só leitura: não cria repasse nem move dinheiro.

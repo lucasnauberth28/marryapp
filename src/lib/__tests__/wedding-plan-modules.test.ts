@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { MODULOS_COM_BLOQUEIO, modulosDoPlano, planoInclui, rotuloDoPlanoNecessario, mensagemDeUpgrade } from "../wedding-plan-modules.ts";
+import { MODULOS_COM_BLOQUEIO, modulosDoPlano, planoInclui, rotuloDoPlanoNecessario, mensagemDeUpgrade } from "../casamento/wedding-plan-modules.ts";
 
 test("básico e plano desconhecido não incluem nada", () => {
   assert.deepEqual(modulosDoPlano("basic"), []);

@@ -7,7 +7,7 @@ import prisma from "@/lib/prisma";
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { gerarTokenDeLink } from "@/lib/account/tokens";
 import { VALIDADE_DO_CONVITE_EM_MS, MAXIMO_DE_CONVITES_PENDENTES } from "@/lib/account/invites";
-import { emailDaMarca, enviarEmail } from "@/lib/email";
+import { emailDaMarca, enviarEmail } from "@/lib/email/email";
 import { urlDoApp } from "@/lib/app-url";
 import { registrarAuditoria } from "@/lib/audit";
 import { type Falha, SEM_SESSAO, UM_MINUTO_EM_MS, contaAtual } from "@/actions/conta/comum";

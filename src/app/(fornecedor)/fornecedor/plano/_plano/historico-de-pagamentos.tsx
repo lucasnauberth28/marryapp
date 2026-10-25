@@ -2,7 +2,7 @@ import Link from "next/link";
 import { PaymentStatus } from "@prisma/client";
 import { nomeCurtoDoPlano } from "@/app/login/auth-config";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-import { DIAS_DO_PERIODO_DO_FORNECEDOR } from "@/lib/subscription-period";
+import { DIAS_DO_PERIODO_DO_FORNECEDOR } from "@/lib/pagamento/subscription-period";
 import type { PagamentoDoFornecedor } from "./dados";
 import { UM_DIA_EM_MS, formatarData } from "./datas";
 

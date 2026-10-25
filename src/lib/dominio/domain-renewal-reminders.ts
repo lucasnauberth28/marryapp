@@ -1,0 +1,81 @@
+import "server-only";
+import prisma from "@/lib/prisma";
+import { urlDoApp } from "@/lib/app-url";
+import { emailDaMarca, enviarEmail } from "@/lib/email/email";
+import { lembreteDeRenovacaoDevido, fimDaJanelaDeRenovacao, type DiaDoLembreteDeRenovacao } from "@/lib/dominio/domain-renewal";
+import { registrarAuditoria } from "@/lib/audit";
+
+import { formatarDataCivilLonga } from "../formatacao/data.ts";
+const PADRAO_DE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// O vencimento é uma data de calendário (meia-noite UTC): formatar em UTC evita voltar um dia.
+
+export interface ResultadoDosLembretesDeDominio {
+  checked: number;
+  sent: number;
+}
+
+/**
+ * Avisa por e-mail o casal (os logins do casamento e o e-mail do titular) 60 e 30 dias antes do vencimento do domínio
+ * próprio, uma vez cada por período. A renovação é manual no Registro.br: o aviso diz isso e pede que respondam à equipe.
+ * Marca antes de enviar (duas execuções ao mesmo tempo não repetem) e desfaz a marca se todos os envios falharem.
+ */
+export async function enviarLembretesDeRenovacaoDeDominio(now = new Date()): Promise<ResultadoDosLembretesDeDominio> {
+  const orders = await prisma.domainOrder.findMany({
+    where: { status: { in: ["REGISTERED", "CONNECTED"] }, expiresAt: { gt: now, lte: fimDaJanelaDeRenovacao(now) } },
+    select: {
+      id: true,
+      domain: true,
+      holderEmail: true,
+      expiresAt: true,
+      renewalReminderDays: true,
+      wedding: { select: { coupleNames: true, members: { select: { username: true } } } },
+    },
+  });
+
+  let sent = 0;
+  for (const order of orders) {
+    const day = lembreteDeRenovacaoDevido({ expiresAt: order.expiresAt, now, lastSent: order.renewalReminderDays });
+    if (!day || !order.expiresAt) continue;
+
+    const claimed = await prisma.domainOrder.updateMany({
+      where: { id: order.id, renewalReminderDays: order.renewalReminderDays, expiresAt: order.expiresAt },
+      data: { renewalReminderDays: day },
+    });
+    if (claimed.count === 0) continue;
+
+    const recipients = [...new Set([...order.wedding.members.map((m) => m.username), order.holderEmail].map((e) => e.trim().toLowerCase()).filter((e) => PADRAO_DE_EMAIL.test(e)))];
+    const delivered = await enviarParaTodos(recipients, order.domain, order.expiresAt, day);
+
+    if (recipients.length > 0 && delivered === 0) {
+      await prisma.domainOrder.updateMany({ where: { id: order.id, renewalReminderDays: day }, data: { renewalReminderDays: order.renewalReminderDays } });
+      console.warn(`[Avisos de domínio] Falha ao avisar o pedido ${order.id} (${day} dias antes).`);
+      continue;
+    }
+    if (delivered > 0) {
+      sent++;
+      await registrarAuditoria({ action: "domain.renewal_reminder", targetType: "DomainOrder", targetId: order.id, actor: { id: null, name: "Rotina diária" }, details: { day, recipients: delivered } });
+    }
+  }
+  return { checked: orders.length, sent };
+}
+
+async function enviarParaTodos(recipients: string[], domain: string, expiresAt: Date, day: DiaDoLembreteDeRenovacao): Promise<number> {
+  const when = formatarDataCivilLonga(expiresAt);
+  const heading = `O endereço ${domain} do site vence em ${when}`;
+  const mail = emailDaMarca({
+    heading,
+    paragraphs: [
+      `O endereço ${domain} do site de vocês vence em ${when}, daqui a cerca de ${day} dias.`,
+      "A renovação do .com.br é feita no Registro.br. Para o site de vocês não sair do ar, confiram no painel as condições da renovação.",
+    ],
+    cta: { label: "Ver o endereço do site", url: urlDoApp("/dominio") },
+    footnotes: ["Este aviso sai uma vez aos 60 dias e outra aos 30 dias antes do vencimento."],
+    preheader: `Vence em ${when}.`,
+  });
+  let delivered = 0;
+  for (const to of recipients) {
+    const res = await enviarEmail({ to, subject: heading, html: mail.html, text: mail.text });
+    if (res.sent) delivered++;
+  }
+  return delivered;
+}

@@ -7,7 +7,7 @@ import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
-import { COR_PADRAO_DO_TEMA, juntarNomesDoCasal } from "@/lib/onboarding-options";
+import { COR_PADRAO_DO_TEMA, juntarNomesDoCasal } from "@/lib/painel/onboarding-options";
 import { classificarConta, ehEnderecoAutomatico, prepararCasamento, renovarCookieDeSessao, enderecoUnicoDoCasamento, criarOuAtualizarPapelDoCasal, comNovaTentativaDeEndereco } from "@/lib/account/wedding-provisioning";
 import { ERROS } from "@/lib/mensagens-de-erro";
 import { ConflitoNoInicio, type EntradaDoInicio, EsquemaDoInicio, type ResultadoDoInicio, interpretarDataDoCasamento } from "@/actions/inicio/comum";

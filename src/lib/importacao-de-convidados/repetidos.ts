@@ -1,5 +1,5 @@
 // Importação de convidados: o que será adicionado, o que tem problema e o que já existe.
-import { obterVariacoesDoTelefone } from "../phone-variations.ts";
+import { obterVariacoesDoTelefone } from "../convidados/phone-variations.ts";
 import { textoSimples } from "./colunas.ts";
 import type { LinhaImportada } from "./linhas.ts";
 

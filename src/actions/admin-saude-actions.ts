@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { registrarAuditoria } from "@/lib/audit";
-import { emailEstaConfigurado, enviarEmail } from "@/lib/email";
+import { emailEstaConfigurado, enviarEmail } from "@/lib/email/email";
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { obterConfiguracaoDaPlataforma, salvarConfiguracaoDaPlataforma } from "@/lib/platform/settings";

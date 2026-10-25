@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import type { Catalogo } from "@/lib/catalog";
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
-import { rotuloDoPlano } from "@/lib/plan-copy";
+import type { Catalogo } from "@/lib/pagamento/catalog";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/pagamento/gift-fee";
+import { rotuloDoPlano } from "@/lib/pagamento/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { Aparicao } from "@/components/motion/reveal";
 import { LinkEmFormaDeBotao } from "./home-ui";

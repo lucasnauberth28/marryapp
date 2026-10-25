@@ -1,4 +1,4 @@
-import { redirecionarParaOCasamentoPrincipal } from "@/lib/wedding-redirect";
+import { redirecionarParaOCasamentoPrincipal } from "@/lib/casamento/wedding-redirect";
 
 // Endereço antigo (sem casamento): redireciona para /casamento/<slug> do casamento principal.
 export const dynamic = "force-dynamic";

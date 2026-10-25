@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type ParametrosDeBusca, parametroDaBusca } from "@/lib/platform/list-params";
-import { emailEstaConfigurado } from "@/lib/email";
+import { emailEstaConfigurado } from "@/lib/email/email";
 import { esquemaDoPublico, interpretarPublico, type Publico } from "@/lib/platform/announcement-audience";
 import { interpretarParametroDeIdsDeCasamento } from "@/lib/platform/announcement";
 import { listarRascunhos, listarHistorico, preverPublico } from "@/lib/platform/queries/comunicados";

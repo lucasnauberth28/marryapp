@@ -6,7 +6,7 @@ import {
   interpretarReferenciaDaAssinatura,
   referenciaDaAssinatura,
   nivelDoFornecedorParaOPlano,
-} from "../subscription-period.ts";
+} from "../pagamento/subscription-period.ts";
 
 const DAY = 24 * 60 * 60 * 1000;
 const ID = "3f1c2a9e-8b7d-4c6e-9a5f-1d2e3f4a5b6c";
@@ -52,7 +52,7 @@ test("trocar de plano ou renovar depois de vencido começa de agora", () => {
   );
 });
 
-import { gerarEnderecoDosNomesDoCasal } from "../wedding-rules.ts";
+import { gerarEnderecoDosNomesDoCasal } from "../casamento/wedding-rules.ts";
 
 test("endereço do site a partir dos nomes do casal", () => {
   assert.equal(gerarEnderecoDosNomesDoCasal("Ana & Rafael"), "ana-e-rafael");

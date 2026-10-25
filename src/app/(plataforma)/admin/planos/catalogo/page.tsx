@@ -1,7 +1,7 @@
 import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { Painel } from "@/components/plataforma/panel";
 import { RegiaoPendente } from "@/components/plataforma/pending";
-import { obterCatalogo } from "@/lib/catalog-server";
+import { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { parametroDaBusca, type ParametrosDeBusca } from "@/lib/platform/list-params";
 import { mesDoContador } from "@/lib/platform/payments";
 import { contarNotasPendentes, listarNotasPendentes } from "@/lib/platform/queries/receita/pendencias";

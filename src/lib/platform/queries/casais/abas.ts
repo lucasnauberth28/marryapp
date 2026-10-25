@@ -1,7 +1,7 @@
 // Consultas dos casais para a administração: o que cada aba do casal mostra. Só números de convidados, nunca dados deles.
 import "server-only";
 import prisma from "@/lib/prisma";
-import { filtroSemSoPresente } from "@/lib/guest-origin";
+import { filtroSemSoPresente } from "@/lib/convidados/guest-origin";
 import { formatarReais } from "../../../formatacao/dinheiro.ts";
 import { ehPixEstatico } from "@/lib/platform/payments";
 

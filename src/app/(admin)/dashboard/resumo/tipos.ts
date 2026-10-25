@@ -1,5 +1,5 @@
-import type { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
-import type { obterPlanoDoCasamento } from "@/lib/wedding-plan";
+import type { obterIdentidadeDoCasamentoPrincipal } from "@/lib/casamento/wedding";
+import type { obterPlanoDoCasamento } from "@/lib/casamento/wedding-plan";
 import type { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 
 export type ContextoDaPagina = Awaited<ReturnType<typeof exigirCasamentoNaPagina>>;

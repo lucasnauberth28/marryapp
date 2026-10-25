@@ -3,7 +3,7 @@
 // Checkout de presentes: acompanhamento público do status de uma transação.
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { mercadoPagoEstaConfigurado, pagamentoDoMercadoPago, valorPagoConfere } from "@/lib/mercadopago";
+import { mercadoPagoEstaConfigurado, pagamentoDoMercadoPago, valorPagoConfere } from "@/lib/pagamento/mercadopago";
 import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { limitarUsoPorIp } from "@/lib/security/rate-limiter";

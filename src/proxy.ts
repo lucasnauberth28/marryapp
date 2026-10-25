@@ -8,11 +8,11 @@ import {
   opcoesDoCookieDeSessaoVista,
   CABECALHO_DO_CAMINHO_ATUAL,
 } from "@/lib/auth";
-import { classificarCaminho, ehCaminhoDeAdminDaPlataforma, ehCaminhoDeSessao } from "@/lib/route-access";
+import { classificarCaminho, ehCaminhoDeAdminDaPlataforma, ehCaminhoDeSessao } from "@/lib/painel/route-access";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
-import { primeiroDestinoPermitido, urlDeLogin, resolverCaminhoPosLogin } from "@/lib/login-redirect";
-import { classificarHost, urlDeRedirecionamentoPrincipal } from "@/lib/custom-domain-host";
-import { rotearCaminhoDoDominioPersonalizado } from "@/lib/custom-domain-routes";
+import { primeiroDestinoPermitido, urlDeLogin, resolverCaminhoPosLogin } from "@/lib/painel/login-redirect";
+import { classificarHost, urlDeRedirecionamentoPrincipal } from "@/lib/dominio/custom-domain-host";
+import { rotearCaminhoDoDominioPersonalizado } from "@/lib/dominio/custom-domain-routes";
 import { criarCacheComValidade } from "@/lib/memory-cache";
 import prisma from "@/lib/prisma";
 

@@ -2,12 +2,12 @@
 
 // Assinatura de plano: prévia do preço, cobrança Pix e conferência do pagamento da conta logada.
 import prisma from "@/lib/prisma";
-import { mercadoPagoEstaConfigurado, pagamentoDoMercadoPago } from "@/lib/mercadopago";
+import { mercadoPagoEstaConfigurado, pagamentoDoMercadoPago } from "@/lib/pagamento/mercadopago";
 import { conferirLimiteDeUso, limitarUsoPorIp } from "@/lib/security/rate-limiter";
 import { PaymentStatus } from "@prisma/client";
 import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
-import { aplicarPagamentoAprovado, marcarPagamentoComoFalho } from "@/lib/subscriptions";
-import { cotarAssinatura } from "@/lib/subscription-quote";
+import { aplicarPagamentoAprovado, marcarPagamentoComoFalho } from "@/lib/pagamento/subscriptions";
+import { cotarAssinatura } from "@/lib/pagamento/subscription-quote";
 import { atualizarPaginasDoPlano } from "@/actions/assinatura/cadastro-comum";
 
 export interface EntradaDoPagamentoDaAssinatura {

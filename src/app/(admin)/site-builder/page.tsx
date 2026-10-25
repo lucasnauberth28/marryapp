@@ -3,7 +3,7 @@ import { obterItensDaHistoria } from "@/actions/site/historia";
 import { obterDicasParaEdicao } from "@/actions/site/dicas";
 import { obterConfiguracoes } from "@/actions/settings-actions";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { obterPresentesEmDestaque } from "@/lib/wedding-data";
+import { obterPresentesEmDestaque } from "@/lib/casamento/wedding-data";
 import { EditorDoSiteCliente } from "./editor-do-site-cliente";
 
 export const dynamic = "force-dynamic";

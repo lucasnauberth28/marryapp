@@ -3,9 +3,9 @@ import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
 import { LinkPendente } from "@/components/plataforma/pending";
-import type { obterCatalogo } from "@/lib/catalog-server";
-import { textoDoDescontoDoCombo, ehPlanoGratis, chaveDoModuloNoCatalogo, chaveDoPlanoNoCatalogo } from "@/lib/catalog";
-import { CONFIGURACAO_DOS_PLANOS, type ChaveDoPlano } from "@/lib/plans";
+import type { obterCatalogo } from "@/lib/pagamento/catalog-server";
+import { textoDoDescontoDoCombo, ehPlanoGratis, chaveDoModuloNoCatalogo, chaveDoPlanoNoCatalogo } from "@/lib/pagamento/catalog";
+import { CONFIGURACAO_DOS_PLANOS, type ChaveDoPlano } from "@/lib/pagamento/plans";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { ORDEM_DOS_PLANOS } from "./edicao";
 

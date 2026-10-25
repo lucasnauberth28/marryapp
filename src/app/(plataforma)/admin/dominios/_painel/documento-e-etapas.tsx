@@ -1,7 +1,7 @@
 import { Check, Copy, Eye } from "lucide-react";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { Botao } from "@/components/ui/button";
-import { ETAPAS_DA_LINHA_DO_TEMPO, situacoesDasEtapas } from "@/lib/domain-order";
+import { ETAPAS_DA_LINHA_DO_TEMPO, situacoesDasEtapas } from "@/lib/dominio/domain-order";
 import { cn } from "@/lib/utils";
 import { copiarTexto } from "./tipos-e-textos";
 

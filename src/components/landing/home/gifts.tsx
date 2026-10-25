@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/pagamento/gift-fee";
 import { SimuladorDePresentes } from "./gift-simulator";
 import { Aparicao } from "@/components/motion/reveal";
 import { CabecalhoDaSecao } from "./home-ui";

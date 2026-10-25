@@ -1,6 +1,6 @@
 import { Check, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ETAPAS_DA_LINHA_DO_TEMPO, SituacaoDaEtapa } from "@/lib/domain-order";
+import type { ETAPAS_DA_LINHA_DO_TEMPO, SituacaoDaEtapa } from "@/lib/dominio/domain-order";
 
 const ROTULO_DA_SITUACAO_DA_ETAPA: Record<SituacaoDaEtapa, string> = { done: "Concluído", current: "Em andamento", next: "A seguir", todo: "Depois" };
 

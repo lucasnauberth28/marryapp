@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { idsDeConvidadosAlcancados, motivoDaFalhaNoEnvio, resumoDoEnvio } from "../whatsapp-results.ts";
+import { idsDeConvidadosAlcancados, motivoDaFalhaNoEnvio, resumoDoEnvio } from "../convidados/whatsapp-results.ts";
 
 test("só quem teve o envio confirmado conta como alcançado", () => {
   const guests = [

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
-import type { obterCatalogo } from "@/lib/catalog-server";
+import type { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { estiloDoBotao, estiloDoContainerDaLanding, estiloDoSobretituloDaLanding } from "@/components/landing/styles";
-import { rotuloDoPlano } from "@/lib/plan-copy";
+import { rotuloDoPlano } from "@/lib/pagamento/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { cn } from "@/lib/utils";
 

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { lembreteDevido, fimDaJanelaDoLembrete } from "../plan-reminders.ts";
+import { lembreteDevido, fimDaJanelaDoLembrete } from "../pagamento/plan-reminders.ts";
 
 const DAY = 24 * 60 * 60 * 1000;
 const now = new Date("2026-10-09T06:00:00Z");

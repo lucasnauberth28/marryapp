@@ -4,7 +4,7 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { filtroSemSoPresente } from "@/lib/guest-origin";
+import { filtroSemSoPresente } from "@/lib/convidados/guest-origin";
 import { filtroDeCasais, assinaturaDoCasal, filtroDeInativos, filtroDosProximos30Dias, filtroDeProblema, type FiltrosDeCasais } from "@/lib/platform/casais-filters";
 import { situacaoDoCasal, type FatosDoCasal } from "@/lib/platform/casal-status";
 import { obterUltimosPlanos, pagamentosFalhosRecentes } from "@/lib/platform/queries/casais/planos";

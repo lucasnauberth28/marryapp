@@ -5,16 +5,16 @@ import prisma from "@/lib/prisma";
 import { urlBaseDoApp } from "@/lib/app-url";
 import { registrarAuditoria } from "@/lib/audit";
 import { ehViolacaoDeUnicidade } from "@/lib/prisma-erros";
-import { ehDominioReservado } from "@/lib/custom-domain-host";
+import { ehDominioReservado } from "@/lib/dominio/custom-domain-host";
 import { esconderDocumento } from "@/lib/document-br";
-import { verificarDisponibilidadeDoDominio, type DisponibilidadeDoDominio } from "@/lib/domain-availability";
-import { normalizarNomeDeDominio } from "@/lib/domain-name";
-import { SITUACOES_ATIVAS, interpretarPedidoDeDominio, type CampoDoPedidoDeDominio } from "@/lib/domain-order";
-import { VERSAO_DOS_TERMOS_DE_DOMINIO } from "@/lib/domain-terms";
+import { verificarDisponibilidadeDoDominio, type DisponibilidadeDoDominio } from "@/lib/dominio/domain-availability";
+import { normalizarNomeDeDominio } from "@/lib/dominio/domain-name";
+import { SITUACOES_ATIVAS, interpretarPedidoDeDominio, type CampoDoPedidoDeDominio } from "@/lib/dominio/domain-order";
+import { VERSAO_DOS_TERMOS_DE_DOMINIO } from "@/lib/dominio/domain-terms";
 import { ErroDeAutorizacao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
 import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
-import { obterPlanoDoCasamento, recusaDeModulo } from "@/lib/wedding-plan";
+import { obterPlanoDoCasamento, recusaDeModulo } from "@/lib/casamento/wedding-plan";
 
 // Ações do casal para o domínio próprio. Tudo é do casamento da sessão: o navegador nunca diz de qual
 // casamento é o pedido. O CPF/CNPJ completo só é gravado e nunca volta para o navegador.

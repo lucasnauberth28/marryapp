@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { revelarDocumentoDoTitularDoDominio } from "@/actions/dominio-admin/conexao";
 import type { ResultadoDaAcaoDeAdmin, ResultadoDaAcaoDeConectarDominio } from "@/actions/dominio-admin/comum";
-import type { ResultadoDaConexao } from "@/lib/vercel-domains-core";
+import type { ResultadoDaConexao } from "@/lib/dominio/vercel-domains-core";
 import { useAcaoDoPainel } from "../../_sistema/use-acao-do-painel";
 
 export type PainelAberto = "registered" | "reject" | "online" | null;

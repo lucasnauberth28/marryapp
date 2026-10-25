@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { classificarCaminho, ehCaminhoDeAdminDaPlataforma } from "../route-access.ts";
+import { classificarCaminho, ehCaminhoDeAdminDaPlataforma } from "../painel/route-access.ts";
 
 const APP_DIR = fileURLToPath(new URL("../../app", import.meta.url));
 

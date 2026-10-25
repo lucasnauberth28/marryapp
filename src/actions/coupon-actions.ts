@@ -6,7 +6,7 @@ import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { ehViolacaoDeUnicidade } from "@/lib/prisma-erros";
 import { registrarAuditoria } from "@/lib/audit";
-import { PLANOS_ACEITOS_PELO_CUPOM, normalizarCodigoDoCupom } from "@/lib/checkout-pricing";
+import { PLANOS_ACEITOS_PELO_CUPOM, normalizarCodigoDoCupom } from "@/lib/pagamento/checkout-pricing";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 
 type ResultadoDaAcao = { success: true } | { success: false; error: string };

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
+import { caminhoDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import { cn } from "@/lib/utils";
 
 /** "A&R" vira "A & R", com o "&" em itálico, como no monograma do design. */

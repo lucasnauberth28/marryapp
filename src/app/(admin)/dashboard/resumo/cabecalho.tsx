@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { FUSO_DE_BRASILIA, rotuloDoDia } from "@/lib/resumo/datas";
-import { rotuloDosDiasRestantes } from "@/lib/wedding-format";
+import { rotuloDosDiasRestantes } from "@/lib/casamento/wedding-format";
 import { estiloDoBotaoSecundario } from "../ui";
 import type { ContasDoResumo } from "./contas";
 import { colocarEmMaiuscula, type ContextoDaPagina, type IdentidadeDoCasamento } from "./tipos";

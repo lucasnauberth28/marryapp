@@ -10,7 +10,7 @@ import {
   serializarCookieDoTema,
   type TemaAplicado,
   type PreferenciaDeTema,
-} from "@/lib/theme";
+} from "@/lib/painel/theme";
 
 // Cor da barra do navegador (meta theme-color) por tema: é o `linho` de cada paleta.
 const COR_DO_TEMA: Record<TemaAplicado, string> = { light: "#FCFBFA", dark: "#141113" };

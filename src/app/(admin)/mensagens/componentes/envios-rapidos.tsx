@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { enviarConvitesIniciais, enviarLembretesDeConfirmacao } from "@/actions/whatsapp-actions";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { estiloDaDicaDoPainel, estiloDoBotao, estiloDoCartao } from "@/components/painel/styles";
-import { ehSoPresentePendente } from "@/lib/guest-origin";
+import { ehSoPresentePendente } from "@/lib/convidados/guest-origin";
 import { temTelefone } from "./utilitarios";
 
 type Atalho = "invites" | "reminders";

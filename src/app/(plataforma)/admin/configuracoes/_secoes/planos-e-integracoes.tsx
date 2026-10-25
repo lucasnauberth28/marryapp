@@ -1,8 +1,8 @@
 import { CheckCircle2, MinusCircle } from "lucide-react";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { INTEGRACOES, situacaoDaIntegracao } from "@/lib/platform/config-core";
-import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
-import { modulosDoPlano } from "@/lib/wedding-plan-modules";
+import { MODULOS_DO_CASAL } from "@/lib/pagamento/pricing-modules";
+import { modulosDoPlano } from "@/lib/casamento/wedding-plan-modules";
 import { SecaoDaConfiguracao } from "./secao";
 
 const COLUNAS_DE_PLANO = [

@@ -7,7 +7,7 @@ import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { ehPixEstatico } from "@/lib/platform/payments";
-import { aplicarPagamentoAprovado, marcarPagamentoComoFalho } from "@/lib/subscriptions";
+import { aplicarPagamentoAprovado, marcarPagamentoComoFalho } from "@/lib/pagamento/subscriptions";
 
 const EsquemaDoId = z.string().uuid();
 

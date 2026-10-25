@@ -10,8 +10,8 @@ import {
   interpretarPedidoDeDominio,
   ROTULO_DA_SITUACAO,
   situacoesDasEtapas,
-} from "../domain-order.ts";
-import { TEXTO_DO_ACEITE_DOS_TERMOS_DE_DOMINIO, TEXTO_DOS_TERMOS_DE_DOMINIO, VERSAO_DOS_TERMOS_DE_DOMINIO } from "../domain-terms.ts";
+} from "../dominio/domain-order.ts";
+import { TEXTO_DO_ACEITE_DOS_TERMOS_DE_DOMINIO, TEXTO_DOS_TERMOS_DE_DOMINIO, VERSAO_DOS_TERMOS_DE_DOMINIO } from "../dominio/domain-terms.ts";
 
 const VALID = {
   domain: "Ana e Rafael.com.br",

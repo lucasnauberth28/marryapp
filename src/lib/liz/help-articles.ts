@@ -1,7 +1,7 @@
 // Guia de ajuda da Liz: respostas escritas à mão sobre o que o painel faz hoje. Não é IA nem conversa.
 // Cada artigo cita rótulos e rotas reais do painel. Ao mudar um nome de tela, ajuste aqui também.
 // Quando a IA for ativada pela administração, este guia pode virar a base de conhecimento inicial.
-import type { ModuloComBloqueio } from "../wedding-plan-modules.ts";
+import type { ModuloComBloqueio } from "../casamento/wedding-plan-modules.ts";
 import { ARTIGOS_DOS_PRIMEIROS_PASSOS } from "./ajuda/primeiros-passos.ts";
 import { ARTIGOS_DO_DIA_A_DIA } from "./ajuda/dia-a-dia.ts";
 import { ARTIGOS_DA_CONTA_E_EXTRAS } from "./ajuda/conta-e-extras.ts";

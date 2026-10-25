@@ -3,8 +3,8 @@ import type { CSSProperties } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { instanteDoCasamento } from "@/components/public/wedding-site-countdown";
-import { estiloDoTemaDaMarca, obterIniciaisDoCasal } from "@/lib/wedding-format";
-import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
+import { estiloDoTemaDaMarca, obterIniciaisDoCasal } from "@/lib/casamento/wedding-format";
+import { caminhoDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import type { ConfiguracoesDoSiteDoCasamento, DicaDoSite, ItemDaHistoria, PresenteDoSite, TomDaFaixa } from "./tipos";
 import { diaDoCasamento, formatarHoraDoSite, interpretarPaleta, linhaDeDataELocal } from "./utilitarios";
 

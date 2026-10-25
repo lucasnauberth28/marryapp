@@ -1,15 +1,15 @@
 "use server";
 
 import { exigirCasamento } from "@/lib/security/wedding-context";
-import { recusaDeModulo } from "@/lib/wedding-plan";
-import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
+import { recusaDeModulo } from "@/lib/casamento/wedding-plan";
+import { urlDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 
 import prisma from "@/lib/prisma";
 import { enviarMensagensEmLote } from "@/lib/whatsapp/mensagens";
 import { RsvpStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { filtroSemSoPresente } from "@/lib/guest-origin";
-import { idsDeConvidadosAlcancados, motivoDaFalhaNoEnvio, resumoDoEnvio } from "@/lib/whatsapp-results";
+import { filtroSemSoPresente } from "@/lib/convidados/guest-origin";
+import { idsDeConvidadosAlcancados, motivoDaFalhaNoEnvio, resumoDoEnvio } from "@/lib/convidados/whatsapp-results";
 
 type ModeloDeMensagem = { content: string; buttons: string | null; mediaUrl: string | null; mediaType: string | null } | null;
 

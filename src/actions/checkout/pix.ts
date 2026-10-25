@@ -2,9 +2,9 @@
 
 // Checkout de presentes: cobrança Pix do convidado (dinâmico no Mercado Pago, ou estático como alternativa).
 import prisma from "@/lib/prisma";
-import { gerarCodigoPix } from "@/lib/pix-utils";
-import { mercadoPagoEstaConfigurado, pagamentoDoMercadoPago } from "@/lib/mercadopago";
-import { acharOuCriarConvidado } from "@/lib/guest-matching";
+import { gerarCodigoPix } from "@/lib/pagamento/pix-utils";
+import { mercadoPagoEstaConfigurado, pagamentoDoMercadoPago } from "@/lib/pagamento/mercadopago";
+import { acharOuCriarConvidado } from "@/lib/convidados/guest-matching";
 import { MENSAGEM_DE_MUITAS_TENTATIVAS } from "@/lib/rate-limit-message";
 import { PaymentStatus } from "@prisma/client";
 import { limitarUsoPorIp } from "@/lib/security/rate-limiter";

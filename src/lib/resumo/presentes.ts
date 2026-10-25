@@ -1,5 +1,5 @@
 // Resumo do casamento: extrato único dos presentes (valores, taxa e líquido por forma de pagamento).
-import { calcularValoresDoPresente, type ValoresDoPresente, type FormaDaTaxaDoPresente, type PlanoDaTaxaDoPresente } from "../gift-fee.ts";
+import { calcularValoresDoPresente, type ValoresDoPresente, type FormaDaTaxaDoPresente, type PlanoDaTaxaDoPresente } from "../pagamento/gift-fee.ts";
 
 /** Plano que decide a taxa: Classic e VIP não cobram no Pix; o personalizado só com o módulo "pixZero"; o resto é Básico. */
 export function planoDaTaxaDoPresenteDe(planId: string | null, modules: readonly string[] = []): PlanoDaTaxaDoPresente {

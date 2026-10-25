@@ -6,7 +6,7 @@ import { ExpenseStatus, PaymentMethod, PaymentStatus, RsvpStatus } from "@prisma
 import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { obterContextoDoCasamento } from "@/lib/security/wedding-context";
 import { quantidadeNaoLidaDe } from "@/lib/notifications/queries";
-import { filtroSemSoPresente } from "@/lib/guest-origin";
+import { filtroSemSoPresente } from "@/lib/convidados/guest-origin";
 
 import { pluralizar } from "@/lib/formatacao/plural";
 // Central de avisos. Tudo aqui vale só para o usuário da sessão: o id do usuário nunca vem do navegador,

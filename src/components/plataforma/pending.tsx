@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useSyncExternalStore, type ComponentProps, type ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { ehCliqueSimplesComBotaoEsquerdo, destinoDaNavegacao } from "@/lib/navigation-progress";
+import { ehCliqueSimplesComBotaoEsquerdo, destinoDaNavegacao } from "@/lib/painel/navigation-progress";
 import { listaEstaPendente, chaveDaLocalizacao } from "@/lib/platform/pending-nav";
 import { cn } from "@/lib/utils";
 

@@ -1,4 +1,4 @@
-import type { ConvidadoDaConfirmacaoPublica } from "@/lib/rsvp-lookup";
+import type { ConvidadoDaConfirmacaoPublica } from "@/lib/convidados/rsvp-lookup";
 
 export interface PropriedadesDaConfirmacaoCliente {
   /** Casamento do endereço: a busca e a confirmação ficam restritas a ele */

@@ -2,11 +2,11 @@
 
 // Mensagens do casal: enviar um modelo aos convidados pelo WhatsApp.
 import { exigirCasamento } from "@/lib/security/wedding-context";
-import { recusaDeModulo } from "@/lib/wedding-plan";
-import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
+import { recusaDeModulo } from "@/lib/casamento/wedding-plan";
+import { urlDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import prisma from "@/lib/prisma";
 import { enviarMensagensEmLote } from "@/lib/whatsapp/mensagens";
-import { idsDeConvidadosAlcancados, motivoDaFalhaNoEnvio, resumoDoEnvio } from "@/lib/whatsapp-results";
+import { idsDeConvidadosAlcancados, motivoDaFalhaNoEnvio, resumoDoEnvio } from "@/lib/convidados/whatsapp-results";
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import { ERROS } from "@/lib/mensagens-de-erro";
 

@@ -2,8 +2,8 @@
 
 // Checkout de presentes: pagamento com cartão de crédito via Mercado Pago (Checkout Transparente).
 import prisma from "@/lib/prisma";
-import { calcularTarifaDoCartao, mercadoPagoEstaConfigurado, pagamentoDoMercadoPago, valorPagoConfere } from "@/lib/mercadopago";
-import { acharOuCriarConvidado } from "@/lib/guest-matching";
+import { calcularTarifaDoCartao, mercadoPagoEstaConfigurado, pagamentoDoMercadoPago, valorPagoConfere } from "@/lib/pagamento/mercadopago";
+import { acharOuCriarConvidado } from "@/lib/convidados/guest-matching";
 import { MENSAGEM_DE_MUITAS_TENTATIVAS } from "@/lib/rate-limit-message";
 import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";

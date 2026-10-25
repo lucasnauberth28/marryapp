@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { planoDaTaxaDoPresentePara, resumirSaldoDeRepasse, type TransacaoDoSaldo } from "../payout-balance.ts";
+import { planoDaTaxaDoPresentePara, resumirSaldoDeRepasse, type TransacaoDoSaldo } from "../repasse/payout-balance.ts";
 
 const tx = (over: Partial<TransacaoDoSaldo>): TransacaoDoSaldo => ({
   amount: 10_000,

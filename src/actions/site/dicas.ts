@@ -2,7 +2,7 @@
 
 // Site do casal: dicas aos convidados (hotéis, salões, transporte).
 import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
-import { obterDicasDoCasamento } from "@/lib/wedding-data";
+import { obterDicasDoCasamento } from "@/lib/casamento/wedding-data";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { estiloDoCartao, estiloDoTituloDoCartao } from "@/components/casal/ui";
 import { Entrada } from "@/components/ui/input";
-import { SUFIXO_DO_DOMINIO, normalizarNomeDeDominio, sugerirNomesDeDominio } from "@/lib/domain-name";
+import { SUFIXO_DO_DOMINIO, normalizarNomeDeDominio, sugerirNomesDeDominio } from "@/lib/dominio/domain-name";
 import { cn } from "@/lib/utils";
 import { ResultadoDaConferencia } from "./resultado-da-conferencia";
 import type { PedidoDeDominio } from "./use-pedido-de-dominio";

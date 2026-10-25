@@ -3,7 +3,7 @@
 import { useState, useTransition, type ReactNode } from "react";
 import type { ConfiguracoesDoSiteDoCasamento } from "@/components/public/site-do-casamento/tipos";
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
-import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
+import { urlDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import { CabecalhoDoEditor } from "./componentes/cabecalho-do-editor";
 import { ConteudoDaSecao } from "./componentes/conteudo-da-secao";
 import { LinhaDaSecao } from "./componentes/linha-da-secao";

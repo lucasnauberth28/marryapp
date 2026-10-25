@@ -7,7 +7,7 @@ import {
   redutorDoProgresso,
   avancarUmPouco,
   type EstadoDoProgresso,
-} from "../navigation-progress.ts";
+} from "../painel/navigation-progress.ts";
 
 const HERE = "https://aceito.test/dashboard?aba=a";
 const link = (href: string, extra: Partial<{ target: string | null; download: boolean; optOut: boolean }> = {}) => ({

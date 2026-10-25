@@ -5,7 +5,7 @@ import { ArrowRight, Check, Download, Gift } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { Selo } from "@/components/landing/seal";
-import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
+import { caminhoDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import { cn } from "@/lib/utils";
 import { estiloDoSobretitulo, estiloDoTitulo, type ConvidadoDaConfirmacao, type PropriedadesDaEtapa } from "./tipos";
 

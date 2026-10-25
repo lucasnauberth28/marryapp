@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
 import { esconderDocumento } from "@/lib/document-br";
-import { obterRegistrador } from "@/lib/domain-registrar";
+import { obterRegistrador } from "@/lib/dominio/domain-registrar";
 import { avisarDepois } from "@/lib/notifications/service";
 import { avisarPedidoDeDominio } from "@/lib/notifications/events";
 import { ERROS } from "@/lib/mensagens-de-erro";

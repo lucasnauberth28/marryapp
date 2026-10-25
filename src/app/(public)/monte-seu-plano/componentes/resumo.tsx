@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Zap } from "lucide-react";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-import type { calcularPrecoDoPlanoPersonalizado } from "@/lib/pricing-modules";
+import type { calcularPrecoDoPlanoPersonalizado } from "@/lib/pagamento/pricing-modules";
 import { cn } from "@/lib/utils";
 
 type Calculo = ReturnType<typeof calcularPrecoDoPlanoPersonalizado>;

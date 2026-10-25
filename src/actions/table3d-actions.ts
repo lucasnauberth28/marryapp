@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { exigirCasamento } from "@/lib/security/wedding-context";
-import { recusaDeModulo } from "@/lib/wedding-plan";
+import { recusaDeModulo } from "@/lib/casamento/wedding-plan";
 import { ehIdDeCenario } from "@/lib/mesas3d/scenarios";
 
 // Mesas em 3D: cenário escolhido e link de visualização. Só o casal altera (requireWedding), e só com o módulo do plano.

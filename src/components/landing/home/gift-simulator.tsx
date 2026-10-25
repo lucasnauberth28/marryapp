@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ROTULO_DA_TAXA_DO_PRESENTE, calcularValoresDoPresente, type PlanoDaTaxaDoPresente } from "@/lib/gift-fee";
+import { ROTULO_DA_TAXA_DO_PRESENTE, calcularValoresDoPresente, type PlanoDaTaxaDoPresente } from "@/lib/pagamento/gift-fee";
 import { formatarCentavos, interpretarCentavos } from "./home-money";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 

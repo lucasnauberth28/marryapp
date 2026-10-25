@@ -3,7 +3,7 @@ import { recusarSeNaoForCron } from "@/lib/security/cron-auth";
 import { enviarLembretesDeDespesa } from "@/lib/notifications/cron";
 import { limparRegistrosAntigosDaPlataforma, registrarRodadaDaTarefaAgendada } from "@/lib/platform/system-records";
 import { rodarAlertasDeSaude } from "@/lib/platform/health-alerts";
-import { enviarLembretesDeRenovacaoDeDominio } from "@/lib/domain-renewal-reminders";
+import { enviarLembretesDeRenovacaoDeDominio } from "@/lib/dominio/domain-renewal-reminders";
 
 /**
  * Rotina diária (Vercel Cron, ver vercel.json): avisa o casal das despesas que vencem em até 3 dias

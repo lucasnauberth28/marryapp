@@ -1,8 +1,8 @@
 // Funções puras da página de mensagens: tipo, links, telefone e a escolha de quem recebe.
 import type { Guest } from "@prisma/client";
 import { somenteDigitos } from "@/lib/formatacao/telefone";
-import { ehSoPresentePendente } from "@/lib/guest-origin";
-import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
+import { ehSoPresentePendente } from "@/lib/convidados/guest-origin";
+import { urlDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import type { ItemDeLink, Publico } from "./tipos";
 
 const ROTULO_DO_TIPO: Record<string, string> = {

@@ -3,9 +3,9 @@ import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { formatarDataBrasiliaLonga } from "@/lib/formatacao/data";
 import { temAcessoAoCaminho } from "@/lib/permissions";
-import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
+import { MODULOS_DO_CASAL } from "@/lib/pagamento/pricing-modules";
 import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
-import { DIAS_DO_PERIODO_DO_FORNECEDOR } from "@/lib/subscription-period";
+import { DIAS_DO_PERIODO_DO_FORNECEDOR } from "@/lib/pagamento/subscription-period";
 
 const UM_DIA_EM_MS = 24 * 60 * 60 * 1000;
 const formatoDeDataEHora = new Intl.DateTimeFormat("pt-BR", { dateStyle: "long", timeStyle: "short", timeZone: "America/Sao_Paulo" });

@@ -1,5 +1,5 @@
 import { Check, Clock, Globe, Hourglass, XCircle } from "lucide-react";
-import type { NomeDaSituacaoDoPedidoDeDominio } from "@/lib/domain-order";
+import type { NomeDaSituacaoDoPedidoDeDominio } from "@/lib/dominio/domain-order";
 import type { TomDaSituacao } from "@/components/plataforma/status-chip";
 import type { AbaDeDominios } from "@/lib/platform/queries/dominios";
 

@@ -3,7 +3,7 @@ import { Check, Clock } from "lucide-react";
 import { formatarReaisDeSaida, formatarReaisSemSinal } from "@/lib/resumo/dinheiro";
 import type { ExtratoDePresentes, LinhaDePresente } from "@/lib/resumo/presentes";
 import { pluralizar } from "@/lib/formatacao/plural";
-import type { PlanoDaTaxaDoPresente } from "@/lib/gift-fee";
+import type { PlanoDaTaxaDoPresente } from "@/lib/pagamento/gift-fee";
 import { BlocoDoPainel, Etiqueta, LinkDeTexto, ValorEmDinheiro, classeDaDica, classeDoRotulo } from "../../ui";
 import { Extrato, LinhaDoExtrato, notaDaTaxa } from "./extrato";
 import { SemPresentesRecebidos } from "./sem-presentes";

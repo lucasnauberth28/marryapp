@@ -5,10 +5,10 @@ import { Clock } from "lucide-react";
 import { isAfter, startOfDay } from "date-fns";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { Monograma } from "@/components/public/guest-header";
-import { obterIdentidadeDoCasamento, metadadosDaPaginaDoConvidado } from "@/lib/wedding";
-import { obterPrazoDeConfirmacao } from "@/lib/wedding-data";
-import { exigirCasamentoPublico } from "@/lib/wedding-redirect";
-import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
+import { obterIdentidadeDoCasamento, metadadosDaPaginaDoConvidado } from "@/lib/casamento/wedding";
+import { obterPrazoDeConfirmacao } from "@/lib/casamento/wedding-data";
+import { exigirCasamentoPublico } from "@/lib/casamento/wedding-redirect";
+import { caminhoDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 
 // Lê o banco a cada acesso: nunca pré-renderizar no build (dados congelados e build dependente do banco)
 export const dynamic = "force-dynamic";

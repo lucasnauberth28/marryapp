@@ -1,7 +1,7 @@
 import { AlertCircle, CheckCircle2, Clock, Info, XCircle } from "lucide-react";
 import { Etiqueta, type TomDaEtiqueta } from "@/components/casal/ui";
 import { Esqueleto } from "@/components/ui/skeleton";
-import { TEXTO_DA_DISPONIBILIDADE, type DisponibilidadeDoDominio } from "@/lib/domain-availability";
+import { TEXTO_DA_DISPONIBILIDADE, type DisponibilidadeDoDominio } from "@/lib/dominio/domain-availability";
 import type { ConferenciaDeDominio } from "./tipos";
 
 const TOM_DA_CONFERENCIA: Record<"sucesso" | "perigo" | "aviso" | "neutro", TomDaEtiqueta> = { sucesso: "sucesso", perigo: "perigo", aviso: "aviso", neutro: "neutro" };

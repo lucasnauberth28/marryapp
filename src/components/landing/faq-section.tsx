@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import { Aparicao } from "@/components/motion/reveal";
-import { obterCatalogo } from "@/lib/catalog-server";
+import { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { cn } from "@/lib/utils";
 import { perguntasFrequentes } from "./faq/perguntas";
 import { estiloDoContainerDaLanding, estiloDoTituloDaSecao, estiloDoTextoDeApoio, estiloDoSobretituloDaLanding } from "./styles";

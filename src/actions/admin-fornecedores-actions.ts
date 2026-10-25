@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { aprovarFornecedor, recusarFornecedor } from "@/lib/vendor-curation";
+import { aprovarFornecedor, recusarFornecedor } from "@/lib/fornecedor/vendor-curation";
 import { DIAS_DE_CONCESSAO, fimDoPlanoConcedido } from "@/lib/platform/vendor-admin";
 
 // Ações da administração sobre fornecedores (/admin/fornecedores). TODA ação chama requirePlatformAdmin primeiro,

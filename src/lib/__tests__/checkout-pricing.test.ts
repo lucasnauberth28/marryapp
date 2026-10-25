@@ -8,7 +8,7 @@ import {
   normalizarCodigoDoCupom,
   detalharPreco,
   type RegrasDoCupom,
-} from "../checkout-pricing.ts";
+} from "../pagamento/checkout-pricing.ts";
 
 const now = new Date("2026-10-09T12:00:00Z");
 const base: RegrasDoCupom = {

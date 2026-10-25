@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ExperienciaDeAcesso } from "@/app/login/auth-experience";
 import type { TipoDeConta } from "@/app/login/auth-config";
-import { obterCatalogo } from "@/lib/catalog-server";
+import { obterCatalogo } from "@/lib/pagamento/catalog-server";
 
 export const metadata: Metadata = {
   title: "Criar conta",

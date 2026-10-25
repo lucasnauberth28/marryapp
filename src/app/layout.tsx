@@ -7,7 +7,7 @@ import { ObservadorDeAparicao } from "@/components/motion/reveal-observer";
 import { ProgressoDaNavegacao } from "@/components/feedback/navigation-progress";
 import { ProvedorDoTema } from "@/components/theme/theme-provider";
 import { AvisosComTema } from "@/components/theme/themed-toaster";
-import { SCRIPT_INICIAL_DO_TEMA } from "@/lib/theme";
+import { SCRIPT_INICIAL_DO_TEMA } from "@/lib/painel/theme";
 
 // Fontes do Manual de Marca (p.12), todas locais: o build não depende de rede. Geist e Urbanist são variáveis
 // no peso (100 a 900), só o subconjunto latino. Interface em Geist 400/500/600; títulos em Urbanist 500/600.

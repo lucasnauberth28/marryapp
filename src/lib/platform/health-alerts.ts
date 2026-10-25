@@ -1,7 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
-import { emailDaMarca, emailEstaConfigurado, enviarEmail } from "@/lib/email";
+import { emailDaMarca, emailEstaConfigurado, enviarEmail } from "@/lib/email/email";
 import { urlDoApp } from "@/lib/app-url";
 import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { coletarSaude } from "@/lib/platform/queries/saude";

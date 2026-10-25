@@ -4,7 +4,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import type { ResultadoDaConexao } from "@/lib/vercel-domains";
+import type { ResultadoDaConexao } from "@/lib/dominio/vercel-domains";
 
 type Concluido = { success: true; message?: string };
 export type Falha = { success: false; error: string };

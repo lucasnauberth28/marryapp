@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { prazoNaFrase, textoDoConviteGeral, nomesNaFrase, textoDoConvitePessoal, textoDoLembrete, dataDoCasamentoNaFrase, linkDoWhatsapp } from "../invite-share.ts";
+import { prazoNaFrase, textoDoConviteGeral, nomesNaFrase, textoDoConvitePessoal, textoDoLembrete, dataDoCasamentoNaFrase, linkDoWhatsapp } from "../convidados/invite-share.ts";
 
 const date = new Date("2027-04-17T12:00:00Z");
 const url = "https://meuaceito.com.br/casamento/ana-e-rafael";

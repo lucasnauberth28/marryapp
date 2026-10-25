@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dicaDoBanco, normalizarChavePix, contextoDaCifraDoRepasse, dicaDaChavePix, validarEntradaDeRepasse } from "../payout-input.ts";
+import { dicaDoBanco, normalizarChavePix, contextoDaCifraDoRepasse, dicaDaChavePix, validarEntradaDeRepasse } from "../repasse/payout-input.ts";
 
 const CPF = "529.982.247-25";
 const CNPJ = "11.222.333/0001-81";

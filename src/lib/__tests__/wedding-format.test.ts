@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { rotuloDosDiasRestantes, saudacaoParaAHora } from "../wedding-format.ts";
+import { rotuloDosDiasRestantes, saudacaoParaAHora } from "../casamento/wedding-format.ts";
 
 test("daysLeftLabel fala em dias, no singular e no próprio dia", () => {
   assert.equal(rotuloDosDiasRestantes(191), "faltam 191 dias");

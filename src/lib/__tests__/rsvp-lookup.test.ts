@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { MENSAGEM_DE_MUITAS_TENTATIVAS, mensagemDaBusca, type BuscaDeConvidado } from "../rsvp-lookup.ts";
+import { MENSAGEM_DE_MUITAS_TENTATIVAS, mensagemDaBusca, type BuscaDeConvidado } from "../convidados/rsvp-lookup.ts";
 
 const guest = { id: "g1", name: "Ana", allowedCompanions: 1, rsvpStatus: "PENDING" as const, dietaryRestrictions: null };
 

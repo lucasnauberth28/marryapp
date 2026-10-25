@@ -1,12 +1,12 @@
 import { Link2 } from "lucide-react";
 import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDePlano, EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
-import { ROTULO_DA_SITUACAO, type NomeDaSituacaoDoPedidoDeDominio } from "@/lib/domain-order";
+import { ROTULO_DA_SITUACAO, type NomeDaSituacaoDoPedidoDeDominio } from "@/lib/dominio/domain-order";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { formatarData, formatarDataEHora } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { obterDetalheDoDominio, obterResumoDosPedidosDeDominio } from "@/lib/platform/queries/dominios";
-import { vercelEstaConfigurada } from "@/lib/vercel-domains";
+import { vercelEstaConfigurada } from "@/lib/dominio/vercel-domains";
 import { PainelDoDominio } from "../_components/domain-panel";
 import { etiquetaDaSituacao } from "./etiquetas";
 

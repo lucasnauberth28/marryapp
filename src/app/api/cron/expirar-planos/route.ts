@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { expirarPlanosDeFornecedor } from "@/lib/subscriptions";
-import { enviarLembretesDoPlanoDoFornecedor } from "@/lib/vendor-plan-reminders";
+import { expirarPlanosDeFornecedor } from "@/lib/pagamento/subscriptions";
+import { enviarLembretesDoPlanoDoFornecedor } from "@/lib/fornecedor/vendor-plan-reminders";
 import { recusarSeNaoForCron } from "@/lib/security/cron-auth";
 import { avisarPlanoVencido } from "@/lib/notifications/cron";
 import { registrarRodadaDaTarefaAgendada } from "@/lib/platform/system-records";

@@ -11,9 +11,9 @@ import { FaixaDeFuncoes, Passos } from "@/components/landing/home/intro";
 import { SecaoDePlanos } from "@/components/landing/home/plans";
 import { SecaoDeConvidados, SecaoDoPainel, SecaoDoSite } from "@/components/landing/home/product";
 import { RolagemSuave } from "@/components/motion/smooth-scroll";
-import { obterCatalogo } from "@/lib/catalog-server";
+import { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { compartilhamentoDaMarca } from "@/lib/brand-meta";
-import { rotuloDoPlano } from "@/lib/plan-copy";
+import { rotuloDoPlano } from "@/lib/pagamento/plan-copy";
 import "@/components/landing/home/home.css";
 
 // Os preços vêm do catálogo da administração: a página se refaz sozinha a cada 5 minutos e na hora que um preço muda.

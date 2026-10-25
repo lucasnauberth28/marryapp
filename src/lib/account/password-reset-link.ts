@@ -1,7 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { gerarTokenDeLink } from "@/lib/account/tokens";
-import { emailDaMarca, enviarEmail } from "@/lib/email";
+import { emailDaMarca, enviarEmail } from "@/lib/email/email";
 import { urlDoApp } from "@/lib/app-url";
 
 const VALIDADE_DA_REDEFINICAO_EM_MS = 60 * 60 * 1000; // 1 hora
