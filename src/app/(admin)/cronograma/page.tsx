@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterEventosDaLinhaDoTempo } from "@/actions/timeline-actions";
-import { LinhaDoTempoCliente } from "./timeline-client";
+import { LinhaDoTempoCliente } from "./linha-do-tempo-cliente";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 
 export const metadata: Metadata = {
