@@ -1,36 +1,30 @@
 import { Suspense } from "react";
-import { obterMetricasFinanceiras, obterTransacoes } from "@/actions/finance-actions";
 import { obterDespesas } from "@/actions/expense-actions";
+import { obterMetricasFinanceiras, obterTransacoes } from "@/actions/finance-actions";
 import { obterFornecedores } from "@/actions/vendor-actions";
 import { obterDadosDaCarteira } from "@/actions/wallet-actions";
-import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
+import { estiloDoTituloDoCartao } from "@/components/casal/ui";
 import { RegiaoDeCarregamento } from "@/components/skeletons";
-import { Aparicao } from "@/components/motion/reveal";
-import { estiloDoNumeroGrande, estiloDoCartao, estiloDoTituloDoCartao, estiloDoSobretitulo } from "@/components/casal/ui";
-import { TabelaFinanceira } from "./finance-client";
-import { DespesasCliente } from "./expenses-client";
-import { EsqueletoDasDespesas, EsqueletoDosPagamentos, EsqueletoDosIndicadores } from "./skeletons";
-
-import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
-import { formatarDataCivilCurta } from "@/lib/formatacao/data";
-// ==========================================
-// UTILS
-// ==========================================
-
-
-// ==========================================
-// METADATA
-// ==========================================
+import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
+import { DespesasCliente } from "./despesas/despesas-cliente";
+import { Indicadores } from "./indicadores";
+import { TabelaFinanceira } from "./pagamentos/tabela-financeira";
+import { EsqueletoDasDespesas, EsqueletoDosIndicadores, EsqueletoDosPagamentos } from "./skeletons";
 
 export const metadata = {
   title: "Finanças",
   description: "Painel de conciliação financeira e controle de despesas do casamento.",
 };
 
-// ==========================================
-// PAGE COMPONENT (Server)
-// ==========================================
+function TituloDaSecao({ id, titulo, texto }: { id: string; titulo: string; texto: string }) {
+  return (
+    <div>
+      <h2 id={id} className={estiloDoTituloDoCartao}>{titulo}</h2>
+      <p className="mt-0.5 text-[15px] text-tinta-suave">{texto}</p>
+    </div>
+  );
+}
 
 export default async function FinancasPage() {
   await exigirCasamentoNaPagina("/financas");
@@ -47,39 +41,18 @@ export default async function FinancasPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <CabecalhoDaPagina
-        eyebrow="Organização"
-        title="Finanças"
-        description="Presentes que entraram, contas a pagar e quanto sobra no fim."
-      />
-
+      <CabecalhoDaPagina eyebrow="Organização" title="Finanças" description="Presentes que entraram, contas a pagar e quanto sobra no fim." />
       <Suspense fallback={<RegiaoDeCarregamento label="os números das finanças"><EsqueletoDosIndicadores /></RegiaoDeCarregamento>}>
         <Indicadores metrics={metrics} expenses={expenses} />
       </Suspense>
-
       <section aria-labelledby="despesas-titulo" className="flex flex-col gap-3">
-        <div>
-          <h2 id="despesas-titulo" className={estiloDoTituloDoCartao}>
-            Despesas
-          </h2>
-          <p className="mt-0.5 text-[15px] text-tinta-suave">Contratos com fornecedores e compras avulsas, com as parcelas de cada um.</p>
-        </div>
-
+        <TituloDaSecao id="despesas-titulo" titulo="Despesas" texto="Contratos com fornecedores e compras avulsas, com as parcelas de cada um." />
         <Suspense fallback={<RegiaoDeCarregamento label="as despesas"><EsqueletoDasDespesas /></RegiaoDeCarregamento>}>
           <Despesas expenses={expenses} vendors={vendors} walletData={walletData} />
         </Suspense>
       </section>
-
       <section aria-labelledby="pagamentos-titulo" className="flex flex-col gap-3 border-t border-linha pt-6">
-        <div>
-          <h2 id="pagamentos-titulo" className={estiloDoTituloDoCartao}>
-            Pagamentos dos presentes
-          </h2>
-          <p className="mt-0.5 text-[15px] text-tinta-suave">
-            Confira no extrato do banco os Pix recebidos e confirme cada um aqui.
-          </p>
-        </div>
-
+        <TituloDaSecao id="pagamentos-titulo" titulo="Pagamentos dos presentes" texto="Confira no extrato do banco os Pix recebidos e confirme cada um aqui." />
         <Suspense fallback={<RegiaoDeCarregamento label="os pagamentos"><EsqueletoDosPagamentos /></RegiaoDeCarregamento>}>
           <Pagamentos transactions={transactions} />
         </Suspense>
@@ -88,70 +61,9 @@ export default async function FinancasPage() {
   );
 }
 
-/** Os quatro números do topo (presentes, despesas, saldo e próxima parcela). */
-async function Indicadores({ metrics: metricsPromise, expenses: expensesPromise }: { metrics: ReturnType<typeof obterMetricasFinanceiras>; expenses: ReturnType<typeof obterDespesas> }) {
-  const [metrics, expenses] = await Promise.all([metricsPromise, expensesPromise]);
-  const isSaldoPositivo = metrics.saldoPrevisto >= 0;
-
-  // Próxima conta a pagar: a pendente (ou atrasada) com o vencimento mais perto (a lista já vem por data)
-  const nextDue = expenses.find((e) => e.status !== "PAID") ?? null;
-  const nextDueName = nextDue ? nextDue.description.replace(/\s*\(\d+[/\sde]+\d+\)\s*$/i, "").trim() : "";
-  const paidPercent = metrics.totalDespesas > 0 ? Math.round((metrics.totalDespesasPagas / metrics.totalDespesas) * 100) : 0;
-
-  return (
-    <Aparicao className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <article className={`${estiloDoCartao} flex flex-col gap-2 p-5 sm:p-6`}>
-        <p className={estiloDoSobretitulo}>Presentes recebidos</p>
-        <span className={estiloDoNumeroGrande}>{formatarReaisEnxuto(metrics.totalLiquido)}</span>
-        <span className="text-sm text-tinta-suave">
-          {metrics.totalPendente > 0
-            ? `Mais ${formatarReaisEnxuto(metrics.totalPendente)} em Pix a conferir`
-            : metrics.totalLiquido > 0
-              ? "Tudo conferido"
-              : "Os presentes pagos entram aqui."}
-        </span>
-      </article>
-
-      <article className={`${estiloDoCartao} flex flex-col gap-2 p-5 sm:p-6`}>
-        <p className={estiloDoSobretitulo}>Despesas</p>
-        <span className={estiloDoNumeroGrande}>{formatarReaisEnxuto(metrics.totalDespesas)}</span>
-        <span className="text-sm text-tinta-suave">
-          {metrics.totalDespesas > 0
-            ? `${paidPercent}% pago · já saíram ${formatarReaisEnxuto(metrics.totalDespesasPagas)}`
-            : "Cadastrem a primeira despesa."}
-        </span>
-      </article>
-
-      <article className={`${estiloDoCartao} flex flex-col gap-2 p-5 sm:p-6`}>
-        <p className={estiloDoSobretitulo}>Saldo previsto</p>
-        <span className={isSaldoPositivo ? estiloDoNumeroGrande : estiloDoNumeroGrande.replace("text-tinta", "text-perigo")}>{formatarReaisEnxuto(metrics.saldoPrevisto)}</span>
-        <span className="text-sm text-tinta-suave">Presentes recebidos menos as despesas</span>
-      </article>
-
-      <article className={`${estiloDoCartao} flex flex-col gap-2 p-5 sm:p-6 ${nextDue ? "border-2 border-aviso" : ""}`}>
-        <p className={estiloDoSobretitulo}>Próxima parcela</p>
-        <span className={estiloDoNumeroGrande}>{nextDue ? formatarReaisEnxuto(nextDue.amount) : "R$ 0"}</span>
-        <span className={`text-sm ${nextDue ? "font-semibold text-aviso" : "text-tinta-suave"}`}>
-          {nextDue
-            ? `${nextDueName} · vence ${formatarDataCivilCurta(nextDue.dueDate).replace(".", "")}${metrics.countDespesasPendentes > 1 ? ` (mais ${metrics.countDespesasPendentes - 1} a vencer)` : ""}`
-            : "Nenhuma conta a pagar."}
-        </span>
-      </article>
-    </Aparicao>
-  );
-}
-
-async function Despesas({
-  expenses,
-  vendors,
-  walletData,
-}: {
-  expenses: ReturnType<typeof obterDespesas>;
-  vendors: ReturnType<typeof obterFornecedores>;
-  walletData: ReturnType<typeof obterDadosDaCarteira>;
-}) {
-  const [list, vendorList, wallet] = await Promise.all([expenses, vendors, walletData]);
-  return <DespesasCliente initialExpenses={list} vendors={vendorList} userCards={wallet.cards} />;
+async function Despesas({ expenses, vendors, walletData }: { expenses: ReturnType<typeof obterDespesas>; vendors: ReturnType<typeof obterFornecedores>; walletData: ReturnType<typeof obterDadosDaCarteira> }) {
+  const [lista, fornecedores, carteira] = await Promise.all([expenses, vendors, walletData]);
+  return <DespesasCliente initialExpenses={lista} vendors={fornecedores} userCards={carteira.cards} />;
 }
 
 async function Pagamentos({ transactions }: { transactions: ReturnType<typeof obterTransacoes> }) {
