@@ -1,35 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { PaymentStatus } from "@prisma/client";
-import prisma from "@/lib/prisma";
 import { Aparicao } from "@/components/motion/reveal";
-import { estiloDoBotao } from "@/components/landing/styles";
-import { cn } from "@/lib/utils";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
-import { opcaoDePlano, nomeCurtoDoPlano } from "@/app/login/auth-config";
 import { obterCatalogo } from "@/lib/catalog-server";
-import { proximoFimDoPeriodoDoFornecedor, DIAS_DO_PERIODO_DO_FORNECEDOR, nivelDoFornecedorParaOPlano } from "@/lib/subscription-period";
-import { detalharPreco } from "@/lib/checkout-pricing";
-import { creditoDeUpgrade } from "@/lib/upgrade-credit";
-import { formatarDataDoCasamento, LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL, inicioDoMesEmBrasilia } from "../../_lib/vendor-panel";
+import { AvisoDeRenovacao, CartaoDoPlanoAtual } from "./_plano/aviso-de-renovacao";
+import { carregarPagamentosEPedidos, situacaoDoPlano } from "./_plano/dados";
+import { HistoricoDePagamentos } from "./_plano/historico-de-pagamentos";
 import { PagamentoDoPlano } from "./plan-checkout";
 
-import { formatarReais } from "@/lib/formatacao/dinheiro";
 export const metadata: Metadata = { title: "Plano" };
-
-const UM_DIA_EM_MS = 24 * 60 * 60 * 1000;
-const DESLOCAMENTO_DE_BRASILIA_EM_MS = 3 * 60 * 60 * 1000; // Brasília (UTC-3, sem horário de verão desde 2019)
-
-/** "14 out 2026" no horário de Brasília; sem o ano quando `short` e for o ano corrente. */
-function formatarData(date: Date, now: Date, short = false): string {
-  const local = new Date(date.getTime() - DESLOCAMENTO_DE_BRASILIA_EM_MS);
-  const label = formatarDataDoCasamento(local) ?? "";
-  if (!short) return label;
-  const sameYear = local.getUTCFullYear() === new Date(now.getTime() - DESLOCAMENTO_DE_BRASILIA_EM_MS).getUTCFullYear();
-  return sameYear ? label.replace(/ \d{4}$/, "") : label;
-}
-
-const PLANO_DO_NIVEL: Record<string, "start" | "pro" | "master"> = { FREE: "start", PRO: "pro", MASTER: "master" };
 
 export default async function PlanoPage() {
   const { session, vendor } = await obterContextoDaPaginaDoFornecedor();
@@ -37,235 +15,30 @@ export default async function PlanoPage() {
 
   // Página dinâmica (sessão): a data de agora é lida a cada requisição.
   const now = new Date();
-  const catalog = await obterCatalogo();
-  const [payments, monthLeads] = await Promise.all([
-    prisma.subscription.findMany({
-      where: { userId: session.userId, status: { in: [PaymentStatus.APPROVED, PaymentStatus.REFUNDED] } },
-      orderBy: { paidAt: "desc" },
-      take: 6,
-      select: { id: true, planName: true, amount: true, status: true, paidAt: true, periodEnd: true },
-    }),
-    prisma.vendorLead.count({ where: { vendorId: vendor.id, createdAt: { gte: inicioDoMesEmBrasilia(now) } } }),
-  ]);
-
-  const isPaid = vendor.planTier !== "FREE";
-  const expiresAt = vendor.planExpiresAt;
-  const hasActivePeriod = expiresAt !== null && expiresAt.getTime() > now.getTime();
-  const daysLeft = isPaid && expiresAt ? Math.max(0, Math.ceil((expiresAt.getTime() - now.getTime()) / UM_DIA_EM_MS)) : null;
-  const planName = nomeCurtoDoPlano(opcaoDePlano(PLANO_DO_NIVEL[vendor.planTier] ?? "start", catalog).name);
-
-  const options = [opcaoDePlano("pro", catalog), opcaoDePlano("master", catalog)];
-  // Até quando vale cada plano se pago agora (mesma regra do webhook de confirmação).
-  const endLabels = Object.fromEntries(
-    options.map((o) => {
-      const newTier = nivelDoFornecedorParaOPlano(o.id) ?? "PRO";
-      const end = proximoFimDoPeriodoDoFornecedor({ currentTier: vendor.planTier, currentExpiresAt: expiresAt, newTier, now });
-      return [o.id, formatarData(end, now, true)];
-    }),
-  );
-
-  // Crédito dos dias pagos que sobraram ao subir de plano (mesma conta do servidor ao gerar o Pix).
-  const currentKey = vendor.planTier === "PRO" ? "pro" : vendor.planTier === "MASTER" ? "master" : null;
-  const credits = Object.fromEntries(
-    options.map((o) => {
-      const newTier = nivelDoFornecedorParaOPlano(o.id);
-      const credit =
-        newTier && currentKey
-          ? creditoDeUpgrade({
-              currentTier: vendor.planTier,
-              currentExpiresAt: expiresAt,
-              newTier,
-              now,
-              currentMonthlyPrice: catalog.plans[currentKey].price,
-              newPrice: o.price,
-            })
-          : 0;
-      return [o.id, detalharPreco({ price: o.price, credit })];
-    }),
-  );
-
-  const showRenewalWarning = daysLeft !== null && daysLeft <= 7;
-  const details: { label: string; value: string }[] = isPaid
-    ? [
-        ...(expiresAt ? [{ label: "Pago até", value: formatarData(expiresAt, now) }] : []),
-        { label: "Pedidos este mês", value: `${monthLeads} · ilimitados` },
-        { label: "Forma de pagamento", value: "Pix, mês a mês" },
-      ]
-    : [
-        {
-          label: "Pedidos este mês",
-          value: `${Math.min(monthLeads, LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL)} de ${LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL}`,
-        },
-        { label: "Valor", value: "Gratuito" },
-      ];
+  const [catalog, [payments, monthLeads]] = await Promise.all([obterCatalogo(), carregarPagamentosEPedidos(session.userId, vendor.id, now)]);
+  const plano = situacaoDoPlano(vendor, catalog, monthLeads, now);
+  const avisarRenovacao = plano.daysLeft !== null && plano.daysLeft <= 7 && plano.expiresAt;
 
   return (
     <div className="flex max-w-[880px] flex-col gap-7">
       <Aparicao variant="fade" className="flex flex-col gap-1">
         <p className="hidden text-xs font-semibold tracking-[0.08em] text-tinta-suave uppercase md:block">Plano</p>
-        <h1 className="font-display text-[32px] leading-[38px] md:text-[40px] md:leading-[46px]">
-          Seu plano no Aceito
-        </h1>
+        <h1 className="font-display text-[32px] leading-[38px] md:text-[40px] md:leading-[46px]">Seu plano no Aceito</h1>
       </Aparicao>
-
-      {showRenewalWarning && expiresAt ? (
-        <div
-          role="status"
-          className="flex flex-col gap-3 rounded-2xl bg-aviso-suave px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4"
-        >
-          <div className="flex flex-col gap-0.5">
-            <strong className="font-semibold">
-              {!hasActivePeriod
-                ? `Seu ${planName} venceu`
-                : daysLeft === 0
-                  ? `Seu ${planName} vence hoje`
-                  : `Seu ${planName} vence em ${daysLeft} ${daysLeft === 1 ? "dia" : "dias"}`}
-            </strong>
-            <span className="text-sm text-tinta-suave">
-              {hasActivePeriod
-                ? `Renove até ${formatarData(expiresAt, now, true)} para não voltar ao Start. Renovar antes soma os dias que faltam.`
-                : `O período pago terminou em ${formatarData(expiresAt, now, true)}. Renove para continuar com os benefícios do ${planName}.`}
-            </span>
-          </div>
-          <a href="#pagar" className={cn(estiloDoBotao.primary, estiloDoBotao.sm, "min-h-11 shrink-0")}>
-            Renovar agora
-          </a>
-        </div>
-      ) : null}
-
+      {avisarRenovacao && plano.expiresAt ? <AvisoDeRenovacao planName={plano.planName} daysLeft={plano.daysLeft!} expiresAt={plano.expiresAt} hasActivePeriod={plano.hasActivePeriod} now={now} /> : null}
       <Aparicao>
-        <section
-          aria-labelledby="plano-atual-titulo"
-          className="flex flex-col gap-4 rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between"
-        >
-          <div className="flex flex-col gap-0.5">
-            <h2 id="plano-atual-titulo" className="text-sm text-tinta-suave">
-              Plano atual
-            </h2>
-            <p className="font-display text-4xl leading-10">{planName}</p>
-          </div>
-          <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:flex sm:flex-wrap sm:gap-8">
-            {details.map((d) => (
-              <div key={d.label}>
-                <dt className="text-sm text-tinta-suave">{d.label}</dt>
-                <dd className="font-semibold">{d.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
+        <CartaoDoPlanoAtual planName={plano.planName} details={plano.details} />
       </Aparicao>
-
       <PagamentoDoPlano
         currentTier={vendor.planTier}
-        hasActivePeriod={hasActivePeriod}
-        daysLeft={hasActivePeriod ? daysLeft : null}
-        endLabels={endLabels}
-        credits={credits}
-        currentPlanName={planName}
-        options={options}
+        hasActivePeriod={plano.hasActivePeriod}
+        daysLeft={plano.hasActivePeriod ? plano.daysLeft : null}
+        endLabels={plano.endLabels}
+        credits={plano.credits}
+        currentPlanName={plano.planName}
+        options={plano.options}
       />
-
-      <section aria-labelledby="pagamentos-titulo" className="flex flex-col gap-3">
-        {payments.length > 0 ? (
-          <>
-            <h2 id="pagamentos-titulo" className="text-lg font-semibold">
-              Pagamentos
-            </h2>
-            {/* Celular: lista de linhas de 56px, como no design; a tabela fica para telas maiores. */}
-            <ul className="flex flex-col rounded-2xl border border-linha bg-papel md:hidden">
-              {payments.map((p) => {
-                const refunded = p.status === PaymentStatus.REFUNDED;
-                return (
-                  <li key={p.id} className="flex min-h-14 items-center gap-3 border-t border-linha px-4 py-2 first:border-t-0">
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <strong className="font-semibold">{nomeCurtoDoPlano(p.planName)}</strong>
-                      <span className="text-sm text-tinta-suave">
-                        {p.paidAt ? `Pago em ${formatarData(p.paidAt, now)}` : "Pagamento sem data"}
-                        {refunded ? " · Estornado" : ""}
-                      </span>
-                    </span>
-                    <span className="tabular-nums">{formatarReais(p.amount)}</span>
-                    {refunded ? null : (
-                      <Link
-                        href={`/recibo/${p.id}`}
-                        className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave"
-                      >
-                        Recibo
-                      </Link>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-            <div
-              role="region"
-              aria-labelledby="pagamentos-titulo"
-              tabIndex={0}
-              className="relative hidden overflow-x-auto rounded-2xl border border-linha bg-papel md:block"
-            >
-              <table className="w-full min-w-[640px] border-collapse text-[15px]">
-                <thead>
-                  <tr className="text-left text-[13px] text-tinta-suave">
-                    <th scope="col" className="px-5 py-3 font-semibold">
-                      Plano
-                    </th>
-                    <th scope="col" className="px-5 py-3 font-semibold">
-                      Pago em
-                    </th>
-                    <th scope="col" className="px-5 py-3 font-semibold">
-                      Período
-                    </th>
-                    <th scope="col" className="px-5 py-3 text-right font-semibold">
-                      Valor
-                    </th>
-                    <th scope="col" className="px-5 py-3">
-                      <span className="sr-only">Recibo</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {payments.map((p) => {
-                    const refunded = p.status === PaymentStatus.REFUNDED;
-                    const period =
-                      p.periodEnd && !refunded
-                        ? `${formatarData(new Date(p.periodEnd.getTime() - DIAS_DO_PERIODO_DO_FORNECEDOR * UM_DIA_EM_MS), now)} a ${formatarData(p.periodEnd, now)}`
-                        : "—";
-                    return (
-                      <tr key={p.id} className="border-t border-linha">
-                        <td className="px-5 py-3.5 font-semibold">{nomeCurtoDoPlano(p.planName)}</td>
-                        <td className="px-5 py-3.5">{p.paidAt ? formatarData(p.paidAt, now) : "—"}</td>
-                        <td className="px-5 py-3.5 text-tinta-suave">{period}</td>
-                        <td className="px-5 py-3.5 text-right whitespace-nowrap tabular-nums">
-                          {refunded ? <span className="mr-2 text-sm font-semibold text-aviso">Estornado</span> : null}
-                          {formatarReais(p.amount)}
-                        </td>
-                        <td className="px-3 py-1.5 text-right">
-                          {refunded ? null : (
-                            <Link
-                              href={`/recibo/${p.id}`}
-                              className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold whitespace-nowrap text-ameixa hover:bg-ameixa-suave"
-                            >
-                              Recibo
-                            </Link>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </>
-        ) : (
-          <h2 id="pagamentos-titulo" className="sr-only">
-            Como funciona o pagamento
-          </h2>
-        )}
-        <p className="text-sm text-tinta-suave">
-          Pagamento por Pix, sem renovação automática. Quando o período acaba, seu perfil volta ao Start até você
-          renovar.
-        </p>
-      </section>
+      <HistoricoDePagamentos payments={payments} now={now} />
     </div>
   );
 }

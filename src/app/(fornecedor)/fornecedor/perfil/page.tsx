@@ -4,8 +4,8 @@ import prisma from "@/lib/prisma";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 import { EtiquetaDaCuradoria } from "../../_components/status-chip";
 import { centavosParaCampoDeReais, MAXIMO_DE_IMAGENS_NA_GALERIA, interpretarGaleria, interpretarRegioes, CATEGORIAS_DE_FORNECEDOR } from "../../_lib/vendor-panel";
-import { FormularioDeMidias } from "./media-form";
-import { FormularioDePerfil } from "./profile-form";
+import { FormularioDeMidias } from "./formulario-de-midias";
+import { FormularioDePerfil } from "./formulario-de-perfil";
 
 export const metadata: Metadata = { title: "Meu perfil" };
 
@@ -14,6 +14,22 @@ const DICA_DA_CURADORIA: Record<string, string> = {
   PENDING_APPROVAL: "O Aceito está analisando seu perfil. Ele aparece na lista de fornecedores assim que for aprovado.",
   REJECTED: "Ajuste os pontos indicados e salve: o perfil volta para a fila da curadoria.",
 };
+
+function AvisoDaCuradoria({ status, notas, completude }: { status: string; notas: string | null; completude: number }) {
+  return (
+    <Aparicao variant="fade" className="flex flex-col gap-3 rounded-2xl border border-linha bg-areia/60 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:p-5">
+      <EtiquetaDaCuradoria status={status} />
+      <span className="text-tinta-suave">
+        {DICA_DA_CURADORIA[status] ?? DICA_DA_CURADORIA.PENDING_APPROVAL} · Perfil {completude}% completo
+      </span>
+      {status === "REJECTED" && notas ? (
+        <p className="w-full rounded-xl bg-perigo-suave px-4 py-3 text-sm text-perigo">
+          <strong className="font-semibold">Recado da curadoria:</strong> {notas}
+        </p>
+      ) : null}
+    </Aparicao>
+  );
+}
 
 export default async function PerfilPage() {
   const { vendor } = await obterContextoDaPaginaDoFornecedor();
@@ -43,22 +59,7 @@ export default async function PerfilPage() {
         vendorId={vendor.id}
         isPublic={vendor.curationStatus === "APPROVED"}
         categories={categories}
-        notice={
-          <Aparicao
-            variant="fade"
-            className="flex flex-col gap-3 rounded-2xl border border-linha bg-areia/60 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:p-5"
-          >
-            <EtiquetaDaCuradoria status={vendor.curationStatus} />
-            <span className="text-tinta-suave">
-              {DICA_DA_CURADORIA[vendor.curationStatus] ?? DICA_DA_CURADORIA.PENDING_APPROVAL} · Perfil {completeness}% completo
-            </span>
-            {vendor.curationStatus === "REJECTED" && vendor.curationNotes ? (
-              <p className="w-full rounded-xl bg-perigo-suave px-4 py-3 text-sm text-perigo">
-                <strong className="font-semibold">Recado da curadoria:</strong> {vendor.curationNotes}
-              </p>
-            ) : null}
-          </Aparicao>
-        }
+        notice={<AvisoDaCuradoria status={vendor.curationStatus} notas={vendor.curationNotes} completude={completeness} />}
         portfolio={<FormularioDeMidias initial={{ logoUrl: vendor.logoUrl, coverUrl: vendor.coverUrl, gallery }} />}
         initial={{
           companyName: vendor.companyName,
