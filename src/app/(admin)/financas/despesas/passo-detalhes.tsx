@@ -71,6 +71,7 @@ function FotoDaCompra({ dados }: { dados: DadosDaDespesa }) {
         <input aria-label="Foto da compra ou do produto" type="file" accept="image/*" onChange={dados.aoEscolherImagem} className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
         {dados.imagem ? (
           <div className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element -- prévia local (data URL) */}
             <img src={dados.imagem} alt="Preview" className="w-10 h-10 object-cover rounded-lg border border-linha" />
             <span className="text-xs font-medium text-tinta truncate max-w-[200px]">{dados.nomeDaImagem}</span>
             <Botao type="button" variant="ghost" size="sm" onClick={() => dados.setImagem("")} className="text-xs text-perigo h-6 px-2">Remover</Botao>
