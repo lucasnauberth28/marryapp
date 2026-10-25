@@ -1,6 +1,6 @@
 import { useState, useTransition } from "react";
 import { Download, Lock, ShieldCheck, Trash2 } from "lucide-react";
-import { excluirMinhaConta } from "@/actions/account-actions";
+import { excluirMinhaConta } from "@/actions/conta/exclusao";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";

@@ -2,7 +2,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Copy, Mail, MessageCircle, Send, UserPlus, Users, X } from "lucide-react";
 import { toast } from "sonner";
-import { cancelarConviteDePessoaParceira, criarConviteDePessoaParceira } from "@/actions/account-actions";
+import { cancelarConviteDePessoaParceira, criarConviteDePessoaParceira } from "@/actions/conta/convite-do-par";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";

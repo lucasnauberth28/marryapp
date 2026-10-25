@@ -1,7 +1,7 @@
 import { useState, useTransition } from "react";
 import { KeyRound, Lock } from "lucide-react";
 import { toast } from "sonner";
-import { trocarSenha } from "@/actions/account-actions";
+import { trocarSenha } from "@/actions/conta/senha";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
