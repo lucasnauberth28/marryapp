@@ -31,6 +31,61 @@ function LinhasDeEsqueleto({ count, avatar = true }: { count: number; avatar?: b
   );
 }
 
+function ConviteEsqueleto() {
+  return (
+    <EsqueletoDoBloco className="min-[1200px]:col-span-7">
+      <div className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-3.5 md:grid-cols-[104px_minmax(0,1fr)] md:gap-5">
+        <Esqueleto className="aspect-[4/5] w-full rounded-[10px]" />
+        <Esqueleto className="h-16 w-full rounded-[8px]" />
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Esqueleto className="h-11 w-48 rounded-full max-md:flex-1" />
+        <Esqueleto className="h-11 w-32 rounded-full max-md:flex-1" />
+        <Esqueleto className="h-11 w-44 rounded-full max-md:flex-1" />
+      </div>
+      <div className="grid gap-2 border-t border-linha pt-4">
+        <Esqueleto className="h-4 w-2/3 rounded-md" />
+        <Esqueleto className="h-2 w-full rounded-full" />
+      </div>
+    </EsqueletoDoBloco>
+  );
+}
+
+function ConfirmacoesEsqueleto() {
+  return (
+    <EsqueletoDoBloco className="min-[1200px]:col-span-7">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="grid gap-2">
+            <Esqueleto className="h-4 w-28 rounded-md" />
+            <Esqueleto className="h-8 w-16 rounded-md" />
+            <Esqueleto className="h-4 w-24 rounded-md" />
+          </div>
+        ))}
+      </div>
+      <Esqueleto className="h-2.5 w-full rounded-full" />
+    </EsqueletoDoBloco>
+  );
+}
+
+function DinheiroEOrcamentoEsqueleto() {
+  return (
+    <>
+      <EsqueletoDoBloco className="min-[1200px]:col-span-7">
+        <Esqueleto className="h-4 w-32 rounded-md" />
+        <Esqueleto className="h-10 w-44 rounded-lg" />
+        <LinhasDeEsqueleto count={4} avatar={false} />
+      </EsqueletoDoBloco>
+      <EsqueletoDoBloco className="min-[1200px]:col-span-5">
+        <Esqueleto className="h-4 w-28 rounded-md" />
+        <Esqueleto className="h-8 w-48 rounded-md" />
+        <Esqueleto className="h-2 w-full rounded-full" />
+        <LinhasDeEsqueleto count={3} avatar={false} />
+      </EsqueletoDoBloco>
+    </>
+  );
+}
+
 // Espelha o Resumo: cabeçalho, convite e fila lado a lado, confirmações e respostas, dinheiro e orçamento.
 // Os dados (convites, fila, números) só chegam com a página; aqui só as caixas, na mesma grade.
 export default function DashboardLoading() {
@@ -41,50 +96,15 @@ export default function DashboardLoading() {
         <Esqueleto className="h-4 w-full max-w-[560px] rounded-md" />
       </div>
       <div className="grid items-start gap-4 min-[1200px]:grid-cols-12">
-        <EsqueletoDoBloco className="min-[1200px]:col-span-7">
-          <div className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-3.5 md:grid-cols-[104px_minmax(0,1fr)] md:gap-5">
-            <Esqueleto className="aspect-[4/5] w-full rounded-[10px]" />
-            <Esqueleto className="h-16 w-full rounded-[8px]" />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Esqueleto className="h-11 w-48 rounded-full max-md:flex-1" />
-            <Esqueleto className="h-11 w-32 rounded-full max-md:flex-1" />
-            <Esqueleto className="h-11 w-44 rounded-full max-md:flex-1" />
-          </div>
-          <div className="grid gap-2 border-t border-linha pt-4">
-            <Esqueleto className="h-4 w-2/3 rounded-md" />
-            <Esqueleto className="h-2 w-full rounded-full" />
-          </div>
-        </EsqueletoDoBloco>
+        <ConviteEsqueleto />
         <EsqueletoDoBloco className="min-[1200px]:col-span-5">
           <LinhasDeEsqueleto count={3} />
         </EsqueletoDoBloco>
-        <EsqueletoDoBloco className="min-[1200px]:col-span-7">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="grid gap-2">
-                <Esqueleto className="h-4 w-28 rounded-md" />
-                <Esqueleto className="h-8 w-16 rounded-md" />
-                <Esqueleto className="h-4 w-24 rounded-md" />
-              </div>
-            ))}
-          </div>
-          <Esqueleto className="h-2.5 w-full rounded-full" />
-        </EsqueletoDoBloco>
+        <ConfirmacoesEsqueleto />
         <EsqueletoDoBloco className="min-[1200px]:col-span-5">
           <LinhasDeEsqueleto count={4} />
         </EsqueletoDoBloco>
-        <EsqueletoDoBloco className="min-[1200px]:col-span-7">
-          <Esqueleto className="h-4 w-32 rounded-md" />
-          <Esqueleto className="h-10 w-44 rounded-lg" />
-          <LinhasDeEsqueleto count={4} avatar={false} />
-        </EsqueletoDoBloco>
-        <EsqueletoDoBloco className="min-[1200px]:col-span-5">
-          <Esqueleto className="h-4 w-28 rounded-md" />
-          <Esqueleto className="h-8 w-48 rounded-md" />
-          <Esqueleto className="h-2 w-full rounded-full" />
-          <LinhasDeEsqueleto count={3} avatar={false} />
-        </EsqueletoDoBloco>
+        <DinheiroEOrcamentoEsqueleto />
       </div>
     </RegiaoDeCarregamento>
   );

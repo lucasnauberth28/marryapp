@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { aprovarTransacaoPix } from "@/actions/finance-actions";
-import { estiloDaLinhaDeBotoes } from "./ui";
+import { estiloDaLinhaDeBotoes } from "../../ui";
 
 /** Selo "A" do Pix conferido (o mesmo círculo ameixa do logotipo), 22px. */
 export function SeloDoPix({ stamp = false }: { stamp?: boolean }) {
