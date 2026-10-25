@@ -7,7 +7,7 @@ import { SeletorDeData } from "@/components/ui/date-picker";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Botao } from "@/components/ui/button";
 import { TIPOS_DE_SOLICITACAO_DE_DADOS, ROTULO_DO_TIPO_DE_SOLICITACAO_DE_DADOS } from "@/lib/platform/support";
-import { criarSolicitacaoDeDados } from "@/actions/admin-suporte-actions";
+import { criarSolicitacaoDeDados } from "@/actions/suporte/dados-pessoais";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 import type { ItemDeSolicitacaoDeDados } from "./tipos";
 

@@ -7,7 +7,7 @@ import { SelecaoNativa } from "@/components/ui/select";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Botao } from "@/components/ui/button";
 import { SITUACOES_DO_CHAMADO, ROTULO_DA_SITUACAO_DO_CHAMADO } from "@/lib/platform/support";
-import { criarChamadoDeSuporte, atualizarChamadoDeSuporte } from "@/actions/admin-suporte-actions";
+import { criarChamadoDeSuporte, atualizarChamadoDeSuporte } from "@/actions/suporte/chamados";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 import type { ItemDeChamado, PreenchimentoDoChamado } from "./tipos";
 

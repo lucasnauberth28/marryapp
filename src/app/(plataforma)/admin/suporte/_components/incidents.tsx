@@ -12,7 +12,7 @@ import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { Botao } from "@/components/ui/button";
-import { criarIncidenteDeSeguranca, atualizarIncidenteDeSeguranca } from "@/actions/admin-suporte-actions";
+import { criarIncidenteDeSeguranca, atualizarIncidenteDeSeguranca } from "@/actions/suporte/incidentes";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
 export interface ItemDeIncidente {

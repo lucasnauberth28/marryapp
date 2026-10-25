@@ -7,7 +7,7 @@ import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Botao } from "@/components/ui/button";
 import { BotaoDeExportar } from "@/components/plataforma/export-button";
-import { cumprirSolicitacaoDeExclusao, atualizarSolicitacaoDeDados } from "@/actions/admin-suporte-actions";
+import { cumprirSolicitacaoDeExclusao, atualizarSolicitacaoDeDados } from "@/actions/suporte/dados-pessoais";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 import type { ItemDeSolicitacaoDeDados } from "./tipos";
 

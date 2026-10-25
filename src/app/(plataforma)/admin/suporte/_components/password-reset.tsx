@@ -6,7 +6,7 @@ import { Entrada } from "@/components/ui/input";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Painel } from "@/components/plataforma/panel";
 import { Botao } from "@/components/ui/button";
-import { enviarRedefinicaoDeSenhaPeloSuporte } from "@/actions/admin-suporte-actions";
+import { enviarRedefinicaoDeSenhaPeloSuporte } from "@/actions/suporte/senha";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
 /** Esqueci a senha: manda o link de redefinição ao e-mail da pessoa. A resposta é sempre a mesma e o link nunca aparece. */
