@@ -1,43 +1,25 @@
-import { Pencil } from "lucide-react";
 import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { Painel } from "@/components/plataforma/panel";
-import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
-import { EstadoVazio } from "@/components/plataforma/empty-state";
-import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
+import { RegiaoPendente } from "@/components/plataforma/pending";
 import { obterCatalogo } from "@/lib/catalog-server";
-import { textoDoDescontoDoCombo, ehPlanoGratis, chaveDoModuloNoCatalogo, chaveDoPlanoNoCatalogo } from "@/lib/catalog";
-import { CONFIGURACAO_DOS_PLANOS, type ChaveDoPlano } from "@/lib/plans";
-import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
-import { formatarDataEHora } from "@/lib/platform/format";
-import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { parametroDaBusca, type ParametrosDeBusca } from "@/lib/platform/list-params";
 import { mesDoContador } from "@/lib/platform/payments";
 import { contarNotasPendentes, listarNotasPendentes } from "@/lib/platform/queries/receita";
 import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
-import { cn } from "@/lib/utils";
-import { LinkPendente, RegiaoPendente } from "@/components/plataforma/pending";
 import { AbasDePlanos } from "../_components/planos-tabs";
 import { SecaoDoContador } from "../_components/contador-section";
 import { FormularioDeEdicaoDoCatalogo } from "./_components/catalog-edit-form";
+import { itemEmEdicao } from "./_catalogo/edicao";
+import { PainelDeMudancas } from "./_catalogo/historico";
+import { PainelDeModulos, PainelDePlanos } from "./_catalogo/tabelas";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Catálogo e preços" };
 
-const ORDEM_DOS_PLANOS: ChaveDoPlano[] = ["basic", "classic", "vip", "start", "pro", "master"];
-const TAXA_DO_PRESENTE: Partial<Record<ChaveDoPlano, string>> = { basic: "3,99%", classic: "0% no Pix", vip: "0% no Pix" };
-const COBRANCA = (id: ChaveDoPlano) => (ehPlanoGratis(id) ? "Grátis" : CONFIGURACAO_DOS_PLANOS[id].type === "VENDOR" ? "Por mês" : "Pagamento único");
-
-interface DetalhesDaAuditoria {
-  before?: { priceCents?: number; name?: string };
-  after?: { priceCents?: number; name?: string };
-  reason?: string;
-}
-
 export default async function Page({ searchParams }: { searchParams: Promise<ParametrosDeBusca> }) {
   await exigirAdminDaPlataformaNaPagina();
-  const query = await searchParams;
-  const editing = parametroDaBusca(query, "editar", 60);
+  const editing = parametroDaBusca(await searchParams, "editar", 60);
   const now = new Date();
   const [catalog, overrides, history, invoices, pendingInvoices] = await Promise.all([
     obterCatalogo(),
@@ -47,22 +29,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
     contarNotasPendentes(),
   ]);
   const edited = new Set(overrides.map((o) => o.key));
-
-  // Item em edição (só aceita chaves que existem no catálogo)
-  let form: { key: string; title: string; name: string; price: number; free: boolean } | null = null;
-  if (editing?.startsWith("plan:")) {
-    const id = editing.slice(5) as ChaveDoPlano;
-    if (ORDEM_DOS_PLANOS.includes(id)) form = { key: editing, title: `o plano ${catalog.plans[id].name.replace(/^(Plano|Fornecedor)\s+/, "")}`, name: catalog.plans[id].name, price: catalog.plans[id].price, free: ehPlanoGratis(id) };
-  } else if (editing?.startsWith("module:")) {
-    const mod = catalog.modules.find((m) => chaveDoModuloNoCatalogo(m.id) === editing);
-    if (mod) form = { key: editing, title: "o recurso", name: mod.name, price: mod.price, free: false };
-  }
-
-  const itemLabel = (key: string | null) => {
-    if (!key) return "Item";
-    if (key.startsWith("plan:")) return CONFIGURACAO_DOS_PLANOS[key.slice(5) as ChaveDoPlano]?.name ?? key;
-    return MODULOS_DO_CASAL.find((m) => chaveDoModuloNoCatalogo(m.id) === key)?.name ?? key;
-  };
+  const form = itemEmEdicao(editing, catalog);
 
   return (
     <>
@@ -71,62 +38,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="flex min-w-0 flex-col gap-6">
-          <Painel title="Planos" padded={false}>
-            <div className="px-3 pb-3 md:px-4 md:pb-4">
-              <TabelaResponsiva
-                caption="Planos à venda"
-                rows={ORDEM_DOS_PLANOS}
-                rowKey={(id) => id}
-                selectedKey={editing?.startsWith("plan:") ? editing.slice(5) : null}
-                columns={[
-                  { key: "plano", header: "Plano", primary: true, cell: (id) => <>{catalog.plans[id].name.replace(/^(Plano|Fornecedor)\s+/, "")}{edited.has(chaveDoPlanoNoCatalogo(id)) ? <span className="ml-2 align-middle"><EtiquetaDeSituacao tone="ameixa">Editado</EtiquetaDeSituacao></span> : null}</> },
-                  { key: "para", header: "Para quem", cell: (id) => (catalog.plans[id].type === "VENDOR" ? "Fornecedor" : "Casal") },
-                  { key: "preco", header: "Preço", align: "right", className: "whitespace-nowrap", cell: (id) => formatarReais(catalog.plans[id].price) },
-                  { key: "cobranca", header: "Cobrança", cell: (id) => COBRANCA(id) },
-                  { key: "taxa", header: "Taxa nos presentes", mobileLabel: "Taxa nos presentes", cell: (id) => TAXA_DO_PRESENTE[id] ?? <span className="text-tinta-suave">Não se aplica</span> },
-                  {
-                    key: "editar",
-                    header: <span className="sr-only">Editar</span>,
-                    mobileLabel: false,
-                    cell: (id) => (
-                      <LinkPendente href={`/admin/planos/catalogo?editar=${chaveDoPlanoNoCatalogo(id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
-                        <Pencil className="size-4" aria-hidden="true" /> Editar<span className="sr-only"> o plano {catalog.plans[id].name}</span>
-                      </LinkPendente>
-                    ),
-                  },
-                ]}
-              />
-              <p className="mt-3 text-sm text-tinta-suave">
-                Plano Liz: ainda não está à venda, então não tem preço para editar. A taxa dos presentes vem do Mercado Pago e aparece aqui só como informação.
-              </p>
-            </div>
-          </Painel>
-
-          <Painel title="Módulos do plano adaptado" padded={false}>
-            <div className="px-3 pb-3 md:px-4 md:pb-4">
-              <TabelaResponsiva
-                caption="Módulos do plano adaptado"
-                rows={catalog.modules}
-                rowKey={(m) => m.id}
-                selectedKey={editing?.startsWith("module:") ? editing.slice(7) : null}
-                columns={[
-                  { key: "nome", header: "Módulo", primary: true, cell: (m) => <>{m.category}: {m.name}{edited.has(chaveDoModuloNoCatalogo(m.id)) ? <span className="ml-2 align-middle"><EtiquetaDeSituacao tone="ameixa">Editado</EtiquetaDeSituacao></span> : null}</> },
-                  { key: "preco", header: "Preço", align: "right", className: "whitespace-nowrap", cell: (m) => formatarReais(m.price) },
-                  {
-                    key: "editar",
-                    header: <span className="sr-only">Editar</span>,
-                    mobileLabel: false,
-                    cell: (m) => (
-                      <LinkPendente href={`/admin/planos/catalogo?editar=${chaveDoModuloNoCatalogo(m.id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
-                        <Pencil className="size-4" aria-hidden="true" /> Editar<span className="sr-only"> o módulo {m.name}</span>
-                      </LinkPendente>
-                    ),
-                  },
-                ]}
-              />
-              <p className="mt-3 text-sm text-tinta-suave">{textoDoDescontoDoCombo()}</p>
-            </div>
-          </Painel>
+          <PainelDePlanos catalog={catalog} edited={edited} editing={editing} />
+          <PainelDeModulos catalog={catalog} edited={edited} editing={editing} />
         </div>
 
         <RegiaoPendente id="editar" className="flex scroll-mt-6 flex-col gap-6 lg:sticky lg:top-6">
@@ -137,29 +50,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
               <p className="text-sm text-tinta-suave">Escolha um plano ou módulo na lista para editar o nome e o preço. Toda mudança pede o motivo e fica no registro de atividades.</p>
             )}
           </Painel>
-          <Painel title="Últimas mudanças">
-            {history.length === 0 ? (
-              <EstadoVazio title="Nenhuma mudança de preço ainda" compact>Os preços estão como no código do Aceito.</EstadoVazio>
-            ) : (
-              <ul className="flex flex-col">
-                {history.map((h) => {
-                  const d = (h.details ?? {}) as DetalhesDaAuditoria;
-                  return (
-                    <li key={h.id} className="border-b border-linha py-3 text-sm first:pt-0 last:border-b-0 last:pb-0">
-                      <p className="font-semibold text-tinta">{itemLabel(h.targetId)}</p>
-                      <p className="text-tinta">
-                        {typeof d.before?.priceCents === "number" ? formatarReais(d.before.priceCents) : "?"} para {typeof d.after?.priceCents === "number" ? formatarReais(d.after.priceCents) : "?"}
-                      </p>
-                      {d.reason ? <p className="text-tinta-suave">Motivo: {d.reason}</p> : null}
-                      <p className={cn("text-tinta-suave")}>
-                        {h.actorName ?? "Administração"} · {formatarDataEHora(h.createdAt)}
-                      </p>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </Painel>
+          <PainelDeMudancas history={history} />
         </RegiaoPendente>
       </div>
 
@@ -167,4 +58,3 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
     </>
   );
 }
-
