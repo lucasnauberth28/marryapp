@@ -54,6 +54,9 @@ function limparChavePix(rawKey: string): string {
 
   const digitsOnly = somenteDigitos(trimmed);
 
+  // CPF/CNPJ digitado com pontos ou barra (123.456.789-09): nunca é telefone
+  if (/\d\.\d|\d\/\d/.test(trimmed) && (digitsOnly.length === 11 || digitsOnly.length === 14)) return digitsOnly;
+
   // Se for telefone celular brasileiro (10 ou 11 dígitos iniciados com DDD válido)
   // No Banco Central DICT, chaves de telefone são OBRIGATORIAMENTE formatadas com +55
   if (digitsOnly.length === 10 || digitsOnly.length === 11) {
