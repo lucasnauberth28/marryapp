@@ -5,12 +5,12 @@ import { useTransition } from "react";
 import { startNavigationProgress } from "@/components/feedback/navigation-progress";
 import { markListNavigation } from "@/components/plataforma/pending";
 import { NativeSelect } from "@/components/ui/select";
-import { PERIODS, type Period } from "@/lib/platform/overview-period";
+import { PERIODOS, type Periodo } from "@/lib/platform/overview-period";
 
-const LABEL: Record<Period, string> = { "30d": "Últimos 30 dias", mes: "Este mês", "90d": "Últimos 90 dias" };
+const LABEL: Record<Periodo, string> = { "30d": "Últimos 30 dias", mes: "Este mês", "90d": "Últimos 90 dias" };
 
 /** Seletor "Período" da Visão geral: escreve ?periodo= na URL (o servidor recalcula os cartões). */
-export function PeriodSelect({ value }: { value: Period }) {
+export function PeriodSelect({ value }: { value: Periodo }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -33,7 +33,7 @@ export function PeriodSelect({ value }: { value: Period }) {
           startTransition(() => router.replace(href, { scroll: false }));
         }}
       >
-        {PERIODS.map((p) => (
+        {PERIODOS.map((p) => (
           <option key={p} value={p}>
             {LABEL[p]}
           </option>

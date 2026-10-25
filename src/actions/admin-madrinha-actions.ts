@@ -6,18 +6,18 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { savePlatformSetting } from "@/lib/platform/settings";
+import { salvarConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import {
-  articleInput,
-  instructionsInput,
-  nextVersion,
-  parseIntField,
-  parsePlanLimits,
-  parseReaisToCents,
-  type FieldErrors,
-  type PlanLimitsForm,
+  entradaDoArtigo,
+  entradaDasInstrucoes,
+  proximaVersao,
+  interpretarCampoInteiro,
+  interpretarLimitesDoPlano,
+  interpretarReaisEmCentavos,
+  type ErrosDosCampos,
+  type FormularioDeLimitesDoPlano,
 } from "@/lib/platform/madrinha";
-import { searchWeddingsForMadrinha, type WeddingHit } from "@/lib/platform/queries/madrinha";
+import { buscarCasamentosParaAMadrinha, type ResultadoDeCasamento } from "@/lib/platform/queries/madrinha";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 /**
@@ -45,15 +45,15 @@ export async function saveMadrinhaLimits(input: unknown): Promise<Ok | Fail> {
   try {
     await exigirAdminDaPlataforma();
     const data = z.object({ subscription: planLimitsShape, trial: planLimitsShape }).parse(input);
-    const sub = parsePlanLimits(data.subscription as PlanLimitsForm);
-    const trial = parsePlanLimits(data.trial as PlanLimitsForm);
+    const sub = interpretarLimitesDoPlano(data.subscription as FormularioDeLimitesDoPlano);
+    const trial = interpretarLimitesDoPlano(data.trial as FormularioDeLimitesDoPlano);
     if (!sub.ok || !trial.ok) {
       return fieldFail({
         ...Object.fromEntries(Object.entries(sub.ok ? {} : sub.errors).map(([k, v]) => [`subscription.${k}`, v])),
         ...Object.fromEntries(Object.entries(trial.ok ? {} : trial.errors).map(([k, v]) => [`trial.${k}`, v])),
       });
     }
-    await savePlatformSetting("madrinha.limits", { subscription: sub.value, trial: trial.value });
+    await salvarConfiguracaoDaPlataforma("madrinha.limits", { subscription: sub.value, trial: trial.value });
     refresh();
     return { success: true, message: "Limites salvos. Valem quando a Liz for ativada." };
   } catch (error) {
@@ -65,13 +65,13 @@ export async function saveMadrinhaGlobalCap(input: unknown): Promise<Ok | Fail> 
   try {
     await exigirAdminDaPlataforma();
     const data = z.object({ monthlyCostCap: z.string().max(16), warnPercent: z.string().max(4), pauseAtCap: z.boolean() }).parse(input);
-    const cap = parseReaisToCents(data.monthlyCostCap);
-    const warn = parseIntField(data.warnPercent);
-    const errors: FieldErrors<"monthlyCostCap" | "warnPercent"> = {};
+    const cap = interpretarReaisEmCentavos(data.monthlyCostCap);
+    const warn = interpretarCampoInteiro(data.warnPercent);
+    const errors: ErrosDosCampos<"monthlyCostCap" | "warnPercent"> = {};
     if (cap === null || cap > 100_000_00) errors.monthlyCostCap = "Use um valor em reais, como 300,00.";
     if (warn === null || warn > 100) errors.warnPercent = "Use de 0 a 100.";
     if (cap === null || warn === null || Object.keys(errors).length) return fieldFail(errors);
-    await savePlatformSetting("madrinha.globalCap", { monthlyCostCapCents: cap, warnPercent: warn, pauseAtCap: data.pauseAtCap });
+    await salvarConfiguracaoDaPlataforma("madrinha.globalCap", { monthlyCostCapCents: cap, warnPercent: warn, pauseAtCap: data.pauseAtCap });
     refresh();
     return { success: true, message: "Teto mensal salvo." };
   } catch (error) {
@@ -85,15 +85,15 @@ export async function saveMadrinhaAbuse(input: unknown): Promise<Ok | Fail> {
     const data = z
       .object({ perHour: z.string().max(12), blockHours: z.string().max(6), blockOffTopic: z.boolean(), offTopicBeforeBlock: z.string().max(6) })
       .parse(input);
-    const perHour = parseIntField(data.perHour);
-    const blockHours = parseIntField(data.blockHours);
-    const before = parseIntField(data.offTopicBeforeBlock);
-    const errors: FieldErrors<"perHour" | "blockHours" | "offTopicBeforeBlock"> = {};
+    const perHour = interpretarCampoInteiro(data.perHour);
+    const blockHours = interpretarCampoInteiro(data.blockHours);
+    const before = interpretarCampoInteiro(data.offTopicBeforeBlock);
+    const errors: ErrosDosCampos<"perHour" | "blockHours" | "offTopicBeforeBlock"> = {};
     if (perHour === null || perHour > 1_000) errors.perHour = "Use um número inteiro, até 1.000.";
     if (blockHours === null || blockHours < 1 || blockHours > 720) errors.blockHours = "Use de 1 a 720 horas.";
     if (before === null || before < 1 || before > 100) errors.offTopicBeforeBlock = "Use de 1 a 100 recusas.";
     if (perHour === null || blockHours === null || before === null || Object.keys(errors).length) return fieldFail(errors);
-    await savePlatformSetting("madrinha.abuse", { perHour, blockHours, blockOffTopic: data.blockOffTopic, offTopicBeforeBlock: before });
+    await salvarConfiguracaoDaPlataforma("madrinha.abuse", { perHour, blockHours, blockOffTopic: data.blockOffTopic, offTopicBeforeBlock: before });
     refresh();
     return { success: true, message: "Bloqueio por abuso salvo." };
   } catch (error) {
@@ -109,7 +109,7 @@ export async function saveMadrinhaCapabilities(input: unknown): Promise<Ok | Fai
       .object({ draftReminder: z.boolean(), suggestTasks: z.boolean(), buildTimeline: z.boolean(), compareQuotes: z.boolean() })
       .strict()
       .parse(input);
-    await savePlatformSetting("madrinha.capabilities", data);
+    await salvarConfiguracaoDaPlataforma("madrinha.capabilities", data);
     refresh();
     return { success: true, message: "Salvo." };
   } catch (error) {
@@ -129,7 +129,7 @@ function isUniqueViolation(error: unknown) {
 async function createVersion(content: string, changeNote: string, author: { userId: string; name: string | null }) {
   for (let attempt = 0; attempt < 3; attempt++) {
     const versions = await prisma.madrinhaInstructionVersion.findMany({ select: { version: true } });
-    const version = nextVersion(versions.map((v) => v.version));
+    const version = proximaVersao(versions.map((v) => v.version));
     try {
       return await prisma.madrinhaInstructionVersion.create({
         data: { version, content, changeNote, status: "DRAFT", createdById: author.userId, createdByName: author.name ?? "Administrador" },
@@ -145,7 +145,7 @@ async function createVersion(content: string, changeNote: string, author: { user
 export async function saveInstructionVersion(input: unknown): Promise<(Ok & { version: number }) | Fail> {
   try {
     const admin = await exigirAdminDaPlataforma();
-    const parsed = instructionsInput.safeParse(input);
+    const parsed = entradaDasInstrucoes.safeParse(input);
     if (!parsed.success) {
       const fieldErrors: Record<string, string> = {};
       for (const issue of parsed.error.issues) fieldErrors[String(issue.path[0] ?? "content")] ??= issue.message;
@@ -226,7 +226,7 @@ export async function saveKnowledgeArticle(input: unknown): Promise<Ok | Fail> {
   try {
     await exigirAdminDaPlataforma();
     const raw = z.object({ status: z.enum(["DRAFT", "PUBLISHED"]) }).passthrough().parse(input);
-    const parsed = articleInput.safeParse(input);
+    const parsed = entradaDoArtigo.safeParse(input);
     if (!parsed.success) {
       const fieldErrors: Record<string, string> = {};
       for (const issue of parsed.error.issues) fieldErrors[String(issue.path[0] ?? "content")] ??= issue.message;
@@ -288,11 +288,11 @@ async function ensureWedding(id: string) {
 }
 
 /** Busca de casais para o seletor (consulta limitada). */
-export async function searchMadrinhaWeddings(input: unknown): Promise<{ success: true; hits: WeddingHit[] } | Fail> {
+export async function searchMadrinhaWeddings(input: unknown): Promise<{ success: true; hits: ResultadoDeCasamento[] } | Fail> {
   try {
     await exigirAdminDaPlataforma();
     const { q } = z.object({ q: z.string().max(100) }).parse(input);
-    return { success: true, hits: await searchWeddingsForMadrinha(q) };
+    return { success: true, hits: await buscarCasamentosParaAMadrinha(q) };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "searchMadrinhaWeddings");
   }
@@ -303,7 +303,7 @@ export async function applyWeddingAdjustment(input: unknown): Promise<Ok | Fail>
   try {
     await exigirAdminDaPlataforma();
     const data = z.object({ weddingId, extraMessages: z.string().max(8), reason: z.string().trim().max(300) }).parse(input);
-    const extra = parseIntField(data.extraMessages);
+    const extra = interpretarCampoInteiro(data.extraMessages);
     if (extra === null || extra > 10_000) return fieldFail({ extraMessages: "Use um número inteiro, até 10.000." });
     if (data.reason.length < 3) return fieldFail({ reason: "Conte o motivo do ajuste (fica no registro)." });
     const wedding = await ensureWedding(data.weddingId);

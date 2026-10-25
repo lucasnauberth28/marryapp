@@ -4,16 +4,16 @@ import { EmptyState } from "@/components/plataforma/empty-state";
 import { Panel } from "@/components/plataforma/panel";
 import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
-import { formatDate, relativeDay } from "@/lib/platform/format";
+import { formatarData, diaRelativo } from "@/lib/platform/format";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-import { REFUND_VIEW_LABEL, refundView, type RefundView } from "@/lib/platform/payments";
-import type { RefundRow } from "@/lib/platform/queries/receita";
+import { ROTULO_DA_VISAO_DO_REEMBOLSO, visaoDoReembolso, type VisaoDoReembolso } from "@/lib/platform/payments";
+import type { LinhaDeReembolso } from "@/lib/platform/queries/receita";
 import { RefundDecision, RegisterRefundForm } from "./refund-forms";
 
-const TONE: Record<RefundView, StatusTone> = { decide: "aviso", waiting_refund: "aviso", refunded: "neutro", denied: "neutro" };
+const TONE: Record<VisaoDoReembolso, StatusTone> = { decide: "aviso", waiting_refund: "aviso", refunded: "neutro", denied: "neutro" };
 
 /** Reembolsos: pedidos, decisão e o aviso de que o estorno de verdade é feito no Mercado Pago. */
-export function RefundsSection({ refunds, payments, now, preview = false, policyText }: { refunds: RefundRow[]; payments?: { id: string; label: string; amount: number }[]; now: Date; preview?: boolean; policyText?: string }) {
+export function RefundsSection({ refunds, payments, now, preview = false, policyText }: { refunds: LinhaDeReembolso[]; payments?: { id: string; label: string; amount: number }[]; now: Date; preview?: boolean; policyText?: string }) {
   const rows = preview ? refunds.slice(0, 5) : refunds;
   return (
     <>
@@ -50,17 +50,17 @@ export function RefundsSection({ refunds, payments, now, preview = false, policy
                 key: "prazo",
                 header: "Prazo",
                 cell: (r) => {
-                  const view = refundView(r);
-                  if (view === "decide" && r.dueAt) return `responder até ${formatDate(r.dueAt)} (${relativeDay(r.dueAt, now)})`;
-                  return r.decidedAt ? `decidido em ${formatDate(r.decidedAt)}` : <span className="text-tinta-suave">Sem prazo</span>;
+                  const view = visaoDoReembolso(r);
+                  if (view === "decide" && r.dueAt) return `responder até ${formatarData(r.dueAt)} (${diaRelativo(r.dueAt, now)})`;
+                  return r.decidedAt ? `decidido em ${formatarData(r.decidedAt)}` : <span className="text-tinta-suave">Sem prazo</span>;
                 },
               },
               {
                 key: "situacao",
                 header: "Situação",
                 cell: (r) => {
-                  const view = refundView(r);
-                  return <StatusChip tone={TONE[view]}>{REFUND_VIEW_LABEL[view]}</StatusChip>;
+                  const view = visaoDoReembolso(r);
+                  return <StatusChip tone={TONE[view]}>{ROTULO_DA_VISAO_DO_REEMBOLSO[view]}</StatusChip>;
                 },
               },
               {
@@ -68,7 +68,7 @@ export function RefundsSection({ refunds, payments, now, preview = false, policy
                 header: <span className="sr-only">Ação</span>,
                 mobileLabel: false,
                 cell: (r) => {
-                  const view = refundView(r);
+                  const view = visaoDoReembolso(r);
                   return (
                     <div className="flex flex-col gap-2">
                       <p className="max-w-[340px] text-sm text-tinta-suave">Motivo: {r.reason}</p>

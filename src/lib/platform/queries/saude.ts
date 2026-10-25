@@ -7,7 +7,7 @@ import { obterEstadoDaConexao, whatsappEstaConfigurado } from "@/lib/evolution";
 import { emailEstaConfigurado } from "@/lib/email";
 import { pushEstaConfigurado } from "@/lib/notifications/push";
 import vercelConfig from "../../../../vercel.json";
-import { attentionItems, consecutiveFailures, cronState, describeCronSummary, jobsFromCrons, type AttentionItem, type CronState } from "@/lib/platform/health";
+import { itensDeAtencao, falhasSeguidas, situacaoDaTarefaAgendada, descreverResumoDaTarefaAgendada, tarefasDosAgendamentos, type ItemDeAtencao, type SituacaoDaTarefaAgendada } from "@/lib/platform/health";
 
 /**
  * Saúde do sistema: só o que dá para medir. Banco (tempo e migrações), variáveis configuradas (sim/não, nunca o valor),
@@ -15,55 +15,55 @@ import { attentionItems, consecutiveFailures, cronState, describeCronSummary, jo
  * "sem registros" e nunca "tudo certo".
  */
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+const UM_DIA_EM_MS = 24 * 60 * 60 * 1000;
 
-export interface ServiceCounts {
+export interface ContagensDosServicos {
   /** Eventos registrados nas últimas 24 h (0 = sem registros). */
   total: number;
   ok: number;
   failed: number;
 }
 
-interface RecentEvent {
+interface EventoRecente {
   at: Date;
   ok: boolean;
   kind: string;
   message: string | null;
 }
 
-interface CronRow {
+interface LinhaDeTarefaAgendada {
   job: string;
-  state: CronState;
+  state: SituacaoDaTarefaAgendada;
   lastAt: Date | null;
   result: string | null;
   error: string | null;
 }
 
-export interface HealthSnapshot {
+export interface FotoDaSaude {
   measuredAt: Date;
-  mercadopago: { configured: boolean; webhookSecret: boolean; counts: ServiceCounts; recent: RecentEvent[]; consecutiveFailures: number };
-  crons: CronRow[];
-  whatsapp: { configured: boolean; connected: boolean | null; stateNote: string | null; counts: ServiceCounts; invalidNumbers: number };
-  email: { configured: boolean; counts: ServiceCounts };
-  push: { configured: boolean; subscriptions: number; counts: ServiceCounts };
+  mercadopago: { configured: boolean; webhookSecret: boolean; counts: ContagensDosServicos; recent: EventoRecente[]; consecutiveFailures: number };
+  crons: LinhaDeTarefaAgendada[];
+  whatsapp: { configured: boolean; connected: boolean | null; stateNote: string | null; counts: ContagensDosServicos; invalidNumbers: number };
+  email: { configured: boolean; counts: ContagensDosServicos };
+  push: { configured: boolean; subscriptions: number; counts: ContagensDosServicos };
   database: { ok: boolean; ms: number | null; migrationsApplied: number | null; migrationsPending: number | null };
   version: { sha: string | null; env: string | null };
   sentryConfigured: boolean;
-  attention: AttentionItem[];
+  attention: ItemDeAtencao[];
 }
 
-function counts(groups: { service: string; ok: boolean; _count: { _all: number } }[], service: string): ServiceCounts {
+function contagens(groups: { service: string; ok: boolean; _count: { _all: number } }[], service: string): ContagensDosServicos {
   const n = (ok: boolean) => groups.find((g) => g.service === service && g.ok === ok)?._count._all ?? 0;
   const ok = n(true);
   const failed = n(false);
   return { total: ok + failed, ok, failed };
 }
 
-async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
+async function comLimiteDeTempo<T>(promise: Promise<T>, ms: number): Promise<T | null> {
   return Promise.race([promise, new Promise<null>((resolve) => setTimeout(() => resolve(null), ms))]);
 }
 
-async function databaseHealth(): Promise<HealthSnapshot["database"]> {
+async function saudeDoBanco(): Promise<FotoDaSaude["database"]> {
   const started = Date.now();
   try {
     await prisma.$queryRaw`SELECT 1`;
@@ -91,19 +91,19 @@ async function databaseHealth(): Promise<HealthSnapshot["database"]> {
 }
 
 /** Tela da administração: confere o acesso e mede. */
-export async function getHealthSnapshot(): Promise<HealthSnapshot> {
+export async function obterFotoDaSaude(): Promise<FotoDaSaude> {
   await exigirAdminDaPlataforma();
-  return collectHealth();
+  return coletarSaude();
 }
 
 /**
  * Mede a saúde SEM conferir o acesso: só para a rotina diária de alertas (que se autentica com o CRON_SECRET).
  * Telas e actions usam getHealthSnapshot.
  */
-export async function collectHealth(): Promise<HealthSnapshot> {
+export async function coletarSaude(): Promise<FotoDaSaude> {
   const now = new Date();
-  const since = new Date(now.getTime() - DAY_MS);
-  const expected = jobsFromCrons((vercelConfig as { crons?: { path: string }[] }).crons);
+  const since = new Date(now.getTime() - UM_DIA_EM_MS);
+  const expected = tarefasDosAgendamentos((vercelConfig as { crons?: { path: string }[] }).crons);
   const whatsappConfigured = whatsappEstaConfigurado();
 
   const [groups, mpRecent, mpLast, runs, subscriptions, invalidNumbers, database, connection] = await Promise.all([
@@ -113,27 +113,27 @@ export async function collectHealth(): Promise<HealthSnapshot> {
     prisma.cronRun.findMany({ where: { job: { in: expected } }, orderBy: { startedAt: "desc" }, distinct: ["job"], select: { job: true, status: true, startedAt: true, summary: true, error: true } }),
     prisma.pushSubscription.count(),
     prisma.serviceEvent.count({ where: { service: "whatsapp", kind: "invalid_number", createdAt: { gte: since } } }),
-    databaseHealth(),
-    whatsappConfigured ? withTimeout(obterEstadoDaConexao(), 3000) : Promise.resolve(null),
+    saudeDoBanco(),
+    whatsappConfigured ? comLimiteDeTempo(obterEstadoDaConexao(), 3000) : Promise.resolve(null),
   ]);
 
-  const mp = counts(groups, "mercadopago");
-  const wa = counts(groups, "whatsapp");
-  const em = counts(groups, "email");
-  const pu = counts(groups, "push");
+  const mp = contagens(groups, "mercadopago");
+  const wa = contagens(groups, "whatsapp");
+  const em = contagens(groups, "email");
+  const pu = contagens(groups, "push");
   const connected = whatsappConfigured ? (connection ? connection.state === "open" : null) : null;
 
-  const crons: CronRow[] = expected.map((job) => {
+  const crons: LinhaDeTarefaAgendada[] = expected.map((job) => {
     const run = runs.find((r) => r.job === job) ?? null;
     return {
       job,
-      state: cronState(run, now),
+      state: situacaoDaTarefaAgendada(run, now),
       lastAt: run?.startedAt ?? null,
-      result: run ? describeCronSummary(job, run.summary) : null,
+      result: run ? descreverResumoDaTarefaAgendada(job, run.summary) : null,
       error: run?.status === "FAILED" ? (run.error ?? "Falhou sem detalhe") : null,
     };
   });
-  const mpFailures = consecutiveFailures(mpLast);
+  const mpFailures = falhasSeguidas(mpLast);
 
   return {
     measuredAt: now,
@@ -157,7 +157,7 @@ export async function collectHealth(): Promise<HealthSnapshot> {
     database,
     version: { sha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null, env: process.env.VERCEL_ENV ?? null },
     sentryConfigured: Boolean(process.env.SENTRY_DSN?.trim()),
-    attention: attentionItems({
+    attention: itensDeAtencao({
       mercadopago: { failed24h: mp.failed, total24h: mp.total, consecutiveFailures: mpFailures },
       email: { failed24h: em.failed },
       whatsapp: { failed24h: wa.failed, configured: whatsappConfigured, connected },

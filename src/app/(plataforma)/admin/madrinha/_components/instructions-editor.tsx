@@ -8,7 +8,7 @@ import { StatusChip } from "@/components/plataforma/status-chip";
 import { Panel } from "@/components/plataforma/panel";
 import { Button } from "@/components/ui/button";
 import { Pencil, CheckCircle2, Archive } from "lucide-react";
-import { formatDateTime } from "@/lib/platform/format";
+import { formatarDataEHora } from "@/lib/platform/format";
 import { publishInstructionVersion, revertInstructionVersion, saveInstructionVersion } from "@/actions/admin-madrinha-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
@@ -89,7 +89,7 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
                     </StatusChip>
                   </p>
                   <p className="text-sm leading-5 text-tinta-suave">
-                    {formatDateTime(new Date(v.createdAt))}
+                    {formatarDataEHora(new Date(v.createdAt))}
                     {v.changeNote ? ` · ${v.changeNote}` : ""}
                   </p>
                 </div>

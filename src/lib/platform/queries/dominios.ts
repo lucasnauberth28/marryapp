@@ -2,7 +2,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { esconderDocumento } from "@/lib/document-br";
-import { pageWindow } from "@/lib/platform/list-params";
+import { janelaDaPagina } from "@/lib/platform/list-params";
 
 /**
  * Consultas de domínios da administração. Dono: tela Domínios. A Visão geral usa getDomainOrderSummary
@@ -10,10 +10,10 @@ import { pageWindow } from "@/lib/platform/list-params";
  * só aparece pela ação auditada revealDomainHolderDocumentAction.
  */
 
-export const DOMAIN_TABS = ["todos", "pedido", "registro", "registrado", "no-ar", "recusado"] as const;
-export type DomainTab = (typeof DOMAIN_TABS)[number];
+export const ABAS_DE_DOMINIOS = ["todos", "pedido", "registro", "registrado", "no-ar", "recusado"] as const;
+export type AbaDeDominios = (typeof ABAS_DE_DOMINIOS)[number];
 
-const TAB_WHERE: Record<DomainTab, Prisma.DomainOrderWhereInput> = {
+const FILTRO_POR_ABA: Record<AbaDeDominios, Prisma.DomainOrderWhereInput> = {
   todos: {},
   pedido: { status: "REQUESTED" },
   registro: { status: "REGISTERING" },
@@ -22,7 +22,7 @@ const TAB_WHERE: Record<DomainTab, Prisma.DomainOrderWhereInput> = {
   recusado: { status: { in: ["REJECTED", "CANCELED"] } },
 };
 
-export interface DomainOrderSummary {
+export interface ResumoDosPedidosDeDominio {
   requested: number;
   registering: number;
   registered: number;
@@ -34,7 +34,7 @@ export interface DomainOrderSummary {
   registeringSince: Date | null;
 }
 
-export async function getDomainOrderSummary(): Promise<DomainOrderSummary> {
+export async function obterResumoDosPedidosDeDominio(): Promise<ResumoDosPedidosDeDominio> {
   const [groups, oldestRequested, registering] = await Promise.all([
     prisma.domainOrder.groupBy({ by: ["status"], _count: { _all: true } }),
     prisma.domainOrder.findFirst({ where: { status: "REQUESTED" }, orderBy: { requestedAt: "asc" }, select: { requestedAt: true } }),
@@ -52,14 +52,14 @@ export async function getDomainOrderSummary(): Promise<DomainOrderSummary> {
   };
 }
 
-export async function getDomainTabCounts(): Promise<Record<DomainTab, number>> {
-  const entries = await Promise.all(DOMAIN_TABS.map(async (tab) => [tab, await prisma.domainOrder.count({ where: TAB_WHERE[tab] })] as const));
-  return Object.fromEntries(entries) as Record<DomainTab, number>;
+export async function obterContagensDasAbasDeDominios(): Promise<Record<AbaDeDominios, number>> {
+  const entries = await Promise.all(ABAS_DE_DOMINIOS.map(async (tab) => [tab, await prisma.domainOrder.count({ where: FILTRO_POR_ABA[tab] })] as const));
+  return Object.fromEntries(entries) as Record<AbaDeDominios, number>;
 }
 
-export const DOMAIN_PAGE_SIZE = 20;
+export const TAMANHO_DA_PAGINA_DE_DOMINIOS = 20;
 
-export interface DomainListRow {
+export interface LinhaDaListaDeDominios {
   id: string;
   domain: string;
   status: string;
@@ -72,10 +72,10 @@ export interface DomainListRow {
   requestedAt: Date;
 }
 
-export async function listDomainOrders(tab: DomainTab, page: number): Promise<{ rows: DomainListRow[]; total: number; page: number }> {
-  const where = TAB_WHERE[tab];
+export async function listarPedidosDeDominio(tab: AbaDeDominios, page: number): Promise<{ rows: LinhaDaListaDeDominios[]; total: number; page: number }> {
+  const where = FILTRO_POR_ABA[tab];
   const total = await prisma.domainOrder.count({ where });
-  const window = pageWindow(page, DOMAIN_PAGE_SIZE, total);
+  const window = janelaDaPagina(page, TAMANHO_DA_PAGINA_DE_DOMINIOS, total);
   const rows = await prisma.domainOrder.findMany({
     where,
     // Quem espera ação (pedido recebido, registrado) primeiro; dentro disso, o mais antigo
@@ -101,7 +101,7 @@ export async function listDomainOrders(tab: DomainTab, page: number): Promise<{ 
   };
 }
 
-export interface DomainDetail extends DomainListRow {
+export interface DetalheDoDominio extends LinhaDaListaDeDominios {
   holderEmail: string;
   holderPhone: string;
   adminNote: string | null;
@@ -116,7 +116,7 @@ export interface DomainDetail extends DomainListRow {
 }
 
 /** O id da URL só BUSCA o pedido; a permissão vem do guard da página. */
-export async function getDomainDetail(id: string): Promise<DomainDetail | null> {
+export async function obterDetalheDoDominio(id: string): Promise<DetalheDoDominio | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const o = await prisma.domainOrder.findUnique({
     where: { id },
@@ -165,7 +165,7 @@ export async function getDomainDetail(id: string): Promise<DomainDetail | null> 
   };
 }
 
-export interface RenewalRow {
+export interface LinhaDeRenovacao {
   id: string;
   domain: string;
   expiresAt: Date;
@@ -173,7 +173,7 @@ export interface RenewalRow {
 }
 
 /** Domínios registrados que vencem nos próximos 90 dias (ou já venceram), do mais próximo ao mais distante. */
-export async function listRenewals(now: Date = new Date(), days = 90): Promise<RenewalRow[]> {
+export async function listarRenovacoes(now: Date = new Date(), days = 90): Promise<LinhaDeRenovacao[]> {
   const rows = await prisma.domainOrder.findMany({
     where: { status: { in: ["REGISTERED", "CONNECTED"] }, expiresAt: { not: null, lte: new Date(now.getTime() + days * 86_400_000) } },
     orderBy: { expiresAt: "asc" },

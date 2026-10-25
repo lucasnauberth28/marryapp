@@ -13,7 +13,7 @@ import { StatusChip, type StatusTone } from "@/components/plataforma/status-chip
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
-import { TICKET_STATUSES, TICKET_STATUS_LABEL } from "@/lib/platform/support";
+import { SITUACOES_DO_CHAMADO, ROTULO_DA_SITUACAO_DO_CHAMADO } from "@/lib/platform/support";
 import { createSupportTicket, updateSupportTicket } from "@/actions/admin-suporte-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
@@ -24,7 +24,7 @@ export interface TicketItem {
   body: string | null;
   requesterName: string;
   requesterEmail: string | null;
-  status: (typeof TICKET_STATUSES)[number];
+  status: (typeof SITUACOES_DO_CHAMADO)[number];
   assigneeName: string | null;
   mine: boolean;
   internalNote: string | null;
@@ -92,7 +92,7 @@ export function Tickets({ rows, newCount, closedCount, showClosed, prefill, open
                   </div>
                   <div className="flex items-center gap-2">
                     <StatusChip tone={s.tone} icon={s.icon}>
-                      {TICKET_STATUS_LABEL[t.status]}
+                      {ROTULO_DA_SITUACAO_DO_CHAMADO[t.status]}
                     </StatusChip>
                     <button type="button" aria-expanded={editing === t.id} onClick={() => setEditing(editing === t.id ? null : t.id)} className={`${btn.quiet} ${btn.sm}`}>
                       {editing === t.id ? "Fechar" : "Abrir"}
@@ -203,9 +203,9 @@ function TicketEditor({ ticket, onDone }: { ticket: TicketItem; onDone: () => vo
       )}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <NativeSelect label="Situação" value={status} onChange={(e) => setStatus(e.target.value as TicketItem["status"])} alwaysFloat>
-          {TICKET_STATUSES.map((s) => (
+          {SITUACOES_DO_CHAMADO.map((s) => (
             <option key={s} value={s}>
-              {TICKET_STATUS_LABEL[s]}
+              {ROTULO_DA_SITUACAO_DO_CHAMADO[s]}
             </option>
           ))}
         </NativeSelect>

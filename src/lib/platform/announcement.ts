@@ -3,34 +3,34 @@
 import { z } from "zod";
 import { estaEmSilencioAgora, type PreferenciasDeNotificacao } from "../notifications/preferences.ts";
 
-const ANNOUNCEMENT_TITLE_MAX = 90;
-const ANNOUNCEMENT_SUBJECT_MAX = 120;
-const ANNOUNCEMENT_BODY_MAX = 1000;
+const TAMANHO_MAXIMO_DO_TITULO_DO_COMUNICADO = 90;
+const TAMANHO_MAXIMO_DO_ASSUNTO_DO_COMUNICADO = 120;
+const TAMANHO_MAXIMO_DO_CORPO_DO_COMUNICADO = 1000;
 /** Mais pessoas que isto não saem de uma vez: reduza o público (proteção contra envio em massa por engano). */
-export const MAX_RECIPIENTS = 5000;
+export const MAXIMO_DE_DESTINATARIOS = 5000;
 
-const AUDIENCE_KINDS = ["couples", "vendors", "all"] as const;
-export const COUPLE_PLAN_GROUPS = ["all", "basic", "classic", "vip", "custom", "classic_vip", "paid"] as const;
-export const VENDOR_PLAN_GROUPS = ["all", "free", "pro", "master", "pro_master", "paid"] as const;
-export const WEDDING_WINDOWS = ["all", "30", "60", "90", "past"] as const;
+const TIPOS_DE_PUBLICO = ["couples", "vendors", "all"] as const;
+export const GRUPOS_DE_PLANO_DO_CASAL = ["all", "basic", "classic", "vip", "custom", "classic_vip", "paid"] as const;
+export const GRUPOS_DE_PLANO_DO_FORNECEDOR = ["all", "free", "pro", "master", "pro_master", "paid"] as const;
+export const JANELAS_DE_CASAMENTO = ["all", "30", "60", "90", "past"] as const;
 
 /** Filtro de público guardado em Announcement.audience. */
-export const audienceSchema = z.object({
-  kind: z.enum(AUDIENCE_KINDS),
-  couplePlans: z.enum(COUPLE_PLAN_GROUPS).default("all"),
-  vendorPlans: z.enum(VENDOR_PLAN_GROUPS).default("all"),
-  weddingWindow: z.enum(WEDDING_WINDOWS).default("all"),
+export const esquemaDoPublico = z.object({
+  kind: z.enum(TIPOS_DE_PUBLICO),
+  couplePlans: z.enum(GRUPOS_DE_PLANO_DO_CASAL).default("all"),
+  vendorPlans: z.enum(GRUPOS_DE_PLANO_DO_FORNECEDOR).default("all"),
+  weddingWindow: z.enum(JANELAS_DE_CASAMENTO).default("all"),
   /** Casais escolhidos na lista de Casais (restringe os destinatários). */
   weddingIds: z.array(z.string().uuid()).max(500).optional(),
   /** Aviso de serviço (manutenção, cobrança, segurança) ignora a escolha de não receber e-mail; novidade respeita. */
   service: z.boolean().default(false),
 });
-export type Audience = z.infer<typeof audienceSchema>;
+export type Publico = z.infer<typeof esquemaDoPublico>;
 
-const CHANNELS = ["PANEL", "PUSH", "EMAIL"] as const;
-export type Channel = (typeof CHANNELS)[number];
+const CANAIS = ["PANEL", "PUSH", "EMAIL"] as const;
+export type Canal = (typeof CANAIS)[number];
 
-export const CHANNEL_LABEL: Record<Channel | "WHATSAPP", string> = {
+export const ROTULO_DO_CANAL: Record<Canal | "WHATSAPP", string> = {
   PANEL: "Aviso no painel",
   PUSH: "Notificação no celular",
   EMAIL: "E-mail",
@@ -38,10 +38,10 @@ export const CHANNEL_LABEL: Record<Channel | "WHATSAPP", string> = {
 };
 
 /** Por que o WhatsApp não é oferecido (aparece no campo desligado). */
-export const WHATSAPP_DISABLED_REASON =
+export const MOTIVO_DO_WHATSAPP_DESLIGADO =
   "Indisponível: o cadastro do casal não guarda o número de WhatsApp e não há envio em massa autorizado.";
 
-export const PLAN_GROUP_LABEL: Record<string, string> = {
+export const ROTULO_DO_GRUPO_DE_PLANO: Record<string, string> = {
   all: "Todos os planos",
   basic: "Básico",
   classic: "Classic",
@@ -55,7 +55,7 @@ export const PLAN_GROUP_LABEL: Record<string, string> = {
   pro_master: "Pro e Master",
 };
 
-export const WINDOW_LABEL: Record<(typeof WEDDING_WINDOWS)[number], string> = {
+export const ROTULO_DA_JANELA: Record<(typeof JANELAS_DE_CASAMENTO)[number], string> = {
   all: "Qualquer data",
   "30": "Próximos 30 dias",
   "60": "Próximos 60 dias",
@@ -64,24 +64,24 @@ export const WINDOW_LABEL: Record<(typeof WEDDING_WINDOWS)[number], string> = {
 };
 
 /** Texto do público para o histórico: "Casais Classic e VIP, casamento nos próximos 90 dias". */
-export function audienceLabel(audience: Audience): string {
+export function rotuloDoPublico(audience: Publico): string {
   const parts: string[] = [];
   if (audience.kind === "all") parts.push("Casais e fornecedores");
-  else if (audience.kind === "couples") parts.push(audience.couplePlans === "all" ? "Casais" : `Casais ${PLAN_GROUP_LABEL[audience.couplePlans]}`);
-  else parts.push(audience.vendorPlans === "all" ? "Fornecedores" : `Fornecedores ${PLAN_GROUP_LABEL[audience.vendorPlans]}`);
-  if (audience.kind !== "vendors" && audience.weddingWindow !== "all") parts.push(`casamento: ${WINDOW_LABEL[audience.weddingWindow].toLowerCase()}`);
+  else if (audience.kind === "couples") parts.push(audience.couplePlans === "all" ? "Casais" : `Casais ${ROTULO_DO_GRUPO_DE_PLANO[audience.couplePlans]}`);
+  else parts.push(audience.vendorPlans === "all" ? "Fornecedores" : `Fornecedores ${ROTULO_DO_GRUPO_DE_PLANO[audience.vendorPlans]}`);
+  if (audience.kind !== "vendors" && audience.weddingWindow !== "all") parts.push(`casamento: ${ROTULO_DA_JANELA[audience.weddingWindow].toLowerCase()}`);
   if (audience.weddingIds?.length) parts.push(audience.weddingIds.length === 1 ? "1 casal escolhido" : `${audience.weddingIds.length} casais escolhidos`);
   return parts.join(", ");
 }
 
 /** Filtro guardado no banco (pode estar velho ou inválido): nunca lança, cai no padrão "Casais". */
-export function parseAudience(raw: unknown): Audience {
-  const parsed = audienceSchema.safeParse(raw);
-  return parsed.success ? parsed.data : audienceSchema.parse({ kind: "couples" });
+export function interpretarPublico(raw: unknown): Publico {
+  const parsed = esquemaDoPublico.safeParse(raw);
+  return parsed.success ? parsed.data : esquemaDoPublico.parse({ kind: "couples" });
 }
 
 /** Planos de casal incluídos em cada grupo (a chave `basic` é o casamento sem assinatura paga). */
-export function couplePlanKeys(group: Audience["couplePlans"]): string[] | null {
+export function chavesDePlanoDoCasal(group: Publico["couplePlans"]): string[] | null {
   switch (group) {
     case "all": return null;
     case "classic_vip": return ["classic", "vip"];
@@ -90,7 +90,7 @@ export function couplePlanKeys(group: Audience["couplePlans"]): string[] | null 
   }
 }
 
-export function vendorTierKeys(group: Audience["vendorPlans"]): ("FREE" | "PRO" | "MASTER")[] | null {
+export function chavesDeNivelDoFornecedor(group: Publico["vendorPlans"]): ("FREE" | "PRO" | "MASTER")[] | null {
   switch (group) {
     case "all": return null;
     case "free": return ["FREE"];
@@ -101,20 +101,20 @@ export function vendorTierKeys(group: Audience["vendorPlans"]): ("FREE" | "PRO" 
 }
 
 /** Janela de casamento em datas: [início, fim) relativas a `now`; null = sem filtro. */
-export function weddingWindowRange(window: Audience["weddingWindow"], now: Date): { gte?: Date; lt?: Date } | null {
+export function intervaloDaJanelaDeCasamento(window: Publico["weddingWindow"], now: Date): { gte?: Date; lt?: Date } | null {
   if (window === "all") return null;
-  if (window === "past") return { lt: startOfUtcDay(now) };
+  if (window === "past") return { lt: inicioDoDiaUtc(now) };
   const days = Number(window);
-  const start = startOfUtcDay(now);
+  const start = inicioDoDiaUtc(now);
   return { gte: start, lt: new Date(start.getTime() + (days + 1) * 86_400_000) };
 }
 
-function startOfUtcDay(d: Date) {
+function inicioDoDiaUtc(d: Date) {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 }
 
 /** Link do botão: só https:// com endereço de verdade. Vazio é permitido (sem botão). */
-export function validateLinkUrl(input: string): { ok: true; url: string | null } | { ok: false; error: string } {
+export function validarUrlDoLink(input: string): { ok: true; url: string | null } | { ok: false; error: string } {
   const text = input.trim();
   if (!text) return { ok: true, url: null };
   if (!/^https:\/\//i.test(text)) return { ok: false, error: "Use um endereço que comece com https://" };
@@ -127,29 +127,29 @@ export function validateLinkUrl(input: string): { ok: true; url: string | null }
   }
 }
 
-export const announcementInput = z.object({
+export const entradaDoComunicado = z.object({
   id: z.string().uuid().optional(),
-  title: z.string().trim().min(3, "Dê um título ao comunicado.").max(ANNOUNCEMENT_TITLE_MAX, `Use até ${ANNOUNCEMENT_TITLE_MAX} caracteres.`),
-  emailSubject: z.string().trim().max(ANNOUNCEMENT_SUBJECT_MAX, `Use até ${ANNOUNCEMENT_SUBJECT_MAX} caracteres.`).optional().default(""),
-  body: z.string().trim().min(5, "Escreva a mensagem.").max(ANNOUNCEMENT_BODY_MAX, `Use até ${ANNOUNCEMENT_BODY_MAX} caracteres.`),
+  title: z.string().trim().min(3, "Dê um título ao comunicado.").max(TAMANHO_MAXIMO_DO_TITULO_DO_COMUNICADO, `Use até ${TAMANHO_MAXIMO_DO_TITULO_DO_COMUNICADO} caracteres.`),
+  emailSubject: z.string().trim().max(TAMANHO_MAXIMO_DO_ASSUNTO_DO_COMUNICADO, `Use até ${TAMANHO_MAXIMO_DO_ASSUNTO_DO_COMUNICADO} caracteres.`).optional().default(""),
+  body: z.string().trim().min(5, "Escreva a mensagem.").max(TAMANHO_MAXIMO_DO_CORPO_DO_COMUNICADO, `Use até ${TAMANHO_MAXIMO_DO_CORPO_DO_COMUNICADO} caracteres.`),
   linkUrl: z.string().max(500).optional().default(""),
-  audience: audienceSchema,
-  channels: z.array(z.enum(CHANNELS)).min(1, "Escolha por onde avisar.").max(3),
+  audience: esquemaDoPublico,
+  channels: z.array(z.enum(CANAIS)).min(1, "Escolha por onde avisar.").max(3),
 });
-export type AnnouncementInput = z.infer<typeof announcementInput>;
+export type EntradaDoComunicado = z.infer<typeof entradaDoComunicado>;
 
 /** Modelos prontos: textos editáveis que preenchem o formulário (conteúdo, não dado de exemplo). */
-export interface AnnouncementTemplate {
+export interface ModeloDeComunicado {
   id: string;
   name: string;
   hint: string;
   title: string;
   body: string;
   service: boolean;
-  channels: Channel[];
+  channels: Canal[];
 }
 
-export const ANNOUNCEMENT_TEMPLATES: AnnouncementTemplate[] = [
+export const MODELOS_DE_COMUNICADO: ModeloDeComunicado[] = [
   {
     id: "manutencao",
     name: "Manutenção programada",
@@ -179,33 +179,33 @@ export const ANNOUNCEMENT_TEMPLATES: AnnouncementTemplate[] = [
   },
 ];
 
-export type SkipReason = "no_email" | "opted_out" | "quiet_hours";
+export type MotivoDePulo = "no_email" | "opted_out" | "quiet_hours";
 
-export const SKIP_TEXT: Record<SkipReason | "no_device", string> = {
+export const TEXTO_DO_PULO: Record<MotivoDePulo | "no_device", string> = {
   no_email: "Sem e-mail válido no cadastro",
   opted_out: "Escolheu não receber este tipo de aviso",
   quiet_hours: "Horário de silêncio",
   no_device: "Sem aparelho com avisos ativados",
 };
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const looksLikeEmail = (value: string | null | undefined): value is string => !!value && EMAIL_RE.test(value);
+const PADRAO_DE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const parecEmail = (value: string | null | undefined): value is string => !!value && PADRAO_DE_EMAIL.test(value);
 
 /**
  * Cada pessoa e canal começam PENDING ou já saem SKIPPED com o motivo.
  * O aviso no painel nunca é pulado. Novidade respeita as preferências (grupo "Plano e conta"); aviso de serviço
  * ignora a escolha de não receber e o horário de silêncio. E-mail exige endereço válido nos dois casos.
  */
-export function decideDelivery(input: {
-  channel: Channel;
+export function decidirEntrega(input: {
+  channel: Canal;
   service: boolean;
   username: string;
   prefs: PreferenciasDeNotificacao;
   now: Date;
-}): { status: "PENDING" } | { status: "SKIPPED"; reason: SkipReason } {
+}): { status: "PENDING" } | { status: "SKIPPED"; reason: MotivoDePulo } {
   const { channel, service, username, prefs, now } = input;
   if (channel === "PANEL") return { status: "PENDING" };
-  if (channel === "EMAIL" && !looksLikeEmail(username)) return { status: "SKIPPED", reason: "no_email" };
+  if (channel === "EMAIL" && !parecEmail(username)) return { status: "SKIPPED", reason: "no_email" };
   if (service) return { status: "PENDING" };
   const key = channel === "PUSH" ? "push" : "email";
   if (!prefs.channels[key].account) return { status: "SKIPPED", reason: "opted_out" };
@@ -214,13 +214,13 @@ export function decideDelivery(input: {
 }
 
 /** "Entregues" do histórico: enviados sobre (enviados + falhas). Pulados ficam de fora. Null sem base. */
-export function deliveredRate(counts: { sent: number; failed: number }): number | null {
+export function taxaDeEntrega(counts: { sent: number; failed: number }): number | null {
   const base = counts.sent + counts.failed;
   return base === 0 ? null : Math.round((counts.sent / base) * 100);
 }
 
 /** Parágrafos do e-mail: a mensagem em texto puro, um parágrafo por linha em branco. */
-export function bodyParagraphs(body: string): string[] {
+export function paragrafosDoCorpo(body: string): string[] {
   return body
     .split(/\n{2,}/)
     .map((p) => p.replace(/\s*\n\s*/g, " ").trim())
@@ -228,7 +228,7 @@ export function bodyParagraphs(body: string): string[] {
 }
 
 /** Aceita `?casais=id1,id2` da lista de Casais: só uuids, sem repetir, no máximo 500. */
-export function parseWeddingIdsParam(value: string | undefined): string[] {
+export function interpretarParametroDeIdsDeCasamento(value: string | undefined): string[] {
   if (!value) return [];
   const ids = value.split(",").map((s) => s.trim()).filter((s) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s));
   return [...new Set(ids.map((s) => s.toLowerCase()))].slice(0, 500);

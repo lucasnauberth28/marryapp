@@ -3,13 +3,13 @@ import { Panel } from "@/components/plataforma/panel";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { StatusChip } from "@/components/plataforma/status-chip";
 import { ResponsiveTable } from "@/components/plataforma/responsive-table";
-import { CHANNEL_LABEL, audienceLabel, deliveredRate } from "@/lib/platform/announcement";
-import { formatDateTime, formatInt } from "@/lib/platform/format";
-import type { HistoryRow } from "@/lib/platform/queries/comunicados";
+import { ROTULO_DO_CANAL, rotuloDoPublico, taxaDeEntrega } from "@/lib/platform/announcement";
+import { formatarDataEHora, formatarInteiro } from "@/lib/platform/format";
+import type { LinhaDoHistorico } from "@/lib/platform/queries/comunicados";
 import { ResumeButton } from "./resume-button";
 
 /** Histórico: números reais. "Lidos" só existe para o aviso no painel; nos outros canais ainda não medimos. */
-export function History({ rows }: { rows: HistoryRow[] }) {
+export function History({ rows }: { rows: LinhaDoHistorico[] }) {
   return (
     <Panel title="Histórico" padded={false}>
       {rows.length === 0 ? (
@@ -24,9 +24,9 @@ export function History({ rows }: { rows: HistoryRow[] }) {
             rowKey={(r) => r.id}
             columns={[
               { key: "t", header: "Comunicado", primary: true, cell: (r) => r.title },
-              { key: "a", header: "Para quem", mobileLabel: "Para quem", cell: (r) => audienceLabel(r.audience) },
-              { key: "c", header: "Canais", mobileLabel: "Canais", cell: (r) => r.channels.map((c) => CHANNEL_LABEL[c]).join(", ") },
-              { key: "d", header: "Enviado", mobileLabel: "Enviado", cell: (r) => formatDateTime(r.sentAt ?? r.createdAt) },
+              { key: "a", header: "Para quem", mobileLabel: "Para quem", cell: (r) => rotuloDoPublico(r.audience) },
+              { key: "c", header: "Canais", mobileLabel: "Canais", cell: (r) => r.channels.map((c) => ROTULO_DO_CANAL[c]).join(", ") },
+              { key: "d", header: "Enviado", mobileLabel: "Enviado", cell: (r) => formatarDataEHora(r.sentAt ?? r.createdAt) },
               {
                 key: "e",
                 header: "Entregues",
@@ -42,16 +42,16 @@ export function History({ rows }: { rows: HistoryRow[] }) {
                         <ResumeButton id={r.id} />
                       </span>
                     );
-                  const rate = deliveredRate({ sent: r.sent, failed: r.failed });
+                  const rate = taxaDeEntrega({ sent: r.sent, failed: r.failed });
                   return (
                     <span className="flex flex-col items-end text-sm leading-5">
                       <span className="inline-flex items-center gap-1 font-semibold text-tinta">
                         {rate === null ? "Sem envios" : <><CheckCircle2 className="size-4 text-sucesso" aria-hidden="true" />{rate}%</>}
                       </span>
                       <span className="text-tinta-suave">
-                        {formatInt(r.sent)} de {formatInt(r.sent + r.failed)}
-                        {r.failed > 0 ? `, ${formatInt(r.failed)} falharam` : ""}
-                        {r.skipped > 0 ? `, ${formatInt(r.skipped)} pulados` : ""}
+                        {formatarInteiro(r.sent)} de {formatarInteiro(r.sent + r.failed)}
+                        {r.failed > 0 ? `, ${formatarInteiro(r.failed)} falharam` : ""}
+                        {r.skipped > 0 ? `, ${formatarInteiro(r.skipped)} pulados` : ""}
                       </span>
                     </span>
                   );

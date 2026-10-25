@@ -2,8 +2,8 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { filtroSemSoPresente } from "@/lib/guest-origin";
-import { casaisWhere, coupleSubscription, inactiveWhere, next30DaysWhere, problemWhere, type CasaisFilters, type PlanoFilter } from "@/lib/platform/casais-filters";
-import { casalProblems, casalSituation, PAYMENT_PROBLEM_DAYS, type CasalFacts } from "@/lib/platform/casal-status";
+import { filtroDeCasais, assinaturaDoCasal, filtroDeInativos, filtroDosProximos30Dias, filtroDeProblema, type FiltrosDeCasais, type FiltroDePlano } from "@/lib/platform/casais-filters";
+import { casalProblems, situacaoDoCasal, DIAS_DE_PROBLEMA_NO_PAGAMENTO, type FatosDoCasal } from "@/lib/platform/casal-status";
 
 import { formatarReais } from "../../formatacao/dinheiro.ts";
 /**
@@ -12,14 +12,14 @@ import { formatarReais } from "../../formatacao/dinheiro.ts";
  * nem dado de convidado (só contagens). Listas paginadas com skip/take; agregados com groupBy (nada de N+1).
  */
 
-const DAY_MS = 86_400_000;
+const UM_DIA_EM_MS = 86_400_000;
 /** Pix estático: o txid gerado em generateSubscriptionPix começa assim (mesma regra de /assinaturas). */
-const STATIC_PIX_PREFIX = "ASSIN";
-const PIX_REVIEW_WINDOW_MS = 3 * DAY_MS;
+const PREFIXO_DO_PIX_ESTATICO = "ASSIN";
+const JANELA_DE_CONFERENCIA_DO_PIX_EM_MS = 3 * UM_DIA_EM_MS;
 
 // ---------- Plano ----------
 
-export interface LatestPlan {
+export interface UltimoPlano {
   weddingId: string;
   planId: string;
   planName: string;
@@ -28,10 +28,10 @@ export interface LatestPlan {
 }
 
 /** Plano de cada casamento = última assinatura de casal APROVADA (mesma ordem de getWeddingPlan). Sem linha = Básico. */
-export async function getLatestPlans(weddingIds?: string[]): Promise<Map<string, LatestPlan>> {
+export async function obterUltimosPlanos(weddingIds?: string[]): Promise<Map<string, UltimoPlano>> {
   if (weddingIds && weddingIds.length === 0) return new Map();
   const filter = weddingIds ? Prisma.sql`AND w.id = ANY(${weddingIds}::text[])` : Prisma.empty;
-  const rows = await prisma.$queryRaw<LatestPlan[]>`
+  const rows = await prisma.$queryRaw<UltimoPlano[]>`
     SELECT DISTINCT ON (w.id) w.id AS "weddingId", s."planId", s."planName", s.amount, s."paidAt"
     FROM subscriptions s
     LEFT JOIN users u ON u.id = s."userId"
@@ -42,17 +42,17 @@ export async function getLatestPlans(weddingIds?: string[]): Promise<Map<string,
 }
 
 /** Ids de casamentos com o plano pedido (a "última assinatura" não cabe num `where`). Básico = fora de todos os pagos. */
-export async function weddingIdsForPlan(plan: PlanoFilter): Promise<{ in?: string[]; notIn?: string[] }> {
-  const all = await getLatestPlans();
+export async function idsDeCasamentoDoPlano(plan: FiltroDePlano): Promise<{ in?: string[]; notIn?: string[] }> {
+  const all = await obterUltimosPlanos();
   const ids = [...all.values()];
   if (plan === "basic") return { notIn: ids.map((p) => p.weddingId) };
   return { in: ids.filter((p) => p.planId === plan).map((p) => p.weddingId) };
 }
 
 /** Data do pagamento de plano do casal recusado/falho mais recente nos últimos 7 dias, por casamento. */
-async function recentFailedPayments(weddingIds: string[], now: Date): Promise<Map<string, Date>> {
+async function pagamentosFalhosRecentes(weddingIds: string[], now: Date): Promise<Map<string, Date>> {
   if (weddingIds.length === 0) return new Map();
-  const since = new Date(now.getTime() - PAYMENT_PROBLEM_DAYS * DAY_MS);
+  const since = new Date(now.getTime() - DIAS_DE_PROBLEMA_NO_PAGAMENTO * UM_DIA_EM_MS);
   const rows = await prisma.$queryRaw<{ weddingId: string; at: Date }[]>`
     SELECT COALESCE(s."weddingId", u."weddingId") AS "weddingId", MAX(s."updatedAt") AS at
     FROM subscriptions s
@@ -65,7 +65,7 @@ async function recentFailedPayments(weddingIds: string[], now: Date): Promise<Ma
 
 // ---------- Contagens das abas ----------
 
-export interface CasaisCounts {
+export interface ContagensDeCasais {
   total: number;
   paid: number;
   problema: number;
@@ -74,13 +74,13 @@ export interface CasaisCounts {
   onboarding: number;
 }
 
-export async function getCasaisCounts(now: Date = new Date()): Promise<CasaisCounts> {
+export async function obterContagensDeCasais(now: Date = new Date()): Promise<ContagensDeCasais> {
   const [total, paid, problema, proximos30, inativos, onboarding] = await Promise.all([
     prisma.wedding.count(),
-    prisma.wedding.count({ where: coupleSubscription({ status: "APPROVED", amount: { gt: 0 } }) }),
-    prisma.wedding.count({ where: problemWhere(now) }),
-    prisma.wedding.count({ where: next30DaysWhere(now) }),
-    prisma.wedding.count({ where: inactiveWhere(now) }),
+    prisma.wedding.count({ where: assinaturaDoCasal({ status: "APPROVED", amount: { gt: 0 } }) }),
+    prisma.wedding.count({ where: filtroDeProblema(now) }),
+    prisma.wedding.count({ where: filtroDosProximos30Dias(now) }),
+    prisma.wedding.count({ where: filtroDeInativos(now) }),
     prisma.wedding.count({ where: { onboardedAt: null } }),
   ]);
   return { total, paid, problema, proximos30, inativos, onboarding };
@@ -88,10 +88,10 @@ export async function getCasaisCounts(now: Date = new Date()): Promise<CasaisCou
 
 // ---------- Lista ----------
 
-export const CASAIS_ORDERS = ["recentes", "data", "atividade", "nome"] as const;
-export type CasaisOrder = (typeof CASAIS_ORDERS)[number];
+export const ORDENACOES_DE_CASAIS = ["recentes", "data", "atividade", "nome"] as const;
+export type OrdenacaoDeCasais = (typeof ORDENACOES_DE_CASAIS)[number];
 
-function orderBy(order: CasaisOrder): Prisma.WeddingOrderByWithRelationInput[] {
+function ordenarPor(order: OrdenacaoDeCasais): Prisma.WeddingOrderByWithRelationInput[] {
   switch (order) {
     case "data":
       return [{ weddingDate: { sort: "asc", nulls: "last" } }, { createdAt: "desc" }];
@@ -104,7 +104,7 @@ function orderBy(order: CasaisOrder): Prisma.WeddingOrderByWithRelationInput[] {
   }
 }
 
-interface CasalRow {
+interface LinhaDeCasal {
   id: string;
   coupleNames: string;
   ownerEmail: string | null;
@@ -117,25 +117,25 @@ interface CasalRow {
   lastActiveAt: Date | null;
   createdAt: Date;
   flagged: boolean;
-  situation: ReturnType<typeof casalSituation>;
+  situation: ReturnType<typeof situacaoDoCasal>;
 }
 
-export interface CasaisPage {
-  rows: CasalRow[];
+export interface PaginaDeCasais {
+  rows: LinhaDeCasal[];
   total: number;
   page: number;
 }
 
-export async function listCasais(input: { filters: CasaisFilters; order: CasaisOrder; page: number; pageSize: number; now?: Date }): Promise<CasaisPage> {
+export async function listarCasais(input: { filters: FiltrosDeCasais; order: OrdenacaoDeCasais; page: number; pageSize: number; now?: Date }): Promise<PaginaDeCasais> {
   const now = input.now ?? new Date();
-  const where = casaisWhere(input.filters, now);
+  const where = filtroDeCasais(input.filters, now);
   const total = await prisma.wedding.count({ where });
   const pages = Math.max(1, Math.ceil(total / input.pageSize));
   const page = Math.min(input.page, pages);
 
   const weddings = await prisma.wedding.findMany({
     where,
-    orderBy: orderBy(input.order),
+    orderBy: ordenarPor(input.order),
     skip: (page - 1) * input.pageSize,
     take: input.pageSize,
     select: {
@@ -156,8 +156,8 @@ export async function listCasais(input: { filters: CasaisFilters; order: CasaisO
   const [guestGroups, giftGroups, plans, failed] = await Promise.all([
     prisma.guest.groupBy({ by: ["weddingId", "rsvpStatus"], where: { weddingId: { in: ids }, ...filtroSemSoPresente }, _count: { _all: true } }),
     prisma.transaction.groupBy({ by: ["weddingId"], where: { weddingId: { in: ids }, status: "APPROVED" }, _sum: { amount: true } }),
-    getLatestPlans(ids),
-    recentFailedPayments(ids, now),
+    obterUltimosPlanos(ids),
+    pagamentosFalhosRecentes(ids, now),
   ]);
 
   const guests = new Map<string, { total: number; confirmed: number }>();
@@ -169,8 +169,8 @@ export async function listCasais(input: { filters: CasaisFilters; order: CasaisO
   }
   const gifts = new Map(giftGroups.map((g) => [g.weddingId, g._sum.amount ?? 0]));
 
-  const rows: CasalRow[] = weddings.map((w) => {
-    const facts: CasalFacts = {
+  const rows: LinhaDeCasal[] = weddings.map((w) => {
+    const facts: FatosDoCasal = {
       suspendedAt: w.suspendedAt,
       failedPaymentAt: failed.get(w.id) ?? null,
       weddingDate: w.weddingDate,
@@ -191,20 +191,20 @@ export async function listCasais(input: { filters: CasaisFilters; order: CasaisO
       lastActiveAt: w.lastActiveAt,
       createdAt: w.createdAt,
       flagged: Boolean(w.flaggedAt),
-      situation: casalSituation(facts, now),
+      situation: situacaoDoCasal(facts, now),
     };
   });
   return { rows, total, page };
 }
 
 /** Ids que casam com o filtro, para "Exportar" (CSV). Teto de linhas para não montar arquivo gigante. */
-export async function listCasaisForExport(input: { filters: CasaisFilters; order: CasaisOrder; ids?: string[]; limit: number; now?: Date }) {
+export async function listarCasaisParaExportar(input: { filters: FiltrosDeCasais; order: OrdenacaoDeCasais; ids?: string[]; limit: number; now?: Date }) {
   const now = input.now ?? new Date();
-  const base = casaisWhere(input.filters, now);
+  const base = filtroDeCasais(input.filters, now);
   const where: Prisma.WeddingWhereInput = input.ids ? { AND: [base, { id: { in: input.ids } }] } : base;
   const weddings = await prisma.wedding.findMany({
     where,
-    orderBy: orderBy(input.order),
+    orderBy: ordenarPor(input.order),
     take: input.limit,
     select: {
       id: true,
@@ -223,8 +223,8 @@ export async function listCasaisForExport(input: { filters: CasaisFilters; order
   const [guestGroups, giftGroups, plans, failed] = await Promise.all([
     prisma.guest.groupBy({ by: ["weddingId"], where: { weddingId: { in: ids }, ...filtroSemSoPresente }, _count: { _all: true } }),
     prisma.transaction.groupBy({ by: ["weddingId"], where: { weddingId: { in: ids }, status: "APPROVED" }, _sum: { amount: true } }),
-    getLatestPlans(ids),
-    recentFailedPayments(ids, now),
+    obterUltimosPlanos(ids),
+    pagamentosFalhosRecentes(ids, now),
   ]);
   const guests = new Map(guestGroups.map((g) => [g.weddingId, g._count._all]));
   const gifts = new Map(giftGroups.map((g) => [g.weddingId, g._sum.amount ?? 0]));
@@ -240,7 +240,7 @@ export async function listCasaisForExport(input: { filters: CasaisFilters; order
     giftsCents: gifts.get(w.id) ?? 0,
     lastActiveAt: w.lastActiveAt,
     createdAt: w.createdAt,
-    situation: casalSituation(
+    situation: situacaoDoCasal(
       { suspendedAt: w.suspendedAt, failedPaymentAt: failed.get(w.id) ?? null, weddingDate: w.weddingDate, onboardedAt: w.onboardedAt, createdAt: w.createdAt, lastActiveAt: w.lastActiveAt },
       now,
     ),
@@ -249,7 +249,7 @@ export async function listCasaisForExport(input: { filters: CasaisFilters; order
 
 // ---------- Detalhe do casal ----------
 
-interface PendingPix {
+interface PixPendente {
   id: string;
   planId: string;
   planName: string;
@@ -257,7 +257,7 @@ interface PendingPix {
   createdAt: Date;
 }
 
-export async function getCasalHeader(id: string, now: Date = new Date()) {
+export async function obterCabecalhoDoCasal(id: string, now: Date = new Date()) {
   const wedding = await prisma.wedding.findUnique({
     where: { id },
     select: {
@@ -282,14 +282,14 @@ export async function getCasalHeader(id: string, now: Date = new Date()) {
     prisma.guest.groupBy({ by: ["rsvpStatus"], where: { weddingId: id, ...filtroSemSoPresente }, _count: { _all: true } }),
     prisma.transaction.aggregate({ where: { weddingId: id, status: "APPROVED" }, _sum: { amount: true }, _count: { _all: true } }),
     prisma.transaction.aggregate({ where: { weddingId: id, status: "APPROVED" }, _sum: { fee: true } }),
-    getLatestPlans([id]),
-    recentFailedPayments([id], now),
+    obterUltimosPlanos([id]),
+    pagamentosFalhosRecentes([id], now),
     prisma.subscription.findFirst({
       where: {
         planType: "COUPLE",
         status: "PENDING",
-        gatewayId: { startsWith: STATIC_PIX_PREFIX },
-        expiresAt: { gte: new Date(now.getTime() - PIX_REVIEW_WINDOW_MS) },
+        gatewayId: { startsWith: PREFIXO_DO_PIX_ESTATICO },
+        expiresAt: { gte: new Date(now.getTime() - JANELA_DE_CONFERENCIA_DO_PIX_EM_MS) },
         OR: [{ weddingId: id }, { weddingId: null, user: { weddingId: id } }],
       },
       orderBy: { createdAt: "desc" },
@@ -305,7 +305,7 @@ export async function getCasalHeader(id: string, now: Date = new Date()) {
   const count = (status: string) => guestGroups.find((g) => g.rsvpStatus === status)?._count._all ?? 0;
   const guests = { total: guestGroups.reduce((n, g) => n + g._count._all, 0), confirmed: count("CONFIRMED"), declined: count("DECLINED"), pending: count("PENDING") };
 
-  const facts: CasalFacts = {
+  const facts: FatosDoCasal = {
     suspendedAt: wedding.suspendedAt,
     failedPaymentAt: failed.get(id) ?? null,
     weddingDate: wedding.weddingDate,
@@ -320,18 +320,18 @@ export async function getCasalHeader(id: string, now: Date = new Date()) {
     plan: plans.get(id) ?? null,
     guests,
     gifts: { cents: giftSum._sum.amount ?? 0, count: giftSum._count._all, feeCents: feeSum._sum.fee ?? 0 },
-    pix: pix as PendingPix | null,
+    pix: pix as PixPendente | null,
     openDomainOrder,
     failedPaymentAt: failed.get(id) ?? null,
     problems: casalProblems(facts, now),
-    situation: casalSituation(facts, now),
+    situation: situacaoDoCasal(facts, now),
   };
 }
-export type CasalHeader = NonNullable<Awaited<ReturnType<typeof getCasalHeader>>>;
+export type CabecalhoDoCasal = NonNullable<Awaited<ReturnType<typeof obterCabecalhoDoCasal>>>;
 
 // ---------- Abas do casal ----------
 
-export interface TimelineItem {
+export interface ItemDaLinhaDoTempo {
   id: string;
   at: Date;
   text: string;
@@ -339,7 +339,7 @@ export interface TimelineItem {
   badge?: { tone: "aviso" | "sucesso" | "perigo" | "neutro"; label: string };
 }
 
-const AUDIT_TEXT: Record<string, string> = {
+const TEXTO_DA_AUDITORIA: Record<string, string> = {
   "wedding.suspend": "Casamento suspenso pela equipe",
   "wedding.unsuspend": "Casamento reativado pela equipe",
   "wedding.flag": "Marcado para acompanhar",
@@ -355,7 +355,7 @@ const AUDIT_TEXT: Record<string, string> = {
 };
 
 /** Linha do tempo real: registro da equipe + cadastro, plano, presentes e domínio. Cada item com data verdadeira. */
-export async function getCasalTimeline(id: string, limit = 8): Promise<TimelineItem[]> {
+export async function obterLinhaDoTempoDoCasal(id: string, limit = 8): Promise<ItemDaLinhaDoTempo[]> {
   const w = await prisma.wedding.findUnique({ where: { id }, select: { createdAt: true, onboardedAt: true } });
   if (!w) return [];
   const [audits, subs, gifts, orders] = await Promise.all([
@@ -370,10 +370,10 @@ export async function getCasalTimeline(id: string, limit = 8): Promise<TimelineI
     prisma.domainOrder.findMany({ where: { weddingId: id }, orderBy: { requestedAt: "desc" }, take: 3, select: { id: true, domain: true, requestedAt: true, connectedAt: true } }),
   ]);
 
-  const items: TimelineItem[] = [];
-  for (const a of audits) items.push({ id: `a-${a.id}`, at: a.createdAt, text: AUDIT_TEXT[a.action] ?? `Registro: ${a.action}` });
+  const items: ItemDaLinhaDoTempo[] = [];
+  for (const a of audits) items.push({ id: `a-${a.id}`, at: a.createdAt, text: TEXTO_DA_AUDITORIA[a.action] ?? `Registro: ${a.action}` });
   for (const s of subs) {
-    const pix = s.gatewayId?.startsWith(STATIC_PIX_PREFIX);
+    const pix = s.gatewayId?.startsWith(PREFIXO_DO_PIX_ESTATICO);
     if (s.status === "APPROVED" && s.paidAt) items.push({ id: `sp-${s.id}`, at: s.paidAt, text: `Pagou o plano ${s.planName} (${formatarReais(s.amount)})`, badge: { tone: "sucesso", label: "Pago" } });
     if (s.status === "PENDING") items.push({ id: `sg-${s.id}`, at: s.createdAt, text: `Gerou o ${pix ? "Pix" : "pagamento"} do plano ${s.planName} (${formatarReais(s.amount)})`, badge: pix ? { tone: "aviso", label: "Aguardando conferência" } : { tone: "aviso", label: "Aguardando" } });
     if (s.status === "REJECTED" || s.status === "FAILED") items.push({ id: `sf-${s.id}`, at: s.createdAt, text: `Pagamento do plano ${s.planName} (${formatarReais(s.amount)}) não passou`, badge: { tone: "perigo", label: "Recusado" } });
@@ -389,7 +389,7 @@ export async function getCasalTimeline(id: string, limit = 8): Promise<TimelineI
   return items.sort((a, b) => b.at.getTime() - a.at.getTime()).slice(0, limit);
 }
 
-export async function getCasalPayments(id: string) {
+export async function obterPagamentosDoCasal(id: string) {
   const subs = await prisma.subscription.findMany({
     where: { planType: "COUPLE", OR: [{ weddingId: id }, { weddingId: null, user: { weddingId: id } }] },
     orderBy: { createdAt: "desc" },
@@ -408,12 +408,12 @@ export async function getCasalPayments(id: string) {
   });
   return subs.map((s) => ({
     ...s,
-    method: s.gatewayId?.startsWith(STATIC_PIX_PREFIX) ? ("Pix" as const) : s.gatewayId?.startsWith("MANUAL") ? ("Cortesia" as const) : ("Mercado Pago" as const),
+    method: s.gatewayId?.startsWith(PREFIXO_DO_PIX_ESTATICO) ? ("Pix" as const) : s.gatewayId?.startsWith("MANUAL") ? ("Cortesia" as const) : ("Mercado Pago" as const),
   }));
 }
 
 /** Convidados e presentes: só números. Nunca nome, telefone, e-mail ou restrição de convidado. */
-export async function getCasalGuestNumbers(id: string) {
+export async function obterNumerosDeConvidadosDoCasal(id: string) {
   const [byStatus, invited, noPhone, gifts] = await Promise.all([
     prisma.guest.groupBy({ by: ["rsvpStatus"], where: { weddingId: id, ...filtroSemSoPresente }, _count: { _all: true } }),
     prisma.guest.count({ where: { weddingId: id, hasReceivedMessage: true, ...filtroSemSoPresente } }),
@@ -434,19 +434,19 @@ export async function getCasalGuestNumbers(id: string) {
   };
 }
 
-export async function getCasalActivity(id: string) {
+export async function obterAtividadeDoCasal(id: string) {
   const members = await prisma.user.findMany({ where: { weddingId: id }, select: { id: true } });
   const [audits, notifications] = await Promise.all([
     prisma.auditLog.findMany({ where: { targetType: "wedding", targetId: id }, orderBy: { createdAt: "desc" }, take: 15, select: { id: true, action: true, actorName: true, createdAt: true } }),
     prisma.notification.findMany({ where: { userId: { in: members.map((m) => m.id) } }, orderBy: { createdAt: "desc" }, take: 8, select: { id: true, title: true, readAt: true, createdAt: true } }),
   ]);
   return {
-    audits: audits.map((a) => ({ id: a.id, at: a.createdAt, text: AUDIT_TEXT[a.action] ?? a.action, actor: a.actorName })),
+    audits: audits.map((a) => ({ id: a.id, at: a.createdAt, text: TEXTO_DA_AUDITORIA[a.action] ?? a.action, actor: a.actorName })),
     notifications,
   };
 }
 
-export async function getCasalDomain(id: string) {
+export async function obterDominioDoCasal(id: string) {
   return prisma.domainOrder.findMany({
     where: { weddingId: id },
     orderBy: { requestedAt: "desc" },
@@ -455,7 +455,7 @@ export async function getCasalDomain(id: string) {
   });
 }
 
-export async function getCasalSupport(id: string) {
+export async function obterSuporteDoCasal(id: string) {
   const [notes, tickets] = await Promise.all([
     prisma.adminNote.findMany({ where: { weddingId: id }, orderBy: { createdAt: "desc" }, take: 30, select: { id: true, authorName: true, body: true, createdAt: true } }),
     prisma.supportTicket.findMany({ where: { weddingId: id }, orderBy: { createdAt: "desc" }, take: 10, select: { id: true, number: true, subject: true, status: true, createdAt: true } }),
@@ -463,6 +463,6 @@ export async function getCasalSupport(id: string) {
   return { notes, tickets };
 }
 
-export async function getCasalMadrinha(id: string) {
+export async function obterMadrinhaDoCasal(id: string) {
   return prisma.madrinhaWeddingOverride.findUnique({ where: { weddingId: id }, select: { enabled: true, extraMessages: true, blockedAt: true, blockedReason: true } });
 }

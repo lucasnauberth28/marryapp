@@ -6,19 +6,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { FormAlert } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { applyWeddingAdjustment, unblockWeddingMadrinha } from "@/actions/admin-madrinha-actions";
-import type { WeddingHit } from "@/lib/platform/queries/madrinha";
+import type { ResultadoDeCasamento } from "@/lib/platform/queries/madrinha";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 import { WeddingSearch } from "./wedding-search";
 
 /** "Ajuste para um casal": mensagens a mais neste mês (com motivo) e desbloqueio. Só configuração salva. */
 export function WeddingAdjust() {
-  const [picked, setPicked] = useState<WeddingHit | null>(null);
+  const [picked, setPicked] = useState<ResultadoDeCasamento | null>(null);
   const [extra, setExtra] = useState("0");
   const [reason, setReason] = useState("");
   const { pending, errors, formError, run } = useAdminAction();
   const [running, setRunning] = useState<"apply" | "unblock" | null>(null); // só o botão clicado mostra o spinner
 
-  function pick(hit: WeddingHit) {
+  function pick(hit: ResultadoDeCasamento) {
     setPicked(hit);
     setExtra(String(hit.override?.extraMessages ?? 0));
     setReason(hit.override?.note ?? "");

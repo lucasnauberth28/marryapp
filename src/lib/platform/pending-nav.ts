@@ -2,7 +2,7 @@
 // A lista fica na tela, mais clara e com aria-busy, até a URL chegar no destino pedido.
 
 /** Chave estável de um endereço: caminho + parâmetros em ordem alfabética (sem hash). Vazio quando o endereço não é do mesmo site. */
-export function locationKey(href: string, base = "http://aceito.local"): string | null {
+export function chaveDaLocalizacao(href: string, base = "http://aceito.local"): string | null {
   try {
     const url = new URL(href, base);
     if (url.origin !== new URL(base).origin) return null;
@@ -18,9 +18,9 @@ export function locationKey(href: string, base = "http://aceito.local"): string 
  * A lista deve aparecer como "atualizando"? Só quando há um destino pedido, ele é na MESMA página (outra rota
  * troca a tela inteira e tem o próprio loading.tsx) e a URL atual ainda não é o destino.
  */
-export function isListPending(target: string | null, currentPath: string, currentSearch: string): boolean {
+export function listaEstaPendente(target: string | null, currentPath: string, currentSearch: string): boolean {
   if (!target) return false;
-  const current = locationKey(`${currentPath}${currentSearch ? `?${currentSearch.replace(/^\?/, "")}` : ""}`);
+  const current = chaveDaLocalizacao(`${currentPath}${currentSearch ? `?${currentSearch.replace(/^\?/, "")}` : ""}`);
   if (!current) return false;
   const targetPath = target.split("?")[0];
   return targetPath === currentPath && target !== current;

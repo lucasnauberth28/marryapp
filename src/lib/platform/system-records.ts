@@ -16,7 +16,7 @@ import prisma from "@/lib/prisma";
  * sistema): webhook do Mercado Pago, lib/email.ts, lib/evolution.ts (WhatsApp) e push.
  */
 
-export async function recordCronRun(run: {
+export async function registrarRodadaDaTarefaAgendada(run: {
   job: string;
   startedAt: Date;
   status: "OK" | "FAILED";
@@ -39,7 +39,7 @@ export async function recordCronRun(run: {
   }
 }
 
-export async function recordServiceEvent(event: { service: string; kind: string; ok: boolean; message?: string | null; refId?: string | null }): Promise<void> {
+export async function registrarEventoDeServico(event: { service: string; kind: string; ok: boolean; message?: string | null; refId?: string | null }): Promise<void> {
   try {
     await prisma.serviceEvent.create({
       data: {
@@ -55,7 +55,7 @@ export async function recordServiceEvent(event: { service: string; kind: string;
   }
 }
 
-export async function prunePlatformRecords(now = new Date()): Promise<void> {
+export async function limparRegistrosAntigosDaPlataforma(now = new Date()): Promise<void> {
   const day = 24 * 60 * 60 * 1000;
   try {
     await Promise.all([

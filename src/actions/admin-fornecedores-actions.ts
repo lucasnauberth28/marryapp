@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { aprovarFornecedor, recusarFornecedor } from "@/lib/vendor-curation";
-import { GRANT_DAYS, grantedPlanEnd } from "@/lib/platform/vendor-admin";
+import { DIAS_DE_CONCESSAO, fimDoPlanoConcedido } from "@/lib/platform/vendor-admin";
 
 // Ações da administração sobre fornecedores (/admin/fornecedores). TODA ação chama requirePlatformAdmin primeiro,
 // valida com zod e grava no AuditLog. O id do navegador só BUSCA o registro; quem pode agir vem da sessão.
@@ -118,7 +118,7 @@ export async function grantVendorPlanAction(input: unknown): Promise<AdminVendor
       .object({
         vendorId: VendorId,
         tier: z.enum(["PRO", "MASTER"]),
-        days: z.coerce.number().int().refine((d) => (GRANT_DAYS as readonly number[]).includes(d), "Escolha um prazo da lista."),
+        days: z.coerce.number().int().refine((d) => (DIAS_DE_CONCESSAO as readonly number[]).includes(d), "Escolha um prazo da lista."),
         reason: Reason(5, "Diga o motivo da cortesia."),
       })
       .parse(input);
@@ -130,7 +130,7 @@ export async function grantVendorPlanAction(input: unknown): Promise<AdminVendor
     if (vendor.curationStatus !== "APPROVED") return { success: false, error: "Aprove o fornecedor antes de conceder um plano." };
     const now = new Date();
     const sameOrHigher = vendor.planTier === data.tier || (vendor.planTier === "MASTER" && data.tier === "PRO");
-    const end = grantedPlanEnd(now, data.days, vendor.planExpiresAt, vendor.planTier === data.tier && sameOrHigher);
+    const end = fimDoPlanoConcedido(now, data.days, vendor.planExpiresAt, vendor.planTier === data.tier && sameOrHigher);
     await prisma.partnerVendor.update({
       where: { id: data.vendorId },
       data: { planTier: data.tier, planExpiresAt: end, planReminderDays: null },

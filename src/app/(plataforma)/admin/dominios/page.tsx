@@ -14,29 +14,29 @@ import { TabsNav } from "@/components/plataforma/tabs-nav";
 import { ROTULO_DA_SITUACAO, type NomeDaSituacaoDoPedidoDeDominio } from "@/lib/domain-order";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { situacaoDoLembreteDeRenovacao } from "@/lib/domain-renewal";
-import { formatDate, formatDateTime, relativeDay, timeAgo } from "@/lib/platform/format";
+import { formatarData, formatarDataEHora, diaRelativo, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
-import { oneOf, param, parsePage, type SearchParams } from "@/lib/platform/list-params";
+import { umDosValores, parametroDaBusca, interpretarPagina, type ParametrosDeBusca } from "@/lib/platform/list-params";
 import {
-  DOMAIN_PAGE_SIZE,
-  DOMAIN_TABS,
-  getDomainDetail,
-  getDomainOrderSummary,
-  getDomainTabCounts,
-  listDomainOrders,
-  listRenewals,
-  type DomainTab,
+  TAMANHO_DA_PAGINA_DE_DOMINIOS,
+  ABAS_DE_DOMINIOS,
+  obterDetalheDoDominio,
+  obterResumoDosPedidosDeDominio,
+  obterContagensDasAbasDeDominios,
+  listarPedidosDeDominio,
+  listarRenovacoes,
+  type AbaDeDominios,
 } from "@/lib/platform/queries/dominios";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { vercelEstaConfigurada } from "@/lib/vercel-domains";
-import { buildHref } from "@/lib/platform/list-params";
+import { montarLink } from "@/lib/platform/list-params";
 import { DomainPanel } from "./_components/domain-panel";
 import { RenewalButton } from "./_components/renewal-button";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Domínios" };
 
-const TAB_LABEL: Record<DomainTab, string> = { todos: "Todos", pedido: "Pedido recebido", registro: "Em registro", registrado: "Registrado", "no-ar": "No ar", recusado: "Recusado" };
+const TAB_LABEL: Record<AbaDeDominios, string> = { todos: "Todos", pedido: "Pedido recebido", registro: "Em registro", registrado: "Registrado", "no-ar": "No ar", recusado: "Recusado" };
 
 const STATUS_CHIP: Record<NomeDaSituacaoDoPedidoDeDominio, { tone: StatusTone; icon: typeof Clock }> = {
   REQUESTED: { tone: "aviso", icon: Clock },
@@ -47,15 +47,15 @@ const STATUS_CHIP: Record<NomeDaSituacaoDoPedidoDeDominio, { tone: StatusTone; i
   CANCELED: { tone: "neutro", icon: XCircle },
 };
 
-export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<ParametrosDeBusca> }) {
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
-  const tab = oneOf(query, "aba", DOMAIN_TABS) ?? "todos";
-  const selectedId = param(query, "id", 40);
+  const tab = umDosValores(query, "aba", ABAS_DE_DOMINIOS) ?? "todos";
+  const selectedId = parametroDaBusca(query, "id", 40);
   const now = new Date();
 
-  const [summary, counts, list] = await Promise.all([getDomainOrderSummary(), getDomainTabCounts(), listDomainOrders(tab, parsePage(query))]);
-  const rowHref = (id: string) => `${buildHref("/admin/dominios", { aba: tab === "todos" ? undefined : tab, pagina: list.page > 1 ? list.page : undefined, id })}#painel`;
+  const [summary, counts, list] = await Promise.all([obterResumoDosPedidosDeDominio(), obterContagensDasAbasDeDominios(), listarPedidosDeDominio(tab, interpretarPagina(query))]);
+  const rowHref = (id: string) => `${montarLink("/admin/dominios", { aba: tab === "todos" ? undefined : tab, pagina: list.page > 1 ? list.page : undefined, id })}#painel`;
 
   return (
     <>
@@ -66,8 +66,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
       />
 
       <StatGrid>
-        <StatCard label="Pedido recebido" value={String(summary.requested)} hint={summary.requested > 0 ? `falta começar o registro${summary.oldestRequestedAt ? `, o mais antigo ${timeAgo(summary.oldestRequestedAt, now)}` : ""}` : "nenhum esperando"} highlight={summary.requested > 0} />
-        <StatCard label="Em registro" value={String(summary.registering)} hint={summary.registeringSince ? `desde ${formatDate(summary.registeringSince)}` : "nenhum em andamento"} />
+        <StatCard label="Pedido recebido" value={String(summary.requested)} hint={summary.requested > 0 ? `falta começar o registro${summary.oldestRequestedAt ? `, o mais antigo ${haQuantoTempo(summary.oldestRequestedAt, now)}` : ""}` : "nenhum esperando"} highlight={summary.requested > 0} />
+        <StatCard label="Em registro" value={String(summary.registering)} hint={summary.registeringSince ? `desde ${formatarData(summary.registeringSince)}` : "nenhum em andamento"} />
         <StatCard label="Registrado" value={String(summary.registered)} hint={summary.registered > 0 ? "falta conectar" : "nenhum esperando"} highlight={summary.registered > 0} />
         <StatCard label="No ar" value={String(summary.connected)} hint={summary.connected > 0 ? "funcionando" : "nenhum ainda"} />
       </StatGrid>
@@ -76,7 +76,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
         label="Situação dos pedidos"
         basePath="/admin/dominios"
         active={tab}
-        tabs={DOMAIN_TABS.map((value) => ({ value, label: TAB_LABEL[value], count: counts[value] }))}
+        tabs={ABAS_DE_DOMINIOS.map((value) => ({ value, label: TAB_LABEL[value], count: counts[value] }))}
       />
 
       <PendingRegion>
@@ -133,8 +133,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                 cell: (r) =>
                   r.expiresAt ? (
                     <>
-                      <span className="block">{formatDate(r.expiresAt)}</span>
-                      {(r.expiresAt.getTime() - now.getTime()) / 86_400_000 <= 60 ? <span className="block text-sm font-semibold text-aviso">{r.expiresAt < now ? "venceu" : `renova ${relativeDay(r.expiresAt, now)}`}</span> : null}
+                      <span className="block">{formatarData(r.expiresAt)}</span>
+                      {(r.expiresAt.getTime() - now.getTime()) / 86_400_000 <= 60 ? <span className="block text-sm font-semibold text-aviso">{r.expiresAt < now ? "venceu" : `renova ${diaRelativo(r.expiresAt, now)}`}</span> : null}
                     </>
                   ) : r.rejectionReason ? (
                     <span className="text-sm text-tinta-suave">{r.rejectionReason}</span>
@@ -144,7 +144,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
               },
             ]}
           />
-          <Pagination page={list.page} pageSize={DOMAIN_PAGE_SIZE} total={list.total} basePath="/admin/dominios" params={{ aba: tab === "todos" ? undefined : tab }} noun={["pedido", "pedidos"]} />
+          <Pagination page={list.page} pageSize={TAMANHO_DA_PAGINA_DE_DOMINIOS} total={list.total} basePath="/admin/dominios" params={{ aba: tab === "todos" ? undefined : tab }} noun={["pedido", "pedidos"]} />
 
           <Suspense
             fallback={
@@ -170,7 +170,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
 }
 
 async function RenewalsBlock({ now }: { now: Date }) {
-  const renewals = await listRenewals(now, 90);
+  const renewals = await listarRenovacoes(now, 90);
   return (
     <Panel title="Renovações dos próximos 90 dias" description="O VIP inclui o primeiro ano. Avisamos o casal por e-mail 60 e 30 dias antes de vencer (rotina diária). A renovação no Registro.br é manual.">
       {renewals.length === 0 ? (
@@ -183,7 +183,7 @@ async function RenewalsBlock({ now }: { now: Date }) {
               <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-linha py-3 first:pt-0 last:border-b-0 last:pb-0">
                 <div className="min-w-0">
                   <p className="break-all font-mono text-[15px] text-tinta">{r.domain}</p>
-                  <p className="text-sm text-tinta-suave">{r.expiresAt < now ? `Venceu em ${formatDate(r.expiresAt)}` : `Vence em ${formatDate(r.expiresAt)}`}</p>
+                  <p className="text-sm text-tinta-suave">{r.expiresAt < now ? `Venceu em ${formatarData(r.expiresAt)}` : `Vence em ${formatarData(r.expiresAt)}`}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   {r.expiresAt < now ? (
@@ -193,7 +193,7 @@ async function RenewalsBlock({ now }: { now: Date }) {
                   ) : reminder.kind === "due" ? (
                     <StatusChip tone="aviso" icon={Clock}>Aviso de {reminder.day} dias sai na próxima rotina diária</StatusChip>
                   ) : reminder.kind === "scheduled" ? (
-                    <StatusChip tone="neutro" icon={Clock}>Aviso de {reminder.day} dias em {formatDate(reminder.on)}</StatusChip>
+                    <StatusChip tone="neutro" icon={Clock}>Aviso de {reminder.day} dias em {formatarData(reminder.on)}</StatusChip>
                   ) : (
                     <StatusChip tone="neutro">Sem aviso previsto</StatusChip>
                   )}
@@ -208,8 +208,8 @@ async function RenewalsBlock({ now }: { now: Date }) {
   );
 }
 
-async function DomainDetailSlot({ selectedId, summary }: { selectedId: string | undefined; summary: Awaited<ReturnType<typeof getDomainOrderSummary>> }) {
-  const detail = selectedId ? await getDomainDetail(selectedId) : null;
+async function DomainDetailSlot({ selectedId, summary }: { selectedId: string | undefined; summary: Awaited<ReturnType<typeof obterResumoDosPedidosDeDominio>> }) {
+  const detail = selectedId ? await obterDetalheDoDominio(selectedId) : null;
   return (
     <>
       {detail ? (
@@ -220,8 +220,8 @@ async function DomainDetailSlot({ selectedId, summary }: { selectedId: string | 
           </div>
           <h2 className="mt-3 break-all font-mono text-2xl font-medium leading-8 text-tinta">{detail.domain}</h2>
           <p className="mt-1 text-sm text-tinta-suave">
-            {detail.coupleNames} · pedido em {formatDateTime(detail.requestedAt)}
-            {detail.registeredAt ? ` · registrado em ${formatDate(detail.registeredAt)}` : ""}
+            {detail.coupleNames} · pedido em {formatarDataEHora(detail.requestedAt)}
+            {detail.registeredAt ? ` · registrado em ${formatarData(detail.registeredAt)}` : ""}
           </p>
           <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[15px]">
             <dt className="text-tinta-suave">Titular</dt>
@@ -231,7 +231,7 @@ async function DomainDetailSlot({ selectedId, summary }: { selectedId: string | 
             <dt className="text-tinta-suave">Telefone</dt>
             <dd className="text-tinta">{formatarTelefone(detail.holderPhone)}</dd>
             <dt className="text-tinta-suave">Vence</dt>
-            <dd className="text-tinta">{detail.expiresAt ? formatDate(detail.expiresAt) : "Sem data"}</dd>
+            <dd className="text-tinta">{detail.expiresAt ? formatarData(detail.expiresAt) : "Sem data"}</dd>
             {detail.rejectionReason ? (
               <>
                 <dt className="text-tinta-suave">Motivo da recusa</dt>

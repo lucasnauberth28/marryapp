@@ -2,27 +2,27 @@ import "server-only";
 import prisma from "@/lib/prisma";
 import { whatsappEstaConfigurado } from "@/lib/evolution";
 import { filtroSemSoPresente } from "@/lib/guest-origin";
-import { coupleSubscription, next30DaysWhere, problemWhere } from "@/lib/platform/casais-filters";
-import { getLatestPlans } from "@/lib/platform/queries/casais";
-import { getPendingRefunds, getPixToCheck } from "@/lib/platform/queries/receita";
-import { getVendorCurationQueue } from "@/lib/platform/queries/fornecedores";
-import { relativeDay, timeAgo, daysBetween } from "@/lib/platform/format";
+import { assinaturaDoCasal, filtroDosProximos30Dias, filtroDeProblema } from "@/lib/platform/casais-filters";
+import { obterUltimosPlanos } from "@/lib/platform/queries/casais";
+import { obterReembolsosPendentes, obterPixParaConferir } from "@/lib/platform/queries/receita";
+import { obterFilaDeCuradoria } from "@/lib/platform/queries/fornecedores";
+import { diaRelativo, haQuantoTempo, diasEntre } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-import { percentChange } from "@/lib/platform/revenue";
-import type { PeriodWindows } from "@/lib/platform/overview-period";
+import { variacaoPercentual } from "@/lib/platform/revenue";
+import type { JanelasDoPeriodo } from "@/lib/platform/overview-period";
 
 /**
  * Consultas da Visão geral (/admin). Dono: tela Visão geral. Tudo real; sem dado, devolve vazio (a tela mostra o estado
  * vazio honesto). Reaproveita as consultas das outras áreas (receita.ts, fornecedores.ts, casais.ts) em vez de duplicar SQL.
  */
 
-const HOUR_MS = 3_600_000;
-const DAY_MS = 24 * HOUR_MS;
+const UMA_HORA_EM_MS = 3_600_000;
+const UM_DIA_EM_MS = 24 * UMA_HORA_EM_MS;
 
 // ---------- Precisa da sua atenção ----------
 
-export interface AttentionEntry {
+export interface EntradaDeAtencao {
   id: string;
   tone: "aviso" | "perigo" | "neutro";
   icon: "clock" | "alert" | "shield" | "globe" | "activity" | "life" | "wallet" | "message";
@@ -33,15 +33,15 @@ export interface AttentionEntry {
 }
 
 /** Itens reais, cada um só aparece se existir. Lista vazia = "Tudo em dia". */
-export async function getAttentionItems(now: Date = new Date()): Promise<AttentionEntry[]> {
-  const day = new Date(now.getTime() - DAY_MS);
+export async function obterItensDeAtencao(now: Date = new Date()): Promise<EntradaDeAtencao[]> {
+  const day = new Date(now.getTime() - UM_DIA_EM_MS);
   const [pix, refunds, curation, domains, dataRequests, tickets, serviceFailures, suspended] = await Promise.all([
-    getPixToCheck(now),
-    getPendingRefunds(),
-    getVendorCurationQueue(),
+    obterPixParaConferir(now),
+    obterReembolsosPendentes(),
+    obterFilaDeCuradoria(),
     prisma.domainOrder.findMany({ where: { status: "REQUESTED" }, orderBy: { requestedAt: "asc" }, take: 3, select: { domain: true, requestedAt: true, wedding: { select: { coupleNames: true } } } }),
     prisma.dataRequest.findMany({
-      where: { status: { in: ["NEW", "IN_REVIEW"] }, dueAt: { lte: new Date(now.getTime() + 5 * DAY_MS) } },
+      where: { status: { in: ["NEW", "IN_REVIEW"] }, dueAt: { lte: new Date(now.getTime() + 5 * UM_DIA_EM_MS) } },
       orderBy: { dueAt: "asc" },
       take: 3,
       select: { dueAt: true },
@@ -51,14 +51,14 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
     prisma.wedding.findMany({ where: { suspendedAt: { not: null } }, orderBy: { suspendedAt: "desc" }, take: 3, select: { id: true, coupleNames: true, weddingDate: true } }),
   ]);
 
-  const items: AttentionEntry[] = [];
+  const items: EntradaDeAtencao[] = [];
   if (pix.count > 0) {
     items.push({
       id: "pix",
       tone: "aviso",
       icon: "clock",
       title: `Conferir ${pluralizar(pix.count, "Pix de plano", "Pix de plano")}`,
-      detail: `${formatarReais(pix.totalCents)} no total${pix.oldestAt ? `, o mais antigo gerado ${timeAgo(pix.oldestAt, now)}` : ""}.`,
+      detail: `${formatarReais(pix.totalCents)} no total${pix.oldestAt ? `, o mais antigo gerado ${haQuantoTempo(pix.oldestAt, now)}` : ""}.`,
       actionLabel: "Conferir",
       href: "/admin/planos/assinaturas",
     });
@@ -68,7 +68,7 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
       id: `suspenso-${w.id}`,
       tone: "perigo",
       icon: "alert",
-      title: `Casamento suspenso${w.weddingDate && daysBetween(w.weddingDate, now) >= 0 && daysBetween(w.weddingDate, now) <= 30 ? ` e a data é ${relativeDay(w.weddingDate, now)}` : ""}`,
+      title: `Casamento suspenso${w.weddingDate && diasEntre(w.weddingDate, now) >= 0 && diasEntre(w.weddingDate, now) <= 30 ? ` e a data é ${diaRelativo(w.weddingDate, now)}` : ""}`,
       detail: `${w.coupleNames}. O site está fora do ar e o painel só lê.`,
       actionLabel: "Abrir casal",
       href: `/admin/casais/${w.id}`,
@@ -80,7 +80,7 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
       tone: "aviso",
       icon: "shield",
       title: `${pluralizar(curation.count, "fornecedor espera", "fornecedores esperam")} a curadoria`,
-      detail: curation.oldestAt ? `O mais antigo chegou ${timeAgo(curation.oldestAt, now)}.` : "Veja quem está na fila.",
+      detail: curation.oldestAt ? `O mais antigo chegou ${haQuantoTempo(curation.oldestAt, now)}.` : "Veja quem está na fila.",
       actionLabel: "Analisar",
       href: "/admin/fornecedores/curadoria",
     });
@@ -91,7 +91,7 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
       tone: "aviso",
       icon: "globe",
       title: "Pedido novo de domínio próprio",
-      detail: `${d.domain} (${d.wedding.coupleNames}) espera o início do registro desde ${timeAgo(d.requestedAt, now)}.`,
+      detail: `${d.domain} (${d.wedding.coupleNames}) espera o início do registro desde ${haQuantoTempo(d.requestedAt, now)}.`,
       actionLabel: "Começar registro",
       href: "/admin/dominios",
     });
@@ -102,19 +102,19 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
       tone: "aviso",
       icon: "wallet",
       title: `${pluralizar(refunds.count, "reembolso para decidir", "reembolsos para decidir")}`,
-      detail: `${formatarReais(refunds.totalCents)} no total${refunds.nextDueAt ? `, responder ${relativeDay(refunds.nextDueAt, now)}` : ""}.`,
+      detail: `${formatarReais(refunds.totalCents)} no total${refunds.nextDueAt ? `, responder ${diaRelativo(refunds.nextDueAt, now)}` : ""}.`,
       actionLabel: "Decidir",
       href: "/admin/planos?aba=reembolsos",
     });
   }
   if (dataRequests.length > 0) {
     const first = dataRequests[0].dueAt;
-    const left = daysBetween(first, now);
+    const left = diasEntre(first, now);
     items.push({
       id: "lgpd",
       tone: left < 0 ? "perigo" : "aviso",
       icon: "life",
-      title: left < 0 ? "Pedido sobre dados pessoais com o prazo vencido" : `Pedido sobre dados pessoais vence ${relativeDay(first, now)}`,
+      title: left < 0 ? "Pedido sobre dados pessoais com o prazo vencido" : `Pedido sobre dados pessoais vence ${diaRelativo(first, now)}`,
       detail: `${pluralizar(dataRequests.length, "pedido aberto perto do prazo", "pedidos abertos perto do prazo")}. Confirme o prazo com o jurídico.`,
       actionLabel: "Abrir pedido",
       href: "/admin/suporte",
@@ -136,7 +136,7 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
       id: `falha-${f.service}`,
       tone: "aviso",
       icon: "activity",
-      title: `${SERVICE_LABEL[f.service] ?? f.service} falhou ${pluralizar(f._count._all, "vez", "vezes")}`,
+      title: `${ROTULO_DO_SERVICO[f.service] ?? f.service} falhou ${pluralizar(f._count._all, "vez", "vezes")}`,
       detail: "Nas últimas 24 horas. Confira o que não foi concluído.",
       actionLabel: "Ver detalhes",
       href: "/admin/saude",
@@ -145,7 +145,7 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
   return items;
 }
 
-const SERVICE_LABEL: Record<string, string> = {
+const ROTULO_DO_SERVICO: Record<string, string> = {
   mercadopago: "Mercado Pago",
   whatsapp: "WhatsApp",
   email: "E-mail",
@@ -154,28 +154,28 @@ const SERVICE_LABEL: Record<string, string> = {
 
 // ---------- Números do topo ----------
 
-export interface OverviewNumbers {
+export interface NumerosDaVisaoGeral {
   revenue: { cents: number; payments: number; trend: number | null };
   newCouples: { count: number; previous: number; trend: number | null };
   next30: { count: number; needAttention: number };
   curation: { count: number; oldestAt: Date | null };
 }
 
-export async function getOverviewNumbers(win: PeriodWindows, now: Date = new Date()): Promise<OverviewNumbers> {
+export async function obterNumerosDaVisaoGeral(win: JanelasDoPeriodo, now: Date = new Date()): Promise<NumerosDaVisaoGeral> {
   const paid = { status: "APPROVED", amount: { gt: 0 } } as const;
   const [revCur, revPrev, newCur, newPrev, next30, next30Problem, curation] = await Promise.all([
     prisma.subscription.aggregate({ where: { ...paid, paidAt: { gte: win.current.from, lte: win.current.to } }, _sum: { amount: true }, _count: { _all: true } }),
     prisma.subscription.aggregate({ where: { ...paid, paidAt: { gte: win.previous.from, lt: win.previous.to } }, _sum: { amount: true } }),
     prisma.wedding.count({ where: { createdAt: { gte: win.current.from, lte: win.current.to } } }),
     prisma.wedding.count({ where: { createdAt: { gte: win.previous.from, lt: win.previous.to } } }),
-    prisma.wedding.count({ where: next30DaysWhere(now) }),
-    prisma.wedding.count({ where: { AND: [next30DaysWhere(now), problemWhere(now)] } }),
-    getVendorCurationQueue(),
+    prisma.wedding.count({ where: filtroDosProximos30Dias(now) }),
+    prisma.wedding.count({ where: { AND: [filtroDosProximos30Dias(now), filtroDeProblema(now)] } }),
+    obterFilaDeCuradoria(),
   ]);
   const cents = revCur._sum.amount ?? 0;
   return {
-    revenue: { cents, payments: revCur._count._all, trend: percentChange(cents, revPrev._sum.amount ?? 0) },
-    newCouples: { count: newCur, previous: newPrev, trend: percentChange(newCur, newPrev) },
+    revenue: { cents, payments: revCur._count._all, trend: variacaoPercentual(cents, revPrev._sum.amount ?? 0) },
+    newCouples: { count: newCur, previous: newPrev, trend: variacaoPercentual(newCur, newPrev) },
     next30: { count: next30, needAttention: next30Problem },
     curation,
   };
@@ -183,14 +183,14 @@ export async function getOverviewNumbers(win: PeriodWindows, now: Date = new Dat
 
 // ---------- Funil ----------
 
-export interface FunnelStep {
+export interface EtapaDoFunil {
   key: string;
   label: string;
   count: number;
 }
 
 /** Coorte dos casamentos criados na janela, passo a passo (cada passo é parte do anterior). Sem "visitaram o site". */
-export async function getFunnel(win: PeriodWindows): Promise<FunnelStep[]> {
+export async function obterFunil(win: JanelasDoPeriodo): Promise<EtapaDoFunil[]> {
   const created = { createdAt: { gte: win.current.from, lte: win.current.to } };
   const onboarded = { ...created, onboardedAt: { not: null } };
   const withGuest = { ...onboarded, guests: { some: {} } };
@@ -198,7 +198,7 @@ export async function getFunnel(win: PeriodWindows): Promise<FunnelStep[]> {
     prisma.wedding.count({ where: created }),
     prisma.wedding.count({ where: onboarded }),
     prisma.wedding.count({ where: withGuest }),
-    prisma.wedding.count({ where: { AND: [withGuest, coupleSubscription({ status: "APPROVED", amount: { gt: 0 } })] } }),
+    prisma.wedding.count({ where: { AND: [withGuest, assinaturaDoCasal({ status: "APPROVED", amount: { gt: 0 } })] } }),
   ]);
   return [
     { key: "cadastro", label: "Cadastraram", count: a },
@@ -210,7 +210,7 @@ export async function getFunnel(win: PeriodWindows): Promise<FunnelStep[]> {
 
 // ---------- Próximos casamentos ----------
 
-export interface UpcomingWedding {
+export interface CasamentoProximo {
   id: string;
   coupleNames: string;
   weddingDate: Date;
@@ -219,23 +219,23 @@ export interface UpcomingWedding {
   status: { tone: "sucesso" | "aviso" | "perigo"; label: string };
 }
 
-export async function getUpcomingWeddings(now: Date = new Date(), take = 5): Promise<UpcomingWedding[]> {
+export async function obterCasamentosProximos(now: Date = new Date(), take = 5): Promise<CasamentoProximo[]> {
   const weddings = await prisma.wedding.findMany({
-    where: next30DaysWhere(now),
+    where: filtroDosProximos30Dias(now),
     orderBy: { weddingDate: "asc" },
     take,
     select: { id: true, coupleNames: true, weddingDate: true, city: true, suspendedAt: true, customDomain: true },
   });
   const ids = weddings.map((w) => w.id);
   const [plans, pending] = await Promise.all([
-    getLatestPlans(ids),
+    obterUltimosPlanos(ids),
     prisma.guest.groupBy({ by: ["weddingId"], where: { weddingId: { in: ids }, rsvpStatus: "PENDING", ...filtroSemSoPresente }, _count: { _all: true } }),
   ]);
   const pendingBy = new Map(pending.map((p) => [p.weddingId, p._count._all]));
   return weddings.flatMap((w) => {
     if (!w.weddingDate) return [];
     const n = pendingBy.get(w.id) ?? 0;
-    const status: UpcomingWedding["status"] = w.suspendedAt
+    const status: CasamentoProximo["status"] = w.suspendedAt
       ? { tone: "perigo", label: "Suspenso" }
       : n > 0
         ? { tone: "aviso", label: `${n} sem resposta` }
@@ -248,7 +248,7 @@ export async function getUpcomingWeddings(now: Date = new Date(), take = 5): Pro
 
 // ---------- Erros e falhas nas últimas 24 horas ----------
 
-interface ServiceHealthRow {
+interface LinhaDeSaudeDoServico {
   service: string;
   label: string;
   total: number;
@@ -256,24 +256,24 @@ interface ServiceHealthRow {
   lastFailureAt: Date | null;
 }
 
-export interface RecentErrors {
-  services: ServiceHealthRow[];
+export interface ErrosRecentes {
+  services: LinhaDeSaudeDoServico[];
   failedCrons: { job: string; at: Date }[];
   /** Nada foi registrado (nem sucesso nem falha): a tela diz "Sem registros ainda", nunca "tudo certo". */
   nothingRecorded: boolean;
 }
 
-export async function getRecentErrors(now: Date = new Date()): Promise<RecentErrors> {
-  const since = new Date(now.getTime() - DAY_MS);
+export async function obterErrosRecentes(now: Date = new Date()): Promise<ErrosRecentes> {
+  const since = new Date(now.getTime() - UM_DIA_EM_MS);
   const [totals, failures, lastFailures, crons] = await Promise.all([
     prisma.serviceEvent.groupBy({ by: ["service"], where: { createdAt: { gte: since } }, _count: { _all: true } }),
     prisma.serviceEvent.groupBy({ by: ["service"], where: { createdAt: { gte: since }, ok: false }, _count: { _all: true } }),
     prisma.serviceEvent.groupBy({ by: ["service"], where: { createdAt: { gte: since }, ok: false }, _max: { createdAt: true } }),
     prisma.cronRun.findMany({ where: { status: "FAILED", startedAt: { gte: since } }, orderBy: { startedAt: "desc" }, distinct: ["job"], select: { job: true, startedAt: true } }),
   ]);
-  const services = Object.keys(SERVICE_LABEL).map<ServiceHealthRow>((service) => ({
+  const services = Object.keys(ROTULO_DO_SERVICO).map<LinhaDeSaudeDoServico>((service) => ({
     service,
-    label: SERVICE_LABEL[service],
+    label: ROTULO_DO_SERVICO[service],
     total: totals.find((t) => t.service === service)?._count._all ?? 0,
     failures: failures.find((t) => t.service === service)?._count._all ?? 0,
     lastFailureAt: lastFailures.find((t) => t.service === service)?._max.createdAt ?? null,
@@ -287,7 +287,7 @@ export async function getRecentErrors(now: Date = new Date()): Promise<RecentErr
 
 // ---------- Visão "Vazia": para abrir as portas ----------
 
-export interface SetupItem {
+export interface ItemDeConfiguracao {
   id: string;
   title: string;
   detail: string;
@@ -296,7 +296,7 @@ export interface SetupItem {
   href: string;
 }
 
-export async function getSetupChecklist(): Promise<SetupItem[]> {
+export async function obterListaDeConfiguracao(): Promise<ItemDeConfiguracao[]> {
   const [coupons, team] = await Promise.all([
     prisma.coupon.count(),
     // Contas com perfil de acesso total ("*"): você e quem mais da equipe

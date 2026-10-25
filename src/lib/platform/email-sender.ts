@@ -1,28 +1,28 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
 import prisma from "@/lib/prisma";
-import { parseSetting } from "@/lib/platform/settings-schema";
-import { resolveSender } from "@/lib/platform/email-sender-core";
+import { interpretarConfiguracao } from "@/lib/platform/settings-schema";
+import { resolverRemetente } from "@/lib/platform/email-sender-core";
 
-export const EMAIL_SENDER_TAG = "email-sender";
+export const ETIQUETA_DO_REMETENTE_DE_EMAIL = "email-sender";
 
 /**
  * Remetente configurado pela administração, com cache curto (30 s; a tag é limpa quando a administração salva).
  * Falha de leitura = nada configurado (vale o ambiente): nunca impede o envio.
  */
-const readConfig = unstable_cache(
+const lerConfiguracao = unstable_cache(
   async () => {
     try {
       const row = await prisma.platformSetting.findUnique({ where: { key: "emailSender" }, select: { value: true } });
-      return parseSetting("emailSender", row?.value);
+      return interpretarConfiguracao("emailSender", row?.value);
     } catch {
-      return parseSetting("emailSender", null);
+      return interpretarConfiguracao("emailSender", null);
     }
   },
   ["platform-email-sender-v1"],
-  { revalidate: 30, tags: [EMAIL_SENDER_TAG] },
+  { revalidate: 30, tags: [ETIQUETA_DO_REMETENTE_DE_EMAIL] },
 );
 
-export async function getEmailSender() {
-  return resolveSender(await readConfig(), process.env.EMAIL_FROM);
+export async function obterRemetenteDeEmail() {
+  return resolverRemetente(await lerConfiguracao(), process.env.EMAIL_FROM);
 }

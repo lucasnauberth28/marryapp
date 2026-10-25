@@ -11,15 +11,15 @@ import { RevenueChart } from "@/components/plataforma/revenue-chart";
 import { PlanChip, StatusChip } from "@/components/plataforma/status-chip";
 import { btn } from "@/components/landing/styles";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
-import { type SearchParams, oneOf } from "@/lib/platform/list-params";
-import { formatDayMonth, formatInt, formatLongDate, formatMonthName, formatPercent, relativeDay, timeAgo, formatTime } from "@/lib/platform/format";
+import { type ParametrosDeBusca, umDosValores } from "@/lib/platform/list-params";
+import { formatarDiaEMes, formatarInteiro, formatarDataPorExtenso, formatarNomeDoMes, formatarPercentual, diaRelativo, haQuantoTempo, formatarHora } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
-import { PERIODS, periodWindows, type Period } from "@/lib/platform/overview-period";
-import { percentLabel } from "@/lib/platform/revenue";
-import { getRevenueByMonth } from "@/lib/platform/queries/receita";
-import { getVendorPlansExpiring } from "@/lib/platform/queries/fornecedores";
-import { getFunnel, getAttentionItems, getRecentErrors, getSetupChecklist, getUpcomingWeddings } from "@/lib/platform/queries/atencao";
+import { PERIODOS, janelasDoPeriodo, type Periodo } from "@/lib/platform/overview-period";
+import { rotuloPercentual } from "@/lib/platform/revenue";
+import { obterReceitaPorMes } from "@/lib/platform/queries/receita";
+import { obterPlanosDeFornecedorPrestesAVencer } from "@/lib/platform/queries/fornecedores";
+import { obterFunil, obterItensDeAtencao, obterErrosRecentes, obterListaDeConfiguracao, obterCasamentosProximos } from "@/lib/platform/queries/atencao";
 import { saudacaoParaAHora } from "@/lib/wedding-format";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
@@ -36,14 +36,14 @@ const ICONS = { clock: Clock, alert: AlertTriangle, shield: ShieldCheck, globe: 
  * (números, atenção, receita, funil, casamentos próximos, planos vencendo, erros) carrega no seu Suspense,
  * independente dos outros, com esqueleto do tamanho real.
  */
-export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<ParametrosDeBusca> }) {
   const admin = await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
   const now = new Date();
   const hour = Number(new Intl.DateTimeFormat("en-GB", { hour: "2-digit", hour12: false, timeZone: "America/Sao_Paulo" }).format(now)) % 24;
   const greeting = admin.firstName ? `${saudacaoParaAHora(hour)}, ${admin.firstName}` : saudacaoParaAHora(hour);
-  const eyebrow = formatLongDate(now).toLocaleUpperCase("pt-BR");
-  const period = oneOf(query, "periodo", PERIODS) ?? "30d";
+  const eyebrow = formatarDataPorExtenso(now).toLocaleUpperCase("pt-BR");
+  const period = umDosValores(query, "periodo", PERIODOS) ?? "30d";
 
   return (
     <Suspense fallback={<OverviewSkeleton />}>
@@ -52,7 +52,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
   );
 }
 
-async function Overview({ eyebrow, title, period, now }: { eyebrow: string; title: string; period: Period; now: Date }) {
+async function Overview({ eyebrow, title, period, now }: { eyebrow: string; title: string; period: Periodo; now: Date }) {
   const weddingCount = await prisma.wedding.count();
   if (weddingCount === 0) return <EmptyOverview eyebrow={eyebrow} title={title} />;
 
@@ -94,37 +94,37 @@ async function Overview({ eyebrow, title, period, now }: { eyebrow: string; titl
   );
 }
 
-async function NumbersBlock({ period, now }: { period: Period; now: Date }) {
+async function NumbersBlock({ period, now }: { period: Periodo; now: Date }) {
   const numbers = await loadOverviewNumbers(period);
-  const win = periodWindows(period, now);
-  const revenueTitle = period === "mes" ? `Receita de ${formatMonthName(now)}` : `Receita, ${win.short}`;
+  const win = janelasDoPeriodo(period, now);
+  const revenueTitle = period === "mes" ? `Receita de ${formatarNomeDoMes(now)}` : `Receita, ${win.short}`;
   return (
     <PendingRegion>
       <StatGrid>
         <StatCard
           label={revenueTitle}
           value={formatarReaisInteiros(numbers.revenue.cents)}
-          trend={numbers.revenue.trend === null ? null : { value: numbers.revenue.trend, label: percentLabel(numbers.revenue.trend) }}
+          trend={numbers.revenue.trend === null ? null : { value: numbers.revenue.trend, label: rotuloPercentual(numbers.revenue.trend) }}
           hint={numbers.revenue.payments === 0 ? "nenhum pagamento ainda" : `${period === "mes" ? "até hoje, " : ""}${pluralizar(numbers.revenue.payments, "pagamento", "pagamentos")}`}
           href="/admin/planos"
         />
         <StatCard
           label={`Novos casais, ${win.short}`}
-          value={formatInt(numbers.newCouples.count)}
-          trend={numbers.newCouples.trend === null ? null : { value: numbers.newCouples.trend, label: percentLabel(numbers.newCouples.trend) }}
-          hint={numbers.newCouples.previous > 0 ? `contra ${formatInt(numbers.newCouples.previous)} antes` : "sem período anterior para comparar"}
+          value={formatarInteiro(numbers.newCouples.count)}
+          trend={numbers.newCouples.trend === null ? null : { value: numbers.newCouples.trend, label: rotuloPercentual(numbers.newCouples.trend) }}
+          hint={numbers.newCouples.previous > 0 ? `contra ${formatarInteiro(numbers.newCouples.previous)} antes` : "sem período anterior para comparar"}
           href="/admin/casais"
         />
         <StatCard
           label="Casamentos em 30 dias"
-          value={formatInt(numbers.next30.count)}
+          value={formatarInteiro(numbers.next30.count)}
           hint={numbers.next30.count === 0 ? "nenhum nos próximos 30 dias" : numbers.next30.needAttention > 0 ? `${numbers.next30.needAttention} ${numbers.next30.needAttention === 1 ? "pede" : "pedem"} atenção` : "nenhum pede atenção"}
           href="/admin/casais?aba=30dias"
         />
         <StatCard
           label="Esperando curadoria"
-          value={formatInt(numbers.curation.count)}
-          hint={numbers.curation.oldestAt ? `o mais antigo, ${timeAgo(numbers.curation.oldestAt, now)}` : "ninguém na fila"}
+          value={formatarInteiro(numbers.curation.count)}
+          hint={numbers.curation.oldestAt ? `o mais antigo, ${haQuantoTempo(numbers.curation.oldestAt, now)}` : "ninguém na fila"}
           highlight={numbers.curation.count > 0}
           href="/admin/fornecedores/curadoria"
         />
@@ -134,7 +134,7 @@ async function NumbersBlock({ period, now }: { period: Period; now: Date }) {
 }
 
 async function AttentionBlock({ now }: { now: Date }) {
-  const attention = await getAttentionItems(now);
+  const attention = await obterItensDeAtencao(now);
   const attentionItems: AttentionItem[] = attention.map((a) => ({ id: a.id, title: a.title, detail: a.detail, tone: a.tone, icon: ICONS[a.icon], actionLabel: a.actionLabel, href: a.href }));
   return (
     <Panel
@@ -159,7 +159,7 @@ async function AttentionBlock({ now }: { now: Date }) {
 }
 
 async function RevenueBlock({ now }: { now: Date }) {
-  const months = await getRevenueByMonth(now, 7);
+  const months = await obterReceitaPorMes(now, 7);
   const hasRevenue = months.some((m) => m.total > 0);
   const current = months[months.length - 1];
   return (
@@ -168,7 +168,7 @@ async function RevenueBlock({ now }: { now: Date }) {
         <>
           <RevenueChart months={months} />
           <p className="mt-4 text-sm leading-6 text-tinta-suave">
-            Em {formatMonthName(now)}, até hoje: casais {formatarReaisInteiros(current.couple)} e fornecedores {formatarReaisInteiros(current.vendor)}.
+            Em {formatarNomeDoMes(now)}, até hoje: casais {formatarReaisInteiros(current.couple)} e fornecedores {formatarReaisInteiros(current.vendor)}.
           </p>
         </>
       ) : (
@@ -180,22 +180,22 @@ async function RevenueBlock({ now }: { now: Date }) {
   );
 }
 
-async function FunnelBlock({ period, now }: { period: Period; now: Date }) {
-  const win = periodWindows(period, now);
-  const funnel = await getFunnel(win);
+async function FunnelBlock({ period, now }: { period: Periodo; now: Date }) {
+  const win = janelasDoPeriodo(period, now);
+  const funnel = await obterFunil(win);
   const funnelMax = Math.max(1, funnel[0]?.count ?? 0);
   return (
     <PendingRegion>
       <Panel title="De cadastro a casal pagante" aside={<span className="text-sm text-tinta-suave">{win.label}</span>}>
         <p className="mb-5 text-tinta">
-          <strong>{formatInt(funnel[0].count)}</strong> {funnel[0].count === 1 ? "casal criou" : "casais criaram"} o casamento {win.period === "mes" ? "neste mês" : `nos últimos ${win.short}`}.
+          <strong>{formatarInteiro(funnel[0].count)}</strong> {funnel[0].count === 1 ? "casal criou" : "casais criaram"} o casamento {win.period === "mes" ? "neste mês" : `nos últimos ${win.short}`}.
         </p>
         {funnel[0].count === 0 ? (
           <p className="text-tinta-suave">Nenhum casamento novo neste período.</p>
         ) : (
           <ol className="flex flex-col gap-4">
             {funnel.map((step, i) => {
-              const pct = i === 0 ? null : formatPercent(step.count, funnel[i - 1].count);
+              const pct = i === 0 ? null : formatarPercentual(step.count, funnel[i - 1].count);
               return (
                 <li key={step.key} className="grid grid-cols-1 items-center gap-x-4 gap-y-1 sm:grid-cols-[180px_1fr_130px]">
                   <span className="text-tinta">{step.label}</span>
@@ -203,7 +203,7 @@ async function FunnelBlock({ period, now }: { period: Period; now: Date }) {
                     <span className="block h-full rounded-full bg-ameixa" style={{ width: `${(step.count / funnelMax) * 100}%` }} />
                   </span>
                   <span className="leading-5">
-                    <span className="font-semibold tabular-nums text-tinta">{formatInt(step.count)}</span>
+                    <span className="font-semibold tabular-nums text-tinta">{formatarInteiro(step.count)}</span>
                     {pct && <span className="block text-sm text-tinta-suave">{pct} do passo anterior</span>}
                   </span>
                 </li>
@@ -216,8 +216,8 @@ async function FunnelBlock({ period, now }: { period: Period; now: Date }) {
   );
 }
 
-async function UpcomingBlock({ period, now }: { period: Period; now: Date }) {
-  const [numbers, upcoming] = await Promise.all([loadOverviewNumbers(period), getUpcomingWeddings(now, 5)]);
+async function UpcomingBlock({ period, now }: { period: Periodo; now: Date }) {
+  const [numbers, upcoming] = await Promise.all([loadOverviewNumbers(period), obterCasamentosProximos(now, 5)]);
   return (
     <Panel title="Casamentos nos próximos 30 dias" action={numbers.next30.count > 0 ? { label: `Ver os ${numbers.next30.count}`, href: "/admin/casais?aba=30dias" } : undefined}>
       {upcoming.length === 0 ? (
@@ -228,9 +228,9 @@ async function UpcomingBlock({ period, now }: { period: Period; now: Date }) {
         <ul className="flex flex-col">
           {upcoming.map((w) => (
             <li key={w.id} className="relative flex items-center gap-4 border-b border-linha py-3 first:pt-0 last:border-b-0 last:pb-0">
-              <span className="w-12 shrink-0 text-center leading-tight" aria-label={relativeDay(w.weddingDate, now)}>
-                <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">{formatDayMonth(w.weddingDate).split(" ")[1]}</span>
-                <span className="block font-num text-2xl text-tinta">{formatDayMonth(w.weddingDate).split(" ")[0]}</span>
+              <span className="w-12 shrink-0 text-center leading-tight" aria-label={diaRelativo(w.weddingDate, now)}>
+                <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">{formatarDiaEMes(w.weddingDate).split(" ")[1]}</span>
+                <span className="block font-num text-2xl text-tinta">{formatarDiaEMes(w.weddingDate).split(" ")[0]}</span>
               </span>
               <span className="min-w-0 flex-1">
                 <Link href={`/admin/casais/${w.id}`} className="font-semibold text-tinta after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa">
@@ -253,7 +253,7 @@ async function UpcomingBlock({ period, now }: { period: Period; now: Date }) {
 }
 
 async function ExpiringBlock({ now }: { now: Date }) {
-  const expiring = await getVendorPlansExpiring(now, 7, 5);
+  const expiring = await obterPlanosDeFornecedorPrestesAVencer(now, 7, 5);
   return (
     <Panel title="Planos de fornecedores vencendo" action={{ label: "Ver todos", href: "/admin/fornecedores?aba=vencendo" }}>
       {expiring.length === 0 ? (
@@ -265,7 +265,7 @@ async function ExpiringBlock({ now }: { now: Date }) {
               <span>
                 <span className="block font-semibold text-tinta">{v.companyName}</span>
                 <span className="block text-sm text-tinta-suave">
-                  {relativeDay(v.planExpiresAt, now)}, {formatDayMonth(v.planExpiresAt)}
+                  {diaRelativo(v.planExpiresAt, now)}, {formatarDiaEMes(v.planExpiresAt)}
                 </span>
               </span>
               <span className="flex items-center gap-2">
@@ -289,7 +289,7 @@ async function ExpiringBlock({ now }: { now: Date }) {
 }
 
 async function ErrorsBlock({ now }: { now: Date }) {
-  const errors = await getRecentErrors(now);
+  const errors = await obterErrosRecentes(now);
   return (
     <Panel title="Erros e falhas nas últimas 24 horas" action={{ label: "Saúde do sistema", href: "/admin/saude" }}>
       {errors.nothingRecorded ? (
@@ -303,7 +303,7 @@ async function ErrorsBlock({ now }: { now: Date }) {
               <span>
                 <span className="block font-semibold text-tinta">{s.label}</span>
                 <span className="block text-sm text-tinta-suave">
-                  {s.total === 0 ? "Sem registros nas últimas 24 horas" : s.failures === 0 ? `Nenhuma falha em ${pluralizar(s.total, "registro", "registros")}` : `${pluralizar(s.failures, "falha", "falhas")}${s.lastFailureAt ? `, a última às ${formatTime(s.lastFailureAt)}` : ""}`}
+                  {s.total === 0 ? "Sem registros nas últimas 24 horas" : s.failures === 0 ? `Nenhuma falha em ${pluralizar(s.total, "registro", "registros")}` : `${pluralizar(s.failures, "falha", "falhas")}${s.lastFailureAt ? `, a última às ${formatarHora(s.lastFailureAt)}` : ""}`}
                 </span>
               </span>
               {s.total > 0 &&
@@ -322,7 +322,7 @@ async function ErrorsBlock({ now }: { now: Date }) {
             <li key={c.job} className="flex flex-wrap items-center justify-between gap-2 border-b border-linha py-3 last:border-b-0">
               <span>
                 <span className="block font-semibold text-tinta">Rotina diária ({c.job})</span>
-                <span className="block text-sm text-tinta-suave">Falhou {timeAgo(c.at, now)}</span>
+                <span className="block text-sm text-tinta-suave">Falhou {haQuantoTempo(c.at, now)}</span>
               </span>
               <StatusChip tone="perigo" icon={AlertTriangle}>
                 Falhou
@@ -337,7 +337,7 @@ async function ErrorsBlock({ now }: { now: Date }) {
 
 /** Versão "Vazia" do desenho: ainda não há nenhum casamento. */
 async function EmptyOverview({ eyebrow, title }: { eyebrow: string; title: string }) {
-  const checklist = await getSetupChecklist();
+  const checklist = await obterListaDeConfiguracao();
   const done = checklist.filter((i) => i.done).length;
   return (
     <>

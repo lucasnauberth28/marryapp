@@ -15,35 +15,35 @@ import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { UserImage } from "@/components/ui/user-image";
 import { PlanChip, StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
 import { TabsNav } from "@/components/plataforma/tabs-nav";
-import { formatDate, formatInt, relativeDay, timeAgo } from "@/lib/platform/format";
+import { formatarData, formatarInteiro, diaRelativo, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
-import { buildHref, oneOf, param, parsePage, type SearchParams } from "@/lib/platform/list-params";
+import { montarLink, umDosValores, parametroDaBusca, interpretarPagina, type ParametrosDeBusca } from "@/lib/platform/list-params";
 import {
-  CURATION_FILTERS,
-  PLAN_FILTERS,
-  VENDOR_PAGE_SIZE,
-  getAdminVendorDetail,
-  getReviewsToModerate,
-  getVendorFilterOptions,
-  getVendorTabCounts,
-  listAdminVendors,
-  type AdminVendorRow,
+  FILTROS_DE_CURADORIA,
+  FILTROS_DE_PLANO,
+  TAMANHO_DA_PAGINA_DE_FORNECEDORES,
+  obterDetalheDoFornecedorDoAdmin,
+  obterAvaliacoesParaModerar,
+  obterOpcoesDeFiltroDeFornecedores,
+  obterContagensDasAbasDeFornecedores,
+  listarFornecedoresDoAdmin,
+  type LinhaDeFornecedorDoAdmin,
 } from "@/lib/platform/queries/fornecedores";
-import { activePaidVendorWhere } from "@/lib/platform/queries/receita";
-import { CURATION_LABEL, VENDOR_SORTS, VENDOR_TABS, curationView, galleryPhotos, planExpiryTone, type CurationView } from "@/lib/platform/vendor-admin";
+import { filtroDeFornecedorPagoAtivo } from "@/lib/platform/queries/receita";
+import { ROTULO_DA_CURADORIA, ORDENACOES_DE_FORNECEDORES, ABAS_DE_FORNECEDORES, visaoDaCuradoria, fotosDaGaleria, tomDoVencimentoDoPlano, type VisaoDaCuradoria } from "@/lib/platform/vendor-admin";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { VendorActionsPanel } from "./vendor-actions-panel";
 import { ReviewModeration } from "./review-moderation";
 
-const VIEW_CHIP: Record<CurationView, { tone: StatusTone; icon: typeof Check }> = {
+const VIEW_CHIP: Record<VisaoDaCuradoria, { tone: StatusTone; icon: typeof Check }> = {
   approved: { tone: "sucesso", icon: Check },
   pending: { tone: "aviso", icon: Clock },
   adjust: { tone: "neutro", icon: Pencil },
   suspended: { tone: "perigo", icon: Ban },
 };
 
-const TAB_LABEL: Record<(typeof VENDOR_TABS)[number], string> = {
+const TAB_LABEL: Record<(typeof ABAS_DE_FORNECEDORES)[number], string> = {
   todos: "Todos",
   curadoria: "Aguardando curadoria",
   "pro-master": "Pro e Master",
@@ -55,23 +55,23 @@ const TAB_LABEL: Record<(typeof VENDOR_TABS)[number], string> = {
  * Tela de fornecedores da administração. `mode="curadoria"` é a mesma tela com a fila de cadastros esperando
  * análise (rota /admin/fornecedores/curadoria): sem abas, o primeiro da fila já abre no painel.
  */
-export async function VendorsScreen({ searchParams, mode }: { searchParams: SearchParams; mode: "lista" | "curadoria" }) {
+export async function VendorsScreen({ searchParams, mode }: { searchParams: ParametrosDeBusca; mode: "lista" | "curadoria" }) {
   const now = new Date();
   const basePath = mode === "curadoria" ? "/admin/fornecedores/curadoria" : "/admin/fornecedores";
-  const tab = mode === "curadoria" ? "curadoria" : (oneOf(searchParams, "aba", VENDOR_TABS) ?? "todos");
-  const q = param(searchParams, "q");
-  const categoria = param(searchParams, "categoria", 60);
-  const regiao = param(searchParams, "regiao", 60);
-  const plano = oneOf(searchParams, "plano", PLAN_FILTERS);
-  const curadoria = oneOf(searchParams, "curadoria", CURATION_FILTERS);
-  const ordem = oneOf(searchParams, "ordem", VENDOR_SORTS) ?? "espera";
-  const selectedId = param(searchParams, "id", 40);
+  const tab = mode === "curadoria" ? "curadoria" : (umDosValores(searchParams, "aba", ABAS_DE_FORNECEDORES) ?? "todos");
+  const q = parametroDaBusca(searchParams, "q");
+  const categoria = parametroDaBusca(searchParams, "categoria", 60);
+  const regiao = parametroDaBusca(searchParams, "regiao", 60);
+  const plano = umDosValores(searchParams, "plano", FILTROS_DE_PLANO);
+  const curadoria = umDosValores(searchParams, "curadoria", FILTROS_DE_CURADORIA);
+  const ordem = umDosValores(searchParams, "ordem", ORDENACOES_DE_FORNECEDORES) ?? "espera";
+  const selectedId = parametroDaBusca(searchParams, "id", 40);
 
   const [counts, paidGroups, options, list] = await Promise.all([
-    getVendorTabCounts(now),
-    prisma.partnerVendor.groupBy({ by: ["planTier"], where: activePaidVendorWhere(now), _count: { _all: true } }),
-    getVendorFilterOptions(),
-    listAdminVendors({ tab, q, categoria, plano, curadoria, regiao, ordem, page: parsePage(searchParams) }, now),
+    obterContagensDasAbasDeFornecedores(now),
+    prisma.partnerVendor.groupBy({ by: ["planTier"], where: filtroDeFornecedorPagoAtivo(now), _count: { _all: true } }),
+    obterOpcoesDeFiltroDeFornecedores(),
+    listarFornecedoresDoAdmin({ tab, q, categoria, plano, curadoria, regiao, ordem, page: interpretarPagina(searchParams) }, now),
   ]);
 
   const pro = paidGroups.find((g) => g.planTier === "PRO")?._count._all ?? 0;
@@ -79,7 +79,7 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
   const detailId = selectedId ?? (mode === "curadoria" ? list.rows[0]?.id : undefined);
 
   const filterParams = { q, categoria, regiao, plano, curadoria, ordem: ordem === "espera" ? undefined : ordem, aba: mode === "lista" && tab !== "todos" ? tab : undefined };
-  const rowHref = (row: AdminVendorRow) => `${buildHref(basePath, { ...filterParams, pagina: list.page > 1 ? list.page : undefined, id: row.id })}#painel`;
+  const rowHref = (row: LinhaDeFornecedorDoAdmin) => `${montarLink(basePath, { ...filterParams, pagina: list.page > 1 ? list.page : undefined, id: row.id })}#painel`;
 
   const oldest = counts.curadoria > 0 ? await prisma.partnerVendor.findFirst({ where: { curationStatus: "PENDING_APPROVAL" }, orderBy: { createdAt: "asc" }, select: { createdAt: true } }) : null;
 
@@ -87,8 +87,8 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
     mode === "curadoria"
       ? counts.curadoria === 0
         ? "Nenhum cadastro esperando análise."
-        : `${pluralizar(counts.curadoria, "cadastro esperando", "cadastros esperando")} análise${oldest ? `, o mais antigo ${timeAgo(oldest.createdAt, now)}` : ""}.`
-      : `${pluralizar(counts.todos, "fornecedor", "fornecedores")}, ${formatInt(pro + master)} com plano pago (${formatInt(pro)} Pro e ${formatInt(master)} Master).`;
+        : `${pluralizar(counts.curadoria, "cadastro esperando", "cadastros esperando")} análise${oldest ? `, o mais antigo ${haQuantoTempo(oldest.createdAt, now)}` : ""}.`
+      : `${pluralizar(counts.todos, "fornecedor", "fornecedores")}, ${formatarInteiro(pro + master)} com plano pago (${formatarInteiro(pro)} Pro e ${formatarInteiro(master)} Master).`;
 
   const filters = [
     { key: "categoria", label: "Categoria", allLabel: "Todas", options: options.categories.map((c) => ({ value: c, label: c })) },
@@ -123,7 +123,7 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
               <Link href="/admin/fornecedores/curadoria" className={btn.secondary}>
                 <ShieldCheck className="size-4" aria-hidden="true" /> Curadoria
               </Link>
-              <ExportButton href={buildHref("/api/admin/fornecedores.csv", filterParams)} fallbackName="fornecedores.csv">
+              <ExportButton href={montarLink("/api/admin/fornecedores.csv", filterParams)} fallbackName="fornecedores.csv">
                 <Download className="size-4" aria-hidden="true" /> Exportar CSV
               </ExportButton>
             </>
@@ -141,7 +141,7 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
           basePath={basePath}
           active={tab}
           params={{ q, categoria, regiao, plano, curadoria, ordem: ordem === "espera" ? undefined : ordem }}
-          tabs={VENDOR_TABS.map((value) => ({ value, label: TAB_LABEL[value], count: counts[value] }))}
+          tabs={ABAS_DE_FORNECEDORES.map((value) => ({ value, label: TAB_LABEL[value], count: counts[value] }))}
         />
       ) : null}
 
@@ -183,11 +183,11 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
                 key: "curadoria",
                 header: "Curadoria",
                 cell: (v) => {
-                  const view = curationView(v);
+                  const view = visaoDaCuradoria(v);
                   const chip = VIEW_CHIP[view];
                   return (
                     <StatusChip tone={chip.tone} icon={chip.icon}>
-                      {CURATION_LABEL[view]}
+                      {ROTULO_DA_CURADORIA[view]}
                     </StatusChip>
                   );
                 },
@@ -228,8 +228,8 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
                     <span className="text-tinta-suave">Sem plano pago</span>
                   ) : v.planExpiresAt ? (
                     <>
-                      <span className="block">{formatDate(v.planExpiresAt)}</span>
-                      <span className={planExpiryTone(v.planExpiresAt, now) === "soon" ? "block text-sm font-semibold text-aviso" : "block text-sm text-tinta-suave"}>{relativeDay(v.planExpiresAt, now)}</span>
+                      <span className="block">{formatarData(v.planExpiresAt)}</span>
+                      <span className={tomDoVencimentoDoPlano(v.planExpiresAt, now) === "soon" ? "block text-sm font-semibold text-aviso" : "block text-sm text-tinta-suave"}>{diaRelativo(v.planExpiresAt, now)}</span>
                     </>
                   ) : (
                     <span className="text-tinta-suave">Sem vencimento</span>
@@ -237,7 +237,7 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
               },
             ]}
           />
-          <Pagination page={list.page} pageSize={VENDOR_PAGE_SIZE} total={list.total} basePath={basePath} params={filterParams} noun={["fornecedor", "fornecedores"]} />
+          <Pagination page={list.page} pageSize={TAMANHO_DA_PAGINA_DE_FORNECEDORES} total={list.total} basePath={basePath} params={filterParams} noun={["fornecedor", "fornecedores"]} />
         </div>
 
         <div id="painel" className="scroll-mt-6 lg:sticky lg:top-6">
@@ -265,7 +265,7 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Sear
 }
 
 async function VendorDetailSlot({ detailId, now, basePath }: { detailId: string | undefined; now: Date; basePath: string }) {
-  const detail = detailId ? await getAdminVendorDetail(detailId) : null;
+  const detail = detailId ? await obterDetalheDoFornecedorDoAdmin(detailId) : null;
   return detail ? (
     <VendorDetailPanel detail={detail} now={now} basePath={basePath} />
   ) : (
@@ -276,7 +276,7 @@ async function VendorDetailSlot({ detailId, now, basePath }: { detailId: string 
 }
 
 async function ModerationBlock({ now }: { now: Date }) {
-  const moderation = await getReviewsToModerate();
+  const moderation = await obterAvaliacoesParaModerar();
   return (
     <>
       {moderation ? (
@@ -337,7 +337,7 @@ function ReviewBlock({ review, now }: { review: { vendorName: string; rating: nu
       <p className="break-words text-[15px] text-tinta">“{review.comment}”</p>
       <p className="flex flex-wrap items-center gap-2 text-sm text-tinta-suave">
         {review.hiddenAt ? (
-          <StatusChip tone="neutro">Ocultada {timeAgo(review.hiddenAt, now)}</StatusChip>
+          <StatusChip tone="neutro">Ocultada {haQuantoTempo(review.hiddenAt, now)}</StatusChip>
         ) : (
           <StatusChip tone="aviso" icon={Flag}>
             Denunciada
@@ -349,10 +349,10 @@ function ReviewBlock({ review, now }: { review: { vendorName: string; rating: nu
   );
 }
 
-function VendorDetailPanel({ detail, now, basePath }: { detail: NonNullable<Awaited<ReturnType<typeof getAdminVendorDetail>>>; now: Date; basePath: string }) {
-  const view = curationView(detail);
+function VendorDetailPanel({ detail, now, basePath }: { detail: NonNullable<Awaited<ReturnType<typeof obterDetalheDoFornecedorDoAdmin>>>; now: Date; basePath: string }) {
+  const view = visaoDaCuradoria(detail);
   const chip = VIEW_CHIP[view];
-  const photos = galleryPhotos(detail.galleryImages, detail.coverUrl, 3);
+  const photos = fotosDaGaleria(detail.galleryImages, detail.coverUrl, 3);
   const days = Math.max(0, Math.floor((now.getTime() - detail.createdAt.getTime()) / 86_400_000));
   const isApproved = detail.curationStatus === "APPROVED";
   return (
@@ -360,7 +360,7 @@ function VendorDetailPanel({ detail, now, basePath }: { detail: NonNullable<Awai
       <div className="flex flex-wrap items-center justify-between gap-2">
         <StatusChip tone="salvia">{detail.category}</StatusChip>
         <StatusChip tone={chip.tone} icon={chip.icon}>
-          {CURATION_LABEL[view]}
+          {ROTULO_DA_CURADORIA[view]}
         </StatusChip>
       </div>
       <h2 className="mt-3 font-display text-[28px] leading-8 text-tinta">{detail.companyName}</h2>
@@ -369,10 +369,10 @@ function VendorDetailPanel({ detail, now, basePath }: { detail: NonNullable<Awai
         {detail.regions.length > 0 ? ` · ${detail.regions.slice(0, 2).join(", ")}` : ""} · cadastro {days === 0 ? "hoje" : `há ${pluralizar(days, "dia", "dias")}`}
       </p>
       {detail.curationStatus === "REJECTED" && detail.curationNotes ? <p className="mt-3 rounded-xl bg-areia p-3 text-sm text-tinta">Mensagem enviada ao fornecedor: {detail.curationNotes}</p> : null}
-      {detail.suspendedAt ? <p className="mt-3 rounded-xl bg-perigo-suave p-3 text-sm text-perigo">Suspenso {timeAgo(detail.suspendedAt, now)}{detail.suspendedReason ? `. Motivo: ${detail.suspendedReason}` : ""}</p> : null}
+      {detail.suspendedAt ? <p className="mt-3 rounded-xl bg-perigo-suave p-3 text-sm text-perigo">Suspenso {haQuantoTempo(detail.suspendedAt, now)}{detail.suspendedReason ? `. Motivo: ${detail.suspendedReason}` : ""}</p> : null}
       {detail.planTier !== "FREE" && detail.planExpiresAt ? (
         <p className="mt-3 text-sm text-tinta-suave">
-          Plano {detail.planTier === "PRO" ? "Pro" : "Master"} até {formatDate(detail.planExpiresAt)}.
+          Plano {detail.planTier === "PRO" ? "Pro" : "Master"} até {formatarData(detail.planExpiresAt)}.
         </p>
       ) : null}
 

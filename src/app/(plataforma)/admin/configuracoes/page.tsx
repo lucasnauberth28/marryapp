@@ -4,9 +4,9 @@ import { PageHeader } from "@/components/plataforma/page-header";
 import { Panel } from "@/components/plataforma/panel";
 import { StatusChip } from "@/components/plataforma/status-chip";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
-import { getPlatformSetting } from "@/lib/platform/settings";
-import { INTEGRATIONS, describeLimit, integrationStatus } from "@/lib/platform/config-core";
-import { splitBackAt } from "@/lib/platform/maintenance-core";
+import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
+import { INTEGRACOES, descreverLimite, situacaoDaIntegracao } from "@/lib/platform/config-core";
+import { separarPrevisaoDeVolta } from "@/lib/platform/maintenance-core";
 import { LimitesDeSeguranca } from "@/lib/security/rate-limiter";
 import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
 import { modulosDoPlano } from "@/lib/wedding-plan-modules";
@@ -49,9 +49,9 @@ function Section({ id, title, description, children }: { id: string; title: stri
 
 export default async function Page() {
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
-  const [maintenance, emailSender, refund] = await Promise.all([getPlatformSetting("maintenance"), getPlatformSetting("emailSender"), getPlatformSetting("refundPolicy")]);
-  const back = splitBackAt(maintenance.backAt);
-  const integrations = INTEGRATIONS.map((def) => integrationStatus(def, process.env));
+  const [maintenance, emailSender, refund] = await Promise.all([obterConfiguracaoDaPlataforma("maintenance"), obterConfiguracaoDaPlataforma("emailSender"), obterConfiguracaoDaPlataforma("refundPolicy")]);
+  const back = separarPrevisaoDeVolta(maintenance.backAt);
+  const integrations = INTEGRACOES.map((def) => situacaoDaIntegracao(def, process.env));
   const planColumns = [
     { id: "basic", label: "Básico", modules: [] as string[] },
     { id: "classic", label: "Classic", modules: modulosDoPlano("classic") },
@@ -185,7 +185,7 @@ export default async function Page() {
               {LIMITS.map((l) => (
                 <div key={l.key} className="flex flex-wrap justify-between gap-2 py-2.5">
                   <dt className="text-tinta-suave">{l.label}</dt>
-                  <dd className="font-semibold text-tinta">{describeLimit(LimitesDeSeguranca[l.key].limit, LimitesDeSeguranca[l.key].windowMs)}</dd>
+                  <dd className="font-semibold text-tinta">{descreverLimite(LimitesDeSeguranca[l.key].limit, LimitesDeSeguranca[l.key].windowMs)}</dd>
                 </div>
               ))}
             </dl>

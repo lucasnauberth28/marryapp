@@ -7,23 +7,23 @@ import { Pagination } from "@/components/plataforma/pagination";
 import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
-import { DEFAULT_PAGE_SIZE, type SearchParams, oneOf, pageWindow, param, parsePage } from "@/lib/platform/list-params";
-import { formatDateTime } from "@/lib/platform/format";
-import { ACTIVITY_GROUPS, ACTIVITY_GROUP_VALUES, actionLabel, parseTarget, summarizeDetails, targetHref, targetLabel } from "@/lib/platform/activity";
-import { PERIODS, listActivity, targetCaption } from "@/lib/platform/queries/atividades";
+import { TAMANHO_PADRAO_DA_PAGINA, type ParametrosDeBusca, umDosValores, janelaDaPagina, parametroDaBusca, interpretarPagina } from "@/lib/platform/list-params";
+import { formatarDataEHora } from "@/lib/platform/format";
+import { GRUPOS_DE_ATIVIDADE, VALORES_DOS_GRUPOS_DE_ATIVIDADE, rotuloDaAcao, interpretarAlvo, resumirDetalhes, linkDoAlvo, rotuloDoAlvo } from "@/lib/platform/activity";
+import { PERIODOS, listarAtividades, legendaDoAlvo } from "@/lib/platform/queries/atividades";
 
 export const metadata = { title: "Registro de atividades" };
 export const dynamic = "force-dynamic";
 
-export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<ParametrosDeBusca> }) {
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
-  const group = oneOf(query, "tipo", ACTIVITY_GROUP_VALUES);
-  const period = oneOf(query, "periodo", PERIODS);
-  const q = param(query, "q", 100)?.trim() || undefined;
-  const target = parseTarget(param(query, "alvo", 140));
-  const win = pageWindow(parsePage(query), DEFAULT_PAGE_SIZE);
-  const [{ rows, total }, caption] = await Promise.all([listActivity({ group, period, q, target }, win.skip, win.take), targetCaption(target)]);
+  const group = umDosValores(query, "tipo", VALORES_DOS_GRUPOS_DE_ATIVIDADE);
+  const period = umDosValores(query, "periodo", PERIODOS);
+  const q = parametroDaBusca(query, "q", 100)?.trim() || undefined;
+  const target = interpretarAlvo(parametroDaBusca(query, "alvo", 140));
+  const win = janelaDaPagina(interpretarPagina(query), TAMANHO_PADRAO_DA_PAGINA);
+  const [{ rows, total }, caption] = await Promise.all([listarAtividades({ group, period, q, target }, win.skip, win.take), legendaDoAlvo(target)]);
   const filtered = Boolean(group || period || q || target);
 
   return (
@@ -33,7 +33,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
       <FilterBar
         searchPlaceholder="Buscar por quem fez"
         filters={[
-          { key: "tipo", label: "Tipo", allLabel: "Todos", options: ACTIVITY_GROUPS.map((g) => ({ value: g.value, label: g.label })) },
+          { key: "tipo", label: "Tipo", allLabel: "Todos", options: GRUPOS_DE_ATIVIDADE.map((g) => ({ value: g.value, label: g.label })) },
           { key: "periodo", label: "Período", allLabel: "Desde o começo", options: [{ value: "7d", label: "Últimos 7 dias" }, { value: "30d", label: "Últimos 30 dias" }, { value: "90d", label: "Últimos 90 dias" }] },
         ]}
       />
@@ -41,7 +41,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
       {target && (
         <p className="flex flex-wrap items-center gap-2 rounded-xl bg-ameixa-suave px-4 py-2.5 text-sm leading-5 text-tinta">
           <span>
-            Mostrando só o que aconteceu com {targetLabel(target.type)?.toLowerCase()}
+            Mostrando só o que aconteceu com {rotuloDoAlvo(target.type)?.toLowerCase()}
             {caption ? <strong className="font-semibold"> {caption}</strong> : null}.
           </span>
           <Link href="/admin/atividades" className="font-semibold text-ameixa underline underline-offset-2">
@@ -56,24 +56,24 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
         rows={rows}
         rowKey={(r) => r.id}
         columns={[
-          { key: "when", header: "Quando", mobileLabel: false, cell: (r) => <span className="whitespace-nowrap text-sm text-tinta-suave">{formatDateTime(r.createdAt)}</span> },
+          { key: "when", header: "Quando", mobileLabel: false, cell: (r) => <span className="whitespace-nowrap text-sm text-tinta-suave">{formatarDataEHora(r.createdAt)}</span> },
           { key: "who", header: "Quem", mobileLabel: "Quem", cell: (r) => r.actorName ?? "Sem login" },
           {
             key: "what",
             header: "O que fez",
             primary: true,
             cell: (r) => {
-              const href = targetHref(r.targetType, r.targetId);
-              const label = targetLabel(r.targetType);
+              const href = linkDoAlvo(r.targetType, r.targetId);
+              const label = rotuloDoAlvo(r.targetType);
               return (
                 <span className="flex flex-col">
-                  <span className="font-semibold text-tinta">{actionLabel(r.action)}</span>
+                  <span className="font-semibold text-tinta">{rotuloDaAcao(r.action)}</span>
                   {label && (href ? <Link href={href} className="relative text-[13px] text-ameixa underline underline-offset-2">{label}</Link> : <span className="text-[13px] text-tinta-suave">{label}</span>)}
                 </span>
               );
             },
           },
-          { key: "details", header: "Detalhes", mobileLabel: false, cell: (r) => <span className="break-words text-sm text-tinta-suave">{summarizeDetails(r.details, r.action, r.targetId) || "Sem detalhes"}</span> },
+          { key: "details", header: "Detalhes", mobileLabel: false, cell: (r) => <span className="break-words text-sm text-tinta-suave">{resumirDetalhes(r.details, r.action, r.targetId) || "Sem detalhes"}</span> },
         ]}
         empty={
           filtered ? (
@@ -88,7 +88,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
         }
       />
 
-      <Pagination page={win.page} pageSize={DEFAULT_PAGE_SIZE} total={total} basePath="/admin/atividades" params={{ tipo: group, periodo: period, q, alvo: target ? `${target.type}:${target.id}` : undefined }} noun={["atividade", "atividades"]} />
+      <Pagination page={win.page} pageSize={TAMANHO_PADRAO_DA_PAGINA} total={total} basePath="/admin/atividades" params={{ tipo: group, periodo: period, q, alvo: target ? `${target.type}:${target.id}` : undefined }} noun={["atividade", "atividades"]} />
       </PendingRegion>
     </>
   );

@@ -14,20 +14,20 @@ import { Notice } from "@/components/plataforma/notices";
 import { btn } from "@/components/landing/styles";
 import { Switch } from "@/components/ui/switch";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
-import { oneOf, type SearchParams } from "@/lib/platform/list-params";
-import { daysBetween, formatDate, formatDateTime, formatInt, formatLongDate, formatPercent, formatWeekday, timeAgo } from "@/lib/platform/format";
+import { umDosValores, type ParametrosDeBusca } from "@/lib/platform/list-params";
+import { diasEntre, formatarData, formatarDataEHora, formatarInteiro, formatarDataPorExtenso, formatarPercentual, formatarDiaDaSemana, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import {
-  getCasalActivity,
-  getCasalDomain,
-  getCasalGuestNumbers,
-  getCasalHeader,
-  getCasalMadrinha,
-  getCasalPayments,
-  getCasalSupport,
-  getCasalTimeline,
-  type CasalHeader,
+  obterAtividadeDoCasal,
+  obterDominioDoCasal,
+  obterNumerosDeConvidadosDoCasal,
+  obterCabecalhoDoCasal,
+  obterMadrinhaDoCasal,
+  obterPagamentosDoCasal,
+  obterSuporteDoCasal,
+  obterLinhaDoTempoDoCasal,
+  type CabecalhoDoCasal,
 } from "@/lib/platform/queries/casais";
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import { obterVisaoDaContaDeRepasse } from "@/lib/payout-account-view";
@@ -70,20 +70,20 @@ function Rows({ items }: { items: { label: string; value: React.ReactNode }[] })
   );
 }
 
-export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<SearchParams> }) {
+export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<ParametrosDeBusca> }) {
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const { id } = await params;
   // O id vem da URL: só serve para BUSCAR o casamento (nunca para decidir permissão). Formato inválido = 404.
   if (!z.string().uuid().safeParse(id).success) notFound();
-  const tab: Tab = oneOf(await searchParams, "aba", TABS) ?? "visao";
+  const tab: Tab = umDosValores(await searchParams, "aba", TABS) ?? "visao";
 
   const now = new Date();
-  const header = await getCasalHeader(id, now);
+  const header = await obterCabecalhoDoCasal(id, now);
   if (!header) notFound();
   const { wedding, owner, plan, guests, gifts, pix, situation, problems } = header;
   const suspended = Boolean(wedding.suspendedAt);
   const siteUrl = urlDoSiteDoCasamento(wedding.slug, undefined, wedding.customDomain);
-  const daysLeft = wedding.weddingDate ? daysBetween(wedding.weddingDate, now) : null;
+  const daysLeft = wedding.weddingDate ? diasEntre(wedding.weddingDate, now) : null;
   const closeToWedding = daysLeft !== null && daysLeft >= 0 && daysLeft <= 14;
   const base = `/admin/casais/${id}`;
 
@@ -116,7 +116,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
         breadcrumb={[{ label: "Casais", href: "/admin/casais" }, { label: wedding.coupleNames }]}
         eyebrow="Casal"
         title={wedding.coupleNames}
-        description={`${wedding.city ? `${wedding.city} · cadastrados` : "Cadastrados"} em ${formatLongDate(wedding.createdAt).replace(/^[^,]+, /, "")}`}
+        description={`${wedding.city ? `${wedding.city} · cadastrados` : "Cadastrados"} em ${formatarDataPorExtenso(wedding.createdAt).replace(/^[^,]+, /, "")}`}
         actions={
           <>
             <Link href={`${base}/entrar-como`} className={cn(btn.primary, "gap-2")}>
@@ -178,20 +178,20 @@ export default async function Page({ params, searchParams }: { params: Promise<{
       <StatGrid>
         <StatCard
           label="Casamento"
-          value={wedding.weddingDate ? formatDate(wedding.weddingDate) : "Sem data"}
-          hint={wedding.weddingDate ? `${formatWeekday(wedding.weddingDate)} · ${daysLeft! >= 0 ? `faltam ${pluralizar(daysLeft!, "dia", "dias")}` : `foi há ${pluralizar(-daysLeft!, "dia", "dias")}`}` : "O casal ainda não informou"}
+          value={wedding.weddingDate ? formatarData(wedding.weddingDate) : "Sem data"}
+          hint={wedding.weddingDate ? `${formatarDiaDaSemana(wedding.weddingDate)} · ${daysLeft! >= 0 ? `faltam ${pluralizar(daysLeft!, "dia", "dias")}` : `foi há ${pluralizar(-daysLeft!, "dia", "dias")}`}` : "O casal ainda não informou"}
           highlight={closeToWedding && problems.length > 0}
         />
         <StatCard
           label="Convidados"
-          value={formatInt(guests.total)}
-          hint={guests.total === 0 ? "Lista vazia" : `${formatInt(guests.confirmed)} confirmaram (${formatPercent(guests.confirmed, guests.total)})`}
+          value={formatarInteiro(guests.total)}
+          hint={guests.total === 0 ? "Lista vazia" : `${formatarInteiro(guests.confirmed)} confirmaram (${formatarPercentual(guests.confirmed, guests.total)})`}
         />
         <StatCard label="Presentes" value={formatarReais(gifts.cents)} hint={gifts.count === 0 ? "Nenhum presente recebido" : `${pluralizar(gifts.count, "presente recebido", "presentes recebidos")}`} />
         <StatCard
           label="Última atividade"
-          value={wedding.lastActiveAt ? timeAgo(wedding.lastActiveAt) : "—"}
-          hint={wedding.lastActiveAt ? formatDateTime(wedding.lastActiveAt) : "Sem registro de visita (só medimos desde agora)"}
+          value={wedding.lastActiveAt ? haQuantoTempo(wedding.lastActiveAt) : "—"}
+          hint={wedding.lastActiveAt ? formatarDataEHora(wedding.lastActiveAt) : "Sem registro de visita (só medimos desde agora)"}
         />
       </StatGrid>
 
@@ -228,7 +228,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
 
 // ---------- Painéis laterais ----------
 
-function PlanPanel({ header }: { header: CasalHeader }) {
+function PlanPanel({ header }: { header: CabecalhoDoCasal }) {
   const { plan, gifts, pix, wedding } = header;
   return (
     <Panel title="Plano">
@@ -236,7 +236,7 @@ function PlanPanel({ header }: { header: CasalHeader }) {
       <p className="mt-1 text-sm leading-5 text-tinta-suave">
         {plan
           ? plan.amount > 0
-            ? `Pago em ${plan.paidAt ? formatDate(plan.paidAt) : "data não registrada"} · ${formatarReais(plan.amount)} · sem mensalidade`
+            ? `Pago em ${plan.paidAt ? formatarData(plan.paidAt) : "data não registrada"} · ${formatarReais(plan.amount)} · sem mensalidade`
             : "Liberado como cortesia · sem cobrança"
           : "Gratuito"}
         {` · taxas de presentes até agora ${formatarReais(gifts.feeCents)}`}
@@ -244,7 +244,7 @@ function PlanPanel({ header }: { header: CasalHeader }) {
       {pix && (
         <div className="mt-4 flex flex-col gap-3">
           <Notice tone="aviso" icon={Clock}>
-            <strong>Pix do {pix.planName.replace(/^Plano /, "")} a conferir.</strong> {formatarReais(pix.amount)}, gerado {timeAgo(pix.createdAt)}.
+            <strong>Pix do {pix.planName.replace(/^Plano /, "")} a conferir.</strong> {formatarReais(pix.amount)}, gerado {haQuantoTempo(pix.createdAt)}.
           </Notice>
           <div>
             <ConfirmPixButton subscriptionId={pix.id} />
@@ -260,13 +260,13 @@ function PlanPanel({ header }: { header: CasalHeader }) {
   );
 }
 
-function HealthPanel({ header }: { header: CasalHeader }) {
+function HealthPanel({ header }: { header: CabecalhoDoCasal }) {
   const { wedding, guests } = header;
   const suspended = Boolean(wedding.suspendedAt);
   const items: { ok: boolean; title: string; detail: string }[] = [
     suspended
-      ? { ok: false, title: "Site fora do ar", detail: `suspenso em ${formatDate(wedding.suspendedAt!)}` }
-      : { ok: true, title: "Site no ar", detail: `desde o cadastro, em ${formatDate(wedding.createdAt)}` },
+      ? { ok: false, title: "Site fora do ar", detail: `suspenso em ${formatarData(wedding.suspendedAt!)}` }
+      : { ok: true, title: "Site no ar", detail: `desde o cadastro, em ${formatarData(wedding.createdAt)}` },
     guests.total > 0 ? { ok: true, title: "Lista de convidados", detail: `${pluralizar(guests.total, "convidado cadastrado", "convidados cadastrados")}` } : { ok: false, title: "Lista de convidados", detail: "ainda sem convidados" },
     guests.total === 0
       ? { ok: true, title: "Confirmações", detail: "nada a responder ainda" }
@@ -293,9 +293,9 @@ function HealthPanel({ header }: { header: CasalHeader }) {
 
 // ---------- Abas ----------
 
-async function VisaoTab({ header, sideColumn }: { header: CasalHeader; sideColumn: React.ReactNode }) {
+async function VisaoTab({ header, sideColumn }: { header: CabecalhoDoCasal; sideColumn: React.ReactNode }) {
   const { wedding, owner, openDomainOrder } = header;
-  const timeline = await getCasalTimeline(wedding.id, 8);
+  const timeline = await obterLinhaDoTempoDoCasal(wedding.id, 8);
   const emails = wedding.members.map((m) => m.username);
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
@@ -307,9 +307,9 @@ async function VisaoTab({ header, sideColumn }: { header: CasalHeader; sideColum
               { label: emails.length > 1 ? "E-mails" : "E-mail", value: emails.length ? emails.join(", ") : "sem e-mail" },
               { label: "Cidade", value: wedding.city ?? "Não informada" },
               { label: "Domínio próprio", value: wedding.customDomain ?? (openDomainOrder ? `${openDomainOrder.domain} (pedido em andamento)` : "Nenhum") },
-              { label: "Cadastro", value: formatDateTime(wedding.createdAt) },
-              { label: "Onboarding concluído", value: wedding.onboardedAt ? formatDateTime(wedding.onboardedAt) : "Ainda não" },
-              { label: "Última entrada com senha", value: owner?.lastLoginAt ? formatDateTime(owner.lastLoginAt) : "Sem registro" },
+              { label: "Cadastro", value: formatarDataEHora(wedding.createdAt) },
+              { label: "Onboarding concluído", value: wedding.onboardedAt ? formatarDataEHora(wedding.onboardedAt) : "Ainda não" },
+              { label: "Última entrada com senha", value: owner?.lastLoginAt ? formatarDataEHora(owner.lastLoginAt) : "Sem registro" },
             ]}
           />
         </Panel>
@@ -331,14 +331,14 @@ async function VisaoTab({ header, sideColumn }: { header: CasalHeader; sideColum
   );
 }
 
-function Timeline({ items }: { items: Awaited<ReturnType<typeof getCasalTimeline>> }) {
+function Timeline({ items }: { items: Awaited<ReturnType<typeof obterLinhaDoTempoDoCasal>> }) {
   return (
     <ol className="flex flex-col">
       {items.map((item) => (
         <li key={item.id} className="relative flex gap-4 pb-5 last:pb-0">
           <span aria-hidden="true" className="mt-1.5 size-2.5 shrink-0 rounded-full bg-ameixa/70" />
           <div className="min-w-0">
-            <p className="text-sm leading-5 text-tinta-suave">{formatDateTime(item.at)}</p>
+            <p className="text-sm leading-5 text-tinta-suave">{formatarDataEHora(item.at)}</p>
             <p className="flex flex-wrap items-center gap-2 leading-6 text-tinta">
               {item.text}
               {item.badge && <StatusChip tone={item.badge.tone}>{item.badge.label}</StatusChip>}
@@ -350,12 +350,12 @@ function Timeline({ items }: { items: Awaited<ReturnType<typeof getCasalTimeline
   );
 }
 
-async function PagamentosTab({ header, sideColumn }: { header: CasalHeader; sideColumn: React.ReactNode }) {
+async function PagamentosTab({ header, sideColumn }: { header: CabecalhoDoCasal; sideColumn: React.ReactNode }) {
   const { wedding, plan } = header;
-  const payments = await getCasalPayments(wedding.id);
+  const payments = await obterPagamentosDoCasal(wedding.id);
   const refundable = payments
     .filter((p) => p.status === "APPROVED" && p.amount > 0 && !p.refundRequests.some((r) => r.status === "REQUESTED"))
-    .map((p) => ({ id: p.id, amountCents: p.amount, label: `${p.planName.replace(/^Plano /, "")}, ${p.paidAt ? formatDate(p.paidAt) : formatDate(p.createdAt)}, ${formatarReais(p.amount)}` }));
+    .map((p) => ({ id: p.id, amountCents: p.amount, label: `${p.planName.replace(/^Plano /, "")}, ${p.paidAt ? formatarData(p.paidAt) : formatarData(p.createdAt)}, ${formatarReais(p.amount)}` }));
   const refunds = payments.flatMap((p) => p.refundRequests.map((r) => ({ ...r, planName: p.planName })));
   const STATUS: Record<string, { tone: StatusTone; label: string }> = {
     APPROVED: { tone: "sucesso", label: "Pago" },
@@ -389,7 +389,7 @@ async function PagamentosTab({ header, sideColumn }: { header: CasalHeader; side
                   <tbody>
                     {payments.map((p) => (
                       <tr key={p.id} className="border-b border-linha last:border-b-0">
-                        <td className="px-2 py-3">{formatDateTime(p.paidAt ?? p.createdAt)}</td>
+                        <td className="px-2 py-3">{formatarDataEHora(p.paidAt ?? p.createdAt)}</td>
                         <td className="px-2 py-3">{p.planName.replace(/^Plano /, "")}</td>
                         <td className="px-2 py-3 text-right tabular-nums">{formatarReais(p.amount)}</td>
                         <td className="px-2 py-3">{p.method}</td>
@@ -417,7 +417,7 @@ async function PagamentosTab({ header, sideColumn }: { header: CasalHeader; side
                       <p className="font-semibold">{p.planName.replace(/^Plano /, "")} · {formatarReais(p.amount)}</p>
                       <StatusChip tone={STATUS[p.status]?.tone ?? "neutro"}>{STATUS[p.status]?.label ?? p.status}</StatusChip>
                     </div>
-                    <p className="mt-1 text-sm text-tinta-suave">{formatDateTime(p.paidAt ?? p.createdAt)} · {p.method}</p>
+                    <p className="mt-1 text-sm text-tinta-suave">{formatarDataEHora(p.paidAt ?? p.createdAt)} · {p.method}</p>
                     {p.status === "APPROVED" && p.amount > 0 && (
                       <Link href={`/recibo/${p.id}`} className="mt-1 inline-block text-sm font-semibold text-ameixa underline underline-offset-2">
                         Recibo
@@ -443,7 +443,7 @@ async function PagamentosTab({ header, sideColumn }: { header: CasalHeader; side
               {refunds.map((r) => (
                 <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
                   <span>
-                    {formatarReais(r.amount)} do plano {r.planName.replace(/^Plano /, "")}, pedido em {formatDate(r.createdAt)}
+                    {formatarReais(r.amount)} do plano {r.planName.replace(/^Plano /, "")}, pedido em {formatarData(r.createdAt)}
                   </span>
                   <StatusChip tone={r.status === "REQUESTED" ? "aviso" : "neutro"}>{REFUND_STATUS[r.status] ?? r.status}</StatusChip>
                 </li>
@@ -480,8 +480,8 @@ async function PayoutPanel({ weddingId }: { weddingId: string }) {
             { label: "Tipo", value: account.type === "PIX_KEY" ? "Chave Pix" : "Conta bancária" },
             { label: "Destino", value: account.keyHint },
             { label: "Titular", value: `${account.holderName} (${account.holderDocumentHint})` },
-            { label: "Verificado em", value: account.verifiedAt ? formatDateTime(account.verifiedAt) : "Ainda não" },
-            { label: "Atualizado em", value: formatDateTime(account.updatedAt) },
+            { label: "Verificado em", value: account.verifiedAt ? formatarDataEHora(account.verifiedAt) : "Ainda não" },
+            { label: "Atualizado em", value: formatarDataEHora(account.updatedAt) },
           ]}
         />
       ) : (
@@ -495,7 +495,7 @@ async function PayoutPanel({ weddingId }: { weddingId: string }) {
 }
 
 async function ConvidadosTab({ id }: { id: string }) {
-  const n = await getCasalGuestNumbers(id);
+  const n = await obterNumerosDeConvidadosDoCasal(id);
   const pct = (v: number) => (n.total ? `${(v / n.total) * 100}%` : "0%");
   return (
     <Panel title="Só números e saúde">
@@ -529,7 +529,7 @@ async function ConvidadosTab({ id }: { id: string }) {
 }
 
 async function AtividadeTab({ id }: { id: string }) {
-  const [timeline, activity] = await Promise.all([getCasalTimeline(id, 20), getCasalActivity(id)]);
+  const [timeline, activity] = await Promise.all([obterLinhaDoTempoDoCasal(id, 20), obterAtividadeDoCasal(id)]);
   return (
     <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
       <Panel title="O que aconteceu" action={{ label: "Abrir no registro", href: "/atividades" }}>
@@ -544,7 +544,7 @@ async function AtividadeTab({ id }: { id: string }) {
               <li key={n.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-linha py-3 first:pt-0 last:border-b-0 last:pb-0">
                 <span className="min-w-0">
                   <span className="block leading-6 text-tinta">{n.title}</span>
-                  <span className="block text-sm text-tinta-suave">{formatDateTime(n.createdAt)}</span>
+                  <span className="block text-sm text-tinta-suave">{formatarDataEHora(n.createdAt)}</span>
                 </span>
                 {n.readAt ? (
                   <StatusChip tone="sucesso" icon={CheckCircle2}>
@@ -565,7 +565,7 @@ async function AtividadeTab({ id }: { id: string }) {
 }
 
 async function DominioTab({ id }: { id: string }) {
-  const orders = await getCasalDomain(id);
+  const orders = await obterDominioDoCasal(id);
   return (
     <Panel title="Domínio próprio">
       {orders.length === 0 ? (
@@ -590,8 +590,8 @@ async function DominioTab({ id }: { id: string }) {
                 <span>
                   <span className="block font-semibold">{o.domain}</span>
                   <span className="block text-sm text-tinta-suave">
-                    Pedido em {formatDate(o.requestedAt)}
-                    {o.expiresAt ? ` · vence em ${formatDate(o.expiresAt)}` : ""}
+                    Pedido em {formatarData(o.requestedAt)}
+                    {o.expiresAt ? ` · vence em ${formatarData(o.expiresAt)}` : ""}
                   </span>
                 </span>
                 <StatusChip tone={s.tone}>{s.label}</StatusChip>
@@ -605,7 +605,7 @@ async function DominioTab({ id }: { id: string }) {
 }
 
 async function MadrinhaTab({ id }: { id: string }) {
-  const override = await getCasalMadrinha(id);
+  const override = await obterMadrinhaDoCasal(id);
   return (
     <Panel title="Assistente">
       <div className="flex items-center justify-between gap-4 border-b border-linha pb-4">
@@ -627,7 +627,7 @@ async function MadrinhaTab({ id }: { id: string }) {
 }
 
 async function SuporteTab({ id }: { id: string }) {
-  const { notes, tickets } = await getCasalSupport(id);
+  const { notes, tickets } = await obterSuporteDoCasal(id);
   return (
     <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
       <Panel title="Notas internas" aside={<StatusChip tone="neutro" icon={Lock}>Só a equipe vê</StatusChip>}>
@@ -638,7 +638,7 @@ async function SuporteTab({ id }: { id: string }) {
             {notes.map((n) => (
               <li key={n.id} className="border-b border-linha py-3 first:pt-0">
                 <p className="text-sm text-tinta-suave">
-                  {n.authorName} · {formatDate(n.createdAt)}
+                  {n.authorName} · {formatarData(n.createdAt)}
                 </p>
                 <p className="whitespace-pre-wrap leading-6 text-tinta">{n.body}</p>
               </li>
@@ -658,7 +658,7 @@ async function SuporteTab({ id }: { id: string }) {
                   <span className="block font-semibold">
                     #{t.number} {t.subject}
                   </span>
-                  <span className="block text-sm text-tinta-suave">{formatDate(t.createdAt)}</span>
+                  <span className="block text-sm text-tinta-suave">{formatarData(t.createdAt)}</span>
                 </span>
                 <StatusChip tone={t.status === "CLOSED" ? "neutro" : "aviso"}>{TICKET_STATUS[t.status] ?? t.status}</StatusChip>
               </li>

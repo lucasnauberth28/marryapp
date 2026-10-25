@@ -11,9 +11,9 @@ import { ExportButton } from "@/components/plataforma/export-button";
 import { InitialsAvatar } from "@/components/plataforma/initials-avatar";
 import { PlanChip } from "@/components/plataforma/status-chip";
 import { th } from "@/components/casal/ui";
-import { formatDate, formatInt, formatPercent, timeAgo } from "@/lib/platform/format";
+import { formatarData, formatarInteiro, formatarPercentual, haQuantoTempo } from "@/lib/platform/format";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-import type { CasalSituation } from "@/lib/platform/casal-status";
+import type { SituacaoDoCasal } from "@/lib/platform/casal-status";
 import { cn } from "@/lib/utils";
 import { SituationChip } from "./situation-chip";
 import { useCasalAction } from "./use-casal-action";
@@ -31,17 +31,17 @@ export interface CasalListRow {
   giftsCents: number;
   lastActiveAt: string | null;
   flagged: boolean;
-  situation: CasalSituation;
+  situation: SituacaoDoCasal;
 }
 
-const when = (row: CasalListRow) => (row.lastActiveAt ? timeAgo(new Date(row.lastActiveAt)) : "sem registro");
+const when = (row: CasalListRow) => (row.lastActiveAt ? haQuantoTempo(new Date(row.lastActiveAt)) : "sem registro");
 
 function GuestsCell({ row }: { row: CasalListRow }) {
   if (row.guests === 0) return <span className="text-tinta-suave">Lista vazia</span>;
-  const pct = formatPercent(row.confirmed, row.guests);
+  const pct = formatarPercentual(row.confirmed, row.guests);
   return (
     <span className="flex flex-col leading-5">
-      <span>{formatInt(row.guests)}</span>
+      <span>{formatarInteiro(row.guests)}</span>
       <span className="text-sm text-tinta-suave">{pct} confirmaram</span>
     </span>
   );
@@ -140,7 +140,7 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
                 </td>
                 <td className="px-3 py-3 align-middle">
                   <span className="flex flex-col leading-5">
-                    <span>{row.weddingDate ? formatDate(new Date(row.weddingDate)) : <span className="text-tinta-suave">Sem data</span>}</span>
+                    <span>{row.weddingDate ? formatarData(new Date(row.weddingDate)) : <span className="text-tinta-suave">Sem data</span>}</span>
                     {row.city && <span className="text-sm text-tinta-suave">{row.city}</span>}
                   </span>
                 </td>
@@ -173,13 +173,13 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
             </div>
             <dl className="mt-3 grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 text-sm leading-5">
               <dt className="text-tinta-suave">Casamento</dt>
-              <dd>{row.weddingDate ? formatDate(new Date(row.weddingDate)) : "Sem data"}{row.city ? ` · ${row.city}` : ""}</dd>
+              <dd>{row.weddingDate ? formatarData(new Date(row.weddingDate)) : "Sem data"}{row.city ? ` · ${row.city}` : ""}</dd>
               <dt className="text-tinta-suave">Plano</dt>
               <dd>
                 <PlanChip plan={row.planId} />
               </dd>
               <dt className="text-tinta-suave">Convidados</dt>
-              <dd>{row.guests === 0 ? "Lista vazia" : `${formatInt(row.guests)} · ${formatPercent(row.confirmed, row.guests)} confirmaram`}</dd>
+              <dd>{row.guests === 0 ? "Lista vazia" : `${formatarInteiro(row.guests)} · ${formatarPercentual(row.confirmed, row.guests)} confirmaram`}</dd>
               <dt className="text-tinta-suave">Presentes</dt>
               <dd className="tabular-nums">{formatarReais(row.giftsCents)}</dd>
               <dt className="text-tinta-suave">Atividade</dt>

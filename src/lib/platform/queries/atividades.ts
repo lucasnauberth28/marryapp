@@ -2,22 +2,22 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { groupPrefixes } from "@/lib/platform/activity";
+import { prefixosDoGrupo } from "@/lib/platform/activity";
 
 /** Registro de atividades (AuditLog) com filtro por tipo, período, pessoa e alvo. Só leitura; os detalhes são resumidos na tela. */
 
-export const PERIODS = ["7d", "30d", "90d"] as const;
-type Period = (typeof PERIODS)[number];
-const DAY_MS = 86_400_000;
+export const PERIODOS = ["7d", "30d", "90d"] as const;
+type Periodo = (typeof PERIODOS)[number];
+const UM_DIA_EM_MS = 86_400_000;
 
-export interface ActivityFilters {
+export interface FiltrosDeAtividade {
   group?: string;
-  period?: Period;
+  period?: Periodo;
   q?: string;
   target?: { type: string; id: string } | null;
 }
 
-export interface ActivityRow {
+export interface LinhaDeAtividade {
   id: string;
   createdAt: Date;
   actorName: string | null;
@@ -27,19 +27,19 @@ export interface ActivityRow {
   details: unknown;
 }
 
-function activityWhere(f: ActivityFilters, now = new Date()): Prisma.AuditLogWhereInput {
+function filtroDeAtividade(f: FiltrosDeAtividade, now = new Date()): Prisma.AuditLogWhereInput {
   const and: Prisma.AuditLogWhereInput[] = [];
-  const prefixes = groupPrefixes(f.group);
+  const prefixes = prefixosDoGrupo(f.group);
   if (prefixes.length) and.push({ OR: prefixes.map((p) => ({ action: { startsWith: p } })) });
-  if (f.period) and.push({ createdAt: { gte: new Date(now.getTime() - Number.parseInt(f.period, 10) * DAY_MS) } });
+  if (f.period) and.push({ createdAt: { gte: new Date(now.getTime() - Number.parseInt(f.period, 10) * UM_DIA_EM_MS) } });
   if (f.q) and.push({ OR: [{ actorName: { contains: f.q, mode: "insensitive" } }, { targetId: f.q }] });
   if (f.target) and.push({ targetType: { equals: f.target.type, mode: "insensitive" }, targetId: f.target.id });
   return and.length ? { AND: and } : {};
 }
 
-export async function listActivity(filters: ActivityFilters, skip: number, take: number): Promise<{ rows: ActivityRow[]; total: number }> {
+export async function listarAtividades(filters: FiltrosDeAtividade, skip: number, take: number): Promise<{ rows: LinhaDeAtividade[]; total: number }> {
   await exigirAdminDaPlataforma();
-  const where = activityWhere(filters);
+  const where = filtroDeAtividade(filters);
   const [rows, total] = await Promise.all([
     prisma.auditLog.findMany({ where, orderBy: { createdAt: "desc" }, skip, take, select: { id: true, createdAt: true, actorName: true, action: true, targetType: true, targetId: true, details: true } }),
     prisma.auditLog.count({ where }),
@@ -48,7 +48,7 @@ export async function listActivity(filters: ActivityFilters, skip: number, take:
 }
 
 /** Nome do casamento do filtro "?alvo=wedding:<id>", para o cabeçalho do filtro (null se não achar). */
-export async function targetCaption(target: { type: string; id: string } | null): Promise<string | null> {
+export async function legendaDoAlvo(target: { type: string; id: string } | null): Promise<string | null> {
   await exigirAdminDaPlataforma();
   if (!target) return null;
   const type = target.type.toLowerCase();

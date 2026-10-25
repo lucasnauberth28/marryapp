@@ -8,9 +8,9 @@ import { registrarAuditoria } from "@/lib/audit";
 import { emailEstaConfigurado } from "@/lib/email";
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { MAX_RECIPIENTS, announcementInput, audienceLabel, audienceSchema, validateLinkUrl, type AnnouncementInput } from "@/lib/platform/announcement";
-import { previewAudience, resolveAudienceUsers, type AudiencePreview } from "@/lib/platform/queries/comunicados";
-import { processAnnouncement, queueRecipients, refreshAnnouncementTotals, releaseStaleClaims, sendAnnouncementTest } from "@/lib/platform/announcement-send";
+import { MAXIMO_DE_DESTINATARIOS, entradaDoComunicado, rotuloDoPublico, esquemaDoPublico, validarUrlDoLink, type EntradaDoComunicado } from "@/lib/platform/announcement";
+import { preverPublico, resolverPessoasDoPublico, type PrevisaoDoPublico } from "@/lib/platform/queries/comunicados";
+import { processarComunicado, enfileirarDestinatarios, atualizarTotaisDoComunicado, liberarReservasAntigas, enviarTesteDoComunicado } from "@/lib/platform/announcement-send";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 /**
@@ -23,30 +23,30 @@ type Fail = { success: false; error: string; fieldErrors?: Record<string, string
 const MINUTE = 60_000;
 
 /** Valida o formulário e devolve os dados limpos ou a falha com mensagens por campo. */
-function validate(input: unknown): { ok: true; data: AnnouncementInput; linkUrl: string | null } | { ok: false; fail: Fail } {
-  const parsed = announcementInput.safeParse(input);
+function validate(input: unknown): { ok: true; data: EntradaDoComunicado; linkUrl: string | null } | { ok: false; fail: Fail } {
+  const parsed = entradaDoComunicado.safeParse(input);
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {};
     for (const issue of parsed.error.issues) fieldErrors[String(issue.path[0] ?? "form")] ??= issue.message;
     return { ok: false, fail: { success: false, error: ERROS.camposInvalidos, fieldErrors } };
   }
-  const link = validateLinkUrl(parsed.data.linkUrl);
+  const link = validarUrlDoLink(parsed.data.linkUrl);
   if (!link.ok) return { ok: false, fail: { success: false, error: ERROS.camposInvalidos, fieldErrors: { linkUrl: link.error } } };
   return { ok: true, data: parsed.data, linkUrl: link.url };
 }
 
 /** Quantas pessoas o público alcança agora (contagem real, para o texto "Chega a N casais"). */
-export async function previewAnnouncementAudience(input: unknown): Promise<{ success: true; preview: AudiencePreview } | Fail> {
+export async function previewAnnouncementAudience(input: unknown): Promise<{ success: true; preview: PrevisaoDoPublico } | Fail> {
   try {
     await exigirAdminDaPlataforma();
-    const audience = audienceSchema.parse(input);
-    return { success: true, preview: await previewAudience(audience) };
+    const audience = esquemaDoPublico.parse(input);
+    return { success: true, preview: await preverPublico(audience) };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "previewAnnouncementAudience");
   }
 }
 
-async function saveDraftRow(data: AnnouncementInput, linkUrl: string | null, admin: { userId: string; name: string | null }) {
+async function saveDraftRow(data: EntradaDoComunicado, linkUrl: string | null, admin: { userId: string; name: string | null }) {
   const values = {
     title: data.title,
     emailSubject: data.emailSubject || null,
@@ -71,7 +71,7 @@ export async function saveAnnouncementDraft(input: unknown): Promise<{ success: 
     if (!v.ok) return v.fail;
     const id = await saveDraftRow(v.data, v.linkUrl, admin);
     if (!id) return { success: false, error: "Este comunicado não pode mais ser editado (já foi enviado ou não existe)." };
-    await registrarAuditoria({ action: "announcement.draft_save", targetType: "announcement", targetId: id, details: { title: v.data.title, channels: v.data.channels, audience: audienceLabel(v.data.audience) } });
+    await registrarAuditoria({ action: "announcement.draft_save", targetType: "announcement", targetId: id, details: { title: v.data.title, channels: v.data.channels, audience: rotuloDoPublico(v.data.audience) } });
     revalidatePath("/admin/comunicados");
     return { success: true, id, message: "Rascunho salvo." };
   } catch (error) {
@@ -101,7 +101,7 @@ export async function sendAnnouncementTestToMe(input: unknown): Promise<{ succes
     if (!v.ok) return v.fail;
     const limit = await conferirLimiteDeUso({ key: `ANNOUNCE_TEST:${admin.userId}`, limit: 10, windowMs: 60 * MINUTE });
     if (!limit.success) return { success: false, error: "Muitos testes seguidos. Aguarde um pouco." };
-    const result = await sendAnnouncementTest(admin, {
+    const result = await enviarTesteDoComunicado(admin, {
       title: v.data.title,
       emailSubject: v.data.emailSubject,
       body: v.data.body,
@@ -131,9 +131,9 @@ export async function sendAnnouncementNow(input: unknown): Promise<{ success: tr
     const limit = await conferirLimiteDeUso({ key: `ANNOUNCE_SEND:${admin.userId}`, limit: 5, windowMs: 60 * MINUTE });
     if (!limit.success) return { success: false, error: "Você já fez 5 envios na última hora. Aguarde um pouco." };
 
-    const users = await resolveAudienceUsers(data.audience);
+    const users = await resolverPessoasDoPublico(data.audience);
     if (users.length === 0) return { success: false, error: "Esse público não alcança ninguém. Mude o filtro." };
-    if (users.length > MAX_RECIPIENTS) return { success: false, error: `Esse público tem ${users.length} pessoas e o limite por envio é ${MAX_RECIPIENTS}. Restrinja o público.` };
+    if (users.length > MAXIMO_DE_DESTINATARIOS) return { success: false, error: `Esse público tem ${users.length} pessoas e o limite por envio é ${MAXIMO_DE_DESTINATARIOS}. Restrinja o público.` };
 
     const id = await saveDraftRow(data, v.linkUrl, admin);
     if (!id) return { success: false, error: "Este comunicado já foi enviado ou não existe." };
@@ -142,14 +142,14 @@ export async function sendAnnouncementNow(input: unknown): Promise<{ success: tr
     const claimed = await prisma.announcement.updateMany({ where: { id, status: "DRAFT" }, data: { status: "SENDING", recipientCount: users.length } });
     if (claimed.count !== 1) return { success: false, error: "Este comunicado já foi enviado." };
 
-    await queueRecipients(id, users, data.channels, data.audience.service);
+    await enfileirarDestinatarios(id, users, data.channels, data.audience.service);
     await registrarAuditoria({
       action: "announcement.send",
       targetType: "announcement",
       targetId: id,
-      details: { title: data.title, channels: data.channels, audience: audienceLabel(data.audience), recipients: users.length, service: data.audience.service },
+      details: { title: data.title, channels: data.channels, audience: rotuloDoPublico(data.audience), recipients: users.length, service: data.audience.service },
     });
-    after(() => processAnnouncement(id));
+    after(() => processarComunicado(id));
     revalidatePath("/admin/comunicados");
     return { success: true, id, message: `Envio começou para ${users.length} ${users.length === 1 ? "pessoa" : "pessoas"}. Acompanhe no histórico.` };
   } catch (error) {
@@ -166,11 +166,11 @@ export async function resumeAnnouncement(input: unknown): Promise<{ success: tru
     if (!limit.success) return { success: false, error: "Muitas tentativas seguidas. Aguarde um pouco." };
     const found = await prisma.announcement.findUnique({ where: { id }, select: { status: true } });
     if (!found || found.status !== "SENDING") return { success: false, error: "Este envio não está em andamento." };
-    const released = await releaseStaleClaims(id);
+    const released = await liberarReservasAntigas(id);
     await registrarAuditoria({ action: "announcement.resume", targetType: "announcement", targetId: id, details: { released } });
     after(async () => {
-      await processAnnouncement(id);
-      await refreshAnnouncementTotals(id);
+      await processarComunicado(id);
+      await atualizarTotaisDoComunicado(id);
     });
     revalidatePath("/admin/comunicados");
     return { success: true, message: "Retomamos o envio." };

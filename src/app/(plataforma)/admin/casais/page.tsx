@@ -9,41 +9,41 @@ import { Pagination } from "@/components/plataforma/pagination";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
-import { type SearchParams, buildHref, oneOf, param, parsePage, DEFAULT_PAGE_SIZE } from "@/lib/platform/list-params";
-import { formatInt } from "@/lib/platform/format";
+import { type ParametrosDeBusca, montarLink, umDosValores, parametroDaBusca, interpretarPagina, TAMANHO_PADRAO_DA_PAGINA } from "@/lib/platform/list-params";
+import { formatarInteiro } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import {
-  ATIVIDADE_FILTERS,
-  CASAIS_TABS,
-  DATA_FILTERS,
-  DOMINIO_FILTERS,
-  ONBOARDING_FILTERS,
-  PLANO_FILTERS,
-  type CasaisFilters,
+  FILTROS_DE_ATIVIDADE,
+  ABAS_DE_CASAIS,
+  FILTROS_DE_DATA,
+  FILTROS_DE_DOMINIO,
+  FILTROS_DE_INICIO,
+  FILTROS_DE_PLANO,
+  type FiltrosDeCasais,
 } from "@/lib/platform/casais-filters";
-import { CASAIS_ORDERS, getCasaisCounts, listCasais, weddingIdsForPlan } from "@/lib/platform/queries/casais";
+import { ORDENACOES_DE_CASAIS, obterContagensDeCasais, listarCasais, idsDeCasamentoDoPlano } from "@/lib/platform/queries/casais";
 import { CasaisList, type CasalListRow } from "./_components/casais-list";
 
 export const metadata = { title: "Casais" };
 
 const ACOMPANHAR = ["marcados"] as const;
 
-export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<ParametrosDeBusca> }) {
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
 
-  const tab = oneOf(query, "aba", CASAIS_TABS) ?? "todos";
-  const q = param(query, "q");
-  const plano = oneOf(query, "plano", PLANO_FILTERS);
-  const data = oneOf(query, "data", DATA_FILTERS);
-  const onboarding = oneOf(query, "onboarding", ONBOARDING_FILTERS);
-  const atividade = oneOf(query, "atividade", ATIVIDADE_FILTERS);
-  const dominio = oneOf(query, "dominio", DOMINIO_FILTERS);
-  const acompanhar = oneOf(query, "acompanhar", ACOMPANHAR);
-  const ordem = oneOf(query, "ordem", CASAIS_ORDERS) ?? "recentes";
+  const tab = umDosValores(query, "aba", ABAS_DE_CASAIS) ?? "todos";
+  const q = parametroDaBusca(query, "q");
+  const plano = umDosValores(query, "plano", FILTROS_DE_PLANO);
+  const data = umDosValores(query, "data", FILTROS_DE_DATA);
+  const onboarding = umDosValores(query, "onboarding", FILTROS_DE_INICIO);
+  const atividade = umDosValores(query, "atividade", FILTROS_DE_ATIVIDADE);
+  const dominio = umDosValores(query, "dominio", FILTROS_DE_DOMINIO);
+  const acompanhar = umDosValores(query, "acompanhar", ACOMPANHAR);
+  const ordem = umDosValores(query, "ordem", ORDENACOES_DE_CASAIS) ?? "recentes";
   const now = new Date();
 
-  const filters: CasaisFilters = {
+  const filters: FiltrosDeCasais = {
     tab,
     q,
     data,
@@ -51,16 +51,16 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
     atividade,
     dominio,
     acompanhar: Boolean(acompanhar),
-    planIds: plano ? await weddingIdsForPlan(plano) : undefined,
+    planIds: plano ? await idsDeCasamentoDoPlano(plano) : undefined,
   };
 
   const [counts, result] = await Promise.all([
-    getCasaisCounts(now),
-    listCasais({ filters, order: ordem, page: parsePage(query), pageSize: DEFAULT_PAGE_SIZE, now }),
+    obterContagensDeCasais(now),
+    listarCasais({ filters, order: ordem, page: interpretarPagina(query), pageSize: TAMANHO_PADRAO_DA_PAGINA, now }),
   ]);
 
   const active = { q, plano, data, onboarding, atividade, dominio, acompanhar, ordem: ordem === "recentes" ? undefined : ordem };
-  const exportHref = buildHref("/api/admin/casais.csv", { aba: tab === "todos" ? undefined : tab, ...active });
+  const exportHref = montarLink("/api/admin/casais.csv", { aba: tab === "todos" ? undefined : tab, ...active });
   const rows: CasalListRow[] = result.rows.map((r) => ({
     id: r.id,
     coupleNames: r.coupleNames,
@@ -77,7 +77,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
   }));
 
   const hasAnyWedding = counts.total > 0;
-  const subtitle = hasAnyWedding ? `${pluralizar(counts.total, "casamento", "casamentos")}, ${formatInt(counts.paid)} com plano pago.` : "Todos os casamentos do Aceito, com plano, convidados e última atividade.";
+  const subtitle = hasAnyWedding ? `${pluralizar(counts.total, "casamento", "casamentos")}, ${formatarInteiro(counts.paid)} com plano pago.` : "Todos os casamentos do Aceito, com plano, convidados e última atividade.";
 
   const exportButton = hasAnyWedding && result.total > 0 ? (
     <ExportButton href={exportHref} fallbackName="casais.csv" className="gap-2">
@@ -142,7 +142,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                 icon={Search}
                 title="Nenhum casal com esses filtros"
                 action={
-                  <Link href={buildHref("/admin/casais", { aba: tab === "todos" ? undefined : tab })} className={`${btn.secondary} ${btn.sm}`}>
+                  <Link href={montarLink("/admin/casais", { aba: tab === "todos" ? undefined : tab })} className={`${btn.secondary} ${btn.sm}`}>
                     Limpar filtros
                   </Link>
                 }
@@ -154,7 +154,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
             <CasaisList rows={rows} />
           )}
 
-          <Pagination page={result.page} pageSize={DEFAULT_PAGE_SIZE} total={result.total} basePath="/admin/casais" params={{ aba: tab === "todos" ? undefined : tab, ...active }} noun={["casal", "casais"]} />
+          <Pagination page={result.page} pageSize={TAMANHO_PADRAO_DA_PAGINA} total={result.total} basePath="/admin/casais" params={{ aba: tab === "todos" ? undefined : tab, ...active }} noun={["casal", "casais"]} />
           </PendingRegion>
         </>
       )}

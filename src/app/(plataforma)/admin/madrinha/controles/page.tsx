@@ -7,8 +7,8 @@ import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
 import { Input } from "@/components/ui/input";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
-import { getPlatformSetting } from "@/lib/platform/settings";
-import { getMadrinhaSettingsMeta, listInstructionVersions, listKnowledgeArticles, listMadrinhaOverrides } from "@/lib/platform/queries/madrinha";
+import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
+import { obterDadosDasConfiguracoesDaMadrinha, listarVersoesDasInstrucoes, listarArtigosDeConhecimento, listarExcecoesDaMadrinha } from "@/lib/platform/queries/madrinha";
 import { InstructionsEditor } from "../_components/instructions-editor";
 import { KnowledgeBase } from "../_components/knowledge-base";
 import { CapabilitiesCard } from "../_components/capabilities-card";
@@ -20,11 +20,11 @@ export const metadata = { title: "Comportamento e qualidade da Liz" };
 export default async function Page() {
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const [versions, articles, capabilities, meta, overrides] = await Promise.all([
-    listInstructionVersions(),
-    listKnowledgeArticles(),
-    getPlatformSetting("madrinha.capabilities"),
-    getMadrinhaSettingsMeta(),
-    listMadrinhaOverrides(30),
+    listarVersoesDasInstrucoes(),
+    listarArtigosDeConhecimento(),
+    obterConfiguracaoDaPlataforma("madrinha.capabilities"),
+    obterDadosDasConfiguracoesDaMadrinha(),
+    listarExcecoesDaMadrinha(30),
   ]);
 
   return (

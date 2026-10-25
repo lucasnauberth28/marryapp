@@ -1,28 +1,28 @@
 // Filtros da lista de casais (/admin/casais) como `where` do Prisma. Puro: só tipos do Prisma, sem banco.
 // As abas e os filtros vêm da URL já validados por lista fechada (oneOf); a busca é texto livre limitado.
 import type { Prisma } from "@prisma/client";
-import { INACTIVE_DAYS, PAYMENT_PROBLEM_DAYS, WEDDING_SOON_DAYS } from "./casal-status.ts";
+import { DIAS_DE_INATIVIDADE, DIAS_DE_PROBLEMA_NO_PAGAMENTO, DIAS_PARA_CASAMENTO_PROXIMO } from "./casal-status.ts";
 
-const DAY_MS = 86_400_000;
-const SP_OFFSET_MS = 3 * 60 * 60 * 1000;
+const UM_DIA_EM_MS = 86_400_000;
+const DESLOCAMENTO_DE_BRASILIA_EM_MS = 3 * 60 * 60 * 1000;
 
-export const CASAIS_TABS = ["todos", "problema", "30dias", "inativos", "onboarding"] as const;
-export type CasaisTab = (typeof CASAIS_TABS)[number];
+export const ABAS_DE_CASAIS = ["todos", "problema", "30dias", "inativos", "onboarding"] as const;
+export type AbaDeCasais = (typeof ABAS_DE_CASAIS)[number];
 
-export const DATA_FILTERS = ["prox30", "prox90", "passados", "semdata"] as const;
-export const ONBOARDING_FILTERS = ["concluido", "pendente"] as const;
-export const ATIVIDADE_FILTERS = ["hoje", "7d", "30d", "sem"] as const;
-export const DOMINIO_FILTERS = ["proprio", "pedido", "nenhum"] as const;
-export const PLANO_FILTERS = ["basic", "classic", "vip", "custom"] as const;
-export type PlanoFilter = (typeof PLANO_FILTERS)[number];
+export const FILTROS_DE_DATA = ["prox30", "prox90", "passados", "semdata"] as const;
+export const FILTROS_DE_INICIO = ["concluido", "pendente"] as const;
+export const FILTROS_DE_ATIVIDADE = ["hoje", "7d", "30d", "sem"] as const;
+export const FILTROS_DE_DOMINIO = ["proprio", "pedido", "nenhum"] as const;
+export const FILTROS_DE_PLANO = ["basic", "classic", "vip", "custom"] as const;
+export type FiltroDePlano = (typeof FILTROS_DE_PLANO)[number];
 
-export interface CasaisFilters {
-  tab?: CasaisTab;
+export interface FiltrosDeCasais {
+  tab?: AbaDeCasais;
   q?: string;
-  data?: (typeof DATA_FILTERS)[number];
-  onboarding?: (typeof ONBOARDING_FILTERS)[number];
-  atividade?: (typeof ATIVIDADE_FILTERS)[number];
-  dominio?: (typeof DOMINIO_FILTERS)[number];
+  data?: (typeof FILTROS_DE_DATA)[number];
+  onboarding?: (typeof FILTROS_DE_INICIO)[number];
+  atividade?: (typeof FILTROS_DE_ATIVIDADE)[number];
+  dominio?: (typeof FILTROS_DE_DOMINIO)[number];
   /** Só os casamentos marcados para acompanhar. */
   acompanhar?: boolean;
   /** Ids de casamentos com o plano pedido (calculado no servidor a partir da última assinatura). */
@@ -30,17 +30,17 @@ export interface CasaisFilters {
 }
 
 /** 00:00 de hoje no horário de Brasília. */
-export function startOfBrasiliaDay(now: Date): Date {
-  return new Date(Math.floor((now.getTime() - SP_OFFSET_MS) / DAY_MS) * DAY_MS + SP_OFFSET_MS);
+export function inicioDoDiaEmBrasilia(now: Date): Date {
+  return new Date(Math.floor((now.getTime() - DESLOCAMENTO_DE_BRASILIA_EM_MS) / UM_DIA_EM_MS) * UM_DIA_EM_MS + DESLOCAMENTO_DE_BRASILIA_EM_MS);
 }
 
-const addDays = (d: Date, n: number) => new Date(d.getTime() + n * DAY_MS);
+const somarDias = (d: Date, n: number) => new Date(d.getTime() + n * UM_DIA_EM_MS);
 
 /**
  * Assinatura de casal ligada ao casamento: pelo `weddingId` ou, nas cobranças antigas sem ele,
  * pelo casamento de quem pagou (mesma regra de getWeddingPlan).
  */
-export function coupleSubscription(sub: Prisma.SubscriptionWhereInput): Prisma.WeddingWhereInput {
+export function assinaturaDoCasal(sub: Prisma.SubscriptionWhereInput): Prisma.WeddingWhereInput {
   return {
     OR: [
       { subscriptions: { some: { planType: "COUPLE", ...sub } } },
@@ -50,36 +50,36 @@ export function coupleSubscription(sub: Prisma.SubscriptionWhereInput): Prisma.W
 }
 
 /** "Com problema": a mesma regra de casalProblems, em forma de consulta. */
-export function problemWhere(now: Date): Prisma.WeddingWhereInput {
-  const today = startOfBrasiliaDay(now);
+export function filtroDeProblema(now: Date): Prisma.WeddingWhereInput {
+  const today = inicioDoDiaEmBrasilia(now);
   return {
     OR: [
       { suspendedAt: { not: null } },
-      coupleSubscription({ status: { in: ["REJECTED", "FAILED"] }, updatedAt: { gte: new Date(now.getTime() - PAYMENT_PROBLEM_DAYS * DAY_MS) } }),
-      { onboardedAt: null, weddingDate: { gte: today, lt: addDays(today, WEDDING_SOON_DAYS + 1) } },
+      assinaturaDoCasal({ status: { in: ["REJECTED", "FAILED"] }, updatedAt: { gte: new Date(now.getTime() - DIAS_DE_PROBLEMA_NO_PAGAMENTO * UM_DIA_EM_MS) } }),
+      { onboardedAt: null, weddingDate: { gte: today, lt: somarDias(today, DIAS_PARA_CASAMENTO_PROXIMO + 1) } },
     ],
   };
 }
 
 /** Sem atividade há mais de 14 dias (sem registro de visita, vale o dia do cadastro). */
-export function inactiveWhere(now: Date): Prisma.WeddingWhereInput {
-  const limit = new Date(now.getTime() - INACTIVE_DAYS * DAY_MS);
+export function filtroDeInativos(now: Date): Prisma.WeddingWhereInput {
+  const limit = new Date(now.getTime() - DIAS_DE_INATIVIDADE * UM_DIA_EM_MS);
   return { OR: [{ lastActiveAt: { lt: limit } }, { lastActiveAt: null, createdAt: { lt: limit } }] };
 }
 
-export function next30DaysWhere(now: Date): Prisma.WeddingWhereInput {
-  const today = startOfBrasiliaDay(now);
-  return { weddingDate: { gte: today, lt: addDays(today, 31) } };
+export function filtroDosProximos30Dias(now: Date): Prisma.WeddingWhereInput {
+  const today = inicioDoDiaEmBrasilia(now);
+  return { weddingDate: { gte: today, lt: somarDias(today, 31) } };
 }
 
-export function tabWhere(tab: CasaisTab, now: Date): Prisma.WeddingWhereInput {
+export function filtroDaAba(tab: AbaDeCasais, now: Date): Prisma.WeddingWhereInput {
   switch (tab) {
     case "problema":
-      return problemWhere(now);
+      return filtroDeProblema(now);
     case "30dias":
-      return next30DaysWhere(now);
+      return filtroDosProximos30Dias(now);
     case "inativos":
-      return inactiveWhere(now);
+      return filtroDeInativos(now);
     case "onboarding":
       return { onboardedAt: null };
     default:
@@ -88,7 +88,7 @@ export function tabWhere(tab: CasaisTab, now: Date): Prisma.WeddingWhereInput {
 }
 
 /** Busca livre: nomes do casal, endereço do site, e-mail e nome de quem tem acesso. Limitada a 100 caracteres. */
-export function searchWhere(q: string): Prisma.WeddingWhereInput {
+export function filtroDaBusca(q: string): Prisma.WeddingWhereInput {
   const text = q.trim().slice(0, 100);
   if (!text) return {};
   const like = { contains: text, mode: "insensitive" as const };
@@ -98,19 +98,19 @@ export function searchWhere(q: string): Prisma.WeddingWhereInput {
 }
 
 /** Junta aba, busca e filtros num único `where` (tudo com AND). */
-export function casaisWhere(filters: CasaisFilters, now: Date = new Date()): Prisma.WeddingWhereInput {
+export function filtroDeCasais(filters: FiltrosDeCasais, now: Date = new Date()): Prisma.WeddingWhereInput {
   const and: Prisma.WeddingWhereInput[] = [];
-  const today = startOfBrasiliaDay(now);
+  const today = inicioDoDiaEmBrasilia(now);
 
-  if (filters.tab) and.push(tabWhere(filters.tab, now));
-  if (filters.q) and.push(searchWhere(filters.q));
+  if (filters.tab) and.push(filtroDaAba(filters.tab, now));
+  if (filters.q) and.push(filtroDaBusca(filters.q));
 
   switch (filters.data) {
     case "prox30":
-      and.push(next30DaysWhere(now));
+      and.push(filtroDosProximos30Dias(now));
       break;
     case "prox90":
-      and.push({ weddingDate: { gte: today, lt: addDays(today, 91) } });
+      and.push({ weddingDate: { gte: today, lt: somarDias(today, 91) } });
       break;
     case "passados":
       and.push({ weddingDate: { lt: today } });
@@ -128,13 +128,13 @@ export function casaisWhere(filters: CasaisFilters, now: Date = new Date()): Pri
       and.push({ lastActiveAt: { gte: today } });
       break;
     case "7d":
-      and.push({ lastActiveAt: { gte: addDays(now, -7) } });
+      and.push({ lastActiveAt: { gte: somarDias(now, -7) } });
       break;
     case "30d":
-      and.push({ lastActiveAt: { gte: addDays(now, -30) } });
+      and.push({ lastActiveAt: { gte: somarDias(now, -30) } });
       break;
     case "sem":
-      and.push(inactiveWhere(now));
+      and.push(filtroDeInativos(now));
       break;
   }
 

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { TabsNav } from "@/components/plataforma/tabs-nav";
-import { getPixToCheck, getPendingRefunds } from "@/lib/platform/queries/receita";
+import { obterPixParaConferir, obterReembolsosPendentes } from "@/lib/platform/queries/receita";
 
 export type PlanosTab = "resumo" | "assinaturas" | "cupons" | "reembolsos" | "catalogo" | "contador";
 
@@ -16,7 +16,7 @@ function tabs(counts: { pix?: number; refunds?: number }) {
 }
 
 async function CountedTabs({ active }: { active: PlanosTab }) {
-  const [pix, refunds] = await Promise.all([getPixToCheck(), getPendingRefunds()]);
+  const [pix, refunds] = await Promise.all([obterPixParaConferir(), obterReembolsosPendentes()]);
   return <TabsNav label="Planos e receita" basePath="/admin/planos" active={active} tabs={tabs({ pix: pix.count, refunds: refunds.count })} />;
 }
 

@@ -9,10 +9,10 @@ import { RowsSkeleton } from "@/components/plataforma/loading-parts";
 import { SkeletonCard, SkeletonForm, LoadingRegion } from "@/components/skeletons";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
-import { type SearchParams, param } from "@/lib/platform/list-params";
-import { formatDate, timeAgo } from "@/lib/platform/format";
-import { dueState } from "@/lib/platform/support";
-import { listDataRequests, listIncidents, listTickets, searchEverything, ticketPrefill } from "@/lib/platform/queries/suporte";
+import { type ParametrosDeBusca, parametroDaBusca } from "@/lib/platform/list-params";
+import { formatarData, haQuantoTempo } from "@/lib/platform/format";
+import { situacaoDoPrazo } from "@/lib/platform/support";
+import { listarSolicitacoesDeDados, listarIncidentes, listarChamados, buscarEmTudo, preenchimentoDoChamado } from "@/lib/platform/queries/suporte";
 import { DataRequests, type DataRequestItem } from "./_components/data-requests";
 import { Incidents } from "./_components/incidents";
 import { PasswordReset } from "./_components/password-reset";
@@ -24,14 +24,14 @@ export const metadata = { title: "Suporte e LGPD" };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ymd = (d: Date | null) => (d ? new Date(d.getTime() - 3 * 3_600_000).toISOString().slice(0, 10) : "");
 
-export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<ParametrosDeBusca> }) {
   const admin = await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
-  const searchText = param(query, "q", 100);
-  const showClosed = param(query, "encerrados", 2) === "1";
-  const casal = param(query, "casal", 40);
-  const fornecedor = param(query, "fornecedor", 40);
-  const openNew = param(query, "novo", 2) === "1";
+  const searchText = parametroDaBusca(query, "q", 100);
+  const showClosed = parametroDaBusca(query, "encerrados", 2) === "1";
+  const casal = parametroDaBusca(query, "casal", 40);
+  const fornecedor = parametroDaBusca(query, "fornecedor", 40);
+  const openNew = parametroDaBusca(query, "novo", 2) === "1";
 
   return (
     <>
@@ -90,7 +90,7 @@ function SupportListsSkeleton() {
 async function SearchResults({ searchText, userId }: { searchText: string; userId: string }) {
   // Busca limitada por pessoa da administração: 60 por minuto
   const allowed = (await conferirLimiteDeUso({ key: `ADMIN_SEARCH:${userId}`, limit: 60, windowMs: 60_000 })).success;
-  const results = allowed ? await searchEverything(searchText) : null;
+  const results = allowed ? await buscarEmTudo(searchText) : null;
   return (
     <>
       {!allowed && <p className="mt-3 text-sm font-semibold text-perigo">Muitas buscas seguidas. Aguarde um minuto.</p>}
@@ -138,14 +138,14 @@ async function SearchResults({ searchText, userId }: { searchText: string; userI
 async function SupportLists({ userId, showClosed, casal, fornecedor, openNew }: { userId: string; showClosed: boolean; casal: string | undefined; fornecedor: string | undefined; openNew: boolean }) {
   const now = new Date();
   const [tickets, requests, incidents, prefill] = await Promise.all([
-    listTickets({ showClosed }),
-    listDataRequests(),
-    listIncidents(),
-    ticketPrefill({ weddingId: casal && UUID.test(casal) ? casal : undefined, vendorId: fornecedor && UUID.test(fornecedor) ? fornecedor : undefined }),
+    listarChamados({ showClosed }),
+    listarSolicitacoesDeDados(),
+    listarIncidentes(),
+    preenchimentoDoChamado({ weddingId: casal && UUID.test(casal) ? casal : undefined, vendorId: fornecedor && UUID.test(fornecedor) ? fornecedor : undefined }),
   ]);
 
   const requestItems: DataRequestItem[] = requests.map((r) => {
-    const due = dueState(r.dueAt, r.status, now);
+    const due = situacaoDoPrazo(r.dueAt, r.status, now);
     return {
       id: r.id,
       type: r.type,
@@ -153,14 +153,14 @@ async function SupportLists({ userId, showClosed, casal, fornecedor, openNew }: 
       requesterEmail: r.requesterEmail,
       linked: r.userId !== null,
       status: r.status,
-      receivedLabel: formatDate(r.receivedAt),
-      dueLabel: formatDate(r.dueAt),
+      receivedLabel: formatarData(r.receivedAt),
+      dueLabel: formatarData(r.dueAt),
       dueText: due.kind === "overdue" ? `Venceu há ${due.days} ${due.days === 1 ? "dia" : "dias"}` : due.kind === "soon" || due.kind === "ok" ? (due.days === 0 ? "Vence hoje" : `Vence em ${due.days} ${due.days === 1 ? "dia" : "dias"}`) : null,
       dueTone: due.kind === "overdue" || due.kind === "soon" ? "perigo" : due.kind === "ok" ? "neutro" : null,
       note: r.note,
     };
   });
-  const urgentList = requests.map((r) => ({ r, due: dueState(r.dueAt, r.status, now) })).filter((x) => x.due.kind === "overdue" || x.due.kind === "soon");
+  const urgentList = requests.map((r) => ({ r, due: situacaoDoPrazo(r.dueAt, r.status, now) })).filter((x) => x.due.kind === "overdue" || x.due.kind === "soon");
   const urgentFirst = urgentList.find((x) => x.due.kind === "overdue") ?? urgentList.sort((a, b) => a.r.dueAt.getTime() - b.r.dueAt.getTime())[0];
   const urgent = urgentFirst
     ? urgentFirst.due.kind === "overdue"
@@ -185,7 +185,7 @@ async function SupportLists({ userId, showClosed, casal, fornecedor, openNew }: 
               assigneeName: t.assigneeName,
               mine: t.assigneeId === userId,
               internalNote: t.internalNote,
-              whenLabel: timeAgo(t.createdAt, now),
+              whenLabel: haQuantoTempo(t.createdAt, now),
               weddingId: t.weddingId,
               vendorId: t.vendorId,
             }))}
@@ -206,7 +206,7 @@ async function SupportLists({ userId, showClosed, casal, fornecedor, openNew }: 
               title: i.title,
               description: i.description,
               affected: i.affected,
-              discoveredLabel: formatDate(i.discoveredAt),
+              discoveredLabel: formatarData(i.discoveredAt),
               notifiedOn: ymd(i.notifiedAt),
               notifiedWho: i.notifiedWho,
               open: i.status === "OPEN",

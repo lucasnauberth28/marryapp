@@ -2,18 +2,18 @@ import "server-only";
 import { PaymentStatus, VendorPlanTier, type Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { obterCatalogo } from "@/lib/catalog-server";
-import { PIX_REVIEW_WINDOW_MS, STATIC_PIX_PREFIX } from "@/lib/platform/payments";
+import { JANELA_DE_CONFERENCIA_DO_PIX_EM_MS, PREFIXO_DO_PIX_ESTATICO } from "@/lib/platform/payments";
 import {
-  averagePayment,
-  brasiliaMonthKey,
-  bucketRevenue,
-  lastMonthKeys,
-  monthlyRecurring,
-  monthStartOf,
-  percentChange,
-  previousMonthWindow,
-  shiftMonthKey,
-  type MonthBucket,
+  pagamentoMedio,
+  chaveDoMesEmBrasilia,
+  agruparReceita,
+  chavesDosUltimosMeses,
+  recorrenciaMensal,
+  inicioDoMesDe,
+  variacaoPercentual,
+  janelaDoMesAnterior,
+  deslocarChaveDoMes,
+  type BalaioDoMes,
 } from "@/lib/platform/revenue";
 
 /**
@@ -22,18 +22,18 @@ import {
  * Valores em centavos. Nada daqui lê dado de pessoa (só somas e contagens).
  */
 
-export { STATIC_PIX_PREFIX, PIX_REVIEW_WINDOW_MS };
+export { PREFIXO_DO_PIX_ESTATICO as STATIC_PIX_PREFIX, JANELA_DE_CONFERENCIA_DO_PIX_EM_MS as PIX_REVIEW_WINDOW_MS };
 
 /** Pix de plano a conferir: pendente, Pix estático e com o código vencido há no máximo 3 dias. */
-export function pixToCheckWhere(now: Date = new Date()): Prisma.SubscriptionWhereInput {
+export function filtroDePixParaConferir(now: Date = new Date()): Prisma.SubscriptionWhereInput {
   return {
     status: PaymentStatus.PENDING,
-    gatewayId: { startsWith: STATIC_PIX_PREFIX },
-    expiresAt: { gte: new Date(now.getTime() - PIX_REVIEW_WINDOW_MS) },
+    gatewayId: { startsWith: PREFIXO_DO_PIX_ESTATICO },
+    expiresAt: { gte: new Date(now.getTime() - JANELA_DE_CONFERENCIA_DO_PIX_EM_MS) },
   };
 }
 
-export interface PixToCheck {
+export interface PixParaConferir {
   count: number;
   /** Soma dos valores a conferir. */
   totalCents: number;
@@ -41,8 +41,8 @@ export interface PixToCheck {
   oldestAt: Date | null;
 }
 
-export async function getPixToCheck(now: Date = new Date()): Promise<PixToCheck> {
-  const where = pixToCheckWhere(now);
+export async function obterPixParaConferir(now: Date = new Date()): Promise<PixParaConferir> {
+  const where = filtroDePixParaConferir(now);
   const [sum, oldest] = await Promise.all([
     prisma.subscription.aggregate({ where, _sum: { amount: true }, _count: { _all: true } }),
     prisma.subscription.findFirst({ where, orderBy: { createdAt: "asc" }, select: { createdAt: true } }),
@@ -51,16 +51,16 @@ export async function getPixToCheck(now: Date = new Date()): Promise<PixToCheck>
 }
 
 /** Receita por mês (últimos `months`, o atual por último), separando casais e fornecedores. */
-export async function getRevenueByMonth(now: Date = new Date(), months = 7): Promise<MonthBucket[]> {
-  const start = monthStartOf(lastMonthKeys(now, months)[0]);
+export async function obterReceitaPorMes(now: Date = new Date(), months = 7): Promise<BalaioDoMes[]> {
+  const start = inicioDoMesDe(chavesDosUltimosMeses(now, months)[0]);
   const rows = await prisma.subscription.findMany({
     where: { status: PaymentStatus.APPROVED, amount: { gt: 0 }, paidAt: { gte: start } },
     select: { amount: true, planType: true, paidAt: true },
   });
-  return bucketRevenue(rows, now, months);
+  return agruparReceita(rows, now, months);
 }
 
-export interface MonthRevenue {
+export interface ReceitaDoMes {
   cents: number;
   payments: number;
   /** Receita do mês passado até o mesmo ponto do mês (para a variação). */
@@ -70,9 +70,9 @@ export interface MonthRevenue {
 }
 
 /** Receita do mês em andamento e a variação contra o mês passado até o mesmo ponto. */
-export async function getMonthRevenue(now: Date = new Date()): Promise<MonthRevenue> {
-  const monthStart = monthStartOf(brasiliaMonthKey(now));
-  const previous = previousMonthWindow(now);
+export async function obterReceitaDoMes(now: Date = new Date()): Promise<ReceitaDoMes> {
+  const monthStart = inicioDoMesDe(chaveDoMesEmBrasilia(now));
+  const previous = janelaDoMesAnterior(now);
   const paid = { status: PaymentStatus.APPROVED, amount: { gt: 0 } } as const;
   const [current, before] = await Promise.all([
     prisma.subscription.aggregate({ where: { ...paid, paidAt: { gte: monthStart, lte: now } }, _sum: { amount: true }, _count: { _all: true } }),
@@ -80,10 +80,10 @@ export async function getMonthRevenue(now: Date = new Date()): Promise<MonthReve
   ]);
   const cents = current._sum.amount ?? 0;
   const previousCents = before._sum.amount ?? 0;
-  return { cents, payments: current._count._all, previousCents, change: percentChange(cents, previousCents) };
+  return { cents, payments: current._count._all, previousCents, change: variacaoPercentual(cents, previousCents) };
 }
 
-export interface CouplesPaidMonth {
+export interface CasaisQuePagaramNoMes {
   cents: number;
   /** Casais que pagaram no mês. */
   payments: number;
@@ -92,29 +92,29 @@ export interface CouplesPaidMonth {
 }
 
 /** Pagamentos de plano de casal no mês em andamento (valor médio por casal). */
-export async function getCouplesPaidThisMonth(now: Date = new Date()): Promise<CouplesPaidMonth> {
-  const monthStart = monthStartOf(brasiliaMonthKey(now));
+export async function obterCasaisQuePagaramNesteMes(now: Date = new Date()): Promise<CasaisQuePagaramNoMes> {
+  const monthStart = inicioDoMesDe(chaveDoMesEmBrasilia(now));
   const sum = await prisma.subscription.aggregate({
     where: { status: PaymentStatus.APPROVED, planType: "COUPLE", amount: { gt: 0 }, paidAt: { gte: monthStart, lte: now } },
     _sum: { amount: true },
     _count: { _all: true },
   });
   const cents = sum._sum.amount ?? 0;
-  return { cents, payments: sum._count._all, averageCents: averagePayment(cents, sum._count._all) };
+  return { cents, payments: sum._count._all, averageCents: pagamentoMedio(cents, sum._count._all) };
 }
 
 /** Fornecedores com plano pago em vigor: Pro e Master (mesma regra de /assinaturas). */
-export function activePaidVendorWhere(now: Date = new Date()): Prisma.PartnerVendorWhereInput {
+export function filtroDeFornecedorPagoAtivo(now: Date = new Date()): Prisma.PartnerVendorWhereInput {
   return { planTier: { not: VendorPlanTier.FREE }, OR: [{ planExpiresAt: null }, { planExpiresAt: { gt: now } }] };
 }
 
 /** Mensalidades vigentes: Pro e Master pagantes vezes o preço do catálogo atual. */
-export async function getRecurringRevenue(now: Date = new Date()) {
+export async function obterReceitaRecorrente(now: Date = new Date()) {
   const [groups, catalog] = await Promise.all([
-    prisma.partnerVendor.groupBy({ by: ["planTier"], where: activePaidVendorWhere(now), _count: { _all: true } }),
+    prisma.partnerVendor.groupBy({ by: ["planTier"], where: filtroDeFornecedorPagoAtivo(now), _count: { _all: true } }),
     obterCatalogo(),
   ]);
-  return monthlyRecurring(
+  return recorrenciaMensal(
     groups.flatMap((g) => (g.planTier === "PRO" || g.planTier === "MASTER" ? [{ tier: g.planTier, count: g._count._all }] : [])),
     { pro: catalog.plans.pro.price, master: catalog.plans.master.price },
   );
@@ -124,8 +124,8 @@ export async function getRecurringRevenue(now: Date = new Date()) {
  * "Não renovaram": fornecedores cujo último período pago terminou neste mês e que não pagaram de novo.
  * Não é cancelamento (não existe esse registro): é plano que venceu sem renovação.
  */
-export async function getNonRenewals(now: Date = new Date()): Promise<{ count: number; of: number }> {
-  const monthStart = monthStartOf(brasiliaMonthKey(now));
+export async function obterNaoRenovacoes(now: Date = new Date()): Promise<{ count: number; of: number }> {
+  const monthStart = inicioDoMesDe(chaveDoMesEmBrasilia(now));
   const ended = await prisma.subscription.findMany({
     where: { status: PaymentStatus.APPROVED, planType: "VENDOR", periodEnd: { gte: monthStart, lte: now }, userId: { not: null } },
     select: { userId: true, periodEnd: true },
@@ -147,7 +147,7 @@ export async function getNonRenewals(now: Date = new Date()): Promise<{ count: n
   return { count: users.filter((u) => !renewed.has(u)).length, of: users.length };
 }
 
-export interface RefundSummary {
+export interface ResumoDeReembolsos {
   /** Pedidos de reembolso esperando decisão. */
   count: number;
   totalCents: number;
@@ -155,7 +155,7 @@ export interface RefundSummary {
   nextDueAt: Date | null;
 }
 
-export async function getPendingRefunds(): Promise<RefundSummary> {
+export async function obterReembolsosPendentes(): Promise<ResumoDeReembolsos> {
   const where = { status: "REQUESTED" } as const;
   const [sum, next] = await Promise.all([
     prisma.refundRequest.aggregate({ where, _sum: { amount: true }, _count: { _all: true } }),
@@ -165,24 +165,24 @@ export async function getPendingRefunds(): Promise<RefundSummary> {
 }
 
 /** Notas fiscais pendentes: pagamento aprovado, com valor, sem nota emitida. */
-const pendingInvoiceWhere: Prisma.SubscriptionWhereInput = { status: PaymentStatus.APPROVED, amount: { gt: 0 }, invoiceIssuedAt: null };
+const filtroDeNotaPendente: Prisma.SubscriptionWhereInput = { status: PaymentStatus.APPROVED, amount: { gt: 0 }, invoiceIssuedAt: null };
 
-export async function countPendingInvoices(): Promise<number> {
-  return prisma.subscription.count({ where: pendingInvoiceWhere });
+export async function contarNotasPendentes(): Promise<number> {
+  return prisma.subscription.count({ where: filtroDeNotaPendente });
 }
 
-export { shiftMonthKey };
+export { deslocarChaveDoMes as shiftMonthKey };
 
 // ---------------------------------------------------------------------------------------------
 // Listas da tela Planos e receita
 // ---------------------------------------------------------------------------------------------
 
 /** Nome de quem pagou: o do fornecedor (empresa) ou o da pessoa; conta excluída vira "Conta excluída". */
-function payerLabel(user: { name: string; partnerVendor: { companyName: string } | null } | null): string {
+function rotuloDoPagador(user: { name: string; partnerVendor: { companyName: string } | null } | null): string {
   return user?.partnerVendor?.companyName ?? user?.name ?? "Conta excluída";
 }
 
-export interface PendingInvoice {
+export interface NotaPendente {
   id: string;
   payer: string;
   planName: string;
@@ -191,17 +191,17 @@ export interface PendingInvoice {
   paidAt: Date | null;
 }
 
-export async function listPendingInvoices(take = 20): Promise<PendingInvoice[]> {
+export async function listarNotasPendentes(take = 20): Promise<NotaPendente[]> {
   const rows = await prisma.subscription.findMany({
-    where: pendingInvoiceWhere,
+    where: filtroDeNotaPendente,
     orderBy: [{ paidAt: "desc" }, { createdAt: "desc" }],
     take,
     select: { id: true, planName: true, planType: true, amount: true, paidAt: true, user: { select: { name: true, partnerVendor: { select: { companyName: true } } } } },
   });
-  return rows.map((r) => ({ id: r.id, payer: payerLabel(r.user), planName: r.planName, planType: r.planType, amount: r.amount, paidAt: r.paidAt }));
+  return rows.map((r) => ({ id: r.id, payer: rotuloDoPagador(r.user), planName: r.planName, planType: r.planType, amount: r.amount, paidAt: r.paidAt }));
 }
 
-export interface RefundRow {
+export interface LinhaDeReembolso {
   id: string;
   subscriptionId: string;
   payer: string;
@@ -219,7 +219,7 @@ export interface RefundRow {
 }
 
 /** Pedidos de reembolso: os que esperam decisão ou estorno primeiro, depois os mais recentes. */
-export async function listRefunds(take = 30): Promise<RefundRow[]> {
+export async function listarReembolsos(take = 30): Promise<LinhaDeReembolso[]> {
   const rows = await prisma.refundRequest.findMany({
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     take,
@@ -240,7 +240,7 @@ export async function listRefunds(take = 30): Promise<RefundRow[]> {
   return rows.map((r) => ({
     id: r.id,
     subscriptionId: r.subscriptionId,
-    payer: payerLabel(r.subscription.user),
+    payer: rotuloDoPagador(r.subscription.user),
     planName: r.subscription.planName,
     planType: r.subscription.planType,
     amount: r.amount,
@@ -256,17 +256,17 @@ export async function listRefunds(take = 30): Promise<RefundRow[]> {
 }
 
 /** Pagamentos aprovados recentes, para escolher qual deles ganha um pedido de reembolso. */
-export async function listRefundablePayments(take = 60): Promise<{ id: string; label: string; amount: number }[]> {
+export async function listarPagamentosReembolsaveis(take = 60): Promise<{ id: string; label: string; amount: number }[]> {
   const rows = await prisma.subscription.findMany({
     where: { status: PaymentStatus.APPROVED, amount: { gt: 0 }, refundRequests: { none: { status: "REQUESTED" } } },
     orderBy: [{ paidAt: "desc" }, { createdAt: "desc" }],
     take,
     select: { id: true, planName: true, amount: true, paidAt: true, user: { select: { name: true, partnerVendor: { select: { companyName: true } } } } },
   });
-  return rows.map((r) => ({ id: r.id, amount: r.amount, label: `${payerLabel(r.user)} · ${r.planName.replace(/^(Plano|Fornecedor)\s+/, "")}` }));
+  return rows.map((r) => ({ id: r.id, amount: r.amount, label: `${rotuloDoPagador(r.user)} · ${r.planName.replace(/^(Plano|Fornecedor)\s+/, "")}` }));
 }
 
-export interface CouponInUse {
+export interface CupomEmUso {
   id: string;
   code: string;
   percentOff: number | null;
@@ -277,7 +277,7 @@ export interface CouponInUse {
 }
 
 /** Cupons valendo agora (ativos e dentro do prazo), os mais usados primeiro. */
-export async function listCouponsInUse(now: Date = new Date(), take = 5): Promise<CouponInUse[]> {
+export async function listarCuponsEmUso(now: Date = new Date(), take = 5): Promise<CupomEmUso[]> {
   return prisma.coupon.findMany({
     where: { active: true, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
     orderBy: [{ redemptions: "desc" }, { createdAt: "desc" }],
@@ -286,4 +286,4 @@ export async function listCouponsInUse(now: Date = new Date(), take = 5): Promis
   });
 }
 
-export { payerLabel };
+export { rotuloDoPagador as payerLabel };

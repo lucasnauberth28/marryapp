@@ -1,10 +1,10 @@
 // Regras puras da tela de Configurações: integrações (só presença de variável), limites de uso em texto e
 // validação dos formulários. Sem banco nem Next: roda nos testes.
 import { z } from "zod";
-import { emailDomainProblem } from "./email-sender-core.ts";
-import { joinBackAt } from "./maintenance-core.ts";
+import { problemaNoDominioDoEmail } from "./email-sender-core.ts";
+import { juntarPrevisaoDeVolta } from "./maintenance-core.ts";
 
-export interface IntegrationDef {
+export interface DefinicaoDaIntegracao {
   id: string;
   name: string;
   /** Todas estas variáveis precisam estar preenchidas para contar como "Conectado". */
@@ -13,7 +13,7 @@ export interface IntegrationDef {
   publicKeyVar?: string;
 }
 
-export const INTEGRATIONS: IntegrationDef[] = [
+export const INTEGRACOES: DefinicaoDaIntegracao[] = [
   { id: "mercadopago", name: "Mercado Pago (pagamentos)", vars: ["MERCADOPAGO_ACCESS_TOKEN"], publicKeyVar: "NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY" },
   { id: "mercadopago-webhook", name: "Mercado Pago (assinatura dos avisos)", vars: ["MERCADOPAGO_WEBHOOK_SECRET"] },
   { id: "pix", name: "Pix estático (planos)", vars: ["PIX_KEY", "PIX_MERCHANT_NAME", "PIX_MERCHANT_CITY"] },
@@ -27,7 +27,7 @@ export const INTEGRATIONS: IntegrationDef[] = [
   { id: "cron", name: "Rotinas diárias (segredo da Vercel Cron)", vars: ["CRON_SECRET"] },
 ];
 
-export interface IntegrationStatus {
+export interface SituacaoDaIntegracao {
   id: string;
   name: string;
   connected: boolean;
@@ -36,14 +36,14 @@ export interface IntegrationStatus {
 }
 
 /** Conectado = todas as variáveis presentes (nunca o valor). `env` entra por parâmetro para testar sem process.env. */
-export function integrationStatus(def: IntegrationDef, env: Record<string, string | undefined>): IntegrationStatus {
+export function situacaoDaIntegracao(def: DefinicaoDaIntegracao, env: Record<string, string | undefined>): SituacaoDaIntegracao {
   const connected = def.vars.every((v) => Boolean(env[v]?.trim()));
   const pub = def.publicKeyVar ? (env[def.publicKeyVar] ?? env.NEXT_PUBLIC_MP_PUBLIC_KEY)?.trim() : undefined;
   return { id: def.id, name: def.name, connected, tail: pub && pub.length >= 8 ? pub.slice(-4) : null };
 }
 
 /** "5 por 10 minutos", "20 por 15 minutos", "30 por minuto": o limite do código em texto. */
-export function describeLimit(limit: number, windowMs: number): string {
+export function descreverLimite(limit: number, windowMs: number): string {
   const min = windowMs / 60_000;
   if (min === 1) return `${limit} por minuto`;
   if (min < 60) return `${limit} a cada ${min} minutos`;
@@ -51,7 +51,7 @@ export function describeLimit(limit: number, windowMs: number): string {
   return `${limit} por ${h === 1 ? "hora" : `${h} horas`}`;
 }
 
-const maintenanceInput = z.object({
+const entradaDaManutencao = z.object({
   enabled: z.boolean(),
   message: z.string().trim().max(300, "Use até 300 caracteres."),
   backDate: z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/, "Use uma data válida.").default(""),
@@ -59,11 +59,11 @@ const maintenanceInput = z.object({
 });
 
 /** Valida o formulário de manutenção: ligar exige mensagem e, se houver hora de volta, ela precisa estar no futuro. */
-export function parseMaintenance(
+export function interpretarManutencao(
   input: unknown,
   now: Date = new Date(),
 ): { ok: true; value: { enabled: boolean; message: string; backAt: string | null } } | { ok: false; errors: Record<string, string> } {
-  const parsed = maintenanceInput.safeParse(input);
+  const parsed = entradaDaManutencao.safeParse(input);
   if (!parsed.success) {
     const errors: Record<string, string> = {};
     for (const issue of parsed.error.issues) errors[String(issue.path[0] ?? "form")] ??= issue.message;
@@ -72,7 +72,7 @@ export function parseMaintenance(
   const { enabled, message, backDate, backTime } = parsed.data;
   const errors: Record<string, string> = {};
   if ((backDate && !backTime) || (!backDate && backTime)) errors[backDate ? "backTime" : "backDate"] = "Preencha a data e a hora, ou deixe as duas vazias.";
-  const backAt = backDate && backTime ? joinBackAt(backDate, backTime) : null;
+  const backAt = backDate && backTime ? juntarPrevisaoDeVolta(backDate, backTime) : null;
   if (backDate && backTime && !backAt) errors.backDate = "Use uma data e hora válidas.";
   if (enabled && !message) errors.message = "Escreva o que as pessoas vão ver.";
   if (enabled && backAt && new Date(backAt).getTime() <= now.getTime()) errors.backDate = "A hora de volta precisa estar no futuro.";
@@ -80,22 +80,22 @@ export function parseMaintenance(
   return { ok: true, value: { enabled, message, backAt } };
 }
 
-export const emailSenderInput = z.object({
+export const entradaDoRemetenteDeEmail = z.object({
   fromName: z.string().trim().max(80, "Use até 80 caracteres."),
   fromEmail: z.string().trim().toLowerCase().max(200),
   replyTo: z.string().trim().toLowerCase().max(200),
 });
 
-export function parseEmailSender(input: unknown): { ok: true; value: z.infer<typeof emailSenderInput> } | { ok: false; errors: Record<string, string> } {
-  const parsed = emailSenderInput.safeParse(input);
+export function interpretarRemetenteDeEmail(input: unknown): { ok: true; value: z.infer<typeof entradaDoRemetenteDeEmail> } | { ok: false; errors: Record<string, string> } {
+  const parsed = entradaDoRemetenteDeEmail.safeParse(input);
   if (!parsed.success) {
     const errors: Record<string, string> = {};
     for (const issue of parsed.error.issues) errors[String(issue.path[0] ?? "form")] ??= issue.message;
     return { ok: false, errors };
   }
   const errors: Record<string, string> = {};
-  const a = emailDomainProblem(parsed.data.fromEmail);
-  const b = emailDomainProblem(parsed.data.replyTo);
+  const a = problemaNoDominioDoEmail(parsed.data.fromEmail);
+  const b = problemaNoDominioDoEmail(parsed.data.replyTo);
   if (a) errors.fromEmail = a;
   if (b) errors.replyTo = b;
   if (!parsed.data.fromEmail && parsed.data.fromName) errors.fromEmail = "Para trocar o nome, preencha também o e-mail de envio.";
@@ -103,7 +103,7 @@ export function parseEmailSender(input: unknown): { ok: true; value: z.infer<typ
   return { ok: true, value: parsed.data };
 }
 
-export const refundPolicyInput = z.object({
+export const entradaDaPoliticaDeReembolso = z.object({
   days: z.string().regex(/^\d{1,2}$/, "Use um número de dias, de 0 a 90.").refine((v) => Number(v) <= 90, "Use um número de dias, de 0 a 90."),
   text: z.string().trim().min(10, "Escreva o texto que o casal vai ler.").max(1000, "Use até 1.000 caracteres."),
 });

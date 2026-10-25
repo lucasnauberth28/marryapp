@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Wrench } from "lucide-react";
-import { formatBackAt } from "@/lib/platform/maintenance-core";
+import { formatarPrevisaoDeVolta } from "@/lib/platform/maintenance-core";
 
 /** Páginas que os convidados abrem: o aviso só aparece nelas. */
 const GUEST_PREFIXES = ["/casamento", "/rsvp", "/presentes", "/dia-do-evento"];
@@ -38,7 +38,7 @@ export function GuestMaintenanceNotice() {
   }, [relevant]);
 
   if (!relevant || !state?.enabled) return null;
-  const back = formatBackAt(state.backAt);
+  const back = formatarPrevisaoDeVolta(state.backAt);
   return (
     <div role="status" className="sticky top-0 z-40 flex items-start gap-3 border-b border-aviso/40 bg-aviso-suave px-4 py-3 text-sm leading-5 text-tinta">
       <Wrench className="mt-0.5 size-4 shrink-0" aria-hidden="true" />

@@ -19,21 +19,21 @@ import { StatusChip } from "@/components/plataforma/status-chip";
 import { card } from "@/components/casal/ui";
 import { cn } from "@/lib/utils";
 import {
-  ANNOUNCEMENT_TEMPLATES,
-  CHANNEL_LABEL,
-  COUPLE_PLAN_GROUPS,
-  PLAN_GROUP_LABEL,
-  VENDOR_PLAN_GROUPS,
-  WEDDING_WINDOWS,
-  WHATSAPP_DISABLED_REASON,
-  WINDOW_LABEL,
-  announcementInput,
-  bodyParagraphs,
-  validateLinkUrl,
-  type Audience,
-  type Channel,
+  MODELOS_DE_COMUNICADO,
+  ROTULO_DO_CANAL,
+  GRUPOS_DE_PLANO_DO_CASAL,
+  ROTULO_DO_GRUPO_DE_PLANO,
+  GRUPOS_DE_PLANO_DO_FORNECEDOR,
+  JANELAS_DE_CASAMENTO,
+  MOTIVO_DO_WHATSAPP_DESLIGADO,
+  ROTULO_DA_JANELA,
+  entradaDoComunicado,
+  paragrafosDoCorpo,
+  validarUrlDoLink,
+  type Publico,
+  type Canal,
 } from "@/lib/platform/announcement";
-import { formatInt } from "@/lib/platform/format";
+import { formatarInteiro } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import {
   deleteAnnouncementDraft,
@@ -42,7 +42,7 @@ import {
   sendAnnouncementNow,
   sendAnnouncementTestToMe,
 } from "@/actions/admin-comunicados-actions";
-import type { AudiencePreview } from "@/lib/platform/queries/comunicados";
+import type { PrevisaoDoPublico } from "@/lib/platform/queries/comunicados";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
 export interface ComposeInitial {
@@ -51,8 +51,8 @@ export interface ComposeInitial {
   emailSubject: string;
   body: string;
   linkUrl: string;
-  audience: Audience;
-  channels: Channel[];
+  audience: Publico;
+  channels: Canal[];
 }
 
 export interface DraftItem {
@@ -63,16 +63,16 @@ export interface DraftItem {
 
 const TEMPLATE_ICON = { manutencao: Settings, novidade: Megaphone, plano: Clock } as const;
 
-export function Compose({ initial, initialPreview, drafts, emailConfigured }: { initial: ComposeInitial; initialPreview: AudiencePreview | null; drafts: DraftItem[]; emailConfigured: boolean }) {
+export function Compose({ initial, initialPreview, drafts, emailConfigured }: { initial: ComposeInitial; initialPreview: PrevisaoDoPublico | null; drafts: DraftItem[]; emailConfigured: boolean }) {
   const router = useRouter();
   const [draftId, setDraftId] = useState(initial.id);
   const [title, setTitle] = useState(initial.title);
   const [emailSubject, setEmailSubject] = useState(initial.emailSubject);
   const [body, setBody] = useState(initial.body);
   const [linkUrl, setLinkUrl] = useState(initial.linkUrl);
-  const [audience, setAudience] = useState<Audience>(initial.audience);
-  const [channels, setChannels] = useState<Channel[]>(initial.channels);
-  const [preview, setPreview] = useState<AudiencePreview | null>(initialPreview);
+  const [audience, setAudience] = useState<Publico>(initial.audience);
+  const [channels, setChannels] = useState<Canal[]>(initial.channels);
+  const [preview, setPreview] = useState<PrevisaoDoPublico | null>(initialPreview);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [previewing, setPreviewing] = useState(false); // recalculando o público depois de mudar um filtro
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
@@ -90,15 +90,15 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
   /** Confere o formulário antes de abrir a confirmação (o servidor confere de novo e é quem manda). */
   function askToSend() {
     const found: Record<string, string> = {};
-    const parsed = announcementInput.safeParse(form());
+    const parsed = entradaDoComunicado.safeParse(form());
     if (!parsed.success) for (const issue of parsed.error.issues) found[String(issue.path[0] ?? "form")] ??= issue.message;
-    const link = validateLinkUrl(linkUrl);
+    const link = validarUrlDoLink(linkUrl);
     if (!link.ok) found.linkUrl = link.error;
     setLocalErrors(found);
     if (Object.keys(found).length === 0) setConfirmOpen(true);
   }
 
-  async function refreshPreview(next: Audience) {
+  async function refreshPreview(next: Publico) {
     const mine = ++ticket.current;
     setPreviewing(true);
     const result = await previewAnnouncementAudience(next).catch(() => null);
@@ -107,18 +107,18 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
     setPreviewing(false);
   }
 
-  function changeAudience(patch: Partial<Audience>) {
+  function changeAudience(patch: Partial<Publico>) {
     const next = { ...audience, ...patch };
     setAudience(next);
     void refreshPreview(next);
   }
 
-  function toggleChannel(channel: Channel, on: boolean) {
+  function toggleChannel(channel: Canal, on: boolean) {
     setChannels((list) => (on ? [...new Set([...list, channel])] : list.filter((c) => c !== channel)));
   }
 
   function applyTemplate(id: string) {
-    const t = ANNOUNCEMENT_TEMPLATES.find((x) => x.id === id);
+    const t = MODELOS_DE_COMUNICADO.find((x) => x.id === id);
     if (!t) return;
     setTitle(t.title);
     setBody(t.body);
@@ -130,15 +130,15 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
 
   const audienceText = preview
     ? audience.kind === "couples"
-      ? `${pluralizar(preview.couples.matched, "casal", "casais")} de ${formatInt(preview.couples.total)}`
+      ? `${pluralizar(preview.couples.matched, "casal", "casais")} de ${formatarInteiro(preview.couples.total)}`
       : audience.kind === "vendors"
-        ? `${pluralizar(preview.vendors.matched, "fornecedor", "fornecedores")} de ${formatInt(preview.vendors.total)}`
+        ? `${pluralizar(preview.vendors.matched, "fornecedor", "fornecedores")} de ${formatarInteiro(preview.vendors.total)}`
         : `${pluralizar(preview.couples.matched, "casal", "casais")} e ${pluralizar(preview.vendors.matched, "fornecedor", "fornecedores")}`
     : null;
 
-  const planOptions = audience.kind === "vendors" ? VENDOR_PLAN_GROUPS : COUPLE_PLAN_GROUPS;
+  const planOptions = audience.kind === "vendors" ? GRUPOS_DE_PLANO_DO_FORNECEDOR : GRUPOS_DE_PLANO_DO_CASAL;
   const planValue = audience.kind === "vendors" ? audience.vendorPlans : audience.couplePlans;
-  const channelNames = channels.map((c) => CHANNEL_LABEL[c].toLowerCase()).join(", ");
+  const channelNames = channels.map((c) => ROTULO_DO_CANAL[c].toLowerCase()).join(", ");
 
   return (
     <div className="flex flex-col gap-6">
@@ -147,7 +147,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
           Modelos prontos
         </h2>
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          {ANNOUNCEMENT_TEMPLATES.map((t) => {
+          {MODELOS_DE_COMUNICADO.map((t) => {
             const Icon = TEMPLATE_ICON[t.id as keyof typeof TEMPLATE_ICON] ?? Megaphone;
             return (
               <li key={t.id}>
@@ -197,7 +197,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
                   label="Público"
                   value={audience.kind}
                   disabled={onlyChosen}
-                  onChange={(e) => changeAudience({ kind: e.target.value as Audience["kind"] })}
+                  onChange={(e) => changeAudience({ kind: e.target.value as Publico["kind"] })}
                 >
                   <option value="couples">Casais</option>
                   <option value="vendors">Fornecedores</option>
@@ -209,11 +209,11 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
                   value={planValue}
                   disabled={audience.kind === "all"}
                   hint={audience.kind === "all" ? "Vale ao escolher um público" : undefined}
-                  onChange={(e) => changeAudience(audience.kind === "vendors" ? { vendorPlans: e.target.value as Audience["vendorPlans"] } : { couplePlans: e.target.value as Audience["couplePlans"] })}
+                  onChange={(e) => changeAudience(audience.kind === "vendors" ? { vendorPlans: e.target.value as Publico["vendorPlans"] } : { couplePlans: e.target.value as Publico["couplePlans"] })}
                 >
                   {planOptions.map((p) => (
                     <option key={p} value={p}>
-                      {PLAN_GROUP_LABEL[p]}
+                      {ROTULO_DO_GRUPO_DE_PLANO[p]}
                     </option>
                   ))}
                 </NativeSelect>
@@ -223,11 +223,11 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
                   value={audience.weddingWindow}
                   disabled={audience.kind === "vendors"}
                   hint={audience.kind === "vendors" ? "Só para casais" : undefined}
-                  onChange={(e) => changeAudience({ weddingWindow: e.target.value as Audience["weddingWindow"] })}
+                  onChange={(e) => changeAudience({ weddingWindow: e.target.value as Publico["weddingWindow"] })}
                 >
-                  {WEDDING_WINDOWS.map((w) => (
+                  {JANELAS_DE_CASAMENTO.map((w) => (
                     <option key={w} value={w}>
-                      {WINDOW_LABEL[w]}
+                      {ROTULO_DA_JANELA[w]}
                     </option>
                   ))}
                 </NativeSelect>
@@ -266,7 +266,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
                     <Checkbox id={`canal-${c}`} checked={channels.includes(c)} onCheckedChange={(v) => toggleChannel(c, v === true)} className="mt-0.5" />
                     <div className="min-w-0">
                       <Label htmlFor={`canal-${c}`} className="text-base">
-                        {CHANNEL_LABEL[c]}
+                        {ROTULO_DO_CANAL[c]}
                       </Label>
                       {c === "EMAIL" && !emailConfigured && <p className="text-sm leading-5 text-aviso">O e-mail não está configurado no servidor.</p>}
                       {c === "PUSH" && <p className="text-sm leading-5 text-tinta-suave">Só para quem ativou os avisos no celular.</p>}
@@ -277,9 +277,9 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
                   <Checkbox id="canal-WHATSAPP" checked={false} disabled className="mt-0.5" />
                   <div className="min-w-0">
                     <Label htmlFor="canal-WHATSAPP" className="text-base">
-                      {CHANNEL_LABEL.WHATSAPP}
+                      {ROTULO_DO_CANAL.WHATSAPP}
                     </Label>
-                    <p className="text-sm leading-5 text-tinta-suave">{WHATSAPP_DISABLED_REASON}</p>
+                    <p className="text-sm leading-5 text-tinta-suave">{MOTIVO_DO_WHATSAPP_DESLIGADO}</p>
                   </div>
                 </div>
               </div>
@@ -360,7 +360,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
                   <p className="text-xs leading-4 text-tinta-suave">Assunto: {emailSubject.trim() || title.trim() || "(ainda sem assunto)"}</p>
                   <p className="mt-2 font-display text-2xl leading-8 text-tinta">{title || "Título do comunicado"}</p>
                   <div className="mt-2 flex flex-col gap-2 text-sm leading-5 text-tinta">
-                    {bodyParagraphs(body).map((p, i) => (
+                    {paragrafosDoCorpo(body).map((p, i) => (
                       <p key={i}>{p}</p>
                     ))}
                   </div>

@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
 import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { SETTING_DEFS, parseSetting, type SettingKey, type SettingValue } from "@/lib/platform/settings-schema";
+import { DEFINICOES_DE_CONFIGURACAO, interpretarConfiguracao, type ChaveDeConfiguracao, type ValorDeConfiguracao } from "@/lib/platform/settings-schema";
 
 /**
  * Configurações da plataforma e da Liz (tabela platform_settings), com formato validado por zod
@@ -17,20 +17,20 @@ import { SETTING_DEFS, parseSetting, type SettingKey, type SettingValue } from "
  * Quem lê em caminho quente (a cada visita) deve guardar o resultado em cache curto: a leitura vai ao banco.
  */
 
-export async function getPlatformSetting<K extends SettingKey>(key: K): Promise<SettingValue<K>> {
+export async function obterConfiguracaoDaPlataforma<K extends ChaveDeConfiguracao>(key: K): Promise<ValorDeConfiguracao<K>> {
   try {
     const row = await prisma.platformSetting.findUnique({ where: { key }, select: { value: true } });
-    return parseSetting(key, row?.value);
+    return interpretarConfiguracao(key, row?.value);
   } catch (error) {
     console.error("[getPlatformSetting]", key, error instanceof Error ? error.message : error);
-    return parseSetting(key, null);
+    return interpretarConfiguracao(key, null);
   }
 }
 
-export async function savePlatformSetting<K extends SettingKey>(key: K, value: SettingValue<K>, note?: string): Promise<SettingValue<K>> {
+export async function salvarConfiguracaoDaPlataforma<K extends ChaveDeConfiguracao>(key: K, value: ValorDeConfiguracao<K>, note?: string): Promise<ValorDeConfiguracao<K>> {
   const admin = await exigirAdminDaPlataforma();
-  const clean = SETTING_DEFS[key].schema.parse(value) as SettingValue<K>;
-  const before = await getPlatformSetting(key);
+  const clean = DEFINICOES_DE_CONFIGURACAO[key].schema.parse(value) as ValorDeConfiguracao<K>;
+  const before = await obterConfiguracaoDaPlataforma(key);
   await prisma.platformSetting.upsert({
     where: { key },
     create: { key, value: clean as Prisma.InputJsonValue, updatedById: admin.userId, updatedByName: admin.name ?? "Administrador" },

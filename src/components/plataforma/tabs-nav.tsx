@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { ExternalLink } from "lucide-react";
 import { PendingLink } from "@/components/plataforma/pending";
-import { buildHref } from "@/lib/platform/list-params";
-import { formatInt } from "@/lib/platform/format";
+import { montarLink } from "@/lib/platform/list-params";
+import { formatarInteiro } from "@/lib/platform/format";
 import { cn } from "@/lib/utils";
 
 /**
@@ -45,7 +45,7 @@ export function TabsNav({
       <ul className="inline-flex min-w-0 items-center gap-1 rounded-xl bg-areia p-1">
         {tabs.map((tab) => {
           const isActive = tab.value === active;
-          const href = tab.href ?? buildHref(basePath, { ...params, pagina: undefined, [paramKey]: tab.value === defaultValue ? undefined : tab.value });
+          const href = tab.href ?? montarLink(basePath, { ...params, pagina: undefined, [paramKey]: tab.value === defaultValue ? undefined : tab.value });
           return (
             <li key={tab.value}>
               <PendingLink
@@ -58,7 +58,7 @@ export function TabsNav({
               >
                 {tab.label}
                 {tab.count !== undefined && (
-                  <span className={cn("rounded-md px-1.5 text-xs font-semibold leading-5", isActive ? "bg-areia text-tinta-suave" : "text-tinta-suave")}>{formatInt(tab.count)}</span>
+                  <span className={cn("rounded-md px-1.5 text-xs font-semibold leading-5", isActive ? "bg-areia text-tinta-suave" : "text-tinta-suave")}>{formatarInteiro(tab.count)}</span>
                 )}
                 {tab.external && <ExternalLink className="size-4" aria-hidden="true" />}
               </PendingLink>

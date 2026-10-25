@@ -4,7 +4,7 @@ import { expirarPlanosDeFornecedor } from "@/lib/subscriptions";
 import { enviarLembretesDoPlanoDoFornecedor } from "@/lib/vendor-plan-reminders";
 import { recusarSeNaoForCron } from "@/lib/security/cron-auth";
 import { avisarPlanoVencido } from "@/lib/notifications/cron";
-import { recordCronRun } from "@/lib/platform/system-records";
+import { registrarRodadaDaTarefaAgendada } from "@/lib/platform/system-records";
 
 /**
  * Rotina diária (Vercel Cron, ver vercel.json): fornecedores com o mês pago vencido voltam ao plano gratuito,
@@ -22,7 +22,7 @@ export async function GET(req: Request) {
   try {
     ({ count: expired, vendors } = await expirarPlanosDeFornecedor());
   } catch (error) {
-    await recordCronRun({ job: "expirar-planos", startedAt, status: "FAILED", error: error instanceof Error ? error.message : String(error) });
+    await registrarRodadaDaTarefaAgendada({ job: "expirar-planos", startedAt, status: "FAILED", error: error instanceof Error ? error.message : String(error) });
     throw error;
   }
   if (expired > 0) {
@@ -41,7 +41,7 @@ export async function GET(req: Request) {
     return null;
   });
   // Registro para a Saúde do sistema (nunca atrapalha a rotina)
-  await recordCronRun({
+  await registrarRodadaDaTarefaAgendada({
     job: "expirar-planos",
     startedAt,
     status: reminderFailure ? "FAILED" : "OK",

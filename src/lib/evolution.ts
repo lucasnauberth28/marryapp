@@ -7,7 +7,7 @@
  */
 
 import "server-only";
-import { recordServiceEvent } from "@/lib/platform/system-records";
+import { registrarEventoDeServico } from "@/lib/platform/system-records";
 
 import { somenteDigitos } from "./formatacao/telefone.ts";
 // Sem valores padrão: URL, chave e instância precisam vir do ambiente.
@@ -363,8 +363,8 @@ async function rastreado<T extends ResultadoDoEnvio>(kind: string, run: () => Pr
   const result = await run();
   const reason = result.success ? null : motivoSeguro(result.error);
   if (reason === "") return result; // serviço não configurado: aparece como "não configurado", não como falha
-  if (reason === "Número sem WhatsApp") await recordServiceEvent({ service: "whatsapp", kind: "invalid_number", ok: true, message: reason });
-  else await recordServiceEvent({ service: "whatsapp", kind, ok: result.success, message: reason });
+  if (reason === "Número sem WhatsApp") await registrarEventoDeServico({ service: "whatsapp", kind: "invalid_number", ok: true, message: reason });
+  else await registrarEventoDeServico({ service: "whatsapp", kind, ok: result.success, message: reason });
   return result;
 }
 

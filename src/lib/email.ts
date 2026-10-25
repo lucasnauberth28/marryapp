@@ -1,7 +1,7 @@
 import "server-only";
-import { recordServiceEvent } from "@/lib/platform/system-records";
-import { getEmailSender } from "@/lib/platform/email-sender";
-import { DEFAULT_FROM } from "@/lib/platform/email-sender-core";
+import { registrarEventoDeServico } from "@/lib/platform/system-records";
+import { obterRemetenteDeEmail } from "@/lib/platform/email-sender";
+import { REMETENTE_PADRAO } from "@/lib/platform/email-sender-core";
 
 /**
  * Envio de e-mails transacionais (convite do par, redefinição de senha) pela API REST da Resend.
@@ -45,7 +45,7 @@ export async function enviarEmail({ to, subject, html, text }: EntradaDoEnvioDeE
   }
 
   try {
-    const sender = await getEmailSender();
+    const sender = await obterRemetenteDeEmail();
     const post = (from: string) =>
       fetch(ENDERECO_DO_RESEND, {
         method: "POST",
@@ -66,21 +66,21 @@ export async function enviarEmail({ to, subject, html, text }: EntradaDoEnvioDeE
     // para um endereço errado nas Configurações nunca parar todos os e-mails.
     if (!res.ok && sender.custom && (res.status === 403 || res.status === 422)) {
       console.warn(`[email] Resend recusou o remetente configurado (${res.status}); usando o remetente do ambiente.`);
-      res = await post(process.env.EMAIL_FROM?.trim() || DEFAULT_FROM);
+      res = await post(process.env.EMAIL_FROM?.trim() || REMETENTE_PADRAO);
     }
 
     if (!res.ok) {
       console.error(`[email] Resend respondeu ${res.status} ao enviar "${subject}" para ${esconderEmail(recipient)}.`);
       // Saúde do sistema: só o código HTTP, nunca destinatário nem conteúdo
-      await recordServiceEvent({ service: "email", kind: "send", ok: false, message: `Resend respondeu ${res.status}` });
+      await registrarEventoDeServico({ service: "email", kind: "send", ok: false, message: `Resend respondeu ${res.status}` });
       return { sent: false, reason: "failed" };
     }
     const body = (await res.json().catch(() => null)) as { id?: string } | null;
-    await recordServiceEvent({ service: "email", kind: "send", ok: true });
+    await registrarEventoDeServico({ service: "email", kind: "send", ok: true });
     return { sent: true, id: body?.id ?? null };
   } catch (error) {
     console.error(`[email] Falha ao enviar "${subject}" para ${esconderEmail(recipient)}:`, error instanceof Error ? error.message : error);
-    await recordServiceEvent({ service: "email", kind: "send", ok: false, message: error instanceof Error && error.name === "TimeoutError" ? "Tempo esgotado ao falar com a Resend" : "Falha de conexão com a Resend" });
+    await registrarEventoDeServico({ service: "email", kind: "send", ok: false, message: error instanceof Error && error.name === "TimeoutError" ? "Tempo esgotado ao falar com a Resend" : "Falha de conexão com a Resend" });
     return { sent: false, reason: "failed" };
   }
 }

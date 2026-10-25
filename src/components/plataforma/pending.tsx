@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useSyncExternalStore, type ComponentProps, type ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { ehCliqueSimplesComBotaoEsquerdo, destinoDaNavegacao } from "@/lib/navigation-progress";
-import { isListPending, locationKey } from "@/lib/platform/pending-nav";
+import { listaEstaPendente, chaveDaLocalizacao } from "@/lib/platform/pending-nav";
 import { cn } from "@/lib/utils";
 
 /*
@@ -27,7 +27,7 @@ function emit() {
 
 /** Marca que a URL vai mudar para `href` (mesma página). Sem efeito para endereço de outro site. */
 export function markListNavigation(href: string) {
-  const key = locationKey(href);
+  const key = chaveDaLocalizacao(href);
   if (!key) return;
   target = key;
   clearTimeout(safety);
@@ -52,7 +52,7 @@ const getServerTarget = () => null;
 /** Encerra o pedido pendente quando a URL chegou ao destino ou o usuário já está em outra página. */
 function settle(pathname: string, search: string) {
   if (target === null) return;
-  const current = locationKey(`${pathname}${search ? `?${search}` : ""}`);
+  const current = chaveDaLocalizacao(`${pathname}${search ? `?${search}` : ""}`);
   if (current === target || target.split("?")[0] !== pathname) {
     target = null;
     clearTimeout(safety);
@@ -68,7 +68,7 @@ function useListPending(): boolean {
   useEffect(() => {
     settle(pathname, search);
   }, [pathname, search]);
-  return isListPending(pendingTarget, pathname, search);
+  return listaEstaPendente(pendingTarget, pathname, search);
 }
 
 /**

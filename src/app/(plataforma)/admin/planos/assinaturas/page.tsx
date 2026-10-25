@@ -11,12 +11,12 @@ import { Pagination } from "@/components/plataforma/pagination";
 import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
 import { StatusChip } from "@/components/plataforma/status-chip";
-import { formatDayMonth, formatDateTime, formatInt, formatMonthName, timeAgo } from "@/lib/platform/format";
+import { formatarDiaEMes, formatarDataEHora, formatarInteiro, formatarNomeDoMes, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais, formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
-import { buildHref, oneOf, pageWindow, param, parsePage, type SearchParams } from "@/lib/platform/list-params";
-import { isStaticPix, paymentMethodOf, paymentStatusOf } from "@/lib/platform/payments";
-import { activePaidVendorWhere, getMonthRevenue, getPixToCheck, pixToCheckWhere } from "@/lib/platform/queries/receita";
+import { montarLink, umDosValores, janelaDaPagina, parametroDaBusca, interpretarPagina, type ParametrosDeBusca } from "@/lib/platform/list-params";
+import { ehPixEstatico, formaDoPagamentoDe, situacaoDoPagamentoDe } from "@/lib/platform/payments";
+import { filtroDeFornecedorPagoAtivo, obterReceitaDoMes, obterPixParaConferir, filtroDePixParaConferir } from "@/lib/platform/queries/receita";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { cn } from "@/lib/utils";
 import { PendingLink, PendingRegion } from "@/components/plataforma/pending";
@@ -38,11 +38,11 @@ type FilterValue = (typeof FILTERS)[number]["value"];
 const PAGE_SIZE = 25;
 const BASE = "/admin/planos/assinaturas";
 
-export default async function AssinaturasPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function AssinaturasPage({ searchParams }: { searchParams: Promise<ParametrosDeBusca> }) {
   await exigirAdminDaPlataformaNaPagina();
   const query = await searchParams;
-  const filter = oneOf(query, "status", FILTERS.map((f) => f.value)) ?? "todos";
-  const idParam = param(query, "id", 40);
+  const filter = umDosValores(query, "status", FILTERS.map((f) => f.value)) ?? "todos";
+  const idParam = parametroDaBusca(query, "id", 40);
   const selectedId = idParam && /^[0-9a-f-]{36}$/i.test(idParam) ? idParam : null;
   const now = new Date();
   const catalog = await obterCatalogo();
@@ -50,7 +50,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
 
   const listWhere: Record<FilterValue, Prisma.SubscriptionWhereInput> = {
     todos: {},
-    "a-conferir": pixToCheckWhere(now),
+    "a-conferir": filtroDePixParaConferir(now),
     pagos: { status: PaymentStatus.APPROVED },
     recusados: { status: { in: [PaymentStatus.FAILED, PaymentStatus.REJECTED] } },
     estornados: { status: PaymentStatus.REFUNDED },
@@ -71,19 +71,19 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
   } satisfies Prisma.SubscriptionSelect;
 
   const total = await prisma.subscription.count({ where: listWhere[filter] });
-  const window = pageWindow(parsePage(query), PAGE_SIZE, total);
+  const window = janelaDaPagina(interpretarPagina(query), PAGE_SIZE, total);
   const [rows, month, pix, vendorTiers, expiringSoon, selected] = await Promise.all([
     prisma.subscription.findMany({ where: listWhere[filter], orderBy: { createdAt: "desc" }, skip: window.skip, take: window.take, select }),
-    getMonthRevenue(now),
-    getPixToCheck(now),
-    prisma.partnerVendor.groupBy({ by: ["planTier"], where: activePaidVendorWhere(now), _count: { _all: true } }),
+    obterReceitaDoMes(now),
+    obterPixParaConferir(now),
+    prisma.partnerVendor.groupBy({ by: ["planTier"], where: filtroDeFornecedorPagoAtivo(now), _count: { _all: true } }),
     prisma.partnerVendor.count({ where: { planTier: { not: "FREE" }, planExpiresAt: { gt: now, lte: new Date(now.getTime() + 7 * 86_400_000) } } }),
     selectedId ? prisma.subscription.findUnique({ where: { id: selectedId }, select }) : Promise.resolve(null),
   ]);
   const pro = vendorTiers.find((t) => t.planTier === "PRO")?._count._all ?? 0;
   const master = vendorTiers.find((t) => t.planTier === "MASTER")?._count._all ?? 0;
 
-  const hrefFor = (status: FilterValue, id?: string, page?: number) => `${buildHref(BASE, { status: status === "todos" ? undefined : status, id, pagina: page && page > 1 ? page : undefined })}${id ? "#painel" : ""}`;
+  const hrefFor = (status: FilterValue, id?: string, page?: number) => `${montarLink(BASE, { status: status === "todos" ? undefined : status, id, pagina: page && page > 1 ? page : undefined })}${id ? "#painel" : ""}`;
 
   const panel: PanelSubscription | null = selected
     ? {
@@ -94,13 +94,13 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
         planName: planLabel(selected.planId, selected.planName),
         amount: formatarReais(selected.amount),
         gatewayId: selected.gatewayId,
-        createdAt: timeAgo(selected.createdAt, now),
-        paidAt: selected.paidAt ? formatDateTime(selected.paidAt) : null,
-        periodEnd: selected.periodEnd ? formatDayMonth(selected.periodEnd) : null,
+        createdAt: haQuantoTempo(selected.createdAt, now),
+        paidAt: selected.paidAt ? formatarDataEHora(selected.paidAt) : null,
+        periodEnd: selected.periodEnd ? formatarDiaEMes(selected.periodEnd) : null,
         email: selected.user?.username ?? "Sem e-mail (conta excluída)",
-        method: paymentMethodOf(selected.gatewayId),
-        status: paymentStatusOf(selected, now),
-        checkable: selected.status === PaymentStatus.PENDING && isStaticPix(selected.gatewayId),
+        method: formaDoPagamentoDe(selected.gatewayId),
+        status: situacaoDoPagamentoDe(selected, now),
+        checkable: selected.status === PaymentStatus.PENDING && ehPixEstatico(selected.gatewayId),
         receiptHref: selected.status === PaymentStatus.APPROVED ? `/recibo/${selected.id}` : null,
       }
     : null;
@@ -116,16 +116,16 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
 
       <StatGrid>
         <StatCard
-          label={`Recebido em ${formatMonthName(now)}`}
+          label={`Recebido em ${formatarNomeDoMes(now)}`}
           value={formatarReaisInteiros(month.cents)}
           hint={month.payments === 0 ? "nenhum pagamento ainda" : pluralizar(month.payments, "pagamento", "pagamentos")}
         />
-        <StatCard label="Fornecedores pagantes" value={formatInt(pro + master)} hint={`${pro} Pro e ${master} Master`} />
-        <StatCard label="Vencem em 7 dias" value={formatInt(expiringSoon)} hint="planos de fornecedor" />
+        <StatCard label="Fornecedores pagantes" value={formatarInteiro(pro + master)} hint={`${pro} Pro e ${master} Master`} />
+        <StatCard label="Vencem em 7 dias" value={formatarInteiro(expiringSoon)} hint="planos de fornecedor" />
         <StatCard
           label="Pix a conferir"
-          value={formatInt(pix.count)}
-          hint={pix.oldestAt ? `o mais antigo, ${timeAgo(pix.oldestAt, now)}` : "nada na fila"}
+          value={formatarInteiro(pix.count)}
+          hint={pix.oldestAt ? `o mais antigo, ${haQuantoTempo(pix.oldestAt, now)}` : "nada na fila"}
           highlight={pix.count > 0}
         />
       </StatGrid>
@@ -174,7 +174,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
                 key: "status",
                 header: "Status",
                 cell: (r) => {
-                  const status = paymentStatusOf(r, now);
+                  const status = situacaoDoPagamentoDe(r, now);
                   return <StatusChip tone={status.tone}>{status.label}</StatusChip>;
                 },
               },
@@ -183,7 +183,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
                 header: "Quando",
                 cell: (r) => (
                   <span className="text-sm text-tinta-suave">
-                    {timeAgo(r.paidAt ?? r.createdAt, now)} · {r.status === PaymentStatus.APPROVED && r.periodEnd ? `vale até ${formatDayMonth(r.periodEnd)}` : paymentMethodOf(r.gatewayId)}
+                    {haQuantoTempo(r.paidAt ?? r.createdAt, now)} · {r.status === PaymentStatus.APPROVED && r.periodEnd ? `vale até ${formatarDiaEMes(r.periodEnd)}` : formaDoPagamentoDe(r.gatewayId)}
                   </span>
                 ),
               },
@@ -193,7 +193,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
                 mobileLabel: false,
                 align: "right",
                 cell: (r) => {
-                  const checkable = r.status === PaymentStatus.PENDING && isStaticPix(r.gatewayId);
+                  const checkable = r.status === PaymentStatus.PENDING && ehPixEstatico(r.gatewayId);
                   const who = r.user?.name ?? "conta excluída";
                   return (
                     <span className="inline-flex flex-wrap justify-end gap-1">

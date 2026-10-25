@@ -9,7 +9,7 @@ import { aplicarPagamentoAprovado, marcarPagamentoComoFalho, reembolsarAssinatur
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import { avisarDepois } from "@/lib/notifications/service";
 import { avisarPresentePago } from "@/lib/notifications/events";
-import { recordServiceEvent } from "@/lib/platform/system-records";
+import { registrarEventoDeServico } from "@/lib/platform/system-records";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 async function handleWebhook(req: Request) {
@@ -172,7 +172,7 @@ export async function POST(req: Request) {
     else if (body?.success === false) message = "Não aplicado";
     else if (body?.ignored) message = `Ignorado: ${body.ignored}`.slice(0, 120);
     if (response.status === 401 || response.status === 400) ok = false;
-    await recordServiceEvent({ service: "mercadopago", kind: "webhook", ok, message, refId: paymentId && /^\d+$/.test(paymentId) ? paymentId : null });
+    await registrarEventoDeServico({ service: "mercadopago", kind: "webhook", ok, message, refId: paymentId && /^\d+$/.test(paymentId) ? paymentId : null });
   } catch {
     // registrar nunca atrapalha a resposta ao Mercado Pago
   }

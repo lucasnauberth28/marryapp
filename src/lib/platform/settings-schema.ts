@@ -4,23 +4,23 @@
 // formato (linha editada na mão, versão antiga) nunca quebra a tela: volta ao padrão.
 import { z } from "zod";
 
-const money = z.number().int().min(0).max(100_000_00); // centavos
-const percent = z.number().int().min(0).max(100);
-const count = z.number().int().min(0).max(1_000_000);
+const valorEmCentavos = z.number().int().min(0).max(100_000_00); // centavos
+const percentual = z.number().int().min(0).max(100);
+const quantidade = z.number().int().min(0).max(1_000_000);
 
 /** Limites de mensagens e custo por tipo de assinatura da Liz. */
-const madrinhaPlanLimits = z.object({
-  perDay: count,
-  perMonth: count,
+const limitesDePlanoDaMadrinha = z.object({
+  perDay: quantidade,
+  perMonth: quantidade,
   /** Teto de custo por casal no mês, em centavos. */
-  costCapCents: money,
+  costCapCents: valorEmCentavos,
   /** Avisa ao chegar neste % do teto. */
-  warnPercent: percent,
+  warnPercent: percentual,
   /** Bloqueia sozinha ao atingir o teto (o casal vê um aviso gentil e volta no mês seguinte). */
   autoBlock: z.boolean(),
 });
 
-export const SETTING_DEFS = {
+export const DEFINICOES_DE_CONFIGURACAO = {
   /** Modo de manutenção: casais e convidados veem um aviso e o painel fica só para leitura. */
   maintenance: {
     schema: z.object({
@@ -87,7 +87,7 @@ export const SETTING_DEFS = {
   },
   /** Limites por tipo de assinatura. */
   "madrinha.limits": {
-    schema: z.object({ subscription: madrinhaPlanLimits, trial: madrinhaPlanLimits }),
+    schema: z.object({ subscription: limitesDePlanoDaMadrinha, trial: limitesDePlanoDaMadrinha }),
     default: {
       subscription: { perDay: 25, perMonth: 300, costCapCents: 1200, warnPercent: 80, autoBlock: true },
       trial: { perDay: 10, perMonth: 50, costCapCents: 200, warnPercent: 80, autoBlock: true },
@@ -95,13 +95,13 @@ export const SETTING_DEFS = {
   },
   /** Teto mensal de custo de toda a Liz. */
   "madrinha.globalCap": {
-    schema: z.object({ monthlyCostCapCents: money, warnPercent: percent, pauseAtCap: z.boolean() }),
+    schema: z.object({ monthlyCostCapCents: valorEmCentavos, warnPercent: percentual, pauseAtCap: z.boolean() }),
     default: { monthlyCostCapCents: 30000, warnPercent: 80, pauseAtCap: true },
   },
   /** Bloqueio por abuso (uso como chat comum, fuga de tema). */
   "madrinha.abuse": {
     schema: z.object({
-      perHour: count,
+      perHour: quantidade,
       blockHours: z.number().int().min(1).max(24 * 30),
       blockOffTopic: z.boolean(),
       offTopicBeforeBlock: z.number().int().min(1).max(100),
@@ -110,19 +110,19 @@ export const SETTING_DEFS = {
   },
 } as const;
 
-export type SettingKey = keyof typeof SETTING_DEFS;
-export type SettingValue<K extends SettingKey> = z.infer<(typeof SETTING_DEFS)[K]["schema"]>;
+export type ChaveDeConfiguracao = keyof typeof DEFINICOES_DE_CONFIGURACAO;
+export type ValorDeConfiguracao<K extends ChaveDeConfiguracao> = z.infer<(typeof DEFINICOES_DE_CONFIGURACAO)[K]["schema"]>;
 
-export const SETTING_KEYS = Object.keys(SETTING_DEFS) as SettingKey[];
+export const CHAVES_DE_CONFIGURACAO = Object.keys(DEFINICOES_DE_CONFIGURACAO) as ChaveDeConfiguracao[];
 
-export function isSettingKey(key: string): key is SettingKey {
-  return Object.prototype.hasOwnProperty.call(SETTING_DEFS, key);
+export function ehChaveDeConfiguracao(key: string): key is ChaveDeConfiguracao {
+  return Object.prototype.hasOwnProperty.call(DEFINICOES_DE_CONFIGURACAO, key);
 }
 
 /** Valor salvo se estiver no formato; senão o padrão (nunca lança). */
-export function parseSetting<K extends SettingKey>(key: K, raw: unknown): SettingValue<K> {
-  const def = SETTING_DEFS[key];
-  if (raw === undefined || raw === null) return structuredClone(def.default) as SettingValue<K>;
+export function interpretarConfiguracao<K extends ChaveDeConfiguracao>(key: K, raw: unknown): ValorDeConfiguracao<K> {
+  const def = DEFINICOES_DE_CONFIGURACAO[key];
+  if (raw === undefined || raw === null) return structuredClone(def.default) as ValorDeConfiguracao<K>;
   const parsed = def.schema.safeParse(raw);
-  return (parsed.success ? parsed.data : structuredClone(def.default)) as SettingValue<K>;
+  return (parsed.success ? parsed.data : structuredClone(def.default)) as ValorDeConfiguracao<K>;
 }

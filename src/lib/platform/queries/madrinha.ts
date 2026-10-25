@@ -1,15 +1,15 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { getPlatformSetting } from "@/lib/platform/settings";
-import { MADRINHA_SETTING_KEYS, DEFAULT_MADRINHA_INSTRUCTIONS } from "@/lib/platform/madrinha";
+import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
+import { CHAVES_DE_CONFIGURACAO_DA_MADRINHA, INSTRUCOES_PADRAO_DA_MADRINHA } from "@/lib/platform/madrinha";
 
 /**
  * Consultas da Liz (configuração apenas: a IA não está conectada, então não há conversas, custos nem uso).
  * Cada função confere o acesso da administração por conta própria.
  */
 
-export interface SettingMeta {
+export interface DadosDaConfiguracao {
   /** Já foi salvo pela administração? Se não, o valor mostrado é o padrão sugerido do código. */
   saved: boolean;
   updatedAt: Date | null;
@@ -17,14 +17,14 @@ export interface SettingMeta {
 }
 
 /** Quais configurações da Liz já foram salvas de verdade (e por quem). */
-export async function getMadrinhaSettingsMeta(): Promise<Record<(typeof MADRINHA_SETTING_KEYS)[number], SettingMeta>> {
+export async function obterDadosDasConfiguracoesDaMadrinha(): Promise<Record<(typeof CHAVES_DE_CONFIGURACAO_DA_MADRINHA)[number], DadosDaConfiguracao>> {
   await exigirAdminDaPlataforma();
   const rows = await prisma.platformSetting.findMany({
-    where: { key: { in: [...MADRINHA_SETTING_KEYS] } },
+    where: { key: { in: [...CHAVES_DE_CONFIGURACAO_DA_MADRINHA] } },
     select: { key: true, updatedAt: true, updatedByName: true },
   });
   const byKey = new Map(rows.map((r) => [r.key, r]));
-  const meta = (key: string): SettingMeta => {
+  const meta = (key: string): DadosDaConfiguracao => {
     const row = byKey.get(key);
     return { saved: Boolean(row), updatedAt: row?.updatedAt ?? null, updatedByName: row?.updatedByName ?? null };
   };
@@ -36,11 +36,11 @@ export async function getMadrinhaSettingsMeta(): Promise<Record<(typeof MADRINHA
   };
 }
 
-export interface MadrinhaOverview {
-  limits: Awaited<ReturnType<typeof getPlatformSetting<"madrinha.limits">>>;
-  globalCap: Awaited<ReturnType<typeof getPlatformSetting<"madrinha.globalCap">>>;
-  abuse: Awaited<ReturnType<typeof getPlatformSetting<"madrinha.abuse">>>;
-  meta: Awaited<ReturnType<typeof getMadrinhaSettingsMeta>>;
+export interface VisaoGeralDaMadrinha {
+  limits: Awaited<ReturnType<typeof obterConfiguracaoDaPlataforma<"madrinha.limits">>>;
+  globalCap: Awaited<ReturnType<typeof obterConfiguracaoDaPlataforma<"madrinha.globalCap">>>;
+  abuse: Awaited<ReturnType<typeof obterConfiguracaoDaPlataforma<"madrinha.abuse">>>;
+  meta: Awaited<ReturnType<typeof obterDadosDasConfiguracoesDaMadrinha>>;
   /** Última versão das instruções (ou null se ainda não existe nenhuma). */
   latestInstruction: { version: number; status: "DRAFT" | "PUBLISHED" | "ARCHIVED" } | null;
   /** Só existe o texto inicial sugerido pelo Aceito (ninguém revisou ainda). */
@@ -49,27 +49,27 @@ export interface MadrinhaOverview {
   articleCount: number;
 }
 
-export async function getMadrinhaOverview(): Promise<MadrinhaOverview> {
+export async function obterVisaoGeralDaMadrinha(): Promise<VisaoGeralDaMadrinha> {
   await exigirAdminDaPlataforma();
   const [limits, globalCap, abuse, meta, latest, articleCount, versionCount] = await Promise.all([
-    getPlatformSetting("madrinha.limits"),
-    getPlatformSetting("madrinha.globalCap"),
-    getPlatformSetting("madrinha.abuse"),
-    getMadrinhaSettingsMeta(),
+    obterConfiguracaoDaPlataforma("madrinha.limits"),
+    obterConfiguracaoDaPlataforma("madrinha.globalCap"),
+    obterConfiguracaoDaPlataforma("madrinha.abuse"),
+    obterDadosDasConfiguracoesDaMadrinha(),
     prisma.madrinhaInstructionVersion.findFirst({ orderBy: { version: "desc" }, select: { version: true, status: true } }),
     prisma.madrinhaKnowledgeArticle.count(),
     prisma.madrinhaInstructionVersion.count(),
   ]);
-  const suggestedOnly = versionCount === 1 && latest?.version === 1 && latest.status === "DRAFT" && (await isSuggestedSeed());
+  const suggestedOnly = versionCount === 1 && latest?.version === 1 && latest.status === "DRAFT" && (await ehSementeSugerida());
   return { limits, globalCap, abuse, meta, latestInstruction: latest, suggestedOnly, articleCount };
 }
 
-async function isSuggestedSeed(): Promise<boolean> {
+async function ehSementeSugerida(): Promise<boolean> {
   const first = await prisma.madrinhaInstructionVersion.findUnique({ where: { version: 1 }, select: { createdById: true } });
   return first !== null && first.createdById === null; // a semente não tem autor; versão salva por uma pessoa tem
 }
 
-export interface OverrideRow {
+export interface LinhaDeExcecao {
   weddingId: string;
   coupleNames: string;
   slug: string;
@@ -82,7 +82,7 @@ export interface OverrideRow {
 }
 
 /** Casais que têm algum ajuste (ligado/desligado à mão, mensagens a mais ou bloqueio). */
-export async function listMadrinhaOverrides(limit = 50): Promise<OverrideRow[]> {
+export async function listarExcecoesDaMadrinha(limit = 50): Promise<LinhaDeExcecao[]> {
   await exigirAdminDaPlataforma();
   const rows = await prisma.madrinhaWeddingOverride.findMany({
     where: { OR: [{ enabled: { not: null } }, { extraMessages: { gt: 0 } }, { blockedAt: { not: null } }] },
@@ -112,7 +112,7 @@ export async function listMadrinhaOverrides(limit = 50): Promise<OverrideRow[]> 
   }));
 }
 
-export interface WeddingHit {
+export interface ResultadoDeCasamento {
   id: string;
   coupleNames: string;
   slug: string;
@@ -121,7 +121,7 @@ export interface WeddingHit {
 }
 
 /** Busca de casais por nome ou endereço do site: consulta curta (até 8), nunca carrega todos. */
-export async function searchWeddingsForMadrinha(query: string): Promise<WeddingHit[]> {
+export async function buscarCasamentosParaAMadrinha(query: string): Promise<ResultadoDeCasamento[]> {
   await exigirAdminDaPlataforma();
   const q = query.trim().slice(0, 100);
   if (q.length < 2) return [];
@@ -141,7 +141,7 @@ export async function searchWeddingsForMadrinha(query: string): Promise<WeddingH
   }));
 }
 
-export interface InstructionVersionRow {
+export interface LinhaDeVersaoDasInstrucoes {
   id: string;
   version: number;
   content: string;
@@ -156,14 +156,14 @@ export interface InstructionVersionRow {
  * Histórico de versões das instruções (da mais nova para a mais antiga). Se a tabela está vazia, grava a
  * primeira versão como rascunho com o texto inicial sugerido (idempotente: a versão 1 é única no banco).
  */
-export async function listInstructionVersions(): Promise<InstructionVersionRow[]> {
+export async function listarVersoesDasInstrucoes(): Promise<LinhaDeVersaoDasInstrucoes[]> {
   await exigirAdminDaPlataforma();
   const select = { id: true, version: true, content: true, changeNote: true, status: true, createdByName: true, createdAt: true, publishedAt: true } as const;
   let rows = await prisma.madrinhaInstructionVersion.findMany({ orderBy: { version: "desc" }, take: 50, select });
   if (rows.length === 0) {
     await prisma.madrinhaInstructionVersion
       .createMany({
-        data: [{ version: 1, content: DEFAULT_MADRINHA_INSTRUCTIONS, changeNote: "Texto inicial sugerido", status: "DRAFT", createdByName: "Sugestão do Aceito" }],
+        data: [{ version: 1, content: INSTRUCOES_PADRAO_DA_MADRINHA, changeNote: "Texto inicial sugerido", status: "DRAFT", createdByName: "Sugestão do Aceito" }],
         skipDuplicates: true,
       })
       .catch((error) => console.error("[madrinha] semente das instruções:", error instanceof Error ? error.message : error));
@@ -172,7 +172,7 @@ export async function listInstructionVersions(): Promise<InstructionVersionRow[]
   return rows;
 }
 
-export interface ArticleRow {
+export interface LinhaDeArtigo {
   id: string;
   title: string;
   content: string;
@@ -181,7 +181,7 @@ export interface ArticleRow {
   publishedAt: Date | null;
 }
 
-export async function listKnowledgeArticles(): Promise<ArticleRow[]> {
+export async function listarArtigosDeConhecimento(): Promise<LinhaDeArtigo[]> {
   await exigirAdminDaPlataforma();
   return prisma.madrinhaKnowledgeArticle.findMany({
     where: { status: { not: "ARCHIVED" } },

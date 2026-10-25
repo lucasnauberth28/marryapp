@@ -1,8 +1,8 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
 import prisma from "@/lib/prisma";
-import { parseSetting } from "@/lib/platform/settings-schema";
-import { maintenanceRefusal, type MaintenanceState } from "@/lib/platform/maintenance-core";
+import { interpretarConfiguracao } from "@/lib/platform/settings-schema";
+import { recusaPorManutencao, type SituacaoDaManutencao } from "@/lib/platform/maintenance-core";
 
 /**
  * Modo de manutenção, aplicado de verdade:
@@ -13,23 +13,23 @@ import { maintenanceRefusal, type MaintenanceState } from "@/lib/platform/mainte
  * A leitura tem cache curto de 30 s (tag "maintenance", limpa na hora quando a administração salva) e, se o banco
  * falhar, o modo fica desligado: uma falha de leitura nunca derruba o painel.
  */
-export const MAINTENANCE_TAG = "maintenance";
+export const ETIQUETA_DA_MANUTENCAO = "maintenance";
 
-export const getMaintenance = unstable_cache(
-  async (): Promise<MaintenanceState> => {
+export const obterManutencao = unstable_cache(
+  async (): Promise<SituacaoDaManutencao> => {
     try {
       const row = await prisma.platformSetting.findUnique({ where: { key: "maintenance" }, select: { value: true } });
-      return parseSetting("maintenance", row?.value);
+      return interpretarConfiguracao("maintenance", row?.value);
     } catch (error) {
       console.error("[manutencao] leitura:", error instanceof Error ? error.message : error);
-      return parseSetting("maintenance", null);
+      return interpretarConfiguracao("maintenance", null);
     }
   },
   ["platform-maintenance-v1"],
-  { revalidate: 30, tags: [MAINTENANCE_TAG] },
+  { revalidate: 30, tags: [ETIQUETA_DA_MANUTENCAO] },
 );
 
 /** Recusa de escrita do painel do casal durante a manutenção (null = liberado ou conta da administração). */
-export async function maintenanceWriteRefusal(allowedPaths: readonly string[]): Promise<string | null> {
-  return maintenanceRefusal(await getMaintenance(), allowedPaths);
+export async function recusaDeEscritaPorManutencao(allowedPaths: readonly string[]): Promise<string | null> {
+  return recusaPorManutencao(await obterManutencao(), allowedPaths);
 }

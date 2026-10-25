@@ -2,9 +2,9 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { esconderDocumento } from "@/lib/document-br";
-import { pageWindow } from "@/lib/platform/list-params";
-import { parseRegions, VENDOR_SORTS, VENDOR_TABS, type VendorSort, type VendorTab } from "@/lib/platform/vendor-admin";
-import { activePaidVendorWhere } from "@/lib/platform/queries/receita";
+import { janelaDaPagina } from "@/lib/platform/list-params";
+import { interpretarRegioes, ORDENACOES_DE_FORNECEDORES, ABAS_DE_FORNECEDORES, type OrdenacaoDeFornecedores, type AbaDeFornecedores } from "@/lib/platform/vendor-admin";
+import { filtroDeFornecedorPagoAtivo } from "@/lib/platform/queries/receita";
 
 /**
  * Consultas de fornecedores da administração. Dono: tela Fornecedores. Compartilhadas com a Visão geral:
@@ -12,10 +12,10 @@ import { activePaidVendorWhere } from "@/lib/platform/queries/receita";
  * Nunca devolve CPF/CNPJ inteiro, senha nem token: o documento sai sempre mascarado.
  */
 
-const DAY_MS = 86_400_000;
+const UM_DIA_EM_MS = 86_400_000;
 
 /** Fornecedores esperando a curadoria: quantos e há quanto tempo o mais antigo espera. */
-export async function getVendorCurationQueue(): Promise<{ count: number; oldestAt: Date | null }> {
+export async function obterFilaDeCuradoria(): Promise<{ count: number; oldestAt: Date | null }> {
   const where = { curationStatus: "PENDING_APPROVAL" } as const;
   const [count, oldest] = await Promise.all([
     prisma.partnerVendor.count({ where }),
@@ -24,7 +24,7 @@ export async function getVendorCurationQueue(): Promise<{ count: number; oldestA
   return { count, oldestAt: oldest?.createdAt ?? null };
 }
 
-export interface ExpiringVendorPlan {
+export interface PlanoDeFornecedorPrestesAVencer {
   id: string;
   companyName: string;
   planTier: "PRO" | "MASTER";
@@ -34,9 +34,9 @@ export interface ExpiringVendorPlan {
 }
 
 /** Planos pagos de fornecedor que vencem nos próximos `days` dias (mais próximos primeiro). */
-export async function getVendorPlansExpiring(now: Date = new Date(), days = 7, take = 5): Promise<ExpiringVendorPlan[]> {
+export async function obterPlanosDeFornecedorPrestesAVencer(now: Date = new Date(), days = 7, take = 5): Promise<PlanoDeFornecedorPrestesAVencer[]> {
   const rows = await prisma.partnerVendor.findMany({
-    where: { planTier: { not: "FREE" }, planExpiresAt: { gt: now, lte: new Date(now.getTime() + days * DAY_MS) } },
+    where: { planTier: { not: "FREE" }, planExpiresAt: { gt: now, lte: new Date(now.getTime() + days * UM_DIA_EM_MS) } },
     orderBy: { planExpiresAt: "asc" },
     take,
     select: { id: true, companyName: true, planTier: true, planExpiresAt: true, planReminderDays: true },
@@ -48,41 +48,41 @@ export async function getVendorPlansExpiring(now: Date = new Date(), days = 7, t
   );
 }
 
-export const CURATION_FILTERS = ["aprovado", "analise", "ajustes", "suspenso"] as const;
-type CurationFilter = (typeof CURATION_FILTERS)[number];
-export const PLAN_FILTERS = ["FREE", "PRO", "MASTER"] as const;
-type PlanFilter = (typeof PLAN_FILTERS)[number];
+export const FILTROS_DE_CURADORIA = ["aprovado", "analise", "ajustes", "suspenso"] as const;
+type FiltroDeCuradoria = (typeof FILTROS_DE_CURADORIA)[number];
+export const FILTROS_DE_PLANO = ["FREE", "PRO", "MASTER"] as const;
+type FiltroDePlanoDoFornecedor = (typeof FILTROS_DE_PLANO)[number];
 
-export interface VendorListParams {
-  tab: VendorTab;
+export interface ParametrosDaListaDeFornecedores {
+  tab: AbaDeFornecedores;
   q?: string;
   categoria?: string;
-  plano?: PlanFilter;
-  curadoria?: CurationFilter;
+  plano?: FiltroDePlanoDoFornecedor;
+  curadoria?: FiltroDeCuradoria;
   regiao?: string;
-  ordem: VendorSort;
+  ordem: OrdenacaoDeFornecedores;
   page: number;
 }
 
-const reportedWhere: Prisma.VendorReviewWhereInput = { reportedAt: { not: null }, moderatedAt: null, hiddenAt: null };
+const filtroDeDenunciados: Prisma.VendorReviewWhereInput = { reportedAt: { not: null }, moderatedAt: null, hiddenAt: null };
 
 /** Condição do Prisma de cada aba (a contagem e a lista usam a mesma). */
-function tabWhere(tab: VendorTab, now: Date): Prisma.PartnerVendorWhereInput {
+function filtroDaAba(tab: AbaDeFornecedores, now: Date): Prisma.PartnerVendorWhereInput {
   switch (tab) {
     case "curadoria":
       return { curationStatus: "PENDING_APPROVAL" };
     case "pro-master":
-      return activePaidVendorWhere(now);
+      return filtroDeFornecedorPagoAtivo(now);
     case "vencendo":
-      return { planTier: { not: "FREE" }, planExpiresAt: { gt: now, lte: new Date(now.getTime() + 7 * DAY_MS) } };
+      return { planTier: { not: "FREE" }, planExpiresAt: { gt: now, lte: new Date(now.getTime() + 7 * UM_DIA_EM_MS) } };
     case "denuncias":
-      return { reviews: { some: reportedWhere } };
+      return { reviews: { some: filtroDeDenunciados } };
     default:
       return {};
   }
 }
 
-function filtersWhere(p: VendorListParams): Prisma.PartnerVendorWhereInput {
+function filtroDosFiltros(p: ParametrosDaListaDeFornecedores): Prisma.PartnerVendorWhereInput {
   const and: Prisma.PartnerVendorWhereInput[] = [];
   const q = p.q?.trim();
   if (q) {
@@ -114,7 +114,7 @@ function filtersWhere(p: VendorListParams): Prisma.PartnerVendorWhereInput {
   return and.length ? { AND: and } : {};
 }
 
-export interface AdminVendorRow {
+export interface LinhaDeFornecedorDoAdmin {
   id: string;
   companyName: string;
   category: string;
@@ -133,7 +133,7 @@ export interface AdminVendorRow {
   leads: number;
 }
 
-export interface VendorTabCounts {
+export interface ContagensDasAbasDeFornecedores {
   todos: number;
   curadoria: number;
   "pro-master": number;
@@ -141,17 +141,17 @@ export interface VendorTabCounts {
   denuncias: number;
 }
 
-export async function getVendorTabCounts(now: Date = new Date()): Promise<VendorTabCounts> {
-  const [todos, curadoria, proMaster, vencendo, denuncias] = await Promise.all(VENDOR_TABS.map((tab) => prisma.partnerVendor.count({ where: tabWhere(tab, now) })));
+export async function obterContagensDasAbasDeFornecedores(now: Date = new Date()): Promise<ContagensDasAbasDeFornecedores> {
+  const [todos, curadoria, proMaster, vencendo, denuncias] = await Promise.all(ABAS_DE_FORNECEDORES.map((tab) => prisma.partnerVendor.count({ where: filtroDaAba(tab, now) })));
   return { todos, curadoria, "pro-master": proMaster, vencendo, denuncias };
 }
 
-export const VENDOR_PAGE_SIZE = 12;
+export const TAMANHO_DA_PAGINA_DE_FORNECEDORES = 12;
 
-export async function listAdminVendors(params: VendorListParams, now: Date = new Date()): Promise<{ rows: AdminVendorRow[]; total: number; page: number }> {
-  const where: Prisma.PartnerVendorWhereInput = { AND: [tabWhere(params.tab, now), filtersWhere(params)] };
+export async function listarFornecedoresDoAdmin(params: ParametrosDaListaDeFornecedores, now: Date = new Date()): Promise<{ rows: LinhaDeFornecedorDoAdmin[]; total: number; page: number }> {
+  const where: Prisma.PartnerVendorWhereInput = { AND: [filtroDaAba(params.tab, now), filtroDosFiltros(params)] };
   const total = await prisma.partnerVendor.count({ where });
-  const window = pageWindow(params.page, VENDOR_PAGE_SIZE, total);
+  const window = janelaDaPagina(params.page, TAMANHO_DA_PAGINA_DE_FORNECEDORES, total);
   const orderBy: Prisma.PartnerVendorOrderByWithRelationInput[] =
     params.ordem === "nota" ? [{ rating: "desc" }, { reviewCount: "desc" }, { createdAt: "asc" }] : params.ordem === "recentes" ? [{ createdAt: "desc" }] : [{ curationStatus: "asc" }, { createdAt: "asc" }];
   const vendors = await prisma.partnerVendor.findMany({
@@ -175,7 +175,7 @@ export async function listAdminVendors(params: VendorListParams, now: Date = new
     },
   });
   const ids = vendors.map((v) => v.id);
-  const since = new Date(now.getTime() - 30 * DAY_MS);
+  const since = new Date(now.getTime() - 30 * UM_DIA_EM_MS);
   // Agregados por página (nunca uma consulta por linha)
   const [views, leads] = ids.length
     ? await Promise.all([
@@ -192,7 +192,7 @@ export async function listAdminVendors(params: VendorListParams, now: Date = new
       id: v.id,
       companyName: v.companyName,
       category: v.category,
-      city: parseRegions(v.serviceRegions)[0] ?? null,
+      city: interpretarRegioes(v.serviceRegions)[0] ?? null,
       planTier: v.planTier,
       planExpiresAt: v.planExpiresAt,
       curationStatus: v.curationStatus,
@@ -207,7 +207,7 @@ export async function listAdminVendors(params: VendorListParams, now: Date = new
   };
 }
 
-export interface VendorExportRow {
+export interface LinhaDeExportacaoDeFornecedor {
   companyName: string;
   category: string;
   city: string | null;
@@ -221,25 +221,25 @@ export interface VendorExportRow {
 }
 
 /** Linhas para o CSV (sem documento, telefone nem e-mail): o mesmo filtro da lista, sem paginação. */
-export async function listAdminVendorsForExport(params: Omit<VendorListParams, "page">, limit: number, now: Date = new Date()): Promise<VendorExportRow[]> {
+export async function listarFornecedoresDoAdminParaExportar(params: Omit<ParametrosDaListaDeFornecedores, "page">, limit: number, now: Date = new Date()): Promise<LinhaDeExportacaoDeFornecedor[]> {
   const rows = await prisma.partnerVendor.findMany({
-    where: { AND: [tabWhere(params.tab, now), filtersWhere({ ...params, page: 1 })] },
+    where: { AND: [filtroDaAba(params.tab, now), filtroDosFiltros({ ...params, page: 1 })] },
     orderBy: [{ createdAt: "desc" }],
     take: limit,
     select: { companyName: true, category: true, serviceRegions: true, planTier: true, planExpiresAt: true, curationStatus: true, suspendedAt: true, rating: true, reviewCount: true, createdAt: true },
   });
-  return rows.map(({ serviceRegions, ...r }) => ({ ...r, city: parseRegions(serviceRegions)[0] ?? null }));
+  return rows.map(({ serviceRegions, ...r }) => ({ ...r, city: interpretarRegioes(serviceRegions)[0] ?? null }));
 }
 
 /** Categorias e regiões existentes, para os filtros. */
-export async function getVendorFilterOptions(): Promise<{ categories: string[]; regions: string[] }> {
+export async function obterOpcoesDeFiltroDeFornecedores(): Promise<{ categories: string[]; regions: string[] }> {
   const rows = await prisma.partnerVendor.findMany({ select: { category: true, serviceRegions: true }, take: 2000 });
   const categories = [...new Set(rows.map((r) => r.category))].sort((a, b) => a.localeCompare(b, "pt-BR"));
-  const regions = [...new Set(rows.flatMap((r) => parseRegions(r.serviceRegions)))].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  const regions = [...new Set(rows.flatMap((r) => interpretarRegioes(r.serviceRegions)))].sort((a, b) => a.localeCompare(b, "pt-BR"));
   return { categories, regions };
 }
 
-export interface AdminVendorDetail {
+export interface DetalheDoFornecedorDoAdmin {
   id: string;
   companyName: string;
   category: string;
@@ -260,7 +260,7 @@ export interface AdminVendorDetail {
 }
 
 /** O id da URL só BUSCA o fornecedor: a permissão vem do guard da página. */
-export async function getAdminVendorDetail(id: string): Promise<AdminVendorDetail | null> {
+export async function obterDetalheDoFornecedorDoAdmin(id: string): Promise<DetalheDoFornecedorDoAdmin | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const v = await prisma.partnerVendor.findUnique({
     where: { id },
@@ -290,7 +290,7 @@ export async function getAdminVendorDetail(id: string): Promise<AdminVendorDetai
     category: v.category,
     document: v.documentNumber ? esconderDocumento(v.documentNumber) : null,
     documentType: v.documentType,
-    regions: parseRegions(v.serviceRegions),
+    regions: interpretarRegioes(v.serviceRegions),
     galleryImages: v.galleryImages,
     coverUrl: v.coverUrl,
     curationStatus: v.curationStatus,
@@ -304,7 +304,7 @@ export async function getAdminVendorDetail(id: string): Promise<AdminVendorDetai
   };
 }
 
-export interface ReportedReview {
+export interface AvaliacaoDenunciada {
   id: string;
   vendorId: string;
   vendorName: string;
@@ -316,7 +316,7 @@ export interface ReportedReview {
   hiddenAt: Date | null;
 }
 
-const reviewSelect = {
+const selecaoDaAvaliacao = {
   id: true,
   vendorId: true,
   rating: true,
@@ -328,7 +328,7 @@ const reviewSelect = {
   vendor: { select: { companyName: true } },
 } satisfies Prisma.VendorReviewSelect;
 
-function toReported(r: Prisma.VendorReviewGetPayload<{ select: typeof reviewSelect }>): ReportedReview {
+function paraAvaliacaoDenunciada(r: Prisma.VendorReviewGetPayload<{ select: typeof selecaoDaAvaliacao }>): AvaliacaoDenunciada {
   return {
     id: r.id,
     vendorId: r.vendorId,
@@ -343,12 +343,12 @@ function toReported(r: Prisma.VendorReviewGetPayload<{ select: typeof reviewSele
 }
 
 /** Avaliações denunciadas esperando decisão (mais antigas primeiro) e as últimas ocultadas (para reexibir). */
-export async function getReviewsToModerate(): Promise<{ reported: ReportedReview[]; hidden: ReportedReview[] }> {
+export async function obterAvaliacoesParaModerar(): Promise<{ reported: AvaliacaoDenunciada[]; hidden: AvaliacaoDenunciada[] }> {
   const [reported, hidden] = await Promise.all([
-    prisma.vendorReview.findMany({ where: reportedWhere, orderBy: { reportedAt: "asc" }, take: 20, select: reviewSelect }),
-    prisma.vendorReview.findMany({ where: { hiddenAt: { not: null } }, orderBy: { hiddenAt: "desc" }, take: 10, select: reviewSelect }),
+    prisma.vendorReview.findMany({ where: filtroDeDenunciados, orderBy: { reportedAt: "asc" }, take: 20, select: selecaoDaAvaliacao }),
+    prisma.vendorReview.findMany({ where: { hiddenAt: { not: null } }, orderBy: { hiddenAt: "desc" }, take: 10, select: selecaoDaAvaliacao }),
   ]);
-  return { reported: reported.map(toReported), hidden: hidden.map(toReported) };
+  return { reported: reported.map(paraAvaliacaoDenunciada), hidden: hidden.map(paraAvaliacaoDenunciada) };
 }
 
-export { VENDOR_SORTS };
+export { ORDENACOES_DE_FORNECEDORES as VENDOR_SORTS };

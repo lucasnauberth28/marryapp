@@ -15,13 +15,13 @@ import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { ExportButton } from "@/components/plataforma/export-button";
-import { DATA_REQUEST_TYPES, DATA_REQUEST_TYPE_LABEL } from "@/lib/platform/support";
+import { TIPOS_DE_SOLICITACAO_DE_DADOS, ROTULO_DO_TIPO_DE_SOLICITACAO_DE_DADOS } from "@/lib/platform/support";
 import { createDataRequest, fulfillDeletionRequest, updateDataRequest } from "@/actions/admin-suporte-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
 export interface DataRequestItem {
   id: string;
-  type: (typeof DATA_REQUEST_TYPES)[number];
+  type: (typeof TIPOS_DE_SOLICITACAO_DE_DADOS)[number];
   requesterName: string;
   requesterEmail: string;
   linked: boolean;
@@ -76,7 +76,7 @@ export function DataRequests({ rows, urgent }: { rows: DataRequestItem[]; urgent
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
                   <div className="min-w-0">
                     <p className="text-[15px] font-semibold leading-5 text-tinta">
-                      {DATA_REQUEST_TYPE_LABEL[r.type]} · {r.requesterName}
+                      {ROTULO_DO_TIPO_DE_SOLICITACAO_DE_DADOS[r.type]} · {r.requesterName}
                     </p>
                     <p className="text-sm leading-5 text-tinta-suave">
                       Pedido em {r.receivedLabel} · prazo {r.dueLabel}
@@ -126,9 +126,9 @@ function NewRequest({ onDone }: { onDone: () => void }) {
       <h3 className="text-lg font-semibold text-tinta">Registrar um pedido de titular</h3>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <NativeSelect label="Tipo de pedido" alwaysFloat value={type} onChange={(e) => setType(e.target.value as typeof type)}>
-          {DATA_REQUEST_TYPES.map((t) => (
+          {TIPOS_DE_SOLICITACAO_DE_DADOS.map((t) => (
             <option key={t} value={t}>
-              {DATA_REQUEST_TYPE_LABEL[t]}
+              {ROTULO_DO_TIPO_DE_SOLICITACAO_DE_DADOS[t]}
             </option>
           ))}
         </NativeSelect>

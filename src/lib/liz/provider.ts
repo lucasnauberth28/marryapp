@@ -1,5 +1,5 @@
 import "server-only";
-import { getPlatformSetting } from "@/lib/platform/settings";
+import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { chatDaLizEstaAtivo, type RespondedoraDaLiz } from "./answerer";
 
 /**
@@ -17,6 +17,6 @@ export function obterProvedorDaLiz(): RespondedoraDaLiz | null {
 
 /** Lê o interruptor geral e confere se há provedor. Fica falso enquanto a IA não estiver conectada. */
 export async function lerSeOChatDaLizEstaAtivo(): Promise<boolean> {
-  const master = await getPlatformSetting("madrinha.master");
+  const master = await obterConfiguracaoDaPlataforma("madrinha.master");
   return chatDaLizEstaAtivo(master, obterProvedorDaLiz());
 }

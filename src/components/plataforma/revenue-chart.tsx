@@ -1,4 +1,4 @@
-import { chartScale, type MonthBucket } from "@/lib/platform/revenue";
+import { escalaDoGrafico, type BalaioDoMes } from "@/lib/platform/revenue";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { cn } from "@/lib/utils";
 
@@ -16,8 +16,8 @@ function compactBRL(cents: number): string {
   return `R$ ${Math.round(cents / 100)}`;
 }
 
-export function RevenueChart({ months, className }: { months: MonthBucket[]; className?: string }) {
-  const { max, ticks } = chartScale(months);
+export function RevenueChart({ months, className }: { months: BalaioDoMes[]; className?: string }) {
+  const { max, ticks } = escalaDoGrafico(months);
   const summary = months.map((m) => `${m.label}: ${formatarReais(m.total)} (casais ${formatarReais(m.couple)}, fornecedores ${formatarReais(m.vendor)})${m.inProgress ? ", em andamento" : ""}`).join("; ");
   const HEIGHT = 190;
 

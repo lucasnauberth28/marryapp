@@ -3,8 +3,8 @@ import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
 import { protecaoDaApiDeAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { csvLine } from "@/lib/platform/csv";
-import { accountantMonth, monthRange, paymentMethodOf } from "@/lib/platform/payments";
+import { linhaCsv } from "@/lib/platform/csv";
+import { mesDoContador, intervaloDoMes, formaDoPagamentoDe } from "@/lib/platform/payments";
 
 const MAX_ROWS = 10_000;
 
@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
   const { ctx, response } = await protecaoDaApiDeAdminDaPlataforma();
   if (response) return response;
 
-  const month = accountantMonth(request.nextUrl.searchParams.get("mes") ?? undefined, new Date());
-  const { start, end } = monthRange(month);
+  const month = mesDoContador(request.nextUrl.searchParams.get("mes") ?? undefined, new Date());
+  const { start, end } = intervaloDoMes(month);
   const rows = await prisma.subscription.findMany({
     where: { status: { in: [PaymentStatus.APPROVED, PaymentStatus.REFUNDED] }, amount: { gt: 0 }, paidAt: { gte: start, lt: end } },
     orderBy: { paidAt: "asc" },
@@ -40,16 +40,16 @@ export async function GET(request: NextRequest) {
   const reais = (cents: number) => (cents / 100).toFixed(2).replace(".", ",");
   const day = (d: Date | null) => (d ? new Date(d.getTime() - 3 * 3_600_000).toISOString().slice(0, 10) : "");
   const lines = [
-    csvLine(["Data do pagamento", "Quem pagou", "Tipo de conta", "Plano", "Valor (R$)", "Cupom", "Forma de pagamento", "Situação", "Nota emitida em", "Número da nota"]),
+    linhaCsv(["Data do pagamento", "Quem pagou", "Tipo de conta", "Plano", "Valor (R$)", "Cupom", "Forma de pagamento", "Situação", "Nota emitida em", "Número da nota"]),
     ...rows.map((r) =>
-      csvLine([
+      linhaCsv([
         day(r.paidAt),
         r.user?.partnerVendor?.companyName ?? r.user?.name ?? "Conta excluída",
         r.planType === "VENDOR" ? "Fornecedor" : "Casal",
         r.planName,
         reais(r.amount),
         r.couponCode ?? "",
-        paymentMethodOf(r.gatewayId),
+        formaDoPagamentoDe(r.gatewayId),
         r.status === PaymentStatus.REFUNDED ? "Estornado" : "Pago",
         day(r.invoiceIssuedAt),
         r.invoiceNumber ?? "",

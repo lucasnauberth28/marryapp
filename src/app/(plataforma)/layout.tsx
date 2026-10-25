@@ -4,7 +4,7 @@ import { PlatformSidebar } from "@/components/plataforma/sidebar";
 import { PlatformMobileNav } from "@/components/plataforma/mobile-nav";
 import { PlatformMobileTopBar } from "@/components/plataforma/mobile-top-bar";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
-import { getPlatformNavCounts } from "@/lib/platform/nav-counts";
+import { obterContagensDoMenuDaPlataforma } from "@/lib/platform/nav-counts";
 
 // A administração nunca aparece em buscadores
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -18,10 +18,10 @@ type Who = { name: string; initials: string; roleLabel: string };
 
 /** Os números do menu vêm de 8 consultas: o menu já aparece sem eles e os números entram quando chegam. */
 async function SidebarWithCounts(who: Who) {
-  return <PlatformSidebar counts={await getPlatformNavCounts()} {...who} />;
+  return <PlatformSidebar counts={await obterContagensDoMenuDaPlataforma()} {...who} />;
 }
 async function MobileNavWithCounts(who: Who) {
-  return <PlatformMobileNav counts={await getPlatformNavCounts()} {...who} />;
+  return <PlatformMobileNav counts={await obterContagensDoMenuDaPlataforma()} {...who} />;
 }
 
 export default async function PlataformaLayout({ children }: { children: React.ReactNode }) {

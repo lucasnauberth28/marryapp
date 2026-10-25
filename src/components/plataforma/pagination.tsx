@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { PendingLink } from "@/components/plataforma/pending";
-import { buildHref, pageNumbers } from "@/lib/platform/list-params";
-import { formatInt } from "@/lib/platform/format";
+import { montarLink, numerosDePagina } from "@/lib/platform/list-params";
+import { formatarInteiro } from "@/lib/platform/format";
 import { cn } from "@/lib/utils";
 
 /**
@@ -28,13 +28,13 @@ export function Pagination({
   const pages = Math.max(1, Math.ceil(total / pageSize));
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const to = Math.min(total, page * pageSize);
-  const href = (n: number) => buildHref(basePath, { ...params, pagina: n === 1 ? undefined : n });
+  const href = (n: number) => montarLink(basePath, { ...params, pagina: n === 1 ? undefined : n });
   const edge = "inline-flex min-h-11 items-center gap-1 rounded-xl border px-4 text-sm font-semibold sm:min-h-10";
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-sm leading-5 text-tinta-suave" aria-live="polite">
-        {total === 0 ? `Nenhum ${noun[0]}` : pages === 1 ? `${formatInt(total)} ${total === 1 ? noun[0] : noun[1]}` : `${formatInt(from)} a ${formatInt(to)} de ${formatInt(total)} ${noun[1]}`}
+        {total === 0 ? `Nenhum ${noun[0]}` : pages === 1 ? `${formatarInteiro(total)} ${total === 1 ? noun[0] : noun[1]}` : `${formatarInteiro(from)} a ${formatarInteiro(to)} de ${formatarInteiro(total)} ${noun[1]}`}
       </p>
       {pages > 1 && (
         <nav aria-label="Páginas" className="flex flex-wrap items-center gap-1.5">
@@ -47,7 +47,7 @@ export function Pagination({
               <ChevronLeft className="size-4" aria-hidden="true" /> Anterior
             </span>
           )}
-          {pageNumbers(page, pages).map((n, i) =>
+          {numerosDePagina(page, pages).map((n, i) =>
             n === "..." ? (
               <span key={`gap-${i}`} className="px-1 text-tinta-suave" aria-hidden="true">
                 …

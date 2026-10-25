@@ -1,7 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { MAX_RECIPIENTS, couplePlanKeys, parseAudience, vendorTierKeys, weddingWindowRange, type Audience } from "@/lib/platform/announcement";
+import { MAXIMO_DE_DESTINATARIOS, chavesDePlanoDoCasal, interpretarPublico, chavesDeNivelDoFornecedor, intervaloDaJanelaDeCasamento, type Publico } from "@/lib/platform/announcement";
 
 /**
  * Público dos comunicados, sempre resolvido no servidor a partir do filtro (nunca de uma lista vinda do navegador).
@@ -9,24 +9,24 @@ import { MAX_RECIPIENTS, couplePlanKeys, parseAudience, vendorTierKeys, weddingW
  * Plano do fornecedor = planTier, valendo FREE depois de planExpiresAt.
  */
 
-export interface RecipientUser {
+export interface PessoaDestinataria {
   id: string;
   username: string;
   name: string;
   kind: "couple" | "vendor";
 }
 
-export interface AudiencePreview {
+export interface PrevisaoDoPublico {
   couples: { matched: number; total: number };
   vendors: { matched: number; total: number };
   people: number;
   tooMany: boolean;
 }
 
-const COUPLE_CAP = 50_000;
+const LIMITE_DE_CASAIS = 50_000;
 
 /** Plano vigente de cada casamento que tem assinatura de casal aprovada (mais recente primeiro). */
-async function couplePlanByWedding(): Promise<Map<string, string>> {
+async function planoDoCasalPorCasamento(): Promise<Map<string, string>> {
   const subs = await prisma.subscription.findMany({
     where: { planType: "COUPLE", status: "APPROVED", OR: [{ weddingId: { not: null } }, { weddingId: null, user: { weddingId: { not: null } } }] },
     orderBy: [{ paidAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
@@ -40,9 +40,9 @@ async function couplePlanByWedding(): Promise<Map<string, string>> {
   return map;
 }
 
-async function coupleUsers(audience: Audience, now: Date): Promise<(RecipientUser & { weddingId: string })[]> {
+async function pessoasDosCasais(audience: Publico, now: Date): Promise<(PessoaDestinataria & { weddingId: string })[]> {
   if (audience.kind === "vendors") return [];
-  const range = weddingWindowRange(audience.weddingWindow, now);
+  const range = intervaloDaJanelaDeCasamento(audience.weddingWindow, now);
   const users = await prisma.user.findMany({
     where: {
       partnerVendorId: null,
@@ -51,10 +51,10 @@ async function coupleUsers(audience: Audience, now: Date): Promise<(RecipientUse
     },
     select: { id: true, username: true, name: true, weddingId: true },
     orderBy: { createdAt: "asc" },
-    take: COUPLE_CAP,
+    take: LIMITE_DE_CASAIS,
   });
-  const plans = couplePlanKeys(audience.couplePlans);
-  const planMap = plans ? await couplePlanByWedding() : null;
+  const plans = chavesDePlanoDoCasal(audience.couplePlans);
+  const planMap = plans ? await planoDoCasalPorCasamento() : null;
   return users
     .filter((u): u is typeof u & { weddingId: string } => u.weddingId !== null)
     .filter((u) => {
@@ -65,14 +65,14 @@ async function coupleUsers(audience: Audience, now: Date): Promise<(RecipientUse
     .map((u) => ({ id: u.id, username: u.username, name: u.name, kind: "couple" as const, weddingId: u.weddingId }));
 }
 
-async function vendorUsers(audience: Audience, now: Date): Promise<(RecipientUser & { vendorId: string })[]> {
+async function pessoasDosFornecedores(audience: Publico, now: Date): Promise<(PessoaDestinataria & { vendorId: string })[]> {
   if (audience.kind === "couples" || audience.weddingIds?.length) return []; // casais escolhidos à mão não levam fornecedores
-  const tiers = vendorTierKeys(audience.vendorPlans);
+  const tiers = chavesDeNivelDoFornecedor(audience.vendorPlans);
   const users = await prisma.user.findMany({
     where: { partnerVendorId: { not: null } },
     select: { id: true, username: true, name: true, partnerVendorId: true, partnerVendor: { select: { planTier: true, planExpiresAt: true } } },
     orderBy: { createdAt: "asc" },
-    take: COUPLE_CAP,
+    take: LIMITE_DE_CASAIS,
   });
   return users
     .filter((u) => {
@@ -85,12 +85,12 @@ async function vendorUsers(audience: Audience, now: Date): Promise<(RecipientUse
 }
 
 /** Quem recebe, sem repetir ninguém. Passa de MAX_RECIPIENTS? Devolve o tamanho real para a tela recusar. */
-export async function resolveAudienceUsers(audienceInput: unknown, now = new Date()): Promise<RecipientUser[]> {
+export async function resolverPessoasDoPublico(audienceInput: unknown, now = new Date()): Promise<PessoaDestinataria[]> {
   await exigirAdminDaPlataforma();
-  const audience = parseAudience(audienceInput);
-  const [couples, vendors] = await Promise.all([coupleUsers(audience, now), vendorUsers(audience, now)]);
+  const audience = interpretarPublico(audienceInput);
+  const [couples, vendors] = await Promise.all([pessoasDosCasais(audience, now), pessoasDosFornecedores(audience, now)]);
   const seen = new Set<string>();
-  const out: RecipientUser[] = [];
+  const out: PessoaDestinataria[] = [];
   for (const u of [...couples, ...vendors]) {
     if (seen.has(u.id)) continue;
     seen.add(u.id);
@@ -100,12 +100,12 @@ export async function resolveAudienceUsers(audienceInput: unknown, now = new Dat
 }
 
 /** "Chega a 83 casais de 1.236": contagem real, calculada na hora. */
-export async function previewAudience(audienceInput: unknown, now = new Date()): Promise<AudiencePreview> {
+export async function preverPublico(audienceInput: unknown, now = new Date()): Promise<PrevisaoDoPublico> {
   await exigirAdminDaPlataforma();
-  const audience = parseAudience(audienceInput);
+  const audience = interpretarPublico(audienceInput);
   const [couples, vendors, weddingTotal, vendorTotal] = await Promise.all([
-    coupleUsers(audience, now),
-    vendorUsers(audience, now),
+    pessoasDosCasais(audience, now),
+    pessoasDosFornecedores(audience, now),
     prisma.wedding.count(),
     prisma.partnerVendor.count(),
   ]);
@@ -114,22 +114,22 @@ export async function previewAudience(audienceInput: unknown, now = new Date()):
     couples: { matched: new Set(couples.map((u) => u.weddingId)).size, total: weddingTotal },
     vendors: { matched: new Set(vendors.map((u) => u.vendorId)).size, total: vendorTotal },
     people,
-    tooMany: people > MAX_RECIPIENTS,
+    tooMany: people > MAXIMO_DE_DESTINATARIOS,
   };
 }
 
-export interface DraftRow {
+export interface LinhaDeRascunho {
   id: string;
   title: string;
   emailSubject: string | null;
   body: string;
   linkUrl: string | null;
-  audience: Audience;
+  audience: Publico;
   channels: ("PANEL" | "PUSH" | "EMAIL" | "WHATSAPP")[];
   updatedAt: Date;
 }
 
-export async function listDrafts(): Promise<DraftRow[]> {
+export async function listarRascunhos(): Promise<LinhaDeRascunho[]> {
   await exigirAdminDaPlataforma();
   const rows = await prisma.announcement.findMany({ where: { status: "DRAFT" }, orderBy: { updatedAt: "desc" }, take: 20 });
   return rows.map((r) => ({
@@ -138,17 +138,17 @@ export async function listDrafts(): Promise<DraftRow[]> {
     emailSubject: r.emailSubject,
     body: r.body,
     linkUrl: r.linkUrl,
-    audience: parseAudience(r.audience),
+    audience: interpretarPublico(r.audience),
     channels: r.channels,
     updatedAt: r.updatedAt,
   }));
 }
 
-export interface HistoryRow {
+export interface LinhaDoHistorico {
   id: string;
   title: string;
   status: "SENDING" | "SENT";
-  audience: Audience;
+  audience: Publico;
   channels: ("PANEL" | "PUSH" | "EMAIL" | "WHATSAPP")[];
   sentAt: Date | null;
   createdAt: Date;
@@ -162,7 +162,7 @@ export interface HistoryRow {
 }
 
 /** Histórico: enviados e em envio, com contagens reais por situação dos destinatários. */
-export async function listHistory(limit = 20): Promise<HistoryRow[]> {
+export async function listarHistorico(limit = 20): Promise<LinhaDoHistorico[]> {
   await exigirAdminDaPlataforma();
   const rows = await prisma.announcement.findMany({ where: { status: { in: ["SENDING", "SENT"] } }, orderBy: { createdAt: "desc" }, take: limit });
   if (rows.length === 0) return [];
@@ -180,7 +180,7 @@ export async function listHistory(limit = 20): Promise<HistoryRow[]> {
       id: r.id,
       title: r.title,
       status: r.status as "SENDING" | "SENT",
-      audience: parseAudience(r.audience),
+      audience: interpretarPublico(r.audience),
       channels: r.channels,
       sentAt: r.sentAt,
       createdAt: r.createdAt,

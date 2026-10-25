@@ -8,11 +8,11 @@ import { obterCatalogo } from "@/lib/catalog-server";
 import { textoDoDescontoDoCombo, ehPlanoGratis, chaveDoModuloNoCatalogo, chaveDoPlanoNoCatalogo } from "@/lib/catalog";
 import { CONFIGURACAO_DOS_PLANOS, type ChaveDoPlano } from "@/lib/plans";
 import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
-import { formatDateTime } from "@/lib/platform/format";
+import { formatarDataEHora } from "@/lib/platform/format";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-import { param, type SearchParams } from "@/lib/platform/list-params";
-import { accountantMonth } from "@/lib/platform/payments";
-import { countPendingInvoices, listPendingInvoices } from "@/lib/platform/queries/receita";
+import { parametroDaBusca, type ParametrosDeBusca } from "@/lib/platform/list-params";
+import { mesDoContador } from "@/lib/platform/payments";
+import { contarNotasPendentes, listarNotasPendentes } from "@/lib/platform/queries/receita";
 import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { cn } from "@/lib/utils";
@@ -34,17 +34,17 @@ interface AuditDetails {
   reason?: string;
 }
 
-export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<ParametrosDeBusca> }) {
   await exigirAdminDaPlataformaNaPagina();
   const query = await searchParams;
-  const editing = param(query, "editar", 60);
+  const editing = parametroDaBusca(query, "editar", 60);
   const now = new Date();
   const [catalog, overrides, history, invoices, pendingInvoices] = await Promise.all([
     obterCatalogo(),
     prisma.catalogPrice.findMany({ select: { key: true } }),
     prisma.auditLog.findMany({ where: { action: "catalog.price_update" }, orderBy: { createdAt: "desc" }, take: 8, select: { id: true, actorName: true, targetId: true, details: true, createdAt: true } }),
-    listPendingInvoices(20),
-    countPendingInvoices(),
+    listarNotasPendentes(20),
+    contarNotasPendentes(),
   ]);
   const edited = new Set(overrides.map((o) => o.key));
 
@@ -152,7 +152,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                       </p>
                       {d.reason ? <p className="text-tinta-suave">Motivo: {d.reason}</p> : null}
                       <p className={cn("text-tinta-suave")}>
-                        {h.actorName ?? "Administração"} · {formatDateTime(h.createdAt)}
+                        {h.actorName ?? "Administração"} · {formatarDataEHora(h.createdAt)}
                       </p>
                     </li>
                   );
@@ -163,7 +163,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
         </PendingRegion>
       </div>
 
-      <ContadorSection month={accountantMonth(undefined, now)} now={now} invoices={invoices} pendingCount={pendingInvoices} />
+      <ContadorSection month={mesDoContador(undefined, now)} now={now} invoices={invoices} pendingCount={pendingInvoices} />
     </>
   );
 }

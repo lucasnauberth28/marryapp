@@ -15,7 +15,7 @@ import {
 import { resolverPersonificacao, type ContextoDePersonificacao } from "@/lib/security/impersonation";
 import { recusaDeEscritaNoCasamento } from "@/lib/security/impersonation-rules";
 import { registrarAuditoria } from "@/lib/audit";
-import { maintenanceWriteRefusal } from "@/lib/platform/maintenance";
+import { recusaDeEscritaPorManutencao } from "@/lib/platform/maintenance";
 
 /**
  * Multi-casamento: todo dado do painel do casal pertence a um casamento (weddingId).
@@ -157,7 +157,7 @@ export async function exigirCasamento(path?: string): Promise<ContextoDoCasament
   const refusal = recusaDeEscritaNoCasamento({ impersonation: ctx.impersonation, suspendedAt: ctx.wedding.suspendedAt });
   if (refusal) throw new AuthorizationError(refusal);
   // Modo de manutenção (administração > Configurações): painel só para leitura; a administração nunca é barrada
-  const maintenance = await maintenanceWriteRefusal(ctx.session.allowedPaths);
+  const maintenance = await recusaDeEscritaPorManutencao(ctx.session.allowedPaths);
   if (maintenance) throw new AuthorizationError(maintenance);
   if (ctx.impersonation?.canEdit) {
     await registrarAuditoria({

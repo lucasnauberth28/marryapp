@@ -10,8 +10,8 @@ import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
 import { Switch } from "@/components/ui/switch";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
-import { getMadrinhaOverview, listMadrinhaOverrides } from "@/lib/platform/queries/madrinha";
-import { formatDayMonth } from "@/lib/platform/format";
+import { obterVisaoGeralDaMadrinha, listarExcecoesDaMadrinha } from "@/lib/platform/queries/madrinha";
+import { formatarDiaEMes } from "@/lib/platform/format";
 import { AbuseForm, GlobalCapForm, LimitsForm } from "./_components/config-forms";
 import { WeddingAdjust } from "./_components/wedding-adjust";
 import { SettingBadge } from "../_sistema/setting-badge";
@@ -20,7 +20,7 @@ export const metadata = { title: "Liz" };
 
 export default async function Page() {
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
-  const [overview, overrides] = await Promise.all([getMadrinhaOverview(), listMadrinhaOverrides(20)]);
+  const [overview, overrides] = await Promise.all([obterVisaoGeralDaMadrinha(), listarExcecoesDaMadrinha(20)]);
   const { limits, globalCap, abuse, meta, latestInstruction, suggestedOnly } = overview;
 
   const instructionStatus = suggestedOnly
@@ -139,7 +139,7 @@ export default async function Page() {
                     {o.coupleNames}
                   </Link>
                   <p className="text-sm text-tinta-suave">
-                    Atualizado em {formatDayMonth(o.updatedAt)}
+                    Atualizado em {formatarDiaEMes(o.updatedAt)}
                     {o.note ? ` · ${o.note}` : ""}
                   </p>
                 </div>

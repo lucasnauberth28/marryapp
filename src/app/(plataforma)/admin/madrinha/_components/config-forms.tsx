@@ -6,7 +6,7 @@ import { FormAlert } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { card } from "@/components/casal/ui";
 import { cn } from "@/lib/utils";
-import { centsToReaisInput } from "@/lib/platform/madrinha";
+import { centavosParaCampoDeReais } from "@/lib/platform/madrinha";
 import { saveMadrinhaAbuse, saveMadrinhaGlobalCap, saveMadrinhaLimits } from "@/actions/admin-madrinha-actions";
 import { ToggleRow } from "../../_sistema/toggle-row";
 import { useAdminAction } from "../../_sistema/use-admin-action";
@@ -30,7 +30,7 @@ interface PlanState {
 const toState = (l: PlanLimits): PlanState => ({
   perDay: String(l.perDay),
   perMonth: String(l.perMonth),
-  costCap: centsToReaisInput(l.costCapCents),
+  costCap: centavosParaCampoDeReais(l.costCapCents),
   warnPercent: String(l.warnPercent),
   autoBlock: l.autoBlock,
 });
@@ -102,7 +102,7 @@ export function LimitsForm({ subscription, trial }: { subscription: PlanLimits; 
 }
 
 export function GlobalCapForm({ monthlyCostCapCents, warnPercent, pauseAtCap }: { monthlyCostCapCents: number; warnPercent: number; pauseAtCap: boolean }) {
-  const [cap, setCap] = useState(centsToReaisInput(monthlyCostCapCents));
+  const [cap, setCap] = useState(centavosParaCampoDeReais(monthlyCostCapCents));
   const [warn, setWarn] = useState(String(warnPercent));
   const [pause, setPause] = useState(pauseAtCap);
   const { pending, errors, formError, run } = useAdminAction();

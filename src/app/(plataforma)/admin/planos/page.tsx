@@ -11,28 +11,28 @@ import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { RevenueChart } from "@/components/plataforma/revenue-chart";
 import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
 import { obterCatalogo } from "@/lib/catalog-server";
-import { formatDate, formatInt, formatMonthName, relativeDay, timeAgo } from "@/lib/platform/format";
+import { formatarData, formatarInteiro, formatarNomeDoMes, diaRelativo, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais, formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
-import { oneOf, type SearchParams } from "@/lib/platform/list-params";
-import { accountantMonth } from "@/lib/platform/payments";
-import { percentLabel } from "@/lib/platform/revenue";
-import { getVendorPlansExpiring } from "@/lib/platform/queries/fornecedores";
+import { umDosValores, type ParametrosDeBusca } from "@/lib/platform/list-params";
+import { mesDoContador } from "@/lib/platform/payments";
+import { rotuloPercentual } from "@/lib/platform/revenue";
+import { obterPlanosDeFornecedorPrestesAVencer } from "@/lib/platform/queries/fornecedores";
 import {
-  countPendingInvoices,
-  getCouplesPaidThisMonth,
-  getMonthRevenue,
-  getNonRenewals,
-  getPendingRefunds,
-  getPixToCheck,
-  getRecurringRevenue,
-  getRevenueByMonth,
-  listCouponsInUse,
-  listPendingInvoices,
-  listRefundablePayments,
-  listRefunds,
+  contarNotasPendentes,
+  obterCasaisQuePagaramNesteMes,
+  obterReceitaDoMes,
+  obterNaoRenovacoes,
+  obterReembolsosPendentes,
+  obterPixParaConferir,
+  obterReceitaRecorrente,
+  obterReceitaPorMes,
+  listarCuponsEmUso,
+  listarNotasPendentes,
+  listarPagamentosReembolsaveis,
+  listarReembolsos,
 } from "@/lib/platform/queries/receita";
-import { getPlatformSetting } from "@/lib/platform/settings";
+import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { ContadorSection } from "./_components/contador-section";
 import { PendingRegion } from "@/components/plataforma/pending";
@@ -45,10 +45,10 @@ export const metadata = { title: "Planos e receita" };
 
 const ABAS = ["resumo", "reembolsos", "contador"] as const;
 
-export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<ParametrosDeBusca> }) {
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
-  const aba = oneOf(query, "aba", ABAS) ?? "resumo";
+  const aba = umDosValores(query, "aba", ABAS) ?? "resumo";
   const now = new Date();
 
   return (
@@ -72,7 +72,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
       {/* Cada aba busca os próprios dados: abas e cabeçalho ficam, só o corpo mostra o esqueleto (key = aba) */}
       <PendingRegion className="flex flex-col gap-6">
         <Suspense key={aba} fallback={aba === "resumo" ? <ResumoSkeleton /> : aba === "reembolsos" ? <ReembolsosSkeleton /> : <ContadorSkeleton />}>
-          {aba === "resumo" ? <Resumo now={now} /> : aba === "reembolsos" ? <Reembolsos now={now} /> : <Contador now={now} month={accountantMonth(typeof query.mes === "string" ? query.mes : undefined, now)} />}
+          {aba === "resumo" ? <Resumo now={now} /> : aba === "reembolsos" ? <Reembolsos now={now} /> : <Contador now={now} month={mesDoContador(typeof query.mes === "string" ? query.mes : undefined, now)} />}
         </Suspense>
       </PendingRegion>
     </>
@@ -81,20 +81,20 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
 
 async function Resumo({ now }: { now: Date }) {
   const [month, couples, recurring, nonRenewals, months, pix, refunds, invoiceCount, expiring, coupons, refundRows, catalog] = await Promise.all([
-    getMonthRevenue(now),
-    getCouplesPaidThisMonth(now),
-    getRecurringRevenue(now),
-    getNonRenewals(now),
-    getRevenueByMonth(now, 7),
-    getPixToCheck(now),
-    getPendingRefunds(),
-    countPendingInvoices(),
-    getVendorPlansExpiring(now, 7, 8),
-    listCouponsInUse(now, 5),
-    listRefunds(5),
+    obterReceitaDoMes(now),
+    obterCasaisQuePagaramNesteMes(now),
+    obterReceitaRecorrente(now),
+    obterNaoRenovacoes(now),
+    obterReceitaPorMes(now, 7),
+    obterPixParaConferir(now),
+    obterReembolsosPendentes(),
+    contarNotasPendentes(),
+    obterPlanosDeFornecedorPrestesAVencer(now, 7, 8),
+    listarCuponsEmUso(now, 5),
+    listarReembolsos(5),
     obterCatalogo(),
   ]);
-  const monthName = formatMonthName(now);
+  const monthName = formatarNomeDoMes(now);
   const hasRevenue = months.some((m) => m.total > 0);
 
   const attention: AttentionItem[] = [];
@@ -104,7 +104,7 @@ async function Resumo({ now }: { now: Date }) {
       icon: Clock,
       tone: "aviso",
       title: `${pluralizar(pix.count, "Pix para conferir", "Pix para conferir")}`,
-      detail: `${formatarReais(pix.totalCents)} no total.${pix.oldestAt ? ` O mais antigo é ${timeAgo(pix.oldestAt, now)}.` : ""}`,
+      detail: `${formatarReais(pix.totalCents)} no total.${pix.oldestAt ? ` O mais antigo é ${haQuantoTempo(pix.oldestAt, now)}.` : ""}`,
       actionLabel: "Conferir",
       href: "/admin/planos/assinaturas?status=a-conferir",
     });
@@ -114,7 +114,7 @@ async function Resumo({ now }: { now: Date }) {
       icon: RotateCcw,
       tone: "aviso",
       title: pluralizar(refunds.count, "reembolso para decidir", "reembolsos para decidir"),
-      detail: `${formatarReais(refunds.totalCents)} no total.${refunds.nextDueAt ? ` Responder até ${formatDate(refunds.nextDueAt)}.` : ""}`,
+      detail: `${formatarReais(refunds.totalCents)} no total.${refunds.nextDueAt ? ` Responder até ${formatarData(refunds.nextDueAt)}.` : ""}`,
       actionLabel: "Analisar",
       href: "/admin/planos?aba=reembolsos",
     });
@@ -135,7 +135,7 @@ async function Resumo({ now }: { now: Date }) {
         <StatCard
           label={`Receita de ${monthName}`}
           value={formatarReaisInteiros(month.cents)}
-          trend={month.change === null ? null : { value: month.change, label: percentLabel(month.change) }}
+          trend={month.change === null ? null : { value: month.change, label: rotuloPercentual(month.change) }}
           hint={month.payments === 0 ? "nenhum pagamento até agora" : `até hoje, ${pluralizar(month.payments, "pagamento", "pagamentos")}`}
         />
         <StatCard label="Mensalidades" value={formatarReaisInteiros(recurring.cents)} hint={`${recurring.pro} Pro e ${recurring.master} Master em vigor`} />
@@ -177,7 +177,7 @@ async function Resumo({ now }: { now: Date }) {
               columns={[
                 { key: "nome", header: "Fornecedor", primary: true, cell: (v) => v.companyName },
                 { key: "plano", header: "Plano", cell: (v) => <PlanChip plan={v.planTier} /> },
-                { key: "vence", header: "Vence", cell: (v) => `${formatDate(v.planExpiresAt)} (${relativeDay(v.planExpiresAt, now)})` },
+                { key: "vence", header: "Vence", cell: (v) => `${formatarData(v.planExpiresAt)} (${diaRelativo(v.planExpiresAt, now)})` },
                 { key: "valor", header: "Valor", align: "right", cell: (v) => formatarReais(catalog.plans[v.planTier === "PRO" ? "pro" : "master"].price) },
                 {
                   key: "aviso",
@@ -198,8 +198,8 @@ async function Resumo({ now }: { now: Date }) {
               columns={[
                 { key: "codigo", header: "Código", primary: true, cell: (c) => <span className="font-mono">{c.code}</span> },
                 { key: "desconto", header: "Desconto", cell: (c) => (c.percentOff ? `${c.percentOff}%` : c.amountOff ? formatarReais(c.amountOff) : "Sem desconto") },
-                { key: "usos", header: "Usos", align: "right", cell: (c) => (c.maxRedemptions ? `${formatInt(c.redemptions)} de ${formatInt(c.maxRedemptions)}` : formatInt(c.redemptions)) },
-                { key: "ate", header: "Vale até", cell: (c) => (c.expiresAt ? formatDate(c.expiresAt) : "Sem prazo") },
+                { key: "usos", header: "Usos", align: "right", cell: (c) => (c.maxRedemptions ? `${formatarInteiro(c.redemptions)} de ${formatarInteiro(c.maxRedemptions)}` : formatarInteiro(c.redemptions)) },
+                { key: "ate", header: "Vale até", cell: (c) => (c.expiresAt ? formatarData(c.expiresAt) : "Sem prazo") },
               ]}
             />
           </div>
@@ -212,11 +212,11 @@ async function Resumo({ now }: { now: Date }) {
 }
 
 async function Reembolsos({ now }: { now: Date }) {
-  const [refunds, payments, policy] = await Promise.all([listRefunds(50), listRefundablePayments(), getPlatformSetting("refundPolicy")]);
+  const [refunds, payments, policy] = await Promise.all([listarReembolsos(50), listarPagamentosReembolsaveis(), obterConfiguracaoDaPlataforma("refundPolicy")]);
   return <RefundsSection refunds={refunds} payments={payments} now={now} policyText={policy.text} />;
 }
 
 async function Contador({ now, month }: { now: Date; month: string }) {
-  const [invoices, count] = await Promise.all([listPendingInvoices(20), countPendingInvoices()]);
+  const [invoices, count] = await Promise.all([listarNotasPendentes(20), contarNotasPendentes()]);
   return <ContadorSection month={month} now={now} invoices={invoices} pendingCount={count} />;
 }

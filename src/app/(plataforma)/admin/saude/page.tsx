@@ -4,11 +4,11 @@ import { Panel } from "@/components/plataforma/panel";
 import { Notice } from "@/components/plataforma/notices";
 import { StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
-import { getPlatformSetting } from "@/lib/platform/settings";
+import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { emailEstaConfigurado } from "@/lib/email";
-import { getHealthSnapshot, type ServiceCounts } from "@/lib/platform/queries/saude";
-import { CRON_LABEL, CRON_STATE_LABEL } from "@/lib/platform/health";
-import { formatDateTime, formatInt, formatTime, timeAgo } from "@/lib/platform/format";
+import { obterFotoDaSaude, type ContagensDosServicos } from "@/lib/platform/queries/saude";
+import { ROTULO_DA_TAREFA_AGENDADA, ROTULO_DA_SITUACAO_DA_TAREFA_AGENDADA } from "@/lib/platform/health";
+import { formatarDataEHora, formatarInteiro, formatarHora, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { AlertsForm } from "./_components/alerts-form";
 import { ReconnectWhatsapp } from "./_components/reconnect-whatsapp";
@@ -37,7 +37,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 const NoRecords = ({ what }: { what: string }) => <p className="text-sm leading-5 text-tinta-suave">Sem registros ainda. {what}</p>;
 
 /** Situação geral de um serviço, só com o que foi medido: sem configuração, sem registros, com falhas ou sem falhas. */
-function serviceChip(configured: boolean, c: ServiceCounts): { tone: StatusTone; icon: typeof Clock; text: string } {
+function serviceChip(configured: boolean, c: ContagensDosServicos): { tone: StatusTone; icon: typeof Clock; text: string } {
   if (!configured) return { tone: "neutro", icon: Info, text: "Não configurado" };
   if (c.failed > 0) return { tone: "aviso", icon: AlertTriangle, text: "Atenção" };
   if (c.total === 0) return { tone: "neutro", icon: Clock, text: "Sem registros" };
@@ -46,7 +46,7 @@ function serviceChip(configured: boolean, c: ServiceCounts): { tone: StatusTone;
 
 export default async function Page() {
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
-  const [h, alerts] = await Promise.all([getHealthSnapshot(), getPlatformSetting("healthAlerts")]);
+  const [h, alerts] = await Promise.all([obterFotoDaSaude(), obterConfiguracaoDaPlataforma("healthAlerts")]);
   const now = h.measuredAt;
 
   const nothingMeasured =
@@ -67,7 +67,7 @@ export default async function Page() {
 
   return (
     <>
-      <PageHeader eyebrow="Sistema" title="Saúde do sistema" description={`O que faz o Aceito funcionar, num lugar só. Atualizado às ${formatTime(now)}.`} />
+      <PageHeader eyebrow="Sistema" title="Saúde do sistema" description={`O que faz o Aceito funcionar, num lugar só. Atualizado às ${formatarHora(now)}.`} />
 
       {h.attention.length > 0 ? (
         <Notice tone="aviso" icon={AlertTriangle} title={`${pluralizar(h.attention.length, "coisa pede", "coisas pedem")} atenção`}>
@@ -91,14 +91,14 @@ export default async function Page() {
           ) : (
             <>
               <div className="flex gap-10">
-                <Metric value={formatInt(h.mercadopago.counts.total)} label="avisos recebidos em 24 h" />
-                <Metric value={formatInt(h.mercadopago.counts.failed)} label="não aplicados" />
+                <Metric value={formatarInteiro(h.mercadopago.counts.total)} label="avisos recebidos em 24 h" />
+                <Metric value={formatarInteiro(h.mercadopago.counts.failed)} label="não aplicados" />
               </div>
               <ul className="mt-4 divide-y divide-linha">
                 {h.mercadopago.recent.map((e, i) => (
                   <li key={i} className="flex items-center justify-between gap-3 py-2.5 text-[15px]">
                     <span className="flex min-w-0 items-baseline gap-3">
-                      <span className="text-sm tabular-nums text-tinta-suave">{formatTime(e.at)}</span>
+                      <span className="text-sm tabular-nums text-tinta-suave">{formatarHora(e.at)}</span>
                       <span className="truncate text-tinta">{e.message ?? "Aviso aplicado"}</span>
                     </span>
                     <StatusChip tone={e.ok ? "sucesso" : "perigo"} icon={e.ok ? CheckCircle2 : XCircle}>
@@ -130,13 +130,13 @@ export default async function Page() {
             {h.crons.map((c) => (
               <li key={c.job} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3">
                 <div className="min-w-0">
-                  <p className="text-[15px] font-semibold leading-5 text-tinta">{CRON_LABEL[c.job] ?? c.job}</p>
-                  <p className="text-sm leading-5 text-tinta-suave">{c.lastAt ? `${timeAgo(c.lastAt, now)}, ${formatDateTime(c.lastAt)}` : "Ainda não rodou"}</p>
+                  <p className="text-[15px] font-semibold leading-5 text-tinta">{ROTULO_DA_TAREFA_AGENDADA[c.job] ?? c.job}</p>
+                  <p className="text-sm leading-5 text-tinta-suave">{c.lastAt ? `${haQuantoTempo(c.lastAt, now)}, ${formatarDataEHora(c.lastAt)}` : "Ainda não rodou"}</p>
                   {c.error && <p className="text-sm leading-5 text-perigo">{c.error.slice(0, 160)}</p>}
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <StatusChip tone={c.state === "ok" ? "sucesso" : c.state === "never" ? "neutro" : "perigo"} icon={c.state === "ok" ? CheckCircle2 : c.state === "never" ? Clock : XCircle}>
-                    {CRON_STATE_LABEL[c.state]}
+                    {ROTULO_DA_SITUACAO_DA_TAREFA_AGENDADA[c.state]}
                   </StatusChip>
                   {c.result && <span className="text-sm text-tinta-suave">{c.result}</span>}
                 </div>
@@ -162,9 +162,9 @@ export default async function Page() {
                 <NoRecords what="As mensagens enviadas passam a ser contadas a partir de agora." />
               ) : (
                 <div className="flex gap-10">
-                  <Metric value={formatInt(h.whatsapp.counts.ok)} label="enviadas em 24 h" />
-                  <Metric value={formatInt(h.whatsapp.counts.failed)} label="falhas em 24 h" />
-                  <Metric value={formatInt(h.whatsapp.invalidNumbers)} label="números sem WhatsApp" />
+                  <Metric value={formatarInteiro(h.whatsapp.counts.ok)} label="enviadas em 24 h" />
+                  <Metric value={formatarInteiro(h.whatsapp.counts.failed)} label="falhas em 24 h" />
+                  <Metric value={formatarInteiro(h.whatsapp.invalidNumbers)} label="números sem WhatsApp" />
                 </div>
               )}
               <div className="mt-3">
@@ -180,14 +180,14 @@ export default async function Page() {
             <NoRecords what="Os e-mails enviados passam a ser contados a partir de agora." />
           ) : (
             <div className="flex gap-10">
-              <Metric value={formatInt(h.email.counts.ok)} label="e-mails enviados em 24 h" />
-              <Metric value={formatInt(h.email.counts.failed)} label="falhas de envio" />
+              <Metric value={formatarInteiro(h.email.counts.ok)} label="e-mails enviados em 24 h" />
+              <Metric value={formatarInteiro(h.email.counts.failed)} label="falhas de envio" />
             </div>
           )}
           <dl className="mt-3 divide-y divide-linha border-t border-linha pt-2">
             <Row label="Notificações no celular">{h.push.configured ? "Configuradas" : "Não configuradas"}</Row>
-            <Row label="Aparelhos inscritos">{formatInt(h.push.subscriptions)}</Row>
-            <Row label="Envios de notificação em 24 h">{h.push.counts.total === 0 ? "Sem registros ainda" : `${formatInt(h.push.counts.ok)} certos, ${formatInt(h.push.counts.failed)} com falha`}</Row>
+            <Row label="Aparelhos inscritos">{formatarInteiro(h.push.subscriptions)}</Row>
+            <Row label="Envios de notificação em 24 h">{h.push.counts.total === 0 ? "Sem registros ainda" : `${formatarInteiro(h.push.counts.ok)} certos, ${formatarInteiro(h.push.counts.failed)} com falha`}</Row>
           </dl>
         </Panel>
 

@@ -9,15 +9,15 @@ import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/securit
 import { enviarLinkDeRedefinicaoDeSenha } from "@/lib/account/password-reset-link";
 import { excluirContaPorId } from "@/lib/account/delete-account";
 import {
-  dataRequestDueAt,
-  dataRequestInput,
-  dataRequestUpdateInput,
-  dayToDate,
-  incidentInput,
-  incidentUpdateInput,
-  maskEmailForLog,
-  ticketInput,
-  ticketUpdateInput,
+  prazoDaSolicitacaoDeDados,
+  entradaDaSolicitacaoDeDados,
+  entradaDeAtualizacaoDaSolicitacaoDeDados,
+  diaParaData,
+  entradaDoIncidente,
+  entradaDeAtualizacaoDoIncidente,
+  esconderEmailParaORegistro,
+  entradaDoChamado,
+  entradaDeAtualizacaoDoChamado,
 } from "@/lib/platform/support";
 import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 
@@ -45,7 +45,7 @@ function zodFail(error: z.ZodError): Fail {
 export async function createSupportTicket(input: unknown): Promise<(Ok & { number: number }) | Fail> {
   try {
     const admin = await exigirAdminDaPlataforma();
-    const parsed = ticketInput.safeParse(input);
+    const parsed = entradaDoChamado.safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
     // Só liga o pedido a um casal ou fornecedor que existe
@@ -79,7 +79,7 @@ export async function createSupportTicket(input: unknown): Promise<(Ok & { numbe
 export async function updateSupportTicket(input: unknown): Promise<Ok | Fail> {
   try {
     const admin = await exigirAdminDaPlataforma();
-    const parsed = ticketUpdateInput.safeParse(input);
+    const parsed = entradaDeAtualizacaoDoChamado.safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
     const current = await prisma.supportTicket.findUnique({ where: { id: d.id }, select: { id: true, number: true, status: true, assigneeId: true } });
@@ -123,10 +123,10 @@ export async function updateSupportTicket(input: unknown): Promise<Ok | Fail> {
 export async function createDataRequest(input: unknown): Promise<Ok | Fail> {
   try {
     await exigirAdminDaPlataforma();
-    const parsed = dataRequestInput.safeParse(input);
+    const parsed = entradaDaSolicitacaoDeDados.safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
-    const receivedAt = d.receivedOn ? dayToDate(d.receivedOn) : new Date();
+    const receivedAt = d.receivedOn ? diaParaData(d.receivedOn) : new Date();
     if (receivedAt.getTime() > Date.now() + 60_000) return zodFail(new z.ZodError([{ code: "custom", path: ["receivedOn"], message: "A data de recebimento não pode ser no futuro.", input: d.receivedOn }]));
     // Se o e-mail é de uma conta, liga o pedido a ela (é o que permite exportar ou excluir depois)
     const user = await prisma.user.findUnique({ where: { username: d.requesterEmail }, select: { id: true, weddingId: true } });
@@ -138,7 +138,7 @@ export async function createDataRequest(input: unknown): Promise<Ok | Fail> {
         userId: user?.id ?? null,
         weddingId: user?.weddingId ?? null,
         receivedAt,
-        dueAt: dataRequestDueAt(receivedAt),
+        dueAt: prazoDaSolicitacaoDeDados(receivedAt),
         note: d.note || null,
       },
       select: { id: true },
@@ -147,7 +147,7 @@ export async function createDataRequest(input: unknown): Promise<Ok | Fail> {
       action: "data_request.create",
       targetType: "data_request",
       targetId: created.id,
-      details: { type: d.type, email: maskEmailForLog(d.requesterEmail), linkedAccount: Boolean(user) },
+      details: { type: d.type, email: esconderEmailParaORegistro(d.requesterEmail), linkedAccount: Boolean(user) },
     });
     refresh();
     return { success: true, message: user ? "Pedido registrado e ligado à conta." : "Pedido registrado. O e-mail não é de uma conta, então não dá para exportar nem excluir por aqui." };
@@ -159,7 +159,7 @@ export async function createDataRequest(input: unknown): Promise<Ok | Fail> {
 export async function updateDataRequest(input: unknown): Promise<Ok | Fail> {
   try {
     const admin = await exigirAdminDaPlataforma();
-    const parsed = dataRequestUpdateInput.safeParse(input);
+    const parsed = entradaDeAtualizacaoDaSolicitacaoDeDados.safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
     const current = await prisma.dataRequest.findUnique({ where: { id: d.id }, select: { id: true, type: true, status: true } });
@@ -247,7 +247,7 @@ export async function sendSupportPasswordReset(input: unknown): Promise<Ok | Fai
       action: "support.password_reset",
       targetType: "user",
       targetId: user?.id,
-      details: { email: maskEmailForLog(parsed.data.email), accountFound: Boolean(user), emailAccepted: result?.sent ?? false, limited: !byEmail.success },
+      details: { email: esconderEmailParaORegistro(parsed.data.email), accountFound: Boolean(user), emailAccepted: result?.sent ?? false, limited: !byEmail.success },
     });
     return { success: true, message: NEUTRAL };
   } catch (error) {
@@ -262,7 +262,7 @@ export async function sendSupportPasswordReset(input: unknown): Promise<Ok | Fai
 export async function createSecurityIncident(input: unknown): Promise<Ok | Fail> {
   try {
     const admin = await exigirAdminDaPlataforma();
-    const parsed = incidentInput.safeParse(input);
+    const parsed = entradaDoIncidente.safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
     const created = await prisma.securityIncident.create({
@@ -270,8 +270,8 @@ export async function createSecurityIncident(input: unknown): Promise<Ok | Fail>
         title: d.title,
         description: d.description,
         affected: d.affected || null,
-        discoveredAt: dayToDate(d.discoveredAt),
-        notifiedAt: d.notifiedOn ? dayToDate(d.notifiedOn) : null,
+        discoveredAt: diaParaData(d.discoveredAt),
+        notifiedAt: d.notifiedOn ? diaParaData(d.notifiedOn) : null,
         notifiedWho: d.notifiedWho || null,
         createdById: admin.userId,
         createdByName: admin.name ?? "Administrador",
@@ -290,7 +290,7 @@ export async function createSecurityIncident(input: unknown): Promise<Ok | Fail>
 export async function updateSecurityIncident(input: unknown): Promise<Ok | Fail> {
   try {
     await exigirAdminDaPlataforma();
-    const parsed = incidentUpdateInput.safeParse(input);
+    const parsed = entradaDeAtualizacaoDoIncidente.safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
     const current = await prisma.securityIncident.findUnique({ where: { id: d.id }, select: { id: true, status: true } });
@@ -298,7 +298,7 @@ export async function updateSecurityIncident(input: unknown): Promise<Ok | Fail>
     await prisma.securityIncident.update({
       where: { id: d.id },
       data: {
-        notifiedAt: d.notifiedOn ? dayToDate(d.notifiedOn) : null,
+        notifiedAt: d.notifiedOn ? diaParaData(d.notifiedOn) : null,
         notifiedWho: d.notifiedWho || null,
         ...(d.close ? { status: "CLOSED", closedAt: new Date() } : d.reopen ? { status: "OPEN", closedAt: null } : {}),
       },

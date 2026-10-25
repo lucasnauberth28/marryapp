@@ -9,7 +9,7 @@ import { Panel } from "@/components/plataforma/panel";
 import { StatusChip } from "@/components/plataforma/status-chip";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
-import { formatDayMonth } from "@/lib/platform/format";
+import { formatarDiaEMes } from "@/lib/platform/format";
 import { archiveKnowledgeArticle, saveKnowledgeArticle } from "@/actions/admin-madrinha-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
@@ -46,7 +46,7 @@ export function KnowledgeBase({ articles }: { articles: ArticleItem[] }) {
               <li key={a.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
                 <div className="min-w-0">
                   <p className="text-[15px] font-semibold leading-5 text-tinta">{a.title}</p>
-                  <p className="text-sm text-tinta-suave">Atualizado em {formatDayMonth(new Date(a.updatedAt))}</p>
+                  <p className="text-sm text-tinta-suave">Atualizado em {formatarDiaEMes(new Date(a.updatedAt))}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {a.status === "PUBLISHED" ? (

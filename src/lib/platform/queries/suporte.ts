@@ -1,14 +1,14 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { normalizeSearch, phoneDigits } from "@/lib/platform/support";
+import { normalizarBusca, digitosDoTelefone } from "@/lib/platform/support";
 
 /**
  * Consultas de Suporte e LGPD. Atravessam casamentos de propósito (é o dono), mas o select nunca inclui
  * senha, tokens, chaves nem documento (CPF/CNPJ) de ninguém.
  */
 
-interface SearchHit {
+interface ResultadoDaBusca {
   kind: "wedding" | "user" | "vendor";
   id: string;
   title: string;
@@ -19,32 +19,32 @@ interface SearchHit {
   ticketHref: string | null;
 }
 
-export interface SearchResults {
+export interface ResultadosDaBusca {
   query: string;
-  hits: SearchHit[];
+  hits: ResultadoDaBusca[];
 }
 
-const PER_TYPE = 8;
+const POR_TIPO = 8;
 
 /** Busca em tudo: casal (nome, endereço do site, domínio), pessoa (nome, e-mail) e fornecedor (nome, telefone). Até 8 por tipo. */
-export async function searchEverything(raw: string | undefined): Promise<SearchResults | null> {
+export async function buscarEmTudo(raw: string | undefined): Promise<ResultadosDaBusca | null> {
   await exigirAdminDaPlataforma();
-  const q = normalizeSearch(raw);
+  const q = normalizarBusca(raw);
   if (!q) return null;
-  const digits = phoneDigits(q);
+  const digits = digitosDoTelefone(q);
   const ci = { contains: q, mode: "insensitive" as const };
 
   const [weddings, users, vendors] = await Promise.all([
     prisma.wedding.findMany({
       where: { OR: [{ coupleNames: ci }, { slug: ci }, { customDomain: ci }] },
       orderBy: { createdAt: "desc" },
-      take: PER_TYPE,
+      take: POR_TIPO,
       select: { id: true, coupleNames: true, slug: true, customDomain: true, suspendedAt: true },
     }),
     prisma.user.findMany({
       where: { OR: [{ name: ci }, { username: ci }] },
       orderBy: { createdAt: "desc" },
-      take: PER_TYPE,
+      take: POR_TIPO,
       select: { id: true, name: true, username: true, weddingId: true, partnerVendorId: true, role: { select: { allowedPaths: true } } },
     }),
     prisma.partnerVendor.findMany({
@@ -57,12 +57,12 @@ export async function searchEverything(raw: string | undefined): Promise<SearchR
         ],
       },
       orderBy: { createdAt: "desc" },
-      take: PER_TYPE,
+      take: POR_TIPO,
       select: { id: true, companyName: true, category: true, suspendedAt: true },
     }),
   ]);
 
-  const hits: SearchHit[] = [
+  const hits: ResultadoDaBusca[] = [
     ...weddings.map((w) => ({
       kind: "wedding" as const,
       id: w.id,
@@ -94,7 +94,7 @@ export async function searchEverything(raw: string | undefined): Promise<SearchR
   return { query: q, hits };
 }
 
-export interface TicketRow {
+export interface LinhaDeChamado {
   id: string;
   number: number;
   subject: string;
@@ -110,7 +110,7 @@ export interface TicketRow {
   createdAt: Date;
 }
 
-export async function listTickets(opts: { showClosed: boolean }): Promise<{ rows: TicketRow[]; newCount: number; closedCount: number }> {
+export async function listarChamados(opts: { showClosed: boolean }): Promise<{ rows: LinhaDeChamado[]; newCount: number; closedCount: number }> {
   await exigirAdminDaPlataforma();
   const [rows, newCount, closedCount] = await Promise.all([
     prisma.supportTicket.findMany({
@@ -129,7 +129,7 @@ export async function listTickets(opts: { showClosed: boolean }): Promise<{ rows
 }
 
 /** Dados para preencher "Novo pedido" quando vem de um casal ou fornecedor (links de Casais e da busca). */
-export async function ticketPrefill(ref: { weddingId?: string; vendorId?: string }): Promise<{ weddingId?: string; vendorId?: string; requesterName: string; requesterEmail: string; label: string } | null> {
+export async function preenchimentoDoChamado(ref: { weddingId?: string; vendorId?: string }): Promise<{ weddingId?: string; vendorId?: string; requesterName: string; requesterEmail: string; label: string } | null> {
   await exigirAdminDaPlataforma();
   if (ref.weddingId) {
     const w = await prisma.wedding.findUnique({ where: { id: ref.weddingId }, select: { id: true, coupleNames: true, members: { orderBy: { createdAt: "asc" }, take: 1, select: { name: true, username: true } } } });
@@ -146,7 +146,7 @@ export async function ticketPrefill(ref: { weddingId?: string; vendorId?: string
   return null;
 }
 
-export interface DataRequestRow {
+export interface LinhaDeSolicitacaoDeDados {
   id: string;
   type: "EXPORT" | "DELETE" | "CORRECTION" | "OTHER";
   requesterName: string;
@@ -160,7 +160,7 @@ export interface DataRequestRow {
   handledByName: string | null;
 }
 
-export async function listDataRequests(): Promise<DataRequestRow[]> {
+export async function listarSolicitacoesDeDados(): Promise<LinhaDeSolicitacaoDeDados[]> {
   await exigirAdminDaPlataforma();
   // Abertos primeiro (o mais perto de vencer no topo), depois os encerrados mais recentes
   const [open, closed] = await Promise.all([
@@ -173,7 +173,7 @@ export async function listDataRequests(): Promise<DataRequestRow[]> {
   }));
 }
 
-export interface IncidentRow {
+export interface LinhaDeIncidente {
   id: string;
   title: string;
   description: string;
@@ -185,7 +185,7 @@ export interface IncidentRow {
   closedAt: Date | null;
 }
 
-export async function listIncidents(): Promise<IncidentRow[]> {
+export async function listarIncidentes(): Promise<LinhaDeIncidente[]> {
   await exigirAdminDaPlataforma();
   return prisma.securityIncident.findMany({
     orderBy: [{ status: "asc" }, { discoveredAt: "desc" }],

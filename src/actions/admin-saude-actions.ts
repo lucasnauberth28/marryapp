@@ -6,8 +6,8 @@ import { registrarAuditoria } from "@/lib/audit";
 import { emailEstaConfigurado, enviarEmail } from "@/lib/email";
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { getPlatformSetting, savePlatformSetting } from "@/lib/platform/settings";
-import { alertEmail } from "@/lib/platform/health-alerts";
+import { obterConfiguracaoDaPlataforma, salvarConfiguracaoDaPlataforma } from "@/lib/platform/settings";
+import { emailDoAlerta } from "@/lib/platform/health-alerts";
 import { conectarInstancia, whatsappEstaConfigurado } from "@/lib/evolution";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
@@ -29,9 +29,9 @@ export async function saveHealthAlerts(input: unknown): Promise<Ok | Fail> {
     if (parsed.sendTo && !z.string().email().safeParse(parsed.sendTo).success) {
       return { success: false, error: "Confira o e-mail.", fieldErrors: { sendTo: "Confira o e-mail: falta o @ ou o final do endereço." } };
     }
-    const current = await getPlatformSetting("healthAlerts");
+    const current = await obterConfiguracaoDaPlataforma("healthAlerts");
     // errorRate depende do Sentry (não integrado): fica como está, a tela não oferece
-    await savePlatformSetting("healthAlerts", { ...current, ...parsed });
+    await salvarConfiguracaoDaPlataforma("healthAlerts", { ...current, ...parsed });
     revalidatePath("/admin/saude");
     return { success: true, message: "Alertas salvos." };
   } catch (error) {
@@ -45,10 +45,10 @@ export async function testHealthAlerts(): Promise<Ok | Fail> {
     const admin = await exigirAdminDaPlataforma();
     const limit = await conferirLimiteDeUso({ key: `HEALTH_ALERT_TEST:${admin.userId}`, limit: 5, windowMs: 60 * 60_000 });
     if (!limit.success) return { success: false, error: "Muitos testes seguidos. Aguarde um pouco." };
-    const settings = await getPlatformSetting("healthAlerts");
+    const settings = await obterConfiguracaoDaPlataforma("healthAlerts");
     if (!settings.sendTo) return { success: false, error: "Salve primeiro o e-mail que recebe os alertas." };
     if (!emailEstaConfigurado()) return { success: false, error: "O e-mail não está configurado no servidor (RESEND_API_KEY)." };
-    const { html, text } = alertEmail(["Este é um teste: se você recebeu esta mensagem, os alertas por e-mail estão funcionando."]);
+    const { html, text } = emailDoAlerta(["Este é um teste: se você recebeu esta mensagem, os alertas por e-mail estão funcionando."]);
     const result = await enviarEmail({ to: settings.sendTo, subject: "Aceito: teste dos alertas", html, text });
     await registrarAuditoria({ action: "health.alert_test", targetType: "health", details: { sent: result.sent } });
     return result.sent ? { success: true, message: "Teste enviado. Confira a caixa de entrada." } : { success: false, error: "Não foi possível enviar o teste. Confira o e-mail e a configuração." };

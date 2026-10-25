@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ACTION_LABEL, ACTIVITY_GROUPS, actionLabel, groupOf, groupPrefixes, parseTarget, summarizeDetails, targetHref, targetLabel } from "../activity.ts";
+import { ROTULO_DA_ACAO, GRUPOS_DE_ATIVIDADE, rotuloDaAcao, grupoDe, prefixosDoGrupo, interpretarAlvo, resumirDetalhes, linkDoAlvo, rotuloDoAlvo } from "../activity.ts";
 
 // Ações novas da administração que precisam de frase em português (nunca o código bruto na tela)
 const NEW_ACTIONS = [
@@ -14,48 +14,48 @@ const NEW_ACTIONS = [
 
 test("toda ação da administração tem frase em português e sem travessão", () => {
   for (const action of NEW_ACTIONS) {
-    const label = actionLabel(action);
+    const label = rotuloDaAcao(action);
     assert.notEqual(label, action, `${action} sem frase`);
     assert.equal(label.includes("—"), false, action);
     assert.match(label, /^[A-ZÁÉÍÓÚÂÊÔÃÕÇ]/, action);
   }
-  assert.equal(actionLabel("acao.desconhecida"), "acao.desconhecida"); // nunca some: aparece pelo código
-  assert.equal(Object.values(ACTION_LABEL).some((l) => l.includes("—")), false);
+  assert.equal(rotuloDaAcao("acao.desconhecida"), "acao.desconhecida"); // nunca some: aparece pelo código
+  assert.equal(Object.values(ROTULO_DA_ACAO).some((l) => l.includes("—")), false);
 });
 
 test("o filtro por tipo cobre as ações e os grupos não se confundem", () => {
-  const sem = Object.keys(ACTION_LABEL).filter((a) => groupOf(a) === null);
+  const sem = Object.keys(ROTULO_DA_ACAO).filter((a) => grupoDe(a) === null);
   assert.deepEqual(sem, [], "ação sem grupo no filtro");
-  assert.equal(groupOf("wedding.suspend"), "casais");
-  assert.equal(groupOf("impersonation.write"), "casais");
-  assert.equal(groupOf("refund.request"), "dinheiro");
-  assert.equal(groupOf("export.csv"), "dinheiro");
-  assert.equal(groupOf("data_request.export"), "suporte");
-  assert.equal(groupOf("platform_setting.update"), "sistema");
-  assert.equal(groupOf("nada.disso"), null);
-  assert.deepEqual(groupPrefixes("dominios"), ["domain."]);
-  assert.deepEqual(groupPrefixes("inventado"), []);
-  assert.equal(new Set(ACTIVITY_GROUPS.map((g) => g.value)).size, ACTIVITY_GROUPS.length);
+  assert.equal(grupoDe("wedding.suspend"), "casais");
+  assert.equal(grupoDe("impersonation.write"), "casais");
+  assert.equal(grupoDe("refund.request"), "dinheiro");
+  assert.equal(grupoDe("export.csv"), "dinheiro");
+  assert.equal(grupoDe("data_request.export"), "suporte");
+  assert.equal(grupoDe("platform_setting.update"), "sistema");
+  assert.equal(grupoDe("nada.disso"), null);
+  assert.deepEqual(prefixosDoGrupo("dominios"), ["domain."]);
+  assert.deepEqual(prefixosDoGrupo("inventado"), []);
+  assert.equal(new Set(GRUPOS_DE_ATIVIDADE.map((g) => g.value)).size, GRUPOS_DE_ATIVIDADE.length);
 });
 
 test("alvo do link 'Ver tudo no registro'", () => {
-  assert.deepEqual(parseTarget("wedding:3f2504e0-4f89-41d3-9a0c-0305e82c3301"), { type: "wedding", id: "3f2504e0-4f89-41d3-9a0c-0305e82c3301" });
-  assert.equal(parseTarget("wedding"), null);
-  assert.equal(parseTarget("wedding:a b"), null);
-  assert.equal(parseTarget("../x:1"), null);
-  assert.equal(parseTarget(undefined), null);
-  assert.equal(targetHref("wedding", "3f2504e0-4f89-41d3-9a0c-0305e82c3301"), "/admin/casais/3f2504e0-4f89-41d3-9a0c-0305e82c3301");
-  assert.equal(targetHref("coupon", "x"), null);
-  assert.equal(targetLabel("support_ticket"), "Pedido de ajuda");
-  assert.equal(targetLabel("tipo_novo"), "tipo_novo");
+  assert.deepEqual(interpretarAlvo("wedding:3f2504e0-4f89-41d3-9a0c-0305e82c3301"), { type: "wedding", id: "3f2504e0-4f89-41d3-9a0c-0305e82c3301" });
+  assert.equal(interpretarAlvo("wedding"), null);
+  assert.equal(interpretarAlvo("wedding:a b"), null);
+  assert.equal(interpretarAlvo("../x:1"), null);
+  assert.equal(interpretarAlvo(undefined), null);
+  assert.equal(linkDoAlvo("wedding", "3f2504e0-4f89-41d3-9a0c-0305e82c3301"), "/admin/casais/3f2504e0-4f89-41d3-9a0c-0305e82c3301");
+  assert.equal(linkDoAlvo("coupon", "x"), null);
+  assert.equal(rotuloDoAlvo("support_ticket"), "Pedido de ajuda");
+  assert.equal(rotuloDoAlvo("tipo_novo"), "tipo_novo");
 });
 
 test("resumo dos detalhes: só chaves conhecidas, no máximo cinco, sem segredos", () => {
-  assert.equal(summarizeDetails({ reason: "Pedido do casal", amount: 14900, token: "segredo", password: "x" }), "Motivo: Pedido do casal · Valor: R$ 149,00");
-  assert.equal(summarizeDetails({ channels: ["PANEL", "EMAIL"], recipients: 12, enabled: true }), "Canais: PANEL, EMAIL · Destinatários: 12 · Ligado: sim");
-  assert.equal(summarizeDetails({ a: 1, b: 2 }), "");
-  assert.equal(summarizeDetails(null), "");
-  assert.equal(summarizeDetails({ before: { x: 1 }, after: { x: 2 } }, "platform_setting.update", "maintenance"), "Configuração: Modo de manutenção");
-  const many = summarizeDetails({ code: "a", name: "b", username: "c", role: "d", reason: "e", domain: "f" });
+  assert.equal(resumirDetalhes({ reason: "Pedido do casal", amount: 14900, token: "segredo", password: "x" }), "Motivo: Pedido do casal · Valor: R$ 149,00");
+  assert.equal(resumirDetalhes({ channels: ["PANEL", "EMAIL"], recipients: 12, enabled: true }), "Canais: PANEL, EMAIL · Destinatários: 12 · Ligado: sim");
+  assert.equal(resumirDetalhes({ a: 1, b: 2 }), "");
+  assert.equal(resumirDetalhes(null), "");
+  assert.equal(resumirDetalhes({ before: { x: 1 }, after: { x: 2 } }, "platform_setting.update", "maintenance"), "Configuração: Modo de manutenção");
+  const many = resumirDetalhes({ code: "a", name: "b", username: "c", role: "d", reason: "e", domain: "f" });
   assert.equal(many.split(" · ").length, 5);
 });

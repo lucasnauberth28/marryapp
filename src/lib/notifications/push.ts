@@ -1,7 +1,7 @@
 import "server-only";
 import webpush from "web-push";
 import prisma from "@/lib/prisma";
-import { recordServiceEvent } from "@/lib/platform/system-records";
+import { registrarEventoDeServico } from "@/lib/platform/system-records";
 import { montarConteudoDoPush, entregarPush, type RelatorioDaEntregaDePush, type ConteudoDoPush, type OrigemDoPush } from "./push-payload.ts";
 
 // Web Push sem serviço externo: VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY (npx web-push generate-vapid-keys)
@@ -55,7 +55,7 @@ export async function enviarPushParaAPessoa(userId: string, payload: ConteudoDoP
     });
     // Saúde do sistema: uma linha por pessoa com aparelho (sem endereço do aparelho nem texto do aviso)
     if (subscriptions.length > 0) {
-      await recordServiceEvent({
+      await registrarEventoDeServico({
         service: "push",
         kind: "send",
         ok: report.failed === 0,
@@ -65,7 +65,7 @@ export async function enviarPushParaAPessoa(userId: string, payload: ConteudoDoP
     return { ...report, devices: subscriptions.length };
   } catch (error) {
     console.error("[push] Falha ao enviar:", error instanceof Error ? error.message : error);
-    await recordServiceEvent({ service: "push", kind: "send", ok: false, message: "Erro ao enviar" });
+    await registrarEventoDeServico({ service: "push", kind: "send", ok: false, message: "Erro ao enviar" });
     return { ...RESULTADO_VAZIO, devices: 0 };
   }
 }

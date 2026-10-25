@@ -6,7 +6,7 @@ import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { cleanInvoiceNumber, refundAmountProblem, refundDueAt } from "@/lib/platform/payments";
+import { limparNumeroDaNota, problemaNoValorDoReembolso, prazoDoReembolso } from "@/lib/platform/payments";
 import {
   PRECO_MAXIMO_EM_CENTAVOS,
   TAMANHO_MAXIMO_DO_NOME,
@@ -61,12 +61,12 @@ export async function registerRefundRequestAction(input: unknown): Promise<Admin
     });
     if (!sub) return { success: false, error: "Pagamento não encontrado. Atualize a página." };
     if (sub.status !== PaymentStatus.APPROVED) return { success: false, error: "Só um pagamento aprovado pode ter pedido de reembolso." };
-    const problem = refundAmountProblem(data.amountCents, sub.amount);
+    const problem = problemaNoValorDoReembolso(data.amountCents, sub.amount);
     if (problem) return { success: false, error: problem };
     const open = await prisma.refundRequest.count({ where: { subscriptionId: sub.id, status: "REQUESTED" } });
     if (open > 0) return { success: false, error: "Já existe um pedido de reembolso em aberto para este pagamento." };
     const created = await prisma.refundRequest.create({
-      data: { subscriptionId: sub.id, amount: data.amountCents, reason: data.reason, requestedByName: sub.user?.name ?? null, dueAt: refundDueAt(new Date()) },
+      data: { subscriptionId: sub.id, amount: data.amountCents, reason: data.reason, requestedByName: sub.user?.name ?? null, dueAt: prazoDoReembolso(new Date()) },
       select: { id: true },
     });
     await registrarAuditoria({ action: "refund.request", targetType: "refund_request", targetId: created.id, details: { subscriptionId: sub.id, amount: data.amountCents, by: admin.userId } });
@@ -121,7 +121,7 @@ export async function markInvoiceIssuedAction(input: unknown): Promise<AdminPlan
   try {
     const admin = await exigirAdminDaPlataforma();
     const data = z.object({ subscriptionId: z.string().uuid("Pagamento inválido."), number: z.string().max(80).optional() }).parse(input);
-    const number = cleanInvoiceNumber(data.number);
+    const number = limparNumeroDaNota(data.number);
     const done = await prisma.subscription.updateMany({
       where: { id: data.subscriptionId, status: PaymentStatus.APPROVED, amount: { gt: 0 }, invoiceIssuedAt: null },
       data: { invoiceIssuedAt: new Date(), invoiceNumber: number },

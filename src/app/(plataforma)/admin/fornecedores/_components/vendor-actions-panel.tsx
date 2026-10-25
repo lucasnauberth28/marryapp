@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { GRANT_DAYS, REJECTION_REASONS, rejectionMessageFor } from "@/lib/platform/vendor-admin";
+import { DIAS_DE_CONCESSAO, MOTIVOS_DE_RECUSA, mensagemDeRecusaPara } from "@/lib/platform/vendor-admin";
 import { cn } from "@/lib/utils";
 
 const DANGER = "border-perigo text-perigo hover:border-perigo hover:bg-perigo-suave";
@@ -41,8 +41,8 @@ export function VendorActionsPanel({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [reasonKey, setReasonKey] = useState<string>(REJECTION_REASONS[0].value);
-  const [message, setMessage] = useState<string>(REJECTION_REASONS[0].message);
+  const [reasonKey, setReasonKey] = useState<string>(MOTIVOS_DE_RECUSA[0].value);
+  const [message, setMessage] = useState<string>(MOTIVOS_DE_RECUSA[0].message);
   const [tier, setTier] = useState<"PRO" | "MASTER">("PRO");
   const [days, setDays] = useState("30");
   const [grantReason, setGrantReason] = useState("");
@@ -91,10 +91,10 @@ export function VendorActionsPanel({
             value={reasonKey}
             onChange={(e) => {
               setReasonKey(e.target.value);
-              setMessage(rejectionMessageFor(e.target.value));
+              setMessage(mensagemDeRecusaPara(e.target.value));
             }}
           >
-            {REJECTION_REASONS.map((r) => (
+            {MOTIVOS_DE_RECUSA.map((r) => (
               <option key={r.value} value={r.value}>
                 {r.label}
               </option>
@@ -148,7 +148,7 @@ export function VendorActionsPanel({
                 <option value="MASTER">Master</option>
               </NativeSelect>
               <NativeSelect label="Por quantos dias" alwaysFloat value={days} onChange={(e) => setDays(e.target.value)}>
-                {GRANT_DAYS.map((d) => (
+                {DIAS_DE_CONCESSAO.map((d) => (
                   <option key={d} value={d}>
                     {d}
                   </option>

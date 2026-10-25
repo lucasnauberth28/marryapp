@@ -14,7 +14,7 @@ const FILES = [
   "subscription-admin-actions.ts",
 ];
 
-const GUARDS = ["requirePlatformAdmin()", "adminOnly()", "savePlatformSetting("];
+const GUARDS = ["exigirAdminDaPlataforma()", "adminOnly()", "salvarConfiguracaoDaPlataforma("];
 
 for (const file of FILES) {
   test(`${file}: cada ação confere a administração antes de tocar no banco`, () => {
@@ -33,6 +33,6 @@ for (const file of FILES) {
 
   test(`${file}: nenhuma ação usa a permissão antiga por caminho`, () => {
     const source = readFileSync(fileURLToPath(new URL(`../${file}`, import.meta.url)), "utf8");
-    assert.ok(!source.includes("requirePathPermission"), "troque por requirePlatformAdmin");
+    assert.ok(!source.includes("exigirPermissaoDoCaminho"), "troque por exigirAdminDaPlataforma");
   });
 }

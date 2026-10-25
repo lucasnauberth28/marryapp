@@ -3,7 +3,7 @@
 import { useState, type ComponentProps, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { filenameFromDisposition } from "@/lib/platform/download-name";
+import { nomeDoArquivoDoCabecalho } from "@/lib/platform/download-name";
 
 /**
  * Botão de exportação (CSV, planilha, arquivo de dados). Baixa de uma rota `/api/admin/...` protegida e mostra
@@ -35,7 +35,7 @@ export function ExportButton({
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = filenameFromDisposition(res.headers.get("content-disposition"), fallbackName);
+      link.download = nomeDoArquivoDoCabecalho(res.headers.get("content-disposition"), fallbackName);
       document.body.append(link);
       link.click();
       link.remove();

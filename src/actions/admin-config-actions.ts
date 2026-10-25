@@ -3,10 +3,10 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { registrarAuditoria } from "@/lib/audit";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
-import { getPlatformSetting, savePlatformSetting } from "@/lib/platform/settings";
-import { parseEmailSender, parseMaintenance, refundPolicyInput } from "@/lib/platform/config-core";
-import { MAINTENANCE_TAG } from "@/lib/platform/maintenance";
-import { EMAIL_SENDER_TAG } from "@/lib/platform/email-sender";
+import { obterConfiguracaoDaPlataforma, salvarConfiguracaoDaPlataforma } from "@/lib/platform/settings";
+import { interpretarRemetenteDeEmail, interpretarManutencao, entradaDaPoliticaDeReembolso } from "@/lib/platform/config-core";
+import { ETIQUETA_DA_MANUTENCAO } from "@/lib/platform/maintenance";
+import { ETIQUETA_DO_REMETENTE_DE_EMAIL } from "@/lib/platform/email-sender";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 /**
@@ -24,14 +24,14 @@ type Ok = { success: true; message: string };
 export async function saveMaintenance(input: unknown): Promise<Ok | Fail> {
   try {
     await exigirAdminDaPlataforma();
-    const parsed = parseMaintenance(input);
+    const parsed = interpretarManutencao(input);
     if (!parsed.ok) return { success: false, error: ERROS.camposInvalidos, fieldErrors: parsed.errors };
-    const before = await getPlatformSetting("maintenance");
-    await savePlatformSetting("maintenance", parsed.value, parsed.value.enabled ? "Manutenção ligada" : "Manutenção desligada");
+    const before = await obterConfiguracaoDaPlataforma("maintenance");
+    await salvarConfiguracaoDaPlataforma("maintenance", parsed.value, parsed.value.enabled ? "Manutenção ligada" : "Manutenção desligada");
     if (before.enabled !== parsed.value.enabled) {
       await registrarAuditoria({ action: parsed.value.enabled ? "maintenance.enable" : "maintenance.disable", targetType: "platform_setting", targetId: "maintenance", details: { backAt: parsed.value.backAt } });
     }
-    updateTag(MAINTENANCE_TAG);
+    updateTag(ETIQUETA_DA_MANUTENCAO);
     revalidatePath("/admin/configuracoes");
     return { success: true, message: parsed.value.enabled ? "Modo de manutenção ligado. Casais e convidados já veem o aviso." : "Modo de manutenção desligado." };
   } catch (error) {
@@ -43,10 +43,10 @@ export async function saveMaintenance(input: unknown): Promise<Ok | Fail> {
 export async function saveEmailSender(input: unknown): Promise<Ok | Fail> {
   try {
     await exigirAdminDaPlataforma();
-    const parsed = parseEmailSender(input);
+    const parsed = interpretarRemetenteDeEmail(input);
     if (!parsed.ok) return { success: false, error: ERROS.camposInvalidos, fieldErrors: parsed.errors };
-    await savePlatformSetting("emailSender", parsed.value);
-    updateTag(EMAIL_SENDER_TAG);
+    await salvarConfiguracaoDaPlataforma("emailSender", parsed.value);
+    updateTag(ETIQUETA_DO_REMETENTE_DE_EMAIL);
     revalidatePath("/admin/configuracoes");
     return { success: true, message: parsed.value.fromEmail ? "Remetente salvo. Vale para os próximos e-mails." : "Voltamos ao remetente do servidor." };
   } catch (error) {
@@ -58,13 +58,13 @@ export async function saveEmailSender(input: unknown): Promise<Ok | Fail> {
 export async function saveRefundPolicy(input: unknown): Promise<Ok | Fail> {
   try {
     await exigirAdminDaPlataforma();
-    const parsed = refundPolicyInput.safeParse(input);
+    const parsed = entradaDaPoliticaDeReembolso.safeParse(input);
     if (!parsed.success) {
       const fieldErrors: Record<string, string> = {};
       for (const issue of parsed.error.issues) fieldErrors[String(issue.path[0] ?? "form")] ??= issue.message;
       return { success: false, error: ERROS.camposInvalidos, fieldErrors };
     }
-    await savePlatformSetting("refundPolicy", { days: Number(parsed.data.days), decidedBy: "ADMIN", text: parsed.data.text });
+    await salvarConfiguracaoDaPlataforma("refundPolicy", { days: Number(parsed.data.days), decidedBy: "ADMIN", text: parsed.data.text });
     revalidatePath("/admin/configuracoes");
     revalidatePath("/admin/planos");
     return { success: true, message: "Política de reembolso salva." };

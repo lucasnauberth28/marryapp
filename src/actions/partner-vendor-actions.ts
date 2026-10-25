@@ -9,7 +9,7 @@ import { normalizarTexto } from "@/lib/security/sanitize";
 import { avisarDepois } from "@/lib/notifications/service";
 import { avisarNovoPedidoDeOrcamento, avisarPropostaAceita } from "@/lib/notifications/events";
 import { obterIdsDeFornecedoresIndisponiveis, fornecedorEstaDisponivel } from "@/lib/vendor-availability";
-import { vitrineRank } from "@/lib/platform/vendor-admin";
+import { posicaoNaVitrine } from "@/lib/platform/vendor-admin";
 import {
   effectiveVendorTier,
   LEAD_BUDGET_OPTIONS,
@@ -132,7 +132,7 @@ export async function getPartnerVendorsAction(category?: string, options?: { wed
         const v = toPublicVendor(rest);
         return { v, featured: isFeatured, tierRank: rank[v.planTier], index };
       })
-      .sort(vitrineRank)
+      .sort(posicaoNaVitrine)
       .map(({ v }) => v);
   } catch (error) {
     console.error("[getPartnerVendorsAction Error]:", error);

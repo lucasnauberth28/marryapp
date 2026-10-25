@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { recusarSeNaoForCron } from "@/lib/security/cron-auth";
 import { enviarLembretesDeDespesa } from "@/lib/notifications/cron";
-import { prunePlatformRecords, recordCronRun } from "@/lib/platform/system-records";
-import { runHealthAlerts } from "@/lib/platform/health-alerts";
+import { limparRegistrosAntigosDaPlataforma, registrarRodadaDaTarefaAgendada } from "@/lib/platform/system-records";
+import { rodarAlertasDeSaude } from "@/lib/platform/health-alerts";
 import { enviarLembretesDeRenovacaoDeDominio } from "@/lib/domain-renewal-reminders";
 
 /**
@@ -29,15 +29,15 @@ export async function GET(req: Request) {
     return null;
   });
   // Registro para a Saúde do sistema (nunca atrapalha a rotina)
-  await recordCronRun({
+  await registrarRodadaDaTarefaAgendada({
     job: "avisos",
     startedAt,
     status: failure ? "FAILED" : "OK",
     summary: { ...(expenses ? { expenses: { ...expenses } } : {}), ...(domains ? { domainRenewals: { ...domains } } : {}) },
     error: failure,
   });
-  await prunePlatformRecords();
+  await limparRegistrosAntigosDaPlataforma();
   // Alertas por e-mail da Saúde do sistema (uma verificação por dia; nunca lança erro)
-  const alerts = await runHealthAlerts();
+  const alerts = await rodarAlertasDeSaude();
   return NextResponse.json({ success: true, expenses, domainRenewals: domains, alerts: alerts.reason });
 }
