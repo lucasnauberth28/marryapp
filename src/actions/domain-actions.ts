@@ -70,6 +70,53 @@ export type ResultadoDoPedidoDeDominio =
   | { success: true }
   | { success: false; error?: string; fieldErrors?: Partial<Record<CampoDoPedidoDeDominio, string>> };
 
+type RecusaOuDisponibilidade = { recusa: ResultadoDoPedidoDeDominio } | { availability: Awaited<ReturnType<typeof verificarDisponibilidadeDoDominio>> };
+
+/** Um pedido ativo por casamento e um nome por pedido ativo; nome ocupado ou em liberação não dá para pedir. */
+async function recusaDoNomeNoPedido(weddingId: string, domain: string): Promise<RecusaOuDisponibilidade> {
+  // O banco também garante, para corridas
+  const [mine, sameName] = await Promise.all([
+    prisma.domainOrder.findFirst({ where: { weddingId, status: { in: [...SITUACOES_ATIVAS] } }, select: { id: true } }),
+    prisma.domainOrder.findFirst({ where: { domain, status: { in: [...SITUACOES_ATIVAS] } }, select: { id: true } }),
+  ]);
+  if (mine) return { recusa: { success: false, error: "Vocês já têm um pedido de domínio em andamento." } };
+  if (sameName) return { recusa: { success: false, fieldErrors: { domain: "Esse endereço já está em um pedido. Escolham outro nome." } } };
+
+  // Se a consulta falhar, o pedido segue e conferimos ao registrar.
+  const availability = await verificarDisponibilidadeDoDominio(domain);
+  if (availability === "taken") return { recusa: { success: false, fieldErrors: { domain: `${domain} já tem dono. Escolham outro nome.` } } };
+  if (availability === "releasing") {
+    return { recusa: { success: false, fieldErrors: { domain: `${domain} está em liberação e não dá para pedir agora. Escolham outro nome.` } } };
+  }
+  return { availability };
+}
+
+type DadosDoPedido = { domain: string; holderName: string; holderDocument: string; holderEmail: string; holderPhone: string };
+
+/** Grava o pedido no nome do titular. O banco garante um pedido ativo por casamento e por endereço. */
+async function criarPedido(weddingId: string, userId: string, subscriptionId: string | null, data: DadosDoPedido): Promise<{ orderId: string } | { erro: string }> {
+  try {
+    const order = await prisma.domainOrder.create({
+      data: {
+        weddingId,
+        requestedByUserId: userId === ID_DO_SUPER_ADMIN ? null : userId,
+        subscriptionId,
+        domain: data.domain,
+        holderName: data.holderName,
+        holderDocument: data.holderDocument,
+        holderEmail: data.holderEmail,
+        holderPhone: data.holderPhone,
+      },
+      select: { id: true },
+    });
+    return { orderId: order.id };
+  } catch (error) {
+    if (ehViolacaoDeUnicidade(error)) return { erro: "Já existe um pedido para este casamento ou para este endereço. Atualize a página." };
+    console.error("[requestDomainAction]", error instanceof Error ? error.message : error);
+    return { erro: "Não conseguimos registrar o pedido agora. Tente de novo em instantes." };
+  }
+}
+
 /** Cria o pedido de domínio do casamento, no nome do titular informado. */
 export async function pedirDominio(input: unknown): Promise<ResultadoDoPedidoDeDominio> {
   const got = await obterContextoDaPessoa();
@@ -90,44 +137,15 @@ export async function pedirDominio(input: unknown): Promise<ResultadoDoPedidoDeD
     return { success: false, fieldErrors: { domain: "Esse endereço não está disponível. Escolham outro nome." } };
   }
 
-  // Um pedido ativo por casamento e um nome por pedido ativo (o banco também garante, para corridas)
-  const [mine, sameName] = await Promise.all([
-    prisma.domainOrder.findFirst({ where: { weddingId, status: { in: [...SITUACOES_ATIVAS] } }, select: { id: true } }),
-    prisma.domainOrder.findFirst({ where: { domain: data.domain, status: { in: [...SITUACOES_ATIVAS] } }, select: { id: true } }),
-  ]);
-  if (mine) return { success: false, error: "Vocês já têm um pedido de domínio em andamento." };
-  if (sameName) return { success: false, fieldErrors: { domain: "Esse endereço já está em um pedido. Escolham outro nome." } };
-
-  // Nome ocupado ou em liberação não dá para pedir. Se a consulta falhar, o pedido segue e conferimos ao registrar.
-  const availability = await verificarDisponibilidadeDoDominio(data.domain);
-  if (availability === "taken") return { success: false, fieldErrors: { domain: `${data.domain} já tem dono. Escolham outro nome.` } };
-  if (availability === "releasing") {
-    return { success: false, fieldErrors: { domain: `${data.domain} está em liberação e não dá para pedir agora. Escolham outro nome.` } };
-  }
+  const recusa = await recusaDoNomeNoPedido(weddingId, data.domain);
+  if ("recusa" in recusa) return recusa.recusa;
+  const { availability } = recusa;
 
   const plan = session.userId === ID_DO_SUPER_ADMIN ? null : await obterPlanoDoCasamento(weddingId);
 
-  let orderId: string;
-  try {
-    const order = await prisma.domainOrder.create({
-      data: {
-        weddingId,
-        requestedByUserId: session.userId === ID_DO_SUPER_ADMIN ? null : session.userId,
-        subscriptionId: plan?.subscriptionId ?? null,
-        domain: data.domain,
-        holderName: data.holderName,
-        holderDocument: data.holderDocument,
-        holderEmail: data.holderEmail,
-        holderPhone: data.holderPhone,
-      },
-      select: { id: true },
-    });
-    orderId = order.id;
-  } catch (error) {
-    if (ehViolacaoDeUnicidade(error)) return { success: false, error: "Já existe um pedido para este casamento ou para este endereço. Atualize a página." };
-    console.error("[requestDomainAction]", error instanceof Error ? error.message : error);
-    return { success: false, error: "Não conseguimos registrar o pedido agora. Tente de novo em instantes." };
-  }
+  const criado = await criarPedido(weddingId, session.userId, plan?.subscriptionId ?? null, data);
+  if ("erro" in criado) return { success: false, error: criado.erro };
+  const orderId = criado.orderId;
 
   // Sem CPF/CNPJ nem contato do titular no registro de atividades
   await registrarAuditoria({
