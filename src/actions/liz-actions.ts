@@ -33,6 +33,31 @@ export type ResultadoDoPainelDaLiz = { success: true; data: DadosDoPainelDaLiz }
 
 const ERRO_AO_CARREGAR = "Não deu para carregar a sugestão agora. Tente de novo.";
 
+interface EntradaDasContagens {
+  weddingId: string;
+  can: (path: string) => boolean;
+  whatsapp: boolean;
+  now: Date;
+  todayKey: string;
+}
+
+/** Só consulta o que o perfil pode abrir: a dica nunca aponta para uma tela sem acesso. */
+async function contagensParaADica({ weddingId, can, whatsapp, now, todayKey }: EntradaDasContagens) {
+  const [pending, notInvitedYet, settings, overdueExpenses, overdueTasks] = await Promise.all([
+    // Convites sem resposta e os acompanhantes que eles trazem (a sugestão diz convites e pessoas)
+    can("/convidados")
+      ? prisma.guest.aggregate({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING, ...filtroSemSoPresente }, _count: { _all: true }, _sum: { allowedCompanions: true } })
+      : null,
+    can("/mensagens") && whatsapp
+      ? prisma.guest.count({ where: { weddingId, hasReceivedMessage: false, phone: { not: null }, NOT: { phone: "" }, ...filtroSemSoPresente } })
+      : 0,
+    can("/convidados") ? prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } }) : null,
+    can("/financas") ? prisma.expense.count({ where: { weddingId, status: { not: ExpenseStatus.PAID }, dueDate: { lt: startOfDay(now) } } }) : 0,
+    can("/pendencias") ? prisma.task.count({ where: { weddingId, status: { not: TaskStatus.DONE }, dueDate: { lt: new Date(`${todayKey}T00:00:00Z`) } } }) : 0,
+  ]);
+  return { pending, notInvitedYet, settings, overdueExpenses, overdueTasks };
+}
+
 /** Dados do painel: a sugestão para agora (mesmas regras do Início e das Tarefas) e o plano do casamento. */
 export async function obterDadosDoPainelDaLiz(): Promise<ResultadoDoPainelDaLiz> {
   try {
@@ -50,27 +75,7 @@ export async function obterDadosDoPainelDaLiz(): Promise<ResultadoDoPainelDaLiz>
       lerSeOChatDaLizEstaAtivo(),
     ]);
 
-    // Só consulta o que o perfil pode abrir: a dica nunca aponta para uma tela sem acesso.
-    const [pending, notInvitedYet, settings, overdueExpenses, overdueTasks] = await Promise.all([
-      // Convites sem resposta e os acompanhantes que eles trazem (a sugestão diz convites e pessoas)
-      can("/convidados")
-        ? prisma.guest.aggregate({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING, ...filtroSemSoPresente }, _count: { _all: true }, _sum: { allowedCompanions: true } })
-        : null,
-      can("/mensagens") && whatsapp
-        ? prisma.guest.count({
-            where: { weddingId, hasReceivedMessage: false, phone: { not: null }, NOT: { phone: "" }, ...filtroSemSoPresente },
-          })
-        : 0,
-      can("/convidados") ? prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } }) : null,
-      can("/financas")
-        ? prisma.expense.count({ where: { weddingId, status: { not: ExpenseStatus.PAID }, dueDate: { lt: startOfDay(now) } } })
-        : 0,
-      can("/pendencias")
-        ? prisma.task.count({
-            where: { weddingId, status: { not: TaskStatus.DONE }, dueDate: { lt: new Date(`${todayKey}T00:00:00Z`) } },
-          })
-        : 0,
-    ]);
+    const { pending, notInvitedYet, settings, overdueExpenses, overdueTasks } = await contagensParaADica({ weddingId, can, whatsapp, now, todayKey });
 
     const pendingGuests = pending?._count._all ?? 0;
     const pendingPeople = pendingGuests + (pending?._sum.allowedCompanions ?? 0);

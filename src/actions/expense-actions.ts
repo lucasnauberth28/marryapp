@@ -122,6 +122,18 @@ export async function excluirDespesa(id: string) {
   }
 }
 
+/** Cada fornecedor citado precisa ser deste casamento e cada tipo precisa existir. Devolve o problema, ou null. */
+async function problemaNosItensDoLote(items: Array<{ type?: ExpenseType; vendorId?: string | null }>, weddingId: string): Promise<string | null> {
+  const vendorIds = [...new Set(items.map((item) => item.vendorId).filter((v): v is string => !!v))];
+  if (vendorIds.some((v) => typeof v !== "string")) return ERROS.fornecedorNaoEncontrado;
+  if (vendorIds.length > 0) {
+    const owned = await prisma.vendor.count({ where: { id: { in: vendorIds }, weddingId } });
+    if (owned !== vendorIds.length) return ERROS.fornecedorNaoEncontrado;
+  }
+  if (items.some((item) => item.type && !TIPOS_DE_DESPESA.has(item.type))) return "Tipo de despesa inválido.";
+  return null;
+}
+
 export async function criarDespesasEmLote(items: Array<{
   description: string;
   amount: number;
@@ -142,16 +154,8 @@ export async function criarDespesasEmLote(items: Array<{
   }
 
   try {
-    // Cada fornecedor citado precisa ser deste casamento
-    const vendorIds = [...new Set(items.map((item) => item.vendorId).filter((v): v is string => !!v))];
-    if (vendorIds.some((v) => typeof v !== "string")) return { success: false, error: ERROS.fornecedorNaoEncontrado };
-    if (vendorIds.length > 0) {
-      const owned = await prisma.vendor.count({ where: { id: { in: vendorIds }, weddingId } });
-      if (owned !== vendorIds.length) return { success: false, error: ERROS.fornecedorNaoEncontrado };
-    }
-    if (items.some((item) => item.type && !TIPOS_DE_DESPESA.has(item.type))) {
-      return { success: false, error: "Tipo de despesa inválido." };
-    }
+    const problema = await problemaNosItensDoLote(items, weddingId);
+    if (problema) return { success: false, error: problema };
 
     await prisma.expense.createMany({
       data: items.map((item) => ({
