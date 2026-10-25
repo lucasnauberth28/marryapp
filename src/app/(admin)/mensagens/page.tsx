@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
 import { CartaoDeUpgrade } from "@/components/plan/upgrade-card";
-import { MensagensCliente } from "./mensagens-client";
+import { MensagensCliente } from "./mensagens-cliente";
 import { garantirModelosPadrao } from "@/actions/message-actions";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 
