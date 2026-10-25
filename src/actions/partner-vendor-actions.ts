@@ -21,6 +21,7 @@ import {
 } from "@/app/(fornecedor)/_lib/vendor-panel";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
+import { ERROS } from "@/lib/mensagens-de-erro";
 const PUBLIC_VENDOR_SELECT = {
   id: true,
   companyName: true,
@@ -204,7 +205,7 @@ export async function checkVendorAvailability(vendorId: string, date: string): P
       where: { id: parsed.data.vendorId, curationStatus: "APPROVED", suspendedAt: null },
       select: { id: true },
     });
-    if (!vendor) return { success: false, error: "Fornecedor não encontrado." };
+    if (!vendor) return { success: false, error: ERROS.fornecedorNaoEncontrado };
 
     return { success: true, available: await isVendorAvailable(vendor.id, parsed.data.date) };
   } catch (error) {
@@ -261,7 +262,7 @@ export async function createVendorLead(data: {
       where: { id: input.vendorId, curationStatus: "APPROVED", suspendedAt: null },
       select: { id: true, planTier: true, planExpiresAt: true },
     });
-    if (!vendor) return { success: false, error: "Fornecedor não encontrado." };
+    if (!vendor) return { success: false, error: ERROS.fornecedorNaoEncontrado };
 
     let locked = false;
     if (effectiveVendorTier(vendor.planTier, vendor.planExpiresAt) === "FREE") {

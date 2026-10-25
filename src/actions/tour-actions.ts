@@ -7,6 +7,7 @@ import { getWeddingContext } from "@/lib/security/wedding-context";
 import { getTourUserRow, tourAccountOf } from "@/lib/tour/panel-tour";
 import { tourEligible, tourMayWrite, tourWrite, type TourOutcome } from "@/lib/tour/rules";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 // Passo a passo do painel. Tudo aqui vale só para a pessoa da sessão: nenhum id vem do navegador.
 // Não usa requireWedding de propósito: é uma preferência da pessoa, não um dado do casamento (segue
 // funcionando com o casamento suspenso ou em manutenção). A administração e quem está "entrando como"
@@ -15,7 +16,7 @@ import { tourEligible, tourMayWrite, tourWrite, type TourOutcome } from "@/lib/t
 export type TourResult = { success: true } | { success: false; error: string };
 
 const REFUSED: TourResult = { success: false, error: "O passo a passo não é gravado nesta sessão." };
-const EXPIRED: TourResult = { success: false, error: "Sua sessão expirou. Entre de novo." };
+const EXPIRED: TourResult = { success: false, error: ERROS.sessaoExpirada };
 
 /** Id da pessoa quando ela pode gravar o passo a passo; senão o motivo da recusa. */
 async function writableUserId(): Promise<{ userId: string } | { refusal: TourResult }> {

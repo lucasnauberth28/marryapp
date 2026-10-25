@@ -8,6 +8,7 @@ import { parseEmailSender, parseMaintenance, refundPolicyInput } from "@/lib/pla
 import { MAINTENANCE_TAG } from "@/lib/platform/maintenance";
 import { EMAIL_SENDER_TAG } from "@/lib/platform/email-sender";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 /**
  * Configurações da plataforma. Cada função começa pelo guard da administração e grava pelo helper
  * savePlatformSetting (valida com zod e registra antes e depois no AuditLog).
@@ -24,7 +25,7 @@ export async function saveMaintenance(input: unknown): Promise<Ok | Fail> {
   try {
     await requirePlatformAdmin();
     const parsed = parseMaintenance(input);
-    if (!parsed.ok) return { success: false, error: "Confira os campos marcados.", fieldErrors: parsed.errors };
+    if (!parsed.ok) return { success: false, error: ERROS.camposInvalidos, fieldErrors: parsed.errors };
     const before = await getPlatformSetting("maintenance");
     await savePlatformSetting("maintenance", parsed.value, parsed.value.enabled ? "Manutenção ligada" : "Manutenção desligada");
     if (before.enabled !== parsed.value.enabled) {
@@ -43,7 +44,7 @@ export async function saveEmailSender(input: unknown): Promise<Ok | Fail> {
   try {
     await requirePlatformAdmin();
     const parsed = parseEmailSender(input);
-    if (!parsed.ok) return { success: false, error: "Confira os campos marcados.", fieldErrors: parsed.errors };
+    if (!parsed.ok) return { success: false, error: ERROS.camposInvalidos, fieldErrors: parsed.errors };
     await savePlatformSetting("emailSender", parsed.value);
     updateTag(EMAIL_SENDER_TAG);
     revalidatePath("/admin/configuracoes");
@@ -61,7 +62,7 @@ export async function saveRefundPolicy(input: unknown): Promise<Ok | Fail> {
     if (!parsed.success) {
       const fieldErrors: Record<string, string> = {};
       for (const issue of parsed.error.issues) fieldErrors[String(issue.path[0] ?? "form")] ??= issue.message;
-      return { success: false, error: "Confira os campos marcados.", fieldErrors };
+      return { success: false, error: ERROS.camposInvalidos, fieldErrors };
     }
     await savePlatformSetting("refundPolicy", { days: Number(parsed.data.days), decidedBy: "ADMIN", text: parsed.data.text });
     revalidatePath("/admin/configuracoes");

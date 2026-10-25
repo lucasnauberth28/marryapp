@@ -5,6 +5,7 @@ import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-conte
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 export async function getTablesWithGuests() {
   const { weddingId } = await requireWeddingRead();
   return prisma.table.findMany({
@@ -59,9 +60,9 @@ export async function createTable(name: string, capacity: number) {
 export async function deleteTable(id: string) {
   const { weddingId } = await requireWedding("/mesas");
   try {
-    if (typeof id !== "string") return { success: false, error: "Mesa não encontrada." };
+    if (typeof id !== "string") return { success: false, error: ERROS.mesaNaoEncontrada };
     const table = await prisma.table.findFirst({ where: { id, weddingId }, select: { id: true } });
-    if (!table) return { success: false, error: "Mesa não encontrada." };
+    if (!table) return { success: false, error: ERROS.mesaNaoEncontrada };
 
     // Os convidados da mesa voltam para "sem mesa" antes de apagá-la
     await prisma.$transaction([
@@ -79,20 +80,20 @@ export async function deleteTable(id: string) {
 export async function assignGuestToTable(guestId: string, tableId: string | null) {
   const { weddingId } = await requireWedding("/mesas");
   try {
-    if (typeof guestId !== "string") return { success: false, error: "Convidado não encontrado." };
+    if (typeof guestId !== "string") return { success: false, error: ERROS.convidadoNaoEncontrado };
 
     // A mesa precisa ser do mesmo casamento do convidado
     if (tableId !== null) {
-      if (typeof tableId !== "string") return { success: false, error: "Mesa não encontrada." };
+      if (typeof tableId !== "string") return { success: false, error: ERROS.mesaNaoEncontrada };
       const table = await prisma.table.findFirst({ where: { id: tableId, weddingId }, select: { id: true } });
-      if (!table) return { success: false, error: "Mesa não encontrada." };
+      if (!table) return { success: false, error: ERROS.mesaNaoEncontrada };
     }
 
     const result = await prisma.guest.updateMany({
       where: { id: guestId, weddingId },
       data: { tableId },
     });
-    if (result.count === 0) return { success: false, error: "Convidado não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.convidadoNaoEncontrado };
 
     revalidatePath("/convidados");
     revalidatePath("/(admin)/convidados", "page");

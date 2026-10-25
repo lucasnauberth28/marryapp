@@ -13,6 +13,7 @@ import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { adminDisplayName } from "@/lib/security/impersonation";
 import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 // Ações da administração sobre um casal (Casais e Casal). Toda uma: requirePlatformAdmin primeiro, zod no servidor,
 // o id da tela só BUSCA o registro, e toda escrita vai ao AuditLog com ator, alvo e motivo.
 
@@ -96,7 +97,7 @@ export async function addWeddingNote(input: unknown): Promise<CasalActionResult>
     const admin = await requirePlatformAdmin();
     const data = z.object({ weddingId: id, body: z.string().trim().min(2, "Escreva a nota.").max(2000, "A nota está longa demais (máximo de 2000 letras).") }).parse(input);
     const wedding = await prisma.wedding.findUnique({ where: { id: data.weddingId }, select: { id: true } });
-    if (!wedding) return { success: false, error: "Casamento não encontrado." };
+    if (!wedding) return { success: false, error: ERROS.casamentoNaoEncontrado };
     const note = await prisma.adminNote.create({
       data: { weddingId: wedding.id, authorId: admin.userId, authorName: adminDisplayName(admin.userId, admin.name), body: data.body },
       select: { id: true },
@@ -151,7 +152,7 @@ export async function deleteWedding(input: unknown): Promise<CasalActionResult> 
       .parse(input);
 
     const wedding = await prisma.wedding.findUnique({ where: { id: data.weddingId }, select: { id: true, coupleNames: true, slug: true, _count: { select: { guests: true, members: true } } } });
-    if (!wedding) return { success: false, error: "Casamento não encontrado." };
+    if (!wedding) return { success: false, error: ERROS.casamentoNaoEncontrado };
 
     await prisma.$transaction(async (tx) => {
       // Pagamentos de presentes apontam para os presentes (RESTRICT): saem antes do casamento.
@@ -185,7 +186,7 @@ export async function grantWeddingPlan(input: unknown): Promise<CasalActionResul
       where: { id: data.weddingId },
       select: { id: true, coupleNames: true, members: { orderBy: { createdAt: "asc" }, select: { id: true, name: true, username: true } } },
     });
-    if (!wedding) return { success: false, error: "Casamento não encontrado." };
+    if (!wedding) return { success: false, error: ERROS.casamentoNaoEncontrado };
     const plan = resolvePlan(data.planId);
     if (!plan || plan.type !== "COUPLE") return { success: false, error: "Plano inválido." };
 

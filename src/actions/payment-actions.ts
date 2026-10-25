@@ -15,6 +15,7 @@ import { deferNotify } from "@/lib/notifications/service";
 import { notifyGiftPaid, notifyPixToCheck } from "@/lib/notifications/events";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
+import { ERROS } from "@/lib/mensagens-de-erro";
 // Ações públicas usadas pelo checkout de presentes. Nenhuma delas pode aprovar
 // pagamento por conta própria: aprovação só vem do Mercado Pago (webhook/consulta)
 // ou da conferência manual do casal em /financas.
@@ -62,7 +63,7 @@ export async function createPixTransactionAction(input: {
     }
 
     const gift = await prisma.gift.findUnique({ where: { id: giftId } });
-    if (!gift) return { success: false, error: "Presente não encontrado." };
+    if (!gift) return { success: false, error: ERROS.presenteNaoEncontrado };
     if (gift.isPurchased) return { success: false, error: "Este presente já foi comprado." };
     if (await isWeddingSuspended(gift.weddingId)) return { success: false, error: SITE_UNAVAILABLE_MESSAGE };
 
@@ -244,7 +245,7 @@ export async function processCardPaymentAction(input: {
     }
 
     const gift = await prisma.gift.findUnique({ where: { id: giftId } });
-    if (!gift) return { success: false, error: "Presente não encontrado." };
+    if (!gift) return { success: false, error: ERROS.presenteNaoEncontrado };
     if (gift.isPurchased) return { success: false, error: "Este presente já foi comprado." };
     if (await isWeddingSuspended(gift.weddingId)) return { success: false, error: SITE_UNAVAILABLE_MESSAGE };
 

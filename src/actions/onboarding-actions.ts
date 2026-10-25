@@ -17,6 +17,7 @@ import {
   withSlugRetry,
 } from "@/lib/account/wedding-provisioning";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 const personName = (label: string) =>
   z
     .string()
@@ -71,7 +72,7 @@ class OnboardingConflict extends Error {}
  */
 export async function completeOnboarding(input: OnboardingInput): Promise<OnboardingResult> {
   const session = await getSession();
-  if (!session) return { success: false, error: "Sua sessão expirou. Entre de novo.", redirectTo: "/login" };
+  if (!session) return { success: false, error: ERROS.sessaoExpirada, redirectTo: "/login" };
   if (session.userId === SUPER_ADMIN_USER_ID) {
     return { success: false, error: "A conta de emergência não tem casamento próprio.", redirectTo: "/dashboard" };
   }
@@ -84,7 +85,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
   if (weddingDate === "invalid") return { success: false, error: "Confira a data do casamento." };
 
   const limit = await checkRateLimit({ key: `ONBOARDING:${session.userId}`, limit: 10, windowMs: 10 * 60 * 1000 });
-  if (!limit.success) return { success: false, error: "Muitas tentativas seguidas. Aguarde alguns minutos." };
+  if (!limit.success) return { success: false, error: ERROS.muitasTentativas };
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },

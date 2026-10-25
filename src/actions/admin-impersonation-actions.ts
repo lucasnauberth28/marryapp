@@ -17,6 +17,7 @@ import {
 } from "@/lib/security/impersonation-rules";
 import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 // "Entrar como este casal": início e fim da sessão. A pessoa vem sempre da sessão de login (nunca do navegador);
 // o cookie é assinado e guarda só o id da ImpersonationSession; tudo confere de novo no banco (impersonation.ts).
 
@@ -40,7 +41,7 @@ export async function startImpersonation(input: unknown): Promise<ImpersonationR
     if (data.canEdit && !data.confirmEdit) return { success: false, error: "Para permitir edição, confirme que entendeu que as mudanças valem de verdade." };
 
     const wedding = await prisma.wedding.findUnique({ where: { id: data.weddingId }, select: { id: true, coupleNames: true } });
-    if (!wedding) return { success: false, error: "Casamento não encontrado." };
+    if (!wedding) return { success: false, error: ERROS.casamentoNaoEncontrado };
 
     if (data.ticketNumber !== null) {
       const ticket = await prisma.supportTicket.findUnique({ where: { number: data.ticketNumber }, select: { id: true } });

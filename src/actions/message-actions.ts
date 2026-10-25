@@ -11,6 +11,7 @@ import { guestIdsReached, sendFailureReason, sendSummary } from "@/lib/whatsapp-
 import { revalidatePath } from "next/cache";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
+import { ERROS } from "@/lib/mensagens-de-erro";
 /**
  * Dá os modelos padrão (convite e lembrete) a um casamento que ainda não tem nenhum.
  * Seguro para rodar a cada visita e em paralelo: um bloqueio por casamento (advisory lock da transação)
@@ -73,12 +74,12 @@ export async function updateMessageTemplate(id: string, formData: FormData) {
       return { success: false, error: "Informem o nome do modelo e o texto da mensagem." };
     }
 
-    if (typeof id !== "string") return { success: false, error: "Modelo não encontrado." };
+    if (typeof id !== "string") return { success: false, error: ERROS.modeloNaoEncontrado };
     const result = await prisma.messageTemplate.updateMany({
       where: { id, weddingId },
       data: { name, content, mediaUrl, mediaType, type, buttons },
     });
-    if (result.count === 0) return { success: false, error: "Modelo não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.modeloNaoEncontrado };
     const template = await prisma.messageTemplate.findFirst({ where: { id, weddingId } });
 
     revalidatePath("/mensagens");
@@ -92,9 +93,9 @@ export async function updateMessageTemplate(id: string, formData: FormData) {
 export async function deleteMessageTemplate(id: string) {
   const { weddingId } = await requireWedding("/mensagens");
   try {
-    if (typeof id !== "string") return { success: false, error: "Modelo não encontrado." };
+    if (typeof id !== "string") return { success: false, error: ERROS.modeloNaoEncontrado };
     const result = await prisma.messageTemplate.deleteMany({ where: { id, weddingId } });
-    if (result.count === 0) return { success: false, error: "Modelo não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.modeloNaoEncontrado };
     revalidatePath("/mensagens");
     return { success: true };
   } catch (error) {
@@ -111,9 +112,9 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
   const refusal = await moduleRefusal({ weddingId, session }, "whatsapp");
   if (refusal) return { success: false, error: refusal };
   try {
-    if (typeof templateId !== "string") return { success: false, error: "Modelo não encontrado." };
+    if (typeof templateId !== "string") return { success: false, error: ERROS.modeloNaoEncontrado };
     const template = await prisma.messageTemplate.findFirst({ where: { id: templateId, weddingId } });
-    if (!template) return { success: false, error: "Modelo não encontrado." };
+    if (!template) return { success: false, error: ERROS.modeloNaoEncontrado };
 
     const ids = Array.isArray(guestIds) ? guestIds.filter((id): id is string => typeof id === "string") : [];
     const guests = await prisma.guest.findMany({

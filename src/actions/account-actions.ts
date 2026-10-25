@@ -15,6 +15,7 @@ import { brandedEmail, sendEmail } from "@/lib/email";
 import { appUrl } from "@/lib/app-url";
 import { logAudit } from "@/lib/audit";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 const MINUTE = 60 * 1000;
 
 type Fail = { success: false; error: string };
@@ -38,7 +39,7 @@ async function currentAccount() {
   return user ? { ...user, kind: classifyAccount(user) } : null;
 }
 
-const NO_SESSION: Fail = { success: false, error: "Sua sessão expirou. Entre de novo." };
+const NO_SESSION: Fail = { success: false, error: ERROS.sessaoExpirada };
 
 // ---------------------------------------------------------------------------
 // Senha
@@ -61,7 +62,7 @@ export async function changePassword(input: { currentPassword: string; newPasswo
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira os dados." };
 
   const limit = await checkRateLimit({ key: `ACCOUNT_PASSWORD:${user.id}`, limit: 5, windowMs: 15 * MINUTE });
-  if (!limit.success) return { success: false, error: "Muitas tentativas seguidas. Aguarde alguns minutos." };
+  if (!limit.success) return { success: false, error: ERROS.muitasTentativas };
 
   if (!(await bcrypt.compare(parsed.data.currentPassword, user.password))) {
     return { success: false, error: "A senha atual não confere." };
@@ -198,7 +199,7 @@ export async function deleteMyAccount(input: { confirmation: string; password: s
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira os dados." };
 
   const limit = await checkRateLimit({ key: `ACCOUNT_DELETE:${user.id}`, limit: 5, windowMs: 15 * MINUTE });
-  if (!limit.success) return { success: false, error: "Muitas tentativas seguidas. Aguarde alguns minutos." };
+  if (!limit.success) return { success: false, error: ERROS.muitasTentativas };
 
   if (!(await bcrypt.compare(parsed.data.password, user.password))) return { success: false, error: "A senha não confere." };
 

@@ -7,6 +7,7 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 const CreditCardSchema = z.object({
   bank: z.string().min(2, "Informe o nome do banco."),
   brand: z.string().min(2, "Informe a bandeira do cartão."),
@@ -80,12 +81,12 @@ export async function updateCreditCard(id: string, formData: FormData) {
   }
 
   try {
-    if (typeof id !== "string") return { success: false, error: "Cartão não encontrado." };
+    if (typeof id !== "string") return { success: false, error: ERROS.cartaoNaoEncontrado };
     const result = await prisma.creditCard.updateMany({
       where: { id, weddingId },
       data: parsed.data,
     });
-    if (result.count === 0) return { success: false, error: "Cartão não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.cartaoNaoEncontrado };
     revalidatePath("/(admin)/carteira", "page");
     revalidatePath("/(admin)/financas", "page");
     return { success: true };
@@ -98,9 +99,9 @@ export async function updateCreditCard(id: string, formData: FormData) {
 export async function deleteCreditCard(id: string) {
   const { weddingId } = await requireWedding("/carteira");
   try {
-    if (typeof id !== "string") return { success: false, error: "Cartão não encontrado." };
+    if (typeof id !== "string") return { success: false, error: ERROS.cartaoNaoEncontrado };
     const result = await prisma.creditCard.deleteMany({ where: { id, weddingId } });
-    if (result.count === 0) return { success: false, error: "Cartão não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.cartaoNaoEncontrado };
     revalidatePath("/(admin)/carteira", "page");
     revalidatePath("/(admin)/financas", "page");
     return { success: true };

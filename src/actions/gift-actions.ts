@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { uploadGiftImage } from "@/lib/supabase"
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 const GiftSchema = z.object({
   title: z.string().min(2, "O título deve ter ao menos 2 caracteres.").max(120).trim(),
   description: z.string().max(1000).optional(),
@@ -78,9 +79,9 @@ export async function deleteGift(id: string) {
   const { weddingId } = await requireWedding("/presentes-admin")
 
   try {
-    if (typeof id !== "string") return { success: false, error: "Presente não encontrado." }
+    if (typeof id !== "string") return { success: false, error: ERROS.presenteNaoEncontrado }
     const gift = await prisma.gift.findFirst({ where: { id, weddingId }, select: { id: true } })
-    if (!gift) return { success: false, error: "Presente não encontrado." }
+    if (!gift) return { success: false, error: ERROS.presenteNaoEncontrado }
 
     // Presentes com pagamentos aprovados não podem ser apagados: o histórico financeiro precisa ser preservado.
     const approved = await prisma.transaction.count({

@@ -10,6 +10,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 // ==========================================
 // ROLES (PERFIS)
 // ==========================================
@@ -87,7 +88,7 @@ export async function updateRole(id: string, data: { name: string; allowedPaths:
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
   const current = await prisma.role.findUnique({ where: { id }, select: { name: true, allowedPaths: true } });
-  if (!current) return { success: false, error: "Perfil não encontrado." };
+  if (!current) return { success: false, error: ERROS.perfilNaoEncontrado };
   assertCanGrant(session.allowedPaths, current.allowedPaths);
   assertCanGrant(session.allowedPaths, parsed.data.allowedPaths);
 
@@ -115,7 +116,7 @@ export async function updateRole(id: string, data: { name: string; allowedPaths:
 export async function deleteRole(id: string) {
   const session = await requirePathPermission("/perfis");
   const current = await prisma.role.findUnique({ where: { id }, select: { name: true, allowedPaths: true } });
-  if (!current) return { success: false, error: "Perfil não encontrado." };
+  if (!current) return { success: false, error: ERROS.perfilNaoEncontrado };
   assertCanGrant(session.allowedPaths, current.allowedPaths);
 
   try {
@@ -164,7 +165,7 @@ export async function createUser(data: { name: string; username: string; passwor
   const password = PASSWORD_RULE.safeParse(parsed.data.password ?? "");
   if (!password.success) return { success: false, error: password.error.issues[0].message };
   if (!(await assertRoleAssignable(session.allowedPaths, parsed.data.roleId))) {
-    return { success: false, error: "Perfil não encontrado." };
+    return { success: false, error: ERROS.perfilNaoEncontrado };
   }
 
   try {
@@ -206,7 +207,7 @@ export async function updateUser(id: string, data: { name: string; username: str
   if (!target) return { success: false, error: "Usuário não encontrado." };
   assertCanGrant(session.allowedPaths, target.role.allowedPaths);
   if (!(await assertRoleAssignable(session.allowedPaths, parsed.data.roleId))) {
-    return { success: false, error: "Perfil não encontrado." };
+    return { success: false, error: ERROS.perfilNaoEncontrado };
   }
 
   const updateData: Prisma.UserUncheckedUpdateInput = {

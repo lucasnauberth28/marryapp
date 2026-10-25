@@ -7,6 +7,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ExpenseStatus, ExpenseType } from "@prisma/client";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 const ExpenseSchema = z.object({
   description: z.string().min(2, "Descrição é obrigatória."),
   amount: z.coerce.number().min(1, "O valor deve ser maior que zero."),
@@ -61,7 +62,7 @@ export async function createExpense(formData: FormData) {
 
   try {
     const vendorId = await resolveVendorId(weddingId, parsed.data.vendorId || null);
-    if (vendorId === false) return { success: false, error: "Fornecedor não encontrado." };
+    if (vendorId === false) return { success: false, error: ERROS.fornecedorNaoEncontrado };
 
     await prisma.expense.create({
       data: {
@@ -96,7 +97,7 @@ export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
       where: { id, weddingId },
       data: { status }
     });
-    if (result.count === 0) return { success: false, error: "Despesa não encontrada." };
+    if (result.count === 0) return { success: false, error: ERROS.despesaNaoEncontrada };
     revalidatePath("/(admin)/financas", "page");
     revalidatePath("/(admin)/dashboard", "page");
     return { success: true };
@@ -109,9 +110,9 @@ export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
 export async function deleteExpense(id: string) {
   const { weddingId } = await requireWedding("/financas");
   try {
-    if (typeof id !== "string") return { success: false, error: "Despesa não encontrada." };
+    if (typeof id !== "string") return { success: false, error: ERROS.despesaNaoEncontrada };
     const result = await prisma.expense.deleteMany({ where: { id, weddingId } });
-    if (result.count === 0) return { success: false, error: "Despesa não encontrada." };
+    if (result.count === 0) return { success: false, error: ERROS.despesaNaoEncontrada };
     revalidatePath("/(admin)/financas", "page");
     revalidatePath("/(admin)/dashboard", "page");
     return { success: true };
@@ -143,10 +144,10 @@ export async function createBatchExpenses(items: Array<{
   try {
     // Cada fornecedor citado precisa ser deste casamento
     const vendorIds = [...new Set(items.map((item) => item.vendorId).filter((v): v is string => !!v))];
-    if (vendorIds.some((v) => typeof v !== "string")) return { success: false, error: "Fornecedor não encontrado." };
+    if (vendorIds.some((v) => typeof v !== "string")) return { success: false, error: ERROS.fornecedorNaoEncontrado };
     if (vendorIds.length > 0) {
       const owned = await prisma.vendor.count({ where: { id: { in: vendorIds }, weddingId } });
-      if (owned !== vendorIds.length) return { success: false, error: "Fornecedor não encontrado." };
+      if (owned !== vendorIds.length) return { success: false, error: ERROS.fornecedorNaoEncontrado };
     }
     if (items.some((item) => item.type && !EXPENSE_TYPES.has(item.type))) {
       return { success: false, error: "Tipo de despesa inválido." };

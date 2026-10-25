@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { PaymentStatus, PaymentMethod, ExpenseStatus, Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 // ==========================================
 // TYPES
 // ==========================================
@@ -147,14 +148,14 @@ export async function approvePixTransaction(
 ): Promise<{ success: boolean; error?: string }> {
   const { weddingId } = await requireWedding("/financas");
   try {
-    if (typeof transactionId !== "string") return { success: false, error: "Pagamento não encontrado." };
+    if (typeof transactionId !== "string") return { success: false, error: ERROS.pagamentoNaoEncontrado };
     // O presente é sempre o da própria transação (não confiar no giftId enviado pelo cliente)
     const transaction = await prisma.transaction.findFirst({
       where: { id: transactionId, weddingId },
       select: { giftId: true, status: true, paymentMethod: true },
     });
     if (!transaction || transaction.giftId !== giftId) {
-      return { success: false, error: "Pagamento não encontrado." };
+      return { success: false, error: ERROS.pagamentoNaoEncontrado };
     }
     if (transaction.paymentMethod !== PaymentMethod.PIX || transaction.status !== PaymentStatus.PENDING) {
       return { success: false, error: "Apenas Pix pendentes podem ser conferidos manualmente." };
@@ -198,12 +199,12 @@ export async function toggleThankYouSent(
 ): Promise<{ success: boolean; error?: string }> {
   const { weddingId } = await requireWedding("/financas");
   try {
-    if (typeof transactionId !== "string") return { success: false, error: "Pagamento não encontrado." };
+    if (typeof transactionId !== "string") return { success: false, error: ERROS.pagamentoNaoEncontrado };
     const result = await prisma.transaction.updateMany({
       where: { id: transactionId, weddingId },
       data: { thankYouSent: !currentStatus },
     });
-    if (result.count === 0) return { success: false, error: "Pagamento não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.pagamentoNaoEncontrado };
 
     revalidatePath("/financas");
     revalidatePath("/dashboard");

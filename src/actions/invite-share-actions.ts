@@ -4,6 +4,7 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { requireWedding } from "@/lib/security/wedding-context";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 const InputSchema = z.object({ guestId: z.string().uuid("Convidado não encontrado.") });
 
 export type MarkInviteSharedResult = { success: true } | { success: false; error: string };
@@ -15,7 +16,7 @@ export type MarkInviteSharedResult = { success: true } | { success: false; error
  */
 export async function markInviteShared(input: unknown): Promise<MarkInviteSharedResult> {
   const parsed = InputSchema.safeParse(input);
-  if (!parsed.success) return { success: false, error: "Convidado não encontrado." };
+  if (!parsed.success) return { success: false, error: ERROS.convidadoNaoEncontrado };
 
   const { weddingId } = await requireWedding("/convidados");
   try {
@@ -24,7 +25,7 @@ export async function markInviteShared(input: unknown): Promise<MarkInviteShared
       where: { id: parsed.data.guestId, weddingId },
       data: { inviteSharedAt: new Date() },
     });
-    if (result.count === 0) return { success: false, error: "Convidado não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.convidadoNaoEncontrado };
     return { success: true };
   } catch (error) {
     console.error("[markInviteShared]", error);

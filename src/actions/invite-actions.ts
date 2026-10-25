@@ -10,6 +10,7 @@ import { INVITE_STATUS_MESSAGE, lookupInvite } from "@/lib/account/invites";
 import { classifyAccount, isUniqueViolation, refreshSessionCookie, upsertCoupleRole } from "@/lib/account/wedding-provisioning";
 import { logAudit } from "@/lib/audit";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 type Fail = { success: false; error: string };
 export type AcceptInviteResult =
   | { success: true; redirectTo: string }
@@ -29,7 +30,7 @@ export async function acceptInvite(input: { token: string; confirmLeave?: boolea
   if (session.userId === SUPER_ADMIN_USER_ID) return { success: false, error: "A conta de emergência não pode entrar em um casamento." };
 
   const limit = await checkRateLimit({ key: `INVITE_ACCEPT:${session.userId}`, limit: 10, windowMs: 10 * 60 * 1000 });
-  if (!limit.success) return { success: false, error: "Muitas tentativas seguidas. Aguarde alguns minutos." };
+  if (!limit.success) return { success: false, error: ERROS.muitasTentativas };
 
   const lookup = await lookupInvite(input?.token);
   if (lookup.status !== "ok") return { success: false, error: INVITE_STATUS_MESSAGE[lookup.status] };

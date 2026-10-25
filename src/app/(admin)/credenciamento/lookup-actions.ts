@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { requireWeddingRead } from "@/lib/security/wedding-context";
 import { moduleRefusal } from "@/lib/wedding-plan";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 // Consultas só de leitura da portaria: nada é gravado aqui (a entrada é registrada por checkInGuest).
 
 export interface CheckInGuestInfo {
@@ -51,7 +52,7 @@ export async function lookupGuestForCheckIn(guestId: string): Promise<{ success:
   const { weddingId, session } = await requireWeddingRead("/credenciamento");
   const refusal = await moduleRefusal({ weddingId, session }, "qrcode");
   if (refusal) return { success: false, error: refusal };
-  if (typeof guestId !== "string" || !guestId) return { success: false, error: "Convidado não encontrado." };
+  if (typeof guestId !== "string" || !guestId) return { success: false, error: ERROS.convidadoNaoEncontrado };
   const guest = await prisma.guest.findFirst({ where: { id: guestId, weddingId }, select });
   if (!guest) return { success: false, error: "Esse convite não é deste casamento." };
   return { success: true, guest: toInfo(guest) };

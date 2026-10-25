@@ -12,6 +12,7 @@ import { MAX_RECIPIENTS, announcementInput, audienceLabel, audienceSchema, valid
 import { previewAudience, resolveAudienceUsers, type AudiencePreview } from "@/lib/platform/queries/comunicados";
 import { processAnnouncement, queueRecipients, refreshAnnouncementTotals, releaseStaleClaims, sendAnnouncementTest } from "@/lib/platform/announcement-send";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 /**
  * Comunicados da administração. Todo destinatário é resolvido AQUI, a partir do filtro de público
  * (nunca de uma lista vinda do navegador). Limites: até 5.000 pessoas por envio e 5 envios por hora.
@@ -27,10 +28,10 @@ function validate(input: unknown): { ok: true; data: AnnouncementInput; linkUrl:
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {};
     for (const issue of parsed.error.issues) fieldErrors[String(issue.path[0] ?? "form")] ??= issue.message;
-    return { ok: false, fail: { success: false, error: "Confira os campos marcados.", fieldErrors } };
+    return { ok: false, fail: { success: false, error: ERROS.camposInvalidos, fieldErrors } };
   }
   const link = validateLinkUrl(parsed.data.linkUrl);
-  if (!link.ok) return { ok: false, fail: { success: false, error: "Confira os campos marcados.", fieldErrors: { linkUrl: link.error } } };
+  if (!link.ok) return { ok: false, fail: { success: false, error: ERROS.camposInvalidos, fieldErrors: { linkUrl: link.error } } };
   return { ok: true, data: parsed.data, linkUrl: link.url };
 }
 

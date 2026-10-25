@@ -24,6 +24,7 @@ import {
 } from "@/app/(fornecedor)/_lib/vendor-panel";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
+import { ERROS } from "@/lib/mensagens-de-erro";
 // Painel do fornecedor: toda escrita é limitada ao fornecedor vinculado à sessão.
 const VENDOR_PANEL_LIMIT = { limit: 60, windowMs: 1000 * 60 }; // 60 alterações / minuto por conta
 
@@ -80,7 +81,7 @@ export async function updateLeadStatus(leadId: string, status: string) {
       where: { id: parsed.data.leadId, vendorId: vendor.id },
       select: { status: true, respondedAt: true, locked: true },
     });
-    if (!current) return { success: false, error: "Pedido não encontrado." };
+    if (!current) return { success: false, error: ERROS.pedidoNaoEncontrado };
     if (lockedFor(vendor, current)) return { success: false, error: LOCKED_ERROR };
     if (current.status === target) return { success: true };
 
@@ -96,7 +97,7 @@ export async function updateLeadStatus(leadId: string, status: string) {
         declinedAt: target === "DECLINED" ? now : null,
       },
     });
-    if (result.count === 0) return { success: false, error: "Pedido não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.pedidoNaoEncontrado };
 
     revalidatePath(VENDOR_PANEL_PATH, "layout");
     return { success: true };
@@ -164,7 +165,7 @@ export async function saveLeadProposal(input: LeadProposalInput) {
       where: { id: data.leadId, vendorId: vendor.id },
       select: { status: true, respondedAt: true, locked: true, proposalToken: true, proposalAcceptedAt: true },
     });
-    if (!current) return { success: false, error: "Pedido não encontrado." };
+    if (!current) return { success: false, error: ERROS.pedidoNaoEncontrado };
     if (lockedFor(vendor, current)) return { success: false, error: LOCKED_ERROR };
     // O que o casal aceitou fica registrado como foi aceito.
     if (current.proposalAcceptedAt) {
@@ -186,7 +187,7 @@ export async function saveLeadProposal(input: LeadProposalInput) {
         ...(current.status !== "CLOSED" ? { status: "PROPOSAL_SENT", declinedAt: null } : {}),
       },
     });
-    if (result.count === 0) return { success: false, error: "Pedido não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.pedidoNaoEncontrado };
 
     revalidatePath(VENDOR_PANEL_PATH, "layout");
     return { success: true };
@@ -219,7 +220,7 @@ export async function declineLead(input: DeclineLeadInput) {
       where: { id: data.leadId, vendorId: vendor.id },
       select: { respondedAt: true, locked: true },
     });
-    if (!current) return { success: false, error: "Pedido não encontrado." };
+    if (!current) return { success: false, error: ERROS.pedidoNaoEncontrado };
     if (lockedFor(vendor, current)) return { success: false, error: LOCKED_ERROR };
 
     const now = new Date();
@@ -233,7 +234,7 @@ export async function declineLead(input: DeclineLeadInput) {
         ...(!current.respondedAt ? { respondedAt: now } : {}),
       },
     });
-    if (result.count === 0) return { success: false, error: "Pedido não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.pedidoNaoEncontrado };
 
     revalidatePath(VENDOR_PANEL_PATH, "layout");
     return { success: true };
@@ -265,7 +266,7 @@ export async function requestLeadReview(leadId: string): Promise<RequestLeadRevi
       where: { id: parsed.data, vendorId: vendor.id },
       select: { status: true, locked: true, reviewToken: true, review: { select: { id: true } } },
     });
-    if (!current) return { success: false, error: "Pedido não encontrado." };
+    if (!current) return { success: false, error: ERROS.pedidoNaoEncontrado };
     if (lockedFor(vendor, current)) return { success: false, error: LOCKED_ERROR };
     if (current.status !== "CLOSED") {
       return { success: false, error: "Só dá para pedir avaliação de pedidos fechados." };
@@ -277,7 +278,7 @@ export async function requestLeadReview(leadId: string): Promise<RequestLeadRevi
       where: { id: parsed.data, vendorId: vendor.id },
       data: { reviewToken: token, reviewRequestedAt: new Date() },
     });
-    if (result.count === 0) return { success: false, error: "Pedido não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.pedidoNaoEncontrado };
 
     revalidatePath(VENDOR_PANEL_PATH, "layout");
     return { success: true, url: reviewPublicUrl(token) };
@@ -340,7 +341,7 @@ export async function createVendorEvent(input: VendorEventInput) {
         where: { id: data.leadId, vendorId: vendor.id },
         select: { id: true, coupleName: true, locked: true },
       });
-      if (!found) return { success: false, error: "Pedido não encontrado." };
+      if (!found) return { success: false, error: ERROS.pedidoNaoEncontrado };
       if (lockedFor(vendor, found)) return { success: false, error: LOCKED_ERROR };
       lead = { id: found.id, coupleName: found.coupleName };
     }
@@ -556,7 +557,7 @@ export async function updateVendorMedia(input: VendorMediaInput): Promise<Vendor
       where: { id: vendor.id },
       select: { logoUrl: true, coverUrl: true, galleryImages: true },
     });
-    if (!current) return { success: false, error: "Fornecedor não encontrado." };
+    if (!current) return { success: false, error: ERROS.fornecedorNaoEncontrado };
 
     const media: VendorMedia = {
       logoUrl: current.logoUrl,

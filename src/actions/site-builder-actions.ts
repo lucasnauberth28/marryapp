@@ -16,6 +16,7 @@ import { sanitizeUrl } from "@/lib/security/sanitize";
 import { uploadImageFile } from "@/lib/supabase";
 import { isAllowedSiteImage } from "@/lib/image-source";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 /**
  * Obtém ou inicializa as configurações visuais e seções do site do casamento da sessão.
  * O site público lê pelo endereço do casamento (lib/wedding-data).
@@ -261,7 +262,7 @@ export async function createGuestBookEntry(
     imageUrl?: string;
   }
 ) {
-  if (typeof slug !== "string") return { success: false, error: "Casamento não encontrado." };
+  if (typeof slug !== "string") return { success: false, error: ERROS.casamentoNaoEncontrado };
   const parsed = GuestBookSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
@@ -277,7 +278,7 @@ export async function createGuestBookEntry(
     }
 
     const wedding = await getWeddingBySlug(slug);
-    if (!wedding) return { success: false, error: "Casamento não encontrado." };
+    if (!wedding) return { success: false, error: ERROS.casamentoNaoEncontrado };
     if (wedding.suspendedAt) return { success: false, error: "Este site está indisponível no momento." };
 
     const entry = await prisma.guestBookEntry.create({

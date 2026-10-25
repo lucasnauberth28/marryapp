@@ -13,6 +13,7 @@ import { addOneYear } from "@/lib/domain-renewal";
 import { isOpenStatus } from "@/lib/domain-order";
 import { connectDomainToProject, verifyProjectDomain, type ConnectionResult } from "@/lib/vercel-domains";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 // Ações da administração do Aceito sobre os pedidos de domínio. Só quem tem acesso total ("*") passa.
 // O CPF/CNPJ completo é trocado pela versão escondida na mesma gravação que tira o pedido do estado aberto.
 
@@ -53,7 +54,7 @@ function parseCalendarDate(value: unknown): Date | null {
 export async function startDomainRegistrationAction(orderId: string): Promise<AdminResult> {
   if (!(await adminOnly())) return NOT_ALLOWED;
   const id = IdSchema.safeParse(orderId);
-  if (!id.success) return { success: false, error: "Pedido inválido." };
+  if (!id.success) return { success: false, error: ERROS.pedidoInvalido };
 
   const order = await prisma.domainOrder.findUnique({
     where: { id: id.data },
@@ -89,7 +90,7 @@ export async function startDomainRegistrationAction(orderId: string): Promise<Ad
 export async function markDomainRegisteredAction(input: { orderId: string; registeredAt: string; expiresAt: string }): Promise<AdminResult> {
   if (!(await adminOnly())) return NOT_ALLOWED;
   const id = IdSchema.safeParse(input?.orderId);
-  if (!id.success) return { success: false, error: "Pedido inválido." };
+  if (!id.success) return { success: false, error: ERROS.pedidoInvalido };
 
   const registeredAt = parseCalendarDate(input.registeredAt);
   const expiresAt = parseCalendarDate(input.expiresAt);
@@ -150,7 +151,7 @@ export async function rejectDomainOrderAction(input: { orderId: string; reason: 
 export async function saveDomainNoteAction(input: { orderId: string; note: string }): Promise<AdminResult> {
   if (!(await adminOnly())) return NOT_ALLOWED;
   const id = IdSchema.safeParse(input?.orderId);
-  if (!id.success) return { success: false, error: "Pedido inválido." };
+  if (!id.success) return { success: false, error: ERROS.pedidoInvalido };
   const note = typeof input.note === "string" ? input.note.replace(/\s+/g, " ").trim().slice(0, 1000) : "";
   const done = await prisma.domainOrder.updateMany({ where: { id: id.data }, data: { adminNote: note || null } });
   if (done.count !== 1) return STALE;
@@ -241,7 +242,7 @@ export async function markDomainOnlineAction(orderId: string): Promise<AdminResu
 export async function revealDomainHolderDocumentAction(orderId: string): Promise<{ success: true; document: string } | Fail> {
   if (!(await adminOnly())) return NOT_ALLOWED;
   const id = IdSchema.safeParse(orderId);
-  if (!id.success) return { success: false, error: "Pedido inválido." };
+  if (!id.success) return { success: false, error: ERROS.pedidoInvalido };
   const order = await prisma.domainOrder.findUnique({ where: { id: id.data }, select: { id: true, status: true, domain: true, holderDocument: true } });
   if (!order || !isOpenStatus(order.status) || isMaskedDocument(order.holderDocument)) {
     return { success: false, error: "O documento completo só fica guardado enquanto o pedido está aberto." };
@@ -257,7 +258,7 @@ export async function revealDomainHolderDocumentAction(orderId: string): Promise
 export async function markDomainRenewedAction(orderId: string): Promise<AdminResult> {
   if (!(await adminOnly())) return NOT_ALLOWED;
   const id = IdSchema.safeParse(orderId);
-  if (!id.success) return { success: false, error: "Pedido inválido." };
+  if (!id.success) return { success: false, error: ERROS.pedidoInvalido };
   const order = await prisma.domainOrder.findUnique({ where: { id: id.data }, select: { id: true, status: true, domain: true, expiresAt: true } });
   if (!order || !order.expiresAt || (order.status !== "REGISTERED" && order.status !== "CONNECTED")) {
     return { success: false, error: "Só dá para renovar um domínio já registrado e com vencimento." };

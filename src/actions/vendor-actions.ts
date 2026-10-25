@@ -6,6 +6,7 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 const VendorSchema = z.object({
   name: z.string().min(2, "Nome deve ter ao menos 2 caracteres."),
   category: z.string().min(2, "Categoria é obrigatória."),
@@ -66,12 +67,12 @@ export async function updateVendor(id: string, formData: FormData) {
   }
 
   try {
-    if (typeof id !== "string") return { success: false, error: "Fornecedor não encontrado." };
+    if (typeof id !== "string") return { success: false, error: ERROS.fornecedorNaoEncontrado };
     const result = await prisma.vendor.updateMany({
       where: { id, weddingId },
       data: parsed.data,
     });
-    if (result.count === 0) return { success: false, error: "Fornecedor não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.fornecedorNaoEncontrado };
     revalidatePath("/(admin)/fornecedores", "page");
     revalidatePath("/(admin)/financas", "page");
     return { success: true };
@@ -84,9 +85,9 @@ export async function updateVendor(id: string, formData: FormData) {
 export async function deleteVendor(id: string) {
   const { weddingId } = await requireWedding("/meus-fornecedores");
   try {
-    if (typeof id !== "string") return { success: false, error: "Fornecedor não encontrado." };
+    if (typeof id !== "string") return { success: false, error: ERROS.fornecedorNaoEncontrado };
     const result = await prisma.vendor.deleteMany({ where: { id, weddingId } });
-    if (result.count === 0) return { success: false, error: "Fornecedor não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.fornecedorNaoEncontrado };
     revalidatePath("/(admin)/fornecedores", "page");
     return { success: true };
   } catch (error) {

@@ -19,6 +19,7 @@ import {
 } from "@/lib/platform/madrinha";
 import { searchWeddingsForMadrinha, type WeddingHit } from "@/lib/platform/queries/madrinha";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 /**
  * Configuração da Liz (a IA ainda não está conectada: nada aqui chama a API nem simula uso).
  * Toda função começa pelo guard da administração e grava no AuditLog. Não existe ação que ligue o
@@ -37,7 +38,7 @@ const planLimitsShape = z.object({ perDay: z.string().max(12), perMonth: z.strin
 function fieldFail(errors: Record<string, string | undefined>, prefix = ""): Fail {
   const fieldErrors: Record<string, string> = {};
   for (const [key, message] of Object.entries(errors)) if (message) fieldErrors[`${prefix}${key}`] = message;
-  return { success: false, error: "Confira os campos marcados.", fieldErrors };
+  return { success: false, error: ERROS.camposInvalidos, fieldErrors };
 }
 
 export async function saveMadrinhaLimits(input: unknown): Promise<Ok | Fail> {
@@ -148,7 +149,7 @@ export async function saveInstructionVersion(input: unknown): Promise<(Ok & { ve
     if (!parsed.success) {
       const fieldErrors: Record<string, string> = {};
       for (const issue of parsed.error.issues) fieldErrors[String(issue.path[0] ?? "content")] ??= issue.message;
-      return { success: false, error: "Confira os campos marcados.", fieldErrors };
+      return { success: false, error: ERROS.camposInvalidos, fieldErrors };
     }
     const latest = await prisma.madrinhaInstructionVersion.findFirst({ orderBy: { version: "desc" }, select: { content: true } });
     if (latest && latest.content.trim() === parsed.data.content) {
@@ -229,7 +230,7 @@ export async function saveKnowledgeArticle(input: unknown): Promise<Ok | Fail> {
     if (!parsed.success) {
       const fieldErrors: Record<string, string> = {};
       for (const issue of parsed.error.issues) fieldErrors[String(issue.path[0] ?? "content")] ??= issue.message;
-      return { success: false, error: "Confira os campos marcados.", fieldErrors };
+      return { success: false, error: ERROS.camposInvalidos, fieldErrors };
     }
     const { id, title, content } = parsed.data;
     const publishing = raw.status === "PUBLISHED";
@@ -306,7 +307,7 @@ export async function applyWeddingAdjustment(input: unknown): Promise<Ok | Fail>
     if (extra === null || extra > 10_000) return fieldFail({ extraMessages: "Use um número inteiro, até 10.000." });
     if (data.reason.length < 3) return fieldFail({ reason: "Conte o motivo do ajuste (fica no registro)." });
     const wedding = await ensureWedding(data.weddingId);
-    if (!wedding) return { success: false, error: "Casal não encontrado." };
+    if (!wedding) return { success: false, error: ERROS.casalNaoEncontrado };
     await prisma.madrinhaWeddingOverride.upsert({
       where: { weddingId: wedding.id },
       create: { weddingId: wedding.id, extraMessages: extra, note: data.reason },
@@ -329,7 +330,7 @@ export async function unblockWeddingMadrinha(input: unknown): Promise<Ok | Fail>
     await requirePlatformAdmin();
     const data = z.object({ weddingId }).parse(input);
     const wedding = await ensureWedding(data.weddingId);
-    if (!wedding) return { success: false, error: "Casal não encontrado." };
+    if (!wedding) return { success: false, error: ERROS.casalNaoEncontrado };
     await prisma.madrinhaWeddingOverride.updateMany({ where: { weddingId: wedding.id }, data: { blockedAt: null, blockedReason: null } });
     await logAudit({ action: "madrinha.override_unblock", targetType: "wedding", targetId: wedding.id });
     refresh();
@@ -345,7 +346,7 @@ export async function setWeddingMadrinhaEnabled(input: unknown): Promise<Ok | Fa
     await requirePlatformAdmin();
     const data = z.object({ weddingId, enabled: z.boolean().nullable() }).parse(input);
     const wedding = await ensureWedding(data.weddingId);
-    if (!wedding) return { success: false, error: "Casal não encontrado." };
+    if (!wedding) return { success: false, error: ERROS.casalNaoEncontrado };
     await prisma.madrinhaWeddingOverride.upsert({
       where: { weddingId: wedding.id },
       create: { weddingId: wedding.id, enabled: data.enabled },

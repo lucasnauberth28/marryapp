@@ -21,6 +21,7 @@ import {
 } from "@/lib/platform/support";
 import { SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 /**
  * Suporte e LGPD. Cada função começa pelo guard da administração e grava no AuditLog sem segredos
  * (nunca senha, token ou link; e-mails vão mascarados). Os ids vindos da tela só LOCALIZAM o registro.
@@ -34,7 +35,7 @@ const refresh = () => revalidatePath("/admin/suporte");
 function zodFail(error: z.ZodError): Fail {
   const fieldErrors: Record<string, string> = {};
   for (const issue of error.issues) fieldErrors[String(issue.path[0] ?? "form")] ??= issue.message;
-  return { success: false, error: "Confira os campos marcados.", fieldErrors };
+  return { success: false, error: ERROS.camposInvalidos, fieldErrors };
 }
 
 // ---------------------------------------------------------------------------
@@ -82,7 +83,7 @@ export async function updateSupportTicket(input: unknown): Promise<Ok | Fail> {
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
     const current = await prisma.supportTicket.findUnique({ where: { id: d.id }, select: { id: true, number: true, status: true, assigneeId: true } });
-    if (!current) return { success: false, error: "Pedido não encontrado." };
+    if (!current) return { success: false, error: ERROS.pedidoNaoEncontrado };
 
     const now = new Date();
     const assign = d.assignToMe
@@ -162,7 +163,7 @@ export async function updateDataRequest(input: unknown): Promise<Ok | Fail> {
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
     const current = await prisma.dataRequest.findUnique({ where: { id: d.id }, select: { id: true, type: true, status: true } });
-    if (!current) return { success: false, error: "Pedido não encontrado." };
+    if (!current) return { success: false, error: ERROS.pedidoNaoEncontrado };
     const final = d.status === "DONE" || d.status === "REFUSED";
     await prisma.dataRequest.update({
       where: { id: d.id },
@@ -195,7 +196,7 @@ export async function fulfillDeletionRequest(input: unknown): Promise<Ok | Fail>
     if (!limit.success) return { success: false, error: "Muitas exclusões seguidas. Aguarde um pouco." };
 
     const request = await prisma.dataRequest.findUnique({ where: { id: parsed.data.id }, select: { id: true, type: true, status: true, userId: true, requesterEmail: true } });
-    if (!request) return { success: false, error: "Pedido não encontrado." };
+    if (!request) return { success: false, error: ERROS.pedidoNaoEncontrado };
     if (request.type !== "DELETE") return { success: false, error: "Só pedidos de exclusão podem apagar a conta." };
     if (request.status === "DONE" || request.status === "REFUSED") return { success: false, error: "Este pedido já foi encerrado." };
     if (!request.userId) return { success: false, error: "Este pedido não está ligado a uma conta." };

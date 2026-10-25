@@ -10,6 +10,7 @@ import { getPlatformSetting, savePlatformSetting } from "@/lib/platform/settings
 import { alertEmail } from "@/lib/platform/health-alerts";
 import { connectInstance, isWhatsappConfigured } from "@/lib/evolution";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 type Fail = { success: false; error: string; fieldErrors?: Record<string, string> };
 type Ok = { success: true; message: string };
 
@@ -65,7 +66,7 @@ export async function reconnectWhatsapp(): Promise<{ success: true; qrCode: stri
     const admin = await requirePlatformAdmin();
     if (!isWhatsappConfigured()) return { success: false, error: "O WhatsApp não está configurado neste ambiente." };
     const limit = await checkRateLimit({ key: `ADMIN_WA_RECONNECT:${admin.userId}`, limit: 6, windowMs: 10 * 60_000 });
-    if (!limit.success) return { success: false, error: "Muitas tentativas seguidas. Aguarde alguns minutos." };
+    if (!limit.success) return { success: false, error: ERROS.muitasTentativas };
     const result = await connectInstance();
     await logAudit({ action: "whatsapp.reconnect", targetType: "whatsapp", details: { qrGenerated: Boolean(result.success && result.qrCode) } });
     if (result.success && result.qrCode) return { success: true, qrCode: result.qrCode };

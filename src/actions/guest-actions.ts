@@ -26,6 +26,7 @@ import {
 } from "@/lib/guest-import";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
+import { ERROS } from "@/lib/mensagens-de-erro";
 // ==========================================
 // VALIDAÇÕES ZOD
 // ==========================================
@@ -246,7 +247,7 @@ export async function importGuests(input: unknown) {
 
 export async function updateGuest(id: string, formData: FormData) {
   const { weddingId } = await requireWedding("/convidados");
-  if (typeof id !== "string") return { success: false, error: "Convidado não encontrado." };
+  if (typeof id !== "string") return { success: false, error: ERROS.convidadoNaoEncontrado };
   const raw = {
     name: formData.get("name"),
     phone: formData.get("phone"),
@@ -285,7 +286,7 @@ export async function updateGuest(id: string, formData: FormData) {
         dietaryRestrictions: parsed.data.dietaryRestrictions || null,
       },
     });
-    if (result.count === 0) return { success: false, error: "Convidado não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.convidadoNaoEncontrado };
 
     revalidatePath("/convidados");
     return { success: true };
@@ -298,9 +299,9 @@ export async function updateGuest(id: string, formData: FormData) {
 export async function deleteGuest(id: string) {
   const { weddingId } = await requireWedding("/convidados");
   try {
-    if (typeof id !== "string") return { success: false, error: "Convidado não encontrado." };
+    if (typeof id !== "string") return { success: false, error: ERROS.convidadoNaoEncontrado };
     const result = await prisma.guest.deleteMany({ where: { id, weddingId } });
-    if (result.count === 0) return { success: false, error: "Convidado não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.convidadoNaoEncontrado };
     revalidatePath("/convidados");
     return { success: true };
   } catch (error) {
@@ -371,11 +372,11 @@ export async function publicConfirmRsvp(
     }
 
     const wedding = await getWeddingBySlug(data.slug);
-    if (!wedding) return { success: false, error: "Convidado não encontrado." };
+    if (!wedding) return { success: false, error: ERROS.convidadoNaoEncontrado };
     if (wedding.suspendedAt) return { success: false, error: "Este site está indisponível no momento." };
 
     const guest = await prisma.guest.findFirst({ where: { id: data.id, weddingId: wedding.id } });
-    if (!guest) return { success: false, error: "Convidado não encontrado." };
+    if (!guest) return { success: false, error: ERROS.convidadoNaoEncontrado };
 
     if (data.status === "CONFIRMED" && data.confirmedCompanions > guest.allowedCompanions) {
       return { success: false, error: `Você só pode levar até ${guest.allowedCompanions} acompanhante(s).` };
@@ -390,7 +391,7 @@ export async function publicConfirmRsvp(
         dietaryRestrictions: data.dietaryRestrictions?.trim() || null,
       },
     });
-    if (result.count === 0) return { success: false, error: "Convidado não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.convidadoNaoEncontrado };
 
     // Avisa o casal só quando a resposta mudou (reenviar o mesmo formulário não vira outro aviso)
     if (guest.rsvpStatus !== data.status) {
@@ -418,9 +419,9 @@ export async function checkInGuest(guestId: string) {
   const refusal = await moduleRefusal({ weddingId, session }, "qrcode");
   if (refusal) return { success: false, error: refusal };
   try {
-    if (typeof guestId !== "string") return { success: false, error: "Convidado não encontrado." };
+    if (typeof guestId !== "string") return { success: false, error: ERROS.convidadoNaoEncontrado };
     const guest = await prisma.guest.findFirst({ where: { id: guestId, weddingId } });
-    if (!guest) return { success: false, error: "Convidado não encontrado." };
+    if (!guest) return { success: false, error: ERROS.convidadoNaoEncontrado };
 
     if (guest.isPresent) {
       return { success: false, error: "A entrada deste convidado já foi registrada antes." };

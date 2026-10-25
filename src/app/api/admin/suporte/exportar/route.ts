@@ -6,6 +6,7 @@ import { buildAccountExport } from "@/lib/account/export-data";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { platformAdminApiGuard } from "@/lib/security/platform-admin";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 export const dynamic = "force-dynamic";
 
 /**
@@ -18,7 +19,7 @@ export async function GET(req: Request) {
   if (response) return response;
 
   const id = new URL(req.url).searchParams.get("pedido") ?? "";
-  if (!z.string().uuid().safeParse(id).success) return NextResponse.json({ error: "Pedido inválido." }, { status: 400, headers: { "cache-control": "no-store" } });
+  if (!z.string().uuid().safeParse(id).success) return NextResponse.json({ error: ERROS.pedidoInvalido }, { status: 400, headers: { "cache-control": "no-store" } });
 
   const limit = await checkRateLimit({ key: `ADMIN_DATA_EXPORT:${ctx.userId}`, limit: 20, windowMs: 10 * 60 * 1000 });
   if (!limit.success) return NextResponse.json({ error: "Muitas exportações seguidas. Aguarde alguns minutos." }, { status: 429 });

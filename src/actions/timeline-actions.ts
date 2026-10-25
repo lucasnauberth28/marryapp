@@ -7,6 +7,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 // Campos que o cronograma pode gravar. Qualquer outro campo enviado (ex.: weddingId) é ignorado.
 const TimelineEventSchema = z.object({
   title: z.string().trim().min(1, "Informe o título do evento.").max(160),
@@ -40,12 +41,12 @@ export async function createTimelineEvent(data: TimelineEventInput) {
 
 export async function updateTimelineEvent(id: string, data: TimelineEventInput) {
   const { weddingId } = await requireWedding("/cronograma");
-  if (typeof id !== "string") return { success: false, error: "Horário não encontrado." };
+  if (typeof id !== "string") return { success: false, error: ERROS.horarioNaoEncontrado };
   const parsed = TimelineEventSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   try {
     const result = await prisma.timelineEvent.updateMany({ where: { id, weddingId }, data: parsed.data });
-    if (result.count === 0) return { success: false, error: "Horário não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.horarioNaoEncontrado };
     revalidatePath("/cronograma");
     revalidatePath("/casamento", "layout");
     return { success: true };
@@ -57,9 +58,9 @@ export async function updateTimelineEvent(id: string, data: TimelineEventInput) 
 export async function deleteTimelineEvent(id: string) {
   const { weddingId } = await requireWedding("/cronograma");
   try {
-    if (typeof id !== "string") return { success: false, error: "Horário não encontrado." };
+    if (typeof id !== "string") return { success: false, error: ERROS.horarioNaoEncontrado };
     const result = await prisma.timelineEvent.deleteMany({ where: { id, weddingId } });
-    if (result.count === 0) return { success: false, error: "Horário não encontrado." };
+    if (result.count === 0) return { success: false, error: ERROS.horarioNaoEncontrado };
     revalidatePath("/cronograma");
     revalidatePath("/casamento", "layout");
     return { success: true };

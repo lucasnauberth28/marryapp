@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 
 import { BoardItem, BoardItemType } from "@/types/kanban";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 const TASK_STATUSES = new Set<string>(Object.values(TaskStatus));
 
 function isTaskStatus(value: unknown): value is TaskStatus {
@@ -116,7 +117,7 @@ export async function updateTaskStatus(
         position: Math.round(Number(newPosition)),
       },
     });
-    if (result.count === 0) return { success: false, error: "Tarefa não encontrada." };
+    if (result.count === 0) return { success: false, error: ERROS.tarefaNaoEncontrada };
 
     revalidatePath("/pendencias");
     
@@ -162,7 +163,7 @@ export async function updateTask(taskId: string, data: Partial<{
       where: { id: taskId, weddingId },
       data: update,
     });
-    if (result.count === 0) return { success: false, error: "Tarefa não encontrada." };
+    if (result.count === 0) return { success: false, error: ERROS.tarefaNaoEncontrada };
     const task = await prisma.task.findFirst({ where: { id: taskId, weddingId } });
 
     revalidatePath("/pendencias");
@@ -176,11 +177,11 @@ export async function updateTask(taskId: string, data: Partial<{
 export async function deleteTask(taskId: string) {
   const { weddingId } = await requireWedding("/pendencias");
   try {
-    if (typeof taskId !== "string") return { success: false, error: "Tarefa não encontrada." };
+    if (typeof taskId !== "string") return { success: false, error: ERROS.tarefaNaoEncontrada };
     const result = await prisma.task.deleteMany({
       where: { id: taskId, weddingId },
     });
-    if (result.count === 0) return { success: false, error: "Tarefa não encontrada." };
+    if (result.count === 0) return { success: false, error: ERROS.tarefaNaoEncontrada };
 
     revalidatePath("/pendencias");
     return { success: true };

@@ -9,6 +9,7 @@ import { hashLinkToken, isLinkTokenShape } from "@/lib/account/tokens";
 import { sendPasswordResetLink } from "@/lib/account/password-reset-link";
 import { logAudit } from "@/lib/audit";
 
+import { ERROS } from "@/lib/mensagens-de-erro";
 const MINUTE = 60 * 1000;
 
 /** Mesma resposta exista ou não a conta: não revela quais e-mails estão cadastrados. */
@@ -76,7 +77,7 @@ export async function resetPassword(input: { token: string; password: string; co
 
   const ip = await getClientIp();
   const byIp = await checkRateLimit({ key: `PWRESET_USE_IP:${ip}`, limit: 10, windowMs: 15 * MINUTE });
-  if (!byIp.success) return { success: false, error: "Muitas tentativas seguidas. Aguarde alguns minutos." };
+  if (!byIp.success) return { success: false, error: ERROS.muitasTentativas };
 
   const tokenHash = hashLinkToken(token);
   const record = await prisma.passwordResetToken.findUnique({
@@ -86,7 +87,7 @@ export async function resetPassword(input: { token: string; password: string; co
   if (!record || record.usedAt || record.expiresAt <= new Date()) return { success: false, error: EXPIRED_MESSAGE, expired: true };
 
   const byAccount = await checkRateLimit({ key: `PWRESET_USE_ACCOUNT:${record.userId}`, limit: 5, windowMs: 15 * MINUTE });
-  if (!byAccount.success) return { success: false, error: "Muitas tentativas seguidas. Aguarde alguns minutos." };
+  if (!byAccount.success) return { success: false, error: ERROS.muitasTentativas };
 
   const hashed = await bcrypt.hash(password, 12);
   const now = new Date();
