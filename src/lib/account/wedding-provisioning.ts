@@ -2,6 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { ehViolacaoDeUnicidade } from "@/lib/prisma-erros";
 import { temAcessoAoCaminho, opcoesDoCookieDeSessao, assinarToken, NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
 import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { CAMINHOS_DO_CASAL, NOME_DO_PAPEL_DO_CASAL, gerarEnderecoDosNomesDoCasal } from "@/lib/wedding-rules";
@@ -31,11 +32,6 @@ export function classificarConta(user: {
   if (/^fornecedor/i.test(user.role?.name ?? "")) return "vendor";
   if (temAcessoAoCaminho(paths, "/fornecedor") && !temAcessoAoCaminho(paths, "/dashboard")) return "vendor";
   return "couple";
-}
-
-/** Erro de índice único do Postgres (ex.: slug ou e-mail criados ao mesmo tempo). */
-export function ehViolacaoDeUnicidade(error: unknown) {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 }
 
 /**

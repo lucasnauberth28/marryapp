@@ -5,7 +5,7 @@ import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Interruptor } from "@/components/ui/switch";
-import { definirMadrinhaDoCasamentoAtiva } from "@/actions/admin-madrinha-actions";
+import { definirMadrinhaDoCasamentoAtiva } from "@/actions/madrinha/casamentos";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 import { BuscaDeCasamento } from "./wedding-search";
 

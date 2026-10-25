@@ -49,7 +49,7 @@ export function useTarefas(initialTasks: ItemDoQuadro[]) {
   async function toggle(task: ItemDoQuadro) {
     const next = tarefaEstaConcluida(task) ? SituacaoDaTarefa.TODO : SituacaoDaTarefa.DONE;
     setTasks((cur) => cur.map((t) => (t.id === task.id ? { ...t, status: next } : t)));
-    const res = await atualizarSituacaoDaTarefa(task.id, next, task.position, task.type);
+    const res = await atualizarSituacaoDaTarefa(task.id, next, task.position);
     if (!res.success) {
       setTasks((cur) => cur.map((t) => (t.id === task.id ? { ...t, status: task.status } : t)));
       toast.error(res.error || "Não deu para atualizar a tarefa. Tente de novo.");

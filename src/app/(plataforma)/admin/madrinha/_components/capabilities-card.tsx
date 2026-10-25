@@ -5,7 +5,7 @@ import { Painel } from "@/components/plataforma/panel";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { LinhaDeAlternancia } from "../../_sistema/toggle-row";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
-import { salvarCapacidadesDaMadrinha } from "@/actions/admin-madrinha-actions";
+import { salvarCapacidadesDaMadrinha } from "@/actions/madrinha/limites";
 
 type Capacidades = { draftReminder: boolean; suggestTasks: boolean; buildTimeline: boolean; compareQuotes: boolean };
 

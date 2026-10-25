@@ -7,7 +7,8 @@ import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { conferirLimiteDeUso, limitarUsoPorIp } from "@/lib/security/rate-limiter";
 import { normalizarTexto } from "@/lib/security/sanitize";
 import { MENSAGEM_DA_SITUACAO_DO_CONVITE, buscarConvite } from "@/lib/account/invites";
-import { classificarConta, ehViolacaoDeUnicidade, renovarCookieDeSessao, criarOuAtualizarPapelDoCasal } from "@/lib/account/wedding-provisioning";
+import { ehViolacaoDeUnicidade } from "@/lib/prisma-erros";
+import { classificarConta, renovarCookieDeSessao, criarOuAtualizarPapelDoCasal } from "@/lib/account/wedding-provisioning";
 import { registrarAuditoria } from "@/lib/audit";
 
 import { ERROS } from "@/lib/mensagens-de-erro";

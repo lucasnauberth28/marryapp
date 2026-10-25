@@ -5,7 +5,7 @@ import { Entrada } from "@/components/ui/input";
 import { AreaDeTexto } from "@/components/ui/textarea";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Botao } from "@/components/ui/button";
-import { aplicarAjusteAoCasamento, desbloquearMadrinhaDoCasamento } from "@/actions/admin-madrinha-actions";
+import { aplicarAjusteAoCasamento, desbloquearMadrinhaDoCasamento } from "@/actions/madrinha/casamentos";
 import type { ResultadoDeCasamento } from "@/lib/platform/queries/madrinha";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 import { BuscaDeCasamento } from "./wedding-search";

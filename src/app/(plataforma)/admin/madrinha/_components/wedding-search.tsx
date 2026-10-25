@@ -5,7 +5,7 @@ import { Search } from "lucide-react";
 import { RegiaoDeCarregamento } from "@/components/skeletons";
 import { Entrada } from "@/components/ui/input";
 import { Esqueleto } from "@/components/ui/skeleton";
-import { buscarCasamentosDaMadrinha } from "@/actions/admin-madrinha-actions";
+import { buscarCasamentosDaMadrinha } from "@/actions/madrinha/casamentos";
 import type { ResultadoDeCasamento } from "@/lib/platform/queries/madrinha";
 import { cn } from "@/lib/utils";
 

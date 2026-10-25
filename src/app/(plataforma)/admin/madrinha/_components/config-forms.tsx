@@ -7,7 +7,7 @@ import { Botao } from "@/components/ui/button";
 import { estiloDoCartao } from "@/components/casal/ui";
 import { cn } from "@/lib/utils";
 import { centavosParaCampoDeReais } from "@/lib/platform/madrinha";
-import { salvarLimitesContraAbusoDaMadrinha, salvarTetoGlobalDaMadrinha, salvarLimitesDaMadrinha } from "@/actions/admin-madrinha-actions";
+import { salvarLimitesContraAbusoDaMadrinha, salvarTetoGlobalDaMadrinha, salvarLimitesDaMadrinha } from "@/actions/madrinha/limites";
 import { LinhaDeAlternancia } from "../../_sistema/toggle-row";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 

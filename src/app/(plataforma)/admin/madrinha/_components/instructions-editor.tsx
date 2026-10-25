@@ -9,7 +9,7 @@ import { Painel } from "@/components/plataforma/panel";
 import { Botao } from "@/components/ui/button";
 import { Pencil, CheckCircle2, Archive } from "lucide-react";
 import { formatarDataEHora } from "@/lib/platform/format";
-import { publicarVersaoDasInstrucoes, reverterVersaoDasInstrucoes, salvarVersaoDasInstrucoes } from "@/actions/admin-madrinha-actions";
+import { publicarVersaoDasInstrucoes, reverterVersaoDasInstrucoes, salvarVersaoDasInstrucoes } from "@/actions/madrinha/instrucoes";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
 export interface ItemDeVersao {

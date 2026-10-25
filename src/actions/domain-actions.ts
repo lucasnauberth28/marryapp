@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { urlBaseDoApp } from "@/lib/app-url";
 import { registrarAuditoria } from "@/lib/audit";
-import { ehViolacaoDeUnicidade } from "@/lib/account/wedding-provisioning";
+import { ehViolacaoDeUnicidade } from "@/lib/prisma-erros";
 import { ehDominioReservado } from "@/lib/custom-domain-host";
 import { esconderDocumento } from "@/lib/document-br";
 import { verificarDisponibilidadeDoDominio, type DisponibilidadeDoDominio } from "@/lib/domain-availability";

@@ -10,7 +10,7 @@ import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { Botao } from "@/components/ui/button";
 import { formatarDiaEMes } from "@/lib/platform/format";
-import { arquivarArtigoDeConhecimento, salvarArtigoDeConhecimento } from "@/actions/admin-madrinha-actions";
+import { arquivarArtigoDeConhecimento, salvarArtigoDeConhecimento } from "@/actions/madrinha/conhecimento";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
 export interface ItemDeArtigo {

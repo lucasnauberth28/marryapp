@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { ehViolacaoDeUnicidade } from "@/lib/prisma-erros";
 import { exigirSessaoDoFornecedor } from "@/lib/security/vendor-guard";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
 import { PADRAO_DO_TOKEN_PUBLICO } from "@/app/(fornecedor)/_lib/links-publicos";
@@ -136,7 +136,7 @@ export async function enviarAvaliacaoDoPedido(input: EntradaDoEnvioDaAvaliacao):
     return { success: true };
   } catch (error) {
     // Duas abas enviando ao mesmo tempo: o leadId único segura a segunda.
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+    if (ehViolacaoDeUnicidade(error)) {
       return { success: false, error: "Avaliação já enviada.", alreadyReviewed: true };
     }
     console.error("[submitLeadReview Error]:", error);

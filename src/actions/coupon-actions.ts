@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import { ehViolacaoDeUnicidade } from "@/lib/prisma-erros";
 import { registrarAuditoria } from "@/lib/audit";
 import { PLANOS_ACEITOS_PELO_CUPOM, normalizarCodigoDoCupom } from "@/lib/checkout-pricing";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
@@ -76,7 +77,7 @@ export async function criarCupom(input: { code: string } & CamposDoCupom): Promi
     revalidatePath("/admin/planos", "layout");
     return { success: true };
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+    if (ehViolacaoDeUnicidade(error)) {
       return { success: false, error: "Já existe um cupom com este código." };
     }
     return falha(error, "createCoupon");

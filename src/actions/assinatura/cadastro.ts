@@ -11,7 +11,8 @@ import { limitarUsoPorIp } from "@/lib/security/rate-limiter";
 import { normalizarTexto, limparEndereco, limparUrl } from "@/lib/security/sanitize";
 import { CAMINHO_DO_PAINEL_DO_FORNECEDOR } from "@/lib/security/vendor-guard";
 import { VendorPlanTier } from "@prisma/client";
-import { ehViolacaoDeUnicidade, prepararCasamento, criarOuAtualizarPapelDoCasal, comNovaTentativaDeEndereco } from "@/lib/account/wedding-provisioning";
+import { ehViolacaoDeUnicidade } from "@/lib/prisma-erros";
+import { prepararCasamento, criarOuAtualizarPapelDoCasal, comNovaTentativaDeEndereco } from "@/lib/account/wedding-provisioning";
 import { EsquemaDoCadastro, NOME_DO_PAPEL_DE_FORNECEDOR, calcularFaixaDePreco, dataDeCasamentoValida, guardarImagem, type DadosDoCadastroDoPlano } from "@/actions/assinatura/cadastro-comum";
 
 type EntradaValida = NonNullable<ReturnType<typeof EsquemaDoCadastro.safeParse>["data"]>;

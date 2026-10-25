@@ -5,6 +5,7 @@ import { exigirSessaoAutenticada, exigirPermissaoDoCaminho, ErroDeAutorizacao } 
 import { temAcessoAoCaminho } from "@/lib/auth";
 
 import prisma from "@/lib/prisma";
+import { ehViolacaoDeUnicidade } from "@/lib/prisma-erros";
 import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
@@ -53,10 +54,6 @@ function garantirQuePodeConceder(sessionPaths: string[], grantedPaths: unknown) 
   }
 }
 
-function codigoDoErroDoPrisma(error: unknown) {
-  return error instanceof Prisma.PrismaClientKnownRequestError ? error.code : undefined;
-}
-
 export async function criarPerfil(data: { name: string; allowedPaths: string[] }) {
   const session = await exigirPermissaoDoCaminho("/perfis");
   const parsed = EsquemaDoPerfil.safeParse(data);
@@ -75,7 +72,7 @@ export async function criarPerfil(data: { name: string; allowedPaths: string[] }
     revalidatePath("/admin/usuarios");
     return { success: true, role };
   } catch (error) {
-    if (codigoDoErroDoPrisma(error) === "P2002") {
+    if (ehViolacaoDeUnicidade(error)) {
       return { success: false, error: "Já existe um perfil com esse nome." };
     }
     return { success: false, error: "Erro ao criar perfil." };
@@ -188,7 +185,7 @@ export async function criarPessoa(data: { name: string; username: string; passwo
     revalidatePath("/admin/usuarios");
     return { success: true, user: { id: user.id } };
   } catch (error) {
-    if (codigoDoErroDoPrisma(error) === "P2002") {
+    if (ehViolacaoDeUnicidade(error)) {
       return { success: false, error: "Já existe um usuário com este login." };
     }
     return { success: false, error: "Erro ao criar usuário." };
@@ -240,7 +237,7 @@ export async function atualizarPessoa(id: string, data: { name: string; username
     revalidatePath("/admin/usuarios");
     return { success: true };
   } catch (error) {
-    if (codigoDoErroDoPrisma(error) === "P2002") {
+    if (ehViolacaoDeUnicidade(error)) {
       return { success: false, error: "Já existe um usuário com este login." };
     }
     return { success: false, error: "Erro ao atualizar usuário." };
