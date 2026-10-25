@@ -14,9 +14,9 @@ import {
 import { logout } from "@/actions/auth-actions";
 import { Spinner } from "@/components/ui/spinner";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import { hasPathAccess, isPlatformAdminPaths } from "@/lib/permissions";
+import { temAcessoAoCaminho, ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
 import { Logo } from "@/components/brand/logo";
-import { accountLabel } from "@/lib/account-label";
+import { rotuloDaConta } from "@/lib/account-label";
 import { TourMenuItem } from "@/components/tour/tour-restart";
 import { ThemeMenuItems, ThemeToggle } from "@/components/theme/theme-toggle";
 import { visibleAdminItems } from "@/components/admin/nav-config";
@@ -47,10 +47,10 @@ const menuItem = "cursor-pointer rounded-[8px] px-3 py-2.5 text-sm text-tinta";
  */
 export function Header({ role = "Admin", allowedPaths = [], coupleNames, initials, subtitle, adminView = false, userName = null, planName = null, unreadNotifications = 0, pushPublicKey = null }: HeaderProps) {
   const [leaving, startLeave] = useTransition();
-  const can = (path: string) => hasPathAccess(allowedPaths, path);
-  const label = accountLabel({ adminView, coupleNames, coupleInitials: initials, userName, role });
+  const can = (path: string) => temAcessoAoCaminho(allowedPaths, path);
+  const label = rotuloDaConta({ adminView, coupleNames, coupleInitials: initials, userName, role });
   // Só a conta com acesso total ("*") vê o caminho de volta para a administração da plataforma
-  const isPlatformAdmin = isPlatformAdminPaths(allowedPaths);
+  const isPlatformAdmin = ehAcessoDeAdminDaPlataforma(allowedPaths);
   const adminItems = visibleAdminItems(allowedPaths);
 
   return (

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { PageHeader } from "@/components/plataforma/page-header";
 import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
 import { type SearchParams, param } from "@/lib/platform/list-params";
-import { isEmailConfigured } from "@/lib/email";
+import { emailEstaConfigurado } from "@/lib/email";
 import { audienceSchema, parseWeddingIdsParam, parseAudience, type Audience } from "@/lib/platform/announcement";
 import { listDrafts, listHistory, previewAudience } from "@/lib/platform/queries/comunicados";
 import { formatDateTime } from "@/lib/platform/format";
@@ -47,7 +47,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
         initial={initial}
         initialPreview={preview}
         drafts={drafts.map((d) => ({ id: d.id, title: d.title, updatedAtLabel: `Salvo em ${formatDateTime(d.updatedAt)}` }))}
-        emailConfigured={isEmailConfigured()}
+        emailConfigured={emailEstaConfigurado()}
       />
       {/* O histórico é a parte mais pesada e fica abaixo do formulário: chega depois, com esqueleto */}
       <Suspense fallback={<TablePanelSkeleton columns={6} rows={3} />}>

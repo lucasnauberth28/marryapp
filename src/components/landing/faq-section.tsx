@@ -2,19 +2,19 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
-import { getCatalog } from "@/lib/catalog-server";
-import type { Catalog } from "@/lib/catalog";
-import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
-import { GIFT_CONDITIONS, planLabel } from "@/lib/plan-copy";
+import { obterCatalogo } from "@/lib/catalog-server";
+import type { Catalogo } from "@/lib/catalog";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
+import { CONDICOES_DO_PRESENTE, rotuloDoPlano } from "@/lib/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { cn } from "@/lib/utils";
 import { container, h2, lead, overline } from "./styles";
 
 const link = "font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 hover:decoration-ameixa";
 
-const faqs = (catalog: Catalog): { q: string; a: ReactNode }[] => {
-  const classic = planLabel(catalog.plans.classic.name);
-  const vip = planLabel(catalog.plans.vip.name);
+const faqs = (catalog: Catalogo): { q: string; a: ReactNode }[] => {
+  const classic = rotuloDoPlano(catalog.plans.classic.name);
+  const vip = rotuloDoPlano(catalog.plans.vip.name);
   return [
     {
       q: "O que é o Aceito?",
@@ -22,7 +22,7 @@ const faqs = (catalog: Catalog): { q: string; a: ReactNode }[] => {
     },
     {
       q: "Preciso pagar para começar?",
-      a: `Vocês podem começar pelo plano Básico, sem mensalidade e sem cartão de crédito. Nesse plano, há uma taxa de ${GIFT_FEE_LABEL} por presente recebido. O ${classic} (${formatarReaisEnxuto(catalog.plans.classic.price)}) e o ${vip} (${formatarReaisEnxuto(catalog.plans.vip.price)}) têm pagamento único e outras condições.`,
+      a: `Vocês podem começar pelo plano Básico, sem mensalidade e sem cartão de crédito. Nesse plano, há uma taxa de ${ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido. O ${classic} (${formatarReaisEnxuto(catalog.plans.classic.price)}) e o ${vip} (${formatarReaisEnxuto(catalog.plans.vip.price)}) têm pagamento único e outras condições.`,
     },
     {
       q: "Os convidados precisam criar conta?",
@@ -41,7 +41,7 @@ const faqs = (catalog: Catalog): { q: string; a: ReactNode }[] => {
           pode ser presenteado uma vez. Vocês acompanham os pagamentos no painel.
           <br />
           <br />
-          {GIFT_CONDITIONS.pix} {GIFT_CONDITIONS.card} {GIFT_CONDITIONS.fee}
+          {CONDICOES_DO_PRESENTE.pix} {CONDICOES_DO_PRESENTE.card} {CONDICOES_DO_PRESENTE.fee}
           <br />
           <br />
           A forma e o prazo para os valores chegarem ao casal seguem as regras da carteira descritas nos{" "}
@@ -84,7 +84,7 @@ const faqs = (catalog: Catalog): { q: string; a: ReactNode }[] => {
  * Só uma aberta por vez (atributo name). Onde o navegador permite, a altura anima.
  */
 export async function FaqSection() {
-  const FAQS = faqs(await getCatalog());
+  const FAQS = faqs(await obterCatalogo());
   return (
     <section id="duvidas" aria-labelledby="duvidas-titulo" className="py-16 sm:py-24 lg:py-28">
       <div className={cn(container, "grid gap-10 lg:grid-cols-[5fr_7fr] lg:gap-20")}>

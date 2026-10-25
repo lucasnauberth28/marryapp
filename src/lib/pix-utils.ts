@@ -4,7 +4,7 @@ import { somenteDigitos } from "./formatacao/telefone.ts";
  * Baseado na especificação oficial do Banco Central do Brasil (EMV QRCPS / BR Code).
  */
 
-interface GeneratePixOptions {
+interface OpcoesParaGerarPix {
   pixKey: string;
   merchantName: string;
   merchantCity: string;
@@ -16,7 +16,7 @@ interface GeneratePixOptions {
 /**
  * Sanitiza texto removendo caracteres especiais e acentos para conformidade EMV
  */
-function sanitizeEMV(text: string, maxLength: number): string {
+function limparEmv(text: string, maxLength: number): string {
   return text
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "") // Remove acentos
@@ -34,7 +34,7 @@ function sanitizeEMV(text: string, maxLength: number): string {
  * - E-mail: Em minúsculas
  * - EVP: UUID 36 caracteres com hífen
  */
-function cleanPixKey(rawKey: string): string {
+function limparChavePix(rawKey: string): string {
   const trimmed = rawKey.trim();
 
   // E-mail
@@ -67,7 +67,7 @@ function cleanPixKey(rawKey: string): string {
 /**
  * Calcula o CRC16 CCITT (0xFFFF, Polinômio 0x1021) conforme norma EMV / Banco Central
  */
-function calculateCRC16(payload: string): string {
+function calcularCrc16(payload: string): string {
   let crc = 0xffff;
   const polynomial = 0x1021;
 
@@ -90,59 +90,59 @@ function calculateCRC16(payload: string): string {
 /**
  * Formata um campo no padrão EMV (ID + Tamanho com 2 dígitos + Valor)
  */
-function formatEMVField(id: string, value: string): string {
+function formatarCampoEmv(id: string, value: string): string {
   const len = value.length.toString().padStart(2, "0");
   return `${id}${len}${value}`;
 }
 
-export function generatePixPayload({
+export function gerarCodigoPix({
   pixKey,
   merchantName,
   merchantCity,
   amount,
   txId = "MARRYAPP",
-}: GeneratePixOptions): string {
-  const sanitizedKey = cleanPixKey(pixKey);
+}: OpcoesParaGerarPix): string {
+  const sanitizedKey = limparChavePix(pixKey);
 
   // 00 - Format Indicator (Fixo 01)
-  let payload = formatEMVField("00", "01");
+  let payload = formatarCampoEmv("00", "01");
 
   // 26 - Merchant Account Information (GUI + Chave PIX)
-  const gui = formatEMVField("00", "br.gov.bcb.pix");
-  const key = formatEMVField("01", sanitizedKey);
-  payload += formatEMVField("26", `${gui}${key}`);
+  const gui = formatarCampoEmv("00", "br.gov.bcb.pix");
+  const key = formatarCampoEmv("01", sanitizedKey);
+  payload += formatarCampoEmv("26", `${gui}${key}`);
 
   // 52 - Merchant Category Code (0000 = Geral)
-  payload += formatEMVField("52", "0000");
+  payload += formatarCampoEmv("52", "0000");
 
   // 53 - Currency (986 = Real BRL)
-  payload += formatEMVField("53", "986");
+  payload += formatarCampoEmv("53", "986");
 
   // 54 - Transaction Amount (Formato: 30.00)
   const amountStr = (amount / 100).toFixed(2);
-  payload += formatEMVField("54", amountStr);
+  payload += formatarCampoEmv("54", amountStr);
 
   // 58 - Country Code (BR)
-  payload += formatEMVField("58", "BR");
+  payload += formatarCampoEmv("58", "BR");
 
   // 59 - Merchant Name (Nome do recebedor, max 25 chars)
-  const name = sanitizeEMV(merchantName || "LUCAS E GIOVANNA", 25);
-  payload += formatEMVField("59", name || "MARRYAPP");
+  const name = limparEmv(merchantName || "LUCAS E GIOVANNA", 25);
+  payload += formatarCampoEmv("59", name || "MARRYAPP");
 
   // 60 - Merchant City (Cidade do recebedor, max 15 chars)
-  const city = sanitizeEMV(merchantCity || "SAO PAULO", 15);
-  payload += formatEMVField("60", city || "SAO PAULO");
+  const city = limparEmv(merchantCity || "SAO PAULO", 15);
+  payload += formatarCampoEmv("60", city || "SAO PAULO");
 
   // 62 - Additional Data Field Template (TxID alfanumérico limpo)
-  const sanitizedTxId = sanitizeEMV(txId || "MARRYAPP", 20);
-  const txIdField = formatEMVField("05", sanitizedTxId || "MARRYAPP");
-  payload += formatEMVField("62", txIdField);
+  const sanitizedTxId = limparEmv(txId || "MARRYAPP", 20);
+  const txIdField = formatarCampoEmv("05", sanitizedTxId || "MARRYAPP");
+  payload += formatarCampoEmv("62", txIdField);
 
   // 63 - CRC16 Marker
   payload += "6304";
 
   // Checksum
-  const crc = calculateCRC16(payload);
+  const crc = calcularCrc16(payload);
 
   return payload + crc;
 }

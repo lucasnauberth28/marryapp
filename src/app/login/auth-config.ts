@@ -1,24 +1,24 @@
 // Textos, fotos e planos da tela de acesso (entrar e criar conta). Sem dependências de servidor.
-import type { PlanKey } from "@/lib/plans";
-import { defaultCatalog, customPlanPriceIn, type Catalog } from "@/lib/catalog";
-import { SIGNUP_SUMMARY, planLabel } from "@/lib/plan-copy";
+import type { ChaveDoPlano } from "@/lib/plans";
+import { catalogoPadrao, precoDoPlanoPersonalizadoNoCatalogo, type Catalogo } from "@/lib/catalog";
+import { RESUMO_DO_CADASTRO, rotuloDoPlano } from "@/lib/plan-copy";
 
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 // Sem catálogo passado, valem os preços do código; as telas reais passam o catálogo do servidor (lib/catalog-server.ts),
 // que traz os preços editados pela administração.
-let codeCatalog: Catalog | null = null;
-const fallbackCatalog = () => (codeCatalog ??= defaultCatalog());
+let codeCatalog: Catalogo | null = null;
+const fallbackCatalog = () => (codeCatalog ??= catalogoPadrao());
 
 export type AuthMode = "entrar" | "criar";
 export type AccountType = "casal" | "fornecedor";
 export type SignupStep = "tipo" | "plano" | "dados" | "pagamento" | "pronto";
 
-const COUPLE_PLAN_KEYS = ["basic", "classic", "vip"] as const satisfies readonly PlanKey[];
-const VENDOR_PLAN_KEYS = ["start", "pro", "master"] as const satisfies readonly PlanKey[];
+const COUPLE_PLAN_KEYS = ["basic", "classic", "vip"] as const satisfies readonly ChaveDoPlano[];
+const VENDOR_PLAN_KEYS = ["start", "pro", "master"] as const satisfies readonly ChaveDoPlano[];
 
 /** Plano mostrado na tela: os do catálogo ou o adaptado (montado em /monte-seu-plano). */
 export interface PlanOption {
-  id: PlanKey | "custom";
+  id: ChaveDoPlano | "custom";
   name: string;
   summary: string;
   price: number; // centavos
@@ -29,15 +29,15 @@ export interface PlanOption {
 
 /** Nome sem o prefixo "Plano"/"Fornecedor": "Classic", "Pro", "Master Elite". */
 export function shortPlanName(name: string) {
-  return planLabel(name);
+  return rotuloDoPlano(name);
 }
 
-export function planOption(key: PlanKey, catalog: Catalog = fallbackCatalog()): PlanOption {
+export function planOption(key: ChaveDoPlano, catalog: Catalogo = fallbackCatalog()): PlanOption {
   const plan = catalog.plans[key];
   return {
     id: key,
     name: shortPlanName(plan.name),
-    summary: SIGNUP_SUMMARY[key],
+    summary: RESUMO_DO_CADASTRO[key],
     price: plan.price,
     period: plan.price === 0 ? "sem mensalidade" : plan.type === "VENDOR" ? "por mês" : "pagamento único",
     features: [...plan.features],
@@ -45,8 +45,8 @@ export function planOption(key: PlanKey, catalog: Catalog = fallbackCatalog()): 
   };
 }
 
-function customPlanOption(modules: string[], catalog: Catalog = fallbackCatalog()): PlanOption | null {
-  const calc = customPlanPriceIn(catalog, modules);
+function customPlanOption(modules: string[], catalog: Catalogo = fallbackCatalog()): PlanOption | null {
+  const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, modules);
   if (calc.selectedModules.length === 0) return null;
   return {
     id: "custom",
@@ -58,7 +58,7 @@ function customPlanOption(modules: string[], catalog: Catalog = fallbackCatalog(
   };
 }
 
-export function plansFor(type: AccountType, customModules?: string[], catalog: Catalog = fallbackCatalog()): PlanOption[] {
+export function plansFor(type: AccountType, customModules?: string[], catalog: Catalogo = fallbackCatalog()): PlanOption[] {
   if (type === "fornecedor") return VENDOR_PLAN_KEYS.map((key) => planOption(key, catalog));
   const custom = customModules?.length ? customPlanOption(customModules, catalog) : null;
   return [...(custom ? [custom] : []), ...COUPLE_PLAN_KEYS.map((key) => planOption(key, catalog))];

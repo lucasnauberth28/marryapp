@@ -2,7 +2,7 @@
 
 import { requireWeddingRead } from "@/lib/security/wedding-context";
 
-import { getConnectionState } from "@/lib/evolution";
+import { obterEstadoDaConexao } from "@/lib/evolution";
 
 /**
  * Estado da conexão do WhatsApp do Aceito (um número só, da plataforma). O casal só consulta:
@@ -11,5 +11,5 @@ import { getConnectionState } from "@/lib/evolution";
  */
 export async function getWhatsAppStatus() {
   await requireWeddingRead("/configuracoes");
-  return getConnectionState();
+  return obterEstadoDaConexao();
 }

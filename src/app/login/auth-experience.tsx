@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { LoginForm } from "./login-form";
 import { SignupFlow } from "./signup-flow";
 import { photoFor, typeOfPlan, type AccountType, type AuthMode, type SignupStep } from "./auth-config";
-import type { Catalog } from "@/lib/catalog";
+import type { Catalogo } from "@/lib/catalog";
 
 interface AuthExperienceProps {
   initialMode: AuthMode;
@@ -15,7 +15,7 @@ interface AuthExperienceProps {
   initialPlanId?: string;
   customModules?: string[];
   /** Preços vigentes (catálogo do servidor); sem ele valem os do código. */
-  catalog?: Catalog;
+  catalog?: Catalogo;
   /** Caminho (já validado no servidor) para onde voltar depois de entrar. */
   nextPath?: string | null;
   /** A pessoa chegou aqui porque a sessão expirou. */

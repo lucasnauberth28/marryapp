@@ -4,11 +4,11 @@ import prisma from "@/lib/prisma";
 import { MadrinhaCard } from "@/components/admin/madrinha-card";
 import { TasksBoard, type Filter } from "@/components/tarefas/tasks-board";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
-import { getWeddingIdentity } from "@/lib/wedding";
-import { daysUntil } from "@/lib/wedding-format";
-import { RSVP_PENDING_ACTION, RSVP_PENDING_HREF, rsvpPendingTipText, rsvpTipUrgent } from "@/lib/liz-tips";
+import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
+import { diasAte } from "@/lib/wedding-format";
+import { ACAO_DAS_CONFIRMACOES_PENDENTES, LINK_DAS_CONFIRMACOES_PENDENTES, textoDaDicaDeConfirmacaoPendente, dicaDeConfirmacaoUrgente } from "@/lib/liz-tips";
 import { lizTipPose } from "@/lib/liz/pose";
-import { notGiftOnlyWhere } from "@/lib/guest-origin";
+import { filtroSemSoPresente } from "@/lib/guest-origin";
 
 export const metadata: Metadata = {
   title: "Tarefas",
@@ -24,7 +24,7 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
   const { weddingId } = await requireWeddingPage("/pendencias");
   const { filtro } = await searchParams;
 
-  const [{ data: tasks, success }, identity] = await Promise.all([getTasks(), getWeddingIdentity()]);
+  const [{ data: tasks, success }, identity] = await Promise.all([getTasks(), obterIdentidadeDoCasamentoPrincipal()]);
 
   if (!success) {
     return (
@@ -35,7 +35,7 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
   }
 
   const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: SP }).format(new Date());
-  const daysLeft = identity.weddingDate ? daysUntil(identity.weddingDate) : null;
+  const daysLeft = identity.weddingDate ? diasAte(identity.weddingDate) : null;
 
   // Sugestão da Liz por regras, com os dados reais do casamento (sem IA)
   const overdue = (tasks ?? []).filter((t) => t.status !== "DONE" && t.dueDate && new Date(t.dueDate).toISOString().slice(0, 10) < todayKey).length;
@@ -52,7 +52,7 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
     );
   } else {
     const [pending, settings] = await Promise.all([
-      prisma.guest.count({ where: { weddingId, rsvpStatus: "PENDING", ...notGiftOnlyWhere } }),
+      prisma.guest.count({ where: { weddingId, rsvpStatus: "PENDING", ...filtroSemSoPresente } }),
       prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } }),
     ]);
     if (pending > 0) {
@@ -64,10 +64,10 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
       suggestion = (
         <MadrinhaCard
           id="rsvp-sem-resposta"
-          text={rsvpPendingTipText({ pending, ...when })}
-          actionLabel={RSVP_PENDING_ACTION}
-          actionHref={RSVP_PENDING_HREF}
-          pose={lizTipPose({ urgent: rsvpTipUrgent(when) })}
+          text={textoDaDicaDeConfirmacaoPendente({ pending, ...when })}
+          actionLabel={ACAO_DAS_CONFIRMACOES_PENDENTES}
+          actionHref={LINK_DAS_CONFIRMACOES_PENDENTES}
+          pose={lizTipPose({ urgent: dicaDeConfirmacaoUrgente(when) })}
         />
       );
     }

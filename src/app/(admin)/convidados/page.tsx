@@ -3,7 +3,7 @@ import { getGuests } from "@/actions/guest-actions";
 import { GuestsClient } from "./guests-client";
 import prisma from "@/lib/prisma";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
-import { weddingHasModule } from "@/lib/wedding-plan";
+import { casamentoTemModulo } from "@/lib/wedding-plan";
 
 import { formatarDataCivilLonga } from "@/lib/formatacao/data";
 export const metadata: Metadata = {
@@ -26,7 +26,7 @@ export default async function ConvidadosPage({ searchParams }: { searchParams: P
   const [guests, settings, canRemind] = await Promise.all([
     getGuests(),
     prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } }),
-    weddingHasModule({ weddingId, session }, "whatsapp"),
+    casamentoTemModulo({ weddingId, session }, "whatsapp"),
   ]);
 
   return (

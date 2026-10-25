@@ -5,7 +5,7 @@ import {
 } from "@/actions/site-builder-actions";
 import { getSettings } from "@/actions/settings-actions";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
-import { getFeaturedGifts } from "@/lib/wedding-data";
+import { obterPresentesEmDestaque } from "@/lib/wedding-data";
 import { SiteBuilderClient } from "./site-builder-client";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ export default async function SiteBuilderPage() {
     getSiteCustomization(),
     getStoryItems(),
     getWeddingTips(),
-    getFeaturedGifts(weddingId),
+    obterPresentesEmDestaque(weddingId),
     getSettings(),
   ]);
 

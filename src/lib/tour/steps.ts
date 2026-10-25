@@ -1,6 +1,6 @@
 // Passos do passo a passo do painel do casal. Puro (sem banco nem Next): a ordem, o texto e quem vê cada passo.
-import { hasPathAccess } from "../permissions.ts";
-import { PANEL_AREAS, type AreaId } from "../panel-nav.ts";
+import { temAcessoAoCaminho } from "../permissions.ts";
+import { AREAS_DO_PAINEL, type IdDaArea } from "../panel-nav.ts";
 
 /** Módulos de plano que fecham uma tela inteira (o resto do painel abre para todos os planos). */
 export type TourModule = "whatsapp" | "qrcode" | "customDomain";
@@ -30,7 +30,7 @@ interface StepDef {
 }
 
 /** Telas de cada área, na mesma ordem do menu (lib/panel-nav). */
-const screensOf = (id: AreaId) => PANEL_AREAS.find((a) => a.id === id)!.screens.map((s) => s.href);
+const screensOf = (id: IdDaArea) => AREAS_DO_PAINEL.find((a) => a.id === id)!.screens.map((s) => s.href);
 
 const DEFS: readonly StepDef[] = [
   {
@@ -136,7 +136,7 @@ export function navAnchor(href: string): string {
  */
 export function buildTourSteps(opts: { allowedPaths: readonly string[]; modules: readonly string[] }): TourStep[] {
   const paths = [...opts.allowedPaths];
-  const opens = (href: string) => hasPathAccess(paths, href);
+  const opens = (href: string) => temAcessoAoCaminho(paths, href);
   const steps: TourStep[] = [];
   for (const def of DEFS) {
     if (def.needs && !opts.modules.includes(def.needs)) continue;

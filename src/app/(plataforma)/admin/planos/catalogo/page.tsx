@@ -4,10 +4,10 @@ import { Panel } from "@/components/plataforma/panel";
 import { StatusChip } from "@/components/plataforma/status-chip";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { ResponsiveTable } from "@/components/plataforma/responsive-table";
-import { getCatalog } from "@/lib/catalog-server";
-import { comboDiscountText, isFreePlan, moduleCatalogKey, planCatalogKey } from "@/lib/catalog";
-import { PLANS_CONFIG, type PlanKey } from "@/lib/plans";
-import { COUPLE_MODULES } from "@/lib/pricing-modules";
+import { obterCatalogo } from "@/lib/catalog-server";
+import { textoDoDescontoDoCombo, ehPlanoGratis, chaveDoModuloNoCatalogo, chaveDoPlanoNoCatalogo } from "@/lib/catalog";
+import { CONFIGURACAO_DOS_PLANOS, type ChaveDoPlano } from "@/lib/plans";
+import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
 import { formatDateTime } from "@/lib/platform/format";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { param, type SearchParams } from "@/lib/platform/list-params";
@@ -24,9 +24,9 @@ import { CatalogEditForm } from "./_components/catalog-edit-form";
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Catálogo e preços" };
 
-const PLAN_ORDER: PlanKey[] = ["basic", "classic", "vip", "start", "pro", "master"];
-const GIFT_FEE: Partial<Record<PlanKey, string>> = { basic: "3,99%", classic: "0% no Pix", vip: "0% no Pix" };
-const BILLING = (id: PlanKey) => (isFreePlan(id) ? "Grátis" : PLANS_CONFIG[id].type === "VENDOR" ? "Por mês" : "Pagamento único");
+const PLAN_ORDER: ChaveDoPlano[] = ["basic", "classic", "vip", "start", "pro", "master"];
+const GIFT_FEE: Partial<Record<ChaveDoPlano, string>> = { basic: "3,99%", classic: "0% no Pix", vip: "0% no Pix" };
+const BILLING = (id: ChaveDoPlano) => (ehPlanoGratis(id) ? "Grátis" : CONFIGURACAO_DOS_PLANOS[id].type === "VENDOR" ? "Por mês" : "Pagamento único");
 
 interface AuditDetails {
   before?: { priceCents?: number; name?: string };
@@ -40,7 +40,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
   const editing = param(query, "editar", 60);
   const now = new Date();
   const [catalog, overrides, history, invoices, pendingInvoices] = await Promise.all([
-    getCatalog(),
+    obterCatalogo(),
     prisma.catalogPrice.findMany({ select: { key: true } }),
     prisma.auditLog.findMany({ where: { action: "catalog.price_update" }, orderBy: { createdAt: "desc" }, take: 8, select: { id: true, actorName: true, targetId: true, details: true, createdAt: true } }),
     listPendingInvoices(20),
@@ -51,17 +51,17 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
   // Item em edição (só aceita chaves que existem no catálogo)
   let form: { key: string; title: string; name: string; price: number; free: boolean } | null = null;
   if (editing?.startsWith("plan:")) {
-    const id = editing.slice(5) as PlanKey;
-    if (PLAN_ORDER.includes(id)) form = { key: editing, title: `o plano ${catalog.plans[id].name.replace(/^(Plano|Fornecedor)\s+/, "")}`, name: catalog.plans[id].name, price: catalog.plans[id].price, free: isFreePlan(id) };
+    const id = editing.slice(5) as ChaveDoPlano;
+    if (PLAN_ORDER.includes(id)) form = { key: editing, title: `o plano ${catalog.plans[id].name.replace(/^(Plano|Fornecedor)\s+/, "")}`, name: catalog.plans[id].name, price: catalog.plans[id].price, free: ehPlanoGratis(id) };
   } else if (editing?.startsWith("module:")) {
-    const mod = catalog.modules.find((m) => moduleCatalogKey(m.id) === editing);
+    const mod = catalog.modules.find((m) => chaveDoModuloNoCatalogo(m.id) === editing);
     if (mod) form = { key: editing, title: "o recurso", name: mod.name, price: mod.price, free: false };
   }
 
   const itemLabel = (key: string | null) => {
     if (!key) return "Item";
-    if (key.startsWith("plan:")) return PLANS_CONFIG[key.slice(5) as PlanKey]?.name ?? key;
-    return COUPLE_MODULES.find((m) => moduleCatalogKey(m.id) === key)?.name ?? key;
+    if (key.startsWith("plan:")) return CONFIGURACAO_DOS_PLANOS[key.slice(5) as ChaveDoPlano]?.name ?? key;
+    return MODULOS_DO_CASAL.find((m) => chaveDoModuloNoCatalogo(m.id) === key)?.name ?? key;
   };
 
   return (
@@ -79,7 +79,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                 rowKey={(id) => id}
                 selectedKey={editing?.startsWith("plan:") ? editing.slice(5) : null}
                 columns={[
-                  { key: "plano", header: "Plano", primary: true, cell: (id) => <>{catalog.plans[id].name.replace(/^(Plano|Fornecedor)\s+/, "")}{edited.has(planCatalogKey(id)) ? <span className="ml-2 align-middle"><StatusChip tone="ameixa">Editado</StatusChip></span> : null}</> },
+                  { key: "plano", header: "Plano", primary: true, cell: (id) => <>{catalog.plans[id].name.replace(/^(Plano|Fornecedor)\s+/, "")}{edited.has(chaveDoPlanoNoCatalogo(id)) ? <span className="ml-2 align-middle"><StatusChip tone="ameixa">Editado</StatusChip></span> : null}</> },
                   { key: "para", header: "Para quem", cell: (id) => (catalog.plans[id].type === "VENDOR" ? "Fornecedor" : "Casal") },
                   { key: "preco", header: "Preço", align: "right", className: "whitespace-nowrap", cell: (id) => formatarReais(catalog.plans[id].price) },
                   { key: "cobranca", header: "Cobrança", cell: (id) => BILLING(id) },
@@ -89,7 +89,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                     header: <span className="sr-only">Editar</span>,
                     mobileLabel: false,
                     cell: (id) => (
-                      <PendingLink href={`/admin/planos/catalogo?editar=${planCatalogKey(id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
+                      <PendingLink href={`/admin/planos/catalogo?editar=${chaveDoPlanoNoCatalogo(id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
                         <Pencil className="size-4" aria-hidden="true" /> Editar<span className="sr-only"> o plano {catalog.plans[id].name}</span>
                       </PendingLink>
                     ),
@@ -110,21 +110,21 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                 rowKey={(m) => m.id}
                 selectedKey={editing?.startsWith("module:") ? editing.slice(7) : null}
                 columns={[
-                  { key: "nome", header: "Módulo", primary: true, cell: (m) => <>{m.category}: {m.name}{edited.has(moduleCatalogKey(m.id)) ? <span className="ml-2 align-middle"><StatusChip tone="ameixa">Editado</StatusChip></span> : null}</> },
+                  { key: "nome", header: "Módulo", primary: true, cell: (m) => <>{m.category}: {m.name}{edited.has(chaveDoModuloNoCatalogo(m.id)) ? <span className="ml-2 align-middle"><StatusChip tone="ameixa">Editado</StatusChip></span> : null}</> },
                   { key: "preco", header: "Preço", align: "right", className: "whitespace-nowrap", cell: (m) => formatarReais(m.price) },
                   {
                     key: "editar",
                     header: <span className="sr-only">Editar</span>,
                     mobileLabel: false,
                     cell: (m) => (
-                      <PendingLink href={`/admin/planos/catalogo?editar=${moduleCatalogKey(m.id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
+                      <PendingLink href={`/admin/planos/catalogo?editar=${chaveDoModuloNoCatalogo(m.id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
                         <Pencil className="size-4" aria-hidden="true" /> Editar<span className="sr-only"> o módulo {m.name}</span>
                       </PendingLink>
                     ),
                   },
                 ]}
               />
-              <p className="mt-3 text-sm text-tinta-suave">{comboDiscountText()}</p>
+              <p className="mt-3 text-sm text-tinta-suave">{textoDoDescontoDoCombo()}</p>
             </div>
           </Panel>
         </div>

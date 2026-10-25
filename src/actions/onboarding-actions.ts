@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { normalizeText } from "@/lib/security/sanitize";
-import { DEFAULT_THEME_COLOR, GUEST_RANGES, THEME_PRESETS, joinCoupleNames } from "@/lib/onboarding-options";
+import { COR_PADRAO_DO_TEMA, FAIXAS_DE_CONVIDADOS, TEMAS_PRONTOS, juntarNomesDoCasal } from "@/lib/onboarding-options";
 import {
   classifyAccount,
   isAutoSlug,
@@ -24,7 +24,7 @@ const personName = (label: string) =>
     .transform((v) => normalizeText(v).replace(/[&+]/g, " ").replace(/\s+/g, " ").trim())
     .pipe(z.string().min(2, `Informe ${label}.`).max(60, `${label[0].toUpperCase()}${label.slice(1)} está longo demais.`));
 
-const THEME_HEXES = THEME_PRESETS.map((p) => p.hex) as [string, ...string[]];
+const THEME_HEXES = TEMAS_PRONTOS.map((p) => p.hex) as [string, ...string[]];
 
 const OnboardingSchema = z.object({
   yourName: personName("o seu nome"),
@@ -39,7 +39,7 @@ const OnboardingSchema = z.object({
     .max(80, "Cidade longa demais.")
     .transform((v) => normalizeText(v))
     .optional(),
-  guestEstimate: z.enum(GUEST_RANGES).nullable().optional(),
+  guestEstimate: z.enum(FAIXAS_DE_CONVIDADOS).nullable().optional(),
   // Cor, cidade e faixa de convidados saíram do onboarding (ficam em Editar o site); seguem aceitos se vierem.
   themeColor: z.enum(THEME_HEXES).optional(),
 });
@@ -106,7 +106,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
   }
   if (user.wedding?.onboardedAt) return { success: false, error: "O casamento já está configurado.", redirectTo: "/dashboard" };
 
-  const coupleNames = joinCoupleNames(data.yourName, data.partnerName);
+  const coupleNames = juntarNomesDoCasal(data.yourName, data.partnerName);
   // Campo que não veio fica como está (o onboarding curto não pergunta cidade, convidados nem cor).
   const optional = {
     ...(data.city !== undefined ? { city: data.city || null } : {}),
@@ -160,7 +160,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
             title: coupleNames,
             subtitle: "",
             weddingDate,
-            themeColor: data.themeColor ?? DEFAULT_THEME_COLOR,
+            themeColor: data.themeColor ?? COR_PADRAO_DO_TEMA,
             ceremonyTime: null,
             receptionTime: null,
             locationName: null,

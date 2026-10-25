@@ -10,7 +10,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { THEME_OPTIONS, parseThemePreference } from "@/lib/theme";
+import { OPCOES_DE_TEMA, interpretarPreferenciaDeTema } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { useTheme } from "./theme-provider";
 
@@ -32,8 +32,8 @@ export function ThemeMenuItems() {
   return (
     <>
       <DropdownMenuLabel className="text-xs font-semibold text-tinta-suave">Aparência</DropdownMenuLabel>
-      <DropdownMenuRadioGroup value={preference} onValueChange={(v) => setPreference(parseThemePreference(v))}>
-        {THEME_OPTIONS.map(({ value, label }) => {
+      <DropdownMenuRadioGroup value={preference} onValueChange={(v) => setPreference(interpretarPreferenciaDeTema(v))}>
+        {OPCOES_DE_TEMA.map(({ value, label }) => {
           const Icon = OPTION_ICON[value];
           return (
             <DropdownMenuRadioItem key={value} value={value} className="min-h-11 cursor-pointer text-base">
@@ -84,7 +84,7 @@ export function ThemeSegmented({ className }: { className?: string }) {
     <fieldset className={cn("min-w-0", className)}>
       <legend className="sr-only">Aparência do aplicativo</legend>
       <div className="grid w-full grid-cols-3 gap-1 rounded-[12px] border border-linha bg-areia p-1 sm:inline-grid sm:w-auto sm:grid-flow-col sm:grid-cols-none">
-        {THEME_OPTIONS.map(({ value, label }) => {
+        {OPCOES_DE_TEMA.map(({ value, label }) => {
           const Icon = OPTION_ICON[value];
           return (
             <label key={value} className="relative min-w-0">

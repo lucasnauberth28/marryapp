@@ -4,9 +4,9 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
-import { applyApprovedPayment, markPaymentFailed } from "@/lib/subscriptions";
+import { aplicarPagamentoAprovado, marcarPagamentoComoFalho } from "@/lib/subscriptions";
 
 /** Pix estático (sem confirmação automática): o txid gerado em generateSubscriptionPix começa assim. */
 const STATIC_PIX_PREFIX = "ASSIN";
@@ -54,14 +54,14 @@ export async function confirmSubscriptionManually(subscriptionId: string): Promi
     if ("error" in found) return { success: false, error: found.error ?? "Cobrança inválida." };
     const { sub } = found;
 
-    const result = await applyApprovedPayment(sub.id, { id: sub.gatewayId, amountInReais: sub.amount / 100 });
+    const result = await aplicarPagamentoAprovado(sub.id, { id: sub.gatewayId, amountInReais: sub.amount / 100 });
     if (result === "not_found") return { success: false, error: "Cobrança não encontrada." };
     if (result === "amount_mismatch") return { success: false, error: "O valor da cobrança não confere com o plano." };
 
     console.info(
       `[Assinatura] Pix estático ${sub.gatewayId} (assinatura ${sub.id}) confirmado manualmente por ${session.userId}${result === "already" ? " (já estava pago)" : ""}.`,
     );
-    await logAudit({
+    await registrarAuditoria({
       action: "subscription.confirm",
       targetType: "subscription",
       targetId: sub.id,
@@ -84,9 +84,9 @@ export async function rejectSubscription(subscriptionId: string): Promise<Action
     const found = await findCheckableSubscription(parsed.data);
     if ("error" in found) return { success: false, error: found.error ?? "Cobrança inválida." };
 
-    await markPaymentFailed(found.sub.id);
+    await marcarPagamentoComoFalho(found.sub.id);
     console.info(`[Assinatura] Pix estático ${found.sub.gatewayId} (assinatura ${found.sub.id}) marcado como não recebido por ${session.userId}.`);
-    await logAudit({
+    await registrarAuditoria({
       action: "subscription.reject",
       targetType: "subscription",
       targetId: found.sub.id,

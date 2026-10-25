@@ -1,4 +1,4 @@
-import { getCatalog } from "@/lib/catalog-server";
+import { obterCatalogo } from "@/lib/catalog-server";
 import { CustomPlanClient } from "./custom-plan-client";
 
 // Os preços dos recursos vêm do catálogo da administração: a página se refaz a cada 5 minutos e na hora que um preço muda.
@@ -10,7 +10,7 @@ export const metadata = {
 };
 
 export default async function CustomPlanPage() {
-  const catalog = await getCatalog();
+  const catalog = await obterCatalogo();
   // O servidor sempre recalcula o preço ao cobrar: o que aparece aqui é só a prévia.
   return <CustomPlanClient modules={catalog.modules} />;
 }

@@ -9,7 +9,7 @@ import { LoadingRegion } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QrFrame } from "@/components/ui/qr-frame";
-import { QR_COLORS } from "@/lib/qr-colors";
+import { CORES_DO_QR } from "@/lib/qr-colors";
 import { cn } from "@/lib/utils";
 
 
@@ -155,7 +155,7 @@ export function SubscriptionPix({ planId, modules, planName, couponCode, onPaid 
           <p className="font-num text-3xl text-tinta">{formatarReais(charge.amount)}</p>
         </div>
         <QrFrame className={cn("transition-opacity", expired && "opacity-30")}>
-          <QRCodeSVG value={charge.payload} size={184} {...QR_COLORS} marginSize={2} aria-label="QR Code do Pix" role="img" />
+          <QRCodeSVG value={charge.payload} size={184} {...CORES_DO_QR} marginSize={2} aria-label="QR Code do Pix" role="img" />
         </QrFrame>
         <p aria-live="polite" className={cn("text-sm font-semibold tabular-nums", expired ? "text-perigo" : "text-tinta-suave")}>
           {expired

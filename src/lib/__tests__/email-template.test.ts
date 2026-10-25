@@ -1,9 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { brandedEmail } from "../email-template.ts";
+import { emailDaMarca } from "../email-template.ts";
 
 test("e-mail da marca usa a assinatura em PNG com endereço absoluto e as cores do manual", () => {
-  const { html, text } = brandedEmail({
+  const { html, text } = emailDaMarca({
     heading: "Redefinam a senha",
     paragraphs: ["Olá, Ana."],
     cta: { label: "Criar nova senha", url: "https://meuaceito.com.br/redefinir-senha?t=abc" },
@@ -21,7 +21,7 @@ test("e-mail da marca usa a assinatura em PNG com endereço absoluto e as cores 
 });
 
 test("e-mail escapa HTML do conteúdo", () => {
-  const { html } = brandedEmail({ heading: "<b>x</b>", paragraphs: ['"oi" & <i>'] });
+  const { html } = emailDaMarca({ heading: "<b>x</b>", paragraphs: ['"oi" & <i>'] });
   assert.ok(!html.includes("<b>x</b>"));
   assert.ok(html.includes("&lt;b&gt;x&lt;/b&gt;"));
 });

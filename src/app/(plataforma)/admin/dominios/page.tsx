@@ -11,9 +11,9 @@ import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
 import { PlanChip, StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
 import { TabsNav } from "@/components/plataforma/tabs-nav";
-import { STATUS_LABEL, type DomainOrderStatusName } from "@/lib/domain-order";
+import { ROTULO_DA_SITUACAO, type NomeDaSituacaoDoPedidoDeDominio } from "@/lib/domain-order";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
-import { renewalReminderStatus } from "@/lib/domain-renewal";
+import { situacaoDoLembreteDeRenovacao } from "@/lib/domain-renewal";
 import { formatDate, formatDateTime, relativeDay, timeAgo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { oneOf, param, parsePage, type SearchParams } from "@/lib/platform/list-params";
@@ -28,7 +28,7 @@ import {
   type DomainTab,
 } from "@/lib/platform/queries/dominios";
 import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
-import { vercelConfigured } from "@/lib/vercel-domains";
+import { vercelEstaConfigurada } from "@/lib/vercel-domains";
 import { buildHref } from "@/lib/platform/list-params";
 import { DomainPanel } from "./_components/domain-panel";
 import { RenewalButton } from "./_components/renewal-button";
@@ -38,7 +38,7 @@ export const metadata = { title: "Domínios" };
 
 const TAB_LABEL: Record<DomainTab, string> = { todos: "Todos", pedido: "Pedido recebido", registro: "Em registro", registrado: "Registrado", "no-ar": "No ar", recusado: "Recusado" };
 
-const STATUS_CHIP: Record<DomainOrderStatusName, { tone: StatusTone; icon: typeof Clock }> = {
+const STATUS_CHIP: Record<NomeDaSituacaoDoPedidoDeDominio, { tone: StatusTone; icon: typeof Clock }> = {
   REQUESTED: { tone: "aviso", icon: Clock },
   REGISTERING: { tone: "neutro", icon: Hourglass },
   REGISTERED: { tone: "aviso", icon: Check },
@@ -119,10 +119,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                 key: "situacao",
                 header: "Situação",
                 cell: (r) => {
-                  const chip = STATUS_CHIP[r.status as DomainOrderStatusName] ?? STATUS_CHIP.CANCELED;
+                  const chip = STATUS_CHIP[r.status as NomeDaSituacaoDoPedidoDeDominio] ?? STATUS_CHIP.CANCELED;
                   return (
                     <StatusChip tone={chip.tone} icon={chip.icon}>
-                      {STATUS_LABEL[r.status as DomainOrderStatusName] ?? r.status}
+                      {ROTULO_DA_SITUACAO[r.status as NomeDaSituacaoDoPedidoDeDominio] ?? r.status}
                     </StatusChip>
                   );
                 },
@@ -178,7 +178,7 @@ async function RenewalsBlock({ now }: { now: Date }) {
       ) : (
         <ul className="flex flex-col">
           {renewals.map((r) => {
-            const reminder = renewalReminderStatus({ expiresAt: r.expiresAt, now, lastSent: r.renewalReminderDays });
+            const reminder = situacaoDoLembreteDeRenovacao({ expiresAt: r.expiresAt, now, lastSent: r.renewalReminderDays });
             return (
               <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-linha py-3 first:pt-0 last:border-b-0 last:pb-0">
                 <div className="min-w-0">
@@ -216,7 +216,7 @@ async function DomainDetailSlot({ selectedId, summary }: { selectedId: string | 
         <Panel as="article">
           <div className="flex flex-wrap items-center justify-between gap-2">
             {detail.planName?.toLowerCase().includes("vip") ? <PlanChip plan="vip" /> : detail.planName?.toLowerCase().includes("adaptado") ? <PlanChip plan="custom" /> : <StatusChip tone="neutro">Sem assinatura</StatusChip>}
-            <StatusChip tone={(STATUS_CHIP[detail.status as DomainOrderStatusName] ?? STATUS_CHIP.CANCELED).tone}>{STATUS_LABEL[detail.status as DomainOrderStatusName] ?? detail.status}</StatusChip>
+            <StatusChip tone={(STATUS_CHIP[detail.status as NomeDaSituacaoDoPedidoDeDominio] ?? STATUS_CHIP.CANCELED).tone}>{ROTULO_DA_SITUACAO[detail.status as NomeDaSituacaoDoPedidoDeDominio] ?? detail.status}</StatusChip>
           </div>
           <h2 className="mt-3 break-all font-mono text-2xl font-medium leading-8 text-tinta">{detail.domain}</h2>
           <p className="mt-1 text-sm text-tinta-suave">
@@ -242,11 +242,11 @@ async function DomainDetailSlot({ selectedId, summary }: { selectedId: string | 
           <div className="mt-5 border-t border-linha pt-5">
             <DomainPanel
               key={detail.id}
-              vercelReady={vercelConfigured()}
+              vercelReady={vercelEstaConfigurada()}
               order={{
                 id: detail.id,
                 domain: detail.domain,
-                status: detail.status as DomainOrderStatusName,
+                status: detail.status as NomeDaSituacaoDoPedidoDeDominio,
                 holderDocument: detail.holderDocument,
                 canRevealDocument: detail.canRevealDocument,
                 adminNote: detail.adminNote,

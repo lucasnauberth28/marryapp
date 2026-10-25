@@ -1,7 +1,7 @@
 "use server";
 
 import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
-import { ensureWalletBalance } from "@/lib/wedding-data";
+import { garantirSaldoDaCarteira } from "@/lib/wedding-data";
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
@@ -19,7 +19,7 @@ const CreditCardSchema = z.object({
 
 export async function getWalletData() {
   const { weddingId } = await requireWeddingRead();
-  const wallet = await ensureWalletBalance(weddingId);
+  const wallet = await garantirSaldoDaCarteira(weddingId);
 
   const cards = await prisma.creditCard.findMany({
     where: { weddingId },

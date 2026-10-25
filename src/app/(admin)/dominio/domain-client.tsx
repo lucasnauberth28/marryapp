@@ -14,19 +14,19 @@ import { Input } from "@/components/ui/input";
 import { Chip, card, cardTitle, type ChipTone } from "@/components/casal/ui";
 import { btn } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
-import { AVAILABILITY_TEXT, type DomainAvailability } from "@/lib/domain-availability";
-import { DOMAIN_SUFFIX, normalizeDomainName, suggestDomainNames } from "@/lib/domain-name";
-import { STATUS_LABEL, TIMELINE_STEPS, timelineStates, type DomainRequestField, type TimelineState } from "@/lib/domain-order";
-import { formatDocument } from "@/lib/document-br";
-import { DOMAIN_TERMS_CHECKBOX, DOMAIN_TERMS_TEXT } from "@/lib/domain-terms";
-import type { DomainOrderView } from "@/lib/domain-orders";
+import { TEXTO_DA_DISPONIBILIDADE, type DisponibilidadeDoDominio } from "@/lib/domain-availability";
+import { SUFIXO_DO_DOMINIO, normalizarNomeDeDominio, sugerirNomesDeDominio } from "@/lib/domain-name";
+import { ROTULO_DA_SITUACAO, ETAPAS_DA_LINHA_DO_TEMPO, situacoesDasEtapas, type CampoDoPedidoDeDominio, type SituacaoDaEtapa } from "@/lib/domain-order";
+import { formatarDocumento } from "@/lib/document-br";
+import { TEXTO_DO_ACEITE_DOS_TERMOS_DE_DOMINIO, TEXTO_DOS_TERMOS_DE_DOMINIO } from "@/lib/domain-terms";
+import type { VisaoDoPedidoDeDominio } from "@/lib/domain-orders";
 
 import { formatarDataBrasiliaLonga, formatarDataCivilLonga } from "@/lib/formatacao/data";
 interface Props {
   coupleNames: string;
   weddingDate: string | null;
-  order: DomainOrderView | null;
-  lastClosed: DomainOrderView | null;
+  order: VisaoDoPedidoDeDominio | null;
+  lastClosed: VisaoDoPedidoDeDominio | null;
   defaults: { name: string; email: string };
 }
 
@@ -61,7 +61,7 @@ export function DomainClient({ coupleNames, weddingDate, order, lastClosed, defa
 // PEDIDO RECUSADO
 // ==========================================
 
-function RejectedNotice({ order }: { order: DomainOrderView }) {
+function RejectedNotice({ order }: { order: VisaoDoPedidoDeDominio }) {
   return (
     <section aria-labelledby="dominio-recusado" className="flex items-start gap-3 rounded-2xl border border-aviso/30 bg-aviso-suave p-4 text-[15px] text-tinta">
       <AlertCircle className="mt-0.5 size-5 shrink-0 text-aviso" aria-hidden="true" />
@@ -85,7 +85,7 @@ type Check =
   | { state: "invalid"; message: string }
   | { state: "checking" }
   | { state: "error"; message: string }
-  | { state: DomainAvailability; domain: string };
+  | { state: DisponibilidadeDoDominio; domain: string };
 
 const CHECK_TONE: Record<"sucesso" | "perigo" | "aviso" | "neutro", ChipTone> = { sucesso: "sucesso", perigo: "perigo", aviso: "aviso", neutro: "neutro" };
 
@@ -107,7 +107,7 @@ function CheckResult({ check }: { check: Check }) {
       </p>
     );
   }
-  const spec = AVAILABILITY_TEXT[check.state];
+  const spec = TEXTO_DA_DISPONIBILIDADE[check.state];
   const Icon = check.state === "available" ? CheckCircle2 : check.state === "taken" ? XCircle : check.state === "releasing" ? Clock : Info;
   const label = check.state === "available" ? "Livre" : check.state === "taken" ? "Já tem dono" : check.state === "releasing" ? "Em liberação" : "Sem resposta agora";
   return (
@@ -130,7 +130,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
   const [holderPhone, setHolderPhone] = useState("");
   const [accepted, setAccepted] = useState(false);
   const [check, setCheck] = useState<Check>({ state: "idle" });
-  const [errors, setErrors] = useState<Partial<Record<DomainRequestField, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<CampoDoPedidoDeDominio, string>>>({});
   const [formError, setFormError] = useState<string | null>(null);
 
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -143,7 +143,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
   );
 
   const suggestions = useMemo(
-    () => suggestDomainNames({ coupleNames, weddingDate: weddingDate ? new Date(weddingDate) : null }, { max: 5 }),
+    () => sugerirNomesDeDominio({ coupleNames, weddingDate: weddingDate ? new Date(weddingDate) : null }, { max: 5 }),
     [coupleNames, weddingDate],
   );
 
@@ -151,7 +151,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
   function scheduleCheck(value: string, immediately = false) {
     if (timer.current) clearTimeout(timer.current);
     const mine = ++sequence.current;
-    const parsed = normalizeDomainName(value);
+    const parsed = normalizarNomeDeDominio(value);
     if (!parsed.ok) {
       setCheck(value.trim() ? { state: "invalid", message: parsed.error } : { state: "idle" });
       return;
@@ -174,7 +174,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
   }
 
   function pick(domain: string) {
-    const label = domain.slice(0, -DOMAIN_SUFFIX.length);
+    const label = domain.slice(0, -SUFIXO_DO_DOMINIO.length);
     setName(label);
     setErrors((e) => ({ ...e, domain: undefined }));
     scheduleCheck(label, true);
@@ -195,7 +195,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
     });
   }
 
-  const nameParsed = normalizeDomainName(name);
+  const nameParsed = normalizarNomeDeDominio(name);
   const blocked = check.state === "taken" || check.state === "releasing";
 
   return (
@@ -205,13 +205,13 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
           <h2 id="dominio-endereco" className={cardTitle}>
             Qual endereço vocês querem?
           </h2>
-          <p className="text-[15px] text-tinta-suave">Hoje registramos endereços terminados em {DOMAIN_SUFFIX}.</p>
+          <p className="text-[15px] text-tinta-suave">Hoje registramos endereços terminados em {SUFIXO_DO_DOMINIO}.</p>
         </div>
 
         <Input
           id="dominio-nome"
           label="Nome do endereço"
-          suffix={DOMAIN_SUFFIX}
+          suffix={SUFIXO_DO_DOMINIO}
           hint="Só letras, números e hífen. Pode digitar do seu jeito, nós arrumamos."
           error={errors.domain}
           value={name}
@@ -279,7 +279,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
             error={errors.holderDocument}
             value={holderDocument}
             onChange={(e) => setHolderDocument(e.target.value)}
-            onBlur={() => setHolderDocument((v) => formatDocument(v))}
+            onBlur={() => setHolderDocument((v) => formatarDocumento(v))}
             autoComplete="off"
             inputMode="text"
           />
@@ -310,7 +310,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
         <h2 id="dominio-condicoes" className={cardTitle}>
           Condições
         </h2>
-        <p className="rounded-xl bg-areia p-4 text-[15px] leading-6 text-tinta">{DOMAIN_TERMS_TEXT}</p>
+        <p className="rounded-xl bg-areia p-4 text-[15px] leading-6 text-tinta">{TEXTO_DOS_TERMOS_DE_DOMINIO}</p>
         <div className="flex flex-col gap-2">
           <div className="flex items-start gap-3">
             <Checkbox
@@ -325,7 +325,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
               className="mt-0.5"
             />
             <label htmlFor="dominio-aceite" className="min-h-6 cursor-pointer text-[15px] leading-6 text-tinta">
-              {DOMAIN_TERMS_CHECKBOX}
+              {TEXTO_DO_ACEITE_DOS_TERMOS_DE_DOMINIO}
             </label>
           </div>
           {errors.accepted ? (
@@ -358,9 +358,9 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
 // ANDAMENTO DO PEDIDO
 // ==========================================
 
-const STATE_LABEL: Record<TimelineState, string> = { done: "Concluído", current: "Em andamento", next: "A seguir", todo: "Depois" };
+const STATE_LABEL: Record<SituacaoDaEtapa, string> = { done: "Concluído", current: "Em andamento", next: "A seguir", todo: "Depois" };
 
-function StepDot({ state }: { state: TimelineState }) {
+function StepDot({ state }: { state: SituacaoDaEtapa }) {
   const base = "relative z-10 grid size-8 shrink-0 place-items-center rounded-full border-2";
   if (state === "done") {
     return (
@@ -379,8 +379,8 @@ function StepDot({ state }: { state: TimelineState }) {
   return <span className={cn(base, "border-linha-forte bg-papel", state === "next" && "border-ameixa")} aria-hidden="true" />;
 }
 
-function OrderProgress({ order }: { order: DomainOrderView }) {
-  const states = timelineStates(order.status) ?? [];
+function OrderProgress({ order }: { order: VisaoDoPedidoDeDominio }) {
+  const states = situacoesDasEtapas(order.status) ?? [];
   const dates: Record<string, string | null> = {
     REQUESTED: fmt(order.requestedAt),
     REGISTERING: null,
@@ -401,15 +401,15 @@ function OrderProgress({ order }: { order: DomainOrderView }) {
             <p className="break-all font-display text-[28px] leading-8 text-tinta sm:text-[32px] sm:leading-9">{order.domain}</p>
           </div>
           <Chip tone={order.status === "CONNECTED" ? "sucesso" : order.status === "REGISTERED" ? "salvia" : "aviso"} icon={order.status === "CONNECTED" ? CheckCircle2 : Clock}>
-            {STATUS_LABEL[order.status]}
+            {ROTULO_DA_SITUACAO[order.status]}
           </Chip>
         </div>
 
         <ol className="flex flex-col">
-          {TIMELINE_STEPS.map((step, index) => {
+          {ETAPAS_DA_LINHA_DO_TEMPO.map((step, index) => {
             const state = states[index] ?? "todo";
             const date = dates[step.status];
-            const last = index === TIMELINE_STEPS.length - 1;
+            const last = index === ETAPAS_DA_LINHA_DO_TEMPO.length - 1;
             return (
               <li key={step.status} className="relative flex gap-4 pb-6 last:pb-0" aria-current={state === "current" ? "step" : undefined}>
                 {!last ? (
@@ -446,7 +446,7 @@ function OrderProgress({ order }: { order: DomainOrderView }) {
           <Fact label="E-mail">{order.holderEmail}</Fact>
           <Fact label="Telefone">{order.holderPhone}</Fact>
         </dl>
-        <p className="text-sm text-tinta-suave">{DOMAIN_TERMS_TEXT}</p>
+        <p className="text-sm text-tinta-suave">{TEXTO_DOS_TERMOS_DE_DOMINIO}</p>
         {order.status === "REQUESTED" ? <CancelButton /> : null}
       </section>
     </div>

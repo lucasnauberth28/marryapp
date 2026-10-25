@@ -1,15 +1,15 @@
 import jsPDF from "jspdf";
-import { LOCKUP_PNG_BASE64, LOCKUP_PNG_RATIO } from "@/lib/brand/lockup-png";
-import { timelinePdfFileName } from "@/lib/timeline-pdf-name";
+import { ASSINATURA_PNG_EM_BASE64, PROPORCAO_DA_ASSINATURA_PNG } from "@/lib/brand/lockup-png";
+import { nomeDoArquivoPdfDaLinhaDoTempo } from "@/lib/timeline-pdf-name";
 
-export interface TimelineEventPdf {
+export interface EventoDaLinhaDoTempoNoPdf {
   id: string;
   title: string;
   time: string;
   description?: string | null;
 }
 
-export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "Nosso Casamento") {
+export function gerarPdfDaLinhaDoTempo(events: EventoDaLinhaDoTempoNoPdf[], coupleNames = "Nosso Casamento") {
   if (!events || events.length === 0) {
     return false;
   }
@@ -30,7 +30,7 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
   const marginX = 20;
   // Assinatura Aceito no topo (manual p.8: horizontal com no mínimo 35 mm de largura); o resto desce junto.
   const logoWidth = 40;
-  doc.addImage(`data:image/png;base64,${LOCKUP_PNG_BASE64}`, "PNG", (pageWidth - logoWidth) / 2, 12, logoWidth, logoWidth / LOCKUP_PNG_RATIO);
+  doc.addImage(`data:image/png;base64,${ASSINATURA_PNG_EM_BASE64}`, "PNG", (pageWidth - logoWidth) / 2, 12, logoWidth, logoWidth / PROPORCAO_DA_ASSINATURA_PNG);
   let currentY = 32;
 
   // --- CABEÇALHO ---
@@ -180,6 +180,6 @@ export function generateTimelinePdf(events: TimelineEventPdf[], coupleNames = "N
   }
 
   // Salvar PDF
-  doc.save(timelinePdfFileName(coupleNames));
+  doc.save(nomeDoArquivoPdfDaLinhaDoTempo(coupleNames));
   return true;
 }

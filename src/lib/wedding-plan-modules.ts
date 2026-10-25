@@ -1,5 +1,5 @@
 // Regras puras: o que cada plano de casal libera (sem banco nem Next), testáveis isoladamente.
-import { COUPLE_MODULES } from "./pricing-modules.ts";
+import { MODULOS_DO_CASAL } from "./pricing-modules.ts";
 
 /**
  * Módulos do catálogo (lib/pricing-modules) que cada plano fechado inclui, segundo a lista de
@@ -7,7 +7,7 @@ import { COUPLE_MODULES } from "./pricing-modules.ts";
  * VIP = tudo do Classic + domínio próprio (na prática, todos os módulos).
  * O plano adaptado (custom) vale pelos módulos escolhidos; o Básico não inclui nenhum.
  */
-const CLASSIC_MODULES = ["site", "pixZero", "whatsapp", "qrcode"];
+const MODULOS_DO_CLASSIC = ["site", "pixZero", "whatsapp", "qrcode"];
 
 /**
  * Módulos que o servidor realmente bloqueia hoje: os claramente premium e que existem no app.
@@ -15,26 +15,26 @@ const CLASSIC_MODULES = ["site", "pixZero", "whatsapp", "qrcode"];
  * O domínio próprio (.com.br, no nome do titular) é pedido em /dominio e só o plano VIP
  * (ou um plano adaptado com o módulo) libera o pedido.
  */
-export const ENFORCED_MODULES = ["whatsapp", "qrcode", "customDomain", "tables3d"] as const;
-export type EnforcedModule = (typeof ENFORCED_MODULES)[number];
+export const MODULOS_COM_BLOQUEIO = ["whatsapp", "qrcode", "customDomain", "tables3d"] as const;
+export type ModuloComBloqueio = (typeof MODULOS_COM_BLOQUEIO)[number];
 
-const ALL_MODULE_IDS = COUPLE_MODULES.map((m) => m.id);
+const TODOS_OS_IDS_DE_MODULO = MODULOS_DO_CASAL.map((m) => m.id);
 
-export function modulesForPlan(planId: string | null, customModules?: unknown): string[] {
-  if (planId === "vip") return ALL_MODULE_IDS;
-  if (planId === "classic") return CLASSIC_MODULES;
+export function modulosDoPlano(planId: string | null, customModules?: unknown): string[] {
+  if (planId === "vip") return TODOS_OS_IDS_DE_MODULO;
+  if (planId === "classic") return MODULOS_DO_CLASSIC;
   if (planId === "custom") {
     const chosen = Array.isArray(customModules) ? customModules.filter((m): m is string => typeof m === "string") : [];
-    return ALL_MODULE_IDS.filter((id) => chosen.includes(id));
+    return TODOS_OS_IDS_DE_MODULO.filter((id) => chosen.includes(id));
   }
   return [];
 }
 
-export function planIncludes(modules: readonly string[], moduleId: string): boolean {
+export function planoInclui(modules: readonly string[], moduleId: string): boolean {
   return modules.includes(moduleId);
 }
 
-const FEATURE: Record<EnforcedModule, { sentence: string; title: string; plans: string; planLabel: string }> = {
+const RECURSOS: Record<ModuloComBloqueio, { sentence: string; title: string; plans: string; planLabel: string }> = {
   whatsapp: {
     sentence: "Os convites e lembretes pelo WhatsApp, enviados pelo painel, fazem parte",
     title: "Convites e lembretes pelo WhatsApp são do plano",
@@ -62,16 +62,16 @@ const FEATURE: Record<EnforcedModule, { sentence: string; title: string; plans: 
 };
 
 /** Texto simples para quando o plano do casamento não inclui o módulo. */
-export function upgradeMessage(moduleId: EnforcedModule): string {
-  return `${FEATURE[moduleId].sentence} ${FEATURE[moduleId].plans} ou de um plano adaptado com este módulo. Vejam as opções em Plano e pagamentos.`;
+export function mensagemDeUpgrade(moduleId: ModuloComBloqueio): string {
+  return `${RECURSOS[moduleId].sentence} ${RECURSOS[moduleId].plans} ou de um plano adaptado com este módulo. Vejam as opções em Plano e pagamentos.`;
 }
 
 /** Nome do plano mais simples que inclui o módulo ("Classic", "VIP"), para o título do aviso. */
-export function requiredPlanLabel(moduleId: EnforcedModule): string {
-  return FEATURE[moduleId].planLabel;
+export function rotuloDoPlanoNecessario(moduleId: ModuloComBloqueio): string {
+  return RECURSOS[moduleId].planLabel;
 }
 
 /** Título do aviso de upgrade: "O endereço personalizado do site é do plano VIP". */
-export function upgradeTitle(moduleId: EnforcedModule): string {
-  return `${FEATURE[moduleId].title} ${FEATURE[moduleId].planLabel}`;
+export function tituloDeUpgrade(moduleId: ModuloComBloqueio): string {
+  return `${RECURSOS[moduleId].title} ${RECURSOS[moduleId].planLabel}`;
 }

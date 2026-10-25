@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { LIZ_ASSETS, lizAssetSrc, lizTipPose, type LizPose } from "../pose.ts";
 import { decideLizTip, type LizTipInput } from "../tip.ts";
-import { rsvpTipUrgent } from "../../liz-tips.ts";
+import { dicaDeConfirmacaoUrgente } from "../../liz-tips.ts";
 
 const base: LizTipInput = {
   pendingGuests: 0,
@@ -40,10 +40,10 @@ test("motivo de prazo (vencido, hoje ou perto) pede atenção", () => {
 
 test("prazo do casal manda sobre a data do casamento, como no texto", () => {
   // Prazo longe, casamento perto: o texto cita o prazo, então a pose segue o prazo
-  assert.equal(rsvpTipUrgent({ deadlineKey: "2027-03-14", todayKey: "2027-03-06", weddingDays: 3 }), false);
-  assert.equal(rsvpTipUrgent({ deadlineKey: null, todayKey: "2027-03-06", weddingDays: 8 }), false);
+  assert.equal(dicaDeConfirmacaoUrgente({ deadlineKey: "2027-03-14", todayKey: "2027-03-06", weddingDays: 3 }), false);
+  assert.equal(dicaDeConfirmacaoUrgente({ deadlineKey: null, todayKey: "2027-03-06", weddingDays: 8 }), false);
   // Casamento que já passou não é prazo
-  assert.equal(rsvpTipUrgent({ deadlineKey: null, todayKey: "2027-03-06", weddingDays: -1 }), false);
+  assert.equal(dicaDeConfirmacaoUrgente({ deadlineKey: null, todayKey: "2027-03-06", weddingDays: -1 }), false);
 });
 
 test("arquivo pela largura pedida: o menor que cobre, senão o maior", () => {

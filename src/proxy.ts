@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import {
-  verifyToken,
+  verificarToken,
   hasPathAccess,
-  SESSION_COOKIE_NAME,
-  SESSION_SEEN_COOKIE_NAME,
-  sessionSeenCookieOptions,
-  CURRENT_PATH_HEADER,
+  NOME_DO_COOKIE_DE_SESSAO,
+  NOME_DO_COOKIE_DE_SESSAO_VISTA,
+  opcoesDoCookieDeSessaoVista,
+  CABECALHO_DO_CAMINHO_ATUAL,
 } from "@/lib/auth";
-import { classifyPath, isPlatformAdminPath, isSessionPath } from "@/lib/route-access";
-import { isPlatformAdminPaths } from "@/lib/permissions";
-import { firstAllowedDestination, loginUrl, resolvePostLoginPath } from "@/lib/login-redirect";
-import { classifyHost, createTtlCache, mainRedirectUrl, routeCustomDomainPath } from "@/lib/custom-domain-host";
+import { classificarCaminho, ehCaminhoDeAdminDaPlataforma, ehCaminhoDeSessao } from "@/lib/route-access";
+import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
+import { primeiroDestinoPermitido, urlDeLogin, resolverCaminhoPosLogin } from "@/lib/login-redirect";
+import { classificarHost, criarCacheComValidade, urlDeRedirecionamentoPrincipal, rotearCaminhoDoDominioPersonalizado } from "@/lib/custom-domain-host";
 import prisma from "@/lib/prisma";
 
 // As listas de rotas (públicas, de qualquer conta logada e do painel) ficam em src/lib/route-access.ts.
@@ -24,7 +24,7 @@ import prisma from "@/lib/prisma";
 // Visita a um endereço que não é o do app (nem localhost nem vercel.app): consulta o banco por
 // Wedding.customDomain, com cache de 60 s (inclusive para "não é de ninguém"). O domínio do casal só serve as
 // páginas públicas do casamento daquele slug (regras em lib/custom-domain-host.ts) e nunca recebe a sessão do painel.
-const domainCache = createTtlCache<{ slug: string } | null>(60_000);
+const domainCache = criarCacheComValidade<{ slug: string } | null>(60_000);
 
 async function lookupCustomDomain(domain: string): Promise<{ slug: string } | null> {
   const cached = domainCache.get(domain);
@@ -40,7 +40,7 @@ function withoutSession(request: NextRequest): Headers {
   const cookies = (headers.get("cookie") ?? "")
     .split(";")
     .map((part) => part.trim())
-    .filter((part) => part && !part.startsWith(`${SESSION_COOKIE_NAME}=`));
+    .filter((part) => part && !part.startsWith(`${NOME_DO_COOKIE_DE_SESSAO}=`));
   if (cookies.length > 0) headers.set("cookie", cookies.join("; "));
   else headers.delete("cookie");
   return headers;
@@ -58,7 +58,7 @@ async function handleCustomDomain(request: NextRequest, domain: string): Promise
   if (!wedding) return null;
 
   const headers = withoutSession(request);
-  const route = routeCustomDomainPath(request.nextUrl.pathname, wedding.slug);
+  const route = rotearCaminhoDoDominioPersonalizado(request.nextUrl.pathname, wedding.slug);
   switch (route.action) {
     case "rewrite": {
       const url = request.nextUrl.clone();
@@ -68,7 +68,7 @@ async function handleCustomDomain(request: NextRequest, domain: string): Promise
     case "pass":
       return NextResponse.next({ request: { headers } });
     case "redirect-main": {
-      const target = mainRedirectUrl(process.env.NEXT_PUBLIC_BASE_URL, route.pathname, request.nextUrl.search);
+      const target = urlDeRedirecionamentoPrincipal(process.env.NEXT_PUBLIC_BASE_URL, route.pathname, request.nextUrl.search);
       return target ? NextResponse.redirect(target, 307) : notFoundResponse(request);
     }
     default:
@@ -85,32 +85,32 @@ function notFoundResponse(request: NextRequest): NextResponse {
 }
 
 export default async function proxy(request: NextRequest) {
-  const host = classifyHost(request.headers.get("host"), process.env.NEXT_PUBLIC_BASE_URL);
+  const host = classificarHost(request.headers.get("host"), process.env.NEXT_PUBLIC_BASE_URL);
   if (host.kind === "candidate") {
     const custom = await handleCustomDomain(request, host.domain);
     if (custom) return custom;
   }
 
   const path = request.nextUrl.pathname;
-  const kind = classifyPath(path);
+  const kind = classificarCaminho(path);
 
   // Não é rota do app: o Next responde 404 (nada de mandar visitante para o login)
   if (kind === "unknown") return NextResponse.next();
 
   const isPublic = kind === "public";
-  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-  const seenBefore = request.cookies.has(SESSION_SEEN_COOKIE_NAME);
+  const sessionCookie = request.cookies.get(NOME_DO_COOKIE_DE_SESSAO);
+  const seenBefore = request.cookies.has(NOME_DO_COOKIE_DE_SESSAO_VISTA);
 
   // Caminho que a pessoa abriu (com a busca), para voltar a ele depois do login
   const here = `${path}${request.nextUrl.search}`;
   const forwardedHeaders = new Headers(request.headers);
-  forwardedHeaders.set(CURRENT_PATH_HEADER, here);
+  forwardedHeaders.set(CABECALHO_DO_CAMINHO_ATUAL, here);
   const pass = () => NextResponse.next({ request: { headers: forwardedHeaders } });
 
   const toLogin = (expired: boolean) => {
-    const response = NextResponse.redirect(new URL(loginUrl(here, expired), request.url));
+    const response = NextResponse.redirect(new URL(urlDeLogin(here, expired), request.url));
     // O aviso aparece uma vez: depois dele a marca de "já esteve logada" é apagada
-    if (expired) response.cookies.delete(SESSION_SEEN_COOKIE_NAME);
+    if (expired) response.cookies.delete(NOME_DO_COOKIE_DE_SESSAO_VISTA);
     return response;
   };
 
@@ -123,7 +123,7 @@ export default async function proxy(request: NextRequest) {
   }
 
   if (sessionCookie) {
-    const payload = await verifyToken(sessionCookie.value);
+    const payload = await verificarToken(sessionCookie.value);
 
     if (!payload) {
       // Token inválido ou vencido: limpa o cookie. Em rotas públicas apenas segue sem sessão.
@@ -132,28 +132,28 @@ export default async function proxy(request: NextRequest) {
         : path.startsWith("/api/")
           ? NextResponse.json({ error: "Unauthorized" }, { status: 401 })
           : toLogin(true);
-      response.cookies.delete(SESSION_COOKIE_NAME);
+      response.cookies.delete(NOME_DO_COOKIE_DE_SESSAO);
       return response;
     }
 
-    const dest = firstAllowedDestination(payload.allowedPaths);
+    const dest = primeiroDestinoPermitido(payload.allowedPaths);
 
     if (path === "/login") {
       // ?expirou=1 vindo do servidor (a sessão é válida no token mas não existe mais): mostra o login
       // para não girar em círculos. Perfil sem nenhum módulo liberado também permanece no login.
       if (request.nextUrl.searchParams.get("expirou") === "1" || dest === "/login") return pass();
-      const target = resolvePostLoginPath(request.nextUrl.searchParams.get("proxima"), dest, payload.allowedPaths);
+      const target = resolverCaminhoPosLogin(request.nextUrl.searchParams.get("proxima"), dest, payload.allowedPaths);
       return NextResponse.redirect(new URL(target, request.url));
     }
 
     // /admin exige acesso total ("*"): um "/admin" solto na lista do perfil não vale
-    const allowed = isPlatformAdminPath(path) ? isPlatformAdminPaths(payload.allowedPaths) : hasPathAccess(payload.allowedPaths, path);
-    if (!isPublic && !isSessionPath(path) && !path.startsWith("/api/") && !allowed) {
+    const allowed = ehCaminhoDeAdminDaPlataforma(path) ? ehAcessoDeAdminDaPlataforma(payload.allowedPaths) : hasPathAccess(payload.allowedPaths, path);
+    if (!isPublic && !ehCaminhoDeSessao(path) && !path.startsWith("/api/") && !allowed) {
       return NextResponse.redirect(new URL(dest, request.url));
     }
 
     const response = pass();
-    if (!seenBefore) response.cookies.set(SESSION_SEEN_COOKIE_NAME, "1", sessionSeenCookieOptions());
+    if (!seenBefore) response.cookies.set(NOME_DO_COOKIE_DE_SESSAO_VISTA, "1", opcoesDoCookieDeSessaoVista());
     return response;
   }
 

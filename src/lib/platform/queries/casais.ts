@@ -1,7 +1,7 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { notGiftOnlyWhere } from "@/lib/guest-origin";
+import { filtroSemSoPresente } from "@/lib/guest-origin";
 import { casaisWhere, coupleSubscription, inactiveWhere, next30DaysWhere, problemWhere, type CasaisFilters, type PlanoFilter } from "@/lib/platform/casais-filters";
 import { casalProblems, casalSituation, PAYMENT_PROBLEM_DAYS, type CasalFacts } from "@/lib/platform/casal-status";
 
@@ -154,7 +154,7 @@ export async function listCasais(input: { filters: CasaisFilters; order: CasaisO
   const ids = weddings.map((w) => w.id);
 
   const [guestGroups, giftGroups, plans, failed] = await Promise.all([
-    prisma.guest.groupBy({ by: ["weddingId", "rsvpStatus"], where: { weddingId: { in: ids }, ...notGiftOnlyWhere }, _count: { _all: true } }),
+    prisma.guest.groupBy({ by: ["weddingId", "rsvpStatus"], where: { weddingId: { in: ids }, ...filtroSemSoPresente }, _count: { _all: true } }),
     prisma.transaction.groupBy({ by: ["weddingId"], where: { weddingId: { in: ids }, status: "APPROVED" }, _sum: { amount: true } }),
     getLatestPlans(ids),
     recentFailedPayments(ids, now),
@@ -221,7 +221,7 @@ export async function listCasaisForExport(input: { filters: CasaisFilters; order
   });
   const ids = weddings.map((w) => w.id);
   const [guestGroups, giftGroups, plans, failed] = await Promise.all([
-    prisma.guest.groupBy({ by: ["weddingId"], where: { weddingId: { in: ids }, ...notGiftOnlyWhere }, _count: { _all: true } }),
+    prisma.guest.groupBy({ by: ["weddingId"], where: { weddingId: { in: ids }, ...filtroSemSoPresente }, _count: { _all: true } }),
     prisma.transaction.groupBy({ by: ["weddingId"], where: { weddingId: { in: ids }, status: "APPROVED" }, _sum: { amount: true } }),
     getLatestPlans(ids),
     recentFailedPayments(ids, now),
@@ -279,7 +279,7 @@ export async function getCasalHeader(id: string, now: Date = new Date()) {
   if (!wedding) return null;
 
   const [guestGroups, giftSum, feeSum, plans, failed, pix, openDomainOrder] = await Promise.all([
-    prisma.guest.groupBy({ by: ["rsvpStatus"], where: { weddingId: id, ...notGiftOnlyWhere }, _count: { _all: true } }),
+    prisma.guest.groupBy({ by: ["rsvpStatus"], where: { weddingId: id, ...filtroSemSoPresente }, _count: { _all: true } }),
     prisma.transaction.aggregate({ where: { weddingId: id, status: "APPROVED" }, _sum: { amount: true }, _count: { _all: true } }),
     prisma.transaction.aggregate({ where: { weddingId: id, status: "APPROVED" }, _sum: { fee: true } }),
     getLatestPlans([id]),
@@ -415,9 +415,9 @@ export async function getCasalPayments(id: string) {
 /** Convidados e presentes: só números. Nunca nome, telefone, e-mail ou restrição de convidado. */
 export async function getCasalGuestNumbers(id: string) {
   const [byStatus, invited, noPhone, gifts] = await Promise.all([
-    prisma.guest.groupBy({ by: ["rsvpStatus"], where: { weddingId: id, ...notGiftOnlyWhere }, _count: { _all: true } }),
-    prisma.guest.count({ where: { weddingId: id, hasReceivedMessage: true, ...notGiftOnlyWhere } }),
-    prisma.guest.count({ where: { weddingId: id, phone: null, ...notGiftOnlyWhere } }),
+    prisma.guest.groupBy({ by: ["rsvpStatus"], where: { weddingId: id, ...filtroSemSoPresente }, _count: { _all: true } }),
+    prisma.guest.count({ where: { weddingId: id, hasReceivedMessage: true, ...filtroSemSoPresente } }),
+    prisma.guest.count({ where: { weddingId: id, phone: null, ...filtroSemSoPresente } }),
     prisma.transaction.aggregate({ where: { weddingId: id, status: "APPROVED" }, _sum: { amount: true, fee: true }, _count: { _all: true } }),
   ]);
   const count = (s: string) => byStatus.find((g) => g.rsvpStatus === s)?._count._all ?? 0;

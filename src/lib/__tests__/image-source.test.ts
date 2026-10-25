@@ -1,30 +1,30 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { isOptimizableImage, storageRemotePattern } from "../image-source.ts";
+import { ehImagemOtimizavel, padraoRemotoDoArmazenamento } from "../image-source.ts";
 
 const SUPA = "https://abc123.supabase.co";
 
 test("aceita foto do storage público do Supabase", () => {
-  assert.equal(isOptimizableImage(`${SUPA}/storage/v1/object/public/gifts/site/a.webp`, SUPA), true);
+  assert.equal(ehImagemOtimizavel(`${SUPA}/storage/v1/object/public/gifts/site/a.webp`, SUPA), true);
 });
 
 test("recusa link externo, data URL, caminho de outro bucket privado e lixo", () => {
-  assert.equal(isOptimizableImage("https://exemplo.com/foto.jpg", SUPA), false);
-  assert.equal(isOptimizableImage("data:image/png;base64,AAAA", SUPA), false);
-  assert.equal(isOptimizableImage(`${SUPA}/storage/v1/object/sign/x/a.png`, SUPA), false);
-  assert.equal(isOptimizableImage("http://abc123.supabase.co/storage/v1/object/public/a.png", SUPA), false);
-  assert.equal(isOptimizableImage("não é url", SUPA), false);
-  assert.equal(isOptimizableImage(null, SUPA), false);
+  assert.equal(ehImagemOtimizavel("https://exemplo.com/foto.jpg", SUPA), false);
+  assert.equal(ehImagemOtimizavel("data:image/png;base64,AAAA", SUPA), false);
+  assert.equal(ehImagemOtimizavel(`${SUPA}/storage/v1/object/sign/x/a.png`, SUPA), false);
+  assert.equal(ehImagemOtimizavel("http://abc123.supabase.co/storage/v1/object/public/a.png", SUPA), false);
+  assert.equal(ehImagemOtimizavel("não é url", SUPA), false);
+  assert.equal(ehImagemOtimizavel(null, SUPA), false);
 });
 
 test("sem Supabase configurado nada é otimizado", () => {
-  assert.equal(isOptimizableImage(`${SUPA}/storage/v1/object/public/a.png`, undefined), false);
-  assert.equal(isOptimizableImage(`${SUPA}/storage/v1/object/public/a.png`, ""), false);
-  assert.equal(storageRemotePattern(""), null);
+  assert.equal(ehImagemOtimizavel(`${SUPA}/storage/v1/object/public/a.png`, undefined), false);
+  assert.equal(ehImagemOtimizavel(`${SUPA}/storage/v1/object/public/a.png`, ""), false);
+  assert.equal(padraoRemotoDoArmazenamento(""), null);
 });
 
 test("remotePattern restringe ao caminho público do storage", () => {
-  assert.deepEqual(storageRemotePattern(SUPA), {
+  assert.deepEqual(padraoRemotoDoArmazenamento(SUPA), {
     protocol: "https",
     hostname: "abc123.supabase.co",
     pathname: "/storage/v1/object/public/**",
@@ -32,7 +32,7 @@ test("remotePattern restringe ao caminho público do storage", () => {
 });
 
 test("imagens do editor do site: aceita https, data:image e arquivos estáticos do próprio app", async () => {
-  const { isAllowedSiteImage } = await import("../image-source.ts");
+  const { ehImagemPermitidaNoSite: isAllowedSiteImage } = await import("../image-source.ts");
   for (const ok of [
     "",
     "https://exemplo.com/foto.jpg",
@@ -47,7 +47,7 @@ test("imagens do editor do site: aceita https, data:image e arquivos estáticos 
 });
 
 test("imagens do editor do site: recusa esquemas perigosos, hosts sem https e caminhos suspeitos", async () => {
-  const { isAllowedSiteImage } = await import("../image-source.ts");
+  const { ehImagemPermitidaNoSite: isAllowedSiteImage } = await import("../image-source.ts");
   for (const bad of [
     "javascript:alert(1)",
     "JaVaScRiPt:alert(1)",
@@ -75,7 +75,7 @@ test("imagens do editor do site: recusa esquemas perigosos, hosts sem https e ca
 });
 
 test("caminho estático próprio: só dentro do app", async () => {
-  const { isOwnStaticImagePath } = await import("../image-source.ts");
+  const { ehCaminhoDeImagemEstaticaPropria: isOwnStaticImagePath } = await import("../image-source.ts");
   assert.equal(isOwnStaticImagePath("/images/aceito/img-01-casal-capa.webp"), true);
   assert.equal(isOwnStaticImagePath("https://exemplo.com/a.png"), false);
   assert.equal(isOwnStaticImagePath("/"), false);

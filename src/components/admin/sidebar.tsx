@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { NavList, type NavCounts } from "@/components/admin/nav-list";
 import { Logo } from "@/components/brand/logo";
-import { hasPathAccess } from "@/lib/permissions";
+import { temAcessoAoCaminho } from "@/lib/permissions";
 
 interface SidebarProps {
   allowedPaths?: string[];
@@ -20,7 +20,7 @@ interface SidebarProps {
  * O botão da Liz fica sobre o canto de baixo dela, por isso o espaço extra no fim.
  */
 export function Sidebar({ allowedPaths = [], counts, planName = null, siteHref = null }: SidebarProps) {
-  const canPlan = hasPathAccess(allowedPaths, "/plano");
+  const canPlan = temAcessoAoCaminho(allowedPaths, "/plano");
   const footerRow = "flex min-h-11 items-center justify-between gap-2 rounded-[10px] px-3 text-[13px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta";
   return (
     <aside className="sticky top-[var(--faixa)] hidden h-[calc(100svh-var(--faixa))] w-60 shrink-0 flex-col gap-5 overflow-y-auto px-3 pb-24 pt-5 md:flex" data-lenis-prevent>

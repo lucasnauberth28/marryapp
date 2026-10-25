@@ -1,5 +1,5 @@
 import type { Instrumentation } from "next";
-import { authHeader, buildEnvelope, buildEvent, parseDsn } from "@/lib/sentry-envelope";
+import { cabecalhoDeAutenticacao, montarEnvelope, montarEvento, interpretarDsn } from "@/lib/sentry-envelope";
 
 /**
  * Envia erros do servidor ao Sentry pela API HTTP (envelope), sem SDK.
@@ -7,12 +7,12 @@ import { authHeader, buildEnvelope, buildEvent, parseDsn } from "@/lib/sentry-en
  * Cookies, headers e corpo da requisição nunca são lidos.
  */
 export const onRequestError: Instrumentation.onRequestError = async (error, request, context) => {
-  const dsn = parseDsn(process.env.SENTRY_DSN);
+  const dsn = interpretarDsn(process.env.SENTRY_DSN);
   if (!dsn) return;
 
   try {
     const err = error as Error & { digest?: string };
-    const event = buildEvent({
+    const event = montarEvento({
       error: { name: err.name, message: err.message, stack: err.stack, digest: err.digest },
       path: request.path,
       method: request.method,
@@ -23,8 +23,8 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
     });
     const res = await fetch(dsn.envelopeUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/x-sentry-envelope", "X-Sentry-Auth": authHeader(dsn) },
-      body: buildEnvelope(event),
+      headers: { "Content-Type": "application/x-sentry-envelope", "X-Sentry-Auth": cabecalhoDeAutenticacao(dsn) },
+      body: montarEnvelope(event),
       // Monitoramento nunca pode travar nem derrubar a resposta ao usuário.
       signal: AbortSignal.timeout(3000),
     });

@@ -10,7 +10,7 @@ import { PlanChip, StatusChip } from "@/components/plataforma/status-chip";
 import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { RevenueChart } from "@/components/plataforma/revenue-chart";
 import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
-import { getCatalog } from "@/lib/catalog-server";
+import { obterCatalogo } from "@/lib/catalog-server";
 import { formatDate, formatInt, formatMonthName, relativeDay, timeAgo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais, formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
@@ -92,7 +92,7 @@ async function Resumo({ now }: { now: Date }) {
     getVendorPlansExpiring(now, 7, 8),
     listCouponsInUse(now, 5),
     listRefunds(5),
-    getCatalog(),
+    obterCatalogo(),
   ]);
   const monthName = formatMonthName(now);
   const hasRevenue = months.some((m) => m.total > 0);

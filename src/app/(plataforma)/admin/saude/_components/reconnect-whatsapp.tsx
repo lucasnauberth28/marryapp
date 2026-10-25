@@ -5,7 +5,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { CustomModal } from "@/components/ui/custom-modal";
 import { Button } from "@/components/ui/button";
 import { QrFrame } from "@/components/ui/qr-frame";
-import { QR_COLORS } from "@/lib/qr-colors";
+import { CORES_DO_QR } from "@/lib/qr-colors";
 import { LoadingRegion, SkeletonImage } from "@/components/skeletons";
 import { reconnectWhatsapp } from "@/actions/admin-saude-actions";
 
@@ -56,7 +56,7 @@ export function ReconnectWhatsapp() {
               </QrFrame>
             ) : (
               <QrFrame className="p-3">
-                <QRCodeSVG value={qr} size={240} {...QR_COLORS} marginSize={2} aria-label="QR Code para conectar o WhatsApp" />
+                <QRCodeSVG value={qr} size={240} {...CORES_DO_QR} marginSize={2} aria-label="QR Code para conectar o WhatsApp" />
               </QrFrame>
             ))}
           {qr && <p className="text-center text-sm text-tinta-suave">O código vale por pouco tempo. Depois de conectar, atualize esta página.</p>}

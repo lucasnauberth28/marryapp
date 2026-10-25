@@ -1,21 +1,21 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
-import type { Catalog } from "@/lib/catalog";
-import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
-import { couplePriceNote, planLabel, type CouplePlanKey } from "@/lib/plan-copy";
+import type { Catalogo } from "@/lib/catalog";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
+import { notaDoPrecoDoCasal, rotuloDoPlano, type ChaveDoPlanoDoCasal } from "@/lib/plan-copy";
 import { Reveal } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
 import { breakEvenCents, splitPrice } from "./home-money";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { LinkButton, SectionHead } from "./home-ui";
 
-const KEYS: CouplePlanKey[] = ["basic", "classic", "vip"];
+const KEYS: ChaveDoPlanoDoCasal[] = ["basic", "classic", "vip"];
 
 /** Planos de casal. Nome, preço e recursos vêm do catálogo; a taxa vem de GIFT_FEE_LABEL. */
-export function PlansSection({ catalog }: { catalog: Catalog }) {
-  const classic = planLabel(catalog.plans.classic.name);
-  const destaque = (key: CouplePlanKey) => ({
-    basic: <>Taxa de {GIFT_FEE_LABEL} por presente.</>,
+export function PlansSection({ catalog }: { catalog: Catalogo }) {
+  const classic = rotuloDoPlano(catalog.plans.classic.name);
+  const destaque = (key: ChaveDoPlanoDoCasal) => ({
+    basic: <>Taxa de {ROTULO_DA_TAXA_DO_PRESENTE} por presente.</>,
     classic: <>Pix sem a taxa do Aceito.</>,
     vip: <>Tudo do {classic}.</>,
   })[key];
@@ -27,7 +27,7 @@ export function PlansSection({ catalog }: { catalog: Catalog }) {
       <div className="lp-planos">
         {KEYS.map((key, idx) => {
           const plan = catalog.plans[key];
-          const label = planLabel(plan.name);
+          const label = rotuloDoPlano(plan.name);
           const { reais, centavos } = splitPrice(plan.price);
           const rec = key === "classic";
           const features = key === "basic" ? plan.features.filter((f) => !/^Taxa de /.test(f)) : plan.features;
@@ -44,7 +44,7 @@ export function PlansSection({ catalog }: { catalog: Catalog }) {
                   <span className="lp-cent">,{centavos}</span>
                 </p>
                 <p className="lp-cond">
-                  {key === "basic" ? "Sem mensalidade" : couplePriceNote(key).replace(/^./, (c) => c.toUpperCase())}. <b>{destaque(key)}</b>
+                  {key === "basic" ? "Sem mensalidade" : notaDoPrecoDoCasal(key).replace(/^./, (c) => c.toUpperCase())}. <b>{destaque(key)}</b>
                 </p>
               </div>
               <ul>

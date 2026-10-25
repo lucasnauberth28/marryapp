@@ -8,7 +8,7 @@ import prisma from "@/lib/prisma";
 import { requireVendorSession, VENDOR_PANEL_PATH } from "@/lib/security/vendor-guard";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { normalizeText, sanitizeUrl } from "@/lib/security/sanitize";
-import { MAX_IMAGE_BYTES, uploadImageDataUrl } from "@/lib/supabase";
+import { TAMANHO_MAXIMO_DA_IMAGEM_EM_BYTES, enviarImagemDeDataUrl } from "@/lib/supabase";
 import type { VendorPanelVendor } from "@/lib/security/vendor-guard";
 import {
   effectiveVendorTier,
@@ -522,7 +522,7 @@ export async function updateVendorProfile(input: VendorProfileInput) {
 // O helper de upload confere tipo real (magic bytes) e tamanho (até 5 MB).
 const ImageDataUrl = z
   .string({ message: "Imagem inválida." })
-  .max(Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 64, "Imagem acima do limite de 5 MB.")
+  .max(Math.ceil((TAMANHO_MAXIMO_DA_IMAGEM_EM_BYTES * 4) / 3) + 64, "Imagem acima do limite de 5 MB.")
   .regex(/^data:image\/(jpeg|png|webp|avif);base64,[A-Za-z0-9+/=]+$/, "Formato de imagem não suportado (use JPG, PNG ou WEBP).");
 
 const GalleryIndex = z.number().int().min(0).max(MAX_GALLERY_IMAGES - 1);
@@ -566,7 +566,7 @@ export async function updateVendorMedia(input: VendorMediaInput): Promise<Vendor
     };
 
     const upload = async (image: string, folder: string) => {
-      const res = await uploadImageDataUrl(image, folder);
+      const res = await enviarImagemDeDataUrl(image, folder);
       return res.success ? { url: res.url } : { error: res.error };
     };
 

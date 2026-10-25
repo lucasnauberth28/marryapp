@@ -3,15 +3,15 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
-import { formatDocument, isMaskedDocument, maskDocument } from "@/lib/document-br";
-import { getRegistrar } from "@/lib/domain-registrar";
+import { registrarAuditoria } from "@/lib/audit";
+import { formatarDocumento, ehDocumentoEscondido, esconderDocumento } from "@/lib/document-br";
+import { obterRegistrador } from "@/lib/domain-registrar";
 import { deferNotify } from "@/lib/notifications/service";
 import { notifyDomainOrder } from "@/lib/notifications/events";
 import { requirePlatformAdmin } from "@/lib/security/platform-admin";
-import { addOneYear } from "@/lib/domain-renewal";
-import { isOpenStatus } from "@/lib/domain-order";
-import { connectDomainToProject, verifyProjectDomain, type ConnectionResult } from "@/lib/vercel-domains";
+import { somarUmAno } from "@/lib/domain-renewal";
+import { ehSituacaoEmAberto } from "@/lib/domain-order";
+import { conectarDominioAoProjeto, verificarDominioDoProjeto, type ConnectionResult } from "@/lib/vercel-domains";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 // Ações da administração do Aceito sobre os pedidos de domínio. Só quem tem acesso total ("*") passa.
@@ -62,7 +62,7 @@ export async function startDomainRegistrationAction(orderId: string): Promise<Ad
   });
   if (!order || order.status !== "REQUESTED") return STALE;
 
-  const registrar = getRegistrar();
+  const registrar = obterRegistrador();
   const outcome = await registrar.register(order);
   if (outcome.kind === "failed") return { success: false, error: outcome.reason };
 
@@ -70,10 +70,10 @@ export async function startDomainRegistrationAction(orderId: string): Promise<Ad
     // Provedor com API que já comprou o domínio
     const done = await prisma.domainOrder.updateMany({
       where: { id: order.id, status: "REQUESTED" },
-      data: { status: "REGISTERED", registeredAt: outcome.registeredAt, expiresAt: outcome.expiresAt, holderDocument: maskDocument(order.holderDocument) },
+      data: { status: "REGISTERED", registeredAt: outcome.registeredAt, expiresAt: outcome.expiresAt, holderDocument: esconderDocumento(order.holderDocument) },
     });
     if (done.count !== 1) return STALE;
-    await logAudit({ action: "domain.registered", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain, registrar: registrar.id } });
+    await registrarAuditoria({ action: "domain.registered", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain, registrar: registrar.id } });
     deferNotify(() => notifyDomainOrder(order.id, "registered"));
     refresh();
     return { success: true, message: "Domínio registrado." };
@@ -81,7 +81,7 @@ export async function startDomainRegistrationAction(orderId: string): Promise<Ad
 
   const done = await prisma.domainOrder.updateMany({ where: { id: order.id, status: "REQUESTED" }, data: { status: "REGISTERING" } });
   if (done.count !== 1) return STALE;
-  await logAudit({ action: "domain.start", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain, registrar: registrar.id } });
+  await registrarAuditoria({ action: "domain.start", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain, registrar: registrar.id } });
   refresh();
   return { success: true, message: "Registro iniciado. Registre o domínio no Registro.br e depois marque como registrado." };
 }
@@ -105,11 +105,11 @@ export async function markDomainRegisteredAction(input: { orderId: string; regis
 
   const done = await prisma.domainOrder.updateMany({
     where: { id: order.id, status: { in: ["REQUESTED", "REGISTERING"] } },
-    data: { status: "REGISTERED", registeredAt, expiresAt, holderDocument: maskDocument(order.holderDocument) },
+    data: { status: "REGISTERED", registeredAt, expiresAt, holderDocument: esconderDocumento(order.holderDocument) },
   });
   if (done.count !== 1) return STALE;
 
-  await logAudit({
+  await registrarAuditoria({
     action: "domain.registered",
     targetType: "DomainOrder",
     targetId: order.id,
@@ -137,11 +137,11 @@ export async function rejectDomainOrderAction(input: { orderId: string; reason: 
 
   const done = await prisma.domainOrder.updateMany({
     where: { id: order.id, status: { in: ["REQUESTED", "REGISTERING"] } },
-    data: { status: "REJECTED", rejectionReason: reason, holderDocument: maskDocument(order.holderDocument) },
+    data: { status: "REJECTED", rejectionReason: reason, holderDocument: esconderDocumento(order.holderDocument) },
   });
   if (done.count !== 1) return STALE;
 
-  await logAudit({ action: "domain.reject", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain, reason } });
+  await registrarAuditoria({ action: "domain.reject", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain, reason } });
   deferNotify(() => notifyDomainOrder(order.id, "rejected"));
   refresh();
   return { success: true, message: "Pedido recusado e o casal foi avisado." };
@@ -183,7 +183,7 @@ async function finishConnection(order: { id: string; domain: string; weddingId: 
     console.error("[finishConnection]", error instanceof Error ? error.message : error);
     return { success: false, error: "Não foi possível marcar como no ar. Confira se outro casamento já usa este domínio." };
   }
-  await logAudit({ action: "domain.online", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain, vercelState } });
+  await registrarAuditoria({ action: "domain.online", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain, vercelState } });
   deferNotify(() => notifyDomainOrder(order.id, "ready"));
   refresh();
   return { success: true, message: "No ar! O casal foi avisado e os links dos convidados já usam o domínio novo." };
@@ -195,9 +195,9 @@ export async function connectDomainAction(orderId: string): Promise<ConnectResul
   const order = await registeredOrder(orderId);
   if (!order) return { success: false, error: "Só dá para conectar um domínio já registrado." };
 
-  const connection = await connectDomainToProject(order.domain);
+  const connection = await conectarDominioAoProjeto(order.domain);
   await prisma.domainOrder.updateMany({ where: { id: order.id }, data: { vercelState: connection.ok ? connection.state : `erro:${connection.reason}` } });
-  await logAudit({
+  await registrarAuditoria({
     action: "domain.connect",
     targetType: "DomainOrder",
     targetId: order.id,
@@ -214,7 +214,7 @@ export async function verifyDomainAction(orderId: string): Promise<ConnectResult
   const order = await registeredOrder(orderId);
   if (!order) return { success: false, error: "Só dá para verificar um domínio já registrado." };
 
-  const connection = await verifyProjectDomain(order.domain);
+  const connection = await verificarDominioDoProjeto(order.domain);
   if (!connection.ok) return { success: false, error: connection.message };
 
   await prisma.domainOrder.updateMany({ where: { id: order.id }, data: { vercelState: connection.state } });
@@ -244,11 +244,11 @@ export async function revealDomainHolderDocumentAction(orderId: string): Promise
   const id = IdSchema.safeParse(orderId);
   if (!id.success) return { success: false, error: ERROS.pedidoInvalido };
   const order = await prisma.domainOrder.findUnique({ where: { id: id.data }, select: { id: true, status: true, domain: true, holderDocument: true } });
-  if (!order || !isOpenStatus(order.status) || isMaskedDocument(order.holderDocument)) {
+  if (!order || !ehSituacaoEmAberto(order.status) || ehDocumentoEscondido(order.holderDocument)) {
     return { success: false, error: "O documento completo só fica guardado enquanto o pedido está aberto." };
   }
-  await logAudit({ action: "domain.reveal_document", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain } });
-  return { success: true, document: formatDocument(order.holderDocument) };
+  await registrarAuditoria({ action: "domain.reveal_document", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain } });
+  return { success: true, document: formatarDocumento(order.holderDocument) };
 }
 
 /**
@@ -263,13 +263,13 @@ export async function markDomainRenewedAction(orderId: string): Promise<AdminRes
   if (!order || !order.expiresAt || (order.status !== "REGISTERED" && order.status !== "CONNECTED")) {
     return { success: false, error: "Só dá para renovar um domínio já registrado e com vencimento." };
   }
-  const next = addOneYear(order.expiresAt);
+  const next = somarUmAno(order.expiresAt);
   const done = await prisma.domainOrder.updateMany({
     where: { id: order.id, expiresAt: order.expiresAt, status: { in: ["REGISTERED", "CONNECTED"] } },
     data: { expiresAt: next, renewalReminderDays: null },
   });
   if (done.count !== 1) return STALE;
-  await logAudit({
+  await registrarAuditoria({
     action: "domain.renewed",
     targetType: "DomainOrder",
     targetId: order.id,

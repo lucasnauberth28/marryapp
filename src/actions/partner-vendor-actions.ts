@@ -8,7 +8,7 @@ import { checkRateLimit, getClientIp, rateLimitByIp } from "@/lib/security/rate-
 import { normalizeText } from "@/lib/security/sanitize";
 import { deferNotify } from "@/lib/notifications/service";
 import { notifyLeadNew, notifyProposalAccepted } from "@/lib/notifications/events";
-import { getUnavailableVendorIds, isVendorAvailable } from "@/lib/vendor-availability";
+import { obterIdsDeFornecedoresIndisponiveis, fornecedorEstaDisponivel } from "@/lib/vendor-availability";
 import { vitrineRank } from "@/lib/platform/vendor-admin";
 import {
   effectiveVendorTier,
@@ -109,7 +109,7 @@ export async function getPartnerVendorsAction(category?: string, options?: { wed
 
     const day = parseWeddingDay(options?.weddingDate);
     if (day) {
-      const busy = await getUnavailableVendorIds(day);
+      const busy = await obterIdsDeFornecedoresIndisponiveis(day);
       if (busy.size > 0) where.id = { notIn: [...busy] };
     }
 
@@ -207,7 +207,7 @@ export async function checkVendorAvailability(vendorId: string, date: string): P
     });
     if (!vendor) return { success: false, error: ERROS.fornecedorNaoEncontrado };
 
-    return { success: true, available: await isVendorAvailable(vendor.id, parsed.data.date) };
+    return { success: true, available: await fornecedorEstaDisponivel(vendor.id, parsed.data.date) };
   } catch (error) {
     console.error("[checkVendorAvailability Error]:", error);
     return { success: false, error: "Não foi possível consultar a agenda agora." };

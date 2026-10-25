@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { comboDiscountText } from "@/lib/catalog";
-import { calculateCustomPlanPrice, type PricingModule } from "@/lib/pricing-modules";
+import { textoDoDescontoDoCombo } from "@/lib/catalog";
+import { calcularPrecoDoPlanoPersonalizado, type ModuloDePreco } from "@/lib/pricing-modules";
 import { Check, ArrowLeft, Zap } from "lucide-react";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -12,14 +12,14 @@ import { cn } from "@/lib/utils";
 
 
 import { formatarReais, formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
-export function CustomPlanClient({ modules }: { modules: PricingModule[] }) {
+export function CustomPlanClient({ modules }: { modules: ModuloDePreco[] }) {
   const [selectedModuleIds, setSelectedModuleIds] = useState<string[]>(["site", "pixZero", "whatsapp"]);
 
   const toggleModule = (id: string) => {
     setSelectedModuleIds((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]));
   };
 
-  const calculation = useMemo(() => calculateCustomPlanPrice(selectedModuleIds, modules), [selectedModuleIds, modules]);
+  const calculation = useMemo(() => calcularPrecoDoPlanoPersonalizado(selectedModuleIds, modules), [selectedModuleIds, modules]);
 
   const customCheckoutUrl = useMemo(() => {
     const modulesParam = selectedModuleIds.join(",");
@@ -50,7 +50,7 @@ export function CustomPlanClient({ modules }: { modules: PricingModule[] }) {
             Escolham só o que vão usar
           </h1>
           <p className="max-w-[60ch] text-[17px] leading-[26px] text-tinta-suave sm:text-lg sm:leading-7">
-            {comboDiscountText()} O pagamento é único, sem mensalidade.
+            {textoDoDescontoDoCombo()} O pagamento é único, sem mensalidade.
           </p>
         </div>
 

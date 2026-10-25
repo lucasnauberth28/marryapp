@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath, updateTag } from "next/cache";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
 import { getPlatformSetting, savePlatformSetting } from "@/lib/platform/settings";
 import { parseEmailSender, parseMaintenance, refundPolicyInput } from "@/lib/platform/config-core";
@@ -29,7 +29,7 @@ export async function saveMaintenance(input: unknown): Promise<Ok | Fail> {
     const before = await getPlatformSetting("maintenance");
     await savePlatformSetting("maintenance", parsed.value, parsed.value.enabled ? "Manutenção ligada" : "Manutenção desligada");
     if (before.enabled !== parsed.value.enabled) {
-      await logAudit({ action: parsed.value.enabled ? "maintenance.enable" : "maintenance.disable", targetType: "platform_setting", targetId: "maintenance", details: { backAt: parsed.value.backAt } });
+      await registrarAuditoria({ action: parsed.value.enabled ? "maintenance.enable" : "maintenance.disable", targetType: "platform_setting", targetId: "maintenance", details: { backAt: parsed.value.backAt } });
     }
     updateTag(MAINTENANCE_TAG);
     revalidatePath("/admin/configuracoes");

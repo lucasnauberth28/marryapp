@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GIFT_FEE_LABEL, giftAmounts, type GiftFeePlan } from "@/lib/gift-fee";
+import { ROTULO_DA_TAXA_DO_PRESENTE, calcularValoresDoPresente, type PlanoDaTaxaDoPresente } from "@/lib/gift-fee";
 import { formatCents, parseCents } from "./home-money";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 
@@ -10,11 +10,11 @@ import { formatarReais } from "@/lib/formatacao/dinheiro";
  * no Básico vale a taxa do Aceito; no Classic e no VIP o Pix não tem taxa.
  */
 export function GiftSimulator({ classicLabel, vipLabel }: { classicLabel: string; vipLabel: string }) {
-  const [plano, setPlano] = useState<GiftFeePlan>("basic");
+  const [plano, setPlano] = useState<PlanoDaTaxaDoPresente>("basic");
   const [texto, setTexto] = useState("200,00");
   const cents = parseCents(texto);
   const valor = cents ?? 0;
-  const { feeCents, netCents } = giftAmounts(valor, plano, "PIX");
+  const { feeCents, netCents } = calcularValoresDoPresente(valor, plano, "PIX");
 
   return (
     <div className="lp-simulador">
@@ -57,7 +57,7 @@ export function GiftSimulator({ classicLabel, vipLabel }: { classicLabel: string
         </p>
         <div className="lp-sim-linhas">
           <div>
-            <span>{plano === "basic" ? `Taxa do Aceito (${GIFT_FEE_LABEL})` : "Taxa do Aceito no Pix"}</span>
+            <span>{plano === "basic" ? `Taxa do Aceito (${ROTULO_DA_TAXA_DO_PRESENTE})` : "Taxa do Aceito no Pix"}</span>
             <b>{feeCents ? `− ${formatarReais(feeCents)}` : formatarReais(0)}</b>
           </div>
           <div>

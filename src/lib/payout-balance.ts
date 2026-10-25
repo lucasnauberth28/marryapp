@@ -1,17 +1,17 @@
 // Saldo a repassar ao casal, SÓ CÁLCULO (sem banco nem Next): soma os presentes aprovados e separa bruto, taxa do
 // Aceito e líquido. Não cria repasse e não move dinheiro. A leitura do banco fica em payout-balance-server.ts.
-import { giftAmounts, type GiftFeeMethod, type GiftFeePlan } from "./gift-fee.ts";
+import { calcularValoresDoPresente, type FormaDaTaxaDoPresente, type PlanoDaTaxaDoPresente } from "./gift-fee.ts";
 
-export interface BalanceTransaction {
+export interface TransacaoDoSaldo {
   /** O que o convidado pagou, em centavos. */
   amount: number;
   netAmount: number | null;
   fee: number | null;
-  paymentMethod: GiftFeeMethod;
+  paymentMethod: FormaDaTaxaDoPresente;
   status: "PENDING" | "APPROVED" | "FAILED" | "REFUNDED" | "REJECTED";
 }
 
-export interface PayoutBalance {
+export interface SaldoDeRepasse {
   /** Presentes aprovados, antes da taxa. */
   grossCents: number;
   /** O que o Aceito retém. */
@@ -30,22 +30,22 @@ export interface PayoutBalance {
 }
 
 /** Plano que decide a taxa: Classic e VIP não cobram no Pix; o personalizado só com o módulo "pixZero"; o resto é Básico. */
-export function giftFeePlanFor(planId: string | null, modules: readonly string[] = []): GiftFeePlan {
+export function planoDaTaxaDoPresentePara(planId: string | null, modules: readonly string[] = []): PlanoDaTaxaDoPresente {
   if (planId === "vip") return "vip";
   if (planId === "classic") return "classic";
   if (planId === "custom" && modules.includes("pixZero")) return "classic";
   return "basic";
 }
 
-const isCents = (n: unknown): n is number => typeof n === "number" && Number.isInteger(n) && n >= 0;
+const ehCentavos = (n: unknown): n is number => typeof n === "number" && Number.isInteger(n) && n >= 0;
 
 /**
  * Soma por casamento. Para cada presente aprovado, usa `netAmount` e `fee` gravados quando eles fecham com o valor pago
  * (líquido + taxa = valor); senão calcula com `giftAmounts` pelo plano vigente do casamento. Estornados, recusados e
  * falhos ficam de fora. Pix pendente vira "a conferir".
  */
-export function summarizePayoutBalance(transactions: readonly BalanceTransaction[], plan: GiftFeePlan): PayoutBalance {
-  const out: PayoutBalance = {
+export function resumirSaldoDeRepasse(transactions: readonly TransacaoDoSaldo[], plan: PlanoDaTaxaDoPresente): SaldoDeRepasse {
+  const out: SaldoDeRepasse = {
     grossCents: 0,
     feeCents: 0,
     netCents: 0,
@@ -57,7 +57,7 @@ export function summarizePayoutBalance(transactions: readonly BalanceTransaction
   };
 
   for (const tx of transactions) {
-    if (!isCents(tx.amount)) continue;
+    if (!ehCentavos(tx.amount)) continue;
 
     if (tx.status === "PENDING") {
       if (tx.paymentMethod === "PIX") {
@@ -68,8 +68,8 @@ export function summarizePayoutBalance(transactions: readonly BalanceTransaction
     }
     if (tx.status !== "APPROVED") continue;
 
-    const byPlan = giftAmounts(tx.amount, plan, tx.paymentMethod);
-    const stored = isCents(tx.netAmount) && isCents(tx.fee) && tx.netAmount + tx.fee === tx.amount;
+    const byPlan = calcularValoresDoPresente(tx.amount, plan, tx.paymentMethod);
+    const stored = ehCentavos(tx.netAmount) && ehCentavos(tx.fee) && tx.netAmount + tx.fee === tx.amount;
     const feeCents = stored ? (tx.fee as number) : byPlan.feeCents;
     if (!stored) out.calculatedCount += 1;
     else if (feeCents !== byPlan.feeCents) out.divergentCount += 1;

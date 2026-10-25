@@ -20,7 +20,7 @@ import { percentLabel } from "@/lib/platform/revenue";
 import { getRevenueByMonth } from "@/lib/platform/queries/receita";
 import { getVendorPlansExpiring } from "@/lib/platform/queries/fornecedores";
 import { getFunnel, getAttentionItems, getRecentErrors, getSetupChecklist, getUpcomingWeddings } from "@/lib/platform/queries/atencao";
-import { greetingForHour } from "@/lib/wedding-format";
+import { saudacaoParaAHora } from "@/lib/wedding-format";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { loadOverviewNumbers } from "./_visao-geral/data";
@@ -41,7 +41,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
   const query = await searchParams;
   const now = new Date();
   const hour = Number(new Intl.DateTimeFormat("en-GB", { hour: "2-digit", hour12: false, timeZone: "America/Sao_Paulo" }).format(now)) % 24;
-  const greeting = admin.firstName ? `${greetingForHour(hour)}, ${admin.firstName}` : greetingForHour(hour);
+  const greeting = admin.firstName ? `${saudacaoParaAHora(hour)}, ${admin.firstName}` : saudacaoParaAHora(hour);
   const eyebrow = formatLongDate(now).toLocaleUpperCase("pt-BR");
   const period = oneOf(query, "periodo", PERIODS) ?? "30d";
 

@@ -11,43 +11,43 @@ import { DEFAULT_FROM } from "@/lib/platform/email-sender-core";
  *   conter tokens) e devolve { sent: false }. Nunca lança erro: quem chama decide o que mostrar.
  */
 
-const RESEND_ENDPOINT = "https://api.resend.com/emails";
+const ENDERECO_DO_RESEND = "https://api.resend.com/emails";
 
-export interface SendEmailInput {
+export interface EntradaDoEnvioDeEmail {
   to: string;
   subject: string;
   html: string;
   text: string;
 }
 
-export type SendEmailResult = { sent: true; id: string | null } | { sent: false; reason: "not_configured" | "invalid_recipient" | "failed" };
+export type ResultadoDoEnvioDeEmail = { sent: true; id: string | null } | { sent: false; reason: "not_configured" | "invalid_recipient" | "failed" };
 
-const EMAIL_RE = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[^\s@<>()[\]\\,;:"]+$/;
+const PADRAO_DE_EMAIL = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[^\s@<>()[\]\\,;:"]+$/;
 
 /** "ana@exemplo.com" -> "a***@exemplo.com", para logs. */
-function maskEmail(email: string) {
+function esconderEmail(email: string) {
   const [user, domain] = email.split("@");
   return `${user?.charAt(0) ?? ""}***@${domain ?? ""}`;
 }
 
-export function isEmailConfigured() {
+export function emailEstaConfigurado() {
   return Boolean(process.env.RESEND_API_KEY?.trim());
 }
 
-export async function sendEmail({ to, subject, html, text }: SendEmailInput): Promise<SendEmailResult> {
+export async function enviarEmail({ to, subject, html, text }: EntradaDoEnvioDeEmail): Promise<ResultadoDoEnvioDeEmail> {
   const recipient = String(to ?? "").trim().toLowerCase();
-  if (!EMAIL_RE.test(recipient) || recipient.length > 254) return { sent: false, reason: "invalid_recipient" };
+  if (!PADRAO_DE_EMAIL.test(recipient) || recipient.length > 254) return { sent: false, reason: "invalid_recipient" };
 
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) {
-    console.warn(`[email] RESEND_API_KEY ausente: e-mail "${subject}" para ${maskEmail(recipient)} não foi enviado.`);
+    console.warn(`[email] RESEND_API_KEY ausente: e-mail "${subject}" para ${esconderEmail(recipient)} não foi enviado.`);
     return { sent: false, reason: "not_configured" };
   }
 
   try {
     const sender = await getEmailSender();
     const post = (from: string) =>
-      fetch(RESEND_ENDPOINT, {
+      fetch(ENDERECO_DO_RESEND, {
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -70,7 +70,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailInput): Pr
     }
 
     if (!res.ok) {
-      console.error(`[email] Resend respondeu ${res.status} ao enviar "${subject}" para ${maskEmail(recipient)}.`);
+      console.error(`[email] Resend respondeu ${res.status} ao enviar "${subject}" para ${esconderEmail(recipient)}.`);
       // Saúde do sistema: só o código HTTP, nunca destinatário nem conteúdo
       await recordServiceEvent({ service: "email", kind: "send", ok: false, message: `Resend respondeu ${res.status}` });
       return { sent: false, reason: "failed" };
@@ -79,11 +79,11 @@ export async function sendEmail({ to, subject, html, text }: SendEmailInput): Pr
     await recordServiceEvent({ service: "email", kind: "send", ok: true });
     return { sent: true, id: body?.id ?? null };
   } catch (error) {
-    console.error(`[email] Falha ao enviar "${subject}" para ${maskEmail(recipient)}:`, error instanceof Error ? error.message : error);
+    console.error(`[email] Falha ao enviar "${subject}" para ${esconderEmail(recipient)}:`, error instanceof Error ? error.message : error);
     await recordServiceEvent({ service: "email", kind: "send", ok: false, message: error instanceof Error && error.name === "TimeoutError" ? "Tempo esgotado ao falar com a Resend" : "Falha de conexão com a Resend" });
     return { sent: false, reason: "failed" };
   }
 }
 
 // O modelo dos e-mails da marca mora em email-template.ts (sem server-only, para testar e pré-visualizar).
-export { brandedEmail, type BrandedEmailInput } from "./email-template.ts";
+export { emailDaMarca as brandedEmail, type EntradaDoEmailDaMarca as BrandedEmailInput } from "./email-template.ts";

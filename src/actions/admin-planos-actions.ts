@@ -4,22 +4,22 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
 import { cleanInvoiceNumber, refundAmountProblem, refundDueAt } from "@/lib/platform/payments";
 import {
-  MAX_PRICE_CENTS,
-  MAX_NAME_LENGTH,
-  MIN_NAME_LENGTH,
-  MIN_PAID_PRICE_CENTS,
-  cleanName,
-  defaultCatalog,
-  isCatalogPlanKey,
-  isFreePlan,
-  mergeCatalog,
+  PRECO_MAXIMO_EM_CENTAVOS,
+  TAMANHO_MAXIMO_DO_NOME,
+  TAMANHO_MINIMO_DO_NOME,
+  PRECO_MINIMO_PAGO_EM_CENTAVOS,
+  limparNome,
+  catalogoPadrao,
+  ehChaveDePlanoDoCatalogo,
+  ehPlanoGratis,
+  mesclarCatalogo,
 } from "@/lib/catalog";
-import { COUPLE_MODULES } from "@/lib/pricing-modules";
-import { PLANS_CONFIG } from "@/lib/plans";
+import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
+import { CONFIGURACAO_DOS_PLANOS } from "@/lib/plans";
 
 // Ações da administração em Planos e receita: reembolsos, notas fiscais e preços do catálogo.
 // Toda ação chama requirePlatformAdmin primeiro, valida com zod e grava no AuditLog.
@@ -69,7 +69,7 @@ export async function registerRefundRequestAction(input: unknown): Promise<Admin
       data: { subscriptionId: sub.id, amount: data.amountCents, reason: data.reason, requestedByName: sub.user?.name ?? null, dueAt: refundDueAt(new Date()) },
       select: { id: true },
     });
-    await logAudit({ action: "refund.request", targetType: "refund_request", targetId: created.id, details: { subscriptionId: sub.id, amount: data.amountCents, by: admin.userId } });
+    await registrarAuditoria({ action: "refund.request", targetType: "refund_request", targetId: created.id, details: { subscriptionId: sub.id, amount: data.amountCents, by: admin.userId } });
     refresh();
     return { success: true, message: "Pedido de reembolso registrado." };
   } catch (error) {
@@ -96,7 +96,7 @@ export async function decideRefundAction(input: unknown): Promise<AdminPlanosRes
       data: { decidedAt: now, decidedByName: admin.name ?? "Administrador", decisionNote: data.note, ...(data.decision === "deny" ? { status: "DENIED" } : {}) },
     });
     if (done.count === 0) return { success: false, error: "Este pedido já foi decidido. Atualize a página." };
-    await logAudit({
+    await registrarAuditoria({
       action: "refund.decide",
       targetType: "refund_request",
       targetId: refund.id,
@@ -127,7 +127,7 @@ export async function markInvoiceIssuedAction(input: unknown): Promise<AdminPlan
       data: { invoiceIssuedAt: new Date(), invoiceNumber: number },
     });
     if (done.count === 0) return { success: false, error: "Esta nota já foi marcada ou o pagamento não pede nota. Atualize a página." };
-    await logAudit({ action: "invoice.mark_issued", targetType: "subscription", targetId: data.subscriptionId, details: { number, by: admin.userId } });
+    await registrarAuditoria({ action: "invoice.mark_issued", targetType: "subscription", targetId: data.subscriptionId, details: { number, by: admin.userId } });
     refresh();
     return { success: true, message: "Nota fiscal marcada como emitida." };
   } catch (error) {
@@ -145,9 +145,9 @@ const KeySchema = z.string().regex(/^(plan|module):[A-Za-z0-9_-]{1,40}$/, "Item 
 function catalogItem(key: string): { baseName: string; basePrice: number; free: boolean } | null {
   const [kind, id] = key.split(":");
   if (kind === "plan") {
-    return isCatalogPlanKey(defaultCatalog(), id) ? { baseName: PLANS_CONFIG[id].name, basePrice: PLANS_CONFIG[id].price, free: isFreePlan(id) } : null;
+    return ehChaveDePlanoDoCatalogo(catalogoPadrao(), id) ? { baseName: CONFIGURACAO_DOS_PLANOS[id].name, basePrice: CONFIGURACAO_DOS_PLANOS[id].price, free: ehPlanoGratis(id) } : null;
   }
-  const mod = COUPLE_MODULES.find((m) => m.id === id);
+  const mod = MODULOS_DO_CASAL.find((m) => m.id === id);
   return mod ? { baseName: mod.name, basePrice: mod.price, free: false } : null;
 }
 
@@ -168,16 +168,16 @@ export async function saveCatalogPriceAction(input: unknown): Promise<AdminPlano
       .parse(input);
     const item = catalogItem(data.key);
     if (!item) return { success: false, error: "Item não encontrado no catálogo." };
-    const name = cleanName(data.name);
-    if (!name) return { success: false, error: `O nome precisa ter de ${MIN_NAME_LENGTH} a ${MAX_NAME_LENGTH} letras.` };
+    const name = limparNome(data.name);
+    if (!name) return { success: false, error: `O nome precisa ter de ${TAMANHO_MINIMO_DO_NOME} a ${TAMANHO_MAXIMO_DO_NOME} letras.` };
     if (item.free) {
       if (data.priceCents !== 0) return { success: false, error: "Este plano é gratuito e continua gratuito. Só o nome pode mudar." };
-    } else if (data.priceCents < MIN_PAID_PRICE_CENTS || data.priceCents > MAX_PRICE_CENTS) {
+    } else if (data.priceCents < PRECO_MINIMO_PAGO_EM_CENTAVOS || data.priceCents > PRECO_MAXIMO_EM_CENTAVOS) {
       return { success: false, error: "O preço precisa ficar entre R$ 1,00 e R$ 10.000,00." };
     }
 
     const before = await prisma.catalogPrice.findUnique({ where: { key: data.key }, select: { priceCents: true, name: true } });
-    const current = mergeCatalog(before ? [{ key: data.key, priceCents: before.priceCents, name: before.name }] : []);
+    const current = mesclarCatalogo(before ? [{ key: data.key, priceCents: before.priceCents, name: before.name }] : []);
     const [, id] = data.key.split(":");
     const beforePrice = data.key.startsWith("plan:") ? current.plans[id as keyof typeof current.plans].price : (current.modules.find((m) => m.id === id)?.price ?? item.basePrice);
     const beforeName = data.key.startsWith("plan:") ? current.plans[id as keyof typeof current.plans].name : (current.modules.find((m) => m.id === id)?.name ?? item.baseName);
@@ -193,7 +193,7 @@ export async function saveCatalogPriceAction(input: unknown): Promise<AdminPlano
         update: { priceCents: data.priceCents, name: name === item.baseName ? null : name, reason: data.reason, updatedById: admin.userId, updatedByName: admin.name ?? "Administrador" },
       });
     }
-    await logAudit({
+    await registrarAuditoria({
       action: "catalog.price_update",
       targetType: "catalog_price",
       targetId: data.key,

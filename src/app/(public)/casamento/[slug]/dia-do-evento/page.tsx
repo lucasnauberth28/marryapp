@@ -4,15 +4,15 @@ import Link from "next/link";
 import { QrCode } from "lucide-react";
 import { GuestHeader } from "@/components/public/guest-header";
 import { btn } from "@/components/landing/styles";
-import { getIdentityForWedding, guestPageMetadata } from "@/lib/wedding";
-import { getWeddingTimeline } from "@/lib/wedding-data";
-import { requirePublicWedding } from "@/lib/wedding-redirect";
-import { weddingSitePath } from "@/lib/wedding-links";
+import { obterIdentidadeDoCasamento, metadadosDaPaginaDoConvidado } from "@/lib/wedding";
+import { obterLinhaDoTempoDoCasamento } from "@/lib/wedding-data";
+import { exigirCasamentoPublico } from "@/lib/wedding-redirect";
+import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
 import { TimelinePublicClient } from "./timeline-public-client";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  return guestPageMetadata(slug, "Cronograma do dia", "Acompanhe os horários do grande dia.", "dia-do-evento");
+  return metadadosDaPaginaDoConvidado(slug, "Cronograma do dia", "Acompanhe os horários do grande dia.", "dia-do-evento");
 }
 
 // Lê o banco a cada acesso: nunca pré-renderizar no build (dados congelados e build dependente do banco)
@@ -33,9 +33,9 @@ function weekdayLabel(date: Date) {
 
 export default async function DiaDoEventoPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const wedding = await requirePublicWedding(slug);
+  const wedding = await exigirCasamentoPublico(slug);
   if (wedding.suspendedAt) return <SiteUnavailable />;
-  const [events, identity] = await Promise.all([getWeddingTimeline(wedding.id), getIdentityForWedding(wedding)]);
+  const [events, identity] = await Promise.all([obterLinhaDoTempoDoCasamento(wedding.id), obterIdentidadeDoCasamento(wedding)]);
   const date = identity.weddingDate;
 
   return (
@@ -60,7 +60,7 @@ export default async function DiaDoEventoPage({ params }: { params: Promise<{ sl
               </p>
             </div>
           </div>
-          <Link href={weddingSitePath(wedding.slug, "rsvp")} className={`${btn.secondary} ${btn.block}`}>
+          <Link href={caminhoDoSiteDoCasamento(wedding.slug, "rsvp")} className={`${btn.secondary} ${btn.block}`}>
             Abrir meu convite
           </Link>
         </section>

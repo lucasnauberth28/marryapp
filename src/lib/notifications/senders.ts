@@ -1,8 +1,8 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { appUrl } from "@/lib/app-url";
-import { brandedEmail, isEmailConfigured, sendEmail } from "@/lib/email";
-import { isWhatsappConfigured, sendTextMessage } from "@/lib/evolution";
+import { urlDoApp } from "@/lib/app-url";
+import { brandedEmail, emailEstaConfigurado, enviarEmail } from "@/lib/email";
+import { whatsappEstaConfigurado, enviarMensagemDeTexto } from "@/lib/evolution";
 import { emailContent, whatsappText } from "./channel-texts.ts";
 import type { FanOutDeps, FanOutItem } from "./fanout.ts";
 import { DEFAULT_PREFS, resolvePrefs, type NotificationChannel, type NotificationPrefs } from "./preferences.ts";
@@ -22,28 +22,28 @@ export async function loadPrefsFor(userId: string): Promise<NotificationPrefs> {
 }
 
 /** Link absoluto do aviso, sempre a partir do endereço configurado (nunca do navegador). */
-const linkOf = (item: FanOutItem) => appUrl(safeInternalHref(item.href));
+const linkOf = (item: FanOutItem) => urlDoApp(safeInternalHref(item.href));
 
 /** WhatsApp do fornecedor ligado à conta. Conta de casal não tem telefone no cadastro: não envia. */
 async function sendWhatsapp(item: FanOutItem): Promise<boolean> {
-  if (!isWhatsappConfigured()) return false;
+  if (!whatsappEstaConfigurado()) return false;
   const user = await prisma.user.findUnique({
     where: { id: item.userId },
     select: { partnerVendor: { select: { whatsapp: true, phone: true } } },
   });
   const phone = user?.partnerVendor?.whatsapp || user?.partnerVendor?.phone;
   if (!phone) return false;
-  const result = await sendTextMessage({ phone, text: whatsappText(item, linkOf(item)) });
+  const result = await enviarMensagemDeTexto({ phone, text: whatsappText(item, linkOf(item)) });
   return result.success === true;
 }
 
 /** E-mail só quando o login é um e-mail de verdade. */
 async function sendEmailNotice(item: FanOutItem): Promise<boolean> {
-  if (!isEmailConfigured()) return false;
+  if (!emailEstaConfigurado()) return false;
   const user = await prisma.user.findUnique({ where: { id: item.userId }, select: { username: true } });
   const to = user?.username && EMAIL_RE.test(user.username) ? user.username : null;
   if (!to) return false;
-  const content = emailContent(item, linkOf(item), appUrl("/conta#avisos"));
+  const content = emailContent(item, linkOf(item), urlDoApp("/conta#avisos"));
   const { html, text } = brandedEmail({
     heading: content.heading,
     paragraphs: content.paragraphs,
@@ -51,7 +51,7 @@ async function sendEmailNotice(item: FanOutItem): Promise<boolean> {
     footnotes: content.footnotes,
     preheader: content.preheader,
   });
-  const result = await sendEmail({ to, subject: content.subject, html, text });
+  const result = await enviarEmail({ to, subject: content.subject, html, text });
   return result.sent;
 }
 

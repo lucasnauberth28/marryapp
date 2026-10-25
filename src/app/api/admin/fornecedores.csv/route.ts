@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { platformAdminApiGuard } from "@/lib/security/platform-admin";
 import { oneOf, param, type SearchParams } from "@/lib/platform/list-params";
 import { csvLine } from "@/lib/platform/csv";
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     ]).map(csvLine),
   ];
 
-  await logAudit({ action: "export.csv", targetType: "fornecedores", details: { rows: rows.length, by: ctx.userId } });
+  await registrarAuditoria({ action: "export.csv", targetType: "fornecedores", details: { rows: rows.length, by: ctx.userId } });
   return new NextResponse(`﻿${lines.join("\r\n")}\r\n`, {
     headers: {
       "content-type": "text/csv; charset=utf-8",

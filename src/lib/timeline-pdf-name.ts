@@ -1,5 +1,5 @@
 /** Nome do arquivo do PDF do cronograma, com os nomes do casal (sem acento nem símbolo): "cronograma-ana-e-bia.pdf". */
-export function timelinePdfFileName(coupleNames: string): string {
+export function nomeDoArquivoPdfDaLinhaDoTempo(coupleNames: string): string {
   const slug = coupleNames
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")

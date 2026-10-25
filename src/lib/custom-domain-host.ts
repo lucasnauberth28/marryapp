@@ -8,20 +8,20 @@
 //  - /api/* e qualquer coisa que não seja do app: 404 (webhooks e rotinas agendadas só existem no domínio principal);
 //  - o casamento de outro casal (/casamento/<outro>) e caminhos suspeitos: 404.
 
-import { classifyPath } from "./route-access.ts";
+import { classificarCaminho } from "./route-access.ts";
 
-const DEFAULT_BASE_URL = "https://meuaceito.com.br";
+const URL_BASE_PADRAO = "https://meuaceito.com.br";
 
 // ==========================================
 // HOST
 // ==========================================
 
-export type ParsedHost = { kind: "name"; name: string } | { kind: "ip" };
+export type HostInterpretado = { kind: "name"; name: string } | { kind: "ip" };
 
-const LABEL = /^(?!-)[a-z0-9-]{1,63}(?<!-)$/;
+const PADRAO_DE_ROTULO_DE_DOMINIO = /^(?!-)[a-z0-9-]{1,63}(?<!-)$/;
 
 /** Lê o cabeçalho Host: minúsculas, sem porta e sem ponto final. Devolve null para o que não for um endereço válido. */
-export function parseHostHeader(raw: string | null | undefined): ParsedHost | null {
+export function interpretarCabecalhoHost(raw: string | null | undefined): HostInterpretado | null {
   if (typeof raw !== "string") return null;
   let host = raw.trim().toLowerCase();
   if (!host || host.length > 300 || /[\s,/\\@?#%]/.test(host)) return null;
@@ -33,20 +33,20 @@ export function parseHostHeader(raw: string | null | undefined): ParsedHost | nu
   if (!host || host.length > 253 || host.includes(":")) return null;
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return { kind: "ip" };
   const labels = host.split(".");
-  if (!labels.every((label) => LABEL.test(label))) return null;
+  if (!labels.every((label) => PADRAO_DE_ROTULO_DE_DOMINIO.test(label))) return null;
   return { kind: "name", name: host };
 }
 
 /** Nome do host do app, vindo de NEXT_PUBLIC_BASE_URL (mesmo padrão de lib/wedding-links). */
-export function mainHostOf(baseUrl: string | null | undefined): string {
+export function hostPrincipalDe(baseUrl: string | null | undefined): string {
   try {
-    return new URL((baseUrl ?? "").trim() || DEFAULT_BASE_URL).hostname.toLowerCase();
+    return new URL((baseUrl ?? "").trim() || URL_BASE_PADRAO).hostname.toLowerCase();
   } catch {
-    return new URL(DEFAULT_BASE_URL).hostname;
+    return new URL(URL_BASE_PADRAO).hostname;
   }
 }
 
-export type HostClass =
+export type ClasseDoHost =
   /** Endereço do próprio app (domínio principal, localhost, vercel.app, IP ou cabeçalho ilegível): nada muda. */
   | { kind: "main" }
   /** Outro nome: pode ser o domínio de um casal. `domain` já vem sem "www.". */
@@ -56,12 +56,12 @@ export type HostClass =
  * O host é do app? Só vira "candidate" (e só então vale consultar o banco) o que NÃO for o domínio principal
  * (nem seus subdomínios), localhost, *.vercel.app ou IP.
  */
-export function classifyHost(rawHost: string | null | undefined, baseUrl?: string | null): HostClass {
-  const parsed = parseHostHeader(rawHost);
+export function classificarHost(rawHost: string | null | undefined, baseUrl?: string | null): ClasseDoHost {
+  const parsed = interpretarCabecalhoHost(rawHost);
   if (!parsed || parsed.kind === "ip") return { kind: "main" };
   const { name } = parsed;
 
-  const main = mainHostOf(baseUrl);
+  const main = hostPrincipalDe(baseUrl);
   const mainBare = main.replace(/^www\./, "");
   if (name === main || name === mainBare || name === `www.${mainBare}` || name.endsWith(`.${mainBare}`)) return { kind: "main" };
   if (name === "localhost" || name.endsWith(".localhost")) return { kind: "main" };
@@ -71,8 +71,8 @@ export function classifyHost(rawHost: string | null | undefined, baseUrl?: strin
 }
 
 /** O domínio pedido por um casal não pode ser o do próprio app nem estar dentro dele. */
-export function isReservedDomain(domain: string, baseUrl?: string | null): boolean {
-  const main = mainHostOf(baseUrl).replace(/^www\./, "");
+export function ehDominioReservado(domain: string, baseUrl?: string | null): boolean {
+  const main = hostPrincipalDe(baseUrl).replace(/^www\./, "");
   return domain === main || domain.endsWith(`.${main}`) || main.endsWith(`.${domain}`);
 }
 
@@ -80,7 +80,7 @@ export function isReservedDomain(domain: string, baseUrl?: string | null): boole
 // CAMINHOS
 // ==========================================
 
-export type CustomDomainRoute =
+export type RotaDeDominioPersonalizado =
   /** Serve a rota interna no lugar (o endereço no navegador não muda). */
   | { action: "rewrite"; pathname: string }
   /** Segue como está (a rota já é pública e do casamento certo). */
@@ -89,15 +89,15 @@ export type CustomDomainRoute =
   | { action: "redirect-main"; pathname: string }
   | { action: "not-found" };
 
-const GUEST_PAGES = ["rsvp", "presentes", "dia-do-evento"] as const;
-const PASS_EXACT = new Set(["/favicon.ico", "/icon.svg", "/manifest.webmanifest", "/sw.js"]);
-const CHECKOUT = /^\/checkout\/[0-9a-f-]{36}$/i;
+const PAGINAS_DO_CONVIDADO = ["rsvp", "presentes", "dia-do-evento"] as const;
+const CAMINHOS_LIBERADOS_EXATOS = new Set(["/favicon.ico", "/icon.svg", "/manifest.webmanifest", "/sw.js"]);
+const PADRAO_DO_CAMINHO_DO_CHECKOUT = /^\/checkout\/[0-9a-f-]{36}$/i;
 
 /**
  * Caminho seguro para decidir a rota: começa com uma barra só, sem "..", ".", barra invertida, byte nulo,
  * barras duplas nem dupla codificação. Tira a barra final. Devolve null para o que for suspeito.
  */
-export function cleanPathname(pathname: string): string | null {
+export function limparCaminho(pathname: string): string | null {
   if (typeof pathname !== "string" || !pathname.startsWith("/") || pathname.startsWith("//")) return null;
   if (pathname.length > 2000 || /[\\\0]/.test(pathname)) return null;
   let decoded: string;
@@ -119,16 +119,16 @@ export function cleanPathname(pathname: string): string | null {
 }
 
 /** Caminho do domínio do casal → rota interna do casamento `slug`. */
-export function routeCustomDomainPath(pathname: string, slug: string): CustomDomainRoute {
-  const path = cleanPathname(pathname);
+export function rotearCaminhoDoDominioPersonalizado(pathname: string, slug: string): RotaDeDominioPersonalizado {
+  const path = limparCaminho(pathname);
   if (!path) return { action: "not-found" };
 
   // Arquivos técnicos do Next e do app
-  if (path.startsWith("/_next/") || PASS_EXACT.has(path)) return { action: "pass" };
+  if (path.startsWith("/_next/") || CAMINHOS_LIBERADOS_EXATOS.has(path)) return { action: "pass" };
 
   // A página inicial e as três páginas do convidado, só no casamento deste domínio
   if (path === "/") return { action: "rewrite", pathname: `/casamento/${slug}` };
-  for (const page of GUEST_PAGES) {
+  for (const page of PAGINAS_DO_CONVIDADO) {
     if (path === `/${page}`) return { action: "rewrite", pathname: `/casamento/${slug}/${page}` };
   }
 
@@ -136,15 +136,15 @@ export function routeCustomDomainPath(pathname: string, slug: string): CustomDom
   if (path === "/casamento" || path.startsWith("/casamento/")) {
     const own = `/casamento/${slug}`;
     if (path === own) return { action: "pass" };
-    if (GUEST_PAGES.some((page) => path === `${own}/${page}`)) return { action: "pass" };
+    if (PAGINAS_DO_CONVIDADO.some((page) => path === `${own}/${page}`)) return { action: "pass" };
     return { action: "not-found" };
   }
 
   // Pagamento de presente (Pix ou cartão): rota pública, o presente já determina o casamento
-  if (CHECKOUT.test(path)) return { action: "pass" };
+  if (PADRAO_DO_CAMINHO_DO_CHECKOUT.test(path)) return { action: "pass" };
 
   // Páginas do convidado e do pagamento com subcaminho ou id fora do formato: não existem aqui
-  const guestRoot = ["/checkout", ...GUEST_PAGES.map((page) => `/${page}`)];
+  const guestRoot = ["/checkout", ...PAGINAS_DO_CONVIDADO.map((page) => `/${page}`)];
   if (guestRoot.some((root) => path === root || path.startsWith(`${root}/`))) return { action: "not-found" };
 
   // Nada de API aqui: webhooks e rotinas agendadas só existem no domínio principal
@@ -154,7 +154,7 @@ export function routeCustomDomainPath(pathname: string, slug: string): CustomDom
   if (path === "/admin" || path.startsWith("/admin/")) return { action: "not-found" };
 
   // Páginas do app (login, painel, conta, termos...): o lugar delas é o domínio principal
-  if (classifyPath(path) !== "unknown") return { action: "redirect-main", pathname: path };
+  if (classificarCaminho(path) !== "unknown") return { action: "redirect-main", pathname: path };
 
   return { action: "not-found" };
 }
@@ -163,11 +163,11 @@ export function routeCustomDomainPath(pathname: string, slug: string): CustomDom
  * Endereço no domínio principal para onde mandar quem abriu uma página do app no domínio do casal.
  * O domínio vem sempre da configuração, nunca do pedido; o caminho precisa começar com uma barra só.
  */
-export function mainRedirectUrl(baseUrl: string | null | undefined, pathname: string, search = ""): string | null {
+export function urlDeRedirecionamentoPrincipal(baseUrl: string | null | undefined, pathname: string, search = ""): string | null {
   if (!pathname.startsWith("/") || pathname.startsWith("//") || /[\\\0]/.test(pathname)) return null;
   let base: URL;
   try {
-    base = new URL((baseUrl ?? "").trim() || DEFAULT_BASE_URL);
+    base = new URL((baseUrl ?? "").trim() || URL_BASE_PADRAO);
   } catch {
     return null;
   }
@@ -180,7 +180,7 @@ export function mainRedirectUrl(baseUrl: string | null | undefined, pathname: st
 // CACHE EM MEMÓRIA
 // ==========================================
 
-export interface TtlCache<V> {
+export interface CacheComValidade<V> {
   get(key: string): V | undefined;
   set(key: string, value: V): void;
   clear(): void;
@@ -188,7 +188,7 @@ export interface TtlCache<V> {
 }
 
 /** Cache simples com validade e teto de entradas (host forjado em massa não cresce a memória sem limite). */
-export function createTtlCache<V>(ttlMs: number, maxEntries = 500, now: () => number = Date.now): TtlCache<V> {
+export function criarCacheComValidade<V>(ttlMs: number, maxEntries = 500, now: () => number = Date.now): CacheComValidade<V> {
   const map = new Map<string, { value: V; expires: number }>();
   return {
     get(key) {

@@ -12,7 +12,7 @@ import { somenteDigitos } from "./formatacao/telefone.ts";
  * - "551157305051" (DDI + DDD + 8 dígitos)
  * - "1157305051" (DDD + 8 dígitos)
  */
-export function getPhoneVariations(rawPhone: string): string[] {
+export function obterVariacoesDoTelefone(rawPhone: string): string[] {
   const clean = somenteDigitos(rawPhone);
   if (!clean) return [];
 

@@ -14,7 +14,7 @@ import {
 } from "@/lib/security/auth-guard";
 import { resolveImpersonation, type ImpersonationContext } from "@/lib/security/impersonation";
 import { weddingWriteRefusal } from "@/lib/security/impersonation-rules";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { maintenanceWriteRefusal } from "@/lib/platform/maintenance";
 
 /**
@@ -160,7 +160,7 @@ export async function requireWedding(path?: string): Promise<WeddingContext> {
   const maintenance = await maintenanceWriteRefusal(ctx.session.allowedPaths);
   if (maintenance) throw new AuthorizationError(maintenance);
   if (ctx.impersonation?.canEdit) {
-    await logAudit({
+    await registrarAuditoria({
       action: "impersonation.write",
       targetType: "wedding",
       targetId: ctx.weddingId,

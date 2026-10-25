@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 
-export interface AuditEntry {
+export interface RegistroDeAuditoria {
   /** Ex.: "account.delete", "wedding.invite_accept", "subscription.confirm". */
   action: string;
   targetType?: string;
@@ -21,7 +21,7 @@ export interface AuditEntry {
  * Registra uma ação no AuditLog. Autor vem da sessão atual (id e nome), salvo `actor`.
  * Nunca lança erro: uma falha no registro não pode desfazer a ação que já aconteceu.
  */
-export async function logAudit({ action, targetType, targetId, details, actor }: AuditEntry): Promise<void> {
+export async function registrarAuditoria({ action, targetType, targetId, details, actor }: RegistroDeAuditoria): Promise<void> {
   try {
     let actorId: string | null = actor?.id ?? null;
     let actorName: string | null = actor?.name ?? null;

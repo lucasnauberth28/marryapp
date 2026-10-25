@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { platformAdminApiGuard } from "@/lib/security/platform-admin";
 import { oneOf, param, type SearchParams } from "@/lib/platform/list-params";
 import { ATIVIDADE_FILTERS, CASAIS_TABS, DATA_FILTERS, DOMINIO_FILTERS, ONBOARDING_FILTERS, PLANO_FILTERS, type CasaisFilters } from "@/lib/platform/casais-filters";
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     ),
   ];
 
-  await logAudit({ action: "export.csv", targetType: "casais", details: { rows: rows.length, selection: ids.data.length, by: ctx.userId } });
+  await registrarAuditoria({ action: "export.csv", targetType: "casais", details: { rows: rows.length, selection: ids.data.length, by: ctx.userId } });
   return new NextResponse(`﻿${lines.join("\r\n")}\r\n`, {
     headers: {
       "content-type": "text/csv; charset=utf-8",

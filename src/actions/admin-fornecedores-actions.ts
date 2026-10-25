@@ -3,9 +3,9 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
-import { approveVendor, rejectVendor } from "@/lib/vendor-curation";
+import { aprovarFornecedor, recusarFornecedor } from "@/lib/vendor-curation";
 import { GRANT_DAYS, grantedPlanEnd } from "@/lib/platform/vendor-admin";
 
 // Ações da administração sobre fornecedores (/admin/fornecedores). TODA ação chama requirePlatformAdmin primeiro,
@@ -36,7 +36,7 @@ export async function approveVendorAdminAction(input: unknown): Promise<AdminVen
     const { vendorId } = z.object({ vendorId: VendorId }).parse(input);
     const vendor = await prisma.partnerVendor.findUnique({ where: { id: vendorId }, select: { companyName: true } });
     if (!vendor) return { success: false, error: "Fornecedor não encontrado. Atualize a página." };
-    await approveVendor(vendorId);
+    await aprovarFornecedor(vendorId);
     refresh(vendorId);
     return { success: true, message: `${vendor.companyName} aprovado e publicado na vitrine.` };
   } catch (error) {
@@ -52,7 +52,7 @@ export async function rejectVendorAdminAction(input: unknown): Promise<AdminVend
       .parse(input);
     const vendor = await prisma.partnerVendor.findUnique({ where: { id: data.vendorId }, select: { companyName: true } });
     if (!vendor) return { success: false, error: "Fornecedor não encontrado. Atualize a página." };
-    await rejectVendor(data.vendorId, data.message);
+    await recusarFornecedor(data.vendorId, data.message);
     refresh(data.vendorId);
     return { success: true, message: `Cadastro de ${vendor.companyName} devolvido com a mensagem.` };
   } catch (error) {
@@ -70,7 +70,7 @@ export async function suspendVendorAction(input: unknown): Promise<AdminVendorRe
       data: { suspendedAt: new Date(), suspendedReason: data.reason, isFeatured: false },
     });
     if (done.count === 0) return { success: false, error: "O fornecedor já está suspenso ou não existe. Atualize a página." };
-    await logAudit({ action: "vendor.suspend", targetType: "partner_vendor", targetId: data.vendorId, details: { reason: data.reason } });
+    await registrarAuditoria({ action: "vendor.suspend", targetType: "partner_vendor", targetId: data.vendorId, details: { reason: data.reason } });
     refresh(data.vendorId);
     return { success: true, message: "Fornecedor suspenso. Ele saiu da vitrine." };
   } catch (error) {
@@ -84,7 +84,7 @@ export async function unsuspendVendorAction(input: unknown): Promise<AdminVendor
     const { vendorId } = z.object({ vendorId: VendorId }).parse(input);
     const done = await prisma.partnerVendor.updateMany({ where: { id: vendorId, suspendedAt: { not: null } }, data: { suspendedAt: null, suspendedReason: null } });
     if (done.count === 0) return { success: false, error: "O fornecedor não estava suspenso. Atualize a página." };
-    await logAudit({ action: "vendor.unsuspend", targetType: "partner_vendor", targetId: vendorId });
+    await registrarAuditoria({ action: "vendor.unsuspend", targetType: "partner_vendor", targetId: vendorId });
     refresh(vendorId);
     return { success: true, message: "Suspensão desfeita. O fornecedor voltou para a vitrine, se estiver aprovado." };
   } catch (error) {
@@ -102,7 +102,7 @@ export async function setVendorFeaturedAction(input: unknown): Promise<AdminVend
       data: { isFeatured: data.featured },
     });
     if (done.count === 0) return { success: false, error: "Só um fornecedor aprovado e ativo pode ser destacado." };
-    await logAudit({ action: "vendor.feature", targetType: "partner_vendor", targetId: data.vendorId, details: { featured: data.featured } });
+    await registrarAuditoria({ action: "vendor.feature", targetType: "partner_vendor", targetId: data.vendorId, details: { featured: data.featured } });
     refresh(data.vendorId);
     return { success: true, message: data.featured ? "Destacado no topo da vitrine." : "Destaque removido." };
   } catch (error) {
@@ -136,7 +136,7 @@ export async function grantVendorPlanAction(input: unknown): Promise<AdminVendor
       data: { planTier: data.tier, planExpiresAt: end, planReminderDays: null },
     });
     await prisma.vendorLead.updateMany({ where: { vendorId: data.vendorId, locked: true }, data: { locked: false } });
-    await logAudit({
+    await registrarAuditoria({
       action: "vendor.grant_plan",
       targetType: "partner_vendor",
       targetId: data.vendorId,
@@ -180,7 +180,7 @@ export async function moderateReviewAction(input: unknown): Promise<AdminVendorR
             : { moderatedAt: now },
     });
     if (data.decision !== "keep") await recalcRating(review.vendorId);
-    await logAudit({
+    await registrarAuditoria({
       action: data.decision === "hide" ? "review.hide" : data.decision === "show" ? "review.show" : "review.keep",
       targetType: "vendor_review",
       targetId: data.reviewId,

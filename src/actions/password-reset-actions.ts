@@ -7,7 +7,7 @@ import prisma from "@/lib/prisma";
 import { checkRateLimit, getClientIp } from "@/lib/security/rate-limiter";
 import { hashLinkToken, isLinkTokenShape } from "@/lib/account/tokens";
 import { sendPasswordResetLink } from "@/lib/account/password-reset-link";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 const MINUTE = 60 * 1000;
@@ -108,7 +108,7 @@ export async function resetPassword(input: { token: string; password: string; co
     return { success: false, error: "Não conseguimos trocar a senha agora. Tente de novo em instantes." };
   }
 
-  await logAudit({
+  await registrarAuditoria({
     action: "account.password_reset",
     targetType: "User",
     targetId: record.userId,

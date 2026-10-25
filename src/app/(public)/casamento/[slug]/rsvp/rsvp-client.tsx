@@ -13,9 +13,9 @@ import { Field, FormAlert } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { mascararTelefone } from "@/lib/formatacao/telefone";
-import { weddingSitePath } from "@/lib/wedding-links";
-import { rememberGuest } from "@/lib/use-saved-guest";
-import { lookupMessage, type PublicRsvpGuest } from "@/lib/rsvp-lookup";
+import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
+import { lembrarConvidado } from "@/lib/use-saved-guest";
+import { mensagemDaBusca, type ConvidadoDaConfirmacaoPublica } from "@/lib/rsvp-lookup";
 import { cn } from "@/lib/utils";
 
 interface RsvpClientProps {
@@ -26,7 +26,7 @@ interface RsvpClientProps {
   locationName: string | null;
 }
 
-type Guest = PublicRsvpGuest;
+type Guest = ConvidadoDaConfirmacaoPublica;
 
 const overline = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
 const title = "font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta outline-none";
@@ -74,7 +74,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
         setDietary(found.dietaryRestrictions || "");
       } else {
         // Cada situação tem a sua mensagem: limite de tentativas não é "convite não encontrado"
-        setError(lookupMessage(result) ?? "");
+        setError(mensagemDaBusca(result) ?? "");
       }
     } catch {
       setError("Não conseguimos buscar o convite agora. Tente de novo em instantes.");
@@ -111,7 +111,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
       );
       if (res.success) {
         // Quem respondeu ao convite não precisa digitar nome e WhatsApp de novo se for dar um presente (só nesta aba).
-        rememberGuest(slug, { name: guest.name, phone });
+        lembrarConvidado(slug, { name: guest.name, phone });
         setSuccessStatus(status);
       } else {
         setError(res.error || "Não conseguimos salvar a sua resposta. Tente de novo.");
@@ -331,7 +331,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
           <div className="flex w-full flex-col rounded-[16px] border border-linha bg-papel px-6 py-4 text-left shadow-[var(--shadow-aceito-1)]">
             <p className={cn(overline, "mb-1")}>E agora?</p>
             <Link
-              href={weddingSitePath(slug, "presentes")}
+              href={caminhoDoSiteDoCasamento(slug, "presentes")}
               className="flex min-h-12 items-center gap-3 font-semibold text-tinta no-underline"
             >
               <Gift aria-hidden="true" className="size-5 text-ameixa" strokeWidth={1.6} />

@@ -1,8 +1,8 @@
 // Sugestão para agora: escolhe a dica da Liz a partir de contagens reais do casamento.
 // Puro (sem banco): o painel da Liz e o Início usam a mesma regra e os mesmos textos.
 // A Liz orienta, nunca executa: a dica sempre leva a uma tela onde o casal decide.
-import { hasPathAccess } from "../permissions.ts";
-import { RSVP_PENDING_ACTION, RSVP_PENDING_HREF, rsvpPendingTipText, rsvpTipUrgent } from "../liz-tips.ts";
+import { temAcessoAoCaminho } from "../permissions.ts";
+import { ACAO_DAS_CONFIRMACOES_PENDENTES, LINK_DAS_CONFIRMACOES_PENDENTES, textoDaDicaDeConfirmacaoPendente, dicaDeConfirmacaoUrgente } from "../liz-tips.ts";
 
 import { escolherPlural } from "../formatacao/plural.ts";
 export interface LizTip {
@@ -40,16 +40,16 @@ export interface LizTipInput {
 
 /** Primeira dica que se aplica, na ordem de importância; null quando não há nada a sugerir. */
 export function decideLizTip(input: LizTipInput): LizTip | null {
-  const can = (path: string) => hasPathAccess([...input.allowedPaths], path);
+  const can = (path: string) => temAcessoAoCaminho([...input.allowedPaths], path);
 
   if (input.pendingGuests > 0 && can("/convidados")) {
     const when = { deadlineKey: input.deadlineKey, todayKey: input.todayKey, weddingDays: input.weddingDays };
     return {
       id: "rsvp-sem-resposta",
-      text: rsvpPendingTipText({ pending: input.pendingGuests, pendingPeople: input.pendingPeople, ...when }),
-      action: RSVP_PENDING_ACTION,
-      href: RSVP_PENDING_HREF,
-      urgent: rsvpTipUrgent(when),
+      text: textoDaDicaDeConfirmacaoPendente({ pending: input.pendingGuests, pendingPeople: input.pendingPeople, ...when }),
+      action: ACAO_DAS_CONFIRMACOES_PENDENTES,
+      href: LINK_DAS_CONFIRMACOES_PENDENTES,
+      urgent: dicaDeConfirmacaoUrgente(when),
     };
   }
 

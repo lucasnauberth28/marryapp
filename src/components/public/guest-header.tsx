@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { btn } from "@/components/landing/styles";
-import { weddingSitePath } from "@/lib/wedding-links";
+import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
 import { cn } from "@/lib/utils";
 
 /** "A&R" vira "A & R", com o "&" em itálico, como no monograma do design. */
@@ -46,7 +46,7 @@ export function GuestHeader({
   /** Nome da página, mostrado na barra do celular. */
   title: string;
 }) {
-  const site = weddingSitePath(slug);
+  const site = caminhoDoSiteDoCasamento(slug);
   return (
     <header className="border-b border-linha bg-linho">
       {/* Celular */}
@@ -73,7 +73,7 @@ export function GuestHeader({
           {NAV.map((item) => (
             <Link
               key={item.page}
-              href={item.page === "site" ? site : weddingSitePath(slug, item.page)}
+              href={item.page === "site" ? site : caminhoDoSiteDoCasamento(slug, item.page)}
               aria-current={item.page === current ? "page" : undefined}
               className={cn(
                 "inline-flex min-h-11 items-center no-underline transition-colors hover:text-ameixa",
@@ -84,7 +84,7 @@ export function GuestHeader({
             </Link>
           ))}
         </nav>
-        <Link href={weddingSitePath(slug, "rsvp")} className={cn(btn.primary, btn.sm)}>
+        <Link href={caminhoDoSiteDoCasamento(slug, "rsvp")} className={cn(btn.primary, btn.sm)}>
           Confirmar presença
         </Link>
       </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/legal/legal-page";
-import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
 
 export const metadata: Metadata = {
   title: "Termos de uso",
@@ -116,7 +116,7 @@ const sections: LegalSection[] = [
           <li>Os pagamentos são processados pelo Mercado Pago. O Aceito não armazena dados completos de cartão.</li>
           <li>
             Presentes em dinheiro pagos por convidados passam pelo Aceito (o pagamento é processado pelo Mercado Pago). Quando o plano do
-            casal prevê, o Aceito retém {GIFT_FEE_LABEL} de cada presente, conforme informado na página de planos.
+            casal prevê, o Aceito retém {ROTULO_DA_TAXA_DO_PRESENTE} de cada presente, conforme informado na página de planos.
           </li>
           <li>
             O valor que sobra é repassado ao destino que o casal cadastrar em Configurações (chave Pix ou conta bancária em nome de uma

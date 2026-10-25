@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { getSession, SUPER_ADMIN_USER_ID, redirectToLogin } from "@/lib/security/auth-guard";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
-import { splitCoupleNames } from "@/lib/onboarding-options";
+import { separarNomesDoCasal } from "@/lib/onboarding-options";
 import { OnboardingFlow } from "./onboarding-flow";
 
 export const metadata: Metadata = {
@@ -54,7 +54,7 @@ export default async function BoasVindasPage() {
 
   const firstName = user.name.trim().split(/\s+/)[0] ?? "";
   // No cadastro o casamento nasce com o nome de quem criou a conta; o par entra aqui.
-  const [a, b] = user.wedding ? splitCoupleNames(user.wedding.coupleNames) : [firstName, ""];
+  const [a, b] = user.wedding ? separarNomesDoCasal(user.wedding.coupleNames) : [firstName, ""];
   const yourName = b ? a : firstName || a;
   const partnerName = b;
 

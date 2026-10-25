@@ -10,16 +10,16 @@ import { Field, FormAlert } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { QrFrame } from "@/components/ui/qr-frame";
-import { QR_COLORS } from "@/lib/qr-colors";
+import { CORES_DO_QR } from "@/lib/qr-colors";
 import { Textarea } from "@/components/ui/textarea";
 import { mascararTelefone } from "@/lib/formatacao/telefone";
-import { phoneEnding } from "@/lib/saved-guest";
-import { useSavedGuest } from "@/lib/use-saved-guest";
+import { finalDoTelefone } from "@/lib/saved-guest";
+import { useConvidadoSalvo } from "@/lib/use-saved-guest";
 import { Seal } from "@/components/landing/seal";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { UserImage } from "@/components/ui/user-image";
-import { tokenizeCard } from "@/lib/mercadopago-client";
-import { weddingSitePath } from "@/lib/wedding-links";
+import { tokenizarCartao } from "@/lib/mercadopago-client";
+import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
 import { GiftLocal as Gift } from "@/types/local";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +45,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
   const [isPending, startTransition] = useTransition();
 
   // Dados do Convidado. Quem confirmou presença nesta aba já vem identificado; ele só segue depois de confirmar "sim, sou eu".
-  const { guest: knownGuest, forget: forgetKnownGuest } = useSavedGuest(slug);
+  const { guest: knownGuest, forget: forgetKnownGuest } = useConvidadoSalvo(slug);
   const [typedName, setTypedName] = useState("");
   const [typedPhone, setTypedPhone] = useState("");
   const [recognizedDismissed, setRecognizedDismissed] = useState(false);
@@ -136,7 +136,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
         // Os dados do cartão vão direto para o Mercado Pago; o servidor recebe só o token.
         let card: { token: string; paymentMethodId: string };
         try {
-          card = await tokenizeCard({ cardNumber, cardholderName: cardName, cardExpiry, securityCode: cardCvv });
+          card = await tokenizarCartao({ cardNumber, cardholderName: cardName, cardExpiry, securityCode: cardCvv });
         } catch (err) {
           const message = err instanceof Error ? err.message : "Não foi possível validar o cartão.";
           setError(message);
@@ -231,7 +231,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
               <div className="min-w-0">
                 <p className={overline}>Presente de</p>
                 <p className="truncate text-lg font-semibold leading-7 text-tinta">{recognized.name}</p>
-                <p className="text-sm leading-5 text-tinta-suave">WhatsApp {phoneEnding(recognized.phone)}</p>
+                <p className="text-sm leading-5 text-tinta-suave">WhatsApp {finalDoTelefone(recognized.phone)}</p>
               </div>
               <button
                 type="button"
@@ -520,7 +520,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
               {pixPayload === "" ? (
                 <Skeleton className="size-[200px] rounded-lg" />
               ) : (
-                <QRCodeSVG value={pixPayload} size={200} {...QR_COLORS} marginSize={2} role="img" aria-label="QR Code do Pix" />
+                <QRCodeSVG value={pixPayload} size={200} {...CORES_DO_QR} marginSize={2} role="img" aria-label="QR Code do Pix" />
               )}
             </QrFrame>
             <p className="text-sm text-tinta-suave">
@@ -637,10 +637,10 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
           </div>
 
           <div className="mt-2 flex w-full flex-col gap-2">
-            <Link href={weddingSitePath(slug, "rsvp")} className={cn(btn.primary, btn.block, "min-h-12")}>
+            <Link href={caminhoDoSiteDoCasamento(slug, "rsvp")} className={cn(btn.primary, btn.block, "min-h-12")}>
               Confirmar presença
             </Link>
-            <Link href={weddingSitePath(slug)} className={cn(btn.secondary, btn.block, "min-h-12")}>
+            <Link href={caminhoDoSiteDoCasamento(slug)} className={cn(btn.secondary, btn.block, "min-h-12")}>
               Ver o site do casal
             </Link>
           </div>

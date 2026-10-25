@@ -2,15 +2,15 @@
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { generatePixPayload } from "@/lib/pix-utils";
-import { calculateCardFee, isMercadoPagoConfigured, mpPayment, paidAmountMatches } from "@/lib/mercadopago";
-import { findOrCreateGuest } from "@/lib/guest-matching";
-import { TOO_MANY_ATTEMPTS_MESSAGE } from "@/lib/rate-limit-message";
+import { gerarCodigoPix } from "@/lib/pix-utils";
+import { calcularTarifaDoCartao, mercadoPagoEstaConfigurado, pagamentoDoMercadoPago, paidAmountMatches } from "@/lib/mercadopago";
+import { acharOuCriarConvidado } from "@/lib/guest-matching";
+import { MENSAGEM_DE_MUITAS_TENTATIVAS } from "@/lib/rate-limit-message";
 import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { rateLimitByIp } from "@/lib/security/rate-limiter";
 import { normalizeText } from "@/lib/security/sanitize";
-import { isWeddingSuspended, SITE_UNAVAILABLE_MESSAGE } from "@/lib/wedding-suspension";
+import { casamentoEstaSuspenso, MENSAGEM_DE_SITE_INDISPONIVEL } from "@/lib/wedding-suspension";
 import { deferNotify } from "@/lib/notifications/service";
 import { notifyGiftPaid, notifyPixToCheck } from "@/lib/notifications/events";
 
@@ -59,16 +59,16 @@ export async function createPixTransactionAction(input: {
   try {
     const rateLimit = await rateLimitByIp("CHECKOUT");
     if (!rateLimit.success) {
-      return { success: false, error: TOO_MANY_ATTEMPTS_MESSAGE };
+      return { success: false, error: MENSAGEM_DE_MUITAS_TENTATIVAS };
     }
 
     const gift = await prisma.gift.findUnique({ where: { id: giftId } });
     if (!gift) return { success: false, error: ERROS.presenteNaoEncontrado };
     if (gift.isPurchased) return { success: false, error: "Este presente já foi comprado." };
-    if (await isWeddingSuspended(gift.weddingId)) return { success: false, error: SITE_UNAVAILABLE_MESSAGE };
+    if (await casamentoEstaSuspenso(gift.weddingId)) return { success: false, error: MENSAGEM_DE_SITE_INDISPONIVEL };
 
     // O casamento vem sempre do presente (nunca do navegador): convidado e transação ficam nele.
-    const guest = await findOrCreateGuest({
+    const guest = await acharOuCriarConvidado({
       weddingId: gift.weddingId,
       name: guestName,
       phone: guestPhone,
@@ -90,9 +90,9 @@ export async function createPixTransactionAction(input: {
     });
 
     // 1. Pix dinâmico via Mercado Pago (confirmação automática por webhook)
-    if (isMercadoPagoConfigured()) {
+    if (mercadoPagoEstaConfigurado()) {
       try {
-        const mpResponse = await mpPayment.create({
+        const mpResponse = await pagamentoDoMercadoPago.create({
           body: {
             transaction_amount: gift.amount / 100,
             payment_method_id: "pix",
@@ -135,7 +135,7 @@ export async function createPixTransactionAction(input: {
     // Aviso ao casal: o Pix estático precisa de conferência no extrato
     deferNotify(() => notifyPixToCheck(transaction.id));
 
-    const pixPayload = generatePixPayload({
+    const pixPayload = gerarCodigoPix({
       pixKey,
       merchantName: (process.env.PIX_MERCHANT_NAME || "Casamento").trim(),
       merchantCity: (process.env.PIX_MERCHANT_CITY || "Sao Paulo").trim(),
@@ -175,9 +175,9 @@ export async function checkTransactionStatusAction(transactionId: string) {
     if (!transaction) return { approved: false };
     if (transaction.status === PaymentStatus.APPROVED) return { approved: true };
 
-    if (transaction.gatewayId && /^\d+$/.test(transaction.gatewayId) && isMercadoPagoConfigured()) {
+    if (transaction.gatewayId && /^\d+$/.test(transaction.gatewayId) && mercadoPagoEstaConfigurado()) {
       try {
-        const mpResponse = await mpPayment.get({ id: transaction.gatewayId });
+        const mpResponse = await pagamentoDoMercadoPago.get({ id: transaction.gatewayId });
         if (
           mpResponse.status === "approved" &&
           mpResponse.external_reference === transaction.id &&
@@ -237,22 +237,22 @@ export async function processCardPaymentAction(input: {
     // Proteção anti card-testing
     const rateLimit = await rateLimitByIp("CHECKOUT");
     if (!rateLimit.success) {
-      return { success: false, error: TOO_MANY_ATTEMPTS_MESSAGE };
+      return { success: false, error: MENSAGEM_DE_MUITAS_TENTATIVAS };
     }
 
-    if (!isMercadoPagoConfigured()) {
+    if (!mercadoPagoEstaConfigurado()) {
       return { success: false, error: "Pagamento com cartão indisponível no momento." };
     }
 
     const gift = await prisma.gift.findUnique({ where: { id: giftId } });
     if (!gift) return { success: false, error: ERROS.presenteNaoEncontrado };
     if (gift.isPurchased) return { success: false, error: "Este presente já foi comprado." };
-    if (await isWeddingSuspended(gift.weddingId)) return { success: false, error: SITE_UNAVAILABLE_MESSAGE };
+    if (await casamentoEstaSuspenso(gift.weddingId)) return { success: false, error: MENSAGEM_DE_SITE_INDISPONIVEL };
 
-    const { finalAmount, fee } = calculateCardFee(gift.amount);
+    const { finalAmount, fee } = calcularTarifaDoCartao(gift.amount);
 
     // O casamento vem sempre do presente (nunca do navegador): convidado e transação ficam nele.
-    const guest = await findOrCreateGuest({ weddingId: gift.weddingId, name: guestName, phone: guestPhone, email: payerEmail });
+    const guest = await acharOuCriarConvidado({ weddingId: gift.weddingId, name: guestName, phone: guestPhone, email: payerEmail });
 
     const transaction = await prisma.transaction.create({
       data: {
@@ -268,7 +268,7 @@ export async function processCardPaymentAction(input: {
       },
     });
 
-    const mpResponse = await mpPayment.create({
+    const mpResponse = await pagamentoDoMercadoPago.create({
       body: {
         transaction_amount: finalAmount / 100,
         token: cardToken,

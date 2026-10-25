@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { mpPayment, paidAmountMatches, verifyMercadoPagoSignature } from "@/lib/mercadopago";
-import { sendTextMessage } from "@/lib/evolution";
+import { pagamentoDoMercadoPago, paidAmountMatches, verifyMercadoPagoSignature } from "@/lib/mercadopago";
+import { enviarMensagemDeTexto } from "@/lib/evolution";
 import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { parseSubscriptionReference } from "@/lib/subscription-period";
-import { applyApprovedPayment, markPaymentFailed, refundSubscription } from "@/lib/subscriptions";
-import { weddingSiteUrl } from "@/lib/wedding-links";
+import { interpretarReferenciaDaAssinatura } from "@/lib/subscription-period";
+import { aplicarPagamentoAprovado, marcarPagamentoComoFalho, reembolsarAssinatura } from "@/lib/subscriptions";
+import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import { deferNotify } from "@/lib/notifications/service";
 import { notifyGiftPaid } from "@/lib/notifications/events";
 import { recordServiceEvent } from "@/lib/platform/system-records";
@@ -46,12 +46,12 @@ async function handleWebhook(req: Request) {
     }
 
     // 2. Busca os dados atualizados diretamente no Mercado Pago (fonte da verdade)
-    const mpResponse = await mpPayment.get({ id: paymentId });
+    const mpResponse = await pagamentoDoMercadoPago.get({ id: paymentId });
     const status = mpResponse.status;
     const internalTxId = mpResponse.external_reference;
 
     // Assinaturas de plano têm referência própria ("assinatura:<id>"); o resto é presente.
-    const subscriptionId = parseSubscriptionReference(internalTxId);
+    const subscriptionId = interpretarReferenciaDaAssinatura(internalTxId);
     if (subscriptionId) {
       return handleSubscriptionPayment(subscriptionId, paymentId, status, mpResponse.transaction_amount);
     }
@@ -123,9 +123,9 @@ async function handleWebhook(req: Request) {
           `🎁 *${transaction.gift.title}* — ${amountFormatted}\n\n` +
           `Sua generosidade faz parte da realização do nosso sonho. ❤️\n\n` +
           `Nos vemos no altar! 💒\n` +
-          `_Não esqueça de confirmar sua presença em:_ ${weddingSiteUrl(transaction.wedding.slug, "rsvp", transaction.wedding.customDomain)}`;
+          `_Não esqueça de confirmar sua presença em:_ ${urlDoSiteDoCasamento(transaction.wedding.slug, "rsvp", transaction.wedding.customDomain)}`;
 
-        await sendTextMessage({ phone: guest.phone, text: message }).catch((err) =>
+        await enviarMensagemDeTexto({ phone: guest.phone, text: message }).catch((err) =>
           console.error("[Webhook MP] Erro ao enviar WhatsApp:", err)
         );
       }
@@ -187,7 +187,7 @@ async function handleSubscriptionPayment(
   amountInReais: number | undefined,
 ) {
   if (status === "approved") {
-    const result = await applyApprovedPayment(subscriptionId, { id: paymentId, amountInReais });
+    const result = await aplicarPagamentoAprovado(subscriptionId, { id: paymentId, amountInReais });
     if (result === "not_found") return NextResponse.json({ received: true, ignored: "subscription not found" });
     if (result === "amount_mismatch") return NextResponse.json({ success: false, error: "Amount mismatch" });
     if (result === "activated") {
@@ -197,9 +197,9 @@ async function handleSubscriptionPayment(
     return NextResponse.json({ success: true, alreadyApproved: result === "already" });
   }
   if (status === "rejected" || status === "cancelled") {
-    await markPaymentFailed(subscriptionId);
+    await marcarPagamentoComoFalho(subscriptionId);
   } else if (status === "refunded" || status === "charged_back") {
-    await refundSubscription(subscriptionId);
+    await reembolsarAssinatura(subscriptionId);
     revalidatePath("/fornecedor", "layout");
     revalidatePath("/fornecedores");
   }

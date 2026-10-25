@@ -11,22 +11,22 @@ import { SkeletonRows } from "@/components/painel/skeleton-parts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
 import {
-  MAX_IMPORT_ROWS,
-  SHEET_TEMPLATE_FILENAME,
-  decodeSpreadsheetBytes,
-  parseGuestSheet,
-  planImport,
-  sheetTemplateCsv,
-  type ColumnMap,
-  type ExistingGuest,
-  type ImportField,
-  type ImportRow,
+  MAXIMO_DE_LINHAS_NA_IMPORTACAO,
+  NOME_DO_ARQUIVO_MODELO_DA_PLANILHA,
+  decodificarBytesDaPlanilha,
+  interpretarPlanilhaDeConvidados,
+  planejarImportacao,
+  csvDaPlanilhaModelo,
+  type MapaDeColunas,
+  type ConvidadoExistente,
+  type CampoDaImportacao,
+  type LinhaImportada,
 } from "@/lib/guest-import";
 
 import { pluralizar } from "@/lib/formatacao/plural";
 const MAX_FILE_BYTES = 2 * 1024 * 1024;
 
-const FIELD_LABEL: Record<ImportField, string> = {
+const FIELD_LABEL: Record<CampoDaImportacao, string> = {
   name: "Nome",
   phone: "Telefone",
   email: "E-mail",
@@ -40,24 +40,24 @@ type Stage = "escolher" | "previa" | "importando" | "pronto";
 
 interface Sheet {
   fileName: string;
-  rows: ImportRow[];
+  rows: LinhaImportada[];
   hasHeader: boolean;
-  columns: ColumnMap;
+  columns: MapaDeColunas;
 }
 
 interface ImportGuestsModalProps {
   isOpen: boolean;
   onClose: () => void;
   /** Quem já está na lista: telefone igual a um deles é pulado. */
-  existing: ExistingGuest[];
+  existing: ConvidadoExistente[];
 }
 
 function downloadSheetTemplate() {
-  const blob = new Blob([sheetTemplateCsv()], { type: "text/csv;charset=utf-8" });
+  const blob = new Blob([csvDaPlanilhaModelo()], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = SHEET_TEMPLATE_FILENAME;
+  link.download = NOME_DO_ARQUIVO_MODELO_DA_PLANILHA;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -80,7 +80,7 @@ export function ImportGuestsModal({ isOpen, onClose, existing }: ImportGuestsMod
   );
 }
 
-function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose: () => void }) {
+function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onClose: () => void }) {
   const [stage, setStage] = useState<Stage>("escolher");
   const [sheet, setSheet] = useState<Sheet | null>(null);
   const [reading, setReading] = useState(false);
@@ -89,7 +89,7 @@ function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose:
   const fileInput = useRef<HTMLInputElement>(null);
   const stageHeading = useRef<HTMLHeadingElement>(null);
 
-  const plan = useMemo(() => (sheet ? planImport(sheet.rows, existing) : null), [sheet, existing]);
+  const plan = useMemo(() => (sheet ? planejarImportacao(sheet.rows, existing) : null), [sheet, existing]);
 
   // A cada etapa nova, o foco vai para o título dela: quem usa leitor de tela ouve onde está.
   useEffect(() => {
@@ -118,7 +118,7 @@ function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose:
         setError("Esse arquivo parece ser uma planilha do Excel. Salve como CSV e escolha o arquivo de novo.");
         return;
       }
-      const parsed = parseGuestSheet(decodeSpreadsheetBytes(bytes));
+      const parsed = interpretarPlanilhaDeConvidados(decodificarBytesDaPlanilha(bytes));
       if (!parsed.ok) {
         setError(parsed.error);
         return;
@@ -229,7 +229,7 @@ function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose:
             <li>O cabeçalho é opcional. Sem ele, adivinhamos pelo conteúdo e mostramos o que entendemos antes de importar.</li>
             <li>Só o nome é obrigatório. Telefone com DDD, por exemplo (11) 91234-5678.</li>
             <li>“Lugares” conta o convidado: 2 lugares é o convidado mais 1 acompanhante.</li>
-            <li>Quem já está na lista (mesmo telefone) é pulado, sem duplicar. Até {MAX_IMPORT_ROWS} convidados por vez.</li>
+            <li>Quem já está na lista (mesmo telefone) é pulado, sem duplicar. Até {MAXIMO_DE_LINHAS_NA_IMPORTACAO} convidados por vez.</li>
           </ul>
         </div>
       </div>
@@ -287,7 +287,7 @@ function ImportFlow({ existing, onClose }: { existing: ExistingGuest[]; onClose:
 
   // ------------------------------------------------------------------ prévia
   if (!sheet || !plan) return null;
-  const columnNames = (Object.keys(FIELD_LABEL) as ImportField[])
+  const columnNames = (Object.keys(FIELD_LABEL) as CampoDaImportacao[])
     .filter((f) => sheet.columns[f] !== undefined)
     .map((f) => FIELD_LABEL[f]);
   const addCount = plan.toAdd.length;

@@ -6,10 +6,10 @@ import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { Logo } from "@/components/brand/logo";
 import { btn } from "@/components/landing/styles";
-import { hasPathAccess } from "@/lib/permissions";
-import { COUPLE_MODULES } from "@/lib/pricing-modules";
+import { temAcessoAoCaminho } from "@/lib/permissions";
+import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
 import { getSession, SUPER_ADMIN_USER_ID, redirectToLogin } from "@/lib/security/auth-guard";
-import { VENDOR_PERIOD_DAYS } from "@/lib/subscription-period";
+import { DIAS_DO_PERIODO_DO_FORNECEDOR } from "@/lib/subscription-period";
 import { cn } from "@/lib/utils";
 import { PrintButton } from "./print-button";
 
@@ -69,7 +69,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
   });
   if (!sub || sub.status !== PaymentStatus.APPROVED) notFound();
 
-  const isAdmin = hasPathAccess(session.allowedPaths, "/assinaturas");
+  const isAdmin = temAcessoAoCaminho(session.allowedPaths, "/assinaturas");
   let isOwner = sub.userId !== null && sub.userId === session.userId;
   if (!isOwner && sub.planType === "COUPLE" && sub.weddingId && session.userId !== SUPER_ADMIN_USER_ID) {
     const me = await prisma.user.findUnique({ where: { id: session.userId }, select: { weddingId: true } });
@@ -84,11 +84,11 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
   const listPrice = sub.amount + discount + credit;
 
   const moduleIds = Array.isArray(sub.modules) ? sub.modules.filter((m): m is string => typeof m === "string") : [];
-  const moduleNames = COUPLE_MODULES.filter((m) => moduleIds.includes(m.id)).map((m) => m.name);
+  const moduleNames = MODULOS_DO_CASAL.filter((m) => moduleIds.includes(m.id)).map((m) => m.name);
 
   const period =
     isVendor && sub.periodEnd
-      ? `${formatarDataBrasiliaLonga(new Date(sub.periodEnd.getTime() - VENDOR_PERIOD_DAYS * DAY_MS))} a ${formatarDataBrasiliaLonga(sub.periodEnd)}`
+      ? `${formatarDataBrasiliaLonga(new Date(sub.periodEnd.getTime() - DIAS_DO_PERIODO_DO_FORNECEDOR * DAY_MS))} a ${formatarDataBrasiliaLonga(sub.periodEnd)}`
       : isVendor
         ? "Mensal (30 dias)"
         : "Pagamento único, vale para o casamento";

@@ -1,8 +1,8 @@
 // Guia de ajuda da Liz: respostas escritas à mão sobre o que o painel faz hoje. Não é IA nem conversa.
 // Cada artigo cita rótulos e rotas reais do painel. Ao mudar um nome de tela, ajuste aqui também.
 // Quando a IA for ativada pela administração, este guia pode virar a base de conhecimento inicial.
-import { GIFT_FEE_LABEL } from "../gift-fee.ts";
-import type { EnforcedModule } from "../wedding-plan-modules.ts";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "../gift-fee.ts";
+import type { ModuloComBloqueio } from "../wedding-plan-modules.ts";
 
 export interface HelpArticle {
   id: string;
@@ -19,7 +19,7 @@ export interface HelpArticle {
   /** Caminho do painel exigido (o mesmo de allowedPaths). Quem não tem esse acesso não vê o artigo. */
   path: string;
   /** Recurso que depende do plano: o artigo continua visível, com o aviso do plano. */
-  planModule?: EnforcedModule;
+  planModule?: ModuloComBloqueio;
   /** Posição em "Dúvidas comuns" (1 é a primeira). Sem número, só aparece na busca. */
   common?: number;
 }
@@ -137,7 +137,7 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     id: "receber-presentes",
     title: "Como acompanho os presentes que recebi por Pix e cartão?",
     keywords: ["receber", "pix", "cartao", "pagamento", "a conferir", "confirmar pix", "extrato", "taxa", "recebidos", "dinheiro"],
-    answer: `Cada presente pago aparece em Recebidos, com o nome de quem enviou. Alguns pagamentos por Pix ficam A conferir até vocês confirmarem em Finanças. No plano Básico, há taxa de ${GIFT_FEE_LABEL} por presente recebido.`,
+    answer: `Cada presente pago aparece em Recebidos, com o nome de quem enviou. Alguns pagamentos por Pix ficam A conferir até vocês confirmarem em Finanças. No plano Básico, há taxa de ${ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido.`,
     steps: [
       "Abram Presentes em dinheiro e vejam o Total recebido e a lista Recebidos.",
       "Se houver Pix A conferir, abram Finanças e vejam se o valor entrou no extrato de vocês.",
@@ -304,7 +304,7 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
     id: "planos",
     title: "Quais são os planos e o que muda em cada um?",
     keywords: ["plano", "basico", "classic", "vip", "preco", "taxa", "pagamento unico", "mensalidade", "assinar", "upgrade", "melhorar plano"],
-    answer: `O plano Básico não tem mensalidade e cobra ${GIFT_FEE_LABEL} por presente recebido. Classic e VIP têm pagamento único, e cada um libera recursos a mais, como o WhatsApp pelo painel, o registro de entrada com código QR e o endereço personalizado.`,
+    answer: `O plano Básico não tem mensalidade e cobra ${ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido. Classic e VIP têm pagamento único, e cada um libera recursos a mais, como o WhatsApp pelo painel, o registro de entrada com código QR e o endereço personalizado.`,
     steps: [
       "Abram Plano e pagamentos.",
       "Comparem os recursos e as taxas de cada plano.",

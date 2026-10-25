@@ -3,8 +3,8 @@ import { readdir } from "node:fs/promises";
 import path from "node:path";
 import prisma from "@/lib/prisma";
 import { requirePlatformAdmin } from "@/lib/security/platform-admin";
-import { getConnectionState, isWhatsappConfigured } from "@/lib/evolution";
-import { isEmailConfigured } from "@/lib/email";
+import { obterEstadoDaConexao, whatsappEstaConfigurado } from "@/lib/evolution";
+import { emailEstaConfigurado } from "@/lib/email";
 import { isPushConfigured } from "@/lib/notifications/push";
 import vercelConfig from "../../../../vercel.json";
 import { attentionItems, consecutiveFailures, cronState, describeCronSummary, jobsFromCrons, type AttentionItem, type CronState } from "@/lib/platform/health";
@@ -104,7 +104,7 @@ export async function collectHealth(): Promise<HealthSnapshot> {
   const now = new Date();
   const since = new Date(now.getTime() - DAY_MS);
   const expected = jobsFromCrons((vercelConfig as { crons?: { path: string }[] }).crons);
-  const whatsappConfigured = isWhatsappConfigured();
+  const whatsappConfigured = whatsappEstaConfigurado();
 
   const [groups, mpRecent, mpLast, runs, subscriptions, invalidNumbers, database, connection] = await Promise.all([
     prisma.serviceEvent.groupBy({ by: ["service", "ok"], where: { createdAt: { gte: since }, kind: { not: "invalid_number" } }, _count: { _all: true } }),
@@ -114,7 +114,7 @@ export async function collectHealth(): Promise<HealthSnapshot> {
     prisma.pushSubscription.count(),
     prisma.serviceEvent.count({ where: { service: "whatsapp", kind: "invalid_number", createdAt: { gte: since } } }),
     databaseHealth(),
-    whatsappConfigured ? withTimeout(getConnectionState(), 3000) : Promise.resolve(null),
+    whatsappConfigured ? withTimeout(obterEstadoDaConexao(), 3000) : Promise.resolve(null),
   ]);
 
   const mp = counts(groups, "mercadopago");
@@ -152,7 +152,7 @@ export async function collectHealth(): Promise<HealthSnapshot> {
       counts: wa,
       invalidNumbers,
     },
-    email: { configured: isEmailConfigured(), counts: em },
+    email: { configured: emailEstaConfigurado(), counts: em },
     push: { configured: isPushConfigured(), subscriptions, counts: pu },
     database,
     version: { sha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null, env: process.env.VERCEL_ENV ?? null },

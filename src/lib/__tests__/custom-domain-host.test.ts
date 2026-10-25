@@ -2,26 +2,26 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  classifyHost,
-  cleanPathname,
-  createTtlCache,
-  isReservedDomain,
-  mainHostOf,
-  mainRedirectUrl,
-  parseHostHeader,
-  routeCustomDomainPath,
+  classificarHost,
+  limparCaminho,
+  criarCacheComValidade,
+  ehDominioReservado,
+  hostPrincipalDe,
+  urlDeRedirecionamentoPrincipal,
+  interpretarCabecalhoHost,
+  rotearCaminhoDoDominioPersonalizado,
 } from "../custom-domain-host.ts";
 
 const BASE = "https://meuaceito.com.br";
 const SLUG = "ana-e-rafael";
 
 test("cabeçalho Host: minúsculas, sem porta, sem ponto final", () => {
-  assert.deepEqual(parseHostHeader("AnaERafael.com.br"), { kind: "name", name: "anaerafael.com.br" });
-  assert.deepEqual(parseHostHeader("anaerafael.com.br:443"), { kind: "name", name: "anaerafael.com.br" });
-  assert.deepEqual(parseHostHeader("anaerafael.com.br."), { kind: "name", name: "anaerafael.com.br" });
-  assert.deepEqual(parseHostHeader(" localhost:3000 "), { kind: "name", name: "localhost" });
-  assert.deepEqual(parseHostHeader("127.0.0.1:3100"), { kind: "ip" });
-  assert.deepEqual(parseHostHeader("[::1]:3000"), { kind: "ip" });
+  assert.deepEqual(interpretarCabecalhoHost("AnaERafael.com.br"), { kind: "name", name: "anaerafael.com.br" });
+  assert.deepEqual(interpretarCabecalhoHost("anaerafael.com.br:443"), { kind: "name", name: "anaerafael.com.br" });
+  assert.deepEqual(interpretarCabecalhoHost("anaerafael.com.br."), { kind: "name", name: "anaerafael.com.br" });
+  assert.deepEqual(interpretarCabecalhoHost(" localhost:3000 "), { kind: "name", name: "localhost" });
+  assert.deepEqual(interpretarCabecalhoHost("127.0.0.1:3100"), { kind: "ip" });
+  assert.deepEqual(interpretarCabecalhoHost("[::1]:3000"), { kind: "ip" });
 });
 
 test("cabeçalho Host: lixo e tentativas de abuso viram null", () => {
@@ -46,7 +46,7 @@ test("cabeçalho Host: lixo e tentativas de abuso viram null", () => {
     "ana:rafael:1",
     "[::1",
   ]) {
-    assert.equal(parseHostHeader(raw as string | null), null, String(raw));
+    assert.equal(interpretarCabecalhoHost(raw as string | null), null, String(raw));
   }
 });
 
@@ -69,42 +69,42 @@ test("domínio principal, localhost e vercel.app são do app (sem consulta ao ba
     null,
     "host inválido",
   ]) {
-    assert.deepEqual(classifyHost(host, BASE), { kind: "main" }, String(host));
+    assert.deepEqual(classificarHost(host, BASE), { kind: "main" }, String(host));
   }
 });
 
 test("outros nomes são candidatos a domínio próprio, sem o 'www.'", () => {
-  assert.deepEqual(classifyHost("anaerafael.com.br", BASE), { kind: "candidate", domain: "anaerafael.com.br" });
-  assert.deepEqual(classifyHost("www.AnaERafael.com.br:443", BASE), { kind: "candidate", domain: "anaerafael.com.br" });
-  assert.deepEqual(classifyHost("anaerafael.com.br.", BASE), { kind: "candidate", domain: "anaerafael.com.br" });
+  assert.deepEqual(classificarHost("anaerafael.com.br", BASE), { kind: "candidate", domain: "anaerafael.com.br" });
+  assert.deepEqual(classificarHost("www.AnaERafael.com.br:443", BASE), { kind: "candidate", domain: "anaerafael.com.br" });
+  assert.deepEqual(classificarHost("anaerafael.com.br.", BASE), { kind: "candidate", domain: "anaerafael.com.br" });
 });
 
 test("parecido com o principal não é o principal", () => {
   for (const host of ["meuaceito.com.br.evil.com", "evilmeuaceito.com.br", "meuaceito.com", "meuaceito-com.br", "xvercel.app", "vercel.app.evil.com", "localhost.evil.com"]) {
-    assert.equal(classifyHost(host, BASE).kind, "candidate", host);
+    assert.equal(classificarHost(host, BASE).kind, "candidate", host);
   }
 });
 
 test("o domínio principal vem da configuração (e de um padrão seguro)", () => {
-  assert.equal(mainHostOf("http://localhost:3100"), "localhost");
-  assert.equal(mainHostOf("https://www.Exemplo.com.br/"), "www.exemplo.com.br");
-  assert.equal(mainHostOf(undefined), "meuaceito.com.br");
-  assert.equal(mainHostOf("isso nao e url"), "meuaceito.com.br");
-  assert.deepEqual(classifyHost("exemplo.com.br", "https://www.exemplo.com.br"), { kind: "main" });
-  assert.deepEqual(classifyHost("anaerafael.com.br", undefined), { kind: "candidate", domain: "anaerafael.com.br" });
-  assert.deepEqual(classifyHost("meuaceito.com.br", undefined), { kind: "main" });
+  assert.equal(hostPrincipalDe("http://localhost:3100"), "localhost");
+  assert.equal(hostPrincipalDe("https://www.Exemplo.com.br/"), "www.exemplo.com.br");
+  assert.equal(hostPrincipalDe(undefined), "meuaceito.com.br");
+  assert.equal(hostPrincipalDe("isso nao e url"), "meuaceito.com.br");
+  assert.deepEqual(classificarHost("exemplo.com.br", "https://www.exemplo.com.br"), { kind: "main" });
+  assert.deepEqual(classificarHost("anaerafael.com.br", undefined), { kind: "candidate", domain: "anaerafael.com.br" });
+  assert.deepEqual(classificarHost("meuaceito.com.br", undefined), { kind: "main" });
 });
 
 test("domínio reservado: o do próprio app não pode ser pedido", () => {
-  assert.ok(isReservedDomain("meuaceito.com.br", BASE));
-  assert.ok(isReservedDomain("app.meuaceito.com.br", BASE));
-  assert.ok(!isReservedDomain("anaerafael.com.br", BASE));
-  assert.ok(!isReservedDomain("meuaceito2.com.br", BASE));
+  assert.ok(ehDominioReservado("meuaceito.com.br", BASE));
+  assert.ok(ehDominioReservado("app.meuaceito.com.br", BASE));
+  assert.ok(!ehDominioReservado("anaerafael.com.br", BASE));
+  assert.ok(!ehDominioReservado("meuaceito2.com.br", BASE));
 });
 
 // ---------- caminhos ----------
 
-const route = (p: string, slug = SLUG) => routeCustomDomainPath(p, slug);
+const route = (p: string, slug = SLUG) => rotearCaminhoDoDominioPersonalizado(p, slug);
 
 test("a raiz e as três páginas do convidado vão para o casamento do domínio", () => {
   assert.deepEqual(route("/"), { action: "rewrite", pathname: "/casamento/ana-e-rafael" });
@@ -196,28 +196,28 @@ test("abuso: caminhos com .., barras duplas, barra invertida, byte nulo e codifi
 });
 
 test("o slug usado é sempre o do domínio, nunca o do pedido", () => {
-  assert.deepEqual(routeCustomDomainPath("/", "outro-casal"), { action: "rewrite", pathname: "/casamento/outro-casal" });
-  assert.deepEqual(routeCustomDomainPath("/casamento/ana-e-rafael", "outro-casal"), { action: "not-found" });
+  assert.deepEqual(rotearCaminhoDoDominioPersonalizado("/", "outro-casal"), { action: "rewrite", pathname: "/casamento/outro-casal" });
+  assert.deepEqual(rotearCaminhoDoDominioPersonalizado("/casamento/ana-e-rafael", "outro-casal"), { action: "not-found" });
 });
 
 test("limpeza do caminho: tira a barra do fim e mantém o resto", () => {
-  assert.equal(cleanPathname("/rsvp/"), "/rsvp");
-  assert.equal(cleanPathname("/"), "/");
-  assert.equal(cleanPathname("/a/b/"), "/a/b");
-  assert.equal(cleanPathname("/a%20b"), "/a%20b");
-  assert.equal(cleanPathname("/a//"), null);
+  assert.equal(limparCaminho("/rsvp/"), "/rsvp");
+  assert.equal(limparCaminho("/"), "/");
+  assert.equal(limparCaminho("/a/b/"), "/a/b");
+  assert.equal(limparCaminho("/a%20b"), "/a%20b");
+  assert.equal(limparCaminho("/a//"), null);
 });
 
 test("redirecionamento ao principal: domínio sempre da configuração, caminho validado", () => {
-  assert.equal(mainRedirectUrl(BASE, "/login"), "https://meuaceito.com.br/login");
-  assert.equal(mainRedirectUrl("https://meuaceito.com.br/", "/dashboard", "?a=1"), "https://meuaceito.com.br/dashboard?a=1");
-  assert.equal(mainRedirectUrl("http://localhost:3100", "/login"), "http://localhost:3100/login");
-  assert.equal(mainRedirectUrl(undefined, "/login"), "https://meuaceito.com.br/login");
-  assert.equal(mainRedirectUrl(BASE, "//evil.com"), null);
-  assert.equal(mainRedirectUrl(BASE, "/\\evil.com"), null);
-  assert.equal(mainRedirectUrl(BASE, "evil.com"), null);
-  assert.equal(mainRedirectUrl("javascript:alert(1)", "/login"), null);
-  assert.equal(mainRedirectUrl(BASE, "/login", "?"), "https://meuaceito.com.br/login");
+  assert.equal(urlDeRedirecionamentoPrincipal(BASE, "/login"), "https://meuaceito.com.br/login");
+  assert.equal(urlDeRedirecionamentoPrincipal("https://meuaceito.com.br/", "/dashboard", "?a=1"), "https://meuaceito.com.br/dashboard?a=1");
+  assert.equal(urlDeRedirecionamentoPrincipal("http://localhost:3100", "/login"), "http://localhost:3100/login");
+  assert.equal(urlDeRedirecionamentoPrincipal(undefined, "/login"), "https://meuaceito.com.br/login");
+  assert.equal(urlDeRedirecionamentoPrincipal(BASE, "//evil.com"), null);
+  assert.equal(urlDeRedirecionamentoPrincipal(BASE, "/\\evil.com"), null);
+  assert.equal(urlDeRedirecionamentoPrincipal(BASE, "evil.com"), null);
+  assert.equal(urlDeRedirecionamentoPrincipal("javascript:alert(1)", "/login"), null);
+  assert.equal(urlDeRedirecionamentoPrincipal(BASE, "/login", "?"), "https://meuaceito.com.br/login");
 });
 
 test("nunca redireciona para fora do domínio principal, qualquer que seja o caminho", () => {
@@ -225,14 +225,14 @@ test("nunca redireciona para fora do domínio principal, qualquer que seja o cam
   for (const p of sample) {
     const r = route(p);
     if (r.action !== "redirect-main") continue;
-    const url = mainRedirectUrl(BASE, r.pathname);
+    const url = urlDeRedirecionamentoPrincipal(BASE, r.pathname);
     assert.ok(url && new URL(url).origin === "https://meuaceito.com.br", p);
   }
 });
 
 test("cache com validade e teto de entradas", () => {
   let now = 1000;
-  const cache = createTtlCache<string | null>(60_000, 3, () => now);
+  const cache = criarCacheComValidade<string | null>(60_000, 3, () => now);
   assert.equal(cache.get("a"), undefined);
   cache.set("a", "x");
   cache.set("b", null);

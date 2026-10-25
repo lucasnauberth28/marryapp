@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { classifyPath, isPlatformAdminPath } from "../route-access.ts";
+import { classificarCaminho, ehCaminhoDeAdminDaPlataforma } from "../route-access.ts";
 
 const APP_DIR = fileURLToPath(new URL("../../app", import.meta.url));
 
@@ -37,38 +37,38 @@ test("toda rota de primeiro nível do app está classificada (senão o proxy dar
   assert.ok(existsSync(APP_DIR));
   const rotas = topLevelSegments(APP_DIR);
   assert.ok(rotas.length > 20, "deveria achar as rotas do app");
-  const sem = rotas.filter((r) => classifyPath(r) === "unknown");
+  const sem = rotas.filter((r) => classificarCaminho(r) === "unknown");
   assert.deepEqual(sem, [], `rotas fora de src/lib/route-access.ts: ${sem.join(", ")}`);
 });
 
 test("classifica públicas, de sessão e protegidas", () => {
-  assert.equal(classifyPath("/"), "public");
-  assert.equal(classifyPath("/login"), "public");
-  assert.equal(classifyPath("/casamento/ana-e-bia/rsvp"), "public");
-  assert.equal(classifyPath("/api/webhooks/mercadopago"), "public");
-  assert.equal(classifyPath("/boas-vindas"), "session");
-  assert.equal(classifyPath("/dashboard"), "protected");
-  assert.equal(classifyPath("/convidados/importar"), "protected");
-  assert.equal(classifyPath("/fornecedor/agenda"), "protected");
-  assert.equal(classifyPath("/api/export/guests"), "protected");
+  assert.equal(classificarCaminho("/"), "public");
+  assert.equal(classificarCaminho("/login"), "public");
+  assert.equal(classificarCaminho("/casamento/ana-e-bia/rsvp"), "public");
+  assert.equal(classificarCaminho("/api/webhooks/mercadopago"), "public");
+  assert.equal(classificarCaminho("/boas-vindas"), "session");
+  assert.equal(classificarCaminho("/dashboard"), "protected");
+  assert.equal(classificarCaminho("/convidados/importar"), "protected");
+  assert.equal(classificarCaminho("/fornecedor/agenda"), "protected");
+  assert.equal(classificarCaminho("/api/export/guests"), "protected");
 });
 
 test("a administração da plataforma é protegida (página e API), sem confundir com prefixos parecidos", () => {
   for (const p of ["/admin", "/admin/casais", "/admin/casais/abc", "/admin/planos/catalogo", "/api/admin/sessao"]) {
-    assert.equal(classifyPath(p), "protected", p);
+    assert.equal(classificarCaminho(p), "protected", p);
   }
   for (const p of ["/adminx", "/administracao", "/admin-painel", "/api/adminx"]) {
-    assert.equal(classifyPath(p), "unknown", p);
+    assert.equal(classificarCaminho(p), "unknown", p);
   }
-  assert.equal(isPlatformAdminPath("/admin"), true);
-  assert.equal(isPlatformAdminPath("/admin/saude"), true);
-  assert.equal(isPlatformAdminPath("/adminx"), false);
-  assert.equal(isPlatformAdminPath("/api/admin/sessao"), false, "a API confere o acesso na própria rota");
-  assert.equal(isPlatformAdminPath("/dashboard"), false);
+  assert.equal(ehCaminhoDeAdminDaPlataforma("/admin"), true);
+  assert.equal(ehCaminhoDeAdminDaPlataforma("/admin/saude"), true);
+  assert.equal(ehCaminhoDeAdminDaPlataforma("/adminx"), false);
+  assert.equal(ehCaminhoDeAdminDaPlataforma("/api/admin/sessao"), false, "a API confere o acesso na própria rota");
+  assert.equal(ehCaminhoDeAdminDaPlataforma("/dashboard"), false);
 });
 
 test("caminho que não é do app é desconhecido (compara por segmento)", () => {
   for (const p of ["/wp-admin", "/administrator", "/dashboardx", "/fornecedoresx", "/api", "/api/qualquer", "/convidadosx/a", "/.env"]) {
-    assert.equal(classifyPath(p), "unknown", p);
+    assert.equal(classificarCaminho(p), "unknown", p);
   }
 });

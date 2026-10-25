@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { QR_COLORS } from "../qr-colors.ts";
+import { CORES_DO_QR } from "../qr-colors.ts";
 
 // Guardas do tema escuro no código das telas (os tokens ficam em theme-tokens.test.ts).
 const SRC = new URL("../../", import.meta.url).pathname;
@@ -27,8 +27,8 @@ test("QR Code: módulos escuros sobre branco, contraste de 7:1 ou mais", () => {
     const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   };
-  assert.equal(QR_COLORS.bgColor.toLowerCase(), "#ffffff");
-  const [hi, lo] = [lum(QR_COLORS.bgColor), lum(QR_COLORS.fgColor)].sort((a, b) => b - a);
+  assert.equal(CORES_DO_QR.bgColor.toLowerCase(), "#ffffff");
+  const [hi, lo] = [lum(CORES_DO_QR.bgColor), lum(CORES_DO_QR.fgColor)].sort((a, b) => b - a);
   assert.ok((hi + 0.05) / (lo + 0.05) >= 7);
 });
 

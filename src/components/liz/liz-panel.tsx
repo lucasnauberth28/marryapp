@@ -10,8 +10,8 @@ import { helpGuideAnswerer, type LizAnswerer, type LizAskContext } from "@/lib/l
 import { HELP_ARTICLES } from "@/lib/liz/help-articles";
 import { visibleArticles, type HelpHit } from "@/lib/liz/help-search";
 import { LIZ_TOPICS, topicOfArticle, topicsFor } from "@/lib/liz/topics";
-import { requiredPlanLabel } from "@/lib/wedding-plan-modules";
-import { hasPathAccess } from "@/lib/permissions";
+import { rotuloDoPlanoNecessario } from "@/lib/wedding-plan-modules";
+import { temAcessoAoCaminho } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { LizAvatar, LizIllustration } from "./liz-illustration";
 
@@ -81,7 +81,7 @@ export function LizPanel({
   const visible = useMemo(() => visibleArticles(HELP_ARTICLES, context), [context]);
   const topics = useMemo(() => topicsFor(visible), [visible]);
   const hitById = useMemo(() => new Map(visible.map((h) => [h.article.id, h])), [visible]);
-  const canOpenPlans = hasPathAccess([...allowedPaths], "/plano");
+  const canOpenPlans = temAcessoAoCaminho([...allowedPaths], "/plano");
 
   // Cada mensagem nova rola a conversa para o fim.
   useEffect(() => {
@@ -315,7 +315,7 @@ function ArticleBody({ hit, canOpenPlans, onNavigate }: { hit: HelpHit | undefin
   return (
     <div className="flex flex-col gap-3">
       <p>{article.answer}</p>
-      {locked && article.planModule ? <p className="rounded-lg bg-aviso-suave px-3 py-2 text-sm leading-5 text-aviso">Este recurso é do plano {requiredPlanLabel(article.planModule)} ou de um plano adaptado.</p> : null}
+      {locked && article.planModule ? <p className="rounded-lg bg-aviso-suave px-3 py-2 text-sm leading-5 text-aviso">Este recurso é do plano {rotuloDoPlanoNecessario(article.planModule)} ou de um plano adaptado.</p> : null}
       <ol className="flex list-decimal flex-col gap-1.5 pl-5 marker:font-semibold marker:text-tinta-suave">
         {article.steps.map((step) => (
           <li key={step} className="pl-1">

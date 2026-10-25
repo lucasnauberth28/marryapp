@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma"
 import { getGifts } from "@/actions/gift-actions"
 import { GiftsClient, type GiftPayment } from "./gifts-client"
 import { requireWeddingPage } from "@/lib/security/wedding-context"
-import { weddingSitePath } from "@/lib/wedding-links"
+import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links"
 
 import { formatarDataBrasiliaCurtaComAno } from "@/lib/formatacao/data";
 export const metadata: Metadata = {
@@ -75,7 +75,7 @@ export default async function PresentesAdminPage() {
       <GiftsClient
         initialGifts={gifts || []}
         payments={payments}
-        siteGiftsHref={weddingSitePath(wedding.slug, "presentes")}
+        siteGiftsHref={caminhoDoSiteDoCasamento(wedding.slug, "presentes")}
         summary={{
           receivedCents: approved.reduce((acc, t) => acc + t.amount, 0),
           receivedCount: approved.length,

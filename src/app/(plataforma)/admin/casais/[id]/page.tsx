@@ -29,8 +29,8 @@ import {
   getCasalTimeline,
   type CasalHeader,
 } from "@/lib/platform/queries/casais";
-import { weddingSiteUrl } from "@/lib/wedding-links";
-import { getPayoutAccountView } from "@/lib/payout-account-view";
+import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
+import { obterVisaoDaContaDeRepasse } from "@/lib/payout-account-view";
 import { cn } from "@/lib/utils";
 import { SituationChip } from "../_components/situation-chip";
 import { LinkRow } from "./_components/copy-link";
@@ -82,7 +82,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   if (!header) notFound();
   const { wedding, owner, plan, guests, gifts, pix, situation, problems } = header;
   const suspended = Boolean(wedding.suspendedAt);
-  const siteUrl = weddingSiteUrl(wedding.slug, undefined, wedding.customDomain);
+  const siteUrl = urlDoSiteDoCasamento(wedding.slug, undefined, wedding.customDomain);
   const daysLeft = wedding.weddingDate ? daysBetween(wedding.weddingDate, now) : null;
   const closeToWedding = daysLeft !== null && daysLeft >= 0 && daysLeft <= 14;
   const base = `/admin/casais/${id}`;
@@ -316,9 +316,9 @@ async function VisaoTab({ header, sideColumn }: { header: CasalHeader; sideColum
 
         <Panel title="Links do casal">
           <ul>
-            <LinkRow label="Site do casal" url={weddingSiteUrl(wedding.slug, undefined, wedding.customDomain)} />
-            <LinkRow label="Confirmação de presença" url={weddingSiteUrl(wedding.slug, "rsvp", wedding.customDomain)} />
-            <LinkRow label="Lista de presentes" url={weddingSiteUrl(wedding.slug, "presentes", wedding.customDomain)} />
+            <LinkRow label="Site do casal" url={urlDoSiteDoCasamento(wedding.slug, undefined, wedding.customDomain)} />
+            <LinkRow label="Confirmação de presença" url={urlDoSiteDoCasamento(wedding.slug, "rsvp", wedding.customDomain)} />
+            <LinkRow label="Lista de presentes" url={urlDoSiteDoCasamento(wedding.slug, "presentes", wedding.customDomain)} />
           </ul>
         </Panel>
 
@@ -459,7 +459,7 @@ async function PagamentosTab({ header, sideColumn }: { header: CasalHeader; side
 
 // Dados de recebimento do casal: SOMENTE a máscara, sem botão que decifre. A página já passou por requirePlatformAdminPage.
 async function PayoutPanel({ weddingId }: { weddingId: string }) {
-  const account = await getPayoutAccountView(weddingId);
+  const account = await obterVisaoDaContaDeRepasse(weddingId);
   return (
     <Panel
       title="Dados de recebimento"

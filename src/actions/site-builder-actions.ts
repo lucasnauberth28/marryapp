@@ -2,9 +2,9 @@
 
 import { getWeddingBySlug, requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
 import {
-  ensureSiteCustomization,
-  getWeddingStoryItems,
-  getWeddingTipsList,
+  garantirPersonalizacaoDoSite,
+  obterItensDaHistoriaDoCasamento,
+  obterDicasDoCasamento,
 } from "@/lib/wedding-data";
 
 import prisma from "@/lib/prisma";
@@ -13,8 +13,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { rateLimitByIp } from "@/lib/security/rate-limiter";
 import { sanitizeUrl } from "@/lib/security/sanitize";
-import { uploadImageFile } from "@/lib/supabase";
-import { isAllowedSiteImage } from "@/lib/image-source";
+import { enviarArquivoDeImagem } from "@/lib/supabase";
+import { ehImagemPermitidaNoSite } from "@/lib/image-source";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 /**
@@ -24,7 +24,7 @@ import { ERROS } from "@/lib/mensagens-de-erro";
 export async function getSiteCustomization() {
   const { wedding } = await requireWeddingRead("/site-builder");
   try {
-    return await ensureSiteCustomization(wedding);
+    return await garantirPersonalizacaoDoSite(wedding);
   } catch (error) {
     console.error("[getSiteCustomization Error]:", error);
     return null;
@@ -43,7 +43,7 @@ const optionalImage = z
   .string()
   .trim()
   .max(2000)
-  .refine(isAllowedSiteImage, "Use um link começando com https:// ou escolha uma foto do computador.")
+  .refine(ehImagemPermitidaNoSite, "Use um link começando com https:// ou escolha uma foto do computador.")
   .optional()
   .nullable();
 const optionalText = (max: number) => z.string().trim().max(max).optional().nullable();
@@ -98,7 +98,7 @@ export async function updateSiteCustomization(data: SiteCustomizationInput) {
   ) as Prisma.SiteCustomizationUncheckedUpdateInput;
 
   try {
-    await ensureSiteCustomization(wedding);
+    await garantirPersonalizacaoDoSite(wedding);
     const updated = await prisma.siteCustomization.update({
       where: { weddingId },
       data: clean,
@@ -126,7 +126,7 @@ export async function uploadSiteImageAction(formData: FormData) {
     return { success: false, error: "Selecione uma imagem." };
   }
 
-  const result = await uploadImageFile(file, "site");
+  const result = await enviarArquivoDeImagem(file, "site");
   return result.success ? { success: true, url: result.url } : { success: false, error: result.error };
 }
 
@@ -136,7 +136,7 @@ export async function uploadSiteImageAction(formData: FormData) {
 export async function getStoryItems() {
   const { weddingId } = await requireWeddingRead("/site-builder");
   try {
-    return await getWeddingStoryItems(weddingId);
+    return await obterItensDaHistoriaDoCasamento(weddingId);
   } catch (error) {
     console.error("[getStoryItems Error]:", error);
     return [];
@@ -191,7 +191,7 @@ export async function deleteStoryItem(id: string) {
 export async function getWeddingTips() {
   const { weddingId } = await requireWeddingRead("/site-builder");
   try {
-    return await getWeddingTipsList(weddingId);
+    return await obterDicasDoCasamento(weddingId);
   } catch (error) {
     console.error("[getWeddingTips Error]:", error);
     return [];

@@ -1,16 +1,16 @@
 // Presentes e dinheiro no Resumo: um extrato só (recebido bruto, taxa do Aceito, líquido e a conferir).
 import Link from "next/link";
 import { Check, Clock, Gift } from "lucide-react";
-import { GIFT_FEE_LABEL, type GiftFeePlan, giftAmounts } from "@/lib/gift-fee";
-import { formatBRL, formatBRLOut, shortDayLabel, dayKeyOf, type GiftLine, type GiftStatement } from "@/lib/dashboard-summary";
+import { ROTULO_DA_TAXA_DO_PRESENTE, type PlanoDaTaxaDoPresente, calcularValoresDoPresente } from "@/lib/gift-fee";
+import { formatarReaisSemSinal, formatarReaisDeSaida, rotuloCurtoDoDia, chaveDoDiaDe, type LinhaDePresente, type ExtratoDePresentes } from "@/lib/dashboard-summary";
 import { Block, Chip, Money, TextLink, btnPrimary, hintClass, labelClass } from "./ui";
 import { ConferirButton, PixSeal } from "./conferir-button";
 
 import { pluralizar } from "@/lib/formatacao/plural";
 /** Em que a taxa se aplica no plano, em uma frase. */
-function feeNote(plan: GiftFeePlan): string {
-  if (plan === "basic") return `${GIFT_FEE_LABEL} por presente no plano Básico`;
-  return `Pix sem taxa no plano ${plan === "vip" ? "VIP" : "Classic"}; cartão ${GIFT_FEE_LABEL}`;
+function feeNote(plan: PlanoDaTaxaDoPresente): string {
+  if (plan === "basic") return `${ROTULO_DA_TAXA_DO_PRESENTE} por presente no plano Básico`;
+  return `Pix sem taxa no plano ${plan === "vip" ? "VIP" : "Classic"}; cartão ${ROTULO_DA_TAXA_DO_PRESENTE}`;
 }
 
 /** Linhas do extrato (a mesma conta para o extrato de verdade e para o exemplo). */
@@ -45,9 +45,9 @@ export function MoneyBlock({
   canConfer,
   className = "",
 }: {
-  statement: GiftStatement;
-  lines: GiftLine[];
-  plan: GiftFeePlan;
+  statement: ExtratoDePresentes;
+  lines: LinhaDePresente[];
+  plan: PlanoDaTaxaDoPresente;
   giftCount: number;
   canOpenGifts: boolean;
   /** O perfil abre as Configurações (onde fica "Onde receber"). */
@@ -66,7 +66,7 @@ export function MoneyBlock({
 
   if (empty) {
     // Exemplo de como um presente de R$ 300,00 aparece, com a taxa do plano de vocês (marcado, nunca como se fosse real)
-    const ex = giftAmounts(30_000, plan, "PIX");
+    const ex = calcularValoresDoPresente(30_000, plan, "PIX");
     return (
       <Block id="dinheiro" title="Presentes e dinheiro" aside={aside} className={className}>
         <div className="grid items-start gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
@@ -94,9 +94,9 @@ export function MoneyBlock({
               label="Exemplo de um presente de R$ 300,00"
               rows={
                 <>
-                  <Row term="Presente de exemplo" value={formatBRL(ex.grossCents)} />
-                  <Row term="Taxa do Aceito" note={feeNote(plan)} value={ex.feeCents > 0 ? formatBRLOut(ex.feeCents) : formatBRL(0)} tone="saida" />
-                  <Row term="Vocês recebem" value={formatBRL(ex.netCents)} total />
+                  <Row term="Presente de exemplo" value={formatarReaisSemSinal(ex.grossCents)} />
+                  <Row term="Taxa do Aceito" note={feeNote(plan)} value={ex.feeCents > 0 ? formatarReaisDeSaida(ex.feeCents) : formatarReaisSemSinal(0)} tone="saida" />
+                  <Row term="Vocês recebem" value={formatarReaisSemSinal(ex.netCents)} total />
                 </>
               }
             />
@@ -122,9 +122,9 @@ export function MoneyBlock({
         label="Extrato dos presentes"
         rows={
           <>
-            <Row term="Recebido (bruto)" note="O que os convidados pagaram" meta={pluralizar(statement.approvedCount, "presente", "presentes")} value={formatBRL(statement.grossCents)} />
-            <Row term="Taxa do Aceito" note={feeNote(plan)} value={statement.feeCents > 0 ? formatBRLOut(statement.feeCents) : formatBRL(0)} tone="saida" />
-            <Row term="Líquido para vocês" value={formatBRL(statement.netCents)} total />
+            <Row term="Recebido (bruto)" note="O que os convidados pagaram" meta={pluralizar(statement.approvedCount, "presente", "presentes")} value={formatarReaisSemSinal(statement.grossCents)} />
+            <Row term="Taxa do Aceito" note={feeNote(plan)} value={statement.feeCents > 0 ? formatarReaisDeSaida(statement.feeCents) : formatarReaisSemSinal(0)} tone="saida" />
+            <Row term="Líquido para vocês" value={formatarReaisSemSinal(statement.netCents)} total />
             <Row
               tone="conferir"
               term={
@@ -142,7 +142,7 @@ export function MoneyBlock({
                 )
               }
               meta={statement.toCheckCount > 0 ? `${statement.toCheckCount} Pix` : undefined}
-              value={formatBRL(statement.toCheckCents)}
+              value={formatarReaisSemSinal(statement.toCheckCents)}
             />
           </>
         }
@@ -170,7 +170,7 @@ export function MoneyBlock({
                     <div className="grid">
                       <b className="font-semibold text-tinta">{l.tx.who}</b>
                       <small className="flex flex-wrap items-center gap-x-1.5 text-[12.5px] text-tinta-suave tabular-nums">
-                        {shortDayLabel(dayKeyOf(l.tx.createdAt))} · {l.tx.method === "PIX" ? "Pix" : "Cartão"}
+                        {rotuloCurtoDoDia(chaveDoDiaDe(l.tx.createdAt))} · {l.tx.method === "PIX" ? "Pix" : "Cartão"}
                         {l.toCheck && (
                           <Chip tone="aviso" icon={Clock}>
                             A conferir
@@ -181,13 +181,13 @@ export function MoneyBlock({
                   </td>
                   <td className="px-3 text-right align-middle tabular-nums max-md:col-start-2 max-md:row-start-1 max-md:p-0">
                     <div className="grid">
-                      <span className="whitespace-nowrap">{formatBRL(l.grossCents)}</span>
-                      <small className="whitespace-nowrap text-[12.5px] text-tinta-suave">taxa {formatBRL(l.feeCents)}</small>
+                      <span className="whitespace-nowrap">{formatarReaisSemSinal(l.grossCents)}</span>
+                      <small className="whitespace-nowrap text-[12.5px] text-tinta-suave">taxa {formatarReaisSemSinal(l.feeCents)}</small>
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-3 text-right align-middle tabular-nums max-md:col-start-2 max-md:row-start-2 max-md:p-0 max-md:text-[13px]">
                     <span className="hidden text-tinta-suave max-md:inline">recebem </span>
-                    {formatBRL(l.netCents)}
+                    {formatarReaisSemSinal(l.netCents)}
                   </td>
                   <td className="whitespace-nowrap px-3 text-right align-middle max-md:col-start-1 max-md:row-start-2 max-md:p-0 max-md:text-left">
                     {l.toCheck ? (

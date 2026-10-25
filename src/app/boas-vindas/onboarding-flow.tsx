@@ -8,7 +8,7 @@ import { Seal } from "@/components/landing/seal";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { LoadingButton } from "@/components/painel/loading-button";
 import { Field, FormAlert } from "@/components/ui/field";
-import { joinCoupleNames, validateOnboardingBasics, type OnboardingBasicsErrors } from "@/lib/onboarding-options";
+import { juntarNomesDoCasal, validarDadosBasicosDoInicio, type ErrosDosDadosBasicosDoInicio } from "@/lib/onboarding-options";
 import { cn } from "@/lib/utils";
 
 type Step = "dados" | "pronto";
@@ -38,7 +38,7 @@ export function OnboardingFlow({
   const [partnerName, setPartnerName] = useState(initial.partnerName);
   const [weddingDate, setWeddingDate] = useState(initial.weddingDate ?? "");
 
-  const [errors, setErrors] = useState<OnboardingBasicsErrors>({});
+  const [errors, setErrors] = useState<ErrosDosDadosBasicosDoInicio>({});
   const [formError, setFormError] = useState("");
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<{ slug: string; coupleNames: string } | null>(done);
@@ -55,9 +55,9 @@ export function OnboardingFlow({
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
 
-  const coupleNames = joinCoupleNames(yourName, partnerName) || "Vocês dois";
+  const coupleNames = juntarNomesDoCasal(yourName, partnerName) || "Vocês dois";
   // O erro some assim que a pessoa mexe no campo a que ele se refere.
-  const edit = (key: keyof OnboardingBasicsErrors, set: (v: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const edit = (key: keyof ErrosDosDadosBasicosDoInicio, set: (v: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
     set(e.target.value);
     setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
   };
@@ -65,7 +65,7 @@ export function OnboardingFlow({
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
-    const found = validateOnboardingBasics({ yourName, partnerName, weddingDate });
+    const found = validarDadosBasicosDoInicio({ yourName, partnerName, weddingDate });
     setErrors(found);
     const first = (["yourName", "partnerName", "weddingDate"] as const).find((k) => found[k]);
     if (first) return document.getElementById(`onb-${first}`)?.focus();

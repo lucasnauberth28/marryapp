@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { firstAllowedDestination, loginUrl, PLATFORM_ADMIN_HOME, resolvePostLoginPath, safeNextPath } from "../login-redirect.ts";
+import { primeiroDestinoPermitido, urlDeLogin, INICIO_DO_ADMIN_DA_PLATAFORMA, resolverCaminhoPosLogin, caminhoSeguroDeRetorno } from "../login-redirect.ts";
 
 test("aceita caminho interno, com query", () => {
-  assert.equal(safeNextPath("/convidados"), "/convidados");
-  assert.equal(safeNextPath("/convidados?filtro=pendentes"), "/convidados?filtro=pendentes");
-  assert.equal(safeNextPath("/casamento/ana-e-bia/presentes"), "/casamento/ana-e-bia/presentes");
+  assert.equal(caminhoSeguroDeRetorno("/convidados"), "/convidados");
+  assert.equal(caminhoSeguroDeRetorno("/convidados?filtro=pendentes"), "/convidados?filtro=pendentes");
+  assert.equal(caminhoSeguroDeRetorno("/casamento/ana-e-bia/presentes"), "/casamento/ana-e-bia/presentes");
 });
 
 test("recusa URL externa e variações de open redirect", () => {
@@ -27,83 +27,83 @@ test("recusa URL externa e variações de open redirect", () => {
     " /convidados",
     "/%0a/evil.com".replace("%0a", "\n"),
   ];
-  for (const a of ataques) assert.equal(safeNextPath(a), null, `deveria recusar ${JSON.stringify(a)}`);
+  for (const a of ataques) assert.equal(caminhoSeguroDeRetorno(a), null, `deveria recusar ${JSON.stringify(a)}`);
 });
 
 test("recusa o que não é texto e o que é longo demais", () => {
-  assert.equal(safeNextPath(undefined), null);
-  assert.equal(safeNextPath(null), null);
-  assert.equal(safeNextPath(42), null);
-  assert.equal(safeNextPath(["/dashboard"]), null);
-  assert.equal(safeNextPath(`/${"a".repeat(600)}`), null);
+  assert.equal(caminhoSeguroDeRetorno(undefined), null);
+  assert.equal(caminhoSeguroDeRetorno(null), null);
+  assert.equal(caminhoSeguroDeRetorno(42), null);
+  assert.equal(caminhoSeguroDeRetorno(["/dashboard"]), null);
+  assert.equal(caminhoSeguroDeRetorno(`/${"a".repeat(600)}`), null);
 });
 
 test("não volta para telas de acesso nem para API", () => {
-  assert.equal(safeNextPath("/login"), null);
-  assert.equal(safeNextPath("/login?proxima=/dashboard"), null);
-  assert.equal(safeNextPath("/cadastro"), null);
-  assert.equal(safeNextPath("/api/export/guests"), null);
+  assert.equal(caminhoSeguroDeRetorno("/login"), null);
+  assert.equal(caminhoSeguroDeRetorno("/login?proxima=/dashboard"), null);
+  assert.equal(caminhoSeguroDeRetorno("/cadastro"), null);
+  assert.equal(caminhoSeguroDeRetorno("/api/export/guests"), null);
 });
 
 test("normaliza o caminho (sem sair do site)", () => {
-  assert.equal(safeNextPath("/a/../dashboard"), "/dashboard");
-  assert.equal(safeNextPath("/dashboard#topo"), "/dashboard");
+  assert.equal(caminhoSeguroDeRetorno("/a/../dashboard"), "/dashboard");
+  assert.equal(caminhoSeguroDeRetorno("/dashboard#topo"), "/dashboard");
 });
 
 test("monta o endereço do login com origem e aviso", () => {
-  assert.equal(loginUrl(), "/login");
-  assert.equal(loginUrl(null, true), "/login?expirou=1");
-  assert.equal(loginUrl("/convidados?filtro=a b"), "/login?proxima=%2Fconvidados%3Ffiltro%3Da%2520b");
-  assert.equal(loginUrl("/convidados", true), "/login?proxima=%2Fconvidados&expirou=1");
+  assert.equal(urlDeLogin(), "/login");
+  assert.equal(urlDeLogin(null, true), "/login?expirou=1");
+  assert.equal(urlDeLogin("/convidados?filtro=a b"), "/login?proxima=%2Fconvidados%3Ffiltro%3Da%2520b");
+  assert.equal(urlDeLogin("/convidados", true), "/login?proxima=%2Fconvidados&expirou=1");
   // Origem insegura é descartada, o aviso continua
-  assert.equal(loginUrl("https://evil.com", true), "/login?expirou=1");
+  assert.equal(urlDeLogin("https://evil.com", true), "/login?expirou=1");
 });
 
 test("depois do login respeita a origem quando o perfil pode abrir", () => {
   const casal = ["/dashboard", "/convidados", "/mensagens"];
-  assert.equal(resolvePostLoginPath("/convidados?filtro=x", "/dashboard", casal), "/convidados?filtro=x");
-  assert.equal(resolvePostLoginPath("/convidados", "/dashboard", ["*"]), "/convidados");
+  assert.equal(resolverCaminhoPosLogin("/convidados?filtro=x", "/dashboard", casal), "/convidados?filtro=x");
+  assert.equal(resolverCaminhoPosLogin("/convidados", "/dashboard", ["*"]), "/convidados");
 });
 
 test("depois do login ignora a origem que o perfil não pode abrir ou que é insegura", () => {
   const fornecedor = ["/fornecedor"];
-  assert.equal(resolvePostLoginPath("/convidados", "/fornecedor", fornecedor), "/fornecedor");
-  assert.equal(resolvePostLoginPath("https://evil.com", "/dashboard", ["*"]), "/dashboard");
-  assert.equal(resolvePostLoginPath("//evil.com", "/dashboard", ["*"]), "/dashboard");
-  assert.equal(resolvePostLoginPath(undefined, "/dashboard", ["*"]), "/dashboard");
+  assert.equal(resolverCaminhoPosLogin("/convidados", "/fornecedor", fornecedor), "/fornecedor");
+  assert.equal(resolverCaminhoPosLogin("https://evil.com", "/dashboard", ["*"]), "/dashboard");
+  assert.equal(resolverCaminhoPosLogin("//evil.com", "/dashboard", ["*"]), "/dashboard");
+  assert.equal(resolverCaminhoPosLogin(undefined, "/dashboard", ["*"]), "/dashboard");
   // Caminho que não existe no app
-  assert.equal(resolvePostLoginPath("/nao-existe", "/dashboard", ["*"]), "/dashboard");
+  assert.equal(resolverCaminhoPosLogin("/nao-existe", "/dashboard", ["*"]), "/dashboard");
 });
 
 test("depois do login, rotas de qualquer conta e públicas são aceitas", () => {
-  assert.equal(resolvePostLoginPath("/conta", "/dashboard", ["/fornecedor"]), "/conta");
-  assert.equal(resolvePostLoginPath("/casamento/ana-e-bia", "/dashboard", ["/dashboard"]), "/casamento/ana-e-bia");
+  assert.equal(resolverCaminhoPosLogin("/conta", "/dashboard", ["/fornecedor"]), "/conta");
+  assert.equal(resolverCaminhoPosLogin("/casamento/ana-e-bia", "/dashboard", ["/dashboard"]), "/casamento/ana-e-bia");
 });
 
 test("conta sem casamento faz o onboarding primeiro", () => {
-  assert.equal(resolvePostLoginPath("/convidados", "/boas-vindas", ["*"]), "/boas-vindas");
+  assert.equal(resolverCaminhoPosLogin("/convidados", "/boas-vindas", ["*"]), "/boas-vindas");
 });
 
 test("a conta de administração (\"*\") entra em /admin; as outras no painel que o perfil tem", () => {
-  assert.equal(PLATFORM_ADMIN_HOME, "/admin");
-  assert.equal(firstAllowedDestination(["*"]), "/admin");
-  assert.equal(firstAllowedDestination(["/dashboard", "/convidados"]), "/dashboard");
-  assert.equal(firstAllowedDestination(["/fornecedor"]), "/fornecedor");
-  assert.equal(firstAllowedDestination(["/convidados", "/dashboard"]), "/dashboard");
-  assert.equal(firstAllowedDestination([]), "/login");
+  assert.equal(INICIO_DO_ADMIN_DA_PLATAFORMA, "/admin");
+  assert.equal(primeiroDestinoPermitido(["*"]), "/admin");
+  assert.equal(primeiroDestinoPermitido(["/dashboard", "/convidados"]), "/dashboard");
+  assert.equal(primeiroDestinoPermitido(["/fornecedor"]), "/fornecedor");
+  assert.equal(primeiroDestinoPermitido(["/convidados", "/dashboard"]), "/dashboard");
+  assert.equal(primeiroDestinoPermitido([]), "/login");
   // "/admin" escrito na lista não dá acesso à administração, nem é destino
-  assert.equal(firstAllowedDestination(["/admin"]), "/login", "sem acesso total, \"/admin\" não é destino (evita laço no proxy)");
-  assert.equal(firstAllowedDestination(["/admin", "/fornecedor"]), "/fornecedor");
+  assert.equal(primeiroDestinoPermitido(["/admin"]), "/login", "sem acesso total, \"/admin\" não é destino (evita laço no proxy)");
+  assert.equal(primeiroDestinoPermitido(["/admin", "/fornecedor"]), "/fornecedor");
 });
 
 test("depois do login, a administração respeita a origem; casal e fornecedor nunca vão para /admin", () => {
-  assert.equal(resolvePostLoginPath(undefined, "/admin", ["*"]), "/admin");
-  assert.equal(resolvePostLoginPath("/admin/casais?aba=problema", "/admin", ["*"]), "/admin/casais?aba=problema");
-  assert.equal(resolvePostLoginPath("/convidados", "/admin", ["*"]), "/convidados");
+  assert.equal(resolverCaminhoPosLogin(undefined, "/admin", ["*"]), "/admin");
+  assert.equal(resolverCaminhoPosLogin("/admin/casais?aba=problema", "/admin", ["*"]), "/admin/casais?aba=problema");
+  assert.equal(resolverCaminhoPosLogin("/convidados", "/admin", ["*"]), "/convidados");
   const casal = ["/dashboard", "/convidados"];
-  assert.equal(resolvePostLoginPath("/admin", "/dashboard", casal), "/dashboard");
-  assert.equal(resolvePostLoginPath("/admin/saude", "/dashboard", casal), "/dashboard");
-  assert.equal(resolvePostLoginPath("/admin", "/fornecedor", ["/fornecedor"]), "/fornecedor");
+  assert.equal(resolverCaminhoPosLogin("/admin", "/dashboard", casal), "/dashboard");
+  assert.equal(resolverCaminhoPosLogin("/admin/saude", "/dashboard", casal), "/dashboard");
+  assert.equal(resolverCaminhoPosLogin("/admin", "/fornecedor", ["/fornecedor"]), "/fornecedor");
   // "/admin" solto na lista do perfil não vale
-  assert.equal(resolvePostLoginPath("/admin", "/dashboard", ["/admin", "/dashboard"]), "/dashboard");
+  assert.equal(resolverCaminhoPosLogin("/admin", "/dashboard", ["/admin", "/dashboard"]), "/dashboard");
 });

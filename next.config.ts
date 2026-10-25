@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { storageRemotePattern } from "./src/lib/image-source";
+import { padraoRemotoDoArmazenamento } from "./src/lib/image-source";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -27,7 +27,7 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 // Fotos de usuário ficam no Supabase Storage (bucket público); só esse caminho passa pelo otimizador.
-const storagePattern = storageRemotePattern(process.env.NEXT_PUBLIC_SUPABASE_URL);
+const storagePattern = padraoRemotoDoArmazenamento(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { giftAmounts } from "../../../lib/gift-fee.ts";
+import { calcularValoresDoPresente } from "../../../lib/gift-fee.ts";
 import { breakEvenCents, formatCents, parseCents, splitPrice } from "./home-money.ts";
 
 test("parseCents entende os formatos digitados", () => {
@@ -19,8 +19,8 @@ test("formatCents usa vírgula e milhar", () => {
 
 test("breakEvenCents: a taxa do Básico alcança o preço do plano", () => {
   const be = breakEvenCents(14900);
-  assert.ok(giftAmounts(be, "basic", "PIX").feeCents >= 14900);
-  assert.ok(giftAmounts(be - 100, "basic", "PIX").feeCents < 14900);
+  assert.ok(calcularValoresDoPresente(be, "basic", "PIX").feeCents >= 14900);
+  assert.ok(calcularValoresDoPresente(be - 100, "basic", "PIX").feeCents < 14900);
   assert.equal(breakEvenCents(0), 0);
 });
 

@@ -1,7 +1,7 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { maskDocument } from "@/lib/document-br";
+import { esconderDocumento } from "@/lib/document-br";
 import { pageWindow } from "@/lib/platform/list-params";
 
 /**
@@ -93,7 +93,7 @@ export async function listDomainOrders(tab: DomainTab, page: number): Promise<{ 
       status: r.status,
       coupleNames: r.wedding.coupleNames,
       holderName: r.holderName,
-      holderDocument: maskDocument(r.holderDocument),
+      holderDocument: esconderDocumento(r.holderDocument),
       expiresAt: r.expiresAt,
       rejectionReason: r.rejectionReason,
       requestedAt: r.requestedAt,
@@ -141,7 +141,7 @@ export async function getDomainDetail(id: string): Promise<DomainDetail | null> 
     },
   });
   if (!o) return null;
-  const masked = maskDocument(o.holderDocument);
+  const masked = esconderDocumento(o.holderDocument);
   return {
     id: o.id,
     domain: o.domain,

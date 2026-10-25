@@ -23,8 +23,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { btn, overline } from "@/components/landing/styles";
 import { createGuestBookEntry } from "@/actions/site-builder-actions";
-import { brandThemeStyle, getCoupleInitials } from "@/lib/wedding-format";
-import { weddingSitePath } from "@/lib/wedding-links";
+import { estiloDoTemaDaMarca, obterIniciaisDoCasal } from "@/lib/wedding-format";
+import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
 import { toast } from "sonner";
 import { Reveal } from "@/components/motion/reveal";
 import { Button } from "@/components/ui/button";
@@ -247,7 +247,7 @@ export function WeddingSiteView({
   const [formOpen, setFormOpen] = useState(guestbookEntries.length === 0);
 
   const coupleNames = s.title?.trim() || "Nosso Casamento";
-  const initials = getCoupleInitials(coupleNames);
+  const initials = obterIniciaisDoCasal(coupleNames);
   const day = weddingDay(s.weddingDate);
   const dateLabel = day ? format(day, "d 'de' MMMM 'de' yyyy", { locale: ptBR }) : null;
   const weekdayLabel = day ? format(day, "EEEE, d 'de' MMMM", { locale: ptBR }) : null;
@@ -255,7 +255,7 @@ export function WeddingSiteView({
   const deadlineLabel = deadlineDay ? format(deadlineDay, "d 'de' MMMM", { locale: ptBR }) : null;
   const countdownTarget = s.weddingDate ? weddingInstant(new Date(s.weddingDate), s.ceremonyTime) : null;
   const palette = parsePalette(s.dressCodePalette);
-  const accent = brandThemeStyle(s.themeColor);
+  const accent = estiloDoTemaDaMarca(s.themeColor);
   // O design usa a ameixa como destaque; no site do casal, o destaque é a cor que os noivos escolheram.
   const themeStyle = {
     ...accent,
@@ -304,8 +304,8 @@ export function WeddingSiteView({
     showGuestbook && { href: "#recados", label: "Recados" },
   ].filter(Boolean) as { href: string; label: string }[];
 
-  const rsvpHref = weddingSitePath(slug, "rsvp");
-  const giftsHref = weddingSitePath(slug, "presentes");
+  const rsvpHref = caminhoDoSiteDoCasamento(slug, "rsvp");
+  const giftsHref = caminhoDoSiteDoCasamento(slug, "presentes");
 
   const handleSendGuestbook = (e: React.FormEvent) => {
     e.preventDefault();

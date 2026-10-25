@@ -5,7 +5,7 @@ import { Notice } from "@/components/plataforma/notices";
 import { StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
 import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
 import { getPlatformSetting } from "@/lib/platform/settings";
-import { isEmailConfigured } from "@/lib/email";
+import { emailEstaConfigurado } from "@/lib/email";
 import { getHealthSnapshot, type ServiceCounts } from "@/lib/platform/queries/saude";
 import { CRON_LABEL, CRON_STATE_LABEL } from "@/lib/platform/health";
 import { formatDateTime, formatInt, formatTime, timeAgo } from "@/lib/platform/format";
@@ -215,7 +215,7 @@ export default async function Page() {
 
       <AlertsForm
         initial={{ mercadoPagoFailures: alerts.mercadoPagoFailures, whatsappDisconnected: alerts.whatsappDisconnected, routineMissed: alerts.routineMissed, sendTo: alerts.sendTo }}
-        emailConfigured={isEmailConfigured()}
+        emailConfigured={emailEstaConfigurado()}
       />
     </>
   );

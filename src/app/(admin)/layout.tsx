@@ -4,10 +4,10 @@ import { Sidebar } from "@/components/admin/sidebar"
 import { Header } from "@/components/admin/header"
 import { MobileTabBar } from "@/components/admin/mobile-tab-bar"
 import { getSession, redirectToLogin } from "@/lib/security/auth-guard"
-import { getAccountView, getWeddingIdentity } from "@/lib/wedding"
+import { obterVisaoDaConta, obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding"
 import { getWeddingContext } from "@/lib/security/wedding-context"
-import { getNavCounts } from "@/lib/nav-counts"
-import { daysUntil, daysLeftLabel } from "@/lib/wedding-format"
+import { obterContagensDoMenu } from "@/lib/nav-counts"
+import { diasAte, rotuloDosDiasRestantes } from "@/lib/wedding-format"
 import { MainWeddingNote } from "@/components/admin/main-wedding-note"
 import { MaintenanceBanner } from "@/components/admin/maintenance-banner"
 import { unreadCountFor } from "@/lib/notifications/queries"
@@ -17,9 +17,9 @@ import { LizAssistant } from "@/components/liz/liz-assistant"
 import { PanelTourProvider } from "@/components/tour/panel-tour-provider"
 import { loadPanelTour } from "@/lib/tour/panel-tour"
 import { AreaTabs } from "@/components/admin/area-tabs"
-import { getWeddingPlan } from "@/lib/wedding-plan"
-import { planShortName } from "@/lib/panel-nav"
-import { weddingSiteUrl } from "@/lib/wedding-links"
+import { obterPlanoDoCasamento } from "@/lib/wedding-plan"
+import { nomeCurtoDoPlano } from "@/lib/panel-nav"
+import { urlDoSiteDoCasamento } from "@/lib/wedding-links"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Perfil e permissões vêm do banco (não só do JWT), refletindo alterações de acesso na hora.
@@ -28,21 +28,21 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const { role, allowedPaths } = session;
   const [wedding, account, ctx, unreadNotifications] = await Promise.all([
-    getWeddingIdentity(),
-    getAccountView(),
+    obterIdentidadeDoCasamentoPrincipal(),
+    obterVisaoDaConta(),
     getWeddingContext(),
     unreadCountFor(session.userId),
   ]);
   const [counts, tour, plan] = await Promise.all([
-    ctx ? getNavCounts(ctx.weddingId, allowedPaths.includes("*")) : undefined,
+    ctx ? obterContagensDoMenu(ctx.weddingId, allowedPaths.includes("*")) : undefined,
     loadPanelTour(session, ctx), // passo a passo do painel (null para administração, visita "Entrar como" e fornecedor)
-    ctx && !account.adminView ? getWeddingPlan(ctx.weddingId) : null,
+    ctx && !account.adminView ? obterPlanoDoCasamento(ctx.weddingId) : null,
   ]);
   // Cabeçalho: "17 abr 2027 · faltam 191 dias" (casal); a administração não mostra data
-  const daysLeft = daysLeftLabel(wedding.weddingDate ? daysUntil(wedding.weddingDate) : null);
+  const daysLeft = rotuloDosDiasRestantes(wedding.weddingDate ? diasAte(wedding.weddingDate) : null);
   const subtitle = account.adminView ? null : [wedding.shortDateLabel, daysLeft].filter(Boolean).join(" · ") || null;
-  const planName = plan ? planShortName(plan.planId) : null;
-  const siteHref = !account.adminView && ctx && wedding.slug ? weddingSiteUrl(wedding.slug, undefined, ctx.wedding.customDomain) : null;
+  const planName = plan ? nomeCurtoDoPlano(plan.planId) : null;
+  const siteHref = !account.adminView && ctx && wedding.slug ? urlDoSiteDoCasamento(wedding.slug, undefined, ctx.wedding.customDomain) : null;
 
   // "Entrar como este casal": faixa fixa no topo de TODAS as telas do painel; a barra lateral e o cabeçalho descem a altura dela
   const impersonation = ctx?.impersonation ?? null;

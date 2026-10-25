@@ -3,16 +3,16 @@
 import { Suspense, useEffect, useSyncExternalStore } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
-  DONE_HOLD_MS,
-  IDLE_PROGRESS,
-  SAFETY_MS,
-  SHOW_DELAY_MS,
-  TICK_MS,
-  isPlainLeftClick,
-  navigationTarget,
-  progressReducer,
-  type ProgressEvent,
-  type ProgressState,
+  TEMPO_DE_CONCLUSAO_EM_MS,
+  PROGRESSO_PARADO,
+  LIMITE_DE_SEGURANCA_EM_MS,
+  ATRASO_PARA_MOSTRAR_EM_MS,
+  INTERVALO_EM_MS,
+  ehCliqueSimplesComBotaoEsquerdo,
+  destinoDaNavegacao,
+  redutorDoProgresso,
+  type EventoDoProgresso,
+  type EstadoDoProgresso,
 } from "@/lib/navigation-progress";
 
 /*
@@ -27,15 +27,15 @@ import {
  * Link que não deve acender a barra: data-no-progress.
  */
 
-let state: ProgressState = IDLE_PROGRESS;
+let state: EstadoDoProgresso = PROGRESSO_PARADO;
 const listeners = new Set<() => void>();
 let showTimer: ReturnType<typeof setTimeout> | undefined;
 let tickTimer: ReturnType<typeof setInterval> | undefined;
 let safetyTimer: ReturnType<typeof setTimeout> | undefined;
 let resetTimer: ReturnType<typeof setTimeout> | undefined;
 
-function dispatch(event: ProgressEvent) {
-  const next = progressReducer(state, event);
+function dispatch(event: EventoDoProgresso) {
+  const next = redutorDoProgresso(state, event);
   if (next === state) return;
   state = next;
   listeners.forEach((l) => l());
@@ -58,9 +58,9 @@ export function startNavigationProgress() {
   dispatch("start");
   showTimer = setTimeout(() => {
     dispatch("show");
-    tickTimer = setInterval(() => dispatch("tick"), TICK_MS);
-  }, SHOW_DELAY_MS);
-  safetyTimer = setTimeout(finishNavigationProgress, SAFETY_MS);
+    tickTimer = setInterval(() => dispatch("tick"), INTERVALO_EM_MS);
+  }, ATRASO_PARA_MOSTRAR_EM_MS);
+  safetyTimer = setTimeout(finishNavigationProgress, LIMITE_DE_SEGURANCA_EM_MS);
 }
 
 /** Encerra a barra. O componente chama sozinho quando a rota muda. */
@@ -68,7 +68,7 @@ function finishNavigationProgress() {
   if (state.phase === "idle" || state.phase === "done") return;
   clearTimers();
   dispatch("finish");
-  if (currentPhase() === "done") resetTimer = setTimeout(() => dispatch("reset"), DONE_HOLD_MS);
+  if (currentPhase() === "done") resetTimer = setTimeout(() => dispatch("reset"), TEMPO_DE_CONCLUSAO_EM_MS);
 }
 
 function subscribe(listener: () => void) {
@@ -81,7 +81,7 @@ function subscribe(listener: () => void) {
 function Bar() {
   const pathname = usePathname();
   const search = useSearchParams().toString();
-  const current = useSyncExternalStore(subscribe, () => state, () => IDLE_PROGRESS);
+  const current = useSyncExternalStore(subscribe, () => state, () => PROGRESSO_PARADO);
 
   // A rota mudou: a navegação terminou.
   useEffect(() => {
@@ -90,10 +90,10 @@ function Bar() {
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      if (!isPlainLeftClick(e)) return;
+      if (!ehCliqueSimplesComBotaoEsquerdo(e)) return;
       const anchor = e.target instanceof Element ? e.target.closest("a[href]") : null;
       if (!(anchor instanceof HTMLAnchorElement)) return;
-      const to = navigationTarget(
+      const to = destinoDaNavegacao(
         { href: anchor.href, target: anchor.getAttribute("target"), download: anchor.hasAttribute("download"), optOut: anchor.hasAttribute("data-no-progress") },
         window.location.href,
       );

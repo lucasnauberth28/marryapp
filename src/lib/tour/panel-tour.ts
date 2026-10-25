@@ -3,10 +3,10 @@ import { cache } from "react";
 import prisma from "@/lib/prisma";
 import { SUPER_ADMIN_USER_ID, type SecureAuthContext } from "@/lib/security/auth-guard";
 import type { WeddingContext } from "@/lib/security/wedding-context";
-import { isPlatformAdminPaths } from "@/lib/permissions";
+import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
-import { weddingHasModule } from "@/lib/wedding-plan";
-import { PANEL_AREAS } from "@/lib/panel-nav";
+import { casamentoTemModulo } from "@/lib/wedding-plan";
+import { AREAS_DO_PAINEL } from "@/lib/panel-nav";
 import { buildTourSteps, type StepPlace, type TourModule, type TourStep } from "./steps";
 import { decideTourMode, stepsForMode, tourEligible, type TourAccount, type TourMode } from "./rules";
 
@@ -38,7 +38,7 @@ export function tourAccountOf(args: {
 }): TourAccount {
   const { session, ctx, row } = args;
   return {
-    platformAdmin: session.userId === SUPER_ADMIN_USER_ID || isPlatformAdminPaths(session.allowedPaths),
+    platformAdmin: session.userId === SUPER_ADMIN_USER_ID || ehAcessoDeAdminDaPlataforma(session.allowedPaths),
     impersonating: Boolean(ctx?.impersonation),
     vendor: row ? classifyAccount(row) === "vendor" : false,
     onboardedWedding: Boolean(ctx?.wedding.onboardedAt),
@@ -60,7 +60,7 @@ const TOUR_MODULES: TourModule[] = ["whatsapp", "qrcode", "customDomain"];
 
 function placesFor(steps: TourStep[]): Record<string, StepPlace> {
   // O item do menu de cada passo é a área a que a tela pertence (lib/panel-nav)
-  const areaOf = (href: string) => PANEL_AREAS.find((a) => a.screens.some((sc) => sc.href === href));
+  const areaOf = (href: string) => AREAS_DO_PAINEL.find((a) => a.screens.some((sc) => sc.href === href));
   const out: Record<string, StepPlace> = {};
   for (const s of steps) {
     if (!s.href || out[s.href]) continue;
@@ -77,7 +77,7 @@ export async function loadPanelTour(session: SecureAuthContext, ctx: WeddingCont
   const account = tourAccountOf({ session, ctx, row });
   if (!tourEligible(account) || !row) return null;
 
-  const owned = await Promise.all(TOUR_MODULES.map(async (m) => ((await weddingHasModule(ctx, m)) ? m : null)));
+  const owned = await Promise.all(TOUR_MODULES.map(async (m) => ((await casamentoTemModulo(ctx, m)) ? m : null)));
   const steps = buildTourSteps({ allowedPaths: session.allowedPaths, modules: owned.filter((m): m is TourModule => m !== null) });
   if (steps.length === 0) return null;
 

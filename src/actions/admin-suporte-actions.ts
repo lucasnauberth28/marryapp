@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
 import { sendPasswordResetLink } from "@/lib/account/password-reset-link";
@@ -63,7 +63,7 @@ export async function createSupportTicket(input: unknown): Promise<(Ok & { numbe
       },
       select: { id: true, number: true },
     });
-    await logAudit({
+    await registrarAuditoria({
       action: "ticket.create",
       targetType: "support_ticket",
       targetId: created.id,
@@ -102,7 +102,7 @@ export async function updateSupportTicket(input: unknown): Promise<Ok | Fail> {
         closedAt: d.status === "CLOSED" ? now : null,
       },
     });
-    await logAudit({
+    await registrarAuditoria({
       action: "ticket.update",
       targetType: "support_ticket",
       targetId: d.id,
@@ -143,7 +143,7 @@ export async function createDataRequest(input: unknown): Promise<Ok | Fail> {
       },
       select: { id: true },
     });
-    await logAudit({
+    await registrarAuditoria({
       action: "data_request.create",
       targetType: "data_request",
       targetId: created.id,
@@ -175,7 +175,7 @@ export async function updateDataRequest(input: unknown): Promise<Ok | Fail> {
         handledByName: admin.name ?? "Administrador",
       },
     });
-    await logAudit({ action: "data_request.update", targetType: "data_request", targetId: d.id, details: { type: current.type, from: current.status, to: d.status } });
+    await registrarAuditoria({ action: "data_request.update", targetType: "data_request", targetId: d.id, details: { type: current.type, from: current.status, to: d.status } });
     refresh();
     return { success: true, message: d.status === "DONE" ? "Pedido marcado como pronto." : d.status === "REFUSED" ? "Pedido recusado." : "Pedido atualizado." };
   } catch (error) {
@@ -213,7 +213,7 @@ export async function fulfillDeletionRequest(input: unknown): Promise<Ok | Fail>
       where: { id: request.id },
       data: { status: "DONE", completedAt: new Date(), handledById: admin.userId, handledByName: admin.name ?? "Administrador", note: "Conta excluída pela administração." },
     });
-    await logAudit({
+    await registrarAuditoria({
       action: "data_request.delete_account",
       targetType: "data_request",
       targetId: request.id,
@@ -243,7 +243,7 @@ export async function sendSupportPasswordReset(input: unknown): Promise<Ok | Fai
     const byEmail = await checkRateLimit({ key: `PWRESET_REQ_EMAIL:${parsed.data.email}`, limit: 3, windowMs: 60 * MINUTE });
     const user = byEmail.success ? await prisma.user.findUnique({ where: { username: parsed.data.email }, select: { id: true, name: true, username: true } }) : null;
     const result = user ? await sendPasswordResetLink(user) : null;
-    await logAudit({
+    await registrarAuditoria({
       action: "support.password_reset",
       targetType: "user",
       targetId: user?.id,
@@ -278,7 +278,7 @@ export async function createSecurityIncident(input: unknown): Promise<Ok | Fail>
       },
       select: { id: true },
     });
-    await logAudit({ action: "incident.create", targetType: "security_incident", targetId: created.id, details: { title: d.title, discoveredAt: d.discoveredAt, notified: Boolean(d.notifiedOn) } });
+    await registrarAuditoria({ action: "incident.create", targetType: "security_incident", targetId: created.id, details: { title: d.title, discoveredAt: d.discoveredAt, notified: Boolean(d.notifiedOn) } });
     refresh();
     return { success: true, message: "Incidente registrado." };
   } catch (error) {
@@ -303,7 +303,7 @@ export async function updateSecurityIncident(input: unknown): Promise<Ok | Fail>
         ...(d.close ? { status: "CLOSED", closedAt: new Date() } : d.reopen ? { status: "OPEN", closedAt: null } : {}),
       },
     });
-    await logAudit({ action: d.close ? "incident.close" : d.reopen ? "incident.reopen" : "incident.update", targetType: "security_incident", targetId: d.id, details: { notified: Boolean(d.notifiedOn) } });
+    await registrarAuditoria({ action: d.close ? "incident.close" : d.reopen ? "incident.reopen" : "incident.update", targetType: "security_incident", targetId: d.id, details: { notified: Boolean(d.notifiedOn) } });
     refresh();
     return { success: true, message: d.close ? "Incidente fechado." : d.reopen ? "Incidente reaberto." : "Incidente atualizado." };
   } catch (error) {

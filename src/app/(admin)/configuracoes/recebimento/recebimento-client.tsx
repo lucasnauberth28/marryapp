@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
-import { BANK_ACCOUNT_KIND_LABEL, BANK_ACCOUNT_KINDS, PIX_KEY_TYPE_LABEL, PIX_KEY_TYPES, type BankAccountKind, type PixKeyType } from "@/lib/payout-input";
+import { ROTULO_DO_TIPO_DE_CONTA_BANCARIA, TIPOS_DE_CONTA_BANCARIA, ROTULO_DO_TIPO_DE_CHAVE_PIX, TIPOS_DE_CHAVE_PIX, type TipoDeContaBancaria, type TipoDeChavePix } from "@/lib/payout-input";
 import { cn } from "@/lib/utils";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
@@ -285,13 +285,13 @@ function PayoutForm({ replacing, onCancel, onSaved }: { replacing: boolean; onCa
   const [kind, setKind] = useState<"PIX_KEY" | "BANK_ACCOUNT">("PIX_KEY");
   const [holderName, setHolderName] = useState("");
   const [holderDocument, setHolderDocument] = useState("");
-  const [pixKeyType, setPixKeyType] = useState<PixKeyType>("CPF");
+  const [pixKeyType, setPixKeyType] = useState<TipoDeChavePix>("CPF");
   const [pixKey, setPixKey] = useState("");
   const [bankCode, setBankCode] = useState("");
   const [agency, setAgency] = useState("");
   const [account, setAccount] = useState("");
   const [accountDigit, setAccountDigit] = useState("");
-  const [accountKind, setAccountKind] = useState<BankAccountKind>("CORRENTE");
+  const [accountKind, setAccountKind] = useState<TipoDeContaBancaria>("CORRENTE");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -374,10 +374,10 @@ function PayoutForm({ replacing, onCancel, onSaved }: { replacing: boolean; onCa
 
           {kind === "PIX_KEY" ? (
             <div className="grid gap-4 sm:grid-cols-2">
-              <NativeSelect id={`${uid}-tipochave`} label="Tipo da chave" value={pixKeyType} onChange={(e) => setPixKeyType(e.target.value as PixKeyType)}>
-                {PIX_KEY_TYPES.map((t) => (
+              <NativeSelect id={`${uid}-tipochave`} label="Tipo da chave" value={pixKeyType} onChange={(e) => setPixKeyType(e.target.value as TipoDeChavePix)}>
+                {TIPOS_DE_CHAVE_PIX.map((t) => (
                   <option key={t} value={t}>
-                    {PIX_KEY_TYPE_LABEL[t]}
+                    {ROTULO_DO_TIPO_DE_CHAVE_PIX[t]}
                   </option>
                 ))}
               </NativeSelect>
@@ -400,10 +400,10 @@ function PayoutForm({ replacing, onCancel, onSaved }: { replacing: boolean; onCa
               <Input id={`${uid}-agencia`} label="Agência" inputMode="numeric" autoComplete="off" value={agency} onChange={(e) => setAgency(somenteDigitos(e.target.value).slice(0, 5))} required hint="Sem o dígito." />
               <Input id={`${uid}-conta`} label="Conta" inputMode="numeric" autoComplete="off" value={account} onChange={(e) => setAccount(somenteDigitos(e.target.value).slice(0, 12))} required hint="Sem o dígito." />
               <Input id={`${uid}-digito`} label="Dígito da conta" autoComplete="off" value={accountDigit} onChange={(e) => setAccountDigit(e.target.value.slice(0, 2))} optional />
-              <NativeSelect id={`${uid}-tipoconta`} label="Tipo da conta" value={accountKind} onChange={(e) => setAccountKind(e.target.value as BankAccountKind)}>
-                {BANK_ACCOUNT_KINDS.map((t) => (
+              <NativeSelect id={`${uid}-tipoconta`} label="Tipo da conta" value={accountKind} onChange={(e) => setAccountKind(e.target.value as TipoDeContaBancaria)}>
+                {TIPOS_DE_CONTA_BANCARIA.map((t) => (
                   <option key={t} value={t}>
-                    {BANK_ACCOUNT_KIND_LABEL[t]}
+                    {ROTULO_DO_TIPO_DE_CONTA_BANCARIA[t]}
                   </option>
                 ))}
               </NativeSelect>

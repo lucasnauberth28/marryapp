@@ -5,20 +5,20 @@ import { ptBR } from "date-fns/locale";
 import { Armchair, CalendarHeart, Check, Clock, Gift, ListChecks, Minus, Receipt, type LucideIcon } from "lucide-react";
 import { LizAvatar, LizIllustration } from "@/components/liz/liz-illustration";
 import {
-  formatBRL,
-  invitesLabel,
-  peopleLabel,
-  shortDayLabel,
-  type Budget,
-  type GuestCounts,
-  type QueueItem,
-  type QueueKind,
+  formatarReaisSemSinal,
+  rotuloDeConvites,
+  rotuloDePessoas,
+  rotuloCurtoDoDia,
+  type Orcamento,
+  type ContagemDeConvidados,
+  type ItemDaFila,
+  type TipoDeItemDaFila,
 } from "@/lib/dashboard-summary";
 import { Block, Chip, Meter, Money, TextLink, btnPrimary, btnSecondary, hintClass, labelClass } from "./ui";
 
 const textButton = "inline-flex min-h-11 items-center rounded-[8px] px-1 text-sm font-semibold text-ameixa underline-offset-4 hover:underline";
 
-const KIND_ICON: Record<Exclude<QueueKind, "liz">, LucideIcon> = { pix: Gift, despesa: Receipt, data: CalendarHeart, tarefa: ListChecks, mesas: Armchair };
+const KIND_ICON: Record<Exclude<TipoDeItemDaFila, "liz">, LucideIcon> = { pix: Gift, despesa: Receipt, data: CalendarHeart, tarefa: ListChecks, mesas: Armchair };
 
 /** Ação de um item: link interno ou âncora da própria página. */
 function ItemLink({ href, className, children }: { href: string; className: string; children: React.ReactNode }) {
@@ -39,7 +39,7 @@ export function QueueBlock({
   deadline,
   className = "",
 }: {
-  items: QueueItem[];
+  items: ItemDaFila[];
   /** Prazo de confirmação chegando: o primeiro item ganha o chip e o botão de lembrar quem não respondeu. */
   deadline: { chip: string; remindHref: string } | null;
   className?: string;
@@ -124,7 +124,7 @@ export function ConfirmationsBlock({
   canOpenList,
   className = "",
 }: {
-  counts: GuestCounts;
+  counts: ContagemDeConvidados;
   /** "Prazo em 15 mar 2027", quando o casal definiu um. */
   deadlineHint: string | null;
   /** Prazo chegando: troca a dica por um chip de atenção. */
@@ -136,12 +136,12 @@ export function ConfirmationsBlock({
   return (
     <Block id="confirmacoes" title="Confirmações de presença" aside={canOpenList ? <TextLink href="/convidados">Ver lista</TextLink> : null} className={className}>
       <div className="grid grid-cols-2 gap-y-4 md:grid-cols-3">
-        <Figure label="Convites confirmados" value={c.confirmed} unit={`de ${invitesLabel(c.total)}`} />
-        <Figure label="Pessoas confirmadas" value={p.confirmed} unit={`de ${peopleLabel(p.total)}`} hint="Número para o buffet" />
+        <Figure label="Convites confirmados" value={c.confirmed} unit={`de ${rotuloDeConvites(c.total)}`} />
+        <Figure label="Pessoas confirmadas" value={p.confirmed} unit={`de ${rotuloDePessoas(p.total)}`} hint="Número para o buffet" />
         <Figure
           label="Sem resposta"
           value={c.pending}
-          unit={`${c.pending === 1 ? "convite" : "convites"} · ${peopleLabel(p.pending)}`}
+          unit={`${c.pending === 1 ? "convite" : "convites"} · ${rotuloDePessoas(p.pending)}`}
           hint={deadlineChip ? <Chip tone="aviso" icon={Clock}>{deadlineChip}</Chip> : deadlineHint}
         />
       </div>
@@ -159,17 +159,17 @@ export function ConfirmationsBlock({
           <li className="flex items-center gap-1.5">
             <Check className="size-3.5" aria-hidden="true" />
             <i className="block size-2.5 rounded-[3px] bg-sucesso" aria-hidden="true" />
-            Confirmados <b className="font-semibold tabular-nums text-tinta">{invitesLabel(c.confirmed)}</b>
+            Confirmados <b className="font-semibold tabular-nums text-tinta">{rotuloDeConvites(c.confirmed)}</b>
           </li>
           <li className="flex items-center gap-1.5">
             <Minus className="size-3.5" aria-hidden="true" />
             <i className="block size-2.5 rounded-[3px] bg-linha-forte" aria-hidden="true" />
-            Não vão <b className="font-semibold tabular-nums text-tinta">{invitesLabel(c.declined)}</b>
+            Não vão <b className="font-semibold tabular-nums text-tinta">{rotuloDeConvites(c.declined)}</b>
           </li>
           <li className="flex items-center gap-1.5">
             <Clock className="size-3.5" aria-hidden="true" />
             <i className="block size-2.5 rounded-[3px] bg-areia ring-1 ring-inset ring-linha" aria-hidden="true" />
-            Sem resposta <b className="font-semibold tabular-nums text-tinta">{invitesLabel(c.pending)}</b>
+            Sem resposta <b className="font-semibold tabular-nums text-tinta">{rotuloDeConvites(c.pending)}</b>
           </li>
         </ul>
       </div>
@@ -206,7 +206,7 @@ export function ResponsesBlock({ rows, canOpenList, className = "" }: { rows: Re
               <div className="grid min-w-0">
                 <b className="truncate font-semibold text-tinta">{r.name}</b>
                 <small className="text-[13px] text-tinta-suave">
-                  {peopleLabel(r.people)} · {formatDistanceToNowStrict(r.at, { addSuffix: true, locale: ptBR })}
+                  {rotuloDePessoas(r.people)} · {formatDistanceToNowStrict(r.at, { addSuffix: true, locale: ptBR })}
                 </small>
               </div>
               {r.yes ? (
@@ -226,7 +226,7 @@ export function ResponsesBlock({ rows, canOpenList, className = "" }: { rows: Re
   );
 }
 
-export function BudgetBlock({ budget, canOpen, className = "" }: { budget: Budget; canOpen: boolean; className?: string }) {
+export function BudgetBlock({ budget, canOpen, className = "" }: { budget: Orcamento; canOpen: boolean; className?: string }) {
   const hasExpenses = budget.totalCents > 0;
   return (
     <Block id="orcamento" title="Orçamento" aside={canOpen && hasExpenses ? <TextLink href="/financas">Ver despesas</TextLink> : null} className={className}>
@@ -249,7 +249,7 @@ export function BudgetBlock({ budget, canOpen, className = "" }: { budget: Budge
             <span className={labelClass}>Pago até agora</span>
             <span className="flex flex-wrap items-baseline gap-x-2">
               <Money cents={budget.paidCents} className="text-[28px] leading-[1.1]" />
-              <span className="text-[15px] font-medium text-tinta-suave tabular-nums">de {formatBRL(budget.totalCents)}</span>
+              <span className="text-[15px] font-medium text-tinta-suave tabular-nums">de {formatarReaisSemSinal(budget.totalCents)}</span>
             </span>
             <Meter
               label={`${budget.pct}% das despesas pagas`}
@@ -259,7 +259,7 @@ export function BudgetBlock({ budget, canOpen, className = "" }: { budget: Budge
               ]}
             />
             <span className={hintClass}>
-              <b className="font-semibold tabular-nums text-tinta">{budget.pct}%</b> pago · faltam <b className="font-semibold tabular-nums text-tinta">{formatBRL(budget.leftCents)}</b>
+              <b className="font-semibold tabular-nums text-tinta">{budget.pct}%</b> pago · faltam <b className="font-semibold tabular-nums text-tinta">{formatarReaisSemSinal(budget.leftCents)}</b>
             </span>
           </div>
           {budget.upcoming.length > 0 && (
@@ -270,7 +270,7 @@ export function BudgetBlock({ budget, canOpen, className = "" }: { budget: Budge
                   <li key={u.id} className="grid min-h-[60px] grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 border-t border-linha py-2 first:border-t-0">
                     <span className="grid justify-items-center rounded-[8px] border border-linha bg-areia/40 py-1 leading-[1.15]">
                       <b className="text-base font-semibold tabular-nums">{Number(u.dueKey.slice(8, 10))}</b>
-                      <small className="text-[11.5px] text-tinta-suave">{shortDayLabel(u.dueKey).split(" ")[1]}</small>
+                      <small className="text-[11.5px] text-tinta-suave">{rotuloCurtoDoDia(u.dueKey).split(" ")[1]}</small>
                     </span>
                     <div className="grid min-w-0 gap-0.5">
                       <b className="truncate font-medium text-tinta">{u.name}</b>
@@ -287,7 +287,7 @@ export function BudgetBlock({ budget, canOpen, className = "" }: { budget: Budge
                         ) : null}
                       </span>
                     </div>
-                    <span className="whitespace-nowrap text-right font-medium tabular-nums">{formatBRL(u.amount)}</span>
+                    <span className="whitespace-nowrap text-right font-medium tabular-nums">{formatarReaisSemSinal(u.amount)}</span>
                   </li>
                 ))}
               </ul>

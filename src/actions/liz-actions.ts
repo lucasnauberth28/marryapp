@@ -6,11 +6,11 @@ import { startOfDay } from "date-fns";
 import prisma from "@/lib/prisma";
 import { requireWeddingRead } from "@/lib/security/wedding-context";
 import { AuthorizationError } from "@/lib/security/authorization-error";
-import { weddingHasModule } from "@/lib/wedding-plan";
-import { notGiftOnlyWhere } from "@/lib/guest-origin";
-import { hasPathAccess } from "@/lib/permissions";
-import { daysUntil } from "@/lib/wedding-format";
-import { getWeddingIdentity } from "@/lib/wedding";
+import { casamentoTemModulo } from "@/lib/wedding-plan";
+import { filtroSemSoPresente } from "@/lib/guest-origin";
+import { temAcessoAoCaminho } from "@/lib/permissions";
+import { diasAte } from "@/lib/wedding-format";
+import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 import { decideLizTip, type LizTip } from "@/lib/liz/tip";
 import { helpGuideAnswerer, type LizAnswer } from "@/lib/liz/answerer";
 import { getLizProvider, readLizChatEnabled } from "@/lib/liz/provider";
@@ -38,15 +38,15 @@ export async function getLizPanelData(): Promise<LizPanelResult> {
   try {
     const ctx = await requireWeddingRead();
     const { weddingId, session } = ctx;
-    const can = (path: string) => hasPathAccess(session.allowedPaths, path);
+    const can = (path: string) => temAcessoAoCaminho(session.allowedPaths, path);
     const now = new Date();
     const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: SP }).format(now);
 
     const [whatsapp, qrcode, customDomain, tables3d, chatEnabled] = await Promise.all([
-      weddingHasModule({ weddingId, session }, "whatsapp"),
-      weddingHasModule({ weddingId, session }, "qrcode"),
-      weddingHasModule({ weddingId, session }, "customDomain"),
-      weddingHasModule({ weddingId, session }, "tables3d"),
+      casamentoTemModulo({ weddingId, session }, "whatsapp"),
+      casamentoTemModulo({ weddingId, session }, "qrcode"),
+      casamentoTemModulo({ weddingId, session }, "customDomain"),
+      casamentoTemModulo({ weddingId, session }, "tables3d"),
       readLizChatEnabled(),
     ]);
 
@@ -54,11 +54,11 @@ export async function getLizPanelData(): Promise<LizPanelResult> {
     const [pending, notInvitedYet, settings, overdueExpenses, overdueTasks] = await Promise.all([
       // Convites sem resposta e os acompanhantes que eles trazem (a sugestão diz convites e pessoas)
       can("/convidados")
-        ? prisma.guest.aggregate({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING, ...notGiftOnlyWhere }, _count: { _all: true }, _sum: { allowedCompanions: true } })
+        ? prisma.guest.aggregate({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING, ...filtroSemSoPresente }, _count: { _all: true }, _sum: { allowedCompanions: true } })
         : null,
       can("/mensagens") && whatsapp
         ? prisma.guest.count({
-            where: { weddingId, hasReceivedMessage: false, phone: { not: null }, NOT: { phone: "" }, ...notGiftOnlyWhere },
+            where: { weddingId, hasReceivedMessage: false, phone: { not: null }, NOT: { phone: "" }, ...filtroSemSoPresente },
           })
         : 0,
       can("/convidados") ? prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } }) : null,
@@ -75,8 +75,8 @@ export async function getLizPanelData(): Promise<LizPanelResult> {
     const pendingGuests = pending?._count._all ?? 0;
     const pendingPeople = pendingGuests + (pending?._sum.allowedCompanions ?? 0);
 
-    const { weddingDate } = await getWeddingIdentity();
-    const days = weddingDate ? daysUntil(weddingDate) : null;
+    const { weddingDate } = await obterIdentidadeDoCasamentoPrincipal();
+    const days = weddingDate ? diasAte(weddingDate) : null;
     const tip = decideLizTip({
       pendingGuests,
       pendingPeople,
@@ -118,10 +118,10 @@ export async function askLiz(input: unknown): Promise<AskLizResult> {
       allowedPaths: session.allowedPaths,
       pathname: parsed.data.pathname,
       planModules: {
-        whatsapp: await weddingHasModule({ weddingId, session }, "whatsapp"),
-        qrcode: await weddingHasModule({ weddingId, session }, "qrcode"),
-        customDomain: await weddingHasModule({ weddingId, session }, "customDomain"),
-        tables3d: await weddingHasModule({ weddingId, session }, "tables3d"),
+        whatsapp: await casamentoTemModulo({ weddingId, session }, "whatsapp"),
+        qrcode: await casamentoTemModulo({ weddingId, session }, "qrcode"),
+        customDomain: await casamentoTemModulo({ weddingId, session }, "customDomain"),
+        tables3d: await casamentoTemModulo({ weddingId, session }, "tables3d"),
       },
     };
     const provider = getLizProvider();

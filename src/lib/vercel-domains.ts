@@ -1,9 +1,9 @@
 import "server-only";
-import { connectDomain, verifyDomain, type ConnectionResult, type VercelConfig } from "@/lib/vercel-domains-core";
+import { conectarDominio, verificarDominio, type ResultadoDaConexao, type ConfiguracaoDaVercel } from "@/lib/vercel-domains-core";
 
 // Variáveis (Vercel > Settings): VERCEL_API_TOKEN, VERCEL_PROJECT_ID e, se o projeto for de um time,
 // VERCEL_TEAM_ID. VERCEL_API_BASE só serve para testes locais com um servidor de mentira.
-function vercelConfigFromEnv(): VercelConfig | null {
+function configuracaoDaVercelDoAmbiente(): ConfiguracaoDaVercel | null {
   const token = process.env.VERCEL_API_TOKEN?.trim();
   const projectId = process.env.VERCEL_PROJECT_ID?.trim();
   if (!token || !projectId) return null;
@@ -15,8 +15,8 @@ function vercelConfigFromEnv(): VercelConfig | null {
   };
 }
 
-export const vercelConfigured = () => vercelConfigFromEnv() !== null;
+export const vercelEstaConfigurada = () => configuracaoDaVercelDoAmbiente() !== null;
 
-export const connectDomainToProject = (domain: string): Promise<ConnectionResult> => connectDomain(vercelConfigFromEnv(), domain);
-export const verifyProjectDomain = (domain: string): Promise<ConnectionResult> => verifyDomain(vercelConfigFromEnv(), domain);
-export type { ConnectionResult, DnsRecord } from "@/lib/vercel-domains-core";
+export const conectarDominioAoProjeto = (domain: string): Promise<ResultadoDaConexao> => conectarDominio(configuracaoDaVercelDoAmbiente(), domain);
+export const verificarDominioDoProjeto = (domain: string): Promise<ResultadoDaConexao> => verificarDominio(configuracaoDaVercelDoAmbiente(), domain);
+export type { ResultadoDaConexao as ConnectionResult, RegistroDns as DnsRecord } from "@/lib/vercel-domains-core";

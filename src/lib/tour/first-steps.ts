@@ -1,5 +1,5 @@
 // "Primeiros passos" do Resumo: itens derivados de DADOS REAIS do casamento (nada de estado inventado).
-import { hasPathAccess } from "../permissions.ts";
+import { temAcessoAoCaminho } from "../permissions.ts";
 
 export interface FirstStepsData {
   allowedPaths: readonly string[];
@@ -42,7 +42,7 @@ export function siteInfoFilled(site: FirstStepsData["site"]): boolean {
 
 /** Todos os itens que esta pessoa pode abrir, na ordem em que fazem sentido. */
 export function firstStepItems(d: FirstStepsData): FirstStepItem[] {
-  const opens = (href: string) => hasPathAccess([...d.allowedPaths], href);
+  const opens = (href: string) => temAcessoAoCaminho([...d.allowedPaths], href);
   const items: FirstStepItem[] = [];
   if (opens("/site-builder")) items.push({ id: "site", label: "Preencher as informações do site", href: "/site-builder", action: "Editar o site", done: siteInfoFilled(d.site) });
   if (opens("/convidados")) items.push({ id: "guest", label: "Adicionar o primeiro convidado", href: "/convidados", action: "Adicionar convidado", done: d.guestCount > 0 });

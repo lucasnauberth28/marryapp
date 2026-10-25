@@ -1,8 +1,8 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
-import { brandedEmail, isEmailConfigured, sendEmail } from "@/lib/email";
-import { appUrl } from "@/lib/app-url";
+import { registrarAuditoria } from "@/lib/audit";
+import { brandedEmail, emailEstaConfigurado, enviarEmail } from "@/lib/email";
+import { urlDoApp } from "@/lib/app-url";
 import { getPlatformSetting } from "@/lib/platform/settings";
 import { collectHealth } from "@/lib/platform/queries/saude";
 import { sameAlertSet, selectAlerts } from "@/lib/platform/health";
@@ -22,7 +22,7 @@ export async function runHealthAlerts(now = new Date()): Promise<AlertRunResult>
   try {
     const settings = await getPlatformSetting("healthAlerts");
     if (!settings.sendTo) return { sent: false, reason: "no_recipient", keys: [] };
-    if (!isEmailConfigured()) return { sent: false, reason: "email_off", keys: [] };
+    if (!emailEstaConfigurado()) return { sent: false, reason: "email_off", keys: [] };
     const snap = await collectHealth();
     const items = selectAlerts(settings, {
       mpConsecutiveFailures: snap.mercadopago.consecutiveFailures,
@@ -37,9 +37,9 @@ export async function runHealthAlerts(now = new Date()): Promise<AlertRunResult>
     if (Array.isArray(lastKeys) && sameAlertSet(lastKeys.map(String), keys)) return { sent: false, reason: "repeated", keys };
 
     const { html, text } = alertEmail(items.map((i) => `${i.title}. ${i.detail}`));
-    const result = await sendEmail({ to: settings.sendTo, subject: `Aceito: ${items.length === 1 ? "1 coisa pede atenção" : `${items.length} coisas pedem atenção`}`, html, text });
+    const result = await enviarEmail({ to: settings.sendTo, subject: `Aceito: ${items.length === 1 ? "1 coisa pede atenção" : `${items.length} coisas pedem atenção`}`, html, text });
     if (!result.sent) return { sent: false, reason: "failed", keys };
-    await logAudit({ action: "health.alert_sent", targetType: "health", details: { keys }, actor: { id: null, name: "Sistema" } });
+    await registrarAuditoria({ action: "health.alert_sent", targetType: "health", details: { keys }, actor: { id: null, name: "Sistema" } });
     return { sent: true, reason: "sent", keys };
   } catch (error) {
     console.error("[alertas] Falha ao verificar:", error instanceof Error ? error.message : error);
@@ -52,7 +52,7 @@ export function alertEmail(lines: string[]) {
     heading: "Algo pede a sua atenção",
     preheader: lines[0]?.slice(0, 100),
     paragraphs: lines,
-    cta: { label: "Abrir a Saúde do sistema", url: appUrl("/admin/saude") },
+    cta: { label: "Abrir a Saúde do sistema", url: urlDoApp("/admin/saude") },
     footnotes: ["Os alertas são verificados uma vez por dia. Para mudar o que recebe, abra a Saúde do sistema."],
   });
 }

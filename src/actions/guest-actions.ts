@@ -1,7 +1,7 @@
 "use server";
 
 import { requireWedding, requireWeddingRead, getWeddingBySlug } from "@/lib/security/wedding-context";
-import { moduleRefusal } from "@/lib/wedding-plan";
+import { recusaDeModulo } from "@/lib/wedding-plan";
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
@@ -10,19 +10,19 @@ import { RsvpStatus } from "@prisma/client";
 import { rateLimitByIp } from "@/lib/security/rate-limiter";
 import { deferNotify } from "@/lib/notifications/service";
 import { notifyRsvp } from "@/lib/notifications/events";
-import { TOO_MANY_ATTEMPTS_MESSAGE } from "@/lib/rate-limit-message";
-import type { GuestLookup } from "@/lib/rsvp-lookup";
-import { logAudit } from "@/lib/audit";
+import { MENSAGEM_DE_MUITAS_TENTATIVAS } from "@/lib/rate-limit-message";
+import type { BuscaDeConvidado } from "@/lib/rsvp-lookup";
+import { registrarAuditoria } from "@/lib/audit";
 import {
-  MAX_CATEGORY,
-  MAX_COMPANIONS,
-  MAX_DIETARY,
-  MAX_EMAIL,
-  MAX_GUESTS_PER_WEDDING,
-  MAX_IMPORT_ROWS,
-  MAX_NAME,
-  normalizePhoneBR,
-  planImport,
+  TAMANHO_MAXIMO_DA_CATEGORIA,
+  MAXIMO_DE_ACOMPANHANTES,
+  TAMANHO_MAXIMO_DA_RESTRICAO_ALIMENTAR,
+  TAMANHO_MAXIMO_DO_EMAIL,
+  MAXIMO_DE_CONVIDADOS_POR_CASAMENTO,
+  MAXIMO_DE_LINHAS_NA_IMPORTACAO,
+  TAMANHO_MAXIMO_DO_NOME,
+  normalizarTelefoneBR,
+  planejarImportacao,
 } from "@/lib/guest-import";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
@@ -155,21 +155,21 @@ export async function createGuest(formData: FormData) {
 
 const ImportGuestSchema = z.object({
   line: z.number().int().min(1).max(1_000_000),
-  name: z.string().trim().min(2, "o nome é curto demais").max(MAX_NAME, "o nome é longo demais"),
+  name: z.string().trim().min(2, "o nome é curto demais").max(TAMANHO_MAXIMO_DO_NOME, "o nome é longo demais"),
   phone: z
     .string()
     .nullable()
-    .refine((v) => v === null || (normalizePhoneBR(v).ok && /^\d{10,11}$/.test(v)), "o telefone não é válido"),
-  email: z.string().trim().email("o e-mail não é válido").max(MAX_EMAIL).nullable(),
-  companions: z.number().int().min(0).max(MAX_COMPANIONS, "são acompanhantes demais"),
-  category: z.string().trim().min(1).max(MAX_CATEGORY, "o grupo é longo demais").nullable(),
-  dietary: z.string().trim().min(1).max(MAX_DIETARY, "a restrição alimentar é longa demais").nullable(),
+    .refine((v) => v === null || (normalizarTelefoneBR(v).ok && /^\d{10,11}$/.test(v)), "o telefone não é válido"),
+  email: z.string().trim().email("o e-mail não é válido").max(TAMANHO_MAXIMO_DO_EMAIL).nullable(),
+  companions: z.number().int().min(0).max(MAXIMO_DE_ACOMPANHANTES, "são acompanhantes demais"),
+  category: z.string().trim().min(1).max(TAMANHO_MAXIMO_DA_CATEGORIA, "o grupo é longo demais").nullable(),
+  dietary: z.string().trim().min(1).max(TAMANHO_MAXIMO_DA_RESTRICAO_ALIMENTAR, "a restrição alimentar é longa demais").nullable(),
 });
 
 const ImportGuestsSchema = z
   .array(ImportGuestSchema)
   .min(1, "Não há nenhum convidado para importar.")
-  .max(MAX_IMPORT_ROWS, `Dá para importar até ${MAX_IMPORT_ROWS} convidados por vez.`);
+  .max(MAXIMO_DE_LINHAS_NA_IMPORTACAO, `Dá para importar até ${MAXIMO_DE_LINHAS_NA_IMPORTACAO} convidados por vez.`);
 
 /**
  * Importa convidados de uma planilha. O navegador lê o arquivo e manda só as linhas já
@@ -199,9 +199,9 @@ export async function importGuests(input: unknown) {
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`guest-import:${weddingId}`}))`;
 
         const existing = await tx.guest.findMany({ where: { weddingId }, select: { name: true, phone: true } });
-        const plan = planImport(rows, existing);
+        const plan = planejarImportacao(rows, existing);
 
-        if (existing.length + plan.toAdd.length > MAX_GUESTS_PER_WEDDING) {
+        if (existing.length + plan.toAdd.length > MAXIMO_DE_CONVIDADOS_POR_CASAMENTO) {
           return { tooMany: true as const };
         }
         if (plan.toAdd.length > 0) {
@@ -225,11 +225,11 @@ export async function importGuests(input: unknown) {
     if (result.tooMany) {
       return {
         success: false as const,
-        error: `A lista chegaria a mais de ${MAX_GUESTS_PER_WEDDING} convidados, que é o máximo por casamento.`,
+        error: `A lista chegaria a mais de ${MAXIMO_DE_CONVIDADOS_POR_CASAMENTO} convidados, que é o máximo por casamento.`,
       };
     }
 
-    await logAudit({
+    await registrarAuditoria({
       action: "guests.import",
       targetType: "wedding",
       targetId: weddingId,
@@ -317,7 +317,7 @@ export async function deleteGuest(id: string) {
  * Pública: localiza o convite pelo telefone, só dentro do casamento do endereço (slug).
  * Retorna apenas o necessário para o RSVP.
  */
-export async function findGuestByPhone(slug: string, phone: string): Promise<GuestLookup> {
+export async function findGuestByPhone(slug: string, phone: string): Promise<BuscaDeConvidado> {
   if (typeof slug !== "string" || typeof phone !== "string") return { status: "not_found" };
   const cleanPhone = somenteDigitos(phone);
   if (cleanPhone.length < 10 || cleanPhone.length > 13) return { status: "invalid_phone" };
@@ -368,7 +368,7 @@ export async function publicConfirmRsvp(
   try {
     const rateLimit = await rateLimitByIp("RSVP");
     if (!rateLimit.success) {
-      return { success: false, error: TOO_MANY_ATTEMPTS_MESSAGE };
+      return { success: false, error: MENSAGEM_DE_MUITAS_TENTATIVAS };
     }
 
     const wedding = await getWeddingBySlug(data.slug);
@@ -416,7 +416,7 @@ export async function publicConfirmRsvp(
 
 export async function checkInGuest(guestId: string) {
   const { weddingId, session } = await requireWedding("/credenciamento");
-  const refusal = await moduleRefusal({ weddingId, session }, "qrcode");
+  const refusal = await recusaDeModulo({ weddingId, session }, "qrcode");
   if (refusal) return { success: false, error: refusal };
   try {
     if (typeof guestId !== "string") return { success: false, error: ERROS.convidadoNaoEncontrado };

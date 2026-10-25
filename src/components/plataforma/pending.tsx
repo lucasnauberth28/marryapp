@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useSyncExternalStore, type ComponentProps, type ReactNode } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { isPlainLeftClick, navigationTarget } from "@/lib/navigation-progress";
+import { ehCliqueSimplesComBotaoEsquerdo, destinoDaNavegacao } from "@/lib/navigation-progress";
 import { isListPending, locationKey } from "@/lib/platform/pending-nav";
 import { cn } from "@/lib/utils";
 
@@ -81,9 +81,9 @@ export function PendingLink({ onClick, ...props }: ComponentProps<typeof Link>) 
       {...props}
       onClick={(e) => {
         onClick?.(e);
-        if (e.defaultPrevented || !isPlainLeftClick(e)) return;
+        if (e.defaultPrevented || !ehCliqueSimplesComBotaoEsquerdo(e)) return;
         const a = e.currentTarget;
-        const to = navigationTarget({ href: a.href, target: a.getAttribute("target"), download: a.hasAttribute("download"), optOut: a.hasAttribute("data-no-progress") }, window.location.href);
+        const to = destinoDaNavegacao({ href: a.href, target: a.getAttribute("target"), download: a.hasAttribute("download"), optOut: a.hasAttribute("data-no-progress") }, window.location.href);
         if (to) markListNavigation(to);
       }}
     />

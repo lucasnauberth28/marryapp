@@ -4,7 +4,7 @@
 // devolva `{ kind: "registered", ... }` em `register` e troque o retorno de `getRegistrar()`.
 // As telas e as ações só falam com esta interface, nunca com um provedor específico.
 
-interface RegistrarOrder {
+interface PedidoParaORegistrador {
   id: string;
   domain: string;
   holderName: string;
@@ -14,28 +14,28 @@ interface RegistrarOrder {
   holderPhone: string;
 }
 
-type RegistrarResult =
+type ResultadoDoRegistrador =
   /** O pedido fica na fila: uma pessoa registra à mão e marca como registrado. */
   | { kind: "manual" }
   /** O provedor já registrou (compra automática). */
   | { kind: "registered"; registeredAt: Date; expiresAt: Date; providerRef?: string }
   | { kind: "failed"; reason: string };
 
-export interface DomainRegistrar {
+export interface RegistradorDeDominio {
   /** Nome curto, para registro de atividades e telas internas. */
   readonly id: string;
   /** Chamado quando o registro começa (botão "Começar o registro"). */
-  register(order: RegistrarOrder): Promise<RegistrarResult>;
+  register(order: PedidoParaORegistrador): Promise<ResultadoDoRegistrador>;
 }
 
 /** Registro manual: não faz nada além de deixar o pedido na fila. */
-const manualRegistrar: DomainRegistrar = {
+const registradorManual: RegistradorDeDominio = {
   id: "manual",
   async register() {
     return { kind: "manual" };
   },
 };
 
-export function getRegistrar(): DomainRegistrar {
-  return manualRegistrar;
+export function obterRegistrador(): RegistradorDeDominio {
+  return registradorManual;
 }

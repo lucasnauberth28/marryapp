@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/admin/page-header";
 import { HistoryList } from "@/components/notifications/history-list";
 import { PushCard } from "@/components/notifications/push-card";
 import { vapidPublicKey } from "@/lib/notifications/push";
-import { hasPathAccess } from "@/lib/permissions";
+import { temAcessoAoCaminho } from "@/lib/permissions";
 import { getSession, redirectToLogin } from "@/lib/security/auth-guard";
 import { getWeddingContext } from "@/lib/security/wedding-context";
 
@@ -18,7 +18,7 @@ export default async function NotificacoesPage() {
   if (!session) return redirectToLogin();
   // Conta de fornecedor tem os avisos no painel dela; conta sem casamento ainda vai ao cadastro do casamento.
   if (!(await getWeddingContext())) {
-    redirect(hasPathAccess(session.allowedPaths, "/fornecedor") ? "/fornecedor/notificacoes" : "/boas-vindas");
+    redirect(temAcessoAoCaminho(session.allowedPaths, "/fornecedor") ? "/fornecedor/notificacoes" : "/boas-vindas");
   }
 
   const { items } = await listNotificationHistory();

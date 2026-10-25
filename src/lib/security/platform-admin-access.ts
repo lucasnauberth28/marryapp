@@ -1,6 +1,6 @@
 // Regra de acesso à administração da plataforma, sem dependências do servidor (roda nos testes).
 // O guard de verdade (sessão, banco, redirecionamento) fica em platform-admin.ts e usa esta função.
-import { isPlatformAdminPaths } from "../permissions.ts";
+import { ehAcessoDeAdminDaPlataforma } from "../permissions.ts";
 import { AuthorizationError } from "./authorization-error.ts";
 
 export type PlatformAdminAccess = "ok" | "no-session" | "forbidden";
@@ -11,7 +11,7 @@ export type PlatformAdminAccess = "ok" | "no-session" | "forbidden";
  */
 export function checkPlatformAdminAccess(session: { allowedPaths: readonly string[] } | null | undefined): PlatformAdminAccess {
   if (!session) return "no-session";
-  return isPlatformAdminPaths(session.allowedPaths) ? "ok" : "forbidden";
+  return ehAcessoDeAdminDaPlataforma(session.allowedPaths) ? "ok" : "forbidden";
 }
 
 /**

@@ -6,7 +6,7 @@ import { ExpenseStatus, PaymentMethod, PaymentStatus, RsvpStatus } from "@prisma
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { getWeddingContext } from "@/lib/security/wedding-context";
 import { unreadCountFor } from "@/lib/notifications/queries";
-import { notGiftOnlyWhere } from "@/lib/guest-origin";
+import { filtroSemSoPresente } from "@/lib/guest-origin";
 
 import { pluralizar } from "@/lib/formatacao/plural";
 // Central de avisos. Tudo aqui vale só para o usuário da sessão: o id do usuário nunca vem do navegador,
@@ -74,8 +74,8 @@ async function coupleReminders(weddingId: string): Promise<ReminderItem[]> {
     prisma.expense.count({
       where: { weddingId, status: { in: [ExpenseStatus.PENDING, ExpenseStatus.OVERDUE] }, dueDate: { lte: soon } },
     }),
-    prisma.guest.count({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING, ...notGiftOnlyWhere } }),
-    prisma.guest.count({ where: { weddingId, hasReceivedMessage: false, phone: { not: null }, ...notGiftOnlyWhere } }),
+    prisma.guest.count({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING, ...filtroSemSoPresente } }),
+    prisma.guest.count({ where: { weddingId, hasReceivedMessage: false, phone: { not: null }, ...filtroSemSoPresente } }),
   ]);
 
   const reminders: ReminderItem[] = [];

@@ -11,29 +11,29 @@ import { recordServiceEvent } from "@/lib/platform/system-records";
 
 import { somenteDigitos } from "./formatacao/telefone.ts";
 // Sem valores padrão: URL, chave e instância precisam vir do ambiente.
-const EVOLUTION_URL = (process.env.EVOLUTION_API_URL || "").trim().replace(/\/+$/, "");
-const EVOLUTION_KEY = (process.env.EVOLUTION_API_KEY || "").trim();
-const EVOLUTION_INSTANCE = (process.env.EVOLUTION_INSTANCE || "").trim();
+const URL_DA_EVOLUTION = (process.env.EVOLUTION_API_URL || "").trim().replace(/\/+$/, "");
+const CHAVE_DA_EVOLUTION = (process.env.EVOLUTION_API_KEY || "").trim();
+const INSTANCIA_DA_EVOLUTION = (process.env.EVOLUTION_INSTANCE || "").trim();
 
-function isConfigured() {
-  return !!(EVOLUTION_URL && EVOLUTION_KEY && EVOLUTION_INSTANCE);
+function estaConfigurado() {
+  return !!(URL_DA_EVOLUTION && CHAVE_DA_EVOLUTION && INSTANCIA_DA_EVOLUTION);
 }
 
 /** Para quem só quer saber se há WhatsApp configurado antes de montar a mensagem. */
-export function isWhatsappConfigured() {
-  return isConfigured();
+export function whatsappEstaConfigurado() {
+  return estaConfigurado();
 }
 
 /**
  * O QR de pareamento é uma credencial: nunca enviá-lo a serviços externos para gerar imagem.
  * Retorna a data URL da Evolution, ou o código bruto (renderizado como QR no navegador).
  */
-function formatQrCode(rawQr?: string | null): string | null {
+function formatarQrCode(rawQr?: string | null): string | null {
   if (!rawQr) return null;
   return rawQr;
 }
 
-function formatPhoneNumber(phone: string): string {
+function formatarNumeroDeTelefone(phone: string): string {
   const clean = somenteDigitos(phone);
   if (clean.startsWith("55") && (clean.length === 12 || clean.length === 13)) {
     return clean;
@@ -44,21 +44,21 @@ function formatPhoneNumber(phone: string): string {
   return clean;
 }
 
-interface SendMessageOptions {
+interface OpcoesDeEnvioDeMensagem {
   phone: string; // Formato E.164, ex: "5511999998888"
   text: string;
 }
 /**
  * Verifica se um número existe no WhatsApp e obtém o número canônico verificado.
  */
-async function resolveWhatsappJid(phone: string): Promise<{ exists: boolean; number: string }> {
-  const cleanNumber = formatPhoneNumber(phone);
+async function resolverJidDoWhatsapp(phone: string): Promise<{ exists: boolean; number: string }> {
+  const cleanNumber = formatarNumeroDeTelefone(phone);
   try {
-    const res = await fetch(`${EVOLUTION_URL}/chat/whatsappNumbers/${EVOLUTION_INSTANCE}`, {
+    const res = await fetch(`${URL_DA_EVOLUTION}/chat/whatsappNumbers/${INSTANCIA_DA_EVOLUTION}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        apikey: EVOLUTION_KEY!,
+        apikey: CHAVE_DA_EVOLUTION!,
       },
       body: JSON.stringify({
         numbers: [cleanNumber],
@@ -86,13 +86,13 @@ async function resolveWhatsappJid(phone: string): Promise<{ exists: boolean; num
 /**
  * Envia uma mensagem de texto simples via WhatsApp.
  */
-async function sendTextMessageRaw({ phone, text }: SendMessageOptions) {
-  if (!isConfigured()) {
+async function enviarMensagemDeTextoBruta({ phone, text }: OpcoesDeEnvioDeMensagem) {
+  if (!estaConfigurado()) {
     console.warn("[Evolution API] Serviço não configurado. Mensagem não enviada.");
     return { success: false, error: "Evolution API não configurada." };
   }
 
-  const { exists, number: cleanNumber } = await resolveWhatsappJid(phone);
+  const { exists, number: cleanNumber } = await resolverJidDoWhatsapp(phone);
 
   if (!exists) {
     return { success: false, error: `O número ${phone} não possui conta ativa no WhatsApp.` };
@@ -100,12 +100,12 @@ async function sendTextMessageRaw({ phone, text }: SendMessageOptions) {
 
   try {
     const response = await fetch(
-      `${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`,
+      `${URL_DA_EVOLUTION}/message/sendText/${INSTANCIA_DA_EVOLUTION}`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          apikey: EVOLUTION_KEY!,
+          apikey: CHAVE_DA_EVOLUTION!,
         },
         body: JSON.stringify({
           number: cleanNumber,
@@ -132,15 +132,15 @@ async function sendTextMessageRaw({ phone, text }: SendMessageOptions) {
 /**
  * Busca o status de conexão da instância do Evolution API.
  */
-export async function getConnectionState() {
-  if (!isConfigured()) {
+export async function obterEstadoDaConexao() {
+  if (!estaConfigurado()) {
     return { state: "DISCONNECTED", message: "Serviço não configurado." };
   }
 
   try {
-    const response = await fetch(`${EVOLUTION_URL}/instance/connectionState/${EVOLUTION_INSTANCE}`, {
+    const response = await fetch(`${URL_DA_EVOLUTION}/instance/connectionState/${INSTANCIA_DA_EVOLUTION}`, {
       headers: {
-        apikey: EVOLUTION_KEY!,
+        apikey: CHAVE_DA_EVOLUTION!,
       },
       cache: 'no-store'
     });
@@ -159,17 +159,17 @@ export async function getConnectionState() {
 /**
  * Cria a instância caso ela não exista no servidor da Evolution API.
  */
-async function createInstance() {
-  if (!isConfigured()) return null;
+async function criarInstancia() {
+  if (!estaConfigurado()) return null;
   try {
-    const response = await fetch(`${EVOLUTION_URL}/instance/create`, {
+    const response = await fetch(`${URL_DA_EVOLUTION}/instance/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        apikey: EVOLUTION_KEY!,
+        apikey: CHAVE_DA_EVOLUTION!,
       },
       body: JSON.stringify({
-        instanceName: EVOLUTION_INSTANCE,
+        instanceName: INSTANCIA_DA_EVOLUTION,
         qrcode: true,
         integration: "WHATSAPP-BAILEYS",
       }),
@@ -183,13 +183,13 @@ async function createInstance() {
   }
 }
 
-async function logoutInstance() {
-  if (!isConfigured()) return null;
+async function desconectarInstancia() {
+  if (!estaConfigurado()) return null;
   try {
-    const response = await fetch(`${EVOLUTION_URL}/instance/logout/${EVOLUTION_INSTANCE}`, {
+    const response = await fetch(`${URL_DA_EVOLUTION}/instance/logout/${INSTANCIA_DA_EVOLUTION}`, {
       method: "DELETE",
       headers: {
-        apikey: EVOLUTION_KEY!,
+        apikey: CHAVE_DA_EVOLUTION!,
       },
       cache: "no-store",
     });
@@ -204,27 +204,27 @@ async function logoutInstance() {
  * Tenta conectar a instância e retorna o QR Code se estiver desconectado.
  * Se a instância não existir, cria-a automaticamente.
  */
-export async function connectInstance() {
-  if (!isConfigured()) {
-    return { success: false, error: `Serviço não configurado: URL=${EVOLUTION_URL}, KEY=${!!EVOLUTION_KEY}, INSTANCE=${EVOLUTION_INSTANCE}` };
+export async function conectarInstancia() {
+  if (!estaConfigurado()) {
+    return { success: false, error: `Serviço não configurado: URL=${URL_DA_EVOLUTION}, KEY=${!!CHAVE_DA_EVOLUTION}, INSTANCE=${INSTANCIA_DA_EVOLUTION}` };
   }
 
   try {
-    const fetchUrl = `${EVOLUTION_URL}/instance/connect/${EVOLUTION_INSTANCE}`;
+    const fetchUrl = `${URL_DA_EVOLUTION}/instance/connect/${INSTANCIA_DA_EVOLUTION}`;
     let response = await fetch(fetchUrl, {
       method: "GET",
       headers: {
-        apikey: EVOLUTION_KEY!,
+        apikey: CHAVE_DA_EVOLUTION!,
       },
       cache: 'no-store'
     });
 
     if (response.status === 404) {
-      await createInstance();
+      await criarInstancia();
       await new Promise(r => setTimeout(r, 2000));
       response = await fetch(fetchUrl, {
         method: "GET",
-        headers: { apikey: EVOLUTION_KEY! },
+        headers: { apikey: CHAVE_DA_EVOLUTION! },
         cache: 'no-store'
       });
     }
@@ -236,26 +236,26 @@ export async function connectInstance() {
 
     const data = await response.json();
     const rawQr = data?.base64 || data?.qrcode?.base64 || data?.qrcode?.code || data?.code;
-    const formatted = formatQrCode(rawQr);
+    const formatted = formatarQrCode(rawQr);
     if (formatted) {
       return { success: true, qrCode: formatted };
     }
 
     // Se a resposta veio OK mas sem QR Code ({ count: 0 }), desloga a instância para forçar novo QR Code
     if (data?.qrcode?.count === 0 || data?.count === 0 || !rawQr) {
-      await logoutInstance();
+      await desconectarInstancia();
       await new Promise(r => setTimeout(r, 2500));
       
       const retryRes = await fetch(fetchUrl, {
         method: "GET",
-        headers: { apikey: EVOLUTION_KEY! },
+        headers: { apikey: CHAVE_DA_EVOLUTION! },
         cache: 'no-store'
       });
 
       if (retryRes.ok) {
         const retryData = await retryRes.json();
         const retryQr = retryData?.base64 || retryData?.qrcode?.base64 || retryData?.qrcode?.code || retryData?.code;
-        const retryFormatted = formatQrCode(retryQr);
+        const retryFormatted = formatarQrCode(retryQr);
         if (retryFormatted) {
           return { success: true, qrCode: retryFormatted };
         }
@@ -269,7 +269,7 @@ export async function connectInstance() {
   }
 }
 
-interface SendMediaOptions {
+interface OpcoesDeEnvioDeMidia {
   phone: string;
   mediaUrl: string;
   mediaType?: string | null; 
@@ -280,19 +280,19 @@ interface SendMediaOptions {
 /**
  * Envia imagem, PDF, áudio ou outro arquivo via WhatsApp.
  */
-async function sendMediaMessageRaw({ 
+async function enviarMensagemDeMidiaBruta({ 
   phone, 
   mediaUrl, 
   mediaType, 
   caption, 
   fileName 
-}: SendMediaOptions) {
-  if (!isConfigured()) {
+}: OpcoesDeEnvioDeMidia) {
+  if (!estaConfigurado()) {
     console.warn("[Evolution API] Serviço não configurado. Mídia não enviada.");
     return { success: false, error: "Evolution API não configurada." };
   }
 
-  const { exists, number: cleanNumber } = await resolveWhatsappJid(phone);
+  const { exists, number: cleanNumber } = await resolverJidDoWhatsapp(phone);
 
   if (!exists) {
     return { success: false, error: `O número ${phone} não possui conta ativa no WhatsApp.` };
@@ -313,12 +313,12 @@ async function sendMediaMessageRaw({
 
   try {
     const response = await fetch(
-      `${EVOLUTION_URL}/message/sendMedia/${EVOLUTION_INSTANCE}`,
+      `${URL_DA_EVOLUTION}/message/sendMedia/${INSTANCIA_DA_EVOLUTION}`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          apikey: EVOLUTION_KEY!,
+          apikey: CHAVE_DA_EVOLUTION!,
         },
         body: JSON.stringify({
           number: cleanNumber,
@@ -347,10 +347,10 @@ async function sendMediaMessageRaw({
 
 // ---------- Saúde do sistema: resultado de cada envio, sem telefone, texto nem mídia ----------
 
-type SendResult = { success: boolean; error?: string };
+type ResultadoDoEnvio = { success: boolean; error?: string };
 
 /** Motivo curto e seguro da falha (a mensagem original pode conter número de telefone ou corpo da resposta). */
-function safeReason(error: string | undefined): string {
+function motivoSeguro(error: string | undefined): string {
   if (!error) return "Falha no envio";
   const http = error.match(/^HTTP (\d{3})/);
   if (http) return `A Evolution API respondeu ${http[1]}`;
@@ -359,23 +359,23 @@ function safeReason(error: string | undefined): string {
   return "Falha de conexão com a Evolution API";
 }
 
-async function tracked<T extends SendResult>(kind: string, run: () => Promise<T>): Promise<T> {
+async function rastreado<T extends ResultadoDoEnvio>(kind: string, run: () => Promise<T>): Promise<T> {
   const result = await run();
-  const reason = result.success ? null : safeReason(result.error);
+  const reason = result.success ? null : motivoSeguro(result.error);
   if (reason === "") return result; // serviço não configurado: aparece como "não configurado", não como falha
   if (reason === "Número sem WhatsApp") await recordServiceEvent({ service: "whatsapp", kind: "invalid_number", ok: true, message: reason });
   else await recordServiceEvent({ service: "whatsapp", kind, ok: result.success, message: reason });
   return result;
 }
 
-export const sendTextMessage = (options: Parameters<typeof sendTextMessageRaw>[0]) => tracked("send", () => sendTextMessageRaw(options));
-const sendMediaMessage = (options: Parameters<typeof sendMediaMessageRaw>[0]) => tracked("send", () => sendMediaMessageRaw(options));
+export const enviarMensagemDeTexto = (options: Parameters<typeof enviarMensagemDeTextoBruta>[0]) => rastreado("send", () => enviarMensagemDeTextoBruta(options));
+const enviarMensagemDeMidia = (options: Parameters<typeof enviarMensagemDeMidiaBruta>[0]) => rastreado("send", () => enviarMensagemDeMidiaBruta(options));
 
 /**
  * Dispara mensagens para uma lista de convidados com rate limiting anti-ban.
  * Suporta mensagens de texto simples e mensagens com mídia (imagens, documentos, áudios).
  */
-export async function sendBulkMessages(
+export async function enviarMensagensEmLote(
   recipients: Array<{ 
     phone: string; 
     message: string; 
@@ -392,14 +392,14 @@ export async function sendBulkMessages(
     
     // Se houver mediaUrl válida, envia mensagem com mídia e legenda
     if (r.mediaUrl && r.mediaUrl.trim() !== "") {
-      result = await sendMediaMessage({ 
+      result = await enviarMensagemDeMidia({ 
         phone: r.phone, 
         mediaUrl: r.mediaUrl.trim(), 
         mediaType: r.mediaType || "image", 
         caption: r.message 
       });
     } else {
-      result = await sendTextMessage({ phone: r.phone, text: r.message });
+      result = await enviarMensagemDeTexto({ phone: r.phone, text: r.message });
     }
 
     results.push({ phone: r.phone, ...result });

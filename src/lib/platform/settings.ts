@@ -1,7 +1,7 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { requirePlatformAdmin } from "@/lib/security/platform-admin";
 import { SETTING_DEFS, parseSetting, type SettingKey, type SettingValue } from "@/lib/platform/settings-schema";
 
@@ -36,7 +36,7 @@ export async function savePlatformSetting<K extends SettingKey>(key: K, value: S
     create: { key, value: clean as Prisma.InputJsonValue, updatedById: admin.userId, updatedByName: admin.name ?? "Administrador" },
     update: { value: clean as Prisma.InputJsonValue, updatedById: admin.userId, updatedByName: admin.name ?? "Administrador" },
   });
-  await logAudit({
+  await registrarAuditoria({
     action: "platform_setting.update",
     targetType: "platform_setting",
     targetId: key,

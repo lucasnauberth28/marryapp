@@ -1,18 +1,18 @@
 import "server-only";
 import { cache } from "react";
 import prisma from "@/lib/prisma";
-import { maskDocument } from "@/lib/document-br";
-import { ACTIVE_STATUSES, isActiveStatus, type DomainOrderStatusName } from "@/lib/domain-order";
+import { esconderDocumento } from "@/lib/document-br";
+import { SITUACOES_ATIVAS, ehSituacaoAtiva, type NomeDaSituacaoDoPedidoDeDominio } from "@/lib/domain-order";
 import { formatarTelefone } from "./formatacao/telefone.ts";
 
 /**
  * Pedido de domínio como a tela do casal vê: o documento do titular SEMPRE escondido,
  * datas em texto (vão para o navegador) e nada além do que a tela mostra.
  */
-export interface DomainOrderView {
+export interface VisaoDoPedidoDeDominio {
   id: string;
   domain: string;
-  status: DomainOrderStatusName;
+  status: NomeDaSituacaoDoPedidoDeDominio;
   holderName: string;
   holderDocumentMasked: string;
   holderEmail: string;
@@ -24,7 +24,7 @@ export interface DomainOrderView {
   rejectionReason: string | null;
 }
 
-const VIEW_SELECT = {
+const SELECAO_DA_VISAO = {
   id: true,
   domain: true,
   status: true,
@@ -39,7 +39,7 @@ const VIEW_SELECT = {
   rejectionReason: true,
 } as const;
 
-type OrderRow = {
+type LinhaDoPedido = {
   id: string;
   domain: string;
   status: string;
@@ -54,13 +54,13 @@ type OrderRow = {
   rejectionReason: string | null;
 };
 
-function toOrderView(row: OrderRow): DomainOrderView {
+function paraVisaoDoPedido(row: LinhaDoPedido): VisaoDoPedidoDeDominio {
   return {
     id: row.id,
     domain: row.domain,
-    status: row.status as DomainOrderStatusName,
+    status: row.status as NomeDaSituacaoDoPedidoDeDominio,
     holderName: row.holderName,
-    holderDocumentMasked: maskDocument(row.holderDocument),
+    holderDocumentMasked: esconderDocumento(row.holderDocument),
     holderEmail: row.holderEmail,
     holderPhone: formatarTelefone(row.holderPhone),
     requestedAt: row.requestedAt.toISOString(),
@@ -72,22 +72,22 @@ function toOrderView(row: OrderRow): DomainOrderView {
 }
 
 /** Pedido ativo do casamento (no máximo um) e o último pedido encerrado, para explicar uma recusa. */
-export const getWeddingDomainOrders = cache(
-  async (weddingId: string): Promise<{ active: DomainOrderView | null; lastClosed: DomainOrderView | null }> => {
+export const obterPedidosDeDominioDoCasamento = cache(
+  async (weddingId: string): Promise<{ active: VisaoDoPedidoDeDominio | null; lastClosed: VisaoDoPedidoDeDominio | null }> => {
     const [active, lastClosed] = await Promise.all([
       prisma.domainOrder.findFirst({
-        where: { weddingId, status: { in: [...ACTIVE_STATUSES] } },
+        where: { weddingId, status: { in: [...SITUACOES_ATIVAS] } },
         orderBy: { requestedAt: "desc" },
-        select: VIEW_SELECT,
+        select: SELECAO_DA_VISAO,
       }),
       prisma.domainOrder.findFirst({
         where: { weddingId, status: { in: ["REJECTED", "CANCELED"] } },
         orderBy: { updatedAt: "desc" },
-        select: VIEW_SELECT,
+        select: SELECAO_DA_VISAO,
       }),
     ]);
-    return { active: active ? toOrderView(active) : null, lastClosed: lastClosed ? toOrderView(lastClosed) : null };
+    return { active: active ? paraVisaoDoPedido(active) : null, lastClosed: lastClosed ? paraVisaoDoPedido(lastClosed) : null };
   },
 );
 
-export { isActiveStatus };
+export { ehSituacaoAtiva as isActiveStatus };

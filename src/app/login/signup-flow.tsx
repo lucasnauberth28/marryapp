@@ -31,7 +31,7 @@ import { NativeSelect } from "@/components/ui/select";
 import { mascararDocumentoDigitando } from "@/lib/formatacao/documento";
 import { mascararTelefone } from "@/lib/formatacao/telefone";
 import { formatPrice, plansFor, type AccountType, type PlanOption, type SignupStep } from "./auth-config";
-import type { Catalog } from "@/lib/catalog";
+import type { Catalogo } from "@/lib/catalog";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 interface SignupFlowProps {
@@ -43,7 +43,7 @@ interface SignupFlowProps {
   initialPlanId?: string;
   customModules?: string[];
   /** Preços vigentes (catálogo do servidor). */
-  catalog?: Catalog;
+  catalog?: Catalogo;
   /** Conta já existente: leva para a aba Entrar com o e-mail preenchido. */
   onGoToLogin: (email: string) => void;
 }

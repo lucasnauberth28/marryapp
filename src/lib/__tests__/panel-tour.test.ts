@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { PANEL_TOUR_VERSION, decideTourMode, stepsForMode, tourEligible, tourMayWrite, tourWrite } from "../tour/rules.ts";
 import { buildTourSteps, navAnchor, whereText } from "../tour/steps.ts";
 import { placeBalloon } from "../tour/positioning.ts";
-import { visibleAreas } from "../panel-nav.ts";
+import { areasVisiveis } from "../panel-nav.ts";
 import { firstStepsView, siteInfoFilled, type FirstStepsData } from "../tour/first-steps.ts";
 
 const COUPLE = [
@@ -76,7 +76,7 @@ test("todo passo do menu aponta para uma tela que existe no menu (panel-nav) e o
     if (step.href) assert.match(nav, new RegExp(`href: "${step.href}"`), `${step.id}: ${step.href} não está no menu`);
     if (step.href && !step.where) {
       // o item do menu (e da barra de baixo) usa data-tour="nav-<primeira tela da área que o perfil abre>"
-      const area = visibleAreas(["*"]).find((a) => a.screens.some((sc) => sc.href === step.href));
+      const area = areasVisiveis(["*"]).find((a) => a.screens.some((sc) => sc.href === step.href));
       assert.equal(step.anchor, navAnchor(area!.href), `${step.id}: âncora diferente da do item do menu`);
     }
   }

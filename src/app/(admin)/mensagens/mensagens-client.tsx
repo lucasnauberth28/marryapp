@@ -16,9 +16,9 @@ import { btn, btnDanger, btnIcon, card, chipBase, chipTone, errorBox, hint, inpu
 import { LoadingButton } from "@/components/painel/loading-button";
 import { createMessageTemplate, updateMessageTemplate, deleteMessageTemplate, sendTemplateToGuests } from "@/actions/message-actions";
 import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-actions";
-import { weddingSiteUrl } from "@/lib/wedding-links";
+import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
-import { isGiftOnlyPending } from "@/lib/guest-origin";
+import { ehSoPresentePendente } from "@/lib/guest-origin";
 import { cn } from "@/lib/utils";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
@@ -79,7 +79,7 @@ type Audience = "pending" | "unsent" | "confirmed" | "all" | "custom";
 function idsFor(audience: Audience, guests: Guest[]): string[] {
   const withPhone = guests.filter(hasPhone);
   // Quem só presenteou não foi convidado pelo casal: fica fora dos envios por grupo (só escolhendo à mão)
-  const invitees = withPhone.filter((g) => !isGiftOnlyPending(g));
+  const invitees = withPhone.filter((g) => !ehSoPresentePendente(g));
   switch (audience) {
     case "pending":
       return invitees.filter((g) => g.rsvpStatus === "PENDING").map((g) => g.id);
@@ -107,7 +107,7 @@ function links2preview(links: LinkItem[], slug: string, customDomain?: string | 
     .map((l) => {
       const lower = l.text.toLowerCase();
       const gifts = lower.includes("presente") || l.id === "gifts";
-      return { text: l.text, url: weddingSiteUrl(slug, gifts ? "presentes" : "rsvp", customDomain) };
+      return { text: l.text, url: urlDoSiteDoCasamento(slug, gifts ? "presentes" : "rsvp", customDomain) };
     });
 }
 
@@ -556,8 +556,8 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
   const [shortcut, setShortcut] = useState<"invites" | "reminders" | null>(null);
 
   const withPhone = initialGuests.filter(hasPhone).length;
-  const invitesToSend = initialGuests.filter((g) => !g.hasReceivedMessage && hasPhone(g) && !isGiftOnlyPending(g)).length;
-  const remindersToSend = initialGuests.filter((g) => g.rsvpStatus === "PENDING" && g.hasReceivedMessage && hasPhone(g) && !isGiftOnlyPending(g)).length;
+  const invitesToSend = initialGuests.filter((g) => !g.hasReceivedMessage && hasPhone(g) && !ehSoPresentePendente(g)).length;
+  const remindersToSend = initialGuests.filter((g) => g.rsvpStatus === "PENDING" && g.hasReceivedMessage && hasPhone(g) && !ehSoPresentePendente(g)).length;
   const received = initialGuests.filter((g) => g.hasReceivedMessage).length;
   const sample = initialGuests[0]?.name.split(" ")[0] ?? "Nome";
 

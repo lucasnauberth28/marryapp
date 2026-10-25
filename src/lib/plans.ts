@@ -2,10 +2,10 @@
  * Catálogo de planos. Fonte única de preço: o servidor sempre recalcula o valor a partir daqui,
  * nunca confiando no valor enviado pelo navegador.
  */
-import { GIFT_FEE_LABEL } from "./gift-fee.ts";
-import { calculateCustomPlanPrice } from "./pricing-modules.ts";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "./gift-fee.ts";
+import { calcularPrecoDoPlanoPersonalizado } from "./pricing-modules.ts";
 
-export const PLANS_CONFIG = {
+export const CONFIGURACAO_DOS_PLANOS = {
   // Casais
   basic: {
     type: "COUPLE" as const,
@@ -17,7 +17,7 @@ export const PLANS_CONFIG = {
       "Site do casamento com endereço no Aceito",
       "Lista de convidados e confirmações de presença",
       "Presentes em dinheiro por Pix e cartão",
-      `Taxa de ${GIFT_FEE_LABEL} por presente recebido`,
+      `Taxa de ${ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido`,
     ],
   },
   classic: {
@@ -28,7 +28,7 @@ export const PLANS_CONFIG = {
     badge: "Convites e entrada",
     // Só entra aqui o que o plano diferencia de fato: WhatsApp pelo painel e código QR são travados em wedding-plan-modules.
     features: [
-      `Presentes por Pix sem a taxa de ${GIFT_FEE_LABEL} do Aceito`,
+      `Presentes por Pix sem a taxa de ${ROTULO_DA_TAXA_DO_PRESENTE} do Aceito`,
       "Convites e lembretes pelo WhatsApp, enviados pelo painel",
       "Registro de entrada dos convidados com código QR",
     ],
@@ -88,23 +88,23 @@ export const PLANS_CONFIG = {
   },
 };
 
-export type PlanKey = keyof typeof PLANS_CONFIG;
+export type ChaveDoPlano = keyof typeof CONFIGURACAO_DOS_PLANOS;
 
-export function isPlanKey(value: string): value is PlanKey {
-  return Object.prototype.hasOwnProperty.call(PLANS_CONFIG, value);
+export function ehChaveDePlano(value: string): value is ChaveDoPlano {
+  return Object.prototype.hasOwnProperty.call(CONFIGURACAO_DOS_PLANOS, value);
 }
 
 /**
  * Resolve tipo e preço (em centavos) de um plano pelos valores DO CÓDIGO. Planos personalizados são sempre de casal.
  * No servidor, quem cobra usa o catálogo mesclado com os preços da administração (lib/catalog.ts: resolvePlanIn).
  */
-export function resolvePlan(planId: string, modules?: string[]): { type: "COUPLE" | "VENDOR"; name: string; price: number } | null {
+export function resolverPlano(planId: string, modules?: string[]): { type: "COUPLE" | "VENDOR"; name: string; price: number } | null {
   if (planId === "custom") {
-    const calc = calculateCustomPlanPrice(modules ?? []);
+    const calc = calcularPrecoDoPlanoPersonalizado(modules ?? []);
     if (calc.selectedModules.length === 0) return null;
     return { type: "COUPLE", name: "Plano Adaptado", price: calc.total };
   }
-  if (!isPlanKey(planId)) return null;
-  const plan = PLANS_CONFIG[planId];
+  if (!ehChaveDePlano(planId)) return null;
+  const plan = CONFIGURACAO_DOS_PLANOS[planId];
   return { type: plan.type, name: plan.name, price: plan.price };
 }

@@ -3,25 +3,25 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import {
-  THEME_KEY,
-  parseThemePreference,
-  readThemeFromCookie,
-  resolveTheme,
-  serializeThemeCookie,
-  type AppliedTheme,
-  type ThemePreference,
+  CHAVE_DO_TEMA,
+  interpretarPreferenciaDeTema,
+  lerTemaDoCookie,
+  resolverTema,
+  serializarCookieDoTema,
+  type TemaAplicado,
+  type PreferenciaDeTema,
 } from "@/lib/theme";
 
 // Cor da barra do navegador (meta theme-color) por tema: é o `linho` de cada paleta.
-const THEME_COLOR: Record<AppliedTheme, string> = { light: "#FCFBFA", dark: "#141113" };
+const THEME_COLOR: Record<TemaAplicado, string> = { light: "#FCFBFA", dark: "#141113" };
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
 type ThemeContextValue = {
   /** O que a pessoa escolheu: "light", "dark" ou "system" (Do aparelho). */
-  preference: ThemePreference;
+  preference: PreferenciaDeTema;
   /** O tema que está no <html> agora (já considera o sistema e as páginas sempre claras). */
-  resolvedTheme: AppliedTheme;
-  setPreference: (next: ThemePreference) => void;
+  resolvedTheme: TemaAplicado;
+  setPreference: (next: PreferenciaDeTema) => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -31,11 +31,11 @@ const LockContext = createContext<((on: boolean) => void) | null>(null);
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 
-function readStoredPreference(): ThemePreference {
-  const fromCookie = readThemeFromCookie(document.cookie);
+function readStoredPreference(): PreferenciaDeTema {
+  const fromCookie = lerTemaDoCookie(document.cookie);
   if (fromCookie) return fromCookie;
   try {
-    return parseThemePreference(localStorage.getItem(THEME_KEY));
+    return interpretarPreferenciaDeTema(localStorage.getItem(CHAVE_DO_TEMA));
   } catch {
     return "light";
   }
@@ -45,7 +45,7 @@ function subscribePreference(onChange: () => void) {
   listeners.add(onChange);
   // Outra aba gravou no localStorage (o cookie acompanha a gravação).
   const onStorage = (e: StorageEvent) => {
-    if (e.key === THEME_KEY || e.key === null) onChange();
+    if (e.key === CHAVE_DO_TEMA || e.key === null) onChange();
   };
   window.addEventListener("storage", onStorage);
   return () => {
@@ -75,7 +75,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemDark = useSyncExternalStore(subscribeSystem, () => window.matchMedia(DARK_QUERY).matches, () => false);
   const [locks, setLocks] = useState(0);
 
-  const resolvedTheme: AppliedTheme = locks > 0 ? "light" : resolveTheme({ preference, systemDark, pathname });
+  const resolvedTheme: TemaAplicado = locks > 0 ? "light" : resolverTema({ preference, systemDark, pathname });
 
   useEffect(() => {
     if (!mounted) return;
@@ -83,10 +83,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", THEME_COLOR[resolvedTheme]));
   }, [mounted, resolvedTheme]);
 
-  const setPreference = useCallback((next: ThemePreference) => {
-    document.cookie = serializeThemeCookie(next);
+  const setPreference = useCallback((next: PreferenciaDeTema) => {
+    document.cookie = serializarCookieDoTema(next);
     try {
-      localStorage.setItem(THEME_KEY, next);
+      localStorage.setItem(CHAVE_DO_TEMA, next);
     } catch {
       /* navegação privativa: o cookie já guarda */
     }

@@ -1,7 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
-import { maskDocument } from "@/lib/document-br";
+import { esconderDocumento } from "@/lib/document-br";
 
 /**
  * Cópia dos dados de uma conta (LGPD, art. 18, V), em JSON. Usada pela própria pessoa (/api/conta/exportar)
@@ -98,7 +98,7 @@ export async function buildAccountExport(userId: string): Promise<{ filename: st
     },
     subscriptions: user.subscriptions,
     // Pedidos de domínio: o CPF/CNPJ do titular sai sempre escondido (o número completo é só para o registro)
-    wedding: wedding && { ...wedding, domainOrders: wedding.domainOrders.map((o) => ({ ...o, holderDocument: maskDocument(o.holderDocument) })) },
+    wedding: wedding && { ...wedding, domainOrders: wedding.domainOrders.map((o) => ({ ...o, holderDocument: esconderDocumento(o.holderDocument) })) },
     vendorProfile,
   };
 

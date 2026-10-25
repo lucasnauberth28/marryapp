@@ -3,9 +3,9 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { after } from "next/server";
 import prisma from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { SUPER_ADMIN_USER_ID, type SecureAuthContext } from "@/lib/security/auth-guard";
-import { isPlatformAdminPaths } from "@/lib/permissions";
+import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
 import {
   IMPERSONATION_COOKIE,
   IMPERSONATION_MAX_MINUTES,
@@ -58,7 +58,7 @@ function closeExpired(row: { id: string; adminUserId: string; adminName: string;
         data: { endedAt: new Date(), endedReason: "expired" },
       });
       if (count > 0) {
-        await logAudit({
+        await registrarAuditoria({
           action: "impersonation.end",
           targetType: "wedding",
           targetId: row.weddingId ?? undefined,
@@ -80,7 +80,7 @@ function closeExpired(row: { id: string; adminUserId: string; adminName: string;
 /** Sessão de "entrar como" válida para esta sessão logada, ou null (padrão, sem cookie ou sem acesso total). */
 export const resolveImpersonation = cache(async (session: SecureAuthContext): Promise<ImpersonationContext | null> => {
   // Só a administração tem sessão de "entrar como" (o perfil vem do banco, não do navegador)
-  if (!isPlatformAdminPaths(session.allowedPaths)) return null;
+  if (!ehAcessoDeAdminDaPlataforma(session.allowedPaths)) return null;
 
   const store = await cookies();
   const signed = await verifyImpersonationCookie(store.get(IMPERSONATION_COOKIE)?.value);

@@ -2,13 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { logAudit } from "@/lib/audit";
-import { isEmailConfigured, sendEmail } from "@/lib/email";
+import { registrarAuditoria } from "@/lib/audit";
+import { emailEstaConfigurado, enviarEmail } from "@/lib/email";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
 import { getPlatformSetting, savePlatformSetting } from "@/lib/platform/settings";
 import { alertEmail } from "@/lib/platform/health-alerts";
-import { connectInstance, isWhatsappConfigured } from "@/lib/evolution";
+import { conectarInstancia, whatsappEstaConfigurado } from "@/lib/evolution";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 type Fail = { success: false; error: string; fieldErrors?: Record<string, string> };
@@ -47,10 +47,10 @@ export async function testHealthAlerts(): Promise<Ok | Fail> {
     if (!limit.success) return { success: false, error: "Muitos testes seguidos. Aguarde um pouco." };
     const settings = await getPlatformSetting("healthAlerts");
     if (!settings.sendTo) return { success: false, error: "Salve primeiro o e-mail que recebe os alertas." };
-    if (!isEmailConfigured()) return { success: false, error: "O e-mail não está configurado no servidor (RESEND_API_KEY)." };
+    if (!emailEstaConfigurado()) return { success: false, error: "O e-mail não está configurado no servidor (RESEND_API_KEY)." };
     const { html, text } = alertEmail(["Este é um teste: se você recebeu esta mensagem, os alertas por e-mail estão funcionando."]);
-    const result = await sendEmail({ to: settings.sendTo, subject: "Aceito: teste dos alertas", html, text });
-    await logAudit({ action: "health.alert_test", targetType: "health", details: { sent: result.sent } });
+    const result = await enviarEmail({ to: settings.sendTo, subject: "Aceito: teste dos alertas", html, text });
+    await registrarAuditoria({ action: "health.alert_test", targetType: "health", details: { sent: result.sent } });
     return result.sent ? { success: true, message: "Teste enviado. Confira a caixa de entrada." } : { success: false, error: "Não foi possível enviar o teste. Confira o e-mail e a configuração." };
   } catch (error) {
     return platformAdminFailure(error, "testHealthAlerts");
@@ -64,11 +64,11 @@ export async function testHealthAlerts(): Promise<Ok | Fail> {
 export async function reconnectWhatsapp(): Promise<{ success: true; qrCode: string } | Fail> {
   try {
     const admin = await requirePlatformAdmin();
-    if (!isWhatsappConfigured()) return { success: false, error: "O WhatsApp não está configurado neste ambiente." };
+    if (!whatsappEstaConfigurado()) return { success: false, error: "O WhatsApp não está configurado neste ambiente." };
     const limit = await checkRateLimit({ key: `ADMIN_WA_RECONNECT:${admin.userId}`, limit: 6, windowMs: 10 * 60_000 });
     if (!limit.success) return { success: false, error: ERROS.muitasTentativas };
-    const result = await connectInstance();
-    await logAudit({ action: "whatsapp.reconnect", targetType: "whatsapp", details: { qrGenerated: Boolean(result.success && result.qrCode) } });
+    const result = await conectarInstancia();
+    await registrarAuditoria({ action: "whatsapp.reconnect", targetType: "whatsapp", details: { qrGenerated: Boolean(result.success && result.qrCode) } });
     if (result.success && result.qrCode) return { success: true, qrCode: result.qrCode };
     console.error("[reconnectWhatsapp]", result.error);
     return { success: false, error: "Não deu para gerar o QR Code agora. Tente de novo em instantes." };

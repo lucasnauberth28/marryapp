@@ -1,12 +1,12 @@
 import prisma from "@/lib/prisma";
 import { Guest, Prisma } from "@prisma/client";
-import { giftOnlyGuestDefaults } from "@/lib/guest-origin";
-import { getPhoneVariations } from "@/lib/phone-variations";
+import { padroesDoConvidadoSoPresente } from "@/lib/guest-origin";
+import { obterVariacoesDoTelefone } from "@/lib/phone-variations";
 
 import { somenteDigitos } from "./formatacao/telefone.ts";
-export { getPhoneVariations };
+export { obterVariacoesDoTelefone as getPhoneVariations };
 
-interface FindOrCreateGuestInput {
+interface EntradaParaAcharOuCriarConvidado {
   /** Casamento dono do presente: a busca e a criação ficam restritas a ele. */
   weddingId: string;
   name: string;
@@ -18,13 +18,13 @@ interface FindOrCreateGuestInput {
  * Busca por um convidado existente considerando todas as variações de telefone e e-mail.
  * Caso não encontre, cria um novo convidado de forma segura sem duplicidade.
  */
-export async function findOrCreateGuest({
+export async function acharOuCriarConvidado({
   weddingId,
   name,
   phone,
   email,
-}: FindOrCreateGuestInput): Promise<Guest> {
-  const phoneVariations = getPhoneVariations(phone);
+}: EntradaParaAcharOuCriarConvidado): Promise<Guest> {
+  const phoneVariations = obterVariacoesDoTelefone(phone);
 
   // 1. Tenta encontrar por variação de telefone ou e-mail
   const contactFilters: Prisma.GuestWhereInput[] = [
@@ -65,7 +65,7 @@ export async function findOrCreateGuest({
       phone: formattedPhone,
       email: email && email.trim() !== "" ? email.trim().toLowerCase() : null,
       // Quem só presenteou não respondeu ao convite: fica pendente e marcado (nunca "Confirmado")
-      ...giftOnlyGuestDefaults(),
+      ...padroesDoConvidadoSoPresente(),
     },
   });
 }

@@ -6,10 +6,10 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 import { FaqSection } from "@/components/landing/faq-section";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { btn, container, lead, overline } from "@/components/landing/styles";
-import { brandShare } from "@/lib/brand-meta";
-import { getCatalog } from "@/lib/catalog-server";
-import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
-import { GIFT_CONDITIONS, planLabel } from "@/lib/plan-copy";
+import { compartilhamentoDaMarca } from "@/lib/brand-meta";
+import { obterCatalogo } from "@/lib/catalog-server";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
+import { CONDICOES_DO_PRESENTE, rotuloDoPlano } from "@/lib/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +19,7 @@ export const revalidate = 300;
 export const metadata: Metadata = {
   title: "Planos",
   description: "Escolham o plano do casamento: o Básico não tem mensalidade, Classic e VIP têm pagamento único. Veja os recursos e as taxas sobre presentes.",
-  ...brandShare({
+  ...compartilhamentoDaMarca({
     title: "Planos · Aceito",
     description: "Escolham o plano do casamento: o Básico não tem mensalidade, Classic e VIP têm pagamento único.",
     url: "/planos",
@@ -37,7 +37,7 @@ const VENDOR_PLANS = [
 const textLink = "font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 transition-colors hover:decoration-ameixa";
 
 export default async function PlanosPage() {
-  const catalog = await getCatalog();
+  const catalog = await obterCatalogo();
   return (
     <div className="bg-linho text-tinta">
       <LandingHeader />
@@ -88,21 +88,21 @@ export default async function PlanosPage() {
             <dl className="divide-y divide-linha border-y border-linha text-base leading-6">
               <div className="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
                 <dt className="font-semibold">Plano Básico</dt>
-                <dd className="text-tinta-suave">{GIFT_FEE_LABEL} por presente recebido, em presentes pagos por Pix ou cartão.</dd>
+                <dd className="text-tinta-suave">{ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido, em presentes pagos por Pix ou cartão.</dd>
               </div>
               <div className="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
                 <dt className="font-semibold">
-                  {planLabel(catalog.plans.classic.name)} e {planLabel(catalog.plans.vip.name)}
+                  {rotuloDoPlano(catalog.plans.classic.name)} e {rotuloDoPlano(catalog.plans.vip.name)}
                 </dt>
-                <dd className="text-tinta-suave">A taxa de {GIFT_FEE_LABEL} do Aceito não vale para presentes pagos por Pix.</dd>
+                <dd className="text-tinta-suave">A taxa de {ROTULO_DA_TAXA_DO_PRESENTE} do Aceito não vale para presentes pagos por Pix.</dd>
               </div>
               <div className="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
                 <dt className="font-semibold">Pix</dt>
-                <dd className="text-tinta-suave">{GIFT_CONDITIONS.pix}</dd>
+                <dd className="text-tinta-suave">{CONDICOES_DO_PRESENTE.pix}</dd>
               </div>
               <div className="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
                 <dt className="font-semibold">Cartão</dt>
-                <dd className="text-tinta-suave">{GIFT_CONDITIONS.card}</dd>
+                <dd className="text-tinta-suave">{CONDICOES_DO_PRESENTE.card}</dd>
               </div>
               <div className="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
                 <dt className="font-semibold">Recebimento</dt>
@@ -138,7 +138,7 @@ export default async function PlanosPage() {
                 return (
                   <li key={key}>
                     <article className="flex h-full flex-col gap-3 rounded-[16px] border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
-                      <h3 className="text-xl font-semibold leading-7">{planLabel(plan.name)}</h3>
+                      <h3 className="text-xl font-semibold leading-7">{rotuloDoPlano(plan.name)}</h3>
                       <p className="flex items-baseline gap-2">
                         <span className="font-num text-[40px] leading-[44px]">{plan.price === 0 ? "R$ 0" : formatarReaisEnxuto(plan.price)}</span>
                         <span className="text-tinta-suave">{plan.price === 0 ? "sem mensalidade" : "por mês"}</span>
@@ -154,7 +154,7 @@ export default async function PlanosPage() {
                       <Link
                         href={`/cadastro?tipo=fornecedor&plano=${key}`}
                         className={cn(key === "start" ? btn.primary : btn.secondary, btn.block, "mt-2")}
-                        aria-label={`${cta}: plano ${planLabel(plan.name)}`}
+                        aria-label={`${cta}: plano ${rotuloDoPlano(plan.name)}`}
                       >
                         {cta}
                       </Link>

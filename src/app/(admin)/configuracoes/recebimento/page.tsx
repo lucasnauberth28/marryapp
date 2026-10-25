@@ -4,8 +4,8 @@ import { requireWeddingPage } from "@/lib/security/wedding-context";
 import { weddingWriteRefusal } from "@/lib/security/impersonation-rules";
 import { SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { isPayoutCryptoConfigured } from "@/lib/security/payout-crypto";
-import { getPayoutAccountView } from "@/lib/payout-account-view";
-import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
+import { obterVisaoDaContaDeRepasse } from "@/lib/payout-account-view";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
 import { RecebimentoClient } from "./recebimento-client";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default async function RecebimentoPage() {
   const ctx = await requireWeddingPage("/configuracoes");
-  const account = await getPayoutAccountView(ctx.weddingId);
+  const account = await obterVisaoDaContaDeRepasse(ctx.weddingId);
 
   // Quem pode mexer: só a própria pessoa do casal (a administração vendo o casal, mesmo editando, só lê).
   let blockedReason: string | null = null;
@@ -49,7 +49,7 @@ export default async function RecebimentoPage() {
           }
           blockedReason={blockedReason}
           registrationAvailable={registrationAvailable}
-          feeLabel={GIFT_FEE_LABEL}
+          feeLabel={ROTULO_DA_TAXA_DO_PRESENTE}
         />
       </div>
     </div>

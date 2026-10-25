@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { Info } from "lucide-react";
-import { showsMainWeddingNote } from "@/lib/account-label";
+import { mostraNotaDoCasamentoPrincipal } from "@/lib/account-label";
 
 /**
  * Aviso discreto para a administração: as telas do casal mostram o casamento principal.
@@ -10,7 +10,7 @@ import { showsMainWeddingNote } from "@/lib/account-label";
  */
 export function MainWeddingNote({ coupleNames }: { coupleNames: string }) {
   const pathname = usePathname();
-  if (!showsMainWeddingNote(pathname)) return null;
+  if (!mostraNotaDoCasamentoPrincipal(pathname)) return null;
   return (
     <p className="mb-4 flex items-start gap-2 text-sm leading-5 text-tinta-suave">
       <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />

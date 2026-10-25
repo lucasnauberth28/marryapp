@@ -1,11 +1,11 @@
 // Resultado da busca do convite pelo telefone (tela pública de confirmação de presença).
 // Cada situação tem a sua mensagem: limite de tentativas não pode parecer "convite não encontrado".
 
-import { TOO_MANY_ATTEMPTS_MESSAGE } from "./rate-limit-message.ts";
+import { MENSAGEM_DE_MUITAS_TENTATIVAS } from "./rate-limit-message.ts";
 
-export { TOO_MANY_ATTEMPTS_MESSAGE };
+export { MENSAGEM_DE_MUITAS_TENTATIVAS as TOO_MANY_ATTEMPTS_MESSAGE };
 
-export interface PublicRsvpGuest {
+export interface ConvidadoDaConfirmacaoPublica {
   id: string;
   name: string;
   allowedCompanions: number;
@@ -13,19 +13,19 @@ export interface PublicRsvpGuest {
   dietaryRestrictions: string | null;
 }
 
-export type GuestLookup =
-  | { status: "found"; guest: PublicRsvpGuest }
+export type BuscaDeConvidado =
+  | { status: "found"; guest: ConvidadoDaConfirmacaoPublica }
   | { status: "not_found" }
   | { status: "invalid_phone" }
   | { status: "rate_limited" };
 
 /** Mensagem para a pessoa quando o convite não foi achado; null quando achou. */
-export function lookupMessage(result: GuestLookup): string | null {
+export function mensagemDaBusca(result: BuscaDeConvidado): string | null {
   switch (result.status) {
     case "found":
       return null;
     case "rate_limited":
-      return TOO_MANY_ATTEMPTS_MESSAGE;
+      return MENSAGEM_DE_MUITAS_TENTATIVAS;
     case "invalid_phone":
       return "Confira o número: use o WhatsApp com DDD, por exemplo (11) 91234-5678.";
     case "not_found":

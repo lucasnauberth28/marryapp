@@ -7,7 +7,7 @@ import type { WeddingSummary } from "@/lib/security/wedding-context";
  * Este módulo NÃO é uma Server Action: o weddingId nunca vem do navegador.
  */
 
-async function upsertOnce<T>(create: () => Promise<T>, read: () => Promise<T | null>): Promise<T> {
+async function criarOuAtualizarUmaVez<T>(create: () => Promise<T>, read: () => Promise<T | null>): Promise<T> {
   try {
     return await create();
   } catch (error) {
@@ -19,11 +19,11 @@ async function upsertOnce<T>(create: () => Promise<T>, read: () => Promise<T | n
 }
 
 /** Site do casal (uma linha por casamento). Criado com os dados do onboarding no primeiro acesso. */
-export async function ensureSiteCustomization(wedding: WeddingSummary) {
+export async function garantirPersonalizacaoDoSite(wedding: WeddingSummary) {
   const where = { weddingId: wedding.id };
   const existing = await prisma.siteCustomization.findUnique({ where });
   if (existing) return existing;
-  return upsertOnce(
+  return criarOuAtualizarUmaVez(
     () =>
       prisma.siteCustomization.upsert({
         where,
@@ -51,11 +51,11 @@ export async function ensureSiteCustomization(wedding: WeddingSummary) {
 }
 
 /** Regras do casamento (prazo do RSVP etc.), uma linha por casamento. */
-export async function ensureSystemSettings(weddingId: string) {
+export async function garantirConfiguracoesDoSistema(weddingId: string) {
   const where = { weddingId };
   const existing = await prisma.systemSettings.findUnique({ where });
   if (existing) return existing;
-  return upsertOnce(
+  return criarOuAtualizarUmaVez(
     () =>
       prisma.systemSettings.upsert({
         where,
@@ -67,24 +67,24 @@ export async function ensureSystemSettings(weddingId: string) {
 }
 
 /** Saldo da carteira do casal, uma linha por casamento. */
-export async function ensureWalletBalance(weddingId: string) {
+export async function garantirSaldoDaCarteira(weddingId: string) {
   const where = { weddingId };
   const existing = await prisma.walletBalance.findUnique({ where });
   if (existing) return existing;
-  return upsertOnce(
+  return criarOuAtualizarUmaVez(
     () => prisma.walletBalance.upsert({ where, update: {}, create: { weddingId, balance: 0 } }),
     () => prisma.walletBalance.findUnique({ where })
   );
 }
 
 /** Prazo do RSVP sem criar nada (páginas públicas). */
-export async function getRsvpDeadline(weddingId: string): Promise<Date | null> {
+export async function obterPrazoDeConfirmacao(weddingId: string): Promise<Date | null> {
   const settings = await prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } });
   return settings?.rsvpDeadline ?? null;
 }
 
 /** Presentes ainda disponíveis em destaque no site (prévia do editor e site público). */
-export function getFeaturedGifts(weddingId: string) {
+export function obterPresentesEmDestaque(weddingId: string) {
   return prisma.gift.findMany({
     where: { weddingId, isPurchased: false },
     select: { id: true, title: true, description: true, amount: true, imageUrl: true },
@@ -94,7 +94,7 @@ export function getFeaturedGifts(weddingId: string) {
 }
 
 /** Lista de presentes exibível (sem dados internos). */
-export function getWeddingGifts(weddingId: string) {
+export function obterPresentesDoCasamento(weddingId: string) {
   return prisma.gift.findMany({
     where: { weddingId },
     orderBy: { createdAt: "desc" },
@@ -110,18 +110,18 @@ export function getWeddingGifts(weddingId: string) {
   });
 }
 
-export function getWeddingTimeline(weddingId: string) {
+export function obterLinhaDoTempoDoCasamento(weddingId: string) {
   return prisma.timelineEvent.findMany({
     where: { weddingId },
     orderBy: [{ position: "asc" }, { time: "asc" }],
   });
 }
 
-export function getWeddingStoryItems(weddingId: string) {
+export function obterItensDaHistoriaDoCasamento(weddingId: string) {
   return prisma.weddingStoryItem.findMany({ where: { weddingId }, orderBy: { position: "asc" } });
 }
 
-export function getWeddingTipsList(weddingId: string) {
+export function obterDicasDoCasamento(weddingId: string) {
   return prisma.weddingTip.findMany({ where: { weddingId }, orderBy: { position: "asc" } });
 }
 
@@ -134,7 +134,7 @@ function getApprovedGuestBookEntries(weddingId: string) {
 }
 
 /** Tudo o que o site público de um casamento mostra. */
-export async function getPublicSiteData(wedding: WeddingSummary) {
+export async function obterDadosDoSitePublico(wedding: WeddingSummary) {
   const safe = <T,>(p: Promise<T>, fallback: T) =>
     p.catch((error) => {
       console.error("[getPublicSiteData]", error);
@@ -142,12 +142,12 @@ export async function getPublicSiteData(wedding: WeddingSummary) {
     });
 
   const [settings, storyItems, tips, guestbookEntries, gifts, rsvpDeadline] = await Promise.all([
-    safe(ensureSiteCustomization(wedding), null),
-    safe(getWeddingStoryItems(wedding.id), []),
-    safe(getWeddingTipsList(wedding.id), []),
+    safe(garantirPersonalizacaoDoSite(wedding), null),
+    safe(obterItensDaHistoriaDoCasamento(wedding.id), []),
+    safe(obterDicasDoCasamento(wedding.id), []),
     safe(getApprovedGuestBookEntries(wedding.id), []),
-    safe(getFeaturedGifts(wedding.id), []),
-    safe(getRsvpDeadline(wedding.id), null),
+    safe(obterPresentesEmDestaque(wedding.id), []),
+    safe(obterPrazoDeConfirmacao(wedding.id), null),
   ]);
 
   return { settings, storyItems, tips, guestbookEntries, gifts, rsvpDeadline };

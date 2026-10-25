@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { HELP_ARTICLES, commonArticles, type HelpArticle } from "../help-articles.ts";
 import { normalizeSearchText, searchHelp, visibleArticles } from "../help-search.ts";
-import { classifyPath } from "../../route-access.ts";
+import { classificarCaminho } from "../../route-access.ts";
 
 const COUPLE = ["/dashboard", "/convidados", "/mensagens", "/mesas", "/presentes-admin", "/site-builder", "/fornecedores", "/plano"];
 
@@ -80,8 +80,8 @@ test("guia: ids únicos, passos, destinos que existem no app e 'Dúvidas comuns'
   assert.equal(ids.size, HELP_ARTICLES.length);
   for (const a of HELP_ARTICLES) {
     assert.ok(a.steps.length >= 2, `${a.id}: passos`);
-    assert.notEqual(classifyPath(a.action.href.split(/[?#]/)[0]), "unknown", `${a.id}: destino ${a.action.href}`);
-    assert.notEqual(classifyPath(a.path), "unknown", `${a.id}: módulo ${a.path}`);
+    assert.notEqual(classificarCaminho(a.action.href.split(/[?#]/)[0]), "unknown", `${a.id}: destino ${a.action.href}`);
+    assert.notEqual(classificarCaminho(a.path), "unknown", `${a.id}: módulo ${a.path}`);
     const text = [a.title, a.answer, a.action.label, ...a.steps].join(" ");
     assert.ok(!text.includes("—"), `${a.id}: sem travessão`);
     assert.ok(!/em breve|breve/i.test(text), `${a.id}: sem promessa de data`);

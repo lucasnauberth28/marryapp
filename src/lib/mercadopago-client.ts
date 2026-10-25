@@ -8,7 +8,7 @@ import { somenteDigitos } from "./formatacao/telefone.ts";
  * apenas o token de uso único, o que reduz drasticamente o escopo PCI-DSS.
  */
 
-interface MercadoPagoInstance {
+interface InstanciaDoMercadoPago {
   createCardToken(data: {
     cardNumber: string;
     cardholderName: string;
@@ -23,49 +23,49 @@ interface MercadoPagoInstance {
 
 declare global {
   interface Window {
-    MercadoPago?: new (publicKey: string, options?: { locale?: string }) => MercadoPagoInstance;
+    MercadoPago?: new (publicKey: string, options?: { locale?: string }) => InstanciaDoMercadoPago;
   }
 }
 
-const SDK_URL = "https://sdk.mercadopago.com/js/v2";
-let sdkPromise: Promise<void> | null = null;
-let instance: MercadoPagoInstance | null = null;
+const URL_DO_SDK = "https://sdk.mercadopago.com/js/v2";
+let promessaDoSdk: Promise<void> | null = null;
+let instanciaCarregada: InstanciaDoMercadoPago | null = null;
 
-function loadSdk(): Promise<void> {
+function carregarSdk(): Promise<void> {
   if (window.MercadoPago) return Promise.resolve();
-  if (!sdkPromise) {
-    sdkPromise = new Promise((resolve, reject) => {
+  if (!promessaDoSdk) {
+    promessaDoSdk = new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = SDK_URL;
+      script.src = URL_DO_SDK;
       script.async = true;
       script.onload = () => resolve();
       script.onerror = () => {
-        sdkPromise = null;
+        promessaDoSdk = null;
         reject(new Error("Não foi possível carregar o Mercado Pago."));
       };
       document.head.appendChild(script);
     });
   }
-  return sdkPromise;
+  return promessaDoSdk;
 }
 
-async function getInstance(): Promise<MercadoPagoInstance> {
+async function obterInstancia(): Promise<InstanciaDoMercadoPago> {
   // Aceita também NEXT_PUBLIC_MP_PUBLIC_KEY, o nome usado na Vercel do projeto (cada acesso precisa ser literal para o Next embutir no build).
   const publicKey = process.env.NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY || process.env.NEXT_PUBLIC_MP_PUBLIC_KEY;
   if (!publicKey) throw new Error("Pagamento com cartão indisponível no momento.");
-  await loadSdk();
+  await carregarSdk();
   if (!window.MercadoPago) throw new Error("Não foi possível carregar o Mercado Pago.");
-  instance ??= new window.MercadoPago(publicKey, { locale: "pt-BR" });
-  return instance;
+  instanciaCarregada ??= new window.MercadoPago(publicKey, { locale: "pt-BR" });
+  return instanciaCarregada;
 }
 
-export async function tokenizeCard(input: {
+export async function tokenizarCartao(input: {
   cardNumber: string;
   cardholderName: string;
   cardExpiry: string; // "MM/AA" ou "MM/AAAA"
   securityCode: string;
 }): Promise<{ token: string; paymentMethodId: string }> {
-  const mp = await getInstance();
+  const mp = await obterInstancia();
   const cardNumber = somenteDigitos(input.cardNumber);
   const [month = "", yearRaw = ""] = input.cardExpiry.split("/").map((p) => p.trim());
   const year = yearRaw.length === 2 ? `20${yearRaw}` : yearRaw;

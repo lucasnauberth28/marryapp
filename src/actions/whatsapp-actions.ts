@@ -1,22 +1,22 @@
 "use server";
 
 import { requireWedding } from "@/lib/security/wedding-context";
-import { moduleRefusal } from "@/lib/wedding-plan";
-import { weddingSiteUrl } from "@/lib/wedding-links";
+import { recusaDeModulo } from "@/lib/wedding-plan";
+import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 
 import prisma from "@/lib/prisma";
-import { sendBulkMessages } from "@/lib/evolution";
+import { enviarMensagensEmLote } from "@/lib/evolution";
 import { RsvpStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { notGiftOnlyWhere } from "@/lib/guest-origin";
-import { guestIdsReached, sendFailureReason, sendSummary } from "@/lib/whatsapp-results";
+import { filtroSemSoPresente } from "@/lib/guest-origin";
+import { idsDeConvidadosAlcancados, motivoDaFalhaNoEnvio, resumoDoEnvio } from "@/lib/whatsapp-results";
 
 /**
  * Dispara lembretes em massa para convidados com RSVP pendente.
  */
 export async function sendRsvpReminders() {
   const { weddingId, wedding, session } = await requireWedding("/mensagens");
-  const refusal = await moduleRefusal({ weddingId, session }, "whatsapp");
+  const refusal = await recusaDeModulo({ weddingId, session }, "whatsapp");
   if (refusal) return { success: false, error: refusal };
   const guests = await prisma.guest.findMany({
     where: {
@@ -24,7 +24,7 @@ export async function sendRsvpReminders() {
       rsvpStatus: RsvpStatus.PENDING,
       phone: { not: null },
       hasReceivedMessage: true, // Já recebeu convite inicial
-      ...notGiftOnlyWhere,
+      ...filtroSemSoPresente,
     },
     orderBy: { name: "asc" },
   });
@@ -52,7 +52,7 @@ export async function sendRsvpReminders() {
         `Olá, *${g.name}*! Tudo bem? 😊\n\n` +
         `Percebemos que ainda não recebemos a sua confirmação de presença para o nosso casamento.\n\n` +
         `Por favor, confirme pelo link abaixo:\n` +
-        `✅ ${weddingSiteUrl(wedding.slug, "rsvp", wedding.customDomain)}\n\n` +
+        `✅ ${urlDoSiteDoCasamento(wedding.slug, "rsvp", wedding.customDomain)}\n\n` +
         `Ficaria muito especial ter você conosco! ❤️`;
 
     return {
@@ -67,17 +67,17 @@ export async function sendRsvpReminders() {
     };
   });
 
-  const results = await sendBulkMessages(messages, 500);
+  const results = await enviarMensagensEmLote(messages, 500);
   const sent = results.filter((r) => r.success).length;
   const failed = results.length - sent;
-  if (sent === 0 && failed > 0) return { success: false, error: `Nenhum lembrete foi enviado. ${sendFailureReason(results)}` };
+  if (sent === 0 && failed > 0) return { success: false, error: `Nenhum lembrete foi enviado. ${motivoDaFalhaNoEnvio(results)}` };
 
   return {
     success: true,
     sent,
     failed,
     total: guests.length,
-    message: sendSummary(sent, failed, "lembrete"),
+    message: resumoDoEnvio(sent, failed, "lembrete"),
   };
 }
 
@@ -86,14 +86,14 @@ export async function sendRsvpReminders() {
  */
 export async function sendInitialInvites() {
   const { weddingId, wedding, session } = await requireWedding("/mensagens");
-  const refusal = await moduleRefusal({ weddingId, session }, "whatsapp");
+  const refusal = await recusaDeModulo({ weddingId, session }, "whatsapp");
   if (refusal) return { success: false, error: refusal };
   const guests = await prisma.guest.findMany({
     where: {
       weddingId,
       hasReceivedMessage: false,
       phone: { not: null },
-      ...notGiftOnlyWhere,
+      ...filtroSemSoPresente,
     },
     orderBy: { name: "asc" },
   });
@@ -121,8 +121,8 @@ export async function sendInitialInvites() {
         `Olá, *${g.name}*! 🎉\n\n` +
         `Temos a honra de convidá-lo(a) para o nosso casamento!\n\n` +
         `Por favor:\n` +
-        `✅ *Confirme sua presença:* ${weddingSiteUrl(wedding.slug, "rsvp", wedding.customDomain)}\n` +
-        `🎁 *Veja nossa lista de presentes:* ${weddingSiteUrl(wedding.slug, "presentes", wedding.customDomain)}\n\n` +
+        `✅ *Confirme sua presença:* ${urlDoSiteDoCasamento(wedding.slug, "rsvp", wedding.customDomain)}\n` +
+        `🎁 *Veja nossa lista de presentes:* ${urlDoSiteDoCasamento(wedding.slug, "presentes", wedding.customDomain)}\n\n` +
         `Mal podemos esperar para te ver! ❤️`;
 
     return {
@@ -137,12 +137,12 @@ export async function sendInitialInvites() {
     };
   });
 
-  const results = await sendBulkMessages(messages, 600);
+  const results = await enviarMensagensEmLote(messages, 600);
   const sent = results.filter((r) => r.success).length;
   const failed = results.length - sent;
 
   // Só quem teve o envio confirmado passa a constar como "já recebeu"
-  const reached = guestIdsReached(guests, results);
+  const reached = idsDeConvidadosAlcancados(guests, results);
   if (reached.length > 0) {
     await prisma.guest.updateMany({
       where: { weddingId, id: { in: reached } },
@@ -152,13 +152,13 @@ export async function sendInitialInvites() {
 
   revalidatePath("/(admin)/convidados", "page");
 
-  if (sent === 0 && failed > 0) return { success: false, error: `Nenhum convite foi enviado. ${sendFailureReason(results)}` };
+  if (sent === 0 && failed > 0) return { success: false, error: `Nenhum convite foi enviado. ${motivoDaFalhaNoEnvio(results)}` };
 
   return {
     success: true,
     sent,
     failed,
     total: guests.length,
-    message: sendSummary(sent, failed, "convite"),
+    message: resumoDoEnvio(sent, failed, "convite"),
   };
 }

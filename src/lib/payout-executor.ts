@@ -9,7 +9,7 @@
 //  - Registrar cada tentativa no AuditLog (ator, casamento, valor, resultado), sem dado bancário.
 //  - Nenhum repasse começa sem uma ação explícita e auditada da administração ou uma regra aprovada pelo dono.
 
-export type PayoutDestination =
+export type DestinoDoRepasse =
   | { kind: "PIX_KEY"; pixKeyType: "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "RANDOM"; pixKey: string; holderName: string; holderDocument: string }
   | {
       kind: "BANK_ACCOUNT";
@@ -22,26 +22,26 @@ export type PayoutDestination =
       holderDocument: string;
     };
 
-export interface PayoutRequest {
+export interface PedidoDeRepasse {
   weddingId: string;
   /** Valor líquido a repassar, em centavos. */
   amountCents: number;
   /** Um por repasse: repetir a chamada com a mesma chave não pode pagar duas vezes. */
   idempotencyKey: string;
   /** Destino já decifrado, vivo só durante a chamada. */
-  destination: PayoutDestination;
+  destination: DestinoDoRepasse;
 }
 
-export type PayoutResult =
+export type ResultadoDoRepasse =
   | { status: "ACCEPTED"; gatewayReference: string }
   | { status: "REJECTED"; reason: "invalid_destination" | "insufficient_balance" | "gateway_refused" }
   | { status: "UNAVAILABLE" };
 
-export interface PayoutExecutor {
+export interface ExecutorDeRepasse {
   /** Nome do gateway, só para registro (ex.: "mercadopago", "asaas"). */
   readonly gateway: string;
-  execute(request: PayoutRequest): Promise<PayoutResult>;
+  execute(request: PedidoDeRepasse): Promise<ResultadoDoRepasse>;
 }
 
 /** Hoje não há executor: o repasse é liberado pela equipe. Existe para a tela e a administração dizerem a verdade. */
-export const PAYOUT_EXECUTOR_ACTIVE = false as const;
+export const EXECUTOR_DE_REPASSE_ATIVO = false as const;

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Check, Info } from "lucide-react";
-import type { CatalogPlan } from "@/lib/catalog";
-import { COUPLE_PLAN_COPY, couplePriceNote, planLabel, type CouplePlanKey } from "@/lib/plan-copy";
+import type { PlanoDoCatalogo } from "@/lib/catalog";
+import { TEXTOS_DO_PLANO_DO_CASAL, notaDoPrecoDoCasal, rotuloDoPlano, type ChaveDoPlanoDoCasal } from "@/lib/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { cn } from "@/lib/utils";
 import { btn } from "./styles";
@@ -10,9 +10,9 @@ import { btn } from "./styles";
  * Cartão de plano de casal, o mesmo na home e em /planos: nome, preço e recursos vêm do catálogo,
  * e o resumo e o botão vêm de lib/plan-copy. A taxa sobre presentes aparece como nota, dentro do cartão.
  */
-export function CouplePlanCard({ planKey, plan, href, className }: { planKey: CouplePlanKey; plan: CatalogPlan; href?: string; className?: string }) {
-  const label = planLabel(plan.name);
-  const copy = COUPLE_PLAN_COPY[planKey];
+export function CouplePlanCard({ planKey, plan, href, className }: { planKey: ChaveDoPlanoDoCasal; plan: PlanoDoCatalogo; href?: string; className?: string }) {
+  const label = rotuloDoPlano(plan.name);
+  const copy = TEXTOS_DO_PLANO_DO_CASAL[planKey];
   const cta = copy.cta(label);
   const primary = planKey === "basic";
   return (
@@ -21,7 +21,7 @@ export function CouplePlanCard({ planKey, plan, href, className }: { planKey: Co
       <p className="mt-1 text-[15px] leading-[22px] text-tinta-suave">{copy.summary}</p>
       <p className="mt-5 flex flex-wrap items-baseline gap-x-2">
         <span className="font-num text-[44px] leading-[48px] tracking-[-0.01em]">{plan.price === 0 ? "R$ 0" : formatarReaisEnxuto(plan.price)}</span>
-        <span className="text-[15px] text-tinta-suave">{couplePriceNote(planKey)}</span>
+        <span className="text-[15px] text-tinta-suave">{notaDoPrecoDoCasal(planKey)}</span>
       </p>
       <ul className="mt-6 flex flex-1 flex-col gap-3 border-t border-linha pt-6">
         {plan.features.map((feature) => {

@@ -1,7 +1,7 @@
 // Monta o envelope do Sentry à mão (HTTP API), sem SDK. Arquivo puro: sem server-only, sem prisma,
 // sem imports de Node, para rodar em qualquer runtime e ser testado direto.
 
-export interface ParsedDsn {
+export interface DsnInterpretado {
   publicKey: string;
   projectId: string;
   /** URL de POST do envelope: https://<host>/<prefixo>/api/<projeto>/envelope/ */
@@ -9,7 +9,7 @@ export interface ParsedDsn {
 }
 
 /** https://<chave>@<host>/<projectId> -> partes necessárias; null se o DSN for inválido. */
-export function parseDsn(dsn: string | undefined | null): ParsedDsn | null {
+export function interpretarDsn(dsn: string | undefined | null): DsnInterpretado | null {
   if (!dsn) return null;
   let url: URL;
   try {
@@ -32,7 +32,7 @@ export function parseDsn(dsn: string | undefined | null): ParsedDsn | null {
   };
 }
 
-export interface ErrorContext {
+export interface ContextoDoErro {
   error: { name?: string; message?: string; stack?: string; digest?: string };
   /** Caminho da requisição; a query é descartada (pode carregar tokens). */
   path?: string;
@@ -44,15 +44,15 @@ export interface ErrorContext {
   release?: string;
 }
 
-const MAX_MESSAGE = 1000;
-const MAX_FRAMES = 50;
+const TAMANHO_MAXIMO_DA_MENSAGEM = 1000;
+const MAXIMO_DE_QUADROS = 50;
 
-export function stripQuery(path: string | undefined): string | undefined {
+export function tirarParametrosDaUrl(path: string | undefined): string | undefined {
   if (!path) return undefined;
   return path.split(/[?#]/)[0];
 }
 
-interface Frame {
+interface Quadro {
   function?: string;
   filename?: string;
   lineno?: number;
@@ -60,9 +60,9 @@ interface Frame {
 }
 
 /** Converte a stack do V8 ("at fn (arquivo:linha:col)") em frames do Sentry (do mais antigo ao mais novo). */
-export function parseStack(stack: string | undefined): Frame[] {
+export function interpretarPilhaDeChamadas(stack: string | undefined): Quadro[] {
   if (!stack) return [];
-  const frames: Frame[] = [];
+  const frames: Quadro[] = [];
   for (const raw of stack.split("\n")) {
     const line = raw.trim();
     if (!line.startsWith("at ")) continue;
@@ -74,10 +74,10 @@ export function parseStack(stack: string | undefined): Frame[] {
       frames.push({ function: body });
     }
   }
-  return frames.slice(0, MAX_FRAMES).reverse();
+  return frames.slice(0, MAXIMO_DE_QUADROS).reverse();
 }
 
-function newEventId(): string {
+function novoIdDeEvento(): string {
   return globalThis.crypto.randomUUID().replace(/-/g, "");
 }
 
@@ -85,16 +85,16 @@ function newEventId(): string {
  * Evento do Sentry a partir do erro. Só entram: tipo, mensagem, stack, rota, método, ambiente e release.
  * Nunca cookies, headers (autorização) ou corpo da requisição.
  */
-export function buildEvent(ctx: ErrorContext, opts: { eventId?: string; now?: Date } = {}) {
-  const message = (ctx.error.message ?? "").slice(0, MAX_MESSAGE);
-  const path = stripQuery(ctx.path);
+export function montarEvento(ctx: ContextoDoErro, opts: { eventId?: string; now?: Date } = {}) {
+  const message = (ctx.error.message ?? "").slice(0, TAMANHO_MAXIMO_DA_MENSAGEM);
+  const path = tirarParametrosDaUrl(ctx.path);
   const tags: Record<string, string> = {};
   if (ctx.routePath) tags.route = ctx.routePath;
   if (ctx.routeType) tags.route_type = ctx.routeType;
   if (ctx.error.digest) tags.digest = ctx.error.digest;
 
   return {
-    event_id: opts.eventId ?? newEventId(),
+    event_id: opts.eventId ?? novoIdDeEvento(),
     timestamp: (opts.now ?? new Date()).getTime() / 1000,
     platform: "node",
     level: "error",
@@ -108,7 +108,7 @@ export function buildEvent(ctx: ErrorContext, opts: { eventId?: string; now?: Da
         {
           type: ctx.error.name || "Error",
           value: message,
-          stacktrace: { frames: parseStack(ctx.error.stack) },
+          stacktrace: { frames: interpretarPilhaDeChamadas(ctx.error.stack) },
         },
       ],
     },
@@ -116,12 +116,12 @@ export function buildEvent(ctx: ErrorContext, opts: { eventId?: string; now?: Da
 }
 
 /** Envelope = 3 linhas JSON: cabeçalho, cabeçalho do item e o evento. */
-export function buildEnvelope(event: ReturnType<typeof buildEvent>, sentAt: Date = new Date()): string {
+export function montarEnvelope(event: ReturnType<typeof montarEvento>, sentAt: Date = new Date()): string {
   const header = { event_id: event.event_id, sent_at: sentAt.toISOString() };
   return [JSON.stringify(header), JSON.stringify({ type: "event" }), JSON.stringify(event)].join("\n");
 }
 
 /** Cabeçalho X-Sentry-Auth (chave pública do DSN). */
-export function authHeader(dsn: ParsedDsn): string {
+export function cabecalhoDeAutenticacao(dsn: DsnInterpretado): string {
   return `Sentry sentry_version=7, sentry_client=aceito/1.0, sentry_key=${dsn.publicKey}`;
 }

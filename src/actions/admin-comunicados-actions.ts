@@ -4,8 +4,8 @@ import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
-import { isEmailConfigured } from "@/lib/email";
+import { registrarAuditoria } from "@/lib/audit";
+import { emailEstaConfigurado } from "@/lib/email";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
 import { MAX_RECIPIENTS, announcementInput, audienceLabel, audienceSchema, validateLinkUrl, type AnnouncementInput } from "@/lib/platform/announcement";
@@ -71,7 +71,7 @@ export async function saveAnnouncementDraft(input: unknown): Promise<{ success: 
     if (!v.ok) return v.fail;
     const id = await saveDraftRow(v.data, v.linkUrl, admin);
     if (!id) return { success: false, error: "Este comunicado não pode mais ser editado (já foi enviado ou não existe)." };
-    await logAudit({ action: "announcement.draft_save", targetType: "announcement", targetId: id, details: { title: v.data.title, channels: v.data.channels, audience: audienceLabel(v.data.audience) } });
+    await registrarAuditoria({ action: "announcement.draft_save", targetType: "announcement", targetId: id, details: { title: v.data.title, channels: v.data.channels, audience: audienceLabel(v.data.audience) } });
     revalidatePath("/admin/comunicados");
     return { success: true, id, message: "Rascunho salvo." };
   } catch (error) {
@@ -85,7 +85,7 @@ export async function deleteAnnouncementDraft(input: unknown): Promise<{ success
     const { id } = z.object({ id: z.string().uuid() }).parse(input);
     const res = await prisma.announcement.deleteMany({ where: { id, status: "DRAFT" } });
     if (res.count !== 1) return { success: false, error: "Rascunho não encontrado." };
-    await logAudit({ action: "announcement.draft_delete", targetType: "announcement", targetId: id });
+    await registrarAuditoria({ action: "announcement.draft_delete", targetType: "announcement", targetId: id });
     revalidatePath("/admin/comunicados");
     return { success: true, message: "Rascunho excluído." };
   } catch (error) {
@@ -109,7 +109,7 @@ export async function sendAnnouncementTestToMe(input: unknown): Promise<{ succes
       channels: v.data.channels,
       service: v.data.audience.service,
     });
-    await logAudit({ action: "announcement.test", targetType: "announcement", details: { title: v.data.title, channels: v.data.channels } });
+    await registrarAuditoria({ action: "announcement.test", targetType: "announcement", details: { title: v.data.title, channels: v.data.channels } });
     if (result.done.length === 0) return { success: false, error: result.notes.join(" ") || "Nada foi enviado." };
     return { success: true, message: `Teste enviado (${result.done.join(", ")}).${result.notes.length ? ` ${result.notes.join(" ")}` : ""}` };
   } catch (error) {
@@ -125,7 +125,7 @@ export async function sendAnnouncementNow(input: unknown): Promise<{ success: tr
     if (!v.ok) return v.fail;
     const { data } = v;
 
-    if (data.channels.includes("EMAIL") && !isEmailConfigured()) {
+    if (data.channels.includes("EMAIL") && !emailEstaConfigurado()) {
       return { success: false, error: "O e-mail não está configurado no servidor (RESEND_API_KEY). Tire o canal E-mail ou configure o envio." };
     }
     const limit = await checkRateLimit({ key: `ANNOUNCE_SEND:${admin.userId}`, limit: 5, windowMs: 60 * MINUTE });
@@ -143,7 +143,7 @@ export async function sendAnnouncementNow(input: unknown): Promise<{ success: tr
     if (claimed.count !== 1) return { success: false, error: "Este comunicado já foi enviado." };
 
     await queueRecipients(id, users, data.channels, data.audience.service);
-    await logAudit({
+    await registrarAuditoria({
       action: "announcement.send",
       targetType: "announcement",
       targetId: id,
@@ -167,7 +167,7 @@ export async function resumeAnnouncement(input: unknown): Promise<{ success: tru
     const found = await prisma.announcement.findUnique({ where: { id }, select: { status: true } });
     if (!found || found.status !== "SENDING") return { success: false, error: "Este envio não está em andamento." };
     const released = await releaseStaleClaims(id);
-    await logAudit({ action: "announcement.resume", targetType: "announcement", targetId: id, details: { released } });
+    await registrarAuditoria({ action: "announcement.resume", targetType: "announcement", targetId: id, details: { released } });
     after(async () => {
       await processAnnouncement(id);
       await refreshAnnouncementTotals(id);

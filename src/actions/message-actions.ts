@@ -1,13 +1,13 @@
 "use server";
 
 import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
-import { moduleRefusal } from "@/lib/wedding-plan";
-import { weddingSiteUrl } from "@/lib/wedding-links";
-import { defaultTemplatesToCreate } from "@/lib/default-message-templates";
+import { recusaDeModulo } from "@/lib/wedding-plan";
+import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
+import { modelosPadraoParaCriar } from "@/lib/default-message-templates";
 
 import prisma from "@/lib/prisma";
-import { sendBulkMessages } from "@/lib/evolution";
-import { guestIdsReached, sendFailureReason, sendSummary } from "@/lib/whatsapp-results";
+import { enviarMensagensEmLote } from "@/lib/evolution";
+import { idsDeConvidadosAlcancados, motivoDaFalhaNoEnvio, resumoDoEnvio } from "@/lib/whatsapp-results";
 import { revalidatePath } from "next/cache";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
@@ -24,7 +24,7 @@ export async function ensureDefaultTemplates() {
   try {
     await prisma.$transaction(async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`message-templates:${weddingId}`}))`;
-      const toCreate = defaultTemplatesToCreate(await tx.messageTemplate.count({ where: { weddingId } }));
+      const toCreate = modelosPadraoParaCriar(await tx.messageTemplate.count({ where: { weddingId } }));
       // A lista mostra o mais novo primeiro: cria o lembrete antes para o convite ficar no topo
       for (const template of [...toCreate].reverse()) {
         await tx.messageTemplate.create({ data: { weddingId, ...template } });
@@ -109,7 +109,7 @@ export async function deleteMessageTemplate(id: string) {
  */
 export async function sendTemplateToGuests(templateId: string, guestIds: string[]) {
   const { weddingId, wedding, session } = await requireWedding("/mensagens");
-  const refusal = await moduleRefusal({ weddingId, session }, "whatsapp");
+  const refusal = await recusaDeModulo({ weddingId, session }, "whatsapp");
   if (refusal) return { success: false, error: refusal };
   try {
     if (typeof templateId !== "string") return { success: false, error: ERROS.modeloNaoEncontrado };
@@ -133,8 +133,8 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
       }
     }
 
-    const rsvpUrl = weddingSiteUrl(wedding.slug, "rsvp", wedding.customDomain);
-    const giftsUrl = weddingSiteUrl(wedding.slug, "presentes", wedding.customDomain);
+    const rsvpUrl = urlDoSiteDoCasamento(wedding.slug, "rsvp", wedding.customDomain);
+    const giftsUrl = urlDoSiteDoCasamento(wedding.slug, "presentes", wedding.customDomain);
 
     // Mapeia os convidados para o formato esperado pela Evolution API
     const recipients = guests
@@ -170,19 +170,19 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
       return { success: false, error: "Nenhum dos escolhidos tem telefone válido com DDD." };
     }
 
-    const results = await sendBulkMessages(recipients);
+    const results = await enviarMensagensEmLote(recipients);
 
     const sent = results.filter((r) => r.success).length;
     const failed = results.length - sent;
 
     if (sent === 0 && failed > 0) {
-      return { success: false, error: `Nenhuma mensagem foi enviada. ${sendFailureReason(results)}`, results };
+      return { success: false, error: `Nenhuma mensagem foi enviada. ${motivoDaFalhaNoEnvio(results)}`, results };
     }
 
     // Só quem teve o envio confirmado passa a constar como "já recebeu"
     if (sent > 0) {
       await prisma.guest.updateMany({
-        where: { id: { in: guestIdsReached(guests, results) }, weddingId },
+        where: { id: { in: idsDeConvidadosAlcancados(guests, results) }, weddingId },
         data: { hasReceivedMessage: true },
       });
     }
@@ -192,7 +192,7 @@ export async function sendTemplateToGuests(templateId: string, guestIds: string[
       sent,
       failed,
       results,
-      message: sendSummary(sent, failed, "mensagem"),
+      message: resumoDoEnvio(sent, failed, "mensagem"),
     };
   } catch (error) {
     console.error("[sendTemplateToGuests Error]:", error);

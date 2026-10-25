@@ -4,7 +4,7 @@
  * Verifica se a lista de paths concede acesso ao path pedido.
  * Compara por segmento para que "/fornecedores" não libere "/fornecedores-admin".
  */
-export function hasPathAccess(allowedPaths: string[], path: string): boolean {
+export function temAcessoAoCaminho(allowedPaths: string[], path: string): boolean {
   if (allowedPaths.includes("*")) return true;
   return allowedPaths.some((p) => path === p || path.startsWith(p.endsWith("/") ? p : `${p}/`));
 }
@@ -13,6 +13,6 @@ export function hasPathAccess(allowedPaths: string[], path: string): boolean {
  * Administração da plataforma (o dono do Aceito): só a conta com acesso total ("*").
  * Uma lista com "/admin" escrito NÃO basta: o /admin atravessa todos os casamentos de propósito.
  */
-export function isPlatformAdminPaths(allowedPaths: readonly string[] | null | undefined): boolean {
+export function ehAcessoDeAdminDaPlataforma(allowedPaths: readonly string[] | null | undefined): boolean {
   return Array.isArray(allowedPaths) && allowedPaths.includes("*");
 }

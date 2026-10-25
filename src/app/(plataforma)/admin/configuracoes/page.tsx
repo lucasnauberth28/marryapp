@@ -8,8 +8,8 @@ import { getPlatformSetting } from "@/lib/platform/settings";
 import { INTEGRATIONS, describeLimit, integrationStatus } from "@/lib/platform/config-core";
 import { splitBackAt } from "@/lib/platform/maintenance-core";
 import { SecurityLimits } from "@/lib/security/rate-limiter";
-import { COUPLE_MODULES } from "@/lib/pricing-modules";
-import { modulesForPlan } from "@/lib/wedding-plan-modules";
+import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
+import { modulosDoPlano } from "@/lib/wedding-plan-modules";
 import { EmailSenderForm, MaintenanceForm, RefundPolicyForm } from "./_components/config-forms";
 
 export const metadata = { title: "Configurações da plataforma" };
@@ -54,8 +54,8 @@ export default async function Page() {
   const integrations = INTEGRATIONS.map((def) => integrationStatus(def, process.env));
   const planColumns = [
     { id: "basic", label: "Básico", modules: [] as string[] },
-    { id: "classic", label: "Classic", modules: modulesForPlan("classic") },
-    { id: "vip", label: "VIP", modules: modulesForPlan("vip") },
+    { id: "classic", label: "Classic", modules: modulosDoPlano("classic") },
+    { id: "vip", label: "VIP", modules: modulosDoPlano("vip") },
   ];
   const feePercent = process.env.MP_FEE_PERCENT?.trim();
   const feeFixed = process.env.MP_FEE_FIXED?.trim();
@@ -133,7 +133,7 @@ export default async function Page() {
                   </tr>
                 </thead>
                 <tbody>
-                  {COUPLE_MODULES.map((m) => (
+                  {MODULOS_DO_CASAL.map((m) => (
                     <tr key={m.id} className="border-b border-linha last:border-b-0">
                       <th scope="row" className="px-4 py-3 font-normal text-tinta">{m.name}</th>
                       {planColumns.map((p) => (

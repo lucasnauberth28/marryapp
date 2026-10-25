@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { isOptimizableImage } from "@/lib/image-source";
+import { ehImagemOtimizavel } from "@/lib/image-source";
 
 interface UserImageProps {
   src: string;
@@ -33,7 +33,7 @@ export function UserImage({ src, alt, className, sizes, priority, skeleton = tru
   return (
     <>
       {showSkeleton && <span aria-hidden="true" className="ac-skeleton absolute inset-0 rounded-[inherit]" />}
-      {isOptimizableImage(src, process.env.NEXT_PUBLIC_SUPABASE_URL) ? (
+      {ehImagemOtimizavel(src, process.env.NEXT_PUBLIC_SUPABASE_URL) ? (
         <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className={className} onLoad={done} onError={done} />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element -- origem desconhecida (link livre) ou data URL: o next/image recusaria

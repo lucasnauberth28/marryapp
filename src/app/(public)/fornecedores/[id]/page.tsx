@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getPartnerVendorById } from "@/actions/partner-vendor-actions";
-import { recordVendorProfileView } from "@/lib/vendor-profile-views";
+import { registrarVisitaAoPerfilDoFornecedor } from "@/lib/vendor-profile-views";
 import { toIsoDate, todayBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { VendorDetailClient } from "./vendor-detail-client";
 
@@ -19,7 +19,7 @@ export default async function VendorDetailPage({ params }: VendorDetailPageProps
   }
 
   // Visita ao perfil (gravada depois da resposta; ignora o próprio fornecedor, robôs e prefetch).
-  await recordVendorProfileView(vendor.id);
+  await registrarVisitaAoPerfilDoFornecedor(vendor.id);
 
   return <VendorDetailClient vendor={vendor} todayIso={toIsoDate(todayBrasilia())} />;
 }

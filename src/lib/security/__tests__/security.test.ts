@@ -2,16 +2,16 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 
-import { hasPathAccess } from "../../permissions.ts";
+import { temAcessoAoCaminho } from "../../permissions.ts";
 import { normalizeText, sanitizeSlug, sanitizeUrl } from "../sanitize.ts";
 import { paidAmountMatches, verifyMercadoPagoSignature } from "../webhook-signature.ts";
 
 test("hasPathAccess compara por segmento", () => {
-  assert.equal(hasPathAccess(["*"], "/qualquer"), true);
-  assert.equal(hasPathAccess(["/convidados"], "/convidados"), true);
-  assert.equal(hasPathAccess(["/convidados"], "/convidados/123"), true);
-  assert.equal(hasPathAccess(["/fornecedores"], "/fornecedores-admin"), false);
-  assert.equal(hasPathAccess([], "/dashboard"), false);
+  assert.equal(temAcessoAoCaminho(["*"], "/qualquer"), true);
+  assert.equal(temAcessoAoCaminho(["/convidados"], "/convidados"), true);
+  assert.equal(temAcessoAoCaminho(["/convidados"], "/convidados/123"), true);
+  assert.equal(temAcessoAoCaminho(["/fornecedores"], "/fornecedores-admin"), false);
+  assert.equal(temAcessoAoCaminho([], "/dashboard"), false);
 });
 
 test("normalizeText não escapa HTML (React já escapa) e remove controles", () => {
@@ -50,7 +50,7 @@ test("verifyMercadoPagoSignature valida o HMAC do manifest", () => {
 });
 
 test("readableAccent escurece cores claras até contraste AA", async () => {
-  const { readableAccent } = await import("../../wedding-format.ts");
+  const { destaqueLegivel: readableAccent } = await import("../../wedding-format.ts");
   assert.deepEqual(readableAccent("#5B3A6E"), { color: "#5b3a6e", adjusted: false });
   assert.equal(readableAccent("#8C6D45").adjusted, true);
   const light = readableAccent("#F5D0A9");
@@ -59,7 +59,7 @@ test("readableAccent escurece cores claras até contraste AA", async () => {
 });
 
 test("getCoupleInitials", async () => {
-  const { getCoupleInitials } = await import("../../wedding-format.ts");
+  const { obterIniciaisDoCasal: getCoupleInitials } = await import("../../wedding-format.ts");
   assert.equal(getCoupleInitials("Lucas & Giovanna"), "L&G");
   assert.equal(getCoupleInitials("Ana e Bia"), "A&B");
   assert.equal(getCoupleInitials("Nosso Casamento"), "NC");

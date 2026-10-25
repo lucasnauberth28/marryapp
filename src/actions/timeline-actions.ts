@@ -1,7 +1,7 @@
 "use server";
 
 import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
-import { getWeddingTimeline } from "@/lib/wedding-data";
+import { obterLinhaDoTempoDoCasamento } from "@/lib/wedding-data";
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -22,7 +22,7 @@ type TimelineEventInput = { title: string; time: string; description?: string; i
 /** Cronograma do casamento da sessão (painel). O público lê pelo endereço do casamento. */
 export async function getTimelineEvents() {
   const { weddingId } = await requireWeddingRead("/cronograma");
-  return getWeddingTimeline(weddingId);
+  return obterLinhaDoTempoDoCasamento(weddingId);
 }
 
 export async function createTimelineEvent(data: TimelineEventInput) {

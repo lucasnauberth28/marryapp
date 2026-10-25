@@ -1,6 +1,6 @@
-import { GIFT_FEE_LABEL } from "./gift-fee.ts";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "./gift-fee.ts";
 
-export interface PricingModule {
+export interface ModuloDePreco {
   id: string;
   name: string;
   category: string;
@@ -11,7 +11,7 @@ export interface PricingModule {
   highlightBadge?: string;
 }
 
-export const COUPLE_MODULES: PricingModule[] = [
+export const MODULOS_DO_CASAL: ModuloDePreco[] = [
   {
     id: "site",
     name: "Site dos noivos com editor completo",
@@ -25,7 +25,7 @@ export const COUPLE_MODULES: PricingModule[] = [
     id: "pixZero",
     name: "Sem taxa no Pix dos presentes",
     category: "Presentes",
-    description: `Os presentes pagos por Pix chegam sem a taxa de ${GIFT_FEE_LABEL} do Aceito.`,
+    description: `Os presentes pagos por Pix chegam sem a taxa de ${ROTULO_DA_TAXA_DO_PRESENTE} do Aceito.`,
     price: 5900, // R$ 59,00
     iconName: "Percent",
   },
@@ -78,7 +78,7 @@ export const COUPLE_MODULES: PricingModule[] = [
  * `modules` é a lista com os preços vigentes (o catálogo mesclado da administração, lib/catalog.ts);
  * sem ela valem os preços do código.
  */
-export function calculateCustomPlanPrice(selectedModuleIds: string[], modules: readonly PricingModule[] = COUPLE_MODULES) {
+export function calcularPrecoDoPlanoPersonalizado(selectedModuleIds: string[], modules: readonly ModuloDePreco[] = MODULOS_DO_CASAL) {
   const selectedModules = modules.filter((m) =>
     selectedModuleIds.includes(m.id)
   );

@@ -1,20 +1,20 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { daysLeftLabel, greetingForHour } from "../wedding-format.ts";
+import { rotuloDosDiasRestantes, saudacaoParaAHora } from "../wedding-format.ts";
 
 test("daysLeftLabel fala em dias, no singular e no próprio dia", () => {
-  assert.equal(daysLeftLabel(191), "faltam 191 dias");
-  assert.equal(daysLeftLabel(1), "falta 1 dia");
-  assert.equal(daysLeftLabel(0), "é hoje");
-  assert.equal(daysLeftLabel(-3), null);
-  assert.equal(daysLeftLabel(null), null);
+  assert.equal(rotuloDosDiasRestantes(191), "faltam 191 dias");
+  assert.equal(rotuloDosDiasRestantes(1), "falta 1 dia");
+  assert.equal(rotuloDosDiasRestantes(0), "é hoje");
+  assert.equal(rotuloDosDiasRestantes(-3), null);
+  assert.equal(rotuloDosDiasRestantes(null), null);
 });
 
 test("greetingForHour muda de manhã, tarde e noite (madrugada é noite)", () => {
-  assert.equal(greetingForHour(5), "Bom dia");
-  assert.equal(greetingForHour(11), "Bom dia");
-  assert.equal(greetingForHour(12), "Boa tarde");
-  assert.equal(greetingForHour(17), "Boa tarde");
-  assert.equal(greetingForHour(18), "Boa noite");
-  assert.equal(greetingForHour(2), "Boa noite");
+  assert.equal(saudacaoParaAHora(5), "Bom dia");
+  assert.equal(saudacaoParaAHora(11), "Bom dia");
+  assert.equal(saudacaoParaAHora(12), "Boa tarde");
+  assert.equal(saudacaoParaAHora(17), "Boa tarde");
+  assert.equal(saudacaoParaAHora(18), "Boa noite");
+  assert.equal(saudacaoParaAHora(2), "Boa noite");
 });

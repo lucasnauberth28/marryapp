@@ -7,10 +7,10 @@ import { btn } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 import { getVendorPageContext } from "@/lib/security/vendor-guard";
 import { planOption, shortPlanName } from "@/app/login/auth-config";
-import { getCatalog } from "@/lib/catalog-server";
-import { nextVendorPeriodEnd, VENDOR_PERIOD_DAYS, vendorTierForPlan } from "@/lib/subscription-period";
-import { priceBreakdown } from "@/lib/checkout-pricing";
-import { upgradeCredit } from "@/lib/upgrade-credit";
+import { obterCatalogo } from "@/lib/catalog-server";
+import { proximoFimDoPeriodoDoFornecedor, DIAS_DO_PERIODO_DO_FORNECEDOR, nivelDoFornecedorParaOPlano } from "@/lib/subscription-period";
+import { detalharPreco } from "@/lib/checkout-pricing";
+import { creditoDeUpgrade } from "@/lib/upgrade-credit";
 import { formatWeddingDate, START_MONTHLY_LEAD_LIMIT, startOfMonthBrasilia } from "../../_lib/vendor-panel";
 import { PlanCheckout } from "./plan-checkout";
 
@@ -37,7 +37,7 @@ export default async function PlanoPage() {
 
   // Página dinâmica (sessão): a data de agora é lida a cada requisição.
   const now = new Date();
-  const catalog = await getCatalog();
+  const catalog = await obterCatalogo();
   const [payments, monthLeads] = await Promise.all([
     prisma.subscription.findMany({
       where: { userId: session.userId, status: { in: [PaymentStatus.APPROVED, PaymentStatus.REFUNDED] } },
@@ -58,8 +58,8 @@ export default async function PlanoPage() {
   // Até quando vale cada plano se pago agora (mesma regra do webhook de confirmação).
   const endLabels = Object.fromEntries(
     options.map((o) => {
-      const newTier = vendorTierForPlan(o.id) ?? "PRO";
-      const end = nextVendorPeriodEnd({ currentTier: vendor.planTier, currentExpiresAt: expiresAt, newTier, now });
+      const newTier = nivelDoFornecedorParaOPlano(o.id) ?? "PRO";
+      const end = proximoFimDoPeriodoDoFornecedor({ currentTier: vendor.planTier, currentExpiresAt: expiresAt, newTier, now });
       return [o.id, formatDate(end, now, true)];
     }),
   );
@@ -68,10 +68,10 @@ export default async function PlanoPage() {
   const currentKey = vendor.planTier === "PRO" ? "pro" : vendor.planTier === "MASTER" ? "master" : null;
   const credits = Object.fromEntries(
     options.map((o) => {
-      const newTier = vendorTierForPlan(o.id);
+      const newTier = nivelDoFornecedorParaOPlano(o.id);
       const credit =
         newTier && currentKey
-          ? upgradeCredit({
+          ? creditoDeUpgrade({
               currentTier: vendor.planTier,
               currentExpiresAt: expiresAt,
               newTier,
@@ -80,7 +80,7 @@ export default async function PlanoPage() {
               newPrice: o.price,
             })
           : 0;
-      return [o.id, priceBreakdown({ price: o.price, credit })];
+      return [o.id, detalharPreco({ price: o.price, credit })];
     }),
   );
 
@@ -228,7 +228,7 @@ export default async function PlanoPage() {
                     const refunded = p.status === PaymentStatus.REFUNDED;
                     const period =
                       p.periodEnd && !refunded
-                        ? `${formatDate(new Date(p.periodEnd.getTime() - VENDOR_PERIOD_DAYS * DAY_MS), now)} a ${formatDate(p.periodEnd, now)}`
+                        ? `${formatDate(new Date(p.periodEnd.getTime() - DIAS_DO_PERIODO_DO_FORNECEDOR * DAY_MS), now)} a ${formatDate(p.periodEnd, now)}`
                         : "—";
                     return (
                       <tr key={p.id} className="border-t border-linha">

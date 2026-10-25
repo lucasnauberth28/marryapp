@@ -3,28 +3,28 @@
 // data URLs (ambiente local, sem storage) continuam em <img>, porque o next/image recusa hosts
 // fora de `images.remotePatterns` e não otimiza data URLs.
 
-const STORAGE_PATH = "/storage/v1/object/public/";
+const CAMINHO_DO_ARMAZENAMENTO = "/storage/v1/object/public/";
 
 /** Padrão de remotePatterns derivado da URL do Supabase (vazio se não configurada). */
-export function storageRemotePattern(supabaseUrl: string | undefined) {
+export function padraoRemotoDoArmazenamento(supabaseUrl: string | undefined) {
   if (!supabaseUrl) return null;
   try {
     const url = new URL(supabaseUrl);
     if (url.protocol !== "https:") return null;
-    return { protocol: "https" as const, hostname: url.hostname, pathname: `${STORAGE_PATH}**` };
+    return { protocol: "https" as const, hostname: url.hostname, pathname: `${CAMINHO_DO_ARMAZENAMENTO}**` };
   } catch {
     return null;
   }
 }
 
 /** true se `src` é uma foto do nosso storage público e, portanto, pode usar o next/image. */
-export function isOptimizableImage(src: string | null | undefined, supabaseUrl: string | undefined): boolean {
+export function ehImagemOtimizavel(src: string | null | undefined, supabaseUrl: string | undefined): boolean {
   if (!src) return false;
-  const pattern = storageRemotePattern(supabaseUrl);
+  const pattern = padraoRemotoDoArmazenamento(supabaseUrl);
   if (!pattern) return false;
   try {
     const url = new URL(src);
-    return url.protocol === "https:" && url.hostname === pattern.hostname && url.pathname.startsWith(STORAGE_PATH);
+    return url.protocol === "https:" && url.hostname === pattern.hostname && url.pathname.startsWith(CAMINHO_DO_ARMAZENAMENTO);
   } catch {
     return false;
   }
@@ -32,11 +32,11 @@ export function isOptimizableImage(src: string | null | undefined, supabaseUrl: 
 
 // Caminho de imagem dos arquivos estáticos do próprio app (pasta public), ex.: /images/aceito/capa.webp.
 // Só letras, números, ponto, hífen, sublinhado e barra; precisa terminar em extensão de imagem.
-const OWN_IMAGE_PATH = /^\/[A-Za-z0-9][A-Za-z0-9._/-]*\.(?:avif|gif|jpe?g|png|svg|webp)$/i;
+const PADRAO_DO_CAMINHO_DE_IMAGEM_PROPRIA = /^\/[A-Za-z0-9][A-Za-z0-9._/-]*\.(?:avif|gif|jpe?g|png|svg|webp)$/i;
 
 /** true para "/images/foto.webp": caminho absoluto no próprio site, sem "//", sem "..", sem esquema, sem query. */
-export function isOwnStaticImagePath(value: string): boolean {
-  if (!OWN_IMAGE_PATH.test(value)) return false;
+export function ehCaminhoDeImagemEstaticaPropria(value: string): boolean {
+  if (!PADRAO_DO_CAMINHO_DE_IMAGEM_PROPRIA.test(value)) return false;
   if (value.includes("//") || value.includes("..") || value.includes("/.")) return false;
   return true;
 }
@@ -46,7 +46,7 @@ export function isOwnStaticImagePath(value: string): boolean {
  * (ambiente local sem storage) ou um arquivo estático do próprio app (/images/...).
  * Nada de javascript:, http:, "//host" ou caminhos que sobem de pasta.
  */
-export function isAllowedSiteImage(value: string): boolean {
+export function ehImagemPermitidaNoSite(value: string): boolean {
   if (value === "") return true;
-  return /^https:\/\//i.test(value) || value.startsWith("data:image/") || isOwnStaticImagePath(value);
+  return /^https:\/\//i.test(value) || value.startsWith("data:image/") || ehCaminhoDeImagemEstaticaPropria(value);
 }

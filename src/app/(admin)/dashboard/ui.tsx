@@ -3,7 +3,7 @@
 // segmentos em pílula; números em Geist com algarismos tabulares; estado sempre com ícone e palavra.
 import Link from "next/link";
 import { ChevronRight, type LucideIcon } from "lucide-react";
-import { formatBRL, splitBRL } from "@/lib/dashboard-summary";
+import { formatarReaisSemSinal, separarReais } from "@/lib/dashboard-summary";
 
 const pill =
   "inline-flex min-h-11 shrink-0 cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-full px-[18px] text-sm font-semibold leading-5 no-underline transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100";
@@ -72,10 +72,10 @@ export function Chip({ tone, icon: Icon, children }: { tone: Tone; icon?: Lucide
 
 /** Valor de destaque: reais em 600, "R$" e centavos menores em tom secundário. O texto completo vai para leitores de tela. */
 export function Money({ cents, className = "text-[32px] leading-[1.1]" }: { cents: number; className?: string }) {
-  const { whole, cents: c } = splitBRL(cents);
+  const { whole, cents: c } = separarReais(cents);
   return (
     <span className={`whitespace-nowrap font-semibold tracking-[-0.02em] tabular-nums text-tinta ${className}`}>
-      <span className="sr-only">{formatBRL(cents)}</span>
+      <span className="sr-only">{formatarReaisSemSinal(cents)}</span>
       <span aria-hidden="true">
         <span className="mr-[0.22em] text-[0.56em] font-medium tracking-normal text-tinta-suave">R$</span>
         {whole}

@@ -1,7 +1,7 @@
 import "server-only";
 import { PaymentStatus, VendorPlanTier, type Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { getCatalog } from "@/lib/catalog-server";
+import { obterCatalogo } from "@/lib/catalog-server";
 import { PIX_REVIEW_WINDOW_MS, STATIC_PIX_PREFIX } from "@/lib/platform/payments";
 import {
   averagePayment,
@@ -112,7 +112,7 @@ export function activePaidVendorWhere(now: Date = new Date()): Prisma.PartnerVen
 export async function getRecurringRevenue(now: Date = new Date()) {
   const [groups, catalog] = await Promise.all([
     prisma.partnerVendor.groupBy({ by: ["planTier"], where: activePaidVendorWhere(now), _count: { _all: true } }),
-    getCatalog(),
+    obterCatalogo(),
   ]);
   return monthlyRecurring(
     groups.flatMap((g) => (g.planTier === "PRO" || g.planTier === "MASTER" ? [{ tier: g.planTier, count: g._count._all }] : [])),

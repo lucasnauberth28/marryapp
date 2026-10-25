@@ -1,20 +1,20 @@
 import "server-only";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { getWeddingPlan } from "@/lib/wedding-plan";
-import { giftFeePlanFor, summarizePayoutBalance, type PayoutBalance } from "./payout-balance.ts";
+import { obterPlanoDoCasamento } from "@/lib/wedding-plan";
+import { planoDaTaxaDoPresentePara, resumirSaldoDeRepasse, type SaldoDeRepasse } from "./payout-balance.ts";
 
 /**
  * Saldo a repassar de UM casamento (bruto, taxa, líquido e a conferir). Só leitura: não cria repasse nem move dinheiro.
  * Quem chama passa o `weddingId` da sessão (nunca um id vindo do navegador).
  */
-export async function getPayoutBalance(weddingId: string): Promise<PayoutBalance> {
+export async function obterSaldoDeRepasse(weddingId: string): Promise<SaldoDeRepasse> {
   const [plan, rows] = await Promise.all([
-    getWeddingPlan(weddingId),
+    obterPlanoDoCasamento(weddingId),
     prisma.transaction.findMany({
       where: { weddingId, status: { in: [PaymentStatus.APPROVED, PaymentStatus.PENDING] } },
       select: { amount: true, netAmount: true, fee: true, paymentMethod: true, status: true },
     }),
   ]);
-  return summarizePayoutBalance(rows, giftFeePlanFor(plan.planId, plan.modules));
+  return resumirSaldoDeRepasse(rows, planoDaTaxaDoPresentePara(plan.planId, plan.modules));
 }

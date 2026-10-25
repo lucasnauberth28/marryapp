@@ -1,21 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import type { Catalog } from "@/lib/catalog";
-import { GIFT_FEE_LABEL } from "@/lib/gift-fee";
-import { planLabel } from "@/lib/plan-copy";
+import type { Catalogo } from "@/lib/catalog";
+import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
+import { rotuloDoPlano } from "@/lib/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { Reveal } from "@/components/motion/reveal";
 import { LinkButton } from "./home-ui";
 
 /** Perguntas mais comuns, em acordeão nativo (<details>, sem JavaScript). Preços, taxa e nomes vêm do catálogo. */
-export function HomeFaq({ catalog }: { catalog: Catalog }) {
-  const classic = planLabel(catalog.plans.classic.name);
-  const vip = planLabel(catalog.plans.vip.name);
+export function HomeFaq({ catalog }: { catalog: Catalogo }) {
+  const classic = rotuloDoPlano(catalog.plans.classic.name);
+  const vip = rotuloDoPlano(catalog.plans.vip.name);
   const faqs: { q: string; a: React.ReactNode }[] = [
     {
       q: "Preciso pagar para começar?",
-      a: `Não. O Básico não tem mensalidade nem pede cartão. Há uma taxa de ${GIFT_FEE_LABEL} por presente recebido. ${classic} (${formatarReaisEnxuto(catalog.plans.classic.price)}) e ${vip} (${formatarReaisEnxuto(catalog.plans.vip.price)}) têm pagamento único.`,
+      a: `Não. O Básico não tem mensalidade nem pede cartão. Há uma taxa de ${ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido. ${classic} (${formatarReaisEnxuto(catalog.plans.classic.price)}) e ${vip} (${formatarReaisEnxuto(catalog.plans.vip.price)}) têm pagamento único.`,
     },
     { q: "Os convidados precisam criar conta?", a: "Não. Eles abrem o link, digitam o próprio WhatsApp e respondem." },
     {

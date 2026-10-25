@@ -1,6 +1,6 @@
 "use server";
 
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { requireAuthSession, requirePathPermission, AuthorizationError } from "@/lib/security/auth-guard";
 import { hasPathAccess } from "@/lib/auth";
 
@@ -65,7 +65,7 @@ export async function createRole(data: { name: string; allowedPaths: string[] })
 
   try {
     const role = await prisma.role.create({ data: parsed.data });
-    await logAudit({
+    await registrarAuditoria({
       action: "role.create",
       targetType: "role",
       targetId: role.id,
@@ -94,7 +94,7 @@ export async function updateRole(id: string, data: { name: string; allowedPaths:
 
   try {
     const role = await prisma.role.update({ where: { id }, data: parsed.data });
-    await logAudit({
+    await registrarAuditoria({
       action: "role.update",
       targetType: "role",
       targetId: id,
@@ -121,7 +121,7 @@ export async function deleteRole(id: string) {
 
   try {
     await prisma.role.delete({ where: { id } });
-    await logAudit({ action: "role.delete", targetType: "role", targetId: id, details: { name: current.name } });
+    await registrarAuditoria({ action: "role.delete", targetType: "role", targetId: id, details: { name: current.name } });
     revalidatePath("/perfis");
     revalidatePath("/admin/usuarios");
     return { success: true };
@@ -178,7 +178,7 @@ export async function createUser(data: { name: string; username: string; passwor
       },
       select: { id: true },
     });
-    await logAudit({
+    await registrarAuditoria({
       action: "user.create",
       targetType: "user",
       targetId: user.id,
@@ -224,7 +224,7 @@ export async function updateUser(id: string, data: { name: string; username: str
 
   try {
     await prisma.user.update({ where: { id }, data: updateData, select: { id: true } });
-    await logAudit({
+    await registrarAuditoria({
       action: "user.update",
       targetType: "user",
       targetId: id,
@@ -262,7 +262,7 @@ export async function deleteUser(id: string) {
 
   try {
     await prisma.user.delete({ where: { id }, select: { id: true } });
-    await logAudit({
+    await registrarAuditoria({
       action: "user.delete",
       targetType: "user",
       targetId: id,

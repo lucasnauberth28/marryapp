@@ -1,7 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { appUrl } from "@/lib/app-url";
-import { brandedEmail, sendEmail } from "@/lib/email";
+import { urlDoApp } from "@/lib/app-url";
+import { brandedEmail, enviarEmail } from "@/lib/email";
 import { sendPushToUser } from "@/lib/notifications/push";
 import { buildPushPayload } from "@/lib/notifications/push-payload";
 import { loadPrefs } from "@/lib/notifications/senders";
@@ -75,7 +75,7 @@ function emailFor(content: Pick<AnnouncementContent, "title" | "body" | "linkUrl
     cta: content.linkUrl ? { label: "Abrir", url: content.linkUrl } : undefined,
     footnotes: service
       ? ["Este é um aviso sobre o funcionamento do Aceito."]
-      : [`Para escolher quais avisos receber por e-mail, acesse ${appUrl("/conta#avisos")}.`],
+      : [`Para escolher quais avisos receber por e-mail, acesse ${urlDoApp("/conta#avisos")}.`],
   });
   return { html, text };
 }
@@ -150,7 +150,7 @@ export async function processAnnouncement(announcementId: string): Promise<void>
       for (let i = 0; i < emails.length; i += EMAIL_CONCURRENCY) {
         await Promise.all(
           emails.slice(i, i + EMAIL_CONCURRENCY).map(async (row) => {
-            const result = await sendEmail({ to: row.user.username, subject, html: mail.html, text: mail.text });
+            const result = await enviarEmail({ to: row.user.username, subject, html: mail.html, text: mail.text });
             if (result.sent) await finish(row.id, "SENT");
             else await finish(row.id, "FAILED", failureText(result.reason));
           }),
@@ -199,7 +199,7 @@ export async function sendAnnouncementTest(
   }
   if (input.channels.includes("EMAIL")) {
     const mail = emailFor({ title, body: input.body, linkUrl: input.linkUrl }, input.service);
-    const result = await sendEmail({ to: user.username, subject: `[Teste] ${input.emailSubject.trim() || input.title}`, html: mail.html, text: mail.text });
+    const result = await enviarEmail({ to: user.username, subject: `[Teste] ${input.emailSubject.trim() || input.title}`, html: mail.html, text: mail.text });
     if (result.sent) done.push("e-mail");
     else notes.push(`E-mail: ${failureText(result.reason)}.`);
   }

@@ -7,7 +7,7 @@ import { RevealObserver } from "@/components/motion/reveal-observer";
 import { NavigationProgress } from "@/components/feedback/navigation-progress";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { ThemedToaster } from "@/components/theme/themed-toaster";
-import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import { SCRIPT_INICIAL_DO_TEMA } from "@/lib/theme";
 
 // Fontes do Manual de Marca (p.12), todas locais: o build não depende de rede. Geist e Urbanist são variáveis
 // no peso (100 a 900), só o subconjunto latino. Interface em Geist 400/500/600; títulos em Urbanist 500/600.
@@ -83,7 +83,7 @@ export default function RootLayout({
         {/* Antes da pintura: habilita as animações de entrada só quando há JavaScript. */}
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
         {/* Antes da pintura: aplica data-theme (cookie, ou o sistema em "Do aparelho"). Sem flash. */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_INICIAL_DO_TEMA }} />
       </head>
       <body className="min-h-screen bg-linho font-sans text-tinta">
         {/* Ícones: traço de 1,6 px com pontas arredondadas (manual p.14); quem precisa de outro traço passa strokeWidth. */}

@@ -1,7 +1,7 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { maskDocument } from "@/lib/document-br";
+import { esconderDocumento } from "@/lib/document-br";
 import { pageWindow } from "@/lib/platform/list-params";
 import { parseRegions, VENDOR_SORTS, VENDOR_TABS, type VendorSort, type VendorTab } from "@/lib/platform/vendor-admin";
 import { activePaidVendorWhere } from "@/lib/platform/queries/receita";
@@ -288,7 +288,7 @@ export async function getAdminVendorDetail(id: string): Promise<AdminVendorDetai
     id: v.id,
     companyName: v.companyName,
     category: v.category,
-    document: v.documentNumber ? maskDocument(v.documentNumber) : null,
+    document: v.documentNumber ? esconderDocumento(v.documentNumber) : null,
     documentType: v.documentType,
     regions: parseRegions(v.serviceRegions),
     galleryImages: v.galleryImages,

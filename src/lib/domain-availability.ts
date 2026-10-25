@@ -3,9 +3,9 @@
 // do Aceito, na hora de registrar. Por isso falha de rede, limite de consultas ou lentidão viram
 // "indisponível agora" e não bloqueiam o pedido.
 
-import { toDomain } from "./domain-name.ts";
+import { paraDominio } from "./domain-name.ts";
 
-export type DomainAvailability =
+export type DisponibilidadeDoDominio =
   /** Ninguém registrou. */
   | "available"
   /** Já tem dono. */
@@ -15,10 +15,10 @@ export type DomainAvailability =
   /** Não deu para consultar agora (não impede o pedido). */
   | "unknown";
 
-export const DEFAULT_RDAP_BASE = "https://rdap.registro.br";
-const RDAP_TIMEOUT_MS = 5000;
+export const BASE_RDAP_PADRAO = "https://rdap.registro.br";
+const LIMITE_DE_TEMPO_DO_RDAP_EM_MS = 5000;
 
-export interface AvailabilityOptions {
+export interface OpcoesDeDisponibilidade {
   fetch?: typeof fetch;
   /** Padrão: DOMAIN_RDAP_BASE do ambiente (usada nos testes) ou o RDAP do Registro.br. */
   base?: string;
@@ -26,19 +26,19 @@ export interface AvailabilityOptions {
 }
 
 /** Texto de estado do RDAP sem espaços, caixa nem símbolos: "pending delete" e "pendingDelete" viram o mesmo. */
-const statusKey = (value: unknown) => (typeof value === "string" ? value.toLowerCase().replace(/[^a-z]/g, "") : "");
+const chaveDaSituacao = (value: unknown) => (typeof value === "string" ? value.toLowerCase().replace(/[^a-z]/g, "") : "");
 
 /** O JSON do RDAP diz que o domínio está sendo liberado (pendingDelete)? */
-export function isPendingDelete(body: unknown): boolean {
+export function estaPendenteDeExclusao(body: unknown): boolean {
   if (!body || typeof body !== "object") return false;
   const status = (body as { status?: unknown }).status;
   const list = Array.isArray(status) ? status : [status];
-  return list.some((s) => statusKey(s) === "pendingdelete");
+  return list.some((s) => chaveDaSituacao(s) === "pendingdelete");
 }
 
-function rdapBase(options: AvailabilityOptions): string {
+function baseRdap(options: OpcoesDeDisponibilidade): string {
   const configured = options.base ?? (typeof process !== "undefined" ? process.env.DOMAIN_RDAP_BASE : undefined);
-  return (configured?.trim() || DEFAULT_RDAP_BASE).replace(/\/+$/, "");
+  return (configured?.trim() || BASE_RDAP_PADRAO).replace(/\/+$/, "");
 }
 
 /**
@@ -46,15 +46,15 @@ function rdapBase(options: AvailabilityOptions): string {
  * sem sair da máquina). 404 = livre; 200 = ocupado (ou em liberação, se o JSON disser pendingDelete);
  * qualquer outra coisa (erro, 429, 5xx, lentidão) = "unknown".
  */
-export async function checkDomainAvailability(domainInput: string, options: AvailabilityOptions = {}): Promise<DomainAvailability> {
-  const domain = toDomain(domainInput);
+export async function verificarDisponibilidadeDoDominio(domainInput: string, options: OpcoesDeDisponibilidade = {}): Promise<DisponibilidadeDoDominio> {
+  const domain = paraDominio(domainInput);
   if (!domain) return "unknown";
 
   const doFetch = options.fetch ?? fetch;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? RDAP_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? LIMITE_DE_TEMPO_DO_RDAP_EM_MS);
   try {
-    const response = await doFetch(`${rdapBase(options)}/domain/${encodeURIComponent(domain)}`, {
+    const response = await doFetch(`${baseRdap(options)}/domain/${encodeURIComponent(domain)}`, {
       method: "GET",
       headers: { accept: "application/rdap+json, application/json" },
       signal: controller.signal,
@@ -64,7 +64,7 @@ export async function checkDomainAvailability(domainInput: string, options: Avai
     if (response.status === 404) return "available";
     if (response.status !== 200) return "unknown";
     const body = await response.json().catch(() => null);
-    return isPendingDelete(body) ? "releasing" : "taken";
+    return estaPendenteDeExclusao(body) ? "releasing" : "taken";
   } catch {
     return "unknown";
   } finally {
@@ -73,7 +73,7 @@ export async function checkDomainAvailability(domainInput: string, options: Avai
 }
 
 /** Frase para mostrar ao casal, com a cor do aviso. */
-export const AVAILABILITY_TEXT: Record<DomainAvailability, { tone: "sucesso" | "perigo" | "aviso" | "neutro"; text: (domain: string) => string }> = {
+export const TEXTO_DA_DISPONIBILIDADE: Record<DisponibilidadeDoDominio, { tone: "sucesso" | "perigo" | "aviso" | "neutro"; text: (domain: string) => string }> = {
   available: { tone: "sucesso", text: (d) => `${d} parece estar livre. Confirmamos na hora de registrar.` },
   taken: { tone: "perigo", text: (d) => `${d} já tem dono. Experimentem uma das sugestões ou outro nome.` },
   releasing: { tone: "aviso", text: (d) => `${d} está em liberação e não dá para pedir agora. Escolham outro nome ou tentem de novo mais tarde.` },

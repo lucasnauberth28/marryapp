@@ -3,7 +3,7 @@
 // route-access.test.ts confere isso olhando as pastas, então uma rota nova sem lista falha no CI.
 
 /** Acessíveis sem login. */
-const PUBLIC_PATHS = [
+const CAMINHOS_PUBLICOS = [
   "/login",
   "/cadastro",
   "/assinar",
@@ -32,10 +32,10 @@ const PUBLIC_PATHS = [
  * Rotas de qualquer conta logada, sem depender de módulo do perfil: o onboarding do casamento,
  * a área "Minha conta", os recibos (a própria página confere a quem pertencem) e os avisos.
  */
-const SESSION_PATHS = ["/boas-vindas", "/conta", "/recibo", "/notificacoes"];
+const CAMINHOS_DE_SESSAO = ["/boas-vindas", "/conta", "/recibo", "/notificacoes"];
 
 /** Painel do casal, painel do fornecedor e rotas de API da conta: exigem sessão e módulo liberado. */
-const PROTECTED_PATHS = [
+const CAMINHOS_PROTEGIDOS = [
   // Administração da plataforma: só a conta com acesso total ("*"); cada página, Server Action e rota
   // de API confere de novo com requirePlatformAdmin (lib/security/platform-admin.ts).
   "/admin",
@@ -66,26 +66,26 @@ const PROTECTED_PATHS = [
   "/api/export",
 ];
 
-export type RouteKind = "public" | "session" | "protected" | "unknown";
+export type TipoDeRota = "public" | "session" | "protected" | "unknown";
 
-function matches(list: string[], path: string) {
+function combinaComCaminho(list: string[], path: string) {
   return list.some((p) => path === p || path.startsWith(`${p}/`));
 }
 
 /** Diz a que grupo um caminho pertence. "unknown" é um caminho que não existe no app (vira 404). */
-export function classifyPath(path: string): RouteKind {
+export function classificarCaminho(path: string): TipoDeRota {
   if (path === "/") return "public";
-  if (matches(PUBLIC_PATHS, path)) return "public";
-  if (matches(SESSION_PATHS, path)) return "session";
-  if (matches(PROTECTED_PATHS, path)) return "protected";
+  if (combinaComCaminho(CAMINHOS_PUBLICOS, path)) return "public";
+  if (combinaComCaminho(CAMINHOS_DE_SESSAO, path)) return "session";
+  if (combinaComCaminho(CAMINHOS_PROTEGIDOS, path)) return "protected";
   return "unknown";
 }
 
-export function isSessionPath(path: string) {
-  return matches(SESSION_PATHS, path);
+export function ehCaminhoDeSessao(path: string) {
+  return combinaComCaminho(CAMINHOS_DE_SESSAO, path);
 }
 
 /** Caminho da administração da plataforma (/admin e abaixo dele; a API fica em /api/admin). */
-export function isPlatformAdminPath(path: string) {
+export function ehCaminhoDeAdminDaPlataforma(path: string) {
   return path === "/admin" || path.startsWith("/admin/");
 }

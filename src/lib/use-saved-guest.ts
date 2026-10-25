@@ -1,20 +1,20 @@
 "use client";
 
 import { useCallback, useSyncExternalStore } from "react";
-import { parseSavedGuest, savedGuestKey, serializeSavedGuest, type SavedGuest } from "./saved-guest";
+import { interpretarConvidadoSalvo, chaveDoConvidadoSalvo, serializarConvidadoSalvo, type ConvidadoSalvo } from "./saved-guest";
 
-const listeners = new Set<() => void>();
+const ouvintes = new Set<() => void>();
 
-function subscribe(listener: () => void) {
-  listeners.add(listener);
+function assinarMudancas(listener: () => void) {
+  ouvintes.add(listener);
   return () => {
-    listeners.delete(listener);
+    ouvintes.delete(listener);
   };
 }
 
-function read(slug: string): string | null {
+function lerConvidadoSalvo(slug: string): string | null {
   try {
-    return window.sessionStorage.getItem(savedGuestKey(slug));
+    return window.sessionStorage.getItem(chaveDoConvidadoSalvo(slug));
   } catch {
     // Armazenamento bloqueado (aba privada, política do navegador): segue sem reaproveitar nada.
     return null;
@@ -22,33 +22,33 @@ function read(slug: string): string | null {
 }
 
 /** Grava quem se identificou na confirmação de presença (chamado depois que a pessoa respondeu). */
-export function rememberGuest(slug: string, guest: SavedGuest) {
-  const raw = serializeSavedGuest(guest);
+export function lembrarConvidado(slug: string, guest: ConvidadoSalvo) {
+  const raw = serializarConvidadoSalvo(guest);
   if (!raw) return;
   try {
-    window.sessionStorage.setItem(savedGuestKey(slug), raw);
+    window.sessionStorage.setItem(chaveDoConvidadoSalvo(slug), raw);
   } catch {
     // sem armazenamento: o checkout só pede os dados de novo
   }
-  listeners.forEach((l) => l());
+  ouvintes.forEach((l) => l());
 }
 
-function forgetGuest(slug: string) {
+function esquecerConvidado(slug: string) {
   try {
-    window.sessionStorage.removeItem(savedGuestKey(slug));
+    window.sessionStorage.removeItem(chaveDoConvidadoSalvo(slug));
   } catch {
     // nada a limpar
   }
-  listeners.forEach((l) => l());
+  ouvintes.forEach((l) => l());
 }
 
 /** Quem se identificou neste navegador no site deste casamento, ou null. No servidor é sempre null. */
-export function useSavedGuest(slug: string): { guest: SavedGuest | null; forget: () => void } {
+export function useConvidadoSalvo(slug: string): { guest: ConvidadoSalvo | null; forget: () => void } {
   const raw = useSyncExternalStore(
-    subscribe,
-    () => read(slug),
+    assinarMudancas,
+    () => lerConvidadoSalvo(slug),
     () => null,
   );
-  const forget = useCallback(() => forgetGuest(slug), [slug]);
-  return { guest: parseSavedGuest(raw), forget };
+  const forget = useCallback(() => esquecerConvidado(slug), [slug]);
+  return { guest: interpretarConvidadoSalvo(raw), forget };
 }

@@ -1,6 +1,6 @@
 // Contas e formatos de dinheiro da home (simulador de presentes e comparação de planos). Puro: roda nos testes.
 import { formatarValorSemSimbolo } from "../../../lib/formatacao/dinheiro.ts";
-import { GIFT_FEE_BASIS_POINTS } from "../../../lib/gift-fee.ts";
+import { TAXA_DO_PRESENTE_EM_PONTOS_BASE } from "../../../lib/gift-fee.ts";
 
 /** Texto digitado ("1.250,50", "200", "200,5") em centavos; null se não for um valor válido. */
 export function parseCents(text: string): number | null {
@@ -21,7 +21,7 @@ export const formatCents = formatarValorSemSimbolo;
  */
 export function breakEvenCents(planPriceCents: number): number {
   if (planPriceCents <= 0) return 0;
-  return Math.ceil((planPriceCents * 10_000) / GIFT_FEE_BASIS_POINTS);
+  return Math.ceil((planPriceCents * 10_000) / TAXA_DO_PRESENTE_EM_PONTOS_BASE);
 }
 
 /** Preço em partes para exibir "R$ 149,00" com os centavos pequenos. */

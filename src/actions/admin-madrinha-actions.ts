@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
 import { savePlatformSetting } from "@/lib/platform/settings";
 import {
@@ -156,7 +156,7 @@ export async function saveInstructionVersion(input: unknown): Promise<(Ok & { ve
       return { success: false, error: "O texto é igual ao da última versão. Mude alguma coisa antes de salvar.", fieldErrors: { content: "Nada mudou neste texto." } };
     }
     const created = await createVersion(parsed.data.content, parsed.data.changeNote, admin);
-    await logAudit({
+    await registrarAuditoria({
       action: "madrinha.instructions_save",
       targetType: "madrinha_instructions",
       targetId: created.id,
@@ -184,7 +184,7 @@ export async function publishInstructionVersion(input: unknown): Promise<Ok | Fa
       await tx.madrinhaInstructionVersion.update({ where: { id }, data: { status: "PUBLISHED", publishedAt: now } });
       return old?.version ?? null;
     });
-    await logAudit({
+    await registrarAuditoria({
       action: "madrinha.instructions_publish",
       targetType: "madrinha_instructions",
       targetId: id,
@@ -205,7 +205,7 @@ export async function revertInstructionVersion(input: unknown): Promise<(Ok & { 
     const source = await prisma.madrinhaInstructionVersion.findUnique({ where: { id }, select: { id: true, version: true, content: true } });
     if (!source) return { success: false, error: "Versão não encontrada." };
     const created = await createVersion(source.content, `Voltou ao texto da versão ${source.version}`, admin);
-    await logAudit({
+    await registrarAuditoria({
       action: "madrinha.instructions_revert",
       targetType: "madrinha_instructions",
       targetId: created.id,
@@ -249,7 +249,7 @@ export async function saveKnowledgeArticle(input: unknown): Promise<Ok | Fail> {
       });
       articleId = created.id;
     }
-    await logAudit({
+    await registrarAuditoria({
       action: id ? "madrinha.article_update" : "madrinha.article_create",
       targetType: "madrinha_article",
       targetId: articleId,
@@ -269,7 +269,7 @@ export async function archiveKnowledgeArticle(input: unknown): Promise<Ok | Fail
     const found = await prisma.madrinhaKnowledgeArticle.findUnique({ where: { id }, select: { id: true, title: true } });
     if (!found) return { success: false, error: "Texto não encontrado." };
     await prisma.madrinhaKnowledgeArticle.update({ where: { id }, data: { status: "ARCHIVED" } });
-    await logAudit({ action: "madrinha.article_archive", targetType: "madrinha_article", targetId: id, details: { title: found.title } });
+    await registrarAuditoria({ action: "madrinha.article_archive", targetType: "madrinha_article", targetId: id, details: { title: found.title } });
     refresh();
     return { success: true, message: "Texto removido da base." };
   } catch (error) {
@@ -313,7 +313,7 @@ export async function applyWeddingAdjustment(input: unknown): Promise<Ok | Fail>
       create: { weddingId: wedding.id, extraMessages: extra, note: data.reason },
       update: { extraMessages: extra, note: data.reason },
     });
-    await logAudit({
+    await registrarAuditoria({
       action: "madrinha.override_adjust",
       targetType: "wedding",
       targetId: wedding.id,
@@ -332,7 +332,7 @@ export async function unblockWeddingMadrinha(input: unknown): Promise<Ok | Fail>
     const wedding = await ensureWedding(data.weddingId);
     if (!wedding) return { success: false, error: ERROS.casalNaoEncontrado };
     await prisma.madrinhaWeddingOverride.updateMany({ where: { weddingId: wedding.id }, data: { blockedAt: null, blockedReason: null } });
-    await logAudit({ action: "madrinha.override_unblock", targetType: "wedding", targetId: wedding.id });
+    await registrarAuditoria({ action: "madrinha.override_unblock", targetType: "wedding", targetId: wedding.id });
     refresh();
     return { success: true, message: `${wedding.coupleNames} foi desbloqueado.` };
   } catch (error) {
@@ -352,7 +352,7 @@ export async function setWeddingMadrinhaEnabled(input: unknown): Promise<Ok | Fa
       create: { weddingId: wedding.id, enabled: data.enabled },
       update: { enabled: data.enabled },
     });
-    await logAudit({ action: "madrinha.override_enabled", targetType: "wedding", targetId: wedding.id, details: { enabled: data.enabled } });
+    await registrarAuditoria({ action: "madrinha.override_enabled", targetType: "wedding", targetId: wedding.id, details: { enabled: data.enabled } });
     refresh();
     return { success: true, message: data.enabled === null ? "Voltou ao padrão." : data.enabled ? "Ligada para este casal." : "Desligada para este casal." };
   } catch (error) {

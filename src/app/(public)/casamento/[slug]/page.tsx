@@ -1,14 +1,14 @@
 import { SiteUnavailable } from "@/components/public/site-unavailable";
 import { WeddingSiteView } from "@/components/public/wedding-site-view";
-import { guestPageMetadata } from "@/lib/wedding";
-import { getPublicSiteData } from "@/lib/wedding-data";
-import { requirePublicWedding } from "@/lib/wedding-redirect";
+import { metadadosDaPaginaDoConvidado } from "@/lib/wedding";
+import { obterDadosDoSitePublico } from "@/lib/wedding-data";
+import { exigirCasamentoPublico } from "@/lib/wedding-redirect";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  return guestPageMetadata(slug, null);
+  return metadadosDaPaginaDoConvidado(slug, null);
 }
 
 export default async function WeddingPublicSlugPage({
@@ -17,9 +17,9 @@ export default async function WeddingPublicSlugPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const wedding = await requirePublicWedding(slug);
+  const wedding = await exigirCasamentoPublico(slug);
   if (wedding.suspendedAt) return <SiteUnavailable />;
-  const { settings, storyItems, tips, guestbookEntries, gifts, rsvpDeadline } = await getPublicSiteData(wedding);
+  const { settings, storyItems, tips, guestbookEntries, gifts, rsvpDeadline } = await obterDadosDoSitePublico(wedding);
 
   return (
     <WeddingSiteView

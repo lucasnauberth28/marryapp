@@ -23,14 +23,14 @@ import { StatusChip } from "@/components/plataforma/status-chip";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { TIMELINE_STEPS, timelineStates, type DomainOrderStatusName } from "@/lib/domain-order";
-import type { ConnectionResult } from "@/lib/vercel-domains-core";
+import { ETAPAS_DA_LINHA_DO_TEMPO, situacoesDasEtapas, type NomeDaSituacaoDoPedidoDeDominio } from "@/lib/domain-order";
+import type { ResultadoDaConexao } from "@/lib/vercel-domains-core";
 import { cn } from "@/lib/utils";
 
 export interface DomainPanelData {
   id: string;
   domain: string;
-  status: DomainOrderStatusName;
+  status: NomeDaSituacaoDoPedidoDeDominio;
   holderDocument: string;
   canRevealDocument: boolean;
   adminNote: string | null;
@@ -76,13 +76,13 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
   const [expiresAt, setExpiresAt] = useState(() => plusOneYear(today()));
   const [reason, setReason] = useState("");
   const [note, setNote] = useState(order.adminNote ?? "");
-  const [connection, setConnection] = useState<ConnectionResult | null>(null);
+  const [connection, setConnection] = useState<ResultadoDaConexao | null>(null);
   const [fullDocument, setFullDocument] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Qual ação está rodando: só o botão clicado mostra o spinner, os outros ficam desabilitados
   const [running, setRunning] = useState<string | null>(null);
   const id = order.id;
-  const states = timelineStates(order.status);
+  const states = situacoesDasEtapas(order.status);
 
   function run(key: string, action: () => Promise<AdminResult | ConnectResult>, afterOk?: () => void) {
     setError(null);
@@ -146,7 +146,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
 
       {states ? (
         <ol className="flex flex-col gap-2" aria-label="Etapas do pedido">
-          {TIMELINE_STEPS.map((step, i) => {
+          {ETAPAS_DA_LINHA_DO_TEMPO.map((step, i) => {
             const state = states[i];
             return (
               <li key={step.status} className="flex items-center gap-3 text-[15px]">
@@ -309,7 +309,7 @@ const STATE_CHIP = {
   pending_verification: { tone: "aviso", label: "Falta a verificação" },
 } as const;
 
-function ConnectionPanel({ connection }: { connection: ConnectionResult }) {
+function ConnectionPanel({ connection }: { connection: ResultadoDaConexao }) {
   if (!connection.ok) {
     return (
       <p role="status" className="rounded-xl bg-perigo-suave p-3 text-sm font-semibold text-perigo">

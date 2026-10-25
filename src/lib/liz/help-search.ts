@@ -1,15 +1,15 @@
 // Busca no guia de ajuda da Liz. Puro (sem banco, sem Next): roda no navegador e nos testes.
 // Sem acento e sem maiúsculas; pontuação simples: título pesa mais que palavra-chave, que pesa mais que o texto.
-import { hasPathAccess } from "../permissions.ts";
-import { classifyPath } from "../route-access.ts";
-import type { EnforcedModule } from "../wedding-plan-modules.ts";
+import { temAcessoAoCaminho } from "../permissions.ts";
+import { classificarCaminho } from "../route-access.ts";
+import type { ModuloComBloqueio } from "../wedding-plan-modules.ts";
 import type { HelpArticle } from "./help-articles.ts";
 
 /** Quem pergunta: o que o perfil abre e o que o plano do casamento inclui. */
 export interface HelpAudience {
   allowedPaths: readonly string[];
   /** Recursos do plano. Módulo ausente ou ainda não carregado vale como liberado. */
-  planModules?: Partial<Record<EnforcedModule, boolean>>;
+  planModules?: Partial<Record<ModuloComBloqueio, boolean>>;
 }
 
 export interface HelpHit {
@@ -84,7 +84,7 @@ function scoreArticle(queryWords: readonly string[], article: HelpArticle): numb
 
 /** Telas de qualquer conta logada (Minha conta, Avisos) não dependem do perfil; as demais exigem o módulo. */
 function canOpen(path: string, allowedPaths: readonly string[]): boolean {
-  return classifyPath(path) === "session" || hasPathAccess([...allowedPaths], path);
+  return classificarCaminho(path) === "session" || temAcessoAoCaminho([...allowedPaths], path);
 }
 
 /** Artigos que o perfil pode ver: quem não abre o módulo não vê o artigo. */

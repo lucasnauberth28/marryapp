@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { SESSION_COOKIE_NAME } from "@/lib/auth";
-import { safeNextPath } from "@/lib/login-redirect";
+import { NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
+import { caminhoSeguroDeRetorno } from "@/lib/login-redirect";
 import { getSession } from "@/lib/security/auth-guard";
-import { getCatalog } from "@/lib/catalog-server";
+import { obterCatalogo } from "@/lib/catalog-server";
 import { AuthExperience } from "./auth-experience";
 
 export const metadata: Metadata = {
@@ -22,12 +22,12 @@ const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v
  */
 export default async function LoginPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const nextPath = safeNextPath(first(params.proxima));
+  const nextPath = caminhoSeguroDeRetorno(first(params.proxima));
 
   let expired = first(params.expirou) === "1";
-  if (!expired && (await cookies()).has(SESSION_COOKIE_NAME)) {
+  if (!expired && (await cookies()).has(NOME_DO_COOKIE_DE_SESSAO)) {
     expired = (await getSession()) === null;
   }
 
-  return <AuthExperience initialMode="entrar" nextPath={nextPath} sessionExpired={expired} catalog={await getCatalog()} />;
+  return <AuthExperience initialMode="entrar" nextPath={nextPath} sessionExpired={expired} catalog={await obterCatalogo()} />;
 }

@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 import { getSession } from "@/lib/security/auth-guard";
 import { todayBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
 
-const BOT_UA = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|monitor|headless|lighthouse/i;
+const PADRAO_DE_ROBO = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|monitor|headless|lighthouse/i;
 
 /**
  * Conta uma visita ao perfil público (um contador por fornecedor e dia, em Brasília).
@@ -13,11 +13,11 @@ const BOT_UA = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|moni
  * Ignora robôs, prefetch do Next e o próprio fornecedor vendo o perfil.
  * A gravação roda depois da resposta (after), sem atrasar a página.
  */
-export async function recordVendorProfileView(vendorId: string): Promise<void> {
+export async function registrarVisitaAoPerfilDoFornecedor(vendorId: string): Promise<void> {
   try {
     const h = await headers();
     if (h.get("next-router-prefetch") || h.get("purpose") === "prefetch" || h.get("sec-purpose")?.includes("prefetch")) return;
-    if (BOT_UA.test(h.get("user-agent") ?? "")) return;
+    if (PADRAO_DE_ROBO.test(h.get("user-agent") ?? "")) return;
 
     const session = await getSession();
     const day = todayBrasilia();

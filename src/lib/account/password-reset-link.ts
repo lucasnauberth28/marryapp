@@ -1,8 +1,8 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { generateLinkToken } from "@/lib/account/tokens";
-import { brandedEmail, sendEmail } from "@/lib/email";
-import { appUrl } from "@/lib/app-url";
+import { brandedEmail, enviarEmail } from "@/lib/email";
+import { urlDoApp } from "@/lib/app-url";
 
 const RESET_TTL_MS = 60 * 60 * 1000; // 1 hora
 
@@ -29,12 +29,12 @@ export async function sendPasswordResetLink(user: { id: string; name: string; us
       `${firstName ? `Olá, ${firstName}. ` : "Olá. "}Recebemos um pedido para trocar a senha da sua conta no Aceito.`,
       "Toque no botão abaixo para escolher uma senha nova.",
     ],
-    cta: { label: "Criar nova senha", url: appUrl(`/redefinir-senha/${token}`) },
+    cta: { label: "Criar nova senha", url: urlDoApp(`/redefinir-senha/${token}`) },
     footnotes: [
       "O link vale por 1 hora e só pode ser usado uma vez.",
       "Se não foi você, ignore este e-mail: sua senha continua a mesma.",
     ],
   });
-  const result = await sendEmail({ to: user.username, subject: "Sua nova senha no Aceito", html, text });
+  const result = await enviarEmail({ to: user.username, subject: "Sua nova senha no Aceito", html, text });
   return { sent: result.sent };
 }

@@ -9,7 +9,7 @@ import {
   isPlatformItemActive,
   platformMoreGroups,
 } from "../nav-config.ts";
-import { classifyPath } from "../../../lib/route-access.ts";
+import { classificarCaminho } from "../../../lib/route-access.ts";
 
 const APP = fileURLToPath(new URL("../../../app", import.meta.url));
 const items = PLATFORM_NAV_GROUPS.flatMap((g) => g.items);
@@ -41,7 +41,7 @@ test("o menu segue o desenho: grupos, ordem e nomes", () => {
 
 test("todo item do menu aponta para uma página que existe e é protegida", () => {
   for (const item of items) {
-    assert.equal(classifyPath(item.href), "protected", item.href);
+    assert.equal(classificarCaminho(item.href), "protected", item.href);
     const dir = item.href.startsWith("/admin") ? `${APP}/(plataforma)${item.href}` : `${APP}/(admin)${item.href}`;
     assert.ok(existsSync(`${dir}/page.tsx`), `falta a página de ${item.href}`);
   }

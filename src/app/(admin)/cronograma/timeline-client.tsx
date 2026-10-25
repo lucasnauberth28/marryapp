@@ -13,9 +13,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { btn, btnDanger, btnIcon, btnIconDanger, card, errorBox } from "@/components/painel/styles";
 import { LoadingButton } from "@/components/painel/loading-button";
 import { useSyncedState } from "@/hooks/use-synced-state";
-import { generateTimelinePdf, type TimelineEventPdf } from "@/lib/generate-timeline-pdf";
+import { gerarPdfDaLinhaDoTempo, type EventoDaLinhaDoTempoNoPdf } from "@/lib/generate-timeline-pdf";
 
-type TimelineEvent = TimelineEventPdf & { position?: number; icon?: string };
+type TimelineEvent = EventoDaLinhaDoTempoNoPdf & { position?: number; icon?: string };
 
 /** "14:00" vira "14h" e "19:30" vira "19h30". */
 function timeLabel(time: string) {
@@ -144,7 +144,7 @@ export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { init
       toast.error("Cadastre ao menos um horário para gerar o PDF.");
       return;
     }
-    if (generateTimelinePdf(events, coupleNames)) toast.success("PDF do cronograma gerado.");
+    if (gerarPdfDaLinhaDoTempo(events, coupleNames)) toast.success("PDF do cronograma gerado.");
   }
 
   return (

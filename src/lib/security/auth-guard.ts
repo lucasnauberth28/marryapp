@@ -3,8 +3,8 @@ import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { verifyToken, hasPathAccess, SESSION_COOKIE_NAME, SESSION_SEEN_COOKIE_NAME, CURRENT_PATH_HEADER } from "@/lib/auth";
-import { loginUrl, safeNextPath } from "@/lib/login-redirect";
+import { verificarToken, hasPathAccess, NOME_DO_COOKIE_DE_SESSAO, NOME_DO_COOKIE_DE_SESSAO_VISTA, CABECALHO_DO_CAMINHO_ATUAL } from "@/lib/auth";
+import { urlDeLogin, caminhoSeguroDeRetorno } from "@/lib/login-redirect";
 import { AuthorizationError } from "@/lib/security/authorization-error";
 
 export const SUPER_ADMIN_USER_ID = "super-admin";
@@ -25,10 +25,10 @@ export { AuthorizationError };
  */
 export const getSession = cache(async (): Promise<SecureAuthContext | null> => {
   const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const token = cookieStore.get(NOME_DO_COOKIE_DE_SESSAO)?.value;
   if (!token) return null;
 
-  const payload = await verifyToken(token);
+  const payload = await verificarToken(token);
   if (!payload?.userId) return null;
 
   if (payload.userId === SUPER_ADMIN_USER_ID) {
@@ -77,7 +77,7 @@ export async function requirePathPermission(path: string): Promise<SecureAuthCon
  */
 export async function redirectToLogin(fallbackPath?: string): Promise<never> {
   const [headerStore, cookieStore] = await Promise.all([headers(), cookies()]);
-  const here = safeNextPath(headerStore.get(CURRENT_PATH_HEADER)) ?? safeNextPath(fallbackPath);
-  const expired = cookieStore.has(SESSION_COOKIE_NAME) || cookieStore.has(SESSION_SEEN_COOKIE_NAME);
-  redirect(loginUrl(here, expired));
+  const here = caminhoSeguroDeRetorno(headerStore.get(CABECALHO_DO_CAMINHO_ATUAL)) ?? caminhoSeguroDeRetorno(fallbackPath);
+  const expired = cookieStore.has(NOME_DO_COOKIE_DE_SESSAO) || cookieStore.has(NOME_DO_COOKIE_DE_SESSAO_VISTA);
+  redirect(urlDeLogin(here, expired));
 }

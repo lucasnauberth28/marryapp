@@ -3,7 +3,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { hasPathAccess } from "@/lib/permissions";
+import { temAcessoAoCaminho } from "@/lib/permissions";
 import { AuthorizationError, getSession, redirectToLogin, type SecureAuthContext } from "@/lib/security/auth-guard";
 
 /** Path do painel do fornecedor (o perfil "Fornecedor" libera só este módulo). */
@@ -50,7 +50,7 @@ type VendorLookup =
 const lookupVendor = cache(async (): Promise<VendorLookup> => {
   const session = await getSession();
   if (!session) return { status: "no-session" };
-  if (!hasPathAccess(session.allowedPaths, VENDOR_PANEL_PATH)) return { status: "forbidden", session };
+  if (!temAcessoAoCaminho(session.allowedPaths, VENDOR_PANEL_PATH)) return { status: "forbidden", session };
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },

@@ -27,8 +27,8 @@ import { UserImage } from "@/components/ui/user-image";
 import { Chip } from "@/components/casal/ui";
 import { LightScope } from "@/components/theme/light-scope";
 import { WeddingSiteView, type WeddingSiteSettings } from "@/components/public/wedding-site-view";
-import { readableAccent } from "@/lib/wedding-format";
-import { weddingSitePath, weddingSiteUrl } from "@/lib/wedding-links";
+import { destaqueLegivel } from "@/lib/wedding-format";
+import { caminhoDoSiteDoCasamento, urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import {
   updateSiteCustomization,
   uploadSiteImageAction,
@@ -227,7 +227,7 @@ export function SiteBuilderClient({
   };
 
   const palette = parsePalette(settings.dressCodePalette);
-  const accent = readableAccent(settings.themeColor || "#5E2B4E");
+  const accent = destaqueLegivel(settings.themeColor || "#5E2B4E");
 
   const handleSave = () => {
     const payload = Object.fromEntries(
@@ -374,7 +374,7 @@ export function SiteBuilderClient({
     );
   };
 
-  const siteAddress = weddingSiteUrl(slug, undefined, customDomain).replace(/^https?:\/\//, "");
+  const siteAddress = urlDoSiteDoCasamento(slug, undefined, customDomain).replace(/^https?:\/\//, "");
 
   const preview = (
     <div className="overflow-hidden rounded-2xl bg-linho shadow-[var(--shadow-aceito-2)]">
@@ -438,7 +438,7 @@ export function SiteBuilderClient({
             {siteAddress} · {savedLabel}
           </span>
         </div>
-        <Link href={weddingSitePath(slug)} target="_blank" className={`${btn.secondary} ${btn.sm}`}>
+        <Link href={caminhoDoSiteDoCasamento(slug)} target="_blank" className={`${btn.secondary} ${btn.sm}`}>
           <Eye className="size-4" aria-hidden="true" /> Ver o site
         </Link>
         <LoadingButton onClick={handleSave} loading={busyAction === "publish"} disabled={isPending || !dirty} className={`${btn.primary} ${btn.sm}`}>

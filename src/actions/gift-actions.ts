@@ -1,12 +1,12 @@
 'use server'
 
 import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context"
-import { getWeddingGifts } from "@/lib/wedding-data"
+import { obterPresentesDoCasamento } from "@/lib/wedding-data"
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-import { uploadGiftImage } from "@/lib/supabase"
+import { enviarImagemDoPresente } from "@/lib/supabase"
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 const GiftSchema = z.object({
@@ -20,7 +20,7 @@ const GiftSchema = z.object({
 export async function getGifts() {
   const { weddingId } = await requireWeddingRead("/presentes-admin")
   try {
-    const gifts = await getWeddingGifts(weddingId)
+    const gifts = await obterPresentesDoCasamento(weddingId)
     return { success: true, data: gifts }
   } catch (error) {
     console.error("Erro ao buscar presentes:", error)
@@ -50,7 +50,7 @@ export async function createGiftAction(formData: FormData) {
   let imageUrl: string | null = null
 
   if (imageFile instanceof File && imageFile.size > 0) {
-    const upload = await uploadGiftImage(imageFile)
+    const upload = await enviarImagemDoPresente(imageFile)
     if (!upload.success) return { success: false, error: upload.error }
     imageUrl = upload.url
   }

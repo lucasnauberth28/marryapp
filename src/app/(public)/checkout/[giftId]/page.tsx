@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 import prisma from "@/lib/prisma";
-import { getIdentityForWedding } from "@/lib/wedding";
-import { weddingSitePath } from "@/lib/wedding-links";
+import { obterIdentidadeDoCasamento } from "@/lib/wedding";
+import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
 import { notFound } from "next/navigation";
 import { SiteUnavailable } from "@/components/public/site-unavailable";
 import { CheckoutClient } from "./checkout-client";
-import { calculateCardFee, isCardPaymentAvailable } from "@/lib/mercadopago";
+import { calcularTarifaDoCartao, pagamentoPorCartaoEstaDisponivel } from "@/lib/mercadopago";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: CheckoutPageProps): Promise<M
   const { giftId } = await params;
   const gift = await loadGift(giftId);
   if (gift?.wedding.suspendedAt) return { title: { absolute: "Site indisponível" }, robots: { index: false, follow: false } };
-  const { coupleNames } = await getIdentityForWedding(gift?.wedding ?? null);
+  const { coupleNames } = await obterIdentidadeDoCasamento(gift?.wedding ?? null);
   return {
     title: { absolute: `Presentear · ${coupleNames}` },
     description: "Presente em dinheiro por Pix ou cartão.",
@@ -60,8 +60,8 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
 
   // Só os campos do presente vão para o cliente
   const { wedding, ...gift } = giftWithWedding;
-  const { coupleNames } = await getIdentityForWedding(wedding);
-  const giftsPath = weddingSitePath(wedding.slug, "presentes");
+  const { coupleNames } = await obterIdentidadeDoCasamento(wedding);
+  const giftsPath = caminhoDoSiteDoCasamento(wedding.slug, "presentes");
 
   return (
     <div className="flex min-h-dvh flex-col bg-linho font-sans text-tinta">
@@ -82,7 +82,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
       </header>
 
       <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col px-4 pb-6 pt-5">
-        <CheckoutClient gift={gift} coupleNames={coupleNames} slug={wedding.slug} cardEnabled={isCardPaymentAvailable()} cardAmount={calculateCardFee(gift.amount).finalAmount} />
+        <CheckoutClient gift={gift} coupleNames={coupleNames} slug={wedding.slug} cardEnabled={pagamentoPorCartaoEstaDisponivel()} cardAmount={calcularTarifaDoCartao(gift.amount).finalAmount} />
       </div>
 
       <p className="px-4 pb-6 text-center text-sm text-tinta-suave">{coupleNames} · Feito com Aceito</p>

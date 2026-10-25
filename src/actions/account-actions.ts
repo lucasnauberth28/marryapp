@@ -5,15 +5,15 @@ import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import { SESSION_COOKIE_NAME, SESSION_SEEN_COOKIE_NAME } from "@/lib/auth";
+import { NOME_DO_COOKIE_DE_SESSAO, NOME_DO_COOKIE_DE_SESSAO_VISTA } from "@/lib/auth";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { generateLinkToken } from "@/lib/account/tokens";
 import { classifyAccount } from "@/lib/account/wedding-provisioning";
 import { INVITE_TTL_MS, MAX_PENDING_INVITES } from "@/lib/account/invites";
-import { brandedEmail, sendEmail } from "@/lib/email";
-import { appUrl } from "@/lib/app-url";
-import { logAudit } from "@/lib/audit";
+import { brandedEmail, enviarEmail } from "@/lib/email";
+import { urlDoApp } from "@/lib/app-url";
+import { registrarAuditoria } from "@/lib/audit";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 const MINUTE = 60 * 1000;
@@ -74,7 +74,7 @@ export async function changePassword(input: { currentPassword: string; newPasswo
     // Links de "esqueci a senha" pendentes deixam de valer.
     prisma.passwordResetToken.updateMany({ where: { userId: user.id, usedAt: null }, data: { usedAt: new Date() } }),
   ]);
-  await logAudit({ action: "account.password_change", targetType: "User", targetId: user.id });
+  await registrarAuditoria({ action: "account.password_change", targetType: "User", targetId: user.id });
   return { success: true };
 }
 
@@ -142,13 +142,13 @@ export async function createPartnerInvite(input: { email?: string }): Promise<Cr
         `${firstName} está organizando o casamento ${user.wedding.coupleNames} no Aceito e quer você junto: convidados, site, presentes e tudo mais, num lugar só.`,
         "Aceite o convite para entrar com a sua própria conta.",
       ],
-      cta: { label: "Aceitar o convite", url: appUrl(path) },
+      cta: { label: "Aceitar o convite", url: urlDoApp(path) },
       footnotes: ["O convite vale por 7 dias e só pode ser usado uma vez.", "Se você não esperava este convite, pode ignorar este e-mail."],
     });
-    emailSent = (await sendEmail({ to: email, subject: `${firstName} convidou você para o casamento no Aceito`, html, text })).sent;
+    emailSent = (await enviarEmail({ to: email, subject: `${firstName} convidou você para o casamento no Aceito`, html, text })).sent;
   }
 
-  await logAudit({ action: "wedding.invite_create", targetType: "WeddingInvite", targetId: invite.id, details: { byEmail: Boolean(email), emailSent } });
+  await registrarAuditoria({ action: "wedding.invite_create", targetType: "WeddingInvite", targetId: invite.id, details: { byEmail: Boolean(email), emailSent } });
   revalidatePath("/conta");
 
   return {
@@ -170,7 +170,7 @@ export async function cancelPartnerInvite(inviteId: string): Promise<{ success: 
   const removed = await prisma.weddingInvite.deleteMany({ where: { id: inviteId, weddingId: user.wedding.id, usedAt: null } });
   if (removed.count !== 1) return { success: false, error: "Convite não encontrado ou já usado." };
 
-  await logAudit({ action: "wedding.invite_cancel", targetType: "WeddingInvite", targetId: inviteId });
+  await registrarAuditoria({ action: "wedding.invite_cancel", targetType: "WeddingInvite", targetId: inviteId });
   revalidatePath("/conta");
   return { success: true };
 }
@@ -227,7 +227,7 @@ export async function deleteMyAccount(input: { confirmation: string; password: s
     return { success: false, error: "Não conseguimos excluir a conta agora. Tente de novo ou fale com o suporte." };
   }
 
-  await logAudit({
+  await registrarAuditoria({
     action: "account.delete",
     targetType: "User",
     targetId: user.id,
@@ -241,7 +241,7 @@ export async function deleteMyAccount(input: { confirmation: string; password: s
   });
 
   const cookieStore = await cookies();
-  cookieStore.delete(SESSION_COOKIE_NAME);
-  cookieStore.delete(SESSION_SEEN_COOKIE_NAME);
+  cookieStore.delete(NOME_DO_COOKIE_DE_SESSAO);
+  cookieStore.delete(NOME_DO_COOKIE_DE_SESSAO_VISTA);
   return { success: true };
 }

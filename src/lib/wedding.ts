@@ -3,12 +3,12 @@ import { cache } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import prisma from "@/lib/prisma";
-import { getCoupleInitials } from "@/lib/wedding-format";
+import { obterIniciaisDoCasal } from "@/lib/wedding-format";
 import { getWeddingBySlug, getWeddingContext, type WeddingSummary } from "@/lib/security/wedding-context";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { weddingSiteUrl, type WeddingGuestPage } from "@/lib/wedding-links";
+import { urlDoSiteDoCasamento, type PaginaDoConvidadoNoCasamento } from "@/lib/wedding-links";
 
-export interface WeddingIdentity {
+export interface IdentidadeDoCasamento {
   /** Ex.: "Lucas & Giovanna" */
   coupleNames: string;
   /** Ex.: "L&G" */
@@ -23,17 +23,17 @@ export interface WeddingIdentity {
   slug: string | null;
 }
 
-const FALLBACK_NAMES = "Nosso Casamento";
+const NOMES_DE_APOIO = "Nosso Casamento";
 
-function buildIdentity(
+function montarIdentidade(
   wedding: WeddingSummary | null,
   site: { title: string; weddingDate: Date | null; locationName: string | null } | null
-): WeddingIdentity {
-  const coupleNames = site?.title?.trim() || wedding?.coupleNames?.trim() || FALLBACK_NAMES;
+): IdentidadeDoCasamento {
+  const coupleNames = site?.title?.trim() || wedding?.coupleNames?.trim() || NOMES_DE_APOIO;
   const weddingDate = site?.weddingDate ?? wedding?.weddingDate ?? null;
   return {
     coupleNames,
-    initials: getCoupleInitials(coupleNames),
+    initials: obterIniciaisDoCasal(coupleNames),
     weddingDate,
     dateLabel: weddingDate ? format(weddingDate, "d 'de' MMMM 'de' yyyy", { locale: ptBR }) : null,
     shortDateLabel: weddingDate ? format(weddingDate, "d MMM yyyy", { locale: ptBR }) : null,
@@ -43,17 +43,17 @@ function buildIdentity(
 }
 
 /** Identidade de um casamento já resolvido (nomes do site do casal, com o cadastro como reserva). */
-export const getIdentityForWedding = cache(async (wedding: WeddingSummary | null): Promise<WeddingIdentity> => {
-  if (!wedding) return buildIdentity(null, null);
+export const obterIdentidadeDoCasamento = cache(async (wedding: WeddingSummary | null): Promise<IdentidadeDoCasamento> => {
+  if (!wedding) return montarIdentidade(null, null);
   try {
     const site = await prisma.siteCustomization.findUnique({
       where: { weddingId: wedding.id },
       select: { title: true, weddingDate: true, locationName: true },
     });
-    return buildIdentity(wedding, site);
+    return montarIdentidade(wedding, site);
   } catch (error) {
     console.error("[getIdentityForWedding]", error);
-    return buildIdentity(wedding, null);
+    return montarIdentidade(wedding, null);
   }
 });
 
@@ -61,17 +61,17 @@ export const getIdentityForWedding = cache(async (wedding: WeddingSummary | null
  * Identidade do casamento da sessão (painel do casal): nomes, iniciais, data.
  * Lida uma vez por request. Sem casamento (ou banco indisponível) devolve um nome neutro.
  */
-export const getWeddingIdentity = cache(async (): Promise<WeddingIdentity> => {
+export const obterIdentidadeDoCasamentoPrincipal = cache(async (): Promise<IdentidadeDoCasamento> => {
   try {
     const ctx = await getWeddingContext();
-    return await getIdentityForWedding(ctx?.wedding ?? null);
+    return await obterIdentidadeDoCasamento(ctx?.wedding ?? null);
   } catch (error) {
     console.error("[getWeddingIdentity]", error);
-    return buildIdentity(null, null);
+    return montarIdentidade(null, null);
   }
 });
 
-export interface AccountView {
+export interface VisaoDaConta {
   /** Conta de administração sem casamento próprio (o painel mostra o casamento principal). */
   adminView: boolean;
   /** Nome cadastrado do usuário; null na conta de emergência ou quando não é administração. */
@@ -82,7 +82,7 @@ export interface AccountView {
  * Como a conta da sessão aparece no topo e no menu: casal (nomes do casal) ou administração.
  * Perfil com acesso total ("*") que tem casamento próprio continua sendo conta de casal.
  */
-export const getAccountView = cache(async (): Promise<AccountView> => {
+export const obterVisaoDaConta = cache(async (): Promise<VisaoDaConta> => {
   try {
     const [session, ctx] = await Promise.all([getSession(), getWeddingContext()]);
     if (!session?.allowedPaths.includes("*")) return { adminView: false, userName: null };
@@ -98,15 +98,15 @@ export const getAccountView = cache(async (): Promise<AccountView> => {
 /**
  * Metadados das páginas públicas do convidado: "Página · Nomes do casal".
  */
-export async function guestPageMetadata(slug: string, page: string | null, description?: string, guestPage?: WeddingGuestPage) {
+export async function metadadosDaPaginaDoConvidado(slug: string, page: string | null, description?: string, guestPage?: PaginaDoConvidadoNoCasamento) {
   const wedding = await getWeddingBySlug(slug).catch(() => null);
   // Suspenso: nada do casal nos metadados e fora dos buscadores
   if (wedding?.suspendedAt) return { title: { absolute: "Site indisponível" }, robots: { index: false, follow: false } };
-  const identity = wedding ? await getIdentityForWedding(wedding) : buildIdentity(null, null);
+  const identity = wedding ? await obterIdentidadeDoCasamento(wedding) : montarIdentidade(null, null);
   const { coupleNames, dateLabel } = identity;
   // Endereço oficial: o domínio próprio quando existe (links e buscadores usam o mesmo endereço)
   const customDomain = wedding?.customDomain ?? null;
-  const canonical = weddingSiteUrl(slug, guestPage, customDomain);
+  const canonical = urlDoSiteDoCasamento(slug, guestPage, customDomain);
   return {
     ...(customDomain ? { metadataBase: new URL(`https://${customDomain}`) } : {}),
     alternates: { canonical },

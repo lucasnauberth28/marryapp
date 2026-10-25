@@ -1,20 +1,20 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { isPlatformAdminPaths } from "../../permissions.ts";
+import { ehAcessoDeAdminDaPlataforma } from "../../permissions.ts";
 import { AuthorizationError } from "../authorization-error.ts";
 import { assertPlatformAdminSession, checkPlatformAdminAccess } from "../platform-admin-access.ts";
 
 test("só o acesso total (\"*\") é administração da plataforma", () => {
-  assert.equal(isPlatformAdminPaths(["*"]), true);
-  assert.equal(isPlatformAdminPaths(["/dashboard", "*"]), true);
-  assert.equal(isPlatformAdminPaths(["/admin"]), false, "\"/admin\" escrito na lista não basta");
-  assert.equal(isPlatformAdminPaths(["/curadoria", "/assinaturas", "/usuarios", "/perfis"]), false, "perfil parcial de administração não entra");
-  assert.equal(isPlatformAdminPaths(["/dashboard", "/fornecedor"]), false);
-  assert.equal(isPlatformAdminPaths([]), false);
-  assert.equal(isPlatformAdminPaths(null), false);
-  assert.equal(isPlatformAdminPaths(undefined), false);
-  assert.equal(isPlatformAdminPaths("*" as unknown as string[]), false, "texto solto não é lista");
+  assert.equal(ehAcessoDeAdminDaPlataforma(["*"]), true);
+  assert.equal(ehAcessoDeAdminDaPlataforma(["/dashboard", "*"]), true);
+  assert.equal(ehAcessoDeAdminDaPlataforma(["/admin"]), false, "\"/admin\" escrito na lista não basta");
+  assert.equal(ehAcessoDeAdminDaPlataforma(["/curadoria", "/assinaturas", "/usuarios", "/perfis"]), false, "perfil parcial de administração não entra");
+  assert.equal(ehAcessoDeAdminDaPlataforma(["/dashboard", "/fornecedor"]), false);
+  assert.equal(ehAcessoDeAdminDaPlataforma([]), false);
+  assert.equal(ehAcessoDeAdminDaPlataforma(null), false);
+  assert.equal(ehAcessoDeAdminDaPlataforma(undefined), false);
+  assert.equal(ehAcessoDeAdminDaPlataforma("*" as unknown as string[]), false, "texto solto não é lista");
 });
 
 test("o guard distingue sem sessão, sem acesso e acesso", () => {

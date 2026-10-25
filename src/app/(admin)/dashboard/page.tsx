@@ -6,34 +6,34 @@ import { ChevronRight, ExternalLink, Gift, LayoutTemplate, QrCode, Upload, UserP
 import { PaymentStatus, RsvpStatus, TaskStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { requireWeddingPage } from "@/lib/security/wedding-context";
-import { getWeddingIdentity } from "@/lib/wedding";
-import { daysLeftLabel } from "@/lib/wedding-format";
-import { weddingSiteUrl } from "@/lib/wedding-links";
-import { hasPathAccess } from "@/lib/permissions";
-import { notGiftOnlyWhere } from "@/lib/guest-origin";
-import { getWeddingPlan, weddingHasModule } from "@/lib/wedding-plan";
+import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
+import { rotuloDosDiasRestantes } from "@/lib/wedding-format";
+import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
+import { temAcessoAoCaminho } from "@/lib/permissions";
+import { filtroSemSoPresente } from "@/lib/guest-origin";
+import { obterPlanoDoCasamento, casamentoTemModulo } from "@/lib/wedding-plan";
 import { decideLizTip } from "@/lib/liz/tip";
-import { generalInviteText, personalInviteText, reminderText, whatsappLink } from "@/lib/invite-share";
+import { textoDoConviteGeral, textoDoConvitePessoal, textoDoLembrete, linkDoWhatsapp } from "@/lib/invite-share";
 import {
-  buildQueue,
-  countGuests,
-  dayKeyOf,
-  dayLabel,
-  daysBetweenKeys,
-  deadlineInfo,
-  giftFeePlanOf,
-  guestsToInvite,
-  guestsToRemind,
-  inviteReached,
-  lastGiftLines,
-  seatsOf,
-  shortDayLabel,
-  SP_TZ,
-  summarizeBudget,
-  summarizeGifts,
-  todayKeyOf,
-  type GiftTx,
-  type GuestRow,
+  montarFila,
+  contarConvidados,
+  chaveDoDiaDe,
+  rotuloDoDia,
+  diasEntreChaves,
+  informacoesDoPrazo,
+  planoDaTaxaDoPresenteDe,
+  convidadosParaConvidar,
+  convidadosParaLembrar,
+  conviteChegou,
+  ultimasLinhasDePresentes,
+  lugaresDe,
+  rotuloCurtoDoDia,
+  FUSO_DE_BRASILIA,
+  resumirOrcamento,
+  resumirPresentes,
+  chaveDeHojeDe,
+  type TransacaoDePresente,
+  type LinhaDeConvidado,
 } from "@/lib/dashboard-summary";
 import { btnSecondary } from "./ui";
 import { InviteBlock, type InviteRow } from "./invite-block";
@@ -54,10 +54,10 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 export default async function DashboardPage() {
   const ctx = await requireWeddingPage("/dashboard");
   const { weddingId, session, wedding: weddingRow } = ctx;
-  const [identity, plan] = await Promise.all([getWeddingIdentity(), getWeddingPlan(weddingId)]);
+  const [identity, plan] = await Promise.all([obterIdentidadeDoCasamentoPrincipal(), obterPlanoDoCasamento(weddingId)]);
   const now = new Date();
-  const todayKey = todayKeyOf(now);
-  const can = (path: string) => hasPathAccess(session.allowedPaths, path);
+  const todayKey = chaveDeHojeDe(now);
+  const can = (path: string) => temAcessoAoCaminho(session.allowedPaths, path);
 
   const [guestRows, recent, txRows, expenseRows, nextTask, taskCount, tableCount, settings, giftCount, canWhatsApp, canQr, site, unseated] = await Promise.all([
     prisma.guest.findMany({
@@ -86,18 +86,18 @@ export default async function DashboardPage() {
     prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } }),
     prisma.gift.count({ where: { weddingId } }),
     // O registro de entrada por QR só é sugerido a quem tem o recurso no plano
-    weddingHasModule({ weddingId, session }, "whatsapp"),
-    weddingHasModule({ weddingId, session }, "qrcode"),
+    casamentoTemModulo({ weddingId, session }, "whatsapp"),
+    casamentoTemModulo({ weddingId, session }, "qrcode"),
     prisma.siteCustomization.findUnique({ where: { weddingId }, select: { heroImageUrl: true, couplePhotoUrl: true } }),
     // Pessoas confirmadas que ainda não têm mesa
-    prisma.guest.findMany({ where: { weddingId, rsvpStatus: RsvpStatus.CONFIRMED, tableId: null, ...notGiftOnlyWhere }, select: { confirmedCompanions: true } }),
+    prisma.guest.findMany({ where: { weddingId, rsvpStatus: RsvpStatus.CONFIRMED, tableId: null, ...filtroSemSoPresente }, select: { confirmedCompanions: true } }),
   ]);
 
   // ---------- Contas ----------
-  const guests: GuestRow[] = guestRows;
-  const counts = countGuests(guests);
-  const giftPlan = giftFeePlanOf(plan.planId, plan.modules);
-  const txs: GiftTx[] = txRows.map((t) => ({
+  const guests: LinhaDeConvidado[] = guestRows;
+  const counts = contarConvidados(guests);
+  const giftPlan = planoDaTaxaDoPresenteDe(plan.planId, plan.modules);
+  const txs: TransacaoDePresente[] = txRows.map((t) => ({
     id: t.id,
     giftId: t.giftId,
     amount: t.amount,
@@ -108,12 +108,12 @@ export default async function DashboardPage() {
     who: t.guest?.name || t.guestName || "Convidado sem nome",
     createdAt: t.createdAt,
   }));
-  const statement = summarizeGifts(txs, giftPlan);
-  const budget = summarizeBudget(expenseRows, todayKey);
-  const weddingKey = identity.weddingDate ? dayKeyOf(identity.weddingDate) : null;
-  const weddingDays = weddingKey ? daysBetweenKeys(todayKey, weddingKey) : null;
-  const deadlineKey = settings?.rsvpDeadline ? dayKeyOf(settings.rsvpDeadline) : null;
-  const deadline = deadlineInfo(todayKey, deadlineKey);
+  const statement = resumirPresentes(txs, giftPlan);
+  const budget = resumirOrcamento(expenseRows, todayKey);
+  const weddingKey = identity.weddingDate ? chaveDoDiaDe(identity.weddingDate) : null;
+  const weddingDays = weddingKey ? diasEntreChaves(todayKey, weddingKey) : null;
+  const deadlineKey = settings?.rsvpDeadline ? chaveDoDiaDe(settings.rsvpDeadline) : null;
+  const deadline = informacoesDoPrazo(todayKey, deadlineKey);
   const unseatedPeople = unseated.reduce((acc, g) => acc + 1 + g.confirmedCompanions, 0);
 
   // Primeiro acesso: nada foi cadastrado ainda. Em vez de caixas vazias, o convite pronto e um caminho de 3 passos.
@@ -133,13 +133,13 @@ export default async function DashboardPage() {
     allowedPaths: session.allowedPaths,
   });
 
-  const queue = buildQueue({
+  const queue = montarFila({
     todayKey,
     tip,
     pendingPix: can("/financas") ? statement.toCheckCount : 0,
     budget,
     hasWeddingDate: Boolean(weddingKey),
-    task: nextTask?.dueDate ? { title: nextTask.title, dueKey: dayKeyOf(nextTask.dueDate) } : null,
+    task: nextTask?.dueDate ? { title: nextTask.title, dueKey: chaveDoDiaDe(nextTask.dueDate) } : null,
     unseatedPeople,
     hasTables: tableCount > 0,
     can,
@@ -147,33 +147,33 @@ export default async function DashboardPage() {
 
   // ---------- Convite ----------
   const slug = identity.slug ?? weddingRow.slug;
-  const siteUrl = weddingSiteUrl(slug, undefined, weddingRow.customDomain);
-  const rsvpUrl = weddingSiteUrl(slug, "rsvp", weddingRow.customDomain);
+  const siteUrl = urlDoSiteDoCasamento(slug, undefined, weddingRow.customDomain);
+  const rsvpUrl = urlDoSiteDoCasamento(slug, "rsvp", weddingRow.customDomain);
   const weddingDate = identity.weddingDate;
-  const generalMessage = generalInviteText({ coupleNames: identity.coupleNames, weddingDate, city: weddingRow.city, url: siteUrl });
-  const inviteRow = (g: GuestRow, kind: "invite" | "reminder"): InviteRow => {
-    const reached = inviteReached(g);
+  const generalMessage = textoDoConviteGeral({ coupleNames: identity.coupleNames, weddingDate, city: weddingRow.city, url: siteUrl });
+  const inviteRow = (g: LinhaDeConvidado, kind: "invite" | "reminder"): InviteRow => {
+    const reached = conviteChegou(g);
     const text =
       kind === "reminder"
-        ? reminderText({ guestName: g.name, coupleNames: identity.coupleNames, deadline: settings?.rsvpDeadline ?? null, url: rsvpUrl })
-        : personalInviteText({ guestName: g.name, coupleNames: identity.coupleNames, weddingDate, url: rsvpUrl });
-    const status = !reached ? "convite ainda não enviado" : g.inviteSharedAt ? `convite enviado em ${shortDayLabel(dayKeyOf(g.inviteSharedAt))}` : "convite enviado";
-    return { id: g.id, name: g.name, detail: `${seatsText(seatsOf(g))} · ${g.phone ? status : "sem telefone cadastrado"}`, whatsappUrl: whatsappLink(g.phone, text), kind };
+        ? textoDoLembrete({ guestName: g.name, coupleNames: identity.coupleNames, deadline: settings?.rsvpDeadline ?? null, url: rsvpUrl })
+        : textoDoConvitePessoal({ guestName: g.name, coupleNames: identity.coupleNames, weddingDate, url: rsvpUrl });
+    const status = !reached ? "convite ainda não enviado" : g.inviteSharedAt ? `convite enviado em ${rotuloCurtoDoDia(chaveDoDiaDe(g.inviteSharedAt))}` : "convite enviado";
+    return { id: g.id, name: g.name, detail: `${seatsText(lugaresDe(g))} · ${g.phone ? status : "sem telefone cadastrado"}`, whatsappUrl: linkDoWhatsapp(g.phone, text), kind };
   };
-  const toInvite = guestsToInvite(guests);
-  const toRemind = guestsToRemind(guests);
+  const toInvite = convidadosParaConvidar(guests);
+  const toRemind = convidadosParaLembrar(guests);
   const reminding = (deadline.state === "soon" || deadline.state === "today" || deadline.state === "passed") && toRemind.length > 0;
   const deadlineChip = deadline.state === "soon" ? `Prazo em ${deadline.days} ${deadline.days === 1 ? "dia" : "dias"}` : deadline.state === "today" ? "O prazo termina hoje" : deadline.state === "passed" ? "Prazo vencido" : null;
 
   const dateShort = weddingDate ? `${weddingDate.getUTCDate()} · ${MONTHS[weddingDate.getUTCMonth()]} · ${weddingDate.getUTCFullYear()}` : null;
 
   // ---------- Cabeçalho ----------
-  const today = capitalize(new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: SP_TZ }).format(now));
-  const left = weddingDays !== null && weddingDays >= 0 ? daysLeftLabel(weddingDays) : null;
+  const today = capitalize(new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: FUSO_DE_BRASILIA }).format(now));
+  const left = weddingDays !== null && weddingDays >= 0 ? rotuloDosDiasRestantes(weddingDays) : null;
   const weddingLine = weddingDate
     ? `Casamento ${new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(weddingDate).replace(/^(\p{L}+), /u, "no $1, ")}${weddingRow.city ? `, em ${weddingRow.city}` : ""}`
     : null;
-  const deadlineLabel = deadlineKey ? dayLabel(deadlineKey, todayKey) : null;
+  const deadlineLabel = deadlineKey ? rotuloDoDia(deadlineKey, todayKey) : null;
 
   const shortcuts: Shortcut[] = [
     can("/convidados") && { href: "/convidados", label: "Adicionar convidado", icon: UserPlus },
@@ -182,7 +182,7 @@ export default async function DashboardPage() {
     can("/site-builder") && { href: "/site-builder", label: "Editar o site", icon: LayoutTemplate },
   ].filter((s): s is Shortcut => Boolean(s));
 
-  const lines = lastGiftLines(txs, giftPlan, 6);
+  const lines = ultimasLinhasDePresentes(txs, giftPlan, 6);
 
   return (
     <div className="flex flex-col gap-5 md:gap-6">
@@ -236,7 +236,7 @@ export default async function DashboardPage() {
         <InviteBlock
           displayUrl={siteUrl.replace(/^https?:\/\//, "")}
           siteUrl={siteUrl}
-          generalWhatsappUrl={whatsappLink(null, generalMessage)}
+          generalWhatsappUrl={linkDoWhatsapp(null, generalMessage)}
           generalMessage={generalMessage}
           coupleNames={identity.coupleNames}
           initials={identity.initials}
@@ -246,7 +246,7 @@ export default async function DashboardPage() {
           sentCount={counts.sent}
           canSendEach={can("/convidados")}
           toInvite={{ rows: toInvite.slice(0, SHOWN_IN_LISTS).map((g) => inviteRow(g, "invite")), total: toInvite.length }}
-          reminders={reminding ? { rows: toRemind.slice(0, SHOWN_IN_LISTS).map((g) => inviteRow(g, inviteReached(g) ? "reminder" : "invite")), total: toRemind.length, peopleTotal: counts.people.pending } : null}
+          reminders={reminding ? { rows: toRemind.slice(0, SHOWN_IN_LISTS).map((g) => inviteRow(g, conviteChegou(g) ? "reminder" : "invite")), total: toRemind.length, peopleTotal: counts.people.pending } : null}
           firstAccess={firstAccess}
         />
 
@@ -261,7 +261,7 @@ export default async function DashboardPage() {
         ) : (
           <ConfirmationsBlock
             counts={counts}
-            deadlineHint={deadlineLabel && deadline.state !== "passed" ? `Prazo em ${shortDayLabel(deadlineKey!)}${deadlineKey!.slice(0, 4) !== todayKey.slice(0, 4) ? ` ${deadlineKey!.slice(0, 4)}` : ""}` : deadline.state === "passed" ? "Prazo vencido" : null}
+            deadlineHint={deadlineLabel && deadline.state !== "passed" ? `Prazo em ${rotuloCurtoDoDia(deadlineKey!)}${deadlineKey!.slice(0, 4) !== todayKey.slice(0, 4) ? ` ${deadlineKey!.slice(0, 4)}` : ""}` : deadline.state === "passed" ? "Prazo vencido" : null}
             deadlineChip={reminding ? deadlineChip : null}
             canOpenList={can("/convidados")}
             className="min-[1200px]:col-span-7"

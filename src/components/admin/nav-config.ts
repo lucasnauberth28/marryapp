@@ -21,11 +21,11 @@ import {
   Users as UsersIcon,
   type LucideIcon,
 } from "lucide-react";
-import { hasPathAccess } from "@/lib/permissions";
-import { isScreenActive, type NavCountKey } from "@/lib/panel-nav";
+import { temAcessoAoCaminho } from "@/lib/permissions";
+import { telaEstaAtiva, type ChaveDeContagemDoMenu } from "@/lib/panel-nav";
 
-export type { NavCountKey };
-export { PANEL_AREAS, visibleAreas, areaOfPath, ACCOUNT_SCREENS } from "@/lib/panel-nav";
+export type { ChaveDeContagemDoMenu as NavCountKey };
+export { AREAS_DO_PAINEL as PANEL_AREAS, areasVisiveis as visibleAreas, areaDoCaminho as areaOfPath, TELAS_DA_CONTA as ACCOUNT_SCREENS } from "@/lib/panel-nav";
 
 /** Ícone de cada área e tela (a estrutura e os nomes ficam em lib/panel-nav). */
 const ICONS: Record<string, LucideIcon> = {
@@ -55,7 +55,7 @@ export interface AdminNavItem {
   name: string;
   href: string;
   icon: LucideIcon;
-  countKey?: NavCountKey;
+  countKey?: ChaveDeContagemDoMenu;
 }
 
 // Ferramentas de administração que moram no painel (só aparecem para quem tem a permissão): a mesma lista de antes,
@@ -73,9 +73,9 @@ const ADMIN_NAV_ITEMS: AdminNavItem[] = [
 
 export function visibleAdminItems(allowedPaths: readonly string[]): AdminNavItem[] {
   const paths = [...allowedPaths];
-  return ADMIN_NAV_ITEMS.filter((item) => hasPathAccess(paths, item.href));
+  return ADMIN_NAV_ITEMS.filter((item) => temAcessoAoCaminho(paths, item.href));
 }
 
 export function isNavItemActive(pathname: string, href: string) {
-  return isScreenActive(pathname, href);
+  return telaEstaAtiva(pathname, href);
 }

@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getRoles } from "@/actions/rbac-actions";
 import { getSession } from "@/lib/security/auth-guard";
-import { isPlatformAdminPaths } from "@/lib/permissions";
+import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
 import { RolesClient } from "./roles-client";
 
 export const metadata: Metadata = {
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function RolesPage() {
   // A administração da plataforma usa a tela nova (/admin/usuarios, aba Perfis); a antiga segue para quem só tem o módulo Perfis
   const session = await getSession();
-  if (session && isPlatformAdminPaths(session.allowedPaths)) redirect("/admin/usuarios?aba=perfis");
+  if (session && ehAcessoDeAdminDaPlataforma(session.allowedPaths)) redirect("/admin/usuarios?aba=perfis");
 
   const roles = await getRoles();
 

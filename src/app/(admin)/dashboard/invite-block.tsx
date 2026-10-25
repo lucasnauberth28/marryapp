@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Check, ChevronRight, Clock, Copy, Link2, MessageCircle, Send } from "lucide-react";
 import { toast } from "sonner";
 import { markInviteShared } from "@/actions/invite-share-actions";
-import { invitesLabel } from "@/lib/dashboard-summary";
+import { rotuloDeConvites } from "@/lib/dashboard-summary";
 import { UserImage } from "@/components/ui/user-image";
 import { Block, Chip, Meter, TextLink, btnPrimary, btnRow, btnSecondary, hintClass, labelClass } from "./ui";
 
@@ -111,7 +111,7 @@ export function InviteBlock(props: InviteBlockProps) {
           </Chip>
         ) : invitesTotal > 0 && sentNow >= invitesTotal ? (
           <Chip tone="ok" icon={Check}>
-            {invitesTotal} de {invitesLabel(invitesTotal)} {invitesTotal === 1 ? "enviado" : "enviados"}
+            {invitesTotal} de {rotuloDeConvites(invitesTotal)} {invitesTotal === 1 ? "enviado" : "enviados"}
           </Chip>
         ) : (
           <Chip tone="ok" icon={Check}>
@@ -197,13 +197,13 @@ export function InviteBlock(props: InviteBlockProps) {
             <span className={hintClass}>Nenhum convidado na lista ainda</span>
           ) : (
             <span className={hintClass}>
-              <b className="font-semibold tabular-nums text-tinta">{sentNow.toLocaleString("pt-BR")}</b> de {invitesLabel(invitesTotal)} ·{" "}
+              <b className="font-semibold tabular-nums text-tinta">{sentNow.toLocaleString("pt-BR")}</b> de {rotuloDeConvites(invitesTotal)} ·{" "}
               <b className="font-semibold tabular-nums text-tinta">{remaining.toLocaleString("pt-BR")}</b> por enviar
             </span>
           )}
         </div>
         <Meter
-          label={invitesTotal === 0 ? "Nenhum convite para enviar ainda" : `${sentNow} de ${invitesLabel(invitesTotal)} ${invitesTotal === 1 ? "enviado" : "enviados"}`}
+          label={invitesTotal === 0 ? "Nenhum convite para enviar ainda" : `${sentNow} de ${rotuloDeConvites(invitesTotal)} ${invitesTotal === 1 ? "enviado" : "enviados"}`}
           segments={[
             { value: sentNow, className: "bg-ameixa" },
             { value: remaining, className: "bg-areia" },

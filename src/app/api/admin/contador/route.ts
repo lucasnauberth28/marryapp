@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { platformAdminApiGuard } from "@/lib/security/platform-admin";
 import { csvLine } from "@/lib/platform/csv";
 import { accountantMonth, monthRange, paymentMethodOf } from "@/lib/platform/payments";
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     ),
   ];
 
-  await logAudit({ action: "export.csv", targetType: "contador", details: { month, rows: rows.length, by: ctx.userId } });
+  await registrarAuditoria({ action: "export.csv", targetType: "contador", details: { month, rows: rows.length, by: ctx.userId } });
   return new NextResponse(`﻿${lines.join("\r\n")}\r\n`, {
     headers: {
       "content-type": "text/csv; charset=utf-8",

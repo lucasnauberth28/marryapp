@@ -8,7 +8,7 @@ import { checkRateLimit, rateLimitByIp } from "@/lib/security/rate-limiter";
 import { normalizeText } from "@/lib/security/sanitize";
 import { INVITE_STATUS_MESSAGE, lookupInvite } from "@/lib/account/invites";
 import { classifyAccount, isUniqueViolation, refreshSessionCookie, upsertCoupleRole } from "@/lib/account/wedding-provisioning";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 type Fail = { success: false; error: string };
@@ -89,7 +89,7 @@ export async function acceptInvite(input: { token: string; confirmLeave?: boolea
   }
 
   await refreshSessionCookie(user.id);
-  await logAudit({
+  await registrarAuditoria({
     action: "wedding.invite_accept",
     targetType: "Wedding",
     targetId: invite.weddingId,
@@ -158,7 +158,7 @@ export async function acceptInviteWithNewAccount(input: {
   }
 
   await refreshSessionCookie(userId);
-  await logAudit({
+  await registrarAuditoria({
     action: "wedding.invite_accept",
     targetType: "Wedding",
     targetId: invite.weddingId,

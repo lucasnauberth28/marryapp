@@ -4,7 +4,7 @@
  * Iniciais do casal a partir dos nomes: "Lucas & Giovanna" -> "L&G", "Ana e Bia" -> "A&B".
  * Para um nome só, usa as duas primeiras iniciais das palavras.
  */
-export function getCoupleInitials(coupleNames: string): string {
+export function obterIniciaisDoCasal(coupleNames: string): string {
   const parts = coupleNames
     .split(/\s*(?:&|\+|\be\b)\s*/i)
     .map((p) => p.trim())
@@ -24,7 +24,7 @@ export function getCoupleInitials(coupleNames: string): string {
 /**
  * Dias inteiros até a data (0 no próprio dia, negativo se já passou).
  */
-export function daysUntil(date: Date, now = new Date()): number {
+export function diasAte(date: Date, now = new Date()): number {
   const start = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
   const d = new Date(date);
   const end = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
@@ -32,27 +32,27 @@ export function daysUntil(date: Date, now = new Date()): number {
 }
 
 /** Saudação do painel pela hora (0 a 23) no fuso do casal: "Bom dia", "Boa tarde" ou "Boa noite". */
-export function greetingForHour(hour: number): string {
+export function saudacaoParaAHora(hour: number): string {
   if (hour >= 5 && hour < 12) return "Bom dia";
   if (hour >= 12 && hour < 18) return "Boa tarde";
   return "Boa noite";
 }
 
 /** "faltam 191 dias", "falta 1 dia", "é hoje"; vazio se já passou ou não há data. */
-export function daysLeftLabel(days: number | null): string | null {
+export function rotuloDosDiasRestantes(days: number | null): string | null {
   if (days === null || days < 0) return null;
   if (days === 0) return "é hoje";
   return days === 1 ? "falta 1 dia" : `faltam ${days} dias`;
 }
 
-function hexToRgb(hex: string): [number, number, number] | null {
+function hexParaRgb(hex: string): [number, number, number] | null {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
   if (!m) return null;
   const n = parseInt(m[1], 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-function luminance([r, g, b]: [number, number, number]) {
+function luminancia([r, g, b]: [number, number, number]) {
   const c = [r, g, b].map((v) => {
     const s = v / 255;
     return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
@@ -60,24 +60,24 @@ function luminance([r, g, b]: [number, number, number]) {
   return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
 }
 
-function contrast(a: [number, number, number], b: [number, number, number]) {
-  const [l1, l2] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+function contraste(a: [number, number, number], b: [number, number, number]) {
+  const [l1, l2] = [luminancia(a), luminancia(b)].sort((x, y) => y - x);
   return (l1 + 0.05) / (l2 + 0.05);
 }
 
-const IVORY: [number, number, number] = [0xf7, 0xf3, 0xec];
+const MARFIM: [number, number, number] = [0xf7, 0xf3, 0xec];
 
 /**
  * Cor de destaque legível: escurece a cor escolhida até ter contraste 5:1 sobre o fundo marfim
  * (margem para continuar acima de 4,5:1 sobre os fundos tingidos com a própria cor).
  * Retorna a cor usada e se foi ajustada.
  */
-export function readableAccent(hex: string): { color: string; adjusted: boolean } {
-  const rgb = hexToRgb(hex);
+export function destaqueLegivel(hex: string): { color: string; adjusted: boolean } {
+  const rgb = hexParaRgb(hex);
   if (!rgb) return { color: "#5E2B4E", adjusted: false };
   let current = rgb;
   let steps = 0;
-  while (contrast(current, IVORY) < 5 && steps < 40) {
+  while (contraste(current, MARFIM) < 5 && steps < 40) {
     current = current.map((v) => Math.round(v * 0.95)) as [number, number, number];
     steps++;
   }
@@ -88,8 +88,8 @@ export function readableAccent(hex: string): { color: string; adjusted: boolean 
 /**
  * Variáveis CSS que aplicam a cor do casal a uma seção (tokens bg-brand, text-brand-600 ...).
  */
-export function brandThemeStyle(hex: string | null | undefined): Record<string, string> {
-  const { color } = readableAccent(hex || "#5E2B4E");
+export function estiloDoTemaDaMarca(hex: string | null | undefined): Record<string, string> {
+  const { color } = destaqueLegivel(hex || "#5E2B4E");
   return {
     "--color-brand": color,
     "--color-brand-500": color,

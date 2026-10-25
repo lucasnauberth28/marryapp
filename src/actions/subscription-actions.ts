@@ -4,20 +4,20 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import { signToken, sessionCookieOptions, hasPathAccess, SESSION_COOKIE_NAME } from "@/lib/auth";
-import { isMercadoPagoConfigured, mpPayment } from "@/lib/mercadopago";
-import { generatePixPayload } from "@/lib/pix-utils";
-import { resolvePlanIn } from "@/lib/catalog";
-import { getCatalog } from "@/lib/catalog-server";
+import { assinarToken, opcoesDoCookieDeSessao, hasPathAccess, NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
+import { mercadoPagoEstaConfigurado, pagamentoDoMercadoPago } from "@/lib/mercadopago";
+import { gerarCodigoPix } from "@/lib/pix-utils";
+import { resolverPlanoNoCatalogo } from "@/lib/catalog";
+import { obterCatalogo } from "@/lib/catalog-server";
 import { checkRateLimit, rateLimitByIp } from "@/lib/security/rate-limiter";
 import { normalizeText, sanitizeSlug, sanitizeUrl } from "@/lib/security/sanitize";
-import { uploadImageDataUrl } from "@/lib/supabase";
+import { enviarImagemDeDataUrl } from "@/lib/supabase";
 import { PaymentStatus, VendorPlanTier } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { applyApprovedPayment, markPaymentFailed } from "@/lib/subscriptions";
-import { subscriptionReference } from "@/lib/subscription-period";
-import { quoteSubscription } from "@/lib/subscription-quote";
+import { aplicarPagamentoAprovado, marcarPagamentoComoFalho } from "@/lib/subscriptions";
+import { referenciaDaAssinatura } from "@/lib/subscription-period";
+import { cotarAssinatura } from "@/lib/subscription-quote";
 import { isUniqueViolation, provisionWedding, upsertCoupleRole, withSlugRetry } from "@/lib/account/wedding-provisioning";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
@@ -104,7 +104,7 @@ function calculatePriceRange(avgTicketInCents?: number, startingPriceInCents?: n
 async function storeImage(value: string | undefined, folder: string): Promise<string | null> {
   if (!value) return null;
   if (value.startsWith("data:")) {
-    const upload = await uploadImageDataUrl(value, folder);
+    const upload = await enviarImagemDeDataUrl(value, folder);
     if (!upload.success) throw new Error(upload.error);
     return upload.url;
   }
@@ -136,7 +136,7 @@ export async function previewSubscriptionPrice(input: SubscriptionCheckoutInput)
       const limit = await checkRateLimit({ key: `COUPON_PREVIEW:${session.userId}`, limit: 20, windowMs: 10 * 60 * 1000 });
       if (!limit.success) return { success: false as const, error: "Muitas tentativas de cupom. Aguarde alguns minutos.", field: "coupon" as const };
     }
-    const result = await quoteSubscription({
+    const result = await cotarAssinatura({
       userId: session.userId,
       planId: String(input.planId ?? ""),
       modules: input.modules,
@@ -168,7 +168,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
     }
 
     // Preço sempre do servidor: catálogo, crédito de troca e cupom conferidos agora.
-    const quoted = await quoteSubscription({
+    const quoted = await cotarAssinatura({
       userId: session.userId,
       planId: String(input.planId ?? ""),
       modules: input.modules,
@@ -200,15 +200,15 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
     const email = z.string().email().safeParse(user.username);
     const name = normalizeText(user.name) || "Cliente";
 
-    if (isMercadoPagoConfigured()) {
+    if (mercadoPagoEstaConfigurado()) {
       try {
-        const mpResponse = await mpPayment.create({
+        const mpResponse = await pagamentoDoMercadoPago.create({
           body: {
             transaction_amount: amount / 100,
             payment_method_id: "pix",
             description: `Assinatura Aceito: ${plan.name}`,
             date_of_expiration: expiresAt.toISOString(),
-            external_reference: subscriptionReference(subscription.id),
+            external_reference: referenciaDaAssinatura(subscription.id),
             payer: {
               email: email.success ? email.data : "contato@meuaceito.com.br",
               first_name: name.split(" ")[0],
@@ -246,7 +246,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
     }
 
     const txId = `ASSIN${Date.now().toString(36).toUpperCase()}`.substring(0, 18);
-    const pixPayload = generatePixPayload({
+    const pixPayload = gerarCodigoPix({
       pixKey,
       merchantName: (process.env.PIX_MERCHANT_NAME || "ACEITO BRASIL").trim(),
       merchantCity: (process.env.PIX_MERCHANT_CITY || "SAO PAULO").trim(),
@@ -297,11 +297,11 @@ export async function verifySubscriptionPaymentStatus(subscriptionId: string) {
       return { success: true, paid: false, status: "pending", message: "Aguardando confirmação..." };
     }
 
-    if (isMercadoPagoConfigured() && sub.gatewayId && /^\d+$/.test(sub.gatewayId)) {
+    if (mercadoPagoEstaConfigurado() && sub.gatewayId && /^\d+$/.test(sub.gatewayId)) {
       try {
-        const mpResponse = await mpPayment.get({ id: sub.gatewayId });
+        const mpResponse = await pagamentoDoMercadoPago.get({ id: sub.gatewayId });
         if (mpResponse.status === "approved") {
-          const result = await applyApprovedPayment(sub.id, {
+          const result = await aplicarPagamentoAprovado(sub.id, {
             id: String(mpResponse.id),
             amountInReais: mpResponse.transaction_amount,
           });
@@ -312,7 +312,7 @@ export async function verifySubscriptionPaymentStatus(subscriptionId: string) {
           return { success: false, paid: false, status: "rejected", message: "O valor pago não confere. Fale com o suporte." };
         }
         if (mpResponse.status === "rejected" || mpResponse.status === "cancelled") {
-          await markPaymentFailed(sub.id);
+          await marcarPagamentoComoFalho(sub.id);
           return { success: false, paid: false, status: mpResponse.status, message: "O Pix foi recusado ou expirou no banco." };
         }
       } catch (mpErr) {
@@ -346,7 +346,7 @@ function validWeddingDate(date: Date | null | undefined): Date | null {
  */
 export async function registerPlanAccount(data: PlanRegistrationData) {
   // O preço vem do catálogo do servidor; o `amount` enviado pelo navegador é ignorado.
-  const plan = resolvePlanIn(await getCatalog(), data.planId, data.modules);
+  const plan = resolverPlanoNoCatalogo(await obterCatalogo(), data.planId, data.modules);
   if (!plan) return { success: false, error: "Plano inválido." };
 
   const parsed = RegistrationSchema.safeParse(data);
@@ -439,9 +439,9 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
       if (!created) return { success: false, error: "Já existe uma conta com este e-mail. Faça login para continuar." };
 
       const allowedPaths = Array.isArray(created.role.allowedPaths) ? (created.role.allowedPaths as string[]) : [];
-      const token = await signToken({ userId: created.user.id, role: created.role.name, allowedPaths });
+      const token = await assinarToken({ userId: created.user.id, role: created.role.name, allowedPaths });
       const cookieStore = await cookies();
-      cookieStore.set(SESSION_COOKIE_NAME, token, sessionCookieOptions());
+      cookieStore.set(NOME_DO_COOKIE_DE_SESSAO, token, opcoesDoCookieDeSessao());
 
       return {
         success: true,
@@ -475,10 +475,10 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
     });
 
     const allowedPaths = Array.isArray(role.allowedPaths) ? (role.allowedPaths as string[]) : [];
-    const token = await signToken({ userId: user.id, role: role.name, allowedPaths });
+    const token = await assinarToken({ userId: user.id, role: role.name, allowedPaths });
 
     const cookieStore = await cookies();
-    cookieStore.set(SESSION_COOKIE_NAME, token, sessionCookieOptions());
+    cookieStore.set(NOME_DO_COOKIE_DE_SESSAO, token, opcoesDoCookieDeSessao());
 
     return {
       success: true,

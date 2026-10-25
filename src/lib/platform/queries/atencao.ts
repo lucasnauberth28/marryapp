@@ -1,7 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { isWhatsappConfigured } from "@/lib/evolution";
-import { notGiftOnlyWhere } from "@/lib/guest-origin";
+import { whatsappEstaConfigurado } from "@/lib/evolution";
+import { filtroSemSoPresente } from "@/lib/guest-origin";
 import { coupleSubscription, next30DaysWhere, problemWhere } from "@/lib/platform/casais-filters";
 import { getLatestPlans } from "@/lib/platform/queries/casais";
 import { getPendingRefunds, getPixToCheck } from "@/lib/platform/queries/receita";
@@ -229,7 +229,7 @@ export async function getUpcomingWeddings(now: Date = new Date(), take = 5): Pro
   const ids = weddings.map((w) => w.id);
   const [plans, pending] = await Promise.all([
     getLatestPlans(ids),
-    prisma.guest.groupBy({ by: ["weddingId"], where: { weddingId: { in: ids }, rsvpStatus: "PENDING", ...notGiftOnlyWhere }, _count: { _all: true } }),
+    prisma.guest.groupBy({ by: ["weddingId"], where: { weddingId: { in: ids }, rsvpStatus: "PENDING", ...filtroSemSoPresente }, _count: { _all: true } }),
   ]);
   const pendingBy = new Map(pending.map((p) => [p.weddingId, p._count._all]));
   return weddings.flatMap((w) => {
@@ -306,7 +306,7 @@ export async function getSetupChecklist(): Promise<SetupItem[]> {
   return [
     { id: "mp", title: "Conectar o Mercado Pago", detail: "Pagamentos e presentes já entram sozinhos.", done: mercadoPago, actionLabel: "Ver a saúde", href: "/admin/saude" },
     { id: "equipe", title: "Convidar a equipe", detail: team > 1 ? `Você e mais ${pluralizar(team - 1, "pessoa", "pessoas")} com acesso.` : "Hoje só uma pessoa tem acesso total.", done: team > 1, actionLabel: "Usuários e perfis", href: "/usuarios" },
-    { id: "whatsapp", title: "Conectar o WhatsApp", detail: "Sem isso, convites e lembretes não saem.", done: isWhatsappConfigured(), actionLabel: "Conectar", href: "/admin/saude" },
+    { id: "whatsapp", title: "Conectar o WhatsApp", detail: "Sem isso, convites e lembretes não saem.", done: whatsappEstaConfigurado(), actionLabel: "Conectar", href: "/admin/saude" },
     { id: "cupom", title: "Criar um cupom de lançamento", detail: "Opcional, para os primeiros casais.", done: coupons > 0, actionLabel: "Criar cupom", href: "/admin/planos/cupons" },
   ];
 }

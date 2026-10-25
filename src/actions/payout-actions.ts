@@ -8,10 +8,10 @@ import { AuthorizationError, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-gua
 import { requireWedding, type WeddingContext } from "@/lib/security/wedding-context";
 import { checkRateLimit } from "@/lib/security/rate-limiter";
 import { encryptPayoutSecret, isPayoutCryptoConfigured, payoutCurrentKeyVersion, PayoutCryptoError } from "@/lib/security/payout-crypto";
-import { logAudit } from "@/lib/audit";
-import { payoutCipherContext, validatePayoutInput } from "@/lib/payout-input";
-import { getPayoutAccountView, type PayoutAccountView } from "@/lib/payout-account-view";
-import { notifyPayoutChange } from "@/lib/payout-notify";
+import { registrarAuditoria } from "@/lib/audit";
+import { contextoDaCifraDoRepasse, validarEntradaDeRepasse } from "@/lib/payout-input";
+import { obterVisaoDaContaDeRepasse, type VisaoDaContaDeRepasse } from "@/lib/payout-account-view";
+import { avisarMudancaNoRepasse } from "@/lib/payout-notify";
 
 // Dados de recebimento do casal (onde o Aceito deve repassar os presentes). Regras de todas as actions daqui:
 //  - o casamento vem SEMPRE da sessão (requireWedding), nunca do navegador;
@@ -21,7 +21,7 @@ import { notifyPayoutChange } from "@/lib/payout-notify";
 //  - a resposta devolve só a máscara (PayoutAccountView), nunca o dado nem o texto cifrado.
 
 type Fail = { success: false; error: string };
-export type PayoutResponse = { success: true; account: PayoutAccountView | null } | Fail;
+export type PayoutResponse = { success: true; account: VisaoDaContaDeRepasse | null } | Fail;
 
 const MINUTE = 60 * 1000;
 const NO_WRITE = "Só quem é do casal pode cadastrar ou alterar os dados de recebimento.";
@@ -56,7 +56,7 @@ async function authorizeWrite(password: unknown, action: string): Promise<{ ctx:
   if (!user) return { success: false, error: NO_WRITE };
 
   if (!(await bcrypt.compare(pw.data, user.password))) {
-    await logAudit({ action: `${action}_denied`, targetType: "Wedding", targetId: ctx.weddingId, details: { reason: "wrong_password" } });
+    await registrarAuditoria({ action: `${action}_denied`, targetType: "Wedding", targetId: ctx.weddingId, details: { reason: "wrong_password" } });
     return { success: false, error: "A senha não confere." };
   }
   return { ctx, userId: user.id, name: user.name };
@@ -68,7 +68,7 @@ async function authorizeWrite(password: unknown, action: string): Promise<{ ctx:
 export async function savePayoutAccount(input: unknown): Promise<PayoutResponse> {
   const { password, ...fields } = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
 
-  const valid = validatePayoutInput(fields);
+  const valid = validarEntradaDeRepasse(fields);
   if (!valid.ok) return { success: false, error: valid.error };
   if (!isPayoutCryptoConfigured()) {
     return { success: false, error: "O cadastro dos dados de recebimento ainda não foi liberado. A equipe do Aceito está terminando a configuração de segurança." };
@@ -86,11 +86,11 @@ export async function savePayoutAccount(input: unknown): Promise<PayoutResponse>
       type: data.type,
       holderName: data.holderName,
       holderDocumentKind: data.holderDocumentKind,
-      holderDocumentEnc: encryptPayoutSecret(data.documentSecret, payoutCipherContext(weddingId, "document")),
+      holderDocumentEnc: encryptPayoutSecret(data.documentSecret, contextoDaCifraDoRepasse(weddingId, "document")),
       holderDocumentLast4: data.documentLast4,
       pixKeyType: data.pixKeyType,
-      pixKeyEnc: data.pixKeySecret ? encryptPayoutSecret(data.pixKeySecret, payoutCipherContext(weddingId, "pix")) : null,
-      bankAccountEnc: data.bankSecret ? encryptPayoutSecret(data.bankSecret, payoutCipherContext(weddingId, "bank")) : null,
+      pixKeyEnc: data.pixKeySecret ? encryptPayoutSecret(data.pixKeySecret, contextoDaCifraDoRepasse(weddingId, "pix")) : null,
+      bankAccountEnc: data.bankSecret ? encryptPayoutSecret(data.bankSecret, contextoDaCifraDoRepasse(weddingId, "bank")) : null,
       keyHint: data.keyHint,
       encKeyVersion,
       verifiedAt: null,
@@ -106,16 +106,16 @@ export async function savePayoutAccount(input: unknown): Promise<PayoutResponse>
     });
 
     const change = previous ? "updated" : "created";
-    await logAudit({
+    await registrarAuditoria({
       action: previous ? "payout.account_update" : "payout.account_create",
       targetType: "WeddingPayoutAccount",
       targetId: saved.id,
       // Só o tipo: nunca máscara, documento, chave ou conta.
       details: { weddingId, type: data.type, previousType: previous?.type ?? null },
     });
-    notifyPayoutChange({ weddingId, actorName: name, change, at: new Date() });
+    avisarMudancaNoRepasse({ weddingId, actorName: name, change, at: new Date() });
     revalidatePath("/configuracoes/recebimento");
-    return { success: true, account: await getPayoutAccountView(weddingId) };
+    return { success: true, account: await obterVisaoDaContaDeRepasse(weddingId) };
   } catch (error) {
     // Só o tipo do erro: a mensagem do banco ou da cifra pode conter pedaços do dado.
     console.error("[payout] falha ao salvar", error instanceof PayoutCryptoError ? error.code : error instanceof Error ? error.name : "erro");
@@ -135,13 +135,13 @@ export async function confirmPayoutAccount(input: unknown): Promise<PayoutRespon
       data: { verifiedAt: new Date(), registeredByUserId: auth.userId },
     });
     if (done.count === 0) {
-      const current = await getPayoutAccountView(weddingId);
+      const current = await obterVisaoDaContaDeRepasse(weddingId);
       return current ? { success: true, account: current } : { success: false, error: "Ainda não há dados de recebimento cadastrados." };
     }
     const row = await prisma.weddingPayoutAccount.findUnique({ where: { weddingId }, select: { id: true, type: true } });
-    await logAudit({ action: "payout.account_verify", targetType: "WeddingPayoutAccount", targetId: row?.id, details: { weddingId, type: row?.type ?? null } });
+    await registrarAuditoria({ action: "payout.account_verify", targetType: "WeddingPayoutAccount", targetId: row?.id, details: { weddingId, type: row?.type ?? null } });
     revalidatePath("/configuracoes/recebimento");
-    return { success: true, account: await getPayoutAccountView(weddingId) };
+    return { success: true, account: await obterVisaoDaContaDeRepasse(weddingId) };
   } catch (error) {
     console.error("[payout] falha ao confirmar", error instanceof Error ? error.name : "erro");
     return { success: false, error: GENERIC_ERROR };
@@ -158,8 +158,8 @@ export async function removePayoutAccount(input: unknown): Promise<PayoutRespons
     const row = await prisma.weddingPayoutAccount.findUnique({ where: { weddingId }, select: { id: true, type: true } });
     if (!row) return { success: true, account: null };
     await prisma.weddingPayoutAccount.deleteMany({ where: { id: row.id, weddingId } });
-    await logAudit({ action: "payout.account_delete", targetType: "WeddingPayoutAccount", targetId: row.id, details: { weddingId, type: row.type } });
-    notifyPayoutChange({ weddingId, actorName: auth.name, change: "removed", at: new Date() });
+    await registrarAuditoria({ action: "payout.account_delete", targetType: "WeddingPayoutAccount", targetId: row.id, details: { weddingId, type: row.type } });
+    avisarMudancaNoRepasse({ weddingId, actorName: auth.name, change: "removed", at: new Date() });
     revalidatePath("/configuracoes/recebimento");
     return { success: true, account: null };
   } catch (error) {

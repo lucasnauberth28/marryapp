@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { expireVendorPlans } from "@/lib/subscriptions";
-import { sendVendorPlanReminders } from "@/lib/vendor-plan-reminders";
+import { expirarPlanosDeFornecedor } from "@/lib/subscriptions";
+import { enviarLembretesDoPlanoDoFornecedor } from "@/lib/vendor-plan-reminders";
 import { rejectUnlessCron } from "@/lib/security/cron-auth";
 import { notifyPlanExpired } from "@/lib/notifications/cron";
 import { recordCronRun } from "@/lib/platform/system-records";
@@ -18,9 +18,9 @@ export async function GET(req: Request) {
 
   const startedAt = new Date();
   let expired = 0;
-  let vendors: Awaited<ReturnType<typeof expireVendorPlans>>["vendors"];
+  let vendors: Awaited<ReturnType<typeof expirarPlanosDeFornecedor>>["vendors"];
   try {
-    ({ count: expired, vendors } = await expireVendorPlans());
+    ({ count: expired, vendors } = await expirarPlanosDeFornecedor());
   } catch (error) {
     await recordCronRun({ job: "expirar-planos", startedAt, status: "FAILED", error: error instanceof Error ? error.message : String(error) });
     throw error;
@@ -35,7 +35,7 @@ export async function GET(req: Request) {
   }
   // Um erro nos avisos não pode desfazer a expiração, que já aconteceu.
   let reminderFailure: string | null = null;
-  const reminders = await sendVendorPlanReminders().catch((error) => {
+  const reminders = await enviarLembretesDoPlanoDoFornecedor().catch((error) => {
     console.error("[Cron] Falha nos avisos de vencimento:", error);
     reminderFailure = error instanceof Error ? error.message : String(error);
     return null;

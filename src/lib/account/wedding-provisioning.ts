@@ -2,10 +2,10 @@ import "server-only";
 import { cookies } from "next/headers";
 import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { hasPathAccess, sessionCookieOptions, signToken, SESSION_COOKIE_NAME } from "@/lib/auth";
+import { hasPathAccess, opcoesDoCookieDeSessao, assinarToken, NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
 import { SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { COUPLE_PATHS, COUPLE_ROLE_NAME, slugifyCoupleNames } from "@/lib/wedding-rules";
-import { DEFAULT_THEME_COLOR } from "@/lib/onboarding-options";
+import { CAMINHOS_DO_CASAL, NOME_DO_PAPEL_DO_CASAL, gerarEnderecoDosNomesDoCasal } from "@/lib/wedding-rules";
+import { COR_PADRAO_DO_TEMA } from "@/lib/onboarding-options";
 
 /**
  * Criação de casamento e ajustes de conta compartilhados pelo cadastro, onboarding e convite do par.
@@ -43,7 +43,7 @@ export function isUniqueViolation(error: unknown) {
  * `excludeWeddingId` permite manter o próprio endereço ao regenerar.
  */
 export async function uniqueWeddingSlug(tx: Tx, source: string, excludeWeddingId?: string): Promise<string> {
-  const base = slugifyCoupleNames(source);
+  const base = gerarEnderecoDosNomesDoCasal(source);
   const taken = new Set(
     (
       await tx.wedding.findMany({
@@ -62,7 +62,7 @@ export async function uniqueWeddingSlug(tx: Tx, source: string, excludeWeddingId
 
 /** O endereço ainda é o gerado automaticamente a partir dos nomes (com ou sem sufixo numérico)? */
 export function isAutoSlug(slug: string, coupleNames: string) {
-  const base = slugifyCoupleNames(coupleNames);
+  const base = gerarEnderecoDosNomesDoCasal(coupleNames);
   if (slug === base) return true;
   return slug.startsWith(`${base}-`) && /^\d+$/.test(slug.slice(base.length + 1));
 }
@@ -70,9 +70,9 @@ export function isAutoSlug(slug: string, coupleNames: string) {
 /** Perfil "Casal". Se já existir, mantém os módulos que a administração tiver ajustado. */
 export function upsertCoupleRole(tx: Tx) {
   return tx.role.upsert({
-    where: { name: COUPLE_ROLE_NAME },
+    where: { name: NOME_DO_PAPEL_DO_CASAL },
     update: {},
-    create: { name: COUPLE_ROLE_NAME, allowedPaths: [...COUPLE_PATHS] },
+    create: { name: NOME_DO_PAPEL_DO_CASAL, allowedPaths: [...CAMINHOS_DO_CASAL] },
     select: { id: true, name: true, allowedPaths: true },
   });
 }
@@ -87,7 +87,7 @@ export async function provisionWedding(
 ) {
   const slug = await uniqueWeddingSlug(tx, slugSource || coupleNames);
   const wedding = await tx.wedding.create({
-    data: { slug, coupleNames, weddingDate: weddingDate ?? null, themeColor: DEFAULT_THEME_COLOR },
+    data: { slug, coupleNames, weddingDate: weddingDate ?? null, themeColor: COR_PADRAO_DO_TEMA },
     select: { id: true, slug: true, coupleNames: true },
   });
 
@@ -103,7 +103,7 @@ export async function provisionWedding(
       receptionTime: null,
       locationName: null,
       locationAddress: null,
-      themeColor: DEFAULT_THEME_COLOR,
+      themeColor: COR_PADRAO_DO_TEMA,
       fontFamily: "serif",
       dressCodeTitle: null,
       dressCodeDesc: null,
@@ -144,7 +144,7 @@ export async function refreshSessionCookie(userId: string) {
   });
   if (!user) return;
   const allowedPaths = Array.isArray(user.role.allowedPaths) ? (user.role.allowedPaths as string[]) : [];
-  const token = await signToken({ userId: user.id, role: user.role.name, allowedPaths });
+  const token = await assinarToken({ userId: user.id, role: user.role.name, allowedPaths });
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE_NAME, token, sessionCookieOptions());
+  cookieStore.set(NOME_DO_COOKIE_DE_SESSAO, token, opcoesDoCookieDeSessao());
 }

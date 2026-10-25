@@ -1,17 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  MAX_IMPORT_ROWS,
-  decodeSpreadsheetBytes,
-  normalizePhoneBR,
-  parseDelimited,
-  parseGuestSheet,
-  planImport,
-  sheetTemplateCsv,
-  type ImportRow,
+  MAXIMO_DE_LINHAS_NA_IMPORTACAO,
+  decodificarBytesDaPlanilha,
+  normalizarTelefoneBR,
+  interpretarTextoDelimitado,
+  interpretarPlanilhaDeConvidados,
+  planejarImportacao,
+  csvDaPlanilhaModelo,
+  type LinhaImportada,
 } from "../guest-import.ts";
 
-const cells = (text: string) => parseDelimited(text).map((r) => r.cells);
+const cells = (text: string) => interpretarTextoDelimitado(text).map((r) => r.cells);
 
 // ---------- leitura do CSV ----------
 
@@ -36,15 +36,15 @@ test("acentos e emojis passam intactos", () => {
 });
 
 test("finais de linha do Windows, Mac e Linux; linhas vazias são ignoradas mas contam na numeração", () => {
-  const rows = parseDelimited("a;b\r\n\r\nc;d\r\n;;\r\ne;f");
+  const rows = interpretarTextoDelimitado("a;b\r\n\r\nc;d\r\n;;\r\ne;f");
   assert.deepEqual(rows.map((r) => r.cells), [["a", "b"], ["c", "d"], ["e", "f"]]);
   assert.deepEqual(rows.map((r) => r.line), [1, 3, 5]);
   assert.deepEqual(cells("a;b\rc;d"), [["a", "b"], ["c", "d"]]);
 });
 
 test("arquivo vazio ou só com espaços não gera linhas", () => {
-  assert.deepEqual(parseDelimited(""), []);
-  assert.deepEqual(parseDelimited("  \n\n ;; \n"), []);
+  assert.deepEqual(interpretarTextoDelimitado(""), []);
+  assert.deepEqual(interpretarTextoDelimitado("  \n\n ;; \n"), []);
 });
 
 test("escolhe o separador pelo que se repete nas linhas, mesmo com vírgula no nome entre aspas", () => {
@@ -56,17 +56,17 @@ test("escolhe o separador pelo que se repete nas linhas, mesmo com vírgula no n
 
 test("decodifica UTF-8 e cai para Windows-1252 quando o arquivo é do Excel antigo", () => {
   const utf8 = new TextEncoder().encode("João").buffer as ArrayBuffer;
-  assert.equal(decodeSpreadsheetBytes(utf8), "João");
+  assert.equal(decodificarBytesDaPlanilha(utf8), "João");
   // "João" em Windows-1252: 4A 6F E3 6F
   const win = new Uint8Array([0x4a, 0x6f, 0xe3, 0x6f]).buffer as ArrayBuffer;
-  assert.equal(decodeSpreadsheetBytes(win), "João");
+  assert.equal(decodificarBytesDaPlanilha(win), "João");
 });
 
 // ---------- telefone ----------
 
 test("normaliza telefone brasileiro em vários formatos", () => {
   const ok = (v: string) => {
-    const r = normalizePhoneBR(v);
+    const r = normalizarTelefoneBR(v);
     return r.ok ? r.phone : r.reason;
   };
   assert.equal(ok("(11) 91234-5678"), "11912345678");
@@ -78,20 +78,20 @@ test("normaliza telefone brasileiro em vários formatos", () => {
 });
 
 test("recusa telefone sem DDD, curto, com DDD inexistente ou celular sem 9", () => {
-  assert.equal(normalizePhoneBR("91234-5678").ok, false);
-  assert.match((normalizePhoneBR("91234-5678") as { reason: string }).reason, /DDD/);
-  assert.equal(normalizePhoneBR("12345").ok, false);
-  assert.equal(normalizePhoneBR("(10) 91234-5678").ok, false);
-  assert.equal(normalizePhoneBR("(11) 81234-5678").ok, false);
-  assert.equal(normalizePhoneBR("abc").ok, false);
-  assert.equal(normalizePhoneBR("1.19123E+10").ok, false);
-  assert.match((normalizePhoneBR("1.19123E+10") as { reason: string }).reason, /texto/);
+  assert.equal(normalizarTelefoneBR("91234-5678").ok, false);
+  assert.match((normalizarTelefoneBR("91234-5678") as { reason: string }).reason, /DDD/);
+  assert.equal(normalizarTelefoneBR("12345").ok, false);
+  assert.equal(normalizarTelefoneBR("(10) 91234-5678").ok, false);
+  assert.equal(normalizarTelefoneBR("(11) 81234-5678").ok, false);
+  assert.equal(normalizarTelefoneBR("abc").ok, false);
+  assert.equal(normalizarTelefoneBR("1.19123E+10").ok, false);
+  assert.match((normalizarTelefoneBR("1.19123E+10") as { reason: string }).reason, /texto/);
 });
 
 // ---------- planilha completa ----------
 
 function parse(text: string) {
-  const r = parseGuestSheet(text);
+  const r = interpretarPlanilhaDeConvidados(text);
   assert.ok(r.ok, r.ok ? "" : r.error);
   return r;
 }
@@ -172,13 +172,13 @@ test("telefone vazio é aceito (convidado sem WhatsApp)", () => {
 });
 
 test("vazio, só cabeçalho e arquivos grandes demais dão erro claro", () => {
-  assert.equal(parseGuestSheet("").ok, false);
-  assert.equal(parseGuestSheet("Nome;Telefone\n").ok, false);
-  const grande = "Nome\n" + Array.from({ length: MAX_IMPORT_ROWS + 1 }, (_, i) => `Pessoa ${i}`).join("\n");
-  const r = parseGuestSheet(grande);
+  assert.equal(interpretarPlanilhaDeConvidados("").ok, false);
+  assert.equal(interpretarPlanilhaDeConvidados("Nome;Telefone\n").ok, false);
+  const grande = "Nome\n" + Array.from({ length: MAXIMO_DE_LINHAS_NA_IMPORTACAO + 1 }, (_, i) => `Pessoa ${i}`).join("\n");
+  const r = interpretarPlanilhaDeConvidados(grande);
   assert.equal(r.ok, false);
   assert.match(r.ok ? "" : r.error, /500/);
-  assert.equal(parseGuestSheet("Nome\n" + Array.from({ length: MAX_IMPORT_ROWS }, (_, i) => `Pessoa ${i}`).join("\n")).ok, true);
+  assert.equal(interpretarPlanilhaDeConvidados("Nome\n" + Array.from({ length: MAXIMO_DE_LINHAS_NA_IMPORTACAO }, (_, i) => `Pessoa ${i}`).join("\n")).ok, true);
 });
 
 test("nome gigante é recusado", () => {
@@ -187,7 +187,7 @@ test("nome gigante é recusado", () => {
 });
 
 test("o modelo de planilha é lido de volta sem problemas", () => {
-  const r = parse(sheetTemplateCsv());
+  const r = parse(csvDaPlanilhaModelo());
   assert.equal(r.hasHeader, true);
   assert.equal(r.rows.length, 2);
   assert.ok(r.rows.every((x) => x.problem === null));
@@ -196,12 +196,12 @@ test("o modelo de planilha é lido de volta sem problemas", () => {
 
 // ---------- repetidos ----------
 
-const row = (over: Partial<ImportRow>): ImportRow => ({
+const row = (over: Partial<LinhaImportada>): LinhaImportada => ({
   line: 1, name: "Fulano", phone: null, email: null, companions: 0, category: null, dietary: null, problem: null, ...over,
 });
 
 test("telefone igual a um convidado do casamento é pulado, em qualquer formato", () => {
-  const plan = planImport(
+  const plan = planejarImportacao(
     [row({ name: "Ana", phone: "11912345678" }), row({ name: "Bia", phone: "11987654321" })],
     [{ name: "Ana Lima", phone: "5511912345678" }],
   );
@@ -211,12 +211,12 @@ test("telefone igual a um convidado do casamento é pulado, em qualquer formato"
 });
 
 test("celular antigo sem o 9 também conta como repetido", () => {
-  const plan = planImport([row({ phone: "11912345678" })], [{ name: "X", phone: "1112345678" }]);
+  const plan = planejarImportacao([row({ phone: "11912345678" })], [{ name: "X", phone: "1112345678" }]);
   assert.equal(plan.duplicates.length, 1);
 });
 
 test("repetido dentro da própria planilha entra só uma vez", () => {
-  const plan = planImport(
+  const plan = planejarImportacao(
     [row({ line: 2, name: "Ana", phone: "11912345678" }), row({ line: 3, name: "Ana de novo", phone: "11912345678" })],
     [],
   );
@@ -225,17 +225,17 @@ test("repetido dentro da própria planilha entra só uma vez", () => {
 });
 
 test("sem telefone, o mesmo nome (sem acento ou caixa) entre quem também não tem telefone é repetido", () => {
-  const plan = planImport([row({ name: "JOSÉ da Silva" }), row({ name: "Maria" })], [{ name: "Jose da Silva", phone: null }]);
+  const plan = planejarImportacao([row({ name: "JOSÉ da Silva" }), row({ name: "Maria" })], [{ name: "Jose da Silva", phone: null }]);
   assert.deepEqual(plan.toAdd.map((r) => r.name), ["Maria"]);
 });
 
 test("mesmo nome com telefones diferentes são pessoas diferentes", () => {
-  const plan = planImport([row({ name: "João Silva", phone: "11911111111" })], [{ name: "João Silva", phone: "11922222222" }]);
+  const plan = planejarImportacao([row({ name: "João Silva", phone: "11911111111" })], [{ name: "João Silva", phone: "11922222222" }]);
   assert.equal(plan.toAdd.length, 1);
 });
 
 test("linhas com problema vão para a lista de problemas, não para importar", () => {
-  const plan = planImport([row({ problem: "Falta o nome." }), row({ name: "Ok" })], []);
+  const plan = planejarImportacao([row({ problem: "Falta o nome." }), row({ name: "Ok" })], []);
   assert.equal(plan.invalid.length, 1);
   assert.equal(plan.toAdd.length, 1);
 });

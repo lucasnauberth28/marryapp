@@ -4,8 +4,8 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
-import { COUPON_PLAN_IDS, normalizeCouponCode } from "@/lib/checkout-pricing";
+import { registrarAuditoria } from "@/lib/audit";
+import { PLANOS_ACEITOS_PELO_CUPOM, normalizarCodigoDoCupom } from "@/lib/checkout-pricing";
 import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
 
 type ActionResult = { success: true } | { success: false; error: string };
@@ -23,7 +23,7 @@ const FieldsSchema = z
     kind: z.enum(["percent", "amount"]),
     /** Percentual (1 a 100) ou valor em centavos. */
     value: z.coerce.number().int("Use um número inteiro.").min(1, "Informe o desconto."),
-    planIds: z.array(z.enum(COUPON_PLAN_IDS)).max(COUPON_PLAN_IDS.length).default([]),
+    planIds: z.array(z.enum(PLANOS_ACEITOS_PELO_CUPOM)).max(PLANOS_ACEITOS_PELO_CUPOM.length).default([]),
     maxRedemptions: z.coerce.number().int().min(1, "O limite de usos precisa ser pelo menos 1.").max(1_000_000).nullable(),
     expiresAt: z
       .string()
@@ -66,13 +66,13 @@ function failure(error: unknown, context: string): ActionResult {
 export async function createCoupon(input: { code: string } & CouponFields): Promise<ActionResult> {
   try {
     await requirePlatformAdmin();
-    const code = normalizeCouponCode(input?.code);
+    const code = normalizarCodigoDoCupom(input?.code);
     if (!code) return { success: false, error: "O código precisa ter de 3 a 30 letras ou números, sem espaços." };
     const parsed = FieldsSchema.safeParse(input);
     if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
     const created = await prisma.coupon.create({ data: { code, ...toData(parsed.data) }, select: { id: true } });
-    await logAudit({ action: "coupon.create", targetType: "coupon", targetId: created.id, details: auditDetails(code, parsed.data) });
+    await registrarAuditoria({ action: "coupon.create", targetType: "coupon", targetId: created.id, details: auditDetails(code, parsed.data) });
     revalidatePath("/admin/planos", "layout");
     return { success: true };
   } catch (error) {
@@ -94,7 +94,7 @@ export async function updateCoupon(id: string, input: CouponFields): Promise<Act
     const coupon = await prisma.coupon.findUnique({ where: { id }, select: { code: true } });
     if (!coupon) return { success: false, error: "Cupom não encontrado. Atualize a página." };
     await prisma.coupon.update({ where: { id }, data: toData(parsed.data) });
-    await logAudit({ action: "coupon.update", targetType: "coupon", targetId: id, details: auditDetails(coupon.code, parsed.data) });
+    await registrarAuditoria({ action: "coupon.update", targetType: "coupon", targetId: id, details: auditDetails(coupon.code, parsed.data) });
     revalidatePath("/admin/planos", "layout");
     return { success: true };
   } catch (error) {
@@ -109,7 +109,7 @@ export async function deleteCoupon(id: string): Promise<ActionResult> {
     if (!z.string().uuid().safeParse(id).success) return { success: false, error: "Cupom inválido." };
     const deleted = await prisma.coupon.delete({ where: { id }, select: { code: true, redemptions: true } }).catch(() => null);
     if (!deleted) return { success: false, error: "Cupom não encontrado. Atualize a página." };
-    await logAudit({
+    await registrarAuditoria({
       action: "coupon.delete",
       targetType: "coupon",
       targetId: id,

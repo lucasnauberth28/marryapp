@@ -10,9 +10,9 @@ import { FunctionsStrip, Steps } from "@/components/landing/home/intro";
 import { PlansSection } from "@/components/landing/home/plans";
 import { GuestsSection, PanelSection, SiteSection } from "@/components/landing/home/product";
 import { SmoothScroll } from "@/components/motion/smooth-scroll";
-import { getCatalog } from "@/lib/catalog-server";
-import { brandShare } from "@/lib/brand-meta";
-import { planLabel } from "@/lib/plan-copy";
+import { obterCatalogo } from "@/lib/catalog-server";
+import { compartilhamentoDaMarca } from "@/lib/brand-meta";
+import { rotuloDoPlano } from "@/lib/plan-copy";
 import "@/components/landing/home/home.css";
 
 // Os preços vêm do catálogo da administração: a página se refaz sozinha a cada 5 minutos e na hora que um preço muda.
@@ -27,13 +27,13 @@ export const metadata: Metadata = {
   title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/" },
-  ...brandShare({ title: TITLE, description: DESCRIPTION, url: "/" }),
+  ...compartilhamentoDaMarca({ title: TITLE, description: DESCRIPTION, url: "/" }),
 };
 
 export default async function Home() {
-  const catalog = await getCatalog();
-  const classic = planLabel(catalog.plans.classic.name);
-  const vip = planLabel(catalog.plans.vip.name);
+  const catalog = await obterCatalogo();
+  const classic = rotuloDoPlano(catalog.plans.classic.name);
+  const vip = rotuloDoPlano(catalog.plans.vip.name);
   return (
     <div className="lp">
       <SmoothScroll />

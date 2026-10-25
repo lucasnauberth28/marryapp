@@ -4,9 +4,9 @@ import { z } from "zod";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import { logAudit } from "@/lib/audit";
+import { registrarAuditoria } from "@/lib/audit";
 import { requireAuthSession } from "@/lib/security/auth-guard";
-import { isPlatformAdminPaths } from "@/lib/permissions";
+import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
 import { adminDisplayName, impersonationCookieOptions } from "@/lib/security/impersonation";
 import {
   IMPERSONATION_COOKIE,
@@ -69,7 +69,7 @@ export async function startImpersonation(input: unknown): Promise<ImpersonationR
     const store = await cookies();
     store.set(IMPERSONATION_COOKIE, await signImpersonationCookie({ sessionId: row.id, adminUserId: admin.userId, expiresAt: row.expiresAt }), impersonationCookieOptions(row.expiresAt));
 
-    await logAudit({
+    await registrarAuditoria({
       action: "impersonation.start",
       targetType: "wedding",
       targetId: wedding.id,
@@ -90,14 +90,14 @@ export async function endImpersonation(): Promise<ImpersonationResult> {
     store.delete(IMPERSONATION_COOKIE);
 
     let weddingId: string | null = null;
-    if (signed && signed.adminUserId === session.userId && isPlatformAdminPaths(session.allowedPaths)) {
+    if (signed && signed.adminUserId === session.userId && ehAcessoDeAdminDaPlataforma(session.allowedPaths)) {
       const row = await prisma.impersonationSession.findUnique({ where: { id: signed.sessionId } });
       if (row && row.adminUserId === session.userId) {
         weddingId = row.weddingId;
         if (!row.endedAt) {
           const now = new Date();
           await prisma.impersonationSession.update({ where: { id: row.id }, data: { endedAt: now, endedReason: row.expiresAt <= now ? "expired" : "manual" } });
-          await logAudit({
+          await registrarAuditoria({
             action: "impersonation.end",
             targetType: "wedding",
             targetId: row.weddingId ?? undefined,
