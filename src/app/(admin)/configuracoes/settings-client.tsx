@@ -5,10 +5,10 @@ import Link from "next/link";
 import { atualizarConfiguracoes } from "@/actions/settings-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { DatePicker } from "@/components/ui/date-picker";
-import { PageHeader } from "@/components/admin/page-header";
-import { TourSettingsCard } from "@/components/tour/tour-restart";
-import { ThemeSegmented } from "@/components/theme/theme-toggle";
+import { SeletorDeData } from "@/components/ui/date-picker";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
+import { CartaoDeConfiguracaoDoTour } from "@/components/tour/tour-restart";
+import { SeletorSegmentadoDoTema } from "@/components/theme/theme-toggle";
 import { toast } from "sonner";
 
 interface SettingsClientProps {
@@ -47,7 +47,7 @@ export function SettingsClient({ initialSettings, summary, canSeePlan }: Setting
 
   return (
     <div className="flex max-w-[880px] flex-col gap-6">
-      <PageHeader eyebrow="Conta" title="Configurações" />
+      <CabecalhoDaPagina eyebrow="Conta" title="Configurações" />
 
       <Card className="gap-4">
         <CardHeader>
@@ -74,7 +74,7 @@ export function SettingsClient({ initialSettings, summary, canSeePlan }: Setting
           <CardTitle>Confirmação de presença</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <DatePicker
+          <SeletorDeData
             id="rsvpDeadline"
             label="Prazo de confirmação"
             hint="Opcional. Depois desta data, a página de confirmação do site deixa de aceitar respostas. A Liz também usa este prazo nas sugestões."
@@ -96,7 +96,7 @@ export function SettingsClient({ initialSettings, summary, canSeePlan }: Setting
           <CardDescription>Claro, escuro ou o do seu aparelho. Vale para este navegador e não muda o site do casamento, que fica sempre claro.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ThemeSegmented />
+          <SeletorSegmentadoDoTema />
         </CardContent>
       </Card>
 
@@ -136,7 +136,7 @@ export function SettingsClient({ initialSettings, summary, canSeePlan }: Setting
         </CardContent>
       </Card>
 
-      <TourSettingsCard />
+      <CartaoDeConfiguracaoDoTour />
 
       {canSeePlan && (
         <Card className="gap-4">

@@ -5,7 +5,7 @@ import { Check, ChevronRight, Clock, Copy, Link2, MessageCircle, Send } from "lu
 import { toast } from "sonner";
 import { marcarConviteComoCompartilhado } from "@/actions/invite-share-actions";
 import { rotuloDeConvites } from "@/lib/dashboard-summary";
-import { UserImage } from "@/components/ui/user-image";
+import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { Block, Chip, Meter, TextLink, btnPrimary, btnRow, btnSecondary, hintClass, labelClass } from "./ui";
 
 /** Uma pessoa da lista de envio: o link do WhatsApp dela já vem pronto do servidor, com a mensagem pessoal. */
@@ -123,7 +123,7 @@ export function InviteBlock(props: InviteBlockProps) {
       <div className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-3.5 md:grid-cols-[104px_minmax(0,1fr)] md:gap-5">
         {/* Prévia do convite: foto de capa do site com os nomes e a data (sem foto, só o fundo e o texto) */}
         <div className="relative aspect-[4/5] overflow-hidden rounded-[10px] bg-[#4A2140]">
-          {coverUrl && <UserImage src={coverUrl} alt={`Foto de capa do site de ${coupleNames}`} sizes="104px" className="object-cover object-[50%_30%]" />}
+          {coverUrl && <ImagemDaPessoa src={coverUrl} alt={`Foto de capa do site de ${coupleNames}`} sizes="104px" className="object-cover object-[50%_30%]" />}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" aria-hidden="true" />
           {/* Sem foto de capa, o monograma ocupa a prévia também no celular */}
           {!coverUrl && <span className="absolute inset-0 grid place-items-center font-display text-xl font-semibold text-[#FFFFFF] md:hidden" aria-hidden="true">{initials}</span>}

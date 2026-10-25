@@ -1,16 +1,16 @@
 import { Suspense } from "react";
 import { Check, Clock, Globe, Hourglass, Link2, XCircle } from "lucide-react";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { PageHeader } from "@/components/plataforma/page-header";
-import { Pagination } from "@/components/plataforma/pagination";
-import { PendingRegion } from "@/components/plataforma/pending";
-import { RowsSkeleton, SidePanelSkeleton } from "@/components/plataforma/loading-parts";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { Paginacao } from "@/components/plataforma/pagination";
+import { RegiaoPendente } from "@/components/plataforma/pending";
+import { EsqueletoDasLinhas, EsqueletoDoPainelLateral } from "@/components/plataforma/loading-parts";
 import { SkeletonCard } from "@/components/skeletons";
-import { Panel } from "@/components/plataforma/panel";
-import { ResponsiveTable } from "@/components/plataforma/responsive-table";
-import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
-import { PlanChip, StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
-import { TabsNav } from "@/components/plataforma/tabs-nav";
+import { Painel } from "@/components/plataforma/panel";
+import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
+import { CartaoDeIndicador, GradeDeIndicadores } from "@/components/plataforma/stat-card";
+import { EtiquetaDePlano, EtiquetaDeSituacao, type TomDaSituacao } from "@/components/plataforma/status-chip";
+import { NavegacaoDeAbas } from "@/components/plataforma/tabs-nav";
 import { ROTULO_DA_SITUACAO, type NomeDaSituacaoDoPedidoDeDominio } from "@/lib/domain-order";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { situacaoDoLembreteDeRenovacao } from "@/lib/domain-renewal";
@@ -38,7 +38,7 @@ export const metadata = { title: "Domínios" };
 
 const TAB_LABEL: Record<AbaDeDominios, string> = { todos: "Todos", pedido: "Pedido recebido", registro: "Em registro", registrado: "Registrado", "no-ar": "No ar", recusado: "Recusado" };
 
-const STATUS_CHIP: Record<NomeDaSituacaoDoPedidoDeDominio, { tone: StatusTone; icon: typeof Clock }> = {
+const STATUS_CHIP: Record<NomeDaSituacaoDoPedidoDeDominio, { tone: TomDaSituacao; icon: typeof Clock }> = {
   REQUESTED: { tone: "aviso", icon: Clock },
   REGISTERING: { tone: "neutro", icon: Hourglass },
   REGISTERED: { tone: "aviso", icon: Check },
@@ -59,39 +59,39 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 
   return (
     <>
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow="Dinheiro"
         title="Domínios"
         description="Pedidos de domínio próprio do plano VIP. O Aceito registra o .com.br no nome da pessoa que pediu."
       />
 
-      <StatGrid>
-        <StatCard label="Pedido recebido" value={String(summary.requested)} hint={summary.requested > 0 ? `falta começar o registro${summary.oldestRequestedAt ? `, o mais antigo ${haQuantoTempo(summary.oldestRequestedAt, now)}` : ""}` : "nenhum esperando"} highlight={summary.requested > 0} />
-        <StatCard label="Em registro" value={String(summary.registering)} hint={summary.registeringSince ? `desde ${formatarData(summary.registeringSince)}` : "nenhum em andamento"} />
-        <StatCard label="Registrado" value={String(summary.registered)} hint={summary.registered > 0 ? "falta conectar" : "nenhum esperando"} highlight={summary.registered > 0} />
-        <StatCard label="No ar" value={String(summary.connected)} hint={summary.connected > 0 ? "funcionando" : "nenhum ainda"} />
-      </StatGrid>
+      <GradeDeIndicadores>
+        <CartaoDeIndicador label="Pedido recebido" value={String(summary.requested)} hint={summary.requested > 0 ? `falta começar o registro${summary.oldestRequestedAt ? `, o mais antigo ${haQuantoTempo(summary.oldestRequestedAt, now)}` : ""}` : "nenhum esperando"} highlight={summary.requested > 0} />
+        <CartaoDeIndicador label="Em registro" value={String(summary.registering)} hint={summary.registeringSince ? `desde ${formatarData(summary.registeringSince)}` : "nenhum em andamento"} />
+        <CartaoDeIndicador label="Registrado" value={String(summary.registered)} hint={summary.registered > 0 ? "falta conectar" : "nenhum esperando"} highlight={summary.registered > 0} />
+        <CartaoDeIndicador label="No ar" value={String(summary.connected)} hint={summary.connected > 0 ? "funcionando" : "nenhum ainda"} />
+      </GradeDeIndicadores>
 
-      <TabsNav
+      <NavegacaoDeAbas
         label="Situação dos pedidos"
         basePath="/admin/dominios"
         active={tab}
         tabs={ABAS_DE_DOMINIOS.map((value) => ({ value, label: TAB_LABEL[value], count: counts[value] }))}
       />
 
-      <PendingRegion>
+      <RegiaoPendente>
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
         <div className="flex min-w-0 flex-col gap-6">
-          <ResponsiveTable
+          <TabelaResponsiva
             caption="Pedidos de domínio"
             rows={list.rows}
             rowKey={(r) => r.id}
             rowHref={(r) => rowHref(r.id)}
             selectedKey={selectedId}
             empty={
-              <EmptyState icon={Globe} title={tab === "todos" ? "Nenhum pedido de domínio ainda" : "Nenhum pedido nesta situação"} compact>
+              <EstadoVazio icon={Globe} title={tab === "todos" ? "Nenhum pedido de domínio ainda" : "Nenhum pedido nesta situação"} compact>
                 {tab === "todos" ? "Quando um casal do plano VIP pedir o domínio próprio, o pedido aparece aqui." : "Escolha outra aba para ver os outros pedidos."}
-              </EmptyState>
+              </EstadoVazio>
             }
             columns={[
               {
@@ -121,9 +121,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
                 cell: (r) => {
                   const chip = STATUS_CHIP[r.status as NomeDaSituacaoDoPedidoDeDominio] ?? STATUS_CHIP.CANCELED;
                   return (
-                    <StatusChip tone={chip.tone} icon={chip.icon}>
+                    <EtiquetaDeSituacao tone={chip.tone} icon={chip.icon}>
                       {ROTULO_DA_SITUACAO[r.status as NomeDaSituacaoDoPedidoDeDominio] ?? r.status}
-                    </StatusChip>
+                    </EtiquetaDeSituacao>
                   );
                 },
               },
@@ -144,12 +144,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
               },
             ]}
           />
-          <Pagination page={list.page} pageSize={TAMANHO_DA_PAGINA_DE_DOMINIOS} total={list.total} basePath="/admin/dominios" params={{ aba: tab === "todos" ? undefined : tab }} noun={["pedido", "pedidos"]} />
+          <Paginacao page={list.page} pageSize={TAMANHO_DA_PAGINA_DE_DOMINIOS} total={list.total} basePath="/admin/dominios" params={{ aba: tab === "todos" ? undefined : tab }} noun={["pedido", "pedidos"]} />
 
           <Suspense
             fallback={
               <SkeletonCard description>
-                <RowsSkeleton rows={3} />
+                <EsqueletoDasLinhas rows={3} />
               </SkeletonCard>
             }
           >
@@ -159,12 +159,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 
         <div id="painel" className="scroll-mt-6 lg:sticky lg:top-6">
           {/* O painel busca o pedido escolhido sozinho: a lista não espera por ele (key = pedido) */}
-          <Suspense key={selectedId ?? "nenhum"} fallback={<SidePanelSkeleton />}>
+          <Suspense key={selectedId ?? "nenhum"} fallback={<EsqueletoDoPainelLateral />}>
             <DomainDetailSlot selectedId={selectedId} summary={summary} />
           </Suspense>
         </div>
       </div>
-      </PendingRegion>
+      </RegiaoPendente>
     </>
   );
 }
@@ -172,7 +172,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 async function RenewalsBlock({ now }: { now: Date }) {
   const renewals = await listarRenovacoes(now, 90);
   return (
-    <Panel title="Renovações dos próximos 90 dias" description="O VIP inclui o primeiro ano. Avisamos o casal por e-mail 60 e 30 dias antes de vencer (rotina diária). A renovação no Registro.br é manual.">
+    <Painel title="Renovações dos próximos 90 dias" description="O VIP inclui o primeiro ano. Avisamos o casal por e-mail 60 e 30 dias antes de vencer (rotina diária). A renovação no Registro.br é manual.">
       {renewals.length === 0 ? (
         <p className="text-sm text-tinta-suave">Nenhum domínio vence nos próximos 90 dias.</p>
       ) : (
@@ -187,15 +187,15 @@ async function RenewalsBlock({ now }: { now: Date }) {
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   {r.expiresAt < now ? (
-                    <StatusChip tone="perigo">Vencido</StatusChip>
+                    <EtiquetaDeSituacao tone="perigo">Vencido</EtiquetaDeSituacao>
                   ) : reminder.kind === "sent" ? (
-                    <StatusChip tone="sucesso" icon={Check}>Aviso de {reminder.day} dias enviado</StatusChip>
+                    <EtiquetaDeSituacao tone="sucesso" icon={Check}>Aviso de {reminder.day} dias enviado</EtiquetaDeSituacao>
                   ) : reminder.kind === "due" ? (
-                    <StatusChip tone="aviso" icon={Clock}>Aviso de {reminder.day} dias sai na próxima rotina diária</StatusChip>
+                    <EtiquetaDeSituacao tone="aviso" icon={Clock}>Aviso de {reminder.day} dias sai na próxima rotina diária</EtiquetaDeSituacao>
                   ) : reminder.kind === "scheduled" ? (
-                    <StatusChip tone="neutro" icon={Clock}>Aviso de {reminder.day} dias em {formatarData(reminder.on)}</StatusChip>
+                    <EtiquetaDeSituacao tone="neutro" icon={Clock}>Aviso de {reminder.day} dias em {formatarData(reminder.on)}</EtiquetaDeSituacao>
                   ) : (
-                    <StatusChip tone="neutro">Sem aviso previsto</StatusChip>
+                    <EtiquetaDeSituacao tone="neutro">Sem aviso previsto</EtiquetaDeSituacao>
                   )}
                   <RenewalButton orderId={r.id} domain={r.domain} />
                 </div>
@@ -204,7 +204,7 @@ async function RenewalsBlock({ now }: { now: Date }) {
           })}
         </ul>
       )}
-    </Panel>
+    </Painel>
   );
 }
 
@@ -213,10 +213,10 @@ async function DomainDetailSlot({ selectedId, summary }: { selectedId: string | 
   return (
     <>
       {detail ? (
-        <Panel as="article">
+        <Painel as="article">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            {detail.planName?.toLowerCase().includes("vip") ? <PlanChip plan="vip" /> : detail.planName?.toLowerCase().includes("adaptado") ? <PlanChip plan="custom" /> : <StatusChip tone="neutro">Sem assinatura</StatusChip>}
-            <StatusChip tone={(STATUS_CHIP[detail.status as NomeDaSituacaoDoPedidoDeDominio] ?? STATUS_CHIP.CANCELED).tone}>{ROTULO_DA_SITUACAO[detail.status as NomeDaSituacaoDoPedidoDeDominio] ?? detail.status}</StatusChip>
+            {detail.planName?.toLowerCase().includes("vip") ? <EtiquetaDePlano plan="vip" /> : detail.planName?.toLowerCase().includes("adaptado") ? <EtiquetaDePlano plan="custom" /> : <EtiquetaDeSituacao tone="neutro">Sem assinatura</EtiquetaDeSituacao>}
+            <EtiquetaDeSituacao tone={(STATUS_CHIP[detail.status as NomeDaSituacaoDoPedidoDeDominio] ?? STATUS_CHIP.CANCELED).tone}>{ROTULO_DA_SITUACAO[detail.status as NomeDaSituacaoDoPedidoDeDominio] ?? detail.status}</EtiquetaDeSituacao>
           </div>
           <h2 className="mt-3 break-all font-mono text-2xl font-medium leading-8 text-tinta">{detail.domain}</h2>
           <p className="mt-1 text-sm text-tinta-suave">
@@ -255,14 +255,14 @@ async function DomainDetailSlot({ selectedId, summary }: { selectedId: string | 
               }}
             />
           </div>
-        </Panel>
+        </Painel>
       ) : (
-        <Panel>
+        <Painel>
           <p className="text-sm text-tinta-suave">Escolha um pedido na lista para ver os dados do titular, as etapas e as ações.</p>
           <p className="mt-2 flex items-center gap-2 text-sm text-tinta-suave">
             <Link2 className="size-4" aria-hidden="true" /> {pluralizar(summary.requested + summary.registered, "pedido espera", "pedidos esperam")} uma ação sua.
           </p>
-        </Panel>
+        </Painel>
       )}
     </>
   );

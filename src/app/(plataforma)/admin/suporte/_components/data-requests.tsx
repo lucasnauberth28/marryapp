@@ -6,15 +6,15 @@ import { AlertTriangle, CheckCircle2, Clock, Download, Plus, ShieldCheck, XCircl
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
-import { DatePicker } from "@/components/ui/date-picker";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { FormAlert } from "@/components/ui/field";
-import { Panel } from "@/components/plataforma/panel";
-import { StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { btn } from "@/components/landing/styles";
+import { SeletorDeData } from "@/components/ui/date-picker";
+import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
+import { AvisoDoFormulario } from "@/components/ui/field";
+import { Painel } from "@/components/plataforma/panel";
+import { EtiquetaDeSituacao, type TomDaSituacao } from "@/components/plataforma/status-chip";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
-import { ExportButton } from "@/components/plataforma/export-button";
+import { BotaoDeExportar } from "@/components/plataforma/export-button";
 import { TIPOS_DE_SOLICITACAO_DE_DADOS, ROTULO_DO_TIPO_DE_SOLICITACAO_DE_DADOS } from "@/lib/platform/support";
 import { criarSolicitacaoDeDados, cumprirSolicitacaoDeExclusao, atualizarSolicitacaoDeDados } from "@/actions/admin-suporte-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
@@ -34,7 +34,7 @@ export interface DataRequestItem {
   note: string | null;
 }
 
-const STATUS: Record<DataRequestItem["status"], { label: string; tone: StatusTone; icon: typeof Clock }> = {
+const STATUS: Record<DataRequestItem["status"], { label: string; tone: TomDaSituacao; icon: typeof Clock }> = {
   NEW: { label: "Novo", tone: "aviso", icon: Clock },
   IN_REVIEW: { label: "Em análise", tone: "aviso", icon: Clock },
   DONE: { label: "Pronto", tone: "salvia", icon: CheckCircle2 },
@@ -45,17 +45,17 @@ export function DataRequests({ rows, urgent }: { rows: DataRequestItem[]; urgent
   const [formOpen, setFormOpen] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   return (
-    <Panel
+    <Painel
       title="Pedidos sobre dados pessoais"
       aside={
         <div className="flex flex-wrap items-center gap-2">
           {urgent && (
-            <StatusChip tone="perigo" icon={AlertTriangle}>
+            <EtiquetaDeSituacao tone="perigo" icon={AlertTriangle}>
               {urgent}
-            </StatusChip>
+            </EtiquetaDeSituacao>
           )}
           {!formOpen && (
-            <button type="button" onClick={() => setFormOpen(true)} className={`${btn.secondary} ${btn.sm}`}>
+            <button type="button" onClick={() => setFormOpen(true)} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
               <Plus className="size-4" aria-hidden="true" /> Registrar pedido
             </button>
           )}
@@ -64,9 +64,9 @@ export function DataRequests({ rows, urgent }: { rows: DataRequestItem[]; urgent
     >
       {formOpen && <NewRequest onDone={() => setFormOpen(false)} />}
       {rows.length === 0 ? (
-        <EmptyState icon={ShieldCheck} compact title="Nenhum pedido de titular registrado">
+        <EstadoVazio icon={ShieldCheck} compact title="Nenhum pedido de titular registrado">
           Pedidos de exportação, exclusão ou correção de dados chegam por e-mail ou WhatsApp: registre aqui para acompanhar o prazo. O que a própria pessoa faz em Minha conta não aparece nesta lista.
-        </EmptyState>
+        </EstadoVazio>
       ) : (
         <ul className="divide-y divide-linha overflow-hidden rounded-2xl border border-linha">
           {rows.map((r) => {
@@ -85,10 +85,10 @@ export function DataRequests({ rows, urgent }: { rows: DataRequestItem[]; urgent
                     {r.dueText && <p className={r.dueTone === "perigo" ? "text-sm font-semibold leading-5 text-perigo" : "text-sm leading-5 text-tinta-suave"}>{r.dueText}</p>}
                   </div>
                   <div className="flex items-center gap-2">
-                    <StatusChip tone={s.tone} icon={s.icon}>
+                    <EtiquetaDeSituacao tone={s.tone} icon={s.icon}>
                       {s.label}
-                    </StatusChip>
-                    <button type="button" aria-expanded={open === r.id} onClick={() => setOpen(open === r.id ? null : r.id)} className={`${btn.quiet} ${btn.sm}`}>
+                    </EtiquetaDeSituacao>
+                    <button type="button" aria-expanded={open === r.id} onClick={() => setOpen(open === r.id ? null : r.id)} className={`${estiloDoBotao.quiet} ${estiloDoBotao.sm}`}>
                       {open === r.id ? "Fechar" : "Atender"}
                     </button>
                   </div>
@@ -100,7 +100,7 @@ export function DataRequests({ rows, urgent }: { rows: DataRequestItem[]; urgent
         </ul>
       )}
       <p className="mt-3 text-sm text-tinta-suave">Exportação e exclusão têm prazo de 15 dias para responder. Confirme o prazo com o jurídico.</p>
-    </Panel>
+    </Painel>
   );
 }
 
@@ -132,12 +132,12 @@ function NewRequest({ onDone }: { onDone: () => void }) {
             </option>
           ))}
         </NativeSelect>
-        <DatePicker label="Recebido em" optional value={receivedOn} onChange={(e) => setReceivedOn(e.target.value)} error={errors.receivedOn} hint="Vazio vale hoje." />
+        <SeletorDeData label="Recebido em" optional value={receivedOn} onChange={(e) => setReceivedOn(e.target.value)} error={errors.receivedOn} hint="Vazio vale hoje." />
         <Input label="Quem pediu" value={name} onChange={(e) => setName(e.target.value)} error={errors.requesterName} maxLength={120} />
         <Input label="E-mail da pessoa" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.requesterEmail} hint="Se for o e-mail de uma conta, o pedido se liga a ela." />
       </div>
       <Textarea label="Observação" optional value={note} onChange={(e) => setNote(e.target.value)} error={errors.note} rows={2} maxLength={2000} />
-      {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
+      {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="flex flex-wrap gap-3">
         <Button type="submit" loading={pending}>
           Registrar pedido
@@ -167,14 +167,14 @@ function Handle({ item, onDone }: { item: DataRequestItem; onDone: () => void })
       <p className="text-sm text-tinta-suave">{item.requesterEmail}</p>
       {item.type === "EXPORT" && item.linked && (
         <div>
-          <ExportButton href={`/api/admin/suporte/exportar?pedido=${item.id}`} fallbackName="exportacao.json" size="sm">
+          <BotaoDeExportar href={`/api/admin/suporte/exportar?pedido=${item.id}`} fallbackName="exportacao.json" size="sm">
             <Download className="size-4" aria-hidden="true" /> Baixar a exportação (JSON)
-          </ExportButton>
+          </BotaoDeExportar>
           <p className="mt-1 text-sm text-tinta-suave">Sem senhas nem tokens. Envie o arquivo ao titular pelo e-mail dele e marque como pronto. O download fica no registro.</p>
         </div>
       )}
       <Textarea label="Nota do atendimento" optional hint="Obrigatória para recusar. Fica no registro." value={note} onChange={(e) => setNote(e.target.value)} error={errors.note} rows={2} maxLength={2000} />
-      {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
+      {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       {!closed && (
         <div className="flex flex-wrap gap-3">
           {item.status === "NEW" && (
@@ -227,7 +227,7 @@ function Handle({ item, onDone }: { item: DataRequestItem; onDone: () => void })
               Excluir a conta
             </Button>
           </div>
-          <ConfirmModal
+          <ModalDeConfirmacao
             isOpen={confirmOpen}
             onClose={() => setConfirmOpen(false)}
             title="Excluir esta conta?"

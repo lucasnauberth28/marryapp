@@ -23,12 +23,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cancelarConviteDePessoaParceira, trocarSenha, criarConviteDePessoaParceira, excluirMinhaConta } from "@/actions/account-actions";
-import { btn } from "@/components/landing/styles";
-import { LoadingButton } from "@/components/painel/loading-button";
-import { Field, FormAlert } from "@/components/ui/field";
-import { ThemeSegmented } from "@/components/theme/theme-toggle";
+import { estiloDoBotao } from "@/components/landing/styles";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
+import { Campo, AvisoDoFormulario } from "@/components/ui/field";
+import { SeletorSegmentadoDoTema } from "@/components/theme/theme-toggle";
 import { cn } from "@/lib/utils";
-import { PreferencesForm } from "@/components/notifications/preferences-form";
+import { FormularioDePreferencias } from "@/components/notifications/preferences-form";
 import type { PublicoDaNotificacao, GrupoDeNotificacao } from "@/lib/notifications/catalog";
 import type { PreferenciasDeNotificacao } from "@/lib/notifications/preferences";
 
@@ -141,7 +141,7 @@ function NotificationsSection({ pushPublicKey, notifications }: Pick<Props, "pus
       title="Avisos"
       description="Escolha como e quando o Aceito avisa você. O sino no topo guarda tudo, aconteça o que acontecer."
     >
-      <PreferencesForm initial={notifications.prefs} audience={notifications.audience} groups={notifications.groups} pushPublicKey={pushPublicKey} />
+      <FormularioDePreferencias initial={notifications.prefs} audience={notifications.audience} groups={notifications.groups} pushPublicKey={pushPublicKey} />
     </Section>
   );
 }
@@ -149,7 +149,7 @@ function NotificationsSection({ pushPublicKey, notifications }: Pick<Props, "pus
 function AppearanceSection() {
   return (
     <Section id="aparencia" icon={SunMoon} title="Aparência" description="Claro, escuro ou o do seu aparelho. Vale para este navegador.">
-      <ThemeSegmented />
+      <SeletorSegmentadoDoTema />
     </Section>
   );
 }
@@ -192,7 +192,7 @@ function PasswordSection() {
   return (
     <Section id="senha" icon={KeyRound} title="Senha" description="Troque a senha de acesso. Use uma que você não usa em outros sites.">
       <form onSubmit={submit} noValidate className="grid gap-5 sm:grid-cols-2">
-        <Field
+        <Campo
           id="senha-current"
           label="Senha atual"
           icon={Lock}
@@ -203,24 +203,24 @@ function PasswordSection() {
           {(c) => (
             <input {...c} id="senha-current" type={show ? "text" : "password"} autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
           )}
-        </Field>
-        <Field id="senha-next" label="Nova senha" icon={Lock} error={errors.next} hint="Pelo menos 8 caracteres.">
+        </Campo>
+        <Campo id="senha-next" label="Nova senha" icon={Lock} error={errors.next} hint="Pelo menos 8 caracteres.">
           {(c) => <input {...c} id="senha-next" type={show ? "text" : "password"} autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} />}
-        </Field>
-        <Field id="senha-confirm" label="Repita a nova senha" icon={Lock} error={errors.confirm}>
+        </Campo>
+        <Campo id="senha-confirm" label="Repita a nova senha" icon={Lock} error={errors.confirm}>
           {(c) => (
             <input {...c} id="senha-confirm" type={show ? "text" : "password"} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
           )}
-        </Field>
+        </Campo>
         {error ? (
           <div className="sm:col-span-2">
-            <FormAlert>{error}</FormAlert>
+            <AvisoDoFormulario>{error}</AvisoDoFormulario>
           </div>
         ) : null}
         <div className="sm:col-span-2">
-          <LoadingButton type="submit" loading={isPending} className={cn(btn.primary, "min-h-12")}>
+          <BotaoComCarregamento type="submit" loading={isPending} className={cn(estiloDoBotao.primary, "min-h-12")}>
             Trocar senha
-          </LoadingButton>
+          </BotaoComCarregamento>
         </div>
       </form>
     </Section>
@@ -324,7 +324,7 @@ function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> })
 
       {/* Novo convite */}
       <form onSubmit={create} noValidate className="flex flex-col gap-4">
-        <Field
+        <Campo
           id="convite-email"
           label="E-mail do seu par"
           icon={Mail}
@@ -345,13 +345,13 @@ function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> })
               onChange={(e) => setEmail(e.target.value)}
             />
           )}
-        </Field>
-        {error ? <FormAlert>{error}</FormAlert> : null}
+        </Campo>
+        {error ? <AvisoDoFormulario>{error}</AvisoDoFormulario> : null}
         <div>
-          <LoadingButton type="submit" loading={isPending && !cancelling} disabled={isPending} className={cn(btn.primary, "min-h-12")}>
+          <BotaoComCarregamento type="submit" loading={isPending && !cancelling} disabled={isPending} className={cn(estiloDoBotao.primary, "min-h-12")}>
             <Send aria-hidden="true" className="size-4" />
             Criar convite
-          </LoadingButton>
+          </BotaoComCarregamento>
         </div>
       </form>
 
@@ -373,7 +373,7 @@ function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> })
               onFocus={(e) => e.currentTarget.select()}
               className="min-w-0 flex-1 bg-transparent font-mono text-sm text-tinta outline-none"
             />
-            <button type="button" onClick={copy} className={cn(btn.quiet, btn.sm, "shrink-0")}>
+            <button type="button" onClick={copy} className={cn(estiloDoBotao.quiet, estiloDoBotao.sm, "shrink-0")}>
               {copied ? <Check aria-hidden="true" className="size-4" /> : <Copy aria-hidden="true" className="size-4" />}
               {copied ? "Copiado" : "Copiar"}
             </button>
@@ -382,7 +382,7 @@ function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> })
             href={`https://wa.me/?text=${encodeURIComponent(whatsappText)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={cn(btn.secondary, "min-h-11 self-start")}
+            className={cn(estiloDoBotao.secondary, "min-h-11 self-start")}
           >
             <MessageCircle aria-hidden="true" className="size-4" />
             Enviar pelo WhatsApp
@@ -404,15 +404,15 @@ function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> })
                     Criado em {shortFmt.format(new Date(i.createdAt))} · vence em {shortFmt.format(new Date(i.expiresAt))}
                   </span>
                 </span>
-                <LoadingButton
+                <BotaoComCarregamento
                   onClick={() => cancel(i.id)}
                   loading={cancelling === i.id}
                   disabled={isPending}
-                  className={cn(btn.quiet, btn.sm, "shrink-0 text-perigo hover:bg-perigo-suave")}
+                  className={cn(estiloDoBotao.quiet, estiloDoBotao.sm, "shrink-0 text-perigo hover:bg-perigo-suave")}
                 >
                   <X aria-hidden="true" className="size-4" />
                   Cancelar
-                </LoadingButton>
+                </BotaoComCarregamento>
               </li>
             ))}
           </ul>
@@ -454,7 +454,7 @@ function DataSection({
       }
     >
       <div className="flex flex-wrap items-center gap-3">
-        <a href="/api/conta/exportar" download className={cn(btn.secondary, "min-h-12")}>
+        <a href="/api/conta/exportar" download className={cn(estiloDoBotao.secondary, "min-h-12")}>
           <Download aria-hidden="true" className="size-4" />
           Baixar meus dados (JSON)
         </a>
@@ -503,13 +503,13 @@ function DeleteSection({ kind, isLastMember }: { kind: Props["kind"]; isLastMemb
     <Section id="excluir" icon={Trash2} tone="danger" title="Excluir conta" description={`Apaga a sua conta de vez. ${consequence} Não dá para desfazer.`}>
       {!open ? (
         <div>
-          <button type="button" onClick={() => setOpen(true)} className={cn(btn.secondary, "min-h-12 text-perigo hover:border-perigo hover:bg-perigo-suave")}>
+          <button type="button" onClick={() => setOpen(true)} className={cn(estiloDoBotao.secondary, "min-h-12 text-perigo hover:border-perigo hover:bg-perigo-suave")}>
             Quero excluir minha conta
           </button>
         </div>
       ) : (
         <form onSubmit={submit} noValidate className="step-in grid gap-5 sm:grid-cols-2">
-          <Field id="excluir-confirmacao" label='Digite "EXCLUIR" para confirmar'>
+          <Campo id="excluir-confirmacao" label='Digite "EXCLUIR" para confirmar'>
             {(c) => (
               <input
                 {...c}
@@ -521,27 +521,27 @@ function DeleteSection({ kind, isLastMember }: { kind: Props["kind"]; isLastMemb
                 onChange={(e) => setConfirmation(e.target.value)}
               />
             )}
-          </Field>
-          <Field id="excluir-senha" label="Sua senha" icon={Lock} trailing={<PasswordToggle show={show} onToggle={() => setShow((v) => !v)} />}>
+          </Campo>
+          <Campo id="excluir-senha" label="Sua senha" icon={Lock} trailing={<PasswordToggle show={show} onToggle={() => setShow((v) => !v)} />}>
             {(c) => (
               <input {...c} id="excluir-senha" type={show ? "text" : "password"} autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
             )}
-          </Field>
+          </Campo>
           {error ? (
             <div className="sm:col-span-2">
-              <FormAlert>{error}</FormAlert>
+              <AvisoDoFormulario>{error}</AvisoDoFormulario>
             </div>
           ) : null}
           <div className="flex flex-wrap gap-3 sm:col-span-2">
-            <LoadingButton
+            <BotaoComCarregamento
               type="submit"
               loading={isPending}
               disabled={!ready}
-              className={cn(btn.primary, "min-h-12 bg-perigo hover:bg-perigo/90 hover:shadow-none")}
+              className={cn(estiloDoBotao.primary, "min-h-12 bg-perigo hover:bg-perigo/90 hover:shadow-none")}
             >
               <Trash2 aria-hidden="true" className="size-4" />
               Excluir minha conta
-            </LoadingButton>
+            </BotaoComCarregamento>
             <button
               type="button"
               onClick={() => {
@@ -550,7 +550,7 @@ function DeleteSection({ kind, isLastMember }: { kind: Props["kind"]; isLastMemb
                 setPassword("");
                 setError("");
               }}
-              className={cn(btn.quiet, "min-h-12")}
+              className={cn(estiloDoBotao.quiet, "min-h-12")}
             >
               Cancelar
             </button>

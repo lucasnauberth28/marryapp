@@ -13,10 +13,10 @@ import {
 } from "@/lib/theme";
 
 // Cor da barra do navegador (meta theme-color) por tema: é o `linho` de cada paleta.
-const THEME_COLOR: Record<TemaAplicado, string> = { light: "#FCFBFA", dark: "#141113" };
-const DARK_QUERY = "(prefers-color-scheme: dark)";
+const COR_DO_TEMA: Record<TemaAplicado, string> = { light: "#FCFBFA", dark: "#141113" };
+const CONSULTA_DO_TEMA_ESCURO = "(prefers-color-scheme: dark)";
 
-type ThemeContextValue = {
+type ValorDoContextoDoTema = {
   /** O que a pessoa escolheu: "light", "dark" ou "system" (Do aparelho). */
   preference: PreferenciaDeTema;
   /** O tema que está no <html> agora (já considera o sistema e as páginas sempre claras). */
@@ -24,14 +24,14 @@ type ThemeContextValue = {
   setPreference: (next: PreferenciaDeTema) => void;
 };
 
-const ThemeContext = createContext<ThemeContextValue | null>(null);
-const LockContext = createContext<((on: boolean) => void) | null>(null);
+const ContextoDoTema = createContext<ValorDoContextoDoTema | null>(null);
+const ContextoDeTravaDoTema = createContext<((on: boolean) => void) | null>(null);
 
 // Preferência guardada: cookie primeiro, localStorage de reserva. O "snapshot" é uma string estável.
-const listeners = new Set<() => void>();
-const emit = () => listeners.forEach((l) => l());
+const ouvintesDoProgresso = new Set<() => void>();
+const emitirMudancaDoTema = () => ouvintesDoProgresso.forEach((l) => l());
 
-function readStoredPreference(): PreferenciaDeTema {
+function lerPreferenciaGuardada(): PreferenciaDeTema {
   const fromCookie = lerTemaDoCookie(document.cookie);
   if (fromCookie) return fromCookie;
   try {
@@ -41,38 +41,38 @@ function readStoredPreference(): PreferenciaDeTema {
   }
 }
 
-function subscribePreference(onChange: () => void) {
-  listeners.add(onChange);
+function assinarPreferencia(onChange: () => void) {
+  ouvintesDoProgresso.add(onChange);
   // Outra aba gravou no localStorage (o cookie acompanha a gravação).
   const onStorage = (e: StorageEvent) => {
     if (e.key === CHAVE_DO_TEMA || e.key === null) onChange();
   };
   window.addEventListener("storage", onStorage);
   return () => {
-    listeners.delete(onChange);
+    ouvintesDoProgresso.delete(onChange);
     window.removeEventListener("storage", onStorage);
   };
 }
 
-function subscribeSystem(onChange: () => void) {
-  const mq = window.matchMedia(DARK_QUERY);
+function assinarSistema(onChange: () => void) {
+  const mq = window.matchMedia(CONSULTA_DO_TEMA_ESCURO);
   mq.addEventListener("change", onChange);
   return () => mq.removeEventListener("change", onChange);
 }
 
-const noopSubscribe = () => () => {};
+const assinaturaVazia = () => () => {};
 
 /**
  * Guarda a escolha de tema e aplica data-theme no <html>. O primeiro valor vem do script inline do
  * <head> (THEME_INIT_SCRIPT), antes da pintura; aqui só reagimos a mudanças: troca ao vivo, mudança
  * do sistema quando a opção é "Do aparelho", navegação entre páginas sempre claras e as demais.
  */
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ProvedorDoTema({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   // Na hidratação o servidor devolve o padrão (claro); só depois de montar valem os valores do navegador.
-  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
-  const preference = useSyncExternalStore(subscribePreference, readStoredPreference, () => "light" as const);
-  const systemDark = useSyncExternalStore(subscribeSystem, () => window.matchMedia(DARK_QUERY).matches, () => false);
+  const mounted = useSyncExternalStore(assinaturaVazia, () => true, () => false);
+  const preference = useSyncExternalStore(assinarPreferencia, lerPreferenciaGuardada, () => "light" as const);
+  const systemDark = useSyncExternalStore(assinarSistema, () => window.matchMedia(CONSULTA_DO_TEMA_ESCURO).matches, () => false);
   const [locks, setLocks] = useState(0);
 
   const resolvedTheme: TemaAplicado = locks > 0 ? "light" : resolverTema({ preference, systemDark, pathname });
@@ -80,7 +80,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!mounted) return;
     document.documentElement.setAttribute("data-theme", resolvedTheme);
-    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", THEME_COLOR[resolvedTheme]));
+    document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", COR_DO_TEMA[resolvedTheme]));
   }, [mounted, resolvedTheme]);
 
   const setPreference = useCallback((next: PreferenciaDeTema) => {
@@ -90,7 +90,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* navegação privativa: o cookie já guarda */
     }
-    emit();
+    emitirMudancaDoTema();
   }, []);
 
   const registerLock = useCallback((on: boolean) => setLocks((n) => Math.max(0, n + (on ? 1 : -1))), []);
@@ -98,15 +98,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(() => ({ preference, resolvedTheme, setPreference }), [preference, resolvedTheme, setPreference]);
 
   return (
-    <LockContext.Provider value={registerLock}>
-      <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-    </LockContext.Provider>
+    <ContextoDeTravaDoTema.Provider value={registerLock}>
+      <ContextoDoTema.Provider value={value}>{children}</ContextoDoTema.Provider>
+    </ContextoDeTravaDoTema.Provider>
   );
 }
 
 /** Tema atual e como trocá-lo. Fora do provider devolve o padrão ("Claro") e não faz nada. */
-export function useTheme(): ThemeContextValue {
-  return useContext(ThemeContext) ?? { preference: "light", resolvedTheme: "light", setPreference: () => {} };
+export function useTema(): ValorDoContextoDoTema {
+  return useContext(ContextoDoTema) ?? { preference: "light", resolvedTheme: "light", setPreference: () => {} };
 }
 
 /**
@@ -114,8 +114,8 @@ export function useTheme(): ThemeContextValue {
  * escopo data-theme="light" ao redor dos filhos. Para páginas que ficam sempre claras mesmo em
  * endereço próprio do casal, onde o caminho (/) não identifica a rota.
  */
-export function ThemeLight({ children, className }: { children: React.ReactNode; className?: string }) {
-  const register = useContext(LockContext);
+export function TemaClaro({ children, className }: { children: React.ReactNode; className?: string }) {
+  const register = useContext(ContextoDeTravaDoTema);
   useEffect(() => {
     register?.(true);
     return () => register?.(false);

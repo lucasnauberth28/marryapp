@@ -4,22 +4,22 @@ import { useState } from "react";
 import { Bell, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
 import { marcarTodasAsNotificacoesComoLidas, marcarNotificacaoComoLida, type ItemDeNotificacao } from "@/actions/notification-actions";
-import { NotificationRow } from "./notification-row";
-import { NOTIFICATIONS_CHANGED_EVENT } from "./use-notification-feed";
-import { useNow } from "./use-now";
+import { LinhaDeNotificacao } from "./notification-row";
+import { EVENTO_DE_NOTIFICACOES_MUDARAM } from "./use-notification-feed";
+import { useAgora } from "./use-now";
 
-interface Props {
+interface Propriedades {
   initialItems: ItemDeNotificacao[];
   /** Hora do servidor: a primeira pintura do "há 5 min" fica igual no servidor e no navegador. */
   nowIso: string;
 }
 
-const announce = () => window.dispatchEvent(new Event(NOTIFICATIONS_CHANGED_EVENT));
+const anunciarParaLeitor = () => window.dispatchEvent(new Event(EVENTO_DE_NOTIFICACOES_MUDARAM));
 
 /** Histórico (últimos 100 avisos), com "Marcar todas como lidas". */
-export function HistoryList({ initialItems, nowIso }: Props) {
+export function ListaDoHistorico({ initialItems, nowIso }: Propriedades) {
   const [items, setItems] = useState(initialItems);
-  const now = useNow(nowIso);
+  const now = useAgora(nowIso);
   const unread = items.filter((n) => !n.readAt).length;
 
   async function onMarkAll() {
@@ -28,7 +28,7 @@ export function HistoryList({ initialItems, nowIso }: Props) {
     try {
       const res = await marcarTodasAsNotificacoesComoLidas();
       if (!res.success) throw new Error("falhou");
-      announce();
+      anunciarParaLeitor();
     } catch {
       setItems(initialItems);
       toast.error("Não conseguimos marcar como lidos. Tente de novo.");
@@ -39,7 +39,7 @@ export function HistoryList({ initialItems, nowIso }: Props) {
     if (item.readAt) return;
     const stamp = new Date().toISOString();
     setItems((current) => current.map((n) => (n.id === item.id ? { ...n, readAt: stamp } : n)));
-    void marcarNotificacaoComoLida(item.id).then(announce, () => {});
+    void marcarNotificacaoComoLida(item.id).then(anunciarParaLeitor, () => {});
   }
 
   return (
@@ -75,7 +75,7 @@ export function HistoryList({ initialItems, nowIso }: Props) {
         <ul className="divide-y divide-linha">
           {items.map((item) => (
             <li key={item.id}>
-              <NotificationRow item={item} now={now} onOpen={onOpen} />
+              <LinhaDeNotificacao item={item} now={now} onOpen={onOpen} />
             </li>
           ))}
         </ul>

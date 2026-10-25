@@ -7,11 +7,11 @@ import { Bell, Plus, Clock, CheckCircle2, MessageCircle, Lock } from "lucide-rea
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
-import { FormAlert } from "@/components/ui/field";
-import { Panel } from "@/components/plataforma/panel";
-import { StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { btn } from "@/components/landing/styles";
+import { AvisoDoFormulario } from "@/components/ui/field";
+import { Painel } from "@/components/plataforma/panel";
+import { EtiquetaDeSituacao, type TomDaSituacao } from "@/components/plataforma/status-chip";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { SITUACOES_DO_CHAMADO, ROTULO_DA_SITUACAO_DO_CHAMADO } from "@/lib/platform/support";
 import { criarChamadoDeSuporte, atualizarChamadoDeSuporte } from "@/actions/admin-suporte-actions";
@@ -41,7 +41,7 @@ export interface TicketPrefill {
   label: string;
 }
 
-const TONE: Record<TicketItem["status"], { tone: StatusTone; icon: typeof Clock }> = {
+const TONE: Record<TicketItem["status"], { tone: TomDaSituacao; icon: typeof Clock }> = {
   NEW: { tone: "aviso", icon: Clock },
   IN_PROGRESS: { tone: "aviso", icon: Clock },
   ANSWERED: { tone: "salvia", icon: CheckCircle2 },
@@ -52,17 +52,17 @@ export function Tickets({ rows, newCount, closedCount, showClosed, prefill, open
   const [formOpen, setFormOpen] = useState(openForm);
   const [editing, setEditing] = useState<string | null>(null);
   return (
-    <Panel
+    <Painel
       title="Pedidos de ajuda"
       aside={
         <div className="flex flex-wrap items-center gap-2">
           {newCount > 0 && (
-            <StatusChip tone="aviso" icon={Bell}>
+            <EtiquetaDeSituacao tone="aviso" icon={Bell}>
               {newCount} {newCount === 1 ? "novo" : "novos"}
-            </StatusChip>
+            </EtiquetaDeSituacao>
           )}
           {!formOpen && (
-            <button type="button" onClick={() => setFormOpen(true)} className={`${btn.secondary} ${btn.sm}`}>
+            <button type="button" onClick={() => setFormOpen(true)} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
               <Plus className="size-4" aria-hidden="true" /> Registrar pedido
             </button>
           )}
@@ -72,9 +72,9 @@ export function Tickets({ rows, newCount, closedCount, showClosed, prefill, open
       <div id="chamados" className="scroll-mt-24" />
       {formOpen && <NewTicket prefill={prefill} onDone={() => setFormOpen(false)} />}
       {rows.length === 0 ? (
-        <EmptyState icon={MessageCircle} compact title={showClosed ? "Nenhum pedido registrado" : "Nenhum pedido em aberto"}>
+        <EstadoVazio icon={MessageCircle} compact title={showClosed ? "Nenhum pedido registrado" : "Nenhum pedido em aberto"}>
           Não há formulário público: registre aqui os pedidos que chegarem por WhatsApp ou e-mail.
-        </EmptyState>
+        </EstadoVazio>
       ) : (
         <ul className="divide-y divide-linha overflow-hidden rounded-2xl border border-linha">
           {rows.map((t) => {
@@ -91,10 +91,10 @@ export function Tickets({ rows, newCount, closedCount, showClosed, prefill, open
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <StatusChip tone={s.tone} icon={s.icon}>
+                    <EtiquetaDeSituacao tone={s.tone} icon={s.icon}>
                       {ROTULO_DA_SITUACAO_DO_CHAMADO[t.status]}
-                    </StatusChip>
-                    <button type="button" aria-expanded={editing === t.id} onClick={() => setEditing(editing === t.id ? null : t.id)} className={`${btn.quiet} ${btn.sm}`}>
+                    </EtiquetaDeSituacao>
+                    <button type="button" aria-expanded={editing === t.id} onClick={() => setEditing(editing === t.id ? null : t.id)} className={`${estiloDoBotao.quiet} ${estiloDoBotao.sm}`}>
                       {editing === t.id ? "Fechar" : "Abrir"}
                     </button>
                   </div>
@@ -116,7 +116,7 @@ export function Tickets({ rows, newCount, closedCount, showClosed, prefill, open
           </Link>
         ) : null}
       </p>
-    </Panel>
+    </Painel>
   );
 }
 
@@ -152,7 +152,7 @@ function NewTicket({ prefill, onDone }: { prefill: TicketPrefill | null; onDone:
         <Input label="E-mail" optional type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.requesterEmail} />
         <Input label="Telefone" optional value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.requesterPhone} maxLength={30} />
       </div>
-      {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
+      {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="flex flex-wrap gap-3">
         <Button type="submit" loading={pending}>
           Registrar pedido
@@ -216,7 +216,7 @@ function TicketEditor({ ticket, onDone }: { ticket: TicketItem; onDone: () => vo
         </NativeSelect>
       </div>
       <Textarea label="Nota interna" optional hint="Só a equipe vê." value={note} onChange={(e) => setNote(e.target.value)} error={errors.internalNote} rows={3} maxLength={2000} />
-      {formError && <FormAlert>{formError}</FormAlert>}
+      {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div>
         <Button type="submit" loading={pending}>
           Salvar

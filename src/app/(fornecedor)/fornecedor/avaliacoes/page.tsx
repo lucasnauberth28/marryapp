@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EyeOff, ExternalLink, Flag, ShieldCheck, Star } from "lucide-react";
-import { Reveal } from "@/components/motion/reveal";
+import { Aparicao } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
-import { LinkPending } from "@/components/feedback/link-pending";
+import { LinkPendente } from "@/components/feedback/link-pending";
 import { Chip } from "../../_components/status-chip";
 import { formatWeddingDate } from "../../_lib/vendor-panel";
 import { ReportReview } from "./report-review";
@@ -91,7 +91,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
 
   return (
     <div className="flex flex-col gap-6">
-      <Reveal variant="fade" className="flex flex-col gap-1">
+      <Aparicao variant="fade" className="flex flex-col gap-1">
         <p className={cn(OVERLINE, "hidden md:block")}>Fornecedor</p>
         <h1 className="font-display text-[32px] leading-[38px] font-medium md:text-[40px] md:leading-[46px]">
           Avaliações
@@ -99,10 +99,10 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
         <p className="text-tinta-suave">
           Suas respostas aparecem no seu perfil público, logo abaixo de cada avaliação.
         </p>
-      </Reveal>
+      </Aparicao>
 
       {total === 0 ? (
-        <Reveal variant="fade" className={cn(CARD, "flex flex-col items-center gap-3 px-6 py-12 text-center")}>
+        <Aparicao variant="fade" className={cn(CARD, "flex flex-col items-center gap-3 px-6 py-12 text-center")}>
           <span className="grid size-12 place-items-center rounded-full bg-salvia-suave text-salvia">
             <Star aria-hidden="true" className="size-6" />
           </span>
@@ -123,10 +123,10 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
               <span className="sr-only">(abre em nova aba)</span>
             </Link>
           ) : null}
-        </Reveal>
+        </Aparicao>
       ) : (
         <>
-          <Reveal variant="up">
+          <Aparicao variant="up">
             <section
               aria-label="Resumo das avaliações"
               className={cn(CARD, "flex flex-wrap items-center gap-6 p-5 sm:gap-8 sm:p-6")}
@@ -161,7 +161,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
                 ))}
               </ul>
             </section>
-          </Reveal>
+          </Aparicao>
 
           <section aria-labelledby="lista-avaliacoes" className="group/lista flex flex-col gap-3">
             <h2 id="lista-avaliacoes" className="sr-only">
@@ -185,7 +185,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
                         )}
                       >
                         {f.label} · {f.count}
-                        <LinkPending label="Carregando as avaliações" />
+                        <LinkPendente label="Carregando as avaliações" />
                       </Link>
                     </li>
                   );
@@ -194,7 +194,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
             </nav>
 
             {reviews.length === 0 ? (
-              <Reveal variant="fade" className={cn(CARD, "flex flex-col items-center gap-2 px-6 py-10 text-center")}>
+              <Aparicao variant="fade" className={cn(CARD, "flex flex-col items-center gap-2 px-6 py-10 text-center")}>
                 <p className="text-lg font-semibold">Tudo respondido</p>
                 <p className="max-w-md text-tinta-suave">
                   Você já respondeu todas as avaliações. As respostas estão no seu perfil público.
@@ -206,7 +206,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
                 >
                   Ver todas as avaliações
                 </Link>
-              </Reveal>
+              </Aparicao>
             ) : (
               <ul className="flex flex-col gap-3 transition-opacity group-has-[[data-link-pending]]/lista:opacity-60">
                 {reviews.map((review, i) => {
@@ -216,7 +216,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
                     ? `${married ? "Casaram em" : "Casamento em"} ${date}`
                     : `Avaliou em ${formatShortDate(review.createdAt, now)}`;
                   return (
-                    <Reveal as="li" key={review.id} variant="up" delay={Math.min(i, 5) * 80}>
+                    <Aparicao as="li" key={review.id} variant="up" delay={Math.min(i, 5) * 80}>
                       <article
                         aria-labelledby={`avaliacao-${review.id}`}
                         className={cn(
@@ -259,7 +259,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
                           }
                         />
                       </article>
-                    </Reveal>
+                    </Aparicao>
                   );
                 })}
               </ul>

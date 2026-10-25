@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { Download, Flag, Megaphone } from "lucide-react";
 import { definirMarcaDosCasamentos } from "@/actions/admin-casais-actions";
-import { btn } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ExportButton } from "@/components/plataforma/export-button";
-import { InitialsAvatar } from "@/components/plataforma/initials-avatar";
-import { PlanChip } from "@/components/plataforma/status-chip";
-import { th } from "@/components/casal/ui";
+import { BotaoDeExportar } from "@/components/plataforma/export-button";
+import { AvatarComIniciais } from "@/components/plataforma/initials-avatar";
+import { EtiquetaDePlano } from "@/components/plataforma/status-chip";
+import { estiloDoTituloDaColunaDoCasal } from "@/components/casal/ui";
 import { formatarData, formatarInteiro, formatarPercentual, haQuantoTempo } from "@/lib/platform/format";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import type { SituacaoDoCasal } from "@/lib/platform/casal-status";
@@ -50,7 +50,7 @@ function GuestsCell({ row }: { row: CasalListRow }) {
 function CoupleCell({ row }: { row: CasalListRow }) {
   return (
     <span className="flex min-w-0 items-center gap-3">
-      <InitialsAvatar name={row.coupleNames} />
+      <AvatarComIniciais name={row.coupleNames} />
       <span className="flex min-w-0 flex-col leading-5">
         <span className="flex items-center gap-1.5 font-semibold text-tinta">
           <span className="truncate">{row.coupleNames}</span>
@@ -90,16 +90,16 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
             {chosen.length === 1 ? "1 casal selecionado" : `${chosen.length} casais selecionados`}
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/admin/comunicados?casais=${chosen.join(",")}`} className={cn(btn.secondary, btn.sm, "gap-1.5")}>
+            <Link href={`/admin/comunicados?casais=${chosen.join(",")}`} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm, "gap-1.5")}>
               <Megaphone className="size-4" aria-hidden="true" /> Enviar comunicado
             </Link>
-            <ExportButton href={`/api/admin/casais.csv?ids=${chosen.join(",")}`} fallbackName="casais.csv" size="sm" className="gap-1.5">
+            <BotaoDeExportar href={`/api/admin/casais.csv?ids=${chosen.join(",")}`} fallbackName="casais.csv" size="sm" className="gap-1.5">
               <Download className="size-4" aria-hidden="true" /> Exportar seleção
-            </ExportButton>
+            </BotaoDeExportar>
             <Button type="button" variant="outline" size="sm" onClick={flag} loading={pending} className="gap-1.5">
               <Flag className="size-4" aria-hidden="true" /> {anyUnflagged ? "Marcar para acompanhar" : "Deixar de acompanhar"}
             </Button>
-            <button type="button" onClick={() => setSelected([])} className={cn(btn.quiet, btn.sm)}>
+            <button type="button" onClick={() => setSelected([])} className={cn(estiloDoBotao.quiet, estiloDoBotao.sm)}>
               Limpar seleção
             </button>
           </div>
@@ -117,11 +117,11 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
           <caption className="sr-only">Casais</caption>
           <thead>
             <tr className="border-b border-linha">
-              <th scope="col" className={cn(th, "w-12 pr-0")}>
+              <th scope="col" className={cn(estiloDoTituloDaColunaDoCasal, "w-12 pr-0")}>
                 <Checkbox checked={allOn} onCheckedChange={(v) => setSelected(v === true ? rows.map((r) => r.id) : [])} aria-label="Selecionar todos desta página" />
               </th>
               {["Casal", "Casamento", "Plano", "Convidados", "Presentes", "Última atividade", "Situação"].map((h) => (
-                <th key={h} scope="col" className={cn(th, "normal-case tracking-normal text-[13px]")}>
+                <th key={h} scope="col" className={cn(estiloDoTituloDaColunaDoCasal, "normal-case tracking-normal text-[13px]")}>
                   {h}
                 </th>
               ))}
@@ -145,7 +145,7 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
                   </span>
                 </td>
                 <td className="px-3 py-3 align-middle">
-                  <PlanChip plan={row.planId} />
+                  <EtiquetaDePlano plan={row.planId} />
                 </td>
                 <td className="px-3 py-3 align-middle">
                   <GuestsCell row={row} />
@@ -176,7 +176,7 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
               <dd>{row.weddingDate ? formatarData(new Date(row.weddingDate)) : "Sem data"}{row.city ? ` · ${row.city}` : ""}</dd>
               <dt className="text-tinta-suave">Plano</dt>
               <dd>
-                <PlanChip plan={row.planId} />
+                <EtiquetaDePlano plan={row.planId} />
               </dd>
               <dt className="text-tinta-suave">Convidados</dt>
               <dd>{row.guests === 0 ? "Lista vazia" : `${formatarInteiro(row.guests)} · ${formatarPercentual(row.confirmed, row.guests)} confirmaram`}</dd>

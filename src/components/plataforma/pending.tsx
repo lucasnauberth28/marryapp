@@ -16,57 +16,57 @@ import { cn } from "@/lib/utils";
  * A rota nova com o seu loading.tsx não passa por aqui: o destino precisa ser a MESMA página (ver pending-nav.ts).
  */
 
-const SAFETY_MS = 10_000;
-let target: string | null = null;
-let safety: ReturnType<typeof setTimeout> | undefined;
-const listeners = new Set<() => void>();
+const LIMITE_DE_SEGURANCA_EM_MS = 10_000;
+let destinoPendente: string | null = null;
+let temporizadorDeSegurancaDaLista: ReturnType<typeof setTimeout> | undefined;
+const ouvintes = new Set<() => void>();
 
-function emit() {
-  listeners.forEach((l) => l());
+function emitirMudanca() {
+  ouvintes.forEach((l) => l());
 }
 
 /** Marca que a URL vai mudar para `href` (mesma página). Sem efeito para endereço de outro site. */
-export function markListNavigation(href: string) {
+export function marcarNavegacaoDaLista(href: string) {
   const key = chaveDaLocalizacao(href);
   if (!key) return;
-  target = key;
-  clearTimeout(safety);
+  destinoPendente = key;
+  clearTimeout(temporizadorDeSegurancaDaLista);
   // Rede ou servidor falhou e a URL nunca chegou: não deixa a lista clara para sempre.
-  safety = setTimeout(() => {
-    target = null;
-    emit();
-  }, SAFETY_MS);
-  emit();
+  temporizadorDeSegurancaDaLista = setTimeout(() => {
+    destinoPendente = null;
+    emitirMudanca();
+  }, LIMITE_DE_SEGURANCA_EM_MS);
+  emitirMudanca();
 }
 
-function subscribe(listener: () => void) {
-  listeners.add(listener);
+function assinarMudancas(listener: () => void) {
+  ouvintes.add(listener);
   return () => {
-    listeners.delete(listener);
+    ouvintes.delete(listener);
   };
 }
 
-const getTarget = () => target;
-const getServerTarget = () => null;
+const obterDestino = () => destinoPendente;
+const obterDestinoNoServidor = () => null;
 
 /** Encerra o pedido pendente quando a URL chegou ao destino ou o usuário já está em outra página. */
-function settle(pathname: string, search: string) {
-  if (target === null) return;
+function liberarPendencia(pathname: string, search: string) {
+  if (destinoPendente === null) return;
   const current = chaveDaLocalizacao(`${pathname}${search ? `?${search}` : ""}`);
-  if (current === target || target.split("?")[0] !== pathname) {
-    target = null;
-    clearTimeout(safety);
-    emit();
+  if (current === destinoPendente || destinoPendente.split("?")[0] !== pathname) {
+    destinoPendente = null;
+    clearTimeout(temporizadorDeSegurancaDaLista);
+    emitirMudanca();
   }
 }
 
 /** true enquanto a mesma página troca de filtro, aba ou página. */
-function useListPending(): boolean {
+function useListaPendente(): boolean {
   const pathname = usePathname();
   const search = useSearchParams().toString();
-  const pendingTarget = useSyncExternalStore(subscribe, getTarget, getServerTarget);
+  const pendingTarget = useSyncExternalStore(assinarMudancas, obterDestino, obterDestinoNoServidor);
   useEffect(() => {
-    settle(pathname, search);
+    liberarPendencia(pathname, search);
   }, [pathname, search]);
   return listaEstaPendente(pendingTarget, pathname, search);
 }
@@ -75,7 +75,7 @@ function useListPending(): boolean {
  * Link de navegação de lista (aba, página, chip de filtro). Igual ao Link do Next, e avisa a PendingRegion
  * no clique simples. Abrir em nova aba (Ctrl/Cmd) e links para outra página não marcam nada.
  */
-export function PendingLink({ onClick, ...props }: ComponentProps<typeof Link>) {
+export function LinkPendente({ onClick, ...props }: ComponentProps<typeof Link>) {
   return (
     <Link
       {...props}
@@ -84,7 +84,7 @@ export function PendingLink({ onClick, ...props }: ComponentProps<typeof Link>) 
         if (e.defaultPrevented || !ehCliqueSimplesComBotaoEsquerdo(e)) return;
         const a = e.currentTarget;
         const to = destinoDaNavegacao({ href: a.href, target: a.getAttribute("target"), download: a.hasAttribute("download"), optOut: a.hasAttribute("data-no-progress") }, window.location.href);
-        if (to) markListNavigation(to);
+        if (to) marcarNavegacaoDaLista(to);
       }}
     />
   );
@@ -94,8 +94,8 @@ export function PendingLink({ onClick, ...props }: ComponentProps<typeof Link>) 
  * Envolve o que muda com o filtro: enquanto a URL não chega, fica mais clara e marcada como ocupada.
  * O efeito só começa depois de 200ms (navegação rápida não pisca) e some na hora quando termina.
  */
-export function PendingRegion({ id, className, children }: { id?: string; className?: string; children: ReactNode }) {
-  const pending = useListPending();
+export function RegiaoPendente({ id, className, children }: { id?: string; className?: string; children: ReactNode }) {
+  const pending = useListaPendente();
   return (
     <div id={id} aria-busy={pending || undefined} className={cn("transition-opacity duration-150", pending && "opacity-60 delay-200", className)}>
       <span role="status" className="sr-only">

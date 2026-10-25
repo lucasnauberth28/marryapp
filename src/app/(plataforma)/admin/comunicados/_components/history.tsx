@@ -1,8 +1,8 @@
 import { CheckCircle2, Hourglass, Megaphone } from "lucide-react";
-import { Panel } from "@/components/plataforma/panel";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { StatusChip } from "@/components/plataforma/status-chip";
-import { ResponsiveTable } from "@/components/plataforma/responsive-table";
+import { Painel } from "@/components/plataforma/panel";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
+import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
 import { ROTULO_DO_CANAL, rotuloDoPublico, taxaDeEntrega } from "@/lib/platform/announcement";
 import { formatarDataEHora, formatarInteiro } from "@/lib/platform/format";
 import type { LinhaDoHistorico } from "@/lib/platform/queries/comunicados";
@@ -11,14 +11,14 @@ import { ResumeButton } from "./resume-button";
 /** Histórico: números reais. "Lidos" só existe para o aviso no painel; nos outros canais ainda não medimos. */
 export function History({ rows }: { rows: LinhaDoHistorico[] }) {
   return (
-    <Panel title="Histórico" padded={false}>
+    <Painel title="Histórico" padded={false}>
       {rows.length === 0 ? (
-        <EmptyState icon={Megaphone} compact title="Nenhum comunicado enviado ainda">
+        <EstadoVazio icon={Megaphone} compact title="Nenhum comunicado enviado ainda">
           Quando você enviar o primeiro, ele aparece aqui com quantas pessoas receberam.
-        </EmptyState>
+        </EstadoVazio>
       ) : (
         <div className="px-4 pb-4 md:px-6 md:pb-6">
-          <ResponsiveTable
+          <TabelaResponsiva
             caption="Comunicados enviados, do mais recente para o mais antigo"
             rows={rows}
             rowKey={(r) => r.id}
@@ -36,9 +36,9 @@ export function History({ rows }: { rows: LinhaDoHistorico[] }) {
                   if (r.status === "SENDING")
                     return (
                       <span className="flex flex-col items-end gap-1">
-                        <StatusChip tone="aviso" icon={Hourglass}>
+                        <EtiquetaDeSituacao tone="aviso" icon={Hourglass}>
                           Enviando
-                        </StatusChip>
+                        </EtiquetaDeSituacao>
                         <ResumeButton id={r.id} />
                       </span>
                     );
@@ -76,6 +76,6 @@ export function History({ rows }: { rows: LinhaDoHistorico[] }) {
           />
         </div>
       )}
-    </Panel>
+    </Painel>
   );
 }

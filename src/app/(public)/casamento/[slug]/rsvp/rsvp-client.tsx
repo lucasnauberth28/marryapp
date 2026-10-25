@@ -6,10 +6,10 @@ import { toast } from "sonner";
 import { ArrowRight, CalendarDays, Check, Download, Gift, MapPin, Phone } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 import { acharConvidadoPeloTelefone, confirmarPresencaPublica } from "@/actions/guest-actions";
-import { btn } from "@/components/landing/styles";
-import { Seal } from "@/components/landing/seal";
+import { estiloDoBotao } from "@/components/landing/styles";
+import { Selo } from "@/components/landing/seal";
 import { Button } from "@/components/ui/button";
-import { Field, FormAlert } from "@/components/ui/field";
+import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { mascararTelefone } from "@/lib/formatacao/telefone";
@@ -153,7 +153,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
             <p className="text-tinta-suave">Digite o seu WhatsApp com DDD, o mesmo que os noivos têm de você. Você verá só o seu convite.</p>
           </div>
           <form onSubmit={handleSearch} className="flex flex-col gap-6">
-            <Field id="rsvp-telefone" label="Seu WhatsApp com DDD" icon={Phone} error={error || undefined}>
+            <Campo id="rsvp-telefone" label="Seu WhatsApp com DDD" icon={Phone} error={error || undefined}>
               {(c) => (
                 <input
                   {...c}
@@ -168,7 +168,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
                   required
                 />
               )}
-            </Field>
+            </Campo>
             <Button type="submit" loading={loading} className="h-12 w-full rounded-[12px] px-6">
               Encontrar meu convite
             </Button>
@@ -259,7 +259,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
             </>
           ) : null}
 
-          <Field id="rsvp-restricoes" label="Restrição alimentar ou alergia" optional hint="Se não tiver nenhuma, é só deixar em branco.">
+          <Campo id="rsvp-restricoes" label="Restrição alimentar ou alergia" optional hint="Se não tiver nenhuma, é só deixar em branco.">
             {(c) => (
               <input
                 {...c}
@@ -269,9 +269,9 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
                 onChange={(e) => setDietary(e.target.value)}
               />
             )}
-          </Field>
+          </Campo>
 
-          {error ? <FormAlert>{error}</FormAlert> : null}
+          {error ? <AvisoDoFormulario>{error}</AvisoDoFormulario> : null}
 
           <div className="flex flex-col gap-2">
             <Button
@@ -299,7 +299,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
 
       {stage === "CONFIRMED" ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col items-center gap-4 pt-4 text-center">
-          <Seal label="Selo de confirmação" className="size-24 [&>span]:text-[54px]" />
+          <Selo label="Selo de confirmação" className="size-24 [&>span]:text-[54px]" />
           <h1 ref={headingRef} id="titulo" tabIndex={-1} className="mt-2 font-display text-[40px] font-medium leading-[46px] tracking-[-0.015em] text-tinta outline-none">
             Que alegria!
           </h1>
@@ -322,7 +322,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
             <p className="text-sm text-tinta-suave">
               Este código QR serve para o registro de entrada na festa, se os noivos usarem esse recurso. Salve a imagem no celular, caso a internet falhe lá.
             </p>
-            <button type="button" onClick={downloadQrCode} className={cn(btn.secondary, btn.block)}>
+            <button type="button" onClick={downloadQrCode} className={cn(estiloDoBotao.secondary, estiloDoBotao.block)}>
               <Download aria-hidden="true" className="size-4" />
               Salvar como imagem
             </button>
@@ -340,7 +340,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
             </Link>
           </div>
 
-          <button type="button" onClick={() => setSuccessStatus(null)} className={cn(btn.quiet, "mt-2")}>
+          <button type="button" onClick={() => setSuccessStatus(null)} className={cn(estiloDoBotao.quiet, "mt-2")}>
             Mudar minha resposta
           </button>
         </section>
@@ -354,7 +354,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
           <p className="max-w-[34ch] text-tinta-suave">
             Avisamos {coupleNames}. Se os planos mudarem, é só voltar aqui e responder de novo.
           </p>
-          <button type="button" onClick={() => setSuccessStatus(null)} className={cn(btn.secondary, "mt-4")}>
+          <button type="button" onClick={() => setSuccessStatus(null)} className={cn(estiloDoBotao.secondary, "mt-4")}>
             Mudar minha resposta
           </button>
         </section>

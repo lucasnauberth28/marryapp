@@ -4,34 +4,34 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, MousePointerClick } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LizIllustration } from "@/components/liz/liz-illustration";
+import { IlustracaoDaLiz } from "@/components/liz/liz-illustration";
 import { posicionarBalao, type Caixa, type Posicionamento } from "@/lib/tour/positioning";
 import { textoDoLugar, type LugarDoPasso, type PassoDoTour } from "@/lib/tour/steps";
 
-export interface TourDone {
+export interface TourConcluido {
   outcome: "completed" | "skipped";
   /** Saiu pelo botão que leva a uma tela (o foco fica com a tela nova). */
   navigated?: boolean;
 }
 
 /** Mesmo corte do painel: abaixo de 768px vale a barra inferior e a aba "Mais". */
-const MOBILE_QUERY = "(max-width: 767px)";
-const subscribeMobile = (cb: () => void) => {
-  const mq = window.matchMedia(MOBILE_QUERY);
+const CONSULTA_DE_TELA_MOVEL = "(max-width: 767px)";
+const assinarTelaMovel = (cb: () => void) => {
+  const mq = window.matchMedia(CONSULTA_DE_TELA_MOVEL);
   mq.addEventListener("change", cb);
   return () => mq.removeEventListener("change", cb);
 };
-const isMobileNow = () => window.matchMedia(MOBILE_QUERY).matches;
-const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const ehTelaMovelAgora = () => window.matchMedia(CONSULTA_DE_TELA_MOVEL).matches;
+const movimentoReduzido = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const PAD = 6;
+const FOLGA_DO_FOCO = 6;
 /** Quanto esperar o item aparecer (a aba "Mais" desliza ao abrir) antes de pular o passo. */
-const GIVE_UP_MS = 1200;
+const TEMPO_PARA_DESISTIR_EM_MS = 1200;
 /** Quadros seguidos com o item parado para considerar que ele chegou ao lugar. */
-const STABLE_FRAMES = 3;
+const QUADROS_ESTAVEIS = 3;
 
 /** O elemento do passo que está de fato na tela (o menu lateral e a barra de baixo não aparecem juntos). */
-function findAnchor(anchor: string): HTMLElement | null {
+function acharAncora(anchor: string): HTMLElement | null {
   const all = document.querySelectorAll<HTMLElement>(`[data-tour="${anchor}"]`);
   for (const el of all) {
     const r = el.getBoundingClientRect();
@@ -40,14 +40,14 @@ function findAnchor(anchor: string): HTMLElement | null {
   return null;
 }
 
-function boxOf(el: Element): Caixa {
+function caixaDe(el: Element): Caixa {
   const r = el.getBoundingClientRect();
-  return { top: r.top - PAD, left: r.left - PAD, width: r.width + PAD * 2, height: r.height + PAD * 2 };
+  return { top: r.top - FOLGA_DO_FOCO, left: r.left - FOLGA_DO_FOCO, width: r.width + FOLGA_DO_FOCO * 2, height: r.height + FOLGA_DO_FOCO * 2 };
 }
 
-const sameBox = (a: Caixa, b: Caixa) => Math.abs(a.top - b.top) < 0.5 && Math.abs(a.left - b.left) < 0.5 && Math.abs(a.width - b.width) < 0.5 && Math.abs(a.height - b.height) < 0.5;
+const mesmaCaixa = (a: Caixa, b: Caixa) => Math.abs(a.top - b.top) < 0.5 && Math.abs(a.left - b.left) < 0.5 && Math.abs(a.width - b.width) < 0.5 && Math.abs(a.height - b.height) < 0.5;
 
-interface Resolved {
+interface AncoraResolvida {
   key: string;
   /** Retângulo do item destacado; null quando o passo só explica (sem destaque). */
   box: Caixa | null;
@@ -59,14 +59,14 @@ interface Resolved {
  * Não bloqueia o app: se o item não existe, o passo é pulado; "Esc" e "Pular" saem a qualquer momento.
  * Foco: vai para o balão a cada passo, Tab percorre só os botões dele, e ao sair o foco volta ao ponto de partida.
  */
-export function TourSpotlight({ steps, places, onDone }: { steps: PassoDoTour[]; places: Record<string, LugarDoPasso>; onDone: (done: TourDone) => void }) {
-  const mobile = useSyncExternalStore(subscribeMobile, isMobileNow, () => false);
+export function FocoDoTour({ steps, places, onDone }: { steps: PassoDoTour[]; places: Record<string, LugarDoPasso>; onDone: (done: TourConcluido) => void }) {
+  const mobile = useSyncExternalStore(assinarTelaMovel, ehTelaMovelAgora, () => false);
   const device = mobile ? "mobile" : "desktop";
 
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState<1 | -1>(1);
   const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
-  const [resolved, setResolved] = useState<Resolved | null>(null);
+  const [resolved, setResolved] = useState<AncoraResolvida | null>(null);
 
   const list = steps.filter((s) => !hidden.has(s.id));
   const step: PassoDoTour | undefined = list[index];
@@ -94,7 +94,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: PassoDoTour[];
   /** Calcula onde ficam o destaque e o balão para o item atual. */
   const place = useCallback(
     (el: HTMLElement | null, forKey: string) => {
-      const box = el ? boxOf(el) : null;
+      const box = el ? caixaDe(el) : null;
       const dialog = dialogRef.current;
       const width = dialog?.offsetWidth ?? 340;
       const height = dialog?.offsetHeight ?? 320;
@@ -130,21 +130,21 @@ export function TourSpotlight({ steps, places, onDone }: { steps: PassoDoTour[];
         place(null, key);
         return;
       }
-      const el = findAnchor(step.anchor);
+      const el = acharAncora(step.anchor);
       if (el) {
         if (!scrolled) {
           scrolled = true;
-          el.scrollIntoView({ block: "center", inline: "nearest", behavior: reducedMotion() ? "auto" : "smooth" });
+          el.scrollIntoView({ block: "center", inline: "nearest", behavior: movimentoReduzido() ? "auto" : "smooth" });
         }
-        const box = boxOf(el);
-        stable = last && sameBox(last, box) ? stable + 1 : 0;
+        const box = caixaDe(el);
+        stable = last && mesmaCaixa(last, box) ? stable + 1 : 0;
         last = box;
-        if (stable >= STABLE_FRAMES) {
+        if (stable >= QUADROS_ESTAVEIS) {
           anchorRef.current = el;
           place(el, key);
           return;
         }
-      } else if (performance.now() - started > GIVE_UP_MS) {
+      } else if (performance.now() - started > TEMPO_PARA_DESISTIR_EM_MS) {
         giveUp();
         return;
       }
@@ -276,7 +276,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: PassoDoTour[];
           shown ? "motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200" : "invisible"
         }`}
       >
-        {shown && shown.place.side !== "center" && <Arrow side={shown.place.side} offset={shown.place.arrow} />}
+        {shown && shown.place.side !== "center" && <SetaDoBalao side={shown.place.side} offset={shown.place.arrow} />}
 
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm font-semibold leading-5 text-tinta-suave" aria-hidden="true">
@@ -289,7 +289,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: PassoDoTour[];
 
         <div className="flex items-start gap-3">
           {/* Passo da Liz: ela mesma cumprimenta (decorativa, o título já diz "Liz") */}
-          {step.id === "liz" && <LizIllustration pose="cumprimentando" height={112} decorative className="h-28 w-auto shrink-0" />}
+          {step.id === "liz" && <IlustracaoDaLiz pose="cumprimentando" height={112} decorative className="h-28 w-auto shrink-0" />}
           <div className="flex min-w-0 flex-col gap-1.5">
             <h2 id="tour-passo-titulo" className="font-display text-[22px] font-medium leading-7 text-tinta">
               {step.title}
@@ -332,7 +332,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: PassoDoTour[];
 }
 
 /** Seta do balão apontando para o item destacado. */
-function Arrow({ side, offset }: { side: Exclude<Posicionamento["side"], "center">; offset: number }) {
+function SetaDoBalao({ side, offset }: { side: Exclude<Posicionamento["side"], "center">; offset: number }) {
   const common = "absolute size-3 rotate-45 border-linha bg-papel";
   if (side === "right") return <span aria-hidden="true" className={`${common} -left-1.5 border-b border-l`} style={{ top: offset - 6 }} />;
   if (side === "left") return <span aria-hidden="true" className={`${common} -right-1.5 border-r border-t`} style={{ top: offset - 6 }} />;

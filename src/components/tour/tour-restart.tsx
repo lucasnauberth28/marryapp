@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useTour } from "./panel-tour-provider";
 
 /** Item "Ver o passo a passo" do menu da conta. Some quando a conta não tem o passo a passo. */
-export function TourMenuItem() {
+export function ItemDeMenuDoTour() {
   const { available, start } = useTour();
   if (!available) return null;
   return (
@@ -18,7 +18,7 @@ export function TourMenuItem() {
 }
 
 /** Cartão das Configurações para rever o passo a passo de novo, quando quiser. */
-export function TourSettingsCard() {
+export function CartaoDeConfiguracaoDoTour() {
   const { available, start } = useTour();
   if (!available) return null;
   return (

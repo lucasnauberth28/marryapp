@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingRegion, SkeletonCard, SkeletonChart, SkeletonPageHeader, SkeletonStatGrid, SkeletonText } from "@/components/skeletons";
-import { AttentionSkeleton, RowsSkeleton } from "@/components/plataforma/loading-parts";
+import { EsqueletoDaAtencao, EsqueletoDasLinhas } from "@/components/plataforma/loading-parts";
 
 /* Esqueletos de cada bloco da Visão geral (mesmas alturas dos blocos reais em page.tsx). */
 
@@ -11,7 +11,7 @@ export function NumbersSkeleton() {
 export function AttentionBlockSkeleton() {
   return (
     <SkeletonCard>
-      <AttentionSkeleton rows={3} />
+      <EsqueletoDaAtencao rows={3} />
     </SkeletonCard>
   );
 }
@@ -74,7 +74,7 @@ export function UpcomingBlockSkeleton() {
 export function ExpiringBlockSkeleton() {
   return (
     <SkeletonCard>
-      <RowsSkeleton rows={3} />
+      <EsqueletoDasLinhas rows={3} />
     </SkeletonCard>
   );
 }
@@ -82,7 +82,7 @@ export function ExpiringBlockSkeleton() {
 export function ErrorsBlockSkeleton() {
   return (
     <SkeletonCard>
-      <RowsSkeleton rows={4} />
+      <EsqueletoDasLinhas rows={4} />
     </SkeletonCard>
   );
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { th } from "@/components/casal/ui";
+import { estiloDoTituloDaColunaDoCasal } from "@/components/casal/ui";
 import { cn } from "@/lib/utils";
 
 /**
@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
  * - empty: o que mostrar sem linhas (<EmptyState/>); a tabela some e o cabeçalho continua, como no desenho.
  * Quando precisar de checkbox por linha ou ordenação no navegador, componha uma versão cliente na própria tela.
  */
-export interface Column<T> {
+export interface Coluna<T> {
   key: string;
   header: ReactNode;
   cell: (row: T) => ReactNode;
@@ -41,7 +41,7 @@ export interface Column<T> {
   className?: string;
 }
 
-export function ResponsiveTable<T>({
+export function TabelaResponsiva<T>({
   caption,
   columns,
   rows,
@@ -53,7 +53,7 @@ export function ResponsiveTable<T>({
   className,
 }: {
   caption: string;
-  columns: Column<T>[];
+  columns: Coluna<T>[];
   rows: T[];
   rowKey: (row: T) => string;
   rowHref?: (row: T) => string | null;
@@ -74,7 +74,7 @@ export function ResponsiveTable<T>({
           <thead>
             <tr className="border-b border-linha">
               {columns.map((c) => (
-                <th key={c.key} scope="col" className={cn(th, "normal-case tracking-normal text-[13px]", c.align === "right" && "text-right")}>
+                <th key={c.key} scope="col" className={cn(estiloDoTituloDaColunaDoCasal, "normal-case tracking-normal text-[13px]", c.align === "right" && "text-right")}>
                   {c.header}
                 </th>
               ))}

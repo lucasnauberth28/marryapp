@@ -3,7 +3,7 @@ import Link from "next/link";
 import { formatDistanceToNowStrict } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Armchair, CalendarHeart, Check, Clock, Gift, ListChecks, Minus, Receipt, type LucideIcon } from "lucide-react";
-import { LizAvatar, LizIllustration } from "@/components/liz/liz-illustration";
+import { AvatarDaLiz, IlustracaoDaLiz } from "@/components/liz/liz-illustration";
 import {
   formatarReaisSemSinal,
   rotuloDeConvites,
@@ -48,7 +48,7 @@ export function QueueBlock({
     <Block id="agora" title="O que fazer agora" aside={items.length > 0 ? <span>{items.length === 1 ? "1 item" : `${items.length} itens`}</span> : null} className={className}>
       {items.length === 0 ? (
         <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4">
-          <LizIllustration pose="tranquila" height={88} decorative className="h-[88px] w-auto" />
+          <IlustracaoDaLiz pose="tranquila" height={88} decorative className="h-[88px] w-auto" />
           <div className="grid gap-1">
             <p className="text-[14.5px] font-semibold text-tinta">Nada pedindo atenção agora</p>
             <p className="text-[14.5px] leading-[1.45] text-tinta-suave">Quando surgir algo, como um convite sem resposta ou um Pix para conferir, aparece aqui.</p>
@@ -66,7 +66,7 @@ export function QueueBlock({
                     <Icon className="size-[19px]" strokeWidth={1.6} aria-hidden="true" />
                   </span>
                 ) : (
-                  <LizAvatar size={40} decorative />
+                  <AvatarDaLiz size={40} decorative />
                 )}
                 <div className="grid min-h-10 content-center gap-0.5">
                   {item.kind === "liz" && <strong className="text-[13px] font-semibold text-ameixa">A Liz sugere o próximo passo</strong>}

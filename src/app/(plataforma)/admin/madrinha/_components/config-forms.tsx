@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { FormAlert } from "@/components/ui/field";
+import { AvisoDoFormulario } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
-import { card } from "@/components/casal/ui";
+import { estiloDoCartao } from "@/components/casal/ui";
 import { cn } from "@/lib/utils";
 import { centavosParaCampoDeReais } from "@/lib/platform/madrinha";
 import { salvarLimitesContraAbusoDaMadrinha, salvarTetoGlobalDaMadrinha, salvarLimitesDaMadrinha } from "@/actions/admin-madrinha-actions";
@@ -52,7 +52,7 @@ function PlanCard({
 }) {
   const set = <K extends keyof PlanState>(key: K, value: PlanState[K]) => onChange({ ...state, [key]: value });
   return (
-    <div className={cn(card, "flex flex-col gap-4 p-5")}>
+    <div className={cn(estiloDoCartao, "flex flex-col gap-4 p-5")}>
       <div>
         <h3 className="text-lg font-semibold leading-6 text-tinta">{title}</h3>
         <p className="text-sm text-tinta-suave">{subtitle}</p>
@@ -91,7 +91,7 @@ export function LimitsForm({ subscription, trial }: { subscription: PlanLimits; 
         <PlanCard prefix="subscription" title="Assinatura" subtitle="Casais com a Liz contratada" state={sub} onChange={setSub} errors={errors} />
         <PlanCard prefix="trial" title="Teste" subtitle="Período de teste, se o produto oferecer" state={tri} onChange={setTri} errors={errors} />
       </div>
-      {formError && <FormAlert>{formError}</FormAlert>}
+      {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div>
         <Button type="submit" loading={pending}>
           Salvar limites
@@ -118,7 +118,7 @@ export function GlobalCapForm({ monthlyCostCapCents, warnPercent, pauseAtCap }: 
       <Input label="Avisar ao chegar em" suffix="%" inputMode="numeric" value={warn} onChange={(e) => setWarn(e.target.value)} error={errors.warnPercent} />
       <ToggleRow label="Pausar tudo ao chegar no teto" description="Evita surpresa na fatura da API." checked={pause} onCheckedChange={setPause} />
       <p className="text-sm leading-5 text-tinta-suave">Ao chegar no aviso, a equipe receberá um e-mail. O envio só começa quando a Liz for ativada.</p>
-      {formError && <FormAlert>{formError}</FormAlert>}
+      {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="mt-auto">
         <Button type="submit" variant="outline" loading={pending}>
           Salvar teto
@@ -147,7 +147,7 @@ export function AbuseForm({ perHour, blockHours, blockOffTopic, offTopicBeforeBl
       <ToggleRow label="Bloquear quem usa como chat comum" description="Depois de algumas recusas por fuga de tema em um dia." checked={off} onCheckedChange={setOff} />
       {off && <Input label="Recusas antes de bloquear" inputMode="numeric" value={before} onChange={(e) => setBefore(e.target.value)} error={errors.offTopicBeforeBlock} />}
       <p className="text-sm leading-5 text-tinta-suave">Quem for bloqueado verá uma mensagem gentil e pode pedir ajuda ao suporte.</p>
-      {formError && <FormAlert>{formError}</FormAlert>}
+      {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="mt-auto">
         <Button type="submit" variant="outline" loading={pending}>
           Salvar bloqueio

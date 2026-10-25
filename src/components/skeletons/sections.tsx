@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
-import { card } from "@/components/casal/ui";
+import { estiloDoCartao } from "@/components/casal/ui";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { SkeletonAvatar, SkeletonText } from "./primitives";
+import { EsqueletoDeAvatar, EsqueletoDeTexto } from "./primitives";
 
 /* Blocos grandes do esqueleto. Alturas e espaçamentos espelham os componentes reais
    (PageHeader, StatCard, Panel, ResponsiveTable, campos flutuantes) para não haver salto de layout. */
@@ -14,7 +14,7 @@ import { SkeletonAvatar, SkeletonText } from "./primitives";
  * - actions: quantos botões à direita (44px de altura); 0 não mostra nada.
  * - breadcrumb: trilha acima do sobretítulo (páginas de detalhe).
  */
-export function SkeletonPageHeader({
+export function EsqueletoDoCabecalhoDaPagina({
   eyebrow = true,
   description = true,
   actions = 0,
@@ -65,9 +65,9 @@ export function SkeletonPageHeader({
  * Cartão de número (StatCard): sobretítulo, número grande e dica.
  *   <SkeletonStat />   <SkeletonStat hint={false} className="p-4 sm:p-5" />
  */
-export function SkeletonStat({ hint = true, className }: { hint?: boolean; className?: string }) {
+export function EsqueletoDeIndicador({ hint = true, className }: { hint?: boolean; className?: string }) {
   return (
-    <div className={cn(card, "block p-5", className)}>
+    <div className={cn(estiloDoCartao, "block p-5", className)}>
       <div className="flex h-4 items-center">
         <Skeleton className="h-3 w-24 rounded-md" />
       </div>
@@ -84,7 +84,7 @@ export function SkeletonStat({ hint = true, className }: { hint?: boolean; class
 }
 
 /** Grade de números (StatGrid): 1 coluna no celular, 2 no tablet, `cols` (padrão 4) no computador. */
-export function SkeletonStatGrid({
+export function EsqueletoDaGradeDeIndicadores({
   count = 4,
   cols = 4,
   hint = true,
@@ -99,7 +99,7 @@ export function SkeletonStatGrid({
   return (
     <div className={cn("grid grid-cols-1 gap-4 sm:grid-cols-2", lg, className)}>
       {Array.from({ length: count }).map((_, i) => (
-        <SkeletonStat key={i} hint={hint} />
+        <EsqueletoDeIndicador key={i} hint={hint} />
       ))}
     </div>
   );
@@ -112,7 +112,7 @@ export function SkeletonStatGrid({
  * - title: linha do título do cartão (28px). description: linha de descrição abaixo dele.
  * - padded={false}: sem respiro interno (listas e tabelas até a borda); o título ganha o respiro próprio.
  */
-export function SkeletonCard({
+export function EsqueletoDeCartao({
   title = true,
   description = false,
   padded = true,
@@ -126,7 +126,7 @@ export function SkeletonCard({
   children?: ReactNode;
 }) {
   return (
-    <div className={cn(card, "min-w-0", padded && "p-5 md:p-6", className)}>
+    <div className={cn(estiloDoCartao, "min-w-0", padded && "p-5 md:p-6", className)}>
       {title && (
         <div className={cn("mb-4 flex h-7 items-center", !padded && "px-5 pt-5 md:px-6 md:pt-6")}>
           <Skeleton className="h-5 w-40 rounded-md" />
@@ -137,7 +137,7 @@ export function SkeletonCard({
           <Skeleton className="h-3 w-56 max-w-full rounded-md" />
         </div>
       )}
-      {children ?? <SkeletonText lines={3} />}
+      {children ?? <EsqueletoDeTexto lines={3} />}
     </div>
   );
 }
@@ -151,7 +151,7 @@ export function SkeletonCard({
  * - card: dentro do cartão com borda (padrão). `false` é para colocar DENTRO de um <SkeletonCard padded={false}>
  *   (as linhas ganham o respiro lateral do Panel sem padding).
  */
-export function SkeletonList({
+export function EsqueletoDeLista({
   rows = 6,
   leading = "avatar",
   lines = 1,
@@ -167,11 +167,11 @@ export function SkeletonList({
   className?: string;
 }) {
   return (
-    <div className={cn("min-w-0", framed && cn(card, "overflow-hidden"), className)}>
+    <div className={cn("min-w-0", framed && cn(estiloDoCartao, "overflow-hidden"), className)}>
       {Array.from({ length: rows }).map((_, i) => (
         <div key={i} className={cn("flex h-14 items-center gap-3 border-b border-linha last:border-b-0", framed ? "px-4" : "px-5 md:px-6")}>
-          {leading === "avatar" && <SkeletonAvatar />}
-          {leading === "icon" && <SkeletonAvatar shape="square" />}
+          {leading === "avatar" && <EsqueletoDeAvatar />}
+          {leading === "icon" && <EsqueletoDeAvatar shape="square" />}
           <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
             <Skeleton className={cn("h-4 rounded-md", i % 3 === 0 ? "w-44" : i % 3 === 1 ? "w-36" : "w-52", "max-w-full")} />
             {lines === 2 && <Skeleton className="h-3 w-28 max-w-full rounded-md" />}
@@ -184,7 +184,7 @@ export function SkeletonList({
   );
 }
 
-const COL_WIDTHS = ["w-20", "w-16", "w-24", "w-14", "w-20"];
+const LARGURAS_DAS_COLUNAS = ["w-20", "w-16", "w-24", "w-14", "w-20"];
 
 /**
  * Tabela que vira cartões no celular (como o ResponsiveTable). As duas versões são renderizadas e o CSS
@@ -194,7 +194,7 @@ const COL_WIDTHS = ["w-20", "w-16", "w-24", "w-14", "w-20"];
  * - avatar: a primeira coluna começa com um avatar (nome de pessoa).
  * - mobileFields: quantos dados aparecem abaixo do título em cada cartão do celular.
  */
-export function SkeletonTable({
+export function EsqueletoDeTabela({
   columns = 4,
   rows = 6,
   avatar = false,
@@ -214,7 +214,7 @@ export function SkeletonTable({
       <div className="hidden overflow-hidden rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)] md:block">
         <div className="grid h-11 items-center gap-3 border-b border-linha px-6" style={template}>
           {Array.from({ length: columns }).map((_, c) => (
-            <Skeleton key={c} className={cn("h-3 rounded-md", c === 0 ? "w-20" : COL_WIDTHS[c % COL_WIDTHS.length], c === columns - 1 && columns > 2 && "justify-self-end")} />
+            <Skeleton key={c} className={cn("h-3 rounded-md", c === 0 ? "w-20" : LARGURAS_DAS_COLUNAS[c % LARGURAS_DAS_COLUNAS.length], c === columns - 1 && columns > 2 && "justify-self-end")} />
           ))}
         </div>
         {Array.from({ length: rows }).map((_, r) => (
@@ -222,11 +222,11 @@ export function SkeletonTable({
             {Array.from({ length: columns }).map((_, c) =>
               c === 0 ? (
                 <div key={c} className="flex min-w-0 items-center gap-3">
-                  {avatar && <SkeletonAvatar />}
+                  {avatar && <EsqueletoDeAvatar />}
                   <Skeleton className={cn("h-4 max-w-full rounded-md", r % 2 ? "w-36" : "w-44")} />
                 </div>
               ) : (
-                <Skeleton key={c} className={cn("h-4 rounded-md", COL_WIDTHS[(c + r) % COL_WIDTHS.length], c === columns - 1 && columns > 2 && "justify-self-end")} />
+                <Skeleton key={c} className={cn("h-4 rounded-md", LARGURAS_DAS_COLUNAS[(c + r) % LARGURAS_DAS_COLUNAS.length], c === columns - 1 && columns > 2 && "justify-self-end")} />
               ),
             )}
           </div>
@@ -238,7 +238,7 @@ export function SkeletonTable({
         {Array.from({ length: rows }).map((_, r) => (
           <li key={r} className="rounded-2xl border border-linha bg-papel p-4 shadow-[var(--shadow-aceito-1)]">
             <div className="flex items-center gap-3">
-              {avatar && <SkeletonAvatar />}
+              {avatar && <EsqueletoDeAvatar />}
               <div className="flex h-6 flex-1 items-center">
                 <Skeleton className={cn("h-4 max-w-full rounded-md", r % 2 ? "w-36" : "w-44")} />
               </div>
@@ -260,7 +260,7 @@ export function SkeletonTable({
   );
 }
 
-type FormField = "input" | "textarea";
+type CampoDoFormulario = "input" | "textarea";
 
 /**
  * Formulário com campos de rótulo flutuante (48px; área de texto de 96px), com o rótulo "em repouso" dentro.
@@ -270,18 +270,18 @@ type FormField = "input" | "textarea";
  * - columns: 2 divide em duas colunas a partir do tablet (a área de texto ocupa a linha inteira).
  * - submit: botão principal de 44px no fim.
  */
-export function SkeletonForm({
+export function EsqueletoDeFormulario({
   fields = 4,
   columns = 1,
   submit = true,
   className,
 }: {
-  fields?: number | FormField[];
+  fields?: number | CampoDoFormulario[];
   columns?: 1 | 2;
   submit?: boolean;
   className?: string;
 }) {
-  const list: FormField[] = typeof fields === "number" ? Array.from({ length: fields }, () => "input") : fields;
+  const list: CampoDoFormulario[] = typeof fields === "number" ? Array.from({ length: fields }, () => "input") : fields;
   return (
     <div className={cn("flex flex-col gap-6", className)}>
       <div className={cn("grid gap-4", columns === 2 && "sm:grid-cols-2")}>

@@ -1,9 +1,9 @@
-import { SiteUnavailable } from "@/components/public/site-unavailable";
+import { SiteIndisponivel } from "@/components/public/site-unavailable";
 import { Metadata } from "next";
 import Link from "next/link";
 import { QrCode } from "lucide-react";
-import { GuestHeader } from "@/components/public/guest-header";
-import { btn } from "@/components/landing/styles";
+import { CabecalhoDoConvidado } from "@/components/public/guest-header";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { obterIdentidadeDoCasamento, metadadosDaPaginaDoConvidado } from "@/lib/wedding";
 import { obterLinhaDoTempoDoCasamento } from "@/lib/wedding-data";
 import { exigirCasamentoPublico } from "@/lib/wedding-redirect";
@@ -34,13 +34,13 @@ function weekdayLabel(date: Date) {
 export default async function DiaDoEventoPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const wedding = await exigirCasamentoPublico(slug);
-  if (wedding.suspendedAt) return <SiteUnavailable />;
+  if (wedding.suspendedAt) return <SiteIndisponivel />;
   const [events, identity] = await Promise.all([obterLinhaDoTempoDoCasamento(wedding.id), obterIdentidadeDoCasamento(wedding)]);
   const date = identity.weddingDate;
 
   return (
     <div className="flex min-h-dvh flex-1 flex-col bg-linho text-tinta">
-      <GuestHeader slug={wedding.slug} initials={identity.initials} coupleNames={identity.coupleNames} current="dia-do-evento" title="Dia do casamento" />
+      <CabecalhoDoConvidado slug={wedding.slug} initials={identity.initials} coupleNames={identity.coupleNames} current="dia-do-evento" title="Dia do casamento" />
       <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col gap-8 px-4 py-8 sm:py-14">
         <TimelinePublicClient
           events={events.map((e) => ({ id: e.id, title: e.title, time: e.time, description: e.description }))}
@@ -60,7 +60,7 @@ export default async function DiaDoEventoPage({ params }: { params: Promise<{ sl
               </p>
             </div>
           </div>
-          <Link href={caminhoDoSiteDoCasamento(wedding.slug, "rsvp")} className={`${btn.secondary} ${btn.block}`}>
+          <Link href={caminhoDoSiteDoCasamento(wedding.slug, "rsvp")} className={`${estiloDoBotao.secondary} ${estiloDoBotao.block}`}>
             Abrir meu convite
           </Link>
         </section>

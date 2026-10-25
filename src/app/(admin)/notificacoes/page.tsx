@@ -3,9 +3,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Settings2 } from "lucide-react";
 import { listarHistoricoDeNotificacoes } from "@/actions/notification-actions";
-import { PageHeader } from "@/components/admin/page-header";
-import { HistoryList } from "@/components/notifications/history-list";
-import { PushCard } from "@/components/notifications/push-card";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
+import { ListaDoHistorico } from "@/components/notifications/history-list";
+import { CartaoDoPush } from "@/components/notifications/push-card";
 import { chavePublicaVapid } from "@/lib/notifications/push";
 import { temAcessoAoCaminho } from "@/lib/permissions";
 import { obterSessao, redirecionarParaOLogin } from "@/lib/security/auth-guard";
@@ -24,7 +24,7 @@ export default async function NotificacoesPage() {
   const { items } = await listarHistoricoDeNotificacoes();
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow="Conta"
         title="Avisos"
         description="Presentes recebidos, respostas dos convidados e lembretes do casamento. Mostramos os últimos 100."
@@ -38,8 +38,8 @@ export default async function NotificacoesPage() {
           </Link>
         }
       />
-      <PushCard publicKey={chavePublicaVapid()} />
-      <HistoryList initialItems={items} nowIso={new Date().toISOString()} />
+      <CartaoDoPush publicKey={chavePublicaVapid()} />
+      <ListaDoHistorico initialItems={items} nowIso={new Date().toISOString()} />
     </div>
   );
 }

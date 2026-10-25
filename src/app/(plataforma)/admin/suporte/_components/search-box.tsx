@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import { startNavigationProgress } from "@/components/feedback/navigation-progress";
+import { iniciarProgressoDaNavegacao } from "@/components/feedback/navigation-progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -23,7 +23,7 @@ export function SearchBox({ defaultValue }: { defaultValue: string }) {
       onSubmit={(e) => {
         e.preventDefault();
         const q = String(new FormData(e.currentTarget).get("q") ?? "").trim();
-        startNavigationProgress();
+        iniciarProgressoDaNavegacao();
         startTransition(() => router.push(q ? `/admin/suporte?q=${encodeURIComponent(q)}#busca` : "/admin/suporte#busca"));
       }}
     >

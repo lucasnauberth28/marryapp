@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
-import { OVERLINE_CLASS, PAGE_TITLE_CLASS } from "@/components/admin/page-header";
+import { CLASSE_DO_SOBRETITULO, CLASSE_DO_TITULO_DA_PAGINA } from "@/components/admin/page-header";
 
 /**
  * Cabeçalho de página da administração.
@@ -12,12 +12,12 @@ import { OVERLINE_CLASS, PAGE_TITLE_CLASS } from "@/components/admin/page-header
  * - actions: botões à direita no computador; no celular descem para baixo do título e quebram linha.
  * Componente de servidor, sem animação (a administração não usa Reveal no topo, para o título já nascer pronto).
  */
-export interface Crumb {
+export interface MigalhaDePao {
   label: string;
   href?: string;
 }
 
-export function PageHeader({
+export function CabecalhoDaPagina({
   title,
   description,
   eyebrow,
@@ -28,7 +28,7 @@ export function PageHeader({
   title: ReactNode;
   description?: ReactNode;
   eyebrow?: ReactNode;
-  breadcrumb?: Crumb[];
+  breadcrumb?: MigalhaDePao[];
   actions?: ReactNode;
   className?: string;
 }) {
@@ -53,8 +53,8 @@ export function PageHeader({
             </ol>
           </nav>
         )}
-        {eyebrow && <p className={`mb-1 ${OVERLINE_CLASS}`}>{eyebrow}</p>}
-        <h1 className={PAGE_TITLE_CLASS}>{title}</h1>
+        {eyebrow && <p className={`mb-1 ${CLASSE_DO_SOBRETITULO}`}>{eyebrow}</p>}
+        <h1 className={CLASSE_DO_TITULO_DA_PAGINA}>{title}</h1>
         {description && <p className="mt-1.5 text-base leading-6 text-tinta-suave">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">{actions}</div>}

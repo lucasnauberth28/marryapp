@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { obterIdentidadeDoCasamento } from "@/lib/wedding";
 import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
 import { notFound } from "next/navigation";
-import { SiteUnavailable } from "@/components/public/site-unavailable";
+import { SiteIndisponivel } from "@/components/public/site-unavailable";
 import { CheckoutClient } from "./checkout-client";
 import { calcularTarifaDoCartao, pagamentoPorCartaoEstaDisponivel } from "@/lib/mercadopago";
 import Link from "next/link";
@@ -56,7 +56,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
     notFound();
   }
 
-  if (giftWithWedding.wedding.suspendedAt) return <SiteUnavailable />;
+  if (giftWithWedding.wedding.suspendedAt) return <SiteIndisponivel />;
 
   // Só os campos do presente vão para o cliente
   const { wedding, ...gift } = giftWithWedding;

@@ -4,10 +4,10 @@ import { obterDespesas } from "@/actions/expense-actions";
 import { obterFornecedores } from "@/actions/vendor-actions";
 import { obterDadosDaCarteira } from "@/actions/wallet-actions";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { PageHeader } from "@/components/admin/page-header";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { LoadingRegion } from "@/components/skeletons";
-import { Reveal } from "@/components/motion/reveal";
-import { bigNumber, card, cardTitle, overline } from "@/components/casal/ui";
+import { Aparicao } from "@/components/motion/reveal";
+import { estiloDoNumeroGrande, estiloDoCartao, estiloDoTituloDoCartao, estiloDoSobretitulo } from "@/components/casal/ui";
 import { FinanceTable } from "./finance-client";
 import { ExpensesClient } from "./expenses-client";
 import { ExpensesSkeleton, PaymentsSkeleton, StatsSkeleton } from "./skeletons";
@@ -47,7 +47,7 @@ export default async function FinancasPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow="Organização"
         title="Finanças"
         description="Presentes que entraram, contas a pagar e quanto sobra no fim."
@@ -59,7 +59,7 @@ export default async function FinancasPage() {
 
       <section aria-labelledby="despesas-titulo" className="flex flex-col gap-3">
         <div>
-          <h2 id="despesas-titulo" className={cardTitle}>
+          <h2 id="despesas-titulo" className={estiloDoTituloDoCartao}>
             Despesas
           </h2>
           <p className="mt-0.5 text-[15px] text-tinta-suave">Contratos com fornecedores e compras avulsas, com as parcelas de cada um.</p>
@@ -72,7 +72,7 @@ export default async function FinancasPage() {
 
       <section aria-labelledby="pagamentos-titulo" className="flex flex-col gap-3 border-t border-linha pt-6">
         <div>
-          <h2 id="pagamentos-titulo" className={cardTitle}>
+          <h2 id="pagamentos-titulo" className={estiloDoTituloDoCartao}>
             Pagamentos dos presentes
           </h2>
           <p className="mt-0.5 text-[15px] text-tinta-suave">
@@ -99,10 +99,10 @@ async function Stats({ metrics: metricsPromise, expenses: expensesPromise }: { m
   const paidPercent = metrics.totalDespesas > 0 ? Math.round((metrics.totalDespesasPagas / metrics.totalDespesas) * 100) : 0;
 
   return (
-    <Reveal className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <article className={`${card} flex flex-col gap-2 p-5 sm:p-6`}>
-        <p className={overline}>Presentes recebidos</p>
-        <span className={bigNumber}>{formatarReaisEnxuto(metrics.totalLiquido)}</span>
+    <Aparicao className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <article className={`${estiloDoCartao} flex flex-col gap-2 p-5 sm:p-6`}>
+        <p className={estiloDoSobretitulo}>Presentes recebidos</p>
+        <span className={estiloDoNumeroGrande}>{formatarReaisEnxuto(metrics.totalLiquido)}</span>
         <span className="text-sm text-tinta-suave">
           {metrics.totalPendente > 0
             ? `Mais ${formatarReaisEnxuto(metrics.totalPendente)} em Pix a conferir`
@@ -112,9 +112,9 @@ async function Stats({ metrics: metricsPromise, expenses: expensesPromise }: { m
         </span>
       </article>
 
-      <article className={`${card} flex flex-col gap-2 p-5 sm:p-6`}>
-        <p className={overline}>Despesas</p>
-        <span className={bigNumber}>{formatarReaisEnxuto(metrics.totalDespesas)}</span>
+      <article className={`${estiloDoCartao} flex flex-col gap-2 p-5 sm:p-6`}>
+        <p className={estiloDoSobretitulo}>Despesas</p>
+        <span className={estiloDoNumeroGrande}>{formatarReaisEnxuto(metrics.totalDespesas)}</span>
         <span className="text-sm text-tinta-suave">
           {metrics.totalDespesas > 0
             ? `${paidPercent}% pago · já saíram ${formatarReaisEnxuto(metrics.totalDespesasPagas)}`
@@ -122,22 +122,22 @@ async function Stats({ metrics: metricsPromise, expenses: expensesPromise }: { m
         </span>
       </article>
 
-      <article className={`${card} flex flex-col gap-2 p-5 sm:p-6`}>
-        <p className={overline}>Saldo previsto</p>
-        <span className={isSaldoPositivo ? bigNumber : bigNumber.replace("text-tinta", "text-perigo")}>{formatarReaisEnxuto(metrics.saldoPrevisto)}</span>
+      <article className={`${estiloDoCartao} flex flex-col gap-2 p-5 sm:p-6`}>
+        <p className={estiloDoSobretitulo}>Saldo previsto</p>
+        <span className={isSaldoPositivo ? estiloDoNumeroGrande : estiloDoNumeroGrande.replace("text-tinta", "text-perigo")}>{formatarReaisEnxuto(metrics.saldoPrevisto)}</span>
         <span className="text-sm text-tinta-suave">Presentes recebidos menos as despesas</span>
       </article>
 
-      <article className={`${card} flex flex-col gap-2 p-5 sm:p-6 ${nextDue ? "border-2 border-aviso" : ""}`}>
-        <p className={overline}>Próxima parcela</p>
-        <span className={bigNumber}>{nextDue ? formatarReaisEnxuto(nextDue.amount) : "R$ 0"}</span>
+      <article className={`${estiloDoCartao} flex flex-col gap-2 p-5 sm:p-6 ${nextDue ? "border-2 border-aviso" : ""}`}>
+        <p className={estiloDoSobretitulo}>Próxima parcela</p>
+        <span className={estiloDoNumeroGrande}>{nextDue ? formatarReaisEnxuto(nextDue.amount) : "R$ 0"}</span>
         <span className={`text-sm ${nextDue ? "font-semibold text-aviso" : "text-tinta-suave"}`}>
           {nextDue
             ? `${nextDueName} · vence ${formatarDataCivilCurta(nextDue.dueDate).replace(".", "")}${metrics.countDespesasPendentes > 1 ? ` (mais ${metrics.countDespesasPendentes - 1} a vencer)` : ""}`
             : "Nenhuma conta a pagar."}
         </span>
       </article>
-    </Reveal>
+    </Aparicao>
   );
 }
 

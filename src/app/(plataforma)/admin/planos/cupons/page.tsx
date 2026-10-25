@@ -1,4 +1,4 @@
-import { PageHeader } from "@/components/plataforma/page-header";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { ehChaveDePlano } from "@/lib/plans";
 import { PLANOS_ACEITOS_PELO_CUPOM, planosDoCupom } from "@/lib/checkout-pricing";
 import { obterCatalogo } from "@/lib/catalog-server";
@@ -36,7 +36,7 @@ export default async function CuponsPage() {
   const label = (id: string) => (id === "custom" ? "Adaptado" : ehChaveDePlano(id) ? planOption(id, catalog).name : shortPlanName(id));
   return (
     <>
-      <PageHeader eyebrow="Dinheiro" title="Cupons" description="Descontos para quem assina um plano. O servidor confere o cupom de novo na hora de gerar o Pix." />
+      <CabecalhoDaPagina eyebrow="Dinheiro" title="Cupons" description="Descontos para quem assina um plano. O servidor confere o cupom de novo na hora de gerar o Pix." />
       <PlanosTabs active="cupons" />
       <CouponsSection coupons={rows} plans={PLANOS_ACEITOS_PELO_CUPOM.map((id) => ({ id, label: label(id) }))} />
     </>

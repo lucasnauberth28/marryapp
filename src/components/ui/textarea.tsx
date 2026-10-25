@@ -3,10 +3,10 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
-import { Field, joinIds, type FloatOptions } from "@/components/ui/field"
+import { Campo, juntarIds, type OpcoesDoCampoFlutuante } from "@/components/ui/field"
 
-export type TextareaProps = React.ComponentProps<"textarea"> &
-  Partial<Omit<FloatOptions, "prefix" | "suffix" | "icon" | "trailing">> & {
+export type PropriedadesDaAreaDeTexto = React.ComponentProps<"textarea"> &
+  Partial<Omit<OpcoesDoCampoFlutuante, "prefix" | "suffix" | "icon" | "trailing">> & {
     /** Classes do controle (textarea) no modo com rótulo. Em `className` vão as da raiz do campo. */
     inputClassName?: string
   }
@@ -16,7 +16,7 @@ export type TextareaProps = React.ComponentProps<"textarea"> &
  *  - Com `label`: campo de formulário com rótulo flutuante (o rótulo repousa na primeira linha).
  *  - Sem `label`: a textarea simples de antes, para casos que não são campo de formulário.
  */
-function Textarea({
+function AreaDeTexto({
   label,
   hint,
   error,
@@ -28,7 +28,7 @@ function Textarea({
   className,
   id,
   ...props
-}: TextareaProps) {
+}: PropriedadesDaAreaDeTexto) {
   const autoId = React.useId()
 
   if (label === undefined || label === null) {
@@ -48,7 +48,7 @@ function Textarea({
   const fieldId = id ?? autoId
   const { "aria-describedby": describedBy, "aria-invalid": ariaInvalid, placeholder, required, ...rest } = props
   return (
-    <Field
+    <Campo
       id={fieldId}
       label={label}
       hint={hint}
@@ -67,12 +67,12 @@ function Textarea({
           data-slot="textarea"
           required={required}
           placeholder={placeholder || c.placeholder}
-          aria-describedby={joinIds(c["aria-describedby"], describedBy)}
+          aria-describedby={juntarIds(c["aria-describedby"], describedBy)}
           className={cn(c.className, inputClassName)}
         />
       )}
-    </Field>
+    </Campo>
   )
 }
 
-export { Textarea }
+export { AreaDeTexto as Textarea }

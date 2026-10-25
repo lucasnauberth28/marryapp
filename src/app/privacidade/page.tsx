@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LegalPage, type LegalSection } from "@/components/legal/legal-page";
+import { PaginaLegal, type SecaoLegal } from "@/components/legal/legal-page";
 
 export const metadata: Metadata = {
   title: "Política de privacidade",
@@ -15,7 +15,7 @@ const CONTROLLER = (
 );
 const DPO_EMAIL = <a href="mailto:contato@meuaceito.com.br">contato@meuaceito.com.br</a>;
 
-const sections: LegalSection[] = [
+const sections: SecaoLegal[] = [
   {
     id: "quem-somos",
     title: "Quem cuida dos seus dados",
@@ -282,7 +282,7 @@ const sections: LegalSection[] = [
 
 export default function PrivacidadePage() {
   return (
-    <LegalPage
+    <PaginaLegal
       title="Política de privacidade"
       updatedAt="24 de outubro de 2026"
       intro={

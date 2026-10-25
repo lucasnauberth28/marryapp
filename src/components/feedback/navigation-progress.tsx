@@ -27,65 +27,65 @@ import {
  * Link que não deve acender a barra: data-no-progress.
  */
 
-let state: EstadoDoProgresso = PROGRESSO_PARADO;
-const listeners = new Set<() => void>();
-let showTimer: ReturnType<typeof setTimeout> | undefined;
-let tickTimer: ReturnType<typeof setInterval> | undefined;
-let safetyTimer: ReturnType<typeof setTimeout> | undefined;
-let resetTimer: ReturnType<typeof setTimeout> | undefined;
+let estadoDoProgresso: EstadoDoProgresso = PROGRESSO_PARADO;
+const ouvintesDoProgresso = new Set<() => void>();
+let temporizadorDeExibicao: ReturnType<typeof setTimeout> | undefined;
+let temporizadorDeAvanco: ReturnType<typeof setInterval> | undefined;
+let temporizadorDeSeguranca: ReturnType<typeof setTimeout> | undefined;
+let temporizadorDeReinicio: ReturnType<typeof setTimeout> | undefined;
 
-function dispatch(event: EventoDoProgresso) {
-  const next = redutorDoProgresso(state, event);
-  if (next === state) return;
-  state = next;
-  listeners.forEach((l) => l());
+function despacharEvento(event: EventoDoProgresso) {
+  const next = redutorDoProgresso(estadoDoProgresso, event);
+  if (next === estadoDoProgresso) return;
+  estadoDoProgresso = next;
+  ouvintesDoProgresso.forEach((l) => l());
 }
 
-function currentPhase() {
-  return state.phase;
+function faseAtual() {
+  return estadoDoProgresso.phase;
 }
 
-function clearTimers() {
-  clearTimeout(showTimer);
-  clearInterval(tickTimer);
-  clearTimeout(safetyTimer);
+function limparTemporizadores() {
+  clearTimeout(temporizadorDeExibicao);
+  clearInterval(temporizadorDeAvanco);
+  clearTimeout(temporizadorDeSeguranca);
 }
 
 /** Acende a barra (sem efeito se já estiver acesa). Use antes de router.push/replace. */
-export function startNavigationProgress() {
-  if (state.phase === "waiting" || state.phase === "loading") return;
-  clearTimeout(resetTimer);
-  dispatch("start");
-  showTimer = setTimeout(() => {
-    dispatch("show");
-    tickTimer = setInterval(() => dispatch("tick"), INTERVALO_EM_MS);
+export function iniciarProgressoDaNavegacao() {
+  if (estadoDoProgresso.phase === "waiting" || estadoDoProgresso.phase === "loading") return;
+  clearTimeout(temporizadorDeReinicio);
+  despacharEvento("start");
+  temporizadorDeExibicao = setTimeout(() => {
+    despacharEvento("show");
+    temporizadorDeAvanco = setInterval(() => despacharEvento("tick"), INTERVALO_EM_MS);
   }, ATRASO_PARA_MOSTRAR_EM_MS);
-  safetyTimer = setTimeout(finishNavigationProgress, LIMITE_DE_SEGURANCA_EM_MS);
+  temporizadorDeSeguranca = setTimeout(concluirProgressoDaNavegacao, LIMITE_DE_SEGURANCA_EM_MS);
 }
 
 /** Encerra a barra. O componente chama sozinho quando a rota muda. */
-function finishNavigationProgress() {
-  if (state.phase === "idle" || state.phase === "done") return;
-  clearTimers();
-  dispatch("finish");
-  if (currentPhase() === "done") resetTimer = setTimeout(() => dispatch("reset"), TEMPO_DE_CONCLUSAO_EM_MS);
+function concluirProgressoDaNavegacao() {
+  if (estadoDoProgresso.phase === "idle" || estadoDoProgresso.phase === "done") return;
+  limparTemporizadores();
+  despacharEvento("finish");
+  if (faseAtual() === "done") temporizadorDeReinicio = setTimeout(() => despacharEvento("reset"), TEMPO_DE_CONCLUSAO_EM_MS);
 }
 
-function subscribe(listener: () => void) {
-  listeners.add(listener);
+function assinarMudancas(listener: () => void) {
+  ouvintesDoProgresso.add(listener);
   return () => {
-    listeners.delete(listener);
+    ouvintesDoProgresso.delete(listener);
   };
 }
 
-function Bar() {
+function BarraDeProgresso() {
   const pathname = usePathname();
   const search = useSearchParams().toString();
-  const current = useSyncExternalStore(subscribe, () => state, () => PROGRESSO_PARADO);
+  const current = useSyncExternalStore(assinarMudancas, () => estadoDoProgresso, () => PROGRESSO_PARADO);
 
   // A rota mudou: a navegação terminou.
   useEffect(() => {
-    finishNavigationProgress();
+    concluirProgressoDaNavegacao();
   }, [pathname, search]);
 
   useEffect(() => {
@@ -97,9 +97,9 @@ function Bar() {
         { href: anchor.href, target: anchor.getAttribute("target"), download: anchor.hasAttribute("download"), optOut: anchor.hasAttribute("data-no-progress") },
         window.location.href,
       );
-      if (to) startNavigationProgress();
+      if (to) iniciarProgressoDaNavegacao();
     };
-    const onPopState = () => startNavigationProgress();
+    const onPopState = () => iniciarProgressoDaNavegacao();
     // Captura: roda antes de qualquer stopPropagation de outro componente.
     document.addEventListener("click", onClick, true);
     window.addEventListener("popstate", onPopState);
@@ -117,10 +117,10 @@ function Bar() {
 }
 
 /** Coloque uma vez no layout raiz. O Suspense existe porque useSearchParams exige (não pinta nada no fallback). */
-export function NavigationProgress() {
+export function ProgressoDaNavegacao() {
   return (
     <Suspense fallback={null}>
-      <Bar />
+      <BarraDeProgresso />
     </Suspense>
   );
 }

@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { ScrollText } from "lucide-react";
-import { PageHeader } from "@/components/plataforma/page-header";
-import { FilterBar } from "@/components/plataforma/filter-bar";
-import { PendingRegion } from "@/components/plataforma/pending";
-import { Pagination } from "@/components/plataforma/pagination";
-import { ResponsiveTable } from "@/components/plataforma/responsive-table";
-import { EmptyState } from "@/components/plataforma/empty-state";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { BarraDeFiltros } from "@/components/plataforma/filter-bar";
+import { RegiaoPendente } from "@/components/plataforma/pending";
+import { Paginacao } from "@/components/plataforma/pagination";
+import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { TAMANHO_PADRAO_DA_PAGINA, type ParametrosDeBusca, umDosValores, janelaDaPagina, parametroDaBusca, interpretarPagina } from "@/lib/platform/list-params";
 import { formatarDataEHora } from "@/lib/platform/format";
@@ -28,9 +28,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 
   return (
     <>
-      <PageHeader eyebrow="Sistema" title="Registro de atividades" description="O que a administração fez por aqui: pagamentos, casais, fornecedores, comunicados, configurações e acessos. Só leitura." />
+      <CabecalhoDaPagina eyebrow="Sistema" title="Registro de atividades" description="O que a administração fez por aqui: pagamentos, casais, fornecedores, comunicados, configurações e acessos. Só leitura." />
 
-      <FilterBar
+      <BarraDeFiltros
         searchPlaceholder="Buscar por quem fez"
         filters={[
           { key: "tipo", label: "Tipo", allLabel: "Todos", options: GRUPOS_DE_ATIVIDADE.map((g) => ({ value: g.value, label: g.label })) },
@@ -50,8 +50,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
         </p>
       )}
 
-      <PendingRegion className="flex flex-col gap-6">
-      <ResponsiveTable
+      <RegiaoPendente className="flex flex-col gap-6">
+      <TabelaResponsiva
         caption="Atividades, da mais recente para a mais antiga"
         rows={rows}
         rowKey={(r) => r.id}
@@ -77,19 +77,19 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
         ]}
         empty={
           filtered ? (
-            <EmptyState icon={ScrollText} compact title="Nada com esses filtros">
+            <EstadoVazio icon={ScrollText} compact title="Nada com esses filtros">
               Tente outro tipo ou período.
-            </EmptyState>
+            </EstadoVazio>
           ) : (
-            <EmptyState icon={ScrollText} compact title="Nada registrado ainda">
+            <EstadoVazio icon={ScrollText} compact title="Nada registrado ainda">
               As próximas ações da administração aparecem aqui.
-            </EmptyState>
+            </EstadoVazio>
           )
         }
       />
 
-      <Pagination page={win.page} pageSize={TAMANHO_PADRAO_DA_PAGINA} total={total} basePath="/admin/atividades" params={{ tipo: group, periodo: period, q, alvo: target ? `${target.type}:${target.id}` : undefined }} noun={["atividade", "atividades"]} />
-      </PendingRegion>
+      <Paginacao page={win.page} pageSize={TAMANHO_PADRAO_DA_PAGINA} total={total} basePath="/admin/atividades" params={{ tipo: group, periodo: period, q, alvo: target ? `${target.type}:${target.id}` : undefined }} noun={["atividade", "atividades"]} />
+      </RegiaoPendente>
     </>
   );
 }

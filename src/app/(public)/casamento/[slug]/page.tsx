@@ -1,5 +1,5 @@
-import { SiteUnavailable } from "@/components/public/site-unavailable";
-import { WeddingSiteView } from "@/components/public/wedding-site-view";
+import { SiteIndisponivel } from "@/components/public/site-unavailable";
+import { VisaoDoSiteDoCasamento } from "@/components/public/wedding-site-view";
 import { metadadosDaPaginaDoConvidado } from "@/lib/wedding";
 import { obterDadosDoSitePublico } from "@/lib/wedding-data";
 import { exigirCasamentoPublico } from "@/lib/wedding-redirect";
@@ -18,11 +18,11 @@ export default async function WeddingPublicSlugPage({
 }) {
   const { slug } = await params;
   const wedding = await exigirCasamentoPublico(slug);
-  if (wedding.suspendedAt) return <SiteUnavailable />;
+  if (wedding.suspendedAt) return <SiteIndisponivel />;
   const { settings, storyItems, tips, guestbookEntries, gifts, rsvpDeadline } = await obterDadosDoSitePublico(wedding);
 
   return (
-    <WeddingSiteView
+    <VisaoDoSiteDoCasamento
       slug={wedding.slug}
       settings={settings}
       storyItems={storyItems}

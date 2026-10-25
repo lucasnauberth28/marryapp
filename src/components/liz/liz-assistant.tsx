@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { EVENTO_DE_ABRIR_A_LIZ } from "@/lib/liz/events";
 import { deveMostrarOAtalhoDaLiz } from "@/lib/liz/visibility";
-import { LizAvatar } from "./liz-illustration";
-import { LizPanel } from "./liz-panel";
-import { useLizHidden } from "./use-liz-hidden";
+import { AvatarDaLiz } from "./liz-illustration";
+import { PainelDaLiz } from "./liz-panel";
+import { useLizEscondida } from "./use-liz-hidden";
 import "./liz.css";
 
 /**
@@ -18,21 +18,21 @@ import "./liz.css";
  * Hoje a Liz conversa por assuntos prontos: sugere o próximo passo e responde dúvidas pelo guia de ajuda; não é IA livre.
  */
 
-const MOBILE_QUERY = "(max-width: 767px)";
-const subscribeMobile = (cb: () => void) => {
-  const mq = window.matchMedia(MOBILE_QUERY);
+const CONSULTA_DE_TELA_MOVEL = "(max-width: 767px)";
+const assinarTelaMovel = (cb: () => void) => {
+  const mq = window.matchMedia(CONSULTA_DE_TELA_MOVEL);
   mq.addEventListener("change", cb);
   return () => mq.removeEventListener("change", cb);
 };
-const isMobileNow = () => window.matchMedia(MOBILE_QUERY).matches;
+const ehTelaMovelAgora = () => window.matchMedia(CONSULTA_DE_TELA_MOVEL).matches;
 
-const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const ELEMENTOS_FOCAVEIS = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export function LizAssistant({ allowedPaths }: { allowedPaths: readonly string[] }) {
+export function AssistenteLiz({ allowedPaths }: { allowedPaths: readonly string[] }) {
   const pathname = usePathname();
   const visible = deveMostrarOAtalhoDaLiz(pathname);
-  const hidden = useLizHidden();
-  const mobile = useSyncExternalStore(subscribeMobile, isMobileNow, () => false);
+  const hidden = useLizEscondida();
+  const mobile = useSyncExternalStore(assinarTelaMovel, ehTelaMovelAgora, () => false);
   // Guarda a tela em que abriu: ao navegar, a folha fecha sozinha (sem efeito para sincronizar).
   const [openAt, setOpenAt] = useState<string | null>(null);
   const open = visible && !hidden && openAt === pathname;
@@ -72,7 +72,7 @@ export function LizAssistant({ allowedPaths }: { allowedPaths: readonly string[]
         return;
       }
       if (e.key !== "Tab" || !mobile || !panelRef.current) return;
-      const items = Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE));
+      const items = Array.from(panelRef.current.querySelectorAll<HTMLElement>(ELEMENTOS_FOCAVEIS));
       if (items.length === 0) return;
       const first = items[0];
       const last = items[items.length - 1];
@@ -126,7 +126,7 @@ export function LizAssistant({ allowedPaths }: { allowedPaths: readonly string[]
             <X className="size-6" aria-hidden="true" />
           </span>
         ) : (
-          <LizAvatar size={40} decorative className="max-md:size-[52px]!" />
+          <AvatarDaLiz size={40} decorative className="max-md:size-[52px]!" />
         )}
         <span className="hidden text-sm font-semibold md:inline" aria-hidden="true">
           Falar com a Liz
@@ -147,7 +147,7 @@ export function LizAssistant({ allowedPaths }: { allowedPaths: readonly string[]
             tabIndex={-1}
             className="fixed inset-x-0 bottom-0 z-50 flex max-h-[88dvh] flex-col rounded-t-3xl border-t border-linha bg-papel text-tinta shadow-[var(--shadow-aceito-2)] outline-none animate-in fade-in slide-in-from-bottom-4 duration-200 md:inset-x-auto md:left-auto md:right-6 md:bottom-[calc(1.25rem+52px+12px)] md:h-[min(640px,calc(100dvh-8rem))] md:max-h-none md:w-[400px] md:rounded-2xl md:border"
           >
-            <LizPanel
+            <PainelDaLiz
               allowedPaths={allowedPaths}
               pathname={pathname}
               titleId={titleId}

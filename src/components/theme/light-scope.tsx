@@ -3,7 +3,7 @@
  * que seguem o tema (editor do site, convite de exemplo). Para a página inteira use ThemeLight,
  * que também trava o <html> em claro.
  */
-export function LightScope({ children, className }: { children: React.ReactNode; className?: string }) {
+export function EscopoClaro({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div data-theme="light" className={`bg-linho text-tinta ${className ?? ""}`}>
       {children}

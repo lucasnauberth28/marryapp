@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Lock, Mail } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { FormAlert } from "@/components/ui/field";
-import { Panel } from "@/components/plataforma/panel";
+import { AvisoDoFormulario } from "@/components/ui/field";
+import { Painel } from "@/components/plataforma/panel";
 import { Button } from "@/components/ui/button";
 import { enviarRedefinicaoDeSenhaPeloSuporte } from "@/actions/admin-suporte-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
@@ -14,7 +14,7 @@ export function PasswordReset() {
   const [email, setEmail] = useState("");
   const { pending, errors, formError, run } = useAdminAction();
   return (
-    <Panel title="Esqueci a senha" description="Para quando a pessoa não recebe o e-mail de redefinição.">
+    <Painel title="Esqueci a senha" description="Para quando a pessoa não recebe o e-mail de redefinição.">
       <form
         className="flex flex-col gap-4"
         onSubmit={(e) => {
@@ -27,13 +27,13 @@ export function PasswordReset() {
           <Lock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           <span>O link vale por 1 hora e vai só para o e-mail da conta. Ele não aparece aqui e o envio fica no registro. Nunca peça a senha para ninguém.</span>
         </p>
-        {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
+        {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
         <div>
           <Button type="submit" disabled={email.trim().length < 5} loading={pending}>
             <Mail className="size-4" aria-hidden="true" /> Enviar link de redefinição
           </Button>
         </div>
       </form>
-    </Panel>
+    </Painel>
   );
 }

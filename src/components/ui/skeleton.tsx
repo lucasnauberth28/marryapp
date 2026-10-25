@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
  * Dê o tamanho e o raio por className, espelhando o elemento real (`h-12 w-40 rounded-xl`).
  * Prefira as composições de `@/components/skeletons` a montar blocos soltos.
  */
-function Skeleton({
+function Esqueleto({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
@@ -20,4 +20,4 @@ function Skeleton({
   );
 }
 
-export { Skeleton };
+export { Esqueleto as Skeleton };

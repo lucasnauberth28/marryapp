@@ -8,8 +8,8 @@ import { obterCatalogo } from "@/lib/catalog-server";
 import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { planOption, shortPlanName, type PlanOption } from "@/app/login/auth-config";
-import { PageHeader } from "@/components/admin/page-header";
-import { Reveal } from "@/components/motion/reveal";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
+import { Aparicao } from "@/components/motion/reveal";
 import { LoadingRegion } from "@/components/skeletons";
 import { PlanoBodySkeleton } from "./skeletons";
 import { UpgradeSection } from "./upgrade-section";
@@ -37,7 +37,7 @@ export default async function PlanoPage() {
   // O cabeçalho sai logo; planos, taxas e recibos (várias consultas) entram quando ficam prontos.
   return (
     <div className="flex flex-col gap-7">
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow="Conta"
         title="Plano e pagamentos"
         description="O plano vale para o casamento inteiro. Pagamento único, sem mensalidade."
@@ -104,7 +104,7 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
 
   return (
     <>
-      <Reveal className="grid gap-4 md:grid-cols-2">
+      <Aparicao className="grid gap-4 md:grid-cols-2">
         <section aria-labelledby="plano-atual-titulo" className="flex flex-col gap-2 rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6">
           <h2 id="plano-atual-titulo" className="text-sm text-tinta-suave">
             Plano atual
@@ -133,10 +133,10 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
             </>
           )}
         </section>
-      </Reveal>
+      </Aparicao>
 
       {awaitingReview ? (
-        <Reveal className="flex items-start gap-3 rounded-2xl border border-aviso/30 bg-aviso-suave p-4 text-[15px] text-tinta">
+        <Aparicao className="flex items-start gap-3 rounded-2xl border border-aviso/30 bg-aviso-suave p-4 text-[15px] text-tinta">
           <Clock className="mt-0.5 h-5 w-5 shrink-0 text-aviso" aria-hidden="true" />
           <p>
             Há um Pix de {formatarReais(awaitingReview.amount)} do plano{" "}
@@ -144,7 +144,7 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
             {formatarDataBrasiliaCurtaComAno(awaitingReview.createdAt)}. Se vocês já pagaram, nossa equipe confere no extrato e libera o plano em até 1
             dia útil.
           </p>
-        </Reveal>
+        </Aparicao>
       ) : null}
 
       <section aria-labelledby="upgrade-titulo" className="flex flex-col gap-4">

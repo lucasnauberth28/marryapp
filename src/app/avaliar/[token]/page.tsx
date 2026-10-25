@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { BadgeCheck, Clock } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
-import { TOKEN_OVERLINE, TokenPageShell } from "@/components/public/token-page-shell";
+import { SOBRETITULO_DA_PAGINA_COM_TOKEN, MoldeDaPaginaComToken } from "@/components/public/token-page-shell";
 import { formatWeddingDate, PUBLIC_TOKEN_RE } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { ReviewForm } from "./review-form";
 
@@ -23,7 +23,7 @@ export default async function AvaliarPage({ params }: { params: Promise<{ token:
   const rateLimit = await conferirLimiteDeUso({ key: `REVIEW_VIEW:${ip}`, ...VIEW_LIMIT });
   if (!rateLimit.success) {
     return (
-      <TokenPageShell>
+      <MoldeDaPaginaComToken>
         <section role="status" className="flex flex-col gap-2 rounded-2xl bg-aviso-suave p-5 sm:p-6">
           <h1 className="flex items-center gap-2 text-lg font-semibold text-aviso">
             <Clock aria-hidden="true" className="size-5" />
@@ -31,7 +31,7 @@ export default async function AvaliarPage({ params }: { params: Promise<{ token:
           </h1>
           <p>Tente novamente daqui a alguns minutos.</p>
         </section>
-      </TokenPageShell>
+      </MoldeDaPaginaComToken>
     );
   }
 
@@ -51,9 +51,9 @@ export default async function AvaliarPage({ params }: { params: Promise<{ token:
   const date = formatWeddingDate(lead.weddingDate);
 
   return (
-    <TokenPageShell>
+    <MoldeDaPaginaComToken>
       <div className="flex flex-col gap-1">
-        <p className={TOKEN_OVERLINE}>Avaliação verificada · {lead.vendor.category}</p>
+        <p className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>Avaliação verificada · {lead.vendor.category}</p>
         <h1 className="font-display text-[32px] leading-[38px] font-medium break-words sm:text-[40px] sm:leading-[46px]">
           Como foi com {lead.vendor.companyName}?
         </h1>
@@ -74,6 +74,6 @@ export default async function AvaliarPage({ params }: { params: Promise<{ token:
       ) : (
         <ReviewForm token={token} companyName={lead.vendor.companyName} />
       )}
-    </TokenPageShell>
+    </MoldeDaPaginaComToken>
   );
 }

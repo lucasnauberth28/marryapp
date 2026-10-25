@@ -5,8 +5,8 @@ import { concluirTourDoPainel, reiniciarTourDoPainel, pularTourDoPainel } from "
 import { ATRIBUTO_DO_TOUR_ATIVO } from "@/lib/tour/events";
 import type { ConfiguracaoDoTourDoPainel } from "@/lib/tour/panel-tour";
 import type { PassoDoTour } from "@/lib/tour/steps";
-import { TourWelcomeCard } from "./tour-welcome-card";
-import { TourSpotlight, type TourDone } from "./tour-spotlight";
+import { CartaoDeBoasVindasDoTour } from "./tour-welcome-card";
+import { FocoDoTour, type TourConcluido } from "./tour-spotlight";
 
 /**
  * Passo a passo do painel. O provedor fica no layout do painel (persiste entre as telas) e guarda:
@@ -17,28 +17,28 @@ import { TourSpotlight, type TourDone } from "./tour-spotlight";
  * (administração, visita "Entrar como", fornecedor), nada aparece e nada é gravado.
  */
 
-interface TourApi {
+interface ApiDoTour {
   /** Esta conta tem o passo a passo (aparece "Ver o passo a passo" nos menus). */
   available: boolean;
   /** Abre o passo a passo completo, do começo. */
   start: () => void;
 }
 
-const TourContext = createContext<TourApi>({ available: false, start: () => {} });
+const ContextoDoTour = createContext<ApiDoTour>({ available: false, start: () => {} });
 
-export function useTour(): TourApi {
-  return useContext(TourContext);
+export function useTour(): ApiDoTour {
+  return useContext(ContextoDoTour);
 }
 
-type Phase = "idle" | "welcome" | "steps";
+type FaseDoTour = "idle" | "welcome" | "steps";
 
 /** O elemento existe na página? (o botão da Liz fica `hidden` durante o passo a passo, mas continua nela) */
-function anchorExists(anchor: string) {
+function ancoraExiste(anchor: string) {
   return document.querySelector(`[data-tour="${anchor}"]`) !== null;
 }
 
-export function PanelTourProvider({ config, children }: { config: ConfiguracaoDoTourDoPainel | null; children: ReactNode }) {
-  const [phase, setPhase] = useState<Phase>(config && config.mode !== "none" ? "welcome" : "idle");
+export function ProvedorDoTourDoPainel({ config, children }: { config: ConfiguracaoDoTourDoPainel | null; children: ReactNode }) {
+  const [phase, setPhase] = useState<FaseDoTour>(config && config.mode !== "none" ? "welcome" : "idle");
   const [run, setRun] = useState<PassoDoTour[]>([]);
   /** Quem tinha o foco antes de abrir, para devolver o foco ao fechar. */
   const returnFocus = useRef<HTMLElement | null>(null);
@@ -53,7 +53,7 @@ export function PanelTourProvider({ config, children }: { config: ConfiguracaoDo
   const open = useCallback(
     (steps: PassoDoTour[]) => {
       // Passo da Liz só entra se o botão dela existir nesta tela
-      const usable = steps.filter((s) => !s.floating || anchorExists(s.anchor));
+      const usable = steps.filter((s) => !s.floating || ancoraExiste(s.anchor));
       if (usable.length === 0) return;
       const active = document.activeElement;
       if (!returnFocus.current && active instanceof HTMLElement && active !== document.body) returnFocus.current = active;
@@ -98,7 +98,7 @@ export function PanelTourProvider({ config, children }: { config: ConfiguracaoDo
   }, [config, open]);
 
   const finish = useCallback(
-    (done: TourDone) => {
+    (done: TourConcluido) => {
       setPhase("idle");
       setRun([]);
       void (done.outcome === "completed" ? concluirTourDoPainel() : pularTourDoPainel()).catch(() => {});
@@ -109,13 +109,13 @@ export function PanelTourProvider({ config, children }: { config: ConfiguracaoDo
     [restoreFocus],
   );
 
-  const api = useMemo<TourApi>(() => ({ available: config !== null, start }), [config, start]);
+  const api = useMemo<ApiDoTour>(() => ({ available: config !== null, start }), [config, start]);
 
   return (
-    <TourContext.Provider value={api}>
+    <ContextoDoTour.Provider value={api}>
       {children}
-      {config && phase === "welcome" && <TourWelcomeCard news={config.mode === "news"} onStart={startFromCard} onDismiss={dismissCard} />}
-      {config && phase === "steps" && <TourSpotlight steps={run} places={config.places} onDone={finish} />}
-    </TourContext.Provider>
+      {config && phase === "welcome" && <CartaoDeBoasVindasDoTour news={config.mode === "news"} onStart={startFromCard} onDismiss={dismissCard} />}
+      {config && phase === "steps" && <FocoDoTour steps={run} places={config.places} onDone={finish} />}
+    </ContextoDoTour.Provider>
   );
 }

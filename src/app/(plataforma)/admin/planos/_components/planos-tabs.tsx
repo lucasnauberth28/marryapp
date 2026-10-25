@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { TabsNav } from "@/components/plataforma/tabs-nav";
+import { NavegacaoDeAbas } from "@/components/plataforma/tabs-nav";
 import { obterPixParaConferir, obterReembolsosPendentes } from "@/lib/platform/queries/receita";
 
 export type PlanosTab = "resumo" | "assinaturas" | "cupons" | "reembolsos" | "catalogo" | "contador";
@@ -17,7 +17,7 @@ function tabs(counts: { pix?: number; refunds?: number }) {
 
 async function CountedTabs({ active }: { active: PlanosTab }) {
   const [pix, refunds] = await Promise.all([obterPixParaConferir(), obterReembolsosPendentes()]);
-  return <TabsNav label="Planos e receita" basePath="/admin/planos" active={active} tabs={tabs({ pix: pix.count, refunds: refunds.count })} />;
+  return <NavegacaoDeAbas label="Planos e receita" basePath="/admin/planos" active={active} tabs={tabs({ pix: pix.count, refunds: refunds.count })} />;
 }
 
 /**
@@ -26,7 +26,7 @@ async function CountedTabs({ active }: { active: PlanosTab }) {
  */
 export function PlanosTabs({ active }: { active: PlanosTab }) {
   return (
-    <Suspense fallback={<TabsNav label="Planos e receita" basePath="/admin/planos" active={active} tabs={tabs({})} />}>
+    <Suspense fallback={<NavegacaoDeAbas label="Planos e receita" basePath="/admin/planos" active={active} tabs={tabs({})} />}>
       <CountedTabs active={active} />
     </Suspense>
   );

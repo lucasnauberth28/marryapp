@@ -1,5 +1,5 @@
 import { AlertTriangle, Ban, CheckCircle2, Clock } from "lucide-react";
-import { StatusChip } from "@/components/plataforma/status-chip";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { ROTULO_DA_SITUACAO, type SituacaoDoCasal } from "@/lib/platform/casal-status";
 
 const CONFIG = {
@@ -14,8 +14,8 @@ const CONFIG = {
 export function SituationChip({ situation }: { situation: SituacaoDoCasal }) {
   const { tone, icon } = CONFIG[situation];
   return (
-    <StatusChip tone={tone} icon={icon}>
+    <EtiquetaDeSituacao tone={tone} icon={icon}>
       {ROTULO_DA_SITUACAO[situation]}
-    </StatusChip>
+    </EtiquetaDeSituacao>
   );
 }

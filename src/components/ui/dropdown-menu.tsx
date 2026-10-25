@@ -6,13 +6,13 @@ import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui"
 import { cn } from "@/lib/utils"
 import { CheckIcon, ChevronRightIcon } from "lucide-react"
 
-function DropdownMenu({
+function MenuSuspenso({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
   return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />
 }
 
-function DropdownMenuPortal({
+function PortalDoMenuSuspenso({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>) {
   return (
@@ -20,7 +20,7 @@ function DropdownMenuPortal({
   )
 }
 
-function DropdownMenuTrigger({
+function GatilhoDoMenuSuspenso({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
   return (
@@ -31,7 +31,7 @@ function DropdownMenuTrigger({
   )
 }
 
-function DropdownMenuContent({
+function ConteudoDoMenuSuspenso({
   className,
   align = "start",
   sideOffset = 4,
@@ -50,7 +50,7 @@ function DropdownMenuContent({
   )
 }
 
-function DropdownMenuGroup({
+function GrupoDoMenuSuspenso({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Group>) {
   return (
@@ -58,7 +58,7 @@ function DropdownMenuGroup({
   )
 }
 
-function DropdownMenuItem({
+function ItemDoMenuSuspenso({
   className,
   inset,
   variant = "default",
@@ -81,7 +81,7 @@ function DropdownMenuItem({
   )
 }
 
-function DropdownMenuCheckboxItem({
+function ItemMarcavelDoMenuSuspenso({
   className,
   children,
   checked,
@@ -115,7 +115,7 @@ function DropdownMenuCheckboxItem({
   )
 }
 
-function DropdownMenuRadioGroup({
+function GrupoDeOpcoesDoMenuSuspenso({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>) {
   return (
@@ -126,7 +126,7 @@ function DropdownMenuRadioGroup({
   )
 }
 
-function DropdownMenuRadioItem({
+function OpcaoDoMenuSuspenso({
   className,
   children,
   inset,
@@ -158,7 +158,7 @@ function DropdownMenuRadioItem({
   )
 }
 
-function DropdownMenuLabel({
+function RotuloDoMenuSuspenso({
   className,
   inset,
   ...props
@@ -178,7 +178,7 @@ function DropdownMenuLabel({
   )
 }
 
-function DropdownMenuSeparator({
+function SeparadorDoMenuSuspenso({
   className,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Separator>) {
@@ -191,7 +191,7 @@ function DropdownMenuSeparator({
   )
 }
 
-function DropdownMenuShortcut({
+function AtalhoDoMenuSuspenso({
   className,
   ...props
 }: React.ComponentProps<"span">) {
@@ -207,13 +207,13 @@ function DropdownMenuShortcut({
   )
 }
 
-function DropdownMenuSub({
+function SubmenuSuspenso({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Sub>) {
   return <DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" {...props} />
 }
 
-function DropdownMenuSubTrigger({
+function GatilhoDoSubmenuSuspenso({
   className,
   inset,
   children,
@@ -237,7 +237,7 @@ function DropdownMenuSubTrigger({
   )
 }
 
-function DropdownMenuSubContent({
+function ConteudoDoSubmenuSuspenso({
   className,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.SubContent>) {
@@ -251,19 +251,19 @@ function DropdownMenuSubContent({
 }
 
 export {
-  DropdownMenu,
-  DropdownMenuPortal,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuItem,
-  DropdownMenuCheckboxItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
+  MenuSuspenso as DropdownMenu,
+  PortalDoMenuSuspenso as DropdownMenuPortal,
+  GatilhoDoMenuSuspenso as DropdownMenuTrigger,
+  ConteudoDoMenuSuspenso as DropdownMenuContent,
+  GrupoDoMenuSuspenso as DropdownMenuGroup,
+  RotuloDoMenuSuspenso as DropdownMenuLabel,
+  ItemDoMenuSuspenso as DropdownMenuItem,
+  ItemMarcavelDoMenuSuspenso as DropdownMenuCheckboxItem,
+  GrupoDeOpcoesDoMenuSuspenso as DropdownMenuRadioGroup,
+  OpcaoDoMenuSuspenso as DropdownMenuRadioItem,
+  SeparadorDoMenuSuspenso as DropdownMenuSeparator,
+  AtalhoDoMenuSuspenso as DropdownMenuShortcut,
+  SubmenuSuspenso as DropdownMenuSub,
+  GatilhoDoSubmenuSuspenso as DropdownMenuSubTrigger,
+  ConteudoDoSubmenuSuspenso as DropdownMenuSubContent,
 }

@@ -1,8 +1,8 @@
 import { ReceiptText } from "lucide-react";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { Panel } from "@/components/plataforma/panel";
-import { ResponsiveTable } from "@/components/plataforma/responsive-table";
-import { StatusChip } from "@/components/plataforma/status-chip";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { Painel } from "@/components/plataforma/panel";
+import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { formatarDiaEMes } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
@@ -15,30 +15,30 @@ import { InvoiceButton } from "./invoice-button";
 export function ContadorSection({ month, now, invoices, pendingCount }: { month: string; now: Date; invoices: NotaPendente[]; pendingCount: number }) {
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-      <Panel title="Exportar para o contador">
+      <Painel title="Exportar para o contador">
         <ContadorExport month={month} options={opcoesDeMesDoContador(now).map((key) => ({ value: key, label: tituloDoMes(key) }))} />
-      </Panel>
+      </Painel>
 
-      <Panel
+      <Painel
         title="Notas fiscais pendentes"
         aside={
           pendingCount > 0 ? (
-            <StatusChip tone="aviso" icon={ReceiptText}>
+            <EtiquetaDeSituacao tone="aviso" icon={ReceiptText}>
               {pluralizar(pendingCount, "pendente", "pendentes")}
-            </StatusChip>
+            </EtiquetaDeSituacao>
           ) : undefined
         }
         padded={false}
       >
         <div className="px-3 pb-3 md:px-4 md:pb-4">
-          <ResponsiveTable
+          <TabelaResponsiva
             caption="Pagamentos sem nota fiscal emitida"
             rows={invoices}
             rowKey={(i) => i.id}
             empty={
-              <EmptyState icon={ReceiptText} title="Nenhuma nota pendente" compact>
+              <EstadoVazio icon={ReceiptText} title="Nenhuma nota pendente" compact>
                 Todos os pagamentos aprovados já têm a nota marcada como emitida.
-              </EmptyState>
+              </EstadoVazio>
             }
             columns={[
               { key: "quem", header: "Quem pagou", primary: true, cell: (i) => <>{i.payer} <span className="font-normal text-tinta-suave">({i.planName.replace(/^(Plano|Fornecedor)\s+/, "")})</span></> },
@@ -49,7 +49,7 @@ export function ContadorSection({ month, now, invoices, pendingCount }: { month:
           />
           {pendingCount > invoices.length ? <p className="mt-3 text-sm text-tinta-suave">Mostrando {invoices.length} de {pendingCount}. Marque as primeiras para ver as próximas.</p> : null}
         </div>
-      </Panel>
+      </Painel>
     </div>
   );
 }

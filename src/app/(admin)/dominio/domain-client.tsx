@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AlertCircle, Check, CheckCircle2, Clock, Copy, ExternalLink, Globe, Info, XCircle } from "lucide-react";
 import { cancelarPedidoDeDominio, verificarDisponibilidadeDoDominioAcao, pedirDominio } from "@/actions/domain-actions";
-import { PageHeader } from "@/components/admin/page-header";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
-import { Chip, card, cardTitle, type ChipTone } from "@/components/casal/ui";
-import { btn } from "@/components/landing/styles";
+import { Etiqueta, estiloDoCartao, estiloDoTituloDoCartao, type TomDaEtiqueta } from "@/components/casal/ui";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 import { TEXTO_DA_DISPONIBILIDADE, type DisponibilidadeDoDominio } from "@/lib/domain-availability";
 import { SUFIXO_DO_DOMINIO, normalizarNomeDeDominio, sugerirNomesDeDominio } from "@/lib/domain-name";
@@ -36,7 +36,7 @@ const fmt = (iso: string | null, calendar = false) => (iso ? (calendar ? formata
 export function DomainClient({ coupleNames, weddingDate, order, lastClosed, defaults }: Props) {
   return (
     <div className="flex max-w-[880px] flex-col gap-6">
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow="Site e presentes"
         title="Endereço personalizado do site"
         description={
@@ -87,7 +87,7 @@ type Check =
   | { state: "error"; message: string }
   | { state: DisponibilidadeDoDominio; domain: string };
 
-const CHECK_TONE: Record<"sucesso" | "perigo" | "aviso" | "neutro", ChipTone> = { sucesso: "sucesso", perigo: "perigo", aviso: "aviso", neutro: "neutro" };
+const CHECK_TONE: Record<"sucesso" | "perigo" | "aviso" | "neutro", TomDaEtiqueta> = { sucesso: "sucesso", perigo: "perigo", aviso: "aviso", neutro: "neutro" };
 
 function CheckResult({ check }: { check: Check }) {
   if (check.state === "idle") return null;
@@ -112,9 +112,9 @@ function CheckResult({ check }: { check: Check }) {
   const label = check.state === "available" ? "Livre" : check.state === "taken" ? "Já tem dono" : check.state === "releasing" ? "Em liberação" : "Sem resposta agora";
   return (
     <div role="status" className="flex flex-col gap-2">
-      <Chip tone={CHECK_TONE[spec.tone]} icon={Icon}>
+      <Etiqueta tone={CHECK_TONE[spec.tone]} icon={Icon}>
         {label}
-      </Chip>
+      </Etiqueta>
       <p className="text-sm leading-5 text-tinta">{spec.text(check.domain)}</p>
     </div>
   );
@@ -200,9 +200,9 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
 
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-6">
-      <section aria-labelledby="dominio-endereco" className={cn(card, "flex flex-col gap-4 p-5 sm:p-6")}>
+      <section aria-labelledby="dominio-endereco" className={cn(estiloDoCartao, "flex flex-col gap-4 p-5 sm:p-6")}>
         <div className="flex flex-col gap-1">
-          <h2 id="dominio-endereco" className={cardTitle}>
+          <h2 id="dominio-endereco" className={estiloDoTituloDoCartao}>
             Qual endereço vocês querem?
           </h2>
           <p className="text-[15px] text-tinta-suave">Hoje registramos endereços terminados em {SUFIXO_DO_DOMINIO}.</p>
@@ -253,9 +253,9 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
         ) : null}
       </section>
 
-      <section aria-labelledby="dominio-titular" className={cn(card, "flex flex-col gap-4 p-5 sm:p-6")}>
+      <section aria-labelledby="dominio-titular" className={cn(estiloDoCartao, "flex flex-col gap-4 p-5 sm:p-6")}>
         <div className="flex flex-col gap-1">
-          <h2 id="dominio-titular" className={cardTitle}>
+          <h2 id="dominio-titular" className={estiloDoTituloDoCartao}>
             Quem será o titular do endereço?
           </h2>
           <p className="text-[15px] text-tinta-suave">
@@ -306,8 +306,8 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
         </div>
       </section>
 
-      <section aria-labelledby="dominio-condicoes" className={cn(card, "flex flex-col gap-4 p-5 sm:p-6")}>
-        <h2 id="dominio-condicoes" className={cardTitle}>
+      <section aria-labelledby="dominio-condicoes" className={cn(estiloDoCartao, "flex flex-col gap-4 p-5 sm:p-6")}>
+        <h2 id="dominio-condicoes" className={estiloDoTituloDoCartao}>
           Condições
         </h2>
         <p className="rounded-xl bg-areia p-4 text-[15px] leading-6 text-tinta">{TEXTO_DOS_TERMOS_DE_DOMINIO}</p>
@@ -392,7 +392,7 @@ function OrderProgress({ order }: { order: VisaoDoPedidoDeDominio }) {
     <div className="flex flex-col gap-6">
       {order.status === "CONNECTED" ? <ConnectedCard domain={order.domain} /> : null}
 
-      <section aria-labelledby="dominio-andamento" className={cn(card, "flex flex-col gap-5 p-5 sm:p-6")}>
+      <section aria-labelledby="dominio-andamento" className={cn(estiloDoCartao, "flex flex-col gap-5 p-5 sm:p-6")}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-1">
             <h2 id="dominio-andamento" className="text-sm text-tinta-suave">
@@ -400,9 +400,9 @@ function OrderProgress({ order }: { order: VisaoDoPedidoDeDominio }) {
             </h2>
             <p className="break-all font-display text-[28px] leading-8 text-tinta sm:text-[32px] sm:leading-9">{order.domain}</p>
           </div>
-          <Chip tone={order.status === "CONNECTED" ? "sucesso" : order.status === "REGISTERED" ? "salvia" : "aviso"} icon={order.status === "CONNECTED" ? CheckCircle2 : Clock}>
+          <Etiqueta tone={order.status === "CONNECTED" ? "sucesso" : order.status === "REGISTERED" ? "salvia" : "aviso"} icon={order.status === "CONNECTED" ? CheckCircle2 : Clock}>
             {ROTULO_DA_SITUACAO[order.status]}
-          </Chip>
+          </Etiqueta>
         </div>
 
         <ol className="flex flex-col">
@@ -436,8 +436,8 @@ function OrderProgress({ order }: { order: VisaoDoPedidoDeDominio }) {
         ) : null}
       </section>
 
-      <section aria-labelledby="dominio-titular-dados" className={cn(card, "flex flex-col gap-4 p-5 sm:p-6")}>
-        <h2 id="dominio-titular-dados" className={cardTitle}>
+      <section aria-labelledby="dominio-titular-dados" className={cn(estiloDoCartao, "flex flex-col gap-4 p-5 sm:p-6")}>
+        <h2 id="dominio-titular-dados" className={estiloDoTituloDoCartao}>
           Titular do endereço
         </h2>
         <dl className="grid gap-4 sm:grid-cols-2">
@@ -489,7 +489,7 @@ function CancelButton() {
           Cancelar o pedido
         </Button>
       </div>
-      <ConfirmModal
+      <ModalDeConfirmacao
         isOpen={open}
         onClose={() => setOpen(false)}
         onConfirm={confirm}
@@ -531,12 +531,12 @@ function ConnectedCard({ domain }: { domain: string }) {
       <p className="break-all font-display text-[28px] leading-8 sm:text-[34px] sm:leading-10">{domain}</p>
       <p className="text-[15px] leading-6">Os links enviados aos convidados já usam este endereço.</p>
       <div className="flex flex-col gap-2 sm:flex-row">
-        <a href={url} target="_blank" rel="noopener noreferrer" className={cn(btn.onAmeixa, "min-h-11")}>
+        <a href={url} target="_blank" rel="noopener noreferrer" className={cn(estiloDoBotao.onAmeixa, "min-h-11")}>
           <ExternalLink className="size-4" aria-hidden="true" />
           Abrir o site
           <span className="sr-only"> (abre em outra aba)</span>
         </a>
-        <button type="button" onClick={copy} className={cn(btn.onAmeixa, "min-h-11 bg-transparent text-on-ameixa ring-1 ring-on-ameixa/50 hover:bg-on-ameixa/10")}>
+        <button type="button" onClick={copy} className={cn(estiloDoBotao.onAmeixa, "min-h-11 bg-transparent text-on-ameixa ring-1 ring-on-ameixa/50 hover:bg-on-ameixa/10")}>
           {copied ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
           {copied ? "Link copiado" : "Copiar o link"}
         </button>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { LogIn, ShieldAlert } from "lucide-react";
 import { iniciarPersonificacao } from "@/actions/admin-impersonation-actions";
-import { btn } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -109,7 +109,7 @@ export function EntrarComoForm({ weddingId, coupleNames, backHref }: { weddingId
         <Button type="submit" disabled={ticketInvalid || (canEdit && !confirmEdit)} loading={pending || redirecting}>
           <LogIn className="size-4" aria-hidden="true" /> Entrar como {coupleNames}
         </Button>
-        <Link href={backHref} className={btn.quiet}>
+        <Link href={backHref} className={estiloDoBotao.quiet}>
           Cancelar
         </Link>
       </div>

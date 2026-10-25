@@ -4,7 +4,7 @@ import * as React from "react";
 import { useState, useMemo } from "react";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Field, joinIds, type FloatOptions } from "@/components/ui/field";
+import { Campo, juntarIds, type OpcoesDoCampoFlutuante } from "@/components/ui/field";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   format,
@@ -22,7 +22,7 @@ import {
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-export type DatePickerProps = Omit<FloatOptions, "prefix" | "suffix" | "trailing" | "icon"> & {
+export type PropriedadesDoSeletorDeData = Omit<OpcoesDoCampoFlutuante, "prefix" | "suffix" | "trailing" | "icon"> & {
   id?: string;
   name?: string;
   value?: string; // YYYY-MM-DD
@@ -35,10 +35,10 @@ export type DatePickerProps = Omit<FloatOptions, "prefix" | "suffix" | "trailing
   className?: string;
 };
 
-const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const DIAS_DA_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 /** Seletor de data com rótulo flutuante: o rótulo já nasce no alto (o campo nunca fica vazio). */
-export function DatePicker({
+export function SeletorDeData({
   id,
   name,
   value: controlledValue,
@@ -54,7 +54,7 @@ export function DatePicker({
   optional,
   size,
   invalid,
-}: DatePickerProps) {
+}: PropriedadesDoSeletorDeData) {
   const autoId = React.useId();
   const [open, setOpen] = useState(false);
   const [internalValue, setInternalValue] = useState<string>(controlledValue ?? defaultValue);
@@ -111,7 +111,7 @@ export function DatePicker({
     : "";
 
   return (
-    <Field
+    <Campo
       id={id ?? autoId}
       label={label}
       hint={hint}
@@ -151,7 +151,7 @@ export function DatePicker({
               type="button"
               disabled={disabled}
               data-float="always"
-              aria-describedby={joinIds(c["aria-describedby"])}
+              aria-describedby={juntarIds(c["aria-describedby"])}
             >
               <span className={cn(!selectedDate && "text-tinta-suave")}>{formattedDisplay || placeholder}</span>
             </button>
@@ -185,7 +185,7 @@ export function DatePicker({
 
             {/* Rótulos dos Dias da Semana */}
             <div className="grid grid-cols-7 gap-1 text-center mb-1">
-              {WEEKDAYS.map((day) => (
+              {DIAS_DA_SEMANA.map((day) => (
                 <span key={day} className="text-xs font-semibold text-tinta-suave py-1">
                   {day}
                 </span>
@@ -240,6 +240,6 @@ export function DatePicker({
           </PopoverContent>
         </Popover>
       )}
-    </Field>
+    </Campo>
   );
 }

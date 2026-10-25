@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Flag } from "lucide-react";
 import { toast } from "sonner";
 import { denunciarAvaliacao } from "@/actions/vendor-report-actions";
-import { btn } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,7 @@ export function ReportReview({ reviewId, coupleNames }: { reviewId: string; coup
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className={cn(btn.quiet, btn.sm, "-ml-3 min-h-11 self-start px-3")}>
+      <button type="button" onClick={() => setOpen(true)} className={cn(estiloDoBotao.quiet, estiloDoBotao.sm, "-ml-3 min-h-11 self-start px-3")}>
         <Flag aria-hidden="true" className="size-4" />
         Denunciar
         <span className="sr-only"> a avaliação de {coupleNames}</span>
@@ -63,7 +63,7 @@ export function ReportReview({ reviewId, coupleNames }: { reviewId: string; coup
         hint={`${reason.length}/500 caracteres`}
       />
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <button type="button" onClick={() => setOpen(false)} disabled={pending} className={cn(btn.secondary, btn.sm, "min-h-11")}>
+        <button type="button" onClick={() => setOpen(false)} disabled={pending} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm, "min-h-11")}>
           Cancelar
         </button>
         <Button type="submit" size="sm" loading={pending}>

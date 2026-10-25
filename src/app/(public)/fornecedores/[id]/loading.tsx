@@ -1,6 +1,6 @@
-import { LandingHeader } from "@/components/landing/landing-header";
-import { LandingFooter } from "@/components/landing/landing-footer";
-import { container } from "@/components/landing/styles";
+import { CabecalhoDaLanding } from "@/components/landing/landing-header";
+import { RodapeDaLanding } from "@/components/landing/landing-footer";
+import { estiloDoContainerDaLanding } from "@/components/landing/styles";
 import { LoadingRegion, SkeletonImage, SkeletonText } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -10,8 +10,8 @@ import { cn } from "@/lib/utils";
 export default function VendorDetailLoading() {
   return (
     <div className="flex min-h-screen flex-col bg-linho font-sans text-tinta">
-      <LandingHeader />
-      <LoadingRegion label="o perfil do fornecedor" className={cn(container, "flex flex-1 flex-col gap-6 pb-0 pt-4 sm:pt-6 lg:pb-24")}>
+      <CabecalhoDaLanding />
+      <LoadingRegion label="o perfil do fornecedor" className={cn(estiloDoContainerDaLanding, "flex flex-1 flex-col gap-6 pb-0 pt-4 sm:pt-6 lg:pb-24")}>
         <div className="flex items-center justify-between gap-3">
           <Skeleton className="h-11 w-36 rounded-[12px]" />
           <Skeleton className="h-11 w-40 rounded-[12px] sm:h-9" />
@@ -91,7 +91,7 @@ export default function VendorDetailLoading() {
           </aside>
         </div>
       </LoadingRegion>
-      <LandingFooter />
+      <RodapeDaLanding />
     </div>
   );
 }

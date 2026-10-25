@@ -5,15 +5,15 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Bell, Check, ChevronDown, Image as ImageIcon, Link as LinkIcon, MessageCircle, Pencil, Plus, Search, Send, Trash2, UserCheck, X } from "lucide-react";
 import type { Guest } from "@prisma/client";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { CustomModal } from "@/components/ui/custom-modal";
-import { PageHeader } from "@/components/admin/page-header";
-import { RsvpChip, StatusChip } from "@/components/painel/status-chip";
+import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
+import { ModalPersonalizado } from "@/components/ui/custom-modal";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
+import { EtiquetaDeConfirmacao, EtiquetaDeSituacao } from "@/components/painel/status-chip";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
-import { btn, btnDanger, btnIcon, card, chipBase, chipTone, errorBox, hint, input, overline } from "@/components/painel/styles";
-import { LoadingButton } from "@/components/painel/loading-button";
+import { btn, estiloDoBotaoDePerigo, estiloDoBotaoDeIcone, estiloDoCartao, estiloBaseDaEtiqueta, estiloDoTomDaEtiqueta, estiloDaCaixaDeErro, estiloDaDicaDoPainel, estiloDaEntradaDoPainel, estiloDoSobretitulo } from "@/components/painel/styles";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { criarModeloDeMensagem, atualizarModeloDeMensagem, excluirModeloDeMensagem, enviarModeloAosConvidados } from "@/actions/message-actions";
 import { enviarLembretesDeConfirmacao, enviarConvitesIniciais } from "@/actions/whatsapp-actions";
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
@@ -278,7 +278,7 @@ function EditorForm({
             inputClassName="min-h-44"
           />
           <div className="flex flex-wrap items-center gap-2">
-            <button type="button" onClick={insertName} className={`${chipBase} ${chipTone.neutro} min-h-11 cursor-pointer !pl-3 hover:brightness-95 sm:min-h-8`}>
+            <button type="button" onClick={insertName} className={`${estiloBaseDaEtiqueta} ${estiloDoTomDaEtiqueta.neutro} min-h-11 cursor-pointer !pl-3 hover:brightness-95 sm:min-h-8`}>
               <UserCheck className="size-4" aria-hidden="true" />
               Pôr o nome de quem recebe
             </button>
@@ -291,7 +291,7 @@ function EditorForm({
             <LinkIcon className="size-4" aria-hidden="true" />
             Links no fim da mensagem
           </legend>
-          <p className={hint}>Cada link leva a pessoa direto ao convite ou à lista de presentes. Até 3.</p>
+          <p className={estiloDaDicaDoPainel}>Cada link leva a pessoa direto ao convite ou à lista de presentes. Até 3.</p>
           {links.map((l, idx) => (
             <div key={l.id} className="flex items-center gap-2">
               <Input
@@ -302,7 +302,7 @@ function EditorForm({
                 placeholder="Ex.: Confirmar presença"
                 fieldClassName="flex-1"
               />
-              <button type="button" aria-label={`Remover o link ${idx + 1}`} onClick={() => setLinks(links.filter((_, i) => i !== idx))} className={btnIcon}>
+              <button type="button" aria-label={`Remover o link ${idx + 1}`} onClick={() => setLinks(links.filter((_, i) => i !== idx))} className={estiloDoBotaoDeIcone}>
                 <X className="size-4" aria-hidden="true" />
               </button>
             </div>
@@ -342,15 +342,15 @@ function EditorForm({
         </details>
 
         <div className="flex flex-wrap items-center gap-2">
-          <LoadingButton type="submit" loading={saving} className={btn.primary}>
+          <BotaoComCarregamento type="submit" loading={saving} className={btn.primary}>
             <Check className="size-4" aria-hidden="true" />
             {template ? "Salvar alterações" : "Salvar mensagem"}
-          </LoadingButton>
+          </BotaoComCarregamento>
           <button type="button" onClick={onCancel} className={btn.secondary}>
             Cancelar
           </button>
           {template ? (
-            <button type="button" onClick={() => setConfirmDelete(true)} className={`${btnDanger} sm:ml-auto`}>
+            <button type="button" onClick={() => setConfirmDelete(true)} className={`${estiloDoBotaoDePerigo} sm:ml-auto`}>
               <Trash2 className="size-4" aria-hidden="true" />
               Excluir
             </button>
@@ -359,11 +359,11 @@ function EditorForm({
       </form>
 
       <section aria-label="Prévia no WhatsApp" className="flex min-w-0 flex-col gap-2 lg:sticky lg:top-0">
-        <p className={overline}>Como chega</p>
+        <p className={estiloDoSobretitulo}>Como chega</p>
         <WhatsAppPreview coupleNames={coupleNames} text={content} sampleName={sampleName} links={links2preview(links, slug, customDomain)} hasMedia={!!mediaUrl} mediaType={mediaType} />
       </section>
 
-      <ConfirmModal
+      <ModalDeConfirmacao
         isOpen={confirmDelete}
         onClose={() => setConfirmDelete(false)}
         onConfirm={() => {
@@ -478,14 +478,14 @@ function SendFlow({ template, guests, slug, customDomain, coupleNames, onDone }:
             </span>
             {audience === "custom" ? <span className="shrink-0 rounded-full bg-areia px-3 py-1 text-sm font-semibold tabular-nums text-tinta">{picked.length}</span> : null}
           </label>
-          <p className={hint}>Só entra quem tem telefone cadastrado.</p>
+          <p className={estiloDaDicaDoPainel}>Só entra quem tem telefone cadastrado.</p>
         </fieldset>
 
         {audience === "custom" ? (
           <div className="flex flex-col gap-3">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-tinta-suave" aria-hidden="true" />
-              <input id={searchId} type="search" aria-label="Buscar convidado" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome ou telefone" className={`${input} pl-10`} />
+              <input id={searchId} type="search" aria-label="Buscar convidado" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome ou telefone" className={`${estiloDaEntradaDoPainel} pl-10`} />
             </div>
             <ul className="max-h-72 divide-y divide-linha overflow-y-auto rounded-xl border border-linha">
               {shownGuests.length === 0 ? <li className="px-4 py-6 text-center text-sm text-tinta-suave">Ninguém com esta busca.</li> : null}
@@ -500,8 +500,8 @@ function SendFlow({ template, guests, slug, customDomain, coupleNames, onDone }:
                         <span className="block text-sm text-tinta-suave">{g.phone ? formatarTelefone(g.phone) : "Sem telefone"}</span>
                       </span>
                       <span className="flex shrink-0 flex-col items-end gap-1 sm:flex-row sm:items-center">
-                        <RsvpChip status={g.rsvpStatus} />
-                        {g.hasReceivedMessage ? <StatusChip tone="neutro">Já recebeu</StatusChip> : null}
+                        <EtiquetaDeConfirmacao status={g.rsvpStatus} />
+                        {g.hasReceivedMessage ? <EtiquetaDeSituacao tone="neutro">Já recebeu</EtiquetaDeSituacao> : null}
                       </span>
                     </label>
                   </li>
@@ -512,16 +512,16 @@ function SendFlow({ template, guests, slug, customDomain, coupleNames, onDone }:
         ) : null}
 
         {result ? (
-          <p role={result.ok ? "status" : "alert"} className={result.ok ? "rounded-xl bg-sucesso-suave px-3 py-2 text-sm font-semibold text-sucesso" : errorBox}>
+          <p role={result.ok ? "status" : "alert"} className={result.ok ? "rounded-xl bg-sucesso-suave px-3 py-2 text-sm font-semibold text-sucesso" : estiloDaCaixaDeErro}>
             {result.text}
           </p>
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2">
-          <LoadingButton onClick={send} loading={sending} disabled={picked.length === 0} className={btn.primary}>
+          <BotaoComCarregamento onClick={send} loading={sending} disabled={picked.length === 0} className={btn.primary}>
             <Send className="size-4" aria-hidden="true" />
             {picked.length === 0 ? "Escolha quem recebe" : `Enviar para ${picked.length} ${picked.length === 1 ? "pessoa" : "pessoas"}`}
-          </LoadingButton>
+          </BotaoComCarregamento>
           <button type="button" onClick={onDone} className={btn.secondary}>
             {result?.ok ? "Fechar" : "Cancelar"}
           </button>
@@ -529,7 +529,7 @@ function SendFlow({ template, guests, slug, customDomain, coupleNames, onDone }:
       </div>
 
       <section aria-label="Prévia no WhatsApp" className="flex min-w-0 flex-col gap-2 lg:sticky lg:top-0">
-        <p className={overline}>Como chega para {sample.split(" ")[0]}</p>
+        <p className={estiloDoSobretitulo}>Como chega para {sample.split(" ")[0]}</p>
         <WhatsAppPreview
           coupleNames={coupleNames}
           text={template.content}
@@ -595,7 +595,7 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
 
   return (
     <div className="flex flex-col gap-10">
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow="Convidados"
         title="Mensagens"
         description={`${withPhone} ${withPhone === 1 ? "convidado tem" : "convidados têm"} telefone cadastrado${received > 0 ? ` e ${received} já ${received === 1 ? "recebeu" : "receberam"} mensagem por aqui` : ""}.`}
@@ -613,17 +613,17 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
             <Bell className="size-5 text-ameixa" aria-hidden="true" />
             Envios rápidos
           </h2>
-          <p className={`${hint} mt-1`}>Os dois envios mais comuns, com um toque. Usam as mensagens de convite e de lembrete abaixo.</p>
+          <p className={`${estiloDaDicaDoPainel} mt-1`}>Os dois envios mais comuns, com um toque. Usam as mensagens de convite e de lembrete abaixo.</p>
         </div>
         <ul className="grid gap-4 md:grid-cols-2">
           {quick.map((q) => (
-            <li key={q.kind} className={`${card} flex flex-col gap-4 p-5`}>
+            <li key={q.kind} className={`${estiloDoCartao} flex flex-col gap-4 p-5`}>
               <div className="flex flex-col gap-1">
                 <h3 className="text-lg font-semibold leading-7 text-tinta">{q.title}</h3>
                 <p className="text-[15px] leading-6 text-tinta-suave">{q.text}</p>
               </div>
               <div className="mt-auto">
-                <LoadingButton loading={shortcut === q.kind} disabled={shortcut !== null || q.n === 0} onClick={() => runShortcut(q.kind)} className={q.n === 0 ? btn.secondary : btn.primary}>
+                <BotaoComCarregamento loading={shortcut === q.kind} disabled={shortcut !== null || q.n === 0} onClick={() => runShortcut(q.kind)} className={q.n === 0 ? btn.secondary : btn.primary}>
                   {q.n === 0 ? (
                     <>
                       <Check className="size-4" aria-hidden="true" />
@@ -635,7 +635,7 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
                       {q.cta(q.n)}
                     </>
                   )}
-                </LoadingButton>
+                </BotaoComCarregamento>
               </div>
             </li>
           ))}
@@ -647,10 +647,10 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
           <h2 id="suas-mensagens" className="font-display text-2xl leading-8 text-tinta">
             Suas mensagens
           </h2>
-          <p className={`${hint} mt-1`}>Escolham uma mensagem para enviar a quem quiserem, ou editem o texto.</p>
+          <p className={`${estiloDaDicaDoPainel} mt-1`}>Escolham uma mensagem para enviar a quem quiserem, ou editem o texto.</p>
         </div>
         {templates.length === 0 ? (
-          <div className={`${card} flex flex-col items-start gap-3 p-6`}>
+          <div className={`${estiloDoCartao} flex flex-col items-start gap-3 p-6`}>
             <p className="text-[15px] leading-6 text-tinta-suave">Vocês ainda não escreveram nenhuma mensagem.</p>
             <button type="button" onClick={() => setEditing("novo")} className={btn.primary}>
               <Plus className="size-4" aria-hidden="true" />
@@ -660,11 +660,11 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
         ) : (
           <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {templates.map((t) => (
-              <li key={t.id} className={`${card} flex min-w-0 flex-col gap-3 p-5`}>
+              <li key={t.id} className={`${estiloDoCartao} flex min-w-0 flex-col gap-3 p-5`}>
                 <div className="flex flex-col gap-1.5">
-                  <StatusChip tone="neutro" className="self-start">
+                  <EtiquetaDeSituacao tone="neutro" className="self-start">
                     {typeLabel(t.type)}
-                  </StatusChip>
+                  </EtiquetaDeSituacao>
                   <h3 className="line-clamp-2 text-lg font-semibold leading-7 text-tinta">{t.name}</h3>
                 </div>
                 <p className="line-clamp-4 whitespace-pre-line text-[15px] leading-6 text-tinta-suave">{t.content.replace(/\{nome\}/gi, sample)}</p>
@@ -684,7 +684,7 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
         )}
       </section>
 
-      <CustomModal isOpen={editing !== null} onClose={() => setEditing(null)} title={editing === "novo" ? "Nova mensagem" : "Editar mensagem"} description="Escrevam o texto e vejam, ao lado, como ele chega no WhatsApp." size="xl" className="max-h-[92dvh] overflow-y-auto">
+      <ModalPersonalizado isOpen={editing !== null} onClose={() => setEditing(null)} title={editing === "novo" ? "Nova mensagem" : "Editar mensagem"} description="Escrevam o texto e vejam, ao lado, como ele chega no WhatsApp." size="xl" className="max-h-[92dvh] overflow-y-auto">
         {editing !== null ? (
           <EditorForm
             key={editing === "novo" ? "novo" : editing.id}
@@ -704,11 +704,11 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
             }}
           />
         ) : null}
-      </CustomModal>
+      </ModalPersonalizado>
 
-      <CustomModal isOpen={sending !== null} onClose={() => setSending(null)} title={sending ? `Enviar “${sending.name}”` : "Enviar"} description="Escolham quem recebe. O envio usa o texto salvo da mensagem." size="xl" className="max-h-[92dvh] overflow-y-auto">
+      <ModalPersonalizado isOpen={sending !== null} onClose={() => setSending(null)} title={sending ? `Enviar “${sending.name}”` : "Enviar"} description="Escolham quem recebe. O envio usa o texto salvo da mensagem." size="xl" className="max-h-[92dvh] overflow-y-auto">
         {sending ? <SendFlow key={sending.id} template={sending} guests={initialGuests} slug={slug} customDomain={customDomain} coupleNames={coupleNames} onDone={() => setSending(null)} /> : null}
-      </CustomModal>
+      </ModalPersonalizado>
     </div>
   );
 }

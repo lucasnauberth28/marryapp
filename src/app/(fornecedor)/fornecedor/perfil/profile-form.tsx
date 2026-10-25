@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Eye } from "lucide-react";
 import { toast } from "sonner";
-import { Reveal } from "@/components/motion/reveal";
+import { Aparicao } from "@/components/motion/reveal";
 import { atualizarPerfilDoFornecedor, type EntradaDoPerfilDoFornecedor } from "@/actions/vendor-panel-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,7 +77,7 @@ export function ProfileForm({
 
   return (
     <>
-      <Reveal variant="fade" className="flex flex-wrap items-end justify-between gap-4">
+      <Aparicao variant="fade" className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <p className="text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase">Meu perfil</p>
           <h1 className="font-display text-[28px] leading-9 font-medium md:text-[40px] md:leading-[46px]">
@@ -99,7 +99,7 @@ export function ProfileForm({
           ) : null}
           {saveButton}
         </div>
-      </Reveal>
+      </Aparicao>
 
       {notice}
 
@@ -112,7 +112,7 @@ export function ProfileForm({
           </p>
         ) : null}
 
-        <Reveal as="section" variant="up" delay={80} className={cn(CARD, "grid grid-cols-1 gap-5 sm:grid-cols-2")}>
+        <Aparicao as="section" variant="up" delay={80} className={cn(CARD, "grid grid-cols-1 gap-5 sm:grid-cols-2")}>
           <h2 className="text-xl leading-7 font-semibold sm:col-span-2">Sobre o negócio</h2>
           <Input
             id="f-nome"
@@ -164,9 +164,9 @@ export function ProfileForm({
             onChange={set("description")}
             inputClassName="min-h-32"
           />
-        </Reveal>
+        </Aparicao>
 
-        <Reveal as="section" variant="up" delay={160} className={cn(CARD, "grid grid-cols-1 gap-5 sm:grid-cols-2")}>
+        <Aparicao as="section" variant="up" delay={160} className={cn(CARD, "grid grid-cols-1 gap-5 sm:grid-cols-2")}>
           <div className="flex flex-col gap-1 sm:col-span-2">
             <h2 className="text-xl leading-7 font-semibold">Contato e redes</h2>
             <p className={HINT}>Os pedidos de orçamento chegam aqui no painel; o WhatsApp aparece para os casais no Plano Pro.</p>
@@ -206,7 +206,7 @@ export function ProfileForm({
             value={values.website}
             onChange={set("website")}
           />
-        </Reveal>
+        </Aparicao>
 
         <div className="flex flex-col gap-2 sm:hidden">
           {saveButton}

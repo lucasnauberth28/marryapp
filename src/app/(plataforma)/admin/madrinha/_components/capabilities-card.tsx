@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Panel } from "@/components/plataforma/panel";
-import { FormAlert } from "@/components/ui/field";
+import { Painel } from "@/components/plataforma/panel";
+import { AvisoDoFormulario } from "@/components/ui/field";
 import { ToggleRow } from "../../_sistema/toggle-row";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 import { salvarCapacidadesDaMadrinha } from "@/actions/admin-madrinha-actions";
@@ -29,7 +29,7 @@ export function CapabilitiesCard({ initial, badge }: { initial: Caps; badge: Rea
   }
 
   return (
-    <Panel title="O que ela pode fazer" aside={badge}>
+    <Painel title="O que ela pode fazer" aside={badge}>
       <div className="divide-y divide-linha">
         {ITEMS.map((item) => (
           <ToggleRow key={item.key} label={item.label} description={item.description} checked={caps[item.key]} onCheckedChange={(v) => toggle(item.key, v)} disabled={pending} />
@@ -38,9 +38,9 @@ export function CapabilitiesCard({ initial, badge }: { initial: Caps; badge: Rea
       </div>
       {formError && (
         <div className="mt-3">
-          <FormAlert>{formError}</FormAlert>
+          <AvisoDoFormulario>{formError}</AvisoDoFormulario>
         </div>
       )}
-    </Panel>
+    </Painel>
   );
 }

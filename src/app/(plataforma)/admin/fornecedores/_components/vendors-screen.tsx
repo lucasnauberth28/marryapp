@@ -1,20 +1,20 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { Check, Clock, Download, Flag, Pencil, ShieldCheck, Star, Store, Ban } from "lucide-react";
-import { btn } from "@/components/landing/styles";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { ExportButton } from "@/components/plataforma/export-button";
-import { FilterBar } from "@/components/plataforma/filter-bar";
-import { PageHeader } from "@/components/plataforma/page-header";
-import { Pagination } from "@/components/plataforma/pagination";
-import { PendingRegion } from "@/components/plataforma/pending";
-import { SidePanelSkeleton } from "@/components/plataforma/loading-parts";
+import { estiloDoBotao } from "@/components/landing/styles";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { BotaoDeExportar } from "@/components/plataforma/export-button";
+import { BarraDeFiltros } from "@/components/plataforma/filter-bar";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { Paginacao } from "@/components/plataforma/pagination";
+import { RegiaoPendente } from "@/components/plataforma/pending";
+import { EsqueletoDoPainelLateral } from "@/components/plataforma/loading-parts";
 import { SkeletonCard, SkeletonText } from "@/components/skeletons";
-import { Panel } from "@/components/plataforma/panel";
-import { ResponsiveTable } from "@/components/plataforma/responsive-table";
-import { UserImage } from "@/components/ui/user-image";
-import { PlanChip, StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
-import { TabsNav } from "@/components/plataforma/tabs-nav";
+import { Painel } from "@/components/plataforma/panel";
+import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
+import { ImagemDaPessoa } from "@/components/ui/user-image";
+import { EtiquetaDePlano, EtiquetaDeSituacao, type TomDaSituacao } from "@/components/plataforma/status-chip";
+import { NavegacaoDeAbas } from "@/components/plataforma/tabs-nav";
 import { formatarData, formatarInteiro, diaRelativo, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { montarLink, umDosValores, parametroDaBusca, interpretarPagina, type ParametrosDeBusca } from "@/lib/platform/list-params";
@@ -36,7 +36,7 @@ import { cn } from "@/lib/utils";
 import { VendorActionsPanel } from "./vendor-actions-panel";
 import { ReviewModeration } from "./review-moderation";
 
-const VIEW_CHIP: Record<VisaoDaCuradoria, { tone: StatusTone; icon: typeof Check }> = {
+const VIEW_CHIP: Record<VisaoDaCuradoria, { tone: TomDaSituacao; icon: typeof Check }> = {
   approved: { tone: "sucesso", icon: Check },
   pending: { tone: "aviso", icon: Clock },
   adjust: { tone: "neutro", icon: Pencil },
@@ -112,7 +112,7 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Para
 
   return (
     <>
-      <PageHeader
+      <CabecalhoDaPagina
         breadcrumb={mode === "curadoria" ? [{ label: "Fornecedores", href: "/admin/fornecedores" }, { label: "Curadoria" }] : undefined}
         eyebrow="Casais e fornecedores"
         title={mode === "curadoria" ? "Curadoria" : "Fornecedores"}
@@ -120,15 +120,15 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Para
         actions={
           mode === "lista" ? (
             <>
-              <Link href="/admin/fornecedores/curadoria" className={btn.secondary}>
+              <Link href="/admin/fornecedores/curadoria" className={estiloDoBotao.secondary}>
                 <ShieldCheck className="size-4" aria-hidden="true" /> Curadoria
               </Link>
-              <ExportButton href={montarLink("/api/admin/fornecedores.csv", filterParams)} fallbackName="fornecedores.csv">
+              <BotaoDeExportar href={montarLink("/api/admin/fornecedores.csv", filterParams)} fallbackName="fornecedores.csv">
                 <Download className="size-4" aria-hidden="true" /> Exportar CSV
-              </ExportButton>
+              </BotaoDeExportar>
             </>
           ) : (
-            <Link href="/admin/fornecedores" className={btn.secondary}>
+            <Link href="/admin/fornecedores" className={estiloDoBotao.secondary}>
               <Store className="size-4" aria-hidden="true" /> Todos os fornecedores
             </Link>
           )
@@ -136,7 +136,7 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Para
       />
 
       {mode === "lista" ? (
-        <TabsNav
+        <NavegacaoDeAbas
           label="Fornecedores"
           basePath={basePath}
           active={tab}
@@ -145,23 +145,23 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Para
         />
       ) : null}
 
-      <FilterBar searchPlaceholder="Buscar por nome, categoria ou cidade" filters={mode === "curadoria" ? filters.filter((f) => f.key === "categoria" || f.key === "ordem") : filters} />
+      <BarraDeFiltros searchPlaceholder="Buscar por nome, categoria ou cidade" filters={mode === "curadoria" ? filters.filter((f) => f.key === "categoria" || f.key === "ordem") : filters} />
 
-      <PendingRegion>
+      <RegiaoPendente>
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="flex min-w-0 flex-col gap-4">
-          <ResponsiveTable
+          <TabelaResponsiva
             caption="Fornecedores"
             rows={list.rows}
             rowKey={(r) => r.id}
             rowHref={rowHref}
             selectedKey={detailId}
             empty={
-              <EmptyState icon={Store} title={hasFilters || tab !== "todos" ? "Nenhum fornecedor com esses filtros" : "Ainda não tem fornecedor aqui"} compact>
+              <EstadoVazio icon={Store} title={hasFilters || tab !== "todos" ? "Nenhum fornecedor com esses filtros" : "Ainda não tem fornecedor aqui"} compact>
                 {hasFilters || tab !== "todos"
                   ? "Tente limpar os filtros ou escolher outra aba."
                   : "Quando um fornecedor se cadastrar, ele aparece nesta lista para a curadoria."}
-              </EmptyState>
+              </EstadoVazio>
             }
             columns={[
               {
@@ -178,7 +178,7 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Para
                   </>
                 ),
               },
-              { key: "plano", header: "Plano", cell: (v) => <PlanChip plan={v.planTier} /> },
+              { key: "plano", header: "Plano", cell: (v) => <EtiquetaDePlano plan={v.planTier} /> },
               {
                 key: "curadoria",
                 header: "Curadoria",
@@ -186,9 +186,9 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Para
                   const view = visaoDaCuradoria(v);
                   const chip = VIEW_CHIP[view];
                   return (
-                    <StatusChip tone={chip.tone} icon={chip.icon}>
+                    <EtiquetaDeSituacao tone={chip.tone} icon={chip.icon}>
                       {ROTULO_DA_CURADORIA[view]}
-                    </StatusChip>
+                    </EtiquetaDeSituacao>
                   );
                 },
               },
@@ -237,17 +237,17 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Para
               },
             ]}
           />
-          <Pagination page={list.page} pageSize={TAMANHO_DA_PAGINA_DE_FORNECEDORES} total={list.total} basePath={basePath} params={filterParams} noun={["fornecedor", "fornecedores"]} />
+          <Paginacao page={list.page} pageSize={TAMANHO_DA_PAGINA_DE_FORNECEDORES} total={list.total} basePath={basePath} params={filterParams} noun={["fornecedor", "fornecedores"]} />
         </div>
 
         <div id="painel" className="scroll-mt-6 lg:sticky lg:top-6">
           {/* O painel busca o fornecedor escolhido sozinho: a lista não espera por ele (key = fornecedor) */}
-          <Suspense key={detailId ?? "nenhum"} fallback={<SidePanelSkeleton photos />}>
+          <Suspense key={detailId ?? "nenhum"} fallback={<EsqueletoDoPainelLateral photos />}>
             <VendorDetailSlot detailId={detailId} now={now} basePath={basePath} />
           </Suspense>
         </div>
       </div>
-      </PendingRegion>
+      </RegiaoPendente>
 
       {mode === "lista" ? (
         <Suspense
@@ -269,9 +269,9 @@ async function VendorDetailSlot({ detailId, now, basePath }: { detailId: string 
   return detail ? (
     <VendorDetailPanel detail={detail} now={now} basePath={basePath} />
   ) : (
-    <Panel>
+    <Painel>
       <p className="text-sm text-tinta-suave">Escolha um fornecedor na lista para ver o perfil e decidir.</p>
-    </Panel>
+    </Painel>
   );
 }
 
@@ -280,20 +280,20 @@ async function ModerationBlock({ now }: { now: Date }) {
   return (
     <>
       {moderation ? (
-        <Panel
+        <Painel
           title="Avaliações denunciadas"
           aside={
             moderation.reported.length > 0 ? (
-              <StatusChip tone="aviso" icon={Flag}>
+              <EtiquetaDeSituacao tone="aviso" icon={Flag}>
                 {moderation.reported.length} para moderar
-              </StatusChip>
+              </EtiquetaDeSituacao>
             ) : undefined
           }
         >
           {moderation.reported.length === 0 ? (
-            <EmptyState icon={Flag} title="Nenhuma avaliação denunciada" compact>
+            <EstadoVazio icon={Flag} title="Nenhuma avaliação denunciada" compact>
               O fornecedor denuncia uma avaliação pela tela Avaliações do painel dele. Quando isso acontecer, ela aparece aqui para você decidir.
-            </EmptyState>
+            </EstadoVazio>
           ) : (
             <ul className="flex flex-col">
               {moderation.reported.map((r) => (
@@ -317,7 +317,7 @@ async function ModerationBlock({ now }: { now: Date }) {
               </ul>
             </div>
           ) : null}
-        </Panel>
+        </Painel>
       ) : null}
     </>
   );
@@ -337,11 +337,11 @@ function ReviewBlock({ review, now }: { review: { vendorName: string; rating: nu
       <p className="break-words text-[15px] text-tinta">“{review.comment}”</p>
       <p className="flex flex-wrap items-center gap-2 text-sm text-tinta-suave">
         {review.hiddenAt ? (
-          <StatusChip tone="neutro">Ocultada {haQuantoTempo(review.hiddenAt, now)}</StatusChip>
+          <EtiquetaDeSituacao tone="neutro">Ocultada {haQuantoTempo(review.hiddenAt, now)}</EtiquetaDeSituacao>
         ) : (
-          <StatusChip tone="aviso" icon={Flag}>
+          <EtiquetaDeSituacao tone="aviso" icon={Flag}>
             Denunciada
-          </StatusChip>
+          </EtiquetaDeSituacao>
         )}
         {review.reportReason ? <span>Motivo do fornecedor: {review.reportReason}</span> : null}
       </p>
@@ -356,12 +356,12 @@ function VendorDetailPanel({ detail, now, basePath }: { detail: NonNullable<Awai
   const days = Math.max(0, Math.floor((now.getTime() - detail.createdAt.getTime()) / 86_400_000));
   const isApproved = detail.curationStatus === "APPROVED";
   return (
-    <Panel as="article">
+    <Painel as="article">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <StatusChip tone="salvia">{detail.category}</StatusChip>
-        <StatusChip tone={chip.tone} icon={chip.icon}>
+        <EtiquetaDeSituacao tone="salvia">{detail.category}</EtiquetaDeSituacao>
+        <EtiquetaDeSituacao tone={chip.tone} icon={chip.icon}>
           {ROTULO_DA_CURADORIA[view]}
-        </StatusChip>
+        </EtiquetaDeSituacao>
       </div>
       <h2 className="mt-3 font-display text-[28px] leading-8 text-tinta">{detail.companyName}</h2>
       <p className="mt-1 text-sm text-tinta-suave">
@@ -380,7 +380,7 @@ function VendorDetailPanel({ detail, now, basePath }: { detail: NonNullable<Awai
         <ul className="mt-4 grid grid-cols-3 gap-2" aria-label="Fotos do portfólio">
           {photos.map((url, i) => (
             <li key={url} className="relative aspect-square overflow-hidden rounded-xl bg-areia">
-              <UserImage src={url} alt={`Foto ${i + 1} de ${detail.companyName}`} sizes="120px" className="object-cover" />
+              <ImagemDaPessoa src={url} alt={`Foto ${i + 1} de ${detail.companyName}`} sizes="120px" className="object-cover" />
             </li>
           ))}
         </ul>
@@ -390,12 +390,12 @@ function VendorDetailPanel({ detail, now, basePath }: { detail: NonNullable<Awai
 
       <div className="mt-4 flex flex-wrap gap-2">
         {isApproved && !detail.suspendedAt ? (
-          <Link href={`/fornecedores/${detail.id}`} target="_blank" className={cn(btn.secondary, btn.sm)}>
+          <Link href={`/fornecedores/${detail.id}`} target="_blank" className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)}>
             Ver a página pública
           </Link>
         ) : null}
         {basePath === "/admin/fornecedores" && detail.curationStatus === "PENDING_APPROVAL" ? (
-          <Link href={`/admin/fornecedores/curadoria?id=${detail.id}`} className={cn(btn.secondary, btn.sm)}>
+          <Link href={`/admin/fornecedores/curadoria?id=${detail.id}`} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)}>
             Abrir na curadoria
           </Link>
         ) : null}
@@ -412,6 +412,6 @@ function VendorDetailPanel({ detail, now, basePath }: { detail: NonNullable<Awai
           isApproved={isApproved}
         />
       </div>
-    </Panel>
+    </Painel>
   );
 }

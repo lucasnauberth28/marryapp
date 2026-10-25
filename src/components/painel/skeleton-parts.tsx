@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonAvatar } from "@/components/skeletons";
-import { card } from "@/components/casal/ui";
+import { estiloDoCartao } from "@/components/casal/ui";
 import { cn } from "@/lib/utils";
 
 /* Peças de esqueleto próprias do painel do casal (compõem os blocos de @/components/skeletons). */
 
 /** Linhas de 56px sem moldura nem respiro lateral, para dentro de um cartão que já tem padding (dashboard, tarefas). */
-export function SkeletonRows({
+export function EsqueletoDeLinhas({
   rows = 4,
   leading = "avatar",
   trailing = "none",
@@ -38,12 +38,12 @@ export function SkeletonRows({
 }
 
 /** Barra de busca de 44px, como a do DataTable (largura máxima de `max-w-sm`). */
-export function SkeletonSearch({ className }: { className?: string }) {
+export function EsqueletoDaBusca({ className }: { className?: string }) {
   return <Skeleton className={cn("h-11 w-full max-w-sm rounded-xl", className)} />;
 }
 
 /** Título de seção (cardTitle, 28px) com descrição opcional, como `<h2>` + `<p>` das telas do painel. */
-export function SkeletonSectionTitle({ description = false }: { description?: boolean }) {
+export function EsqueletoDoTituloDaSecao({ description = false }: { description?: boolean }) {
   return (
     <div>
       <div className="flex h-7 items-center">
@@ -59,12 +59,12 @@ export function SkeletonSectionTitle({ description = false }: { description?: bo
 }
 
 /** Cartão com moldura (`card`) e conteúdo livre. */
-export function SkeletonPanel({ className, children }: { className?: string; children?: ReactNode }) {
-  return <div className={cn(card, "min-w-0", className)}>{children}</div>;
+export function EsqueletoDoPainel({ className, children }: { className?: string; children?: ReactNode }) {
+  return <div className={cn(estiloDoCartao, "min-w-0", className)}>{children}</div>;
 }
 
 /** Bloco de resultado de uma verificação (ícone, título, texto e botão), como o da conexão do WhatsApp. */
-export function SkeletonStatusBlock({ className }: { className?: string }) {
+export function EsqueletoDoBlocoDeSituacao({ className }: { className?: string }) {
   return (
     <div aria-hidden="true" className={cn("flex flex-col items-center justify-center gap-3 rounded-xl border border-linha p-10 text-center", className)}>
       <Skeleton className="size-12 rounded-full" />

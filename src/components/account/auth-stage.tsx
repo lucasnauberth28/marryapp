@@ -2,10 +2,10 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { Logotipo } from "@/components/brand/logo";
+import { AlternadorDeTema } from "@/components/theme/theme-toggle";
 
-export interface StagePhoto {
+export interface FotoDoPalco {
   src: string;
   alt: string;
   caption: string;
@@ -18,14 +18,14 @@ export interface StagePhoto {
  * toda e o formulário flutua num cartão branco à direita. No celular a foto vira uma faixa no topo e o
  * cartão sobe por cima dela. A foto troca com um esmaecer quando muda a etapa (`key` na imagem).
  */
-export function AuthStage({
+export function PalcoDeAcesso({
   photo,
   children,
   footnote,
   backHref = "/",
   backLabel = "Voltar para o início",
 }: {
-  photo: StagePhoto;
+  photo: FotoDoPalco;
   children: ReactNode;
   footnote?: ReactNode;
   backHref?: string;
@@ -70,9 +70,9 @@ export function AuthStage({
           aria-label="Aceito, início"
           className="flex h-11 items-center rounded-full bg-papel/80 px-5 shadow-aceito-1 backdrop-blur-md transition-colors hover:bg-papel"
         >
-          <Logo height={24} priority />
+          <Logotipo height={24} priority />
         </Link>
-        <ThemeToggle className="ml-auto rounded-full bg-papel/80 shadow-aceito-1 backdrop-blur-md hover:bg-papel" />
+        <AlternadorDeTema className="ml-auto rounded-full bg-papel/80 shadow-aceito-1 backdrop-blur-md hover:bg-papel" />
       </header>
 
       <main

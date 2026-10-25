@@ -9,7 +9,7 @@ import { useLinkStatus } from "next/link";
  *   group-has-[[data-link-pending]]/<nome>:opacity-60
  * Também anuncia "Carregando..." para leitor de tela. Não ocupa espaço (sr-only).
  */
-export function LinkPending({ label = "Carregando" }: { label?: string }) {
+export function LinkPendente({ label = "Carregando" }: { label?: string }) {
   const { pending } = useLinkStatus();
   if (!pending) return null;
   return (

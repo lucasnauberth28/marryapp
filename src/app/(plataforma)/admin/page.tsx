@@ -1,15 +1,15 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { Activity, AlertTriangle, Bell, Check, CheckCircle2, Clock, Globe, Heart, LifeBuoy, MessageSquare, ShieldCheck, Wallet, ExternalLink } from "lucide-react";
-import { PageHeader } from "@/components/plataforma/page-header";
-import { PendingRegion } from "@/components/plataforma/pending";
-import { Panel } from "@/components/plataforma/panel";
-import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
-import { AttentionList, type AttentionItem } from "@/components/plataforma/attention-list";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { RevenueChart } from "@/components/plataforma/revenue-chart";
-import { PlanChip, StatusChip } from "@/components/plataforma/status-chip";
-import { btn } from "@/components/landing/styles";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { RegiaoPendente } from "@/components/plataforma/pending";
+import { Painel } from "@/components/plataforma/panel";
+import { CartaoDeIndicador, GradeDeIndicadores } from "@/components/plataforma/stat-card";
+import { ListaDeAtencao, type ItemDeAtencao } from "@/components/plataforma/attention-list";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { GraficoDeReceita } from "@/components/plataforma/revenue-chart";
+import { EtiquetaDePlano, EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type ParametrosDeBusca, umDosValores } from "@/lib/platform/list-params";
 import { formatarDiaEMes, formatarInteiro, formatarDataPorExtenso, formatarNomeDoMes, formatarPercentual, diaRelativo, haQuantoTempo, formatarHora } from "@/lib/platform/format";
@@ -58,7 +58,7 @@ async function Overview({ eyebrow, title, period, now }: { eyebrow: string; titl
 
   return (
     <>
-      <PageHeader eyebrow={eyebrow} title={title} description="O que pede a sua decisão hoje e como a plataforma está indo." actions={<PeriodSelect value={period} />} />
+      <CabecalhoDaPagina eyebrow={eyebrow} title={title} description="O que pede a sua decisão hoje e como a plataforma está indo." actions={<PeriodSelect value={period} />} />
 
       <Suspense fallback={<NumbersSkeleton />}>
         <NumbersBlock period={period} now={now} />
@@ -99,62 +99,62 @@ async function NumbersBlock({ period, now }: { period: Periodo; now: Date }) {
   const win = janelasDoPeriodo(period, now);
   const revenueTitle = period === "mes" ? `Receita de ${formatarNomeDoMes(now)}` : `Receita, ${win.short}`;
   return (
-    <PendingRegion>
-      <StatGrid>
-        <StatCard
+    <RegiaoPendente>
+      <GradeDeIndicadores>
+        <CartaoDeIndicador
           label={revenueTitle}
           value={formatarReaisInteiros(numbers.revenue.cents)}
           trend={numbers.revenue.trend === null ? null : { value: numbers.revenue.trend, label: rotuloPercentual(numbers.revenue.trend) }}
           hint={numbers.revenue.payments === 0 ? "nenhum pagamento ainda" : `${period === "mes" ? "até hoje, " : ""}${pluralizar(numbers.revenue.payments, "pagamento", "pagamentos")}`}
           href="/admin/planos"
         />
-        <StatCard
+        <CartaoDeIndicador
           label={`Novos casais, ${win.short}`}
           value={formatarInteiro(numbers.newCouples.count)}
           trend={numbers.newCouples.trend === null ? null : { value: numbers.newCouples.trend, label: rotuloPercentual(numbers.newCouples.trend) }}
           hint={numbers.newCouples.previous > 0 ? `contra ${formatarInteiro(numbers.newCouples.previous)} antes` : "sem período anterior para comparar"}
           href="/admin/casais"
         />
-        <StatCard
+        <CartaoDeIndicador
           label="Casamentos em 30 dias"
           value={formatarInteiro(numbers.next30.count)}
           hint={numbers.next30.count === 0 ? "nenhum nos próximos 30 dias" : numbers.next30.needAttention > 0 ? `${numbers.next30.needAttention} ${numbers.next30.needAttention === 1 ? "pede" : "pedem"} atenção` : "nenhum pede atenção"}
           href="/admin/casais?aba=30dias"
         />
-        <StatCard
+        <CartaoDeIndicador
           label="Esperando curadoria"
           value={formatarInteiro(numbers.curation.count)}
           hint={numbers.curation.oldestAt ? `o mais antigo, ${haQuantoTempo(numbers.curation.oldestAt, now)}` : "ninguém na fila"}
           highlight={numbers.curation.count > 0}
           href="/admin/fornecedores/curadoria"
         />
-      </StatGrid>
-    </PendingRegion>
+      </GradeDeIndicadores>
+    </RegiaoPendente>
   );
 }
 
 async function AttentionBlock({ now }: { now: Date }) {
   const attention = await obterItensDeAtencao(now);
-  const attentionItems: AttentionItem[] = attention.map((a) => ({ id: a.id, title: a.title, detail: a.detail, tone: a.tone, icon: ICONS[a.icon], actionLabel: a.actionLabel, href: a.href }));
+  const attentionItems: ItemDeAtencao[] = attention.map((a) => ({ id: a.id, title: a.title, detail: a.detail, tone: a.tone, icon: ICONS[a.icon], actionLabel: a.actionLabel, href: a.href }));
   return (
-    <Panel
+    <Painel
       title="Precisa da sua atenção"
       aside={
         attentionItems.length > 0 ? (
-          <StatusChip tone="aviso" icon={Bell}>
+          <EtiquetaDeSituacao tone="aviso" icon={Bell}>
             {pluralizar(attentionItems.length, "item", "itens")}
-          </StatusChip>
+          </EtiquetaDeSituacao>
         ) : undefined
       }
     >
       {attentionItems.length > 0 ? (
-        <AttentionList items={attentionItems} />
+        <ListaDeAtencao items={attentionItems} />
       ) : (
-        <EmptyState icon={CheckCircle2} compact title="Tudo em dia">
+        <EstadoVazio icon={CheckCircle2} compact title="Tudo em dia">
           Pedidos de domínio, Pix para conferir, reembolsos e fornecedores na curadoria aparecem aqui.
-        </EmptyState>
+        </EstadoVazio>
       )}
-    </Panel>
+    </Painel>
   );
 }
 
@@ -163,20 +163,20 @@ async function RevenueBlock({ now }: { now: Date }) {
   const hasRevenue = months.some((m) => m.total > 0);
   const current = months[months.length - 1];
   return (
-    <Panel title="Receita por mês">
+    <Painel title="Receita por mês">
       {hasRevenue ? (
         <>
-          <RevenueChart months={months} />
+          <GraficoDeReceita months={months} />
           <p className="mt-4 text-sm leading-6 text-tinta-suave">
             Em {formatarNomeDoMes(now)}, até hoje: casais {formatarReaisInteiros(current.couple)} e fornecedores {formatarReaisInteiros(current.vendor)}.
           </p>
         </>
       ) : (
-        <EmptyState icon={Wallet} compact title="Ainda sem pagamentos" action={<Link href="/planos" className={`${btn.secondary} ${btn.sm}`}>Ver a página de planos</Link>}>
+        <EstadoVazio icon={Wallet} compact title="Ainda sem pagamentos" action={<Link href="/planos" className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>Ver a página de planos</Link>}>
           Quando chegar o primeiro pagamento, a receita de cada mês aparece aqui.
-        </EmptyState>
+        </EstadoVazio>
       )}
-    </Panel>
+    </Painel>
   );
 }
 
@@ -185,8 +185,8 @@ async function FunnelBlock({ period, now }: { period: Periodo; now: Date }) {
   const funnel = await obterFunil(win);
   const funnelMax = Math.max(1, funnel[0]?.count ?? 0);
   return (
-    <PendingRegion>
-      <Panel title="De cadastro a casal pagante" aside={<span className="text-sm text-tinta-suave">{win.label}</span>}>
+    <RegiaoPendente>
+      <Painel title="De cadastro a casal pagante" aside={<span className="text-sm text-tinta-suave">{win.label}</span>}>
         <p className="mb-5 text-tinta">
           <strong>{formatarInteiro(funnel[0].count)}</strong> {funnel[0].count === 1 ? "casal criou" : "casais criaram"} o casamento {win.period === "mes" ? "neste mês" : `nos últimos ${win.short}`}.
         </p>
@@ -211,19 +211,19 @@ async function FunnelBlock({ period, now }: { period: Periodo; now: Date }) {
             })}
           </ol>
         )}
-      </Panel>
-    </PendingRegion>
+      </Painel>
+    </RegiaoPendente>
   );
 }
 
 async function UpcomingBlock({ period, now }: { period: Periodo; now: Date }) {
   const [numbers, upcoming] = await Promise.all([loadOverviewNumbers(period), obterCasamentosProximos(now, 5)]);
   return (
-    <Panel title="Casamentos nos próximos 30 dias" action={numbers.next30.count > 0 ? { label: `Ver os ${numbers.next30.count}`, href: "/admin/casais?aba=30dias" } : undefined}>
+    <Painel title="Casamentos nos próximos 30 dias" action={numbers.next30.count > 0 ? { label: `Ver os ${numbers.next30.count}`, href: "/admin/casais?aba=30dias" } : undefined}>
       {upcoming.length === 0 ? (
-        <EmptyState icon={Heart} compact title="Nenhum casamento nos próximos 30 dias">
+        <EstadoVazio icon={Heart} compact title="Nenhum casamento nos próximos 30 dias">
           Quando houver datas chegando, os casais aparecem aqui com a situação de cada um.
-        </EmptyState>
+        </EstadoVazio>
       ) : (
         <ul className="flex flex-col">
           {upcoming.map((w) => (
@@ -238,24 +238,24 @@ async function UpcomingBlock({ period, now }: { period: Periodo; now: Date }) {
                 </Link>
                 <span className="mt-0.5 flex flex-wrap items-center gap-x-2 text-sm text-tinta-suave">
                   {w.city && <span>{w.city}</span>}
-                  <PlanChip plan={w.planId} className="min-h-6 px-2 text-xs" />
+                  <EtiquetaDePlano plan={w.planId} className="min-h-6 px-2 text-xs" />
                 </span>
               </span>
-              <StatusChip tone={w.status.tone} className="hidden sm:inline-flex">
+              <EtiquetaDeSituacao tone={w.status.tone} className="hidden sm:inline-flex">
                 {w.status.label}
-              </StatusChip>
+              </EtiquetaDeSituacao>
             </li>
           ))}
         </ul>
       )}
-    </Panel>
+    </Painel>
   );
 }
 
 async function ExpiringBlock({ now }: { now: Date }) {
   const expiring = await obterPlanosDeFornecedorPrestesAVencer(now, 7, 5);
   return (
-    <Panel title="Planos de fornecedores vencendo" action={{ label: "Ver todos", href: "/admin/fornecedores?aba=vencendo" }}>
+    <Painel title="Planos de fornecedores vencendo" action={{ label: "Ver todos", href: "/admin/fornecedores?aba=vencendo" }}>
       {expiring.length === 0 ? (
         <p className="text-tinta-suave">Nenhum plano pago vence nos próximos 7 dias.</p>
       ) : (
@@ -269,29 +269,29 @@ async function ExpiringBlock({ now }: { now: Date }) {
                 </span>
               </span>
               <span className="flex items-center gap-2">
-                <PlanChip plan={v.planTier} />
+                <EtiquetaDePlano plan={v.planTier} />
                 {v.reminderSent ? (
-                  <StatusChip tone="neutro" icon={Check}>
+                  <EtiquetaDeSituacao tone="neutro" icon={Check}>
                     Aviso enviado
-                  </StatusChip>
+                  </EtiquetaDeSituacao>
                 ) : (
-                  <StatusChip tone="aviso" icon={Clock}>
+                  <EtiquetaDeSituacao tone="aviso" icon={Clock}>
                     Aviso pendente
-                  </StatusChip>
+                  </EtiquetaDeSituacao>
                 )}
               </span>
             </li>
           ))}
         </ul>
       )}
-    </Panel>
+    </Painel>
   );
 }
 
 async function ErrorsBlock({ now }: { now: Date }) {
   const errors = await obterErrosRecentes(now);
   return (
-    <Panel title="Erros e falhas nas últimas 24 horas" action={{ label: "Saúde do sistema", href: "/admin/saude" }}>
+    <Painel title="Erros e falhas nas últimas 24 horas" action={{ label: "Saúde do sistema", href: "/admin/saude" }}>
       {errors.nothingRecorded ? (
         <p className="text-sm leading-6 text-tinta-suave">
           <strong className="font-semibold text-tinta">Sem registros ainda.</strong> Os envios e avisos dos serviços passam a aparecer aqui conforme acontecem. Sem registro não quer dizer que está tudo certo.
@@ -308,13 +308,13 @@ async function ErrorsBlock({ now }: { now: Date }) {
               </span>
               {s.total > 0 &&
                 (s.failures > 0 ? (
-                  <StatusChip tone="aviso" icon={AlertTriangle}>
+                  <EtiquetaDeSituacao tone="aviso" icon={AlertTriangle}>
                     Atenção
-                  </StatusChip>
+                  </EtiquetaDeSituacao>
                 ) : (
-                  <StatusChip tone="sucesso" icon={CheckCircle2}>
+                  <EtiquetaDeSituacao tone="sucesso" icon={CheckCircle2}>
                     Sem falhas
-                  </StatusChip>
+                  </EtiquetaDeSituacao>
                 ))}
             </li>
           ))}
@@ -324,14 +324,14 @@ async function ErrorsBlock({ now }: { now: Date }) {
                 <span className="block font-semibold text-tinta">Rotina diária ({c.job})</span>
                 <span className="block text-sm text-tinta-suave">Falhou {haQuantoTempo(c.at, now)}</span>
               </span>
-              <StatusChip tone="perigo" icon={AlertTriangle}>
+              <EtiquetaDeSituacao tone="perigo" icon={AlertTriangle}>
                 Falhou
-              </StatusChip>
+              </EtiquetaDeSituacao>
             </li>
           ))}
         </ul>
       )}
-    </Panel>
+    </Painel>
   );
 }
 
@@ -341,9 +341,9 @@ async function EmptyOverview({ eyebrow, title }: { eyebrow: string; title: strin
   const done = checklist.filter((i) => i.done).length;
   return (
     <>
-      <PageHeader eyebrow={eyebrow} title={title} description="Tudo pronto por aqui. Falta só o primeiro casal chegar." />
+      <CabecalhoDaPagina eyebrow={eyebrow} title={title} description="Tudo pronto por aqui. Falta só o primeiro casal chegar." />
       <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr] lg:items-start">
-        <Panel title="Para abrir as portas" aside={<span className="text-sm text-tinta-suave">{done} de {checklist.length}</span>}>
+        <Painel title="Para abrir as portas" aside={<span className="text-sm text-tinta-suave">{done} de {checklist.length}</span>}>
           <ul className="flex flex-col">
             {checklist.map((item) => (
               <li key={item.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-linha py-4 first:pt-0 last:border-b-0 last:pb-0">
@@ -355,44 +355,44 @@ async function EmptyOverview({ eyebrow, title }: { eyebrow: string; title: strin
                   <span className="block text-sm text-tinta-suave">{item.detail}</span>
                 </span>
                 {item.done ? (
-                  <StatusChip tone="sucesso" icon={CheckCircle2}>
+                  <EtiquetaDeSituacao tone="sucesso" icon={CheckCircle2}>
                     Feito
-                  </StatusChip>
+                  </EtiquetaDeSituacao>
                 ) : (
-                  <Link href={item.href} className={`${btn.secondary} ${btn.sm}`}>
+                  <Link href={item.href} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
                     {item.actionLabel}
                   </Link>
                 )}
               </li>
             ))}
           </ul>
-        </Panel>
+        </Painel>
         <div className="flex flex-col gap-6">
-          <Panel title="Receita">
-            <EmptyState icon={Wallet} compact title="Ainda sem pagamentos">
+          <Painel title="Receita">
+            <EstadoVazio icon={Wallet} compact title="Ainda sem pagamentos">
               Quando chegar o primeiro pagamento, a receita do mês aparece aqui.
-            </EmptyState>
-          </Panel>
-          <Panel title="Precisa da sua atenção">
-            <EmptyState icon={CheckCircle2} compact title="Tudo em dia">
+            </EstadoVazio>
+          </Painel>
+          <Painel title="Precisa da sua atenção">
+            <EstadoVazio icon={CheckCircle2} compact title="Tudo em dia">
               Pedidos de domínio, Pix para conferir e fornecedores na curadoria aparecem aqui.
-            </EmptyState>
-          </Panel>
+            </EstadoVazio>
+          </Painel>
         </div>
       </div>
-      <Panel title="Novos casais">
-        <EmptyState
+      <Painel title="Novos casais">
+        <EstadoVazio
           icon={Heart}
           title="Nenhum casal ainda"
           action={
-            <Link href="/planos" className={`${btn.secondary} ${btn.sm} gap-2`}>
+            <Link href="/planos" className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm} gap-2`}>
               <ExternalLink className="size-4" aria-hidden="true" /> Ver a página de planos
             </Link>
           }
         >
           Quando o primeiro casal criar o casamento, você acompanha o caminho dele até o plano pago.
-        </EmptyState>
-      </Panel>
+        </EstadoVazio>
+      </Painel>
     </>
   );
 }

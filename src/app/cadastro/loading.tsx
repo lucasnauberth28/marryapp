@@ -1,10 +1,10 @@
-import { AuthHeadingSkeleton, AuthShellSkeleton } from "@/components/account/auth-shell-skeleton";
+import { EsqueletoDoTituloDeAcesso, EsqueletoDoMoldeDeAcesso } from "@/components/account/auth-shell-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Espelha a tela de acesso na aba Criar conta: abas, barra de etapas, título e as duas opções de tipo de conta.
 export default function CadastroLoading() {
   return (
-    <AuthShellSkeleton label="o cadastro" mobilePhoto footnote>
+    <EsqueletoDoMoldeDeAcesso label="o cadastro" mobilePhoto footnote>
       <Skeleton className="mb-8 h-[52px] w-full rounded-[12px]" />
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
@@ -18,12 +18,12 @@ export default function CadastroLoading() {
           </div>
           <Skeleton className="h-3.5 w-52 rounded-md" />
         </div>
-        <AuthHeadingSkeleton lines={2} titleLines={2} />
+        <EsqueletoDoTituloDeAcesso lines={2} titleLines={2} />
         <div className="flex flex-col gap-3">
           <Skeleton className="h-[120px] w-full rounded-[16px]" />
           <Skeleton className="h-[120px] w-full rounded-[16px]" />
         </div>
       </div>
-    </AuthShellSkeleton>
+    </EsqueletoDoMoldeDeAcesso>
   );
 }

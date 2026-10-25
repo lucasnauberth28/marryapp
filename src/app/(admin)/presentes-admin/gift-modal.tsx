@@ -2,13 +2,13 @@
 
 import { useId, useState, useTransition } from "react"
 import { toast } from "sonner"
-import { btn } from "@/components/landing/styles"
+import { estiloDoBotao } from "@/components/landing/styles"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { CustomModal } from "@/components/ui/custom-modal"
+import { ModalPersonalizado } from "@/components/ui/custom-modal"
 import { criarPresente } from "@/actions/gift-actions"
 import { ImagePlus } from "lucide-react"
-import { LoadingButton } from "@/components/painel/loading-button"
+import { BotaoComCarregamento } from "@/components/painel/loading-button"
 
 interface GiftModalProps {
   isOpen: boolean
@@ -51,7 +51,7 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
   }
 
   return (
-    <CustomModal
+    <ModalPersonalizado
       isOpen={isOpen}
       onClose={onClose}
       title="Novo presente"
@@ -132,14 +132,14 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
         )}
 
         <div className="pt-2 flex justify-end gap-2">
-          <button type="button" onClick={onClose} disabled={isPending} className={btn.secondary}>
+          <button type="button" onClick={onClose} disabled={isPending} className={estiloDoBotao.secondary}>
             Cancelar
           </button>
-          <LoadingButton type="submit" loading={isPending} className={btn.primary}>
+          <BotaoComCarregamento type="submit" loading={isPending} className={estiloDoBotao.primary}>
             Adicionar presente
-          </LoadingButton>
+          </BotaoComCarregamento>
         </div>
       </form>
-    </CustomModal>
+    </ModalPersonalizado>
   )
 }

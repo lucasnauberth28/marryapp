@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Reveal } from "@/components/motion/reveal";
+import { Aparicao } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 import { CurationChip } from "../../_components/status-chip";
@@ -44,7 +44,7 @@ export default async function PerfilPage() {
         isPublic={vendor.curationStatus === "APPROVED"}
         categories={categories}
         notice={
-          <Reveal
+          <Aparicao
             variant="fade"
             className="flex flex-col gap-3 rounded-2xl border border-linha bg-areia/60 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:p-5"
           >
@@ -57,7 +57,7 @@ export default async function PerfilPage() {
                 <strong className="font-semibold">Recado da curadoria:</strong> {vendor.curationNotes}
               </p>
             ) : null}
-          </Reveal>
+          </Aparicao>
         }
         portfolio={<MediaForm initial={{ logoUrl: vendor.logoUrl, coverUrl: vendor.coverUrl, gallery }} />}
         initial={{

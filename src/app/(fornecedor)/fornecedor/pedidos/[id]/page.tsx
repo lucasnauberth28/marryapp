@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, Lock, Mail, MapPin, MessageCircle, Send } from "lucide-react";
-import { Reveal } from "@/components/motion/reveal";
+import { Aparicao } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
@@ -263,7 +263,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="flex flex-col gap-6">
-      <Reveal variant="fade" className="flex flex-col gap-4">
+      <Aparicao variant="fade" className="flex flex-col gap-4">
         <Link
           href="/fornecedor"
           className="-ml-3 inline-flex min-h-11 w-fit items-center gap-2 rounded-xl px-3 text-[15px] font-semibold text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
@@ -286,11 +286,11 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
             </p>
           ) : null}
         </div>
-      </Reveal>
+      </Aparicao>
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col gap-4">
-          <Reveal variant="up" delay={80}>
+          <Aparicao variant="up" delay={80}>
             <section aria-labelledby="casamento-titulo" className={cn(CARD, "flex flex-col gap-4")}>
               <h2 id="casamento-titulo" className="text-lg font-semibold">
                 O casamento
@@ -326,9 +326,9 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
                 </div>
               ) : null}
             </section>
-          </Reveal>
+          </Aparicao>
 
-          <Reveal variant="up" delay={160}>
+          <Aparicao variant="up" delay={160}>
             <section id="proposta" aria-labelledby="proposta-titulo" className={cn(CARD, "flex scroll-mt-20 flex-col gap-4")}>
               <div className="flex flex-col gap-0.5">
                 <h2 id="proposta-titulo" className="text-lg font-semibold">
@@ -351,11 +351,11 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
                 }}
               />
             </section>
-          </Reveal>
+          </Aparicao>
         </div>
 
         <div className="flex min-w-0 flex-col gap-4">
-          <Reveal variant="up" delay={120}>
+          <Aparicao variant="up" delay={120}>
             <section aria-labelledby="contato-titulo" className={cn(CARD, "flex flex-col gap-3")}>
               <h2 id="contato-titulo" className="text-lg font-semibold">
                 Falar com o casal
@@ -391,9 +391,9 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
                 ) : null}
               </ul>
             </section>
-          </Reveal>
+          </Aparicao>
 
-          <Reveal variant="up" delay={200}>
+          <Aparicao variant="up" delay={200}>
             <section aria-labelledby="andamento-titulo" className={cn(CARD, "flex flex-col gap-4")}>
               <h2 id="andamento-titulo" className="text-lg font-semibold">
                 Andamento
@@ -420,10 +420,10 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
                 ))}
               </ol>
             </section>
-          </Reveal>
+          </Aparicao>
 
           {status === "CLOSED" ? (
-            <Reveal variant="up" delay={240}>
+            <Aparicao variant="up" delay={240}>
               <ReviewRequest
                 leadId={lead.id}
                 coupleName={lead.coupleName}
@@ -433,7 +433,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
                 requestedAtLabel={lead.reviewRequestedAt ? formatDateTimeBrasilia(lead.reviewRequestedAt) : null}
                 review={lead.review ? { rating: lead.review.rating, atLabel: formatDateTimeBrasilia(lead.review.createdAt) } : null}
               />
-            </Reveal>
+            </Aparicao>
           ) : null}
 
           <DeclineLead
@@ -492,7 +492,7 @@ function LockedLead({
 }) {
   return (
     <div className="flex flex-col gap-6">
-      <Reveal variant="fade" className="flex flex-col gap-4">
+      <Aparicao variant="fade" className="flex flex-col gap-4">
         <Link
           href="/fornecedor"
           className="-ml-3 inline-flex min-h-11 w-fit items-center gap-2 rounded-xl px-3 text-[15px] font-semibold text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
@@ -509,9 +509,9 @@ function LockedLead({
             {firstName}
           </h1>
         </div>
-      </Reveal>
+      </Aparicao>
 
-      <Reveal variant="up" delay={80}>
+      <Aparicao variant="up" delay={80}>
         <section aria-labelledby="bloqueado-titulo" className={cn(CARD, "flex max-w-2xl flex-col gap-4")}>
           <h2 id="bloqueado-titulo" className="text-lg font-semibold">
             Pedido bloqueado pelo Plano Start
@@ -541,7 +541,7 @@ function LockedLead({
             Desbloquear com o Pro
           </Link>
         </section>
-      </Reveal>
+      </Aparicao>
     </div>
   );
 }

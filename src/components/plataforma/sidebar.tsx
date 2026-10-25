@@ -1,22 +1,22 @@
 import Link from "next/link";
 import { LogOut, Search } from "lucide-react";
 import { sair } from "@/actions/auth-actions";
-import { Logo } from "@/components/brand/logo";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { PlatformNavList, type PlatformNavCountsProp } from "@/components/plataforma/nav-list";
+import { Logotipo } from "@/components/brand/logo";
+import { AlternadorDeTema } from "@/components/theme/theme-toggle";
+import { ListaDoMenuDaPlataforma, type ContagensDoMenuDaPlataformaNaPropriedade } from "@/components/plataforma/nav-list";
 
 /**
  * Barra lateral da administração (computador): marca, cartão "Administração", "Buscar em tudo" (leva à busca
  * de Suporte e LGPD), menu com contadores reais e o perfil de quem está logado, com "Sair".
  * Componente de servidor: o botão Sair é um formulário que chama a Server Action `logout`.
  */
-export function PlatformSidebar({
+export function BarraLateralDaPlataforma({
   counts,
   name,
   initials,
   roleLabel,
 }: {
-  counts: PlatformNavCountsProp;
+  counts: ContagensDoMenuDaPlataformaNaPropriedade;
   name: string;
   initials: string;
   roleLabel: string;
@@ -24,7 +24,7 @@ export function PlatformSidebar({
   return (
     <aside className="sticky top-0 hidden h-screen w-[264px] shrink-0 flex-col gap-5 border-r border-linha bg-linho px-4 pb-4 pt-6 md:flex">
       <Link href="/admin" aria-label="Aceito, início da administração" className="px-3">
-        <Logo height={26} priority />
+        <Logotipo height={26} priority />
       </Link>
 
       <div className="flex flex-col gap-0.5 rounded-xl border border-linha bg-papel p-3">
@@ -41,7 +41,7 @@ export function PlatformSidebar({
       </Link>
 
       <nav aria-label="Administração" className="-mx-1 min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-1" data-lenis-prevent>
-        <PlatformNavList counts={counts} />
+        <ListaDoMenuDaPlataforma counts={counts} />
       </nav>
 
       <div className="flex items-center gap-1 border-t border-linha pt-3">
@@ -54,7 +54,7 @@ export function PlatformSidebar({
             <span className="truncate text-tinta-suave">{roleLabel}</span>
           </span>
         </Link>
-        <ThemeToggle align="start" />
+        <AlternadorDeTema align="start" />
         <form action={sair}>
           <button
             type="submit"

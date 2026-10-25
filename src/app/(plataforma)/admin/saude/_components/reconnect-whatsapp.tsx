@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { CustomModal } from "@/components/ui/custom-modal";
+import { ModalPersonalizado } from "@/components/ui/custom-modal";
 import { Button } from "@/components/ui/button";
-import { QrFrame } from "@/components/ui/qr-frame";
+import { MolduraDoQr } from "@/components/ui/qr-frame";
 import { CORES_DO_QR } from "@/lib/qr-colors";
 import { LoadingRegion, SkeletonImage } from "@/components/skeletons";
 import { reconectarWhatsapp } from "@/actions/admin-saude-actions";
@@ -36,7 +36,7 @@ export function ReconnectWhatsapp() {
       <Button type="button" variant="quiet" size="sm" onClick={start} loading={pending}>
         Reconectar
       </Button>
-      <CustomModal isOpen={open} onClose={() => setOpen(false)} title="Reconectar o WhatsApp" description="No celular do número do Aceito: WhatsApp, Aparelhos conectados, Conectar um aparelho. Aponte a câmera para o código.">
+      <ModalPersonalizado isOpen={open} onClose={() => setOpen(false)} title="Reconectar o WhatsApp" description="No celular do número do Aceito: WhatsApp, Aparelhos conectados, Conectar um aparelho. Aponte a câmera para o código.">
         <div className="flex min-h-64 flex-col items-center justify-center gap-3">
           {pending && (
             <LoadingRegion label="o código">
@@ -50,18 +50,18 @@ export function ReconnectWhatsapp() {
           )}
           {qr &&
             (qr.startsWith("data:image") ? (
-              <QrFrame className="p-3">
+              <MolduraDoQr className="p-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={qr} alt="QR Code para conectar o WhatsApp" className="h-60 w-60 object-contain" />
-              </QrFrame>
+              </MolduraDoQr>
             ) : (
-              <QrFrame className="p-3">
+              <MolduraDoQr className="p-3">
                 <QRCodeSVG value={qr} size={240} {...CORES_DO_QR} marginSize={2} aria-label="QR Code para conectar o WhatsApp" />
-              </QrFrame>
+              </MolduraDoQr>
             ))}
           {qr && <p className="text-center text-sm text-tinta-suave">O código vale por pouco tempo. Depois de conectar, atualize esta página.</p>}
         </div>
-      </CustomModal>
+      </ModalPersonalizado>
     </>
   );
 }

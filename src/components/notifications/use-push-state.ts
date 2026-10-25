@@ -6,15 +6,15 @@ import { classificarSuporteAoPush, ehAparelhoIos, type SituacaoDoSuporteAoPush }
 // Estado do aparelho para avisos, lido do navegador como uma "fonte externa" (sem setState em efeito).
 // Muda quando a permissão muda (inclusive nas configurações do navegador) ou o app é instalado.
 
-const listeners = new Set<() => void>();
-const emit = () => listeners.forEach((l) => l());
+const ouvintesDoProgresso = new Set<() => void>();
+const emitirMudancaDoTema = () => ouvintesDoProgresso.forEach((l) => l());
 
 /** Chame depois de pedir permissão: nem todo navegador avisa a mudança sozinho. */
-export function notifyPushStateChanged() {
-  emit();
+export function avisarMudancaNoPush() {
+  emitirMudancaDoTema();
 }
 
-function read(): SituacaoDoSuporteAoPush {
+function lerSituacaoDoPush(): SituacaoDoSuporteAoPush {
   const standalone =
     window.matchMedia?.("(display-mode: standalone)").matches === true ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true;
@@ -28,8 +28,8 @@ function read(): SituacaoDoSuporteAoPush {
   });
 }
 
-function subscribe(onChange: () => void) {
-  listeners.add(onChange);
+function assinarMudancas(onChange: () => void) {
+  ouvintesDoProgresso.add(onChange);
   let status: PermissionStatus | null = null;
   let cancelled = false;
   navigator.permissions
@@ -44,12 +44,12 @@ function subscribe(onChange: () => void) {
   media?.addEventListener("change", onChange);
   return () => {
     cancelled = true;
-    listeners.delete(onChange);
+    ouvintesDoProgresso.delete(onChange);
     status?.removeEventListener("change", onChange);
     media?.removeEventListener("change", onChange);
   };
 }
 
-export function usePushSupport(): SituacaoDoSuporteAoPush {
-  return useSyncExternalStore(subscribe, read, () => "checking" as const);
+export function useSuporteAoPush(): SituacaoDoSuporteAoPush {
+  return useSyncExternalStore(assinarMudancas, lerSituacaoDoPush, () => "checking" as const);
 }

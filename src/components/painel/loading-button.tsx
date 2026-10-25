@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { Spinner } from "@/components/ui/spinner";
+import { IndicadorDeCarregamento } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 
 /**
@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  *   <LoadingButton type="submit" className={btn.primary} loading={pendente}>Salvar</LoadingButton>
  * Use no lugar de trocar o rótulo por "Salvando..." ou de pôr um ícone girando dentro do botão.
  */
-export function LoadingButton({
+export function BotaoComCarregamento({
   loading = false,
   disabled,
   className,
@@ -28,7 +28,7 @@ export function LoadingButton({
       {loading ? (
         <>
           <span className="pointer-events-none absolute inset-0 grid place-items-center" aria-hidden="true">
-            <Spinner />
+            <IndicadorDeCarregamento />
           </span>
           {/* Mesmo conteúdo, transparente: mantém a largura e o nome acessível. */}
           <span className="inline-flex items-center justify-center gap-[inherit] opacity-0">{children}</span>

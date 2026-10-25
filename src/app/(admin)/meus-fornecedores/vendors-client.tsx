@@ -1,21 +1,21 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useSyncedState } from "@/hooks/use-synced-state";
+import { useEstadoSincronizado } from "@/hooks/use-synced-state";
 
 import { useId, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { criarFornecedor, atualizarFornecedor, excluirFornecedor, type obterFornecedores } from "@/actions/vendor-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { PageHeader } from "@/components/admin/page-header";
-import { btn } from "@/components/landing/styles";
-import { Chip, card } from "@/components/casal/ui";
-import { LoadingButton } from "@/components/painel/loading-button";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
+import { estiloDoBotao } from "@/components/landing/styles";
+import { Etiqueta, estiloDoCartao } from "@/components/casal/ui";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
 
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 type WeddingVendor = Awaited<ReturnType<typeof obterFornecedores>>[number];
@@ -52,7 +52,7 @@ function paymentSummary(v: WeddingVendor) {
 export function VendorsClient({ initialVendors }: VendorsClientProps) {
   const router = useRouter();
   const uid = useId();
-  const [vendors, setVendors] = useSyncedState<WeddingVendor[]>(initialVendors);
+  const [vendors, setVendors] = useEstadoSincronizado<WeddingVendor[]>(initialVendors);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingVendor, setEditingVendor] = useState<WeddingVendor | null>(null);
@@ -151,16 +151,16 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow="Organização"
         title="Meus fornecedores"
         description={vendors.length === 0 ? "Registrem aqui quem vocês contrataram." : `${vendors.length} ${vendors.length === 1 ? "contratado" : "contratados"}`}
         actions={
           <>
-            <Link href="/fornecedores" className={btn.secondary}>
+            <Link href="/fornecedores" className={estiloDoBotao.secondary}>
               Encontrar fornecedores
             </Link>
-            <button type="button" onClick={openCreate} className={btn.primary}>
+            <button type="button" onClick={openCreate} className={estiloDoBotao.primary}>
               <Plus className="size-4" aria-hidden="true" /> Adicionar fornecedor
             </button>
           </>
@@ -174,19 +174,19 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
             Contratados <span className="text-tinta-suave">{vendors.length}</span>
           </h2>
           {vendors.length === 0 ? (
-            <div className={`${card} flex flex-col items-start gap-3 p-4`}>
+            <div className={`${estiloDoCartao} flex flex-col items-start gap-3 p-4`}>
               <p className="text-[15px] text-tinta-suave">Ainda não há fornecedores aqui. Adicionem o primeiro para acompanhar contato e pagamentos.</p>
-              <button type="button" onClick={openCreate} className={`${btn.primary} ${btn.sm}`}>
+              <button type="button" onClick={openCreate} className={`${estiloDoBotao.primary} ${estiloDoBotao.sm}`}>
                 <Plus className="size-4" aria-hidden="true" /> Adicionar fornecedor
               </button>
             </div>
           ) : (
             <ul className="flex flex-col gap-2">
               {vendors.map((v) => (
-                <li key={v.id} className={`${card} flex flex-col gap-1.5 p-3.5`}>
+                <li key={v.id} className={`${estiloDoCartao} flex flex-col gap-1.5 p-3.5`}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 flex-col items-start gap-1.5">
-                      <Chip tone="salvia" className="min-h-6 text-[13px]">{v.category}</Chip>
+                      <Etiqueta tone="salvia" className="min-h-6 text-[13px]">{v.category}</Etiqueta>
                       <strong className="font-semibold text-tinta">{v.name}</strong>
                     </div>
                     <div className="-mr-2 -mt-1 flex shrink-0">
@@ -194,7 +194,7 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
                         type="button"
                         aria-label={`Editar ${v.name}`}
                         onClick={() => openEdit(v)}
-                        className={`${btn.quiet} !min-w-11 !px-0`}
+                        className={`${estiloDoBotao.quiet} !min-w-11 !px-0`}
                       >
                         <Pencil className="size-4" aria-hidden="true" />
                       </button>
@@ -202,7 +202,7 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
                         type="button"
                         aria-label={`Remover ${v.name}`}
                         onClick={() => handleDelete(v)}
-                        className={`${btn.quiet} !min-w-11 !px-0 text-perigo hover:bg-perigo-suave`}
+                        className={`${estiloDoBotao.quiet} !min-w-11 !px-0 text-perigo hover:bg-perigo-suave`}
                       >
                         <Trash2 className="size-4" aria-hidden="true" />
                       </button>
@@ -211,9 +211,9 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
                   <span className="text-sm text-tinta-suave">{paymentSummary(v)}</span>
                   {v.contact && <span className="text-sm text-tinta-suave">{v.contact}</span>}
                   {v.contractUrl && (
-                    <Chip tone="sucesso" icon={Check}>
+                    <Etiqueta tone="sucesso" icon={Check}>
                       Contrato anexado
-                    </Chip>
+                    </Etiqueta>
                   )}
                 </li>
               ))}
@@ -227,12 +227,12 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
             Ainda falta escolher <span className="text-tinta-suave">{missing.length}</span>
           </h2>
           {missing.length === 0 ? (
-            <p className={`${card} p-4 text-[15px] text-tinta-suave`}>Vocês já têm fornecedor em todas as categorias mais comuns.</p>
+            <p className={`${estiloDoCartao} p-4 text-[15px] text-tinta-suave`}>Vocês já têm fornecedor em todas as categorias mais comuns.</p>
           ) : (
             <ul className="flex flex-col gap-2">
               {missing.map((c) => (
                 <li key={c}>
-                  <Link href="/fornecedores" className={`${card} flex min-h-12 items-center justify-between p-3.5 text-tinta no-underline hover:border-ameixa`}>
+                  <Link href="/fornecedores" className={`${estiloDoCartao} flex min-h-12 items-center justify-between p-3.5 text-tinta no-underline hover:border-ameixa`}>
                     <span>{c}</span>
                     <ChevronRight className="size-4" aria-hidden="true" />
                   </Link>
@@ -293,14 +293,14 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
               {fileName && <p className="mt-1 text-sm text-tinta-suave">Arquivo escolhido: {fileName}</p>}
               {editingVendor?.contractUrl && !fileName && <p className="mt-1 text-sm text-tinta-suave">Já há um contrato anexado. Escolher outro arquivo troca o atual.</p>}
             </div>
-            <LoadingButton type="submit" className={`${btn.primary} ${btn.block}`} loading={loading}>
+            <BotaoComCarregamento type="submit" className={`${estiloDoBotao.primary} ${estiloDoBotao.block}`} loading={loading}>
               {editingVendor ? "Salvar mudanças" : "Adicionar fornecedor"}
-            </LoadingButton>
+            </BotaoComCarregamento>
           </form>
         </DialogContent>
       </Dialog>
 
-      <ConfirmModal
+      <ModalDeConfirmacao
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={() => {

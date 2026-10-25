@@ -3,8 +3,8 @@
 import { useState, useTransition } from "react";
 import type { TransacaoComPresente } from "@/actions/finance-actions";
 import { aprovarTransacaoPix, alternarAgradecimentoEnviado } from "@/actions/finance-actions";
-import { DataTable } from "@/components/ui/data-table";
-import { Chip, type ChipTone } from "@/components/casal/ui";
+import { TabelaDeDados } from "@/components/ui/data-table";
+import { Etiqueta, type TomDaEtiqueta } from "@/components/casal/ui";
 import { Button } from "@/components/ui/button";
 import {
   CheckCircle2,
@@ -77,7 +77,7 @@ function Toast({
 // ==========================================
 
 function StatusBadge({ status }: { status: string }) {
-  const config: Record<string, { label: string; tone: ChipTone; icon: typeof Clock }> = {
+  const config: Record<string, { label: string; tone: TomDaEtiqueta; icon: typeof Clock }> = {
     APPROVED: { label: "Recebido", tone: "sucesso", icon: Check },
     PENDING: { label: "A conferir", tone: "aviso", icon: Clock },
     FAILED: { label: "Não passou", tone: "perigo", icon: X },
@@ -86,9 +86,9 @@ function StatusBadge({ status }: { status: string }) {
   };
   const c = config[status] || config.PENDING;
   return (
-    <Chip tone={c.tone} icon={c.icon}>
+    <Etiqueta tone={c.tone} icon={c.icon}>
       {c.label}
-    </Chip>
+    </Etiqueta>
   );
 }
 
@@ -277,7 +277,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
 
   return (
     <div className="space-y-4">
-      <DataTable
+      <TabelaDeDados
         data={transactions}
         mobileCard={(tx) => (
           <div className="flex flex-col gap-2">

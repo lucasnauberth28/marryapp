@@ -1,5 +1,5 @@
-import { SmoothScroll } from "@/components/motion/smooth-scroll";
-import { GuestMaintenanceNotice } from "@/components/maintenance/guest-notice";
+import { RolagemSuave } from "@/components/motion/smooth-scroll";
+import { AvisoDeManutencaoParaConvidados } from "@/components/maintenance/guest-notice";
 
 export default function PublicLayout({
   children,
@@ -8,8 +8,8 @@ export default function PublicLayout({
 }) {
   return (
     <>
-      <SmoothScroll />
-      <GuestMaintenanceNotice />
+      <RolagemSuave />
+      <AvisoDeManutencaoParaConvidados />
       <main id="conteudo" className="min-h-screen bg-transparent">
         {children}
       </main>

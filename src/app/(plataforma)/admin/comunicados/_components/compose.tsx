@@ -6,17 +6,17 @@ import { useRouter } from "next/navigation";
 import { Bell, Link2, Mail, Megaphone, Send, Settings, Clock, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Spinner } from "@/components/ui/spinner";
+import { IndicadorDeCarregamento } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { FormAlert } from "@/components/ui/field";
-import { Panel } from "@/components/plataforma/panel";
-import { StatusChip } from "@/components/plataforma/status-chip";
-import { card } from "@/components/casal/ui";
+import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
+import { AvisoDoFormulario } from "@/components/ui/field";
+import { Painel } from "@/components/plataforma/panel";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
+import { estiloDoCartao } from "@/components/casal/ui";
 import { cn } from "@/lib/utils";
 import {
   MODELOS_DE_COMUNICADO,
@@ -151,7 +151,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
             const Icon = TEMPLATE_ICON[t.id as keyof typeof TEMPLATE_ICON] ?? Megaphone;
             return (
               <li key={t.id}>
-                <button type="button" onClick={() => applyTemplate(t.id)} className={cn(card, "flex min-h-16 w-full items-center gap-3 p-4 text-left transition-shadow hover:shadow-[var(--shadow-aceito-2)] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa")}>
+                <button type="button" onClick={() => applyTemplate(t.id)} className={cn(estiloDoCartao, "flex min-h-16 w-full items-center gap-3 p-4 text-left transition-shadow hover:shadow-[var(--shadow-aceito-2)] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa")}>
                   <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ameixa-suave text-ameixa">
                     <Icon className="size-5" aria-hidden="true" />
                   </span>
@@ -167,12 +167,12 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
       </section>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <Panel
+        <Painel
           title={draftId ? "Editar rascunho" : "Novo comunicado"}
           aside={
-            <StatusChip tone="neutro" icon={Pencil}>
+            <EtiquetaDeSituacao tone="neutro" icon={Pencil}>
               Rascunho
-            </StatusChip>
+            </EtiquetaDeSituacao>
           }
         >
           <form
@@ -245,7 +245,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
               <p aria-busy={previewing || undefined} className={cn("flex min-h-7 flex-wrap items-center gap-2 text-sm leading-5 text-tinta-suave transition-opacity", previewing && "opacity-60")} aria-live="polite">
                 {preview ? (
                   <>
-                    <StatusChip tone={preview.people === 0 || preview.tooMany ? "aviso" : "salvia"}>Chega a {audienceText}</StatusChip>
+                    <EtiquetaDeSituacao tone={preview.people === 0 || preview.tooMany ? "aviso" : "salvia"}>Chega a {audienceText}</EtiquetaDeSituacao>
                     <span>{preview.tooMany ? "Passa do limite de 5.000 pessoas por envio." : `${pluralizar(preview.people, "pessoa", "pessoas")} com conta.`}</span>
                   </>
                 ) : (
@@ -298,7 +298,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
               <Input label="Link do botão" optional icon={Link2} value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} error={errors.linkUrl} inputMode="url" placeholder="https://" />
             </fieldset>
 
-            {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
+            {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
 
             <div className="flex flex-wrap items-center gap-3">
               <Button type="submit" disabled={busy}>
@@ -327,10 +327,10 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
             </div>
             <p className="text-sm leading-5 text-tinta-suave">O envio é imediato: não há agendamento. Quem já recebeu não recebe de novo se o envio for retomado.</p>
           </form>
-        </Panel>
+        </Painel>
 
         <div className="flex min-w-0 flex-col gap-6">
-          <Panel title="Prévia">
+          <Painel title="Prévia">
             <div className="flex flex-col gap-5">
               <div>
                 <p className="mb-2 text-base font-semibold text-tinta">Aviso no painel</p>
@@ -371,10 +371,10 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
                 </div>
               </div>
             </div>
-          </Panel>
+          </Painel>
 
           {drafts.length > 0 && (
-            <Panel title="Rascunhos">
+            <Painel title="Rascunhos">
               <ul className="divide-y divide-linha">
                 {drafts.map((d) => (
                   <li key={d.id} className="flex items-center justify-between gap-3 py-2.5">
@@ -386,12 +386,12 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
                   </li>
                 ))}
               </ul>
-            </Panel>
+            </Painel>
           )}
         </div>
       </div>
 
-      <ConfirmModal
+      <ModalDeConfirmacao
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         variant="default"
@@ -434,7 +434,7 @@ function DeleteDraft({ id, current }: { id: string; current: boolean }) {
       }
       className="grid size-11 shrink-0 place-items-center rounded-xl text-tinta-suave hover:bg-areia hover:text-perigo focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa"
     >
-      {pending ? <Spinner /> : <Trash2 className="size-4" aria-hidden="true" />}
+      {pending ? <IndicadorDeCarregamento /> : <Trash2 className="size-4" aria-hidden="true" />}
     </button>
   );
 }

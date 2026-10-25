@@ -28,7 +28,7 @@ export type { ChaveDeContagemDoMenu as NavCountKey };
 export { AREAS_DO_PAINEL as PANEL_AREAS, areasVisiveis as visibleAreas, areaDoCaminho as areaOfPath, TELAS_DA_CONTA as ACCOUNT_SCREENS } from "@/lib/panel-nav";
 
 /** Ícone de cada área e tela (a estrutura e os nomes ficam em lib/panel-nav). */
-const ICONS: Record<string, LucideIcon> = {
+const ICONES_DO_MENU: Record<string, LucideIcon> = {
   resumo: LayoutDashboard,
   convidados: UsersIcon,
   mensagens: MessageCircle,
@@ -47,11 +47,11 @@ const ICONS: Record<string, LucideIcon> = {
   encontrar: Compass,
 };
 
-export function navIcon(key: string): LucideIcon {
-  return ICONS[key] ?? LayoutDashboard;
+export function iconeDoMenu(key: string): LucideIcon {
+  return ICONES_DO_MENU[key] ?? LayoutDashboard;
 }
 
-export interface AdminNavItem {
+export interface ItemDoMenuDoAdmin {
   name: string;
   href: string;
   icon: LucideIcon;
@@ -60,7 +60,7 @@ export interface AdminNavItem {
 
 // Ferramentas de administração que moram no painel (só aparecem para quem tem a permissão): a mesma lista de antes,
 // agora fora do menu principal. A barra lateral da administração da plataforma (/admin) é outra e não mudou.
-const ADMIN_NAV_ITEMS: AdminNavItem[] = [
+const ITENS_DO_MENU_DO_ADMIN: ItemDoMenuDoAdmin[] = [
   { name: "Curadoria", href: "/curadoria", icon: ShieldCheck },
   { name: "Assinaturas", href: "/assinaturas", icon: BadgeDollarSign },
   // Só quem tem acesso total ("*") entra: a página confere de novo no servidor.
@@ -71,11 +71,11 @@ const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { name: "Registro de atividades", href: "/atividades", icon: ScrollText },
 ];
 
-export function visibleAdminItems(allowedPaths: readonly string[]): AdminNavItem[] {
+export function itensVisiveisDoAdmin(allowedPaths: readonly string[]): ItemDoMenuDoAdmin[] {
   const paths = [...allowedPaths];
-  return ADMIN_NAV_ITEMS.filter((item) => temAcessoAoCaminho(paths, item.href));
+  return ITENS_DO_MENU_DO_ADMIN.filter((item) => temAcessoAoCaminho(paths, item.href));
 }
 
-export function isNavItemActive(pathname: string, href: string) {
+export function itemDoMenuEstaAtivo(pathname: string, href: string) {
   return telaEstaAtiva(pathname, href);
 }

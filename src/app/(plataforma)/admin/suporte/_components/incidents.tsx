@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { Plus, ShieldCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { DatePicker } from "@/components/ui/date-picker";
-import { FormAlert } from "@/components/ui/field";
-import { Panel } from "@/components/plataforma/panel";
-import { StatusChip } from "@/components/plataforma/status-chip";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { btn } from "@/components/landing/styles";
+import { SeletorDeData } from "@/components/ui/date-picker";
+import { AvisoDoFormulario } from "@/components/ui/field";
+import { Painel } from "@/components/plataforma/panel";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { criarIncidenteDeSeguranca, atualizarIncidenteDeSeguranca } from "@/actions/admin-suporte-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
@@ -31,11 +31,11 @@ export function Incidents({ rows, today }: { rows: IncidentItem[]; today: string
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   return (
-    <Panel
+    <Painel
       title="Incidentes de segurança"
       aside={
         !formOpen && (
-          <button type="button" onClick={() => setFormOpen(true)} className={`${btn.secondary} ${btn.sm}`}>
+          <button type="button" onClick={() => setFormOpen(true)} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
             <Plus className="size-4" aria-hidden="true" /> Registrar incidente
           </button>
         )
@@ -43,9 +43,9 @@ export function Incidents({ rows, today }: { rows: IncidentItem[]; today: string
     >
       {formOpen && <NewIncident today={today} onDone={() => setFormOpen(false)} />}
       {rows.length === 0 ? (
-        <EmptyState icon={ShieldCheck} compact title="Nenhum incidente registrado">
+        <EstadoVazio icon={ShieldCheck} compact title="Nenhum incidente registrado">
           Se algo acontecer, registre aqui o que foi afetado, quando e quem foi avisado.
-        </EmptyState>
+        </EstadoVazio>
       ) : (
         <ul className="divide-y divide-linha overflow-hidden rounded-2xl border border-linha">
           {rows.map((i) => (
@@ -56,8 +56,8 @@ export function Incidents({ rows, today }: { rows: IncidentItem[]; today: string
                   <p className="text-sm text-tinta-suave">Descoberto em {i.discoveredLabel}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <StatusChip tone={i.open ? "aviso" : "neutro"}>{i.open ? "Aberto" : "Fechado"}</StatusChip>
-                  <button type="button" aria-expanded={editing === i.id} onClick={() => setEditing(editing === i.id ? null : i.id)} className={`${btn.quiet} ${btn.sm}`}>
+                  <EtiquetaDeSituacao tone={i.open ? "aviso" : "neutro"}>{i.open ? "Aberto" : "Fechado"}</EtiquetaDeSituacao>
+                  <button type="button" aria-expanded={editing === i.id} onClick={() => setEditing(editing === i.id ? null : i.id)} className={`${estiloDoBotao.quiet} ${estiloDoBotao.sm}`}>
                     {editing === i.id ? "Fechar" : "Ver"}
                   </button>
                 </div>
@@ -67,7 +67,7 @@ export function Incidents({ rows, today }: { rows: IncidentItem[]; today: string
           ))}
         </ul>
       )}
-    </Panel>
+    </Painel>
   );
 }
 
@@ -94,10 +94,10 @@ function NewIncident({ today, onDone }: { today: string; onDone: () => void }) {
       <Input label="Título" value={title} onChange={(e) => setTitle(e.target.value)} error={errors.title} maxLength={140} />
       <Textarea label="O que aconteceu" value={description} onChange={(e) => setDescription(e.target.value)} error={errors.description} rows={3} maxLength={3000} />
       <Textarea label="O que foi afetado" optional value={affected} onChange={(e) => setAffected(e.target.value)} error={errors.affected} rows={2} maxLength={2000} />
-      <DatePicker label="Descoberto em" value={discoveredAt} onChange={(e) => setDiscoveredAt(e.target.value)} error={errors.discoveredAt} />
-      <DatePicker label="Quando avisou" optional value={notifiedOn} onChange={(e) => setNotifiedOn(e.target.value)} error={errors.notifiedOn} />
+      <SeletorDeData label="Descoberto em" value={discoveredAt} onChange={(e) => setDiscoveredAt(e.target.value)} error={errors.discoveredAt} />
+      <SeletorDeData label="Quando avisou" optional value={notifiedOn} onChange={(e) => setNotifiedOn(e.target.value)} error={errors.notifiedOn} />
       <Textarea label="Quem foi avisado" optional value={notifiedWho} onChange={(e) => setNotifiedWho(e.target.value)} error={errors.notifiedWho} rows={2} maxLength={2000} />
-      {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
+      {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="flex flex-wrap gap-3">
         <Button type="submit" loading={pending}>
           Registrar incidente
@@ -124,9 +124,9 @@ function IncidentEditor({ item, onDone }: { item: IncidentItem; onDone: () => vo
     <div className="flex flex-col gap-4 border-t border-linha bg-linho px-4 py-4">
       <p className="whitespace-pre-line text-sm leading-5 text-tinta">{item.description}</p>
       {item.affected && <p className="whitespace-pre-line text-sm leading-5 text-tinta-suave">Afetado: {item.affected}</p>}
-      <DatePicker label="Quando avisou" optional value={notifiedOn} onChange={(e) => setNotifiedOn(e.target.value)} error={errors.notifiedOn} />
+      <SeletorDeData label="Quando avisou" optional value={notifiedOn} onChange={(e) => setNotifiedOn(e.target.value)} error={errors.notifiedOn} />
       <Textarea label="Quem foi avisado" optional value={notifiedWho} onChange={(e) => setNotifiedWho(e.target.value)} rows={2} maxLength={2000} />
-      {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
+      {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="flex flex-wrap gap-3">
         <Button
           type="button"

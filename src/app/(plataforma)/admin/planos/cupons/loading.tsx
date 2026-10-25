@@ -1,12 +1,12 @@
 import { LoadingRegion, SkeletonPageHeader, SkeletonTable, SkeletonText } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AdminTabsSkeleton } from "@/components/plataforma/loading-parts";
+import { EsqueletoDasAbasDoAdmin } from "@/components/plataforma/loading-parts";
 
 export default function Loading() {
   return (
     <LoadingRegion label="os cupons" className="flex flex-col gap-6">
       <SkeletonPageHeader description />
-      <AdminTabsSkeleton count={6} />
+      <EsqueletoDasAbasDoAdmin count={6} />
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="w-full max-w-md">

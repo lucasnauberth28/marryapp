@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { Download, Heart, Search } from "lucide-react";
-import { PageHeader } from "@/components/plataforma/page-header";
-import { TabsNav } from "@/components/plataforma/tabs-nav";
-import { FilterBar } from "@/components/plataforma/filter-bar";
-import { ExportButton } from "@/components/plataforma/export-button";
-import { PendingRegion } from "@/components/plataforma/pending";
-import { Pagination } from "@/components/plataforma/pagination";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { btn } from "@/components/landing/styles";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { NavegacaoDeAbas } from "@/components/plataforma/tabs-nav";
+import { BarraDeFiltros } from "@/components/plataforma/filter-bar";
+import { BotaoDeExportar } from "@/components/plataforma/export-button";
+import { RegiaoPendente } from "@/components/plataforma/pending";
+import { Paginacao } from "@/components/plataforma/pagination";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type ParametrosDeBusca, montarLink, umDosValores, parametroDaBusca, interpretarPagina, TAMANHO_PADRAO_DA_PAGINA } from "@/lib/platform/list-params";
 import { formatarInteiro } from "@/lib/platform/format";
@@ -80,36 +80,36 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
   const subtitle = hasAnyWedding ? `${pluralizar(counts.total, "casamento", "casamentos")}, ${formatarInteiro(counts.paid)} com plano pago.` : "Todos os casamentos do Aceito, com plano, convidados e última atividade.";
 
   const exportButton = hasAnyWedding && result.total > 0 ? (
-    <ExportButton href={exportHref} fallbackName="casais.csv" className="gap-2">
+    <BotaoDeExportar href={exportHref} fallbackName="casais.csv" className="gap-2">
       <Download className="size-4" aria-hidden="true" /> Exportar CSV
-    </ExportButton>
+    </BotaoDeExportar>
   ) : (
-    <span aria-disabled="true" className={`${btn.secondary} gap-2 opacity-50`}>
+    <span aria-disabled="true" className={`${estiloDoBotao.secondary} gap-2 opacity-50`}>
       <Download className="size-4" aria-hidden="true" /> Exportar CSV
     </span>
   );
 
   return (
     <>
-      <PageHeader eyebrow="Casais e fornecedores" title="Casais" description={subtitle} actions={exportButton} />
+      <CabecalhoDaPagina eyebrow="Casais e fornecedores" title="Casais" description={subtitle} actions={exportButton} />
 
       {!hasAnyWedding ? (
         <div className="rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)]">
-          <EmptyState
+          <EstadoVazio
             icon={Heart}
             title="Ainda não tem ninguém aqui"
             action={
-              <Link href="/cadastro" className={`${btn.secondary} ${btn.sm}`}>
+              <Link href="/cadastro" className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
                 Ver a página de cadastro
               </Link>
             }
           >
             Quando um casal criar o casamento, ele aparece nesta lista com plano, convidados e última atividade.
-          </EmptyState>
+          </EstadoVazio>
         </div>
       ) : (
         <>
-          <TabsNav
+          <NavegacaoDeAbas
             label="Grupos de casais"
             basePath="/admin/casais"
             params={active}
@@ -122,7 +122,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
               { value: "onboarding", label: "Onboarding incompleto", count: counts.onboarding },
             ]}
           />
-          <FilterBar
+          <BarraDeFiltros
             searchPlaceholder="Buscar por nome, e-mail ou endereço do site"
             filters={[
               { key: "plano", label: "Plano", allLabel: "Todos", options: [{ value: "basic", label: "Básico" }, { value: "classic", label: "Classic" }, { value: "vip", label: "VIP" }, { value: "custom", label: "Adaptado" }] },
@@ -135,27 +135,27 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
             ]}
           />
 
-          <PendingRegion className="flex flex-col gap-6">
+          <RegiaoPendente className="flex flex-col gap-6">
           {rows.length === 0 ? (
             <div className="rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)]">
-              <EmptyState
+              <EstadoVazio
                 icon={Search}
                 title="Nenhum casal com esses filtros"
                 action={
-                  <Link href={montarLink("/admin/casais", { aba: tab === "todos" ? undefined : tab })} className={`${btn.secondary} ${btn.sm}`}>
+                  <Link href={montarLink("/admin/casais", { aba: tab === "todos" ? undefined : tab })} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
                     Limpar filtros
                   </Link>
                 }
               >
                 Tente tirar um filtro ou buscar por outro nome, e-mail ou endereço do site.
-              </EmptyState>
+              </EstadoVazio>
             </div>
           ) : (
             <CasaisList rows={rows} />
           )}
 
-          <Pagination page={result.page} pageSize={TAMANHO_PADRAO_DA_PAGINA} total={result.total} basePath="/admin/casais" params={{ aba: tab === "todos" ? undefined : tab, ...active }} noun={["casal", "casais"]} />
-          </PendingRegion>
+          <Paginacao page={result.page} pageSize={TAMANHO_PADRAO_DA_PAGINA} total={result.total} basePath="/admin/casais" params={{ aba: tab === "todos" ? undefined : tab, ...active }} noun={["casal", "casais"]} />
+          </RegiaoPendente>
         </>
       )}
     </>

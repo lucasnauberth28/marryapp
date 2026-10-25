@@ -1,22 +1,22 @@
 // Definido localmente para evitar importar @prisma/client em Client Components
 // (Client Components não podem importar módulos server-only como o Prisma)
-export const TaskStatus = {
+export const SituacaoDaTarefa = {
   TODO: "TODO",
   IN_PROGRESS: "IN_PROGRESS",
   DONE: "DONE",
 } as const;
 
-export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
+export type SituacaoDaTarefa = (typeof SituacaoDaTarefa)[keyof typeof SituacaoDaTarefa];
 
-export type BoardItemType = "MANUAL";
+export type TipoDoItemDoQuadro = "MANUAL";
 
-export interface BoardItem {
+export interface ItemDoQuadro {
   id: string;
-  type: BoardItemType;
+  type: TipoDoItemDoQuadro;
   title: string;
   description?: string | null;
   dueDate?: Date | null;
   assignee?: string | null;
-  status: TaskStatus;
+  status: SituacaoDaTarefa;
   position: number;
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { Mesas3DView } from "@/components/mesas3d/mesas-3d-view";
+import { VisaoDasMesas3D } from "@/components/mesas3d/mesas-3d-view";
 import { ehIdDeCenario } from "@/lib/mesas3d/scenarios";
 import { lugaresDoConvidado } from "@/lib/mesas3d/seating";
 
@@ -38,7 +38,7 @@ export default async function MapaDasMesasPage({ params }: { params: Promise<{ t
 
   return (
     <div className="mx-auto w-full max-w-[1240px] px-4 py-6 md:px-8">
-      <Mesas3DView
+      <VisaoDasMesas3D
         mode="view"
         coupleNames={wedding.coupleNames}
         initialScene={ehIdDeCenario(wedding.tables3dScene) ? wedding.tables3dScene : "jardim"}

@@ -10,17 +10,17 @@ import {
   type ItemDeLembrete,
 } from "@/actions/notification-actions";
 
-const POLL_MS = 60_000;
+const INTERVALO_DE_CONSULTA_EM_MS = 60_000;
 
 /** Quem muda a leitura fora do sino (página de avisos) dispara isto para o contador se acertar na hora. */
-export const NOTIFICATIONS_CHANGED_EVENT = "aceito:notifications-changed";
+export const EVENTO_DE_NOTIFICACOES_MUDARAM = "aceito:notifications-changed";
 
 /**
  * Estado do sino: contador (consultado ao voltar para a aba e a cada ~1 min enquanto ela está visível,
  * sem websocket), lista dos últimos avisos e marcação de leitura com resposta imediata.
  * `isActive` (estável) diz se este sino está na tela; escondido, não consulta.
  */
-export function useNotificationFeed(initialUnread: number, isActive: () => boolean = () => true) {
+export function useFluxoDeNotificacoes(initialUnread: number, isActive: () => boolean = () => true) {
   const [unread, setUnread] = useState(initialUnread);
   const [items, setItems] = useState<ItemDeNotificacao[] | null>(null);
   const [reminders, setReminders] = useState<ItemDeLembrete[]>([]);
@@ -62,15 +62,15 @@ export function useNotificationFeed(initialUnread: number, isActive: () => boole
       // O painel do fornecedor tem um sino para o celular e outro para o computador: só o que aparece consulta.
       if (document.visibilityState === "visible" && isActive()) void refresh();
     };
-    const id = setInterval(tick, POLL_MS);
+    const id = setInterval(tick, INTERVALO_DE_CONSULTA_EM_MS);
     document.addEventListener("visibilitychange", tick);
     window.addEventListener("focus", tick);
-    window.addEventListener(NOTIFICATIONS_CHANGED_EVENT, tick);
+    window.addEventListener(EVENTO_DE_NOTIFICACOES_MUDARAM, tick);
     return () => {
       clearInterval(id);
       document.removeEventListener("visibilitychange", tick);
       window.removeEventListener("focus", tick);
-      window.removeEventListener(NOTIFICATIONS_CHANGED_EVENT, tick);
+      window.removeEventListener(EVENTO_DE_NOTIFICACOES_MUDARAM, tick);
     };
   }, [refresh, isActive]);
 

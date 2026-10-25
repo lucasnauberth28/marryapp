@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Reveal } from "@/components/motion/reveal";
+import { Aparicao } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
 
 /** Moldura de largura: centraliza o conteúdo e dá o respiro lateral. Sem linhas-guia: as seções se separam só pelo espaço. */
-export function Frame({ children }: { children: React.ReactNode }) {
+export function Moldura({ children }: { children: React.ReactNode }) {
   return (
     <div className="lp-moldura">
       <div className="lp-trilho">{children}</div>
@@ -13,7 +13,7 @@ export function Frame({ children }: { children: React.ReactNode }) {
 }
 
 /** Cabeçalho centrado de seção: etiqueta, título curto (com a segunda linha em ameixa) e uma frase. */
-export function SectionHead({
+export function CabecalhoDaSecao({
   id,
   chip,
   title,
@@ -29,7 +29,7 @@ export function SectionHead({
   padded?: boolean;
 }) {
   return (
-    <Reveal className={cn("lp-cab", padded && "lp-dentro")}>
+    <Aparicao className={cn("lp-cab", padded && "lp-dentro")}>
       {chip ? <span className="lp-chip-sec">{chip}</span> : null}
       <h2 id={id} className="lp-titulo lp-h2">
         {title}
@@ -41,14 +41,14 @@ export function SectionHead({
         ) : null}
       </h2>
       {lead ? <p className="lp-lead">{lead}</p> : null}
-    </Reveal>
+    </Aparicao>
   );
 }
 
-type BtnTone = "ameixa" | "branco" | "claro";
+type TomDoBotao = "ameixa" | "branco" | "claro";
 
 /** Botão-link em pílula. `arrow` põe a setinha dentro de um círculo, como na landing aprovada. */
-export function LinkButton({
+export function LinkEmFormaDeBotao({
   href,
   tone = "ameixa",
   arrow,
@@ -56,7 +56,7 @@ export function LinkButton({
   children,
 }: {
   href: string;
-  tone?: BtnTone;
+  tone?: TomDoBotao;
   arrow?: boolean;
   className?: string;
   children: React.ReactNode;

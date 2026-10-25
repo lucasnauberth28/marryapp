@@ -4,10 +4,10 @@ import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { ArrowRight, Mail, MailCheck } from "lucide-react";
 import { pedirRedefinicaoDeSenha } from "@/actions/password-reset-actions";
-import { ShellHeading } from "@/components/account/auth-shell";
-import { btn, btnArrow } from "@/components/landing/styles";
+import { TituloDoMolde } from "@/components/account/auth-shell";
+import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
-import { Field, FormAlert } from "@/components/ui/field";
+import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
 export function ForgotPasswordForm() {
@@ -49,11 +49,11 @@ export function ForgotPasswordForm() {
         <span className="grid size-14 place-items-center rounded-full bg-ameixa-suave text-ameixa">
           <MailCheck aria-hidden="true" className="size-7" strokeWidth={1.6} />
         </span>
-        <ShellHeading ref={headingRef} title="Confira seu e-mail" text={sent} />
-        <Link href="/login" className={cn(btn.secondary, btn.block, "min-h-12")}>
+        <TituloDoMolde ref={headingRef} title="Confira seu e-mail" text={sent} />
+        <Link href="/login" className={cn(estiloDoBotao.secondary, estiloDoBotao.block, "min-h-12")}>
           Voltar para o login
         </Link>
-        <button type="button" onClick={() => setSent(null)} className={cn(btn.quiet, "self-center")}>
+        <button type="button" onClick={() => setSent(null)} className={cn(estiloDoBotao.quiet, "self-center")}>
           Usar outro e-mail
         </button>
       </section>
@@ -62,9 +62,9 @@ export function ForgotPasswordForm() {
 
   return (
     <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-      <ShellHeading ref={headingRef} title="Esqueceu a senha?" text="Informe o e-mail da conta. Enviamos um link para você criar uma senha nova." />
+      <TituloDoMolde ref={headingRef} title="Esqueceu a senha?" text="Informe o e-mail da conta. Enviamos um link para você criar uma senha nova." />
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-        <Field id="esqueci-email" label="E-mail" icon={Mail} error={fieldError}>
+        <Campo id="esqueci-email" label="E-mail" icon={Mail} error={fieldError}>
           {(c) => (
             <input
               {...c}
@@ -79,11 +79,11 @@ export function ForgotPasswordForm() {
               onChange={(e) => setEmail(e.target.value)}
             />
           )}
-        </Field>
-        {error ? <FormAlert>{error}</FormAlert> : null}
+        </Campo>
+        {error ? <AvisoDoFormulario>{error}</AvisoDoFormulario> : null}
         <Button type="submit" loading={isPending} className="h-12 w-full rounded-[12px] px-6">
           Enviar link
-          <ArrowRight aria-hidden="true" className={btnArrow} />
+          <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
         </Button>
       </form>
     </section>

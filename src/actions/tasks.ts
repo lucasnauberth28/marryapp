@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
 import { Prisma, TaskStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-import { BoardItem, BoardItemType } from "@/types/kanban";
+import { ItemDoQuadro, TipoDoItemDoQuadro } from "@/types/kanban";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 const SITUACOES_DA_TAREFA = new Set<string>(Object.values(TaskStatus));
@@ -38,7 +38,7 @@ export async function obterTarefas() {
       },
     });
 
-    const boardItems: BoardItem[] = tasks.map(t => ({
+    const boardItems: ItemDoQuadro[] = tasks.map(t => ({
       id: t.id,
       type: "MANUAL" as const,
       title: t.title,
@@ -103,7 +103,7 @@ export async function atualizarSituacaoDaTarefa(
   taskId: string,
   newStatus: TaskStatus,
   newPosition: number,
-  type: BoardItemType = "MANUAL"
+  type: TipoDoItemDoQuadro = "MANUAL"
 ) {
   const { weddingId } = await exigirCasamento("/pendencias");
   if (typeof taskId !== "string" || !ehSituacaoDeTarefa(newStatus) || !Number.isFinite(Number(newPosition))) {

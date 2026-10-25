@@ -4,13 +4,13 @@ import type { PlanoDoCatalogo } from "@/lib/catalog";
 import { TEXTOS_DO_PLANO_DO_CASAL, notaDoPrecoDoCasal, rotuloDoPlano, type ChaveDoPlanoDoCasal } from "@/lib/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { cn } from "@/lib/utils";
-import { btn } from "./styles";
+import { estiloDoBotao } from "./styles";
 
 /**
  * Cartão de plano de casal, o mesmo na home e em /planos: nome, preço e recursos vêm do catálogo,
  * e o resumo e o botão vêm de lib/plan-copy. A taxa sobre presentes aparece como nota, dentro do cartão.
  */
-export function CouplePlanCard({ planKey, plan, href, className }: { planKey: ChaveDoPlanoDoCasal; plan: PlanoDoCatalogo; href?: string; className?: string }) {
+export function CartaoDoPlanoDoCasal({ planKey, plan, href, className }: { planKey: ChaveDoPlanoDoCasal; plan: PlanoDoCatalogo; href?: string; className?: string }) {
   const label = rotuloDoPlano(plan.name);
   const copy = TEXTOS_DO_PLANO_DO_CASAL[planKey];
   const cta = copy.cta(label);
@@ -38,7 +38,7 @@ export function CouplePlanCard({ planKey, plan, href, className }: { planKey: Ch
           );
         })}
       </ul>
-      <Link href={href ?? `/cadastro?plano=${planKey}`} className={cn(primary ? btn.primary : btn.secondary, btn.block, "mt-8")}>
+      <Link href={href ?? `/cadastro?plano=${planKey}`} className={cn(primary ? estiloDoBotao.primary : estiloDoBotao.secondary, estiloDoBotao.block, "mt-8")}>
         {cta}
       </Link>
     </article>

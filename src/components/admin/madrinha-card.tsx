@@ -2,10 +2,10 @@
 
 import { useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
-import { btn } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { abrirALiz } from "@/lib/liz/events";
 import type { PoseDaDicaDaLiz } from "@/lib/liz/pose";
-import { LizIllustration } from "@/components/liz/liz-illustration";
+import { IlustracaoDaLiz } from "@/components/liz/liz-illustration";
 
 /**
  * Cartão de sugestão da Liz: uma dica por regras (sem IA, sem chat) com uma ação principal.
@@ -47,7 +47,7 @@ function adiar(id: string) {
   ouvintes.forEach((cb) => cb());
 }
 
-interface MadrinhaCardProps {
+interface PropriedadesDoCartaoDaMadrinha {
   /** Id estável da dica (ex.: "rsvp-sem-resposta"): é o que "Agora não" lembra. */
   id: string;
   /** O texto da sugestão, já com os números reais (situação e motivo). */
@@ -59,7 +59,7 @@ interface MadrinhaCardProps {
   className?: string;
 }
 
-export function MadrinhaCard({ id, text, actionLabel, actionHref, pose = "sugerindo", className = "" }: MadrinhaCardProps) {
+export function CartaoDaMadrinha({ id, text, actionLabel, actionHref, pose = "sugerindo", className = "" }: PropriedadesDoCartaoDaMadrinha) {
   // No servidor mostra a dica; no navegador esconde se o casal já disse "Agora não".
   const escondida = useSyncExternalStore(
     assinar,
@@ -74,7 +74,7 @@ export function MadrinhaCard({ id, text, actionLabel, actionHref, pose = "sugeri
       className={`grid grid-cols-[auto_1fr] gap-x-3 gap-y-2.5 rounded-2xl border border-linha bg-papel p-4 sm:gap-x-4 sm:gap-y-3 sm:p-6 ${className}`}
     >
       {/* Decorativa: o título ao lado já nomeia a Liz. Surge de leve (some com movimento reduzido). */}
-      <LizIllustration
+      <IlustracaoDaLiz
         pose={pose}
         height={112}
         decorative
@@ -85,13 +85,13 @@ export function MadrinhaCard({ id, text, actionLabel, actionHref, pose = "sugeri
         <p className="mt-1 text-[15px] leading-6 text-tinta sm:text-base">{text}</p>
       </div>
       <div className="col-start-2 flex flex-wrap gap-2">
-        <Link href={actionHref} className={`${btn.primary} ${btn.sm}`}>
+        <Link href={actionHref} className={`${estiloDoBotao.primary} ${estiloDoBotao.sm}`}>
           {actionLabel}
         </Link>
-        <button type="button" onClick={() => adiar(id)} className={`${btn.quiet} ${btn.sm}`}>
+        <button type="button" onClick={() => adiar(id)} className={`${estiloDoBotao.quiet} ${estiloDoBotao.sm}`}>
           Agora não
         </button>
-        <button type="button" onClick={abrirALiz} className={`${btn.quiet} ${btn.sm}`}>
+        <button type="button" onClick={abrirALiz} className={`${estiloDoBotao.quiet} ${estiloDoBotao.sm}`}>
           Falar com a Liz
         </button>
       </div>

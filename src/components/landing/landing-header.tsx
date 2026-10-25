@@ -4,27 +4,27 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight, ChevronRight, Menu, X } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
-import { ThemeSegmented, ThemeToggle } from "@/components/theme/theme-toggle";
+import { Logotipo } from "@/components/brand/logo";
+import { SeletorSegmentadoDoTema, AlternadorDeTema } from "@/components/theme/theme-toggle";
 import { cn } from "@/lib/utils";
-import { AnchorLink } from "./anchor-link";
-import { btn, btnArrow } from "./styles";
+import { LinkDeAncora } from "./anchor-link";
+import { estiloDoBotao, estiloDoBotaoComSeta } from "./styles";
 
-type NavItem = { label: string; href: string; anchor?: boolean };
+type ItemDoMenu = { label: string; href: string; anchor?: boolean };
 
-const NAV: NavItem[] = [
+const NAVEGACAO: ItemDoMenu[] = [
   { label: "Como funciona", href: "/#como", anchor: true },
   { label: "Convidados", href: "/#convidados", anchor: true },
   { label: "Encontrar fornecedores", href: "/fornecedores" },
   { label: "Planos", href: "/planos" },
 ];
 
-function NavLink({ item, className, onClick, children }: { item: NavItem; className?: string; onClick?: () => void; children: React.ReactNode }) {
+function LinkDoMenu({ item, className, onClick, children }: { item: ItemDoMenu; className?: string; onClick?: () => void; children: React.ReactNode }) {
   if (item.anchor) {
     return (
-      <AnchorLink href={item.href as `/#${string}`} className={className} onClick={onClick}>
+      <LinkDeAncora href={item.href as `/#${string}`} className={className} onClick={onClick}>
         {children}
-      </AnchorLink>
+      </LinkDeAncora>
     );
   }
   return (
@@ -38,7 +38,7 @@ function NavLink({ item, className, onClick, children }: { item: NavItem; classN
  * Cabeçalho público do Aceito. Transparente no topo; ao rolar ganha fundo linho translúcido,
  * fio inferior e uma sombra leve. No celular, um botão abre o menu em tela cheia.
  */
-export function LandingHeader() {
+export function CabecalhoDaLanding() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -114,14 +114,14 @@ export function LandingHeader() {
             aria-label="Aceito, início"
             className="-m-2 flex shrink-0 items-center rounded-[12px] p-2 transition-opacity duration-200 hover:opacity-80"
           >
-            <Logo height={26} priority />
+            <Logotipo height={26} priority />
           </Link>
 
           <nav aria-label="Principal" className="hidden flex-1 lg:block">
             <ul className="flex items-center gap-8">
-              {NAV.map((item) => (
+              {NAVEGACAO.map((item) => (
                 <li key={item.href}>
-                  <NavLink
+                  <LinkDoMenu
                     item={item}
                     className="group/nav relative inline-flex min-h-11 items-center text-[15px] font-medium text-tinta-suave transition-colors duration-200 hover:text-tinta"
                   >
@@ -130,20 +130,20 @@ export function LandingHeader() {
                       aria-hidden="true"
                       className="absolute inset-x-0 bottom-2.5 h-px origin-left scale-x-0 bg-rosa transition-transform duration-500 ease-[var(--ease-aceito)] group-hover/nav:scale-x-100"
                     />
-                  </NavLink>
+                  </LinkDoMenu>
                 </li>
               ))}
             </ul>
           </nav>
 
           <div className="ml-auto flex items-center gap-1 sm:gap-2">
-            <ThemeToggle />
-            <Link href="/login" className={cn(btn.quiet, "max-sm:min-h-11 max-sm:px-3 max-sm:text-sm")}>
+            <AlternadorDeTema />
+            <Link href="/login" className={cn(estiloDoBotao.quiet, "max-sm:min-h-11 max-sm:px-3 max-sm:text-sm")}>
               Entrar
             </Link>
-            <Link href="/cadastro?plano=basic" className={cn(btn.primary, "hidden md:inline-flex")}>
+            <Link href="/cadastro?plano=basic" className={cn(estiloDoBotao.primary, "hidden md:inline-flex")}>
               Criar conta grátis
-              <ArrowRight aria-hidden="true" className={btnArrow} />
+              <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
             </Link>
             <button
               ref={menuButton}
@@ -176,7 +176,7 @@ export function LandingHeader() {
       >
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-linha pl-4 pr-2">
           <Link href="/" aria-label="Aceito, início" onClick={close} className="-m-2 flex rounded-[12px] p-2">
-            <Logo height={26} />
+            <Logotipo height={26} />
           </Link>
           <button
             ref={closeButton}
@@ -194,7 +194,7 @@ export function LandingHeader() {
 
         <nav aria-label="Principal" className="px-4 pt-4">
           <ul>
-            {NAV.map((item, i) => (
+            {NAVEGACAO.map((item, i) => (
               <li
                 key={item.href}
                 className={cn(
@@ -203,7 +203,7 @@ export function LandingHeader() {
                 )}
                 style={{ transitionDelay: open ? `${80 + i * 60}ms` : "0ms" }}
               >
-                <NavLink
+                <LinkDoMenu
                   item={item}
                   onClick={close}
                   className="group/item flex min-h-16 items-center justify-between font-display text-[28px] leading-9 text-tinta"
@@ -214,7 +214,7 @@ export function LandingHeader() {
                     className="size-5 text-tinta-suave transition-transform duration-300 group-hover/item:translate-x-1"
                     strokeWidth={1.6}
                   />
-                </NavLink>
+                </LinkDoMenu>
               </li>
             ))}
           </ul>
@@ -229,13 +229,13 @@ export function LandingHeader() {
         >
           <div className="mb-2 flex flex-col gap-2">
             <p className="text-sm font-semibold text-tinta">Aparência</p>
-            <ThemeSegmented />
+            <SeletorSegmentadoDoTema />
           </div>
           <p className="mb-2 text-sm text-tinta-suave">Foi convidado para um casamento? Use o link enviado pelo casal. Você não precisa criar uma conta.</p>
-          <Link href="/cadastro?plano=basic" onClick={close} className={cn(btn.primary, btn.block)}>
+          <Link href="/cadastro?plano=basic" onClick={close} className={cn(estiloDoBotao.primary, estiloDoBotao.block)}>
             Criar conta grátis
           </Link>
-          <Link href="/login" onClick={close} className={cn(btn.secondary, btn.block)}>
+          <Link href="/login" onClick={close} className={cn(estiloDoBotao.secondary, estiloDoBotao.block)}>
             Entrar
           </Link>
         </div>

@@ -1,9 +1,9 @@
 import { Pencil } from "lucide-react";
-import { PageHeader } from "@/components/plataforma/page-header";
-import { Panel } from "@/components/plataforma/panel";
-import { StatusChip } from "@/components/plataforma/status-chip";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { ResponsiveTable } from "@/components/plataforma/responsive-table";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { Painel } from "@/components/plataforma/panel";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
 import { obterCatalogo } from "@/lib/catalog-server";
 import { textoDoDescontoDoCombo, ehPlanoGratis, chaveDoModuloNoCatalogo, chaveDoPlanoNoCatalogo } from "@/lib/catalog";
 import { CONFIGURACAO_DOS_PLANOS, type ChaveDoPlano } from "@/lib/plans";
@@ -16,7 +16,7 @@ import { contarNotasPendentes, listarNotasPendentes } from "@/lib/platform/queri
 import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { cn } from "@/lib/utils";
-import { PendingLink, PendingRegion } from "@/components/plataforma/pending";
+import { LinkPendente, RegiaoPendente } from "@/components/plataforma/pending";
 import { PlanosTabs } from "../_components/planos-tabs";
 import { ContadorSection } from "../_components/contador-section";
 import { CatalogEditForm } from "./_components/catalog-edit-form";
@@ -66,20 +66,20 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 
   return (
     <>
-      <PageHeader eyebrow="Dinheiro" title="Catálogo e preços" description="O que cada plano custa e o que cada pagamento rende. Editar um preço não muda o que já foi pago." />
+      <CabecalhoDaPagina eyebrow="Dinheiro" title="Catálogo e preços" description="O que cada plano custa e o que cada pagamento rende. Editar um preço não muda o que já foi pago." />
       <PlanosTabs active="catalogo" />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="flex min-w-0 flex-col gap-6">
-          <Panel title="Planos" padded={false}>
+          <Painel title="Planos" padded={false}>
             <div className="px-3 pb-3 md:px-4 md:pb-4">
-              <ResponsiveTable
+              <TabelaResponsiva
                 caption="Planos à venda"
                 rows={PLAN_ORDER}
                 rowKey={(id) => id}
                 selectedKey={editing?.startsWith("plan:") ? editing.slice(5) : null}
                 columns={[
-                  { key: "plano", header: "Plano", primary: true, cell: (id) => <>{catalog.plans[id].name.replace(/^(Plano|Fornecedor)\s+/, "")}{edited.has(chaveDoPlanoNoCatalogo(id)) ? <span className="ml-2 align-middle"><StatusChip tone="ameixa">Editado</StatusChip></span> : null}</> },
+                  { key: "plano", header: "Plano", primary: true, cell: (id) => <>{catalog.plans[id].name.replace(/^(Plano|Fornecedor)\s+/, "")}{edited.has(chaveDoPlanoNoCatalogo(id)) ? <span className="ml-2 align-middle"><EtiquetaDeSituacao tone="ameixa">Editado</EtiquetaDeSituacao></span> : null}</> },
                   { key: "para", header: "Para quem", cell: (id) => (catalog.plans[id].type === "VENDOR" ? "Fornecedor" : "Casal") },
                   { key: "preco", header: "Preço", align: "right", className: "whitespace-nowrap", cell: (id) => formatarReais(catalog.plans[id].price) },
                   { key: "cobranca", header: "Cobrança", cell: (id) => BILLING(id) },
@@ -89,9 +89,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
                     header: <span className="sr-only">Editar</span>,
                     mobileLabel: false,
                     cell: (id) => (
-                      <PendingLink href={`/admin/planos/catalogo?editar=${chaveDoPlanoNoCatalogo(id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
+                      <LinkPendente href={`/admin/planos/catalogo?editar=${chaveDoPlanoNoCatalogo(id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
                         <Pencil className="size-4" aria-hidden="true" /> Editar<span className="sr-only"> o plano {catalog.plans[id].name}</span>
-                      </PendingLink>
+                      </LinkPendente>
                     ),
                   },
                 ]}
@@ -100,46 +100,46 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
                 Plano Liz: ainda não está à venda, então não tem preço para editar. A taxa dos presentes vem do Mercado Pago e aparece aqui só como informação.
               </p>
             </div>
-          </Panel>
+          </Painel>
 
-          <Panel title="Módulos do plano adaptado" padded={false}>
+          <Painel title="Módulos do plano adaptado" padded={false}>
             <div className="px-3 pb-3 md:px-4 md:pb-4">
-              <ResponsiveTable
+              <TabelaResponsiva
                 caption="Módulos do plano adaptado"
                 rows={catalog.modules}
                 rowKey={(m) => m.id}
                 selectedKey={editing?.startsWith("module:") ? editing.slice(7) : null}
                 columns={[
-                  { key: "nome", header: "Módulo", primary: true, cell: (m) => <>{m.category}: {m.name}{edited.has(chaveDoModuloNoCatalogo(m.id)) ? <span className="ml-2 align-middle"><StatusChip tone="ameixa">Editado</StatusChip></span> : null}</> },
+                  { key: "nome", header: "Módulo", primary: true, cell: (m) => <>{m.category}: {m.name}{edited.has(chaveDoModuloNoCatalogo(m.id)) ? <span className="ml-2 align-middle"><EtiquetaDeSituacao tone="ameixa">Editado</EtiquetaDeSituacao></span> : null}</> },
                   { key: "preco", header: "Preço", align: "right", className: "whitespace-nowrap", cell: (m) => formatarReais(m.price) },
                   {
                     key: "editar",
                     header: <span className="sr-only">Editar</span>,
                     mobileLabel: false,
                     cell: (m) => (
-                      <PendingLink href={`/admin/planos/catalogo?editar=${chaveDoModuloNoCatalogo(m.id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
+                      <LinkPendente href={`/admin/planos/catalogo?editar=${chaveDoModuloNoCatalogo(m.id)}#editar`} scroll={false} className="inline-flex min-h-11 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
                         <Pencil className="size-4" aria-hidden="true" /> Editar<span className="sr-only"> o módulo {m.name}</span>
-                      </PendingLink>
+                      </LinkPendente>
                     ),
                   },
                 ]}
               />
               <p className="mt-3 text-sm text-tinta-suave">{textoDoDescontoDoCombo()}</p>
             </div>
-          </Panel>
+          </Painel>
         </div>
 
-        <PendingRegion id="editar" className="flex scroll-mt-6 flex-col gap-6 lg:sticky lg:top-6">
-          <Panel>
+        <RegiaoPendente id="editar" className="flex scroll-mt-6 flex-col gap-6 lg:sticky lg:top-6">
+          <Painel>
             {form ? (
               <CatalogEditForm key={form.key} itemKey={form.key} title={form.title} currentName={form.name} currentPriceCents={form.price} free={form.free} />
             ) : (
               <p className="text-sm text-tinta-suave">Escolha um plano ou módulo na lista para editar o nome e o preço. Toda mudança pede o motivo e fica no registro de atividades.</p>
             )}
-          </Panel>
-          <Panel title="Últimas mudanças">
+          </Painel>
+          <Painel title="Últimas mudanças">
             {history.length === 0 ? (
-              <EmptyState title="Nenhuma mudança de preço ainda" compact>Os preços estão como no código do Aceito.</EmptyState>
+              <EstadoVazio title="Nenhuma mudança de preço ainda" compact>Os preços estão como no código do Aceito.</EstadoVazio>
             ) : (
               <ul className="flex flex-col">
                 {history.map((h) => {
@@ -159,8 +159,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
                 })}
               </ul>
             )}
-          </Panel>
-        </PendingRegion>
+          </Painel>
+        </RegiaoPendente>
       </div>
 
       <ContadorSection month={mesDoContador(undefined, now)} now={now} invoices={invoices} pendingCount={pendingInvoices} />

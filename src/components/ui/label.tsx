@@ -5,7 +5,7 @@ import { Label as LabelPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
-function Label({
+function Rotulo({
   className,
   ...props
 }: React.ComponentProps<typeof LabelPrimitive.Root>) {
@@ -21,4 +21,4 @@ function Label({
   )
 }
 
-export { Label }
+export { Rotulo as Label }

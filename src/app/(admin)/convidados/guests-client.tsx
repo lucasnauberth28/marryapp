@@ -4,16 +4,16 @@ import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Check, Clock, Download, HeartHandshake, MessageCircle, Plus, Search, Trash2, Upload, UserCheck, X } from "lucide-react";
-import { GuestLocal as Guest } from "@/types/local";
+import { ConvidadoLocal as Guest } from "@/types/local";
 import { excluirConvidado } from "@/actions/guest-actions";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { PageHeader } from "@/components/admin/page-header";
-import { RsvpChip } from "@/components/painel/status-chip";
-import { btn, btnIconDanger, card, input, overline } from "@/components/painel/styles";
+import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
+import { EtiquetaDeConfirmacao } from "@/components/painel/status-chip";
+import { btn, estiloDoBotaoDeIconeDePerigo, estiloDoCartao, estiloDaEntradaDoPainel, estiloDoSobretitulo } from "@/components/painel/styles";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { GuestModal, GUEST_CATEGORIES } from "./guest-modal";
 import { ImportGuestsModal } from "./import-guests-modal";
-import { LizIllustration } from "@/components/liz/liz-illustration";
+import { IlustracaoDaLiz } from "@/components/liz/liz-illustration";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 type GuestRow = Guest & { table?: { name: string } | null };
@@ -156,7 +156,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow="Convidados"
         title="Lista de convidados"
         description={deadlineLabel ? `Prazo de confirmação definido por vocês: ${deadlineLabel}.` : "Quem vocês convidam, quantos lugares cada um tem e quem já respondeu."}
@@ -184,9 +184,9 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
       />
 
       {initialGuests.length === 0 ? (
-        <div className={`${card} flex flex-col items-center gap-3 px-6 pb-14 pt-8 text-center`}>
+        <div className={`${estiloDoCartao} flex flex-col items-center gap-3 px-6 pb-14 pt-8 text-center`}>
           {/* A Liz recebe a lista vazia; decorativa e pequena, para os botões ficarem à vista no celular */}
-          <LizIllustration pose="cumprimentando" height={104} decorative className="h-[104px] w-auto" />
+          <IlustracaoDaLiz pose="cumprimentando" height={104} decorative className="h-[104px] w-auto" />
           <h2 className="font-display text-[26px] font-medium leading-8 text-tinta">A lista de vocês ainda está vazia</h2>
           <p className="max-w-md text-tinta-suave">
             Adicionem o primeiro convidado para começar a organizar as confirmações. Se a lista já existe, importem uma planilha (CSV). Os convidados respondem pelo link do convite, sem criar conta.
@@ -235,7 +235,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
                   setQuery(e.target.value);
                   setVisible(PAGE_SIZE);
                 }}
-                className={`${input} pl-10`}
+                className={`${estiloDaEntradaDoPainel} pl-10`}
               />
             </div>
             <select
@@ -245,7 +245,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
                 setGroup(e.target.value);
                 setVisible(PAGE_SIZE);
               }}
-              className={`${input} sm:w-52 sm:flex-none`}
+              className={`${estiloDaEntradaDoPainel} sm:w-52 sm:flex-none`}
             >
               <option value="">Todos os grupos</option>
               {groups.map((g) => (
@@ -264,19 +264,19 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
           )}
 
           {filtered.length === 0 ? (
-            <div className={`${card} px-6 py-12 text-center text-tinta-suave`}>Nenhum convidado encontrado. Tentem outro nome, filtro ou grupo.</div>
+            <div className={`${estiloDoCartao} px-6 py-12 text-center text-tinta-suave`}>Nenhum convidado encontrado. Tentem outro nome, filtro ou grupo.</div>
           ) : (
             <>
               {/* Computador: tabela com linhas de 56px */}
-              <div className={`${card} hidden overflow-hidden md:block`}>
+              <div className={`${estiloDoCartao} hidden overflow-hidden md:block`}>
                 <table className="w-full border-collapse text-left text-[15px]">
                   <thead>
                     <tr className="border-b border-linha">
-                      <th scope="col" className={`${overline} px-4 py-3`}>Nome</th>
-                      <th scope="col" className={`${overline} px-2 py-3`}>Grupo</th>
-                      <th scope="col" className={`${overline} px-2 py-3`}>Lugares</th>
-                      <th scope="col" className={`${overline} px-2 py-3`}>Resposta</th>
-                      <th scope="col" className={`${overline} px-2 py-3`}>Mesa</th>
+                      <th scope="col" className={`${estiloDoSobretitulo} px-4 py-3`}>Nome</th>
+                      <th scope="col" className={`${estiloDoSobretitulo} px-2 py-3`}>Grupo</th>
+                      <th scope="col" className={`${estiloDoSobretitulo} px-2 py-3`}>Lugares</th>
+                      <th scope="col" className={`${estiloDoSobretitulo} px-2 py-3`}>Resposta</th>
+                      <th scope="col" className={`${estiloDoSobretitulo} px-2 py-3`}>Mesa</th>
                       <th scope="col" className="px-4 py-3">
                         <span className="sr-only">Ações</span>
                       </th>
@@ -297,7 +297,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
                         <td className="px-2 py-3 text-tinta-suave">{g.category || "Sem grupo"}</td>
                         <td className="px-2 py-3 tabular-nums">{seats(g)}</td>
                         <td className="px-2 py-3">
-                          <RsvpChip status={g.rsvpStatus} />
+                          <EtiquetaDeConfirmacao status={g.rsvpStatus} />
                         </td>
                         <td className="px-2 py-3 text-tinta-suave">{g.table?.name ?? "Sem mesa"}</td>
                         <td className="px-4 py-2">
@@ -305,7 +305,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
                             <button type="button" onClick={() => openEdit(g)} className={`${btn.quiet} ${btn.sm}`} aria-label={`Editar ${g.name}`}>
                               Editar
                             </button>
-                            <button type="button" onClick={() => askRemove(g)} className={btnIconDanger} aria-label={`Excluir ${g.name}`}>
+                            <button type="button" onClick={() => askRemove(g)} className={estiloDoBotaoDeIconeDePerigo} aria-label={`Excluir ${g.name}`}>
                               <Trash2 className="size-4" aria-hidden="true" />
                             </button>
                           </div>
@@ -325,7 +325,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
                       onClick={() => openEdit(g)}
                       disabled={removingId === g.id}
                       aria-label={`Editar ${g.name}`}
-                      className={`${card} flex min-h-14 w-full cursor-pointer items-center gap-3 px-3.5 py-3 text-left disabled:opacity-50`}
+                      className={`${estiloDoCartao} flex min-h-14 w-full cursor-pointer items-center gap-3 px-3.5 py-3 text-left disabled:opacity-50`}
                     >
                       <span className="grid size-10 shrink-0 place-items-center rounded-full bg-areia text-sm font-semibold text-tinta" aria-hidden="true">
                         {initials(g.name)}
@@ -334,7 +334,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
                         <strong className="truncate font-semibold text-tinta">{g.name}</strong>
                         <span className="text-sm text-tinta-suave">{[g.category, seatsLabel(g)].filter(Boolean).join(" · ")}</span>
                       </span>
-                      <RsvpChip status={g.rsvpStatus} />
+                      <EtiquetaDeConfirmacao status={g.rsvpStatus} />
                     </button>
                   </li>
                 ))}
@@ -384,7 +384,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
         }}
       />
 
-      <ConfirmModal
+      <ModalDeConfirmacao
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={() => {

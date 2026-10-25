@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { areaOfPath, navIcon, visibleAreas } from "@/components/admin/nav-config";
+import { areaOfPath, iconeDoMenu, visibleAreas } from "@/components/admin/nav-config";
 import { ancoraDoMenu } from "@/lib/tour/steps";
 
 /**
  * Navegação do painel no celular: barra inferior fixa com as mesmas 5 áreas do menu do computador.
  * Configurações, plano, conta e sair ficam no menu do avatar, no cabeçalho.
  */
-export function MobileTabBar({ allowedPaths }: { allowedPaths: string[] }) {
+export function BarraDeAbasMovel({ allowedPaths }: { allowedPaths: string[] }) {
   const pathname = usePathname();
   const areas = visibleAreas(allowedPaths);
   const current = areaOfPath(areas, pathname);
@@ -22,7 +22,7 @@ export function MobileTabBar({ allowedPaths }: { allowedPaths: string[] }) {
       className="fixed inset-x-0 bottom-0 z-40 grid border-t border-linha bg-papel/95 px-1 pb-[max(env(safe-area-inset-bottom),4px)] pt-1 backdrop-blur-md md:hidden"
     >
       {areas.map((area) => {
-        const Icon = navIcon(area.icon);
+        const Icon = iconeDoMenu(area.icon);
         const active = current?.id === area.id;
         return (
           <Link

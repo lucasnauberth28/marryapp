@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingRegion, SkeletonPageHeader } from "@/components/skeletons";
-import { SkeletonPanel } from "@/components/painel/skeleton-parts";
+import { EsqueletoDoPainel } from "@/components/painel/skeleton-parts";
 
 // Espelha as mesas: cabeçalho, painel "Sem mesa" ao lado e a planta com os cartões redondos das mesas.
 export default function MesasLoading() {
@@ -9,7 +9,7 @@ export default function MesasLoading() {
       <SkeletonPageHeader actions={1} />
 
       <div className="flex flex-col items-stretch gap-6 lg:flex-row lg:items-start">
-        <SkeletonPanel className="flex w-full flex-col gap-2 p-4 sm:p-6 lg:max-w-80 lg:flex-none">
+        <EsqueletoDoPainel className="flex w-full flex-col gap-2 p-4 sm:p-6 lg:max-w-80 lg:flex-none">
           <div className="flex h-7 items-center">
             <Skeleton className="h-5 w-28 rounded-md" />
           </div>
@@ -21,17 +21,17 @@ export default function MesasLoading() {
               </div>
             ))}
           </div>
-        </SkeletonPanel>
+        </EsqueletoDoPainel>
 
         <div className="grid min-w-0 flex-1 grid-cols-[repeat(auto-fill,minmax(240px,1fr))] items-start gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <SkeletonPanel key={i} className="flex flex-col items-center gap-3 p-4 text-center">
+            <EsqueletoDoPainel key={i} className="flex flex-col items-center gap-3 p-4 text-center">
               <Skeleton className="size-24 rounded-full" />
               <Skeleton className="h-4 w-32 rounded-md" />
               <Skeleton className="h-3.5 w-16 rounded-md" />
               <Skeleton className="mt-2 h-11 w-full rounded-xl" />
               <Skeleton className="h-11 w-full rounded-xl" />
-            </SkeletonPanel>
+            </EsqueletoDoPainel>
           ))}
         </div>
       </div>

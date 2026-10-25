@@ -4,7 +4,7 @@ import Link from "next/link";
  * Abas "Usuários" e "Perfis de acesso" (a tela do design tem as duas juntas;
  * no app cada uma tem seu endereço, então as abas são links entre elas).
  */
-export function AccessTabs({ current }: { current: "usuarios" | "perfis" }) {
+export function AbasDeAcesso({ current }: { current: "usuarios" | "perfis" }) {
   const items = [
     { id: "usuarios", href: "/usuarios", label: "Usuários" },
     { id: "perfis", href: "/perfis", label: "Perfis de acesso" },

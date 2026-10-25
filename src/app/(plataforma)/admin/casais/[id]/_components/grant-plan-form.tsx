@@ -5,7 +5,7 @@ import { useState } from "react";
 import { History } from "lucide-react";
 import { concederPlanoAoCasamento } from "@/actions/admin-casais-actions";
 import { Button } from "@/components/ui/button";
-import { StatusChip } from "@/components/plataforma/status-chip";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { Checkbox } from "@/components/ui/checkbox";
 import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,9 +34,9 @@ export function GrantPlanForm({ weddingId, currentPlanId }: { weddingId: string;
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-semibold leading-7 text-tinta">Conceder um plano à mão</h2>
-        <StatusChip tone="neutro" icon={History}>
+        <EtiquetaDeSituacao tone="neutro" icon={History}>
           Fica no registro
-        </StatusChip>
+        </EtiquetaDeSituacao>
       </div>
       <p className="-mt-2 text-sm leading-5 text-tinta-suave">É uma cortesia: o plano é liberado sem cobrança e vale para sempre (plano de casal é pago uma vez).</p>
       <NativeSelect label="Plano" value={planId} onChange={(e) => setPlanId(e.target.value as "classic" | "vip")}>

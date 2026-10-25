@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
  */
 
 /** Busca (48px, até 560px) e filtros de rótulo flutuante (48px), como o FilterBar. */
-export function FilterBarSkeleton({ search = true, filters = 0, className }: { search?: boolean; filters?: number; className?: string }) {
+export function EsqueletoDaBarraDeFiltros({ search = true, filters = 0, className }: { search?: boolean; filters?: number; className?: string }) {
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       {search && <Skeleton className="h-12 w-full max-w-[560px] rounded-xl" />}
@@ -25,7 +25,7 @@ export function FilterBarSkeleton({ search = true, filters = 0, className }: { s
 }
 
 /** "1 a 25 de 120 casais" e os botões de página, como a Pagination. */
-export function PaginationSkeleton() {
+export function EsqueletoDaPaginacao() {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex h-5 items-center">
@@ -37,12 +37,12 @@ export function PaginationSkeleton() {
 }
 
 /** Abas por URL (faixa de areia), como o TabsNav. */
-export function AdminTabsSkeleton({ count = 5 }: { count?: number }) {
+export function EsqueletoDasAbasDoAdmin({ count = 5 }: { count?: number }) {
   return <SkeletonTabs count={count} />;
 }
 
 /** Itens do "Precisa da sua atenção": ícone redondo de 40px, duas linhas e botão. */
-export function AttentionSkeleton({ rows = 3 }: { rows?: number }) {
+export function EsqueletoDaAtencao({ rows = 3 }: { rows?: number }) {
   return (
     <ul className="flex flex-col">
       {Array.from({ length: rows }).map((_, i) => (
@@ -64,7 +64,7 @@ export function AttentionSkeleton({ rows = 3 }: { rows?: number }) {
 }
 
 /** Linhas de duas linhas com chip à direita (planos vencendo, casamentos próximos, erros, avisos). */
-export function RowsSkeleton({ rows = 4, chip = true }: { rows?: number; chip?: boolean }) {
+export function EsqueletoDasLinhas({ rows = 4, chip = true }: { rows?: number; chip?: boolean }) {
   return (
     <ul className="flex flex-col">
       {Array.from({ length: rows }).map((_, i) => (
@@ -85,7 +85,7 @@ export function RowsSkeleton({ rows = 4, chip = true }: { rows?: number; chip?: 
 }
 
 /** Painel lateral de um item escolhido na lista (fornecedor, pedido de domínio, pagamento). */
-export function SidePanelSkeleton({ photos = false, className }: { photos?: boolean; className?: string }) {
+export function EsqueletoDoPainelLateral({ photos = false, className }: { photos?: boolean; className?: string }) {
   return (
     <SkeletonCard title={false} className={className}>
       <div className="flex items-center justify-between gap-2">
@@ -115,7 +115,7 @@ export function SidePanelSkeleton({ photos = false, className }: { photos?: bool
 }
 
 /** Painel com tabela até a borda (Vencimentos, Cupons, Reembolsos...). */
-export function TablePanelSkeleton({ columns = 4, rows = 4, className }: { columns?: number; rows?: number; className?: string }) {
+export function EsqueletoDoPainelDeTabela({ columns = 4, rows = 4, className }: { columns?: number; rows?: number; className?: string }) {
   return (
     <SkeletonCard padded={false} className={className}>
       <div className="px-3 pb-3 md:px-4 md:pb-4">

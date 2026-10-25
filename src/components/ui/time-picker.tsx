@@ -4,10 +4,10 @@ import * as React from "react";
 import { useState, useCallback, useMemo, useId } from "react";
 import { Clock, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Field, joinIds, type FloatOptions } from "@/components/ui/field";
+import { Campo, juntarIds, type OpcoesDoCampoFlutuante } from "@/components/ui/field";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export type TimePickerProps = Omit<FloatOptions, "prefix" | "suffix" | "trailing" | "icon"> & {
+export type PropriedadesDoSeletorDeHora = Omit<OpcoesDoCampoFlutuante, "prefix" | "suffix" | "trailing" | "icon"> & {
   id?: string;
   name?: string;
   value?: string; // HH:mm
@@ -20,7 +20,7 @@ export type TimePickerProps = Omit<FloatOptions, "prefix" | "suffix" | "trailing
 };
 
 /** Seletor de hora com rótulo flutuante: o rótulo já nasce no alto (o campo nunca fica vazio). */
-export function TimePicker({
+export function SeletorDeHora({
   id,
   name,
   value = "",
@@ -35,7 +35,7 @@ export function TimePicker({
   optional,
   size,
   invalid,
-}: TimePickerProps) {
+}: PropriedadesDoSeletorDeHora) {
   const autoId = useId();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -98,7 +98,7 @@ export function TimePicker({
     : "";
 
   return (
-    <Field
+    <Campo
       id={id ?? autoId}
       label={label}
       hint={hint}
@@ -120,7 +120,7 @@ export function TimePicker({
               type="button"
               disabled={disabled}
               data-float="always"
-              aria-describedby={joinIds(c["aria-describedby"])}
+              aria-describedby={juntarIds(c["aria-describedby"])}
             >
               <span className={cn("tracking-wider", !displayValue && "text-tinta-suave")}>
                 {displayValue || placeholder}
@@ -216,6 +216,6 @@ export function TimePicker({
           </PopoverContent>
         </Popover>
       )}
-    </Field>
+    </Campo>
   );
 }

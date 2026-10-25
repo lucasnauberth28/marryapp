@@ -4,82 +4,82 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Check, ListChecks, Plus, TriangleAlert } from "lucide-react";
 import type { ReactNode } from "react";
-import { BoardItem, TaskStatus } from "@/types/kanban";
+import { ItemDoQuadro, SituacaoDaTarefa } from "@/types/kanban";
 import { criarTarefa, excluirTarefa, atualizarTarefa, atualizarSituacaoDaTarefa } from "@/actions/tasks";
-import { PageHeader } from "@/components/admin/page-header";
-import { StatusChip } from "@/components/painel/status-chip";
-import { btn, card, overline } from "@/components/painel/styles";
-import { TaskFormModal, type TaskFormData } from "./task-form-modal";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
+import { EtiquetaDeSituacao } from "@/components/painel/status-chip";
+import { btn, estiloDoCartao, estiloDoSobretitulo } from "@/components/painel/styles";
+import { ModalDaTarefa, type DadosDoFormularioDaTarefa } from "./task-form-modal";
 
 import { formatarDataCivilCurta } from "@/lib/formatacao/data";
-export type Filter = "abertas" | "atrasadas" | "concluidas";
+export type FiltroDeTarefas = "abertas" | "atrasadas" | "concluidas";
 
-interface TasksBoardProps {
-  initialTasks: BoardItem[];
+interface PropriedadesDoQuadroDeTarefas {
+  initialTasks: ItemDoQuadro[];
   /** Hoje em São Paulo (AAAA-MM-DD), vindo do servidor: o agrupamento por prazo parte dele. */
   todayKey: string;
   /** Dias até o casamento, quando há data. */
   daysLeft: number | null;
-  initialFilter: Filter;
+  initialFilter: FiltroDeTarefas;
   /** Cartão de sugestão da Liz (decidido no servidor com dados reais). */
   suggestion?: ReactNode;
 }
 
-const DAY = 86_400_000;
-const dayMs = (key: string) => Date.parse(`${key}T00:00:00Z`);
+const UM_DIA_EM_MS = 86_400_000;
+const milissegundosDoDia = (key: string) => Date.parse(`${key}T00:00:00Z`);
 // As datas das tarefas são guardadas à meia-noite UTC do dia escolhido: lemos o dia em UTC.
-const dueKey = (t: BoardItem) => (t.dueDate ? new Date(t.dueDate).toISOString().slice(0, 10) : null);
+const chaveDoPrazo = (t: ItemDoQuadro) => (t.dueDate ? new Date(t.dueDate).toISOString().slice(0, 10) : null);
 
-const monthShort = new Intl.DateTimeFormat("pt-BR", { month: "short", timeZone: "UTC" });
-const monthYear = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "numeric", timeZone: "UTC" });
+const formatoDoMesCurto = new Intl.DateTimeFormat("pt-BR", { month: "short", timeZone: "UTC" });
+const formatoDoMesEAno = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "numeric", timeZone: "UTC" });
 // "5 de out." vira "5 out"; "nov." vira "Nov"
-const short = (formatar: (data: Date) => string, key: string) => {
+const dataCurtaDaChave = (formatar: (data: Date) => string, key: string) => {
   const text = formatar(new Date(`${key}T00:00:00Z`)).replace(".", "").replace(" de ", " ");
   return /^\d/.test(text) ? text : text.charAt(0).toUpperCase() + text.slice(1);
 };
 
-function isDoneTask(t: BoardItem) {
-  return t.status === TaskStatus.DONE;
+function tarefaEstaConcluida(t: ItemDoQuadro) {
+  return t.status === SituacaoDaTarefa.DONE;
 }
 
-function DueChip({ task, todayKey }: { task: BoardItem; todayKey: string }) {
-  const key = dueKey(task);
-  if (!key || isDoneTask(task)) return null;
-  const diff = Math.round((dayMs(key) - dayMs(todayKey)) / DAY);
+function EtiquetaDePrazo({ task, todayKey }: { task: ItemDoQuadro; todayKey: string }) {
+  const key = chaveDoPrazo(task);
+  if (!key || tarefaEstaConcluida(task)) return null;
+  const diff = Math.round((milissegundosDoDia(key) - milissegundosDoDia(todayKey)) / UM_DIA_EM_MS);
   if (diff < 0) {
     return (
-      <StatusChip tone="perigo" icon={<TriangleAlert className="size-4" aria-hidden="true" />}>
-        Venceu {short(formatarDataCivilCurta, key)}
-      </StatusChip>
+      <EtiquetaDeSituacao tone="perigo" icon={<TriangleAlert className="size-4" aria-hidden="true" />}>
+        Venceu {dataCurtaDaChave(formatarDataCivilCurta, key)}
+      </EtiquetaDeSituacao>
     );
   }
-  if (diff <= 7) return <StatusChip tone={diff <= 3 ? "aviso" : "neutro"}>{diff === 0 ? "Hoje" : `Até ${short(formatarDataCivilCurta, key)}`}</StatusChip>;
+  if (diff <= 7) return <EtiquetaDeSituacao tone={diff <= 3 ? "aviso" : "neutro"}>{diff === 0 ? "Hoje" : `Até ${dataCurtaDaChave(formatarDataCivilCurta, key)}`}</EtiquetaDeSituacao>;
   const sameYear = key.slice(0, 4) === todayKey.slice(0, 4);
-  return <StatusChip tone="neutro">{short((d) => (sameYear ? monthShort : monthYear).format(d), key)}</StatusChip>;
+  return <EtiquetaDeSituacao tone="neutro">{dataCurtaDaChave((d) => (sameYear ? formatoDoMesCurto : formatoDoMesEAno).format(d), key)}</EtiquetaDeSituacao>;
 }
 
-export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, suggestion }: TasksBoardProps) {
-  const [tasks, setTasks] = useState<BoardItem[]>(initialTasks);
-  const [filter, setFilter] = useState<Filter>(initialFilter);
+export function QuadroDeTarefas({ initialTasks, todayKey, daysLeft, initialFilter, suggestion }: PropriedadesDoQuadroDeTarefas) {
+  const [tasks, setTasks] = useState<ItemDoQuadro[]>(initialTasks);
+  const [filter, setFilter] = useState<FiltroDeTarefas>(initialFilter);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<BoardItem | null>(null);
+  const [editing, setEditing] = useState<ItemDoQuadro | null>(null);
 
-  const done = tasks.filter(isDoneTask).length;
+  const done = tasks.filter(tarefaEstaConcluida).length;
   const total = tasks.length;
-  const open = tasks.filter((t) => !isDoneTask(t));
+  const open = tasks.filter((t) => !tarefaEstaConcluida(t));
   const overdue = open.filter((t) => {
-    const k = dueKey(t);
+    const k = chaveDoPrazo(t);
     return !!k && k < todayKey;
   });
   const percent = total === 0 ? 0 : Math.round((done / total) * 100);
 
   const groups = useMemo(() => {
-    const byDue = (a: BoardItem, b: BoardItem) => (dueKey(a) ?? "9999").localeCompare(dueKey(b) ?? "9999") || a.position - b.position;
-    const key = (t: BoardItem) => dueKey(t);
-    const weekEnd = new Date(dayMs(todayKey) + 7 * DAY).toISOString().slice(0, 10);
+    const byDue = (a: ItemDoQuadro, b: ItemDoQuadro) => (chaveDoPrazo(a) ?? "9999").localeCompare(chaveDoPrazo(b) ?? "9999") || a.position - b.position;
+    const key = (t: ItemDoQuadro) => chaveDoPrazo(t);
+    const weekEnd = new Date(milissegundosDoDia(todayKey) + 7 * UM_DIA_EM_MS).toISOString().slice(0, 10);
 
     if (filter === "concluidas") {
-      return [{ id: "concluidas", title: "Concluídas", tone: "normal" as const, items: tasks.filter(isDoneTask).sort(byDue) }];
+      return [{ id: "concluidas", title: "Concluídas", tone: "normal" as const, items: tasks.filter(tarefaEstaConcluida).sort(byDue) }];
     }
     const list = filter === "atrasadas" ? overdue : open;
     const g = [
@@ -91,15 +91,15 @@ export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, su
     return g.filter((x) => x.items.length > 0);
   }, [tasks, filter, open, overdue, todayKey]);
 
-  async function toggle(task: BoardItem) {
-    const next = isDoneTask(task) ? TaskStatus.TODO : TaskStatus.DONE;
+  async function toggle(task: ItemDoQuadro) {
+    const next = tarefaEstaConcluida(task) ? SituacaoDaTarefa.TODO : SituacaoDaTarefa.DONE;
     setTasks((cur) => cur.map((t) => (t.id === task.id ? { ...t, status: next } : t)));
     const res = await atualizarSituacaoDaTarefa(task.id, next, task.position, task.type);
     if (!res.success) {
       setTasks((cur) => cur.map((t) => (t.id === task.id ? { ...t, status: task.status } : t)));
       toast.error(res.error || "Não deu para atualizar a tarefa. Tente de novo.");
-    } else if (next === TaskStatus.DONE) {
-      toast.success("Tarefa concluída.", { action: { label: "Desfazer", onClick: () => void toggle({ ...task, status: TaskStatus.DONE }) } });
+    } else if (next === SituacaoDaTarefa.DONE) {
+      toast.success("Tarefa concluída.", { action: { label: "Desfazer", onClick: () => void toggle({ ...task, status: SituacaoDaTarefa.DONE }) } });
     }
   }
 
@@ -108,17 +108,17 @@ export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, su
     setModalOpen(true);
   }
 
-  function openEdit(task: BoardItem) {
+  function openEdit(task: ItemDoQuadro) {
     setEditing(task);
     setModalOpen(true);
   }
 
-  async function save(data: TaskFormData): Promise<boolean> {
+  async function save(data: DadosDoFormularioDaTarefa): Promise<boolean> {
     const toastId = toast.loading(editing ? "Salvando a tarefa..." : "Criando a tarefa...");
     if (editing) {
       const res = await atualizarTarefa(editing.id, data);
       if (res.success && res.data) {
-        const updated: BoardItem = { ...res.data, type: "MANUAL" };
+        const updated: ItemDoQuadro = { ...res.data, type: "MANUAL" };
         setTasks((cur) => cur.map((t) => (t.id === updated.id ? updated : t)));
         toast.success("Tarefa salva.", { id: toastId });
         return true;
@@ -156,7 +156,7 @@ export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, su
 
   const left = daysLeft !== null && daysLeft > 0 ? (daysLeft === 1 ? " · falta 1 dia" : ` · faltam ${daysLeft} dias`) : daysLeft === 0 ? " · o casamento é hoje" : "";
 
-  const chips: Array<{ value: Filter; label: string; tone: string }> = [
+  const chips: Array<{ value: FiltroDeTarefas; label: string; tone: string }> = [
     { value: "abertas", label: `Abertas · ${open.length}`, tone: "bg-areia text-tinta" },
     { value: "atrasadas", label: `Atrasadas · ${overdue.length}`, tone: "bg-perigo-suave text-perigo" },
     { value: "concluidas", label: `Concluídas · ${done}`, tone: "bg-areia text-tinta-suave" },
@@ -164,7 +164,7 @@ export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, su
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow="Organização"
         title="Tarefas"
         description={total === 0 ? "O que falta fazer até o grande dia, num só lugar." : `${done} de ${total} ${total === 1 ? "concluída" : "concluídas"}${left}`}
@@ -183,7 +183,7 @@ export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, su
       )}
 
       {total === 0 ? (
-        <div className={`${card} flex flex-col items-center gap-3 px-6 py-14 text-center`}>
+        <div className={`${estiloDoCartao} flex flex-col items-center gap-3 px-6 py-14 text-center`}>
           <span className="grid size-12 place-items-center rounded-full bg-ameixa-suave text-ameixa">
             <ListChecks className="size-6" aria-hidden="true" />
           </span>
@@ -213,21 +213,21 @@ export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, su
           </div>
 
           {groups.length === 0 ? (
-            <div className={`${card} flex items-center gap-3 px-6 py-10 text-tinta-suave`}>
+            <div className={`${estiloDoCartao} flex items-center gap-3 px-6 py-10 text-tinta-suave`}>
               <Check className="size-5 shrink-0 text-sucesso" aria-hidden="true" />
               {filter === "atrasadas" ? "Nada atrasado. Está tudo em dia." : filter === "concluidas" ? "Ainda não há tarefas concluídas." : "Não há tarefas abertas. Que alegria!"}
             </div>
           ) : (
-            <div className={`${card} p-4 sm:p-6`}>
+            <div className={`${estiloDoCartao} p-4 sm:p-6`}>
               {groups.map((g, gi) => (
                 <section key={g.id} aria-labelledby={`grupo-${g.id}`} className={gi > 0 ? "mt-6" : ""}>
-                  <h2 id={`grupo-${g.id}`} className={`${overline} mb-2 ${g.tone === "perigo" ? "!text-perigo" : ""}`}>
+                  <h2 id={`grupo-${g.id}`} className={`${estiloDoSobretitulo} mb-2 ${g.tone === "perigo" ? "!text-perigo" : ""}`}>
                     {g.title}
                   </h2>
                   <ul>
                     {g.items.map((t) => {
-                      const isDone = isDoneTask(t);
-                      const meta = [t.assignee ? `Responsável: ${t.assignee}` : null, t.status === TaskStatus.IN_PROGRESS ? "Em andamento" : null].filter(Boolean).join(" · ");
+                      const isDone = tarefaEstaConcluida(t);
+                      const meta = [t.assignee ? `Responsável: ${t.assignee}` : null, t.status === SituacaoDaTarefa.IN_PROGRESS ? "Em andamento" : null].filter(Boolean).join(" · ");
                       return (
                         <li key={t.id} className="flex min-h-14 items-center gap-1 border-b border-linha last:border-b-0">
                           <label className="grid size-11 shrink-0 cursor-pointer place-items-center">
@@ -238,11 +238,11 @@ export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, su
                             {(meta || t.description) && <span className="line-clamp-1 text-sm text-tinta-suave">{[meta, t.description?.split("\n")[0]].filter(Boolean).join(" · ")}</span>}
                             {/* Celular: o prazo fica embaixo do texto */}
                             <span className="mt-1 w-fit sm:hidden">
-                              <DueChip task={t} todayKey={todayKey} />
+                              <EtiquetaDePrazo task={t} todayKey={todayKey} />
                             </span>
                           </button>
                           <span className="shrink-0 pr-1 max-sm:hidden">
-                            <DueChip task={t} todayKey={todayKey} />
+                            <EtiquetaDePrazo task={t} todayKey={todayKey} />
                           </span>
                         </li>
                       );
@@ -266,7 +266,7 @@ export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, su
         <Plus className="size-6" aria-hidden="true" />
       </button>
 
-      <TaskFormModal open={modalOpen} onOpenChange={setModalOpen} task={editing} onSave={save} onDelete={remove} />
+      <ModalDaTarefa open={modalOpen} onOpenChange={setModalOpen} task={editing} onSave={save} onDelete={remove} />
     </div>
   );
 }

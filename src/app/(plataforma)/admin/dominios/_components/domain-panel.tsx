@@ -17,10 +17,10 @@ import {
   type ResultadoDaAcaoDeAdmin,
   type ResultadoDaAcaoDeConectarDominio,
 } from "@/actions/domain-admin-actions";
-import { btn } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
-import { StatusChip } from "@/components/plataforma/status-chip";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
+import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ETAPAS_DA_LINHA_DO_TEMPO, situacoesDasEtapas, type NomeDaSituacaoDoPedidoDeDominio } from "@/lib/domain-order";
@@ -136,7 +136,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
             </Button>
           ) : null}
           {fullDocument ? (
-            <button type="button" onClick={() => copyText(fullDocument.replace(/[^0-9A-Z]/g, ""), "Número copiado (só os dígitos).")} className={cn(btn.secondary, btn.sm)}>
+            <button type="button" onClick={() => copyText(fullDocument.replace(/[^0-9A-Z]/g, ""), "Número copiado (só os dígitos).")} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)}>
               <Copy className="size-4" aria-hidden="true" /> Copiar
             </button>
           ) : null}
@@ -275,7 +275,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
         </section>
       ) : null}
 
-      <ConfirmModal
+      <ModalDeConfirmacao
         isOpen={panel === "online"}
         onClose={() => setPanel(null)}
         onConfirm={() => run("online", () => marcarDominioComoNoAr(id), () => setPanel(null))}
@@ -321,9 +321,9 @@ function ConnectionPanel({ connection }: { connection: ResultadoDaConexao }) {
   return (
     <div className="flex flex-col gap-3">
       <p className="flex flex-wrap items-center gap-2 text-sm text-tinta">
-        <StatusChip tone={chip.tone} icon={connection.state === "ready" ? CheckCircle2 : Clock}>
+        <EtiquetaDeSituacao tone={chip.tone} icon={connection.state === "ready" ? CheckCircle2 : Clock}>
           {chip.label}
-        </StatusChip>
+        </EtiquetaDeSituacao>
         {connection.message}
       </p>
       <ul className="flex flex-col gap-2">
@@ -334,7 +334,7 @@ function ConnectionPanel({ connection }: { connection: ResultadoDaConexao }) {
             </span>
             <span className="flex flex-wrap items-center justify-between gap-2">
               <span className="min-w-0 break-all font-mono text-tinta">{record.value}</span>
-              <button type="button" onClick={() => copyText(record.value, "Valor copiado.")} className={cn(btn.secondary, btn.sm)}>
+              <button type="button" onClick={() => copyText(record.value, "Valor copiado.")} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)}>
                 <Copy className="size-4" aria-hidden="true" /> Copiar
               </button>
             </span>

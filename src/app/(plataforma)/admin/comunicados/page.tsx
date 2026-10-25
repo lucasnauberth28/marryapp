@@ -1,12 +1,12 @@
 import { Suspense } from "react";
-import { PageHeader } from "@/components/plataforma/page-header";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type ParametrosDeBusca, parametroDaBusca } from "@/lib/platform/list-params";
 import { emailEstaConfigurado } from "@/lib/email";
 import { esquemaDoPublico, interpretarParametroDeIdsDeCasamento, interpretarPublico, type Publico } from "@/lib/platform/announcement";
 import { listarRascunhos, listarHistorico, preverPublico } from "@/lib/platform/queries/comunicados";
 import { formatarDataEHora } from "@/lib/platform/format";
-import { TablePanelSkeleton } from "@/components/plataforma/loading-parts";
+import { EsqueletoDoPainelDeTabela } from "@/components/plataforma/loading-parts";
 import { Compose, type ComposeInitial } from "./_components/compose";
 import { History } from "./_components/history";
 
@@ -41,7 +41,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 
   return (
     <>
-      <PageHeader eyebrow="Comunicação" title="Comunicados" description="Avise casais e fornecedores, ou só um grupo deles, pelo canal certo." />
+      <CabecalhoDaPagina eyebrow="Comunicação" title="Comunicados" description="Avise casais e fornecedores, ou só um grupo deles, pelo canal certo." />
       <Compose
         key={draft?.id ?? (weddingIds.join(",") || "novo")}
         initial={initial}
@@ -50,7 +50,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
         emailConfigured={emailEstaConfigurado()}
       />
       {/* O histórico é a parte mais pesada e fica abaixo do formulário: chega depois, com esqueleto */}
-      <Suspense fallback={<TablePanelSkeleton columns={6} rows={3} />}>
+      <Suspense fallback={<EsqueletoDoPainelDeTabela columns={6} rows={3} />}>
         <HistoryBlock />
       </Suspense>
     </>

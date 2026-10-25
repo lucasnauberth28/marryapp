@@ -3,15 +3,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { AlertTriangle, Ban, CheckCircle2, Clock, Eye, Globe, Lock, LogIn, Mail, Receipt } from "lucide-react";
-import { PageHeader } from "@/components/plataforma/page-header";
-import { Panel } from "@/components/plataforma/panel";
-import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
-import { PendingRegion } from "@/components/plataforma/pending";
-import { TabsNav } from "@/components/plataforma/tabs-nav";
-import { PlanChip, StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { Notice } from "@/components/plataforma/notices";
-import { btn } from "@/components/landing/styles";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { Painel } from "@/components/plataforma/panel";
+import { CartaoDeIndicador, GradeDeIndicadores } from "@/components/plataforma/stat-card";
+import { RegiaoPendente } from "@/components/plataforma/pending";
+import { NavegacaoDeAbas } from "@/components/plataforma/tabs-nav";
+import { EtiquetaDePlano, EtiquetaDeSituacao, type TomDaSituacao } from "@/components/plataforma/status-chip";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { Aviso } from "@/components/plataforma/notices";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Switch } from "@/components/ui/switch";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { umDosValores, type ParametrosDeBusca } from "@/lib/platform/list-params";
@@ -46,7 +46,7 @@ export const metadata = { title: "Casal" };
 const TABS = ["visao", "pagamentos", "convidados", "atividade", "dominio", "madrinha", "suporte"] as const;
 type Tab = (typeof TABS)[number];
 
-const DOMAIN_STATUS: Record<string, { label: string; tone: StatusTone }> = {
+const DOMAIN_STATUS: Record<string, { label: string; tone: TomDaSituacao }> = {
   REQUESTED: { label: "Pedido recebido", tone: "aviso" },
   REGISTERING: { label: "Em registro", tone: "aviso" },
   REGISTERED: { label: "Registrado, falta conectar", tone: "aviso" },
@@ -92,42 +92,42 @@ export default async function Page({ params, searchParams }: { params: Promise<{
       <PlanPanel header={header} />
       {tab === "visao" && <HealthPanel header={header} />}
       {tab === "pagamentos" && (
-        <Panel title="Contato">
+        <Painel title="Contato">
           <Rows items={[{ label: "E-mail", value: owner?.username ?? "sem e-mail" }]} />
           {owner && (
-            <a href={`mailto:${owner.username}`} className={cn(btn.secondary, btn.sm, "mt-4 gap-2")}>
+            <a href={`mailto:${owner.username}`} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm, "mt-4 gap-2")}>
               <Mail className="size-4" aria-hidden="true" /> Enviar e-mail
             </a>
           )}
-        </Panel>
+        </Painel>
       )}
-      <Panel title="Ações com cuidado">
+      <Painel title="Ações com cuidado">
         <CareActions weddingId={id} coupleNames={wedding.coupleNames} suspended={suspended} />
-        <Notice tone="neutro" icon={Receipt} className="mt-4">
+        <Aviso tone="neutro" icon={Receipt} className="mt-4">
           Cada uma pede confirmação e motivo. Fica no Registro de atividades com o seu nome, o horário e o motivo.
-        </Notice>
-      </Panel>
+        </Aviso>
+      </Painel>
     </aside>
   );
 
   return (
     <>
-      <PageHeader
+      <CabecalhoDaPagina
         breadcrumb={[{ label: "Casais", href: "/admin/casais" }, { label: wedding.coupleNames }]}
         eyebrow="Casal"
         title={wedding.coupleNames}
         description={`${wedding.city ? `${wedding.city} · cadastrados` : "Cadastrados"} em ${formatarDataPorExtenso(wedding.createdAt).replace(/^[^,]+, /, "")}`}
         actions={
           <>
-            <Link href={`${base}/entrar-como`} className={cn(btn.primary, "gap-2")}>
+            <Link href={`${base}/entrar-como`} className={cn(estiloDoBotao.primary, "gap-2")}>
               <LogIn className="size-4" aria-hidden="true" /> Entrar como este casal
             </Link>
             {suspended ? (
-              <span aria-disabled="true" className={cn(btn.secondary, "gap-2 opacity-50")} title="O site está fora do ar enquanto o casal estiver suspenso">
+              <span aria-disabled="true" className={cn(estiloDoBotao.secondary, "gap-2 opacity-50")} title="O site está fora do ar enquanto o casal estiver suspenso">
                 <Globe className="size-4" aria-hidden="true" /> Abrir o site
               </span>
             ) : (
-              <a href={siteUrl} target="_blank" rel="noopener noreferrer" className={cn(btn.secondary, "gap-2")}>
+              <a href={siteUrl} target="_blank" rel="noopener noreferrer" className={cn(estiloDoBotao.secondary, "gap-2")}>
                 <Globe className="size-4" aria-hidden="true" /> Abrir o site
               </a>
             )}
@@ -137,27 +137,27 @@ export default async function Page({ params, searchParams }: { params: Promise<{
 
       <div className="-mt-2 flex flex-wrap gap-2">
         <SituationChip situation={situation} />
-        <PlanChip plan={plan?.planId ?? null} />
+        <EtiquetaDePlano plan={plan?.planId ?? null} />
         {suspended ? (
-          <StatusChip tone="perigo" icon={Ban}>
+          <EtiquetaDeSituacao tone="perigo" icon={Ban}>
             Site fora do ar
-          </StatusChip>
+          </EtiquetaDeSituacao>
         ) : (
-          <StatusChip tone="sucesso" icon={Globe}>
+          <EtiquetaDeSituacao tone="sucesso" icon={Globe}>
             Site no ar
-          </StatusChip>
+          </EtiquetaDeSituacao>
         )}
       </div>
 
       {problems.length > 0 && (
-        <Notice
+        <Aviso
           tone="perigo"
           icon={AlertTriangle}
           title={problems.length === 1 ? problems[0].title : `${problems.length} problemas pedem atenção`}
           aside={
             <div className="flex flex-wrap gap-2">
               {pix && <ConfirmPixButton subscriptionId={pix.id} />}
-              <Link href={`${base}?aba=pagamentos`} className={`${btn.secondary} ${btn.sm}`}>
+              <Link href={`${base}?aba=pagamentos`} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
                 Ver pagamentos
               </Link>
             </div>
@@ -172,30 +172,30 @@ export default async function Page({ params, searchParams }: { params: Promise<{
               </li>
             ))}
           </ul>
-        </Notice>
+        </Aviso>
       )}
 
-      <StatGrid>
-        <StatCard
+      <GradeDeIndicadores>
+        <CartaoDeIndicador
           label="Casamento"
           value={wedding.weddingDate ? formatarData(wedding.weddingDate) : "Sem data"}
           hint={wedding.weddingDate ? `${formatarDiaDaSemana(wedding.weddingDate)} · ${daysLeft! >= 0 ? `faltam ${pluralizar(daysLeft!, "dia", "dias")}` : `foi há ${pluralizar(-daysLeft!, "dia", "dias")}`}` : "O casal ainda não informou"}
           highlight={closeToWedding && problems.length > 0}
         />
-        <StatCard
+        <CartaoDeIndicador
           label="Convidados"
           value={formatarInteiro(guests.total)}
           hint={guests.total === 0 ? "Lista vazia" : `${formatarInteiro(guests.confirmed)} confirmaram (${formatarPercentual(guests.confirmed, guests.total)})`}
         />
-        <StatCard label="Presentes" value={formatarReais(gifts.cents)} hint={gifts.count === 0 ? "Nenhum presente recebido" : `${pluralizar(gifts.count, "presente recebido", "presentes recebidos")}`} />
-        <StatCard
+        <CartaoDeIndicador label="Presentes" value={formatarReais(gifts.cents)} hint={gifts.count === 0 ? "Nenhum presente recebido" : `${pluralizar(gifts.count, "presente recebido", "presentes recebidos")}`} />
+        <CartaoDeIndicador
           label="Última atividade"
           value={wedding.lastActiveAt ? haQuantoTempo(wedding.lastActiveAt) : "—"}
           hint={wedding.lastActiveAt ? formatarDataEHora(wedding.lastActiveAt) : "Sem registro de visita (só medimos desde agora)"}
         />
-      </StatGrid>
+      </GradeDeIndicadores>
 
-      <TabsNav
+      <NavegacaoDeAbas
         label="Abas do casal"
         basePath={base}
         active={tab}
@@ -211,7 +211,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
       />
 
       {/* Cada aba busca os próprios dados: o cabeçalho e os números ficam na tela e só o corpo mostra o esqueleto (key = aba) */}
-      <PendingRegion>
+      <RegiaoPendente>
         <Suspense key={tab} fallback={<CasalTabSkeleton tab={tab} />}>
           {tab === "visao" && <VisaoTab header={header} sideColumn={sideColumn} />}
           {tab === "pagamentos" && <PagamentosTab header={header} sideColumn={sideColumn} />}
@@ -221,7 +221,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
           {tab === "madrinha" && <MadrinhaTab id={id} />}
           {tab === "suporte" && <SuporteTab id={id} />}
         </Suspense>
-      </PendingRegion>
+      </RegiaoPendente>
     </>
   );
 }
@@ -231,7 +231,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
 function PlanPanel({ header }: { header: CabecalhoDoCasal }) {
   const { plan, gifts, pix, wedding } = header;
   return (
-    <Panel title="Plano">
+    <Painel title="Plano">
       <p className="font-display text-[32px] leading-10 text-tinta">{plan?.planName.replace(/^Plano /, "") ?? "Básico"}</p>
       <p className="mt-1 text-sm leading-5 text-tinta-suave">
         {plan
@@ -243,20 +243,20 @@ function PlanPanel({ header }: { header: CabecalhoDoCasal }) {
       </p>
       {pix && (
         <div className="mt-4 flex flex-col gap-3">
-          <Notice tone="aviso" icon={Clock}>
+          <Aviso tone="aviso" icon={Clock}>
             <strong>Pix do {pix.planName.replace(/^Plano /, "")} a conferir.</strong> {formatarReais(pix.amount)}, gerado {haQuantoTempo(pix.createdAt)}.
-          </Notice>
+          </Aviso>
           <div>
             <ConfirmPixButton subscriptionId={pix.id} />
           </div>
         </div>
       )}
       <div className="mt-4">
-        <Link href={`/admin/casais/${wedding.id}?aba=pagamentos#conceder`} className={`${btn.secondary} ${btn.sm}`}>
+        <Link href={`/admin/casais/${wedding.id}?aba=pagamentos#conceder`} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
           Conceder um plano
         </Link>
       </div>
-    </Panel>
+    </Painel>
   );
 }
 
@@ -275,7 +275,7 @@ function HealthPanel({ header }: { header: CabecalhoDoCasal }) {
         : { ok: true, title: "Confirmações", detail: "todos já responderam" },
   ];
   return (
-    <Panel title="Saúde do casamento">
+    <Painel title="Saúde do casamento">
       <ul className="flex flex-col gap-3">
         {items.map((item) => (
           <li key={item.title} className="flex items-start gap-3">
@@ -287,7 +287,7 @@ function HealthPanel({ header }: { header: CabecalhoDoCasal }) {
           </li>
         ))}
       </ul>
-    </Panel>
+    </Painel>
   );
 }
 
@@ -300,7 +300,7 @@ async function VisaoTab({ header, sideColumn }: { header: CabecalhoDoCasal; side
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
       <div className="flex min-w-0 flex-col gap-6">
-        <Panel title="Dados do casamento">
+        <Painel title="Dados do casamento">
           <Rows
             items={[
               { label: "Casal", value: wedding.coupleNames },
@@ -312,19 +312,19 @@ async function VisaoTab({ header, sideColumn }: { header: CabecalhoDoCasal; side
               { label: "Última entrada com senha", value: owner?.lastLoginAt ? formatarDataEHora(owner.lastLoginAt) : "Sem registro" },
             ]}
           />
-        </Panel>
+        </Painel>
 
-        <Panel title="Links do casal">
+        <Painel title="Links do casal">
           <ul>
             <LinkRow label="Site do casal" url={urlDoSiteDoCasamento(wedding.slug, undefined, wedding.customDomain)} />
             <LinkRow label="Confirmação de presença" url={urlDoSiteDoCasamento(wedding.slug, "rsvp", wedding.customDomain)} />
             <LinkRow label="Lista de presentes" url={urlDoSiteDoCasamento(wedding.slug, "presentes", wedding.customDomain)} />
           </ul>
-        </Panel>
+        </Painel>
 
-        <Panel title="Linha do tempo" action={{ label: "Ver tudo no registro", href: "/atividades" }}>
+        <Painel title="Linha do tempo" action={{ label: "Ver tudo no registro", href: "/atividades" }}>
           <Timeline items={timeline} />
-        </Panel>
+        </Painel>
       </div>
       {sideColumn}
     </div>
@@ -341,7 +341,7 @@ function Timeline({ items }: { items: Awaited<ReturnType<typeof obterLinhaDoTemp
             <p className="text-sm leading-5 text-tinta-suave">{formatarDataEHora(item.at)}</p>
             <p className="flex flex-wrap items-center gap-2 leading-6 text-tinta">
               {item.text}
-              {item.badge && <StatusChip tone={item.badge.tone}>{item.badge.label}</StatusChip>}
+              {item.badge && <EtiquetaDeSituacao tone={item.badge.tone}>{item.badge.label}</EtiquetaDeSituacao>}
             </p>
           </div>
         </li>
@@ -357,7 +357,7 @@ async function PagamentosTab({ header, sideColumn }: { header: CabecalhoDoCasal;
     .filter((p) => p.status === "APPROVED" && p.amount > 0 && !p.refundRequests.some((r) => r.status === "REQUESTED"))
     .map((p) => ({ id: p.id, amountCents: p.amount, label: `${p.planName.replace(/^Plano /, "")}, ${p.paidAt ? formatarData(p.paidAt) : formatarData(p.createdAt)}, ${formatarReais(p.amount)}` }));
   const refunds = payments.flatMap((p) => p.refundRequests.map((r) => ({ ...r, planName: p.planName })));
-  const STATUS: Record<string, { tone: StatusTone; label: string }> = {
+  const STATUS: Record<string, { tone: TomDaSituacao; label: string }> = {
     APPROVED: { tone: "sucesso", label: "Pago" },
     PENDING: { tone: "aviso", label: "Aguardando" },
     REJECTED: { tone: "perigo", label: "Recusado" },
@@ -369,7 +369,7 @@ async function PagamentosTab({ header, sideColumn }: { header: CabecalhoDoCasal;
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
       <div className="flex min-w-0 flex-col gap-6">
-        <Panel title="Pagamentos" aside={<span className="text-sm text-tinta-suave">Plano de casal é pago uma vez</span>}>
+        <Painel title="Pagamentos" aside={<span className="text-sm text-tinta-suave">Plano de casal é pago uma vez</span>}>
           {payments.length === 0 ? (
             <p className="text-tinta-suave">Este casal ainda não gerou nenhum pagamento de plano.</p>
           ) : (
@@ -394,7 +394,7 @@ async function PagamentosTab({ header, sideColumn }: { header: CabecalhoDoCasal;
                         <td className="px-2 py-3 text-right tabular-nums">{formatarReais(p.amount)}</td>
                         <td className="px-2 py-3">{p.method}</td>
                         <td className="px-2 py-3">
-                          <StatusChip tone={STATUS[p.status]?.tone ?? "neutro"}>{STATUS[p.status]?.label ?? p.status}</StatusChip>
+                          <EtiquetaDeSituacao tone={STATUS[p.status]?.tone ?? "neutro"}>{STATUS[p.status]?.label ?? p.status}</EtiquetaDeSituacao>
                         </td>
                         <td className="px-2 py-3">
                           {p.status === "APPROVED" && p.amount > 0 ? (
@@ -415,7 +415,7 @@ async function PagamentosTab({ header, sideColumn }: { header: CabecalhoDoCasal;
                   <li key={p.id} className="rounded-xl border border-linha p-3">
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-semibold">{p.planName.replace(/^Plano /, "")} · {formatarReais(p.amount)}</p>
-                      <StatusChip tone={STATUS[p.status]?.tone ?? "neutro"}>{STATUS[p.status]?.label ?? p.status}</StatusChip>
+                      <EtiquetaDeSituacao tone={STATUS[p.status]?.tone ?? "neutro"}>{STATUS[p.status]?.label ?? p.status}</EtiquetaDeSituacao>
                     </div>
                     <p className="mt-1 text-sm text-tinta-suave">{formatarDataEHora(p.paidAt ?? p.createdAt)} · {p.method}</p>
                     {p.status === "APPROVED" && p.amount > 0 && (
@@ -428,15 +428,15 @@ async function PagamentosTab({ header, sideColumn }: { header: CabecalhoDoCasal;
               </ul>
             </>
           )}
-        </Panel>
+        </Painel>
 
         <PayoutPanel weddingId={wedding.id} />
 
-        <Panel>
+        <Painel>
           <GrantPlanForm weddingId={wedding.id} currentPlanId={plan?.planId ?? null} />
-        </Panel>
+        </Painel>
 
-        <Panel title="Reembolso">
+        <Painel title="Reembolso">
           <RefundForm weddingId={wedding.id} options={refundable} />
           {refunds.length > 0 && (
             <ul className="mt-5 flex flex-col gap-2 border-t border-linha pt-4">
@@ -445,12 +445,12 @@ async function PagamentosTab({ header, sideColumn }: { header: CabecalhoDoCasal;
                   <span>
                     {formatarReais(r.amount)} do plano {r.planName.replace(/^Plano /, "")}, pedido em {formatarData(r.createdAt)}
                   </span>
-                  <StatusChip tone={r.status === "REQUESTED" ? "aviso" : "neutro"}>{REFUND_STATUS[r.status] ?? r.status}</StatusChip>
+                  <EtiquetaDeSituacao tone={r.status === "REQUESTED" ? "aviso" : "neutro"}>{REFUND_STATUS[r.status] ?? r.status}</EtiquetaDeSituacao>
                 </li>
               ))}
             </ul>
           )}
-        </Panel>
+        </Painel>
       </div>
       {sideColumn}
     </div>
@@ -461,15 +461,15 @@ async function PagamentosTab({ header, sideColumn }: { header: CabecalhoDoCasal;
 async function PayoutPanel({ weddingId }: { weddingId: string }) {
   const account = await obterVisaoDaContaDeRepasse(weddingId);
   return (
-    <Panel
+    <Painel
       title="Dados de recebimento"
       aside={
         account ? (
-          <StatusChip tone={account.verifiedAt ? "sucesso" : "aviso"} icon={account.verifiedAt ? CheckCircle2 : Clock}>
+          <EtiquetaDeSituacao tone={account.verifiedAt ? "sucesso" : "aviso"} icon={account.verifiedAt ? CheckCircle2 : Clock}>
             {account.verifiedAt ? "Confirmado pelo casal" : "Falta o casal confirmar"}
-          </StatusChip>
+          </EtiquetaDeSituacao>
         ) : (
-          <StatusChip tone="neutro">Não cadastrados</StatusChip>
+          <EtiquetaDeSituacao tone="neutro">Não cadastrados</EtiquetaDeSituacao>
         )
       }
     >
@@ -487,10 +487,10 @@ async function PayoutPanel({ weddingId }: { weddingId: string }) {
       ) : (
         <p className="text-tinta-suave">O casal ainda não cadastrou onde receber os presentes.</p>
       )}
-      <Notice tone="neutro" icon={Lock} className="mt-4">
+      <Aviso tone="neutro" icon={Lock} className="mt-4">
         Os dados ficam criptografados e esta tela mostra só a máscara. Nenhuma ação daqui decifra o dado, e o repasse ainda não é automático.
-      </Notice>
-    </Panel>
+      </Aviso>
+    </Painel>
   );
 }
 
@@ -498,10 +498,10 @@ async function ConvidadosTab({ id }: { id: string }) {
   const n = await obterNumerosDeConvidadosDoCasal(id);
   const pct = (v: number) => (n.total ? `${(v / n.total) * 100}%` : "0%");
   return (
-    <Panel title="Só números e saúde">
-      <Notice tone="neutro" icon={Lock} className="mb-5">
+    <Painel title="Só números e saúde">
+      <Aviso tone="neutro" icon={Lock} className="mb-5">
         Nomes, telefones e restrições dos convidados ficam escondidos. A privacidade deles é do casal.
-      </Notice>
+      </Aviso>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p className="text-lg font-semibold">{pluralizar(n.total, "convidado", "convidados")}</p>
         {n.total > 0 && (
@@ -524,7 +524,7 @@ async function ConvidadosTab({ id }: { id: string }) {
           ]}
         />
       </div>
-    </Panel>
+    </Painel>
   );
 }
 
@@ -532,10 +532,10 @@ async function AtividadeTab({ id }: { id: string }) {
   const [timeline, activity] = await Promise.all([obterLinhaDoTempoDoCasal(id, 20), obterAtividadeDoCasal(id)]);
   return (
     <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-      <Panel title="O que aconteceu" action={{ label: "Abrir no registro", href: "/atividades" }}>
+      <Painel title="O que aconteceu" action={{ label: "Abrir no registro", href: "/atividades" }}>
         <Timeline items={timeline} />
-      </Panel>
-      <Panel title="Avisos enviados ao casal">
+      </Painel>
+      <Painel title="Avisos enviados ao casal">
         {activity.notifications.length === 0 ? (
           <p className="text-tinta-suave">Nenhum aviso foi enviado a este casal ainda.</p>
         ) : (
@@ -547,19 +547,19 @@ async function AtividadeTab({ id }: { id: string }) {
                   <span className="block text-sm text-tinta-suave">{formatarDataEHora(n.createdAt)}</span>
                 </span>
                 {n.readAt ? (
-                  <StatusChip tone="sucesso" icon={CheckCircle2}>
+                  <EtiquetaDeSituacao tone="sucesso" icon={CheckCircle2}>
                     Lida
-                  </StatusChip>
+                  </EtiquetaDeSituacao>
                 ) : (
-                  <StatusChip tone="neutro" icon={Eye}>
+                  <EtiquetaDeSituacao tone="neutro" icon={Eye}>
                     Não lida
-                  </StatusChip>
+                  </EtiquetaDeSituacao>
                 )}
               </li>
             ))}
           </ul>
         )}
-      </Panel>
+      </Painel>
     </div>
   );
 }
@@ -567,20 +567,20 @@ async function AtividadeTab({ id }: { id: string }) {
 async function DominioTab({ id }: { id: string }) {
   const orders = await obterDominioDoCasal(id);
   return (
-    <Panel title="Domínio próprio">
+    <Painel title="Domínio próprio">
       {orders.length === 0 ? (
-        <EmptyState
+        <EstadoVazio
           icon={Globe}
           compact
           title="Sem domínio próprio"
           action={
-            <Link href="/admin/dominios" className={`${btn.secondary} ${btn.sm}`}>
+            <Link href="/admin/dominios" className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
               Ver a fila de domínios
             </Link>
           }
         >
           O casal ainda não pediu um endereço .com.br. O plano VIP inclui um por 1 ano.
-        </EmptyState>
+        </EstadoVazio>
       ) : (
         <ul className="flex flex-col">
           {orders.map((o) => {
@@ -594,20 +594,20 @@ async function DominioTab({ id }: { id: string }) {
                     {o.expiresAt ? ` · vence em ${formatarData(o.expiresAt)}` : ""}
                   </span>
                 </span>
-                <StatusChip tone={s.tone}>{s.label}</StatusChip>
+                <EtiquetaDeSituacao tone={s.tone}>{s.label}</EtiquetaDeSituacao>
               </li>
             );
           })}
         </ul>
       )}
-    </Panel>
+    </Painel>
   );
 }
 
 async function MadrinhaTab({ id }: { id: string }) {
   const override = await obterMadrinhaDoCasal(id);
   return (
-    <Panel title="Assistente">
+    <Painel title="Assistente">
       <div className="flex items-center justify-between gap-4 border-b border-linha pb-4">
         <div>
           <p className="font-semibold">Liz para este casal</p>
@@ -619,10 +619,10 @@ async function MadrinhaTab({ id }: { id: string }) {
         Quando a Liz for ativada, aqui você vê o limite deste casal e pode bloquear por abuso.
         {override && (override.extraMessages > 0 || override.blockedAt) ? ` Já existe um ajuste guardado para este casal: ${override.extraMessages > 0 ? `${override.extraMessages} mensagens a mais` : ""}${override.blockedAt ? `${override.extraMessages > 0 ? ", " : ""}bloqueado` : ""}.` : ""}
       </p>
-      <Link href="/admin/madrinha" className={cn(btn.secondary, btn.sm, "mt-4")}>
+      <Link href="/admin/madrinha" className={cn(estiloDoBotao.secondary, estiloDoBotao.sm, "mt-4")}>
         Ver a gestão da Liz
       </Link>
-    </Panel>
+    </Painel>
   );
 }
 
@@ -630,7 +630,7 @@ async function SuporteTab({ id }: { id: string }) {
   const { notes, tickets } = await obterSuporteDoCasal(id);
   return (
     <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-      <Panel title="Notas internas" aside={<StatusChip tone="neutro" icon={Lock}>Só a equipe vê</StatusChip>}>
+      <Painel title="Notas internas" aside={<EtiquetaDeSituacao tone="neutro" icon={Lock}>Só a equipe vê</EtiquetaDeSituacao>}>
         {notes.length === 0 ? (
           <p className="mb-4 text-tinta-suave">Nenhuma nota ainda.</p>
         ) : (
@@ -646,8 +646,8 @@ async function SuporteTab({ id }: { id: string }) {
           </ul>
         )}
         <NoteForm weddingId={id} />
-      </Panel>
-      <Panel title="Pedidos de ajuda deste casal">
+      </Painel>
+      <Painel title="Pedidos de ajuda deste casal">
         {tickets.length === 0 ? (
           <p className="text-tinta-suave">Nenhum chamado registrado para este casal.</p>
         ) : (
@@ -660,15 +660,15 @@ async function SuporteTab({ id }: { id: string }) {
                   </span>
                   <span className="block text-sm text-tinta-suave">{formatarData(t.createdAt)}</span>
                 </span>
-                <StatusChip tone={t.status === "CLOSED" ? "neutro" : "aviso"}>{TICKET_STATUS[t.status] ?? t.status}</StatusChip>
+                <EtiquetaDeSituacao tone={t.status === "CLOSED" ? "neutro" : "aviso"}>{TICKET_STATUS[t.status] ?? t.status}</EtiquetaDeSituacao>
               </li>
             ))}
           </ul>
         )}
-        <Link href="/admin/suporte" className={cn(btn.secondary, btn.sm, "mt-4")}>
+        <Link href="/admin/suporte" className={cn(estiloDoBotao.secondary, estiloDoBotao.sm, "mt-4")}>
           Abrir Suporte e LGPD
         </Link>
-      </Panel>
+      </Painel>
     </div>
   );
 }

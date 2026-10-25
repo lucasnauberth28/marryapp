@@ -1,11 +1,11 @@
 import { type CSSProperties, type ElementType, type ReactNode } from "react";
 
-type RevealVariant = "up" | "fade" | "scale" | "arch" | "left" | "right";
+type VarianteDaAparicao = "up" | "fade" | "scale" | "arch" | "left" | "right";
 
-interface RevealProps {
+interface PropriedadesDaAparicao {
   children: ReactNode;
   as?: ElementType;
-  variant?: RevealVariant;
+  variant?: VarianteDaAparicao;
   /** Atraso em ms; use múltiplos de 80 para escalonar itens de uma lista. */
   delay?: number;
   className?: string;
@@ -21,7 +21,7 @@ interface RevealProps {
  * só marca o elemento; o RevealObserver (no layout raiz) cuida da animação.
  * Sem JavaScript ou com movimento reduzido, o conteúdo aparece direto.
  */
-export function Reveal({ children, as: Tag = "div", variant = "up", delay = 0, className, style, id, ...aria }: RevealProps) {
+export function Aparicao({ children, as: Tag = "div", variant = "up", delay = 0, className, style, id, ...aria }: PropriedadesDaAparicao) {
   return (
     <Tag
       id={id}

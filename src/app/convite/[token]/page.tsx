@@ -3,8 +3,8 @@ import Link from "next/link";
 import { CircleAlert } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
-import { AuthShell, SHELL_PHOTOS, ShellHeading } from "@/components/account/auth-shell";
-import { btn } from "@/components/landing/styles";
+import { MoldeDeAcesso, FOTOS_DO_MOLDE, TituloDoMolde } from "@/components/account/auth-shell";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { MENSAGEM_DA_SITUACAO_DO_CONVITE, buscarConvite } from "@/lib/account/invites";
 import { classificarConta } from "@/lib/account/wedding-provisioning";
 import { cn } from "@/lib/utils";
@@ -26,20 +26,20 @@ export default async function ConvitePage({ params }: { params: Promise<{ token:
 
   if (lookup.status !== "ok") {
     return (
-      <AuthShell photo={SHELL_PHOTOS.convite}>
+      <MoldeDeAcesso photo={FOTOS_DO_MOLDE.convite}>
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
           <span className="grid size-14 place-items-center rounded-full bg-aviso-suave text-aviso">
             <CircleAlert aria-hidden="true" className="size-7" strokeWidth={1.6} />
           </span>
-          <ShellHeading title={TITLES[lookup.status]} text={MENSAGEM_DA_SITUACAO_DO_CONVITE[lookup.status]} />
-          <Link href="/login" className={cn(btn.primary, btn.block, "min-h-12")}>
+          <TituloDoMolde title={TITLES[lookup.status]} text={MENSAGEM_DA_SITUACAO_DO_CONVITE[lookup.status]} />
+          <Link href="/login" className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}>
             Entrar na minha conta
           </Link>
-          <Link href="/" className={cn(btn.quiet, "self-center")}>
+          <Link href="/" className={cn(estiloDoBotao.quiet, "self-center")}>
             Conhecer o Aceito
           </Link>
         </section>
-      </AuthShell>
+      </MoldeDeAcesso>
     );
   }
 
@@ -72,8 +72,8 @@ export default async function ConvitePage({ params }: { params: Promise<{ token:
   }
 
   return (
-    <AuthShell photo={SHELL_PHOTOS.convite} footnote="O convite vale por 7 dias e só pode ser usado uma vez.">
+    <MoldeDeAcesso photo={FOTOS_DO_MOLDE.convite} footnote="O convite vale por 7 dias e só pode ser usado uma vez.">
       <InviteAccept token={token} coupleNames={lookup.invite.coupleNames} viewer={viewer} />
-    </AuthShell>
+    </MoldeDeAcesso>
   );
 }

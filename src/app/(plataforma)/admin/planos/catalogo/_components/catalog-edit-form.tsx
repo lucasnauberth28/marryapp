@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Info } from "lucide-react";
 import { toast } from "sonner";
 import { salvarPrecoDoCatalogo } from "@/actions/admin-planos-actions";
-import { btn } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -96,7 +96,7 @@ export function CatalogEditForm({
         <Button type="submit" disabled={reason.trim().length < 5 || (!free && !Number.isFinite(cents)) || (big && !confirmBig)} loading={pending}>
           Salvar preço
         </Button>
-        <Link href="/admin/planos/catalogo" scroll={false} className={cn(btn.quiet)}>
+        <Link href="/admin/planos/catalogo" scroll={false} className={cn(estiloDoBotao.quiet)}>
           Descartar
         </Link>
       </div>

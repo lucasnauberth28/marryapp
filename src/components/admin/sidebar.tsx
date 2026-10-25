@@ -1,13 +1,13 @@
 // src/components/admin/sidebar.tsx
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
-import { NavList, type NavCounts } from "@/components/admin/nav-list";
-import { Logo } from "@/components/brand/logo";
+import { ListaDoMenu, type ContagensDoMenu } from "@/components/admin/nav-list";
+import { Logotipo } from "@/components/brand/logo";
 import { temAcessoAoCaminho } from "@/lib/permissions";
 
-interface SidebarProps {
+interface PropriedadesDaBarraLateral {
   allowedPaths?: string[];
-  counts?: NavCounts;
+  counts?: ContagensDoMenu;
   /** Nome curto do plano do casamento ("Básico"); null na conta de administração sem casamento próprio. */
   planName?: string | null;
   /** Endereço público do site (abre em outra aba). */
@@ -19,17 +19,17 @@ interface SidebarProps {
  * Fica sobre o chão do painel (sem caixa); a folha com o conteúdo é a caixa clara ao lado.
  * O botão da Liz fica sobre o canto de baixo dela, por isso o espaço extra no fim.
  */
-export function Sidebar({ allowedPaths = [], counts, planName = null, siteHref = null }: SidebarProps) {
+export function BarraLateral({ allowedPaths = [], counts, planName = null, siteHref = null }: PropriedadesDaBarraLateral) {
   const canPlan = temAcessoAoCaminho(allowedPaths, "/plano");
   const footerRow = "flex min-h-11 items-center justify-between gap-2 rounded-[10px] px-3 text-[13px] text-tinta-suave transition-colors hover:bg-areia hover:text-tinta";
   return (
     <aside className="sticky top-[var(--faixa)] hidden h-[calc(100svh-var(--faixa))] w-60 shrink-0 flex-col gap-5 overflow-y-auto px-3 pb-24 pt-5 md:flex" data-lenis-prevent>
       <Link href="/dashboard" aria-label="Aceito, Resumo do casamento" className="flex min-h-11 w-max items-center rounded-lg px-2">
-        <Logo height={26} priority />
+        <Logotipo height={26} priority />
       </Link>
 
       <nav aria-label="Menu principal">
-        <NavList allowedPaths={allowedPaths} counts={counts} />
+        <ListaDoMenu allowedPaths={allowedPaths} counts={counts} />
       </nav>
 
       {(planName || siteHref) && (

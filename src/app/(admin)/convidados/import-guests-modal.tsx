@@ -3,11 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AlertTriangle, Check, CircleAlert, Download, FileSpreadsheet, Upload } from "lucide-react";
-import { CustomModal } from "@/components/ui/custom-modal";
+import { ModalPersonalizado } from "@/components/ui/custom-modal";
 import { importarConvidados } from "@/actions/guest-actions";
-import { btn, card, errorBox, hint, overline } from "@/components/painel/styles";
-import { LoadingButton } from "@/components/painel/loading-button";
-import { SkeletonRows } from "@/components/painel/skeleton-parts";
+import { btn, estiloDoCartao, estiloDaCaixaDeErro, estiloDaDicaDoPainel, estiloDoSobretitulo } from "@/components/painel/styles";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
+import { EsqueletoDeLinhas } from "@/components/painel/skeleton-parts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
 import {
@@ -66,7 +66,7 @@ function downloadSheetTemplate() {
 
 export function ImportGuestsModal({ isOpen, onClose, existing }: ImportGuestsModalProps) {
   return (
-    <CustomModal
+    <ModalPersonalizado
       isOpen={isOpen}
       onClose={onClose}
       title="Importar lista de convidados"
@@ -76,7 +76,7 @@ export function ImportGuestsModal({ isOpen, onClose, existing }: ImportGuestsMod
     >
       {/* Remonta ao reabrir: começa sempre do zero */}
       {isOpen ? <ImportFlow existing={existing} onClose={onClose} /> : null}
-    </CustomModal>
+    </ModalPersonalizado>
   );
 }
 
@@ -175,14 +175,14 @@ function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onC
   if (stage === "escolher") {
     return (
       <div className="flex flex-col gap-5">
-        <div className={`${card} flex flex-col items-start gap-4 p-5`}>
+        <div className={`${estiloDoCartao} flex flex-col items-start gap-4 p-5`}>
           <div className="flex items-start gap-3">
             <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ameixa-suave text-ameixa">
               <FileSpreadsheet className="size-5" aria-hidden="true" />
             </span>
             <div className="flex flex-col gap-1">
               <h3 className="text-base font-semibold leading-6 text-tinta">Escolham um arquivo CSV</h3>
-              <p className={hint}>
+              <p className={estiloDaDicaDoPainel}>
                 Pode ser .csv ou .txt, separado por vírgula, ponto e vírgula ou tab. O arquivo é lido aqui no seu aparelho e só os dados da lista são enviados.
               </p>
             </div>
@@ -199,10 +199,10 @@ function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onC
             onChange={(e) => void handleFile(e.target.files?.[0])}
           />
           <div className="flex flex-wrap items-center gap-2">
-            <LoadingButton onClick={() => fileInput.current?.click()} loading={reading} className={btn.primary}>
+            <BotaoComCarregamento onClick={() => fileInput.current?.click()} loading={reading} className={btn.primary}>
               <Upload className="size-4" aria-hidden="true" />
               Escolher arquivo
-            </LoadingButton>
+            </BotaoComCarregamento>
             <button type="button" onClick={downloadSheetTemplate} className={btn.quiet}>
               <Download className="size-4" aria-hidden="true" />
               Baixar modelo de planilha
@@ -214,14 +214,14 @@ function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onC
           {reading ? "Lendo o arquivo" : ""}
         </div>
         {error && (
-          <p role="alert" className={errorBox}>
+          <p role="alert" className={estiloDaCaixaDeErro}>
             <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             {error}
           </p>
         )}
 
         <div className="flex flex-col gap-2">
-          <h3 className={overline}>Como preparar a planilha</h3>
+          <h3 className={estiloDoSobretitulo}>Como preparar a planilha</h3>
           <ul className="list-disc space-y-1 pl-5 text-[15px] leading-6 text-tinta-suave">
             <li>
               Reconhecemos as colunas pelo título, em qualquer ordem: <strong className="font-semibold text-tinta">Nome</strong>, Telefone (ou WhatsApp, Celular), E-mail, Acompanhantes (ou Lugares), Grupo e Restrição alimentar.
@@ -244,7 +244,7 @@ function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onC
           <h3 ref={stageHeading} tabIndex={-1} className={headingClass}>
             Importando a lista...
           </h3>
-          <p className={hint}>Isso leva só um instante. Não feche esta janela.</p>
+          <p className={estiloDaDicaDoPainel}>Isso leva só um instante. Não feche esta janela.</p>
         </div>
         {/* Esqueleto da confirmação que vem a seguir: três números e a lista de quem entrou */}
         <div aria-hidden="true" className="grid grid-cols-1 gap-2 sm:grid-cols-3">
@@ -252,7 +252,7 @@ function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onC
             <Skeleton key={i} className="h-[72px] rounded-xl" />
           ))}
         </div>
-        <SkeletonRows rows={3} lines={1} className="rounded-xl border border-linha px-4" />
+        <EsqueletoDeLinhas rows={3} lines={1} className="rounded-xl border border-linha px-4" />
       </div>
     );
   }
@@ -298,7 +298,7 @@ function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onC
         <h3 ref={stageHeading} tabIndex={-1} className={headingClass}>
           Confira antes de importar
         </h3>
-        <p className={hint}>
+        <p className={estiloDaDicaDoPainel}>
           Arquivo: <span className="font-semibold text-tinta">{sheet.fileName}</span>. Colunas que entendemos: {columnNames.join(", ")}.
           {!sheet.hasHeader && " Sua planilha não tinha cabeçalho: adivinhamos as colunas pelo conteúdo. Se algo estiver errado, ajuste o arquivo e escolha de novo."}
         </p>
@@ -329,9 +329,9 @@ function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onC
             <table className="w-full border-collapse text-left text-sm">
               <thead className="sticky top-0 bg-papel">
                 <tr className="border-b border-linha">
-                  <th scope="col" className={`${overline} px-3 py-2`}>Linha</th>
-                  <th scope="col" className={`${overline} px-3 py-2`}>Nome</th>
-                  <th scope="col" className={`${overline} px-3 py-2`}>O que houve</th>
+                  <th scope="col" className={`${estiloDoSobretitulo} px-3 py-2`}>Linha</th>
+                  <th scope="col" className={`${estiloDoSobretitulo} px-3 py-2`}>Nome</th>
+                  <th scope="col" className={`${estiloDoSobretitulo} px-3 py-2`}>O que houve</th>
                 </tr>
               </thead>
               <tbody>
@@ -391,7 +391,7 @@ function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onC
       )}
 
       {error && (
-        <p role="alert" className={errorBox}>
+        <p role="alert" className={estiloDaCaixaDeErro}>
           <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {error}
         </p>

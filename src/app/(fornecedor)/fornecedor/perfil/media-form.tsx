@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { ArrowDown, ArrowUp, Building2, ImagePlus, Loader2, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { Reveal } from "@/components/motion/reveal";
+import { Aparicao } from "@/components/motion/reveal";
 import { atualizarMidiasDoFornecedor, type MidiasDoFornecedor, type EntradaDasMidiasDoFornecedor } from "@/actions/vendor-panel-actions";
 import { SkeletonImage } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -126,7 +126,7 @@ export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
   const galleryFull = media.gallery.length >= MAX_GALLERY_IMAGES;
 
   return (
-    <Reveal variant="up" delay={200}>
+    <Aparicao variant="up" delay={200}>
     <section aria-labelledby="fotos-titulo" className={cn(CARD, "flex flex-col gap-6")}>
       <div className="flex flex-col gap-1">
         <h2 id="fotos-titulo" className="text-xl leading-7 font-semibold">
@@ -287,6 +287,6 @@ export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
         )}
       </div>
     </section>
-    </Reveal>
+    </Aparicao>
   );
 }

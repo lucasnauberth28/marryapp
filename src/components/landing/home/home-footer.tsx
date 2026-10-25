@@ -1,17 +1,17 @@
 import Link from "next/link";
-import { Logo } from "@/components/brand/logo";
-import { ThemeSegmented } from "@/components/theme/theme-toggle";
-import { AnchorLink } from "../anchor-link";
+import { Logotipo } from "@/components/brand/logo";
+import { SeletorSegmentadoDoTema } from "@/components/theme/theme-toggle";
+import { LinkDeAncora } from "../anchor-link";
 
 /** Rodapé da home. Mesmos links do rodapé público de antes, no desenho da landing. */
-export function HomeFooter() {
+export function RodapeDaHome() {
   return (
     <footer className="lp-rodape">
       <div className="lp-moldura">
         <div className="lp-rodape-grade">
           <div className="lp-rodape-marca">
             <Link href="/" className="lp-marca" aria-label="Aceito, início">
-              <Logo height={30} />
+              <Logotipo height={30} />
             </Link>
             <p className="lp-mudo">Foi convidado? Use o link enviado pelo casal. Você não precisa criar conta.</p>
           </div>
@@ -19,7 +19,7 @@ export function HomeFooter() {
             <h2>Para casais</h2>
             <ul>
               <li>
-                <AnchorLink href="/#como">Como funciona</AnchorLink>
+                <LinkDeAncora href="/#como">Como funciona</LinkDeAncora>
               </li>
               <li>
                 <Link href="/planos">Planos</Link>
@@ -28,7 +28,7 @@ export function HomeFooter() {
                 <Link href="/monte-seu-plano">Montar o plano de vocês</Link>
               </li>
               <li>
-                <AnchorLink href="/#duvidas">Perguntas</AnchorLink>
+                <LinkDeAncora href="/#duvidas">Perguntas</LinkDeAncora>
               </li>
               <li>
                 <Link href="/cadastro?plano=basic">Criar conta grátis</Link>
@@ -63,7 +63,7 @@ export function HomeFooter() {
         </div>
         <div className="lp-rodape-base">
           <p>© {new Date().getFullYear()} Aceito. Feito no Brasil para quem vai dizer sim.</p>
-          <ThemeSegmented />
+          <SeletorSegmentadoDoTema />
         </div>
       </div>
     </footer>

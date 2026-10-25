@@ -1,21 +1,21 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useSyncedState } from "@/hooks/use-synced-state";
+import { useEstadoSincronizado } from "@/hooks/use-synced-state";
 
 import { useState, useMemo, useRef } from "react";
 import { toast } from "sonner";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { ExpenseStatus } from "@/types/local";
+import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
+import { SituacaoDaDespesa } from "@/types/local";
 import { criarDespesa, criarDespesasEmLote, excluirDespesa, atualizarSituacaoDaDespesa } from "@/actions/expense-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/ui/date-picker";
+import { SeletorDeData } from "@/components/ui/date-picker";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { btn } from "@/components/landing/styles";
-import { UserImage } from "@/components/ui/user-image";
-import { Chip } from "@/components/casal/ui";
-import { DataTable } from "@/components/ui/data-table";
+import { estiloDoBotao } from "@/components/landing/styles";
+import { ImagemDaPessoa } from "@/components/ui/user-image";
+import { Etiqueta } from "@/components/casal/ui";
+import { TabelaDeDados } from "@/components/ui/data-table";
 import {
   Plus,
   Trash2,
@@ -111,7 +111,7 @@ const PAYMENT_METHODS = [
 
 export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { initialExpenses: ExpenseItem[], vendors: VendorOption[], userCards?: WalletCard[] }) {
   const router = useRouter();
-  const [expenses, setExpenses] = useSyncedState<ExpenseItem[]>(initialExpenses);
+  const [expenses, setExpenses] = useEstadoSincronizado<ExpenseItem[]>(initialExpenses);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   // Parcelas cujo status está sendo trocado: o chip fica esmaecido e sem clique até a resposta chegar
@@ -482,7 +482,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
     if (toggling[id]) return;
     const newStatus = currentStatus === "PAID" ? "PENDING" : "PAID";
     setToggling((prev) => ({ ...prev, [id]: true }));
-    const res = await atualizarSituacaoDaDespesa(id, newStatus as ExpenseStatus).finally(() =>
+    const res = await atualizarSituacaoDaDespesa(id, newStatus as SituacaoDaDespesa).finally(() =>
       setToggling((prev) => {
         const rest = { ...prev };
         delete rest[id];
@@ -567,7 +567,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
           if (!isOpen) resetForm();
         }}>
           <DialogTrigger asChild>
-            <button type="button" className={btn.primary}>
+            <button type="button" className={estiloDoBotao.primary}>
               <Plus className="size-4" aria-hidden="true" /> Nova despesa
             </button>
           </DialogTrigger>
@@ -645,7 +645,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                   <Button
                     type="button"
                     onClick={() => setStep(2)}
-                    className={`${btn.primary} ${btn.block} mt-4`}
+                    className={`${estiloDoBotao.primary} ${estiloDoBotao.block} mt-4`}
                   >
                     Próximo: detalhes e origem <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -775,7 +775,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                         }
                         setStep(3);
                       }}
-                      className={`${btn.primary} w-2/3`}
+                      className={`${estiloDoBotao.primary} w-2/3`}
                     >
                       Próximo: condição de pagamento <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
@@ -829,7 +829,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                         onChange={(e) => setSingleAmount(e.target.value)}
                         required
                       />
-                      <DatePicker
+                      <SeletorDeData
                         label="Vencimento"
                         value={singleDueDate}
                         onChange={(e) => setSingleDueDate(e.target.value)}
@@ -884,7 +884,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                                 onChange={(e) => updateBlock(block.id, "amount", e.target.value)}
                                 placeholder="Ex: 300.00"
                               />
-                              <DatePicker
+                              <SeletorDeData
                                 label="1º vencimento"
                                 value={block.startDate}
                                 onChange={(e) => updateBlock(block.id, "startDate", e.target.value)}
@@ -926,7 +926,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                     <Button type="button" variant="outline" onClick={() => setStep(2)} className="w-1/3">
                       Voltar
                     </Button>
-                    <Button type="submit" className={`${btn.primary} w-2/3`} loading={loading}>
+                    <Button type="submit" className={`${estiloDoBotao.primary} w-2/3`} loading={loading}>
                       {mode === "single" ? "Cadastrar despesa" : `Gerar ${generatedInstallments.length} Parcelas`}
                     </Button>
                   </div>
@@ -978,7 +978,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                       <div className="flex items-start gap-3.5 flex-1 min-w-0">
                         {group.imageUrl ? (
                           <span className="relative block size-14 shrink-0 overflow-hidden rounded-xl border border-linha shadow-xs">
-                            <UserImage src={group.imageUrl} alt={group.baseDescription} sizes="56px" className="object-cover" />
+                            <ImagemDaPessoa src={group.imageUrl} alt={group.baseDescription} sizes="56px" className="object-cover" />
                           </span>
                         ) : (
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border ${
@@ -993,11 +993,11 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                             <h4 className="font-bold text-base text-tinta truncate">
                               {group.baseDescription}
                             </h4>
-                            <Chip tone={isPurchase ? "salvia" : "neutro"} icon={isPurchase ? ShoppingBag : Building2} className="min-h-6 text-[13px]">
+                            <Etiqueta tone={isPurchase ? "salvia" : "neutro"} icon={isPurchase ? ShoppingBag : Building2} className="min-h-6 text-[13px]">
                               {isPurchase ? `Compra: ${group.vendorName}` : group.vendorName}
-                            </Chip>
+                            </Etiqueta>
                             {isFullyPaid && (
-                              <Chip tone="sucesso" icon={CheckCircle2} className="min-h-6 text-[13px]">Quitado</Chip>
+                              <Etiqueta tone="sucesso" icon={CheckCircle2} className="min-h-6 text-[13px]">Quitado</Etiqueta>
                             )}
                           </div>
 
@@ -1130,9 +1130,9 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                                         aria-label={isPaid ? "Pago. Tocar para marcar como pendente" : "Pendente. Tocar para marcar como paga"}
                                         className="inline-flex min-h-11 cursor-pointer items-center rounded-lg disabled:cursor-wait disabled:opacity-50"
                                       >
-                                        <Chip tone={isPaid ? "sucesso" : "aviso"} icon={isPaid ? CheckCircle : Clock}>
+                                        <Etiqueta tone={isPaid ? "sucesso" : "aviso"} icon={isPaid ? CheckCircle : Clock}>
                                           {isPaid ? "Pago" : "Pendente"}
-                                        </Chip>
+                                        </Etiqueta>
                                       </button>
                                     </TableCell>
                                     <TableCell className="text-right">
@@ -1207,7 +1207,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
         </div>
       ) : (
         /* VISÃO DETALHADA: TABELA COMPLETA USANDO DATATABLE COM PAGINAÇÃO DE 15 ITENS */
-        <DataTable
+        <TabelaDeDados
           data={filteredExpensesByType}
           pageSize={15}
           keyExtractor={(exp) => exp.id}
@@ -1233,9 +1233,9 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
               cell: (exp) => {
                 const isPur = (exp.type || "CONTRACT") === "PURCHASE";
                 return (
-                  <Chip tone={isPur ? "salvia" : "neutro"} icon={isPur ? ShoppingBag : Building2}>
+                  <Etiqueta tone={isPur ? "salvia" : "neutro"} icon={isPur ? ShoppingBag : Building2}>
                     {isPur ? "Compra" : "Contrato"}
-                  </Chip>
+                  </Etiqueta>
                 );
               },
             },
@@ -1248,7 +1248,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                 <div className="flex items-center gap-2">
                   {exp.imageUrl && (
                     <span className="relative block size-7 shrink-0 overflow-hidden rounded-md border border-linha">
-                      <UserImage src={exp.imageUrl} alt={exp.description} sizes="28px" className="object-cover" />
+                      <ImagemDaPessoa src={exp.imageUrl} alt={exp.description} sizes="28px" className="object-cover" />
                     </span>
                   )}
                   <span className={`text-sm font-medium ${exp.status === "PAID" ? "text-tinta-suave" : "text-tinta"}`}>
@@ -1303,9 +1303,9 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
                     aria-label={isPaid ? "Pago. Tocar para marcar como pendente" : "Pendente. Tocar para marcar como paga"}
                     className="inline-flex min-h-11 cursor-pointer items-center rounded-lg disabled:cursor-wait disabled:opacity-50"
                   >
-                    <Chip tone={isPaid ? "sucesso" : "aviso"} icon={isPaid ? CheckCircle : Clock}>
+                    <Etiqueta tone={isPaid ? "sucesso" : "aviso"} icon={isPaid ? CheckCircle : Clock}>
                       {isPaid ? "Pago" : "Pendente"}
-                    </Chip>
+                    </Etiqueta>
                   </button>
                 );
               },
@@ -1329,7 +1329,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
         />
       )}
 
-      <ConfirmModal
+      <ModalDeConfirmacao
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={() => {

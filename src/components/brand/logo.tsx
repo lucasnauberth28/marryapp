@@ -1,13 +1,13 @@
-import { LOCKUP_SHAPE, MARK_SHAPE, VERTICAL_SHAPE, WORDMARK_SHAPE, type LogoShape } from "./logo-paths";
+import { FORMA_DA_ASSINATURA, FORMA_DA_MARCA, FORMA_VERTICAL, FORMA_DO_NOME, type FormaDoLogotipo } from "./logo-paths";
 
-type LogoBase = "lockup" | "wordmark" | "mark" | "vertical";
-type LogoVariant = LogoBase | `${LogoBase}-linho`;
+type LogotipoBase = "lockup" | "wordmark" | "mark" | "vertical";
+type VarianteDoLogotipo = LogotipoBase | `${LogotipoBase}-linho`;
 
-const SHAPES: Record<LogoBase, LogoShape> = {
-  lockup: LOCKUP_SHAPE,
-  wordmark: WORDMARK_SHAPE,
-  mark: MARK_SHAPE,
-  vertical: VERTICAL_SHAPE,
+const FORMAS: Record<LogotipoBase, FormaDoLogotipo> = {
+  lockup: FORMA_DA_ASSINATURA,
+  wordmark: FORMA_DO_NOME,
+  mark: FORMA_DA_MARCA,
+  vertical: FORMA_VERTICAL,
 };
 
 // Cores por tema (definidas em globals.css): o logotipo sai inline, sem requisição de imagem, e
@@ -24,18 +24,18 @@ const SOBRE_AMEIXA = "var(--logo-sobre-ameixa)";
  * - "-linho": versão clara, para fundo `bg-ameixa` (a cor certa sobre ameixa em cada tema).
  * `priority` é aceito por compatibilidade e não faz nada: não há imagem para pré-carregar.
  */
-export function Logo({
+export function Logotipo({
   variant = "lockup",
   height = 28,
   className,
 }: {
-  variant?: LogoVariant;
+  variant?: VarianteDoLogotipo;
   height?: number;
   className?: string;
   priority?: boolean;
 }) {
   const onAmeixa = variant.endsWith("-linho");
-  const shape = SHAPES[variant.replace("-linho", "") as LogoBase];
+  const shape = FORMAS[variant.replace("-linho", "") as LogotipoBase];
   const width = Math.round((shape.width / shape.height) * height);
 
   return (

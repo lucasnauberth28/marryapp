@@ -5,9 +5,9 @@ import Link from "next/link";
 import { textoDoDescontoDoCombo } from "@/lib/catalog";
 import { calcularPrecoDoPlanoPersonalizado, type ModuloDePreco } from "@/lib/pricing-modules";
 import { Check, ArrowLeft, Zap } from "lucide-react";
-import { LandingHeader } from "@/components/landing/landing-header";
-import { LandingFooter } from "@/components/landing/landing-footer";
-import { btn, container, overline } from "@/components/landing/styles";
+import { CabecalhoDaLanding } from "@/components/landing/landing-header";
+import { RodapeDaLanding } from "@/components/landing/landing-footer";
+import { estiloDoBotao, estiloDoContainerDaLanding, overline } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 
 
@@ -37,11 +37,11 @@ export function CustomPlanClient({ modules }: { modules: ModuloDePreco[] }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-linho font-sans text-tinta">
-      <LandingHeader />
+      <CabecalhoDaLanding />
 
-      <main className={cn(container, "flex flex-1 flex-col gap-8 pb-20 pt-6 sm:pb-24 sm:pt-10")}>
+      <main className={cn(estiloDoContainerDaLanding, "flex flex-1 flex-col gap-8 pb-20 pt-6 sm:pb-24 sm:pt-10")}>
         <div className="flex flex-col gap-3">
-          <Link href="/#planos" className={cn(btn.quiet, "-ml-3 w-fit")}>
+          <Link href="/#planos" className={cn(estiloDoBotao.quiet, "-ml-3 w-fit")}>
             <ArrowLeft className="size-4" aria-hidden="true" />
             Ver planos prontos
           </Link>
@@ -152,7 +152,7 @@ export function CustomPlanClient({ modules }: { modules: ModuloDePreco[] }) {
             <Link
               href={customCheckoutUrl}
               aria-disabled={selectedCount === 0}
-              className={cn(btn.primary, btn.block, selectedCount === 0 && "pointer-events-none opacity-60")}
+              className={cn(estiloDoBotao.primary, estiloDoBotao.block, selectedCount === 0 && "pointer-events-none opacity-60")}
             >
               Continuar com este plano
             </Link>
@@ -163,7 +163,7 @@ export function CustomPlanClient({ modules }: { modules: ModuloDePreco[] }) {
         </div>
       </main>
 
-      <LandingFooter />
+      <RodapeDaLanding />
     </div>
   );
 }

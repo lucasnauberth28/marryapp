@@ -1,11 +1,11 @@
-import { Logo } from "@/components/brand/logo";
+import { Logotipo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 
 /**
  * Selo do Aceito: marca confirmação de presença e pagamento concluído, nada mais.
  * Círculo ameixa com o símbolo da marca (arte em curvas) e um fio rosa interno.
  */
-export function Seal({ size = "sm", className, label = "Confirmado" }: { size?: "sm" | "lg"; className?: string; label?: string }) {
+export function Selo({ size = "sm", className, label = "Confirmado" }: { size?: "sm" | "lg"; className?: string; label?: string }) {
   const lg = size === "lg";
   return (
     <span
@@ -20,7 +20,7 @@ export function Seal({ size = "sm", className, label = "Confirmado" }: { size?: 
       )}
     >
       <span aria-hidden="true" className="grid place-items-center">
-        <Logo variant="mark-linho" height={lg ? 36 : 20} />
+        <Logotipo variant="mark-linho" height={lg ? 36 : 20} />
       </span>
     </span>
   );

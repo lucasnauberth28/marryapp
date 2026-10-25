@@ -6,9 +6,9 @@ import { Wrench } from "lucide-react";
 import { formatarPrevisaoDeVolta } from "@/lib/platform/maintenance-core";
 
 /** Páginas que os convidados abrem: o aviso só aparece nelas. */
-const GUEST_PREFIXES = ["/casamento", "/rsvp", "/presentes", "/dia-do-evento"];
+const PREFIXOS_DO_CONVIDADO = ["/casamento", "/rsvp", "/presentes", "/dia-do-evento"];
 
-interface PublicState {
+interface SituacaoPublica {
   enabled: boolean;
   message: string;
   backAt: string | null;
@@ -18,16 +18,16 @@ interface PublicState {
  * Faixa de manutenção para convidados no site do casamento. Consulta /api/manutencao ao abrir a página
  * (cache de 30 s no servidor), então funciona também nas páginas estáticas. Se a consulta falhar, não mostra nada.
  */
-export function GuestMaintenanceNotice() {
+export function AvisoDeManutencaoParaConvidados() {
   const pathname = usePathname();
-  const [state, setState] = useState<PublicState | null>(null);
-  const relevant = GUEST_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const [state, setState] = useState<SituacaoPublica | null>(null);
+  const relevant = PREFIXOS_DO_CONVIDADO.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   useEffect(() => {
     if (!relevant) return;
     let cancelled = false;
     fetch("/api/manutencao")
-      .then((r) => (r.ok ? (r.json() as Promise<PublicState>) : null))
+      .then((r) => (r.ok ? (r.json() as Promise<SituacaoPublica>) : null))
       .then((s) => {
         if (!cancelled && s) setState(s);
       })

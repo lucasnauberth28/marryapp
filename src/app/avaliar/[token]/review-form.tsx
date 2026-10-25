@@ -7,7 +7,7 @@ import { enviarAvaliacaoDoPedido } from "@/actions/vendor-review-actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { TOKEN_CARD } from "@/components/public/token-page-shell";
+import { CARTAO_DA_PAGINA_COM_TOKEN } from "@/components/public/token-page-shell";
 
 const STAR_LABEL = ["", "Ruim", "Regular", "Bom", "Muito bom", "Excelente"];
 
@@ -54,7 +54,7 @@ export function ReviewForm({ token, companyName }: { token: string; companyName:
   const length = comment.trim().length;
 
   return (
-    <section aria-labelledby="avaliar-titulo" className={cn(TOKEN_CARD, "flex flex-col gap-4")}>
+    <section aria-labelledby="avaliar-titulo" className={cn(CARTAO_DA_PAGINA_COM_TOKEN, "flex flex-col gap-4")}>
       <h2 id="avaliar-titulo" className="sr-only">
         Sua avaliação
       </h2>

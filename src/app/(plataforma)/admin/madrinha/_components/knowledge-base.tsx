@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Plus, Pencil, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FormAlert } from "@/components/ui/field";
-import { Panel } from "@/components/plataforma/panel";
-import { StatusChip } from "@/components/plataforma/status-chip";
-import { btn } from "@/components/landing/styles";
+import { AvisoDoFormulario } from "@/components/ui/field";
+import { Painel } from "@/components/plataforma/panel";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { formatarDiaEMes } from "@/lib/platform/format";
 import { arquivarArtigoDeConhecimento, salvarArtigoDeConhecimento } from "@/actions/admin-madrinha-actions";
@@ -26,11 +26,11 @@ export function KnowledgeBase({ articles }: { articles: ArticleItem[] }) {
   // editing: null = lista; "novo" = formulário vazio; item = editando
   const [editing, setEditing] = useState<ArticleItem | "novo" | null>(null);
   return (
-    <Panel
+    <Painel
       title="Base de conhecimento do Aceito"
       aside={
         editing === null ? (
-          <button type="button" onClick={() => setEditing("novo")} className={`${btn.secondary} ${btn.sm}`}>
+          <button type="button" onClick={() => setEditing("novo")} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
             <Plus className="size-4" aria-hidden="true" /> Novo texto
           </button>
         ) : undefined
@@ -50,15 +50,15 @@ export function KnowledgeBase({ articles }: { articles: ArticleItem[] }) {
                 </div>
                 <div className="flex items-center gap-2">
                   {a.status === "PUBLISHED" ? (
-                    <StatusChip tone="sucesso" icon={CheckCircle2}>
+                    <EtiquetaDeSituacao tone="sucesso" icon={CheckCircle2}>
                       Publicado
-                    </StatusChip>
+                    </EtiquetaDeSituacao>
                   ) : (
-                    <StatusChip tone="aviso" icon={Pencil}>
+                    <EtiquetaDeSituacao tone="aviso" icon={Pencil}>
                       Rascunho
-                    </StatusChip>
+                    </EtiquetaDeSituacao>
                   )}
-                  <button type="button" onClick={() => setEditing(a)} className={`${btn.quiet} ${btn.sm}`} aria-label={`Editar ${a.title}`}>
+                  <button type="button" onClick={() => setEditing(a)} className={`${estiloDoBotao.quiet} ${estiloDoBotao.sm}`} aria-label={`Editar ${a.title}`}>
                     Editar
                   </button>
                 </div>
@@ -69,7 +69,7 @@ export function KnowledgeBase({ articles }: { articles: ArticleItem[] }) {
       ) : (
         <ArticleForm key={editing === "novo" ? "novo" : editing.id} article={editing === "novo" ? null : editing} onDone={() => setEditing(null)} />
       )}
-    </Panel>
+    </Painel>
   );
 }
 
@@ -94,7 +94,7 @@ function ArticleForm({ article, onDone }: { article: ArticleItem | null; onDone:
     >
       <Input label="Título do texto" value={title} onChange={(e) => setTitle(e.target.value)} error={errors.title} maxLength={120} />
       <Textarea label="Texto de ajuda" value={content} onChange={(e) => setContent(e.target.value)} rows={8} error={errors.content} maxLength={8000} />
-      {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
+      {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" disabled={pending} loading={pending && running === "PUBLISHED"}>
           Publicar

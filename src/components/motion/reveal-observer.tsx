@@ -10,7 +10,7 @@ import { usePathname } from "next/navigation";
  * Um único observer para a página inteira; novos elementos (navegação no cliente) são
  * captados pelo MutationObserver.
  */
-export function RevealObserver() {
+export function ObservadorDeAparicao() {
   const pathname = usePathname();
 
   useEffect(() => {

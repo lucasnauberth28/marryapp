@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, ExternalLink, Inbox, Lock, MapPin, Users } from "lucide-react";
-import { Reveal } from "@/components/motion/reveal";
+import { Aparicao } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
-import { LinkPending } from "@/components/feedback/link-pending";
+import { LinkPendente } from "@/components/feedback/link-pending";
 import { LeadStatusChip } from "../_components/status-chip";
 import { effectiveVendorTier, firstNameOf, formatRelative, formatWeddingDate, isLeadLocked, isLeadStatus, PLAN_HREF, START_MONTHLY_LEAD_LIMIT, startOfMonthBrasilia, todayBrasilia, whatsappHref, type LeadStatus } from "../_lib/vendor-panel";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
@@ -129,7 +129,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className="flex flex-col gap-6">
-      <Reveal variant="fade" className="flex flex-wrap items-end justify-between gap-4">
+      <Aparicao variant="fade" className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <p className={cn(OVERLINE, "hidden md:block")}>Fornecedor</p>
           <h1 className="sr-only font-display text-[40px] leading-[46px] font-medium md:not-sr-only">Pedidos de orçamento</h1>
@@ -146,10 +146,10 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
             <span className="sr-only">(abre em nova aba)</span>
           </Link>
         ) : null}
-      </Reveal>
+      </Aparicao>
 
       {vendor.curationStatus !== "APPROVED" ? (
-        <Reveal
+        <Aparicao
           variant="up"
           className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-linha bg-papel px-5 py-4"
         >
@@ -170,11 +170,11 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
             Completar o perfil
             <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
-        </Reveal>
+        </Aparicao>
       ) : null}
 
       {isFree ? (
-        <Reveal
+        <Aparicao
           variant="up"
           // No celular a lista de pedidos vem primeiro e o convite ao Pro fecha a página, como no design.
           className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-salvia-suave px-5 py-4 max-md:order-last"
@@ -202,22 +202,22 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
             {monthLocked > 0 ? "Desbloquear com o Pro" : "Conhecer o Pro"}
             <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
-        </Reveal>
+        </Aparicao>
       ) : null}
 
       <section aria-label="Resumo" className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {kpis.map((kpi, i) => (
-          <Reveal key={kpi.label} variant="up" delay={80 * (i + 1)} className={cn(CARD, "flex flex-col gap-1 p-4 sm:p-5")}>
+          <Aparicao key={kpi.label} variant="up" delay={80 * (i + 1)} className={cn(CARD, "flex flex-col gap-1 p-4 sm:p-5")}>
             <p className={OVERLINE}>{kpi.label}</p>
             <span className="font-num text-4xl leading-tight">{kpi.value}</span>
             <span className="text-sm text-tinta-suave">{kpi.hint}</span>
-          </Reveal>
+          </Aparicao>
         ))}
       </section>
 
-      <Reveal variant="up" delay={120} className={cn(!isMaster && "max-md:order-last")}>
+      <Aparicao variant="up" delay={120} className={cn(!isMaster && "max-md:order-last")}>
         {isMaster ? <ResultsCard days={dailyViews} leads={windowLeads} /> : <ResultsTeaser />}
-      </Reveal>
+      </Aparicao>
 
       <section aria-labelledby="lista-pedidos" className="group/lista flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -243,7 +243,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
                     >
                       {f.label}
                       {f.value === "NEW" && newCount > 0 ? ` (${newCount})` : ""}
-                      <LinkPending label="Carregando os pedidos" />
+                      <LinkPendente label="Carregando os pedidos" />
                     </Link>
                   </li>
                 );
@@ -253,7 +253,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
         </div>
 
         {sorted.length === 0 ? (
-          <Reveal variant="fade" className={cn(CARD, "flex flex-col items-center gap-3 px-6 py-12 text-center")}>
+          <Aparicao variant="fade" className={cn(CARD, "flex flex-col items-center gap-3 px-6 py-12 text-center")}>
             <span className="grid size-12 place-items-center rounded-full bg-salvia-suave text-salvia">
               <Inbox aria-hidden="true" className="size-6" />
             </span>
@@ -270,7 +270,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
             >
               Caprichar no meu perfil
             </Link>
-          </Reveal>
+          </Aparicao>
         ) : (
           <ul className="flex flex-col gap-3 transition-opacity group-has-[[data-link-pending]]/lista:opacity-60">
             {sorted.map((lead, i) => {
@@ -279,7 +279,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
 
               if (lead.locked) {
                 return (
-                  <Reveal as="li" key={lead.id} variant="up" delay={Math.min(i, 5) * 80}>
+                  <Aparicao as="li" key={lead.id} variant="up" delay={Math.min(i, 5) * 80}>
                     <article
                       aria-labelledby={`lead-${lead.id}`}
                       className={cn(CARD, "relative flex flex-col gap-4 border-dashed bg-areia/40 p-4 sm:flex-row sm:items-center sm:p-6")}
@@ -324,7 +324,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
                         </Link>
                       </div>
                     </article>
-                  </Reveal>
+                  </Aparicao>
                 );
               }
 
@@ -335,7 +335,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
               const waText = `Olá, ${lead.coupleName}! Aqui é ${vendor.companyName}, pelo Aceito. Recebi seu pedido de orçamento${date ? ` para ${date}` : ""} e quero conversar com vocês.`;
 
               return (
-                <Reveal as="li" key={lead.id} variant="up" delay={Math.min(i, 5) * 80}>
+                <Aparicao as="li" key={lead.id} variant="up" delay={Math.min(i, 5) * 80}>
                   <article
                     aria-labelledby={`lead-${lead.id}`}
                     className={cn(
@@ -390,7 +390,7 @@ export default async function PedidosPage({ searchParams }: { searchParams: Prom
                       />
                     </div>
                   </article>
-                </Reveal>
+                </Aparicao>
               );
             })}
           </ul>

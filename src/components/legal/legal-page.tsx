@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { TriangleAlert } from "lucide-react";
-import { LandingFooter } from "@/components/landing/landing-footer";
-import { LandingHeader } from "@/components/landing/landing-header";
-import { container } from "@/components/landing/styles";
+import { RodapeDaLanding } from "@/components/landing/landing-footer";
+import { CabecalhoDaLanding } from "@/components/landing/landing-header";
+import { estiloDoContainerDaLanding } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 
-export interface LegalSection {
+export interface SecaoLegal {
   id: string;
   title: string;
   body: ReactNode;
@@ -16,7 +16,7 @@ export interface LegalSection {
  * Página de documento legal (termos, privacidade): cabeçalho e rodapé da landing,
  * aviso de versão preliminar, sumário e seções numeradas.
  */
-export function LegalPage({
+export function PaginaLegal({
   title,
   intro,
   updatedAt,
@@ -26,21 +26,21 @@ export function LegalPage({
   title: string;
   intro: ReactNode;
   updatedAt: ReactNode;
-  sections: LegalSection[];
+  sections: SecaoLegal[];
   related: { href: string; label: string };
 }) {
   return (
     <div className="min-h-dvh bg-linho text-tinta">
-      <LandingHeader />
+      <CabecalhoDaLanding />
 
       <div role="note" className="border-b border-aviso/25 bg-aviso-suave">
-        <p className={cn(container, "flex items-center gap-2.5 py-3 text-sm font-semibold leading-5 text-aviso")}>
+        <p className={cn(estiloDoContainerDaLanding, "flex items-center gap-2.5 py-3 text-sm font-semibold leading-5 text-aviso")}>
           <TriangleAlert aria-hidden="true" className="size-[18px] shrink-0" strokeWidth={2} />
           Versão preliminar — revisar com assessoria jurídica antes de publicar.
         </p>
       </div>
 
-      <main id="conteudo" className={cn(container, "grid gap-10 pb-20 pt-10 md:pt-16 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-16")}>
+      <main id="conteudo" className={cn(estiloDoContainerDaLanding, "grid gap-10 pb-20 pt-10 md:pt-16 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-16")}>
         <aside className="lg:sticky lg:top-28 lg:self-start">
           <nav aria-label="Sumário" className="flex flex-col gap-2">
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">Sumário</p>
@@ -80,7 +80,7 @@ export function LegalPage({
         </article>
       </main>
 
-      <LandingFooter />
+      <RodapeDaLanding />
     </div>
   );
 }

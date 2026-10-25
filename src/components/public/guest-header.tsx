@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { btn } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
 import { cn } from "@/lib/utils";
 
 /** "A&R" vira "A & R", com o "&" em itálico, como no monograma do design. */
-export function Monogram({ initials, className }: { initials: string; className?: string }) {
+export function Monograma({ initials, className }: { initials: string; className?: string }) {
   const parts = initials.split("&");
   return (
     <span className={cn("font-display text-[22px] leading-7 text-tinta", className)}>
@@ -20,9 +20,9 @@ export function Monogram({ initials, className }: { initials: string; className?
   );
 }
 
-type GuestPage = "site" | "presentes" | "rsvp" | "dia-do-evento";
+type PaginaDoConvidado = "site" | "presentes" | "rsvp" | "dia-do-evento";
 
-const NAV: { page: GuestPage; label: string }[] = [
+const NAVEGACAO: { page: PaginaDoConvidado; label: string }[] = [
   { page: "site", label: "Site do casal" },
   { page: "dia-do-evento", label: "Dia do casamento" },
   { page: "presentes", label: "Presentes" },
@@ -32,7 +32,7 @@ const NAV: { page: GuestPage; label: string }[] = [
  * Cabeçalho das páginas do convidado (presentes, programação). No celular é a barra com a seta de
  * voltar e o nome da página; no computador, o monograma, a navegação e o botão de confirmar presença.
  */
-export function GuestHeader({
+export function CabecalhoDoConvidado({
   slug,
   initials,
   coupleNames,
@@ -42,7 +42,7 @@ export function GuestHeader({
   slug: string;
   initials: string;
   coupleNames: string;
-  current: GuestPage;
+  current: PaginaDoConvidado;
   /** Nome da página, mostrado na barra do celular. */
   title: string;
 }) {
@@ -67,10 +67,10 @@ export function GuestHeader({
       {/* Computador */}
       <div className="mx-auto hidden max-w-[1120px] flex-wrap items-center justify-between gap-x-8 gap-y-3 px-6 py-4 sm:flex">
         <Link href={site} aria-label={`Site de ${coupleNames}`} className="no-underline">
-          <Monogram initials={initials} className="text-2xl leading-8" />
+          <Monograma initials={initials} className="text-2xl leading-8" />
         </Link>
         <nav aria-label="Páginas do casamento" className="flex flex-wrap gap-x-6 gap-y-2 font-medium">
-          {NAV.map((item) => (
+          {NAVEGACAO.map((item) => (
             <Link
               key={item.page}
               href={item.page === "site" ? site : caminhoDoSiteDoCasamento(slug, item.page)}
@@ -84,7 +84,7 @@ export function GuestHeader({
             </Link>
           ))}
         </nav>
-        <Link href={caminhoDoSiteDoCasamento(slug, "rsvp")} className={cn(btn.primary, btn.sm)}>
+        <Link href={caminhoDoSiteDoCasamento(slug, "rsvp")} className={cn(estiloDoBotao.primary, estiloDoBotao.sm)}>
           Confirmar presença
         </Link>
       </div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Lock } from "lucide-react";
-import { btn, btnArrow } from "@/components/landing/styles";
+import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 import { mensagemDeUpgrade, tituloDeUpgrade, type ModuloComBloqueio } from "@/lib/wedding-plan-modules";
 
@@ -20,9 +20,9 @@ export function UpgradeCard({ moduleId }: { moduleId: ModuloComBloqueio }) {
         </h1>
         <p className="text-[15px] leading-6 text-tinta-suave">{mensagemDeUpgrade(moduleId)}</p>
       </div>
-      <Link href="/plano" className={cn(btn.primary, "min-h-11")}>
+      <Link href="/plano" className={cn(estiloDoBotao.primary, "min-h-11")}>
         Ver planos
-        <ArrowRight aria-hidden="true" className={btnArrow} />
+        <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
       </Link>
     </section>
   );

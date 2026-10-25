@@ -21,18 +21,18 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { btn, overline } from "@/components/landing/styles";
+import { estiloDoBotao, overline } from "@/components/landing/styles";
 import { criarRecadoNoLivro } from "@/actions/site-builder-actions";
 import { estiloDoTemaDaMarca, obterIniciaisDoCasal } from "@/lib/wedding-format";
 import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
 import { toast } from "sonner";
-import { Reveal } from "@/components/motion/reveal";
+import { Aparicao } from "@/components/motion/reveal";
 import { Button } from "@/components/ui/button";
-import { UserImage } from "@/components/ui/user-image";
-import { WeddingCountdown, weddingInstant } from "@/components/public/wedding-site-countdown";
+import { ImagemDaPessoa } from "@/components/ui/user-image";
+import { ContagemRegressivaDoCasamento, instanteDoCasamento } from "@/components/public/wedding-site-countdown";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-export interface WeddingSiteSettings {
+export interface ConfiguracoesDoSiteDoCasamento {
   title?: string | null;
   subtitle?: string | null;
   weddingDate?: Date | string | null;
@@ -61,7 +61,7 @@ export interface WeddingSiteSettings {
   showMusic?: boolean;
 }
 
-interface StoryItem {
+interface ItemDaHistoria {
   id: string;
   title: string;
   dateLabel?: string | null;
@@ -69,7 +69,7 @@ interface StoryItem {
   imageUrl?: string | null;
 }
 
-interface Tip {
+interface DicaDoSite {
   id: string;
   category: string;
   title: string;
@@ -80,14 +80,14 @@ interface Tip {
   discountCode?: string | null;
 }
 
-interface GuestbookEntry {
+interface RecadoDoLivro {
   id: string;
   authorName: string;
   message: string;
   createdAt: Date | string;
 }
 
-interface SiteGift {
+interface PresenteDoSite {
   id: string;
   title: string;
   description?: string | null;
@@ -95,20 +95,20 @@ interface SiteGift {
   imageUrl?: string | null;
 }
 
-interface WeddingSiteViewProps {
+interface PropriedadesDaVisaoDoSiteDoCasamento {
   /** Endereço do casamento (/casamento/<slug>): links de RSVP, presentes e o mural usam este casamento. */
   slug: string;
-  settings: WeddingSiteSettings | null;
-  storyItems: StoryItem[];
-  tips: Tip[];
-  guestbookEntries: GuestbookEntry[];
-  gifts: SiteGift[];
+  settings: ConfiguracoesDoSiteDoCasamento | null;
+  storyItems: ItemDaHistoria[];
+  tips: DicaDoSite[];
+  guestbookEntries: RecadoDoLivro[];
+  gifts: PresenteDoSite[];
   rsvpDeadline?: Date | string | null;
   /** Prévia no editor: desativa links e formulários. */
   preview?: boolean;
 }
 
-const TIP_CATEGORIES: Record<string, { label: string; icon: typeof Hotel }> = {
+const CATEGORIAS_DE_DICAS: Record<string, { label: string; icon: typeof Hotel }> = {
   HOTEL: { label: "Hospedagem", icon: Hotel },
   SALON: { label: "Beleza", icon: Scissors },
   TRANSFER: { label: "Transporte", icon: Bus },
@@ -117,9 +117,9 @@ const TIP_CATEGORIES: Record<string, { label: string; icon: typeof Hotel }> = {
 
 
 /** Recados mostrados antes do "Ver todos". */
-const GUESTBOOK_PREVIEW = 6;
+const PREVIA_DO_LIVRO_DE_RECADOS = 6;
 
-function parsePalette(raw?: string | null): string[] {
+function interpretarPaleta(raw?: string | null): string[] {
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
@@ -130,14 +130,14 @@ function parsePalette(raw?: string | null): string[] {
 }
 
 /** "Ana & Rafael", "Ana e Rafael" ou "Ana + Rafael" -> ["Ana", "Rafael"]; qualquer outro texto fica inteiro. */
-function splitNames(raw: string): [string, string] | null {
+function separarNomes(raw: string): [string, string] | null {
   const parts = raw.split(/\s+(?:&|\+|e)\s+/i);
   return parts.length === 2 && parts[0] && parts[1] ? [parts[0], parts[1]] : null;
 }
 
 /** Nomes com o "&" em itálico na cor de destaque. */
-function CoupleNames({ names, ampClassName = "text-ameixa" }: { names: string; ampClassName?: string }) {
-  const pair = splitNames(names);
+function NomesDoCasal({ names, ampClassName = "text-ameixa" }: { names: string; ampClassName?: string }) {
+  const pair = separarNomes(names);
   if (!pair) return <>{names}</>;
   return (
     <>
@@ -147,7 +147,7 @@ function CoupleNames({ names, ampClassName = "text-ameixa" }: { names: string; a
 }
 
 /** "16:30" -> "16h30"; "16:00" -> "16h". Outro formato fica como foi escrito. */
-function formatTime(raw?: string | null): string | null {
+function formatarHoraDoSite(raw?: string | null): string | null {
   const t = raw?.trim();
   if (!t) return null;
   const m = /^(\d{1,2}):(\d{2})$/.exec(t);
@@ -157,54 +157,54 @@ function formatTime(raw?: string | null): string | null {
 }
 
 /** O dia do casamento é gravado ao meio-dia UTC: lê pelos campos UTC para o servidor e o navegador concordarem. */
-function weddingDay(raw?: Date | string | null): Date | null {
+function diaDoCasamento(raw?: Date | string | null): Date | null {
   if (!raw) return null;
   const d = new Date(raw);
   if (Number.isNaN(d.getTime())) return null;
   return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 12);
 }
 
-type Tone = "papel" | "linho" | "areia";
+type TomDaFaixa = "papel" | "linho" | "areia";
 
 /** Cartão do design: papel, borda linha e raio de 16px. Dentro de faixa papel, usa o linho. */
-const card = "rounded-2xl border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)] group-data-[tone=papel]/band:bg-linho";
+const estiloDoCartao = "rounded-2xl border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)] group-data-[tone=papel]/band:bg-linho";
 
-const h2Class = "font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta text-balance md:text-5xl md:leading-[54px]";
+const classeDoTitulo = "font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta text-balance md:text-5xl md:leading-[54px]";
 
 /** Faixa de seção do site: conteúdo de até 1120px, 48px de respiro no celular e 96px no computador. */
-function Band({
+function FaixaDaSecao({
   id,
   tone,
   compact = false,
   children,
 }: {
   id?: string;
-  tone: Tone;
+  tone: TomDaFaixa;
   compact?: boolean;
   children: ReactNode;
 }) {
   const bg = tone === "papel" ? "border-y border-linha bg-papel" : tone === "areia" ? "bg-areia" : "";
   return (
     <section id={id} data-tone={tone} className={`group/band ${bg}`}>
-      <Reveal className={`mx-auto flex max-w-[1120px] flex-col gap-6 px-4 md:gap-8 md:px-6 ${compact ? "py-12 md:py-16" : "py-12 md:py-24"}`}>
+      <Aparicao className={`mx-auto flex max-w-[1120px] flex-col gap-6 px-4 md:gap-8 md:px-6 ${compact ? "py-12 md:py-16" : "py-12 md:py-24"}`}>
         {children}
-      </Reveal>
+      </Aparicao>
     </section>
   );
 }
 
-function Heading({ eyebrow, title, children }: { eyebrow: string; title: string; children?: ReactNode }) {
+function TituloDaSecao({ eyebrow, title, children }: { eyebrow: string; title: string; children?: ReactNode }) {
   return (
     <div className="flex max-w-[560px] flex-col gap-3">
       <p className={overline}>{eyebrow}</p>
-      <h2 className={h2Class}>{title}</h2>
+      <h2 className={classeDoTitulo}>{title}</h2>
       {children && <p className="text-base leading-6 text-tinta-suave">{children}</p>}
     </div>
   );
 }
 
 /** Foto em arco 3:4 (ou outra proporção). O pai define a largura. */
-function ArchPhoto({
+function FotoEmArco({
   src,
   alt,
   sizes,
@@ -221,12 +221,12 @@ function ArchPhoto({
 }) {
   return (
     <div className={`arch relative ${ratio} overflow-hidden bg-areia ${className}`}>
-      <UserImage src={src} alt={alt} sizes={sizes} priority={priority} className="object-cover" />
+      <ImagemDaPessoa src={src} alt={alt} sizes={sizes} priority={priority} className="object-cover" />
     </div>
   );
 }
 
-export function WeddingSiteView({
+export function VisaoDoSiteDoCasamento({
   slug,
   settings,
   storyItems,
@@ -235,7 +235,7 @@ export function WeddingSiteView({
   gifts,
   rsvpDeadline,
   preview = false,
-}: WeddingSiteViewProps) {
+}: PropriedadesDaVisaoDoSiteDoCasamento) {
   const s = settings ?? {};
   const [entries, setEntries] = useState(guestbookEntries);
   const [authorName, setAuthorName] = useState("");
@@ -248,13 +248,13 @@ export function WeddingSiteView({
 
   const coupleNames = s.title?.trim() || "Nosso Casamento";
   const initials = obterIniciaisDoCasal(coupleNames);
-  const day = weddingDay(s.weddingDate);
+  const day = diaDoCasamento(s.weddingDate);
   const dateLabel = day ? format(day, "d 'de' MMMM 'de' yyyy", { locale: ptBR }) : null;
   const weekdayLabel = day ? format(day, "EEEE, d 'de' MMMM", { locale: ptBR }) : null;
-  const deadlineDay = weddingDay(rsvpDeadline);
+  const deadlineDay = diaDoCasamento(rsvpDeadline);
   const deadlineLabel = deadlineDay ? format(deadlineDay, "d 'de' MMMM", { locale: ptBR }) : null;
-  const countdownTarget = s.weddingDate ? weddingInstant(new Date(s.weddingDate), s.ceremonyTime) : null;
-  const palette = parsePalette(s.dressCodePalette);
+  const countdownTarget = s.weddingDate ? instanteDoCasamento(new Date(s.weddingDate), s.ceremonyTime) : null;
+  const palette = interpretarPaleta(s.dressCodePalette);
   const accent = estiloDoTemaDaMarca(s.themeColor);
   // O design usa a ameixa como destaque; no site do casal, o destaque é a cor que os noivos escolheram.
   const themeStyle = {
@@ -293,7 +293,7 @@ export function WeddingSiteView({
     showRsvp && "rsvp",
     showMusic && "musica",
   ].filter(Boolean) as string[];
-  const toneOf = (id: string): Tone => (bands.indexOf(id) % 2 === 0 ? "papel" : "linho");
+  const toneOf = (id: string): TomDaFaixa => (bands.indexOf(id) % 2 === 0 ? "papel" : "linho");
 
   const navLinks = [
     showStory && { href: "#historia", label: "Nossa história" },
@@ -318,7 +318,7 @@ export function WeddingSiteView({
     startTransition(async () => {
       const res = await criarRecadoNoLivro(slug, { authorName, message });
       if (res.success && res.entry) {
-        setEntries((prev) => [res.entry as GuestbookEntry, ...prev]);
+        setEntries((prev) => [res.entry as RecadoDoLivro, ...prev]);
         setAuthorName("");
         setMessage("");
         toast.success("Recado enviado. Obrigado pelo carinho!");
@@ -336,7 +336,7 @@ export function WeddingSiteView({
     if (e.key === "Escape") setMenuOpen(false);
   };
 
-  const visibleEntries = showAllEntries ? entries : entries.slice(0, GUESTBOOK_PREVIEW);
+  const visibleEntries = showAllEntries ? entries : entries.slice(0, PREVIA_DO_LIVRO_DE_RECADOS);
 
   // Fotos em arco da história: a do casal e as das cenas, no máximo duas; as demais ficam na linha do tempo.
   const storyArches = [
@@ -357,8 +357,8 @@ export function WeddingSiteView({
           ? `Data em breve · ${locationName}`
           : "Em breve: data e local";
 
-  const ceremonyTime = formatTime(s.ceremonyTime);
-  const receptionTime = formatTime(s.receptionTime);
+  const ceremonyTime = formatarHoraDoSite(s.ceremonyTime);
+  const receptionTime = formatarHoraDoSite(s.receptionTime);
 
   return (
     <div style={themeStyle} className="min-h-screen overflow-x-clip bg-linho font-sans text-tinta antialiased selection:bg-ameixa/20">
@@ -369,7 +369,7 @@ export function WeddingSiteView({
       >
         <div className="mx-auto flex min-h-[60px] max-w-[1120px] items-center justify-between gap-x-8 gap-y-3 py-2 pl-4 pr-2 lg:flex-wrap md:px-6 lg:py-4">
           <a href="#inicio" className="flex min-h-11 items-center font-display text-[22px] leading-8 text-tinta no-underline md:text-2xl" aria-label={`${coupleNames}, início`} {...linkProps}>
-            <InitialsText initials={initials} />
+            <TextoDeIniciais initials={initials} />
           </a>
           {navLinks.length > 0 && (
             <nav aria-label="Seções" className="hidden flex-wrap gap-x-6 gap-y-2 font-medium lg:flex">
@@ -381,7 +381,7 @@ export function WeddingSiteView({
             </nav>
           )}
           {showRsvp && (
-            <Link href={rsvpHref} className={`${btn.primary} ${btn.sm} max-lg:hidden`} {...linkProps}>
+            <Link href={rsvpHref} className={`${estiloDoBotao.primary} ${estiloDoBotao.sm} max-lg:hidden`} {...linkProps}>
               Confirmar presença
             </Link>
           )}
@@ -423,7 +423,7 @@ export function WeddingSiteView({
         <div className="arch relative aspect-[3/4] w-[260px] max-w-[80%] bg-areia outline outline-1 outline-offset-[6px] outline-rosa md:w-[360px] md:outline-offset-8">
           {coverUrl ? (
             <div className="arch absolute inset-0 overflow-hidden">
-              <UserImage
+              <ImagemDaPessoa
                 src={coverUrl}
                 alt={`Foto de ${coupleNames}`}
                 sizes="(min-width: 768px) 360px, 260px"
@@ -435,7 +435,7 @@ export function WeddingSiteView({
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-ameixa">
               <span className="block h-px w-12 bg-rosa" aria-hidden="true" />
               <span className="font-display text-6xl leading-none md:text-7xl" aria-hidden="true">
-                <InitialsText initials={initials} />
+                <TextoDeIniciais initials={initials} />
               </span>
               <span className="block h-px w-12 bg-rosa" aria-hidden="true" />
             </div>
@@ -445,22 +445,22 @@ export function WeddingSiteView({
         <div className="flex max-w-full flex-col items-center gap-3 pt-2 md:pt-0">
           {s.subtitle?.trim() && <p className={overline}>{s.subtitle.trim()}</p>}
           <h1 className="m-0 max-w-full font-display text-[52px] font-medium leading-[54px] tracking-[-0.02em] text-tinta text-balance md:[font-size:clamp(56px,8vw,96px)] md:leading-none">
-            <CoupleNames names={coupleNames} />
+            <NomesDoCasal names={coupleNames} />
           </h1>
           <p className="m-0 text-[17px] leading-7 text-tinta-suave md:text-xl">{whenWhere}</p>
         </div>
 
-        {countdownTarget !== null && <WeddingCountdown target={countdownTarget} />}
+        {countdownTarget !== null && <ContagemRegressivaDoCasamento target={countdownTarget} />}
 
         {(showRsvp || showGiftLink) && (
           <div className="flex flex-wrap justify-center gap-3">
             {showRsvp && (
-              <Link href={rsvpHref} className={btn.primary} {...linkProps}>
+              <Link href={rsvpHref} className={estiloDoBotao.primary} {...linkProps}>
                 Confirmar presença
               </Link>
             )}
             {showGiftLink && (
-              <Link href={giftsHref} className={btn.secondary} {...linkProps}>
+              <Link href={giftsHref} className={estiloDoBotao.secondary} {...linkProps}>
                 Ver presentes em dinheiro
               </Link>
             )}
@@ -471,7 +471,7 @@ export function WeddingSiteView({
 
       {/* NOSSA HISTÓRIA */}
       {showStory && (
-        <Band id="historia" tone={toneOf("historia")}>
+        <FaixaDaSecao id="historia" tone={toneOf("historia")}>
           <div
             className={`grid items-center gap-6 md:gap-x-16 md:gap-y-4 ${
               storyArches.length > 0 ? "md:grid-cols-2" : "mx-auto w-full max-w-[720px]"
@@ -479,13 +479,13 @@ export function WeddingSiteView({
           >
             <div className="flex flex-col gap-3 md:self-end">
               <p className={overline}>Nossa história</p>
-              <h2 className={h2Class}>Como tudo começou</h2>
+              <h2 className={classeDoTitulo}>Como tudo começou</h2>
             </div>
 
             {storyArches.length > 0 && (
               <div className="flex items-end justify-center gap-3 md:row-span-2 md:row-start-1 md:gap-6">
                 {storyArches.map((a, i) => (
-                  <ArchPhoto
+                  <FotoEmArco
                     key={a.src}
                     src={a.src}
                     alt={a.alt}
@@ -508,7 +508,7 @@ export function WeddingSiteView({
                   {storyItems.map((item) => (
                     <li key={item.id} className="flex items-start gap-4">
                       {item.imageUrl && !archItemIds.has(item.id) && (
-                        <ArchPhoto src={item.imageUrl} alt={item.title} sizes="88px" className="w-[72px] shrink-0 md:w-[88px]" />
+                        <FotoEmArco src={item.imageUrl} alt={item.title} sizes="88px" className="w-[72px] shrink-0 md:w-[88px]" />
                       )}
                       <div className="min-w-0">
                         {item.dateLabel && <p className="m-0 font-display text-xl text-ameixa">{item.dateLabel}</p>}
@@ -521,20 +521,20 @@ export function WeddingSiteView({
               )}
             </div>
           </div>
-        </Band>
+        </FaixaDaSecao>
       )}
 
       {/* CERIMÔNIA, RECEPÇÃO E TRAJE */}
       {(showLocation || showDress) && (
-        <Band id="cerimonia" tone={toneOf("cerimonia")}>
+        <FaixaDaSecao id="cerimonia" tone={toneOf("cerimonia")}>
           {showLocation && (
             <>
               <div className="flex flex-col items-start gap-3 md:items-center md:text-center">
                 <p className={overline}>O grande dia</p>
-                <h2 className={h2Class}>{weekdayLabel ? weekdayLabel.charAt(0).toUpperCase() + weekdayLabel.slice(1) : "Onde vamos celebrar"}</h2>
+                <h2 className={classeDoTitulo}>{weekdayLabel ? weekdayLabel.charAt(0).toUpperCase() + weekdayLabel.slice(1) : "Onde vamos celebrar"}</h2>
               </div>
 
-              <article className={`${card} grid gap-6 md:grid-cols-[1.4fr_1fr] md:gap-12`}>
+              <article className={`${estiloDoCartao} grid gap-6 md:grid-cols-[1.4fr_1fr] md:gap-12`}>
                 <div className="flex min-w-0 flex-col gap-3">
                   <p className={overline}>Local</p>
                   {locationName && <h3 className="m-0 font-display text-2xl font-medium leading-[30px] text-tinta md:text-[26px] md:leading-8">{locationName}</h3>}
@@ -547,19 +547,19 @@ export function WeddingSiteView({
                   {(mapsUrl || wazeUrl || uberUrl) && (
                     <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap [&>*:last-child:nth-child(odd)]:max-sm:col-span-2">
                       {mapsUrl && (
-                        <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className={`${btn.secondary} ${btn.sm}`} {...linkProps}>
+                        <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`} {...linkProps}>
                           <span className="sm:hidden">Google Maps</span>
                           <span className="hidden sm:inline">Abrir no Google Maps</span>
                         </a>
                       )}
                       {wazeUrl && (
-                        <a href={wazeUrl} target="_blank" rel="noopener noreferrer" className={`${btn.secondary} ${btn.sm} sm:border-transparent sm:bg-transparent`} {...linkProps}>
+                        <a href={wazeUrl} target="_blank" rel="noopener noreferrer" className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm} sm:border-transparent sm:bg-transparent`} {...linkProps}>
                           <span className="sm:hidden">Waze</span>
                           <span className="hidden sm:inline">Abrir no Waze</span>
                         </a>
                       )}
                       {uberUrl && (
-                        <a href={uberUrl} target="_blank" rel="noopener noreferrer" className={`${btn.secondary} ${btn.sm} sm:border-transparent sm:bg-transparent`} {...linkProps}>
+                        <a href={uberUrl} target="_blank" rel="noopener noreferrer" className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm} sm:border-transparent sm:bg-transparent`} {...linkProps}>
                           <span className="sm:hidden">Uber</span>
                           <span className="hidden sm:inline">Chamar um Uber</span>
                         </a>
@@ -609,27 +609,27 @@ export function WeddingSiteView({
                 )}
               </div>
               {showTips && (
-                <a href="#dicas" className={btn.quiet} {...linkProps}>
+                <a href="#dicas" className={estiloDoBotao.quiet} {...linkProps}>
                   Ver dicas para o dia
                 </a>
               )}
             </div>
           )}
-        </Band>
+        </FaixaDaSecao>
       )}
 
       {/* DICAS AOS CONVIDADOS */}
       {showTips && (
-        <Band id="dicas" tone={toneOf("dicas")}>
-          <Heading eyebrow="Para os convidados" title="Dicas para aproveitar o dia">
+        <FaixaDaSecao id="dicas" tone={toneOf("dicas")}>
+          <TituloDaSecao eyebrow="Para os convidados" title="Dicas para aproveitar o dia">
             Hospedagem, beleza e transporte que indicamos.
-          </Heading>
+          </TituloDaSecao>
           <ul className="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(min(100%,300px),1fr))] gap-6 p-0">
             {tips.map((tip) => {
-              const cat = TIP_CATEGORIES[tip.category] ?? { label: "Dica", icon: MapPin };
+              const cat = CATEGORIAS_DE_DICAS[tip.category] ?? { label: "Dica", icon: MapPin };
               const Icon = cat.icon;
               return (
-                <li key={tip.id} className={`${card} flex flex-col gap-3`}>
+                <li key={tip.id} className={`${estiloDoCartao} flex flex-col gap-3`}>
                   <div className="flex items-center gap-3">
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ameixa-suave text-ameixa">
                       <Icon className="size-5" aria-hidden="true" />
@@ -678,17 +678,17 @@ export function WeddingSiteView({
               );
             })}
           </ul>
-        </Band>
+        </FaixaDaSecao>
       )}
 
       {/* LISTA DE PRESENTES */}
       {showGifts && (
-        <Band id="presentes" tone={toneOf("presentes")}>
+        <FaixaDaSecao id="presentes" tone={toneOf("presentes")}>
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <Heading eyebrow="Presentes em dinheiro" title="Um carinho para a vida nova">
+            <TituloDaSecao eyebrow="Presentes em dinheiro" title="Um carinho para a vida nova">
               Sua presença é o nosso maior presente. Se quiser contribuir, escolha um item: cada um representa um valor em dinheiro para o casal.
-            </Heading>
-            <Link href={giftsHref} className={`${btn.secondary} max-md:hidden`} {...linkProps}>
+            </TituloDaSecao>
+            <Link href={giftsHref} className={`${estiloDoBotao.secondary} max-md:hidden`} {...linkProps}>
               Ver todos os presentes
             </Link>
           </div>
@@ -699,7 +699,7 @@ export function WeddingSiteView({
                 <Link href={`/checkout/${gift.id}`} className="group/gift flex flex-col gap-1.5 text-tinta no-underline md:gap-2" {...linkProps}>
                   <span className="zoom-media relative block aspect-square overflow-hidden rounded-2xl bg-areia">
                     {gift.imageUrl ? (
-                      <UserImage src={gift.imageUrl} alt="" sizes="(min-width: 768px) 260px, 160px" className="object-cover" />
+                      <ImagemDaPessoa src={gift.imageUrl} alt="" sizes="(min-width: 768px) 260px, 160px" className="object-cover" />
                     ) : (
                       <span className="absolute inset-0 grid place-items-center text-ameixa/60">
                         <Gift className="size-8" aria-hidden="true" />
@@ -713,16 +713,16 @@ export function WeddingSiteView({
               </li>
             ))}
           </ul>
-          <Link href={giftsHref} className={`${btn.secondary} ${btn.block} md:hidden`} {...linkProps}>
+          <Link href={giftsHref} className={`${estiloDoBotao.secondary} ${estiloDoBotao.block} md:hidden`} {...linkProps}>
             Ver todos os presentes
           </Link>
-        </Band>
+        </FaixaDaSecao>
       )}
 
       {/* CONFIRMAÇÃO DE PRESENÇA */}
       {showRsvp && (
         <section id="confirmar" data-tone={toneOf("rsvp")} className={`group/band ${toneOf("rsvp") === "papel" ? "border-y border-linha bg-papel" : ""}`}>
-          <Reveal variant="scale" className="mx-auto flex max-w-[1120px] justify-center px-4 py-12 md:px-6 md:py-24">
+          <Aparicao variant="scale" className="mx-auto flex max-w-[1120px] justify-center px-4 py-12 md:px-6 md:py-24">
             <div className="relative w-full max-w-[560px] rounded-2xl border border-linha bg-papel px-6 py-10 text-center shadow-[var(--shadow-aceito-2)] md:px-8 md:py-12">
               <span className="pointer-events-none absolute inset-2 rounded-[10px] border border-rosa" aria-hidden="true" />
               <div className="relative flex flex-col items-center gap-2">
@@ -735,19 +735,19 @@ export function WeddingSiteView({
                     ? `Confirme sua presença até ${deadlineLabel}. Digite o seu WhatsApp para achar o seu convite; leva menos de um minuto.`
                     : "Digite o seu WhatsApp para achar o seu convite. Leva menos de um minuto."}
                 </p>
-                <Link href={rsvpHref} className={`${btn.primary} ${btn.block}`} {...linkProps}>
+                <Link href={rsvpHref} className={`${estiloDoBotao.primary} ${estiloDoBotao.block}`} {...linkProps}>
                   Confirmar presença
                 </Link>
               </div>
             </div>
-          </Reveal>
+          </Aparicao>
         </section>
       )}
 
       {/* PLAYLIST */}
       {showMusic && (
-        <Band tone={toneOf("musica")} compact>
-          <div className={`${card} flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left`}>
+        <FaixaDaSecao tone={toneOf("musica")} compact>
+          <div className={`${estiloDoCartao} flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left`}>
             <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-ameixa-suave text-ameixa">
               <Music className="size-6" aria-hidden="true" />
             </span>
@@ -755,16 +755,16 @@ export function WeddingSiteView({
               <h2 className="m-0 font-display text-2xl font-medium leading-8 text-tinta">A trilha sonora da festa</h2>
               <p className="m-0 text-tinta-suave">Ouça a nossa playlist e entre no clima.</p>
             </div>
-            <a href={s.spotifyPlaylistUrl!} target="_blank" rel="noopener noreferrer" className={btn.secondary} {...linkProps}>
+            <a href={s.spotifyPlaylistUrl!} target="_blank" rel="noopener noreferrer" className={estiloDoBotao.secondary} {...linkProps}>
               Ouvir playlist <ExternalLink className="size-4" aria-hidden="true" />
             </a>
           </div>
-        </Band>
+        </FaixaDaSecao>
       )}
 
       {/* MURAL DE RECADOS */}
       {showGuestbook && (
-        <Band id="recados" tone="areia">
+        <FaixaDaSecao id="recados" tone="areia">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="flex flex-col gap-3">
               <p className={overline}>Mural de recados</p>
@@ -783,7 +783,7 @@ export function WeddingSiteView({
                 aria-expanded={formOpen}
                 aria-controls="form-recado"
                 disabled={preview}
-                className={`${btn.secondary} max-md:w-full`}
+                className={`${estiloDoBotao.secondary} max-md:w-full`}
               >
                 Escrever um recado
               </button>
@@ -841,19 +841,19 @@ export function WeddingSiteView({
                   </li>
                 ))}
               </ul>
-              {entries.length > GUESTBOOK_PREVIEW && (
-                <button type="button" onClick={() => setShowAllEntries((v) => !v)} className={`${btn.secondary} self-center`}>
+              {entries.length > PREVIA_DO_LIVRO_DE_RECADOS && (
+                <button type="button" onClick={() => setShowAllEntries((v) => !v)} className={`${estiloDoBotao.secondary} self-center`}>
                   {showAllEntries ? "Mostrar menos recados" : `Ver todos os ${entries.length} recados`}
                 </button>
               )}
             </>
           )}
-        </Band>
+        </FaixaDaSecao>
       )}
 
       <footer className="flex flex-col items-center gap-3 px-4 py-12 text-center">
         <p className="m-0 font-display text-[34px] leading-10 text-tinta">
-          <InitialsText initials={initials} />
+          <TextoDeIniciais initials={initials} />
         </p>
         <p className="m-0 text-sm text-tinta-suave">{dateLabel ? `${dateLabel} · ` : ""}Feito com Aceito</p>
       </footer>
@@ -862,16 +862,16 @@ export function WeddingSiteView({
       {!preview && (showRsvp || showGiftLink) && (
         <div className="sticky bottom-0 z-30 flex gap-2 border-t border-linha bg-papel px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-[var(--shadow-aceito-2)] lg:hidden">
           {showRsvp ? (
-            <Link href={rsvpHref} className={`${btn.primary} flex-1`}>
+            <Link href={rsvpHref} className={`${estiloDoBotao.primary} flex-1`}>
               Confirmar presença
             </Link>
           ) : (
-            <Link href={giftsHref} className={`${btn.primary} flex-1`}>
+            <Link href={giftsHref} className={`${estiloDoBotao.primary} flex-1`}>
               Presentes em dinheiro
             </Link>
           )}
           {showRsvp && showGiftLink && (
-            <Link href={giftsHref} aria-label="Presentes em dinheiro" className={`${btn.secondary} px-3.5`}>
+            <Link href={giftsHref} aria-label="Presentes em dinheiro" className={`${estiloDoBotao.secondary} px-3.5`}>
               <Gift className="size-6" aria-hidden="true" />
             </Link>
           )}
@@ -882,7 +882,7 @@ export function WeddingSiteView({
 }
 
 /** "L&G" -> L & G, com o "&" em itálico. Uma inicial só (ou o coração) fica como está. */
-function InitialsText({ initials }: { initials: string }) {
+function TextoDeIniciais({ initials }: { initials: string }) {
   const [a, b] = initials.split("&");
   if (!b) return <>{initials}</>;
   return (

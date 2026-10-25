@@ -7,11 +7,11 @@ import { useSyncExternalStore } from "react";
 // Lê o DOM em vez de depender de cada tela avisar: funciona com qualquer janela do painel.
 
 // O passo a passo marca o <body> com este atributo; lido sem importar o módulo dele.
-const TOUR_ACTIVE_ATTR = "data-tour-active";
+const ATRIBUTO_DO_TOUR_ATIVO = "data-tour-active";
 
-const MODAL = '[role="dialog"][aria-modal="true"]:not([data-liz-panel]), [role="alertdialog"], [data-slot="dialog-content"]';
+const SELETOR_DE_MODAL = '[role="dialog"][aria-modal="true"]:not([data-liz-panel]), [role="alertdialog"], [data-slot="dialog-content"]';
 
-function subscribe(onChange: () => void) {
+function assinarMudancas(onChange: () => void) {
   let frame = 0;
   const schedule = () => {
     if (frame) return;
@@ -25,7 +25,7 @@ function subscribe(onChange: () => void) {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: [TOUR_ACTIVE_ATTR, "data-scroll-locked", "data-liz-hide"],
+    attributeFilter: [ATRIBUTO_DO_TOUR_ATIVO, "data-scroll-locked", "data-liz-hide"],
   });
   document.addEventListener("fullscreenchange", schedule);
   return () => {
@@ -35,15 +35,15 @@ function subscribe(onChange: () => void) {
   };
 }
 
-function getSnapshot(): boolean {
+function obterFotoAtual(): boolean {
   const body = document.body;
-  const tour = body.getAttribute(TOUR_ACTIVE_ATTR);
+  const tour = body.getAttribute(ATRIBUTO_DO_TOUR_ATIVO);
   if (tour !== null && tour !== "false" && tour !== "0") return true;
   if (body.hasAttribute("data-scroll-locked")) return true;
   if (document.fullscreenElement) return true;
-  return document.querySelector(`${MODAL}, [data-liz-hide]`) !== null;
+  return document.querySelector(`${SELETOR_DE_MODAL}, [data-liz-hide]`) !== null;
 }
 
-export function useLizHidden(): boolean {
-  return useSyncExternalStore(subscribe, getSnapshot, () => false);
+export function useLizEscondida(): boolean {
+  return useSyncExternalStore(assinarMudancas, obterFotoAtual, () => false);
 }

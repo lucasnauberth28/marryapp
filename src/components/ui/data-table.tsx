@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export interface Column<T> {
+export interface Coluna<T> {
   key: string;
   header: React.ReactNode;
   accessor?: (item: T) => unknown;
@@ -29,9 +29,9 @@ export interface Column<T> {
   headerClassName?: string;
 }
 
-export interface DataTableProps<T> {
+export interface PropriedadesDaTabelaDeDados<T> {
   data: T[];
-  columns: Column<T>[];
+  columns: Coluna<T>[];
   pageSize?: number;
   searchPlaceholder?: string;
   /** Texto (ou bloco) mostrado quando não há linhas. */
@@ -43,9 +43,9 @@ export interface DataTableProps<T> {
   mobileCard?: (item: T) => React.ReactNode;
 }
 
-type SortOrder = "asc" | "desc" | null;
+type SentidoDaOrdenacao = "asc" | "desc" | null;
 
-export function DataTable<T>({
+export function TabelaDeDados<T>({
   data,
   columns,
   pageSize = 15,
@@ -55,10 +55,10 @@ export function DataTable<T>({
   topRightElement,
   className,
   mobileCard,
-}: DataTableProps<T>) {
+}: PropriedadesDaTabelaDeDados<T>) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+  const [sortOrder, setSortOrder] = useState<SentidoDaOrdenacao>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   // Reset pagination on search change
@@ -69,7 +69,7 @@ export function DataTable<T>({
 
   // Helper to extract cell value for sorting / searching
   const getRawValue = React.useCallback(
-    (item: T, col: Column<T>): string => {
+    (item: T, col: Coluna<T>): string => {
       if (col.accessor) {
         const val = col.accessor(item);
         if (val === null || val === undefined) return "";

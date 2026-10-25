@@ -4,10 +4,10 @@
 // Cada forma tem duas geometrias: `paths` (cores escuras e médias sobre fundo claro, como a ameixa) e `light` (branco e tons claros
 // sobre fundo escuro, com a compensação óptica do desenho que o manual pede).
 
-type LogoPath = { d: string; transform?: string };
-export type LogoShape = { viewBox: string; width: number; height: number; paths: readonly LogoPath[]; light: readonly LogoPath[] };
+type CaminhoDoLogotipo = { d: string; transform?: string };
+export type FormaDoLogotipo = { viewBox: string; width: number; height: number; paths: readonly CaminhoDoLogotipo[]; light: readonly CaminhoDoLogotipo[] };
 
-export const MARK_SHAPE: LogoShape = {
+export const FORMA_DA_MARCA: FormaDoLogotipo = {
   viewBox: "32.0 49.11 191.9 157.7",
   width: 191.9,
   height: 157.7,
@@ -19,7 +19,7 @@ export const MARK_SHAPE: LogoShape = {
   ],
 };
 
-export const WORDMARK_SHAPE: LogoShape = {
+export const FORMA_DO_NOME: FormaDoLogotipo = {
   viewBox: "26.0 29.16 839.0 192.52",
   width: 839.0,
   height: 192.52,
@@ -31,7 +31,7 @@ export const WORDMARK_SHAPE: LogoShape = {
   ],
 };
 
-export const LOCKUP_SHAPE: LogoShape = {
+export const FORMA_DA_ASSINATURA: FormaDoLogotipo = {
   viewBox: "32.0 47.79 1000.25 163.64",
   width: 1000.25,
   height: 163.64,
@@ -45,7 +45,7 @@ export const LOCKUP_SHAPE: LogoShape = {
   ],
 };
 
-export const VERTICAL_SHAPE: LogoShape = {
+export const FORMA_VERTICAL: FormaDoLogotipo = {
   viewBox: "208.0 102.22 383.8 433.42",
   width: 383.8,
   height: 433.42,

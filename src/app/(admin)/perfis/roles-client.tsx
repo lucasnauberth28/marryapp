@@ -1,19 +1,19 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useSyncedState } from "@/hooks/use-synced-state";
+import { useEstadoSincronizado } from "@/hooks/use-synced-state";
 
 import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { DataTable } from "@/components/ui/data-table";
+import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
+import { TabelaDeDados } from "@/components/ui/data-table";
 import { criarPerfil, atualizarPerfil, excluirPerfil } from "@/actions/rbac-actions";
 import { Input } from "@/components/ui/input";
 import { Plus, Pencil, Trash2, Check } from "lucide-react";
-import { PageHeader } from "@/components/admin/page-header";
-import { AccessTabs } from "@/components/casal/access-tabs";
-import { btn } from "@/components/landing/styles";
-import { card, cardTitle } from "@/components/casal/ui";
-import { LoadingButton } from "@/components/painel/loading-button";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
+import { AbasDeAcesso } from "@/components/casal/access-tabs";
+import { estiloDoBotao } from "@/components/landing/styles";
+import { estiloDoCartao, estiloDoTituloDoCartao } from "@/components/casal/ui";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
 
 const AVAILABLE_MODULES = [
   { id: "*", name: "Acesso total" },
@@ -58,7 +58,7 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
   const [isPending, startTransition] = useTransition();
   const uid = useId();
   const router = useRouter();
-  const [roles] = useSyncedState(initialRoles);
+  const [roles] = useEstadoSincronizado(initialRoles);
   const [editingRole, setEditingRole] = useState<RoleItem | null>(null);
   
   const [formData, setFormData] = useState({
@@ -163,10 +163,10 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
   );
   const rowActions = (role: RoleItem) => (
     <div className="flex justify-end gap-1">
-      <button type="button" aria-label={`Editar ${role.name}`} className={`${btn.quiet} !min-w-11 !px-0`} onClick={() => openEditForm(role)}>
+      <button type="button" aria-label={`Editar ${role.name}`} className={`${estiloDoBotao.quiet} !min-w-11 !px-0`} onClick={() => openEditForm(role)}>
         <Pencil className="size-4" aria-hidden="true" />
       </button>
-      <button type="button" aria-label={`Excluir ${role.name}`} className={`${btn.quiet} !min-w-11 !px-0 text-perigo hover:bg-perigo-suave`} onClick={() => handleDelete(role.id)}>
+      <button type="button" aria-label={`Excluir ${role.name}`} className={`${estiloDoBotao.quiet} !min-w-11 !px-0 text-perigo hover:bg-perigo-suave`} onClick={() => handleDelete(role.id)}>
         <Trash2 className="size-4" aria-hidden="true" />
       </button>
     </div>
@@ -181,33 +181,33 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
       {embedded ? (
         !isFormOpen && (
           <div className="flex justify-end">
-            <button type="button" onClick={openNewForm} className={btn.primary}>
+            <button type="button" onClick={openNewForm} className={estiloDoBotao.primary}>
               <Plus className="size-4" aria-hidden="true" /> Novo perfil
             </button>
           </div>
         )
       ) : (
         <>
-          <PageHeader
+          <CabecalhoDaPagina
             eyebrow="Acesso"
             title="Usuários e perfis"
             description="Cada perfil define quais áreas do painel a pessoa pode abrir."
             actions={
               !isFormOpen && (
-                <button type="button" onClick={openNewForm} className={btn.primary}>
+                <button type="button" onClick={openNewForm} className={estiloDoBotao.primary}>
                   <Plus className="size-4" aria-hidden="true" /> Novo perfil
                 </button>
               )
             }
           />
-          <AccessTabs current="perfis" />
+          <AbasDeAcesso current="perfis" />
         </>
       )}
 
       {isFormOpen ? (
-        <section aria-labelledby={`${uid}-titulo`} className={`${card} flex flex-col gap-6 p-5 sm:p-6`}>
+        <section aria-labelledby={`${uid}-titulo`} className={`${estiloDoCartao} flex flex-col gap-6 p-5 sm:p-6`}>
           <div>
-            <h2 id={`${uid}-titulo`} className={cardTitle}>{editingRole ? "Editar perfil" : "Novo perfil"}</h2>
+            <h2 id={`${uid}-titulo`} className={estiloDoTituloDoCartao}>{editingRole ? "Editar perfil" : "Novo perfil"}</h2>
             <p className="mt-0.5 text-[15px] text-tinta-suave">Dê um nome ao perfil e marque as áreas que ele pode abrir.</p>
           </div>
           <Input
@@ -245,16 +245,16 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
           </fieldset>
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-linha pt-4">
-            <button type="button" className={btn.secondary} onClick={() => setIsFormOpen(false)} disabled={isPending}>
+            <button type="button" className={estiloDoBotao.secondary} onClick={() => setIsFormOpen(false)} disabled={isPending}>
               Cancelar
             </button>
-            <LoadingButton className={btn.primary} onClick={handleSave} loading={isPending}>
+            <BotaoComCarregamento className={estiloDoBotao.primary} onClick={handleSave} loading={isPending}>
               Salvar perfil
-            </LoadingButton>
+            </BotaoComCarregamento>
           </div>
         </section>
       ) : (
-        <DataTable
+        <TabelaDeDados
           data={roles}
           pageSize={15}
           keyExtractor={(r) => r.id}
@@ -304,7 +304,7 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
           ]}
         />
       )}
-      <ConfirmModal
+      <ModalDeConfirmacao
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={() => {

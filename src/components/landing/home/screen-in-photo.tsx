@@ -8,39 +8,39 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 
-type Ponto = readonly [number, number];
-type Quad = readonly [Ponto, Ponto, Ponto, Ponto];
+type PontoNaFoto = readonly [number, number];
+type Quadrilatero = readonly [PontoNaFoto, PontoNaFoto, PontoNaFoto, PontoNaFoto];
 
 const FOTO_LARGURA = 1536;
 const FOTO_ALTURA = 1024;
 
 // Homografia de um retângulo para quatro pontos (matrizes 3x3 em linha).
-function adj(m: number[]) {
+function matrizAdjunta(m: number[]) {
   return [
     m[4] * m[8] - m[5] * m[7], m[2] * m[7] - m[1] * m[8], m[1] * m[5] - m[2] * m[4],
     m[5] * m[6] - m[3] * m[8], m[0] * m[8] - m[2] * m[6], m[2] * m[3] - m[0] * m[5],
     m[3] * m[7] - m[4] * m[6], m[1] * m[6] - m[0] * m[7], m[0] * m[4] - m[1] * m[3],
   ];
 }
-function mul(a: number[], b: number[]) {
+function multiplicarMatrizes(a: number[], b: number[]) {
   const c: number[] = [];
   for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) c[3 * i + j] = a[3 * i] * b[j] + a[3 * i + 1] * b[3 + j] + a[3 * i + 2] * b[6 + j];
   return c;
 }
-function mulVec(m: number[], v: number[]) {
+function multiplicarMatrizPorVetor(m: number[], v: number[]) {
   return [m[0] * v[0] + m[1] * v[1] + m[2] * v[2], m[3] * v[0] + m[4] * v[1] + m[5] * v[2], m[6] * v[0] + m[7] * v[1] + m[8] * v[2]];
 }
-function base(p: number[]) {
+function montarBaseDaProjecao(p: number[]) {
   const m = [p[0], p[2], p[4], p[1], p[3], p[5], 1, 1, 1];
-  const v = mulVec(adj(m), [p[6], p[7], 1]);
-  return mul(m, [v[0], 0, 0, 0, v[1], 0, 0, 0, v[2]]);
+  const v = multiplicarMatrizPorVetor(matrizAdjunta(m), [p[6], p[7], 1]);
+  return multiplicarMatrizes(m, [v[0], 0, 0, 0, v[1], 0, 0, 0, v[2]]);
 }
-function projecao(origem: number[], destino: number[]) {
-  const t = mul(base(destino), adj(base(origem)));
+function calcularProjecao(origem: number[], destino: number[]) {
+  const t = multiplicarMatrizes(montarBaseDaProjecao(destino), matrizAdjunta(montarBaseDaProjecao(origem)));
   return t.map((x) => x / t[8]);
 }
 
-export function ScreenInPhoto({
+export function TelaNaFoto({
   src,
   alt,
   sizes,
@@ -52,7 +52,7 @@ export function ScreenInPhoto({
   src: string;
   alt: string;
   sizes: string;
-  quad: Quad;
+  quad: Quadrilatero;
   base: readonly [number, number];
   screenClassName: string;
   children: React.ReactNode;
@@ -72,7 +72,7 @@ export function ScreenInPhoto({
       const escala = box.clientWidth / FOTO_LARGURA;
       if (!escala) return;
       const destino = q.flatMap((p) => [p[0] * escala, p[1] * escala]);
-      const t = projecao([0, 0, largura, 0, largura, altura, 0, altura], destino);
+      const t = calcularProjecao([0, 0, largura, 0, largura, altura, 0, altura], destino);
       el.style.transform = `matrix3d(${[t[0], t[3], 0, t[6], t[1], t[4], 0, t[7], 0, 0, 1, 0, t[2], t[5], 0, t[8]].join(",")})`;
       el.style.visibility = "visible";
     };

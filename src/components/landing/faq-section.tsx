@@ -1,18 +1,18 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { Reveal } from "@/components/motion/reveal";
+import { Aparicao } from "@/components/motion/reveal";
 import { obterCatalogo } from "@/lib/catalog-server";
 import type { Catalogo } from "@/lib/catalog";
 import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
 import { CONDICOES_DO_PRESENTE, rotuloDoPlano } from "@/lib/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { cn } from "@/lib/utils";
-import { container, h2, lead, overline } from "./styles";
+import { estiloDoContainerDaLanding, estiloDoTituloDaSecao, estiloDoTextoDeApoio, overline } from "./styles";
 
-const link = "font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 hover:decoration-ameixa";
+const classeDoLinkDasPerguntas = "font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 hover:decoration-ameixa";
 
-const faqs = (catalog: Catalogo): { q: string; a: ReactNode }[] => {
+const perguntasFrequentes = (catalog: Catalogo): { q: string; a: ReactNode }[] => {
   const classic = rotuloDoPlano(catalog.plans.classic.name);
   const vip = rotuloDoPlano(catalog.plans.vip.name);
   return [
@@ -45,11 +45,11 @@ const faqs = (catalog: Catalogo): { q: string; a: ReactNode }[] => {
           <br />
           <br />
           A forma e o prazo para os valores chegarem ao casal seguem as regras da carteira descritas nos{" "}
-          <Link href="/termos#pagamentos" className={link}>
+          <Link href="/termos#pagamentos" className={classeDoLinkDasPerguntas}>
             termos de uso
           </Link>
           . Veja também as{" "}
-          <Link href="/planos#presentes" className={link}>
+          <Link href="/planos#presentes" className={classeDoLinkDasPerguntas}>
             taxas e condições por plano
           </Link>
           .
@@ -83,25 +83,25 @@ const faqs = (catalog: Catalogo): { q: string; a: ReactNode }[] => {
  * Perguntas frequentes em acordeão nativo (<details>), sem JavaScript.
  * Só uma aberta por vez (atributo name). Onde o navegador permite, a altura anima.
  */
-export async function FaqSection() {
-  const FAQS = faqs(await obterCatalogo());
+export async function SecaoDePerguntasFrequentes() {
+  const FAQS = perguntasFrequentes(await obterCatalogo());
   return (
     <section id="duvidas" aria-labelledby="duvidas-titulo" className="py-16 sm:py-24 lg:py-28">
-      <div className={cn(container, "grid gap-10 lg:grid-cols-[5fr_7fr] lg:gap-20")}>
-        <Reveal className="flex flex-col gap-4 lg:sticky lg:top-28 lg:self-start">
+      <div className={cn(estiloDoContainerDaLanding, "grid gap-10 lg:grid-cols-[5fr_7fr] lg:gap-20")}>
+        <Aparicao className="flex flex-col gap-4 lg:sticky lg:top-28 lg:self-start">
           <p className={cn(overline, "flex items-center gap-3")}>
             <span aria-hidden="true" className="h-px w-8 shrink-0 bg-rosa" />
             Dúvidas
           </p>
-          <h2 id="duvidas-titulo" className={h2}>
+          <h2 id="duvidas-titulo" className={estiloDoTituloDaSecao}>
             Perguntas frequentes
           </h2>
-          <p className={cn(lead, "max-w-[40ch]")}>O essencial sobre planos, presentes, convidados e fornecedores.</p>
-        </Reveal>
+          <p className={cn(estiloDoTextoDeApoio, "max-w-[40ch]")}>O essencial sobre planos, presentes, convidados e fornecedores.</p>
+        </Aparicao>
 
         <div className="border-t border-linha">
           {FAQS.map((faq, i) => (
-            <Reveal key={faq.q} delay={i * 80}>
+            <Aparicao key={faq.q} delay={i * 80}>
               <details
                 name="duvidas"
                 open={i === 0 || undefined}
@@ -122,7 +122,7 @@ export async function FaqSection() {
                 </summary>
                 <div className="max-w-[62ch] pb-6 pr-12 text-base leading-[26px] text-tinta-suave">{faq.a}</div>
               </details>
-            </Reveal>
+            </Aparicao>
           ))}
         </div>
       </div>

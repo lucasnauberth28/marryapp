@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 
-interface Props {
+interface Propriedades {
   checked: boolean;
   onChange: (next: boolean) => void;
   /** Nome acessível: diz o que o interruptor controla. */
@@ -16,7 +16,7 @@ interface Props {
  * Interruptor (role="switch"). A área de toque tem 44px de altura mesmo com a pílula visível de 26px,
  * e funciona com Espaço e Enter. Estado sempre dito em texto para leitores de tela (aria-checked).
  */
-export function ToggleSwitch({ checked, onChange, label, disabled, busy, className }: Props) {
+export function InterruptorDeAlternancia({ checked, onChange, label, disabled, busy, className }: Propriedades) {
   return (
     <button
       type="button"

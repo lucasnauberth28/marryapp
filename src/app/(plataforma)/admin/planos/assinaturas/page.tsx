@@ -5,12 +5,12 @@ import prisma from "@/lib/prisma";
 import { ehChaveDePlano } from "@/lib/plans";
 import { obterCatalogo } from "@/lib/catalog-server";
 import { planOption, shortPlanName } from "@/app/login/auth-config";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { PageHeader } from "@/components/plataforma/page-header";
-import { Pagination } from "@/components/plataforma/pagination";
-import { ResponsiveTable } from "@/components/plataforma/responsive-table";
-import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
-import { StatusChip } from "@/components/plataforma/status-chip";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { Paginacao } from "@/components/plataforma/pagination";
+import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
+import { CartaoDeIndicador, GradeDeIndicadores } from "@/components/plataforma/stat-card";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { formatarDiaEMes, formatarDataEHora, formatarInteiro, formatarNomeDoMes, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais, formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
@@ -19,7 +19,7 @@ import { ehPixEstatico, formaDoPagamentoDe, situacaoDoPagamentoDe } from "@/lib/
 import { filtroDeFornecedorPagoAtivo, obterReceitaDoMes, obterPixParaConferir, filtroDePixParaConferir } from "@/lib/platform/queries/receita";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { cn } from "@/lib/utils";
-import { PendingLink, PendingRegion } from "@/components/plataforma/pending";
+import { LinkPendente, RegiaoPendente } from "@/components/plataforma/pending";
 import { PlanosTabs } from "../_components/planos-tabs";
 import { FilterChips } from "../_components/filter-chips";
 import { SubscriptionPanel, type PanelSubscription } from "../_components/subscription-panel";
@@ -107,30 +107,30 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
 
   return (
     <>
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow="Dinheiro"
         title="Assinaturas e Pix"
         description="Pagamentos pelo Mercado Pago entram sozinhos. Pix estático precisa ser conferido no extrato."
       />
       <PlanosTabs active="assinaturas" />
 
-      <StatGrid>
-        <StatCard
+      <GradeDeIndicadores>
+        <CartaoDeIndicador
           label={`Recebido em ${formatarNomeDoMes(now)}`}
           value={formatarReaisInteiros(month.cents)}
           hint={month.payments === 0 ? "nenhum pagamento ainda" : pluralizar(month.payments, "pagamento", "pagamentos")}
         />
-        <StatCard label="Fornecedores pagantes" value={formatarInteiro(pro + master)} hint={`${pro} Pro e ${master} Master`} />
-        <StatCard label="Vencem em 7 dias" value={formatarInteiro(expiringSoon)} hint="planos de fornecedor" />
-        <StatCard
+        <CartaoDeIndicador label="Fornecedores pagantes" value={formatarInteiro(pro + master)} hint={`${pro} Pro e ${master} Master`} />
+        <CartaoDeIndicador label="Vencem em 7 dias" value={formatarInteiro(expiringSoon)} hint="planos de fornecedor" />
+        <CartaoDeIndicador
           label="Pix a conferir"
           value={formatarInteiro(pix.count)}
           hint={pix.oldestAt ? `o mais antigo, ${haQuantoTempo(pix.oldestAt, now)}` : "nada na fila"}
           highlight={pix.count > 0}
         />
-      </StatGrid>
+      </GradeDeIndicadores>
 
-      <PendingRegion>
+      <RegiaoPendente>
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_auto]">
         <section aria-labelledby="lista-titulo" className="flex min-w-0 flex-col gap-4">
           <h2 id="lista-titulo" className="sr-only">
@@ -143,15 +143,15 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
               active: f.value === filter,
             }))}
           />
-          <ResponsiveTable
+          <TabelaResponsiva
             caption={`Assinaturas${filter === "todos" ? "" : ` filtradas: ${FILTERS.find((f) => f.value === filter)?.label}`}, mais recentes primeiro`}
             rows={rows}
             rowKey={(r) => r.id}
             selectedKey={selected?.id}
             empty={
-              <EmptyState icon={CreditCard} title={filter === "a-conferir" ? "Nenhum Pix esperando conferência" : "Nenhum pagamento por aqui"} compact>
+              <EstadoVazio icon={CreditCard} title={filter === "a-conferir" ? "Nenhum Pix esperando conferência" : "Nenhum pagamento por aqui"} compact>
                 {filter === "todos" ? "Quando alguém assinar um plano, o pagamento aparece nesta lista." : "Troque o filtro para ver outros pagamentos."}
-              </EmptyState>
+              </EstadoVazio>
             }
             columns={[
               {
@@ -175,7 +175,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
                 header: "Status",
                 cell: (r) => {
                   const status = situacaoDoPagamentoDe(r, now);
-                  return <StatusChip tone={status.tone}>{status.label}</StatusChip>;
+                  return <EtiquetaDeSituacao tone={status.tone}>{status.label}</EtiquetaDeSituacao>;
                 },
               },
               {
@@ -202,7 +202,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
                           Recibo<span className="sr-only"> do pagamento de {who}</span>
                         </Link>
                       ) : null}
-                      <PendingLink
+                      <LinkPendente
                         href={hrefFor(filter, r.id, window.page)}
                         scroll={false}
                         aria-current={r.id === selected?.id ? "true" : undefined}
@@ -213,21 +213,21 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
                       >
                         {checkable ? "Conferir" : "Detalhes"}
                         <span className="sr-only"> o pagamento de {who}</span>
-                      </PendingLink>
+                      </LinkPendente>
                     </span>
                   );
                 },
               },
             ]}
           />
-          <Pagination page={window.page} pageSize={PAGE_SIZE} total={total} basePath={BASE} params={{ status: filter === "todos" ? undefined : filter }} noun={["pagamento", "pagamentos"]} />
+          <Paginacao page={window.page} pageSize={PAGE_SIZE} total={total} basePath={BASE} params={{ status: filter === "todos" ? undefined : filter }} noun={["pagamento", "pagamentos"]} />
         </section>
 
         <div id="painel" className="scroll-mt-6">
           {panel ? <SubscriptionPanel key={panel.id} subscription={panel} closeHref={hrefFor(filter, undefined, window.page)} /> : null}
         </div>
       </div>
-      </PendingRegion>
+      </RegiaoPendente>
     </>
   );
 }

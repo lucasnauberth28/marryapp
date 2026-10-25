@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { DatePicker } from "@/components/ui/date-picker";
-import { TimePicker } from "@/components/ui/time-picker";
-import { FormAlert } from "@/components/ui/field";
-import { StatusChip } from "@/components/plataforma/status-chip";
+import { SeletorDeData } from "@/components/ui/date-picker";
+import { SeletorDeHora } from "@/components/ui/time-picker";
+import { AvisoDoFormulario } from "@/components/ui/field";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { Button } from "@/components/ui/button";
 import { Wrench } from "lucide-react";
 import { salvarRemetenteDeEmail, salvarManutencao, salvarPoliticaDeReembolso } from "@/actions/admin-config-actions";
@@ -32,20 +32,20 @@ export function MaintenanceForm({ initial }: { initial: { enabled: boolean; mess
           <ToggleRow label="Modo de manutenção" description={enabled ? "Ligado: casais e convidados veem o aviso e o painel do casal fica só para leitura." : "Desligado agora."} checked={enabled} onCheckedChange={setEnabled} />
         </div>
         {initial.enabled && (
-          <StatusChip tone="aviso" icon={Wrench}>
+          <EtiquetaDeSituacao tone="aviso" icon={Wrench}>
             Ligado no momento
-          </StatusChip>
+          </EtiquetaDeSituacao>
         )}
       </div>
       <Textarea label="Mensagem que as pessoas veem" value={message} onChange={(e) => setMessage(e.target.value)} error={errors.message} rows={2} maxLength={300} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <DatePicker label="Volta em" optional value={backDate} onChange={(e) => setBackDate(e.target.value)} error={errors.backDate} />
-        <TimePicker label="Às" optional value={backTime} onChange={(e) => setBackTime(e.target.value)} error={errors.backTime} />
+        <SeletorDeData label="Volta em" optional value={backDate} onChange={(e) => setBackDate(e.target.value)} error={errors.backDate} />
+        <SeletorDeHora label="Às" optional value={backTime} onChange={(e) => setBackTime(e.target.value)} error={errors.backTime} />
       </div>
       <p className="text-sm leading-5 text-tinta-suave">
         A mudança vale na hora para quem abrir ou salvar algo. Você, na administração, nunca é barrado, e os pagamentos (avisos do Mercado Pago) e as rotinas diárias seguem normais. O painel dos fornecedores não é afetado.
       </p>
-      {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
+      {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div>
         <Button type="submit" loading={pending}>
           Salvar
@@ -74,7 +74,7 @@ export function EmailSenderForm({ initial }: { initial: { fromName: string; from
       <p className="text-sm leading-5 text-tinta-suave">
         Se o e-mail de envio ficar vazio, usamos o remetente do servidor. O domínio do e-mail de envio precisa estar verificado na Resend: daqui não dá para conferir. Se a Resend recusar o endereço, o e-mail sai com o remetente do servidor.
       </p>
-      {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
+      {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div>
         <Button type="submit" loading={pending}>
           Salvar remetente
@@ -106,7 +106,7 @@ export function RefundPolicyForm({ initial }: { initial: { days: number; text: s
         </div>
       </div>
       <Textarea label="Texto para o casal" value={text} onChange={(e) => setText(e.target.value)} error={errors.text} rows={3} maxLength={1000} />
-      {formError && !Object.keys(errors).length && <FormAlert>{formError}</FormAlert>}
+      {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div>
         <Button type="submit" loading={pending}>
           Salvar política

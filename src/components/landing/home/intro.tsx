@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { Check, Gift, Globe, Mail } from "lucide-react";
-import { Reveal } from "@/components/motion/reveal";
-import { SectionHead } from "./home-ui";
+import { Aparicao } from "@/components/motion/reveal";
+import { CabecalhoDaSecao } from "./home-ui";
 
-const FUNCOES = [
+const FUNCOES_DO_PRODUTO = [
   { icon: Globe, titulo: "Site do casamento", texto: "Fotos, local, horário e traje num endereço só." },
   { icon: Check, titulo: "Confirmações", texto: "Quem vai, quem não vai e quem falta responder." },
   { icon: Gift, titulo: "Presentes em dinheiro", texto: "Por Pix ou cartão, conforme o plano." },
@@ -11,18 +11,18 @@ const FUNCOES = [
 ];
 
 /** Faixa das quatro funções, logo abaixo da primeira dobra. */
-export function FunctionsStrip() {
+export function FaixaDeFuncoes() {
   return (
     <>
       <ul className="lp-quatro" aria-label="O que o Aceito reúne">
-        {FUNCOES.map(({ icon: Icon, titulo, texto }, i) => (
-          <Reveal as="li" key={titulo} delay={i * 80}>
+        {FUNCOES_DO_PRODUTO.map(({ icon: Icon, titulo, texto }, i) => (
+          <Aparicao as="li" key={titulo} delay={i * 80}>
             <span className="lp-ic" aria-hidden="true">
               <Icon className="lp-ico" />
             </span>
             <h2>{titulo}</h2>
             <p>{texto}</p>
-          </Reveal>
+          </Aparicao>
         ))}
       </ul>
     </>
@@ -30,7 +30,7 @@ export function FunctionsStrip() {
 }
 
 /** Três passos, com ícones em relevo. `classic` e `vip` são os nomes dos planos, lidos do catálogo. */
-export function Steps({ classic, vip }: { classic: string; vip: string }) {
+export function Passos({ classic, vip }: { classic: string; vip: string }) {
   const passos = [
     { n: "01", icone: "calendario", w: 280, h: 268, titulo: "Criem o site", texto: "Coloquem data, local e fotos." },
     {
@@ -46,10 +46,10 @@ export function Steps({ classic, vip }: { classic: string; vip: string }) {
   return (
     <>
       <section className="lp-sec" id="como" aria-labelledby="lp-t-como">
-        <SectionHead id="lp-t-como" chip="Como funciona" title="Três passos até" accent="a primeira resposta." padded />
+        <CabecalhoDaSecao id="lp-t-como" chip="Como funciona" title="Três passos até" accent="a primeira resposta." padded />
         <ol className="lp-passos">
           {passos.map((p, i) => (
-            <Reveal as="li" key={p.n} className="lp-passo" delay={i * 100}>
+            <Aparicao as="li" key={p.n} className="lp-passo" delay={i * 100}>
               <div className="lp-palco" aria-hidden="true">
                 <Image className="lp-ic3d" src={`/landing/icones/${p.icone}.webp`} alt="" width={p.w} height={p.h} sizes="132px" />
               </div>
@@ -58,7 +58,7 @@ export function Steps({ classic, vip }: { classic: string; vip: string }) {
                 <h3>{p.titulo}</h3>
                 <p>{p.texto}</p>
               </div>
-            </Reveal>
+            </Aparicao>
           ))}
         </ol>
       </section>

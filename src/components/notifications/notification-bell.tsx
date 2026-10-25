@@ -8,13 +8,13 @@ import { LoadingRegion } from "@/components/skeletons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { NotificationRow } from "./notification-row";
-import { useNotificationFeed } from "./use-notification-feed";
-import { useNow } from "./use-now";
-import { ReminderIcon } from "./reminder-icon";
-import { PushCard } from "./push-card";
+import { LinhaDeNotificacao } from "./notification-row";
+import { useFluxoDeNotificacoes } from "./use-notification-feed";
+import { useAgora } from "./use-now";
+import { IconeDeLembrete } from "./reminder-icon";
+import { CartaoDoPush } from "./push-card";
 
-interface Props {
+interface Propriedades {
   /** Contagem de não lidos já calculada no servidor (evita o sino piscar vazio). */
   initialUnread: number;
   /** Página com o histórico: "/notificacoes" (casal) ou "/fornecedor/notificacoes". */
@@ -29,12 +29,12 @@ interface Props {
 }
 
 /** Sino com contador de não lidos e painel dos últimos avisos. Serve aos dois painéis (casal e fornecedor). */
-export function NotificationBell({ initialUnread, allHref, settingsHref, pushPublicKey = null, align = "end", side = "bottom", className }: Props) {
+export function SinoDeNotificacoes({ initialUnread, allHref, settingsHref, pushPublicKey = null, align = "end", side = "bottom", className }: Propriedades) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const isShown = useCallback(() => triggerRef.current?.offsetParent != null, []);
-  const feed = useNotificationFeed(initialUnread, isShown);
+  const feed = useFluxoDeNotificacoes(initialUnread, isShown);
   const [open, setOpen] = useState(false);
-  const now = useNow();
+  const now = useAgora();
 
   const onOpenChange = (next: boolean) => {
     setOpen(next);
@@ -143,7 +143,7 @@ export function NotificationBell({ initialUnread, allHref, settingsHref, pushPub
                 <ul className="divide-y divide-linha">
                   {feed.items.map((item) => (
                     <li key={item.id}>
-                      <NotificationRow
+                      <LinhaDeNotificacao
                         item={item}
                         now={now}
                         onOpen={(n) => {
@@ -168,7 +168,7 @@ export function NotificationBell({ initialUnread, allHref, settingsHref, pushPub
                           onClick={() => onOpenChange(false)}
                           className="flex min-h-12 items-start gap-3 px-4 py-2.5 transition-colors hover:bg-areia/60 focus-visible:bg-areia focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ameixa"
                         >
-                          <ReminderIcon category={r.category} />
+                          <IconeDeLembrete category={r.category} />
                           <span className="min-w-0 flex-1">
                             <span className="block truncate text-sm font-medium text-tinta">{r.title}</span>
                             <span className="line-clamp-2 block text-sm leading-5 text-tinta-suave">{r.description}</span>
@@ -183,7 +183,7 @@ export function NotificationBell({ initialUnread, allHref, settingsHref, pushPub
           )}
         </div>
 
-        <PushCard publicKey={pushPublicKey} variant="compact" />
+        <CartaoDoPush publicKey={pushPublicKey} variant="compact" />
 
         <div className="flex items-center justify-between gap-2 border-t border-linha px-2 py-1">
           <Link

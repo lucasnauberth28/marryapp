@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { ehImagemOtimizavel } from "@/lib/image-source";
 
-interface UserImageProps {
+interface PropriedadesDaImagemDaPessoa {
   src: string;
   alt: string;
   className?: string;
@@ -24,7 +24,7 @@ interface UserImageProps {
  * Padrão de imagem do app: `loading="lazy"` (exceto `priority`) e esqueleto atrás da foto até ela
  * carregar (ou falhar). Imagens abaixo da dobra nunca levam `priority`.
  */
-export function UserImage({ src, alt, className, sizes, priority, skeleton = true }: UserImageProps) {
+export function ImagemDaPessoa({ src, alt, className, sizes, priority, skeleton = true }: PropriedadesDaImagemDaPessoa) {
   // Guarda QUAL foto terminou: ao trocar o src (galeria, lightbox) o esqueleto volta.
   const [settledSrc, setSettledSrc] = useState<string | null>(null);
   const done = () => setSettledSrc(src);

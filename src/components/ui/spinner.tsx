@@ -6,6 +6,6 @@ import { cn } from "@/lib/utils";
  * Nunca como carregamento de tela ou de seção: para isso use os esqueletos de `@/components/skeletons`.
  * Com "reduzir movimento" ligado o ícone fica parado (a regra global zera as animações).
  */
-export function Spinner({ className }: { className?: string }) {
+export function IndicadorDeCarregamento({ className }: { className?: string }) {
   return <LoaderCircle aria-hidden="true" className={cn("size-4 animate-spin", className)} />;
 }

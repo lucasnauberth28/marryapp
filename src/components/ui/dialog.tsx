@@ -7,31 +7,31 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 
-function Dialog({
+function Dialogo({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
-function DialogTrigger({
+function GatilhoDoDialogo({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
 }
 
-function DialogPortal({
+function PortalDoDialogo({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
 }
 
-function DialogClose({
+function FecharDialogo({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Close>) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
-function DialogOverlay({
+function FundoDoDialogo({
   className,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
@@ -47,7 +47,7 @@ function DialogOverlay({
   )
 }
 
-function DialogContent({
+function ConteudoDoDialogo({
   className,
   children,
   showCloseButton = true,
@@ -56,8 +56,8 @@ function DialogContent({
   showCloseButton?: boolean
 }) {
   return (
-    <DialogPortal>
-      <DialogOverlay />
+    <PortalDoDialogo>
+      <FundoDoDialogo />
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
@@ -81,11 +81,11 @@ function DialogContent({
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>
-    </DialogPortal>
+    </PortalDoDialogo>
   )
 }
 
-function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+function CabecalhoDoDialogo({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
@@ -95,7 +95,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function DialogFooter({
+function RodapeDoDialogo({
   className,
   showCloseButton = false,
   children,
@@ -122,7 +122,7 @@ function DialogFooter({
   )
 }
 
-function DialogTitle({
+function TituloDoDialogo({
   className,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Title>) {
@@ -138,7 +138,7 @@ function DialogTitle({
   )
 }
 
-function DialogDescription({
+function DescricaoDoDialogo({
   className,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Description>) {
@@ -155,14 +155,14 @@ function DialogDescription({
 }
 
 export {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-  DialogTrigger,
+  Dialogo as Dialog,
+  FecharDialogo as DialogClose,
+  ConteudoDoDialogo as DialogContent,
+  DescricaoDoDialogo as DialogDescription,
+  RodapeDoDialogo as DialogFooter,
+  CabecalhoDoDialogo as DialogHeader,
+  FundoDoDialogo as DialogOverlay,
+  PortalDoDialogo as DialogPortal,
+  TituloDoDialogo as DialogTitle,
+  GatilhoDoDialogo as DialogTrigger,
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LegalPage, type LegalSection } from "@/components/legal/legal-page";
+import { PaginaLegal, type SecaoLegal } from "@/components/legal/legal-page";
 import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ const CONTROLLER = (
 );
 const CONTACT_EMAIL = <a href="mailto:contato@meuaceito.com.br">contato@meuaceito.com.br</a>;
 
-const sections: LegalSection[] = [
+const sections: SecaoLegal[] = [
   {
     id: "aceitacao",
     title: "Sobre estes termos",
@@ -216,7 +216,7 @@ const sections: LegalSection[] = [
 
 export default function TermosPage() {
   return (
-    <LegalPage
+    <PaginaLegal
       title="Termos de uso"
       updatedAt="24 de outubro de 2026"
       intro={<p>As regras para usar o Aceito, escritas para serem lidas: o que oferecemos, o que esperamos de cada um e como resolvemos problemas.</p>}

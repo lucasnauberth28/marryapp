@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { PageHeader } from "@/components/admin/page-header";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { WhatsAppConfigClient } from "./whatsapp-config-client";
 
 export const metadata: Metadata = {
@@ -13,7 +13,7 @@ export default async function WhatsAppConfigPage() {
 
   return (
     <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <PageHeader
+      <CabecalhoDaPagina
         className="mb-8"
         eyebrow="Configurações"
         title="Conexão do WhatsApp"

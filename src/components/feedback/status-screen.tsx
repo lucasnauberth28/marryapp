@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Logo } from "@/components/brand/logo";
+import { Logotipo } from "@/components/brand/logo";
 
-interface StatusScreenProps {
+interface PropriedadesDaTelaDeSituacao {
   eyebrow: string;
   title: string;
   description: string;
@@ -12,12 +12,12 @@ interface StatusScreenProps {
 }
 
 // Tela cheia para erros e páginas não encontradas: arco rosa com o sinal, no tema do app.
-export function StatusScreen({ eyebrow, title, description, actions, glyph = "?" }: StatusScreenProps) {
+export function TelaDeSituacao({ eyebrow, title, description, actions, glyph = "?" }: PropriedadesDaTelaDeSituacao) {
   return (
     <div className="flex min-h-dvh w-full flex-col bg-linho text-tinta">
       <header className="border-b border-linha px-4 py-4 sm:px-6">
         <Link href="/" aria-label="Aceito, início" className="inline-flex rounded-[12px] transition-opacity hover:opacity-80">
-          <Logo height={28} />
+          <Logotipo height={28} />
         </Link>
       </header>
       <main className="mx-auto flex w-full max-w-[560px] flex-1 flex-col items-center gap-5 px-4 py-12 text-center sm:px-6 sm:py-16">

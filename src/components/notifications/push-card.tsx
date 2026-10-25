@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { BellRing, Send, Smartphone } from "lucide-react";
-import { LoadingButton } from "@/components/painel/loading-button";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { ehMinhaInscricao, removerInscricao, salvarInscricao, enviarPushDeTeste } from "@/actions/push-actions";
 import { urlBase64ParaBytes } from "@/lib/notifications/push-support";
 import { cn } from "@/lib/utils";
-import { ToggleSwitch } from "./toggle-switch";
-import { notifyPushStateChanged, usePushSupport } from "./use-push-state";
+import { InterruptorDeAlternancia } from "./toggle-switch";
+import { avisarMudancaNoPush, useSuporteAoPush } from "./use-push-state";
 
-interface Props {
+interface Propriedades {
   /** Chave pública VAPID; sem ela (ambiente sem push) o cartão nem aparece. */
   publicKey: string | null;
   /** "compact": uma linha, só quando falta ativar (rodapé do sino). "card": cartão completo. */
@@ -19,11 +19,11 @@ interface Props {
   className?: string;
 }
 
-const BTN =
+const ESTILO_DO_BOTAO =
   "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ameixa focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
 
 /** O serviço de push do navegador às vezes não responde (rede bloqueada, sem internet): não deixa a tela girando para sempre. */
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+function comLimiteDeTempo<T>(promise: Promise<T>, ms: number): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error("tempo esgotado")), ms);
     promise.then(
@@ -39,14 +39,14 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   });
 }
 
-async function registerWorker() {
+async function registrarTrabalhador() {
   const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/", updateViaCache: "none" });
   await navigator.serviceWorker.ready;
   return registration;
 }
 
 /** Cria (ou reaproveita) a inscrição do navegador. Se as chaves do servidor mudaram, refaz a inscrição. */
-async function subscribeBrowser(registration: ServiceWorkerRegistration, publicKey: string) {
+async function inscreverNavegador(registration: ServiceWorkerRegistration, publicKey: string) {
   const existing = await registration.pushManager.getSubscription();
   if (existing) return existing;
   const options = { userVisibleOnly: true, applicationServerKey: urlBase64ParaBytes(publicKey) };
@@ -61,8 +61,8 @@ async function subscribeBrowser(registration: ServiceWorkerRegistration, publicK
   }
 }
 
-export function PushCard({ publicKey, variant = "card", className }: Props) {
-  const support = usePushSupport();
+export function CartaoDoPush({ publicKey, variant = "card", className }: Propriedades) {
+  const support = useSuporteAoPush();
   // null = ainda verificando; só faz sentido com a permissão concedida
   const [subscribed, setSubscribed] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
@@ -109,7 +109,7 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
     setBusy(true);
     try {
       const permission = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
-      notifyPushStateChanged();
+      avisarMudancaNoPush();
       if (permission !== "granted") {
         toast.info(
           permission === "denied"
@@ -118,8 +118,8 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
         );
         return;
       }
-      const registration = await withTimeout(registerWorker(), 15_000);
-      const subscription = await withTimeout(subscribeBrowser(registration, publicKey), 20_000);
+      const registration = await comLimiteDeTempo(registrarTrabalhador(), 15_000);
+      const subscription = await comLimiteDeTempo(inscreverNavegador(registration, publicKey), 20_000);
       const result = await salvarInscricao(subscription.toJSON());
       if (!result.success) {
         toast.error(result.error);
@@ -171,7 +171,7 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
   if (variant === "compact") {
     if (!needsActivation) return null;
     return (
-      <LoadingButton
+      <BotaoComCarregamento
         onClick={enable}
         loading={busy}
         className={cn(
@@ -181,7 +181,7 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
       >
         <BellRing aria-hidden="true" className="size-4" />
         Ativar avisos neste aparelho
-      </LoadingButton>
+      </BotaoComCarregamento>
     );
   }
 
@@ -213,7 +213,7 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
           </p>
         </div>
         {support === "granted" && (
-          <ToggleSwitch
+          <InterruptorDeAlternancia
             checked={on}
             onChange={(next) => void (next ? enable() : disable())}
             label="Avisos neste aparelho"
@@ -240,21 +240,21 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
       )}
 
       {needsActivation && (
-        <LoadingButton onClick={enable} loading={busy} className={cn(BTN, "w-fit bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}>
+        <BotaoComCarregamento onClick={enable} loading={busy} className={cn(ESTILO_DO_BOTAO, "w-fit bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}>
           <BellRing aria-hidden="true" className="size-4" />
           Ativar avisos neste aparelho
-        </LoadingButton>
+        </BotaoComCarregamento>
       )}
 
       {on && (
-        <LoadingButton
+        <BotaoComCarregamento
           onClick={test}
           loading={testing}
-          className={cn(BTN, "w-fit border border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}
+          className={cn(ESTILO_DO_BOTAO, "w-fit border border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}
         >
           <Send aria-hidden="true" className="size-4" />
           Enviar um aviso de teste
-        </LoadingButton>
+        </BotaoComCarregamento>
       )}
     </section>
   );

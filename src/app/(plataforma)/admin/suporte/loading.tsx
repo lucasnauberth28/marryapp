@@ -1,6 +1,6 @@
 import { LoadingRegion, SkeletonCard, SkeletonForm, SkeletonPageHeader } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RowsSkeleton } from "@/components/plataforma/loading-parts";
+import { EsqueletoDasLinhas } from "@/components/plataforma/loading-parts";
 
 export default function Loading() {
   return (
@@ -15,10 +15,10 @@ export default function Loading() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
           <SkeletonCard>
-            <RowsSkeleton rows={4} />
+            <EsqueletoDasLinhas rows={4} />
           </SkeletonCard>
           <SkeletonCard>
-            <RowsSkeleton rows={3} />
+            <EsqueletoDasLinhas rows={3} />
           </SkeletonCard>
         </div>
         <div className="flex min-w-0 flex-col gap-6">
@@ -26,7 +26,7 @@ export default function Loading() {
             <SkeletonForm fields={1} />
           </SkeletonCard>
           <SkeletonCard>
-            <RowsSkeleton rows={2} />
+            <EsqueletoDasLinhas rows={2} />
           </SkeletonCard>
         </div>
       </div>

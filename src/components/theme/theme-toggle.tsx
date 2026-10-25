@@ -12,12 +12,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { OPCOES_DE_TEMA, interpretarPreferenciaDeTema } from "@/lib/theme";
 import { cn } from "@/lib/utils";
-import { useTheme } from "./theme-provider";
+import { useTema } from "./theme-provider";
 
-const OPTION_ICON = { light: Sun, dark: Moon, system: Monitor } as const;
+const ICONE_DA_OPCAO = { light: Sun, dark: Moon, system: Monitor } as const;
 
 /** Sol no claro, lua no escuro: troca por CSS (data-theme), então o HTML do servidor já sai certo. */
-function ThemeIcon({ className }: { className?: string }) {
+function IconeDoTema({ className }: { className?: string }) {
   return (
     <>
       <Sun aria-hidden="true" className={cn("dark:hidden", className)} />
@@ -27,14 +27,14 @@ function ThemeIcon({ className }: { className?: string }) {
 }
 
 /** Opções "Claro / Escuro / Do aparelho" para dentro de um DropdownMenu que já existe (menu da conta). */
-export function ThemeMenuItems() {
-  const { preference, setPreference } = useTheme();
+export function ItensDeMenuDoTema() {
+  const { preference, setPreference } = useTema();
   return (
     <>
       <DropdownMenuLabel className="text-xs font-semibold text-tinta-suave">Aparência</DropdownMenuLabel>
       <DropdownMenuRadioGroup value={preference} onValueChange={(v) => setPreference(interpretarPreferenciaDeTema(v))}>
         {OPCOES_DE_TEMA.map(({ value, label }) => {
-          const Icon = OPTION_ICON[value];
+          const Icon = ICONE_DA_OPCAO[value];
           return (
             <DropdownMenuRadioItem key={value} value={value} className="min-h-11 cursor-pointer text-base">
               <Icon aria-hidden="true" />
@@ -51,7 +51,7 @@ export function ThemeMenuItems() {
  * Botão de ícone (sol/lua, 44px) que abre o menu "Claro / Escuro / Do aparelho".
  * Para cabeçalhos e barras: <ThemeToggle /> (aceita variant e className do Button).
  */
-export function ThemeToggle({
+export function AlternadorDeTema({
   className,
   variant = "ghost",
   align = "end",
@@ -64,11 +64,11 @@ export function ThemeToggle({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant={variant} size="icon" className={cn("text-tinta-suave", className)} aria-label="Aparência do aplicativo">
-          <ThemeIcon className="size-5" />
+          <IconeDoTema className="size-5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align={align} className="w-52">
-        <ThemeMenuItems />
+        <ItensDeMenuDoTema />
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -78,14 +78,14 @@ export function ThemeToggle({
  * Seletor em linha com as três opções sempre visíveis (rádios nativos: setas e foco de graça).
  * Para a tela de Configurações.
  */
-export function ThemeSegmented({ className }: { className?: string }) {
-  const { preference, setPreference } = useTheme();
+export function SeletorSegmentadoDoTema({ className }: { className?: string }) {
+  const { preference, setPreference } = useTema();
   return (
     <fieldset className={cn("min-w-0", className)}>
       <legend className="sr-only">Aparência do aplicativo</legend>
       <div className="grid w-full grid-cols-3 gap-1 rounded-[12px] border border-linha bg-areia p-1 sm:inline-grid sm:w-auto sm:grid-flow-col sm:grid-cols-none">
         {OPCOES_DE_TEMA.map(({ value, label }) => {
-          const Icon = OPTION_ICON[value];
+          const Icon = ICONE_DA_OPCAO[value];
           return (
             <label key={value} className="relative min-w-0">
               <input

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
  * Cartão de boas-vindas ao painel. Não bloqueia nada: fica no canto (acima da barra inferior no celular),
  * recebe o foco ao abrir e "Esc" é o mesmo que "Agora não".
  */
-export function TourWelcomeCard({ news, onStart, onDismiss }: { news: boolean; onStart: () => void; onDismiss: () => void }) {
+export function CartaoDeBoasVindasDoTour({ news, onStart, onDismiss }: { news: boolean; onStart: () => void; onDismiss: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  PLATFORM_COUNT_HINT,
-  PLATFORM_NAV_GROUPS,
-  isPlatformItemActive,
-  type PlatformCountKey,
-  type PlatformNavGroup,
+  DICA_DE_CONTAGEM_DA_PLATAFORMA,
+  GRUPOS_DO_MENU_DA_PLATAFORMA,
+  itemDaPlataformaEstaAtivo,
+  type ChaveDeContagemDaPlataforma,
+  type GrupoDoMenuDaPlataforma,
 } from "@/components/plataforma/nav-config";
-import { LizIcon } from "@/components/liz/liz-illustration";
+import { IconeDaLiz } from "@/components/liz/liz-illustration";
 
 /**
  * Lista do menu da administração.
@@ -18,27 +18,27 @@ import { LizIcon } from "@/components/liz/liz-illustration";
  * `counts` vem de getPlatformNavCounts (servidor). Item ativo: aria-current="page".
  */
 
-export type PlatformNavCountsProp = Partial<Record<PlatformCountKey, number>>;
+export type ContagensDoMenuDaPlataformaNaPropriedade = Partial<Record<ChaveDeContagemDaPlataforma, number>>;
 
-interface Props {
-  counts?: PlatformNavCountsProp;
-  groups?: PlatformNavGroup[];
+interface Propriedades {
+  counts?: ContagensDoMenuDaPlataformaNaPropriedade;
+  groups?: GrupoDoMenuDaPlataforma[];
   variant?: "sidebar" | "cards";
   onNavigate?: () => void;
 }
 
-function CountMark({ n, kind }: { n: number; kind: PlatformCountKey }) {
+function MarcaDeContagem({ n, kind }: { n: number; kind: ChaveDeContagemDaPlataforma }) {
   return (
     <span className="ml-auto text-xs font-semibold leading-4 text-tinta-suave">
       {n > 999 ? "999+" : n}
-      <span className="sr-only"> {PLATFORM_COUNT_HINT[kind]}</span>
+      <span className="sr-only"> {DICA_DE_CONTAGEM_DA_PLATAFORMA[kind]}</span>
     </span>
   );
 }
 
-const GROUP_TITLE = "px-3 pb-2 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
+const TITULO_DO_GRUPO = "px-3 pb-2 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
 
-export function PlatformNavList({ counts = {}, groups = PLATFORM_NAV_GROUPS, variant = "sidebar", onNavigate }: Props) {
+export function ListaDoMenuDaPlataforma({ counts = {}, groups = GRUPOS_DO_MENU_DA_PLATAFORMA, variant = "sidebar", onNavigate }: Propriedades) {
   const pathname = usePathname();
 
   if (variant === "cards") {
@@ -49,8 +49,8 @@ export function PlatformNavList({ counts = {}, groups = PLATFORM_NAV_GROUPS, var
             {group.title && <p className="px-1 pb-2 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">{group.title}</p>}
             <div className="rounded-2xl border border-linha bg-papel px-4 shadow-[var(--shadow-aceito-1)]">
               {group.items.map((item) => {
-                const Icon = item.brand === "liz" ? LizIcon : item.icon;
-                const active = isPlatformItemActive(pathname, item);
+                const Icon = item.brand === "liz" ? IconeDaLiz : item.icon;
+                const active = itemDaPlataformaEstaAtivo(pathname, item);
                 const count = item.countKey ? (counts[item.countKey] ?? 0) : 0;
                 return (
                   <Link
@@ -62,7 +62,7 @@ export function PlatformNavList({ counts = {}, groups = PLATFORM_NAV_GROUPS, var
                   >
                     <Icon className={`size-5 shrink-0 ${active ? "text-ameixa" : "text-tinta-suave"}`} strokeWidth={1.6} aria-hidden="true" />
                     <span className="min-w-0 flex-1 truncate">{item.name}</span>
-                    {count > 0 && item.countKey && <CountMark n={count} kind={item.countKey} />}
+                    {count > 0 && item.countKey && <MarcaDeContagem n={count} kind={item.countKey} />}
                   </Link>
                 );
               })}
@@ -77,10 +77,10 @@ export function PlatformNavList({ counts = {}, groups = PLATFORM_NAV_GROUPS, var
     <div className="flex flex-col gap-5">
       {groups.map((group, index) => (
         <div key={group.title ?? `grupo-${index}`} className="flex flex-col gap-0.5">
-          {group.title && <p className={GROUP_TITLE}>{group.title}</p>}
+          {group.title && <p className={TITULO_DO_GRUPO}>{group.title}</p>}
           {group.items.map((item) => {
-            const Icon = item.brand === "liz" ? LizIcon : item.icon;
-            const active = isPlatformItemActive(pathname, item);
+            const Icon = item.brand === "liz" ? IconeDaLiz : item.icon;
+            const active = itemDaPlataformaEstaAtivo(pathname, item);
             const count = item.countKey ? (counts[item.countKey] ?? 0) : 0;
             return (
               <Link
@@ -94,7 +94,7 @@ export function PlatformNavList({ counts = {}, groups = PLATFORM_NAV_GROUPS, var
               >
                 <Icon className={`size-5 shrink-0 ${active ? "text-ameixa" : "text-tinta-suave"}`} strokeWidth={1.6} aria-hidden="true" />
                 <span className="min-w-0 flex-1 leading-5">{item.name}</span>
-                {count > 0 && item.countKey && <CountMark n={count} kind={item.countKey} />}
+                {count > 0 && item.countKey && <MarcaDeContagem n={count} kind={item.countKey} />}
               </Link>
             );
           })}

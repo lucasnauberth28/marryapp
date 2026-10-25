@@ -1,10 +1,10 @@
-import { SiteUnavailable } from "@/components/public/site-unavailable";
+import { SiteIndisponivel } from "@/components/public/site-unavailable";
 import { RsvpClient } from "./rsvp-client";
 import Link from "next/link";
 import { Clock } from "lucide-react";
 import { isAfter, startOfDay } from "date-fns";
-import { btn } from "@/components/landing/styles";
-import { Monogram } from "@/components/public/guest-header";
+import { estiloDoBotao } from "@/components/landing/styles";
+import { Monograma } from "@/components/public/guest-header";
 import { obterIdentidadeDoCasamento, metadadosDaPaginaDoConvidado } from "@/lib/wedding";
 import { obterPrazoDeConfirmacao } from "@/lib/wedding-data";
 import { exigirCasamentoPublico } from "@/lib/wedding-redirect";
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function RsvpPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const weddingRow = await exigirCasamentoPublico(slug);
-  if (weddingRow.suspendedAt) return <SiteUnavailable />;
+  if (weddingRow.suspendedAt) return <SiteIndisponivel />;
   const [rsvpDeadline, wedding] = await Promise.all([obterPrazoDeConfirmacao(weddingRow.id), obterIdentidadeDoCasamento(weddingRow)]);
 
   const isExpired = rsvpDeadline
@@ -33,7 +33,7 @@ export default async function RsvpPage({ params }: { params: Promise<{ slug: str
       <header className="border-b border-linha">
         <div className="mx-auto flex max-w-[1120px] items-center justify-between px-4 py-4 sm:px-6">
           <Link href={caminhoDoSiteDoCasamento(weddingRow.slug)} aria-label={`Site de ${wedding.coupleNames}`} className="no-underline">
-            <Monogram initials={wedding.initials} />
+            <Monograma initials={wedding.initials} />
           </Link>
           {wedding.shortDateLabel ? <span className="text-sm text-tinta-suave">{wedding.shortDateLabel}</span> : null}
         </div>
@@ -53,7 +53,7 @@ export default async function RsvpPage({ params }: { params: Promise<{ slug: str
             <Clock aria-hidden="true" className="size-4" strokeWidth={1.6} />
             Quem já respondeu não precisa fazer mais nada.
           </p>
-          <Link href={caminhoDoSiteDoCasamento(weddingRow.slug)} className={btn.secondary}>
+          <Link href={caminhoDoSiteDoCasamento(weddingRow.slug)} className={estiloDoBotao.secondary}>
             Ver o site do casal
           </Link>
         </div>

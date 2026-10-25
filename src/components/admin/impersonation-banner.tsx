@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Eye, Pencil } from "lucide-react";
 import { encerrarPersonificacao } from "@/actions/admin-impersonation-actions";
-import { btn } from "@/components/landing/styles";
-import { LoadingButton } from "@/components/painel/loading-button";
+import { estiloDoBotao } from "@/components/landing/styles";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { minutosRestantes } from "@/lib/security/impersonation-rules";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
  * Aparece em todas as telas do painel do casal enquanto a sessão vale. Mostra os minutos que faltam e sai sozinha
  * no fim dos 30 minutos (o servidor também deixa de aceitar a sessão: esta contagem é só o aviso).
  */
-export function ImpersonationBanner({ coupleNames, canEdit, expiresAt }: { coupleNames: string; canEdit: boolean; expiresAt: string }) {
+export function FaixaDePersonificacao({ coupleNames, canEdit, expiresAt }: { coupleNames: string; canEdit: boolean; expiresAt: string }) {
   const end = new Date(expiresAt);
   const [left, setLeft] = useState(() => minutosRestantes(end));
   const [pending, startTransition] = useTransition();
@@ -61,9 +61,9 @@ export function ImpersonationBanner({ coupleNames, canEdit, expiresAt }: { coupl
           {failed && " · não conseguimos sair, tente de novo"}
         </p>
       </div>
-      <LoadingButton onClick={leave} loading={pending} className={cn(btn.onAmeixa, btn.sm, "shrink-0")}>
+      <BotaoComCarregamento onClick={leave} loading={pending} className={cn(estiloDoBotao.onAmeixa, estiloDoBotao.sm, "shrink-0")}>
         Sair deste casal
-      </LoadingButton>
+      </BotaoComCarregamento>
     </div>
   );
 }

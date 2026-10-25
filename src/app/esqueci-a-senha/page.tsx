@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AuthShell, SHELL_PHOTOS } from "@/components/account/auth-shell";
+import { MoldeDeAcesso, FOTOS_DO_MOLDE } from "@/components/account/auth-shell";
 import { ForgotPasswordForm } from "./forgot-password-form";
 
 export const metadata: Metadata = {
@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 
 export default function EsqueciASenhaPage() {
   return (
-    <AuthShell
-      photo={SHELL_PHOTOS.senha}
+    <MoldeDeAcesso
+      photo={FOTOS_DO_MOLDE.senha}
       backHref="/login"
       backLabel="Voltar para o login"
       footnote={
@@ -25,6 +25,6 @@ export default function EsqueciASenhaPage() {
       }
     >
       <ForgotPasswordForm />
-    </AuthShell>
+    </MoldeDeAcesso>
   );
 }

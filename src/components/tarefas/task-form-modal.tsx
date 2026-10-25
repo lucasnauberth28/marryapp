@@ -1,38 +1,38 @@
 "use client";
 
 import { useId, useState } from "react";
-import { BoardItem, TaskStatus } from "@/types/kanban";
-import { CustomModal } from "@/components/ui/custom-modal";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { ItemDoQuadro, SituacaoDaTarefa } from "@/types/kanban";
+import { ModalPersonalizado } from "@/components/ui/custom-modal";
+import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
-import { btn, btnDanger } from "@/components/painel/styles";
-import { LoadingButton } from "@/components/painel/loading-button";
+import { btn, estiloDoBotaoDePerigo } from "@/components/painel/styles";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
 
-export interface TaskFormData {
+export interface DadosDoFormularioDaTarefa {
   title: string;
   description: string | null;
-  status: TaskStatus;
+  status: SituacaoDaTarefa;
   assignee: string | null;
   dueDate: Date | null;
 }
 
-interface TaskFormModalProps {
+interface PropriedadesDoModalDaTarefa {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  task: BoardItem | null;
+  task: ItemDoQuadro | null;
   /** Devolve true quando salvou (o formulário fecha). */
-  onSave: (data: TaskFormData) => Promise<boolean>;
+  onSave: (data: DadosDoFormularioDaTarefa) => Promise<boolean>;
   onDelete: (taskId: string) => Promise<boolean>;
 }
 
 // O formulário só existe com o modal aberto: cada abertura começa do zero (ou da tarefa escolhida).
-function TaskForm({ task, onSave, onDelete, onClose }: { task: BoardItem | null; onSave: TaskFormModalProps["onSave"]; onDelete: TaskFormModalProps["onDelete"]; onClose: () => void }) {
+function FormularioDaTarefa({ task, onSave, onDelete, onClose }: { task: ItemDoQuadro | null; onSave: PropriedadesDoModalDaTarefa["onSave"]; onDelete: PropriedadesDoModalDaTarefa["onDelete"]; onClose: () => void }) {
   const ids = { title: useId(), description: useId(), status: useId(), assignee: useId(), due: useId() };
   const [title, setTitle] = useState(task?.title ?? "");
   const [description, setDescription] = useState(task?.description ?? "");
-  const [status, setStatus] = useState<TaskStatus>(task?.status ?? TaskStatus.TODO);
+  const [status, setStatus] = useState<SituacaoDaTarefa>(task?.status ?? SituacaoDaTarefa.TODO);
   const [assignee, setAssignee] = useState(task?.assignee ?? "");
   const [dueDate, setDueDate] = useState(task?.dueDate ? new Date(task.dueDate).toISOString().slice(0, 10) : "");
   const [busy, setBusy] = useState(false);
@@ -78,28 +78,28 @@ function TaskForm({ task, onSave, onDelete, onClose }: { task: BoardItem | null;
           <Input id={ids.assignee} label="Quem cuida" value={assignee} onChange={(e) => setAssignee(e.target.value)} placeholder="Nome" disabled={busy} />
         </div>
 
-        <NativeSelect id={ids.status} label="Como está" value={status} onChange={(e) => setStatus(e.target.value as TaskStatus)} disabled={busy}>
-          <option value={TaskStatus.TODO}>A fazer</option>
-          <option value={TaskStatus.IN_PROGRESS}>Em andamento</option>
-          <option value={TaskStatus.DONE}>Concluída</option>
+        <NativeSelect id={ids.status} label="Como está" value={status} onChange={(e) => setStatus(e.target.value as SituacaoDaTarefa)} disabled={busy}>
+          <option value={SituacaoDaTarefa.TODO}>A fazer</option>
+          <option value={SituacaoDaTarefa.IN_PROGRESS}>Em andamento</option>
+          <option value={SituacaoDaTarefa.DONE}>Concluída</option>
         </NativeSelect>
 
         <div className="flex flex-col gap-2 border-t border-linha pt-4">
-          <LoadingButton type="submit" loading={busy} className={`${btn.primary} ${btn.block}`}>
+          <BotaoComCarregamento type="submit" loading={busy} className={`${btn.primary} ${btn.block}`}>
             {task ? "Salvar alterações" : "Criar tarefa"}
-          </LoadingButton>
+          </BotaoComCarregamento>
           <button type="button" onClick={onClose} disabled={busy} className={`${btn.quiet} ${btn.block}`}>
             Cancelar
           </button>
           {task && (
-            <button type="button" onClick={() => setConfirmOpen(true)} disabled={busy} className={`${btnDanger} w-full`}>
+            <button type="button" onClick={() => setConfirmOpen(true)} disabled={busy} className={`${estiloDoBotaoDePerigo} w-full`}>
               Excluir tarefa
             </button>
           )}
         </div>
       </form>
 
-      <ConfirmModal
+      <ModalDeConfirmacao
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={async () => {
@@ -114,10 +114,10 @@ function TaskForm({ task, onSave, onDelete, onClose }: { task: BoardItem | null;
   );
 }
 
-export function TaskFormModal({ open, onOpenChange, task, onSave, onDelete }: TaskFormModalProps) {
+export function ModalDaTarefa({ open, onOpenChange, task, onSave, onDelete }: PropriedadesDoModalDaTarefa) {
   return (
-    <CustomModal isOpen={open} onClose={() => onOpenChange(false)} title={task ? "Editar tarefa" : "Nova tarefa"} size="sm" className="max-h-[92vh] overflow-y-auto">
-      <TaskForm task={task} onSave={onSave} onDelete={onDelete} onClose={() => onOpenChange(false)} />
-    </CustomModal>
+    <ModalPersonalizado isOpen={open} onClose={() => onOpenChange(false)} title={task ? "Editar tarefa" : "Nova tarefa"} size="sm" className="max-h-[92vh] overflow-y-auto">
+      <FormularioDaTarefa task={task} onSave={onSave} onDelete={onDelete} onClose={() => onOpenChange(false)} />
+    </ModalPersonalizado>
   );
 }

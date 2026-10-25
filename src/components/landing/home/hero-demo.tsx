@@ -7,14 +7,14 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Check, Clock, Minus } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
+import { Logotipo } from "@/components/brand/logo";
 
 type Resposta = "sim" | "nao";
 type Passo = "inicio" | "pessoas";
 
 // Números do exemplo, antes de a pessoa responder.
 const BASE = { confirmados: 86, semResposta: 42, naoVao: 12 };
-const TOTAL_CONVITES = 140;
+const TOTAL_DE_CONVITES = 140;
 
 function Chip({ tipo }: { tipo: "sim" | "nao" | "sem" }) {
   if (tipo === "sim")
@@ -125,7 +125,7 @@ export function HeroDemo() {
                   />
                 ) : null}
                 <div className={`lp-selo${novo ? " lp-carimba" : ""}`} aria-hidden="true">
-                  <Logo variant="mark-linho" height={30} />
+                  <Logotipo variant="mark-linho" height={30} />
                 </div>
                 <p className="lp-t">Resposta registrada no exemplo</p>
                 <p>{resp === "sim" ? (pessoas === 1 ? "Marina vai, 1 pessoa." : "Marina vai com mais 1 pessoa.") : "Marina não poderá ir."}</p>
@@ -190,7 +190,7 @@ export function HeroDemo() {
           <>
             <Clock aria-hidden="true" className="lp-ico" style={{ color: "var(--grafite)" }} />
             <span>
-              Painel: <b>{totais.confirmados}</b> de {TOTAL_CONVITES} convites confirmados
+              Painel: <b>{totais.confirmados}</b> de {TOTAL_DE_CONVITES} convites confirmados
             </span>
           </>
         )}

@@ -4,10 +4,10 @@ import { useState, useTransition } from "react";
 import { ArrowRight, Eye, EyeOff, Heart, Lock, LogOut, Mail, TriangleAlert, User } from "lucide-react";
 import { aceitarConvite, aceitarConviteComContaNova } from "@/actions/invite-actions";
 import { entrar, sair } from "@/actions/auth-actions";
-import { ShellHeading } from "@/components/account/auth-shell";
-import { btn, btnArrow } from "@/components/landing/styles";
+import { TituloDoMolde } from "@/components/account/auth-shell";
+import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
-import { Field, FormAlert } from "@/components/ui/field";
+import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
 export type Viewer =
@@ -23,16 +23,16 @@ export function InviteAccept({ token, coupleNames, viewer }: { token: string; co
       </span>
       <div className="flex flex-col gap-2">
         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">Você foi convidado para organizar</p>
-        <ShellHeading title={coupleNames} text="Entre no casamento para ver e editar tudo junto: convidados, site, presentes e finanças." />
+        <TituloDoMolde title={coupleNames} text="Entre no casamento para ver e editar tudo junto: convidados, site, presentes e finanças." />
       </div>
 
       {viewer.kind === "member" ? <MemberAccept token={token} viewer={viewer} /> : null}
       {viewer.kind === "anonymous" ? <AnonymousAccept token={token} /> : null}
       {viewer.kind === "blocked" ? (
         <div className="flex flex-col gap-4">
-          <FormAlert>{viewer.reason}</FormAlert>
+          <AvisoDoFormulario>{viewer.reason}</AvisoDoFormulario>
           <p className="text-[15px] text-tinta-suave">Depois de sair, abra o link do convite de novo.</p>
-          <button type="button" onClick={() => sair()} className={cn(btn.secondary, btn.block, "min-h-12")}>
+          <button type="button" onClick={() => sair()} className={cn(estiloDoBotao.secondary, estiloDoBotao.block, "min-h-12")}>
             <LogOut aria-hidden="true" className="size-4" />
             Sair desta conta
           </button>
@@ -71,9 +71,9 @@ function MemberAccept({ token, viewer }: { token: string; viewer: Extract<Viewer
     return (
       <div className="flex flex-col gap-4">
         <p className="rounded-[12px] border border-linha bg-papel px-4 py-3 text-[15px] text-tinta">Você já faz parte deste casamento.</p>
-        <a href="/dashboard" className={cn(btn.primary, btn.block, "min-h-12")}>
+        <a href="/dashboard" className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}>
           Ir para o painel
-          <ArrowRight aria-hidden="true" className={btnArrow} />
+          <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
         </a>
       </div>
     );
@@ -100,7 +100,7 @@ function MemberAccept({ token, viewer }: { token: string; viewer: Extract<Viewer
             <Button type="button" onClick={() => accept(true)} loading={isPending} className="flex-1 rounded-[12px] px-6">
               Entendi, entrar mesmo assim
             </Button>
-            <button type="button" onClick={() => setConfirm(null)} disabled={isPending} className={cn(btn.secondary, "min-h-11")}>
+            <button type="button" onClick={() => setConfirm(null)} disabled={isPending} className={cn(estiloDoBotao.secondary, "min-h-11")}>
               Cancelar
             </button>
           </div>
@@ -108,13 +108,13 @@ function MemberAccept({ token, viewer }: { token: string; viewer: Extract<Viewer
       ) : (
         <Button type="button" onClick={() => accept(false)} loading={isPending} className="h-12 w-full rounded-[12px] px-6">
           Entrar neste casamento
-          <ArrowRight aria-hidden="true" className={btnArrow} />
+          <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
         </Button>
       )}
 
-      {error ? <FormAlert>{error}</FormAlert> : null}
+      {error ? <AvisoDoFormulario>{error}</AvisoDoFormulario> : null}
 
-      <button type="button" onClick={() => sair()} className={cn(btn.quiet, "self-center")}>
+      <button type="button" onClick={() => sair()} className={cn(estiloDoBotao.quiet, "self-center")}>
         Não é você? Sair
       </button>
     </div>
@@ -216,11 +216,11 @@ function AnonymousAccept({ token }: { token: string }) {
 
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
         {mode === "criar" ? (
-          <Field id="convite-name" label="Seu nome completo" icon={User} error={errors.name}>
+          <Campo id="convite-name" label="Seu nome completo" icon={User} error={errors.name}>
             {(c) => <input {...c} id="convite-name" autoComplete="name" maxLength={120} value={name} onChange={(e) => setName(e.target.value)} />}
-          </Field>
+          </Campo>
         ) : null}
-        <Field id="convite-email" label="E-mail" icon={Mail} error={errors.email}>
+        <Campo id="convite-email" label="E-mail" icon={Mail} error={errors.email}>
           {(c) => (
             <input
               {...c}
@@ -234,8 +234,8 @@ function AnonymousAccept({ token }: { token: string }) {
               onChange={(e) => setEmail(e.target.value)}
             />
           )}
-        </Field>
-        <Field
+        </Campo>
+        <Campo
           id="convite-password"
           label={mode === "criar" ? "Crie uma senha" : "Senha"}
           icon={Lock}
@@ -253,22 +253,22 @@ function AnonymousAccept({ token }: { token: string }) {
               onChange={(e) => setPassword(e.target.value)}
             />
           )}
-        </Field>
+        </Campo>
 
         {error ? (
-          <FormAlert>
+          <AvisoDoFormulario>
             <p>{error.message}</p>
             {error.existingAccount ? (
               <button type="button" onClick={() => switchMode("entrar")} className="mt-1 font-semibold text-ameixa underline underline-offset-4">
                 Entrar com este e-mail
               </button>
             ) : null}
-          </FormAlert>
+          </AvisoDoFormulario>
         ) : null}
 
         <Button type="submit" loading={isPending} className="h-12 w-full rounded-[12px] px-6">
           {mode === "criar" ? "Criar conta e entrar no casamento" : "Entrar"}
-          <ArrowRight aria-hidden="true" className={btnArrow} />
+          <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
         </Button>
 
         {mode === "criar" ? (
@@ -284,7 +284,7 @@ function AnonymousAccept({ token }: { token: string }) {
             .
           </p>
         ) : (
-          <a href="/esqueci-a-senha" className={cn(btn.quiet, "self-center")}>
+          <a href="/esqueci-a-senha" className={cn(estiloDoBotao.quiet, "self-center")}>
             Esqueci a senha
           </a>
         )}

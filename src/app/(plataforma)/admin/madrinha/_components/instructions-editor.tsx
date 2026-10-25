@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { FormAlert } from "@/components/ui/field";
-import { StatusChip } from "@/components/plataforma/status-chip";
-import { Panel } from "@/components/plataforma/panel";
+import { AvisoDoFormulario } from "@/components/ui/field";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
+import { Painel } from "@/components/plataforma/panel";
 import { Button } from "@/components/ui/button";
 import { Pencil, CheckCircle2, Archive } from "lucide-react";
 import { formatarDataEHora } from "@/lib/platform/format";
@@ -40,9 +40,9 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
   const st = latest ? STATUS[latest.status] : null;
 
   return (
-    <Panel
+    <Painel
       title="Instruções da Liz"
-      aside={st && latest ? <StatusChip tone={st.tone} icon={st.icon}>{`Versão ${latest.version}, ${st.label.toLowerCase()}`}</StatusChip> : undefined}
+      aside={st && latest ? <EtiquetaDeSituacao tone={st.tone} icon={st.icon}>{`Versão ${latest.version}, ${st.label.toLowerCase()}`}</EtiquetaDeSituacao> : undefined}
     >
       <form
         className="flex flex-col gap-4"
@@ -53,7 +53,7 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
       >
         <Textarea label="O que a Liz deve fazer" value={text} onChange={(e) => setText(e.target.value)} rows={10} error={save.errors.content} maxLength={8000} />
         <Input label="O que mudou nesta versão" value={note} onChange={(e) => setNote(e.target.value)} error={save.errors.changeNote} maxLength={160} />
-        {save.formError && !Object.keys(save.errors).length && <FormAlert>{save.formError}</FormAlert>}
+        {save.formError && !Object.keys(save.errors).length && <AvisoDoFormulario>{save.formError}</AvisoDoFormulario>}
         <div className="flex flex-wrap items-center gap-3">
           <Button type="submit" disabled={!changed} loading={save.pending}>
             Salvar como nova versão
@@ -74,7 +74,7 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
       </form>
 
       <h3 className="mb-3 mt-8 text-lg font-semibold leading-6 text-tinta">Histórico de versões</h3>
-      {row.formError && <FormAlert>{row.formError}</FormAlert>}
+      {row.formError && <AvisoDoFormulario>{row.formError}</AvisoDoFormulario>}
       <ul className="divide-y divide-linha overflow-hidden rounded-2xl border border-linha">
         {versions.map((v) => {
           const s = STATUS[v.status];
@@ -84,9 +84,9 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
                 <div className="min-w-0">
                   <p className="flex flex-wrap items-center gap-2 text-[15px] font-semibold text-tinta">
                     Versão {v.version}
-                    <StatusChip tone={s.tone} icon={s.icon}>
+                    <EtiquetaDeSituacao tone={s.tone} icon={s.icon}>
                       {s.label}
-                    </StatusChip>
+                    </EtiquetaDeSituacao>
                   </p>
                   <p className="text-sm leading-5 text-tinta-suave">
                     {formatarDataEHora(new Date(v.createdAt))}
@@ -134,6 +134,6 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
           );
         })}
       </ul>
-    </Panel>
+    </Painel>
   );
 }

@@ -1,7 +1,7 @@
-import { Logo } from "@/components/brand/logo";
+import { Logotipo } from "@/components/brand/logo";
 
 /** Selo do design: marca confirmação de presença (aqui, o convite válido na portaria). */
-export function Seal({ size = 96, label }: { size?: number; label: string }) {
+export function Selo({ size = 96, label }: { size?: number; label: string }) {
   return (
     <span
       role="img"
@@ -10,7 +10,7 @@ export function Seal({ size = 96, label }: { size?: number; label: string }) {
       className="inline-grid place-items-center rounded-full bg-ameixa text-on-ameixa"
     >
       <span aria-hidden="true" className="grid place-items-center">
-        <Logo variant="mark-linho" height={Math.round(size * 0.5)} />
+        <Logotipo variant="mark-linho" height={Math.round(size * 0.5)} />
       </span>
     </span>
   );

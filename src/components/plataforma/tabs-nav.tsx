@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { ExternalLink } from "lucide-react";
-import { PendingLink } from "@/components/plataforma/pending";
+import { LinkPendente } from "@/components/plataforma/pending";
 import { montarLink } from "@/lib/platform/list-params";
 import { formatarInteiro } from "@/lib/platform/format";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  * - tab.href: aba que na verdade leva a outra tela (ex.: "Assinaturas e Pix" -> /assinaturas); com `external` mostra a seta.
  * - count: número real ao lado do rótulo (some quando undefined; 0 aparece).
  */
-export interface TabItem {
+export interface ItemDeAba {
   value: string;
   label: ReactNode;
   count?: number;
@@ -22,7 +22,7 @@ export interface TabItem {
   external?: boolean;
 }
 
-export function TabsNav({
+export function NavegacaoDeAbas({
   tabs,
   active,
   basePath,
@@ -31,7 +31,7 @@ export function TabsNav({
   label,
   className,
 }: {
-  tabs: TabItem[];
+  tabs: ItemDeAba[];
   active: string;
   basePath: string;
   params?: Record<string, string | number | undefined | null>;
@@ -48,7 +48,7 @@ export function TabsNav({
           const href = tab.href ?? montarLink(basePath, { ...params, pagina: undefined, [paramKey]: tab.value === defaultValue ? undefined : tab.value });
           return (
             <li key={tab.value}>
-              <PendingLink
+              <LinkPendente
                 href={href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
@@ -61,7 +61,7 @@ export function TabsNav({
                   <span className={cn("rounded-md px-1.5 text-xs font-semibold leading-5", isActive ? "bg-areia text-tinta-suave" : "text-tinta-suave")}>{formatarInteiro(tab.count)}</span>
                 )}
                 {tab.external && <ExternalLink className="size-4" aria-hidden="true" />}
-              </PendingLink>
+              </LinkPendente>
             </li>
           );
         })}

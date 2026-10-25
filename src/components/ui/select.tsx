@@ -5,15 +5,15 @@ import { Select as SelectPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
-import { Field, joinIds, type FloatOptions } from "@/components/ui/field"
+import { Campo, juntarIds, type OpcoesDoCampoFlutuante } from "@/components/ui/field"
 
-function Select({
+function Selecao({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Root>) {
   return <SelectPrimitive.Root data-slot="select" {...props} />
 }
 
-function SelectGroup({
+function GrupoDaSelecao({
   className,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Group>) {
@@ -26,14 +26,14 @@ function SelectGroup({
   )
 }
 
-function SelectValue({
+function ValorDaSelecao({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Value>) {
   return <SelectPrimitive.Value data-slot="select-value" {...props} />
 }
 
-type SelectTriggerProps = React.ComponentProps<typeof SelectPrimitive.Trigger> &
-  Partial<FloatOptions> & {
+type PropriedadesDoGatilhoDaSelecao = React.ComponentProps<typeof SelectPrimitive.Trigger> &
+  Partial<OpcoesDoCampoFlutuante> & {
     size?: "sm" | "default" | "lg"
   }
 
@@ -44,7 +44,7 @@ type SelectTriggerProps = React.ComponentProps<typeof SelectPrimitive.Trigger> &
  *  - Sem `label`: o gatilho simples de antes (filtros e menus compactos).
  * Em `className`, no modo com rótulo, vão as classes da raiz do campo.
  */
-function SelectTrigger({
+function GatilhoDaSelecao({
   className,
   size = "default",
   children,
@@ -57,7 +57,7 @@ function SelectTrigger({
   fieldClassName,
   id,
   ...props
-}: SelectTriggerProps) {
+}: PropriedadesDoGatilhoDaSelecao) {
   const autoId = React.useId()
 
   if (label === undefined || label === null) {
@@ -82,7 +82,7 @@ function SelectTrigger({
 
   const { "aria-describedby": describedBy, "aria-invalid": ariaInvalid, "aria-required": ariaRequired, ...rest } = props
   return (
-    <Field
+    <Campo
       id={id ?? autoId}
       label={label}
       hint={hint}
@@ -103,17 +103,17 @@ function SelectTrigger({
           {...c}
           data-slot="select-trigger"
           data-size={size}
-          aria-describedby={joinIds(c["aria-describedby"], describedBy)}
+          aria-describedby={juntarIds(c["aria-describedby"], describedBy)}
         >
           {children}
         </SelectPrimitive.Trigger>
       )}
-    </Field>
+    </Campo>
   )
 }
 
-type NativeSelectProps = Omit<React.ComponentProps<"select">, "size"> &
-  Partial<Omit<FloatOptions, "prefix" | "suffix" | "trailing">> & {
+type PropriedadesDaSelecaoNativa = Omit<React.ComponentProps<"select">, "size"> &
+  Partial<Omit<OpcoesDoCampoFlutuante, "prefix" | "suffix" | "trailing">> & {
     /** Classes do select no modo com rótulo. Em `className` vão as da raiz do campo. */
     inputClassName?: string
     /** O rótulo fica sempre no alto e a opção de valor vazio aparece (ex.: "Qualquer valor"). */
@@ -125,7 +125,7 @@ type NativeSelectProps = Omit<React.ComponentProps<"select">, "size"> &
  * em listas longas no celular. Para mostrar o rótulo no centro quando nada foi escolhido, a
  * primeira opção deve ter `value=""`; com qualquer outro valor o rótulo sobe.
  */
-function NativeSelect({
+function SelecaoNativa({
   label,
   hint,
   error,
@@ -140,11 +140,11 @@ function NativeSelect({
   id,
   children,
   ...props
-}: NativeSelectProps) {
+}: PropriedadesDaSelecaoNativa) {
   const autoId = React.useId()
   const { "aria-describedby": describedBy, "aria-invalid": ariaInvalid, required, ...rest } = props
   return (
-    <Field
+    <Campo
       id={id ?? autoId}
       label={label ?? ""}
       hint={hint}
@@ -166,17 +166,17 @@ function NativeSelect({
           data-slot="native-select"
           data-float={alwaysFloat ? "always" : undefined}
           required={required}
-          aria-describedby={joinIds(c["aria-describedby"], describedBy)}
+          aria-describedby={juntarIds(c["aria-describedby"], describedBy)}
           className={cn(c.className, inputClassName)}
         >
           {children}
         </select>
       )}
-    </Field>
+    </Campo>
   )
 }
 
-function SelectContent({
+function ConteudoDaSelecao({
   className,
   children,
   position = "popper",
@@ -195,7 +195,7 @@ function SelectContent({
         align={align}
         {...props}
       >
-        <SelectScrollUpButton />
+        <BotaoDeRolarParaCima />
         <SelectPrimitive.Viewport
           className={cn(
             "p-1",
@@ -205,13 +205,13 @@ function SelectContent({
         >
           {children}
         </SelectPrimitive.Viewport>
-        <SelectScrollDownButton />
+        <BotaoDeRolarParaBaixo />
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
   )
 }
 
-function SelectLabel({
+function RotuloDaSelecao({
   className,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Label>) {
@@ -224,7 +224,7 @@ function SelectLabel({
   )
 }
 
-function SelectItem({
+function ItemDaSelecao({
   className,
   children,
   ...props
@@ -248,7 +248,7 @@ function SelectItem({
   )
 }
 
-function SelectSeparator({
+function SeparadorDaSelecao({
   className,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Separator>) {
@@ -261,7 +261,7 @@ function SelectSeparator({
   )
 }
 
-function SelectScrollUpButton({
+function BotaoDeRolarParaCima({
   className,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.ScrollUpButton>) {
@@ -279,7 +279,7 @@ function SelectScrollUpButton({
   )
 }
 
-function SelectScrollDownButton({
+function BotaoDeRolarParaBaixo({
   className,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.ScrollDownButton>) {
@@ -298,15 +298,15 @@ function SelectScrollDownButton({
 }
 
 export {
-  NativeSelect,
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectScrollDownButton,
-  SelectScrollUpButton,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
+  SelecaoNativa as NativeSelect,
+  Selecao as Select,
+  ConteudoDaSelecao as SelectContent,
+  GrupoDaSelecao as SelectGroup,
+  ItemDaSelecao as SelectItem,
+  RotuloDaSelecao as SelectLabel,
+  BotaoDeRolarParaBaixo as SelectScrollDownButton,
+  BotaoDeRolarParaCima as SelectScrollUpButton,
+  SeparadorDaSelecao as SelectSeparator,
+  GatilhoDaSelecao as SelectTrigger,
+  ValorDaSelecao as SelectValue,
 }

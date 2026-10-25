@@ -21,12 +21,12 @@ import {
   User,
 } from "lucide-react";
 import { cadastrarContaDoPlano, type DadosDoCadastroDoPlano } from "@/actions/subscription-actions";
-import { SubscriptionPix } from "@/components/checkout/subscription-pix";
+import { PixDaAssinatura } from "@/components/checkout/subscription-pix";
 import { VENDOR_CATEGORIES } from "@/app/(fornecedor)/_lib/vendor-panel";
-import { btn, btnArrow } from "@/components/landing/styles";
+import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Field, FormAlert } from "@/components/ui/field";
+import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/select";
 import { mascararDocumentoDigitando } from "@/lib/formatacao/documento";
 import { mascararTelefone } from "@/lib/formatacao/telefone";
@@ -244,9 +244,9 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
           </div>
           <div className="flex items-center gap-3">
             <BackButton onClick={() => onStepChange("tipo")} />
-            <button type="button" onClick={() => onStepChange("dados")} className={cn(btn.primary, "min-h-12 flex-1")}>
+            <button type="button" onClick={() => onStepChange("dados")} className={cn(estiloDoBotao.primary, "min-h-12 flex-1")}>
               Continuar com o {plan?.name}
-              <ArrowRight aria-hidden="true" className={btnArrow} />
+              <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
             </button>
           </div>
           {!isVendor ? (
@@ -277,21 +277,21 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                 {plan.price > 0 ? <span className="font-normal text-tinta-suave"> {plan.period}</span> : null}
               </p>
             </div>
-            <button type="button" onClick={() => onStepChange("plano")} className={cn(btn.quiet, btn.sm)}>
+            <button type="button" onClick={() => onStepChange("plano")} className={cn(estiloDoBotao.quiet, estiloDoBotao.sm)}>
               Trocar
             </button>
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-            <Field id="cadastro-name" label="Seu nome" icon={User} error={errors.name}>
+            <Campo id="cadastro-name" label="Seu nome" icon={User} error={errors.name}>
               {(c) => (
                 <input {...c} id="cadastro-name" name="name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
               )}
-            </Field>
+            </Campo>
 
             {isVendor ? (
               <>
-                <Field id="cadastro-companyName" label="Nome do negócio" icon={Building2} error={errors.companyName}>
+                <Campo id="cadastro-companyName" label="Nome do negócio" icon={Building2} error={errors.companyName}>
                   {(c) => (
                     <input
                       {...c}
@@ -302,14 +302,14 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                       onChange={(e) => setCompanyName(e.target.value)}
                     />
                   )}
-                </Field>
+                </Campo>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <NativeSelect id="cadastro-category" label="Categoria" value={category} onChange={(e) => setCategory(e.target.value)}>
                     {VENDOR_CATEGORIES.map((cat) => (
                       <option key={cat}>{cat}</option>
                     ))}
                   </NativeSelect>
-                  <Field id="cadastro-city" label="Cidade onde atende" icon={MapPin} error={errors.city}>
+                  <Campo id="cadastro-city" label="Cidade onde atende" icon={MapPin} error={errors.city}>
                     {(c) => (
                       <input
                         {...c}
@@ -321,7 +321,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                         onChange={(e) => setCity(e.target.value)}
                       />
                     )}
-                  </Field>
+                  </Campo>
                 </div>
                 <div className="flex flex-col gap-2">
                   <div role="radiogroup" aria-label="Tipo de documento" className="grid w-fit grid-cols-2 gap-1 rounded-[10px] bg-areia p-1">
@@ -344,7 +344,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                       </button>
                     ))}
                   </div>
-                  <Field id="cadastro-document" label={documentType} icon={FileText} error={errors.document} hint="Usado só pela curadoria. Não aparece no seu perfil.">
+                  <Campo id="cadastro-document" label={documentType} icon={FileText} error={errors.document} hint="Usado só pela curadoria. Não aparece no seu perfil.">
                     {(c) => (
                       <input
                         {...c}
@@ -355,12 +355,12 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                         placeholder={documentType === "CPF" ? "000.000.000-00" : "00.000.000/0000-00"}
                       />
                     )}
-                  </Field>
+                  </Campo>
                 </div>
               </>
             ) : null}
 
-            <Field id="cadastro-email" label="E-mail" icon={Mail} error={errors.email} hint="Usaremos este e-mail para o acesso à conta.">
+            <Campo id="cadastro-email" label="E-mail" icon={Mail} error={errors.email} hint="Usaremos este e-mail para o acesso à conta.">
               {(c) => (
                 <input
                   {...c}
@@ -375,9 +375,9 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                   onChange={(e) => setEmail(e.target.value)}
                 />
               )}
-            </Field>
+            </Campo>
 
-            <Field id="cadastro-phone" label="WhatsApp" icon={Phone} error={errors.phone} hint="Informe com DDD, por exemplo (11) 98765-4321.">
+            <Campo id="cadastro-phone" label="WhatsApp" icon={Phone} error={errors.phone} hint="Informe com DDD, por exemplo (11) 98765-4321.">
               {(c) => (
                 <input
                   {...c}
@@ -390,9 +390,9 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                   onChange={(e) => setPhone(mascararTelefone(e.target.value))}
                 />
               )}
-            </Field>
+            </Campo>
 
-            <Field
+            <Campo
               id="cadastro-password"
               label="Crie uma senha"
               icon={Lock}
@@ -421,10 +421,10 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                   onChange={(e) => setPassword(e.target.value)}
                 />
               )}
-            </Field>
+            </Campo>
 
             {formError ? (
-              <FormAlert id="cadastro-erro">
+              <AvisoDoFormulario id="cadastro-erro">
                 <p>{formError.message}</p>
                 {formError.existingAccount ? (
                   <button
@@ -435,14 +435,14 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                     Entrar com este e-mail
                   </button>
                 ) : null}
-              </FormAlert>
+              </AvisoDoFormulario>
             ) : null}
 
             <div className="mt-1 flex items-center gap-3">
               <BackButton onClick={() => onStepChange("plano")} />
               <Button type="submit" loading={isPending || leaving} className="h-12 flex-1 rounded-[12px] px-6">
                 {plan.price > 0 ? "Criar conta e pagar" : "Criar conta"}
-                <ArrowRight aria-hidden="true" className={btnArrow} />
+                <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
               </Button>
             </div>
             <p className="text-center text-sm leading-5 text-tinta-suave">
@@ -468,7 +468,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
             title="Falta só o Pix"
             text="A conta já está criada. O plano é ativado assim que o pagamento for confirmado."
           />
-          <SubscriptionPix planId={plan.id} modules={plan.id === "custom" ? customModules : undefined} planName={`Plano ${plan.name}`} onPaid={handlePaid} />
+          <PixDaAssinatura planId={plan.id} modules={plan.id === "custom" ? customModules : undefined} planName={`Plano ${plan.name}`} onPaid={handlePaid} />
           <div className="flex flex-col gap-3">
             <button
               type="button"
@@ -478,7 +478,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                 window.location.assign(redirectTo ?? "/boas-vindas");
               }}
               disabled={leaving}
-              className={cn(btn.quiet, "self-center")}
+              className={cn(estiloDoBotao.quiet, "self-center")}
             >
               {isVendor ? "Pagar depois e continuar no plano Start" : "Pagar depois e continuar no plano Básico"}
             </button>
@@ -499,9 +499,9 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                 title={firstName ? `Boas-vindas, ${firstName}` : "Cadastro recebido"}
                 text="Seu perfil já está na fila da curadoria. Enquanto isso, complete as informações no painel: perfis completos são aprovados mais rápido."
               />
-              <a href={redirectTo ?? "/fornecedor"} className={cn(btn.primary, btn.block, "min-h-12")}>
+              <a href={redirectTo ?? "/fornecedor"} className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}>
                 Ir para o meu painel
-                <ArrowRight aria-hidden="true" className={btnArrow} />
+                <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
               </a>
             </>
           ) : (
@@ -512,9 +512,9 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
                 text={`A conta de vocês está criada${paid ? " e o pagamento foi confirmado" : ""}. Falta só dizer os nomes e a data: leva menos de um minuto.`}
               />
               {/* Navegação completa: a próxima tela lê o cookie de sessão recém-criado. */}
-              <a href={redirectTo ?? "/boas-vindas"} className={cn(btn.primary, btn.block, "min-h-12")}>
+              <a href={redirectTo ?? "/boas-vindas"} className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}>
                 Continuar para o casamento
-                <ArrowRight aria-hidden="true" className={btnArrow} />
+                <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
               </a>
             </>
           )}
@@ -580,7 +580,7 @@ function Progress({ step, steps }: { step: SignupStep; steps: SignupStep[] }) {
 
 function BackButton({ onClick }: { onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} aria-label="Voltar" className={cn(btn.secondary, "min-h-12 w-12 shrink-0 px-0")}>
+    <button type="button" onClick={onClick} aria-label="Voltar" className={cn(estiloDoBotao.secondary, "min-h-12 w-12 shrink-0 px-0")}>
       <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.6} />
     </button>
   );

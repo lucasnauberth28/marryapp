@@ -2,8 +2,8 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { startNavigationProgress } from "@/components/feedback/navigation-progress";
-import { markListNavigation } from "@/components/plataforma/pending";
+import { iniciarProgressoDaNavegacao } from "@/components/feedback/navigation-progress";
+import { marcarNavegacaoDaLista } from "@/components/plataforma/pending";
 import { cn } from "@/lib/utils";
 
 interface Filter {
@@ -26,8 +26,8 @@ export function FilterChips({ filters }: { filters: Filter[] }) {
           aria-pressed={f.active}
           onClick={() => {
             if (f.active) return;
-            startNavigationProgress();
-            markListNavigation(f.href); // a lista (PendingRegion) fica mais clara até chegar
+            iniciarProgressoDaNavegacao();
+            marcarNavegacaoDaLista(f.href); // a lista (PendingRegion) fica mais clara até chegar
             startTransition(() => router.push(f.href, { scroll: false }));
           }}
           className={cn(

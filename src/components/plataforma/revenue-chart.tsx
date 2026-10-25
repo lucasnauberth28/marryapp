@@ -11,12 +11,12 @@ import { cn } from "@/lib/utils";
  */
 
 /** "9,6 mil" a partir de R$ 1.000; abaixo disso, reais inteiros. */
-function compactBRL(cents: number): string {
+function reaisCompactos(cents: number): string {
   if (cents >= 100_000) return `${(cents / 100_000).toFixed(1).replace(".", ",").replace(/,0$/, "")} mil`;
   return `R$ ${Math.round(cents / 100)}`;
 }
 
-export function RevenueChart({ months, className }: { months: BalaioDoMes[]; className?: string }) {
+export function GraficoDeReceita({ months, className }: { months: BalaioDoMes[]; className?: string }) {
   const { max, ticks } = escalaDoGrafico(months);
   const summary = months.map((m) => `${m.label}: ${formatarReais(m.total)} (casais ${formatarReais(m.couple)}, fornecedores ${formatarReais(m.vendor)})${m.inProgress ? ", em andamento" : ""}`).join("; ");
   const HEIGHT = 190;
@@ -35,7 +35,7 @@ export function RevenueChart({ months, className }: { months: BalaioDoMes[]; cla
         <div className="relative" style={{ height: HEIGHT }} aria-hidden="true">
           {ticks.map((t) => (
             <span key={t} className="absolute right-0 -translate-y-1/2 whitespace-nowrap text-xs text-tinta-suave" style={{ bottom: `${(t / max) * 100}%` }}>
-              {t === 0 ? "0" : compactBRL(t)}
+              {t === 0 ? "0" : reaisCompactos(t)}
             </span>
           ))}
         </div>
@@ -50,7 +50,7 @@ export function RevenueChart({ months, className }: { months: BalaioDoMes[]; cla
                 const vendorShare = m.total > 0 ? (m.vendor / m.total) * 100 : 0;
                 return (
                   <div key={m.key} className="flex h-full flex-col items-center justify-end">
-                    <span className="mb-1 text-[11px] font-semibold tabular-nums text-tinta sm:text-xs">{m.total > 0 ? compactBRL(m.total) : ""}</span>
+                    <span className="mb-1 text-[11px] font-semibold tabular-nums text-tinta sm:text-xs">{m.total > 0 ? reaisCompactos(m.total) : ""}</span>
                     <div className={cn("flex w-full max-w-[44px] flex-col overflow-hidden rounded-t-[4px]", m.inProgress && "opacity-60")} style={{ height: `${total}%` }}>
                       <div className="bg-salvia" style={{ height: `${vendorShare}%` }} />
                       <div className="flex-1 bg-ameixa" />

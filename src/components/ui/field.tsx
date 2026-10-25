@@ -29,12 +29,12 @@ import { cn } from "@/lib/utils"
  * checkbox, radio, switch e upload continuam com `Input` sem `label`, `Label` etc.
  */
 
-export type FieldIcon = React.ComponentType<
+export type IconeDoCampo = React.ComponentType<
   React.SVGProps<SVGSVGElement> & { strokeWidth?: number | string }
 >
 
 /** Opções de rótulo e adornos aceitas por todos os campos prontos (Input, Textarea, Select…). */
-export interface FloatOptions {
+export interface OpcoesDoCampoFlutuante {
   /** Texto do rótulo. É também o nome acessível do campo. */
   label: React.ReactNode
   /** Dica abaixo do campo (some enquanto houver erro). */
@@ -44,7 +44,7 @@ export interface FloatOptions {
   /** Acrescenta "(opcional)" ao rótulo. */
   optional?: boolean
   /** Ícone à esquerda; o rótulo recua para não encostar nele. */
-  icon?: FieldIcon
+  icon?: IconeDoCampo
   /** Texto fixo antes do valor (ex.: "R$"). Só aparece com o rótulo no alto. */
   prefix?: string
   /** Texto fixo depois do valor (ex.: "%"). Só aparece com o rótulo no alto. */
@@ -59,9 +59,9 @@ export interface FloatOptions {
   fieldClassName?: string
 }
 
-export const fieldControlClass = "ac-float__control"
+export const classeDoControleDoCampo = "ac-float__control"
 
-export interface FieldControlProps {
+export interface PropriedadesDoControleDoCampo {
   id: string
   className: string
   placeholder?: string
@@ -70,7 +70,7 @@ export interface FieldControlProps {
   "aria-required"?: true
 }
 
-interface FieldProps extends Omit<FloatOptions, "fieldClassName"> {
+interface PropriedadesDoCampo extends Omit<OpcoesDoCampoFlutuante, "fieldClassName"> {
   /** Id do controle: rótulo, dica e erro se ligam a ele. */
   id: string
   required?: boolean
@@ -85,20 +85,20 @@ interface FieldProps extends Omit<FloatOptions, "fieldClassName"> {
   /** Controle e adornos extras dentro da caixa, depois do rótulo (ex.: seta). */
   extra?: React.ReactNode
   /** Recebe os atributos para espalhar no controle. */
-  children: (control: FieldControlProps) => React.ReactNode
+  children: (control: PropriedadesDoControleDoCampo) => React.ReactNode
 }
 
 /** Junta ids de aria-describedby sem repetir nem deixar vazio. */
-export function joinIds(...ids: Array<string | undefined | false | null>) {
+export function juntarIds(...ids: Array<string | undefined | false | null>) {
   const out = ids.filter(Boolean).join(" ")
   return out || undefined
 }
 
-export function Field(props: FieldProps) {
-  return <FloatField {...props} />
+export function Campo(props: PropriedadesDoCampo) {
+  return <CampoFlutuante {...props} />
 }
 
-function FloatField({
+function CampoFlutuante({
   id,
   label,
   hint,
@@ -117,10 +117,10 @@ function FloatField({
   className,
   extra,
   children,
-}: FieldProps) {
+}: PropriedadesDoCampo) {
   const hasError = Boolean(error) || Boolean(invalid)
   const showHint = Boolean(hint) && !error
-  const describedBy = joinIds(showHint && `${id}-dica`, error ? `${id}-erro` : false)
+  const describedBy = juntarIds(showHint && `${id}-dica`, error ? `${id}-erro` : false)
 
   const boxStyle: React.CSSProperties = {}
   if (prefix) (boxStyle as Record<string, string>)["--ac-float-prefix"] = `calc(${[...prefix].length}ch + 6px)`
@@ -141,7 +141,7 @@ function FloatField({
       >
         {children({
           id,
-          className: fieldControlClass,
+          className: classeDoControleDoCampo,
           ...(control === "text" ? { placeholder: " " } : null),
           ...(hasError ? { "aria-invalid": true as const } : null),
           ...(describedBy ? { "aria-describedby": describedBy } : null),
@@ -181,7 +181,7 @@ function FloatField({
 }
 
 /** Aviso de erro geral do formulário. */
-export function FormAlert({ id, children }: { id?: string; children: React.ReactNode }) {
+export function AvisoDoFormulario({ id, children }: { id?: string; children: React.ReactNode }) {
   return (
     <div
       id={id}

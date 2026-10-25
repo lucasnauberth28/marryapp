@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import { ROTULO_DA_TAXA_DO_PRESENTE, calcularValoresDoPresente, type PlanoDaTaxaDoPresente } from "@/lib/gift-fee";
-import { formatCents, parseCents } from "./home-money";
+import { formatarCentavos, interpretarCentavos } from "./home-money";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 
 /**
  * Simulador de presente por Pix. A conta é a mesma do painel e do checkout (giftAmounts):
  * no Básico vale a taxa do Aceito; no Classic e no VIP o Pix não tem taxa.
  */
-export function GiftSimulator({ classicLabel, vipLabel }: { classicLabel: string; vipLabel: string }) {
+export function SimuladorDePresentes({ classicLabel, vipLabel }: { classicLabel: string; vipLabel: string }) {
   const [plano, setPlano] = useState<PlanoDaTaxaDoPresente>("basic");
   const [texto, setTexto] = useState("200,00");
-  const cents = parseCents(texto);
+  const cents = interpretarCentavos(texto);
   const valor = cents ?? 0;
   const { feeCents, netCents } = calcularValoresDoPresente(valor, plano, "PIX");
 
@@ -39,7 +39,7 @@ export function GiftSimulator({ classicLabel, vipLabel }: { classicLabel: string
             aria-invalid={cents === null}
             onChange={(e) => setTexto(e.target.value)}
             onBlur={() => {
-              if (cents !== null) setTexto(formatCents(cents));
+              if (cents !== null) setTexto(formatarCentavos(cents));
             }}
           />
         </div>
@@ -53,7 +53,7 @@ export function GiftSimulator({ classicLabel, vipLabel }: { classicLabel: string
         <span className="lp-r">Vocês recebem</span>
         <p className="lp-recebe">
           <small>R$</small>
-          {formatCents(netCents)}
+          {formatarCentavos(netCents)}
         </p>
         <div className="lp-sim-linhas">
           <div>

@@ -9,7 +9,7 @@ import type { ComponentProps, MouseEvent } from "react";
  * (o Lenis anima quando está ativo; senão, rolagem nativa respeitando o movimento reduzido).
  * Em outras páginas navega para a landing e abre na seção.
  */
-export function AnchorLink({ href, onClick, ...props }: Omit<ComponentProps<typeof Link>, "href"> & { href: `/#${string}` }) {
+export function LinkDeAncora({ href, onClick, ...props }: Omit<ComponentProps<typeof Link>, "href"> & { href: `/#${string}` }) {
   const pathname = usePathname();
 
   const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {

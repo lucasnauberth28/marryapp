@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { responderAvaliacao } from "@/actions/vendor-review-actions";
-import { btn } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -52,7 +52,7 @@ export function ReviewReply({
           ref={editButtonRef}
           type="button"
           onClick={() => setEditing(true)}
-          className={cn(btn.quiet, btn.sm, "min-h-11 self-start px-3 -ml-3")}
+          className={cn(estiloDoBotao.quiet, estiloDoBotao.sm, "min-h-11 self-start px-3 -ml-3")}
         >
           <Pencil aria-hidden="true" className="size-4" />
           Editar resposta
@@ -140,7 +140,7 @@ function ReplyForm({
       />
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         {isEdit ? (
-          <button type="button" onClick={onDone} disabled={isPending} className={cn(btn.secondary, btn.sm, "min-h-11")}>
+          <button type="button" onClick={onDone} disabled={isPending} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm, "min-h-11")}>
             Cancelar
           </button>
         ) : null}

@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Bell } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { FormAlert } from "@/components/ui/field";
-import { Panel } from "@/components/plataforma/panel";
+import { AvisoDoFormulario } from "@/components/ui/field";
+import { Painel } from "@/components/plataforma/panel";
 import { Button } from "@/components/ui/button";
 import { salvarAlertasDeSaude, testarAlertasDeSaude } from "@/actions/admin-saude-actions";
 import { ToggleRow } from "../../_sistema/toggle-row";
@@ -16,7 +16,7 @@ export function AlertsForm({ initial, emailConfigured }: { initial: { mercadoPag
   const save = useAdminAction();
   const test = useAdminAction();
   return (
-    <Panel
+    <Painel
       title="Alertas"
       description="Você recebe um e-mail quando uma destas coisas acontecer. A verificação é feita uma vez por dia, junto da rotina diária."
       aside={
@@ -41,13 +41,13 @@ export function AlertsForm({ initial, emailConfigured }: { initial: { mercadoPag
           <Input label="Enviar alertas para" type="email" value={s.sendTo} onChange={(e) => setS({ ...s, sendTo: e.target.value })} error={save.errors.sendTo} hint="Sem e-mail aqui, nenhum alerta é enviado." />
         </div>
         {!emailConfigured && <p className="text-sm font-semibold text-aviso">O e-mail não está configurado no servidor: nenhum alerta sai até configurar o envio.</p>}
-        {(save.formError && !Object.keys(save.errors).length && <FormAlert>{save.formError}</FormAlert>) || (test.formError && <FormAlert>{test.formError}</FormAlert>)}
+        {(save.formError && !Object.keys(save.errors).length && <AvisoDoFormulario>{save.formError}</AvisoDoFormulario>) || (test.formError && <AvisoDoFormulario>{test.formError}</AvisoDoFormulario>)}
         <div>
           <Button type="submit" loading={save.pending}>
             Salvar alertas
           </Button>
         </div>
       </form>
-    </Panel>
+    </Painel>
   );
 }

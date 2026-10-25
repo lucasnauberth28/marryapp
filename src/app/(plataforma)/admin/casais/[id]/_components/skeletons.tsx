@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonCard, SkeletonForm, SkeletonText } from "@/components/skeletons";
-import { RowsSkeleton } from "@/components/plataforma/loading-parts";
+import { EsqueletoDasLinhas } from "@/components/plataforma/loading-parts";
 
 /* Esqueletos do detalhe do casal: o corpo de cada aba e a coluna lateral (plano, ações). */
 
@@ -15,7 +15,7 @@ function Aside() {
         <Skeleton className="mt-4 h-9 w-36 rounded-xl" />
       </SkeletonCard>
       <SkeletonCard>
-        <RowsSkeleton rows={3} chip={false} />
+        <EsqueletoDasLinhas rows={3} chip={false} />
       </SkeletonCard>
       <SkeletonCard>
         <div className="flex flex-col gap-3">
@@ -53,10 +53,10 @@ export function CasalTabSkeleton({ tab }: { tab: string }) {
             <LabelValueRows rows={7} />
           </SkeletonCard>
           <SkeletonCard>
-            <RowsSkeleton rows={3} chip={false} />
+            <EsqueletoDasLinhas rows={3} chip={false} />
           </SkeletonCard>
           <SkeletonCard>
-            <RowsSkeleton rows={4} chip={false} />
+            <EsqueletoDasLinhas rows={4} chip={false} />
           </SkeletonCard>
         </div>
         <Aside />
@@ -67,7 +67,7 @@ export function CasalTabSkeleton({ tab }: { tab: string }) {
       <div className={TWO_COL}>
         <div className="flex min-w-0 flex-col gap-6">
           <SkeletonCard>
-            <RowsSkeleton rows={3} />
+            <EsqueletoDasLinhas rows={3} />
           </SkeletonCard>
           <SkeletonCard title={false}>
             <SkeletonForm fields={["input", "textarea"]} />
@@ -83,16 +83,16 @@ export function CasalTabSkeleton({ tab }: { tab: string }) {
     return (
       <div className={HALVES}>
         <SkeletonCard>
-          <RowsSkeleton rows={5} chip={false} />
+          <EsqueletoDasLinhas rows={5} chip={false} />
         </SkeletonCard>
         <SkeletonCard>
-          <RowsSkeleton rows={4} />
+          <EsqueletoDasLinhas rows={4} />
         </SkeletonCard>
       </div>
     );
   return (
     <SkeletonCard>
-      <RowsSkeleton rows={3} />
+      <EsqueletoDasLinhas rows={3} />
     </SkeletonCard>
   );
 }

@@ -3,8 +3,8 @@
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Check, CircleCheck, Info } from "lucide-react";
-import { CouponField, type AppliedCoupon } from "@/components/checkout/coupon-field";
-import { SubscriptionPix } from "@/components/checkout/subscription-pix";
+import { CampoDeCupom, type CupomAplicado } from "@/components/checkout/coupon-field";
+import { PixDaAssinatura } from "@/components/checkout/subscription-pix";
 import { formatPrice, type PlanOption } from "@/app/login/auth-config";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +23,7 @@ export function UpgradeSection({ plans, canPay }: UpgradeSectionProps) {
   const [selected, setSelected] = useState<string>(plans[0]?.id ?? "");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [paidPlan, setPaidPlan] = useState<string | null>(null);
-  const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
+  const [coupon, setCoupon] = useState<CupomAplicado | null>(null);
 
   // Depois de um pagamento a lista muda (router.refresh); se o plano escolhido sumir, volta ao primeiro.
   const plan = plans.find((p) => p.id === selected) ?? plans[0];
@@ -120,7 +120,7 @@ export function UpgradeSection({ plans, canPay }: UpgradeSectionProps) {
         </p>
       ) : checkoutOpen ? (
         <div className="flex flex-col gap-3 md:max-w-md">
-          <SubscriptionPix
+          <PixDaAssinatura
             key={`${plan.id}:${couponFor ?? ""}`}
             planId={plan.id}
             planName={`Plano ${plan.name}`}
@@ -142,7 +142,7 @@ export function UpgradeSection({ plans, canPay }: UpgradeSectionProps) {
       ) : (
         <div className="flex flex-col gap-4">
           <div className="md:max-w-md">
-            <CouponField planId={plan.id} applied={coupon} onChange={setCoupon} />
+            <CampoDeCupom planId={plan.id} applied={coupon} onChange={setCoupon} />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-[15px] text-tinta-suave">O plano é liberado assim que o Pix é confirmado.</p>

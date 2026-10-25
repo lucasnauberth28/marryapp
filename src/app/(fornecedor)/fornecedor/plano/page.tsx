@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { Reveal } from "@/components/motion/reveal";
-import { btn } from "@/components/landing/styles";
+import { Aparicao } from "@/components/motion/reveal";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 import { planOption, shortPlanName } from "@/app/login/auth-config";
@@ -101,12 +101,12 @@ export default async function PlanoPage() {
 
   return (
     <div className="flex max-w-[880px] flex-col gap-7">
-      <Reveal variant="fade" className="flex flex-col gap-1">
+      <Aparicao variant="fade" className="flex flex-col gap-1">
         <p className="hidden text-xs font-semibold tracking-[0.08em] text-tinta-suave uppercase md:block">Plano</p>
         <h1 className="font-display text-[32px] leading-[38px] md:text-[40px] md:leading-[46px]">
           Seu plano no Aceito
         </h1>
-      </Reveal>
+      </Aparicao>
 
       {showRenewalWarning && expiresAt ? (
         <div
@@ -127,13 +127,13 @@ export default async function PlanoPage() {
                 : `O período pago terminou em ${formatDate(expiresAt, now, true)}. Renove para continuar com os benefícios do ${planName}.`}
             </span>
           </div>
-          <a href="#pagar" className={cn(btn.primary, btn.sm, "min-h-11 shrink-0")}>
+          <a href="#pagar" className={cn(estiloDoBotao.primary, estiloDoBotao.sm, "min-h-11 shrink-0")}>
             Renovar agora
           </a>
         </div>
       ) : null}
 
-      <Reveal>
+      <Aparicao>
         <section
           aria-labelledby="plano-atual-titulo"
           className="flex flex-col gap-4 rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between"
@@ -153,7 +153,7 @@ export default async function PlanoPage() {
             ))}
           </dl>
         </section>
-      </Reveal>
+      </Aparicao>
 
       <PlanCheckout
         currentTier={vendor.planTier}

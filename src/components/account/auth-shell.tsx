@@ -1,9 +1,9 @@
 import type { ReactNode, Ref } from "react";
-import { AuthStage, type StagePhoto } from "./auth-stage";
+import { PalcoDeAcesso, type FotoDoPalco } from "./auth-stage";
 
-export type ShellPhoto = StagePhoto;
+export type FotoDoMolde = FotoDoPalco;
 
-export const SHELL_PHOTOS = {
+export const FOTOS_DO_MOLDE = {
   senha: {
     src: "/images/acesso/cafe-croissant.webp",
     alt: "Duas xícaras de cerâmica, um croissant e flores secas numa mesa de madeira clara",
@@ -28,34 +28,34 @@ export const SHELL_PHOTOS = {
     caption: "Tudo pronto. Agora é só começar.",
     position: "35% 60%",
   },
-} satisfies Record<string, ShellPhoto>;
+} satisfies Record<string, FotoDoMolde>;
 
 /**
  * Moldura das telas avulsas de acesso (esqueci a senha, convite do par, onboarding):
  * o mesmo palco de /login, com a foto ao fundo e o formulário no cartão flutuante.
  */
-export function AuthShell({
+export function MoldeDeAcesso({
   photo,
   children,
   backHref = "/",
   backLabel = "Voltar para o início",
   footnote,
 }: {
-  photo: ShellPhoto;
+  photo: FotoDoMolde;
   children: ReactNode;
   backHref?: string;
   backLabel?: string;
   footnote?: ReactNode;
 }) {
   return (
-    <AuthStage photo={photo} backHref={backHref} backLabel={backLabel} footnote={footnote}>
+    <PalcoDeAcesso photo={photo} backHref={backHref} backLabel={backLabel} footnote={footnote}>
       {children}
-    </AuthStage>
+    </PalcoDeAcesso>
   );
 }
 
 /** Título das telas de acesso (mesma escala de /login). */
-export function ShellHeading({
+export function TituloDoMolde({
   title,
   text,
   overline,

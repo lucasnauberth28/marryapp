@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Bell, CalendarDays, CreditCard, ExternalLink, Inbox, LogOut, Star, Store, UserRound, type LucideIcon } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { sair } from "@/actions/auth-actions";
-import { Spinner } from "@/components/ui/spinner";
+import { IndicadorDeCarregamento } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { PLAN_HREF } from "../_lib/vendor-panel";
 
@@ -85,7 +85,7 @@ export function VendorSidebarNav({ newLeads, publicProfileHref }: { newLeads: nu
 /** Ícone do "Sair": vira spinner enquanto a saída roda (o botão fica desabilitado, sem mudar de tamanho). */
 function LogoutIcon({ className }: { className: string }) {
   const { pending } = useFormStatus();
-  return pending ? <Spinner className={className} /> : <LogOut aria-hidden="true" className={className} />;
+  return pending ? <IndicadorDeCarregamento className={className} /> : <LogOut aria-hidden="true" className={className} />;
 }
 
 function LogoutSubmit({ className, children, ...props }: React.ComponentProps<"button">) {

@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
-import { ThemeSegmented, ThemeToggle } from "@/components/theme/theme-toggle";
-import { AnchorLink } from "../anchor-link";
-import { LinkButton } from "./home-ui";
+import { Logotipo } from "@/components/brand/logo";
+import { SeletorSegmentadoDoTema, AlternadorDeTema } from "@/components/theme/theme-toggle";
+import { LinkDeAncora } from "../anchor-link";
+import { LinkEmFormaDeBotao } from "./home-ui";
 
-const NAV = [
+const NAVEGACAO = [
   { label: "Como funciona", href: "/#como" },
   { label: "Convidados", href: "/#convidados" },
   { label: "Presentes", href: "/#presentes" },
@@ -20,7 +20,7 @@ const NAV = [
  * Cabeçalho da home: fixo no alto, com fundo translúcido e fio inferior. No celular, o botão abre um menu
  * em tela cheia (diálogo com foco preso, Esc fecha). Os links levam às seções da própria página.
  */
-export function HomeHeader() {
+export function CabecalhoDaHome() {
   const [open, setOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
@@ -66,23 +66,23 @@ export function HomeHeader() {
       <header className="lp-nav">
         <div className="lp-moldura">
           <Link href="/" className="lp-marca" aria-label="Aceito, início">
-            <Logo height={26} />
+            <Logotipo height={26} />
           </Link>
           <nav className="lp-nav-links" aria-label="Principal">
-            {NAV.map((item) => (
-              <AnchorLink key={item.href} href={item.href}>
+            {NAVEGACAO.map((item) => (
+              <LinkDeAncora key={item.href} href={item.href}>
                 {item.label}
-              </AnchorLink>
+              </LinkDeAncora>
             ))}
           </nav>
           <div className="lp-nav-acoes">
-            <ThemeToggle className="lp-tema" />
+            <AlternadorDeTema className="lp-tema" />
             <Link href="/login" className="lp-entrar">
               Entrar
             </Link>
-            <LinkButton href="/cadastro?plano=basic" className="lp-nav-cta">
+            <LinkEmFormaDeBotao href="/cadastro?plano=basic" className="lp-nav-cta">
               Criar conta grátis
-            </LinkButton>
+            </LinkEmFormaDeBotao>
             <button
               ref={menuButton}
               type="button"
@@ -101,7 +101,7 @@ export function HomeHeader() {
       <div ref={dialog} id="lp-menu" className="lp-menu" role="dialog" aria-modal="true" aria-label="Menu" data-lenis-prevent inert={!open} data-aberto={open ? "" : undefined}>
         <div className="lp-menu-topo">
           <Link href="/" className="lp-marca" aria-label="Aceito, início" onClick={close}>
-            <Logo height={26} />
+            <Logotipo height={26} />
           </Link>
           <button
             ref={closeButton}
@@ -117,27 +117,27 @@ export function HomeHeader() {
           </button>
         </div>
         <nav aria-label="Principal">
-          {NAV.map((item) => (
-            <AnchorLink key={item.href} href={item.href} onClick={close}>
+          {NAVEGACAO.map((item) => (
+            <LinkDeAncora key={item.href} href={item.href} onClick={close}>
               {item.label}
-            </AnchorLink>
+            </LinkDeAncora>
           ))}
-          <AnchorLink href="/#duvidas" onClick={close}>
+          <LinkDeAncora href="/#duvidas" onClick={close}>
             Perguntas frequentes
-          </AnchorLink>
+          </LinkDeAncora>
         </nav>
         <div className="lp-menu-pe">
           <div className="lp-menu-tema">
             <p>Aparência</p>
-            <ThemeSegmented />
+            <SeletorSegmentadoDoTema />
           </div>
           <p className="lp-mudo">Foi convidado para um casamento? Use o link enviado pelo casal. Você não precisa criar uma conta.</p>
-          <LinkButton href="/cadastro?plano=basic" arrow>
+          <LinkEmFormaDeBotao href="/cadastro?plano=basic" arrow>
             Criar conta grátis
-          </LinkButton>
-          <LinkButton href="/login" tone="branco">
+          </LinkEmFormaDeBotao>
+          <LinkEmFormaDeBotao href="/login" tone="branco">
             Entrar
-          </LinkButton>
+          </LinkEmFormaDeBotao>
         </div>
       </div>
     </>

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Clock } from "lucide-react";
-import { AuthStage } from "@/components/account/auth-stage";
+import { PalcoDeAcesso } from "@/components/account/auth-stage";
 import { cn } from "@/lib/utils";
 import { LoginForm } from "./login-form";
 import { SignupFlow } from "./signup-flow";
@@ -51,7 +51,7 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
   const photo = photoFor(mode, step, type);
 
   return (
-    <AuthStage
+    <PalcoDeAcesso
       photo={photo}
       footnote="Foi convidado para um casamento? Use o link enviado pelo casal. Você não precisa criar uma conta."
     >
@@ -99,7 +99,7 @@ export function AuthExperience({ initialMode, initialType = null, initialPlanId,
           />
         )}
       </div>
-    </AuthStage>
+    </PalcoDeAcesso>
   );
 }
 

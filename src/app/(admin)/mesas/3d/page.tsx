@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
 import { UpgradeCard } from "@/components/plan/upgrade-card";
-import { Mesas3DView } from "@/components/mesas3d/mesas-3d-view";
+import { VisaoDasMesas3D } from "@/components/mesas3d/mesas-3d-view";
 import { ehIdDeCenario } from "@/lib/mesas3d/scenarios";
 import { lugaresDoConvidado } from "@/lib/mesas3d/seating";
 
@@ -27,7 +27,7 @@ export default async function Mesas3DPage() {
   ]);
 
   return (
-    <Mesas3DView
+    <VisaoDasMesas3D
       mode="edit"
       coupleNames={wedding.coupleNames}
       initialScene={ehIdDeCenario(row?.tables3dScene) ? row.tables3dScene : null}

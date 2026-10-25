@@ -1,6 +1,6 @@
 import { LoadingRegion, SkeletonCard, SkeletonForm, SkeletonPageHeader } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TablePanelSkeleton } from "@/components/plataforma/loading-parts";
+import { EsqueletoDoPainelDeTabela } from "@/components/plataforma/loading-parts";
 
 export default function Loading() {
   return (
@@ -22,7 +22,7 @@ export default function Loading() {
           <SkeletonCard />
         </div>
       </div>
-      <TablePanelSkeleton columns={6} rows={3} />
+      <EsqueletoDoPainelDeTabela columns={6} rows={3} />
     </LoadingRegion>
   );
 }

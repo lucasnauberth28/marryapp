@@ -5,7 +5,7 @@ import { Switch as SwitchPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
-function Switch({
+function Interruptor({
   className,
   size = "default",
   ...props
@@ -30,4 +30,4 @@ function Switch({
   )
 }
 
-export { Switch }
+export { Interruptor as Switch }

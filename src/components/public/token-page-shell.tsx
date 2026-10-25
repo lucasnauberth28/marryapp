@@ -1,12 +1,12 @@
-import { Logo } from "@/components/brand/logo";
+import { Logotipo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 
 /** Moldura das páginas abertas pelo link enviado ao casal (proposta, avaliação). */
-export function TokenPageShell({ children, className }: { children: React.ReactNode; className?: string }) {
+export function MoldeDaPaginaComToken({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div className="flex min-h-dvh flex-col bg-linho text-tinta">
       <header className="flex h-16 items-center justify-center border-b border-linha px-4">
-        <Logo height={26} />
+        <Logotipo height={26} />
       </header>
       <main id="conteudo" className={cn("mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 sm:py-12", className)}>
         {children}
@@ -18,5 +18,5 @@ export function TokenPageShell({ children, className }: { children: React.ReactN
   );
 }
 
-export const TOKEN_CARD = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
-export const TOKEN_OVERLINE = "text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase";
+export const CARTAO_DA_PAGINA_COM_TOKEN = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
+export const SOBRETITULO_DA_PAGINA_COM_TOKEN = "text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase";

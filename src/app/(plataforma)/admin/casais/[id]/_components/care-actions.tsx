@@ -4,10 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Ban, KeyRound, RotateCcw, Trash2 } from "lucide-react";
 import { excluirCasamento, redefinirSenhaDoCasamento, suspenderCasamento, reativarCasamento } from "@/actions/admin-casais-actions";
-import { btn } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CustomModal } from "@/components/ui/custom-modal";
+import { ModalPersonalizado } from "@/components/ui/custom-modal";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -44,7 +44,7 @@ export function CareActions({ weddingId, coupleNames, suspended }: { weddingId: 
     if (open === "delete") run(() => excluirCasamento({ weddingId, reason, confirmation: confirmText, acknowledged: sure }), done("/admin/casais"));
   };
 
-  const base = `${btn.secondary} w-full justify-start gap-2`;
+  const base = `${estiloDoBotao.secondary} w-full justify-start gap-2`;
   const copy: Record<Kind, { title: string; text: string; cta: string; danger?: boolean }> = {
     reset: { title: "Redefinir a senha", text: `Enviamos um link de nova senha, válido por 1 hora, para o e-mail do dono do casamento de ${coupleNames}. Nós nunca vemos nem mostramos a senha.`, cta: "Enviar o link" },
     suspend: { title: "Suspender o casal", text: `O site público de ${coupleNames} sai do ar (site, confirmação de presença e lista de presentes) e o painel do casal fica só para leitura. Dá para reativar a qualquer momento.`, cta: "Suspender o casal", danger: true },
@@ -75,7 +75,7 @@ export function CareActions({ weddingId, coupleNames, suspended }: { weddingId: 
         </button>
       </div>
 
-      <CustomModal isOpen={open !== null} onClose={close} title={current?.title ?? ""} description={current?.text}>
+      <ModalPersonalizado isOpen={open !== null} onClose={close} title={current?.title ?? ""} description={current?.text}>
         <div className="flex flex-col gap-4">
           <Textarea label={reasonRequired ? "Motivo (obrigatório)" : "Motivo (opcional)"} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} rows={3} hint="Fica no Registro de atividades." />
           {open === "delete" && (
@@ -101,7 +101,7 @@ export function CareActions({ weddingId, coupleNames, suspended }: { weddingId: 
             </Button>
           </div>
         </div>
-      </CustomModal>
+      </ModalPersonalizado>
     </>
   );
 }

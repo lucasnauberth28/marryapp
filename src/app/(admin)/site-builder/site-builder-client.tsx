@@ -17,16 +17,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { DatePicker } from "@/components/ui/date-picker";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { SeletorDeData } from "@/components/ui/date-picker";
+import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { btn } from "@/components/landing/styles";
-import { LoadingButton } from "@/components/painel/loading-button";
+import { estiloDoBotao } from "@/components/landing/styles";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { UserImage } from "@/components/ui/user-image";
-import { Chip } from "@/components/casal/ui";
-import { LightScope } from "@/components/theme/light-scope";
-import { WeddingSiteView, type WeddingSiteSettings } from "@/components/public/wedding-site-view";
+import { ImagemDaPessoa } from "@/components/ui/user-image";
+import { Etiqueta } from "@/components/casal/ui";
+import { EscopoClaro } from "@/components/theme/light-scope";
+import { VisaoDoSiteDoCasamento, type ConfiguracoesDoSiteDoCasamento } from "@/components/public/wedding-site-view";
 import { destaqueLegivel } from "@/lib/wedding-format";
 import { caminhoDoSiteDoCasamento, urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import {
@@ -68,7 +68,7 @@ interface PreviewGift {
 }
 
 interface SiteBuilderClientProps {
-  initialSettings: (WeddingSiteSettings & { id?: string }) | null;
+  initialSettings: (ConfiguracoesDoSiteDoCasamento & { id?: string }) | null;
   initialStoryItems: StoryItem[];
   initialTips: Tip[];
   previewGifts: PreviewGift[];
@@ -82,7 +82,7 @@ interface SiteBuilderClientProps {
 type SectionId = "COVER" | "STORY" | "LOCATION" | "DRESS" | "TIPS" | "RSVP" | "MUSIC" | "GIFTS" | "GUESTBOOK";
 
 /** Seções na ordem em que aparecem no site. `key` liga e desliga a seção no site (a capa está sempre visível). */
-const SECTIONS: { id: SectionId; label: string; key?: keyof WeddingSiteSettings; desc?: string }[] = [
+const SECTIONS: { id: SectionId; label: string; key?: keyof ConfiguracoesDoSiteDoCasamento; desc?: string }[] = [
   { id: "COVER", label: "Capa" },
   { id: "STORY", label: "Nossa história", key: "showStory", desc: "Mensagem de boas-vindas, foto do casal e momentos marcantes." },
   { id: "LOCATION", label: "Cerimônia e recepção", key: "showLocation", desc: "Endereço, horários e botões de rota (Maps, Waze, Uber)." },
@@ -175,9 +175,9 @@ function SectionRow({
         >
           <span className="flex-1 font-semibold text-tinta">{title}</span>
           {visible === undefined ? null : visible ? (
-            <Chip tone="sucesso">Visível</Chip>
+            <Etiqueta tone="sucesso">Visível</Etiqueta>
           ) : (
-            <Chip tone="neutro">Oculta</Chip>
+            <Etiqueta tone="neutro">Oculta</Etiqueta>
           )}
           <ChevronDown aria-hidden="true" className={`size-4 shrink-0 text-tinta-suave transition-transform ${open ? "rotate-180" : ""}`} />
         </button>
@@ -200,7 +200,7 @@ export function SiteBuilderClient({
   slug,
   customDomain,
 }: SiteBuilderClientProps) {
-  const [settings, setSettings] = useState<WeddingSiteSettings>(initialSettings ?? {});
+  const [settings, setSettings] = useState<ConfiguracoesDoSiteDoCasamento>(initialSettings ?? {});
   const [storyItems, setStoryItems] = useState<StoryItem[]>(initialStoryItems);
   const [tips, setTips] = useState<Tip[]>(initialTips);
   const [openSection, setOpenSection] = useState<SectionId | null>("COVER");
@@ -221,7 +221,7 @@ export function SiteBuilderClient({
   const heroInput = useRef<HTMLInputElement>(null);
   const coupleInput = useRef<HTMLInputElement>(null);
 
-  const update = (patch: Partial<WeddingSiteSettings>) => {
+  const update = (patch: Partial<ConfiguracoesDoSiteDoCasamento>) => {
     setSettings((prev) => ({ ...prev, ...patch }));
     setDirty(true);
   };
@@ -320,7 +320,7 @@ export function SiteBuilderClient({
     });
   };
 
-  const toggleBlock = (key: keyof WeddingSiteSettings, checked: boolean) => {
+  const toggleBlock = (key: keyof ConfiguracoesDoSiteDoCasamento, checked: boolean) => {
     setSettings((prev) => ({ ...prev, [key]: checked }));
     startTransition(async () => {
       const res = await atualizarPersonalizacaoDoSite({ [key]: checked } as EntradaDaPersonalizacaoDoSite);
@@ -344,7 +344,7 @@ export function SiteBuilderClient({
                 <Skeleton className="absolute inset-0 rounded-none" />
               </>
             ) : url ? (
-              <UserImage src={url} alt={`Foto atual: ${label.toLowerCase()}`} sizes="72px" className="object-cover" />
+              <ImagemDaPessoa src={url} alt={`Foto atual: ${label.toLowerCase()}`} sizes="72px" className="object-cover" />
             ) : (
               <span className="px-1">Sem foto</span>
             )}
@@ -357,10 +357,10 @@ export function SiteBuilderClient({
             aria-label={`Enviar ${label.toLowerCase()}`}
             onChange={(e) => handleUpload(field, e.target.files?.[0])}
           />
-          <LoadingButton className={`${btn.secondary} ${btn.sm}`} loading={uploading === field} disabled={uploading !== null} onClick={() => ref.current?.click()}>
+          <BotaoComCarregamento className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`} loading={uploading === field} disabled={uploading !== null} onClick={() => ref.current?.click()}>
             <Upload className="size-4" aria-hidden="true" />
             {url ? "Trocar foto" : "Enviar foto"}
-          </LoadingButton>
+          </BotaoComCarregamento>
         </div>
         <Input
           id={`${field}-link`}
@@ -386,9 +386,9 @@ export function SiteBuilderClient({
         {dirty && <span className="shrink-0 text-xs font-semibold text-aviso">Alterações não publicadas</span>}
       </div>
       {/* O site do casal é sempre claro: a prévia não segue o tema do painel */}
-      <LightScope className="h-[72vh] overflow-y-auto">
+      <EscopoClaro className="h-[72vh] overflow-y-auto">
         <div className="pointer-events-none select-none" style={{ zoom: 0.5 }} aria-hidden="true">
-          <WeddingSiteView
+          <VisaoDoSiteDoCasamento
             slug={slug}
             settings={settings}
             storyItems={storyItems}
@@ -399,15 +399,15 @@ export function SiteBuilderClient({
             preview
           />
         </div>
-      </LightScope>
+      </EscopoClaro>
     </div>
   );
 
   const toggle = (id: SectionId) => setOpenSection((cur) => (cur === id ? null : id));
-  const isVisible = (key?: keyof WeddingSiteSettings) => (key ? settings[key] !== false : undefined);
+  const isVisible = (key?: keyof ConfiguracoesDoSiteDoCasamento) => (key ? settings[key] !== false : undefined);
 
   /** Interruptor de "aparece no site" (publicado na hora, como antes). */
-  const visibilityToggle = (key: keyof WeddingSiteSettings, desc?: string) => (
+  const visibilityToggle = (key: keyof ConfiguracoesDoSiteDoCasamento, desc?: string) => (
     <div className="flex items-center justify-between gap-4 rounded-xl bg-linho px-3 py-2">
       <div className="min-w-0">
         <label htmlFor={`block-${key}`} className="flex min-h-6 items-center gap-1.5 text-sm font-semibold text-tinta">
@@ -438,13 +438,13 @@ export function SiteBuilderClient({
             {siteAddress} · {savedLabel}
           </span>
         </div>
-        <Link href={caminhoDoSiteDoCasamento(slug)} target="_blank" className={`${btn.secondary} ${btn.sm}`}>
+        <Link href={caminhoDoSiteDoCasamento(slug)} target="_blank" className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
           <Eye className="size-4" aria-hidden="true" /> Ver o site
         </Link>
-        <LoadingButton onClick={handleSave} loading={busyAction === "publish"} disabled={isPending || !dirty} className={`${btn.primary} ${btn.sm}`}>
+        <BotaoComCarregamento onClick={handleSave} loading={busyAction === "publish"} disabled={isPending || !dirty} className={`${estiloDoBotao.primary} ${estiloDoBotao.sm}`}>
           {dirty ? null : <Check className="size-4" aria-hidden="true" />}
           {dirty ? "Publicar alterações" : "Tudo publicado"}
-        </LoadingButton>
+        </BotaoComCarregamento>
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(340px,420px)_minmax(0,1fr)] xl:items-start">
@@ -462,7 +462,7 @@ export function SiteBuilderClient({
                 {section.id === "COVER" && (
                   <>
                     <Input id="title" label="Nomes do casal" value={settings.title || ""} onChange={(e) => update({ title: e.target.value })} placeholder="Ana & Pedro" inputClassName="text-base font-semibold" />
-                    <DatePicker
+                    <SeletorDeData
                       id="weddingDate"
                       label="Data do casamento"
                       value={toDateInput(settings.weddingDate)}
@@ -515,9 +515,9 @@ export function SiteBuilderClient({
                       <Input id="story-title" label="Título" value={story.title} onChange={(e) => setStory({ ...story, title: e.target.value })} placeholder="O primeiro encontro" />
                       <Input id="story-date" label="Quando" value={story.dateLabel} onChange={(e) => setStory({ ...story, dateLabel: e.target.value })} placeholder="Outubro de 2021" />
                       <Textarea id="story-desc" label="O que aconteceu" rows={3} value={story.description} onChange={(e) => setStory({ ...story, description: e.target.value })} />
-                      <LoadingButton onClick={handleAddStory} loading={busyAction === "story"} disabled={isPending} className={`${btn.secondary} ${btn.sm} w-fit`}>
+                      <BotaoComCarregamento onClick={handleAddStory} loading={busyAction === "story"} disabled={isPending} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm} w-fit`}>
                         <Plus className="size-4" aria-hidden="true" /> Adicionar momento
-                      </LoadingButton>
+                      </BotaoComCarregamento>
                     </fieldset>
                     <ItemList
                       title={`Momentos publicados (${storyItems.length})`}
@@ -576,7 +576,7 @@ export function SiteBuilderClient({
                           </div>
                         ))}
                         {palette.length < 6 && (
-                          <button type="button" className={`${btn.secondary} ${btn.sm}`} onClick={() => update({ dressCodePalette: JSON.stringify([...palette, "#C5A880"]) })}>
+                          <button type="button" className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`} onClick={() => update({ dressCodePalette: JSON.stringify([...palette, "#C5A880"]) })}>
                             <Plus className="size-4" aria-hidden="true" /> Adicionar cor
                           </button>
                         )}
@@ -608,9 +608,9 @@ export function SiteBuilderClient({
                       <Input id="tip-link" label="Site ou link de reserva" value={tip.linkUrl} onChange={(e) => setTip({ ...tip, linkUrl: e.target.value })} placeholder="https://..." />
                       <Input id="tip-discount" label="Cupom de desconto" value={tip.discountCode} onChange={(e) => setTip({ ...tip, discountCode: e.target.value.toUpperCase() })} inputClassName="font-semibold uppercase" />
                       <Textarea id="tip-desc" label="Descrição" rows={2} value={tip.description} onChange={(e) => setTip({ ...tip, description: e.target.value })} />
-                      <LoadingButton onClick={handleAddTip} loading={busyAction === "tip"} disabled={isPending} className={`${btn.secondary} ${btn.sm} w-fit`}>
+                      <BotaoComCarregamento onClick={handleAddTip} loading={busyAction === "tip"} disabled={isPending} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm} w-fit`}>
                         <Plus className="size-4" aria-hidden="true" /> Adicionar dica
-                      </LoadingButton>
+                      </BotaoComCarregamento>
                     </fieldset>
                     <ItemList
                       title={`Dicas publicadas (${tips.length})`}
@@ -649,7 +649,7 @@ export function SiteBuilderClient({
         </div>
       </div>
 
-      <ConfirmModal
+      <ModalDeConfirmacao
         isOpen={pendingDelete !== null}
         onClose={() => setPendingDelete(null)}
         onConfirm={confirmDelete}

@@ -5,11 +5,11 @@ import type { Catalogo } from "@/lib/catalog";
 import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
 import { rotuloDoPlano } from "@/lib/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
-import { Reveal } from "@/components/motion/reveal";
-import { LinkButton } from "./home-ui";
+import { Aparicao } from "@/components/motion/reveal";
+import { LinkEmFormaDeBotao } from "./home-ui";
 
 /** Perguntas mais comuns, em acordeão nativo (<details>, sem JavaScript). Preços, taxa e nomes vêm do catálogo. */
-export function HomeFaq({ catalog }: { catalog: Catalogo }) {
+export function PerguntasFrequentesDaHome({ catalog }: { catalog: Catalogo }) {
   const classic = rotuloDoPlano(catalog.plans.classic.name);
   const vip = rotuloDoPlano(catalog.plans.vip.name);
   const faqs: { q: string; a: React.ReactNode }[] = [
@@ -48,14 +48,14 @@ export function HomeFaq({ catalog }: { catalog: Catalogo }) {
     <>
       <section className="lp-sec lp-dentro" id="duvidas" aria-labelledby="lp-t-faq">
         <div className="lp-faq">
-          <Reveal>
+          <Aparicao>
             <h2 className="lp-titulo lp-h2" id="lp-t-faq">
               Dúvidas?
               <br />
               <span className="lp-cor">Aqui estão as respostas.</span>
             </h2>
-          </Reveal>
-          <Reveal variant="right" delay={120} className="lp-faq-lista">
+          </Aparicao>
+          <Aparicao variant="right" delay={120} className="lp-faq-lista">
             {faqs.map((f) => (
               <details key={f.q} name="lp-faq">
                 <summary>
@@ -65,7 +65,7 @@ export function HomeFaq({ catalog }: { catalog: Catalogo }) {
                 <div className="lp-resp">{f.a}</div>
               </details>
             ))}
-          </Reveal>
+          </Aparicao>
         </div>
       </section>
     </>
@@ -73,10 +73,10 @@ export function HomeFaq({ catalog }: { catalog: Catalogo }) {
 }
 
 /** Convite final, com a Liz em voo. */
-export function Closing() {
+export function Encerramento() {
   return (
     <section className="lp-dentro lp-fim" aria-labelledby="lp-t-final">
-      <Reveal variant="scale" className="lp-final">
+      <Aparicao variant="scale" className="lp-final">
         <div className="lp-final-txt">
           <h2 className="lp-titulo lp-h2" id="lp-t-final">
             Vocês chegaram
@@ -84,14 +84,14 @@ export function Closing() {
             ao fim da página.
           </h2>
           <p>Se chegaram até aqui, o próximo passo é criar a conta. Começar é grátis.</p>
-          <LinkButton href="/cadastro?plano=basic" tone="claro" arrow>
+          <LinkEmFormaDeBotao href="/cadastro?plano=basic" tone="claro" arrow>
             Criar conta grátis
-          </LinkButton>
+          </LinkEmFormaDeBotao>
         </div>
         <figure className="lp-final-liz">
           <Image src="/brand/liz/voando-820.webp" alt="Liz, a fada flor do Aceito, voando com um rastro de brilho" width={820} height={542} sizes="(min-width: 900px) 460px, 300px" />
         </figure>
-      </Reveal>
+      </Aparicao>
     </section>
   );
 }

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { PageHeader } from "@/components/plataforma/page-header";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { EntrarComoForm } from "./entrar-como-form";
 
@@ -17,7 +17,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   return (
     <>
-      <PageHeader
+      <CabecalhoDaPagina
         breadcrumb={[{ label: "Casais", href: "/admin/casais" }, { label: wedding.coupleNames, href: `/admin/casais/${id}` }, { label: "Entrar como este casal" }]}
         eyebrow="Impersonação"
         title="Entrar como este casal"

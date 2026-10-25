@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { PageHeader } from "@/components/plataforma/page-header";
-import { Panel } from "@/components/plataforma/panel";
-import { InitialsAvatar } from "@/components/plataforma/initials-avatar";
-import { btn } from "@/components/landing/styles";
-import { RowsSkeleton } from "@/components/plataforma/loading-parts";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { Painel } from "@/components/plataforma/panel";
+import { AvatarComIniciais } from "@/components/plataforma/initials-avatar";
+import { estiloDoBotao } from "@/components/landing/styles";
+import { EsqueletoDasLinhas } from "@/components/plataforma/loading-parts";
 import { SkeletonCard, SkeletonForm, LoadingRegion } from "@/components/skeletons";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
@@ -35,10 +35,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 
   return (
     <>
-      <PageHeader eyebrow="Suporte" title="Suporte e LGPD" description="Ajude casais e fornecedores e responda aos pedidos sobre dados pessoais dentro do prazo." />
+      <CabecalhoDaPagina eyebrow="Suporte" title="Suporte e LGPD" description="Ajude casais e fornecedores e responda aos pedidos sobre dados pessoais dentro do prazo." />
 
       <div id="busca" className="scroll-mt-6">
-        <Panel title="Busca em tudo">
+        <Painel title="Busca em tudo">
           <SearchBox defaultValue={searchText ?? ""} />
           {searchText && (
             // Cada busca nova troca o resultado por um esqueleto (key = texto); o campo e o resto da página ficam
@@ -46,7 +46,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
               <SearchResults searchText={searchText} userId={admin.userId} />
             </Suspense>
           )}
-        </Panel>
+        </Painel>
       </div>
 
       <Suspense key={`${casal ?? ""}-${fornecedor ?? ""}-${showClosed}`} fallback={<SupportListsSkeleton />}>
@@ -59,7 +59,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 function SearchResultsSkeleton() {
   return (
     <LoadingRegion label="a busca" className="mt-4">
-      <RowsSkeleton rows={3} chip={false} />
+      <EsqueletoDasLinhas rows={3} chip={false} />
     </LoadingRegion>
   );
 }
@@ -69,10 +69,10 @@ function SupportListsSkeleton() {
     <LoadingRegion label="os pedidos de ajuda" className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <div className="flex min-w-0 flex-col gap-6">
         <SkeletonCard>
-          <RowsSkeleton rows={4} />
+          <EsqueletoDasLinhas rows={4} />
         </SkeletonCard>
         <SkeletonCard>
-          <RowsSkeleton rows={3} />
+          <EsqueletoDasLinhas rows={3} />
         </SkeletonCard>
       </div>
       <div className="flex min-w-0 flex-col gap-6">
@@ -80,7 +80,7 @@ function SupportListsSkeleton() {
           <SkeletonForm fields={1} />
         </SkeletonCard>
         <SkeletonCard>
-          <RowsSkeleton rows={2} />
+          <EsqueletoDasLinhas rows={2} />
         </SkeletonCard>
       </div>
     </LoadingRegion>
@@ -104,7 +104,7 @@ async function SearchResults({ searchText, userId }: { searchText: string; userI
                 <li key={`${h.kind}-${h.id}`} className="flex items-center justify-between gap-3 py-3">
                   {h.href ? (
                     <Link href={h.href} className="flex min-w-0 flex-1 items-center gap-3 focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa">
-                      <InitialsAvatar name={h.title} />
+                      <AvatarComIniciais name={h.title} />
                       <span className="min-w-0">
                         <span className="block truncate font-semibold leading-5 text-tinta">{h.title}</span>
                         <span className="block truncate text-sm leading-5 text-tinta-suave">{h.detail}</span>
@@ -113,7 +113,7 @@ async function SearchResults({ searchText, userId }: { searchText: string; userI
                     </Link>
                   ) : (
                     <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <InitialsAvatar name={h.title} />
+                      <AvatarComIniciais name={h.title} />
                       <span className="min-w-0">
                         <span className="block truncate font-semibold leading-5 text-tinta">{h.title}</span>
                         <span className="block truncate text-sm leading-5 text-tinta-suave">{h.detail}</span>
@@ -121,7 +121,7 @@ async function SearchResults({ searchText, userId }: { searchText: string; userI
                     </div>
                   )}
                   {h.ticketHref && (
-                    <Link href={h.ticketHref} className={`${btn.quiet} ${btn.sm} shrink-0`}>
+                    <Link href={h.ticketHref} className={`${estiloDoBotao.quiet} ${estiloDoBotao.sm} shrink-0`}>
                       Abrir pedido
                     </Link>
                   )}

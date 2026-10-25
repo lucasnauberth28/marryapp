@@ -6,21 +6,21 @@ import { QRCodeSVG } from "qrcode.react";
 import { ArrowRight, Check, Copy, Gift as GiftIcon, Heart, Hourglass, Lock } from "lucide-react";
 import { criarTransacaoPix, conferirSituacaoDaTransacao, processarPagamentoComCartao } from "@/actions/payment-actions";
 import { Button } from "@/components/ui/button";
-import { Field, FormAlert } from "@/components/ui/field";
+import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { QrFrame } from "@/components/ui/qr-frame";
+import { MolduraDoQr } from "@/components/ui/qr-frame";
 import { CORES_DO_QR } from "@/lib/qr-colors";
 import { Textarea } from "@/components/ui/textarea";
 import { mascararTelefone } from "@/lib/formatacao/telefone";
 import { finalDoTelefone } from "@/lib/saved-guest";
 import { useConvidadoSalvo } from "@/lib/use-saved-guest";
-import { Seal } from "@/components/landing/seal";
-import { btn, btnArrow } from "@/components/landing/styles";
-import { UserImage } from "@/components/ui/user-image";
+import { Selo } from "@/components/landing/seal";
+import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
+import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { tokenizarCartao } from "@/lib/mercadopago-client";
 import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
-import { GiftLocal as Gift } from "@/types/local";
+import { PresenteLocal as Gift } from "@/types/local";
 import { cn } from "@/lib/utils";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
@@ -203,7 +203,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
       {/* Resumo do presente */}
       <div className="flex items-center gap-3 rounded-[16px] border border-linha bg-papel p-3 shadow-[var(--shadow-aceito-1)]">
         <div className="relative size-14 shrink-0 overflow-hidden rounded-[12px] bg-areia">
-          {gift.imageUrl ? <UserImage src={gift.imageUrl} alt="" sizes="56px" className="object-cover" /> : null}
+          {gift.imageUrl ? <ImagemDaPessoa src={gift.imageUrl} alt="" sizes="56px" className="object-cover" /> : null}
         </div>
         <div className="flex min-w-0 flex-1 flex-col">
           <strong className="font-semibold leading-6">{gift.title}</strong>
@@ -240,14 +240,14 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                   forgetKnownGuest();
                   setRecognizedDismissed(true);
                 }}
-                className={cn(btn.quiet, "min-h-11 self-start px-0")}
+                className={cn(estiloDoBotao.quiet, "min-h-11 self-start px-0")}
               >
                 Não sou essa pessoa
               </button>
             </div>
           ) : (
             <>
-              <Field id="checkout-nome" label="Seu nome completo">
+              <Campo id="checkout-nome" label="Seu nome completo">
                 {(c) => (
                   <input
                     {...c}
@@ -260,9 +260,9 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                     required
                   />
                 )}
-              </Field>
+              </Campo>
 
-              <Field id="checkout-telefone" label="Seu WhatsApp com DDD">
+              <Campo id="checkout-telefone" label="Seu WhatsApp com DDD">
                 {(c) => (
                   <input
                     {...c}
@@ -277,7 +277,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                     required
                   />
                 )}
-              </Field>
+              </Campo>
             </>
           )}
 
@@ -289,11 +289,11 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
             .
           </p>
 
-          {error ? <FormAlert>{error}</FormAlert> : null}
+          {error ? <AvisoDoFormulario>{error}</AvisoDoFormulario> : null}
 
-          <button type="submit" className={cn(btn.primary, btn.block, "min-h-12")}>
+          <button type="submit" className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}>
             {recognized ? "Sim, sou eu. Continuar" : "Continuar para o pagamento"}
-            <ArrowRight aria-hidden="true" className={btnArrow} />
+            <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
           </button>
         </form>
       )}
@@ -342,7 +342,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
 
           {method === "CREDIT_CARD" && (
             <div className="grid grid-cols-2 gap-x-3 gap-y-5">
-              <Field id="cartao-email" label="E-mail para o comprovante" className="col-span-2">
+              <Campo id="cartao-email" label="E-mail para o comprovante" className="col-span-2">
                 {(c) => (
                   <input
                     {...c}
@@ -354,9 +354,9 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                     placeholder="voce@email.com"
                   />
                 )}
-              </Field>
+              </Campo>
 
-              <Field id="cartao-nome" label="Nome como está no cartão" className="col-span-2">
+              <Campo id="cartao-nome" label="Nome como está no cartão" className="col-span-2">
                 {(c) => (
                   <input
                     {...c}
@@ -367,9 +367,9 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                     placeholder="JOAO M SILVA"
                   />
                 )}
-              </Field>
+              </Campo>
 
-              <Field id="cartao-numero" label="Número do cartão" className="col-span-2">
+              <Campo id="cartao-numero" label="Número do cartão" className="col-span-2">
                 {(c) => (
                   <input
                     {...c}
@@ -383,9 +383,9 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                     className={cn(c.className, "font-mono tracking-wider")}
                   />
                 )}
-              </Field>
+              </Campo>
 
-              <Field id="cartao-validade" label="Validade (MM/AA)">
+              <Campo id="cartao-validade" label="Validade (MM/AA)">
                 {(c) => (
                   <input
                     {...c}
@@ -402,9 +402,9 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                     className={cn(c.className, "font-mono")}
                   />
                 )}
-              </Field>
+              </Campo>
 
-              <Field id="cartao-cvv" label="Código (CVV)">
+              <Campo id="cartao-cvv" label="Código (CVV)">
                 {(c) => (
                   <input
                     {...c}
@@ -419,7 +419,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                     className={cn(c.className, "font-mono")}
                   />
                 )}
-              </Field>
+              </Campo>
 
               {/* Parcelas (máx. 12x) */}
               <NativeSelect
@@ -483,13 +483,13 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
             </p>
           </section>
 
-          {error ? <FormAlert>{error}</FormAlert> : null}
+          {error ? <AvisoDoFormulario>{error}</AvisoDoFormulario> : null}
 
           <div className="flex flex-col gap-2">
             <Button type="button" onClick={handleProcessPayment} loading={isPending} className="h-12 w-full rounded-[12px] px-6">
               {method === "PIX" ? "Gerar Pix" : "Pagar com cartão"}
             </Button>
-            <button type="button" onClick={() => setStep("IDENTIFICATION")} className={cn(btn.quiet, btn.block)}>
+            <button type="button" onClick={() => setStep("IDENTIFICATION")} className={cn(estiloDoBotao.quiet, estiloDoBotao.block)}>
               Voltar
             </button>
           </div>
@@ -516,13 +516,13 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
               {pixPayload === "" ? "Gerando o código" : "Aguardando pagamento"}
             </span>
             {pixPayload === "" ? <span role="status" className="sr-only">Gerando o código do Pix...</span> : null}
-            <QrFrame className="p-3">
+            <MolduraDoQr className="p-3">
               {pixPayload === "" ? (
                 <Skeleton className="size-[200px] rounded-lg" />
               ) : (
                 <QRCodeSVG value={pixPayload} size={200} {...CORES_DO_QR} marginSize={2} role="img" aria-label="QR Code do Pix" />
               )}
-            </QrFrame>
+            </MolduraDoQr>
             <p className="text-sm text-tinta-suave">
               No celular, copie o código e cole no app do seu banco, na opção Pix copia e cola. No computador, escaneie o QR Code com o celular.
             </p>
@@ -535,7 +535,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                   type="button"
                   onClick={copyToClipboard}
                   aria-label={copied ? "Código copiado" : "Copiar código Pix"}
-                  className={cn(btn.primary, btn.sm, "shrink-0")}
+                  className={cn(estiloDoBotao.primary, estiloDoBotao.sm, "shrink-0")}
                 >
                   {copied ? <Check aria-hidden="true" className="size-4" /> : <Copy aria-hidden="true" className="size-4" />}
                   {copied ? "Copiado" : "Copiar"}
@@ -580,7 +580,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
                   setPixAcknowledged(true);
                   setStep("SUCCESS");
                 }}
-                className={cn(btn.primary, btn.block, "min-h-12")}
+                className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}
               >
                 Já fiz o Pix
               </button>
@@ -592,7 +592,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
             </p>
           )}
 
-          <button type="button" onClick={() => setStep("METHOD")} disabled={pixPayload === ""} className={cn(btn.quiet, "self-start")}>
+          <button type="button" onClick={() => setStep("METHOD")} disabled={pixPayload === ""} className={cn(estiloDoBotao.quiet, "self-start")}>
             Voltar
           </button>
         </div>
@@ -620,7 +620,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
               <Heart className="size-10" strokeWidth={1.5} />
             </span>
           ) : (
-            <Seal label="Selo de pagamento" className="size-24 [&>span]:text-[54px]" />
+            <Selo label="Selo de pagamento" className="size-24 [&>span]:text-[54px]" />
           )}
           <h2 ref={headingRef} tabIndex={-1} className="mt-2 font-display text-[40px] font-medium leading-[46px] tracking-[-0.015em] text-tinta outline-none">
             Obrigado pelo carinho!
@@ -637,10 +637,10 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
           </div>
 
           <div className="mt-2 flex w-full flex-col gap-2">
-            <Link href={caminhoDoSiteDoCasamento(slug, "rsvp")} className={cn(btn.primary, btn.block, "min-h-12")}>
+            <Link href={caminhoDoSiteDoCasamento(slug, "rsvp")} className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}>
               Confirmar presença
             </Link>
-            <Link href={caminhoDoSiteDoCasamento(slug)} className={cn(btn.secondary, btn.block, "min-h-12")}>
+            <Link href={caminhoDoSiteDoCasamento(slug)} className={cn(estiloDoBotao.secondary, estiloDoBotao.block, "min-h-12")}>
               Ver o site do casal
             </Link>
           </div>

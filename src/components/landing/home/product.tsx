@@ -1,23 +1,23 @@
 import Image from "next/image";
 import { Check } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
-import { Reveal } from "@/components/motion/reveal";
-import { SectionHead } from "./home-ui";
-import { ScreenInPhoto } from "./screen-in-photo";
+import { Logotipo } from "@/components/brand/logo";
+import { Aparicao } from "@/components/motion/reveal";
+import { CabecalhoDaSecao } from "./home-ui";
+import { TelaNaFoto } from "./screen-in-photo";
 
-const NOMES = (
+const NOMES_DE_EXEMPLO = (
   <span className="lp-nomes">
     Ana <span className="lp-amp">&amp;</span> Rafael
   </span>
 );
 
 /** Convidados: foto de mãos com o celular, e o convite de verdade encaixado na tela. */
-export function GuestsSection({ classic, vip }: { classic: string; vip: string }) {
+export function SecaoDeConvidados({ classic, vip }: { classic: string; vip: string }) {
   return (
     <>
       <section className="lp-sec lp-dentro" id="convidados" aria-labelledby="lp-t-conv">
-        <SectionHead id="lp-t-conv" chip="Convidados" title="Cada convidado acha" accent="o próprio convite." lead="Pelo número de WhatsApp, sem criar conta." />
-        <Reveal variant="scale" className="lp-cena">
+        <CabecalhoDaSecao id="lp-t-conv" chip="Convidados" title="Cada convidado acha" accent="o próprio convite." lead="Pelo número de WhatsApp, sem criar conta." />
+        <Aparicao variant="scale" className="lp-cena">
           <Image
             className="lp-liz-envelope"
             src="/brand/liz/envelope-460.webp"
@@ -27,7 +27,7 @@ export function GuestsSection({ classic, vip }: { classic: string; vip: string }
             sizes="150px"
           />
           <div className="lp-recorte lp-recorte-cel">
-            <ScreenInPhoto
+            <TelaNaFoto
               src="/landing/fotos/foto-maos-celular.webp"
               alt="Mãos segurando um celular com o convite do casamento aberto"
               sizes="(min-width: 1000px) 1100px, 230vw"
@@ -38,13 +38,13 @@ export function GuestsSection({ classic, vip }: { classic: string; vip: string }
               <div className="lp-tc-cab">
                 <Image src="/landing/fotos/foto-saida-noivos.webp" alt="" fill sizes="360px" className="lp-cobre" style={{ objectPosition: "50% 35%" }} />
                 <p>
-                  {NOMES}
+                  {NOMES_DE_EXEMPLO}
                   <span className="lp-data">Sábado · 17 · abril 2027</span>
                 </p>
               </div>
               <div className="lp-tc-corpo">
                 <div className="lp-selo" aria-hidden="true">
-                  <Logo variant="mark-linho" height={48} />
+                  <Logotipo variant="mark-linho" height={48} />
                 </div>
                 <p className="lp-tc-t">Presença confirmada</p>
                 <p className="lp-tc-s">Marina Alves e mais 1 pessoa</p>
@@ -53,7 +53,7 @@ export function GuestsSection({ classic, vip }: { classic: string; vip: string }
                 </span>
                 <p className="lp-tc-n">Sem glúten · informado na resposta</p>
               </div>
-            </ScreenInPhoto>
+            </TelaNaFoto>
           </div>
           <p className="lp-balao lp-c1">
             <Image src="/landing/icones/seguranca.webp" alt="" width={280} height={289} sizes="40px" />
@@ -73,7 +73,7 @@ export function GuestsSection({ classic, vip }: { classic: string; vip: string }
               <b>Código QR</b> na entrada · {classic} e {vip}
             </span>
           </p>
-        </Reveal>
+        </Aparicao>
         <p className="lp-exemplo">Imagem ilustrativa, com dados fictícios.</p>
       </section>
     </>
@@ -81,13 +81,13 @@ export function GuestsSection({ classic, vip }: { classic: string; vip: string }
 }
 
 /** Painel do casal: foto do casal no sofá, com o Resumo encaixado na tela do notebook. */
-export function PanelSection() {
+export function SecaoDoPainel() {
   return (
     <>
       <section className="lp-sec lp-dentro lp-sec-curta" id="painel" aria-labelledby="lp-t-painel">
-        <SectionHead id="lp-t-painel" chip="Painel do casal" title="Tudo num painel só," accent="no sofá de casa." lead="Respostas, presentes e o que falta fazer." />
-        <Reveal variant="scale" className="lp-recorte lp-recorte-pc">
-          <ScreenInPhoto
+        <CabecalhoDaSecao id="lp-t-painel" chip="Painel do casal" title="Tudo num painel só," accent="no sofá de casa." lead="Respostas, presentes e o que falta fazer." />
+        <Aparicao variant="scale" className="lp-recorte lp-recorte-pc">
+          <TelaNaFoto
             src="/landing/fotos/foto-casal-notebook.webp"
             alt="Casal sorrindo no sofá enquanto olha o painel do casamento no notebook"
             sizes="(min-width: 1000px) 1100px, 200vw"
@@ -130,8 +130,8 @@ export function PanelSection() {
                 <em>R$ 350,00</em>
               </p>
             </div>
-          </ScreenInPhoto>
-        </Reveal>
+          </TelaNaFoto>
+        </Aparicao>
         <p className="lp-exemplo">Imagem ilustrativa, com dados fictícios.</p>
       </section>
     </>
@@ -139,10 +139,10 @@ export function PanelSection() {
 }
 
 /** O site do casal: ilustração de um site de exemplo (não é um site real), ao lado de um texto curto. */
-export function SiteSection({ vip }: { vip: string }) {
+export function SecaoDoSite({ vip }: { vip: string }) {
   return (
     <section className="lp-meia" aria-labelledby="lp-t-site">
-      <Reveal variant="left" className="lp-meia-visual" role="img" aria-label="Exemplo ilustrado de um site de casamento, com a capa do casal e os horários da cerimônia e da recepção">
+      <Aparicao variant="left" className="lp-meia-visual" role="img" aria-label="Exemplo ilustrado de um site de casamento, com a capa do casal e os horários da cerimônia e da recepção">
         <div className="lp-navegador" aria-hidden="true">
           <div className="lp-nav-barra">
             <i />
@@ -154,7 +154,7 @@ export function SiteSection({ vip }: { vip: string }) {
             <div className="lp-ms-capa">
               <Image src="/landing/fotos/foto-casal-campo.webp" alt="" fill sizes="600px" className="lp-cobre" style={{ objectPosition: "50% 30%" }} />
               <p>
-                {NOMES}
+                {NOMES_DE_EXEMPLO}
                 <span className="lp-data">Sábado · 17 · abril 2027</span>
               </p>
             </div>
@@ -172,8 +172,8 @@ export function SiteSection({ vip }: { vip: string }) {
           </div>
         </div>
         <span className="lp-selo-exemplo">Exemplo</span>
-      </Reveal>
-      <Reveal variant="right" delay={120} className="lp-meia-texto">
+      </Aparicao>
+      <Aparicao variant="right" delay={120} className="lp-meia-texto">
         <h2 className="lp-titulo lp-h2" id="lp-t-site">
           O site do casamento,
           <br />
@@ -187,7 +187,7 @@ export function SiteSection({ vip }: { vip: string }) {
           </span>
         </span>
         <p className="lp-mudo lp-nota">No {vip}, com endereço .com.br próprio.</p>
-      </Reveal>
+      </Aparicao>
     </section>
   );
 }

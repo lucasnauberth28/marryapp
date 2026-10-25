@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { PendingLink } from "@/components/plataforma/pending";
+import { LinkPendente } from "@/components/plataforma/pending";
 import { montarLink, numerosDePagina } from "@/lib/platform/list-params";
 import { formatarInteiro } from "@/lib/platform/format";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  * Mostra "26 a 50 de 1.236 casais", Anterior, números e Próxima (alvos de 44px). Com uma página só, mostra apenas o total.
  * `params` mantém os filtros atuais nos links.
  */
-export function Pagination({
+export function Paginacao({
   page,
   pageSize,
   total,
@@ -39,9 +39,9 @@ export function Pagination({
       {pages > 1 && (
         <nav aria-label="Páginas" className="flex flex-wrap items-center gap-1.5">
           {page > 1 ? (
-            <PendingLink href={href(page - 1)} className={cn(edge, "border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}>
+            <LinkPendente href={href(page - 1)} className={cn(edge, "border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}>
               <ChevronLeft className="size-4" aria-hidden="true" /> Anterior
-            </PendingLink>
+            </LinkPendente>
           ) : (
             <span className={cn(edge, "border-linha text-tinta-suave opacity-60")} aria-disabled="true">
               <ChevronLeft className="size-4" aria-hidden="true" /> Anterior
@@ -53,7 +53,7 @@ export function Pagination({
                 …
               </span>
             ) : (
-              <PendingLink
+              <LinkPendente
                 key={n}
                 href={href(n)}
                 aria-label={`Página ${n}`}
@@ -64,13 +64,13 @@ export function Pagination({
                 )}
               >
                 {n}
-              </PendingLink>
+              </LinkPendente>
             ),
           )}
           {page < pages ? (
-            <PendingLink href={href(page + 1)} className={cn(edge, "border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}>
+            <LinkPendente href={href(page + 1)} className={cn(edge, "border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}>
               Próxima <ChevronRight className="size-4" aria-hidden="true" />
-            </PendingLink>
+            </LinkPendente>
           ) : (
             <span className={cn(edge, "border-linha text-tinta-suave opacity-60")} aria-disabled="true">
               Próxima <ChevronRight className="size-4" aria-hidden="true" />

@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { LandingHeader } from "@/components/landing/landing-header";
-import { LandingFooter } from "@/components/landing/landing-footer";
-import { btn, container } from "@/components/landing/styles";
+import { CabecalhoDaLanding } from "@/components/landing/landing-header";
+import { RodapeDaLanding } from "@/components/landing/landing-footer";
+import { estiloDoBotao, estiloDoContainerDaLanding } from "@/components/landing/styles";
 import {
   Building2,
   Star,
@@ -26,12 +26,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
-import { DatePicker } from "@/components/ui/date-picker";
+import { SeletorDeData } from "@/components/ui/date-picker";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { conferirDisponibilidadeDoFornecedor, criarPedidoDeOrcamento, type FornecedorPublico } from "@/actions/partner-vendor-actions";
 import { toast } from "sonner";
 import { LEAD_BUDGET_OPTIONS, parseGallery, parseRegions } from "@/app/(fornecedor)/_lib/vendor-panel";
-import { UserImage } from "@/components/ui/user-image";
+import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { cn } from "@/lib/utils";
 
 import { formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
@@ -212,16 +212,16 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
 
   return (
     <div className="flex min-h-screen flex-col bg-linho font-sans text-tinta">
-      <LandingHeader />
+      <CabecalhoDaLanding />
 
-      <div className={cn(container, "flex flex-1 flex-col gap-6 pb-0 pt-4 sm:pt-6 lg:pb-24")}>
+      <div className={cn(estiloDoContainerDaLanding, "flex flex-1 flex-col gap-6 pb-0 pt-4 sm:pt-6 lg:pb-24")}>
         {/* Voltar e compartilhar */}
         <div className="flex items-center justify-between gap-3">
-          <Link href="/fornecedores" className={cn(btn.quiet, "-ml-3 shrink-0")}>
+          <Link href="/fornecedores" className={cn(estiloDoBotao.quiet, "-ml-3 shrink-0")}>
             <ArrowLeft className="size-4" aria-hidden="true" />
             Fornecedores
           </Link>
-          <button type="button" onClick={share} className={cn(btn.secondary, btn.sm)}>
+          <button type="button" onClick={share} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)}>
             <Share2 className="size-4" aria-hidden="true" />
             Compartilhar
           </button>
@@ -239,7 +239,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                     aria-label={`Ampliar foto ${i + 1} de ${galleryImages.length}`}
                     className="absolute inset-0 block cursor-zoom-in"
                   >
-                    <UserImage
+                    <ImagemDaPessoa
                       src={img}
                       alt=""
                       sizes={i === 0 ? "(min-width: 1200px) 600px, 50vw" : "(min-width: 1200px) 300px, 25vw"}
@@ -251,7 +251,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                     <button
                       type="button"
                       onClick={() => setLightbox(0)}
-                      className={cn(btn.secondary, btn.sm, "absolute bottom-3 right-3")}
+                      className={cn(estiloDoBotao.secondary, estiloDoBotao.sm, "absolute bottom-3 right-3")}
                     >
                       Ver as {galleryImages.length} fotos
                     </button>
@@ -262,7 +262,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
 
             <div className="flex flex-col gap-3 md:hidden">
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[16px] bg-salvia-suave">
-                <UserImage
+                <ImagemDaPessoa
                   src={galleryImages[activeIndex] ?? galleryImages[0]}
                   alt={`Foto ${activeIndex + 1} de ${vendor.companyName}`}
                   sizes="100vw"
@@ -289,7 +289,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                         activeIndex === i ? "border-ameixa" : "border-transparent opacity-80",
                       )}
                     >
-                      <UserImage src={img} alt="" sizes="60px" className="object-cover" />
+                      <ImagemDaPessoa src={img} alt="" sizes="60px" className="object-cover" />
                     </button>
                   ))}
                 </div>
@@ -328,7 +328,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
               <div className="flex items-center gap-4">
                 {vendor.logoUrl ? (
                   <div className="relative size-14 shrink-0 overflow-hidden rounded-full border border-linha bg-papel sm:size-16">
-                    <UserImage src={vendor.logoUrl} alt="" sizes="64px" className="object-cover" />
+                    <ImagemDaPessoa src={vendor.logoUrl} alt="" sizes="64px" className="object-cover" />
                   </div>
                 ) : null}
                 <h1 className="font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta sm:text-5xl sm:leading-[54px]">
@@ -525,13 +525,13 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                         href={`https://wa.me/${directWhatsapp}?text=${encodeURIComponent(`Olá! Sou ${sentTo.coupleName} e acabei de pedir um orçamento pelo Aceito.`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={cn(btn.primary, btn.block)}
+                        className={cn(estiloDoBotao.primary, estiloDoBotao.block)}
                       >
                         Conversar agora no WhatsApp
                         <span className="sr-only"> (abre em nova aba)</span>
                       </a>
                     ) : null}
-                    <button type="button" onClick={() => setSentTo(null)} className={cn(btn.quiet, btn.block)}>
+                    <button type="button" onClick={() => setSentTo(null)} className={cn(estiloDoBotao.quiet, estiloDoBotao.block)}>
                       Fazer outro pedido
                     </button>
                   </div>
@@ -559,7 +559,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                       placeholder="(11) 99999-9999"
                       required
                     />
-                    <DatePicker
+                    <SeletorDeData
                       id="lead-data"
                       label="Data do casamento"
                       value={weddingDate}
@@ -620,7 +620,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
                         href={`https://wa.me/${directWhatsapp}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={cn(btn.secondary, btn.block)}
+                        className={cn(estiloDoBotao.secondary, estiloDoBotao.block)}
                       >
                         Conversar no WhatsApp
                         <span className="sr-only"> (abre em nova aba)</span>
@@ -638,7 +638,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
             <span className="text-sm text-tinta-suave">{price ? "A partir de" : "Preço"}</span>
             <span className="font-num text-xl text-tinta">{price ?? "Sob consulta"}</span>
           </p>
-          <a href="#orcamento" className={cn(btn.primary, "flex-1 max-w-[240px]")}>
+          <a href="#orcamento" className={cn(estiloDoBotao.primary, "flex-1 max-w-[240px]")}>
             Pedir orçamento
           </a>
         </div>
@@ -651,18 +651,18 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
           <DialogDescription className="sr-only">Use as setas para ver as outras fotos.</DialogDescription>
           {lightbox >= 0 ? (
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[12px] bg-areia">
-              <UserImage src={galleryImages[lightbox]} alt={`Foto ${lightbox + 1} de ${galleryImages.length}`} sizes="960px" className="object-contain" />
+              <ImagemDaPessoa src={galleryImages[lightbox]} alt={`Foto ${lightbox + 1} de ${galleryImages.length}`} sizes="960px" className="object-contain" />
             </div>
           ) : null}
           <div className="flex items-center justify-between gap-3">
-            <button type="button" onClick={() => step(-1)} className={cn(btn.secondary, btn.sm)} aria-label="Foto anterior">
+            <button type="button" onClick={() => step(-1)} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)} aria-label="Foto anterior">
               <ChevronLeft className="size-4" aria-hidden="true" />
               Anterior
             </button>
             <span className="text-sm font-semibold text-tinta-suave">
               {lightbox + 1} / {galleryImages.length}
             </span>
-            <button type="button" onClick={() => step(1)} className={cn(btn.secondary, btn.sm)} aria-label="Próxima foto">
+            <button type="button" onClick={() => step(1)} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)} aria-label="Próxima foto">
               Próxima
               <ChevronRight className="size-4" aria-hidden="true" />
             </button>
@@ -670,7 +670,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
         </DialogContent>
       </Dialog>
 
-      <LandingFooter />
+      <RodapeDaLanding />
     </div>
   );
 }

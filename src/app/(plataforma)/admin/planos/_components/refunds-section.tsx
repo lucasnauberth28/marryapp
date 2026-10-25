@@ -1,37 +1,37 @@
 import Link from "next/link";
 import { RotateCcw } from "lucide-react";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { Panel } from "@/components/plataforma/panel";
-import { ResponsiveTable } from "@/components/plataforma/responsive-table";
-import { StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { Painel } from "@/components/plataforma/panel";
+import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
+import { EtiquetaDeSituacao, type TomDaSituacao } from "@/components/plataforma/status-chip";
 import { formatarData, diaRelativo } from "@/lib/platform/format";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { ROTULO_DA_VISAO_DO_REEMBOLSO, visaoDoReembolso, type VisaoDoReembolso } from "@/lib/platform/payments";
 import type { LinhaDeReembolso } from "@/lib/platform/queries/receita";
 import { RefundDecision, RegisterRefundForm } from "./refund-forms";
 
-const TONE: Record<VisaoDoReembolso, StatusTone> = { decide: "aviso", waiting_refund: "aviso", refunded: "neutro", denied: "neutro" };
+const TONE: Record<VisaoDoReembolso, TomDaSituacao> = { decide: "aviso", waiting_refund: "aviso", refunded: "neutro", denied: "neutro" };
 
 /** Reembolsos: pedidos, decisão e o aviso de que o estorno de verdade é feito no Mercado Pago. */
 export function RefundsSection({ refunds, payments, now, preview = false, policyText }: { refunds: LinhaDeReembolso[]; payments?: { id: string; label: string; amount: number }[]; now: Date; preview?: boolean; policyText?: string }) {
   const rows = preview ? refunds.slice(0, 5) : refunds;
   return (
     <>
-      <Panel
+      <Painel
         title="Reembolsos"
         description="Reembolso pedido, para decidir e decidido. O estorno em si é feito no painel do Mercado Pago: quando o aviso chega, o Aceito conclui sozinho."
         action={preview ? { label: "Ver todos", href: "/admin/planos?aba=reembolsos" } : undefined}
         padded={false}
       >
         <div className="px-3 pb-3 md:px-4 md:pb-4">
-          <ResponsiveTable
+          <TabelaResponsiva
             caption="Pedidos de reembolso"
             rows={rows}
             rowKey={(r) => r.id}
             empty={
-              <EmptyState icon={RotateCcw} title="Nenhum pedido de reembolso" compact>
+              <EstadoVazio icon={RotateCcw} title="Nenhum pedido de reembolso" compact>
                 Quando alguém pedir o dinheiro de volta, registre o pedido aqui para decidir e deixar no registro.
-              </EmptyState>
+              </EstadoVazio>
             }
             columns={[
               {
@@ -60,7 +60,7 @@ export function RefundsSection({ refunds, payments, now, preview = false, policy
                 header: "Situação",
                 cell: (r) => {
                   const view = visaoDoReembolso(r);
-                  return <StatusChip tone={TONE[view]}>{ROTULO_DA_VISAO_DO_REEMBOLSO[view]}</StatusChip>;
+                  return <EtiquetaDeSituacao tone={TONE[view]}>{ROTULO_DA_VISAO_DO_REEMBOLSO[view]}</EtiquetaDeSituacao>;
                 },
               },
               {
@@ -84,11 +84,11 @@ export function RefundsSection({ refunds, payments, now, preview = false, policy
             ]}
           />
         </div>
-      </Panel>
+      </Painel>
       {!preview && payments ? (
-        <Panel title="Registrar um pedido" description="Para pedidos que chegaram por WhatsApp ou e-mail.">
+        <Painel title="Registrar um pedido" description="Para pedidos que chegaram por WhatsApp ou e-mail.">
           <RegisterRefundForm payments={payments} />
-        </Panel>
+        </Painel>
       ) : null}
       {!preview && policyText ? (
         <p className="text-sm text-tinta-suave">

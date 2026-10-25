@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  *   </EmptyState>
  * `compact` reduz o respiro (para dentro de colunas estreitas e tabelas).
  */
-export function EmptyState({
+export function EstadoVazio({
   icon: Icon,
   title,
   children,

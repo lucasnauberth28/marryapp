@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Check, CreditCard, Gift as GiftIcon, QrCode, Search, ShieldCheck } from "lucide-react";
-import { btn } from "@/components/landing/styles";
-import { GiftLocal as Gift } from "@/types/local";
-import { UserImage } from "@/components/ui/user-image";
+import { estiloDoBotao } from "@/components/landing/styles";
+import { PresenteLocal as Gift } from "@/types/local";
+import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { cn } from "@/lib/utils";
 
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
@@ -112,7 +112,7 @@ export function PublicGiftsClient({ initialGifts, coupleNames, cardEnabled = tru
                   <article className="flex h-full flex-col gap-2">
                     <div className="relative aspect-square overflow-hidden rounded-[16px] bg-areia">
                       {gift.imageUrl ? (
-                        <UserImage
+                        <ImagemDaPessoa
                           src={gift.imageUrl}
                           alt=""
                           sizes="(min-width: 1024px) 262px, (min-width: 768px) 33vw, 50vw"
@@ -137,7 +137,7 @@ export function PublicGiftsClient({ initialGifts, coupleNames, cardEnabled = tru
                         <Link
                           href={`/checkout/${gift.id}`}
                           aria-label={`Presentear: ${gift.title}`}
-                          className={cn(btn.secondary, btn.sm, btn.block)}
+                          className={cn(estiloDoBotao.secondary, estiloDoBotao.sm, estiloDoBotao.block)}
                         >
                           Presentear
                         </Link>

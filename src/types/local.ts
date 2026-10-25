@@ -1,43 +1,43 @@
 // Tipos locais para uso em Client Components.
 // NÃO importar de @prisma/client em "use client" — quebra o build (bundle do browser).
 
-export const RsvpStatus = {
+export const SituacaoDaConfirmacao = {
   PENDING: "PENDING",
   CONFIRMED: "CONFIRMED",
   DECLINED: "DECLINED",
 } as const;
-export type RsvpStatus = (typeof RsvpStatus)[keyof typeof RsvpStatus];
+export type SituacaoDaConfirmacao = (typeof SituacaoDaConfirmacao)[keyof typeof SituacaoDaConfirmacao];
 
-export const ExpenseStatus = {
+export const SituacaoDaDespesa = {
   PENDING: "PENDING",
   PAID: "PAID",
   OVERDUE: "OVERDUE",
 } as const;
-export type ExpenseStatus = (typeof ExpenseStatus)[keyof typeof ExpenseStatus];
+export type SituacaoDaDespesa = (typeof SituacaoDaDespesa)[keyof typeof SituacaoDaDespesa];
 
 
 
-export interface GuestLocal {
+export interface ConvidadoLocal {
   id: string;
   name: string;
   phone?: string | null;
   email?: string | null;
   category?: string | null;
-  rsvpStatus: RsvpStatus;
+  rsvpStatus: SituacaoDaConfirmacao;
   allowedCompanions: number;
   confirmedCompanions?: number;
   companionsNames?: string | null;
   dietaryRestrictions?: string | null;
   hasReceivedMessage: boolean;
   parentGuestId?: string | null;
-  parentGuest?: GuestLocal | null;
-  linkedGuests?: GuestLocal[];
+  parentGuest?: ConvidadoLocal | null;
+  linkedGuests?: ConvidadoLocal[];
   createdAt: Date;
   updatedAt: Date;
   tableId?: string | null;
 }
 
-export interface GiftLocal {
+export interface PresenteLocal {
   id: string;
   title: string;
   description?: string | null;
@@ -47,7 +47,7 @@ export interface GiftLocal {
   createdAt: Date;
 }
 
-interface VendorLocal {
+interface FornecedorLocal {
   id: string;
   name: string;
   category: string;
@@ -55,16 +55,16 @@ interface VendorLocal {
   contractUrl?: string | null;
   notes?: string | null;
   createdAt: Date;
-  expenses?: ExpenseLocal[];
+  expenses?: DespesaLocal[];
 }
 
-interface ExpenseLocal {
+interface DespesaLocal {
   id: string;
   description: string;
   amount: number;
   dueDate: Date;
-  status: ExpenseStatus;
+  status: SituacaoDaDespesa;
   createdAt: Date;
   vendorId: string;
-  vendor: VendorLocal;
+  vendor: FornecedorLocal;
 }

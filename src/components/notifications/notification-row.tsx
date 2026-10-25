@@ -5,9 +5,9 @@ import { ChevronRight } from "lucide-react";
 import type { ItemDeNotificacao } from "@/actions/notification-actions";
 import { tempoRelativo } from "@/lib/notifications/relative-time";
 import { cn } from "@/lib/utils";
-import { NotificationIconBadge } from "./visuals";
+import { SeloDeIconeDaNotificacao } from "./visuals";
 
-interface Props {
+interface Propriedades {
   item: ItemDeNotificacao;
   now: Date;
   /** Chamado ao abrir o aviso (marca como lido e fecha o painel). */
@@ -15,12 +15,12 @@ interface Props {
 }
 
 /** Uma linha da lista: não lido tem fundo suave, ponto e título em negrito. A linha toda é o alvo de toque (44px+). */
-export function NotificationRow({ item, now, onOpen }: Props) {
+export function LinhaDeNotificacao({ item, now, onOpen }: Propriedades) {
   const unread = !item.readAt;
   const time = tempoRelativo(new Date(item.createdAt), now);
   const content = (
     <>
-      <NotificationIconBadge type={item.type} />
+      <SeloDeIconeDaNotificacao type={item.type} />
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline gap-2">
           <span className={cn("min-w-0 flex-1 truncate text-sm text-tinta", unread ? "font-semibold" : "font-medium")}>

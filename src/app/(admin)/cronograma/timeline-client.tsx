@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CalendarClock, Download, Pencil, Plus, Trash2 } from "lucide-react";
 import { criarEventoDaLinhaDoTempo, excluirEventoDaLinhaDoTempo, atualizarEventoDaLinhaDoTempo } from "@/actions/timeline-actions";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { CustomModal } from "@/components/ui/custom-modal";
-import { PageHeader } from "@/components/admin/page-header";
+import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
+import { ModalPersonalizado } from "@/components/ui/custom-modal";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { btn, btnDanger, btnIcon, btnIconDanger, card, errorBox } from "@/components/painel/styles";
-import { LoadingButton } from "@/components/painel/loading-button";
-import { useSyncedState } from "@/hooks/use-synced-state";
+import { btn, estiloDoBotaoDePerigo, estiloDoBotaoDeIcone, estiloDoBotaoDeIconeDePerigo, estiloDoCartao, estiloDaCaixaDeErro } from "@/components/painel/styles";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
+import { useEstadoSincronizado } from "@/hooks/use-synced-state";
 import { gerarPdfDaLinhaDoTempo, type EventoDaLinhaDoTempoNoPdf } from "@/lib/generate-timeline-pdf";
 
 type TimelineEvent = EventoDaLinhaDoTempoNoPdf & { position?: number; icon?: string };
@@ -87,19 +87,19 @@ function EventForm({ event, count, onClose, onSaved, onDelete }: { event: Timeli
         disabled={busy}
       />
       {error && title.trim() && time && (
-        <p role="alert" className={errorBox}>
+        <p role="alert" className={estiloDaCaixaDeErro}>
           {error}
         </p>
       )}
       <div className="flex flex-col gap-2 border-t border-linha pt-4">
-        <LoadingButton type="submit" loading={busy} className={`${btn.primary} ${btn.block}`}>
+        <BotaoComCarregamento type="submit" loading={busy} className={`${btn.primary} ${btn.block}`}>
           {event ? "Salvar alterações" : "Adicionar horário"}
-        </LoadingButton>
+        </BotaoComCarregamento>
         <button type="button" onClick={onClose} disabled={busy} className={`${btn.quiet} ${btn.block}`}>
           Cancelar
         </button>
         {event && (
-          <button type="button" onClick={() => onDelete(event)} disabled={busy} className={`${btnDanger} w-full`}>
+          <button type="button" onClick={() => onDelete(event)} disabled={busy} className={`${estiloDoBotaoDePerigo} w-full`}>
             Excluir horário
           </button>
         )}
@@ -110,7 +110,7 @@ function EventForm({ event, count, onClose, onSaved, onDelete }: { event: Timeli
 
 export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { initialEvents: TimelineEvent[]; coupleNames: string; dateLabel: string | null }) {
   const router = useRouter();
-  const [events, setEvents] = useSyncedState<TimelineEvent[]>(initialEvents);
+  const [events, setEvents] = useEstadoSincronizado<TimelineEvent[]>(initialEvents);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<TimelineEvent | null>(null);
   const [toDelete, setToDelete] = useState<TimelineEvent | null>(null);
@@ -149,7 +149,7 @@ export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { init
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow={dateLabel ?? "Dia do casamento"}
         title="Cronograma do dia"
         description="Os convidados veem estes horários na página do dia do evento, no site de vocês."
@@ -168,7 +168,7 @@ export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { init
       />
 
       {sorted.length === 0 ? (
-        <div className={`${card} flex flex-col items-center gap-3 px-6 py-14 text-center`}>
+        <div className={`${estiloDoCartao} flex flex-col items-center gap-3 px-6 py-14 text-center`}>
           <span className="grid size-12 place-items-center rounded-full bg-ameixa-suave text-ameixa">
             <CalendarClock className="size-6" aria-hidden="true" />
           </span>
@@ -181,17 +181,17 @@ export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { init
       ) : (
         <ol className="flex flex-col gap-3">
           {sorted.map((e) => (
-            <li key={e.id} className={`${card} grid grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:grid-cols-[88px_minmax(0,1fr)_auto] sm:gap-4 sm:px-5 sm:py-4`}>
+            <li key={e.id} className={`${estiloDoCartao} grid grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:grid-cols-[88px_minmax(0,1fr)_auto] sm:gap-4 sm:px-5 sm:py-4`}>
               <span className="font-num text-[22px] leading-8 text-ameixa [font-variant-numeric:lining-nums] sm:text-[26px]">{timeLabel(e.time)}</span>
               <div className="min-w-0">
                 <strong className="block font-semibold text-tinta">{e.title}</strong>
                 {e.description && <p className="mt-0.5 whitespace-pre-wrap break-words text-sm text-tinta-suave">{e.description}</p>}
               </div>
               <div className="flex items-center">
-                <button type="button" onClick={() => openEdit(e)} aria-label={`Editar ${e.title}`} className={btnIcon}>
+                <button type="button" onClick={() => openEdit(e)} aria-label={`Editar ${e.title}`} className={estiloDoBotaoDeIcone}>
                   <Pencil className="size-4" aria-hidden="true" />
                 </button>
-                <button type="button" onClick={() => setToDelete(e)} aria-label={`Excluir ${e.title}`} className={btnIconDanger}>
+                <button type="button" onClick={() => setToDelete(e)} aria-label={`Excluir ${e.title}`} className={estiloDoBotaoDeIconeDePerigo}>
                   <Trash2 className="size-4" aria-hidden="true" />
                 </button>
               </div>
@@ -200,7 +200,7 @@ export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { init
         </ol>
       )}
 
-      <CustomModal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? "Editar horário" : "Novo horário"} size="sm" className="max-h-[92vh] overflow-y-auto">
+      <ModalPersonalizado isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? "Editar horário" : "Novo horário"} size="sm" className="max-h-[92vh] overflow-y-auto">
         <EventForm
           event={editing}
           count={events.length}
@@ -211,9 +211,9 @@ export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { init
             setToDelete(e);
           }}
         />
-      </CustomModal>
+      </ModalPersonalizado>
 
-      <ConfirmModal
+      <ModalDeConfirmacao
         isOpen={!!toDelete}
         onClose={() => setToDelete(null)}
         onConfirm={() => {

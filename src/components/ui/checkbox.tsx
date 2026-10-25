@@ -6,7 +6,7 @@ import { Checkbox as CheckboxPrimitive } from "radix-ui"
 import { cn } from "@/lib/utils"
 import { CheckIcon } from "lucide-react"
 
-function Checkbox({
+function CaixaDeSelecao({
   className,
   ...props
 }: React.ComponentProps<typeof CheckboxPrimitive.Root>) {
@@ -30,4 +30,4 @@ function Checkbox({
   )
 }
 
-export { Checkbox }
+export { CaixaDeSelecao as Checkbox }

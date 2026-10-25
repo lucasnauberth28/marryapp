@@ -1,5 +1,5 @@
 import { obterFornecedoresParceiros } from "@/actions/partner-vendor-actions";
-import { PublicVendorsView } from "@/components/public/public-vendors-view";
+import { VisaoDeFornecedoresPublicos } from "@/components/public/public-vendors-view";
 import { parseIsoDate, toIsoDate, todayBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
 
 export const dynamic = "force-dynamic";
@@ -19,5 +19,5 @@ export default async function PublicVendorsPage({ searchParams }: { searchParams
 
   const partnerVendors = await obterFornecedoresParceiros(undefined, { weddingDate });
 
-  return <PublicVendorsView initialPartners={partnerVendors} weddingDate={weddingDate ?? ""} todayIso={todayIso} />;
+  return <VisaoDeFornecedoresPublicos initialPartners={partnerVendors} weddingDate={weddingDate ?? ""} todayIso={todayIso} />;
 }

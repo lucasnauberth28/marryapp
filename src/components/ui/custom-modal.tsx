@@ -10,7 +10,7 @@ import {
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-interface CustomModalProps {
+interface PropriedadesDoModalPersonalizado {
   isOpen: boolean;
   onClose: () => void;
   title: string;
@@ -20,7 +20,7 @@ interface CustomModalProps {
   size?: "sm" | "md" | "lg" | "xl" | "full";
 }
 
-const sizeClasses = {
+const classesDeTamanho = {
   sm: "sm:max-w-[425px]",
   md: "sm:max-w-[600px]",
   lg: "sm:max-w-[800px]",
@@ -28,7 +28,7 @@ const sizeClasses = {
   full: "sm:max-w-[95vw] h-[95vh]",
 };
 
-export function CustomModal({
+export function ModalPersonalizado({
   isOpen,
   onClose,
   title,
@@ -36,10 +36,10 @@ export function CustomModal({
   children,
   className = "",
   size = "sm",
-}: CustomModalProps) {
+}: PropriedadesDoModalPersonalizado) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className={cn(`p-6 sm:p-8 ${sizeClasses[size]}`, className)}>
+      <DialogContent className={cn(`p-6 sm:p-8 ${classesDeTamanho[size]}`, className)}>
         <DialogHeader className="mb-2">
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}

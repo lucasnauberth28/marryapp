@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Panel } from "@/components/plataforma/panel";
-import { StatusChip } from "@/components/plataforma/status-chip";
-import { FormAlert } from "@/components/ui/field";
+import { Painel } from "@/components/plataforma/panel";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
+import { AvisoDoFormulario } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { definirMadrinhaDoCasamentoAtiva } from "@/actions/admin-madrinha-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
@@ -28,7 +28,7 @@ export function WeddingToggles({ initial }: { initial: WeddingToggleItem[] }) {
   }
 
   return (
-    <Panel title="Ligar ou desligar por casal">
+    <Painel title="Ligar ou desligar por casal">
       <WeddingSearch
         selectedId={null}
         label="Buscar casal"
@@ -38,7 +38,7 @@ export function WeddingToggles({ initial }: { initial: WeddingToggleItem[] }) {
       />
       {formError && (
         <div className="mt-3">
-          <FormAlert>{formError}</FormAlert>
+          <AvisoDoFormulario>{formError}</AvisoDoFormulario>
         </div>
       )}
       {items.length === 0 ? (
@@ -52,7 +52,7 @@ export function WeddingToggles({ initial }: { initial: WeddingToggleItem[] }) {
                   {item.coupleNames}
                 </p>
                 <p className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-tinta-suave">
-                  {item.blocked && <StatusChip tone="perigo">Bloqueada</StatusChip>}
+                  {item.blocked && <EtiquetaDeSituacao tone="perigo">Bloqueada</EtiquetaDeSituacao>}
                   {item.enabled === null ? "Segue o padrão" : item.enabled ? "Ligada à mão" : "Desligada à mão"}
                   {item.enabled !== null && (
                     <button type="button" disabled={pending} onClick={() => setEnabled(item, null)} className="font-semibold text-ameixa underline underline-offset-2">
@@ -66,6 +66,6 @@ export function WeddingToggles({ initial }: { initial: WeddingToggleItem[] }) {
           ))}
         </ul>
       )}
-    </Panel>
+    </Painel>
   );
 }

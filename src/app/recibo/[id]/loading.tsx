@@ -1,4 +1,4 @@
-import { Logo } from "@/components/brand/logo";
+import { Logotipo } from "@/components/brand/logo";
 import { LoadingRegion, SkeletonText } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -31,7 +31,7 @@ export default function ReciboLoading() {
         <div className="flex flex-col gap-7 rounded-2xl border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)] sm:p-10">
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-linha pb-6">
             <div className="flex flex-col gap-2">
-              <Logo height={28} />
+              <Logotipo height={28} />
               <Skeleton className="h-4 w-44 rounded-md" />
             </div>
             <div className="flex flex-col items-end gap-1">

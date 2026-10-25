@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonCard, SkeletonChart, SkeletonForm, SkeletonStatGrid, SkeletonTable } from "@/components/skeletons";
-import { AttentionSkeleton, TablePanelSkeleton } from "@/components/plataforma/loading-parts";
+import { EsqueletoDaAtencao, EsqueletoDoPainelDeTabela } from "@/components/plataforma/loading-parts";
 
 /* Esqueletos das telas de Planos e receita. */
 
@@ -16,14 +16,14 @@ export function ResumoSkeleton() {
           <SkeletonChart />
         </SkeletonCard>
         <SkeletonCard>
-          <AttentionSkeleton rows={2} />
+          <EsqueletoDaAtencao rows={2} />
         </SkeletonCard>
       </div>
       <div className={SPLIT}>
-        <TablePanelSkeleton columns={5} rows={3} />
-        <TablePanelSkeleton columns={4} rows={3} />
+        <EsqueletoDoPainelDeTabela columns={5} rows={3} />
+        <EsqueletoDoPainelDeTabela columns={4} rows={3} />
       </div>
-      <TablePanelSkeleton columns={5} rows={3} />
+      <EsqueletoDoPainelDeTabela columns={5} rows={3} />
     </>
   );
 }
@@ -35,7 +35,7 @@ export function ContadorSkeleton() {
       <SkeletonCard>
         <SkeletonForm fields={1} />
       </SkeletonCard>
-      <TablePanelSkeleton columns={4} rows={3} />
+      <EsqueletoDoPainelDeTabela columns={4} rows={3} />
     </div>
   );
 }
@@ -44,7 +44,7 @@ export function ContadorSkeleton() {
 export function ReembolsosSkeleton() {
   return (
     <>
-      <TablePanelSkeleton columns={5} rows={3} />
+      <EsqueletoDoPainelDeTabela columns={5} rows={3} />
       <SkeletonCard>
         <SkeletonForm fields={["input", "input", "textarea"]} columns={2} />
       </SkeletonCard>

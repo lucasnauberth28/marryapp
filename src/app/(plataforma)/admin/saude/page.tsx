@@ -1,8 +1,8 @@
 import { AlertTriangle, CheckCircle2, Clock, Info, XCircle } from "lucide-react";
-import { PageHeader } from "@/components/plataforma/page-header";
-import { Panel } from "@/components/plataforma/panel";
-import { Notice } from "@/components/plataforma/notices";
-import { StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { Painel } from "@/components/plataforma/panel";
+import { Aviso } from "@/components/plataforma/notices";
+import { EtiquetaDeSituacao, type TomDaSituacao } from "@/components/plataforma/status-chip";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { emailEstaConfigurado } from "@/lib/email";
@@ -37,7 +37,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 const NoRecords = ({ what }: { what: string }) => <p className="text-sm leading-5 text-tinta-suave">Sem registros ainda. {what}</p>;
 
 /** Situação geral de um serviço, só com o que foi medido: sem configuração, sem registros, com falhas ou sem falhas. */
-function serviceChip(configured: boolean, c: ContagensDosServicos): { tone: StatusTone; icon: typeof Clock; text: string } {
+function serviceChip(configured: boolean, c: ContagensDosServicos): { tone: TomDaSituacao; icon: typeof Clock; text: string } {
   if (!configured) return { tone: "neutro", icon: Info, text: "Não configurado" };
   if (c.failed > 0) return { tone: "aviso", icon: AlertTriangle, text: "Atenção" };
   if (c.total === 0) return { tone: "neutro", icon: Clock, text: "Sem registros" };
@@ -67,24 +67,24 @@ export default async function Page() {
 
   return (
     <>
-      <PageHeader eyebrow="Sistema" title="Saúde do sistema" description={`O que faz o Aceito funcionar, num lugar só. Atualizado às ${formatarHora(now)}.`} />
+      <CabecalhoDaPagina eyebrow="Sistema" title="Saúde do sistema" description={`O que faz o Aceito funcionar, num lugar só. Atualizado às ${formatarHora(now)}.`} />
 
       {h.attention.length > 0 ? (
-        <Notice tone="aviso" icon={AlertTriangle} title={`${pluralizar(h.attention.length, "coisa pede", "coisas pedem")} atenção`}>
+        <Aviso tone="aviso" icon={AlertTriangle} title={`${pluralizar(h.attention.length, "coisa pede", "coisas pedem")} atenção`}>
           {h.attention.map((a) => `${a.title}: ${a.detail}`).join(" ")}
-        </Notice>
+        </Aviso>
       ) : nothingMeasured ? (
-        <Notice tone="neutro" icon={Info} title="Ainda estamos medindo">
+        <Aviso tone="neutro" icon={Info} title="Ainda estamos medindo">
           Ainda não há registros das últimas 24 horas. Assim que chegarem pagamentos, e-mails e mensagens, os números aparecem aqui. Enquanto isso, só o que dá para conferir na hora (banco e configuração) está medido.
-        </Notice>
+        </Aviso>
       ) : (
-        <Notice tone="sucesso" icon={CheckCircle2} title="Nada pede atenção agora">
+        <Aviso tone="sucesso" icon={CheckCircle2} title="Nada pede atenção agora">
           Considerando só o que foi medido nas últimas 24 horas.
-        </Notice>
+        </Aviso>
       )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Panel title="Mercado Pago" aside={<StatusChip tone={mp.tone} icon={mp.icon}>{mp.text}</StatusChip>}>
+        <Painel title="Mercado Pago" aside={<EtiquetaDeSituacao tone={mp.tone} icon={mp.icon}>{mp.text}</EtiquetaDeSituacao>}>
           {!h.mercadopago.configured && <p className="mb-3 text-sm leading-5 text-aviso">O token do Mercado Pago não está configurado neste ambiente.</p>}
           {h.mercadopago.counts.total === 0 ? (
             <NoRecords what="Os avisos de pagamento recebidos passam a ser contados a partir de agora." />
@@ -101,9 +101,9 @@ export default async function Page() {
                       <span className="text-sm tabular-nums text-tinta-suave">{formatarHora(e.at)}</span>
                       <span className="truncate text-tinta">{e.message ?? "Aviso aplicado"}</span>
                     </span>
-                    <StatusChip tone={e.ok ? "sucesso" : "perigo"} icon={e.ok ? CheckCircle2 : XCircle}>
+                    <EtiquetaDeSituacao tone={e.ok ? "sucesso" : "perigo"} icon={e.ok ? CheckCircle2 : XCircle}>
                       {e.ok ? "Recebido" : "Falhou"}
-                    </StatusChip>
+                    </EtiquetaDeSituacao>
                   </li>
                 ))}
               </ul>
@@ -112,17 +112,17 @@ export default async function Page() {
           <dl className="mt-3 divide-y divide-linha border-t border-linha pt-2">
             <Row label="Assinatura dos avisos">{h.mercadopago.webhookSecret ? "Conferida" : "Não configurada"}</Row>
           </dl>
-        </Panel>
+        </Painel>
 
-        <Panel
+        <Painel
           title="Rotinas diárias"
           aside={
             h.crons.length === 0 ? undefined : cronsAllOk ? (
-              <StatusChip tone="sucesso" icon={CheckCircle2}>Todas rodaram</StatusChip>
+              <EtiquetaDeSituacao tone="sucesso" icon={CheckCircle2}>Todas rodaram</EtiquetaDeSituacao>
             ) : cronsBad ? (
-              <StatusChip tone="aviso" icon={AlertTriangle}>Atenção</StatusChip>
+              <EtiquetaDeSituacao tone="aviso" icon={AlertTriangle}>Atenção</EtiquetaDeSituacao>
             ) : (
-              <StatusChip tone="neutro" icon={Clock}>Ainda não rodou</StatusChip>
+              <EtiquetaDeSituacao tone="neutro" icon={Clock}>Ainda não rodou</EtiquetaDeSituacao>
             )
           }
         >
@@ -135,18 +135,18 @@ export default async function Page() {
                   {c.error && <p className="text-sm leading-5 text-perigo">{c.error.slice(0, 160)}</p>}
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <StatusChip tone={c.state === "ok" ? "sucesso" : c.state === "never" ? "neutro" : "perigo"} icon={c.state === "ok" ? CheckCircle2 : c.state === "never" ? Clock : XCircle}>
+                  <EtiquetaDeSituacao tone={c.state === "ok" ? "sucesso" : c.state === "never" ? "neutro" : "perigo"} icon={c.state === "ok" ? CheckCircle2 : c.state === "never" ? Clock : XCircle}>
                     {ROTULO_DA_SITUACAO_DA_TAREFA_AGENDADA[c.state]}
-                  </StatusChip>
+                  </EtiquetaDeSituacao>
                   {c.result && <span className="text-sm text-tinta-suave">{c.result}</span>}
                 </div>
               </li>
             ))}
           </ul>
           <p className="mt-3 text-sm leading-5 text-tinta-suave">As rotinas rodam uma vez por dia e só aparecem aqui depois da primeira execução.</p>
-        </Panel>
+        </Painel>
 
-        <Panel title="WhatsApp" aside={<StatusChip tone={wa.tone} icon={wa.icon}>{wa.text}</StatusChip>}>
+        <Painel title="WhatsApp" aside={<EtiquetaDeSituacao tone={wa.tone} icon={wa.icon}>{wa.text}</EtiquetaDeSituacao>}>
           {!h.whatsapp.configured ? (
             <p className="text-sm leading-5 text-tinta-suave">O WhatsApp não está configurado neste ambiente. Configure na Vercel (variáveis de ambiente da Evolution API).</p>
           ) : (
@@ -172,9 +172,9 @@ export default async function Page() {
               </div>
             </>
           )}
-        </Panel>
+        </Painel>
 
-        <Panel title="E-mail e notificações" aside={<StatusChip tone={em.tone} icon={em.icon}>{em.text}</StatusChip>}>
+        <Painel title="E-mail e notificações" aside={<EtiquetaDeSituacao tone={em.tone} icon={em.icon}>{em.text}</EtiquetaDeSituacao>}>
           {!h.email.configured && <p className="mb-3 text-sm leading-5 text-aviso">O envio de e-mail (Resend) não está configurado neste ambiente.</p>}
           {h.email.counts.total === 0 ? (
             <NoRecords what="Os e-mails enviados passam a ser contados a partir de agora." />
@@ -189,12 +189,12 @@ export default async function Page() {
             <Row label="Aparelhos inscritos">{formatarInteiro(h.push.subscriptions)}</Row>
             <Row label="Envios de notificação em 24 h">{h.push.counts.total === 0 ? "Sem registros ainda" : `${formatarInteiro(h.push.counts.ok)} certos, ${formatarInteiro(h.push.counts.failed)} com falha`}</Row>
           </dl>
-        </Panel>
+        </Painel>
 
-        <Panel
+        <Painel
           title="Banco e versão no ar"
           aside={
-            h.database.ok ? <StatusChip tone="sucesso" icon={CheckCircle2}>Banco respondendo</StatusChip> : <StatusChip tone="perigo" icon={XCircle}>Banco sem resposta</StatusChip>
+            h.database.ok ? <EtiquetaDeSituacao tone="sucesso" icon={CheckCircle2}>Banco respondendo</EtiquetaDeSituacao> : <EtiquetaDeSituacao tone="perigo" icon={XCircle}>Banco sem resposta</EtiquetaDeSituacao>
           }
         >
           <dl className="divide-y divide-linha">
@@ -210,7 +210,7 @@ export default async function Page() {
             <Row label="Sentry (erros do sistema)">{h.sentryConfigured ? "Configurado" : "Não configurado"}</Row>
           </dl>
           <p className="mt-3 text-sm leading-5 text-tinta-suave">Percentual de erros e erros por dia ainda não são medidos aqui.</p>
-        </Panel>
+        </Painel>
       </div>
 
       <AlertsForm

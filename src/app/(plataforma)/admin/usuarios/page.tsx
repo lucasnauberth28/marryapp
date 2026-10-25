@@ -1,5 +1,5 @@
-import { PageHeader } from "@/components/plataforma/page-header";
-import { TabsNav } from "@/components/plataforma/tabs-nav";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { NavegacaoDeAbas } from "@/components/plataforma/tabs-nav";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type ParametrosDeBusca, umDosValores } from "@/lib/platform/list-params";
 import { obterPerfis, obterPessoas } from "@/actions/rbac-actions";
@@ -20,8 +20,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 
   return (
     <>
-      <PageHeader eyebrow="Sistema" title="Usuários e perfis" description={aba === "usuarios" ? "Quem entra no painel e o que cada pessoa pode ver." : "Cada perfil define quais áreas do painel a pessoa pode abrir."} />
-      <TabsNav
+      <CabecalhoDaPagina eyebrow="Sistema" title="Usuários e perfis" description={aba === "usuarios" ? "Quem entra no painel e o que cada pessoa pode ver." : "Cada perfil define quais áreas do painel a pessoa pode abrir."} />
+      <NavegacaoDeAbas
         label="Acesso"
         basePath="/admin/usuarios"
         active={aba}

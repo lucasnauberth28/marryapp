@@ -4,25 +4,25 @@ import * as React from "react";
 import { Popover as PopoverPrimitive } from "radix-ui";
 import { cn } from "@/lib/utils";
 
-function Popover({
+function JanelaFlutuante({
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Root>) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />;
 }
 
-function PopoverTrigger({
+function GatilhoDaJanelaFlutuante({
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Trigger>) {
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
 }
 
-function PopoverAnchor({
+function AncoraDaJanelaFlutuante({
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Anchor>) {
   return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />;
 }
 
-function PopoverContent({
+function ConteudoDaJanelaFlutuante({
   className,
   align = "start",
   sideOffset = 4,
@@ -44,4 +44,4 @@ function PopoverContent({
   );
 }
 
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor };
+export { JanelaFlutuante as Popover, GatilhoDaJanelaFlutuante as PopoverTrigger, ConteudoDaJanelaFlutuante as PopoverContent, AncoraDaJanelaFlutuante as PopoverAnchor };

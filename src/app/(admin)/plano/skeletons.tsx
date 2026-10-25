@@ -1,22 +1,22 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonList } from "@/components/skeletons";
-import { SkeletonPanel } from "@/components/painel/skeleton-parts";
+import { EsqueletoDoPainel } from "@/components/painel/skeleton-parts";
 
 /** Corpo do plano (abaixo do cabeçalho): plano atual e taxas, planos para mudar e recibos. */
 export function PlanoBodySkeleton() {
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2">
-        <SkeletonPanel className="flex flex-col gap-2 p-5 sm:p-6">
+        <EsqueletoDoPainel className="flex flex-col gap-2 p-5 sm:p-6">
           <Skeleton className="h-4 w-24 rounded-md" />
           <Skeleton className="h-10 w-40 rounded-lg" />
           <Skeleton className="h-4 w-64 max-w-full rounded-md" />
-        </SkeletonPanel>
-        <SkeletonPanel className="flex flex-col gap-2 p-5 sm:p-6">
+        </EsqueletoDoPainel>
+        <EsqueletoDoPainel className="flex flex-col gap-2 p-5 sm:p-6">
           <Skeleton className="h-3 w-44 rounded-md" />
           <Skeleton className="h-11 w-32 rounded-lg" />
           <Skeleton className="h-4 w-48 max-w-full rounded-md" />
-        </SkeletonPanel>
+        </EsqueletoDoPainel>
       </div>
 
       <section className="flex flex-col gap-4">
@@ -25,7 +25,7 @@ export function PlanoBodySkeleton() {
         </div>
         <div className="grid gap-4 md:grid-cols-2">
           {Array.from({ length: 2 }).map((_, i) => (
-            <SkeletonPanel key={i} className="flex flex-col gap-4 p-5 sm:p-[22px]">
+            <EsqueletoDoPainel key={i} className="flex flex-col gap-4 p-5 sm:p-[22px]">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex flex-col gap-2">
                   <Skeleton className="h-5 w-24 rounded-md" />
@@ -38,7 +38,7 @@ export function PlanoBodySkeleton() {
                   <Skeleton key={j} className="h-4 w-full rounded-md" />
                 ))}
               </div>
-            </SkeletonPanel>
+            </EsqueletoDoPainel>
           ))}
         </div>
         <Skeleton className="h-11 w-full max-w-md rounded-xl" />

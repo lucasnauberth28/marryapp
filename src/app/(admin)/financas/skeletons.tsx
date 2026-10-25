@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonStat, SkeletonTable } from "@/components/skeletons";
-import { SkeletonPanel, SkeletonSearch, SkeletonSectionTitle } from "@/components/painel/skeleton-parts";
+import { EsqueletoDoPainel, EsqueletoDaBusca, EsqueletoDoTituloDaSecao } from "@/components/painel/skeleton-parts";
 
 /* Esqueletos dos blocos de Finanças. Usados no loading.tsx e nos fallbacks de Suspense da página,
    para que cada bloco apareça assim que os seus dados chegam. */
@@ -27,10 +27,10 @@ export function ExpensesSkeleton() {
         </div>
         <Skeleton className="h-11 w-40 rounded-xl" />
       </div>
-      <SkeletonSearch className="max-w-[320px]" />
+      <EsqueletoDaBusca className="max-w-[320px]" />
       <div className="flex flex-col gap-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <SkeletonPanel key={i} className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between md:p-5">
+          <EsqueletoDoPainel key={i} className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between md:p-5">
             <div className="flex min-w-0 flex-1 flex-col gap-2">
               <Skeleton className="h-5 w-48 max-w-full rounded-md" />
               <Skeleton className="h-4 w-32 rounded-md" />
@@ -40,7 +40,7 @@ export function ExpensesSkeleton() {
               <Skeleton className="h-11 w-36 rounded-xl sm:h-9" />
               <Skeleton className="h-11 w-32 rounded-xl sm:h-9" />
             </div>
-          </SkeletonPanel>
+          </EsqueletoDoPainel>
         ))}
       </div>
     </div>
@@ -51,7 +51,7 @@ export function ExpensesSkeleton() {
 export function PaymentsSkeleton() {
   return (
     <div className="space-y-4">
-      <SkeletonSearch />
+      <EsqueletoDaBusca />
       <SkeletonTable columns={6} rows={5} mobileFields={2} />
     </div>
   );
@@ -61,7 +61,7 @@ export function PaymentsSkeleton() {
 export function SectionSkeleton({ children, bordered = false }: { children: React.ReactNode; bordered?: boolean }) {
   return (
     <section className={bordered ? "flex flex-col gap-3 border-t border-linha pt-6" : "flex flex-col gap-3"}>
-      <SkeletonSectionTitle description />
+      <EsqueletoDoTituloDaSecao description />
       {children}
     </section>
   );

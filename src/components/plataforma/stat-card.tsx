@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
-import { card, overline, bigNumber } from "@/components/casal/ui";
+import { estiloDoCartao, estiloDoSobretitulo, estiloDoNumeroGrande } from "@/components/casal/ui";
 import { cn } from "@/lib/utils";
 
 /**
@@ -12,12 +12,12 @@ import { cn } from "@/lib/utils";
  * - trend: variação contra o período anterior; some se não houver base. `value` positivo = alta, negativo = queda.
  * - highlight: moldura de aviso ("precisa da sua atenção"); href: o cartão inteiro vira link.
  */
-export interface StatTrend {
+export interface TendenciaDoIndicador {
   value: number;
   label: string;
 }
 
-export function StatCard({
+export function CartaoDeIndicador({
   label,
   value,
   hint,
@@ -29,15 +29,15 @@ export function StatCard({
   label: string;
   value: ReactNode;
   hint?: ReactNode;
-  trend?: StatTrend | null;
+  trend?: TendenciaDoIndicador | null;
   href?: string;
   highlight?: boolean;
   className?: string;
 }) {
   const body = (
     <>
-      <p className={overline}>{label}</p>
-      <p className={cn(bigNumber, "mt-2")}>{value}</p>
+      <p className={estiloDoSobretitulo}>{label}</p>
+      <p className={cn(estiloDoNumeroGrande, "mt-2")}>{value}</p>
       {(trend || hint) && (
         <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm leading-5 text-tinta-suave">
           {trend && (
@@ -52,7 +52,7 @@ export function StatCard({
       )}
     </>
   );
-  const classes = cn(card, "block p-5", highlight && "border-2 border-aviso", href && "transition-shadow hover:shadow-[var(--shadow-aceito-2)] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa", className);
+  const classes = cn(estiloDoCartao, "block p-5", highlight && "border-2 border-aviso", href && "transition-shadow hover:shadow-[var(--shadow-aceito-2)] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa", className);
   return href ? (
     <Link href={href} className={classes}>
       {body}
@@ -63,7 +63,7 @@ export function StatCard({
 }
 
 /** Grade das caixas de número: 1 coluna no celular, 2 no tablet, `cols` (padrão 4) no computador. */
-export function StatGrid({ children, cols = 4 }: { children: ReactNode; cols?: 2 | 3 | 4 }) {
+export function GradeDeIndicadores({ children, cols = 4 }: { children: ReactNode; cols?: 2 | 3 | 4 }) {
   const lg = cols === 4 ? "lg:grid-cols-4" : cols === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2";
   return <div className={cn("grid grid-cols-1 gap-4 sm:grid-cols-2", lg)}>{children}</div>;
 }

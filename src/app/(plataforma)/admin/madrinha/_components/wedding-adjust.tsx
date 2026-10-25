@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FormAlert } from "@/components/ui/field";
+import { AvisoDoFormulario } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { aplicarAjusteAoCasamento, desbloquearMadrinhaDoCasamento } from "@/actions/admin-madrinha-actions";
 import type { ResultadoDeCasamento } from "@/lib/platform/queries/madrinha";
@@ -43,7 +43,7 @@ export function WeddingAdjust() {
       )}
       <Input label="Mensagens a mais neste mês" inputMode="numeric" value={extra} onChange={(e) => setExtra(e.target.value)} error={errors.extraMessages} disabled={!picked} />
       <Textarea label="Motivo" value={reason} onChange={(e) => setReason(e.target.value)} error={errors.reason} disabled={!picked} rows={3} />
-      {formError && <FormAlert>{formError}</FormAlert>}
+      {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="mt-auto flex flex-wrap items-center gap-3">
         <Button type="submit" variant="outline" disabled={pending || !picked} loading={pending && running === "apply"}>
           Aplicar ajuste

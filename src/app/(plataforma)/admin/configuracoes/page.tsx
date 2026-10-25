@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { CheckCircle2, Info, MinusCircle } from "lucide-react";
-import { PageHeader } from "@/components/plataforma/page-header";
-import { Panel } from "@/components/plataforma/panel";
-import { StatusChip } from "@/components/plataforma/status-chip";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { Painel } from "@/components/plataforma/panel";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { INTEGRACOES, descreverLimite, situacaoDaIntegracao } from "@/lib/platform/config-core";
@@ -40,9 +40,9 @@ const LIMITS: { key: keyof typeof LimitesDeSeguranca; label: string }[] = [
 function Section({ id, title, description, children }: { id: string; title: string; description?: string; children: React.ReactNode }) {
   return (
     <div id={id} className="scroll-mt-6">
-      <Panel title={title} description={description}>
+      <Painel title={title} description={description}>
         {children}
-      </Panel>
+      </Painel>
     </div>
   );
 }
@@ -62,7 +62,7 @@ export default async function Page() {
 
   return (
     <>
-      <PageHeader eyebrow="Sistema" title="Configurações da plataforma" description="Mudanças aqui valem para todos. Cada uma fica no Registro de atividades." />
+      <CabecalhoDaPagina eyebrow="Sistema" title="Configurações da plataforma" description="Mudanças aqui valem para todos. Cada uma fica no Registro de atividades." />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
         <nav aria-label="Seções desta página" className="-mx-4 overflow-x-auto px-4 lg:sticky lg:top-6 lg:mx-0 lg:self-start lg:overflow-visible lg:px-0">
@@ -160,13 +160,13 @@ export default async function Page() {
                   <span className="text-[15px] font-semibold text-tinta">{i.name}</span>
                   <span className="flex items-center gap-3">
                     {i.tail && <span className="font-mono text-sm text-tinta-suave">••••{i.tail}</span>}
-                    {i.connected ? <StatusChip tone="sucesso" icon={CheckCircle2}>Conectado</StatusChip> : <StatusChip tone="neutro" icon={MinusCircle}>Não configurado</StatusChip>}
+                    {i.connected ? <EtiquetaDeSituacao tone="sucesso" icon={CheckCircle2}>Conectado</EtiquetaDeSituacao> : <EtiquetaDeSituacao tone="neutro" icon={MinusCircle}>Não configurado</EtiquetaDeSituacao>}
                   </span>
                 </li>
               ))}
               <li className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3">
                 <span className="text-[15px] font-semibold text-tinta">API da Liz</span>
-                <StatusChip tone="neutro" icon={MinusCircle}>Ainda não conectada</StatusChip>
+                <EtiquetaDeSituacao tone="neutro" icon={MinusCircle}>Ainda não conectada</EtiquetaDeSituacao>
               </li>
             </ul>
             <p className="mt-3 text-sm leading-5 text-tinta-suave">Para trocar ou conectar uma chave, configure na Vercel (variáveis de ambiente) e faça um novo deploy.</p>

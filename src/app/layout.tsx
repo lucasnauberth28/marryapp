@@ -3,10 +3,10 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { LucideProvider } from "lucide-react";
 import "./globals.css";
-import { RevealObserver } from "@/components/motion/reveal-observer";
-import { NavigationProgress } from "@/components/feedback/navigation-progress";
-import { ThemeProvider } from "@/components/theme/theme-provider";
-import { ThemedToaster } from "@/components/theme/themed-toaster";
+import { ObservadorDeAparicao } from "@/components/motion/reveal-observer";
+import { ProgressoDaNavegacao } from "@/components/feedback/navigation-progress";
+import { ProvedorDoTema } from "@/components/theme/theme-provider";
+import { AvisosComTema } from "@/components/theme/themed-toaster";
 import { SCRIPT_INICIAL_DO_TEMA } from "@/lib/theme";
 
 // Fontes do Manual de Marca (p.12), todas locais: o build não depende de rede. Geist e Urbanist são variáveis
@@ -88,12 +88,12 @@ export default function RootLayout({
       <body className="min-h-screen bg-linho font-sans text-tinta">
         {/* Ícones: traço de 1,6 px com pontas arredondadas (manual p.14); quem precisa de outro traço passa strokeWidth. */}
         <LucideProvider strokeWidth={1.6}>
-        <ThemeProvider>
-          <RevealObserver />
-          <NavigationProgress />
+        <ProvedorDoTema>
+          <ObservadorDeAparicao />
+          <ProgressoDaNavegacao />
           {children}
-          <ThemedToaster />
-        </ThemeProvider>
+          <AvisosComTema />
+        </ProvedorDoTema>
         </LucideProvider>
       </body>
     </html>

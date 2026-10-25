@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import Link from "next/link";
 import { RotateCcw, Send, X } from "lucide-react";
 import { Skeleton } from "@/components/skeletons";
-import { btn } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { obterDadosDoPainelDaLiz, perguntarALiz, type DadosDoPainelDaLiz } from "@/actions/liz-actions";
 import { respondedoraDoGuiaDeAjuda, type RespondedoraDaLiz, type ContextoDaPerguntaALiz } from "@/lib/liz/answerer";
 import { ARTIGOS_DE_AJUDA } from "@/lib/liz/help-articles";
@@ -13,10 +13,10 @@ import { ASSUNTOS_DA_LIZ, assuntoDoArtigo, assuntosPara } from "@/lib/liz/topics
 import { rotuloDoPlanoNecessario } from "@/lib/wedding-plan-modules";
 import { temAcessoAoCaminho } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
-import { LizAvatar, LizIllustration } from "./liz-illustration";
+import { AvatarDaLiz, IlustracaoDaLiz } from "./liz-illustration";
 
 /** Respondedor que passa a pergunta ao servidor (provedor de IA). Só é usado quando a administração liga a Liz. */
-const serverAnswerer: RespondedoraDaLiz = {
+const respondedoraDoServidor: RespondedoraDaLiz = {
   async answer(question, context) {
     const result = await perguntarALiz({ question, pathname: context.pathname });
     if (!result.success) throw new Error(result.error);
@@ -24,27 +24,27 @@ const serverAnswerer: RespondedoraDaLiz = {
   },
 };
 
-type Load = { status: "loading" } | { status: "error"; message: string } | { status: "ready"; data: DadosDoPainelDaLiz };
+type SituacaoDoCarregamento = { status: "loading" } | { status: "error"; message: string } | { status: "ready"; data: DadosDoPainelDaLiz };
 
-type MsgBody =
+type CorpoDaMensagem =
   | { from: "liz" | "you"; kind: "text"; text: string }
   | { from: "liz"; kind: "tip" }
   | { from: "liz"; kind: "article"; articleId: string };
-type Msg = MsgBody & { id: number };
+type MensagemDoChat = CorpoDaMensagem & { id: number };
 
-const you = (text: string): MsgBody => ({ from: "you", kind: "text", text });
-const lizText = (text: string): MsgBody => ({ from: "liz", kind: "text", text });
+const mensagemDaPessoa = (text: string): CorpoDaMensagem => ({ from: "you", kind: "text", text });
+const textoDaLiz = (text: string): CorpoDaMensagem => ({ from: "liz", kind: "text", text });
 
 /** Onde a conversa está: define quais respostas prontas aparecem embaixo. */
-type Stage = { kind: "root" } | { kind: "topic"; topicId: string } | { kind: "article"; articleId: string } | { kind: "hits"; articleIds: string[] } | { kind: "tip" };
+type Etapa = { kind: "root" } | { kind: "topic"; topicId: string } | { kind: "article"; articleId: string } | { kind: "hits"; articleIds: string[] } | { kind: "tip" };
 
-const GREETING = "Oi! Eu sou a Liz. Posso sugerir o próximo passo ou tirar dúvidas sobre o painel. Sobre o que vocês querem falar?";
+const SAUDACAO = "Oi! Eu sou a Liz. Posso sugerir o próximo passo ou tirar dúvidas sobre o painel. Sobre o que vocês querem falar?";
 
 /**
  * Conversa com a Liz: ela fala, e vocês escolhem a resposta entre assuntos prontos (ou escrevem a dúvida, que ela procura no guia).
  * Hoje não há IA livre: as respostas vêm do guia de ajuda. Monta a cada abertura.
  */
-export function LizPanel({
+export function PainelDaLiz({
   allowedPaths,
   pathname,
   titleId,
@@ -57,9 +57,9 @@ export function LizPanel({
   onClose: () => void;
   onNavigate: () => void;
 }) {
-  const [load, setLoad] = useState<Load>({ status: "loading" });
-  const [msgs, setMsgs] = useState<Msg[]>([{ id: 1, ...lizText(GREETING) }]);
-  const [stage, setStage] = useState<Stage>({ kind: "root" });
+  const [load, setLoad] = useState<SituacaoDoCarregamento>({ status: "loading" });
+  const [msgs, setMsgs] = useState<MensagemDoChat[]>([{ id: 1, ...textoDaLiz(SAUDACAO) }]);
+  const [stage, setStage] = useState<Etapa>({ kind: "root" });
   const [text, setText] = useState("");
   const [asking, setAsking] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
@@ -101,10 +101,10 @@ export function LizPanel({
   }, [stage, msgs.length]);
 
   /** Acrescenta mensagens; o id é a posição na conversa (a lista só cresce, ou recomeça do zero). */
-  const push = (...bodies: MsgBody[]) => setMsgs((m) => [...m, ...bodies.map((b, i) => ({ ...b, id: m.length + i + 1 }) as Msg)]);
+  const push = (...bodies: CorpoDaMensagem[]) => setMsgs((m) => [...m, ...bodies.map((b, i) => ({ ...b, id: m.length + i + 1 }) as MensagemDoChat)]);
 
-  function go(said: string, next: Stage, ...lizMsgs: MsgBody[]) {
-    push(you(said), ...lizMsgs);
+  function go(said: string, next: Etapa, ...lizMsgs: CorpoDaMensagem[]) {
+    push(mensagemDaPessoa(said), ...lizMsgs);
     setStage(next);
   }
 
@@ -113,7 +113,7 @@ export function LizPanel({
   }
   function pickTopic(topicId: string) {
     const t = ASSUNTOS_DA_LIZ.find((x) => x.id === topicId)!;
-    go(t.label, { kind: "topic", topicId }, lizText(t.intro));
+    go(t.label, { kind: "topic", topicId }, textoDaLiz(t.intro));
   }
   function pickArticle(articleId: string) {
     const hit = hitById.get(articleId);
@@ -121,10 +121,10 @@ export function LizPanel({
     go(hit.article.title, { kind: "article", articleId }, { from: "liz", kind: "article", articleId });
   }
   function backToRoot() {
-    go("Outro assunto", { kind: "root" }, lizText("Claro! Sobre o que vocês querem falar agora?"));
+    go("Outro assunto", { kind: "root" }, textoDaLiz("Claro! Sobre o que vocês querem falar agora?"));
   }
   function restart() {
-    setMsgs([{ id: 1, ...lizText(GREETING) }]);
+    setMsgs([{ id: 1, ...textoDaLiz(SAUDACAO) }]);
     setStage({ kind: "root" });
     setText("");
   }
@@ -136,22 +136,22 @@ export function LizPanel({
     setText("");
     setAsking(true);
     try {
-      const answerer = chatEnabled ? serverAnswerer : respondedoraDoGuiaDeAjuda;
+      const answerer = chatEnabled ? respondedoraDoServidor : respondedoraDoGuiaDeAjuda;
       const answer = await answerer.answer(q, context);
       const hits = answer.kind === "articles" ? answer.hits : answer.sources;
       const ids = hits.map((h) => h.article.id);
       if (answer.kind === "text") {
-        push(you(q), lizText(answer.text));
+        push(mensagemDaPessoa(q), textoDaLiz(answer.text));
         setStage(ids.length ? { kind: "hits", articleIds: ids } : { kind: "root" });
       } else if (ids.length > 0) {
-        push(you(q), lizText(ids.length === 1 ? "Achei esta dúvida no guia. É essa?" : "Achei estas dúvidas no guia. Qual é a de vocês?"));
+        push(mensagemDaPessoa(q), textoDaLiz(ids.length === 1 ? "Achei esta dúvida no guia. É essa?" : "Achei estas dúvidas no guia. Qual é a de vocês?"));
         setStage({ kind: "hits", articleIds: ids });
       } else {
-        push(you(q), lizText("Ainda não sei responder isso. Escolham um assunto aqui embaixo e eu mostro as dúvidas mais comuns."));
+        push(mensagemDaPessoa(q), textoDaLiz("Ainda não sei responder isso. Escolham um assunto aqui embaixo e eu mostro as dúvidas mais comuns."));
         setStage({ kind: "root" });
       }
     } catch {
-      push(you(q), lizText("Não deu para responder agora. Tentem de novo em instantes ou escolham um assunto."));
+      push(mensagemDaPessoa(q), textoDaLiz("Não deu para responder agora. Tentem de novo em instantes ou escolham um assunto."));
       setStage({ kind: "root" });
     } finally {
       setAsking(false);
@@ -186,7 +186,7 @@ export function LizPanel({
   return (
     <>
       <header className="flex items-center gap-3 border-b border-linha px-4 py-3">
-        <LizAvatar size={44} decorative className="ring-1 ring-linha" />
+        <AvatarDaLiz size={44} decorative className="ring-1 ring-linha" />
         <div className="min-w-0 flex-1">
           <h2 id={titleId} className="font-display text-xl font-medium leading-6 text-tinta">
             Liz, sua assistente
@@ -216,18 +216,18 @@ export function LizPanel({
           }
           return (
             <div key={m.id} className="flex max-w-[92%] items-end gap-2 self-start motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-1 motion-safe:duration-200">
-              {first ? <LizAvatar size={28} decorative className="mb-0.5" /> : <span aria-hidden="true" className="w-7 shrink-0" />}
+              {first ? <AvatarDaLiz size={28} decorative className="mb-0.5" /> : <span aria-hidden="true" className="w-7 shrink-0" />}
               <div className="min-w-0 rounded-2xl rounded-bl-md bg-areia px-3.5 py-2.5 text-[15px] leading-6 text-tinta">
                 {m.kind === "text" ? <p className="whitespace-pre-line">{m.text}</p> : null}
-                {m.kind === "tip" ? <TipBody load={load} onRetry={() => { setLoad({ status: "loading" }); fetchData(); }} onNavigate={onNavigate} /> : null}
-                {m.kind === "article" ? <ArticleBody hit={hitById.get(m.articleId)} canOpenPlans={canOpenPlans} onNavigate={onNavigate} /> : null}
+                {m.kind === "tip" ? <CorpoDaDica load={load} onRetry={() => { setLoad({ status: "loading" }); fetchData(); }} onNavigate={onNavigate} /> : null}
+                {m.kind === "article" ? <CorpoDoArtigo hit={hitById.get(m.articleId)} canOpenPlans={canOpenPlans} onNavigate={onNavigate} /> : null}
               </div>
             </div>
           );
         })}
         {asking ? (
           <div className="flex items-end gap-2 self-start" role="status">
-            <LizAvatar size={28} decorative />
+            <AvatarDaLiz size={28} decorative />
             <p className="rounded-2xl rounded-bl-md bg-areia px-3.5 py-2.5 text-[15px] leading-6 text-tinta-suave">Procurando no guia...</p>
           </div>
         ) : null}
@@ -273,7 +273,7 @@ export function LizPanel({
   );
 }
 
-function TipBody({ load, onRetry, onNavigate }: { load: Load; onRetry: () => void; onNavigate: () => void }) {
+function CorpoDaDica({ load, onRetry, onNavigate }: { load: SituacaoDoCarregamento; onRetry: () => void; onNavigate: () => void }) {
   if (load.status === "loading")
     return (
       <div role="status" aria-busy="true" className="flex w-56 max-w-full flex-col gap-2">
@@ -286,7 +286,7 @@ function TipBody({ load, onRetry, onNavigate }: { load: Load; onRetry: () => voi
     return (
       <div className="flex flex-col items-start gap-2">
         <p role="alert">{load.message}</p>
-        <button type="button" className={`${btn.secondary} ${btn.sm}`} onClick={onRetry}>
+        <button type="button" className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`} onClick={onRetry}>
           Tentar de novo
         </button>
       </div>
@@ -296,20 +296,20 @@ function TipBody({ load, onRetry, onNavigate }: { load: Load; onRetry: () => voi
     return (
       <div className="flex items-center gap-3">
         <p className="min-w-0 flex-1 text-tinta-suave">Não vi nada pedindo atenção agora. Quando algo precisar de vocês, eu aviso aqui.</p>
-        <LizIllustration pose="tranquila" height={88} decorative className="h-[88px] w-auto shrink-0" />
+        <IlustracaoDaLiz pose="tranquila" height={88} decorative className="h-[88px] w-auto shrink-0" />
       </div>
     );
   return (
     <div className="flex flex-col items-start gap-3">
       <p>{tip.text}</p>
-      <Link href={tip.href} onClick={onNavigate} className={`${btn.primary} ${btn.sm}`}>
+      <Link href={tip.href} onClick={onNavigate} className={`${estiloDoBotao.primary} ${estiloDoBotao.sm}`}>
         {tip.action}
       </Link>
     </div>
   );
 }
 
-function ArticleBody({ hit, canOpenPlans, onNavigate }: { hit: ResultadoDaAjuda | undefined; canOpenPlans: boolean; onNavigate: () => void }) {
+function CorpoDoArtigo({ hit, canOpenPlans, onNavigate }: { hit: ResultadoDaAjuda | undefined; canOpenPlans: boolean; onNavigate: () => void }) {
   if (!hit) return <p>Não achei essa dúvida agora.</p>;
   const { article, locked } = hit;
   return (
@@ -324,11 +324,11 @@ function ArticleBody({ hit, canOpenPlans, onNavigate }: { hit: ResultadoDaAjuda 
         ))}
       </ol>
       <div className="flex flex-wrap gap-2">
-        <Link href={article.action.href} onClick={onNavigate} className={`${btn.primary} ${btn.sm}`}>
+        <Link href={article.action.href} onClick={onNavigate} className={`${estiloDoBotao.primary} ${estiloDoBotao.sm}`}>
           {article.action.label}
         </Link>
         {locked && canOpenPlans ? (
-          <Link href="/plano" onClick={onNavigate} className={`${btn.secondary} ${btn.sm}`}>
+          <Link href="/plano" onClick={onNavigate} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
             Ver Plano e pagamentos
           </Link>
         ) : null}

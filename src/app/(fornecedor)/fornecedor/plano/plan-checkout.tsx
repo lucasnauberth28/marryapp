@@ -3,9 +3,9 @@
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Check, CheckCircle2 } from "lucide-react";
-import { CouponField, type AppliedCoupon } from "@/components/checkout/coupon-field";
-import { SubscriptionPix } from "@/components/checkout/subscription-pix";
-import { btn, btnArrow } from "@/components/landing/styles";
+import { CampoDeCupom, type CupomAplicado } from "@/components/checkout/coupon-field";
+import { PixDaAssinatura } from "@/components/checkout/subscription-pix";
+import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { formatPrice, type PlanOption } from "@/app/login/auth-config";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +36,7 @@ export function PlanCheckout({
   const [selected, setSelected] = useState<string>(currentTier === "MASTER" ? "master" : "pro");
   const [paying, setPaying] = useState(false);
   const [done, setDone] = useState(false);
-  const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
+  const [coupon, setCoupon] = useState<CupomAplicado | null>(null);
   const plan = options.find((o) => o.id === selected) ?? options[0];
   // Só usa o cupom se ele foi conferido para o plano escolhido.
   const couponFor = coupon && coupon.planId === plan.id ? coupon.code : null;
@@ -75,8 +75,8 @@ export function PlanCheckout({
   if (paying) {
     return (
       <section aria-label="Pagamento" className="step-in flex max-w-[460px] flex-col gap-4">
-        <SubscriptionPix planId={plan.id} planName={`Plano ${plan.name}`} couponCode={couponFor} onPaid={handlePaid} />
-        <button type="button" onClick={() => setPaying(false)} className={cn(btn.quiet, "self-center")}>
+        <PixDaAssinatura planId={plan.id} planName={`Plano ${plan.name}`} couponCode={couponFor} onPaid={handlePaid} />
+        <button type="button" onClick={() => setPaying(false)} className={cn(estiloDoBotao.quiet, "self-center")}>
           Voltar aos planos
         </button>
       </section>
@@ -136,7 +136,7 @@ export function PlanCheckout({
         })}
       </div>
       <div className="sm:max-w-md">
-        <CouponField planId={plan.id} applied={coupon} onChange={setCoupon} creditLabel={`Crédito do ${currentPlanName}`} />
+        <CampoDeCupom planId={plan.id} applied={coupon} onChange={setCoupon} creditLabel={`Crédito do ${currentPlanName}`} />
       </div>
       {creditNote && !couponFor ? (
         <p role="status" className="rounded-2xl bg-sucesso-suave p-4 text-[15px] text-tinta">
@@ -153,14 +153,14 @@ export function PlanCheckout({
         <button
           type="button"
           onClick={() => setPaying(true)}
-          className={cn(btn.primary, "min-h-12 w-full shrink-0 sm:w-auto")}
+          className={cn(estiloDoBotao.primary, "min-h-12 w-full shrink-0 sm:w-auto")}
         >
           {TIER_OF[plan.id] === currentTier
             ? `Renovar o ${plan.name} com Pix`
             : currentTier === "FREE"
               ? `Assinar o ${plan.name} com Pix`
               : `Mudar para o ${plan.name} com Pix`}
-          <ArrowRight aria-hidden="true" className={btnArrow} />
+          <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
         </button>
       </div>
     </section>

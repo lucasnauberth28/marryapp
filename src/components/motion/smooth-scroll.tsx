@@ -9,7 +9,7 @@ import Lenis from "lenis";
  * Fica desligada em telas de toque (a rolagem nativa já é suave) e com movimento reduzido.
  * Links âncora (#secao) rolam suavemente respeitando o cabeçalho fixo.
  */
-export function SmoothScroll() {
+export function RolagemSuave() {
   const pathname = usePathname();
 
   useEffect(() => {

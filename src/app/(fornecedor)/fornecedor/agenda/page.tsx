@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Reveal } from "@/components/motion/reveal";
+import { Aparicao } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
-import { LinkPending } from "@/components/feedback/link-pending";
+import { LinkPendente } from "@/components/feedback/link-pending";
 import { Chip } from "../../_components/status-chip";
 import {
   effectiveVendorTier,
@@ -170,7 +170,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   return (
     <AgendaProvider todayIso={todayIso} leads={leadOptions}>
       <div className="flex flex-col gap-6">
-        <Reveal variant="fade" className="flex flex-wrap items-end justify-between gap-4">
+        <Aparicao variant="fade" className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex max-w-2xl flex-col gap-1">
             <p className={cn(OVERLINE, "hidden md:block")}>Fornecedor</p>
             <h1 className="font-display text-[28px] leading-9 font-medium md:text-[40px] md:leading-[46px]">Agenda</h1>
@@ -183,10 +183,10 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
             <NewEventButton kind="BLOCKED" />
             <NewEventButton kind="MEETING" />
           </div>
-        </Reveal>
+        </Aparicao>
 
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-          <Reveal variant="up" delay={80} className="min-w-0">
+          <Aparicao variant="up" delay={80} className="min-w-0">
             <section aria-labelledby="mes-titulo" className={cn(CARD, "group/agenda flex min-w-0 flex-col gap-4 p-4 sm:p-6")}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 id="mes-titulo" aria-live="polite" className="font-display text-2xl font-medium sm:text-[28px]">
@@ -200,7 +200,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
                     className={cn(NAV_BTN, "text-tinta-suave hover:bg-areia hover:text-tinta")}
                   >
                     <ChevronLeft aria-hidden="true" className="size-5" />
-                    <LinkPending label="Carregando o mês" />
+                    <LinkPendente label="Carregando o mês" />
                   </Link>
                   <Link
                     href="/fornecedor/agenda"
@@ -209,7 +209,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
                     className={cn(NAV_BTN, "border border-linha-forte bg-papel px-4 text-sm text-tinta hover:bg-areia")}
                   >
                     Hoje
-                    <LinkPending label="Carregando o mês" />
+                    <LinkPendente label="Carregando o mês" />
                   </Link>
                   <Link
                     href={`/fornecedor/agenda?mes=${monthParam(year, month + 1)}`}
@@ -218,7 +218,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
                     className={cn(NAV_BTN, "text-tinta-suave hover:bg-areia hover:text-tinta")}
                   >
                     <ChevronRight aria-hidden="true" className="size-5" />
-                    <LinkPending label="Carregando o mês" />
+                    <LinkPendente label="Carregando o mês" />
                   </Link>
                 </nav>
               </div>
@@ -243,9 +243,9 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
               </ul>
               <p className="text-sm text-tinta-suave">Toque em um dia para ver os detalhes, marcar uma reunião ou bloquear a data.</p>
             </section>
-          </Reveal>
+          </Aparicao>
 
-          <Reveal variant="up" delay={160} className="min-w-0">
+          <Aparicao variant="up" delay={160} className="min-w-0">
             <section aria-labelledby="proximos-titulo" className="flex flex-col gap-3">
               <h2 id="proximos-titulo" className="text-lg font-semibold">
                 Próximos compromissos
@@ -308,7 +308,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
                 Casamentos entram na agenda quando você marca o pedido como Fechado e ele tem data.
               </p>
             </section>
-          </Reveal>
+          </Aparicao>
         </div>
       </div>
     </AgendaProvider>

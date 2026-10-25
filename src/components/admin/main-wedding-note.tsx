@@ -8,7 +8,7 @@ import { mostraNotaDoCasamentoPrincipal } from "@/lib/account-label";
  * Aviso discreto para a administração: as telas do casal mostram o casamento principal.
  * Aparece só nas páginas que falam do casamento (não nas de administração e de conta).
  */
-export function MainWeddingNote({ coupleNames }: { coupleNames: string }) {
+export function NotaDoCasamentoPrincipal({ coupleNames }: { coupleNames: string }) {
   const pathname = usePathname();
   if (!mostraNotaDoCasamentoPrincipal(pathname)) return null;
   return (

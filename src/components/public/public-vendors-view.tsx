@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Reveal } from "@/components/motion/reveal";
+import { Aparicao } from "@/components/motion/reveal";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LandingHeader } from "@/components/landing/landing-header";
-import { LandingFooter } from "@/components/landing/landing-footer";
-import { btn, container, overline } from "@/components/landing/styles";
+import { CabecalhoDaLanding } from "@/components/landing/landing-header";
+import { RodapeDaLanding } from "@/components/landing/landing-footer";
+import { estiloDoBotao, estiloDoContainerDaLanding, overline } from "@/components/landing/styles";
 import {
   Building2,
   Check,
@@ -25,23 +25,23 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DatePicker } from "@/components/ui/date-picker";
+import { SeletorDeData } from "@/components/ui/date-picker";
 import { criarPedidoDeOrcamento, type ItemDaListaDeFornecedoresPublicos } from "@/actions/partner-vendor-actions";
 import { parseRegions } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { toast } from "sonner";
-import { startNavigationProgress } from "@/components/feedback/navigation-progress";
-import { UserImage } from "@/components/ui/user-image";
+import { iniciarProgressoDaNavegacao } from "@/components/feedback/navigation-progress";
+import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { cn } from "@/lib/utils";
 
 import { formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
-const ALL = "TODOS";
+const VALOR_TODOS = "TODOS";
 
-const CATEGORIES = [ALL, "Espaço", "Fotografia", "Buffet", "Decoração", "DJ & Som", "Vestidos", "Doces & Bolo"];
+const CATEGORIAS = [VALOR_TODOS, "Espaço", "Fotografia", "Buffet", "Decoração", "DJ & Som", "Vestidos", "Doces & Bolo"];
 
-const ALL_REGIONS = "TODAS";
+const TODAS_AS_REGIOES = "TODAS";
 
-const REGIONS = [
-  ALL_REGIONS,
+const REGIOES = [
+  TODAS_AS_REGIOES,
   "São Paulo - Capital",
   "Grande SP",
   "Litoral Norte",
@@ -51,7 +51,7 @@ const REGIONS = [
 ];
 
 // Teto de "a partir de", em reais.
-const BUDGETS = [
+const FAIXAS_DE_ORCAMENTO = [
   { value: "", label: "Qualquer valor" },
   { value: "5000", label: "Até R$ 5.000" },
   { value: "10000", label: "Até R$ 10.000" },
@@ -59,20 +59,20 @@ const BUDGETS = [
   { value: "50000", label: "Até R$ 50.000" },
 ];
 
-type SortKey = "relevance" | "price" | "rating";
+type ChaveDeOrdenacao = "relevance" | "price" | "rating";
 
-const SORTS: { value: SortKey; label: string }[] = [
+const ORDENACOES: { value: ChaveDeOrdenacao; label: string }[] = [
   { value: "relevance", label: "Mais relevantes" },
   { value: "price", label: "Menor preço" },
   { value: "rating", label: "Mais avaliados" },
 ];
 
 // Campos do design: 44px de altura, borda forte, raio de 12px.
-const field =
+const classeDoCampo =
   "min-h-11 w-full rounded-[12px] border border-linha-forte bg-papel px-4 text-base leading-6 text-tinta transition-colors duration-150 hover:border-tinta-suave focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa";
 
 
-interface PublicVendorsViewProps {
+interface PropriedadesDaVisaoDeFornecedoresPublicos {
   /** Já filtrados pelo servidor quando há data do casamento (sem quem está ocupado nela). */
   initialPartners: ItemDaListaDeFornecedoresPublicos[];
   /** Filtro "Data do casamento" em vigor ("AAAA-MM-DD" ou ""). */
@@ -80,30 +80,30 @@ interface PublicVendorsViewProps {
   todayIso: string;
 }
 
-function formatIsoDate(iso: string) {
+function formatarDataIso(iso: string) {
   const [y, m, d] = iso.split("-");
   return `${d}/${m}/${y}`;
 }
 
 /** Cidades e regiões atendidas, em uma linha curta ("A, B e mais 2"). */
-function regionsLabel(serviceRegions: ItemDaListaDeFornecedoresPublicos["serviceRegions"]) {
+function rotuloDasRegioes(serviceRegions: ItemDaListaDeFornecedoresPublicos["serviceRegions"]) {
   const regions = parseRegions(serviceRegions);
   if (regions.length === 0) return null;
   if (regions.length <= 2) return regions.join(" e ");
   return `${regions.slice(0, 2).join(", ")} e mais ${regions.length - 2}`;
 }
 
-export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "", todayIso }: PublicVendorsViewProps) {
+export function VisaoDeFornecedoresPublicos({ initialPartners, weddingDate: activeDate = "", todayIso }: PropriedadesDaVisaoDeFornecedoresPublicos) {
   const partners = initialPartners;
   const router = useRouter();
   const [dateInput, setDateInput] = useState(activeDate);
   const [isPendingDate, startTransitionDate] = useTransition();
-  const [selectedCategory, setSelectedCategory] = useState(ALL);
-  const [selectedRegion, setSelectedRegion] = useState(ALL_REGIONS);
+  const [selectedCategory, setSelectedCategory] = useState(VALOR_TODOS);
+  const [selectedRegion, setSelectedRegion] = useState(TODAS_AS_REGIOES);
   const [searchTerm, setSearchTerm] = useState("");
   const [budget, setBudget] = useState("");
   const [onlyVerified, setOnlyVerified] = useState(false);
-  const [sort, setSort] = useState<SortKey>("relevance");
+  const [sort, setSort] = useState<ChaveDeOrdenacao>("relevance");
   // No celular, data e valor ficam recolhidos atrás de "Mais filtros".
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -125,10 +125,10 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
   const budgetCents = budget ? Number(budget) * 100 : null;
 
   const matching = partners.filter((p) => {
-    const matchesCategory = selectedCategory === ALL || p.category === selectedCategory;
+    const matchesCategory = selectedCategory === VALOR_TODOS || p.category === selectedCategory;
 
     let matchesRegion = true;
-    if (selectedRegion !== ALL_REGIONS) {
+    if (selectedRegion !== TODAS_AS_REGIOES) {
       const regions = parseRegions(p.serviceRegions);
       matchesRegion = regions.includes(selectedRegion) || regions.includes("Brasil Todo");
     }
@@ -163,11 +163,11 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
   const featuredPartners = matching.filter((p) => p.planTier === "MASTER").slice(0, 6);
 
   const hasFilters =
-    selectedCategory !== ALL || selectedRegion !== ALL_REGIONS || !!term || !!budget || onlyVerified || !!activeDate;
+    selectedCategory !== VALOR_TODOS || selectedRegion !== TODAS_AS_REGIOES || !!term || !!budget || onlyVerified || !!activeDate;
 
   const clearFilters = () => {
-    setSelectedCategory(ALL);
-    setSelectedRegion(ALL_REGIONS);
+    setSelectedCategory(VALOR_TODOS);
+    setSelectedRegion(TODAS_AS_REGIOES);
     setSearchTerm("");
     setBudget("");
     setOnlyVerified(false);
@@ -178,7 +178,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
   function applyDate(value: string) {
     setDateInput(value);
     if (value && value < todayIso) return;
-    startNavigationProgress();
+    iniciarProgressoDaNavegacao();
     startTransitionDate(() => {
       router.replace(value ? `/fornecedores?data=${value}` : "/fornecedores", { scroll: false });
     });
@@ -232,11 +232,11 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
 
   return (
     <div className="flex min-h-screen flex-col bg-linho font-sans text-tinta">
-      <LandingHeader />
+      <CabecalhoDaLanding />
 
       {/* Abertura: sobretítulo, título e a barra de busca sobre a faixa sálvia */}
       <section className="bg-salvia-suave">
-        <div className={cn(container, "flex flex-col gap-6 py-10 sm:py-16")}>
+        <div className={cn(estiloDoContainerDaLanding, "flex flex-col gap-6 py-10 sm:py-16")}>
           <div className="flex max-w-[720px] flex-col gap-3">
             <p className={cn(overline, "text-salvia")}>Fornecedores para o casamento</p>
             <h1 className="font-display text-[34px] font-medium leading-[40px] tracking-[-0.02em] text-tinta sm:text-5xl sm:leading-[1.05] lg:text-6xl">
@@ -264,9 +264,9 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
             />
 
             <NativeSelect id="filtro-regiao" label="Onde vai ser?" icon={MapPin} value={selectedRegion} onChange={(e) => setSelectedRegion(e.target.value)}>
-              {REGIONS.map((reg) => (
+              {REGIOES.map((reg) => (
                 <option key={reg} value={reg}>
-                  {reg === ALL_REGIONS ? "Todas as regiões" : reg}
+                  {reg === TODAS_AS_REGIOES ? "Todas as regiões" : reg}
                 </option>
               ))}
             </NativeSelect>
@@ -303,7 +303,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
 
             <div className={cn("min-w-0 flex-col sm:flex", moreOpen || budget || dateInput ? "flex" : "hidden")}>
               <NativeSelect id="filtro-valor" label="Até quanto?" alwaysFloat value={budget} onChange={(e) => setBudget(e.target.value)}>
-                {BUDGETS.map((b) => (
+                {FAIXAS_DE_ORCAMENTO.map((b) => (
                   <option key={b.value} value={b.value}>
                     {b.label}
                   </option>
@@ -315,7 +315,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
               type="button"
               onClick={() => setMoreOpen((v) => !v)}
               aria-expanded={moreOpen}
-              className={cn(btn.quiet, "justify-self-start sm:hidden")}
+              className={cn(estiloDoBotao.quiet, "justify-self-start sm:hidden")}
             >
               {moreOpen ? "Menos filtros" : "Mais filtros"}
             </button>
@@ -324,7 +324,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
           {/* Categorias: faixa rolável de chips */}
           <div className="-mx-4 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0">
             <div role="group" aria-label="Categorias" className="flex gap-2">
-              {CATEGORIES.map((cat) => {
+              {CATEGORIAS.map((cat) => {
                 const isSelected = selectedCategory === cat;
                 return (
                   <button
@@ -337,7 +337,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
                       isSelected ? "bg-salvia text-on-ameixa" : "bg-papel text-tinta hover:bg-areia",
                     )}
                   >
-                    {cat === ALL ? "Todos" : cat}
+                    {cat === VALOR_TODOS ? "Todos" : cat}
                   </button>
                 );
               })}
@@ -346,15 +346,15 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
         </div>
       </section>
 
-      <main className={cn(container, "flex flex-1 flex-col gap-8 pb-20 pt-10 sm:pb-24 sm:pt-12")}>
+      <main className={cn(estiloDoContainerDaLanding, "flex flex-1 flex-col gap-8 pb-20 pt-10 sm:pb-24 sm:pt-12")}>
         {/* Resultado, filtro de verificados e ordenação */}
         <div className="flex flex-wrap items-center justify-between gap-3" aria-busy={isPendingDate || undefined}>
           <p role="status" className="text-base text-tinta-suave">
             <strong className="font-semibold text-tinta">
-              {selectedCategory === ALL ? "Todos os fornecedores" : selectedCategory}
+              {selectedCategory === VALOR_TODOS ? "Todos os fornecedores" : selectedCategory}
             </strong>{" "}
             · {filteredPartners.length} {filteredPartners.length === 1 ? "fornecedor" : "fornecedores"}
-            {activeDate ? <> com a data {formatIsoDate(activeDate)} livre na agenda</> : null}
+            {activeDate ? <> com a data {formatarDataIso(activeDate)} livre na agenda</> : null}
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -375,10 +375,10 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
             <select
               id="ordenar"
               value={sort}
-              onChange={(e) => setSort(e.target.value as SortKey)}
-              className={cn(field, "min-h-11 w-auto py-0 text-sm sm:min-h-9")}
+              onChange={(e) => setSort(e.target.value as ChaveDeOrdenacao)}
+              className={cn(classeDoCampo, "min-h-11 w-auto py-0 text-sm sm:min-h-9")}
             >
-              {SORTS.map((s) => (
+              {ORDENACOES.map((s) => (
                 <option key={s.value} value={s.value}>
                   {s.label}
                 </option>
@@ -403,7 +403,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
                   >
                     <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[12px] bg-salvia-suave">
                       {partner.coverUrl ? (
-                        <UserImage src={partner.coverUrl} alt="" sizes="256px" className="object-cover" />
+                        <ImagemDaPessoa src={partner.coverUrl} alt="" sizes="256px" className="object-cover" />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-tinta-suave">
                           <Building2 className="size-8" aria-hidden="true" />
@@ -443,7 +443,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
                 : "Tente outra região ou categoria para ver mais fornecedores."}
             </p>
             {hasFilters ? (
-              <button type="button" onClick={clearFilters} className={cn(btn.secondary)}>
+              <button type="button" onClick={clearFilters} className={cn(estiloDoBotao.secondary)}>
                 Limpar filtros
               </button>
             ) : null}
@@ -455,11 +455,11 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
           >
             {filteredPartners.map((partner, index) => {
               const isMaster = partner.planTier === "MASTER";
-              const where = regionsLabel(partner.serviceRegions);
+              const where = rotuloDasRegioes(partner.serviceRegions);
               const price = partner.startingPrice && partner.startingPrice > 0 ? formatarReaisInteiros(partner.startingPrice) : null;
 
               return (
-                <Reveal as="li" key={partner.id} delay={(index % 3) * 90} className="flex">
+                <Aparicao as="li" key={partner.id} delay={(index % 3) * 90} className="flex">
                   <article className="flex w-full flex-col gap-3">
                     <Link
                       href={`/fornecedores/${partner.id}`}
@@ -468,7 +468,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
                       className="group relative block aspect-[4/3] w-full overflow-hidden rounded-[16px] bg-salvia-suave"
                     >
                       {partner.coverUrl ? (
-                        <UserImage
+                        <ImagemDaPessoa
                           src={partner.coverUrl}
                           alt=""
                           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
@@ -539,15 +539,15 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
 
                     {/* Ação principal: pedido de orçamento (registra o contato do casal) */}
                     <div className="mt-auto grid grid-cols-2 gap-2 pt-1">
-                      <Link href={`/fornecedores/${partner.id}`} className={cn(btn.secondary, btn.sm)}>
+                      <Link href={`/fornecedores/${partner.id}`} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)}>
                         Ver perfil
                       </Link>
-                      <button type="button" onClick={() => handleOpenLeadModal(partner)} className={cn(btn.primary, btn.sm)}>
+                      <button type="button" onClick={() => handleOpenLeadModal(partner)} className={cn(estiloDoBotao.primary, estiloDoBotao.sm)}>
                         Pedir orçamento
                       </button>
                     </div>
                   </article>
-                </Reveal>
+                </Aparicao>
               );
             })}
           </ul>
@@ -556,14 +556,14 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
 
       {/* Convite para fornecedores */}
       <section className="border-t border-linha bg-papel">
-        <div className={cn(container, "flex flex-wrap items-center justify-between gap-6 py-12 sm:py-16")}>
+        <div className={cn(estiloDoContainerDaLanding, "flex flex-wrap items-center justify-between gap-6 py-12 sm:py-16")}>
           <div className="flex flex-1 basis-[420px] flex-col gap-2">
             <h2 className="font-display text-[28px] font-medium leading-9 text-tinta sm:text-[34px] sm:leading-10">Você é fornecedor?</h2>
             <p className="text-base leading-6 text-tinta-suave">
               Crie seu perfil grátis e receba pedidos de orçamento de casais da sua região. Todo perfil passa por uma curadoria antes de aparecer aqui.
             </p>
           </div>
-          <Link href="/cadastro?tipo=fornecedor&plano=pro" className={btn.primary}>
+          <Link href="/cadastro?tipo=fornecedor&plano=pro" className={estiloDoBotao.primary}>
             Cadastrar meu negócio
           </Link>
         </div>
@@ -656,7 +656,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
                 onChange={(e) => setGuestCount(e.target.value)}
                 placeholder="Ex: 150"
               />
-              <DatePicker
+              <SeletorDeData
                 id="vl-data"
                 label="Data do casamento"
                 value={weddingDate}
@@ -721,7 +721,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
         </DialogContent>
       </Dialog>
 
-      <LandingFooter />
+      <RodapeDaLanding />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { LoadingRegion, SkeletonCard, SkeletonForm, SkeletonPageHeader, SkeletonStatGrid } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RowsSkeleton } from "@/components/plataforma/loading-parts";
+import { EsqueletoDasLinhas } from "@/components/plataforma/loading-parts";
 
 export default function Loading() {
   return (
@@ -9,7 +9,7 @@ export default function Loading() {
       <Skeleton className="h-20 rounded-2xl" />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <SkeletonCard>
-          <RowsSkeleton rows={5} chip={false} />
+          <EsqueletoDasLinhas rows={5} chip={false} />
         </SkeletonCard>
         <SkeletonCard>
           <SkeletonStatGrid count={3} cols={3} className="lg:grid-cols-3" />
@@ -36,7 +36,7 @@ export default function Loading() {
         ))}
       </div>
       <SkeletonCard>
-        <RowsSkeleton rows={2} />
+        <EsqueletoDasLinhas rows={2} />
       </SkeletonCard>
     </LoadingRegion>
   );

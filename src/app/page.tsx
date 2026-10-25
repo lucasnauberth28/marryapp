@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Closing, HomeFaq } from "@/components/landing/home/faq-closing";
-import { LizSection, PartySection, TablesSection, VendorsSection } from "@/components/landing/home/extras";
-import { GiftsSection } from "@/components/landing/home/gifts";
-import { HomeFooter } from "@/components/landing/home/home-footer";
-import { HomeHeader } from "@/components/landing/home/home-header";
-import { Frame } from "@/components/landing/home/home-ui";
-import { Hero } from "@/components/landing/home/hero";
-import { FunctionsStrip, Steps } from "@/components/landing/home/intro";
-import { PlansSection } from "@/components/landing/home/plans";
-import { GuestsSection, PanelSection, SiteSection } from "@/components/landing/home/product";
-import { SmoothScroll } from "@/components/motion/smooth-scroll";
+import { Encerramento, PerguntasFrequentesDaHome } from "@/components/landing/home/faq-closing";
+import { SecaoDaLiz, SecaoDaFesta, SecaoDeMesas, SecaoDeFornecedores } from "@/components/landing/home/extras";
+import { SecaoDePresentes } from "@/components/landing/home/gifts";
+import { RodapeDaHome } from "@/components/landing/home/home-footer";
+import { CabecalhoDaHome } from "@/components/landing/home/home-header";
+import { Moldura } from "@/components/landing/home/home-ui";
+import { Destaque } from "@/components/landing/home/hero";
+import { FaixaDeFuncoes, Passos } from "@/components/landing/home/intro";
+import { SecaoDePlanos } from "@/components/landing/home/plans";
+import { SecaoDeConvidados, SecaoDoPainel, SecaoDoSite } from "@/components/landing/home/product";
+import { RolagemSuave } from "@/components/motion/smooth-scroll";
 import { obterCatalogo } from "@/lib/catalog-server";
 import { compartilhamentoDaMarca } from "@/lib/brand-meta";
 import { rotuloDoPlano } from "@/lib/plan-copy";
@@ -36,32 +36,32 @@ export default async function Home() {
   const vip = rotuloDoPlano(catalog.plans.vip.name);
   return (
     <div className="lp">
-      <SmoothScroll />
+      <RolagemSuave />
       <a href="#conteudo" className="lp-pular">
         Pular para o conteúdo
       </a>
-      <HomeHeader />
+      <CabecalhoDaHome />
       <main id="conteudo">
-        <Frame>
-          <Hero />
-          <FunctionsStrip />
-          <Steps classic={classic} vip={vip} />
-          <GuestsSection classic={classic} vip={vip} />
-          <PanelSection />
-          <SiteSection vip={vip} />
-        </Frame>
-        <GiftsSection classic={classic} vip={vip} />
-        <Frame>
-          <LizSection />
-          <TablesSection vip={vip} />
-          <PartySection classic={classic} vip={vip} />
-          <VendorsSection />
-          <PlansSection catalog={catalog} />
-          <HomeFaq catalog={catalog} />
-          <Closing />
-        </Frame>
+        <Moldura>
+          <Destaque />
+          <FaixaDeFuncoes />
+          <Passos classic={classic} vip={vip} />
+          <SecaoDeConvidados classic={classic} vip={vip} />
+          <SecaoDoPainel />
+          <SecaoDoSite vip={vip} />
+        </Moldura>
+        <SecaoDePresentes classic={classic} vip={vip} />
+        <Moldura>
+          <SecaoDaLiz />
+          <SecaoDeMesas vip={vip} />
+          <SecaoDaFesta classic={classic} vip={vip} />
+          <SecaoDeFornecedores />
+          <SecaoDePlanos catalog={catalog} />
+          <PerguntasFrequentesDaHome catalog={catalog} />
+          <Encerramento />
+        </Moldura>
       </main>
-      <HomeFooter />
+      <RodapeDaHome />
     </div>
   );
 }

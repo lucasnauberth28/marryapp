@@ -4,17 +4,17 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Check, Copy, RefreshCw } from "lucide-react";
 import { gerarPixDaAssinatura, verificarSituacaoDoPagamentoDaAssinatura } from "@/actions/subscription-actions";
-import { btn } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { LoadingRegion } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { QrFrame } from "@/components/ui/qr-frame";
+import { MolduraDoQr } from "@/components/ui/qr-frame";
 import { CORES_DO_QR } from "@/lib/qr-colors";
 import { cn } from "@/lib/utils";
 
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-interface SubscriptionPixProps {
+interface PropriedadesDoPixDaAssinatura {
   planId: string;
   modules?: string[];
   planName: string;
@@ -24,14 +24,14 @@ interface SubscriptionPixProps {
   onPaid: () => void;
 }
 
-type Charge = { subscriptionId: string; payload: string; expiresAt: number; amount: number; isDynamic: boolean };
+type CobrancaDoPix = { subscriptionId: string; payload: string; expiresAt: number; amount: number; isDynamic: boolean };
 
 /**
  * Cobrança Pix de um plano: gera o código para a conta logada, mostra QR e copia e cola,
  * conta os 10 minutos e confere o pagamento sozinha a cada 5 segundos.
  */
-export function SubscriptionPix({ planId, modules, planName, couponCode, onPaid }: SubscriptionPixProps) {
-  const [charge, setCharge] = useState<Charge | null>(null);
+export function PixDaAssinatura({ planId, modules, planName, couponCode, onPaid }: PropriedadesDoPixDaAssinatura) {
+  const [charge, setCharge] = useState<CobrancaDoPix | null>(null);
   const [error, setError] = useState("");
   const [now, setNow] = useState(() => Date.now());
   const [copied, setCopied] = useState(false);
@@ -154,9 +154,9 @@ export function SubscriptionPix({ planId, modules, planName, couponCode, onPaid 
           <p className="font-semibold text-tinta">{planName}</p>
           <p className="font-num text-3xl text-tinta">{formatarReais(charge.amount)}</p>
         </div>
-        <QrFrame className={cn("transition-opacity", expired && "opacity-30")}>
+        <MolduraDoQr className={cn("transition-opacity", expired && "opacity-30")}>
           <QRCodeSVG value={charge.payload} size={184} {...CORES_DO_QR} marginSize={2} aria-label="QR Code do Pix" role="img" />
-        </QrFrame>
+        </MolduraDoQr>
         <p aria-live="polite" className={cn("text-sm font-semibold tabular-nums", expired ? "text-perigo" : "text-tinta-suave")}>
           {expired
             ? "O código expirou."
@@ -167,7 +167,7 @@ export function SubscriptionPix({ planId, modules, planName, couponCode, onPaid 
             <RefreshCw aria-hidden="true" className="size-4" /> Gerar novo código
           </Button>
         ) : (
-          <button type="button" onClick={copy} className={cn(btn.secondary, btn.block)}>
+          <button type="button" onClick={copy} className={cn(estiloDoBotao.secondary, estiloDoBotao.block)}>
             {copied ? <Check aria-hidden="true" className="size-4 text-sucesso" /> : <Copy aria-hidden="true" className="size-4" />}
             {copied ? "Código copiado" : "Copiar código Pix"}
           </button>

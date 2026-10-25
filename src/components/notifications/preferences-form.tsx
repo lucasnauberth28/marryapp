@@ -8,35 +8,35 @@ import { ROTULO_DO_GRUPO, type PublicoDaNotificacao, type GrupoDeNotificacao } f
 import { canaisOferecidos, type CanalDeNotificacao, type PreferenciasDeNotificacao } from "@/lib/notifications/preferences";
 import { NativeSelect } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { PushCard } from "./push-card";
-import { ToggleSwitch } from "./toggle-switch";
+import { CartaoDoPush } from "./push-card";
+import { InterruptorDeAlternancia } from "./toggle-switch";
 
-interface Props {
+interface Propriedades {
   initial: PreferenciasDeNotificacao;
   audience: PublicoDaNotificacao;
   groups: GrupoDeNotificacao[];
   pushPublicKey: string | null;
 }
 
-const CHANNEL_LABEL: Record<CanalDeNotificacao, { title: string; hint: string }> = {
+const ROTULO_DO_CANAL: Record<CanalDeNotificacao, { title: string; hint: string }> = {
   push: { title: "Aviso no aparelho", hint: "Notificação no celular ou no computador" },
   whatsapp: { title: "WhatsApp", hint: "Só para o que não pode esperar" },
   email: { title: "E-mail", hint: "Uma mensagem na sua caixa de entrada" },
 };
 
-const WHATSAPP_HINT: Partial<Record<GrupoDeNotificacao, string>> = {
+const DICA_DO_WHATSAPP: Partial<Record<GrupoDeNotificacao, string>> = {
   requests: "Só para novos pedidos de orçamento",
   account: "Só para plano ativado e perto de vencer",
 };
 
-const HOURS = Array.from({ length: 24 }, (_, h) => h);
-const hourLabel = (h: number) => `${h}h`;
+const HORAS = Array.from({ length: 24 }, (_, h) => h);
+const rotuloDaHora = (h: number) => `${h}h`;
 
 /**
  * "Avisos" da conta: aviso no aparelho, e canais por grupo, e horário de silêncio.
  * A tela muda na hora e salva em seguida; se o servidor recusar, volta ao que estava salvo e avisa.
  */
-export function PreferencesForm({ initial, audience, groups, pushPublicKey }: Props) {
+export function FormularioDePreferencias({ initial, audience, groups, pushPublicKey }: Propriedades) {
   const [prefs, setPrefs] = useState(initial);
   const saved = useRef(initial);
   const seq = useRef(0);
@@ -67,7 +67,7 @@ export function PreferencesForm({ initial, audience, groups, pushPublicKey }: Pr
 
   return (
     <div className="flex flex-col gap-5">
-      <PushCard publicKey={pushPublicKey} />
+      <CartaoDoPush publicKey={pushPublicKey} />
 
       <div className="flex flex-col gap-3">
         <h3 className="text-base font-semibold text-tinta">O que você quer receber</h3>
@@ -86,15 +86,15 @@ export function PreferencesForm({ initial, audience, groups, pushPublicKey }: Pr
                 {channels.map((channel) => (
                   <li key={channel} className="flex min-h-14 items-center justify-between gap-3 py-1">
                     <span className="min-w-0">
-                      <span className="block text-[15px] text-tinta">{CHANNEL_LABEL[channel].title}</span>
+                      <span className="block text-[15px] text-tinta">{ROTULO_DO_CANAL[channel].title}</span>
                       <span className="block text-sm leading-5 text-tinta-suave">
-                        {channel === "whatsapp" ? (WHATSAPP_HINT[group] ?? CHANNEL_LABEL.whatsapp.hint) : CHANNEL_LABEL[channel].hint}
+                        {channel === "whatsapp" ? (DICA_DO_WHATSAPP[group] ?? ROTULO_DO_CANAL.whatsapp.hint) : ROTULO_DO_CANAL[channel].hint}
                       </span>
                     </span>
-                    <ToggleSwitch
+                    <InterruptorDeAlternancia
                       checked={prefs.channels[channel][group]}
                       onChange={(value) => void setChannel(channel, group, value)}
-                      label={`${ROTULO_DO_GRUPO[group].title}: ${CHANNEL_LABEL[channel].title}`}
+                      label={`${ROTULO_DO_GRUPO[group].title}: ${ROTULO_DO_CANAL[channel].title}`}
                     />
                   </li>
                 ))}
@@ -120,7 +120,7 @@ export function PreferencesForm({ initial, audience, groups, pushPublicKey }: Pr
               </p>
             </div>
           </div>
-          <ToggleSwitch checked={quiet.enabled} onChange={(value) => void setQuiet({ enabled: value })} label="Não incomodar à noite" />
+          <InterruptorDeAlternancia checked={quiet.enabled} onChange={(value) => void setQuiet({ enabled: value })} label="Não incomodar à noite" />
         </div>
 
         <div className={cn("mt-4 flex flex-wrap items-center gap-x-4 gap-y-4 pl-[52px]", !quiet.enabled && "opacity-80")}>
@@ -132,9 +132,9 @@ export function PreferencesForm({ initial, audience, groups, pushPublicKey }: Pr
             disabled={!quiet.enabled}
             onChange={(e) => void setQuiet({ startHour: Number(e.target.value) })}
           >
-            {HOURS.map((h) => (
+            {HORAS.map((h) => (
               <option key={h} value={h}>
-                {hourLabel(h)}
+                {rotuloDaHora(h)}
               </option>
             ))}
           </NativeSelect>
@@ -146,9 +146,9 @@ export function PreferencesForm({ initial, audience, groups, pushPublicKey }: Pr
             disabled={!quiet.enabled}
             onChange={(e) => void setQuiet({ endHour: Number(e.target.value) })}
           >
-            {HOURS.map((h) => (
+            {HORAS.map((h) => (
               <option key={h} value={h}>
-                {hourLabel(h)}
+                {rotuloDaHora(h)}
               </option>
             ))}
           </NativeSelect>

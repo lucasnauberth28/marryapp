@@ -1,5 +1,5 @@
 import { LoadingRegion, SkeletonPageHeader, SkeletonStatGrid } from "@/components/skeletons";
-import { AdminTabsSkeleton } from "@/components/plataforma/loading-parts";
+import { EsqueletoDasAbasDoAdmin } from "@/components/plataforma/loading-parts";
 import { CasalDetailSkeleton, CasalTabSkeleton } from "./_components/skeletons";
 
 export default function Loading() {
@@ -8,7 +8,7 @@ export default function Loading() {
       <SkeletonPageHeader breadcrumb actions={2} />
       <CasalDetailSkeleton />
       <SkeletonStatGrid count={4} />
-      <AdminTabsSkeleton count={7} />
+      <EsqueletoDasAbasDoAdmin count={7} />
       <CasalTabSkeleton tab="visao" />
     </LoadingRegion>
   );

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { ChevronLeft, Info, Lock, Pause, ShieldCheck } from "lucide-react";
-import { PageHeader } from "@/components/plataforma/page-header";
-import { Panel } from "@/components/plataforma/panel";
-import { Notice, NotActiveTag } from "@/components/plataforma/notices";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { btn } from "@/components/landing/styles";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { Painel } from "@/components/plataforma/panel";
+import { Aviso, EtiquetaDeInativo } from "@/components/plataforma/notices";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Input } from "@/components/ui/input";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
@@ -29,20 +29,20 @@ export default async function Page() {
 
   return (
     <>
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow="Liz"
         title="Comportamento e qualidade"
         description="Como a Liz fala, o que ela sabe e como você confere se está ajudando."
         actions={
-          <Link href="/admin/madrinha" className={btn.secondary}>
+          <Link href="/admin/madrinha" className={estiloDoBotao.secondary}>
             <ChevronLeft className="size-4" aria-hidden="true" /> Voltar à gestão
           </Link>
         }
       />
 
-      <Notice tone="aviso" icon={Info} title="A Liz ainda não foi ativada" aside={<NotActiveTag />}>
+      <Aviso tone="aviso" icon={Info} title="A Liz ainda não foi ativada" aside={<EtiquetaDeInativo />}>
         Você já pode escrever as instruções e a base de conhecimento. Não há conversas para medir a qualidade.
-      </Notice>
+      </Aviso>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
@@ -64,12 +64,12 @@ export default async function Page() {
         </div>
 
         <div className="flex min-w-0 flex-col gap-6">
-          <Panel title="Modelo">
+          <Painel title="Modelo">
             <p className="flex items-center gap-2 rounded-xl bg-areia p-3 text-[15px] font-semibold text-tinta">
               <Lock className="size-4 text-tinta-suave" aria-hidden="true" /> Ainda não definido
             </p>
             <p className="mt-3 text-sm leading-5 text-tinta-suave">O modelo será escolhido quando a conexão com a API for feita. Trocar de modelo muda o custo e o jeito de responder.</p>
-          </Panel>
+          </Painel>
 
           <CapabilitiesCard initial={capabilities} badge={<SettingBadge {...meta["madrinha.capabilities"]} />} />
 
@@ -82,7 +82,7 @@ export default async function Page() {
             <p className="text-sm leading-5 text-tinta-suave">Para quando algo sair do controle: os casais veem um aviso gentil e a Liz descansa. Só dá para pausar depois que ela for ativada.</p>
             <Input label="Motivo (fica no registro)" disabled />
             <div>
-              <button type="button" disabled className={`${btn.secondary} text-perigo`}>
+              <button type="button" disabled className={`${estiloDoBotao.secondary} text-perigo`}>
                 <Pause className="size-4" aria-hidden="true" /> Pausar para todos
               </button>
             </div>
@@ -90,11 +90,11 @@ export default async function Page() {
         </div>
       </div>
 
-      <Panel title="Qualidade">
-        <EmptyState icon={ShieldCheck} compact title="Ainda não há conversas para avaliar">
+      <Painel title="Qualidade">
+        <EstadoVazio icon={ShieldCheck} compact title="Ainda não há conversas para avaliar">
           Quando a Liz for ativada, aqui aparecem as respostas úteis, a taxa de erro e as conversas marcadas pelo casal. Você só lê conversas marcadas ou de casais que derem consentimento, com nomes, telefones e e-mails ocultos (LGPD).
-        </EmptyState>
-      </Panel>
+        </EstadoVazio>
+      </Painel>
     </>
   );
 }

@@ -3,14 +3,14 @@
 import { useEffect, useId, useState, useTransition } from "react";
 import { TicketPercent, X } from "lucide-react";
 import { previaDoPrecoDaAssinatura } from "@/actions/subscription-actions";
-import { btn } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-export interface AppliedCoupon {
+export interface CupomAplicado {
   code: string;
   /** Plano para o qual o cupom foi conferido. */
   planId: string;
@@ -20,11 +20,11 @@ export interface AppliedCoupon {
   total: number;
 }
 
-interface CouponFieldProps {
+interface PropriedadesDoCampoDeCupom {
   planId: string;
   modules?: string[];
-  applied: AppliedCoupon | null;
-  onChange: (applied: AppliedCoupon | null) => void;
+  applied: CupomAplicado | null;
+  onChange: (applied: CupomAplicado | null) => void;
   /** Texto do crédito do plano anterior, quando houver ("Crédito do Pro atual"). */
   creditLabel?: string;
 }
@@ -33,7 +33,7 @@ interface CouponFieldProps {
  * Campo de cupom do checkout: "Aplicar" confere o código no servidor e mostra o novo total.
  * O servidor confere de novo ao gerar o Pix; aqui é só a prévia.
  */
-export function CouponField({ planId, modules, applied, onChange, creditLabel = "Crédito do plano atual" }: CouponFieldProps) {
+export function CampoDeCupom({ planId, modules, applied, onChange, creditLabel = "Crédito do plano atual" }: PropriedadesDoCampoDeCupom) {
   const inputId = useId();
   const [open, setOpen] = useState(Boolean(applied));
   const [code, setCode] = useState(applied?.code ?? "");
@@ -71,7 +71,7 @@ export function CouponField({ planId, modules, applied, onChange, creditLabel = 
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className={cn(btn.quiet, "-ml-3 min-h-11 self-start")}>
+      <button type="button" onClick={() => setOpen(true)} className={cn(estiloDoBotao.quiet, "-ml-3 min-h-11 self-start")}>
         <TicketPercent aria-hidden="true" className="size-4" />
         Tenho um cupom de desconto
       </button>

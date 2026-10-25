@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 import { Info, Power } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { StatusChip } from "@/components/plataforma/status-chip";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 
 /**
  * Avisos de contexto.
@@ -11,14 +11,14 @@ import { StatusChip } from "@/components/plataforma/status-chip";
  * Regra de honestidade: bloco sem fonte de dados real NUNCA mostra o número de exemplo do desenho; use <NotMeasured> ou omita.
  * tone: aviso (padrão) | neutro | perigo | sucesso.
  */
-const NOTICE: Record<"aviso" | "neutro" | "perigo" | "sucesso", string> = {
+const AVISOS: Record<"aviso" | "neutro" | "perigo" | "sucesso", string> = {
   aviso: "border-aviso/40 bg-aviso-suave",
   neutro: "border-linha bg-areia",
   perigo: "border-perigo/40 bg-perigo-suave",
   sucesso: "border-sucesso/30 bg-sucesso-suave",
 };
 
-export function Notice({
+export function Aviso({
   tone = "aviso",
   icon: Icon = Info,
   title,
@@ -26,7 +26,7 @@ export function Notice({
   aside,
   className,
 }: {
-  tone?: keyof typeof NOTICE;
+  tone?: keyof typeof AVISOS;
   icon?: ComponentType<{ className?: string; strokeWidth?: number | string; "aria-hidden"?: boolean | "true" | "false" }>;
   title?: ReactNode;
   children?: ReactNode;
@@ -34,7 +34,7 @@ export function Notice({
   className?: string;
 }) {
   return (
-    <div role="status" className={cn("flex flex-wrap items-start gap-3 rounded-2xl border px-4 py-3.5", NOTICE[tone], className)}>
+    <div role="status" className={cn("flex flex-wrap items-start gap-3 rounded-2xl border px-4 py-3.5", AVISOS[tone], className)}>
       <Icon className="mt-0.5 size-5 shrink-0 text-tinta" strokeWidth={1.6} aria-hidden="true" />
       <div className="min-w-0 flex-1">
         {title && <p className="font-semibold leading-6 text-tinta">{title}</p>}
@@ -46,10 +46,10 @@ export function Notice({
 }
 
 /** Chip "Desligada" (recurso ainda sem ativação). */
-export function NotActiveTag({ children = "Desligada" }: { children?: ReactNode }) {
+export function EtiquetaDeInativo({ children = "Desligada" }: { children?: ReactNode }) {
   return (
-    <StatusChip tone="neutro" icon={Power}>
+    <EtiquetaDeSituacao tone="neutro" icon={Power}>
       {children}
-    </StatusChip>
+    </EtiquetaDeSituacao>
   );
 }

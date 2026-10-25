@@ -1,10 +1,10 @@
 "use client";
 
-import { CustomModal } from "./custom-modal";
+import { ModalPersonalizado } from "./custom-modal";
 import { Button } from "./button";
 import { AlertTriangle } from "lucide-react";
 
-interface ConfirmModalProps {
+interface PropriedadesDoModalDeConfirmacao {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -16,7 +16,7 @@ interface ConfirmModalProps {
   isLoading?: boolean;
 }
 
-export function ConfirmModal({
+export function ModalDeConfirmacao({
   isOpen,
   onClose,
   onConfirm,
@@ -26,9 +26,9 @@ export function ConfirmModal({
   cancelText = "Cancelar",
   variant = "destructive",
   isLoading = false,
-}: ConfirmModalProps) {
+}: PropriedadesDoModalDeConfirmacao) {
   return (
-    <CustomModal
+    <ModalPersonalizado
       isOpen={isOpen}
       onClose={onClose}
       title={title}
@@ -62,6 +62,6 @@ export function ConfirmModal({
           </Button>
         </div>
       </div>
-    </CustomModal>
+    </ModalPersonalizado>
   );
 }

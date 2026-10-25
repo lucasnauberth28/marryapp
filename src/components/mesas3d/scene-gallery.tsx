@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import { Check } from "lucide-react";
-import { CustomModal } from "@/components/ui/custom-modal";
+import { ModalPersonalizado } from "@/components/ui/custom-modal";
 import { CENARIOS, type IdDoCenario } from "@/lib/mesas3d/scenarios";
 import { cn } from "@/lib/utils";
 
 /** Escolha do cenário: três salões com prévia. Sem escolha feita, não dá para fechar (a cena precisa de um cenário). */
-export function SceneGallery({
+export function GaleriaDeCenarios({
   open,
   current,
   onPick,
@@ -19,7 +19,7 @@ export function SceneGallery({
   onClose: () => void;
 }) {
   return (
-    <CustomModal
+    <ModalPersonalizado
       isOpen={open}
       onClose={() => {
         if (current) onClose();
@@ -61,6 +61,6 @@ export function SceneGallery({
           );
         })}
       </ul>
-    </CustomModal>
+    </ModalPersonalizado>
   );
 }

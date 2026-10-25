@@ -2,10 +2,10 @@
 
 import type { CSSProperties } from "react";
 import { Toaster } from "sonner";
-import { useTheme } from "./theme-provider";
+import { useTema } from "./theme-provider";
 
 // As cores do sonner (richColors) vêm de variáveis: apontadas para os tokens Aceito, trocam com o tema.
-const TOAST_COLORS = {
+const CORES_DOS_AVISOS = {
   "--normal-bg": "var(--color-papel)",
   "--normal-text": "var(--color-tinta)",
   "--normal-border": "var(--color-linha)",
@@ -24,8 +24,8 @@ const TOAST_COLORS = {
 } as CSSProperties;
 
 /** Avisos (sonner) no tema da página, com as cores dos tokens. */
-export function ThemedToaster() {
-  const { resolvedTheme } = useTheme();
+export function AvisosComTema() {
+  const { resolvedTheme } = useTema();
   return (
     <Toaster
       theme={resolvedTheme}
@@ -33,7 +33,7 @@ export function ThemedToaster() {
       richColors
       closeButton
       duration={4000}
-      style={TOAST_COLORS}
+      style={CORES_DOS_AVISOS}
       toastOptions={{
         style: {
           borderRadius: "16px",

@@ -3,14 +3,14 @@
 import { useId, useState, useMemo, useTransition } from "react";
 import { toast } from "sonner";
 import { Minus, Plus } from "lucide-react";
-import { GuestLocal as Guest, RsvpStatus } from "@/types/local";
-import { CustomModal } from "@/components/ui/custom-modal";
+import { ConvidadoLocal as Guest, SituacaoDaConfirmacao } from "@/types/local";
+import { ModalPersonalizado } from "@/components/ui/custom-modal";
 import { criarConvidado, atualizarConvidado } from "@/actions/guest-actions";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
-import { btn, btnDanger, errorBox, hint, label } from "@/components/painel/styles";
-import { LoadingButton } from "@/components/painel/loading-button";
+import { btn, estiloDoBotaoDePerigo, estiloDaCaixaDeErro, estiloDaDicaDoPainel, estiloDoRotuloDoPainel } from "@/components/painel/styles";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
 
 export const GUEST_CATEGORIES = [
   "Padrinho/Madrinha",
@@ -83,7 +83,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<string>(guest?.category ?? "");
   const [parentGuestId, setParentGuestId] = useState<string>(guest?.parentGuestId ?? "none");
-  const [rsvpStatus, setRsvpStatus] = useState<RsvpStatus>(guest?.rsvpStatus ?? RsvpStatus.PENDING);
+  const [rsvpStatus, setRsvpStatus] = useState<SituacaoDaConfirmacao>(guest?.rsvpStatus ?? SituacaoDaConfirmacao.PENDING);
   // Lugares reservados = o convidado + os acompanhantes que ele pode levar
   const [seats, setSeats] = useState<number>(1 + (guest?.allowedCompanions ?? 0));
   // Troca a chave do formulário para limpar os campos ao salvar e adicionar outro
@@ -101,7 +101,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
     if (isOpen) {
       setCategory(guest?.category ?? "");
       setParentGuestId(guest?.parentGuestId ?? "none");
-      setRsvpStatus(guest?.rsvpStatus ?? RsvpStatus.PENDING);
+      setRsvpStatus(guest?.rsvpStatus ?? SituacaoDaConfirmacao.PENDING);
       setSeats(1 + (guest?.allowedCompanions ?? 0));
       setFormKey((k) => k + 1);
       setError(null);
@@ -153,7 +153,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
   }
 
   return (
-    <CustomModal
+    <ModalPersonalizado
       isOpen={isOpen}
       onClose={onClose}
       title={isEditing ? "Editar convidado" : "Adicionar convidado"}
@@ -186,7 +186,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
         <Field label="E-mail (opcional)" name="email" type="email" inputMode="email" autoComplete="off" placeholder="nome@exemplo.com" defaultValue={guest?.email ?? ""} />
 
         <div className="flex flex-col gap-2">
-          <span className={label} id={ids.seats}>
+          <span className={estiloDoRotuloDoPainel} id={ids.seats}>
             Lugares reservados
           </span>
           <div role="group" aria-labelledby={ids.seats} className="flex items-center gap-3">
@@ -200,7 +200,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
               <Plus className="size-4" aria-hidden="true" />
             </button>
           </div>
-          <p className={hint}>Conta a própria pessoa e quem ela pode levar.</p>
+          <p className={estiloDaDicaDoPainel}>Conta a própria pessoa e quem ela pode levar.</p>
         </div>
 
         <div className="grid gap-5">
@@ -230,14 +230,14 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
               label="Resposta do convidado"
               hint="O convidado responde pelo link do convite. Mudem aqui só se ele avisou por outro meio."
               value={rsvpStatus}
-              onChange={(e) => setRsvpStatus(e.target.value as RsvpStatus)}
+              onChange={(e) => setRsvpStatus(e.target.value as SituacaoDaConfirmacao)}
             >
-              <option value={RsvpStatus.PENDING}>Sem resposta</option>
-              <option value={RsvpStatus.CONFIRMED}>Confirmado</option>
-              <option value={RsvpStatus.DECLINED}>Não vai</option>
+              <option value={SituacaoDaConfirmacao.PENDING}>Sem resposta</option>
+              <option value={SituacaoDaConfirmacao.CONFIRMED}>Confirmado</option>
+              <option value={SituacaoDaConfirmacao.DECLINED}>Não vai</option>
             </NativeSelect>
 
-            {rsvpStatus === RsvpStatus.CONFIRMED ? (
+            {rsvpStatus === SituacaoDaConfirmacao.CONFIRMED ? (
               <Field label="Restrições alimentares" name="dietaryRestrictions" placeholder="Sem glúten, vegano..." defaultValue={guest?.dietaryRestrictions ?? ""} />
             ) : (
               <input type="hidden" name="dietaryRestrictions" value={guest?.dietaryRestrictions ?? ""} />
@@ -250,33 +250,33 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
         )}
 
         {error && (
-          <p role="alert" className={errorBox}>
+          <p role="alert" className={estiloDaCaixaDeErro}>
             {error}
           </p>
         )}
 
         <div className="flex flex-col gap-2 border-t border-linha pt-4">
-          <LoadingButton type="submit" loading={isPending && !addAnother} disabled={isPending} onClick={() => setAddAnother(false)} className={`${btn.primary} ${btn.block}`}>
+          <BotaoComCarregamento type="submit" loading={isPending && !addAnother} disabled={isPending} onClick={() => setAddAnother(false)} className={`${btn.primary} ${btn.block}`}>
             {isEditing ? "Salvar alterações" : "Salvar convidado"}
-          </LoadingButton>
+          </BotaoComCarregamento>
           {isEditing ? (
             <>
               <button type="button" onClick={onClose} disabled={isPending} className={`${btn.quiet} ${btn.block}`}>
                 Cancelar
               </button>
               {onDelete && guest && (
-                <button type="button" onClick={() => onDelete(guest)} disabled={isPending} className={`${btnDanger} w-full`}>
+                <button type="button" onClick={() => onDelete(guest)} disabled={isPending} className={`${estiloDoBotaoDePerigo} w-full`}>
                   Excluir convidado
                 </button>
               )}
             </>
           ) : (
-            <LoadingButton type="submit" loading={isPending && addAnother} disabled={isPending} onClick={() => setAddAnother(true)} className={`${btn.quiet} ${btn.block}`}>
+            <BotaoComCarregamento type="submit" loading={isPending && addAnother} disabled={isPending} onClick={() => setAddAnother(true)} className={`${btn.quiet} ${btn.block}`}>
               Salvar e adicionar outro
-            </LoadingButton>
+            </BotaoComCarregamento>
           )}
         </div>
       </form>
-    </CustomModal>
+    </ModalPersonalizado>
   );
 }

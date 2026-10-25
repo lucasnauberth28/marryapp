@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CircleAlert } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
+import { Logotipo } from "@/components/brand/logo";
 import prisma from "@/lib/prisma";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
-import { NotificationBell } from "@/components/notifications/notification-bell";
+import { SinoDeNotificacoes } from "@/components/notifications/notification-bell";
 import { quantidadeNaoLidaDe } from "@/lib/notifications/queries";
 import { chavePublicaVapid } from "@/lib/notifications/push";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { AlternadorDeTema } from "@/components/theme/theme-toggle";
 import { Chip } from "./_components/status-chip";
 import { VendorAvatar } from "./_components/vendor-avatar";
 import { LogoutButton, LogoutIconButton, VendorMobileTitle, VendorSidebarNav, VendorTabBar } from "./_components/vendor-nav";
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 function BrandBlock() {
   return (
     <div className="flex flex-col gap-1.5 px-3">
-      <Logo height={26} />
+      <Logotipo height={26} />
       <span className="w-fit rounded-md bg-salvia-suave px-2.5 py-0.5 text-xs font-semibold text-salvia">
         para Fornecedores
       </span>
@@ -77,7 +77,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
       <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col gap-5 overflow-y-auto border-r border-linha bg-linho px-4 py-6 md:flex">
         <div className="flex items-start justify-between gap-2">
           <BrandBlock />
-          <NotificationBell
+          <SinoDeNotificacoes
             initialUnread={unreadNotifications}
             allHref="/fornecedor/notificacoes"
             settingsHref="/conta#avisos"
@@ -99,7 +99,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
           <div className="min-w-0 flex-1">
             <LogoutButton />
           </div>
-          <ThemeToggle align="start" />
+          <AlternadorDeTema align="start" />
         </div>
       </aside>
 
@@ -112,8 +112,8 @@ export default async function FornecedorLayout({ children }: { children: React.R
           <Chip tone="salvia">
             {isFree ? `Start · ${Math.min(monthLeads, START_MONTHLY_LEAD_LIMIT)} de ${START_MONTHLY_LEAD_LIMIT}` : planLabel}
           </Chip>
-          <ThemeToggle />
-          <NotificationBell
+          <AlternadorDeTema />
+          <SinoDeNotificacoes
             initialUnread={unreadNotifications}
             allHref="/fornecedor/notificacoes"
             settingsHref="/conta#avisos"

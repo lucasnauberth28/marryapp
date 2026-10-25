@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingRegion, SkeletonCard, SkeletonImage, SkeletonList, SkeletonPageHeader, SkeletonStat } from "@/components/skeletons";
-import { SkeletonPanel, SkeletonSectionTitle } from "@/components/painel/skeleton-parts";
+import { EsqueletoDoPainel, EsqueletoDoTituloDaSecao } from "@/components/painel/skeleton-parts";
 
 // Espelha os presentes: cabeçalho, três números, a lista de recebidos e a vitrine de cartões com foto.
 export default function LoadingPresentesAdmin() {
@@ -19,15 +19,15 @@ export default function LoadingPresentesAdmin() {
       </SkeletonCard>
 
       <section className="flex flex-col gap-3">
-        <SkeletonSectionTitle />
+        <EsqueletoDoTituloDaSecao />
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] sm:gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <li key={i}>
-              <SkeletonPanel className="flex flex-col gap-2 p-3">
+              <EsqueletoDoPainel className="flex flex-col gap-2 p-3">
                 <SkeletonImage ratio={1} className="rounded-xl" />
                 <Skeleton className="h-4 w-3/4 rounded-md" />
                 <Skeleton className="h-3.5 w-1/2 rounded-md" />
-              </SkeletonPanel>
+              </EsqueletoDoPainel>
             </li>
           ))}
         </ul>

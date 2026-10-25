@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Download } from "lucide-react";
-import { ExportButton } from "@/components/plataforma/export-button";
+import { BotaoDeExportar } from "@/components/plataforma/export-button";
 import { NativeSelect } from "@/components/ui/select";
 
 /** Escolhe o mês e baixa a planilha do contador. O botão mostra "gerando" até o arquivo ficar pronto. */
@@ -18,9 +18,9 @@ export function ContadorExport({ month, options }: { month: string; options: { v
         ))}
       </NativeSelect>
       <p className="text-sm text-tinta-suave">Inclui data, quem pagou, plano, valor, forma de pagamento, situação (pago ou estornado) e o número da nota. Sem CPF, CNPJ nem a taxa do Mercado Pago.</p>
-      <ExportButton variant="default" href={`/api/admin/contador?mes=${encodeURIComponent(value)}`} fallbackName={`contador-${value}.csv`} className="self-start">
+      <BotaoDeExportar variant="default" href={`/api/admin/contador?mes=${encodeURIComponent(value)}`} fallbackName={`contador-${value}.csv`} className="self-start">
         <Download className="size-4" aria-hidden="true" /> Baixar a planilha
-      </ExportButton>
+      </BotaoDeExportar>
     </div>
   );
 }

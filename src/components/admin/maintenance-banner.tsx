@@ -6,7 +6,7 @@ import { formatarPrevisaoDeVolta, manutencaoNaoSeAplica } from "@/lib/platform/m
  * Faixa no painel do casal enquanto o modo de manutenção está ligado: tudo pode ser lido, nada pode ser salvo.
  * A administração da plataforma não vê a faixa (ela não é barrada).
  */
-export async function MaintenanceBanner({ allowedPaths }: { allowedPaths: readonly string[] }) {
+export async function FaixaDeManutencao({ allowedPaths }: { allowedPaths: readonly string[] }) {
   if (manutencaoNaoSeAplica(allowedPaths)) return null;
   const state = await obterManutencao();
   if (!state.enabled) return null;

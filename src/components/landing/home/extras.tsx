@@ -1,16 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Link2, MousePointerClick, Search, Sparkles } from "lucide-react";
-import { Reveal } from "@/components/motion/reveal";
-import { LinkButton, SectionHead } from "./home-ui";
+import { Aparicao } from "@/components/motion/reveal";
+import { LinkEmFormaDeBotao, CabecalhoDaSecao } from "./home-ui";
 
 /** Liz: sugere o próximo passo a partir do painel e responde dúvidas por assuntos prontos. Não age sozinha. */
-export function LizSection() {
+export function SecaoDaLiz() {
   return (
     <>
       <section className="lp-sec lp-dentro" id="liz" aria-labelledby="lp-t-liz">
         <div className="lp-liz-grade">
-          <Reveal className="lp-liz-texto">
+          <Aparicao className="lp-liz-texto">
             <span className="lp-chip-sec">Liz</span>
             <h2 className="lp-titulo lp-h2" id="lp-t-liz">
               A fada madrinha
@@ -18,8 +18,8 @@ export function LizSection() {
               <span className="lp-cor">do próximo passo.</span>
             </h2>
             <p className="lp-lead">Ela lê o painel e sugere, e responde dúvidas por assuntos prontos. Não faz nada sozinha: quem decide são vocês.</p>
-          </Reveal>
-          <Reveal variant="right" delay={120} className="lp-liz-palco">
+          </Aparicao>
+          <Aparicao variant="right" delay={120} className="lp-liz-palco">
             <Image
               className="lp-liz-sentada"
               src="/brand/liz/apontando-baixo-460.webp"
@@ -36,7 +36,7 @@ export function LizSection() {
               <p className="lp-t">42 convites ainda sem resposta. O prazo termina em 9 dias.</p>
               <span className="lp-chip lp-chip-ameixa">Revisar quem não respondeu</span>
             </div>
-          </Reveal>
+          </Aparicao>
         </div>
       </section>
     </>
@@ -44,7 +44,7 @@ export function LizSection() {
 }
 
 /** O dia da festa: foto ao lado de três recursos com ícones em relevo. */
-export function PartySection({ classic, vip }: { classic: string; vip: string }) {
+export function SecaoDaFesta({ classic, vip }: { classic: string; vip: string }) {
   const itens = [
     { icone: "mesas", w: 280, h: 273, titulo: "Mesas e restrições", texto: "Cada convidado no seu lugar." },
     { icone: "qrcode", w: 280, h: 260, titulo: "Entrada com código QR", texto: `${classic} e ${vip}.` },
@@ -53,7 +53,7 @@ export function PartySection({ classic, vip }: { classic: string; vip: string })
   return (
     <>
       <section className="lp-meia" aria-labelledby="lp-t-festa">
-        <Reveal variant="left" className="lp-meia-visual">
+        <Aparicao variant="left" className="lp-meia-visual">
           <Image
             className="lp-cobre"
             src="/landing/fotos/foto-mesa-recepcao.webp"
@@ -61,8 +61,8 @@ export function PartySection({ classic, vip }: { classic: string; vip: string })
             fill
             sizes="(min-width: 900px) 50vw, 100vw"
           />
-        </Reveal>
-        <Reveal variant="right" delay={120} className="lp-meia-texto">
+        </Aparicao>
+        <Aparicao variant="right" delay={120} className="lp-meia-texto">
           <h2 className="lp-titulo lp-h2" id="lp-t-festa">
             E no dia da festa,
             <br />
@@ -80,18 +80,18 @@ export function PartySection({ classic, vip }: { classic: string; vip: string })
             ))}
           </ul>
           <p className="lp-mais-recursos">Também: mural de recados e despesas. Convites pelo WhatsApp do painel, no {classic} e no {vip}.</p>
-        </Reveal>
+        </Aparicao>
       </section>
     </>
   );
 }
 
 /** Fornecedores: colagem de fotos ao lado de um texto curto. */
-export function VendorsSection() {
+export function SecaoDeFornecedores() {
   return (
     <>
       <section className="lp-meia lp-inv" id="fornecedores" aria-labelledby="lp-t-forn">
-        <Reveal variant="right" className="lp-meia-visual">
+        <Aparicao variant="right" className="lp-meia-visual">
           <div className="lp-colagem">
             <Image
               className="lp-c1"
@@ -118,26 +118,26 @@ export function VendorsSection() {
               sizes="(min-width: 900px) 220px, 36vw"
             />
           </div>
-        </Reveal>
-        <Reveal variant="left" delay={120} className="lp-meia-texto">
+        </Aparicao>
+        <Aparicao variant="left" delay={120} className="lp-meia-texto">
           <h2 className="lp-titulo lp-h2" id="lp-t-forn">
             Fornecedores
             <br />
             <span className="lp-cor">perto do casamento.</span>
           </h2>
           <p className="lp-lead">Fotógrafos, espaços e buffets da região, com pedido de orçamento.</p>
-          <LinkButton href="/fornecedores">Encontrar fornecedores</LinkButton>
+          <LinkEmFormaDeBotao href="/fornecedores">Encontrar fornecedores</LinkEmFormaDeBotao>
           <Link href="/planos#fornecedores" className="lp-link lp-nota">
             Você é fornecedor? Conheça o Aceito para empresas
           </Link>
-        </Reveal>
+        </Aparicao>
       </section>
     </>
   );
 }
 
 /** Mesas em 3D (plano VIP): o salão do casamento, os convidados sentados e o link só de leitura para compartilhar. */
-export function TablesSection({ vip }: { vip: string }) {
+export function SecaoDeMesas({ vip }: { vip: string }) {
   const cenarios = [
     { id: "jardim", nome: "Jardim ao entardecer" },
     { id: "classico", nome: "Salão clássico" },
@@ -150,14 +150,14 @@ export function TablesSection({ vip }: { vip: string }) {
   ];
   return (
     <section className="lp-sec lp-dentro" id="mesas-3d" aria-labelledby="lp-t-3d">
-      <SectionHead
+      <CabecalhoDaSecao
         id="lp-t-3d"
         chip={`Mesas em 3D · ${vip}`}
         title="Sentem os convidados"
         accent="vendo o salão."
         lead="Escolham o cenário do casamento e mandem o mapa das mesas por um link, para cada convidado achar o próprio lugar."
       />
-      <Reveal variant="scale" className="lp-3d">
+      <Aparicao variant="scale" className="lp-3d">
         <div className="lp-3d-palco">
           <Image
             src="/landing/mesas3d/jardim-cenario.webp"
@@ -193,24 +193,24 @@ export function TablesSection({ vip }: { vip: string }) {
             </li>
           ))}
         </ul>
-      </Reveal>
+      </Aparicao>
       <ul className="lp-3d-passos">
         {passos.map(({ icon: Icon, titulo, texto }, i) => (
-          <Reveal as="li" key={titulo} delay={i * 100}>
+          <Aparicao as="li" key={titulo} delay={i * 100}>
             <span className="lp-ic" aria-hidden="true">
               <Icon className="lp-ico" />
             </span>
             <h3>{titulo}</h3>
             <p>{texto}</p>
-          </Reveal>
+          </Aparicao>
         ))}
       </ul>
-      <Reveal className="lp-3d-cta">
-        <LinkButton href="/cadastro?plano=vip" arrow>
+      <Aparicao className="lp-3d-cta">
+        <LinkEmFormaDeBotao href="/cadastro?plano=vip" arrow>
           Quero as mesas em 3D
-        </LinkButton>
+        </LinkEmFormaDeBotao>
         <p className="lp-mudo lp-nota">Recurso do {vip}. Imagem ilustrativa, com convidados fictícios.</p>
-      </Reveal>
+      </Aparicao>
     </section>
   );
 }

@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { CheckCircle2, Circle, Info, Lock, Pause, ShieldCheck } from "lucide-react";
-import { PageHeader } from "@/components/plataforma/page-header";
-import { LizAvatar } from "@/components/liz/liz-illustration";
-import { Panel } from "@/components/plataforma/panel";
-import { Notice, NotActiveTag } from "@/components/plataforma/notices";
-import { StatCard, StatGrid } from "@/components/plataforma/stat-card";
-import { StatusChip } from "@/components/plataforma/status-chip";
-import { EmptyState } from "@/components/plataforma/empty-state";
-import { btn } from "@/components/landing/styles";
+import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
+import { AvatarDaLiz } from "@/components/liz/liz-illustration";
+import { Painel } from "@/components/plataforma/panel";
+import { Aviso, EtiquetaDeInativo } from "@/components/plataforma/notices";
+import { CartaoDeIndicador, GradeDeIndicadores } from "@/components/plataforma/stat-card";
+import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
+import { EstadoVazio } from "@/components/plataforma/empty-state";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Switch } from "@/components/ui/switch";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { obterVisaoGeralDaMadrinha, listarExcecoesDaMadrinha } from "@/lib/platform/queries/madrinha";
@@ -39,28 +39,28 @@ export default async function Page() {
 
   return (
     <>
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow="Liz"
         title={
           <span className="flex items-center gap-3">
-            <LizAvatar size={56} decorative className="ring-2 ring-ameixa" />
+            <AvatarDaLiz size={56} decorative className="ring-2 ring-ameixa" />
             Liz
           </span>
         }
         description="A assistente do Aceito para os casais: só responde sobre casamento e sobre o Aceito."
         actions={
-          <button type="button" disabled className={`${btn.secondary} text-perigo`} title="Só dá para pausar depois que a Liz for ativada">
+          <button type="button" disabled className={`${estiloDoBotao.secondary} text-perigo`} title="Só dá para pausar depois que a Liz for ativada">
             <Pause className="size-4" aria-hidden="true" /> Pausar a Liz para todos
           </button>
         }
       />
 
-      <Notice tone="aviso" icon={Info} title="A Liz ainda não foi ativada" aside={<NotActiveTag />}>
+      <Aviso tone="aviso" icon={Info} title="A Liz ainda não foi ativada" aside={<EtiquetaDeInativo />}>
         Nenhuma conexão com a API foi feita. Você já pode salvar os limites, os tetos e as instruções para quando ela for ativada. Por enquanto não há conversas, uso nem custos.
-      </Notice>
+      </Aviso>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <Panel title="Interruptor geral">
+        <Painel title="Interruptor geral">
           <div className="flex items-start justify-between gap-4 border-b border-linha pb-4">
             <div className="min-w-0">
               <p id="master-t" className="text-[15px] font-semibold leading-5 text-tinta">
@@ -84,26 +84,26 @@ export default async function Page() {
               </li>
             ))}
           </ul>
-          <Link href="/admin/madrinha/controles" className={`${btn.secondary} ${btn.sm} mt-4`}>
+          <Link href="/admin/madrinha/controles" className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm} mt-4`}>
             Editar instruções e conhecimento
           </Link>
-        </Panel>
+        </Painel>
 
-        <Panel title="Uso e custo do mês" aside={<NotActiveTag>Sem dados ainda</NotActiveTag>}>
-          <StatGrid cols={3}>
-            <StatCard label="Assinantes" value="—" hint="Sem dados ainda. Não há plano da Liz à venda." />
-            <StatCard label="Mensagens no mês" value="—" hint="Sem dados ainda." />
-            <StatCard label="Custo estimado" value="—" hint="Sem dados ainda." />
-          </StatGrid>
+        <Painel title="Uso e custo do mês" aside={<EtiquetaDeInativo>Sem dados ainda</EtiquetaDeInativo>}>
+          <GradeDeIndicadores cols={3}>
+            <CartaoDeIndicador label="Assinantes" value="—" hint="Sem dados ainda. Não há plano da Liz à venda." />
+            <CartaoDeIndicador label="Mensagens no mês" value="—" hint="Sem dados ainda." />
+            <CartaoDeIndicador label="Custo estimado" value="—" hint="Sem dados ainda." />
+          </GradeDeIndicadores>
           <p className="mt-4 text-sm leading-5 text-tinta-suave">Quando a Liz for ativada, o uso, o custo e as conversas recusadas aparecem aqui, calculados do que de fato aconteceu.</p>
-        </Panel>
+        </Painel>
       </div>
 
-      <Panel title="Assinantes, consumo e conversas recusadas">
-        <EmptyState icon={ShieldCheck} compact title="Ainda não há o que mostrar">
+      <Painel title="Assinantes, consumo e conversas recusadas">
+        <EstadoVazio icon={ShieldCheck} compact title="Ainda não há o que mostrar">
           Aqui vão aparecer o consumo por casal, a receita e o custo por mês e as perguntas recusadas por fugir do tema, sem nomes, telefones nem e-mails. Ler uma conversa inteira exige o consentimento do casal.
-        </EmptyState>
-      </Panel>
+        </EstadoVazio>
+      </Painel>
 
       <section aria-labelledby="limites-t" className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-3">
@@ -116,18 +116,18 @@ export default async function Page() {
       </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Panel title="Teto mensal global" aside={<SettingBadge {...meta["madrinha.globalCap"]} />} className="flex flex-col">
+        <Painel title="Teto mensal global" aside={<SettingBadge {...meta["madrinha.globalCap"]} />} className="flex flex-col">
           <GlobalCapForm monthlyCostCapCents={globalCap.monthlyCostCapCents} warnPercent={globalCap.warnPercent} pauseAtCap={globalCap.pauseAtCap} />
-        </Panel>
-        <Panel title="Bloqueio por abuso" aside={<SettingBadge {...meta["madrinha.abuse"]} />} className="flex flex-col">
+        </Painel>
+        <Painel title="Bloqueio por abuso" aside={<SettingBadge {...meta["madrinha.abuse"]} />} className="flex flex-col">
           <AbuseForm perHour={abuse.perHour} blockHours={abuse.blockHours} blockOffTopic={abuse.blockOffTopic} offTopicBeforeBlock={abuse.offTopicBeforeBlock} />
-        </Panel>
-        <Panel title="Ajuste para um casal" className="flex flex-col">
+        </Painel>
+        <Painel title="Ajuste para um casal" className="flex flex-col">
           <WeddingAdjust />
-        </Panel>
+        </Painel>
       </div>
 
-      <Panel title="Casais com ajuste" description="Quem tem a Liz ligada, desligada ou bloqueada à mão, ou mensagens a mais.">
+      <Painel title="Casais com ajuste" description="Quem tem a Liz ligada, desligada ou bloqueada à mão, ou mensagens a mais.">
         {overrides.length === 0 ? (
           <p className="text-sm text-tinta-suave">Nenhum casal com ajuste ainda.</p>
         ) : (
@@ -144,16 +144,16 @@ export default async function Page() {
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {o.blockedAt && <StatusChip tone="perigo">Bloqueado</StatusChip>}
-                  {o.enabled === true && <StatusChip tone="sucesso">Ligada à mão</StatusChip>}
-                  {o.enabled === false && <StatusChip tone="neutro">Desligada à mão</StatusChip>}
-                  {o.extraMessages > 0 && <StatusChip tone="salvia">+{o.extraMessages} mensagens</StatusChip>}
+                  {o.blockedAt && <EtiquetaDeSituacao tone="perigo">Bloqueado</EtiquetaDeSituacao>}
+                  {o.enabled === true && <EtiquetaDeSituacao tone="sucesso">Ligada à mão</EtiquetaDeSituacao>}
+                  {o.enabled === false && <EtiquetaDeSituacao tone="neutro">Desligada à mão</EtiquetaDeSituacao>}
+                  {o.extraMessages > 0 && <EtiquetaDeSituacao tone="salvia">+{o.extraMessages} mensagens</EtiquetaDeSituacao>}
                 </div>
               </li>
             ))}
           </ul>
         )}
-      </Panel>
+      </Painel>
     </>
   );
 }

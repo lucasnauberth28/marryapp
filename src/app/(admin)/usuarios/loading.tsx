@@ -1,5 +1,5 @@
 import { LoadingRegion, SkeletonPageHeader, SkeletonTable, SkeletonTabs } from "@/components/skeletons";
-import { SkeletonSearch } from "@/components/painel/skeleton-parts";
+import { EsqueletoDaBusca } from "@/components/painel/skeleton-parts";
 
 // Espelha usuários: cabeçalho com botão, abas Usuários/Perfis, busca e a tabela (cartões no celular).
 export default function UsuariosLoading() {
@@ -8,7 +8,7 @@ export default function UsuariosLoading() {
       <SkeletonPageHeader actions={1} />
       <SkeletonTabs variant="segmented" count={2} />
       <div className="flex flex-col gap-4">
-        <SkeletonSearch />
+        <EsqueletoDaBusca />
         <SkeletonTable columns={3} rows={5} mobileFields={1} />
       </div>
     </LoadingRegion>

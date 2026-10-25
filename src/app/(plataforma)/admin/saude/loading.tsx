@@ -1,6 +1,6 @@
 import { LoadingRegion, SkeletonCard, SkeletonForm, SkeletonPageHeader } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RowsSkeleton } from "@/components/plataforma/loading-parts";
+import { EsqueletoDasLinhas } from "@/components/plataforma/loading-parts";
 
 export default function Loading() {
   return (
@@ -10,7 +10,7 @@ export default function Loading() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {[3, 3, 3, 3, 4].map((rows, i) => (
           <SkeletonCard key={i}>
-            <RowsSkeleton rows={rows} />
+            <EsqueletoDasLinhas rows={rows} />
           </SkeletonCard>
         ))}
       </div>

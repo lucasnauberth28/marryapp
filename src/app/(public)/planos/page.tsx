@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { CouplePlanCard } from "@/components/landing/couple-plan-card";
-import { LandingFooter } from "@/components/landing/landing-footer";
-import { FaqSection } from "@/components/landing/faq-section";
-import { LandingHeader } from "@/components/landing/landing-header";
-import { btn, container, lead, overline } from "@/components/landing/styles";
+import { CartaoDoPlanoDoCasal } from "@/components/landing/couple-plan-card";
+import { RodapeDaLanding } from "@/components/landing/landing-footer";
+import { SecaoDePerguntasFrequentes } from "@/components/landing/faq-section";
+import { CabecalhoDaLanding } from "@/components/landing/landing-header";
+import { estiloDoBotao, estiloDoContainerDaLanding, estiloDoTextoDeApoio, overline } from "@/components/landing/styles";
 import { compartilhamentoDaMarca } from "@/lib/brand-meta";
 import { obterCatalogo } from "@/lib/catalog-server";
 import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
@@ -40,10 +40,10 @@ export default async function PlanosPage() {
   const catalog = await obterCatalogo();
   return (
     <div className="bg-linho text-tinta">
-      <LandingHeader />
+      <CabecalhoDaLanding />
 
       <div>
-        <section aria-labelledby="planos-titulo" className={cn(container, "flex flex-col items-center gap-4 pb-8 pt-12 text-center sm:pt-16")}>
+        <section aria-labelledby="planos-titulo" className={cn(estiloDoContainerDaLanding, "flex flex-col items-center gap-4 pb-8 pt-12 text-center sm:pt-16")}>
           <p className={overline}>Planos para casais</p>
           <h1
             id="planos-titulo"
@@ -51,17 +51,17 @@ export default async function PlanosPage() {
           >
             Escolham o plano para o casamento de vocês
           </h1>
-          <p className={cn(lead, "max-w-[60ch]")}>
+          <p className={cn(estiloDoTextoDeApoio, "max-w-[60ch]")}>
             O Básico não tem mensalidade. Classic e VIP têm pagamento único. As taxas sobre presentes e os recursos incluídos variam
             conforme o plano.
           </p>
         </section>
 
-        <section id="casais" aria-label="Planos para casais" className={cn(container, "scroll-mt-24 pb-12 pt-6")}>
+        <section id="casais" aria-label="Planos para casais" className={cn(estiloDoContainerDaLanding, "scroll-mt-24 pb-12 pt-6")}>
           <ul className="grid gap-6 md:grid-cols-3">
             {COUPLE_PLAN_KEYS.map((key) => (
               <li key={key}>
-                <CouplePlanCard planKey={key} plan={catalog.plans[key]} href={`/cadastro?tipo=casal&plano=${key}`} />
+                <CartaoDoPlanoDoCasal planKey={key} plan={catalog.plans[key]} href={`/cadastro?tipo=casal&plano=${key}`} />
               </li>
             ))}
           </ul>
@@ -75,7 +75,7 @@ export default async function PlanosPage() {
         </section>
 
         <section id="presentes" aria-labelledby="presentes-titulo" className="scroll-mt-24 border-y border-linha bg-papel">
-          <div className={cn(container, "grid gap-8 py-14 lg:grid-cols-[5fr_7fr] lg:gap-16")}>
+          <div className={cn(estiloDoContainerDaLanding, "grid gap-8 py-14 lg:grid-cols-[5fr_7fr] lg:gap-16")}>
             <div className="flex flex-col gap-3">
               <p className={overline}>Presentes em dinheiro</p>
               <h2 id="presentes-titulo" className="font-display text-[32px] font-medium leading-10 tracking-[-0.015em] sm:text-[40px] sm:leading-[46px]">
@@ -118,10 +118,10 @@ export default async function PlanosPage() {
           </div>
         </section>
 
-        <FaqSection />
+        <SecaoDePerguntasFrequentes />
 
         <section id="fornecedores" aria-labelledby="fornecedores-titulo" className="scroll-mt-16 bg-salvia-suave">
-          <div className={cn(container, "flex flex-col gap-8 py-16")}>
+          <div className={cn(estiloDoContainerDaLanding, "flex flex-col gap-8 py-16")}>
             <div className="flex flex-col gap-2">
               <p className={cn(overline, "text-salvia")}>Aceito para empresas</p>
               <h2 id="fornecedores-titulo" className="max-w-[24ch] font-display text-[34px] font-medium leading-10 tracking-[-0.015em] sm:text-[40px] sm:leading-[46px]">
@@ -153,7 +153,7 @@ export default async function PlanosPage() {
                       </ul>
                       <Link
                         href={`/cadastro?tipo=fornecedor&plano=${key}`}
-                        className={cn(key === "start" ? btn.primary : btn.secondary, btn.block, "mt-2")}
+                        className={cn(key === "start" ? estiloDoBotao.primary : estiloDoBotao.secondary, estiloDoBotao.block, "mt-2")}
                         aria-label={`${cta}: plano ${rotuloDoPlano(plan.name)}`}
                       >
                         {cta}
@@ -167,7 +167,7 @@ export default async function PlanosPage() {
         </section>
       </div>
 
-      <LandingFooter />
+      <RodapeDaLanding />
     </div>
   );
 }

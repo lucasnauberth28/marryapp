@@ -11,7 +11,7 @@ import type { ItemDosPrimeirosPassos } from "@/lib/tour/first-steps";
  * "Primeiros passos" do Resumo. Os itens vêm de dados reais do casamento (calculados no servidor);
  * a lista some sozinha quando tudo está feito, ou quando esta pessoa a dispensa.
  */
-export function FirstSteps({ items, doneCount }: { items: ItemDosPrimeirosPassos[]; doneCount: number }) {
+export function PrimeirosPassos({ items, doneCount }: { items: ItemDosPrimeirosPassos[]; doneCount: number }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 

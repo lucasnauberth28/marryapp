@@ -5,9 +5,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
-import { btn } from "@/components/landing/styles";
-import { startNavigationProgress } from "@/components/feedback/navigation-progress";
-import { markListNavigation } from "@/components/plataforma/pending";
+import { estiloDoBotao } from "@/components/landing/styles";
+import { iniciarProgressoDaNavegacao } from "@/components/feedback/navigation-progress";
+import { marcarNavegacaoDaLista } from "@/components/plataforma/pending";
 import { cn } from "@/lib/utils";
 
 /**
@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
  * - "Limpar filtros" aparece quando há busca ou filtro ativo e mantém a aba (?aba=).
  * - searchKey (padrão "q"); defina searchPlaceholder = undefined para esconder a busca.
  */
-export interface FilterDef {
+export interface DefinicaoDoFiltro {
   key: string;
   label: string;
   /** Texto da opção sem valor ("Todos", "Qualquer data", "Tanto faz"). */
@@ -31,14 +31,14 @@ export interface FilterDef {
   options: { value: string; label: string }[];
 }
 
-export function FilterBar({
+export function BarraDeFiltros({
   filters = [],
   searchPlaceholder,
   searchKey = "q",
   searchLabel,
   className,
 }: {
-  filters?: FilterDef[];
+  filters?: DefinicaoDoFiltro[];
   searchPlaceholder?: string;
   searchKey?: string;
   /** Nome acessível da busca (padrão: o próprio placeholder). */
@@ -65,8 +65,8 @@ export function FilterBar({
     const href = qs ? `${pathname}?${qs}` : pathname;
     // Mesma URL (mesmo filtro escolhido de novo): nada a buscar
     if (qs === searchParams.toString()) return;
-    startNavigationProgress();
-    markListNavigation(href); // a lista (PendingRegion) fica mais clara até chegar
+    iniciarProgressoDaNavegacao();
+    marcarNavegacaoDaLista(href); // a lista (PendingRegion) fica mais clara até chegar
     startTransition(() => router.replace(href, { scroll: false }));
   };
 
@@ -131,7 +131,7 @@ export function FilterBar({
       )}
       {active && (
         <div>
-          <button type="button" onClick={clear} className={cn(btn.secondary, btn.sm, "gap-1.5")}>
+          <button type="button" onClick={clear} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm, "gap-1.5")}>
             <X className="size-4" aria-hidden="true" /> Limpar filtros
           </button>
         </div>

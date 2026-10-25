@@ -12,7 +12,7 @@ import { nomeDoArquivoDoCabecalho } from "@/lib/platform/download-name";
  * - Sem JavaScript o botão não faz nada; a rota continua aceitando o GET direto (é a mesma de antes).
  * - Erro da rota (limite, sessão, seleção inválida) vira aviso; o nome vem do Content-Disposition.
  */
-export function ExportButton({
+export function BotaoDeExportar({
   href,
   fallbackName,
   children,

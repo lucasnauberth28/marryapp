@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { ArrowRight, CalendarHeart, Check, Copy, Globe, Heart, Palette, User } from "lucide-react";
 import { concluirInicio } from "@/actions/onboarding-actions";
-import { AuthShell, SHELL_PHOTOS, ShellHeading } from "@/components/account/auth-shell";
-import { Seal } from "@/components/landing/seal";
-import { btn, btnArrow } from "@/components/landing/styles";
-import { LoadingButton } from "@/components/painel/loading-button";
-import { Field, FormAlert } from "@/components/ui/field";
+import { MoldeDeAcesso, FOTOS_DO_MOLDE, TituloDoMolde } from "@/components/account/auth-shell";
+import { Selo } from "@/components/landing/seal";
+import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
+import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { juntarNomesDoCasal, validarDadosBasicosDoInicio, type ErrosDosDadosBasicosDoInicio } from "@/lib/onboarding-options";
 import { cn } from "@/lib/utils";
 
@@ -99,30 +99,30 @@ export function OnboardingFlow({
   };
 
   return (
-    <AuthShell
-      photo={step === "pronto" ? SHELL_PHOTOS.pronto : SHELL_PHOTOS.boasVindas}
+    <MoldeDeAcesso
+      photo={step === "pronto" ? FOTOS_DO_MOLDE.pronto : FOTOS_DO_MOLDE.boasVindas}
       footnote="Nomes e data podem ser alterados depois, em Editar o site."
     >
       {step === "dados" ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-          <ShellHeading
+          <TituloDoMolde
             ref={headingRef}
             overline="Vamos começar"
             title="Quem vai casar, e quando?"
             text={`${firstName ? `Boas-vindas, ${firstName}. ` : ""}É só isso para abrir o site de vocês. Cor, local e fotos ficam para depois, em Editar o site.`}
           />
           <form onSubmit={submit} noValidate className="flex flex-col gap-5">
-            <Field id="onb-yourName" label="Seu nome" icon={User} error={errors.yourName}>
+            <Campo id="onb-yourName" label="Seu nome" icon={User} error={errors.yourName}>
               {(c) => (
                 <input {...c} id="onb-yourName" autoComplete="given-name" maxLength={60} value={yourName} onChange={edit("yourName", setYourName)} />
               )}
-            </Field>
-            <Field id="onb-partnerName" label="Nome de quem vai casar com você" icon={Heart} error={errors.partnerName}>
+            </Campo>
+            <Campo id="onb-partnerName" label="Nome de quem vai casar com você" icon={Heart} error={errors.partnerName}>
               {(c) => (
                 <input {...c} id="onb-partnerName" autoComplete="off" maxLength={60} value={partnerName} onChange={edit("partnerName", setPartnerName)} />
               )}
-            </Field>
-            <Field
+            </Campo>
+            <Campo
               id="onb-weddingDate"
               label="Data do casamento"
               icon={CalendarHeart}
@@ -131,25 +131,25 @@ export function OnboardingFlow({
               hint="Se ainda não têm a data, deixem em branco."
             >
               {(c) => <input {...c} id="onb-weddingDate" type="date" value={weddingDate} onChange={edit("weddingDate", setWeddingDate)} />}
-            </Field>
+            </Campo>
             <p className="rounded-[12px] border border-linha bg-papel px-4 py-3 text-[15px] text-tinta-suave">
               No site vai aparecer <strong className="font-display text-lg font-medium text-tinta">{coupleNames}</strong>
             </p>
 
-            {formError ? <FormAlert id="onb-erro">{formError}</FormAlert> : null}
+            {formError ? <AvisoDoFormulario id="onb-erro">{formError}</AvisoDoFormulario> : null}
 
-            <LoadingButton type="submit" loading={isPending} className={cn(btn.primary, btn.block, "min-h-12")}>
+            <BotaoComCarregamento type="submit" loading={isPending} className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}>
               Criar o site de vocês
-              <ArrowRight aria-hidden="true" className={btnArrow} />
-            </LoadingButton>
+              <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
+            </BotaoComCarregamento>
           </form>
         </section>
       ) : null}
 
       {step === "pronto" && result ? (
         <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-          <Seal label="Casamento criado" className="size-24 [&>span]:text-[54px]" />
-          <ShellHeading ref={headingRef} title="Tudo pronto" text={`O site de ${result.coupleNames} já tem um endereço no Aceito.`} />
+          <Selo label="Casamento criado" className="size-24 [&>span]:text-[54px]" />
+          <TituloDoMolde ref={headingRef} title="Tudo pronto" text={`O site de ${result.coupleNames} já tem um endereço no Aceito.`} />
 
           <div className="flex flex-col gap-2 rounded-[16px] border border-linha bg-papel p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">Endereço do site no Aceito</p>
@@ -158,7 +158,7 @@ export function OnboardingFlow({
               <a href={sitePath} target="_blank" rel="noopener" className="min-w-0 flex-1 break-all font-semibold text-tinta underline decoration-linha underline-offset-4 hover:decoration-ameixa">
                 {origin ? `${origin.replace(/^https?:\/\//, "")}${sitePath}` : sitePath}
               </a>
-              <button type="button" onClick={copyAddress} className={cn(btn.quiet, btn.sm, "min-h-11 shrink-0")}>
+              <button type="button" onClick={copyAddress} className={cn(estiloDoBotao.quiet, estiloDoBotao.sm, "min-h-11 shrink-0")}>
                 {copied ? <Check aria-hidden="true" className="size-4" /> : <Copy aria-hidden="true" className="size-4" />}
                 {copied ? "Copiado" : "Copiar"}
               </button>
@@ -170,17 +170,17 @@ export function OnboardingFlow({
 
           {/* Navegação completa: o painel precisa ler o cookie de sessão atualizado no onboarding. */}
           <div className="flex flex-col gap-3">
-            <a href="/dashboard" className={cn(btn.primary, btn.block, "min-h-12")}>
+            <a href="/dashboard" className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}>
               Ir para o painel
-              <ArrowRight aria-hidden="true" className={btnArrow} />
+              <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
             </a>
-            <a href="/site-builder" className={cn(btn.secondary, btn.block, "min-h-12")}>
+            <a href="/site-builder" className={cn(estiloDoBotao.secondary, estiloDoBotao.block, "min-h-12")}>
               <Palette aria-hidden="true" className="size-4" />
               Escolher cor e fotos do site
             </a>
           </div>
         </section>
       ) : null}
-    </AuthShell>
+    </MoldeDeAcesso>
   );
 }

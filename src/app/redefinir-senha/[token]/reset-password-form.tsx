@@ -4,10 +4,10 @@ import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Eye, EyeOff, Lock } from "lucide-react";
 import { redefinirSenha } from "@/actions/password-reset-actions";
-import { ShellHeading } from "@/components/account/auth-shell";
-import { btn, btnArrow } from "@/components/landing/styles";
+import { TituloDoMolde } from "@/components/account/auth-shell";
+import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
-import { Field, FormAlert } from "@/components/ui/field";
+import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
 export function ResetPasswordForm({ token }: { token: string }) {
@@ -51,10 +51,10 @@ export function ResetPasswordForm({ token }: { token: string }) {
         <span className="grid size-14 place-items-center rounded-full bg-sucesso-suave text-sucesso">
           <CheckCircle2 aria-hidden="true" className="size-7" strokeWidth={1.6} />
         </span>
-        <ShellHeading ref={headingRef} title="Senha trocada" text="Pronto. Agora é só entrar com a senha nova." />
-        <Link href="/login" className={cn(btn.primary, btn.block, "min-h-12")}>
+        <TituloDoMolde ref={headingRef} title="Senha trocada" text="Pronto. Agora é só entrar com a senha nova." />
+        <Link href="/login" className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}>
           Entrar
-          <ArrowRight aria-hidden="true" className={btnArrow} />
+          <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
         </Link>
       </section>
     );
@@ -74,9 +74,9 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   return (
     <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-      <ShellHeading ref={headingRef} title="Crie uma nova senha" text="Escolha uma senha que você não usa em outros sites." />
+      <TituloDoMolde ref={headingRef} title="Crie uma nova senha" text="Escolha uma senha que você não usa em outros sites." />
       <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-        <Field id="nova-senha" label="Nova senha" icon={Lock} error={errors.password} hint="Pelo menos 8 caracteres." trailing={toggle}>
+        <Campo id="nova-senha" label="Nova senha" icon={Lock} error={errors.password} hint="Pelo menos 8 caracteres." trailing={toggle}>
           {(c) => (
             <input
               {...c}
@@ -87,8 +87,8 @@ export function ResetPasswordForm({ token }: { token: string }) {
               onChange={(e) => setPassword(e.target.value)}
             />
           )}
-        </Field>
-        <Field id="nova-senha-confirmar" label="Repita a nova senha" icon={Lock} error={errors.confirm}>
+        </Campo>
+        <Campo id="nova-senha-confirmar" label="Repita a nova senha" icon={Lock} error={errors.confirm}>
           {(c) => (
             <input
               {...c}
@@ -99,20 +99,20 @@ export function ResetPasswordForm({ token }: { token: string }) {
               onChange={(e) => setConfirm(e.target.value)}
             />
           )}
-        </Field>
+        </Campo>
         {error ? (
-          <FormAlert>
+          <AvisoDoFormulario>
             <p>{error.message}</p>
             {error.expired ? (
               <Link href="/esqueci-a-senha" className="mt-1 inline-block font-semibold text-ameixa underline underline-offset-4">
                 Pedir um novo link
               </Link>
             ) : null}
-          </FormAlert>
+          </AvisoDoFormulario>
         ) : null}
         <Button type="submit" loading={isPending} className="h-12 w-full rounded-[12px] px-6">
           Salvar nova senha
-          <ArrowRight aria-hidden="true" className={btnArrow} />
+          <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
         </Button>
       </form>
     </section>

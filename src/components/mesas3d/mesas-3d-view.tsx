@@ -6,16 +6,16 @@ import { ArrowLeft, Box, Image as ImageIcon, Share2, TriangleAlert, X } from "lu
 import { toast } from "sonner";
 import { colocarConvidadoNaMesa } from "@/actions/table-actions";
 import { definirCenarioDasMesas3D } from "@/actions/table3d-actions";
-import { btn } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import type { PredefinicaoDaCamera, MotorDasMesas3D } from "@/lib/mesas3d/engine";
 import { calcularDisposicao, type MesaDeEntrada, type PosicaoDaMesa } from "@/lib/mesas3d/layout";
 import { CENARIO_PADRAO, type IdDoCenario } from "@/lib/mesas3d/scenarios";
 import { podeSentar, corDoConvidado, gruposDe, combinaComNome, ocupacaoPorMesa, coresDosLugares, type ConvidadoParaSentar } from "@/lib/mesas3d/seating";
 import { cn } from "@/lib/utils";
-import { SceneGallery } from "./scene-gallery";
-import { ShareDialog } from "./share-dialog";
+import { GaleriaDeCenarios } from "./scene-gallery";
+import { DialogoDeCompartilhamento } from "./share-dialog";
 
-interface Props {
+interface Propriedades {
   mode: "edit" | "view";
   coupleNames: string;
   initialScene: IdDoCenario | null;
@@ -24,7 +24,7 @@ interface Props {
   initialShareToken?: string | null;
 }
 
-const initials = (n: string) => {
+const iniciaisDoNome = (n: string) => {
   const p = n.trim().split(/\s+/);
   return ((p[0]?.[0] ?? "") + (p[1]?.[0] ?? "")).toUpperCase();
 };
@@ -33,7 +33,7 @@ const initials = (n: string) => {
  * Mesas em 3D: a lista de convidados ao lado do cenário. No modo "edit" (o casal) dá para arrastar o convidado até a mesa,
  * ou tocar no nome e depois na mesa; no modo "view" (o link compartilhado) só se busca o próprio nome e a câmera leva à mesa.
  */
-export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: initialGuests, initialShareToken = null }: Props) {
+export function VisaoDasMesas3D({ mode, coupleNames, initialScene, tables, guests: initialGuests, initialShareToken = null }: Propriedades) {
   const edit = mode === "edit";
   const [scene, setScene] = useState<IdDoCenario | null>(initialScene);
   const [galleryOpen, setGalleryOpen] = useState(edit && !initialScene);
@@ -288,15 +288,15 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {edit ? (
-            <Link href="/mesas" className={cn(btn.secondary, "min-h-11 gap-2")}>
+            <Link href="/mesas" className={cn(estiloDoBotao.secondary, "min-h-11 gap-2")}>
               <ArrowLeft aria-hidden="true" className="size-4" /> Lista de mesas
             </Link>
           ) : null}
-          <button type="button" onClick={() => setGalleryOpen(true)} className={cn(btn.secondary, "min-h-11 gap-2")}>
+          <button type="button" onClick={() => setGalleryOpen(true)} className={cn(estiloDoBotao.secondary, "min-h-11 gap-2")}>
             <ImageIcon aria-hidden="true" className="size-4" /> Trocar cenário
           </button>
           {edit ? (
-            <button type="button" onClick={() => setShareOpen(true)} className={cn(btn.primary, "min-h-11 gap-2")}>
+            <button type="button" onClick={() => setShareOpen(true)} className={cn(estiloDoBotao.primary, "min-h-11 gap-2")}>
               <Share2 aria-hidden="true" className="size-4" /> {shareToken ? "Link compartilhado" : "Compartilhar"}
             </button>
           ) : null}
@@ -317,12 +317,12 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
                 </div>
               </div>
               <div role="group" aria-label="Filtro da lista" className="flex flex-wrap gap-1.5">
-                <FilterChip pressed={filter === "sem"} onClick={() => setFilter("sem")}>
+                <EtiquetaDeFiltro pressed={filter === "sem"} onClick={() => setFilter("sem")}>
                   Sem mesa <span className="tabular-nums">{unseated}</span>
-                </FilterChip>
-                <FilterChip pressed={filter === "todos"} onClick={() => setFilter("todos")}>
+                </EtiquetaDeFiltro>
+                <EtiquetaDeFiltro pressed={filter === "todos"} onClick={() => setFilter("todos")}>
                   Todos
-                </FilterChip>
+                </EtiquetaDeFiltro>
               </div>
             </>
           ) : (
@@ -361,7 +361,7 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
                     )}
                   >
                     <span aria-hidden="true" className="grid size-8 place-items-center rounded-full text-xs font-semibold text-white" style={{ background: corDoConvidado(groups, g) }}>
-                      {initials(g.name)}
+                      {iniciaisDoNome(g.name)}
                     </span>
                     <button
                       type="button"
@@ -432,7 +432,7 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
           {/* Rótulos das mesas */}
           <div className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
             {layout.slots.map((s) => (
-              <TableLabel
+              <RotuloDaMesa
                 key={s.id}
                 slot={s}
                 used={occ[s.id]?.used ?? 0}
@@ -515,7 +515,7 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
                 </>
               )}
               <div className="flex flex-wrap gap-2 pt-1">
-                <button type="button" onClick={() => { engineRef.current?.vistaDaMesa(openSlot.id); setCam(null); }} className={cn(btn.primary, "min-h-10 gap-2 px-4 text-sm")}>
+                <button type="button" onClick={() => { engineRef.current?.vistaDaMesa(openSlot.id); setCam(null); }} className={cn(estiloDoBotao.primary, "min-h-10 gap-2 px-4 text-sm")}>
                   <Box aria-hidden="true" className="size-4" /> Ver da mesa
                 </button>
               </div>
@@ -533,7 +533,7 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
                 <p className="font-display text-xl text-tinta">Este aparelho não conseguiu abrir o 3D</p>
                 <p className="text-[15px] leading-6 text-tinta-suave">{edit ? "Tentem em outro navegador ou aparelho. Enquanto isso, a lista de mesas continua funcionando." : "Tente em outro navegador ou aparelho. Peça ao casal o número da sua mesa."}</p>
                 {edit ? (
-                  <Link href="/mesas" className={cn(btn.primary, "min-h-11")}>
+                  <Link href="/mesas" className={cn(estiloDoBotao.primary, "min-h-11")}>
                     Abrir a lista de mesas
                   </Link>
                 ) : null}
@@ -551,13 +551,13 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
 
       <div ref={ghostRef} hidden className="pointer-events-none fixed z-50 translate-x-2.5 translate-y-2.5 rounded-full bg-ameixa px-3 py-1.5 text-sm font-medium text-on-ameixa shadow-[var(--shadow-aceito-2)]" />
 
-      <SceneGallery open={galleryOpen} current={scene} onPick={pickScene} onClose={() => setGalleryOpen(false)} />
-      {edit ? <ShareDialog open={shareOpen} onClose={() => setShareOpen(false)} token={shareToken} onChange={setShareToken} /> : null}
+      <GaleriaDeCenarios open={galleryOpen} current={scene} onPick={pickScene} onClose={() => setGalleryOpen(false)} />
+      {edit ? <DialogoDeCompartilhamento open={shareOpen} onClose={() => setShareOpen(false)} token={shareToken} onChange={setShareToken} /> : null}
     </div>
   );
 }
 
-function FilterChip({ pressed, onClick, children }: { pressed: boolean; onClick: () => void; children: React.ReactNode }) {
+function EtiquetaDeFiltro({ pressed, onClick, children }: { pressed: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       type="button"
@@ -570,7 +570,7 @@ function FilterChip({ pressed, onClick, children }: { pressed: boolean; onClick:
   );
 }
 
-function TableLabel({ slot, used, target, refCb }: { slot: PosicaoDaMesa; used: number; target: boolean; refCb: (el: HTMLDivElement | null) => void }) {
+function RotuloDaMesa({ slot, used, target, refCb }: { slot: PosicaoDaMesa; used: number; target: boolean; refCb: (el: HTMLDivElement | null) => void }) {
   const full = !slot.decor && used >= slot.cap;
   return (
     <div

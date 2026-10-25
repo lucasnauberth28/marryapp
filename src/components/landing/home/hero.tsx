@@ -1,26 +1,26 @@
 import { Check } from "lucide-react";
-import { Reveal } from "@/components/motion/reveal";
+import { Aparicao } from "@/components/motion/reveal";
 import { HeroDemo } from "./hero-demo";
-import { LinkButton } from "./home-ui";
+import { LinkEmFormaDeBotao } from "./home-ui";
 
 /** Primeira dobra: a oferta em duas linhas, os dois botões e o produto de verdade ao lado (dados fictícios). */
-export function Hero() {
+export function Destaque() {
   return (
     <section className="lp-hero lp-dentro" aria-labelledby="lp-h1">
       <div className="lp-hero-bloco">
-        <Reveal className="lp-hero-texto">
+        <Aparicao className="lp-hero-texto">
           <h1 className="lp-titulo lp-h1" id="lp-h1">
             <span>Um convite para cada convidado.</span>
             <span className="lp-cor">Comece grátis, sem cartão.</span>
           </h1>
           <p className="lp-lead">O site do casamento, as confirmações de presença e os presentes em dinheiro, num painel só.</p>
           <div className="lp-acoes">
-            <LinkButton href="/cadastro?plano=basic" arrow>
+            <LinkEmFormaDeBotao href="/cadastro?plano=basic" arrow>
               Criar conta grátis
-            </LinkButton>
-            <LinkButton href="/#como" tone="branco">
+            </LinkEmFormaDeBotao>
+            <LinkEmFormaDeBotao href="/#como" tone="branco">
               Ver como funciona
-            </LinkButton>
+            </LinkEmFormaDeBotao>
           </div>
           <ul className="lp-garantias">
             <li>
@@ -32,10 +32,10 @@ export function Hero() {
               Sem mensalidade
             </li>
           </ul>
-        </Reveal>
-        <Reveal variant="right" delay={160} className="lp-hero-visual-reveal">
+        </Aparicao>
+        <Aparicao variant="right" delay={160} className="lp-hero-visual-reveal">
           <HeroDemo />
-        </Reveal>
+        </Aparicao>
       </div>
     </section>
   );

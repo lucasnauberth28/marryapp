@@ -7,23 +7,23 @@ import { cn } from "@/lib/utils"
  */
 
 /** `ac-card`: papel, borda linha, raio de 16px e sombra 1. */
-export const card = "rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)]"
+export const estiloDoCartao = "rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)]"
 
 /** Título de cartão (`ac-card__title`). */
-export const cardTitle = "text-xl font-semibold leading-7 text-tinta"
+export const estiloDoTituloDoCartao = "text-xl font-semibold leading-7 text-tinta"
 
 /** Sobretítulo `ac-overline`: só em rótulos curtos acima de um número ou título. */
-export const overline = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave"
+export const estiloDoSobretitulo = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave"
 
 /** Número de destaque em fonte display. */
-export const bigNumber = "font-num text-[36px] leading-10 tabular-nums text-tinta md:text-[40px] md:leading-[44px]"
+export const estiloDoNumeroGrande = "font-num text-[36px] leading-10 tabular-nums text-tinta md:text-[40px] md:leading-[44px]"
 
 /** Cabeçalho de coluna de tabela do design. */
-export const th = "px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave first:pl-6 last:pr-6"
+export const estiloDoTituloDaColunaDoCasal = "px-3 py-3 text-left text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave first:pl-6 last:pr-6"
 
-export type ChipTone = "sucesso" | "aviso" | "perigo" | "neutro" | "salvia"
+export type TomDaEtiqueta = "sucesso" | "aviso" | "perigo" | "neutro" | "salvia"
 
-const TONE: Record<ChipTone, string> = {
+const TONS_DA_ETIQUETA: Record<TomDaEtiqueta, string> = {
   sucesso: "bg-sucesso-suave text-sucesso",
   aviso: "bg-aviso-suave text-aviso",
   perigo: "bg-perigo-suave text-perigo",
@@ -32,13 +32,13 @@ const TONE: Record<ChipTone, string> = {
 }
 
 /** Chip de status (`ac-chip`): sempre ícone e palavra, nunca só cor. */
-export function Chip({
+export function Etiqueta({
   tone,
   icon: Icon,
   children,
   className,
 }: {
-  tone: ChipTone
+  tone: TomDaEtiqueta
   icon?: ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>
   children: ReactNode
   className?: string
@@ -48,7 +48,7 @@ export function Chip({
       className={cn(
         "inline-flex min-h-7 w-fit items-center gap-1 whitespace-nowrap rounded-lg px-3 text-sm font-semibold leading-5",
         Icon && "pl-2",
-        TONE[tone],
+        TONS_DA_ETIQUETA[tone],
         className,
       )}
     >

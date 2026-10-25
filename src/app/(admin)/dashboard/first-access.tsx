@@ -2,14 +2,14 @@
 // o caminho tem 3 passos (o primeiro já feito) e as amostras vêm marcadas como "Exemplo".
 import Link from "next/link";
 import { Check, MessageCircle, UserPlus } from "lucide-react";
-import { LizIllustration } from "@/components/liz/liz-illustration";
+import { IlustracaoDaLiz } from "@/components/liz/liz-illustration";
 import { Block, Chip, Meter, btnPrimary, btnSecondary, hintClass, labelClass } from "./ui";
 
 export function FirstAccessQueue({ canAddGuests, className = "" }: { canAddGuests: boolean; className?: string }) {
   return (
     <Block id="agora" title="O que fazer agora" aside={<span>1 de 3 feitos</span>} className={className}>
       <div className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-3.5 border-b border-linha pb-4">
-        <LizIllustration pose="boas-vindas" height={106} decorative className="h-auto w-16" />
+        <IlustracaoDaLiz pose="boas-vindas" height={106} decorative className="h-auto w-16" />
         <p className="text-pretty text-[14.5px] leading-[1.45] text-tinta">
           <strong className="block text-[13px] font-semibold text-ameixa">A Liz sugere o próximo passo</strong>
           Adicionem a primeira pessoa da lista e mandem o convite para ela. A primeira resposta aparece aqui no Resumo.

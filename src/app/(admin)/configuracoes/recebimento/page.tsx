@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { PageHeader } from "@/components/admin/page-header";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { recusaDeEscritaNoCasamento } from "@/lib/security/impersonation-rules";
 import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
@@ -29,7 +29,7 @@ export default async function RecebimentoPage() {
   return (
     <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex max-w-[880px] flex-col gap-6">
-        <PageHeader
+        <CabecalhoDaPagina
           eyebrow="Configurações"
           title="Onde receber os presentes"
           description="Diga para onde o Aceito deve enviar o dinheiro dos presentes que vocês recebem pelo site."

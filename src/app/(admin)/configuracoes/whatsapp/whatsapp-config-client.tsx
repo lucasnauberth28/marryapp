@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { obterSituacaoDoWhatsapp } from "@/actions/evolution-actions";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, CheckCircle2, XCircle } from "lucide-react";
-import { SkeletonStatusBlock } from "@/components/painel/skeleton-parts";
+import { EsqueletoDoBlocoDeSituacao } from "@/components/painel/skeleton-parts";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function WhatsAppConfigClient() {
@@ -64,7 +64,7 @@ export function WhatsAppConfigClient() {
             role="status"
           >
             <span className="sr-only">Verificando a conexão…</span>
-            <SkeletonStatusBlock />
+            <EsqueletoDoBlocoDeSituacao />
           </motion.div>
         ) : status === "open" || status === "CONNECTED" ? (
           <motion.div

@@ -3,12 +3,12 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
-import { Field, joinIds, type FloatOptions } from "@/components/ui/field"
+import { Campo, juntarIds, type OpcoesDoCampoFlutuante } from "@/components/ui/field"
 
-type NativeInputProps = Omit<React.ComponentProps<"input">, "size" | "prefix">
+type PropriedadesDaEntradaNativa = Omit<React.ComponentProps<"input">, "size" | "prefix">
 
-export type InputProps = NativeInputProps &
-  Partial<FloatOptions> & {
+export type PropriedadesDaEntrada = PropriedadesDaEntradaNativa &
+  Partial<OpcoesDoCampoFlutuante> & {
     /** Classes do controle (input) no modo com rótulo. Em `className` vão as da raiz do campo. */
     inputClassName?: string
   }
@@ -19,7 +19,7 @@ export type InputProps = NativeInputProps &
  *  - Sem `label`: o input simples de antes, para casos que não são campo de formulário
  *    (células editáveis, buscas com lupa, etiquetas pequenas).
  */
-function Input({
+function Entrada({
   label,
   hint,
   error,
@@ -36,7 +36,7 @@ function Input({
   id,
   type,
   ...props
-}: InputProps) {
+}: PropriedadesDaEntrada) {
   const autoId = React.useId()
 
   if (label === undefined || label === null) {
@@ -57,7 +57,7 @@ function Input({
   const fieldId = id ?? autoId
   const { "aria-describedby": describedBy, "aria-invalid": ariaInvalid, placeholder, required, ...rest } = props
   return (
-    <Field
+    <Campo
       id={fieldId}
       label={label}
       hint={hint}
@@ -80,12 +80,12 @@ function Input({
           data-slot="input"
           required={required}
           placeholder={placeholder || c.placeholder}
-          aria-describedby={joinIds(c["aria-describedby"], describedBy)}
+          aria-describedby={juntarIds(c["aria-describedby"], describedBy)}
           className={cn(c.className, inputClassName)}
         />
       )}
-    </Field>
+    </Campo>
   )
 }
 
-export { Input }
+export { Entrada as Input }

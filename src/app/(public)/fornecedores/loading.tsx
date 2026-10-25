@@ -1,6 +1,6 @@
-import { LandingHeader } from "@/components/landing/landing-header";
-import { LandingFooter } from "@/components/landing/landing-footer";
-import { container } from "@/components/landing/styles";
+import { CabecalhoDaLanding } from "@/components/landing/landing-header";
+import { RodapeDaLanding } from "@/components/landing/landing-footer";
+import { estiloDoContainerDaLanding } from "@/components/landing/styles";
 import { LoadingRegion, SkeletonImage } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -10,10 +10,10 @@ import { cn } from "@/lib/utils";
 export default function FornecedoresLoading() {
   return (
     <div className="flex min-h-screen flex-col bg-linho font-sans text-tinta">
-      <LandingHeader />
+      <CabecalhoDaLanding />
       <LoadingRegion label="a vitrine de fornecedores" className="flex flex-1 flex-col">
         <section className="bg-salvia-suave">
-          <div className={cn(container, "flex flex-col gap-6 py-10 sm:py-16")}>
+          <div className={cn(estiloDoContainerDaLanding, "flex flex-col gap-6 py-10 sm:py-16")}>
             <div className="flex max-w-[720px] flex-col gap-3">
               <div className="flex h-4 items-center">
                 <Skeleton className="h-3 w-40 rounded-md bg-papel/70" />
@@ -48,7 +48,7 @@ export default function FornecedoresLoading() {
           </div>
         </section>
 
-        <div className={cn(container, "flex flex-1 flex-col gap-8 pb-20 pt-10 sm:pb-24 sm:pt-12")}>
+        <div className={cn(estiloDoContainerDaLanding, "flex flex-1 flex-col gap-8 pb-20 pt-10 sm:pb-24 sm:pt-12")}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Skeleton className="h-5 w-64 max-w-full rounded-md" />
             <div className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export default function FornecedoresLoading() {
           </ul>
         </div>
       </LoadingRegion>
-      <LandingFooter />
+      <RodapeDaLanding />
     </div>
   );
 }

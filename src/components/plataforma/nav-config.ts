@@ -27,16 +27,16 @@ import {
  * "MIGRAR"); trocar o `href` quando a migração acontecer não exige mexer em mais nada.
  */
 
-export type PlatformCountKey = "curadoria" | "planos" | "dominios" | "suporte" | "saude";
+export type ChaveDeContagemDaPlataforma = "curadoria" | "planos" | "dominios" | "suporte" | "saude";
 
-interface PlatformNavItem {
+interface ItemDoMenuDaPlataforma {
   name: string;
   href: string;
   icon: LucideIcon;
   /** Ícone ilustrado da marca no lugar do lucide (o menu desenha o da Liz em cores próprias). */
   brand?: "liz";
   /** Número à direita do item (só quando maior que zero). */
-  countKey?: PlatformCountKey;
+  countKey?: ChaveDeContagemDaPlataforma;
   /** Item de segundo nível (recuado), como "Curadoria" sob "Fornecedores". */
   child?: boolean;
   /** Ativo só quando o caminho é exatamente este (a Visão geral, que é o prefixo de todos). */
@@ -45,13 +45,13 @@ interface PlatformNavItem {
   alsoActiveFor?: string[];
 }
 
-export interface PlatformNavGroup {
+export interface GrupoDoMenuDaPlataforma {
   /** Sem título: o grupo aparece no topo, sem cabeçalho. */
   title?: string;
-  items: PlatformNavItem[];
+  items: ItemDoMenuDaPlataforma[];
 }
 
-export const PLATFORM_NAV_GROUPS: PlatformNavGroup[] = [
+export const GRUPOS_DO_MENU_DA_PLATAFORMA: GrupoDoMenuDaPlataforma[] = [
   {
     items: [{ name: "Visão geral", href: "/admin", icon: LayoutGrid, exact: true }],
   },
@@ -98,35 +98,35 @@ export const PLATFORM_NAV_GROUPS: PlatformNavGroup[] = [
 ];
 
 /** Todas as telas antigas que o menu aponta, para o teste conferir que continuam existindo. */
-export const LEGACY_ADMIN_HREFS = ["/curadoria", "/usuarios", "/perfis", "/assinaturas", "/atividades", "/dominios"] as const;
+export const LINKS_ANTIGOS_DO_ADMIN = ["/curadoria", "/usuarios", "/perfis", "/assinaturas", "/atividades", "/dominios"] as const;
 
 /** Barra inferior no celular: as quatro áreas mais usadas + "Mais" (abre todas as outras). */
-export const PLATFORM_MOBILE_TABS: { name: string; href: string; icon: LucideIcon; exact?: boolean }[] = [
+export const ABAS_MOVEIS_DA_PLATAFORMA: { name: string; href: string; icon: LucideIcon; exact?: boolean }[] = [
   { name: "Visão geral", href: "/admin", icon: LayoutGrid, exact: true },
   { name: "Casais", href: "/admin/casais", icon: Heart },
   { name: "Fornecedores", href: "/admin/fornecedores", icon: Store },
   { name: "Planos", href: "/admin/planos", icon: Wallet },
 ];
 
-export const PLATFORM_MORE_ICON = Menu;
+export const ICONE_DE_MAIS_DA_PLATAFORMA = Menu;
 
 /** O item (ou aba) está ativo para este caminho? Compara por segmento: "/admin/casais" não liga "/admin/casaisx". */
-export function isPlatformItemActive(pathname: string, item: { href: string; exact?: boolean; alsoActiveFor?: string[] }): boolean {
+export function itemDaPlataformaEstaAtivo(pathname: string, item: { href: string; exact?: boolean; alsoActiveFor?: string[] }): boolean {
   const matches = (base: string) => pathname === base || pathname.startsWith(`${base}/`);
   if (item.exact) return pathname === item.href;
   return matches(item.href) || (item.alsoActiveFor ?? []).some(matches);
 }
 
 /** Aba "Mais": os itens que não estão na barra inferior, nos mesmos grupos do menu. */
-export function platformMoreGroups(): PlatformNavGroup[] {
-  const inTabs = new Set(PLATFORM_MOBILE_TABS.map((t) => t.href));
-  return PLATFORM_NAV_GROUPS.map((group) => ({ ...group, items: group.items.filter((item) => !inTabs.has(item.href)) })).filter(
+export function gruposDeMaisDaPlataforma(): GrupoDoMenuDaPlataforma[] {
+  const inTabs = new Set(ABAS_MOVEIS_DA_PLATAFORMA.map((t) => t.href));
+  return GRUPOS_DO_MENU_DA_PLATAFORMA.map((group) => ({ ...group, items: group.items.filter((item) => !inTabs.has(item.href)) })).filter(
     (group) => group.items.length > 0,
   );
 }
 
 /** Texto lido por leitores de tela depois do número do item. */
-export const PLATFORM_COUNT_HINT: Record<PlatformCountKey, string> = {
+export const DICA_DE_CONTAGEM_DA_PLATAFORMA: Record<ChaveDeContagemDaPlataforma, string> = {
   curadoria: "esperando a curadoria",
   planos: "para resolver",
   dominios: "esperando você",

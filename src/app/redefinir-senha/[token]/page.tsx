@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CircleAlert } from "lucide-react";
 import prisma from "@/lib/prisma";
-import { AuthShell, SHELL_PHOTOS, ShellHeading } from "@/components/account/auth-shell";
-import { btn } from "@/components/landing/styles";
+import { MoldeDeAcesso, FOTOS_DO_MOLDE, TituloDoMolde } from "@/components/account/auth-shell";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { calcularHashDoTokenDeLink, tokenDeLinkTemFormatoValido } from "@/lib/account/tokens";
 import { cn } from "@/lib/utils";
 import { ResetPasswordForm } from "./reset-password-form";
@@ -28,7 +28,7 @@ export default async function RedefinirSenhaPage({ params }: { params: Promise<{
   }
 
   return (
-    <AuthShell photo={SHELL_PHOTOS.senha} backHref="/login" backLabel="Voltar para o login">
+    <MoldeDeAcesso photo={FOTOS_DO_MOLDE.senha} backHref="/login" backLabel="Voltar para o login">
       {valid ? (
         <ResetPasswordForm token={token} />
       ) : (
@@ -36,15 +36,15 @@ export default async function RedefinirSenhaPage({ params }: { params: Promise<{
           <span className="grid size-14 place-items-center rounded-full bg-aviso-suave text-aviso">
             <CircleAlert aria-hidden="true" className="size-7" strokeWidth={1.6} />
           </span>
-          <ShellHeading title="Este link não vale mais" text="Ele expirou ou já foi usado. Peça um novo link: ele chega em instantes." />
-          <Link href="/esqueci-a-senha" className={cn(btn.primary, btn.block, "min-h-12")}>
+          <TituloDoMolde title="Este link não vale mais" text="Ele expirou ou já foi usado. Peça um novo link: ele chega em instantes." />
+          <Link href="/esqueci-a-senha" className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}>
             Pedir um novo link
           </Link>
-          <Link href="/login" className={cn(btn.quiet, "self-center")}>
+          <Link href="/login" className={cn(estiloDoBotao.quiet, "self-center")}>
             Voltar para o login
           </Link>
         </section>
       )}
-    </AuthShell>
+    </MoldeDeAcesso>
   );
 }

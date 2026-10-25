@@ -4,7 +4,7 @@ import { BadgeCheck, CalendarX, CircleX, Clock } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
-import { TOKEN_CARD, TOKEN_OVERLINE, TokenPageShell } from "@/components/public/token-page-shell";
+import { CARTAO_DA_PAGINA_COM_TOKEN, SOBRETITULO_DA_PAGINA_COM_TOKEN, MoldeDaPaginaComToken } from "@/components/public/token-page-shell";
 import {
   formatBrl,
   formatDateTimeBrasilia,
@@ -68,11 +68,11 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
   const rateLimit = await conferirLimiteDeUso({ key: `PROPOSAL_VIEW:${ip}`, ...VIEW_LIMIT });
   if (!rateLimit.success) {
     return (
-      <TokenPageShell>
+      <MoldeDaPaginaComToken>
         <StateCard icon={Clock} tone="aviso" title="Muitas tentativas">
           <p>Você abriu muitas propostas em pouco tempo. Tente novamente daqui a alguns minutos.</p>
         </StateCard>
-      </TokenPageShell>
+      </MoldeDaPaginaComToken>
     );
   }
 
@@ -134,44 +134,44 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
   }
 
   return (
-    <TokenPageShell>
+    <MoldeDaPaginaComToken>
       <div className="flex flex-col gap-1">
-        <p className={TOKEN_OVERLINE}>Proposta de {lead.vendor.category.toLowerCase()}</p>
+        <p className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>Proposta de {lead.vendor.category.toLowerCase()}</p>
         <h1 className="font-display text-[32px] leading-[38px] font-medium break-words sm:text-[40px] sm:leading-[46px]">
           {lead.vendor.companyName}
         </h1>
         <p className="text-tinta-suave">Para {lead.coupleName}</p>
       </div>
 
-      <section aria-labelledby="proposta-resumo" className={cn(TOKEN_CARD, "flex flex-col gap-4")}>
+      <section aria-labelledby="proposta-resumo" className={cn(CARTAO_DA_PAGINA_COM_TOKEN, "flex flex-col gap-4")}>
         <h2 id="proposta-resumo" className="sr-only">
           Resumo da proposta
         </h2>
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-0.5 sm:col-span-2">
-            <dt className={TOKEN_OVERLINE}>Valor</dt>
+            <dt className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>Valor</dt>
             <dd className="font-num text-4xl leading-tight">{formatBrl(lead.proposalAmount)}</dd>
           </div>
           <div className="flex flex-col gap-0.5">
-            <dt className={TOKEN_OVERLINE}>Data do casamento</dt>
+            <dt className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>Data do casamento</dt>
             <dd className="text-[17px] font-semibold">{dateLong ?? "A definir"}</dd>
           </div>
           <div className="flex flex-col gap-0.5">
-            <dt className={TOKEN_OVERLINE}>Validade</dt>
+            <dt className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>Validade</dt>
             <dd className={cn("text-[17px] font-semibold", expired && "text-perigo")}>
               {validUntil ? `Até ${validUntil}` : "Sem prazo definido"}
             </dd>
           </div>
           {lead.location ? (
             <div className="flex flex-col gap-0.5 sm:col-span-2">
-              <dt className={TOKEN_OVERLINE}>Cidade</dt>
+              <dt className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>Cidade</dt>
               <dd className="text-[17px] font-semibold">{lead.location}</dd>
             </div>
           ) : null}
         </dl>
         {lead.proposalDetails ? (
           <div className="flex flex-col gap-1.5 border-t border-linha pt-4">
-            <p className={TOKEN_OVERLINE}>O que está incluído</p>
+            <p className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>O que está incluído</p>
             <p className="text-[15px] whitespace-pre-line break-words sm:text-base">{lead.proposalDetails}</p>
           </div>
         ) : null}
@@ -179,6 +179,6 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
       </section>
 
       {state}
-    </TokenPageShell>
+    </MoldeDaPaginaComToken>
   );
 }

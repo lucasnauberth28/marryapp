@@ -1,16 +1,16 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useSyncedState } from "@/hooks/use-synced-state";
+import { useEstadoSincronizado } from "@/hooks/use-synced-state";
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { CustomModal } from "@/components/ui/custom-modal";
-import { PageHeader } from "@/components/admin/page-header";
-import { StatusChip } from "@/components/painel/status-chip";
+import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
+import { ModalPersonalizado } from "@/components/ui/custom-modal";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
+import { EtiquetaDeSituacao } from "@/components/painel/status-chip";
 import { Input } from "@/components/ui/input";
-import { btn, btnIconDanger, card, hint, errorBox } from "@/components/painel/styles";
-import { LoadingButton } from "@/components/painel/loading-button";
+import { btn, estiloDoBotaoDeIconeDePerigo, estiloDoCartao, estiloDaDicaDoPainel, estiloDaCaixaDeErro } from "@/components/painel/styles";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import {
   DndContext,
   DragOverlay,
@@ -144,12 +144,12 @@ function TableCard({
     <article
       ref={setNodeRef}
       aria-label={`Mesa ${table.name}`}
-      className={`${card} relative flex flex-col items-center gap-2 p-4 text-center transition-[outline-color] ${
+      className={`${estiloDoCartao} relative flex flex-col items-center gap-2 p-4 text-center transition-[outline-color] ${
         isOver ? "outline-2 outline-offset-[3px] outline-dashed outline-ameixa" : ""
       }`}
     >
       <div className="absolute right-1 top-1">
-        <button type="button" onClick={onDelete} aria-label={`Excluir a mesa ${table.name}`} className={btnIconDanger}>
+        <button type="button" onClick={onDelete} aria-label={`Excluir a mesa ${table.name}`} className={estiloDoBotaoDeIconeDePerigo}>
           <Trash2 className="size-4" aria-hidden="true" />
         </button>
       </div>
@@ -163,13 +163,13 @@ function TableCard({
       </div>
       <strong className="max-w-full break-words font-semibold text-tinta">{table.name}</strong>
       {over ? (
-        <StatusChip tone="perigo" icon={<TriangleAlert className="size-4" aria-hidden="true" />}>
+        <EtiquetaDeSituacao tone="perigo" icon={<TriangleAlert className="size-4" aria-hidden="true" />}>
           {occupied} de {table.capacity} · passou
-        </StatusChip>
+        </EtiquetaDeSituacao>
       ) : full ? (
-        <StatusChip tone="sucesso" icon={<Check className="size-4" aria-hidden="true" />}>
+        <EtiquetaDeSituacao tone="sucesso" icon={<Check className="size-4" aria-hidden="true" />}>
           {occupied} de {table.capacity} · completa
-        </StatusChip>
+        </EtiquetaDeSituacao>
       ) : (
         <span className="text-sm text-tinta-suave">
           {occupied} de {table.capacity}
@@ -198,12 +198,12 @@ function UnassignedPanel({ guests, tables, totalConfirmed, onMove }: { guests: S
     <section
       ref={setNodeRef}
       aria-labelledby="sem-mesa"
-      className={`${card} flex w-full flex-col gap-2 p-4 sm:p-6 lg:sticky lg:top-24 lg:max-w-80 lg:flex-none ${isOver ? "outline-2 outline-offset-[3px] outline-dashed outline-ameixa" : ""}`}
+      className={`${estiloDoCartao} flex w-full flex-col gap-2 p-4 sm:p-6 lg:sticky lg:top-24 lg:max-w-80 lg:flex-none ${isOver ? "outline-2 outline-offset-[3px] outline-dashed outline-ameixa" : ""}`}
     >
       <h2 id="sem-mesa" className="text-lg font-semibold leading-7 text-tinta">
         Sem mesa · {guests.length}
       </h2>
-      {guests.length > 0 && <p className={`${hint} mb-2`}>Arraste pela alça para uma mesa, ou toque no ícone de troca e escolha.</p>}
+      {guests.length > 0 && <p className={`${estiloDaDicaDoPainel} mb-2`}>Arraste pela alça para uma mesa, ou toque no ícone de troca e escolha.</p>}
       {guests.length > 0 ? (
         <ul className="flex max-h-80 flex-col gap-2 overflow-y-auto lg:max-h-[640px]">
           {guests.map((g) => (
@@ -224,8 +224,8 @@ function UnassignedPanel({ guests, tables, totalConfirmed, onMove }: { guests: S
 
 export function TablesClient({ initialTables, initialUnassigned }: { initialTables: TableWithGuests[]; initialUnassigned: SeatGuest[] }) {
   const router = useRouter();
-  const [tables, setTables] = useSyncedState<TableWithGuests[]>(initialTables);
-  const [unassigned, setUnassigned] = useSyncedState<SeatGuest[]>(initialUnassigned);
+  const [tables, setTables] = useEstadoSincronizado<TableWithGuests[]>(initialTables);
+  const [unassigned, setUnassigned] = useEstadoSincronizado<SeatGuest[]>(initialUnassigned);
 
   const [newOpen, setNewOpen] = useState(false);
   const [newTableName, setNewTableName] = useState("");
@@ -327,7 +327,7 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
   return (
     <DndContext id="mesas" sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDragCancel={() => setDragging(null)}>
       <div className="flex flex-col gap-6">
-        <PageHeader
+        <CabecalhoDaPagina
           eyebrow="Convidados"
           title="Mesas"
           description={summary}
@@ -367,7 +367,7 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
 
       <DragOverlay dropAnimation={null}>{dragging ? <GuestPreview guest={dragging} /> : null}</DragOverlay>
 
-      <CustomModal isOpen={newOpen} onClose={() => setNewOpen(false)} title="Nova mesa" description="Escolha um nome e quantos lugares a mesa tem." size="sm">
+      <ModalPersonalizado isOpen={newOpen} onClose={() => setNewOpen(false)} title="Nova mesa" description="Escolha um nome e quantos lugares a mesa tem." size="sm">
         <form onSubmit={handleAddTable} className="flex flex-col gap-5">
           <Input
             id="new-table-name"
@@ -389,17 +389,17 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
             onChange={(e) => setNewTableCap(parseInt(e.target.value))}
           />
           {newError && (
-            <p role="alert" className={errorBox}>
+            <p role="alert" className={estiloDaCaixaDeErro}>
               {newError}
             </p>
           )}
-          <LoadingButton type="submit" loading={loading} className={`${btn.primary} ${btn.block}`}>
+          <BotaoComCarregamento type="submit" loading={loading} className={`${btn.primary} ${btn.block}`}>
             Criar mesa
-          </LoadingButton>
+          </BotaoComCarregamento>
         </form>
-      </CustomModal>
+      </ModalPersonalizado>
 
-      <ConfirmModal
+      <ModalDeConfirmacao
         isOpen={!!toDelete}
         onClose={() => setToDelete(null)}
         onConfirm={() => {

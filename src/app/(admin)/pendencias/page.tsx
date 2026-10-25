@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 import { obterTarefas } from "@/actions/tasks";
 import prisma from "@/lib/prisma";
-import { MadrinhaCard } from "@/components/admin/madrinha-card";
-import { TasksBoard, type Filter } from "@/components/tarefas/tasks-board";
+import { CartaoDaMadrinha } from "@/components/admin/madrinha-card";
+import { QuadroDeTarefas, type FiltroDeTarefas } from "@/components/tarefas/tasks-board";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 import { diasAte } from "@/lib/wedding-format";
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const SP = "America/Sao_Paulo";
-const FILTROS: Record<string, Filter> = { abertas: "abertas", atrasadas: "atrasadas", concluidas: "concluidas" };
+const FILTROS: Record<string, FiltroDeTarefas> = { abertas: "abertas", atrasadas: "atrasadas", concluidas: "concluidas" };
 
 export default async function PendenciasPage({ searchParams }: { searchParams: Promise<{ filtro?: string }> }) {
   const { weddingId } = await exigirCasamentoNaPagina("/pendencias");
@@ -42,7 +42,7 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
   let suggestion: React.ReactNode = null;
   if (overdue > 0) {
     suggestion = (
-      <MadrinhaCard
+      <CartaoDaMadrinha
         id="tarefas-atrasadas"
         text={`${overdue === 1 ? "Uma tarefa passou do prazo" : `${overdue} tarefas passaram do prazo`}. Rever as datas ou marcar o que já foi feito mantém a lista fiel ao que falta.`}
         actionLabel={overdue === 1 ? "Ver a atrasada" : `Ver as ${overdue} atrasadas`}
@@ -62,7 +62,7 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
         weddingDays: daysLeft !== null && daysLeft >= 0 ? daysLeft : null,
       };
       suggestion = (
-        <MadrinhaCard
+        <CartaoDaMadrinha
           id="rsvp-sem-resposta"
           text={textoDaDicaDeConfirmacaoPendente({ pending, ...when })}
           actionLabel={ACAO_DAS_CONFIRMACOES_PENDENTES}
@@ -73,5 +73,5 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
     }
   }
 
-  return <TasksBoard initialTasks={tasks ?? []} todayKey={todayKey} daysLeft={daysLeft} initialFilter={FILTROS[filtro ?? ""] ?? "abertas"} suggestion={suggestion} />;
+  return <QuadroDeTarefas initialTasks={tasks ?? []} todayKey={todayKey} daysLeft={daysLeft} initialFilter={FILTROS[filtro ?? ""] ?? "abertas"} suggestion={suggestion} />;
 }

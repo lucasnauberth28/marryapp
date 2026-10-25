@@ -4,10 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { entrar } from "@/actions/auth-actions";
-import { btnArrow } from "@/components/landing/styles";
+import { estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 
-import { FormAlert } from "@/components/ui/field";
+import { AvisoDoFormulario } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
 export function LoginForm({
@@ -99,11 +99,11 @@ export function LoginForm({
         </Link>
       </div>
 
-      {error ? <FormAlert id="login-erro">{error}</FormAlert> : null}
+      {error ? <AvisoDoFormulario id="login-erro">{error}</AvisoDoFormulario> : null}
 
       <Button type="submit" loading={isLoading} className="mt-1 h-12 w-full rounded-[12px] px-6">
         Entrar
-        <ArrowRight aria-hidden="true" className={btnArrow} />
+        <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
       </Button>
 
       <p className="text-center text-[15px] text-tinta-suave">

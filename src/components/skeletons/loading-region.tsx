@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  *   (Se começar com "Carregando", o texto é usado como veio.)
  * - Entrada de 150ms em fade, para o esqueleto não "piscar" em navegações muito rápidas.
  */
-export function LoadingRegion({
+export function RegiaoDeCarregamento({
   label = "a página",
   className,
   children,

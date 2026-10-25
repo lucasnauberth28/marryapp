@@ -4,12 +4,12 @@ import { useEffect, useId, useRef, useState } from "react";
 import { BrowserQRCodeReader, IScannerControls } from "@zxing/browser";
 import { Camera, Check, Clock, Search, QrCode, TriangleAlert, X } from "lucide-react";
 import { registrarEntradaDoConvidado } from "@/actions/guest-actions";
-import { PageHeader } from "@/components/admin/page-header";
-import { Seal } from "@/components/painel/seal";
-import { StatusChip } from "@/components/painel/status-chip";
-import { btn, card, errorBox, input, overline } from "@/components/painel/styles";
-import { LoadingButton } from "@/components/painel/loading-button";
-import { SkeletonRows } from "@/components/painel/skeleton-parts";
+import { CabecalhoDaPagina } from "@/components/admin/page-header";
+import { Selo } from "@/components/painel/seal";
+import { EtiquetaDeSituacao } from "@/components/painel/status-chip";
+import { btn, estiloDoCartao, estiloDaCaixaDeErro, estiloDaEntradaDoPainel, estiloDoSobretitulo } from "@/components/painel/styles";
+import { BotaoComCarregamento } from "@/components/painel/loading-button";
+import { EsqueletoDeLinhas } from "@/components/painel/skeleton-parts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { lookupGuestForCheckIn, searchGuestsForCheckIn, type CheckInGuestInfo } from "./lookup-actions";
 
@@ -156,27 +156,27 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
+      <CabecalhoDaPagina
         eyebrow="Convidados"
         title="Registro de entrada dos convidados"
         description="Quem confirma presença pelo link recebe um código QR para a entrada na festa. Aponte a câmera para o código e registre a chegada de cada convidado."
         actions={
-          <StatusChip tone="sucesso" icon={<Check className="size-4" aria-hidden="true" />}>
+          <EtiquetaDeSituacao tone="sucesso" icon={<Check className="size-4" aria-hidden="true" />}>
             {arrived} de {confirmed} {confirmed === 1 ? "confirmado chegou" : "confirmados chegaram"}
-          </StatusChip>
+          </EtiquetaDeSituacao>
         }
       />
 
       <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
         {message && (
-          <p role={message.ok ? "status" : "alert"} className={message.ok ? "flex items-start gap-2 rounded-xl bg-sucesso-suave px-4 py-3 font-semibold text-sucesso" : errorBox}>
+          <p role={message.ok ? "status" : "alert"} className={message.ok ? "flex items-start gap-2 rounded-xl bg-sucesso-suave px-4 py-3 font-semibold text-sucesso" : estiloDaCaixaDeErro}>
             {message.ok ? <Check className="mt-0.5 size-5 shrink-0" aria-hidden="true" /> : <TriangleAlert className="mt-0.5 size-5 shrink-0" aria-hidden="true" />}
             {message.text}
           </p>
         )}
 
         {stage === "loading" && (
-          <section role="status" aria-busy="true" className={`${card} flex flex-col items-center gap-4 p-6 text-center`}>
+          <section role="status" aria-busy="true" className={`${estiloDoCartao} flex flex-col items-center gap-4 p-6 text-center`}>
             <span className="sr-only">Conferindo o convite...</span>
             {/* Esqueleto do convite lido: selo, situação, nome, pessoas e mesa, botões */}
             <Skeleton className="size-24 rounded-full" />
@@ -216,39 +216,39 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
         )}
 
         {stage === "found" && found && (
-          <section className={`${card} flex flex-col items-center gap-4 p-6 text-center`} aria-label="Convite lido">
-            <Seal label={found.alreadyIn ? "Convite já usado" : "Convite válido"} />
+          <section className={`${estiloDoCartao} flex flex-col items-center gap-4 p-6 text-center`} aria-label="Convite lido">
+            <Selo label={found.alreadyIn ? "Convite já usado" : "Convite válido"} />
             {found.alreadyIn ? (
-              <StatusChip tone="aviso" icon={<Clock className="size-4" aria-hidden="true" />}>
+              <EtiquetaDeSituacao tone="aviso" icon={<Clock className="size-4" aria-hidden="true" />}>
                 Entrada já registrada
-              </StatusChip>
+              </EtiquetaDeSituacao>
             ) : (
-              <StatusChip tone="sucesso" icon={<Check className="size-4" aria-hidden="true" />}>
+              <EtiquetaDeSituacao tone="sucesso" icon={<Check className="size-4" aria-hidden="true" />}>
                 Convite válido
-              </StatusChip>
+              </EtiquetaDeSituacao>
             )}
             <h2 className="font-display text-[34px] font-medium leading-10 text-tinta">{found.name}</h2>
             <dl className="grid w-full grid-cols-2 gap-3 rounded-2xl border border-linha p-4 text-left">
               <div>
-                <dt className={overline}>Pessoas</dt>
+                <dt className={estiloDoSobretitulo}>Pessoas</dt>
                 <dd className="mt-1 font-num text-[28px] leading-8 text-tinta">{found.people}</dd>
               </div>
               <div>
-                <dt className={overline}>Mesa</dt>
+                <dt className={estiloDoSobretitulo}>Mesa</dt>
                 <dd className={`mt-1 font-num text-[28px] leading-8 ${found.table ? "text-ameixa" : "text-tinta-suave"}`}>{found.table ?? "Sem mesa"}</dd>
               </div>
               {found.note && (
                 <div className="col-span-2">
-                  <dt className={overline}>Observação</dt>
+                  <dt className={estiloDoSobretitulo}>Observação</dt>
                   <dd className="mt-1 text-tinta">{found.note}</dd>
                 </div>
               )}
             </dl>
             <div className="flex w-full flex-col gap-2">
               {!found.alreadyIn && (
-                <LoadingButton onClick={confirmEntry} loading={confirming} className={`${btn.primary} ${btn.block}`}>
+                <BotaoComCarregamento onClick={confirmEntry} loading={confirming} className={`${btn.primary} ${btn.block}`}>
                   Registrar entrada de {found.people}
-                </LoadingButton>
+                </BotaoComCarregamento>
               )}
               <button
                 type="button"
@@ -267,7 +267,7 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
 
         {stage === "idle" && (
           <>
-            <section className={`${card} flex flex-col items-center gap-4 p-8 text-center`}>
+            <section className={`${estiloDoCartao} flex flex-col items-center gap-4 p-8 text-center`}>
               <span className="grid size-20 place-items-center rounded-full bg-ameixa-suave text-ameixa">
                 <Camera className="size-9" aria-hidden="true" />
               </span>
@@ -279,18 +279,18 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
               </button>
             </section>
 
-            <section className={`${card} flex flex-col gap-3 p-4`}>
+            <section className={`${estiloDoCartao} flex flex-col gap-3 p-4`}>
               <label htmlFor={searchId} className="text-sm font-semibold text-tinta">
                 Sem o código QR? Busque pelo nome
               </label>
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-tinta-suave" aria-hidden="true" />
-                <input id={searchId} type="search" autoComplete="off" value={query} onChange={(e) => void runSearch(e.target.value)} placeholder="Digite o nome do convidado" className={`${input} pl-10`} />
+                <input id={searchId} type="search" autoComplete="off" value={query} onChange={(e) => void runSearch(e.target.value)} placeholder="Digite o nome do convidado" className={`${estiloDaEntradaDoPainel} pl-10`} />
               </div>
               {searching && !matches && (
                 <div role="status" aria-busy="true">
                   <span className="sr-only">Buscando convidados...</span>
-                  <SkeletonRows rows={2} lines={2} leading="none" className="rounded-xl border border-linha px-4" />
+                  <EsqueletoDeLinhas rows={2} lines={2} leading="none" className="rounded-xl border border-linha px-4" />
                 </div>
               )}
               {matches && (
@@ -305,7 +305,7 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
                             {g.people} {g.people === 1 ? "pessoa" : "pessoas"} · {g.table ?? "sem mesa"}
                           </span>
                         </span>
-                        {g.alreadyIn && <StatusChip tone="aviso">Já entrou</StatusChip>}
+                        {g.alreadyIn && <EtiquetaDeSituacao tone="aviso">Já entrou</EtiquetaDeSituacao>}
                       </button>
                     </li>
                   ))}
