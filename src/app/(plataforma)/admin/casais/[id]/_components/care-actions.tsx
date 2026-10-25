@@ -11,18 +11,18 @@ import { ModalPersonalizado } from "@/components/ui/custom-modal";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { useCasalAction } from "../../_components/use-casal-action";
+import { useAcaoDoCasal } from "../../_components/use-casal-action";
 
-type Kind = "reset" | "suspend" | "unsuspend" | "delete";
+type TipoDeAcao = "reset" | "suspend" | "unsuspend" | "delete";
 
 /** "Ações com cuidado": cada uma pede confirmação e motivo, e fica no Registro de atividades com o nome de quem fez. */
-export function CareActions({ weddingId, coupleNames, suspended }: { weddingId: string; coupleNames: string; suspended: boolean }) {
+export function AcoesDeCuidado({ weddingId, coupleNames, suspended }: { weddingId: string; coupleNames: string; suspended: boolean }) {
   const router = useRouter();
-  const [open, setOpen] = useState<Kind | null>(null);
+  const [open, setOpen] = useState<TipoDeAcao | null>(null);
   const [reason, setReason] = useState("");
   const [confirmText, setConfirmText] = useState("");
   const [sure, setSure] = useState(false);
-  const { pending, error, run, clearError } = useCasalAction();
+  const { pending, error, run, clearError } = useAcaoDoCasal();
 
   const close = () => {
     setOpen(null);
@@ -45,7 +45,7 @@ export function CareActions({ weddingId, coupleNames, suspended }: { weddingId: 
   };
 
   const base = `${estiloDoBotao.secondary} w-full justify-start gap-2`;
-  const copy: Record<Kind, { title: string; text: string; cta: string; danger?: boolean }> = {
+  const copy: Record<TipoDeAcao, { title: string; text: string; cta: string; danger?: boolean }> = {
     reset: { title: "Redefinir a senha", text: `Enviamos um link de nova senha, válido por 1 hora, para o e-mail do dono do casamento de ${coupleNames}. Nós nunca vemos nem mostramos a senha.`, cta: "Enviar o link" },
     suspend: { title: "Suspender o casal", text: `O site público de ${coupleNames} sai do ar (site, confirmação de presença e lista de presentes) e o painel do casal fica só para leitura. Dá para reativar a qualquer momento.`, cta: "Suspender o casal", danger: true },
     unsuspend: { title: "Reativar o casal", text: `O site de ${coupleNames} volta ao ar e o painel volta a aceitar alterações.`, cta: "Reativar o casal" },

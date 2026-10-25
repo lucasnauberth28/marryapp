@@ -2,9 +2,9 @@ import { Suspense } from "react";
 import { NavegacaoDeAbas } from "@/components/plataforma/tabs-nav";
 import { obterPixParaConferir, obterReembolsosPendentes } from "@/lib/platform/queries/receita";
 
-export type PlanosTab = "resumo" | "assinaturas" | "cupons" | "reembolsos" | "catalogo" | "contador";
+export type AbaDePlanos = "resumo" | "assinaturas" | "cupons" | "reembolsos" | "catalogo" | "contador";
 
-function tabs(counts: { pix?: number; refunds?: number }) {
+function abasDeCadaPagina(counts: { pix?: number; refunds?: number }) {
   return [
     { value: "resumo", label: "Resumo", href: "/admin/planos" },
     { value: "assinaturas", label: "Assinaturas e Pix", count: counts.pix, href: "/admin/planos/assinaturas" },
@@ -15,19 +15,19 @@ function tabs(counts: { pix?: number; refunds?: number }) {
   ];
 }
 
-async function CountedTabs({ active }: { active: PlanosTab }) {
+async function AbasComContagem({ active }: { active: AbaDePlanos }) {
   const [pix, refunds] = await Promise.all([obterPixParaConferir(), obterReembolsosPendentes()]);
-  return <NavegacaoDeAbas label="Planos e receita" basePath="/admin/planos" active={active} tabs={tabs({ pix: pix.count, refunds: refunds.count })} />;
+  return <NavegacaoDeAbas label="Planos e receita" basePath="/admin/planos" active={active} tabs={abasDeCadaPagina({ pix: pix.count, refunds: refunds.count })} />;
 }
 
 /**
  * Abas de Planos e receita, as mesmas em todas as telas dessa área (cada aba é uma rota ou um ?aba=).
  * Os números das abas vêm de consultas: enquanto não chegam, as abas já aparecem (sem número) e funcionam.
  */
-export function PlanosTabs({ active }: { active: PlanosTab }) {
+export function AbasDePlanos({ active }: { active: AbaDePlanos }) {
   return (
-    <Suspense fallback={<NavegacaoDeAbas label="Planos e receita" basePath="/admin/planos" active={active} tabs={tabs({})} />}>
-      <CountedTabs active={active} />
+    <Suspense fallback={<NavegacaoDeAbas label="Planos e receita" basePath="/admin/planos" active={active} tabs={abasDeCadaPagina({})} />}>
+      <AbasComContagem active={active} />
     </Suspense>
   );
 }

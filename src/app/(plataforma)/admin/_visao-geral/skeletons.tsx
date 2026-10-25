@@ -4,11 +4,11 @@ import { EsqueletoDaAtencao, EsqueletoDasLinhas } from "@/components/plataforma/
 
 /* Esqueletos de cada bloco da Visão geral (mesmas alturas dos blocos reais em page.tsx). */
 
-export function NumbersSkeleton() {
+export function EsqueletoDosNumeros() {
   return <SkeletonStatGrid count={4} />;
 }
 
-export function AttentionBlockSkeleton() {
+export function EsqueletoDoBlocoDeAtencao() {
   return (
     <SkeletonCard>
       <EsqueletoDaAtencao rows={3} />
@@ -16,7 +16,7 @@ export function AttentionBlockSkeleton() {
   );
 }
 
-export function RevenueBlockSkeleton() {
+export function EsqueletoDoBlocoDeReceita() {
   return (
     <SkeletonCard>
       <SkeletonChart />
@@ -25,7 +25,7 @@ export function RevenueBlockSkeleton() {
   );
 }
 
-export function FunnelBlockSkeleton() {
+export function EsqueletoDoBlocoDoFunil() {
   return (
     <SkeletonCard>
       <SkeletonText lines={1} className="mb-5" lastLineWidth="w-2/3" />
@@ -45,7 +45,7 @@ export function FunnelBlockSkeleton() {
   );
 }
 
-export function UpcomingBlockSkeleton() {
+export function EsqueletoDoBlocoDeProximos() {
   return (
     <SkeletonCard>
       <ul className="flex flex-col">
@@ -71,7 +71,7 @@ export function UpcomingBlockSkeleton() {
   );
 }
 
-export function ExpiringBlockSkeleton() {
+export function EsqueletoDoBlocoDeVencimentos() {
   return (
     <SkeletonCard>
       <EsqueletoDasLinhas rows={3} />
@@ -79,7 +79,7 @@ export function ExpiringBlockSkeleton() {
   );
 }
 
-export function ErrorsBlockSkeleton() {
+export function EsqueletoDoBlocoDeErros() {
   return (
     <SkeletonCard>
       <EsqueletoDasLinhas rows={4} />
@@ -88,22 +88,22 @@ export function ErrorsBlockSkeleton() {
 }
 
 /** Página inteira (loading.tsx e fallback enquanto se confere se já existe algum casamento). */
-export function OverviewSkeleton() {
+export function EsqueletoDaVisaoGeral() {
   return (
     <LoadingRegion label="a visão geral" className="flex flex-col gap-6">
       <SkeletonPageHeader actions={1} />
-      <NumbersSkeleton />
+      <EsqueletoDosNumeros />
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-        <AttentionBlockSkeleton />
-        <RevenueBlockSkeleton />
+        <EsqueletoDoBlocoDeAtencao />
+        <EsqueletoDoBlocoDeReceita />
       </div>
       <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-start">
-        <FunnelBlockSkeleton />
-        <UpcomingBlockSkeleton />
+        <EsqueletoDoBlocoDoFunil />
+        <EsqueletoDoBlocoDeProximos />
       </div>
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-        <ExpiringBlockSkeleton />
-        <ErrorsBlockSkeleton />
+        <EsqueletoDoBlocoDeVencimentos />
+        <EsqueletoDoBlocoDeErros />
       </div>
     </LoadingRegion>
   );

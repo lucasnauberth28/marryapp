@@ -6,53 +6,53 @@ import { Aparicao } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
-import { LeadStatusChip } from "../../../_components/status-chip";
-import { centsToBrlInput, effectiveVendorTier, firstNameOf, isLeadLocked, PLAN_HREF, proposalPublicUrl, reviewPublicUrl, START_MONTHLY_LEAD_LIMIT, formatBrl, formatDateTimeBrasilia, formatRelative, formatTime, formatWeddingDate, formatWeddingDateLong, isLeadStatus, toIsoDate, todayBrasilia, whatsappHref, type LeadStatus } from "../../../_lib/vendor-panel";
+import { EtiquetaDaSituacaoDoPedido } from "../../../_components/status-chip";
+import { centavosParaCampoDeReais, nivelEfetivoDoFornecedor, primeiroNomeDe, pedidoEstaBloqueado, LINK_DO_PLANO, urlPublicaDaProposta, urlPublicaDaAvaliacao, LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL, formatarReaisDoPainel, formatarDataEHoraEmBrasilia, formatarTempoRelativo, formatarHoraDoPainel, formatarDataDoCasamento, formatarDataDoCasamentoPorExtenso, ehSituacaoDoPedido, paraDataIso, hojeEmBrasilia, linkDoWhatsapp, type SituacaoDoPedido } from "../../../_lib/vendor-panel";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
-import { DeclineLead } from "./decline-lead";
-import { ProposalForm, type SavedProposal } from "./proposal-form";
-import { ReviewRequest } from "./review-request";
-import { StatusSelect } from "./status-select";
+import { RecusarPedido } from "./decline-lead";
+import { FormularioDeProposta, type PropostaSalva } from "./proposal-form";
+import { PedidoDeAvaliacao } from "./review-request";
+import { SelecaoDeSituacao } from "./status-select";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 export const metadata: Metadata = { title: "Pedido de orçamento" };
 
-const CARD = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
-const OVERLINE = "text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase";
-const BTN =
+const ESTILO_DO_CARTAO = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
+const ESTILO_DO_SOBRETITULO = "text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase";
+const ESTILO_DO_BOTAO =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition-colors";
-const BTN_PRIMARY = `${BTN} bg-ameixa text-on-ameixa hover:bg-ameixa-hover`;
-const BTN_SECONDARY = `${BTN} border border-linha-forte bg-papel text-tinta hover:bg-areia`;
+const ESTILO_DO_BOTAO_PRIMARIO = `${ESTILO_DO_BOTAO} bg-ameixa text-on-ameixa hover:bg-ameixa-hover`;
+const ESTILO_DO_BOTAO_SECUNDARIO = `${ESTILO_DO_BOTAO} border border-linha-forte bg-papel text-tinta hover:bg-areia`;
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const DAY_MS = 86_400_000;
+const PADRAO_DE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UM_DIA_EM_MS = 86_400_000;
 
-const STATUS_RANK: Record<LeadStatus, number> = { NEW: 0, CONTACTED: 1, PROPOSAL_SENT: 2, CLOSED: 3, DECLINED: -1 };
+const ORDEM_DAS_SITUACOES: Record<SituacaoDoPedido, number> = { NEW: 0, CONTACTED: 1, PROPOSAL_SENT: 2, CLOSED: 3, DECLINED: -1 };
 
-function capitalize(text: string) {
+function colocarEmMaiuscula(text: string) {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 /** "chegou há 2 h", "chegou ontem", "chegou em 3 out". */
-function arrivedLabel(date: Date) {
-  const rel = formatRelative(date);
+function rotuloDeChegada(date: Date) {
+  const rel = formatarTempoRelativo(date);
   return /^(há|ontem|agora)/.test(rel) ? `chegou ${rel}` : `chegou em ${rel}`;
 }
 
-function formatHours(hours: number) {
+function formatarHoras(hours: number) {
   if (hours < 1) return "menos de 1 h";
   if (hours < 48) return `${Math.round(hours)} h`;
   return `${Math.round(hours / 24)} dias`;
 }
 
-type AgendaState = { label: string; tone: "sucesso" | "perigo" | "suave"; note?: React.ReactNode };
+type SituacaoDaAgenda = { label: string; tone: "sucesso" | "perigo" | "suave"; note?: React.ReactNode };
 
 export default async function PedidoPage({ params }: { params: Promise<{ id: string }> }) {
   const { vendor } = await obterContextoDaPaginaDoFornecedor();
   if (!vendor) return null; // o layout explica que a conta ainda não foi vinculada
 
   const { id } = await params;
-  if (!UUID_RE.test(id)) notFound();
+  if (!PADRAO_DE_UUID.test(id)) notFound();
 
   // Posse: só pedidos do fornecedor da sessão.
   const lead = await prisma.vendorLead.findFirst({
@@ -90,18 +90,18 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
   if (!lead) notFound();
 
   // Limite do Start: pedido bloqueado mostra só primeiro nome, data e cidade (sem contato nem mensagem).
-  if (isLeadLocked(lead, effectiveVendorTier(vendor.planTier, vendor.planExpiresAt))) {
+  if (pedidoEstaBloqueado(lead, nivelEfetivoDoFornecedor(vendor.planTier, vendor.planExpiresAt))) {
     return (
-      <LockedLead
-        firstName={firstNameOf(lead.coupleName)}
-        date={formatWeddingDateLong(lead.weddingDate)}
+      <PedidoBloqueado
+        firstName={primeiroNomeDe(lead.coupleName)}
+        date={formatarDataDoCasamentoPorExtenso(lead.weddingDate)}
         location={lead.location}
-        arrived={arrivedLabel(lead.createdAt)}
+        arrived={rotuloDeChegada(lead.createdAt)}
       />
     );
   }
 
-  const status: LeadStatus = isLeadStatus(lead.status) ? lead.status : "NEW";
+  const status: SituacaoDoPedido = ehSituacaoDoPedido(lead.status) ? lead.status : "NEW";
   const day = lead.weddingDate
     ? new Date(Date.UTC(lead.weddingDate.getUTCFullYear(), lead.weddingDate.getUTCMonth(), lead.weddingDate.getUTCDate()))
     : null;
@@ -120,7 +120,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
             vendorId: vendor.id,
             status: "CLOSED",
             id: { not: lead.id },
-            weddingDate: { gte: day, lt: new Date(day.getTime() + DAY_MS) },
+            weddingDate: { gte: day, lt: new Date(day.getTime() + UM_DIA_EM_MS) },
           },
           select: { id: true, coupleName: true },
           take: 3,
@@ -136,13 +136,13 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
       : Promise.resolve([]),
   ]);
 
-  const dateShort = formatWeddingDate(lead.weddingDate);
-  const dateLong = formatWeddingDateLong(lead.weddingDate);
+  const dateShort = formatarDataDoCasamento(lead.weddingDate);
+  const dateLong = formatarDataDoCasamentoPorExtenso(lead.weddingDate);
 
   // "Sua agenda": casamentos fechados e datas bloqueadas ocupam o dia; reuniões, não.
   const blocked = dayEvents.find((e) => e.kind === "BLOCKED");
   const meetings = dayEvents.filter((e) => e.kind === "MEETING");
-  let agenda: AgendaState;
+  let agenda: SituacaoDaAgenda;
   if (!day) {
     agenda = { label: "Sem data definida", tone: "suave" };
   } else if (status === "CLOSED") {
@@ -174,7 +174,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
       tone: "sucesso",
       note:
         meetings.length > 0
-          ? `Você tem reunião nesse dia${meetings[0].time ? ` às ${formatTime(meetings[0].time)}` : ""}.`
+          ? `Você tem reunião nesse dia${meetings[0].time ? ` às ${formatarHoraDoPainel(meetings[0].time)}` : ""}.`
           : undefined,
     };
   }
@@ -186,16 +186,16 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
 
   // Mensagens prontas para o WhatsApp do fornecedor.
   const contactText = `Olá, ${lead.coupleName}! Aqui é ${vendor.companyName}, pelo Aceito. Recebi seu pedido de orçamento${dateShort ? ` para ${dateShort}` : ""} e quero conversar com vocês.`;
-  const contactWa = whatsappHref(lead.couplePhone, contactText);
+  const contactWa = linkDoWhatsapp(lead.couplePhone, contactText);
 
-  let savedProposal: SavedProposal | null = null;
+  let savedProposal: PropostaSalva | null = null;
   if (lead.proposalSentAt && lead.proposalAmount != null) {
-    const validUntil = formatWeddingDate(lead.proposalValidUntil);
-    const publicUrl = lead.proposalToken ? proposalPublicUrl(lead.proposalToken) : null;
+    const validUntil = formatarDataDoCasamento(lead.proposalValidUntil);
+    const publicUrl = lead.proposalToken ? urlPublicaDaProposta(lead.proposalToken) : null;
     const text = [
       `Olá, ${lead.coupleName}! Aqui é ${vendor.companyName}, pelo Aceito. Segue a nossa proposta${dateShort ? ` para o casamento em ${dateShort}` : ""}:`,
       "",
-      `Valor: ${formatBrl(lead.proposalAmount)}`,
+      `Valor: ${formatarReaisDoPainel(lead.proposalAmount)}`,
       ...(validUntil ? [`Válida até: ${validUntil}`] : []),
       ...(lead.proposalDetails ? ["", "O que está incluído:", lead.proposalDetails] : []),
       ...(publicUrl ? ["", "Para ver os detalhes e aceitar a proposta:", publicUrl] : []),
@@ -203,13 +203,13 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
       "Qualquer dúvida, é só responder por aqui.",
     ].join("\n");
     savedProposal = {
-      sentAtLabel: formatDateTimeBrasilia(lead.proposalSentAt),
+      sentAtLabel: formatarDataEHoraEmBrasilia(lead.proposalSentAt),
       text,
-      whatsappUrl: whatsappHref(lead.couplePhone, text),
+      whatsappUrl: linkDoWhatsapp(lead.couplePhone, text),
       publicUrl,
       accepted:
         lead.proposalAcceptedAt && lead.proposalAcceptedName
-          ? { name: lead.proposalAcceptedName, atLabel: formatDateTimeBrasilia(lead.proposalAcceptedAt) }
+          ? { name: lead.proposalAcceptedName, atLabel: formatarDataEHoraEmBrasilia(lead.proposalAcceptedAt) }
           : null,
     };
   }
@@ -218,32 +218,32 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
 
   // Andamento: um passo conta como feito pela data gravada ou pelo status atual
   // (pedidos antigos não têm as datas).
-  const rank = STATUS_RANK[status];
+  const rank = ORDEM_DAS_SITUACOES[status];
   const steps: { label: string; done: boolean; detail?: string }[] = [
-    { label: "Pedido recebido", done: true, detail: `${capitalize(formatDateTimeBrasilia(lead.createdAt))} · pelo seu perfil` },
+    { label: "Pedido recebido", done: true, detail: `${colocarEmMaiuscula(formatarDataEHoraEmBrasilia(lead.createdAt))} · pelo seu perfil` },
     {
       label: "Respondido",
       done: !!lead.respondedAt || rank >= 1,
-      detail: lead.respondedAt ? capitalize(formatDateTimeBrasilia(lead.respondedAt)) : "Fale com o casal e marque como respondido",
+      detail: lead.respondedAt ? colocarEmMaiuscula(formatarDataEHoraEmBrasilia(lead.respondedAt)) : "Fale com o casal e marque como respondido",
     },
     {
       label: "Proposta enviada",
       done: !!lead.proposalSentAt || rank >= 2,
       detail: lead.proposalSentAt
-        ? `${capitalize(formatDateTimeBrasilia(lead.proposalSentAt))}${lead.proposalAmount != null ? ` · ${formatBrl(lead.proposalAmount)}` : ""}`
+        ? `${colocarEmMaiuscula(formatarDataEHoraEmBrasilia(lead.proposalSentAt))}${lead.proposalAmount != null ? ` · ${formatarReaisDoPainel(lead.proposalAmount)}` : ""}`
         : "Registre a proposta neste pedido",
     },
     status === "DECLINED"
       ? {
           label: "Recusado",
           done: true,
-          detail: lead.declinedAt ? capitalize(formatDateTimeBrasilia(lead.declinedAt)) : undefined,
+          detail: lead.declinedAt ? colocarEmMaiuscula(formatarDataEHoraEmBrasilia(lead.declinedAt)) : undefined,
         }
       : {
           label: "Fechado",
           done: status === "CLOSED",
           detail: lead.closedAt
-            ? `${capitalize(formatDateTimeBrasilia(lead.closedAt))}${lead.proposalAcceptedAt ? " · aceite digital do casal" : ""}`
+            ? `${colocarEmMaiuscula(formatarDataEHoraEmBrasilia(lead.closedAt))}${lead.proposalAcceptedAt ? " · aceite digital do casal" : ""}`
             : undefined,
         },
   ];
@@ -273,7 +273,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
         </Link>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex min-w-0 flex-col gap-2">
-            <LeadStatusChip status={status} suffix={arrivedLabel(lead.createdAt)} />
+            <EtiquetaDaSituacaoDoPedido status={status} suffix={rotuloDeChegada(lead.createdAt)} />
             <h1 className="font-display text-[34px] leading-10 font-medium break-words md:text-[44px] md:leading-[50px]">
               {lead.coupleName}
             </h1>
@@ -282,7 +282,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
           {status === "NEW" ? (
             <p className="max-w-sm text-sm text-tinta-suave">
               Quem responde em até 24 h fecha mais
-              {avgResponseHours !== null ? `: sua média é ${formatHours(avgResponseHours)}.` : "."}
+              {avgResponseHours !== null ? `: sua média é ${formatarHoras(avgResponseHours)}.` : "."}
             </p>
           ) : null}
         </div>
@@ -291,19 +291,19 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col gap-4">
           <Aparicao variant="up" delay={80}>
-            <section aria-labelledby="casamento-titulo" className={cn(CARD, "flex flex-col gap-4")}>
+            <section aria-labelledby="casamento-titulo" className={cn(ESTILO_DO_CARTAO, "flex flex-col gap-4")}>
               <h2 id="casamento-titulo" className="text-lg font-semibold">
                 O casamento
               </h2>
               <dl className="grid grid-cols-2 gap-4 sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]">
                 {facts.map((f) => (
                   <div key={f.label} className="flex min-w-0 flex-col gap-0.5">
-                    <dt className={OVERLINE}>{f.label}</dt>
+                    <dt className={ESTILO_DO_SOBRETITULO}>{f.label}</dt>
                     <dd className="text-base font-semibold break-words sm:text-[17px]">{f.value}</dd>
                   </div>
                 ))}
                 <div className="col-span-2 flex min-w-0 flex-col gap-0.5 sm:col-span-1">
-                  <dt className={OVERLINE}>Sua agenda</dt>
+                  <dt className={ESTILO_DO_SOBRETITULO}>Sua agenda</dt>
                   <dd
                     className={cn(
                       "text-base font-semibold sm:text-[17px]",
@@ -319,7 +319,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
               </dl>
               {lead.message ? (
                 <div className="flex flex-col gap-1.5 border-t border-linha pt-4">
-                  <p className={OVERLINE}>Mensagem do casal</p>
+                  <p className={ESTILO_DO_SOBRETITULO}>Mensagem do casal</p>
                   <p className="font-display text-[19px] leading-7 whitespace-pre-line break-words sm:text-[22px] sm:leading-8">
                     “{lead.message}”
                   </p>
@@ -329,7 +329,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
           </Aparicao>
 
           <Aparicao variant="up" delay={160}>
-            <section id="proposta" aria-labelledby="proposta-titulo" className={cn(CARD, "flex scroll-mt-20 flex-col gap-4")}>
+            <section id="proposta" aria-labelledby="proposta-titulo" className={cn(ESTILO_DO_CARTAO, "flex scroll-mt-20 flex-col gap-4")}>
               <div className="flex flex-col gap-0.5">
                 <h2 id="proposta-titulo" className="text-lg font-semibold">
                   {savedProposal?.accepted ? "Proposta aceita" : "Enviar proposta"}
@@ -340,13 +340,13 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
                     : "A proposta fica registrada neste pedido e abre pronta no seu WhatsApp, com o link para o casal aceitar."}
                 </p>
               </div>
-              <ProposalForm
+              <FormularioDeProposta
                 leadId={lead.id}
-                todayIso={toIsoDate(todayBrasilia())}
+                todayIso={paraDataIso(hojeEmBrasilia())}
                 saved={savedProposal}
                 initial={{
-                  amount: centsToBrlInput(lead.proposalAmount),
-                  validUntil: lead.proposalValidUntil ? toIsoDate(lead.proposalValidUntil) : "",
+                  amount: centavosParaCampoDeReais(lead.proposalAmount),
+                  validUntil: lead.proposalValidUntil ? paraDataIso(lead.proposalValidUntil) : "",
                   details: lead.proposalDetails ?? "",
                 }}
               />
@@ -356,12 +356,12 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
 
         <div className="flex min-w-0 flex-col gap-4">
           <Aparicao variant="up" delay={120}>
-            <section aria-labelledby="contato-titulo" className={cn(CARD, "flex flex-col gap-3")}>
+            <section aria-labelledby="contato-titulo" className={cn(ESTILO_DO_CARTAO, "flex flex-col gap-3")}>
               <h2 id="contato-titulo" className="text-lg font-semibold">
                 Falar com o casal
               </h2>
               {contactWa ? (
-                <a href={contactWa} target="_blank" rel="noopener noreferrer" className={cn(BTN_PRIMARY, "w-full")}>
+                <a href={contactWa} target="_blank" rel="noopener noreferrer" className={cn(ESTILO_DO_BOTAO_PRIMARIO, "w-full")}>
                   <MessageCircle aria-hidden="true" className="size-[18px]" />
                   Responder no WhatsApp
                   <span className="sr-only"> (abre em nova aba)</span>
@@ -394,11 +394,11 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
           </Aparicao>
 
           <Aparicao variant="up" delay={200}>
-            <section aria-labelledby="andamento-titulo" className={cn(CARD, "flex flex-col gap-4")}>
+            <section aria-labelledby="andamento-titulo" className={cn(ESTILO_DO_CARTAO, "flex flex-col gap-4")}>
               <h2 id="andamento-titulo" className="text-lg font-semibold">
                 Andamento
               </h2>
-              <StatusSelect leadId={lead.id} status={status} />
+              <SelecaoDeSituacao leadId={lead.id} status={status} />
               <ol className="flex flex-col gap-3.5">
                 {timeline.map((step) => (
                   <li key={step.label} className="flex gap-3">
@@ -424,26 +424,26 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
 
           {status === "CLOSED" ? (
             <Aparicao variant="up" delay={240}>
-              <ReviewRequest
+              <PedidoDeAvaliacao
                 leadId={lead.id}
                 coupleName={lead.coupleName}
                 couplePhone={lead.couplePhone}
                 companyName={vendor.companyName}
-                url={lead.reviewToken ? reviewPublicUrl(lead.reviewToken) : null}
-                requestedAtLabel={lead.reviewRequestedAt ? formatDateTimeBrasilia(lead.reviewRequestedAt) : null}
-                review={lead.review ? { rating: lead.review.rating, atLabel: formatDateTimeBrasilia(lead.review.createdAt) } : null}
+                url={lead.reviewToken ? urlPublicaDaAvaliacao(lead.reviewToken) : null}
+                requestedAtLabel={lead.reviewRequestedAt ? formatarDataEHoraEmBrasilia(lead.reviewRequestedAt) : null}
+                review={lead.review ? { rating: lead.review.rating, atLabel: formatarDataEHoraEmBrasilia(lead.review.createdAt) } : null}
               />
             </Aparicao>
           ) : null}
 
-          <DeclineLead
+          <RecusarPedido
             leadId={lead.id}
             couplePhone={lead.couplePhone}
             defaultMessage={declineDefault}
             declined={
               status === "DECLINED"
                 ? {
-                    atLabel: lead.declinedAt ? formatDateTimeBrasilia(lead.declinedAt).replace(/^(\d)/, "em $1") : null,
+                    atLabel: lead.declinedAt ? formatarDataEHoraEmBrasilia(lead.declinedAt).replace(/^(\d)/, "em $1") : null,
                     message: lead.declineMessage,
                   }
                 : null
@@ -456,20 +456,20 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
       <div aria-hidden="true" className="h-[68px] md:hidden" />
       <div className="fixed inset-x-0 bottom-20 z-30 grid grid-cols-2 gap-2 border-t border-linha bg-papel px-4 py-3 md:hidden">
         {contactWa ? (
-          <a href={contactWa} target="_blank" rel="noopener noreferrer" className={BTN_SECONDARY}>
+          <a href={contactWa} target="_blank" rel="noopener noreferrer" className={ESTILO_DO_BOTAO_SECUNDARIO}>
             <MessageCircle aria-hidden="true" className="size-[18px]" />
             WhatsApp
             <span className="sr-only"> (abre em nova aba)</span>
           </a>
         ) : lead.coupleEmail ? (
-          <a href={`mailto:${lead.coupleEmail}`} className={BTN_SECONDARY}>
+          <a href={`mailto:${lead.coupleEmail}`} className={ESTILO_DO_BOTAO_SECUNDARIO}>
             <Mail aria-hidden="true" className="size-[18px]" />
             E-mail
           </a>
         ) : (
           <span />
         )}
-        <a href="#proposta" className={BTN_PRIMARY}>
+        <a href="#proposta" className={ESTILO_DO_BOTAO_PRIMARIO}>
           <Send aria-hidden="true" className="size-[18px]" />
           {savedProposal ? "Ver proposta" : "Enviar proposta"}
         </a>
@@ -479,7 +479,7 @@ export default async function PedidoPage({ params }: { params: Promise<{ id: str
 }
 
 /** Pedido além do limite do Plano Start: só primeiro nome, data e cidade. */
-function LockedLead({
+function PedidoBloqueado({
   firstName,
   date,
   location,
@@ -512,20 +512,20 @@ function LockedLead({
       </Aparicao>
 
       <Aparicao variant="up" delay={80}>
-        <section aria-labelledby="bloqueado-titulo" className={cn(CARD, "flex max-w-2xl flex-col gap-4")}>
+        <section aria-labelledby="bloqueado-titulo" className={cn(ESTILO_DO_CARTAO, "flex max-w-2xl flex-col gap-4")}>
           <h2 id="bloqueado-titulo" className="text-lg font-semibold">
             Pedido bloqueado pelo Plano Start
           </h2>
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-0.5">
-              <dt className={cn(OVERLINE, "flex items-center gap-1.5")}>
+              <dt className={cn(ESTILO_DO_SOBRETITULO, "flex items-center gap-1.5")}>
                 <CalendarDays aria-hidden="true" className="size-3.5" />
                 Data
               </dt>
               <dd className="text-base font-semibold sm:text-[17px]">{date ?? "A definir"}</dd>
             </div>
             <div className="flex flex-col gap-0.5">
-              <dt className={cn(OVERLINE, "flex items-center gap-1.5")}>
+              <dt className={cn(ESTILO_DO_SOBRETITULO, "flex items-center gap-1.5")}>
                 <MapPin aria-hidden="true" className="size-3.5" />
                 Cidade
               </dt>
@@ -533,10 +533,10 @@ function LockedLead({
             </div>
           </dl>
           <p className="text-tinta-suave">
-            Este casal pediu orçamento depois dos {START_MONTHLY_LEAD_LIMIT} pedidos do mês do Plano Start. Assine o Pro para
+            Este casal pediu orçamento depois dos {LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL} pedidos do mês do Plano Start. Assine o Pro para
             ver o nome completo, o WhatsApp, o e-mail e a mensagem, e para responder ao pedido.
           </p>
-          <Link href={PLAN_HREF} className={cn(BTN_PRIMARY, "w-full sm:w-fit")}>
+          <Link href={LINK_DO_PLANO} className={cn(ESTILO_DO_BOTAO_PRIMARIO, "w-full sm:w-fit")}>
             <Lock aria-hidden="true" className="size-[18px]" />
             Desbloquear com o Pro
           </Link>

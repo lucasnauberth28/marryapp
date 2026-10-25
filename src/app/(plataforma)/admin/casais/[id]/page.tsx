@@ -32,21 +32,21 @@ import {
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import { obterVisaoDaContaDeRepasse } from "@/lib/payout-account-view";
 import { cn } from "@/lib/utils";
-import { SituationChip } from "../_components/situation-chip";
-import { LinkRow } from "./_components/copy-link";
-import { CareActions } from "./_components/care-actions";
-import { CasalTabSkeleton } from "./_components/skeletons";
-import { ConfirmPixButton } from "./_components/confirm-pix-button";
-import { GrantPlanForm } from "./_components/grant-plan-form";
-import { NoteForm } from "./_components/note-form";
-import { RefundForm } from "./_components/refund-form";
+import { EtiquetaDeSituacaoDoCasal } from "../_components/situation-chip";
+import { LinhaDeLink } from "./_components/copy-link";
+import { AcoesDeCuidado } from "./_components/care-actions";
+import { EsqueletoDaAbaDoCasal } from "./_components/skeletons";
+import { BotaoDeConfirmarPix } from "./_components/confirm-pix-button";
+import { FormularioDeConcederPlano } from "./_components/grant-plan-form";
+import { FormularioDeNota } from "./_components/note-form";
+import { FormularioDeReembolso } from "./_components/refund-form";
 
 export const metadata = { title: "Casal" };
 
-const TABS = ["visao", "pagamentos", "convidados", "atividade", "dominio", "madrinha", "suporte"] as const;
-type Tab = (typeof TABS)[number];
+const ABAS = ["visao", "pagamentos", "convidados", "atividade", "dominio", "madrinha", "suporte"] as const;
+type AbaDoCasal = (typeof ABAS)[number];
 
-const DOMAIN_STATUS: Record<string, { label: string; tone: TomDaSituacao }> = {
+const SITUACAO_DO_DOMINIO: Record<string, { label: string; tone: TomDaSituacao }> = {
   REQUESTED: { label: "Pedido recebido", tone: "aviso" },
   REGISTERING: { label: "Em registro", tone: "aviso" },
   REGISTERED: { label: "Registrado, falta conectar", tone: "aviso" },
@@ -55,9 +55,9 @@ const DOMAIN_STATUS: Record<string, { label: string; tone: TomDaSituacao }> = {
   CANCELED: { label: "Cancelado", tone: "neutro" },
 };
 
-const TICKET_STATUS: Record<string, string> = { NEW: "Novo", IN_PROGRESS: "Em andamento", ANSWERED: "Respondido", CLOSED: "Fechado" };
+const SITUACAO_DO_CHAMADO: Record<string, string> = { NEW: "Novo", IN_PROGRESS: "Em andamento", ANSWERED: "Respondido", CLOSED: "Fechado" };
 
-function Rows({ items }: { items: { label: string; value: React.ReactNode }[] }) {
+function LinhasDoDetalhe({ items }: { items: { label: string; value: React.ReactNode }[] }) {
   return (
     <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-[170px_1fr]">
       {items.map((item) => (
@@ -75,7 +75,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   const { id } = await params;
   // O id vem da URL: só serve para BUSCAR o casamento (nunca para decidir permissão). Formato inválido = 404.
   if (!z.string().uuid().safeParse(id).success) notFound();
-  const tab: Tab = umDosValores(await searchParams, "aba", TABS) ?? "visao";
+  const tab: AbaDoCasal = umDosValores(await searchParams, "aba", ABAS) ?? "visao";
 
   const now = new Date();
   const header = await obterCabecalhoDoCasal(id, now);
@@ -89,11 +89,11 @@ export default async function Page({ params, searchParams }: { params: Promise<{
 
   const sideColumn = (
     <aside className="flex flex-col gap-6">
-      <PlanPanel header={header} />
-      {tab === "visao" && <HealthPanel header={header} />}
+      <PainelDoPlano header={header} />
+      {tab === "visao" && <PainelDeSaude header={header} />}
       {tab === "pagamentos" && (
         <Painel title="Contato">
-          <Rows items={[{ label: "E-mail", value: owner?.username ?? "sem e-mail" }]} />
+          <LinhasDoDetalhe items={[{ label: "E-mail", value: owner?.username ?? "sem e-mail" }]} />
           {owner && (
             <a href={`mailto:${owner.username}`} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm, "mt-4 gap-2")}>
               <Mail className="size-4" aria-hidden="true" /> Enviar e-mail
@@ -102,7 +102,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
         </Painel>
       )}
       <Painel title="Ações com cuidado">
-        <CareActions weddingId={id} coupleNames={wedding.coupleNames} suspended={suspended} />
+        <AcoesDeCuidado weddingId={id} coupleNames={wedding.coupleNames} suspended={suspended} />
         <Aviso tone="neutro" icon={Receipt} className="mt-4">
           Cada uma pede confirmação e motivo. Fica no Registro de atividades com o seu nome, o horário e o motivo.
         </Aviso>
@@ -136,7 +136,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
       />
 
       <div className="-mt-2 flex flex-wrap gap-2">
-        <SituationChip situation={situation} />
+        <EtiquetaDeSituacaoDoCasal situation={situation} />
         <EtiquetaDePlano plan={plan?.planId ?? null} />
         {suspended ? (
           <EtiquetaDeSituacao tone="perigo" icon={Ban}>
@@ -156,7 +156,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
           title={problems.length === 1 ? problems[0].title : `${problems.length} problemas pedem atenção`}
           aside={
             <div className="flex flex-wrap gap-2">
-              {pix && <ConfirmPixButton subscriptionId={pix.id} />}
+              {pix && <BotaoDeConfirmarPix subscriptionId={pix.id} />}
               <Link href={`${base}?aba=pagamentos`} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
                 Ver pagamentos
               </Link>
@@ -212,14 +212,14 @@ export default async function Page({ params, searchParams }: { params: Promise<{
 
       {/* Cada aba busca os próprios dados: o cabeçalho e os números ficam na tela e só o corpo mostra o esqueleto (key = aba) */}
       <RegiaoPendente>
-        <Suspense key={tab} fallback={<CasalTabSkeleton tab={tab} />}>
-          {tab === "visao" && <VisaoTab header={header} sideColumn={sideColumn} />}
-          {tab === "pagamentos" && <PagamentosTab header={header} sideColumn={sideColumn} />}
-          {tab === "convidados" && <ConvidadosTab id={id} />}
-          {tab === "atividade" && <AtividadeTab id={id} />}
-          {tab === "dominio" && <DominioTab id={id} />}
-          {tab === "madrinha" && <MadrinhaTab id={id} />}
-          {tab === "suporte" && <SuporteTab id={id} />}
+        <Suspense key={tab} fallback={<EsqueletoDaAbaDoCasal tab={tab} />}>
+          {tab === "visao" && <AbaVisaoGeral header={header} sideColumn={sideColumn} />}
+          {tab === "pagamentos" && <AbaPagamentos header={header} sideColumn={sideColumn} />}
+          {tab === "convidados" && <AbaConvidados id={id} />}
+          {tab === "atividade" && <AbaAtividade id={id} />}
+          {tab === "dominio" && <AbaDominio id={id} />}
+          {tab === "madrinha" && <AbaMadrinha id={id} />}
+          {tab === "suporte" && <AbaSuporte id={id} />}
         </Suspense>
       </RegiaoPendente>
     </>
@@ -228,7 +228,7 @@ export default async function Page({ params, searchParams }: { params: Promise<{
 
 // ---------- Painéis laterais ----------
 
-function PlanPanel({ header }: { header: CabecalhoDoCasal }) {
+function PainelDoPlano({ header }: { header: CabecalhoDoCasal }) {
   const { plan, gifts, pix, wedding } = header;
   return (
     <Painel title="Plano">
@@ -247,7 +247,7 @@ function PlanPanel({ header }: { header: CabecalhoDoCasal }) {
             <strong>Pix do {pix.planName.replace(/^Plano /, "")} a conferir.</strong> {formatarReais(pix.amount)}, gerado {haQuantoTempo(pix.createdAt)}.
           </Aviso>
           <div>
-            <ConfirmPixButton subscriptionId={pix.id} />
+            <BotaoDeConfirmarPix subscriptionId={pix.id} />
           </div>
         </div>
       )}
@@ -260,7 +260,7 @@ function PlanPanel({ header }: { header: CabecalhoDoCasal }) {
   );
 }
 
-function HealthPanel({ header }: { header: CabecalhoDoCasal }) {
+function PainelDeSaude({ header }: { header: CabecalhoDoCasal }) {
   const { wedding, guests } = header;
   const suspended = Boolean(wedding.suspendedAt);
   const items: { ok: boolean; title: string; detail: string }[] = [
@@ -293,7 +293,7 @@ function HealthPanel({ header }: { header: CabecalhoDoCasal }) {
 
 // ---------- Abas ----------
 
-async function VisaoTab({ header, sideColumn }: { header: CabecalhoDoCasal; sideColumn: React.ReactNode }) {
+async function AbaVisaoGeral({ header, sideColumn }: { header: CabecalhoDoCasal; sideColumn: React.ReactNode }) {
   const { wedding, owner, openDomainOrder } = header;
   const timeline = await obterLinhaDoTempoDoCasal(wedding.id, 8);
   const emails = wedding.members.map((m) => m.username);
@@ -301,7 +301,7 @@ async function VisaoTab({ header, sideColumn }: { header: CabecalhoDoCasal; side
     <div className="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
       <div className="flex min-w-0 flex-col gap-6">
         <Painel title="Dados do casamento">
-          <Rows
+          <LinhasDoDetalhe
             items={[
               { label: "Casal", value: wedding.coupleNames },
               { label: emails.length > 1 ? "E-mails" : "E-mail", value: emails.length ? emails.join(", ") : "sem e-mail" },
@@ -316,14 +316,14 @@ async function VisaoTab({ header, sideColumn }: { header: CabecalhoDoCasal; side
 
         <Painel title="Links do casal">
           <ul>
-            <LinkRow label="Site do casal" url={urlDoSiteDoCasamento(wedding.slug, undefined, wedding.customDomain)} />
-            <LinkRow label="Confirmação de presença" url={urlDoSiteDoCasamento(wedding.slug, "rsvp", wedding.customDomain)} />
-            <LinkRow label="Lista de presentes" url={urlDoSiteDoCasamento(wedding.slug, "presentes", wedding.customDomain)} />
+            <LinhaDeLink label="Site do casal" url={urlDoSiteDoCasamento(wedding.slug, undefined, wedding.customDomain)} />
+            <LinhaDeLink label="Confirmação de presença" url={urlDoSiteDoCasamento(wedding.slug, "rsvp", wedding.customDomain)} />
+            <LinhaDeLink label="Lista de presentes" url={urlDoSiteDoCasamento(wedding.slug, "presentes", wedding.customDomain)} />
           </ul>
         </Painel>
 
         <Painel title="Linha do tempo" action={{ label: "Ver tudo no registro", href: "/atividades" }}>
-          <Timeline items={timeline} />
+          <LinhaDoTempo items={timeline} />
         </Painel>
       </div>
       {sideColumn}
@@ -331,7 +331,7 @@ async function VisaoTab({ header, sideColumn }: { header: CabecalhoDoCasal; side
   );
 }
 
-function Timeline({ items }: { items: Awaited<ReturnType<typeof obterLinhaDoTempoDoCasal>> }) {
+function LinhaDoTempo({ items }: { items: Awaited<ReturnType<typeof obterLinhaDoTempoDoCasal>> }) {
   return (
     <ol className="flex flex-col">
       {items.map((item) => (
@@ -350,7 +350,7 @@ function Timeline({ items }: { items: Awaited<ReturnType<typeof obterLinhaDoTemp
   );
 }
 
-async function PagamentosTab({ header, sideColumn }: { header: CabecalhoDoCasal; sideColumn: React.ReactNode }) {
+async function AbaPagamentos({ header, sideColumn }: { header: CabecalhoDoCasal; sideColumn: React.ReactNode }) {
   const { wedding, plan } = header;
   const payments = await obterPagamentosDoCasal(wedding.id);
   const refundable = payments
@@ -430,14 +430,14 @@ async function PagamentosTab({ header, sideColumn }: { header: CabecalhoDoCasal;
           )}
         </Painel>
 
-        <PayoutPanel weddingId={wedding.id} />
+        <PainelDeRepasse weddingId={wedding.id} />
 
         <Painel>
-          <GrantPlanForm weddingId={wedding.id} currentPlanId={plan?.planId ?? null} />
+          <FormularioDeConcederPlano weddingId={wedding.id} currentPlanId={plan?.planId ?? null} />
         </Painel>
 
         <Painel title="Reembolso">
-          <RefundForm weddingId={wedding.id} options={refundable} />
+          <FormularioDeReembolso weddingId={wedding.id} options={refundable} />
           {refunds.length > 0 && (
             <ul className="mt-5 flex flex-col gap-2 border-t border-linha pt-4">
               {refunds.map((r) => (
@@ -458,7 +458,7 @@ async function PagamentosTab({ header, sideColumn }: { header: CabecalhoDoCasal;
 }
 
 // Dados de recebimento do casal: SOMENTE a máscara, sem botão que decifre. A página já passou por requirePlatformAdminPage.
-async function PayoutPanel({ weddingId }: { weddingId: string }) {
+async function PainelDeRepasse({ weddingId }: { weddingId: string }) {
   const account = await obterVisaoDaContaDeRepasse(weddingId);
   return (
     <Painel
@@ -474,7 +474,7 @@ async function PayoutPanel({ weddingId }: { weddingId: string }) {
       }
     >
       {account ? (
-        <Rows
+        <LinhasDoDetalhe
           items={[
             { label: "Cadastrados", value: "Sim" },
             { label: "Tipo", value: account.type === "PIX_KEY" ? "Chave Pix" : "Conta bancária" },
@@ -494,7 +494,7 @@ async function PayoutPanel({ weddingId }: { weddingId: string }) {
   );
 }
 
-async function ConvidadosTab({ id }: { id: string }) {
+async function AbaConvidados({ id }: { id: string }) {
   const n = await obterNumerosDeConvidadosDoCasal(id);
   const pct = (v: number) => (n.total ? `${(v / n.total) * 100}%` : "0%");
   return (
@@ -515,7 +515,7 @@ async function ConvidadosTab({ id }: { id: string }) {
         <span className="bg-perigo" style={{ width: pct(n.declined) }} />
       </div>
       <div className="mt-5">
-        <Rows
+        <LinhasDoDetalhe
           items={[
             { label: "Convites enviados", value: n.total === 0 ? "Nenhum convidado ainda" : `${n.invited} de ${n.total}` },
             { label: "Sem telefone cadastrado", value: pluralizar(n.noPhone, "convidado", "convidados") },
@@ -528,12 +528,12 @@ async function ConvidadosTab({ id }: { id: string }) {
   );
 }
 
-async function AtividadeTab({ id }: { id: string }) {
+async function AbaAtividade({ id }: { id: string }) {
   const [timeline, activity] = await Promise.all([obterLinhaDoTempoDoCasal(id, 20), obterAtividadeDoCasal(id)]);
   return (
     <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
       <Painel title="O que aconteceu" action={{ label: "Abrir no registro", href: "/atividades" }}>
-        <Timeline items={timeline} />
+        <LinhaDoTempo items={timeline} />
       </Painel>
       <Painel title="Avisos enviados ao casal">
         {activity.notifications.length === 0 ? (
@@ -564,7 +564,7 @@ async function AtividadeTab({ id }: { id: string }) {
   );
 }
 
-async function DominioTab({ id }: { id: string }) {
+async function AbaDominio({ id }: { id: string }) {
   const orders = await obterDominioDoCasal(id);
   return (
     <Painel title="Domínio próprio">
@@ -584,7 +584,7 @@ async function DominioTab({ id }: { id: string }) {
       ) : (
         <ul className="flex flex-col">
           {orders.map((o) => {
-            const s = DOMAIN_STATUS[o.status] ?? { label: o.status, tone: "neutro" as const };
+            const s = SITUACAO_DO_DOMINIO[o.status] ?? { label: o.status, tone: "neutro" as const };
             return (
               <li key={o.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-linha py-3 first:pt-0 last:border-b-0 last:pb-0">
                 <span>
@@ -604,7 +604,7 @@ async function DominioTab({ id }: { id: string }) {
   );
 }
 
-async function MadrinhaTab({ id }: { id: string }) {
+async function AbaMadrinha({ id }: { id: string }) {
   const override = await obterMadrinhaDoCasal(id);
   return (
     <Painel title="Assistente">
@@ -626,7 +626,7 @@ async function MadrinhaTab({ id }: { id: string }) {
   );
 }
 
-async function SuporteTab({ id }: { id: string }) {
+async function AbaSuporte({ id }: { id: string }) {
   const { notes, tickets } = await obterSuporteDoCasal(id);
   return (
     <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
@@ -645,7 +645,7 @@ async function SuporteTab({ id }: { id: string }) {
             ))}
           </ul>
         )}
-        <NoteForm weddingId={id} />
+        <FormularioDeNota weddingId={id} />
       </Painel>
       <Painel title="Pedidos de ajuda deste casal">
         {tickets.length === 0 ? (
@@ -660,7 +660,7 @@ async function SuporteTab({ id }: { id: string }) {
                   </span>
                   <span className="block text-sm text-tinta-suave">{formatarData(t.createdAt)}</span>
                 </span>
-                <EtiquetaDeSituacao tone={t.status === "CLOSED" ? "neutro" : "aviso"}>{TICKET_STATUS[t.status] ?? t.status}</EtiquetaDeSituacao>
+                <EtiquetaDeSituacao tone={t.status === "CLOSED" ? "neutro" : "aviso"}>{SITUACAO_DO_CHAMADO[t.status] ?? t.status}</EtiquetaDeSituacao>
               </li>
             ))}
           </ul>

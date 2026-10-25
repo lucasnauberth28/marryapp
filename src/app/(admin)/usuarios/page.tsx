@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { obterPessoas, obterPerfis } from "@/actions/rbac-actions";
 import { obterSessao } from "@/lib/security/auth-guard";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
-import { UsersClient } from "./users-client";
+import { PessoasCliente } from "./users-client";
 
 export const metadata: Metadata = {
   title: "Usuários",
@@ -22,7 +22,7 @@ export default async function UsersPage() {
 
   return (
     <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <UsersClient initialUsers={users} roles={roles} />
+      <PessoasCliente initialUsers={users} roles={roles} />
     </div>
   );
 }

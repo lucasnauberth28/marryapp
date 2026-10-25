@@ -12,9 +12,9 @@ import { Switch } from "@/components/ui/switch";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { obterVisaoGeralDaMadrinha, listarExcecoesDaMadrinha } from "@/lib/platform/queries/madrinha";
 import { formatarDiaEMes } from "@/lib/platform/format";
-import { AbuseForm, GlobalCapForm, LimitsForm } from "./_components/config-forms";
-import { WeddingAdjust } from "./_components/wedding-adjust";
-import { SettingBadge } from "../_sistema/setting-badge";
+import { FormularioContraAbuso, FormularioDoTetoGlobal, FormularioDeLimites } from "./_components/config-forms";
+import { AjusteDoCasamento } from "./_components/wedding-adjust";
+import { SeloDeConfiguracao } from "../_sistema/setting-badge";
 
 export const metadata = { title: "Liz" };
 
@@ -110,20 +110,20 @@ export default async function Page() {
           <h2 id="limites-t" className="text-xl font-semibold leading-7 text-tinta">
             Limites por plano
           </h2>
-          <SettingBadge {...meta["madrinha.limits"]} />
+          <SeloDeConfiguracao {...meta["madrinha.limits"]} />
         </div>
-        <LimitsForm subscription={limits.subscription} trial={limits.trial} />
+        <FormularioDeLimites subscription={limits.subscription} trial={limits.trial} />
       </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Painel title="Teto mensal global" aside={<SettingBadge {...meta["madrinha.globalCap"]} />} className="flex flex-col">
-          <GlobalCapForm monthlyCostCapCents={globalCap.monthlyCostCapCents} warnPercent={globalCap.warnPercent} pauseAtCap={globalCap.pauseAtCap} />
+        <Painel title="Teto mensal global" aside={<SeloDeConfiguracao {...meta["madrinha.globalCap"]} />} className="flex flex-col">
+          <FormularioDoTetoGlobal monthlyCostCapCents={globalCap.monthlyCostCapCents} warnPercent={globalCap.warnPercent} pauseAtCap={globalCap.pauseAtCap} />
         </Painel>
-        <Painel title="Bloqueio por abuso" aside={<SettingBadge {...meta["madrinha.abuse"]} />} className="flex flex-col">
-          <AbuseForm perHour={abuse.perHour} blockHours={abuse.blockHours} blockOffTopic={abuse.blockOffTopic} offTopicBeforeBlock={abuse.offTopicBeforeBlock} />
+        <Painel title="Bloqueio por abuso" aside={<SeloDeConfiguracao {...meta["madrinha.abuse"]} />} className="flex flex-col">
+          <FormularioContraAbuso perHour={abuse.perHour} blockHours={abuse.blockHours} blockOffTopic={abuse.blockOffTopic} offTopicBeforeBlock={abuse.offTopicBeforeBlock} />
         </Painel>
         <Painel title="Ajuste para um casal" className="flex flex-col">
-          <WeddingAdjust />
+          <AjusteDoCasamento />
         </Painel>
       </div>
 

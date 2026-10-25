@@ -3,8 +3,8 @@ import { NavegacaoDeAbas } from "@/components/plataforma/tabs-nav";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type ParametrosDeBusca, umDosValores } from "@/lib/platform/list-params";
 import { obterPerfis, obterPessoas } from "@/actions/rbac-actions";
-import { UsersClient } from "@/app/(admin)/usuarios/users-client";
-import { RolesClient } from "@/app/(admin)/perfis/roles-client";
+import { PessoasCliente } from "@/app/(admin)/usuarios/users-client";
+import { PerfisCliente } from "@/app/(admin)/perfis/roles-client";
 
 export const metadata = { title: "Usuários e perfis" };
 
@@ -30,7 +30,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
           { value: "perfis", label: "Perfis de acesso", count: roles.length },
         ]}
       />
-      {aba === "usuarios" ? <UsersClient initialUsers={users} roles={roles} embedded /> : <RolesClient initialRoles={roles} embedded />}
+      {aba === "usuarios" ? <PessoasCliente initialUsers={users} roles={roles} embedded /> : <PerfisCliente initialRoles={roles} embedded />}
     </>
   );
 }

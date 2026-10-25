@@ -34,21 +34,21 @@ import {
 } from "@/lib/platform/queries/receita";
 import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
-import { ContadorSection } from "./_components/contador-section";
+import { SecaoDoContador } from "./_components/contador-section";
 import { RegiaoPendente } from "@/components/plataforma/pending";
-import { PlanosTabs } from "./_components/planos-tabs";
-import { ContadorSkeleton, ReembolsosSkeleton, ResumoSkeleton } from "./_components/skeletons";
-import { RefundsSection } from "./_components/refunds-section";
+import { AbasDePlanos } from "./_components/planos-tabs";
+import { EsqueletoDoContador, EsqueletoDosReembolsos, EsqueletoDoResumo } from "./_components/skeletons";
+import { SecaoDeReembolsos } from "./_components/refunds-section";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Planos e receita" };
 
-const ABAS = ["resumo", "reembolsos", "contador"] as const;
+const ABAS_DA_PAGINA = ["resumo", "reembolsos", "contador"] as const;
 
 export default async function Page({ searchParams }: { searchParams: Promise<ParametrosDeBusca> }) {
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
-  const aba = umDosValores(query, "aba", ABAS) ?? "resumo";
+  const aba = umDosValores(query, "aba", ABAS_DA_PAGINA) ?? "resumo";
   const now = new Date();
 
   return (
@@ -68,18 +68,18 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
           </>
         }
       />
-      <PlanosTabs active={aba} />
+      <AbasDePlanos active={aba} />
       {/* Cada aba busca os próprios dados: abas e cabeçalho ficam, só o corpo mostra o esqueleto (key = aba) */}
       <RegiaoPendente className="flex flex-col gap-6">
-        <Suspense key={aba} fallback={aba === "resumo" ? <ResumoSkeleton /> : aba === "reembolsos" ? <ReembolsosSkeleton /> : <ContadorSkeleton />}>
-          {aba === "resumo" ? <Resumo now={now} /> : aba === "reembolsos" ? <Reembolsos now={now} /> : <Contador now={now} month={mesDoContador(typeof query.mes === "string" ? query.mes : undefined, now)} />}
+        <Suspense key={aba} fallback={aba === "resumo" ? <EsqueletoDoResumo /> : aba === "reembolsos" ? <EsqueletoDosReembolsos /> : <EsqueletoDoContador />}>
+          {aba === "resumo" ? <ResumoDosPlanos now={now} /> : aba === "reembolsos" ? <ReembolsosDosPlanos now={now} /> : <ContadorDosPlanos now={now} month={mesDoContador(typeof query.mes === "string" ? query.mes : undefined, now)} />}
         </Suspense>
       </RegiaoPendente>
     </>
   );
 }
 
-async function Resumo({ now }: { now: Date }) {
+async function ResumoDosPlanos({ now }: { now: Date }) {
   const [month, couples, recurring, nonRenewals, months, pix, refunds, invoiceCount, expiring, coupons, refundRows, catalog] = await Promise.all([
     obterReceitaDoMes(now),
     obterCasaisQuePagaramNesteMes(now),
@@ -206,17 +206,17 @@ async function Resumo({ now }: { now: Date }) {
         </Painel>
       </div>
 
-      <RefundsSection refunds={refundRows} now={now} preview />
+      <SecaoDeReembolsos refunds={refundRows} now={now} preview />
     </>
   );
 }
 
-async function Reembolsos({ now }: { now: Date }) {
+async function ReembolsosDosPlanos({ now }: { now: Date }) {
   const [refunds, payments, policy] = await Promise.all([listarReembolsos(50), listarPagamentosReembolsaveis(), obterConfiguracaoDaPlataforma("refundPolicy")]);
-  return <RefundsSection refunds={refunds} payments={payments} now={now} policyText={policy.text} />;
+  return <SecaoDeReembolsos refunds={refunds} payments={payments} now={now} policyText={policy.text} />;
 }
 
-async function Contador({ now, month }: { now: Date; month: string }) {
+async function ContadorDosPlanos({ now, month }: { now: Date; month: string }) {
   const [invoices, count] = await Promise.all([listarNotasPendentes(20), contarNotasPendentes()]);
-  return <ContadorSection month={month} now={now} invoices={invoices} pendingCount={count} />;
+  return <SecaoDoContador month={month} now={now} invoices={invoices} pendingCount={count} />;
 }

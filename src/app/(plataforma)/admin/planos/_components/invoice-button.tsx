@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 /** "Já emiti": marca a nota fiscal do pagamento, com o número se quiser. */
-export function InvoiceButton({ subscriptionId, payer }: { subscriptionId: string; payer: string }) {
+export function BotaoDeNota({ subscriptionId, payer }: { subscriptionId: string; payer: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);

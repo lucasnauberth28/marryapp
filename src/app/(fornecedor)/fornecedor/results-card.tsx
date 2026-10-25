@@ -1,29 +1,29 @@
 import Link from "next/link";
 import { ArrowRight, BarChart3, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MONTHS, PLAN_HREF } from "../_lib/vendor-panel";
+import { MESES, LINK_DO_PLANO } from "../_lib/vendor-panel";
 
-const CARD = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
-const OVERLINE = "text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase";
+const ESTILO_DO_CARTAO = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
+const ESTILO_DO_SOBRETITULO = "text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase";
 
-export interface DailyViews {
+export interface VisitasPorDia {
   /** Dia (meia-noite UTC = dia em Brasília). */
   day: Date;
   count: number;
 }
 
-function dayLabel(day: Date) {
-  return `${day.getUTCDate()} ${MONTHS[day.getUTCMonth()]}`;
+function rotuloDoDia(day: Date) {
+  return `${day.getUTCDate()} ${MESES[day.getUTCMonth()]}`;
 }
 
-const percent = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 });
+const percentualDe = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 });
 
 /** Master: visitas ao perfil por dia (30 dias) e quantas viraram pedido. */
-export function ResultsCard({ days, leads }: { days: DailyViews[]; leads: number }) {
+export function CartaoDeResultados({ days, leads }: { days: VisitasPorDia[]; leads: number }) {
   const total = days.reduce((sum, d) => sum + d.count, 0);
   const max = Math.max(1, ...days.map((d) => d.count));
   const conversion = total > 0 ? leads / total : null;
-  const best = days.reduce<DailyViews | null>((acc, d) => (d.count > (acc?.count ?? 0) ? d : acc), null);
+  const best = days.reduce<VisitasPorDia | null>((acc, d) => (d.count > (acc?.count ?? 0) ? d : acc), null);
 
   // Barras finas com 2px de respiro; topo arredondado e base reta na linha de base.
   const W = 300;
@@ -32,7 +32,7 @@ export function ResultsCard({ days, leads }: { days: DailyViews[]; leads: number
   const barW = Math.max(2, slot - 2);
 
   return (
-    <section aria-labelledby="resultados-titulo" className={cn(CARD, "flex flex-col gap-5")}>
+    <section aria-labelledby="resultados-titulo" className={cn(ESTILO_DO_CARTAO, "flex flex-col gap-5")}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-0.5">
           <h2 id="resultados-titulo" className="flex items-center gap-2 text-lg font-semibold">
@@ -45,16 +45,16 @@ export function ResultsCard({ days, leads }: { days: DailyViews[]; leads: number
 
       <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="flex flex-col gap-0.5">
-          <dt className={OVERLINE}>Visitas</dt>
+          <dt className={ESTILO_DO_SOBRETITULO}>Visitas</dt>
           <dd className="font-num text-3xl leading-tight">{total}</dd>
         </div>
         <div className="flex flex-col gap-0.5">
-          <dt className={OVERLINE}>Pedidos no período</dt>
+          <dt className={ESTILO_DO_SOBRETITULO}>Pedidos no período</dt>
           <dd className="font-num text-3xl leading-tight">{leads}</dd>
         </div>
         <div className="flex flex-col gap-0.5">
-          <dt className={OVERLINE}>Visitas que viraram pedido</dt>
-          <dd className="font-num text-3xl leading-tight">{conversion === null ? "—" : percent.format(conversion)}</dd>
+          <dt className={ESTILO_DO_SOBRETITULO}>Visitas que viraram pedido</dt>
+          <dd className="font-num text-3xl leading-tight">{conversion === null ? "—" : percentualDe.format(conversion)}</dd>
           <dd className="text-sm text-tinta-suave">
             {conversion === null ? "sem visitas no período" : "das visitas viraram pedido"}
           </dd>
@@ -66,7 +66,7 @@ export function ResultsCard({ days, leads }: { days: DailyViews[]; leads: number
           viewBox={`0 0 ${W} ${H}`}
           preserveAspectRatio="none"
           role="img"
-          aria-label={`Gráfico de barras: ${total} visitas em 30 dias${best ? `, pico de ${best.count} em ${dayLabel(best.day)}` : ""}. A tabela abaixo traz os números de cada dia.`}
+          aria-label={`Gráfico de barras: ${total} visitas em 30 dias${best ? `, pico de ${best.count} em ${rotuloDoDia(best.day)}` : ""}. A tabela abaixo traz os números de cada dia.`}
           className="h-36 w-full"
         >
           <line x1={0} x2={W} y1={H - 0.5} y2={H - 0.5} className="stroke-linha" strokeWidth={1} vectorEffect="non-scaling-stroke" />
@@ -79,7 +79,7 @@ export function ResultsCard({ days, leads }: { days: DailyViews[]; leads: number
               <g key={d.day.toISOString()}>
                 {/* Alvo de hover maior que a barra */}
                 <rect x={i * slot} y={0} width={slot} height={H} fill="transparent">
-                  <title>{`${dayLabel(d.day)}: ${d.count} ${d.count === 1 ? "visita" : "visitas"}`}</title>
+                  <title>{`${rotuloDoDia(d.day)}: ${d.count} ${d.count === 1 ? "visita" : "visitas"}`}</title>
                 </rect>
                 {h > 0 ? (
                   <path
@@ -92,9 +92,9 @@ export function ResultsCard({ days, leads }: { days: DailyViews[]; leads: number
           })}
         </svg>
         <figcaption className="flex justify-between text-[13px] text-tinta-suave">
-          <span>{days.length > 0 ? dayLabel(days[0].day) : ""}</span>
+          <span>{days.length > 0 ? rotuloDoDia(days[0].day) : ""}</span>
           <span>máx. {max === 1 && total === 0 ? 0 : max} por dia</span>
-          <span>{days.length > 0 ? dayLabel(days[days.length - 1].day) : ""}</span>
+          <span>{days.length > 0 ? rotuloDoDia(days[days.length - 1].day) : ""}</span>
         </figcaption>
       </figure>
 
@@ -119,7 +119,7 @@ export function ResultsCard({ days, leads }: { days: DailyViews[]; leads: number
               {[...days].reverse().map((d) => (
                 <tr key={d.day.toISOString()} className="border-t border-linha">
                   <th scope="row" className="px-4 py-2 text-left font-normal">
-                    {dayLabel(d.day)}
+                    {rotuloDoDia(d.day)}
                   </th>
                   <td className="px-4 py-2 text-right tabular-nums">{d.count}</td>
                 </tr>
@@ -133,7 +133,7 @@ export function ResultsCard({ days, leads }: { days: DailyViews[]; leads: number
 }
 
 /** Pro/Start: chamada para o Master (sem dados). */
-export function ResultsTeaser() {
+export function ChamadaDosResultados() {
   return (
     <section
       aria-labelledby="resultados-teaser"
@@ -153,7 +153,7 @@ export function ResultsTeaser() {
         </div>
       </div>
       <Link
-        href={PLAN_HREF}
+        href={LINK_DO_PLANO}
         className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-linha-forte bg-papel px-4 text-[15px] font-semibold text-tinta transition-colors hover:bg-areia"
       >
         Conhecer o Master

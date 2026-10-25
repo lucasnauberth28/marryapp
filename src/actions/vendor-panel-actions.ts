@@ -11,16 +11,16 @@ import { normalizarTexto, limparUrl } from "@/lib/security/sanitize";
 import { TAMANHO_MAXIMO_DA_IMAGEM_EM_BYTES, enviarImagemDeDataUrl } from "@/lib/supabase";
 import type { FornecedorDoPainel } from "@/lib/security/vendor-guard";
 import {
-  effectiveVendorTier,
-  isLeadLocked,
-  LEAD_STATUSES,
-  MAX_GALLERY_IMAGES,
-  parseGallery,
-  parseIsoDate,
-  reviewPublicUrl,
-  todayBrasilia,
-  VENDOR_CATEGORIES,
-  VENDOR_EVENT_KINDS,
+  nivelEfetivoDoFornecedor,
+  pedidoEstaBloqueado,
+  SITUACOES_DO_PEDIDO,
+  MAXIMO_DE_IMAGENS_NA_GALERIA,
+  interpretarGaleria,
+  interpretarDataIso,
+  urlPublicaDaAvaliacao,
+  hojeEmBrasilia,
+  CATEGORIAS_DE_FORNECEDOR,
+  TIPOS_DE_EVENTO_DO_FORNECEDOR,
 } from "@/app/(fornecedor)/_lib/vendor-panel";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
@@ -37,7 +37,7 @@ const ERRO_DE_BLOQUEIO = "Este pedido está bloqueado pelo limite do Plano Start
 
 /** Pedido bloqueado pelo limite do Start (considerando o plano em vigor do fornecedor). */
 function bloqueadoPara(vendor: FornecedorDoPainel, lead: { locked: boolean }) {
-  return isLeadLocked(lead, effectiveVendorTier(vendor.planTier, vendor.planExpiresAt));
+  return pedidoEstaBloqueado(lead, nivelEfetivoDoFornecedor(vendor.planTier, vendor.planExpiresAt));
 }
 
 /** Token público (proposta / avaliação): 24 bytes aleatórios em base64url (32 caracteres). */
@@ -62,7 +62,7 @@ function interpretarReaisEmCentavos(value: string): number | null {
 
 const EsquemaDaSituacaoDoPedido = z.object({
   leadId: z.string().uuid("Pedido inválido."),
-  status: z.enum(LEAD_STATUSES, { message: "Situação do pedido inválida." }),
+  status: z.enum(SITUACOES_DO_PEDIDO, { message: "Situação do pedido inválida." }),
 });
 
 export async function atualizarSituacaoDoPedido(leadId: string, status: string) {
@@ -129,12 +129,12 @@ const EsquemaDaProposta = z.object({
     .optional()
     .transform((v, ctx) => {
       if (!v) return null;
-      const date = parseIsoDate(v);
+      const date = interpretarDataIso(v);
       if (!date) {
         ctx.addIssue({ code: "custom", message: "Data de validade inválida." });
         return z.NEVER;
       }
-      if (date < todayBrasilia()) {
+      if (date < hojeEmBrasilia()) {
         ctx.addIssue({ code: "custom", message: "A validade não pode ser uma data que já passou." });
         return z.NEVER;
       }
@@ -281,7 +281,7 @@ export async function pedirAvaliacaoDoPedido(leadId: string): Promise<ResultadoD
     if (result.count === 0) return { success: false, error: ERROS.pedidoNaoEncontrado };
 
     revalidatePath(CAMINHO_DO_PAINEL_DO_FORNECEDOR, "layout");
-    return { success: true, url: reviewPublicUrl(token) };
+    return { success: true, url: urlPublicaDaAvaliacao(token) };
   } catch (error) {
     console.error("[requestLeadReview Error]:", error);
     return { success: false, error: "Não deu para gerar o link de avaliação. Tente de novo." };
@@ -294,9 +294,9 @@ export async function pedirAvaliacaoDoPedido(leadId: string): Promise<ResultadoD
 
 const EsquemaDoEventoDoFornecedor = z
   .object({
-    kind: z.enum(VENDOR_EVENT_KINDS, { message: "Tipo de compromisso inválido." }),
+    kind: z.enum(TIPOS_DE_EVENTO_DO_FORNECEDOR, { message: "Tipo de compromisso inválido." }),
     date: z.string().transform((v, ctx) => {
-      const date = parseIsoDate(v);
+      const date = interpretarDataIso(v);
       if (!date || date.getUTCFullYear() < 2000 || date.getUTCFullYear() > 2100) {
         ctx.addIssue({ code: "custom", message: "Escolha uma data válida." });
         return z.NEVER;
@@ -409,7 +409,7 @@ export async function excluirEventoDoFornecedor(eventId: string) {
 
 const EsquemaDoPerfilDoFornecedor = z.object({
   companyName: z.string().trim().min(2, "Informe o nome do negócio.").max(120),
-  category: z.enum(VENDOR_CATEGORIES, { message: "Escolha uma categoria." }),
+  category: z.enum(CATEGORIAS_DE_FORNECEDOR, { message: "Escolha uma categoria." }),
   description: textoOpcional(4000),
   startingPrice: z
     .string()
@@ -525,7 +525,7 @@ const ImagemEmDataUrl = z
   .max(Math.ceil((TAMANHO_MAXIMO_DA_IMAGEM_EM_BYTES * 4) / 3) + 64, "Imagem acima do limite de 5 MB.")
   .regex(/^data:image\/(jpeg|png|webp|avif);base64,[A-Za-z0-9+/=]+$/, "Formato de imagem não suportado (use JPG, PNG ou WEBP).");
 
-const IndiceDaGaleria = z.number().int().min(0).max(MAX_GALLERY_IMAGES - 1);
+const IndiceDaGaleria = z.number().int().min(0).max(MAXIMO_DE_IMAGENS_NA_GALERIA - 1);
 
 const EsquemaDasMidiasDoFornecedor = z.discriminatedUnion("action", [
   z.object({ action: z.literal("set-logo"), image: ImagemEmDataUrl }),
@@ -562,7 +562,7 @@ export async function atualizarMidiasDoFornecedor(input: EntradaDasMidiasDoForne
     const media: MidiasDoFornecedor = {
       logoUrl: current.logoUrl,
       coverUrl: current.coverUrl,
-      gallery: parseGallery(current.galleryImages).slice(0, MAX_GALLERY_IMAGES),
+      gallery: interpretarGaleria(current.galleryImages).slice(0, MAXIMO_DE_IMAGENS_NA_GALERIA),
     };
 
     const upload = async (image: string, folder: string) => {
@@ -574,8 +574,8 @@ export async function atualizarMidiasDoFornecedor(input: EntradaDasMidiasDoForne
       case "set-logo":
       case "set-cover":
       case "add-gallery": {
-        if (op.action === "add-gallery" && media.gallery.length >= MAX_GALLERY_IMAGES) {
-          return { success: false, error: `A galeria aceita até ${MAX_GALLERY_IMAGES} fotos. Remova uma para adicionar outra.` };
+        if (op.action === "add-gallery" && media.gallery.length >= MAXIMO_DE_IMAGENS_NA_GALERIA) {
+          return { success: false, error: `A galeria aceita até ${MAXIMO_DE_IMAGENS_NA_GALERIA} fotos. Remova uma para adicionar outra.` };
         }
         const folder = op.action === "set-logo" ? "vendors/logos" : op.action === "set-cover" ? "vendors/covers" : "vendors/gallery";
         const res = await upload(op.image, folder);

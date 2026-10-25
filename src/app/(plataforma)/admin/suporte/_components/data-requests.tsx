@@ -17,9 +17,9 @@ import { Button } from "@/components/ui/button";
 import { BotaoDeExportar } from "@/components/plataforma/export-button";
 import { TIPOS_DE_SOLICITACAO_DE_DADOS, ROTULO_DO_TIPO_DE_SOLICITACAO_DE_DADOS } from "@/lib/platform/support";
 import { criarSolicitacaoDeDados, cumprirSolicitacaoDeExclusao, atualizarSolicitacaoDeDados } from "@/actions/admin-suporte-actions";
-import { useAdminAction } from "../../_sistema/use-admin-action";
+import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
-export interface DataRequestItem {
+export interface ItemDeSolicitacaoDeDados {
   id: string;
   type: (typeof TIPOS_DE_SOLICITACAO_DE_DADOS)[number];
   requesterName: string;
@@ -34,14 +34,14 @@ export interface DataRequestItem {
   note: string | null;
 }
 
-const STATUS: Record<DataRequestItem["status"], { label: string; tone: TomDaSituacao; icon: typeof Clock }> = {
+const SITUACAO_DO_ITEM: Record<ItemDeSolicitacaoDeDados["status"], { label: string; tone: TomDaSituacao; icon: typeof Clock }> = {
   NEW: { label: "Novo", tone: "aviso", icon: Clock },
   IN_REVIEW: { label: "Em análise", tone: "aviso", icon: Clock },
   DONE: { label: "Pronto", tone: "salvia", icon: CheckCircle2 },
   REFUSED: { label: "Recusado", tone: "neutro", icon: XCircle },
 };
 
-export function DataRequests({ rows, urgent }: { rows: DataRequestItem[]; urgent: string | null }) {
+export function SolicitacoesDeDados({ rows, urgent }: { rows: ItemDeSolicitacaoDeDados[]; urgent: string | null }) {
   const [formOpen, setFormOpen] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   return (
@@ -62,7 +62,7 @@ export function DataRequests({ rows, urgent }: { rows: DataRequestItem[]; urgent
         </div>
       }
     >
-      {formOpen && <NewRequest onDone={() => setFormOpen(false)} />}
+      {formOpen && <NovaSolicitacao onDone={() => setFormOpen(false)} />}
       {rows.length === 0 ? (
         <EstadoVazio icon={ShieldCheck} compact title="Nenhum pedido de titular registrado">
           Pedidos de exportação, exclusão ou correção de dados chegam por e-mail ou WhatsApp: registre aqui para acompanhar o prazo. O que a própria pessoa faz em Minha conta não aparece nesta lista.
@@ -70,7 +70,7 @@ export function DataRequests({ rows, urgent }: { rows: DataRequestItem[]; urgent
       ) : (
         <ul className="divide-y divide-linha overflow-hidden rounded-2xl border border-linha">
           {rows.map((r) => {
-            const s = STATUS[r.status];
+            const s = SITUACAO_DO_ITEM[r.status];
             return (
               <li key={r.id}>
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
@@ -93,7 +93,7 @@ export function DataRequests({ rows, urgent }: { rows: DataRequestItem[]; urgent
                     </button>
                   </div>
                 </div>
-                {open === r.id && <Handle item={r} onDone={() => setOpen(null)} />}
+                {open === r.id && <TratarSolicitacao item={r} onDone={() => setOpen(null)} />}
               </li>
             );
           })}
@@ -104,14 +104,14 @@ export function DataRequests({ rows, urgent }: { rows: DataRequestItem[]; urgent
   );
 }
 
-function NewRequest({ onDone }: { onDone: () => void }) {
+function NovaSolicitacao({ onDone }: { onDone: () => void }) {
   const router = useRouter();
-  const [type, setType] = useState<DataRequestItem["type"]>("EXPORT");
+  const [type, setType] = useState<ItemDeSolicitacaoDeDados["type"]>("EXPORT");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [receivedOn, setReceivedOn] = useState("");
   const [note, setNote] = useState("");
-  const { pending, errors, formError, run } = useAdminAction();
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   return (
     <form
       className="mb-4 flex flex-col gap-4 rounded-2xl bg-linho p-4"
@@ -150,12 +150,12 @@ function NewRequest({ onDone }: { onDone: () => void }) {
   );
 }
 
-function Handle({ item, onDone }: { item: DataRequestItem; onDone: () => void }) {
+function TratarSolicitacao({ item, onDone }: { item: ItemDeSolicitacaoDeDados; onDone: () => void }) {
   const router = useRouter();
   const [note, setNote] = useState(item.note ?? "");
   const [confirmEmail, setConfirmEmail] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const { pending, errors, formError, run } = useAdminAction();
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   const [running, setRunning] = useState<"review" | "done" | "refuse" | null>(null); // só o botão clicado mostra o spinner
   const closed = item.status === "DONE" || item.status === "REFUSED";
   const after = () => {

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 /** Decisão sobre uma avaliação denunciada (manter no ar, ocultar com motivo) ou ocultada (reexibir). */
-export function ReviewModeration({ reviewId, hidden, vendorName }: { reviewId: string; hidden: boolean; vendorName: string }) {
+export function ModeracaoDeAvaliacao({ reviewId, hidden, vendorName }: { reviewId: string; hidden: boolean; vendorName: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [hiding, setHiding] = useState(false);

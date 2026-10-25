@@ -15,11 +15,11 @@ import { formatarData, formatarInteiro, formatarPercentual, haQuantoTempo } from
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import type { SituacaoDoCasal } from "@/lib/platform/casal-status";
 import { cn } from "@/lib/utils";
-import { SituationChip } from "./situation-chip";
-import { useCasalAction } from "./use-casal-action";
+import { EtiquetaDeSituacaoDoCasal } from "./situation-chip";
+import { useAcaoDoCasal } from "./use-casal-action";
 
 /** Linha da lista já em texto simples (datas em ISO), para atravessar do servidor ao navegador. */
-export interface CasalListRow {
+export interface LinhaDaListaDeCasais {
   id: string;
   coupleNames: string;
   ownerEmail: string | null;
@@ -34,9 +34,9 @@ export interface CasalListRow {
   situation: SituacaoDoCasal;
 }
 
-const when = (row: CasalListRow) => (row.lastActiveAt ? haQuantoTempo(new Date(row.lastActiveAt)) : "sem registro");
+const quandoAconteceu = (row: LinhaDaListaDeCasais) => (row.lastActiveAt ? haQuantoTempo(new Date(row.lastActiveAt)) : "sem registro");
 
-function GuestsCell({ row }: { row: CasalListRow }) {
+function CelulaDeConvidados({ row }: { row: LinhaDaListaDeCasais }) {
   if (row.guests === 0) return <span className="text-tinta-suave">Lista vazia</span>;
   const pct = formatarPercentual(row.confirmed, row.guests);
   return (
@@ -47,7 +47,7 @@ function GuestsCell({ row }: { row: CasalListRow }) {
   );
 }
 
-function CoupleCell({ row }: { row: CasalListRow }) {
+function CelulaDoCasal({ row }: { row: LinhaDaListaDeCasais }) {
   return (
     <span className="flex min-w-0 items-center gap-3">
       <AvatarComIniciais name={row.coupleNames} />
@@ -71,9 +71,9 @@ function CoupleCell({ row }: { row: CasalListRow }) {
  * Lista de casais com seleção em massa: Enviar comunicado, Exportar seleção, Marcar para acompanhar, Limpar seleção.
  * No computador é tabela; no celular, uma lista de cartões (sem rolagem lateral).
  */
-export function CasaisList({ rows }: { rows: CasalListRow[] }) {
+export function ListaDeCasais({ rows }: { rows: LinhaDaListaDeCasais[] }) {
   const [selected, setSelected] = useState<string[]>([]);
-  const { pending, error, run } = useCasalAction();
+  const { pending, error, run } = useAcaoDoCasal();
 
   const toggle = (id: string, on: boolean) => setSelected((cur) => (on ? [...new Set([...cur, id])] : cur.filter((x) => x !== id)));
   const allOn = rows.length > 0 && rows.every((r) => selected.includes(r.id));
@@ -135,7 +135,7 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
                 </td>
                 <td className="max-w-[300px] px-3 py-3 align-middle">
                   <Link href={`/admin/casais/${row.id}`} className="block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa">
-                    <CoupleCell row={row} />
+                    <CelulaDoCasal row={row} />
                   </Link>
                 </td>
                 <td className="px-3 py-3 align-middle">
@@ -148,12 +148,12 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
                   <EtiquetaDePlano plan={row.planId} />
                 </td>
                 <td className="px-3 py-3 align-middle">
-                  <GuestsCell row={row} />
+                  <CelulaDeConvidados row={row} />
                 </td>
                 <td className="px-3 py-3 align-middle tabular-nums">{formatarReais(row.giftsCents)}</td>
-                <td className="px-3 py-3 align-middle text-tinta-suave">{when(row)}</td>
+                <td className="px-3 py-3 align-middle text-tinta-suave">{quandoAconteceu(row)}</td>
                 <td className="py-3 pl-3 pr-6 align-middle">
-                  <SituationChip situation={row.situation} />
+                  <EtiquetaDeSituacaoDoCasal situation={row.situation} />
                 </td>
               </tr>
             ))}
@@ -168,7 +168,7 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
             <div className="flex items-start gap-3">
               <Checkbox className="mt-3" checked={chosen.includes(row.id)} onCheckedChange={(v) => toggle(row.id, v === true)} aria-label={`Selecionar ${row.coupleNames}`} />
               <Link href={`/admin/casais/${row.id}`} className="min-w-0 flex-1 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa">
-                <CoupleCell row={row} />
+                <CelulaDoCasal row={row} />
               </Link>
             </div>
             <dl className="mt-3 grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 text-sm leading-5">
@@ -183,10 +183,10 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
               <dt className="text-tinta-suave">Presentes</dt>
               <dd className="tabular-nums">{formatarReais(row.giftsCents)}</dd>
               <dt className="text-tinta-suave">Atividade</dt>
-              <dd>{when(row)}</dd>
+              <dd>{quandoAconteceu(row)}</dd>
               <dt className="sr-only">Situação</dt>
               <dd className="col-span-2">
-                <SituationChip situation={row.situation} />
+                <EtiquetaDeSituacaoDoCasal situation={row.situation} />
               </dd>
             </dl>
           </li>

@@ -11,13 +11,13 @@ import { avisarNovoPedidoDeOrcamento, avisarPropostaAceita } from "@/lib/notific
 import { obterIdsDeFornecedoresIndisponiveis, fornecedorEstaDisponivel } from "@/lib/vendor-availability";
 import { posicaoNaVitrine } from "@/lib/platform/vendor-admin";
 import {
-  effectiveVendorTier,
-  LEAD_BUDGET_OPTIONS,
-  parseIsoDate,
-  PUBLIC_TOKEN_RE,
-  START_MONTHLY_LEAD_LIMIT,
-  startOfMonthBrasilia,
-  todayBrasilia,
+  nivelEfetivoDoFornecedor,
+  OPCOES_DE_ORCAMENTO_DO_PEDIDO,
+  interpretarDataIso,
+  PADRAO_DO_TOKEN_PUBLICO,
+  LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL,
+  inicioDoMesEmBrasilia,
+  hojeEmBrasilia,
 } from "@/app/(fornecedor)/_lib/vendor-panel";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
@@ -74,7 +74,7 @@ type LinhaPublicaDoFornecedor = Prisma.PartnerVendorGetPayload<{ select: typeof 
  */
 function paraFornecedorPublico<T extends LinhaPublicaDoFornecedor>(vendor: T) {
   const { planExpiresAt, ...rest } = vendor;
-  const tier = effectiveVendorTier(vendor.planTier, planExpiresAt);
+  const tier = nivelEfetivoDoFornecedor(vendor.planTier, planExpiresAt);
   const paid = tier !== "FREE";
   return {
     ...rest,
@@ -88,7 +88,7 @@ function paraFornecedorPublico<T extends LinhaPublicaDoFornecedor>(vendor: T) {
 /** "2027-04-17" válido (2000–2100) ou null. */
 function interpretarDiaDoCasamento(value: string | undefined | null): Date | null {
   if (!value) return null;
-  const day = parseIsoDate(value);
+  const day = interpretarDataIso(value);
   if (!day || day.getUTCFullYear() < 2000 || day.getUTCFullYear() > 2100) return null;
   return day;
 }
@@ -177,7 +177,7 @@ const EsquemaDaDisponibilidade = z.object({
       ctx.addIssue({ code: "custom", message: "Escolha uma data válida." });
       return z.NEVER;
     }
-    if (day < todayBrasilia()) {
+    if (day < hojeEmBrasilia()) {
       ctx.addIssue({ code: "custom", message: "Escolha uma data a partir de hoje." });
       return z.NEVER;
     }
@@ -227,7 +227,7 @@ const EsquemaDoPedidoDeOrcamento = z.object({
   message: z.string().trim().max(2000).optional(),
   meetingType: z.enum(["ONLINE", "PRESENTIAL"]).optional(),
   location: z.string().trim().max(80, "Use até 80 caracteres na cidade.").optional(),
-  budget: z.enum(LEAD_BUDGET_OPTIONS, { message: "Faixa de orçamento inválida." }).optional().or(z.literal("")),
+  budget: z.enum(OPCOES_DE_ORCAMENTO_DO_PEDIDO, { message: "Faixa de orçamento inválida." }).optional().or(z.literal("")),
 });
 
 /**
@@ -265,11 +265,11 @@ export async function criarPedidoDeOrcamento(data: {
     if (!vendor) return { success: false, error: ERROS.fornecedorNaoEncontrado };
 
     let locked = false;
-    if (effectiveVendorTier(vendor.planTier, vendor.planExpiresAt) === "FREE") {
+    if (nivelEfetivoDoFornecedor(vendor.planTier, vendor.planExpiresAt) === "FREE") {
       const monthCount = await prisma.vendorLead.count({
-        where: { vendorId: vendor.id, createdAt: { gte: startOfMonthBrasilia() } },
+        where: { vendorId: vendor.id, createdAt: { gte: inicioDoMesEmBrasilia() } },
       });
-      locked = monthCount >= START_MONTHLY_LEAD_LIMIT;
+      locked = monthCount >= LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL;
     }
 
     const lead = await prisma.vendorLead.create({
@@ -314,7 +314,7 @@ function calcularHashDoIp(ip: string): string {
 }
 
 const EsquemaDoAceiteDaProposta = z.object({
-  token: z.string().regex(PUBLIC_TOKEN_RE, "Link inválido."),
+  token: z.string().regex(PADRAO_DO_TOKEN_PUBLICO, "Link inválido."),
   fullName: z
     .string({ message: "Informe seu nome completo." })
     .trim()
@@ -359,7 +359,7 @@ export async function aceitarPropostaDoPedido(input: EntradaDoAceiteDaProposta):
     }
     if (lead.proposalAcceptedAt) return { success: false, error: "Esta proposta já foi aceita." };
     if (lead.status === "DECLINED") return { success: false, error: "Esta proposta não está mais disponível." };
-    if (lead.proposalValidUntil && lead.proposalValidUntil < todayBrasilia()) {
+    if (lead.proposalValidUntil && lead.proposalValidUntil < hojeEmBrasilia()) {
       return { success: false, error: "O prazo desta proposta já passou. Fale com o fornecedor para renová-la." };
     }
 

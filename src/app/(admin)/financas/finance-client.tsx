@@ -24,7 +24,7 @@ import { somenteDigitos } from "@/lib/formatacao/telefone";
 // UTILS
 // ==========================================
 
-function formatDate(date: Date): string {
+function formatarDataDaTransacao(date: Date): string {
   return new Date(date).toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
@@ -38,7 +38,7 @@ function formatDate(date: Date): string {
 // TOAST COMPONENT (lightweight)
 // ==========================================
 
-function Toast({
+function AvisoTemporario({
   message,
   type,
   onClose,
@@ -76,7 +76,7 @@ function Toast({
 // STATUS BADGE
 // ==========================================
 
-function StatusBadge({ status }: { status: string }) {
+function SeloDeSituacao({ status }: { status: string }) {
   const config: Record<string, { label: string; tone: TomDaEtiqueta; icon: typeof Clock }> = {
     APPROVED: { label: "Recebido", tone: "sucesso", icon: Check },
     PENDING: { label: "A conferir", tone: "aviso", icon: Clock },
@@ -96,7 +96,7 @@ function StatusBadge({ status }: { status: string }) {
 // METHOD BADGE
 // ==========================================
 
-function MethodBadge({ method }: { method: string }) {
+function SeloDaForma({ method }: { method: string }) {
   const isPix = method === "PIX";
   const Icon = isPix ? QrCode : CreditCard;
   return (
@@ -111,14 +111,14 @@ function MethodBadge({ method }: { method: string }) {
 // MAIN TABLE COMPONENT
 // ==========================================
 
-interface FinanceTableProps {
+interface PropriedadesDaTabelaFinanceira {
   transactions: TransacaoComPresente[];
 }
 
-type SortField = "createdAt" | "amount" | "guestName";
-type SortDir = "asc" | "desc";
+type CampoDeOrdenacao = "createdAt" | "amount" | "guestName";
+type SentidoDeOrdenacao = "asc" | "desc";
 
-export function FinanceTable({ transactions }: FinanceTableProps) {
+export function TabelaFinanceira({ transactions }: PropriedadesDaTabelaFinanceira) {
   const [isPending, startTransition] = useTransition();
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [thankingId, setThankingId] = useState<string | null>(null);
@@ -127,8 +127,8 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
     type: "success" | "error";
   } | null>(null);
   const [search, setSearch] = useState("");
-  const [sortField, setSortField] = useState<SortField>("createdAt");
-  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [sortField, setSortField] = useState<CampoDeOrdenacao>("createdAt");
+  const [sortDir, setSortDir] = useState<SentidoDeOrdenacao>("desc");
 
   // Filtro + ordenação
   const filtered = transactions
@@ -158,7 +158,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
       return 0;
     });
 
-  function toggleSort(field: SortField) {
+  function toggleSort(field: CampoDeOrdenacao) {
     if (sortField === field) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
@@ -222,7 +222,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
     field,
     children,
   }: {
-    field: SortField;
+    field: CampoDeOrdenacao;
     children: React.ReactNode;
   }) => (
     <button
@@ -284,15 +284,15 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="font-semibold text-tinta">{tx.guest?.name || tx.guestName || "Convidado sem nome"}</p>
-                <p className="text-sm text-tinta-suave">{formatDate(tx.createdAt)}</p>
+                <p className="text-sm text-tinta-suave">{formatarDataDaTransacao(tx.createdAt)}</p>
               </div>
               <span className="shrink-0 font-semibold tabular-nums text-tinta">{formatarReais(tx.netAmount || tx.amount)}</span>
             </div>
             <p className="text-[15px] text-tinta">{tx.gift.title}</p>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-3">
-                <StatusBadge status={tx.status} />
-                <MethodBadge method={tx.paymentMethod} />
+                <SeloDeSituacao status={tx.status} />
+                <SeloDaForma method={tx.paymentMethod} />
               </div>
               {actionFor(tx)}
             </div>
@@ -310,7 +310,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
             accessor: (tx) => new Date(tx.createdAt).getTime(),
             cell: (tx) => (
               <span className="text-sm text-tinta-suave tabular-nums">
-                {formatDate(tx.createdAt)}
+                {formatarDataDaTransacao(tx.createdAt)}
               </span>
             ),
           },
@@ -341,7 +341,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
             header: "Como pagou",
             sortable: true,
             accessor: (tx) => tx.paymentMethod,
-            cell: (tx) => <MethodBadge method={tx.paymentMethod} />,
+            cell: (tx) => <SeloDaForma method={tx.paymentMethod} />,
           },
           {
             key: "amount",
@@ -363,7 +363,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
             className: "text-center",
             headerClassName: "text-center",
             accessor: (tx) => tx.status,
-            cell: (tx) => <StatusBadge status={tx.status} />,
+            cell: (tx) => <SeloDeSituacao status={tx.status} />,
           },
           {
             key: "actions",
@@ -379,7 +379,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
 
       {/* Toast */}
       {toast && (
-        <Toast
+        <AvisoTemporario
           message={toast.message}
           type={toast.type}
           onClose={() => setToast(null)}

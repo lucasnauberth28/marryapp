@@ -5,13 +5,13 @@ import { useState } from "react";
 import { adicionarNotaAoCasamento } from "@/actions/admin-casais-actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useCasalAction } from "../../_components/use-casal-action";
+import { useAcaoDoCasal } from "../../_components/use-casal-action";
 
 /** "Nova nota" interna: só a equipe vê. */
-export function NoteForm({ weddingId }: { weddingId: string }) {
+export function FormularioDeNota({ weddingId }: { weddingId: string }) {
   const router = useRouter();
   const [body, setBody] = useState("");
-  const { pending, error, run } = useCasalAction();
+  const { pending, error, run } = useAcaoDoCasal();
 
   return (
     <form

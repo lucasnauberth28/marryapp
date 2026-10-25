@@ -8,7 +8,7 @@ import { RefreshCw, CheckCircle2, XCircle } from "lucide-react";
 import { EsqueletoDoBlocoDeSituacao } from "@/components/painel/skeleton-parts";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function WhatsAppConfigClient() {
+export function ConfiguracaoDoWhatsappCliente() {
   const [status, setStatus] = useState<string>("LOADING");
   const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState(true);

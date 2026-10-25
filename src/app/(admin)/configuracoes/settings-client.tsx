@@ -11,14 +11,14 @@ import { CartaoDeConfiguracaoDoTour } from "@/components/tour/tour-restart";
 import { SeletorSegmentadoDoTema } from "@/components/theme/theme-toggle";
 import { toast } from "sonner";
 
-interface SettingsClientProps {
+interface PropriedadesDasConfiguracoesCliente {
   initialSettings: { rsvpDeadline: Date | string | null };
   /** Resumo do casamento (os dados são editados no editor do site). */
   summary: { names: string; date: string | null; place: string | null; address: string | null };
   canSeePlan: boolean;
 }
 
-function Fact({ label, children }: { label: string; children: ReactNode }) {
+function InformacaoEmDestaque({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-1">
       <dt className="text-sm font-semibold leading-5 text-tinta-suave">{label}</dt>
@@ -27,7 +27,7 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function SettingsClient({ initialSettings, summary, canSeePlan }: SettingsClientProps) {
+export function ConfiguracoesCliente({ initialSettings, summary, canSeePlan }: PropriedadesDasConfiguracoesCliente) {
   const [isPending, startTransition] = useTransition();
   const [rsvpDeadline, setRsvpDeadline] = useState(
     initialSettings.rsvpDeadline ? new Date(initialSettings.rsvpDeadline).toISOString().split("T")[0] : ""
@@ -56,10 +56,10 @@ export function SettingsClient({ initialSettings, summary, canSeePlan }: Setting
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <dl className="grid gap-4 sm:grid-cols-2">
-            <Fact label="Nomes no site">{summary.names}</Fact>
-            <Fact label="Data">{summary.date ?? "Ainda sem data"}</Fact>
-            <Fact label="Local">{summary.place ?? "A definir"}</Fact>
-            <Fact label="Endereço do site">{summary.address ?? "Disponível depois de concluir o cadastro"}</Fact>
+            <InformacaoEmDestaque label="Nomes no site">{summary.names}</InformacaoEmDestaque>
+            <InformacaoEmDestaque label="Data">{summary.date ?? "Ainda sem data"}</InformacaoEmDestaque>
+            <InformacaoEmDestaque label="Local">{summary.place ?? "A definir"}</InformacaoEmDestaque>
+            <InformacaoEmDestaque label="Endereço do site">{summary.address ?? "Disponível depois de concluir o cadastro"}</InformacaoEmDestaque>
           </dl>
           <div>
             <Button asChild variant="outline">

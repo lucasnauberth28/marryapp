@@ -6,49 +6,49 @@ import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 import { LinkPendente } from "@/components/feedback/link-pending";
-import { Chip } from "../../_components/status-chip";
+import { EtiquetaBase } from "../../_components/status-chip";
 import {
-  effectiveVendorTier,
-  formatTime,
-  formatWeddingDate,
-  MONTH_NAMES,
-  MONTHS,
-  toIsoDate,
-  todayBrasilia,
-  WEEKDAYS_SHORT,
+  nivelEfetivoDoFornecedor,
+  formatarHoraDoPainel,
+  formatarDataDoCasamento,
+  NOMES_DOS_MESES,
+  MESES,
+  paraDataIso,
+  hojeEmBrasilia,
+  DIAS_DA_SEMANA_CURTOS,
 } from "../../_lib/vendor-panel";
 import {
-  AgendaCalendar,
-  AgendaProvider,
-  DeleteEventButton,
-  NewEventButton,
-  type DayItem,
-  type LeadOption,
+  CalendarioDaAgenda,
+  ProvedorDaAgenda,
+  BotaoDeExcluirEvento,
+  BotaoDeNovoEvento,
+  type ItemDoDia,
+  type OpcaoDePedido,
 } from "./agenda-client";
 
 export const metadata: Metadata = { title: "Agenda" };
 
-const CARD = "rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)]";
-const OVERLINE = "text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase";
-const NAV_BTN =
+const ESTILO_DO_CARTAO = "rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)]";
+const ESTILO_DO_SOBRETITULO = "text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase";
+const ESTILO_DO_BOTAO_DE_NAVEGACAO =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-[15px] font-semibold transition-colors";
-const DAY_MS = 86_400_000;
+const UM_DIA_EM_MS = 86_400_000;
 
-function monthParam(year: number, month: number) {
+function parametroDoMes(year: number, month: number) {
   const d = new Date(Date.UTC(year, month, 1));
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
 /** "Hoje", "Amanhã" ou "Qua, 15 out" (datas à meia-noite UTC). */
-function dayLabel(date: Date, today: Date) {
-  const diff = Math.round((date.getTime() - today.getTime()) / DAY_MS);
+function rotuloDoDia(date: Date, today: Date) {
+  const diff = Math.round((date.getTime() - today.getTime()) / UM_DIA_EM_MS);
   if (diff === 0) return "Hoje";
-  if (diff === 1) return `Amanhã · ${WEEKDAYS_SHORT[date.getUTCDay()]}`;
+  if (diff === 1) return `Amanhã · ${DIAS_DA_SEMANA_CURTOS[date.getUTCDay()]}`;
   const sameYear = date.getUTCFullYear() === today.getUTCFullYear();
-  return `${WEEKDAYS_SHORT[date.getUTCDay()]}, ${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}${sameYear ? "" : ` ${date.getUTCFullYear()}`}`;
+  return `${DIAS_DA_SEMANA_CURTOS[date.getUTCDay()]}, ${date.getUTCDate()} ${MESES[date.getUTCMonth()]}${sameYear ? "" : ` ${date.getUTCFullYear()}`}`;
 }
 
-type Upcoming =
+type Proximos =
   | { type: "WEDDING"; id: string; date: Date; coupleName: string; location: string | null }
   | {
       type: "MEETING" | "BLOCKED";
@@ -64,8 +64,8 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   const { vendor } = await obterContextoDaPaginaDoFornecedor();
   if (!vendor) return null; // o layout explica que a conta ainda não foi vinculada
 
-  const today = todayBrasilia();
-  const todayIso = toIsoDate(today);
+  const today = hojeEmBrasilia();
+  const todayIso = paraDataIso(today);
 
   const { mes } = await searchParams;
   const match = typeof mes === "string" ? /^(\d{4})-(0[1-9]|1[0-2])$/.exec(mes) : null;
@@ -114,7 +114,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
       where: {
         vendorId: vendor.id,
         status: { not: "DECLINED" },
-        ...(effectiveVendorTier(vendor.planTier, vendor.planExpiresAt) === "FREE" ? { locked: false } : {}),
+        ...(nivelEfetivoDoFornecedor(vendor.planTier, vendor.planExpiresAt) === "FREE" ? { locked: false } : {}),
       },
       orderBy: { createdAt: "desc" },
       take: 100,
@@ -123,13 +123,13 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
   ]);
 
   // Itens por dia do mês exibido.
-  const days: Record<string, DayItem[]> = {};
-  const push = (iso: string, item: DayItem) => (days[iso] ??= []).push(item);
+  const days: Record<string, ItemDoDia[]> = {};
+  const push = (iso: string, item: ItemDoDia) => (days[iso] ??= []).push(item);
   for (const w of monthWeddings) {
-    if (w.weddingDate) push(toIsoDate(w.weddingDate), { type: "WEDDING", id: w.id, title: w.coupleName, location: w.location });
+    if (w.weddingDate) push(paraDataIso(w.weddingDate), { type: "WEDDING", id: w.id, title: w.coupleName, location: w.location });
   }
   for (const e of monthEvents) {
-    push(toIsoDate(e.date), {
+    push(paraDataIso(e.date), {
       type: e.kind === "BLOCKED" ? "BLOCKED" : "MEETING",
       id: e.id,
       title: e.title,
@@ -139,7 +139,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
     });
   }
 
-  const upcoming: Upcoming[] = [
+  const upcoming: Proximos[] = [
     ...nextWeddings
       .filter((w) => w.weddingDate)
       .map((w) => ({ type: "WEDDING" as const, id: w.id, date: w.weddingDate!, coupleName: w.coupleName, location: w.location })),
@@ -154,25 +154,25 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
     })),
   ]
     .sort((a, b) => {
-      const ka = `${toIsoDate(a.date)} ${a.type === "WEDDING" ? "" : (a.time ?? "")}`;
-      const kb = `${toIsoDate(b.date)} ${b.type === "WEDDING" ? "" : (b.time ?? "")}`;
+      const ka = `${paraDataIso(a.date)} ${a.type === "WEDDING" ? "" : (a.time ?? "")}`;
+      const kb = `${paraDataIso(b.date)} ${b.type === "WEDDING" ? "" : (b.time ?? "")}`;
       return ka.localeCompare(kb);
     })
     .slice(0, 6);
 
-  const leadOptions: LeadOption[] = leads.map((l) => ({
+  const leadOptions: OpcaoDePedido[] = leads.map((l) => ({
     id: l.id,
-    label: l.weddingDate ? `${l.coupleName} · ${formatWeddingDate(l.weddingDate)}` : l.coupleName,
+    label: l.weddingDate ? `${l.coupleName} · ${formatarDataDoCasamento(l.weddingDate)}` : l.coupleName,
   }));
 
-  const monthTitle = `${MONTH_NAMES[month].charAt(0).toUpperCase()}${MONTH_NAMES[month].slice(1)} de ${year}`;
+  const monthTitle = `${NOMES_DOS_MESES[month].charAt(0).toUpperCase()}${NOMES_DOS_MESES[month].slice(1)} de ${year}`;
 
   return (
-    <AgendaProvider todayIso={todayIso} leads={leadOptions}>
+    <ProvedorDaAgenda todayIso={todayIso} leads={leadOptions}>
       <div className="flex flex-col gap-6">
         <Aparicao variant="fade" className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex max-w-2xl flex-col gap-1">
-            <p className={cn(OVERLINE, "hidden md:block")}>Fornecedor</p>
+            <p className={cn(ESTILO_DO_SOBRETITULO, "hidden md:block")}>Fornecedor</p>
             <h1 className="font-display text-[28px] leading-9 font-medium md:text-[40px] md:leading-[46px]">Agenda</h1>
             <p className="text-tinta-suave">
               Casamentos fechados, reuniões com casais e datas bloqueadas. Datas bloqueadas aparecem como ocupadas nos
@@ -180,24 +180,24 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <NewEventButton kind="BLOCKED" />
-            <NewEventButton kind="MEETING" />
+            <BotaoDeNovoEvento kind="BLOCKED" />
+            <BotaoDeNovoEvento kind="MEETING" />
           </div>
         </Aparicao>
 
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
           <Aparicao variant="up" delay={80} className="min-w-0">
-            <section aria-labelledby="mes-titulo" className={cn(CARD, "group/agenda flex min-w-0 flex-col gap-4 p-4 sm:p-6")}>
+            <section aria-labelledby="mes-titulo" className={cn(ESTILO_DO_CARTAO, "group/agenda flex min-w-0 flex-col gap-4 p-4 sm:p-6")}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 id="mes-titulo" aria-live="polite" className="font-display text-2xl font-medium sm:text-[28px]">
                   {monthTitle}
                 </h2>
                 <nav aria-label="Navegar entre meses" className="flex items-center gap-1">
                   <Link
-                    href={`/fornecedor/agenda?mes=${monthParam(year, month - 1)}`}
+                    href={`/fornecedor/agenda?mes=${parametroDoMes(year, month - 1)}`}
                     scroll={false}
                     aria-label="Mês anterior"
-                    className={cn(NAV_BTN, "text-tinta-suave hover:bg-areia hover:text-tinta")}
+                    className={cn(ESTILO_DO_BOTAO_DE_NAVEGACAO, "text-tinta-suave hover:bg-areia hover:text-tinta")}
                   >
                     <ChevronLeft aria-hidden="true" className="size-5" />
                     <LinkPendente label="Carregando o mês" />
@@ -206,16 +206,16 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
                     href="/fornecedor/agenda"
                     scroll={false}
                     aria-current={isCurrentMonth ? "date" : undefined}
-                    className={cn(NAV_BTN, "border border-linha-forte bg-papel px-4 text-sm text-tinta hover:bg-areia")}
+                    className={cn(ESTILO_DO_BOTAO_DE_NAVEGACAO, "border border-linha-forte bg-papel px-4 text-sm text-tinta hover:bg-areia")}
                   >
                     Hoje
                     <LinkPendente label="Carregando o mês" />
                   </Link>
                   <Link
-                    href={`/fornecedor/agenda?mes=${monthParam(year, month + 1)}`}
+                    href={`/fornecedor/agenda?mes=${parametroDoMes(year, month + 1)}`}
                     scroll={false}
                     aria-label="Próximo mês"
-                    className={cn(NAV_BTN, "text-tinta-suave hover:bg-areia hover:text-tinta")}
+                    className={cn(ESTILO_DO_BOTAO_DE_NAVEGACAO, "text-tinta-suave hover:bg-areia hover:text-tinta")}
                   >
                     <ChevronRight aria-hidden="true" className="size-5" />
                     <LinkPendente label="Carregando o mês" />
@@ -224,7 +224,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
               </div>
 
               <div className="transition-opacity group-has-[[data-link-pending]]/agenda:opacity-60">
-                <AgendaCalendar year={year} month={month} todayIso={todayIso} days={days} />
+                <CalendarioDaAgenda year={year} month={month} todayIso={todayIso} days={days} />
               </div>
 
               <ul aria-label="Legenda" className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-tinta-suave">
@@ -251,17 +251,17 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
                 Próximos compromissos
               </h2>
               {upcoming.length === 0 ? (
-                <p className={cn(CARD, "p-4 text-tinta-suave")}>Nada marcado daqui para frente.</p>
+                <p className={cn(ESTILO_DO_CARTAO, "p-4 text-tinta-suave")}>Nada marcado daqui para frente.</p>
               ) : (
                 <ul className="flex flex-col gap-3">
                   {upcoming.map((item) => {
-                    const isToday = toIsoDate(item.date) === todayIso;
-                    const time = item.type === "MEETING" ? formatTime(item.time) : null;
-                    const label = `${dayLabel(item.date, today)}${time ? ` · ${time}` : ""}`;
+                    const isToday = paraDataIso(item.date) === todayIso;
+                    const time = item.type === "MEETING" ? formatarHoraDoPainel(item.time) : null;
+                    const label = `${rotuloDoDia(item.date, today)}${time ? ` · ${time}` : ""}`;
                     return (
                       <li key={`${item.type}-${item.id}`}>
-                        <article className={cn(CARD, "flex flex-col gap-1.5 p-4")}>
-                          <Chip tone={isToday ? "sucesso" : item.type === "WEDDING" ? "salvia" : "neutro"}>{label}</Chip>
+                        <article className={cn(ESTILO_DO_CARTAO, "flex flex-col gap-1.5 p-4")}>
+                          <EtiquetaBase tone={isToday ? "sucesso" : item.type === "WEDDING" ? "salvia" : "neutro"}>{label}</EtiquetaBase>
                           {item.type === "WEDDING" ? (
                             <>
                               <strong className="text-[17px] font-semibold break-words">Casamento de {item.coupleName}</strong>
@@ -294,7 +294,7 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
                                     <span className="sr-only"> de {item.lead.coupleName}</span>
                                   </Link>
                                 ) : null}
-                                <DeleteEventButton eventId={item.id} label={item.type === "BLOCKED" ? "Desbloquear" : "Excluir"} />
+                                <BotaoDeExcluirEvento eventId={item.id} label={item.type === "BLOCKED" ? "Desbloquear" : "Excluir"} />
                               </div>
                             </>
                           )}
@@ -311,6 +311,6 @@ export default async function AgendaPage({ searchParams }: { searchParams: Promi
           </Aparicao>
         </div>
       </div>
-    </AgendaProvider>
+    </ProvedorDaAgenda>
   );
 }

@@ -15,9 +15,9 @@ import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { SITUACOES_DO_CHAMADO, ROTULO_DA_SITUACAO_DO_CHAMADO } from "@/lib/platform/support";
 import { criarChamadoDeSuporte, atualizarChamadoDeSuporte } from "@/actions/admin-suporte-actions";
-import { useAdminAction } from "../../_sistema/use-admin-action";
+import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
-export interface TicketItem {
+export interface ItemDeChamado {
   id: string;
   number: number;
   subject: string;
@@ -33,7 +33,7 @@ export interface TicketItem {
   vendorId: string | null;
 }
 
-export interface TicketPrefill {
+export interface PreenchimentoDoChamado {
   weddingId?: string;
   vendorId?: string;
   requesterName: string;
@@ -41,14 +41,14 @@ export interface TicketPrefill {
   label: string;
 }
 
-const TONE: Record<TicketItem["status"], { tone: TomDaSituacao; icon: typeof Clock }> = {
+const TONS_DA_ETIQUETA: Record<ItemDeChamado["status"], { tone: TomDaSituacao; icon: typeof Clock }> = {
   NEW: { tone: "aviso", icon: Clock },
   IN_PROGRESS: { tone: "aviso", icon: Clock },
   ANSWERED: { tone: "salvia", icon: CheckCircle2 },
   CLOSED: { tone: "neutro", icon: Lock },
 };
 
-export function Tickets({ rows, newCount, closedCount, showClosed, prefill, openForm }: { rows: TicketItem[]; newCount: number; closedCount: number; showClosed: boolean; prefill: TicketPrefill | null; openForm: boolean }) {
+export function Chamados({ rows, newCount, closedCount, showClosed, prefill, openForm }: { rows: ItemDeChamado[]; newCount: number; closedCount: number; showClosed: boolean; prefill: PreenchimentoDoChamado | null; openForm: boolean }) {
   const [formOpen, setFormOpen] = useState(openForm);
   const [editing, setEditing] = useState<string | null>(null);
   return (
@@ -70,7 +70,7 @@ export function Tickets({ rows, newCount, closedCount, showClosed, prefill, open
       }
     >
       <div id="chamados" className="scroll-mt-24" />
-      {formOpen && <NewTicket prefill={prefill} onDone={() => setFormOpen(false)} />}
+      {formOpen && <NovoChamado prefill={prefill} onDone={() => setFormOpen(false)} />}
       {rows.length === 0 ? (
         <EstadoVazio icon={MessageCircle} compact title={showClosed ? "Nenhum pedido registrado" : "Nenhum pedido em aberto"}>
           Não há formulário público: registre aqui os pedidos que chegarem por WhatsApp ou e-mail.
@@ -78,7 +78,7 @@ export function Tickets({ rows, newCount, closedCount, showClosed, prefill, open
       ) : (
         <ul className="divide-y divide-linha overflow-hidden rounded-2xl border border-linha">
           {rows.map((t) => {
-            const s = TONE[t.status];
+            const s = TONS_DA_ETIQUETA[t.status];
             return (
               <li key={t.id}>
                 <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
@@ -99,7 +99,7 @@ export function Tickets({ rows, newCount, closedCount, showClosed, prefill, open
                     </button>
                   </div>
                 </div>
-                {editing === t.id && <TicketEditor ticket={t} onDone={() => setEditing(null)} />}
+                {editing === t.id && <EditorDeChamado ticket={t} onDone={() => setEditing(null)} />}
               </li>
             );
           })}
@@ -120,14 +120,14 @@ export function Tickets({ rows, newCount, closedCount, showClosed, prefill, open
   );
 }
 
-function NewTicket({ prefill, onDone }: { prefill: TicketPrefill | null; onDone: () => void }) {
+function NovoChamado({ prefill, onDone }: { prefill: PreenchimentoDoChamado | null; onDone: () => void }) {
   const router = useRouter();
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [name, setName] = useState(prefill?.requesterName ?? "");
   const [email, setEmail] = useState(prefill?.requesterEmail ?? "");
   const [phone, setPhone] = useState("");
-  const { pending, errors, formError, run } = useAdminAction();
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   return (
     <form
       className="mb-4 flex flex-col gap-4 rounded-2xl bg-linho p-4"
@@ -165,12 +165,12 @@ function NewTicket({ prefill, onDone }: { prefill: TicketPrefill | null; onDone:
   );
 }
 
-function TicketEditor({ ticket, onDone }: { ticket: TicketItem; onDone: () => void }) {
+function EditorDeChamado({ ticket, onDone }: { ticket: ItemDeChamado; onDone: () => void }) {
   const router = useRouter();
   const [status, setStatus] = useState(ticket.status);
   const [note, setNote] = useState(ticket.internalNote ?? "");
   const [assign, setAssign] = useState<"keep" | "me" | "none">("keep");
-  const { pending, errors, formError, run } = useAdminAction();
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   return (
     <form
       className="flex flex-col gap-4 border-t border-linha bg-linho px-4 py-4"
@@ -202,7 +202,7 @@ function TicketEditor({ ticket, onDone }: { ticket: TicketItem; onDone: () => vo
         </p>
       )}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <NativeSelect label="Situação" value={status} onChange={(e) => setStatus(e.target.value as TicketItem["status"])} alwaysFloat>
+        <NativeSelect label="Situação" value={status} onChange={(e) => setStatus(e.target.value as ItemDeChamado["status"])} alwaysFloat>
           {SITUACOES_DO_CHAMADO.map((s) => (
             <option key={s} value={s}>
               {ROTULO_DA_SITUACAO_DO_CHAMADO[s]}

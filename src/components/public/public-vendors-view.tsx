@@ -27,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SeletorDeData } from "@/components/ui/date-picker";
 import { criarPedidoDeOrcamento, type ItemDaListaDeFornecedoresPublicos } from "@/actions/partner-vendor-actions";
-import { parseRegions } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { interpretarRegioes } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { toast } from "sonner";
 import { iniciarProgressoDaNavegacao } from "@/components/feedback/navigation-progress";
 import { ImagemDaPessoa } from "@/components/ui/user-image";
@@ -87,7 +87,7 @@ function formatarDataIso(iso: string) {
 
 /** Cidades e regiões atendidas, em uma linha curta ("A, B e mais 2"). */
 function rotuloDasRegioes(serviceRegions: ItemDaListaDeFornecedoresPublicos["serviceRegions"]) {
-  const regions = parseRegions(serviceRegions);
+  const regions = interpretarRegioes(serviceRegions);
   if (regions.length === 0) return null;
   if (regions.length <= 2) return regions.join(" e ");
   return `${regions.slice(0, 2).join(", ")} e mais ${regions.length - 2}`;
@@ -129,7 +129,7 @@ export function VisaoDeFornecedoresPublicos({ initialPartners, weddingDate: acti
 
     let matchesRegion = true;
     if (selectedRegion !== TODAS_AS_REGIOES) {
-      const regions = parseRegions(p.serviceRegions);
+      const regions = interpretarRegioes(p.serviceRegions);
       matchesRegion = regions.includes(selectedRegion) || regions.includes("Brasil Todo");
     }
 

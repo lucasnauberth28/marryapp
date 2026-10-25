@@ -35,21 +35,21 @@ import {
   type TransacaoDePresente,
   type LinhaDeConvidado,
 } from "@/lib/dashboard-summary";
-import { btnSecondary } from "./ui";
-import { InviteBlock, type InviteRow } from "./invite-block";
-import { BudgetBlock, ConfirmationsBlock, QueueBlock, ResponsesBlock, Shortcuts, type Shortcut } from "./blocks";
-import { MoneyBlock } from "./money-block";
-import { EmptyConfirmations, FirstAccessQueue } from "./first-access";
+import { estiloDoBotaoSecundario } from "./ui";
+import { BlocoDeConvites, type LinhaDeConvite } from "./invite-block";
+import { BlocoDoOrcamento, BlocoDeConfirmacoes, BlocoDaFila, BlocoDeRespostas, Atalhos, type Atalho } from "./blocks";
+import { BlocoDeDinheiro } from "./money-block";
+import { ConfirmacoesVazias, FilaDoPrimeiroAcesso } from "./first-access";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Resumo do casamento" };
 
-const SHOWN_IN_LISTS = 3;
-const MONTHS = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+const EXIBIDOS_NAS_LISTAS = 3;
+const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 
-const seatsText = (n: number) => `${n} ${n === 1 ? "lugar" : "lugares"}`;
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const textoDosLugares = (n: number) => `${n} ${n === 1 ? "lugar" : "lugares"}`;
+const colocarEmMaiuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default async function DashboardPage() {
   const ctx = await exigirCasamentoNaPagina("/dashboard");
@@ -151,36 +151,36 @@ export default async function DashboardPage() {
   const rsvpUrl = urlDoSiteDoCasamento(slug, "rsvp", weddingRow.customDomain);
   const weddingDate = identity.weddingDate;
   const generalMessage = textoDoConviteGeral({ coupleNames: identity.coupleNames, weddingDate, city: weddingRow.city, url: siteUrl });
-  const inviteRow = (g: LinhaDeConvidado, kind: "invite" | "reminder"): InviteRow => {
+  const inviteRow = (g: LinhaDeConvidado, kind: "invite" | "reminder"): LinhaDeConvite => {
     const reached = conviteChegou(g);
     const text =
       kind === "reminder"
         ? textoDoLembrete({ guestName: g.name, coupleNames: identity.coupleNames, deadline: settings?.rsvpDeadline ?? null, url: rsvpUrl })
         : textoDoConvitePessoal({ guestName: g.name, coupleNames: identity.coupleNames, weddingDate, url: rsvpUrl });
     const status = !reached ? "convite ainda não enviado" : g.inviteSharedAt ? `convite enviado em ${rotuloCurtoDoDia(chaveDoDiaDe(g.inviteSharedAt))}` : "convite enviado";
-    return { id: g.id, name: g.name, detail: `${seatsText(lugaresDe(g))} · ${g.phone ? status : "sem telefone cadastrado"}`, whatsappUrl: linkDoWhatsapp(g.phone, text), kind };
+    return { id: g.id, name: g.name, detail: `${textoDosLugares(lugaresDe(g))} · ${g.phone ? status : "sem telefone cadastrado"}`, whatsappUrl: linkDoWhatsapp(g.phone, text), kind };
   };
   const toInvite = convidadosParaConvidar(guests);
   const toRemind = convidadosParaLembrar(guests);
   const reminding = (deadline.state === "soon" || deadline.state === "today" || deadline.state === "passed") && toRemind.length > 0;
   const deadlineChip = deadline.state === "soon" ? `Prazo em ${deadline.days} ${deadline.days === 1 ? "dia" : "dias"}` : deadline.state === "today" ? "O prazo termina hoje" : deadline.state === "passed" ? "Prazo vencido" : null;
 
-  const dateShort = weddingDate ? `${weddingDate.getUTCDate()} · ${MONTHS[weddingDate.getUTCMonth()]} · ${weddingDate.getUTCFullYear()}` : null;
+  const dateShort = weddingDate ? `${weddingDate.getUTCDate()} · ${MESES[weddingDate.getUTCMonth()]} · ${weddingDate.getUTCFullYear()}` : null;
 
   // ---------- Cabeçalho ----------
-  const today = capitalize(new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: FUSO_DE_BRASILIA }).format(now));
+  const today = colocarEmMaiuscula(new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: FUSO_DE_BRASILIA }).format(now));
   const left = weddingDays !== null && weddingDays >= 0 ? rotuloDosDiasRestantes(weddingDays) : null;
   const weddingLine = weddingDate
     ? `Casamento ${new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(weddingDate).replace(/^(\p{L}+), /u, "no $1, ")}${weddingRow.city ? `, em ${weddingRow.city}` : ""}`
     : null;
   const deadlineLabel = deadlineKey ? rotuloDoDia(deadlineKey, todayKey) : null;
 
-  const shortcuts: Shortcut[] = [
+  const shortcuts: Atalho[] = [
     can("/convidados") && { href: "/convidados", label: "Adicionar convidado", icon: UserPlus },
     can("/convidados") && { href: "/convidados", label: "Importar lista", icon: Upload },
     can("/presentes-admin") && { href: "/presentes-admin", label: "Criar presente", icon: Gift },
     can("/site-builder") && { href: "/site-builder", label: "Editar o site", icon: LayoutTemplate },
-  ].filter((s): s is Shortcut => Boolean(s));
+  ].filter((s): s is Atalho => Boolean(s));
 
   const lines = ultimasLinhasDePresentes(txs, giftPlan, 6);
 
@@ -224,7 +224,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         {identity.slug && (
-          <Link href={siteUrl} target="_blank" rel="noopener" className={`${btnSecondary} max-md:hidden`}>
+          <Link href={siteUrl} target="_blank" rel="noopener" className={`${estiloDoBotaoSecundario} max-md:hidden`}>
             Ver o site
             <ExternalLink className="size-[17px]" aria-hidden="true" />
             <span className="sr-only">(abre em outra aba)</span>
@@ -233,7 +233,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid items-start gap-4 min-[1200px]:grid-cols-12">
-        <InviteBlock
+        <BlocoDeConvites
           displayUrl={siteUrl.replace(/^https?:\/\//, "")}
           siteUrl={siteUrl}
           generalWhatsappUrl={linkDoWhatsapp(null, generalMessage)}
@@ -245,21 +245,21 @@ export default async function DashboardPage() {
           invitesTotal={counts.invites.total}
           sentCount={counts.sent}
           canSendEach={can("/convidados")}
-          toInvite={{ rows: toInvite.slice(0, SHOWN_IN_LISTS).map((g) => inviteRow(g, "invite")), total: toInvite.length }}
-          reminders={reminding ? { rows: toRemind.slice(0, SHOWN_IN_LISTS).map((g) => inviteRow(g, conviteChegou(g) ? "reminder" : "invite")), total: toRemind.length, peopleTotal: counts.people.pending } : null}
+          toInvite={{ rows: toInvite.slice(0, EXIBIDOS_NAS_LISTAS).map((g) => inviteRow(g, "invite")), total: toInvite.length }}
+          reminders={reminding ? { rows: toRemind.slice(0, EXIBIDOS_NAS_LISTAS).map((g) => inviteRow(g, conviteChegou(g) ? "reminder" : "invite")), total: toRemind.length, peopleTotal: counts.people.pending } : null}
           firstAccess={firstAccess}
         />
 
         {firstAccess ? (
-          <FirstAccessQueue canAddGuests={can("/convidados")} className="min-[1200px]:col-span-5" />
+          <FilaDoPrimeiroAcesso canAddGuests={can("/convidados")} className="min-[1200px]:col-span-5" />
         ) : (
-          <QueueBlock items={queue} deadline={reminding && deadlineChip ? { chip: deadlineChip, remindHref: "#convite" } : null} className="min-[1200px]:col-span-5" />
+          <BlocoDaFila items={queue} deadline={reminding && deadlineChip ? { chip: deadlineChip, remindHref: "#convite" } : null} className="min-[1200px]:col-span-5" />
         )}
 
         {counts.invites.total === 0 ? (
-          <EmptyConfirmations className="min-[1200px]:col-span-7" />
+          <ConfirmacoesVazias className="min-[1200px]:col-span-7" />
         ) : (
-          <ConfirmationsBlock
+          <BlocoDeConfirmacoes
             counts={counts}
             deadlineHint={deadlineLabel && deadline.state !== "passed" ? `Prazo em ${rotuloCurtoDoDia(deadlineKey!)}${deadlineKey!.slice(0, 4) !== todayKey.slice(0, 4) ? ` ${deadlineKey!.slice(0, 4)}` : ""}` : deadline.state === "passed" ? "Prazo vencido" : null}
             deadlineChip={reminding ? deadlineChip : null}
@@ -268,7 +268,7 @@ export default async function DashboardPage() {
           />
         )}
         {counts.invites.total > 0 && (
-          <ResponsesBlock
+          <BlocoDeRespostas
             rows={recent.map((g) => {
               const yes = g.rsvpStatus === RsvpStatus.CONFIRMED;
               return { id: g.id, name: g.name, yes, people: yes ? 1 + g.confirmedCompanions : 1 + g.allowedCompanions, at: g.updatedAt };
@@ -277,9 +277,9 @@ export default async function DashboardPage() {
             className="min-[1200px]:col-span-5"
           />
         )}
-        {counts.invites.total === 0 && <BudgetBlock budget={budget} canOpen={can("/financas")} className="min-[1200px]:col-span-5" />}
+        {counts.invites.total === 0 && <BlocoDoOrcamento budget={budget} canOpen={can("/financas")} className="min-[1200px]:col-span-5" />}
 
-        <MoneyBlock
+        <BlocoDeDinheiro
           statement={statement}
           lines={lines}
           plan={giftPlan}
@@ -289,9 +289,9 @@ export default async function DashboardPage() {
           canConfer={can("/financas")}
           className={counts.invites.total === 0 ? "min-[1200px]:col-span-12" : "min-[1200px]:col-span-7"}
         />
-        {counts.invites.total > 0 && <BudgetBlock budget={budget} canOpen={can("/financas")} className="min-[1200px]:col-span-5" />}
+        {counts.invites.total > 0 && <BlocoDoOrcamento budget={budget} canOpen={can("/financas")} className="min-[1200px]:col-span-5" />}
 
-        <Shortcuts items={shortcuts} />
+        <Atalhos items={shortcuts} />
       </div>
 
       {canQr && weddingDays !== null && weddingDays <= 7 && weddingDays >= 0 && can("/credenciamento") && (

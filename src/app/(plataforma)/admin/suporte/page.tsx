@@ -13,16 +13,16 @@ import { type ParametrosDeBusca, parametroDaBusca } from "@/lib/platform/list-pa
 import { formatarData, haQuantoTempo } from "@/lib/platform/format";
 import { situacaoDoPrazo } from "@/lib/platform/support";
 import { listarSolicitacoesDeDados, listarIncidentes, listarChamados, buscarEmTudo, preenchimentoDoChamado } from "@/lib/platform/queries/suporte";
-import { DataRequests, type DataRequestItem } from "./_components/data-requests";
-import { Incidents } from "./_components/incidents";
-import { PasswordReset } from "./_components/password-reset";
-import { SearchBox } from "./_components/search-box";
-import { Tickets } from "./_components/tickets";
+import { SolicitacoesDeDados, type ItemDeSolicitacaoDeDados } from "./_components/data-requests";
+import { Incidentes } from "./_components/incidents";
+import { RedefinicaoDeSenha } from "./_components/password-reset";
+import { CaixaDeBusca } from "./_components/search-box";
+import { Chamados } from "./_components/tickets";
 
 export const metadata = { title: "Suporte e LGPD" };
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const ymd = (d: Date | null) => (d ? new Date(d.getTime() - 3 * 3_600_000).toISOString().slice(0, 10) : "");
+const PADRAO_DE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const anoMesDia = (d: Date | null) => (d ? new Date(d.getTime() - 3 * 3_600_000).toISOString().slice(0, 10) : "");
 
 export default async function Page({ searchParams }: { searchParams: Promise<ParametrosDeBusca> }) {
   const admin = await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
@@ -39,24 +39,24 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 
       <div id="busca" className="scroll-mt-6">
         <Painel title="Busca em tudo">
-          <SearchBox defaultValue={searchText ?? ""} />
+          <CaixaDeBusca defaultValue={searchText ?? ""} />
           {searchText && (
             // Cada busca nova troca o resultado por um esqueleto (key = texto); o campo e o resto da página ficam
-            <Suspense key={searchText} fallback={<SearchResultsSkeleton />}>
-              <SearchResults searchText={searchText} userId={admin.userId} />
+            <Suspense key={searchText} fallback={<EsqueletoDosResultadosDaBusca />}>
+              <ResultadosDaBusca searchText={searchText} userId={admin.userId} />
             </Suspense>
           )}
         </Painel>
       </div>
 
-      <Suspense key={`${casal ?? ""}-${fornecedor ?? ""}-${showClosed}`} fallback={<SupportListsSkeleton />}>
-        <SupportLists userId={admin.userId} showClosed={showClosed} casal={casal} fornecedor={fornecedor} openNew={openNew} />
+      <Suspense key={`${casal ?? ""}-${fornecedor ?? ""}-${showClosed}`} fallback={<EsqueletoDasListasDeSuporte />}>
+        <ListasDeSuporte userId={admin.userId} showClosed={showClosed} casal={casal} fornecedor={fornecedor} openNew={openNew} />
       </Suspense>
     </>
   );
 }
 
-function SearchResultsSkeleton() {
+function EsqueletoDosResultadosDaBusca() {
   return (
     <LoadingRegion label="a busca" className="mt-4">
       <EsqueletoDasLinhas rows={3} chip={false} />
@@ -64,7 +64,7 @@ function SearchResultsSkeleton() {
   );
 }
 
-function SupportListsSkeleton() {
+function EsqueletoDasListasDeSuporte() {
   return (
     <LoadingRegion label="os pedidos de ajuda" className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <div className="flex min-w-0 flex-col gap-6">
@@ -87,7 +87,7 @@ function SupportListsSkeleton() {
   );
 }
 
-async function SearchResults({ searchText, userId }: { searchText: string; userId: string }) {
+async function ResultadosDaBusca({ searchText, userId }: { searchText: string; userId: string }) {
   // Busca limitada por pessoa da administração: 60 por minuto
   const allowed = (await conferirLimiteDeUso({ key: `ADMIN_SEARCH:${userId}`, limit: 60, windowMs: 60_000 })).success;
   const results = allowed ? await buscarEmTudo(searchText) : null;
@@ -135,16 +135,16 @@ async function SearchResults({ searchText, userId }: { searchText: string; userI
   );
 }
 
-async function SupportLists({ userId, showClosed, casal, fornecedor, openNew }: { userId: string; showClosed: boolean; casal: string | undefined; fornecedor: string | undefined; openNew: boolean }) {
+async function ListasDeSuporte({ userId, showClosed, casal, fornecedor, openNew }: { userId: string; showClosed: boolean; casal: string | undefined; fornecedor: string | undefined; openNew: boolean }) {
   const now = new Date();
   const [tickets, requests, incidents, prefill] = await Promise.all([
     listarChamados({ showClosed }),
     listarSolicitacoesDeDados(),
     listarIncidentes(),
-    preenchimentoDoChamado({ weddingId: casal && UUID.test(casal) ? casal : undefined, vendorId: fornecedor && UUID.test(fornecedor) ? fornecedor : undefined }),
+    preenchimentoDoChamado({ weddingId: casal && PADRAO_DE_UUID.test(casal) ? casal : undefined, vendorId: fornecedor && PADRAO_DE_UUID.test(fornecedor) ? fornecedor : undefined }),
   ]);
 
-  const requestItems: DataRequestItem[] = requests.map((r) => {
+  const requestItems: ItemDeSolicitacaoDeDados[] = requests.map((r) => {
     const due = situacaoDoPrazo(r.dueAt, r.status, now);
     return {
       id: r.id,
@@ -172,7 +172,7 @@ async function SupportLists({ userId, showClosed, casal, fornecedor, openNew }: 
     <>
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
-          <Tickets
+          <Chamados
             key={`${prefill?.weddingId ?? prefill?.vendorId ?? "sem"}-${openNew ? "1" : ""}`}
             rows={tickets.rows.map((t) => ({
               id: t.id,
@@ -195,19 +195,19 @@ async function SupportLists({ userId, showClosed, casal, fornecedor, openNew }: 
             prefill={prefill}
             openForm={openNew}
           />
-          <DataRequests rows={requestItems} urgent={urgent} />
+          <SolicitacoesDeDados rows={requestItems} urgent={urgent} />
         </div>
         <div className="flex min-w-0 flex-col gap-6">
-          <PasswordReset />
-          <Incidents
-            today={ymd(now)}
+          <RedefinicaoDeSenha />
+          <Incidentes
+            today={anoMesDia(now)}
             rows={incidents.map((i) => ({
               id: i.id,
               title: i.title,
               description: i.description,
               affected: i.affected,
               discoveredLabel: formatarData(i.discoveredAt),
-              notifiedOn: ymd(i.notifiedAt),
+              notifiedOn: anoMesDia(i.notifiedAt),
               notifiedWho: i.notifiedWho,
               open: i.status === "OPEN",
             }))}

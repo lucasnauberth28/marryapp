@@ -15,17 +15,17 @@ import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { useEstadoSincronizado } from "@/hooks/use-synced-state";
 import { gerarPdfDaLinhaDoTempo, type EventoDaLinhaDoTempoNoPdf } from "@/lib/generate-timeline-pdf";
 
-type TimelineEvent = EventoDaLinhaDoTempoNoPdf & { position?: number; icon?: string };
+type EventoDaLinhaDoTempo = EventoDaLinhaDoTempoNoPdf & { position?: number; icon?: string };
 
 /** "14:00" vira "14h" e "19:30" vira "19h30". */
-function timeLabel(time: string) {
+function rotuloDaHora(time: string) {
   const m = /^(\d{1,2}):(\d{2})/.exec(time);
   if (!m) return time;
   const h = Number(m[1]);
   return m[2] === "00" ? `${h}h` : `${h}h${m[2]}`;
 }
 
-function EventForm({ event, count, onClose, onSaved, onDelete }: { event: TimelineEvent | null; count: number; onClose: () => void; onSaved: () => void; onDelete: (e: TimelineEvent) => void }) {
+function FormularioDoEvento({ event, count, onClose, onSaved, onDelete }: { event: EventoDaLinhaDoTempo | null; count: number; onClose: () => void; onSaved: () => void; onDelete: (e: EventoDaLinhaDoTempo) => void }) {
   const ids = { title: useId(), time: useId(), description: useId() };
   const [title, setTitle] = useState(event?.title ?? "");
   const [time, setTime] = useState(event?.time ?? "");
@@ -108,12 +108,12 @@ function EventForm({ event, count, onClose, onSaved, onDelete }: { event: Timeli
   );
 }
 
-export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { initialEvents: TimelineEvent[]; coupleNames: string; dateLabel: string | null }) {
+export function LinhaDoTempoCliente({ initialEvents, coupleNames, dateLabel }: { initialEvents: EventoDaLinhaDoTempo[]; coupleNames: string; dateLabel: string | null }) {
   const router = useRouter();
-  const [events, setEvents] = useEstadoSincronizado<TimelineEvent[]>(initialEvents);
+  const [events, setEvents] = useEstadoSincronizado<EventoDaLinhaDoTempo[]>(initialEvents);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<TimelineEvent | null>(null);
-  const [toDelete, setToDelete] = useState<TimelineEvent | null>(null);
+  const [editing, setEditing] = useState<EventoDaLinhaDoTempo | null>(null);
+  const [toDelete, setToDelete] = useState<EventoDaLinhaDoTempo | null>(null);
 
   const sorted = [...events].sort((a, b) => a.time.localeCompare(b.time));
 
@@ -122,12 +122,12 @@ export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { init
     setModalOpen(true);
   }
 
-  function openEdit(e: TimelineEvent) {
+  function openEdit(e: EventoDaLinhaDoTempo) {
     setEditing(e);
     setModalOpen(true);
   }
 
-  async function executeDelete(target: TimelineEvent) {
+  async function executeDelete(target: EventoDaLinhaDoTempo) {
     const toastId = toast.loading("Removendo o horário...");
     const res = await excluirEventoDaLinhaDoTempo(target.id);
     if (res.success) {
@@ -182,7 +182,7 @@ export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { init
         <ol className="flex flex-col gap-3">
           {sorted.map((e) => (
             <li key={e.id} className={`${estiloDoCartao} grid grid-cols-[64px_minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 sm:grid-cols-[88px_minmax(0,1fr)_auto] sm:gap-4 sm:px-5 sm:py-4`}>
-              <span className="font-num text-[22px] leading-8 text-ameixa [font-variant-numeric:lining-nums] sm:text-[26px]">{timeLabel(e.time)}</span>
+              <span className="font-num text-[22px] leading-8 text-ameixa [font-variant-numeric:lining-nums] sm:text-[26px]">{rotuloDaHora(e.time)}</span>
               <div className="min-w-0">
                 <strong className="block font-semibold text-tinta">{e.title}</strong>
                 {e.description && <p className="mt-0.5 whitespace-pre-wrap break-words text-sm text-tinta-suave">{e.description}</p>}
@@ -201,7 +201,7 @@ export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { init
       )}
 
       <ModalPersonalizado isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? "Editar horário" : "Novo horário"} size="sm" className="max-h-[92vh] overflow-y-auto">
-        <EventForm
+        <FormularioDoEvento
           event={editing}
           count={events.length}
           onClose={() => setModalOpen(false)}

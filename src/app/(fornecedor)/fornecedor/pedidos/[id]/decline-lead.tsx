@@ -7,13 +7,13 @@ import { recusarPedido } from "@/actions/vendor-panel-actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { whatsappHref } from "../../../_lib/vendor-panel";
+import { linkDoWhatsapp } from "../../../_lib/vendor-panel";
 
-const BTN =
+const ESTILO_DO_BOTAO =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-60";
 
 /** "Não é para você?": recusa o pedido com uma mensagem gentil para o casal. */
-export function DeclineLead({
+export function RecusarPedido({
   leadId,
   couplePhone,
   defaultMessage,
@@ -31,7 +31,7 @@ export function DeclineLead({
   const [isPending, startTransition] = useTransition();
 
   if (declined) {
-    const waUrl = declined.message ? whatsappHref(couplePhone, declined.message) : null;
+    const waUrl = declined.message ? linkDoWhatsapp(couplePhone, declined.message) : null;
     return (
       <div className="flex flex-col gap-2 rounded-2xl border border-linha bg-areia/60 p-5">
         <strong className="text-[15px] font-semibold">
@@ -45,7 +45,7 @@ export function DeclineLead({
             href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={cn(BTN, "w-fit border border-linha-forte bg-papel text-tinta hover:bg-areia")}
+            className={cn(ESTILO_DO_BOTAO, "w-fit border border-linha-forte bg-papel text-tinta hover:bg-areia")}
           >
             <MessageCircle aria-hidden="true" className="size-[18px]" />
             Enviar mensagem no WhatsApp
@@ -83,7 +83,7 @@ export function DeclineLead({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className={cn(BTN, "-ml-3 w-fit text-ameixa hover:bg-areia")}
+          className={cn(ESTILO_DO_BOTAO, "-ml-3 w-fit text-ameixa hover:bg-areia")}
         >
           Recusar com mensagem
         </button>
@@ -114,7 +114,7 @@ export function DeclineLead({
               type="button"
               disabled={isPending}
               onClick={() => setOpen(false)}
-              className={cn(BTN, "border border-linha-forte bg-papel text-tinta hover:bg-areia")}
+              className={cn(ESTILO_DO_BOTAO, "border border-linha-forte bg-papel text-tinta hover:bg-areia")}
             >
               Cancelar
             </button>

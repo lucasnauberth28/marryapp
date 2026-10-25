@@ -9,11 +9,11 @@ import { Input } from "@/components/ui/input";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { obterDadosDasConfiguracoesDaMadrinha, listarVersoesDasInstrucoes, listarArtigosDeConhecimento, listarExcecoesDaMadrinha } from "@/lib/platform/queries/madrinha";
-import { InstructionsEditor } from "../_components/instructions-editor";
-import { KnowledgeBase } from "../_components/knowledge-base";
-import { CapabilitiesCard } from "../_components/capabilities-card";
-import { WeddingToggles } from "../_components/wedding-toggles";
-import { SettingBadge } from "../../_sistema/setting-badge";
+import { EditorDeInstrucoes } from "../_components/instructions-editor";
+import { BaseDeConhecimento } from "../_components/knowledge-base";
+import { CartaoDeCapacidades } from "../_components/capabilities-card";
+import { AlternanciasDoCasamento } from "../_components/wedding-toggles";
+import { SeloDeConfiguracao } from "../../_sistema/setting-badge";
 
 export const metadata = { title: "Comportamento e qualidade da Liz" };
 
@@ -46,7 +46,7 @@ export default async function Page() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
-          <InstructionsEditor
+          <EditorDeInstrucoes
             key={versions[0]?.id ?? "vazio"}
             versions={versions.map((v) => ({
               id: v.id,
@@ -58,7 +58,7 @@ export default async function Page() {
               createdByName: v.createdByName,
             }))}
           />
-          <KnowledgeBase
+          <BaseDeConhecimento
             articles={articles.map((a) => ({ id: a.id, title: a.title, content: a.content, status: a.status, updatedAt: a.updatedAt.toISOString() }))}
           />
         </div>
@@ -71,9 +71,9 @@ export default async function Page() {
             <p className="mt-3 text-sm leading-5 text-tinta-suave">O modelo será escolhido quando a conexão com a API for feita. Trocar de modelo muda o custo e o jeito de responder.</p>
           </Painel>
 
-          <CapabilitiesCard initial={capabilities} badge={<SettingBadge {...meta["madrinha.capabilities"]} />} />
+          <CartaoDeCapacidades initial={capabilities} badge={<SeloDeConfiguracao {...meta["madrinha.capabilities"]} />} />
 
-          <WeddingToggles initial={overrides.map((o) => ({ id: o.weddingId, coupleNames: o.coupleNames, enabled: o.enabled, blocked: o.blockedAt !== null }))} />
+          <AlternanciasDoCasamento initial={overrides.map((o) => ({ id: o.weddingId, coupleNames: o.coupleNames, enabled: o.enabled, blocked: o.blockedAt !== null }))} />
 
           <section aria-labelledby="pausar-t" className="flex flex-col gap-3 rounded-2xl border border-perigo/40 bg-papel p-5 shadow-[var(--shadow-aceito-1)] md:p-6">
             <h2 id="pausar-t" className="flex items-center gap-2 text-xl font-semibold leading-7 text-tinta">

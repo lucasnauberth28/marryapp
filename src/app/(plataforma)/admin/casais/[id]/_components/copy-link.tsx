@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Check, Copy, ExternalLink } from "lucide-react";
 
 /** Uma linha dos "Links do casal": nome, endereço, copiar e abrir. */
-export function LinkRow({ label, url }: { label: string; url: string }) {
+export function LinhaDeLink({ label, url }: { label: string; url: string }) {
   const [copied, setCopied] = useState(false);
   const display = url.replace(/^https?:\/\//, "");
 

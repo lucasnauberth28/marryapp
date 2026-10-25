@@ -7,8 +7,8 @@ import { esquemaDoPublico, interpretarParametroDeIdsDeCasamento, interpretarPubl
 import { listarRascunhos, listarHistorico, preverPublico } from "@/lib/platform/queries/comunicados";
 import { formatarDataEHora } from "@/lib/platform/format";
 import { EsqueletoDoPainelDeTabela } from "@/components/plataforma/loading-parts";
-import { Compose, type ComposeInitial } from "./_components/compose";
-import { History } from "./_components/history";
+import { RedacaoDeComunicado, type ValoresIniciaisDaRedacao } from "./_components/compose";
+import { HistoricoDeComunicados } from "./_components/history";
 
 export const metadata = { title: "Comunicados" };
 // O envio roda depois da resposta (after) e usa o tempo máximo desta rota
@@ -26,7 +26,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
   const baseAudience: Publico = draft
     ? draft.audience
     : esquemaDoPublico.parse({ kind: "couples", ...(weddingIds.length ? { weddingIds } : {}) });
-  const initial: ComposeInitial = draft
+  const initial: ValoresIniciaisDaRedacao = draft
     ? {
         id: draft.id,
         title: draft.title,
@@ -42,7 +42,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
   return (
     <>
       <CabecalhoDaPagina eyebrow="Comunicação" title="Comunicados" description="Avise casais e fornecedores, ou só um grupo deles, pelo canal certo." />
-      <Compose
+      <RedacaoDeComunicado
         key={draft?.id ?? (weddingIds.join(",") || "novo")}
         initial={initial}
         initialPreview={preview}
@@ -51,12 +51,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
       />
       {/* O histórico é a parte mais pesada e fica abaixo do formulário: chega depois, com esqueleto */}
       <Suspense fallback={<EsqueletoDoPainelDeTabela columns={6} rows={3} />}>
-        <HistoryBlock />
+        <BlocoDoHistorico />
       </Suspense>
     </>
   );
 }
 
-async function HistoryBlock() {
-  return <History rows={await listarHistorico(20)} />;
+async function BlocoDoHistorico() {
+  return <HistoricoDeComunicados rows={await listarHistorico(20)} />;
 }

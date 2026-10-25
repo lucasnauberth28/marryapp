@@ -6,7 +6,7 @@ import { BotaoDeExportar } from "@/components/plataforma/export-button";
 import { NativeSelect } from "@/components/ui/select";
 
 /** Escolhe o mês e baixa a planilha do contador. O botão mostra "gerando" até o arquivo ficar pronto. */
-export function ContadorExport({ month, options }: { month: string; options: { value: string; label: string }[] }) {
+export function ExportacaoDoContador({ month, options }: { month: string; options: { value: string; label: string }[] }) {
   const [value, setValue] = useState(month);
   return (
     <div className="flex flex-col gap-4">

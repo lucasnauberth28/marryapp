@@ -9,7 +9,7 @@ import { confirmarAssinaturaManualmente, recusarAssinatura } from "@/actions/sub
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export interface PanelSubscription {
+export interface AssinaturaDoPainel {
   id: string;
   accountName: string;
   companyName: string | null;
@@ -30,17 +30,17 @@ export interface PanelSubscription {
   receiptHref: string | null;
 }
 
-const TONE_CLASS = {
+const CLASSE_DO_TOM = {
   aviso: "bg-aviso-suave text-aviso",
   sucesso: "bg-sucesso-suave text-sucesso",
   perigo: "bg-perigo-suave text-perigo",
   neutro: "bg-areia text-tinta",
 } as const;
 
-const BUTTON =
+const ESTILO_DO_BOTAO =
   "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60";
 
-export function SubscriptionPanel({ subscription: s, closeHref }: { subscription: PanelSubscription; closeHref: string }) {
+export function PainelDaAssinatura({ subscription: s, closeHref }: { subscription: AssinaturaDoPainel; closeHref: string }) {
   const router = useRouter();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [seen, setSeen] = useState(false);
@@ -80,7 +80,7 @@ export function SubscriptionPanel({ subscription: s, closeHref }: { subscription
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-2">
-          <span className={cn("inline-flex w-fit items-center rounded-full px-2.5 py-1 text-[13px] font-semibold leading-4", TONE_CLASS[s.status.tone])}>
+          <span className={cn("inline-flex w-fit items-center rounded-full px-2.5 py-1 text-[13px] font-semibold leading-4", CLASSE_DO_TOM[s.status.tone])}>
             {s.status.label}
           </span>
           <h2 id="painel-titulo" ref={headingRef} tabIndex={-1} className="font-display text-[26px] leading-8 text-tinta outline-none">
@@ -129,7 +129,7 @@ export function SubscriptionPanel({ subscription: s, closeHref }: { subscription
       {s.receiptHref ? (
         <Link
           href={s.receiptHref}
-          className={cn(BUTTON, "self-start border border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}
+          className={cn(ESTILO_DO_BOTAO, "self-start border border-linha-forte bg-papel text-tinta hover:border-ameixa hover:bg-ameixa-suave")}
         >
           Ver recibo
         </Link>

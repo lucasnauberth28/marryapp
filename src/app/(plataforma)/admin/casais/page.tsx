@@ -22,11 +22,11 @@ import {
   type FiltrosDeCasais,
 } from "@/lib/platform/casais-filters";
 import { ORDENACOES_DE_CASAIS, obterContagensDeCasais, listarCasais, idsDeCasamentoDoPlano } from "@/lib/platform/queries/casais";
-import { CasaisList, type CasalListRow } from "./_components/casais-list";
+import { ListaDeCasais, type LinhaDaListaDeCasais } from "./_components/casais-list";
 
 export const metadata = { title: "Casais" };
 
-const ACOMPANHAR = ["marcados"] as const;
+const ACOMPANHAR_DE_PERTO = ["marcados"] as const;
 
 export default async function Page({ searchParams }: { searchParams: Promise<ParametrosDeBusca> }) {
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
@@ -39,7 +39,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
   const onboarding = umDosValores(query, "onboarding", FILTROS_DE_INICIO);
   const atividade = umDosValores(query, "atividade", FILTROS_DE_ATIVIDADE);
   const dominio = umDosValores(query, "dominio", FILTROS_DE_DOMINIO);
-  const acompanhar = umDosValores(query, "acompanhar", ACOMPANHAR);
+  const acompanhar = umDosValores(query, "acompanhar", ACOMPANHAR_DE_PERTO);
   const ordem = umDosValores(query, "ordem", ORDENACOES_DE_CASAIS) ?? "recentes";
   const now = new Date();
 
@@ -61,7 +61,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 
   const active = { q, plano, data, onboarding, atividade, dominio, acompanhar, ordem: ordem === "recentes" ? undefined : ordem };
   const exportHref = montarLink("/api/admin/casais.csv", { aba: tab === "todos" ? undefined : tab, ...active });
-  const rows: CasalListRow[] = result.rows.map((r) => ({
+  const rows: LinhaDaListaDeCasais[] = result.rows.map((r) => ({
     id: r.id,
     coupleNames: r.coupleNames,
     ownerEmail: r.ownerEmail,
@@ -151,7 +151,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
               </EstadoVazio>
             </div>
           ) : (
-            <CasaisList rows={rows} />
+            <ListaDeCasais rows={rows} />
           )}
 
           <Paginacao page={result.page} pageSize={TAMANHO_PADRAO_DA_PAGINA} total={result.total} basePath="/admin/casais" params={{ aba: tab === "todos" ? undefined : tab, ...active }} noun={["casal", "casais"]} />

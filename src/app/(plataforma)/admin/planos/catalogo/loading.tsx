@@ -1,7 +1,7 @@
 import { LoadingRegion, SkeletonCard, SkeletonPageHeader } from "@/components/skeletons";
 import { EsqueletoDasAbasDoAdmin, EsqueletoDasLinhas, EsqueletoDoPainelDeTabela } from "@/components/plataforma/loading-parts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ContadorSkeleton } from "../_components/skeletons";
+import { EsqueletoDoContador } from "../_components/skeletons";
 
 export default function Loading() {
   return (
@@ -22,7 +22,7 @@ export default function Loading() {
           </SkeletonCard>
         </div>
       </div>
-      <ContadorSkeleton />
+      <EsqueletoDoContador />
     </LoadingRegion>
   );
 }

@@ -7,7 +7,7 @@ import { marcarDominioComoRenovado } from "@/actions/domain-admin-actions";
 import { Button } from "@/components/ui/button";
 
 /** "Marcar como renovado": a renovação é manual no Registro.br; o Aceito só registra o novo vencimento. */
-export function RenewalButton({ orderId, domain }: { orderId: string; domain: string }) {
+export function BotaoDeRenovacao({ orderId, domain }: { orderId: string; domain: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   return (

@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
-import { WhatsAppConfigClient } from "./whatsapp-config-client";
+import { ConfiguracaoDoWhatsappCliente } from "./whatsapp-config-client";
 
 export const metadata: Metadata = {
   title: "Conexão do WhatsApp",
@@ -20,7 +20,7 @@ export default async function WhatsAppConfigPage() {
         description="Veja se o envio de convites e lembretes pelo WhatsApp está disponível. A conexão é do Aceito e a equipe cuida dela."
       />
 
-      <WhatsAppConfigClient />
+      <ConfiguracaoDoWhatsappCliente />
     </div>
   );
 }

@@ -6,33 +6,33 @@ import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 import { LinkPendente } from "@/components/feedback/link-pending";
-import { Chip } from "../../_components/status-chip";
-import { formatWeddingDate } from "../../_lib/vendor-panel";
-import { ReportReview } from "./report-review";
-import { ReviewReply } from "./review-reply";
-import { Stars } from "./stars";
+import { EtiquetaBase } from "../../_components/status-chip";
+import { formatarDataDoCasamento } from "../../_lib/vendor-panel";
+import { DenunciarAvaliacao } from "./report-review";
+import { RespostaAAvaliacao } from "./review-reply";
+import { Estrelas } from "./stars";
 
 import { pluralizar } from "@/lib/formatacao/plural";
 export const metadata: Metadata = { title: "Avaliações" };
 
-const CARD = "rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)]";
-const OVERLINE = "text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase";
-const PATH = "/fornecedor/avaliacoes";
+const ESTILO_DO_CARTAO = "rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)]";
+const ESTILO_DO_SOBRETITULO = "text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase";
+const CAMINHO_DA_PAGINA = "/fornecedor/avaliacoes";
 
-type Filter = "sem-resposta" | "todas";
+type FiltroDeAvaliacoes = "sem-resposta" | "todas";
 
-const SP_OFFSET_MS = 3 * 60 * 60 * 1000; // Brasília (UTC-3)
+const DESLOCAMENTO_DE_BRASILIA_EM_MS = 3 * 60 * 60 * 1000; // Brasília (UTC-3)
 
 /** "5 out" (ano corrente) ou "5 out 2025", no horário de Brasília. */
-function formatShortDate(date: Date, now: Date): string {
-  const label = formatWeddingDate(new Date(date.getTime() - SP_OFFSET_MS)) ?? "";
+function formatarDataCurta(date: Date, now: Date): string {
+  const label = formatarDataDoCasamento(new Date(date.getTime() - DESLOCAMENTO_DE_BRASILIA_EM_MS)) ?? "";
   const sameYear =
-    new Date(date.getTime() - SP_OFFSET_MS).getUTCFullYear() ===
-    new Date(now.getTime() - SP_OFFSET_MS).getUTCFullYear();
+    new Date(date.getTime() - DESLOCAMENTO_DE_BRASILIA_EM_MS).getUTCFullYear() ===
+    new Date(now.getTime() - DESLOCAMENTO_DE_BRASILIA_EM_MS).getUTCFullYear();
   return sameYear ? label.replace(/ \d{4}$/, "") : label;
 }
 
-const oneDecimal = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const umaCasaDecimal = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 export default async function AvaliacoesPage({ searchParams }: { searchParams: Promise<{ filtro?: string }> }) {
   const { vendor } = await obterContextoDaPaginaDoFornecedor();
@@ -50,11 +50,11 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
   }));
   const total = byRating.reduce((acc, r) => acc + r._count._all, 0);
   const average = total > 0 ? byRating.reduce((acc, r) => acc + r.rating * r._count._all, 0) / total : 0;
-  const averageLabel = oneDecimal.format(average);
+  const averageLabel = umaCasaDecimal.format(average);
 
   const { filtro } = await searchParams;
   // Sem filtro na URL: abre nas que pedem resposta, se houver alguma.
-  const filter: Filter =
+  const filter: FiltroDeAvaliacoes =
     filtro === "todas" || filtro === "sem-resposta" ? filtro : unansweredCount > 0 ? "sem-resposta" : "todas";
 
   const reviews =
@@ -84,7 +84,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
   const firstUnansweredId = reviews.find((r) => !r.reply)?.id;
   const publicProfileHref = vendor.curationStatus === "APPROVED" ? `/fornecedores/${vendor.id}` : null;
 
-  const filters: { value: Filter; label: string; count: number }[] = [
+  const filters: { value: FiltroDeAvaliacoes; label: string; count: number }[] = [
     { value: "sem-resposta", label: "Sem resposta", count: unansweredCount },
     { value: "todas", label: "Todas", count: total },
   ];
@@ -92,7 +92,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
   return (
     <div className="flex flex-col gap-6">
       <Aparicao variant="fade" className="flex flex-col gap-1">
-        <p className={cn(OVERLINE, "hidden md:block")}>Fornecedor</p>
+        <p className={cn(ESTILO_DO_SOBRETITULO, "hidden md:block")}>Fornecedor</p>
         <h1 className="font-display text-[32px] leading-[38px] font-medium md:text-[40px] md:leading-[46px]">
           Avaliações
         </h1>
@@ -102,7 +102,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
       </Aparicao>
 
       {total === 0 ? (
-        <Aparicao variant="fade" className={cn(CARD, "flex flex-col items-center gap-3 px-6 py-12 text-center")}>
+        <Aparicao variant="fade" className={cn(ESTILO_DO_CARTAO, "flex flex-col items-center gap-3 px-6 py-12 text-center")}>
           <span className="grid size-12 place-items-center rounded-full bg-salvia-suave text-salvia">
             <Star aria-hidden="true" className="size-6" />
           </span>
@@ -129,7 +129,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
           <Aparicao variant="up">
             <section
               aria-label="Resumo das avaliações"
-              className={cn(CARD, "flex flex-wrap items-center gap-6 p-5 sm:gap-8 sm:p-6")}
+              className={cn(ESTILO_DO_CARTAO, "flex flex-wrap items-center gap-6 p-5 sm:gap-8 sm:p-6")}
             >
               <div className="flex min-w-[180px] flex-col gap-1.5">
                 <span
@@ -138,7 +138,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
                 >
                   {averageLabel}
                 </span>
-                <Stars rating={average} label={`Nota média ${averageLabel} de 5`} />
+                <Estrelas rating={average} label={`Nota média ${averageLabel} de 5`} />
                 <span className="text-sm text-tinta-suave">
                   {pluralizar(total, "avaliação", "avaliações")} · {unansweredCount} sem resposta
                 </span>
@@ -174,7 +174,7 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
                   return (
                     <li key={f.value}>
                       <Link
-                        href={`${PATH}?filtro=${f.value}`}
+                        href={`${CAMINHO_DA_PAGINA}?filtro=${f.value}`}
                         aria-current={active ? "page" : undefined}
                         scroll={false}
                         className={cn(
@@ -194,13 +194,13 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
             </nav>
 
             {reviews.length === 0 ? (
-              <Aparicao variant="fade" className={cn(CARD, "flex flex-col items-center gap-2 px-6 py-10 text-center")}>
+              <Aparicao variant="fade" className={cn(ESTILO_DO_CARTAO, "flex flex-col items-center gap-2 px-6 py-10 text-center")}>
                 <p className="text-lg font-semibold">Tudo respondido</p>
                 <p className="max-w-md text-tinta-suave">
                   Você já respondeu todas as avaliações. As respostas estão no seu perfil público.
                 </p>
                 <Link
-                  href={`${PATH}?filtro=todas`}
+                  href={`${CAMINHO_DA_PAGINA}?filtro=todas`}
                   scroll={false}
                   className="inline-flex min-h-11 items-center rounded-xl border border-linha-forte bg-papel px-4 text-[15px] font-semibold text-tinta transition-colors hover:bg-areia"
                 >
@@ -210,17 +210,17 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
             ) : (
               <ul className="flex flex-col gap-3 transition-opacity group-has-[[data-link-pending]]/lista:opacity-60">
                 {reviews.map((review, i) => {
-                  const date = formatWeddingDate(review.weddingDate);
+                  const date = formatarDataDoCasamento(review.weddingDate);
                   const married = review.weddingDate ? review.weddingDate.getTime() <= now.getTime() : false;
                   const subtitle = date
                     ? `${married ? "Casaram em" : "Casamento em"} ${date}`
-                    : `Avaliou em ${formatShortDate(review.createdAt, now)}`;
+                    : `Avaliou em ${formatarDataCurta(review.createdAt, now)}`;
                   return (
                     <Aparicao as="li" key={review.id} variant="up" delay={Math.min(i, 5) * 80}>
                       <article
                         aria-labelledby={`avaliacao-${review.id}`}
                         className={cn(
-                          CARD,
+                          ESTILO_DO_CARTAO,
                           "flex flex-col gap-3 p-4 sm:p-6",
                           review.id === firstUnansweredId && "border-2 border-ameixa",
                         )}
@@ -234,24 +234,24 @@ export default async function AvaliacoesPage({ searchParams }: { searchParams: P
                           </div>
                           <div className="flex flex-wrap items-center gap-2">
                             {review.isVerified ? (
-                              <Chip tone="sucesso" icon={ShieldCheck}>
+                              <EtiquetaBase tone="sucesso" icon={ShieldCheck}>
                                 Verificada
-                              </Chip>
+                              </EtiquetaBase>
                             ) : null}
-                            {review.hiddenAt ? <Chip tone="neutro" icon={EyeOff}>Ocultada pela equipe do Aceito</Chip> : null}
-                            {review.reportedAt && !review.moderatedAt && !review.hiddenAt ? <Chip tone="aviso" icon={Flag}>Denúncia em análise</Chip> : null}
-                            <Stars rating={review.rating} label={`${review.rating} de 5 estrelas`} />
+                            {review.hiddenAt ? <EtiquetaBase tone="neutro" icon={EyeOff}>Ocultada pela equipe do Aceito</EtiquetaBase> : null}
+                            {review.reportedAt && !review.moderatedAt && !review.hiddenAt ? <EtiquetaBase tone="aviso" icon={Flag}>Denúncia em análise</EtiquetaBase> : null}
+                            <Estrelas rating={review.rating} label={`${review.rating} de 5 estrelas`} />
                           </div>
                         </div>
                         <p className="font-display text-lg leading-7 whitespace-pre-line break-words sm:text-xl sm:leading-[30px]">
                           “{review.comment}”
                         </p>
-                        {!review.reportedAt || review.moderatedAt ? <ReportReview reviewId={review.id} coupleNames={review.coupleNames} /> : null}
-                        <ReviewReply
+                        {!review.reportedAt || review.moderatedAt ? <DenunciarAvaliacao reviewId={review.id} coupleNames={review.coupleNames} /> : null}
+                        <RespostaAAvaliacao
                           reviewId={review.id}
                           coupleNames={review.coupleNames}
                           reply={review.reply}
-                          repliedLabel={review.repliedAt ? formatShortDate(review.repliedAt, now) : null}
+                          repliedLabel={review.repliedAt ? formatarDataCurta(review.repliedAt, now) : null}
                           placeholder={
                             review.rating >= 4
                               ? "Agradeça e conte algo do dia que vocês lembram"

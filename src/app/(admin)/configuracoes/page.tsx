@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { obterConfiguracoes } from "@/actions/settings-actions";
-import { SettingsClient } from "./settings-client";
+import { ConfiguracoesCliente } from "./settings-client";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
@@ -17,7 +17,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <SettingsClient
+      <ConfiguracoesCliente
         initialSettings={settings}
         summary={{
           names: identity.coupleNames,

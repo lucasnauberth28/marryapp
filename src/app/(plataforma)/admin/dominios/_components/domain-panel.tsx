@@ -27,7 +27,7 @@ import { ETAPAS_DA_LINHA_DO_TEMPO, situacoesDasEtapas, type NomeDaSituacaoDoPedi
 import type { ResultadoDaConexao } from "@/lib/vercel-domains-core";
 import { cn } from "@/lib/utils";
 
-export interface DomainPanelData {
+export interface DadosDoPainelDoDominio {
   id: string;
   domain: string;
   status: NomeDaSituacaoDoPedidoDeDominio;
@@ -38,16 +38,16 @@ export interface DomainPanelData {
   canRenew: boolean;
 }
 
-const DANGER = "border-perigo text-perigo hover:border-perigo hover:bg-perigo-suave";
+const ESTILO_DE_PERIGO = "border-perigo text-perigo hover:border-perigo hover:bg-perigo-suave";
 
-const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
-function plusOneYear(date: string) {
+const hojeNoFormulario = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
+function maisUmAno(date: string) {
   const d = new Date(`${date}T00:00:00Z`);
   d.setUTCFullYear(d.getUTCFullYear() + 1);
   return d.toISOString().slice(0, 10);
 }
 
-async function copyText(text: string, done: string) {
+async function copiarTexto(text: string, done: string) {
   try {
     await navigator.clipboard.writeText(text);
     toast.success(done);
@@ -57,7 +57,7 @@ async function copyText(text: string, done: string) {
 }
 
 /** Texto honesto da última situação lida da Vercel (sem inventar horário: só guardamos a situação). */
-function vercelStateText(state: string | null): string | null {
+function textoDaSituacaoNaVercel(state: string | null): string | null {
   if (!state) return null;
   if (state === "ready") return "A Vercel confirmou: domínio verificado e apontado.";
   if (state === "pending_dns") return "A Vercel ainda não encontra o DNS apontado. A propagação pode levar até 48 horas.";
@@ -68,12 +68,12 @@ function vercelStateText(state: string | null): string | null {
 }
 
 /** Painel do pedido de domínio: etapas, DNS que a Vercel devolve e as ações da equipe (todas auditadas no servidor). */
-export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; vercelReady: boolean }) {
+export function PainelDoDominio({ order, vercelReady }: { order: DadosDoPainelDoDominio; vercelReady: boolean }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [panel, setPanel] = useState<"registered" | "reject" | "online" | null>(null);
-  const [registeredAt, setRegisteredAt] = useState(today);
-  const [expiresAt, setExpiresAt] = useState(() => plusOneYear(today()));
+  const [registeredAt, setRegisteredAt] = useState(hojeNoFormulario);
+  const [expiresAt, setExpiresAt] = useState(() => maisUmAno(hojeNoFormulario()));
   const [reason, setReason] = useState("");
   const [note, setNote] = useState(order.adminNote ?? "");
   const [connection, setConnection] = useState<ResultadoDaConexao | null>(null);
@@ -101,7 +101,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
     });
   }
 
-  const stateText = vercelStateText(order.vercelState);
+  const stateText = textoDaSituacaoNaVercel(order.vercelState);
 
   return (
     <div className="flex flex-col gap-5">
@@ -136,7 +136,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
             </Button>
           ) : null}
           {fullDocument ? (
-            <button type="button" onClick={() => copyText(fullDocument.replace(/[^0-9A-Z]/g, ""), "Número copiado (só os dígitos).")} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)}>
+            <button type="button" onClick={() => copiarTexto(fullDocument.replace(/[^0-9A-Z]/g, ""), "Número copiado (só os dígitos).")} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)}>
               <Copy className="size-4" aria-hidden="true" /> Copiar
             </button>
           ) : null}
@@ -177,7 +177,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
               Vercel não configurada (faltam VERCEL_API_TOKEN e VERCEL_PROJECT_ID). Sem ela não temos os registros reais para mostrar: adicione o domínio na Vercel à mão e use &quot;Marcar como no ar&quot;.
             </p>
           ) : connection ? (
-            <ConnectionPanel connection={connection} />
+            <PainelDaConexao connection={connection} />
           ) : (
             <p className="text-sm text-tinta-suave">Use &quot;Conectar à Vercel&quot; ou &quot;Verificar DNS&quot; para ver os registros que a Vercel pede para este domínio.</p>
           )}
@@ -241,7 +241,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
             value={registeredAt}
             onChange={(e) => {
               setRegisteredAt(e.target.value);
-              if (e.target.value) setExpiresAt(plusOneYear(e.target.value));
+              if (e.target.value) setExpiresAt(maisUmAno(e.target.value));
             }}
             required
           />
@@ -268,7 +268,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
             }}
           >
             <Textarea label="Motivo da recusa" rows={3} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} hint="O casal recebe este texto por e-mail." />
-            <Button type="submit" variant="outline" disabled={reason.trim().length < 5 || pending} loading={pending && running === "reject"} className={cn(DANGER, "self-start")}>
+            <Button type="submit" variant="outline" disabled={reason.trim().length < 5 || pending} loading={pending && running === "reject"} className={cn(ESTILO_DE_PERIGO, "self-start")}>
               Recusar com motivo
             </Button>
           </form>
@@ -303,13 +303,13 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
   );
 }
 
-const STATE_CHIP = {
+const ETIQUETA_DA_SITUACAO = {
   ready: { tone: "sucesso", label: "Verificado e apontado" },
   pending_dns: { tone: "aviso", label: "Falta o DNS" },
   pending_verification: { tone: "aviso", label: "Falta a verificação" },
 } as const;
 
-function ConnectionPanel({ connection }: { connection: ResultadoDaConexao }) {
+function PainelDaConexao({ connection }: { connection: ResultadoDaConexao }) {
   if (!connection.ok) {
     return (
       <p role="status" className="rounded-xl bg-perigo-suave p-3 text-sm font-semibold text-perigo">
@@ -317,7 +317,7 @@ function ConnectionPanel({ connection }: { connection: ResultadoDaConexao }) {
       </p>
     );
   }
-  const chip = STATE_CHIP[connection.state];
+  const chip = ETIQUETA_DA_SITUACAO[connection.state];
   return (
     <div className="flex flex-col gap-3">
       <p className="flex flex-wrap items-center gap-2 text-sm text-tinta">
@@ -334,7 +334,7 @@ function ConnectionPanel({ connection }: { connection: ResultadoDaConexao }) {
             </span>
             <span className="flex flex-wrap items-center justify-between gap-2">
               <span className="min-w-0 break-all font-mono text-tinta">{record.value}</span>
-              <button type="button" onClick={() => copyText(record.value, "Valor copiado.")} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)}>
+              <button type="button" onClick={() => copiarTexto(record.value, "Valor copiado.")} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)}>
                 <Copy className="size-4" aria-hidden="true" /> Copiar
               </button>
             </span>

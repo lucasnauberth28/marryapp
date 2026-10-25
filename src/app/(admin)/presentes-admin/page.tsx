@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import { PaymentMethod, PaymentStatus } from "@prisma/client"
 import prisma from "@/lib/prisma"
 import { obterPresentes } from "@/actions/gift-actions"
-import { GiftsClient, type GiftPayment } from "./gifts-client"
+import { PresentesCliente, type PagamentoDoPresente } from "./gifts-client"
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context"
 import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links"
 
@@ -12,18 +12,18 @@ export const metadata: Metadata = {
   description: "Presentes em dinheiro do casamento: o que foi cadastrado e o que já foi recebido",
 }
 
-const TZ = "America/Sao_Paulo"
-const dayKey = new Intl.DateTimeFormat("en-CA", { timeZone: TZ })
-const timeFmt = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: TZ })
-const shortDateFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", timeZone: TZ })
+const FUSO = "America/Sao_Paulo"
+const chaveDoDia = new Intl.DateTimeFormat("en-CA", { timeZone: FUSO })
+const formatoDaHora = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: FUSO })
+const formatoDaDataCurta = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", timeZone: FUSO })
 
 /** "hoje, 10:42", "ontem", "2 out" ou "2 out 2025" (de anos anteriores). */
-function whenLabel(date: Date, now: Date) {
-  const day = dayKey.format(date)
-  if (day === dayKey.format(now)) return `hoje, ${timeFmt.format(date)}`
-  if (day === dayKey.format(new Date(now.getTime() - 24 * 60 * 60 * 1000))) return "ontem"
-  const sameYear = day.slice(0, 4) === dayKey.format(now).slice(0, 4)
-  return (sameYear ? shortDateFmt.format(date) : formatarDataBrasiliaCurtaComAno(date)).replace(".", "")
+function rotuloDeQuando(date: Date, now: Date) {
+  const day = chaveDoDia.format(date)
+  if (day === chaveDoDia.format(now)) return `hoje, ${formatoDaHora.format(date)}`
+  if (day === chaveDoDia.format(new Date(now.getTime() - 24 * 60 * 60 * 1000))) return "ontem"
+  const sameYear = day.slice(0, 4) === chaveDoDia.format(now).slice(0, 4)
+  return (sameYear ? formatoDaDataCurta.format(date) : formatarDataBrasiliaCurtaComAno(date)).replace(".", "")
 }
 
 export default async function PresentesAdminPage() {
@@ -50,12 +50,12 @@ export default async function PresentesAdminPage() {
   })
 
   const now = new Date()
-  const payments: GiftPayment[] = rows.map((t) => ({
+  const payments: PagamentoDoPresente[] = rows.map((t) => ({
     id: t.id,
     from: t.guest?.name || t.guestName || "Convidado sem nome",
     giftTitle: t.gift.title,
     amount: t.amount,
-    when: whenLabel(t.createdAt, now),
+    when: rotuloDeQuando(t.createdAt, now),
     situation:
       t.status === PaymentStatus.PENDING
         ? "toCheck"
@@ -72,7 +72,7 @@ export default async function PresentesAdminPage() {
 
   return (
     <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <GiftsClient
+      <PresentesCliente
         initialGifts={gifts || []}
         payments={payments}
         siteGiftsHref={caminhoDoSiteDoCasamento(wedding.slug, "presentes")}

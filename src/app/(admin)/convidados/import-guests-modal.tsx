@@ -24,9 +24,9 @@ import {
 } from "@/lib/guest-import";
 
 import { pluralizar } from "@/lib/formatacao/plural";
-const MAX_FILE_BYTES = 2 * 1024 * 1024;
+const TAMANHO_MAXIMO_DO_ARQUIVO_EM_BYTES = 2 * 1024 * 1024;
 
-const FIELD_LABEL: Record<CampoDaImportacao, string> = {
+const ROTULO_DO_CAMPO: Record<CampoDaImportacao, string> = {
   name: "Nome",
   phone: "Telefone",
   email: "E-mail",
@@ -36,23 +36,23 @@ const FIELD_LABEL: Record<CampoDaImportacao, string> = {
   dietary: "Restrição alimentar",
 };
 
-type Stage = "escolher" | "previa" | "importando" | "pronto";
+type EtapaDoFluxo = "escolher" | "previa" | "importando" | "pronto";
 
-interface Sheet {
+interface PlanilhaLida {
   fileName: string;
   rows: LinhaImportada[];
   hasHeader: boolean;
   columns: MapaDeColunas;
 }
 
-interface ImportGuestsModalProps {
+interface PropriedadesDoModalDeImportacao {
   isOpen: boolean;
   onClose: () => void;
   /** Quem já está na lista: telefone igual a um deles é pulado. */
   existing: ConvidadoExistente[];
 }
 
-function downloadSheetTemplate() {
+function baixarPlanilhaModelo() {
   const blob = new Blob([csvDaPlanilhaModelo()], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -64,7 +64,7 @@ function downloadSheetTemplate() {
   URL.revokeObjectURL(url);
 }
 
-export function ImportGuestsModal({ isOpen, onClose, existing }: ImportGuestsModalProps) {
+export function ModalDeImportacaoDeConvidados({ isOpen, onClose, existing }: PropriedadesDoModalDeImportacao) {
   return (
     <ModalPersonalizado
       isOpen={isOpen}
@@ -75,14 +75,14 @@ export function ImportGuestsModal({ isOpen, onClose, existing }: ImportGuestsMod
       className="max-h-[92vh] overflow-y-auto"
     >
       {/* Remonta ao reabrir: começa sempre do zero */}
-      {isOpen ? <ImportFlow existing={existing} onClose={onClose} /> : null}
+      {isOpen ? <FluxoDeImportacao existing={existing} onClose={onClose} /> : null}
     </ModalPersonalizado>
   );
 }
 
-function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onClose: () => void }) {
-  const [stage, setStage] = useState<Stage>("escolher");
-  const [sheet, setSheet] = useState<Sheet | null>(null);
+function FluxoDeImportacao({ existing, onClose }: { existing: ConvidadoExistente[]; onClose: () => void }) {
+  const [stage, setStage] = useState<EtapaDoFluxo>("escolher");
+  const [sheet, setSheet] = useState<PlanilhaLida | null>(null);
   const [reading, setReading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ added: number; duplicates: number; invalid: number } | null>(null);
@@ -104,7 +104,7 @@ function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onC
       setError("Esse é um arquivo de Excel. Salve como CSV (no Excel: Arquivo, Salvar como, CSV UTF-8) e escolha o arquivo de novo.");
       return;
     }
-    if (file.size > MAX_FILE_BYTES) {
+    if (file.size > TAMANHO_MAXIMO_DO_ARQUIVO_EM_BYTES) {
       setError("O arquivo é grande demais (o máximo é 2 MB). Divida a lista em partes.");
       return;
     }
@@ -203,7 +203,7 @@ function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onC
               <Upload className="size-4" aria-hidden="true" />
               Escolher arquivo
             </BotaoComCarregamento>
-            <button type="button" onClick={downloadSheetTemplate} className={btn.quiet}>
+            <button type="button" onClick={baixarPlanilhaModelo} className={btn.quiet}>
               <Download className="size-4" aria-hidden="true" />
               Baixar modelo de planilha
             </button>
@@ -287,9 +287,9 @@ function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onC
 
   // ------------------------------------------------------------------ prévia
   if (!sheet || !plan) return null;
-  const columnNames = (Object.keys(FIELD_LABEL) as CampoDaImportacao[])
+  const columnNames = (Object.keys(ROTULO_DO_CAMPO) as CampoDaImportacao[])
     .filter((f) => sheet.columns[f] !== undefined)
-    .map((f) => FIELD_LABEL[f]);
+    .map((f) => ROTULO_DO_CAMPO[f]);
   const addCount = plan.toAdd.length;
 
   return (

@@ -7,14 +7,14 @@ import { toast } from "sonner";
  * Chama uma Server Action da administração: bloqueia o botão enquanto roda, mostra o aviso de sucesso (toast)
  * e guarda a mensagem geral e os erros por campo para o formulário. Qualquer erro inesperado vira texto amigável.
  */
-export type ActionResult = { success: true; message?: string } | { success: false; error: string; fieldErrors?: Record<string, string> };
+export type ResultadoDaAcao = { success: true; message?: string } | { success: false; error: string; fieldErrors?: Record<string, string> };
 
-export function useAdminAction() {
+export function useAcaoDoAdmin() {
   const [pending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
 
-  function run<T extends ActionResult>(task: () => Promise<T>, onSuccess?: (result: Extract<T, { success: true }>) => void) {
+  function run<T extends ResultadoDaAcao>(task: () => Promise<T>, onSuccess?: (result: Extract<T, { success: true }>) => void) {
     startTransition(async () => {
       setErrors({});
       setFormError(null);

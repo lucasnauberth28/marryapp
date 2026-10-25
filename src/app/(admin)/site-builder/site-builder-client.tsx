@@ -40,7 +40,7 @@ import {
 } from "@/actions/site-builder-actions";
 import { toast } from "sonner";
 
-interface StoryItem {
+interface ItemDaHistoria {
   id: string;
   title: string;
   dateLabel?: string | null;
@@ -48,7 +48,7 @@ interface StoryItem {
   imageUrl?: string | null;
 }
 
-interface Tip {
+interface Dica {
   id: string;
   category: string;
   title: string;
@@ -59,7 +59,7 @@ interface Tip {
   discountCode?: string | null;
 }
 
-interface PreviewGift {
+interface PresenteDaPrevia {
   id: string;
   title: string;
   description?: string | null;
@@ -67,11 +67,11 @@ interface PreviewGift {
   imageUrl?: string | null;
 }
 
-interface SiteBuilderClientProps {
+interface PropriedadesDoEditorDoSiteCliente {
   initialSettings: (ConfiguracoesDoSiteDoCasamento & { id?: string }) | null;
-  initialStoryItems: StoryItem[];
-  initialTips: Tip[];
-  previewGifts: PreviewGift[];
+  initialStoryItems: ItemDaHistoria[];
+  initialTips: Dica[];
+  previewGifts: PresenteDaPrevia[];
   rsvpDeadline: Date | string | null;
   /** Endereço público do casamento (/casamento/<slug>) */
   slug: string;
@@ -79,10 +79,10 @@ interface SiteBuilderClientProps {
   customDomain?: string | null;
 }
 
-type SectionId = "COVER" | "STORY" | "LOCATION" | "DRESS" | "TIPS" | "RSVP" | "MUSIC" | "GIFTS" | "GUESTBOOK";
+type IdDaSecao = "COVER" | "STORY" | "LOCATION" | "DRESS" | "TIPS" | "RSVP" | "MUSIC" | "GIFTS" | "GUESTBOOK";
 
 /** Seções na ordem em que aparecem no site. `key` liga e desliga a seção no site (a capa está sempre visível). */
-const SECTIONS: { id: SectionId; label: string; key?: keyof ConfiguracoesDoSiteDoCasamento; desc?: string }[] = [
+const SECOES: { id: IdDaSecao; label: string; key?: keyof ConfiguracoesDoSiteDoCasamento; desc?: string }[] = [
   { id: "COVER", label: "Capa" },
   { id: "STORY", label: "Nossa história", key: "showStory", desc: "Mensagem de boas-vindas, foto do casal e momentos marcantes." },
   { id: "LOCATION", label: "Cerimônia e recepção", key: "showLocation", desc: "Endereço, horários e botões de rota (Maps, Waze, Uber)." },
@@ -94,7 +94,7 @@ const SECTIONS: { id: SectionId; label: string; key?: keyof ConfiguracoesDoSiteD
   { id: "GUESTBOOK", label: "Mural de recados", key: "showGuestbook", desc: "Espaço para os convidados deixarem mensagens." },
 ];
 
-const TIP_LABELS: Record<string, string> = {
+const ROTULOS_DAS_DICAS: Record<string, string> = {
   HOTEL: "Hospedagem",
   SALON: "Beleza",
   TRANSFER: "Transporte",
@@ -102,20 +102,20 @@ const TIP_LABELS: Record<string, string> = {
 };
 
 // Campos que o editor envia ao servidor (o resto do registro é ignorado)
-const EDITABLE_KEYS = [
+const CHAVES_EDITAVEIS = [
   "title", "subtitle", "weddingDate", "ceremonyTime", "receptionTime", "locationName", "locationAddress",
   "locationMapUrl", "wazeUrl", "uberUrl", "themeColor", "heroImageUrl", "couplePhotoUrl", "dressCodeTitle",
   "dressCodeDesc", "dressCodePalette", "spotifyPlaylistUrl", "welcomeMessage",
   "showStory", "showLocation", "showDressCode", "showTips", "showGifts", "showRsvp", "showGuestbook", "showMusic",
 ] as const;
 
-function toDateInput(value: Date | string | null | undefined) {
+function paraCampoDeData(value: Date | string | null | undefined) {
   if (!value) return "";
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
 }
 
-function parsePalette(raw?: string | null): string[] {
+function interpretarPaleta(raw?: string | null): string[] {
   try {
     const p = raw ? JSON.parse(raw) : [];
     return Array.isArray(p) ? p.filter((c) => typeof c === "string") : [];
@@ -125,7 +125,7 @@ function parsePalette(raw?: string | null): string[] {
 }
 
 /** Rótulo fixo para controles que não são campo de texto (seletor de cor e envio de foto). */
-function Field({ id, label, hint, group, children }: { id: string; label: string; hint?: string; group?: boolean; children: ReactNode }) {
+function CampoDoEditor({ id, label, hint, group, children }: { id: string; label: string; hint?: string; group?: boolean; children: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5" {...(group ? { role: "group", "aria-labelledby": `${id}-rotulo` } : {})}>
       {group ? (
@@ -144,10 +144,10 @@ function Field({ id, label, hint, group, children }: { id: string; label: string
 }
 
 
-const savedFmt = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
+const formatoDoSalvo = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
 
 /** Uma seção do site: linha de 48px com chip Visível/Oculta que abre os campos da seção. */
-function SectionRow({
+function LinhaDaSecao({
   id,
   title,
   visible,
@@ -191,7 +191,7 @@ function SectionRow({
   );
 }
 
-export function SiteBuilderClient({
+export function EditorDoSiteCliente({
   initialSettings,
   initialStoryItems,
   initialTips,
@@ -199,11 +199,11 @@ export function SiteBuilderClient({
   rsvpDeadline,
   slug,
   customDomain,
-}: SiteBuilderClientProps) {
+}: PropriedadesDoEditorDoSiteCliente) {
   const [settings, setSettings] = useState<ConfiguracoesDoSiteDoCasamento>(initialSettings ?? {});
-  const [storyItems, setStoryItems] = useState<StoryItem[]>(initialStoryItems);
-  const [tips, setTips] = useState<Tip[]>(initialTips);
-  const [openSection, setOpenSection] = useState<SectionId | null>("COVER");
+  const [storyItems, setStoryItems] = useState<ItemDaHistoria[]>(initialStoryItems);
+  const [tips, setTips] = useState<Dica[]>(initialTips);
+  const [openSection, setOpenSection] = useState<IdDaSecao | null>("COVER");
   const [savedAt, setSavedAt] = useState<string | null>(() => {
     const u = (initialSettings as { updatedAt?: Date | string } | null)?.updatedAt;
     return u ? new Date(u).toISOString() : null;
@@ -226,12 +226,12 @@ export function SiteBuilderClient({
     setDirty(true);
   };
 
-  const palette = parsePalette(settings.dressCodePalette);
+  const palette = interpretarPaleta(settings.dressCodePalette);
   const accent = destaqueLegivel(settings.themeColor || "#5E2B4E");
 
   const handleSave = () => {
     const payload = Object.fromEntries(
-      EDITABLE_KEYS.filter((k) => settings[k] !== undefined).map((k) => [k, settings[k]])
+      CHAVES_EDITAVEIS.filter((k) => settings[k] !== undefined).map((k) => [k, settings[k]])
     ) as EntradaDaPersonalizacaoDoSite;
 
     const toastId = toast.loading("Publicando as alterações...");
@@ -276,7 +276,7 @@ export function SiteBuilderClient({
       const res = await criarItemDaHistoria({ ...story, position: storyItems.length });
       setBusyAction(null);
       if (res.success && res.item) {
-        setStoryItems((prev) => [...prev, res.item as StoryItem]);
+        setStoryItems((prev) => [...prev, res.item as ItemDaHistoria]);
         setStory({ title: "", dateLabel: "", description: "" });
         toast.success("Momento adicionado.");
       } else {
@@ -295,7 +295,7 @@ export function SiteBuilderClient({
       const res = await criarDicaDoCasamento({ ...tip, position: tips.length });
       setBusyAction(null);
       if (res.success && res.tip) {
-        setTips((prev) => [...prev, res.tip as Tip]);
+        setTips((prev) => [...prev, res.tip as Dica]);
         setTip({ category: tip.category, title: "", description: "", address: "", phone: "", linkUrl: "", discountCode: "" });
         toast.success("Dica adicionada.");
       } else {
@@ -335,7 +335,7 @@ export function SiteBuilderClient({
   const photoField = (field: "heroImageUrl" | "couplePhotoUrl", label: string, hint: string, ref: React.RefObject<HTMLInputElement | null>) => {
     const url = settings[field];
     return (
-      <Field id={field} group label={label} hint={hint}>
+      <CampoDoEditor id={field} group label={label} hint={hint}>
         <div className="flex items-center gap-3">
           <div className="relative grid aspect-[3/4] w-[72px] shrink-0 place-items-center overflow-hidden rounded-t-full bg-areia text-center text-[11px] text-tinta-suave">
             {uploading === field ? (
@@ -370,7 +370,7 @@ export function SiteBuilderClient({
           placeholder="https://..."
           fieldClassName="mt-1"
         />
-      </Field>
+      </CampoDoEditor>
     );
   };
 
@@ -403,7 +403,7 @@ export function SiteBuilderClient({
     </div>
   );
 
-  const toggle = (id: SectionId) => setOpenSection((cur) => (cur === id ? null : id));
+  const toggle = (id: IdDaSecao) => setOpenSection((cur) => (cur === id ? null : id));
   const isVisible = (key?: keyof ConfiguracoesDoSiteDoCasamento) => (key ? settings[key] !== false : undefined);
 
   /** Interruptor de "aparece no site" (publicado na hora, como antes). */
@@ -423,7 +423,7 @@ export function SiteBuilderClient({
   const savedLabel = dirty
     ? "alterações ainda não publicadas"
     : savedAt
-      ? `publicado em ${savedFmt.format(new Date(savedAt)).replace(".", "")}`
+      ? `publicado em ${formatoDoSalvo.format(new Date(savedAt)).replace(".", "")}`
       : "tudo publicado";
 
   return (
@@ -450,8 +450,8 @@ export function SiteBuilderClient({
       <div className="grid gap-6 xl:grid-cols-[minmax(340px,420px)_minmax(0,1fr)] xl:items-start">
         <div className="flex min-w-0 flex-col gap-5">
           <ol className="flex flex-col gap-1.5">
-            {SECTIONS.map((section) => (
-              <SectionRow
+            {SECOES.map((section) => (
+              <LinhaDaSecao
                 key={section.id}
                 id={section.id}
                 title={section.label}
@@ -465,11 +465,11 @@ export function SiteBuilderClient({
                     <SeletorDeData
                       id="weddingDate"
                       label="Data do casamento"
-                      value={toDateInput(settings.weddingDate)}
+                      value={paraCampoDeData(settings.weddingDate)}
                       onChange={(e) => update({ weddingDate: e.target.value ? `${e.target.value}T12:00:00.000Z` : null })}
                     />
                     <Input id="subtitle" label="Frase acima dos nomes" optional hint="Ex.: “Vamos nos casar!”" value={settings.subtitle || ""} onChange={(e) => update({ subtitle: e.target.value })} />
-                    <Field id="themeColor" label="Cor do site">
+                    <CampoDoEditor id="themeColor" label="Cor do site">
                       <div className="flex items-center gap-2">
                         <input
                           id="themeColor"
@@ -499,7 +499,7 @@ export function SiteBuilderClient({
                           "Usada em botões, títulos e detalhes do site."
                         )}
                       </p>
-                    </Field>
+                    </CampoDoEditor>
                     {photoField("heroImageUrl", "Foto da capa", "Aparece em um arco vertical no topo do site. Prefira uma foto em pé, com vocês no centro. JPG, PNG ou WEBP de até 5 MB.", heroInput)}
                   </>
                 )}
@@ -519,7 +519,7 @@ export function SiteBuilderClient({
                         <Plus className="size-4" aria-hidden="true" /> Adicionar momento
                       </BotaoComCarregamento>
                     </fieldset>
-                    <ItemList
+                    <ListaDeItens
                       title={`Momentos publicados (${storyItems.length})`}
                       empty="Nenhum momento ainda. A seção mostra só a mensagem e a foto do casal."
                       items={storyItems.map((i) => ({ id: i.id, eyebrow: i.dateLabel, title: i.title, text: i.description }))}
@@ -595,7 +595,7 @@ export function SiteBuilderClient({
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {Object.entries(TIP_LABELS).map(([value, label]) => (
+                          {Object.entries(ROTULOS_DAS_DICAS).map(([value, label]) => (
                             <SelectItem key={value} value={value}>
                               {label}
                             </SelectItem>
@@ -612,10 +612,10 @@ export function SiteBuilderClient({
                         <Plus className="size-4" aria-hidden="true" /> Adicionar dica
                       </BotaoComCarregamento>
                     </fieldset>
-                    <ItemList
+                    <ListaDeItens
                       title={`Dicas publicadas (${tips.length})`}
                       empty="Nenhuma dica ainda. A seção só aparece no site quando houver pelo menos uma."
-                      items={tips.map((t) => ({ id: t.id, eyebrow: TIP_LABELS[t.category] ?? t.category, title: t.title, text: t.discountCode ? `Cupom ${t.discountCode}` : t.description }))}
+                      items={tips.map((t) => ({ id: t.id, eyebrow: ROTULOS_DAS_DICAS[t.category] ?? t.category, title: t.title, text: t.discountCode ? `Cupom ${t.discountCode}` : t.description }))}
                       onDelete={(item) => setPendingDelete({ kind: "tip", id: item.id, title: item.title })}
                     />
                   </>
@@ -629,7 +629,7 @@ export function SiteBuilderClient({
                 )}
 
                 {(section.id === "RSVP" || section.id === "GIFTS" || section.id === "GUESTBOOK") && section.key && visibilityToggle(section.key, section.desc)}
-              </SectionRow>
+              </LinhaDaSecao>
             ))}
           </ol>
           <p className="text-sm text-tinta-suave">
@@ -662,7 +662,7 @@ export function SiteBuilderClient({
   );
 }
 
-function ItemList({
+function ListaDeItens({
   title,
   empty,
   items,

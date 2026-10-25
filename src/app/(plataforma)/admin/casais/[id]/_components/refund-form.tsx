@@ -7,29 +7,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCasalAction } from "../../_components/use-casal-action";
+import { useAcaoDoCasal } from "../../_components/use-casal-action";
 
-export interface RefundOption {
+export interface OpcaoDeReembolso {
   id: string;
   label: string;
   amountCents: number;
 }
 
 /** Converte "149,00" ou "149.5" em centavos (null se não for um valor). */
-function toCents(text: string): number | null {
+function paraCentavos(text: string): number | null {
   const clean = text.trim().replace(/\./g, "").replace(",", ".");
   if (!/^\d+(\.\d{1,2})?$/.test(clean)) return null;
   return Math.round(Number(clean) * 100);
 }
 
 /** Registra o pedido de reembolso de um pagamento. O estorno é feito no painel do Mercado Pago; a decisão fica em Planos e receita. */
-export function RefundForm({ weddingId, options }: { weddingId: string; options: RefundOption[] }) {
+export function FormularioDeReembolso({ weddingId, options }: { weddingId: string; options: OpcaoDeReembolso[] }) {
   const router = useRouter();
   const [subId, setSubId] = useState(options[0]?.id ?? "");
   const [amount, setAmount] = useState(options[0] ? (options[0].amountCents / 100).toFixed(2).replace(".", ",") : "");
   const [reason, setReason] = useState("");
-  const { pending, error, run } = useCasalAction();
-  const cents = toCents(amount);
+  const { pending, error, run } = useAcaoDoCasal();
+  const cents = paraCentavos(amount);
 
   if (options.length === 0) return <p className="text-sm leading-5 text-tinta-suave">Não há pagamento recebido sem pedido de reembolso aberto.</p>;
 

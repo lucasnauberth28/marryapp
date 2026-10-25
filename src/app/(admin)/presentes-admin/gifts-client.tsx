@@ -12,14 +12,14 @@ import { excluirPresente } from "@/actions/gift-actions"
 import { CabecalhoDaPagina } from "@/components/admin/page-header"
 import { estiloDoBotao } from "@/components/landing/styles"
 import { Etiqueta, estiloDoNumeroGrande, estiloDoCartao, estiloDoTituloDoCartao, estiloDoSobretitulo, estiloDoTituloDaColunaDoCasal, type TomDaEtiqueta } from "@/components/casal/ui"
-import { GiftModal } from "./gift-modal"
+import { ModalDoPresente } from "./gift-modal"
 import { BotaoComCarregamento } from "@/components/painel/loading-button"
 import { ImagemDaPessoa } from "@/components/ui/user-image"
 import { IlustracaoDaLiz } from "@/components/liz/liz-illustration"
 
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { pluralizar } from "@/lib/formatacao/plural";
-export interface GiftPayment {
+export interface PagamentoDoPresente {
   id: string
   from: string
   giftTitle: string
@@ -29,7 +29,7 @@ export interface GiftPayment {
   situation: "pix" | "card" | "toCheck" | "refunded"
 }
 
-interface GiftsSummary {
+interface ResumoDosPresentes {
   receivedCents: number
   receivedCount: number
   receivedPeople: number
@@ -37,21 +37,21 @@ interface GiftsSummary {
   toCheckCount: number
 }
 
-interface GiftsClientProps {
+interface PropriedadesDosPresentesCliente {
   initialGifts: Gift[]
-  payments: GiftPayment[]
-  summary: GiftsSummary
+  payments: PagamentoDoPresente[]
+  summary: ResumoDosPresentes
   siteGiftsHref: string
 }
 
-const SITUATION: Record<GiftPayment["situation"], { tone: TomDaEtiqueta; icon: typeof Check; label: string }> = {
+const SITUACAO: Record<PagamentoDoPresente["situation"], { tone: TomDaEtiqueta; icon: typeof Check; label: string }> = {
   pix: { tone: "sucesso", icon: Check, label: "Pix recebido" },
   card: { tone: "sucesso", icon: CreditCard, label: "Cartão recebido" },
   toCheck: { tone: "aviso", icon: Clock, label: "A conferir" },
   refunded: { tone: "neutro", icon: Undo2, label: "Estornado" },
 }
 
-export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: GiftsClientProps) {
+export function PresentesCliente({ initialGifts, payments, summary, siteGiftsHref }: PropriedadesDosPresentesCliente) {
   const router = useRouter()
   const [gifts, setGifts] = useEstadoSincronizado<Gift[]>(initialGifts)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -176,7 +176,7 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
                 </thead>
                 <tbody>
                   {payments.map((p) => {
-                    const s = SITUATION[p.situation]
+                    const s = SITUACAO[p.situation]
                     return (
                       <tr key={p.id} className="border-b border-linha last:border-b-0">
                         <td className="py-3.5 pl-6 pr-3">
@@ -197,7 +197,7 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
             </div>
             <ul className="divide-y divide-linha border-t border-linha md:hidden">
               {payments.map((p) => {
-                const s = SITUATION[p.situation]
+                const s = SITUACAO[p.situation]
                 return (
                   <li key={p.id} className="flex flex-col gap-2 px-5 py-4">
                     <div className="flex items-start justify-between gap-3">
@@ -272,7 +272,7 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
         )}
       </section>
 
-      <GiftModal
+      <ModalDoPresente
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />

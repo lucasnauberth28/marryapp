@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterEventosDaLinhaDoTempo } from "@/actions/timeline-actions";
-import { TimelineClient } from "./timeline-client";
+import { LinhaDoTempoCliente } from "./timeline-client";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 
 export const metadata: Metadata = {
@@ -20,5 +20,5 @@ export default async function CronogramaPage() {
   // "Sábado, 17 de abril de 2027"
   const dateLabel = identity.weddingDate ? format(identity.weddingDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR }) : null;
 
-  return <TimelineClient initialEvents={events} coupleNames={identity.coupleNames} dateLabel={dateLabel ? dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1) : null} />;
+  return <LinhaDoTempoCliente initialEvents={events} coupleNames={identity.coupleNames} dateLabel={dateLabel ? dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1) : null} />;
 }

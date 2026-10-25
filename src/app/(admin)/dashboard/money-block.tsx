@@ -3,18 +3,18 @@ import Link from "next/link";
 import { Check, Clock, Gift } from "lucide-react";
 import { ROTULO_DA_TAXA_DO_PRESENTE, type PlanoDaTaxaDoPresente, calcularValoresDoPresente } from "@/lib/gift-fee";
 import { formatarReaisSemSinal, formatarReaisDeSaida, rotuloCurtoDoDia, chaveDoDiaDe, type LinhaDePresente, type ExtratoDePresentes } from "@/lib/dashboard-summary";
-import { Block, Chip, Money, TextLink, btnPrimary, hintClass, labelClass } from "./ui";
-import { ConferirButton, PixSeal } from "./conferir-button";
+import { BlocoDoPainel, Etiqueta, ValorEmDinheiro, LinkDeTexto, estiloDoBotaoPrimario, classeDaDica, classeDoRotulo } from "./ui";
+import { BotaoDeConferir, SeloDoPix } from "./conferir-button";
 
 import { pluralizar } from "@/lib/formatacao/plural";
 /** Em que a taxa se aplica no plano, em uma frase. */
-function feeNote(plan: PlanoDaTaxaDoPresente): string {
+function notaDaTaxa(plan: PlanoDaTaxaDoPresente): string {
   if (plan === "basic") return `${ROTULO_DA_TAXA_DO_PRESENTE} por presente no plano Básico`;
   return `Pix sem taxa no plano ${plan === "vip" ? "VIP" : "Classic"}; cartão ${ROTULO_DA_TAXA_DO_PRESENTE}`;
 }
 
 /** Linhas do extrato (a mesma conta para o extrato de verdade e para o exemplo). */
-function Statement({ rows, label }: { rows: React.ReactNode; label: string }) {
+function Extrato({ rows, label }: { rows: React.ReactNode; label: string }) {
   return (
     <dl aria-label={label} className="grid border-t border-linha">
       {rows}
@@ -22,7 +22,7 @@ function Statement({ rows, label }: { rows: React.ReactNode; label: string }) {
   );
 }
 
-function Row({ term, note, meta, value, tone, total = false }: { term: React.ReactNode; note?: React.ReactNode; meta?: React.ReactNode; value: string; tone?: "saida" | "conferir"; total?: boolean }) {
+function LinhaDoExtrato({ term, note, meta, value, tone, total = false }: { term: React.ReactNode; note?: React.ReactNode; meta?: React.ReactNode; value: string; tone?: "saida" | "conferir"; total?: boolean }) {
   return (
     <div className={`grid min-h-12 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-0.5 border-b border-linha py-1.5 sm:grid-cols-[minmax(0,1fr)_auto_auto] ${total ? "-mt-px border-t border-dashed border-t-linha-forte" : ""}`}>
       <dt className={`text-sm ${total ? "font-semibold" : ""} ${tone === "conferir" ? "flex flex-wrap items-center gap-2" : ""}`}>
@@ -35,7 +35,7 @@ function Row({ term, note, meta, value, tone, total = false }: { term: React.Rea
   );
 }
 
-export function MoneyBlock({
+export function BlocoDeDinheiro({
   statement,
   lines,
   plan,
@@ -59,8 +59,8 @@ export function MoneyBlock({
   const empty = statement.approvedCount === 0 && statement.toCheckCount === 0;
   const aside = (
     <>
-      {canReceive && <TextLink href="/configuracoes/recebimento">Onde receber</TextLink>}
-      {canOpenGifts && !empty && <TextLink href="/presentes-admin">Ver presentes</TextLink>}
+      {canReceive && <LinkDeTexto href="/configuracoes/recebimento">Onde receber</LinkDeTexto>}
+      {canOpenGifts && !empty && <LinkDeTexto href="/presentes-admin">Ver presentes</LinkDeTexto>}
     </>
   );
 
@@ -68,7 +68,7 @@ export function MoneyBlock({
     // Exemplo de como um presente de R$ 300,00 aparece, com a taxa do plano de vocês (marcado, nunca como se fosse real)
     const ex = calcularValoresDoPresente(30_000, plan, "PIX");
     return (
-      <Block id="dinheiro" title="Presentes e dinheiro" aside={aside} className={className}>
+      <BlocoDoPainel id="dinheiro" title="Presentes e dinheiro" aside={aside} className={className}>
         <div className="grid items-start gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
           <div className="grid max-w-[60ch] gap-1.5">
             <b className="text-[15px] text-tinta">Nenhum presente recebido ainda</b>
@@ -79,7 +79,7 @@ export function MoneyBlock({
             </p>
             {canOpenGifts && giftCount === 0 && (
               <div className="mt-2">
-                <Link href="/presentes-admin" className={btnPrimary}>
+                <Link href="/presentes-admin" className={estiloDoBotaoPrimario}>
                   <Gift className="size-[17px]" aria-hidden="true" />
                   Criar o primeiro presente
                 </Link>
@@ -88,57 +88,57 @@ export function MoneyBlock({
           </div>
           <div className="relative rounded-[8px] border border-dashed border-linha-forte bg-areia/40 p-4 pt-5" role="group" aria-label="Exemplo de um presente de R$ 300,00">
             <span className="absolute -top-3 left-3">
-              <Chip tone="neutro">Exemplo</Chip>
+              <Etiqueta tone="neutro">Exemplo</Etiqueta>
             </span>
-            <Statement
+            <Extrato
               label="Exemplo de um presente de R$ 300,00"
               rows={
                 <>
-                  <Row term="Presente de exemplo" value={formatarReaisSemSinal(ex.grossCents)} />
-                  <Row term="Taxa do Aceito" note={feeNote(plan)} value={ex.feeCents > 0 ? formatarReaisDeSaida(ex.feeCents) : formatarReaisSemSinal(0)} tone="saida" />
-                  <Row term="Vocês recebem" value={formatarReaisSemSinal(ex.netCents)} total />
+                  <LinhaDoExtrato term="Presente de exemplo" value={formatarReaisSemSinal(ex.grossCents)} />
+                  <LinhaDoExtrato term="Taxa do Aceito" note={notaDaTaxa(plan)} value={ex.feeCents > 0 ? formatarReaisDeSaida(ex.feeCents) : formatarReaisSemSinal(0)} tone="saida" />
+                  <LinhaDoExtrato term="Vocês recebem" value={formatarReaisSemSinal(ex.netCents)} total />
                 </>
               }
             />
           </div>
         </div>
-      </Block>
+      </BlocoDoPainel>
     );
   }
 
   return (
-    <Block id="dinheiro" title="Presentes e dinheiro" aside={aside} className={className}>
+    <BlocoDoPainel id="dinheiro" title="Presentes e dinheiro" aside={aside} className={className}>
       <div className="grid gap-1">
-        <span className={labelClass}>Líquido para vocês</span>
-        <Money cents={statement.netCents} className="text-[36px] leading-[1.1]" />
-        <span className={hintClass}>
+        <span className={classeDoRotulo}>Líquido para vocês</span>
+        <ValorEmDinheiro cents={statement.netCents} className="text-[36px] leading-[1.1]" />
+        <span className={classeDaDica}>
           {statement.approvedCount === 0
             ? "Nenhum presente conferido ainda"
             : `${pluralizar(statement.approvedCount, "presente recebido", "presentes recebidos")} · ${statement.pixCount} por Pix e ${statement.cardCount} por cartão`}
         </span>
       </div>
 
-      <Statement
+      <Extrato
         label="Extrato dos presentes"
         rows={
           <>
-            <Row term="Recebido (bruto)" note="O que os convidados pagaram" meta={pluralizar(statement.approvedCount, "presente", "presentes")} value={formatarReaisSemSinal(statement.grossCents)} />
-            <Row term="Taxa do Aceito" note={feeNote(plan)} value={statement.feeCents > 0 ? formatarReaisDeSaida(statement.feeCents) : formatarReaisSemSinal(0)} tone="saida" />
-            <Row term="Líquido para vocês" value={formatarReaisSemSinal(statement.netCents)} total />
-            <Row
+            <LinhaDoExtrato term="Recebido (bruto)" note="O que os convidados pagaram" meta={pluralizar(statement.approvedCount, "presente", "presentes")} value={formatarReaisSemSinal(statement.grossCents)} />
+            <LinhaDoExtrato term="Taxa do Aceito" note={notaDaTaxa(plan)} value={statement.feeCents > 0 ? formatarReaisDeSaida(statement.feeCents) : formatarReaisSemSinal(0)} tone="saida" />
+            <LinhaDoExtrato term="Líquido para vocês" value={formatarReaisSemSinal(statement.netCents)} total />
+            <LinhaDoExtrato
               tone="conferir"
               term={
                 statement.toCheckCount > 0 ? (
                   <>
-                    <Chip tone="aviso" icon={Clock}>
+                    <Etiqueta tone="aviso" icon={Clock}>
                       A conferir
-                    </Chip>
+                    </Etiqueta>
                     Pix que vocês ainda não conferiram
                   </>
                 ) : (
-                  <Chip tone="ok" icon={Check}>
+                  <Etiqueta tone="ok" icon={Check}>
                     Tudo conferido
-                  </Chip>
+                  </Etiqueta>
                 )
               }
               meta={statement.toCheckCount > 0 ? `${statement.toCheckCount} Pix` : undefined}
@@ -147,7 +147,7 @@ export function MoneyBlock({
           </>
         }
       />
-      <p className={hintClass}>Um Pix a conferir entra no recebido quando vocês confirmam que ele caiu na conta.</p>
+      <p className={classeDaDica}>Um Pix a conferir entra no recebido quando vocês confirmam que ele caiu na conta.</p>
 
       {lines.length > 0 && (
         <div className="overflow-hidden rounded-[8px] border border-linha">
@@ -172,9 +172,9 @@ export function MoneyBlock({
                       <small className="flex flex-wrap items-center gap-x-1.5 text-[12.5px] text-tinta-suave tabular-nums">
                         {rotuloCurtoDoDia(chaveDoDiaDe(l.tx.createdAt))} · {l.tx.method === "PIX" ? "Pix" : "Cartão"}
                         {l.toCheck && (
-                          <Chip tone="aviso" icon={Clock}>
+                          <Etiqueta tone="aviso" icon={Clock}>
                             A conferir
-                          </Chip>
+                          </Etiqueta>
                         )}
                       </small>
                     </div>
@@ -192,13 +192,13 @@ export function MoneyBlock({
                   <td className="whitespace-nowrap px-3 text-right align-middle max-md:col-start-1 max-md:row-start-2 max-md:p-0 max-md:text-left">
                     {l.toCheck ? (
                       canConfer ? (
-                        <ConferirButton transactionId={l.tx.id} giftId={l.tx.giftId} who={l.tx.who} />
+                        <BotaoDeConferir transactionId={l.tx.id} giftId={l.tx.giftId} who={l.tx.who} />
                       ) : (
                         <span className="text-[13px] text-tinta-suave">A conferir</span>
                       )
                     ) : (
                       <span className="inline-flex items-center gap-2 text-[13px] text-tinta-suave">
-                        <PixSeal />
+                        <SeloDoPix />
                         Conferido
                       </span>
                     )}
@@ -209,6 +209,6 @@ export function MoneyBlock({
           </table>
         </div>
       )}
-    </Block>
+    </BlocoDoPainel>
   );
 }

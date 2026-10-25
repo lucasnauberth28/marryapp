@@ -8,17 +8,17 @@ import { PixDaAssinatura } from "@/components/checkout/subscription-pix";
 import { formatarPrecoDoPlano, type OpcaoDePlano } from "@/app/login/auth-config";
 import { cn } from "@/lib/utils";
 
-interface UpgradeSectionProps {
+interface PropriedadesDaSecaoDeUpgrade {
   /** Planos acima do atual, já filtrados no servidor (vazio quando já estão no VIP). */
   plans: OpcaoDePlano[];
   /** false na conta de emergência (super-admin): ela não tem conta própria para pagar. */
   canPay: boolean;
 }
 
-const BUTTON =
+const ESTILO_DO_BOTAO =
   "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-5 text-[15px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60";
 
-export function UpgradeSection({ plans, canPay }: UpgradeSectionProps) {
+export function SecaoDeUpgrade({ plans, canPay }: PropriedadesDaSecaoDeUpgrade) {
   const router = useRouter();
   const [selected, setSelected] = useState<string>(plans[0]?.id ?? "");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -134,7 +134,7 @@ export function UpgradeSection({ plans, canPay }: UpgradeSectionProps) {
           <button
             type="button"
             onClick={() => setCheckoutOpen(false)}
-            className={cn(BUTTON, "self-start px-3 text-ameixa hover:bg-ameixa-suave")}
+            className={cn(ESTILO_DO_BOTAO, "self-start px-3 text-ameixa hover:bg-ameixa-suave")}
           >
             Escolher outro plano
           </button>
@@ -152,7 +152,7 @@ export function UpgradeSection({ plans, canPay }: UpgradeSectionProps) {
                 setPaidPlan(null);
                 setCheckoutOpen(true);
               }}
-              className={cn(BUTTON, "w-full bg-ameixa text-on-ameixa hover:bg-ameixa-hover sm:w-auto")}
+              className={cn(ESTILO_DO_BOTAO, "w-full bg-ameixa text-on-ameixa hover:bg-ameixa-hover sm:w-auto")}
             >
               Mudar para o {plan.name} com Pix
               <ArrowRight className="h-4 w-4" aria-hidden="true" />

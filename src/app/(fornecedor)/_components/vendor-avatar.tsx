@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
-import { initialsOf } from "../_lib/vendor-panel";
+import { iniciaisDe } from "../_lib/vendor-panel";
 
 /** Avatar em arco (forma-assinatura do Aceito) com o logo do fornecedor ou as iniciais. */
-export function VendorAvatar({
+export function AvatarDoFornecedor({
   name,
   logoUrl,
   size = 40,
@@ -27,7 +27,7 @@ export function VendorAvatar({
         // eslint-disable-next-line @next/next/no-img-element
         <img src={logoUrl} alt="" className="size-full object-cover" loading="lazy" />
       ) : (
-        initialsOf(name)
+        iniciaisDe(name)
       )}
     </span>
   );

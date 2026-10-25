@@ -11,7 +11,7 @@ import { NativeSelect } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-export interface CouponRow {
+export interface LinhaDeCupom {
   id: string;
   code: string;
   percentOff: number | null;
@@ -27,40 +27,40 @@ export interface CouponRow {
   active: boolean;
 }
 
-interface PlanChoice {
+interface EscolhaDePlano {
   id: string;
   label: string;
 }
 
-const BUTTON =
+const ESTILO_DO_BOTAO =
   "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60";
 
 
 /** "10,50" ou "10.50" -> 1050 centavos; null se não for um valor. */
-function reaisToCents(value: string): number | null {
+function reaisParaCentavos(value: string): number | null {
   const clean = value.trim().replace(/\s|R\$/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".");
   if (!/^\d+(\.\d{1,2})?$/.test(clean)) return null;
   return Math.round(Number(clean) * 100);
 }
 
-function centsToReais(cents: number) {
+function centavosParaReais(cents: number) {
   return (cents / 100).toFixed(2).replace(".", ",");
 }
 
-function discountLabel(c: Pick<CouponRow, "percentOff" | "amountOff">) {
+function rotuloDoDesconto(c: Pick<LinhaDeCupom, "percentOff" | "amountOff">) {
   if (c.percentOff) return `${c.percentOff}% de desconto`;
   if (c.amountOff) return `${formatarReais(c.amountOff)} de desconto`;
   return "Sem desconto";
 }
 
-function statusOf(c: CouponRow): { label: string; tone: string } {
+function situacaoDe(c: LinhaDeCupom): { label: string; tone: string } {
   if (!c.active) return { label: "Pausado", tone: "bg-areia text-tinta" };
   if (c.expired) return { label: "Vencido", tone: "bg-perigo-suave text-perigo" };
   if (c.maxRedemptions !== null && c.redemptions >= c.maxRedemptions) return { label: "Esgotado", tone: "bg-aviso-suave text-aviso" };
   return { label: "Valendo", tone: "bg-sucesso-suave text-sucesso" };
 }
 
-type Draft = {
+type RascunhoDoCupom = {
   code: string;
   kind: "percent" | "amount";
   value: string;
@@ -70,13 +70,13 @@ type Draft = {
   active: boolean;
 };
 
-const EMPTY: Draft = { code: "", kind: "percent", value: "", planIds: [], maxRedemptions: "", expiresAt: "", active: true };
+const RASCUNHO_VAZIO_DO_CUPOM: RascunhoDoCupom = { code: "", kind: "percent", value: "", planIds: [], maxRedemptions: "", expiresAt: "", active: true };
 
-function draftOf(c: CouponRow): Draft {
+function rascunhoDe(c: LinhaDeCupom): RascunhoDoCupom {
   return {
     code: c.code,
     kind: c.percentOff ? "percent" : "amount",
-    value: c.percentOff ? String(c.percentOff) : c.amountOff ? centsToReais(c.amountOff) : "",
+    value: c.percentOff ? String(c.percentOff) : c.amountOff ? centavosParaReais(c.amountOff) : "",
     planIds: c.planIds,
     maxRedemptions: c.maxRedemptions ? String(c.maxRedemptions) : "",
     expiresAt: c.expiresOn ?? "",
@@ -84,31 +84,31 @@ function draftOf(c: CouponRow): Draft {
   };
 }
 
-export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans: PlanChoice[] }) {
+export function SecaoDeCupons({ coupons, plans }: { coupons: LinhaDeCupom[]; plans: EscolhaDePlano[] }) {
   const router = useRouter();
   const [editing, setEditing] = useState<string | "new" | null>(null);
-  const [draft, setDraft] = useState<Draft>(EMPTY);
+  const [draft, setDraft] = useState<RascunhoDoCupom>(RASCUNHO_VAZIO_DO_CUPOM);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const planLabel = (id: string) => plans.find((p) => p.id === id)?.label ?? id;
 
-  const open = (target: CouponRow | "new") => {
+  const open = (target: LinhaDeCupom | "new") => {
     setError("");
     setDeleting(null);
     if (target === "new") {
-      setDraft(EMPTY);
+      setDraft(RASCUNHO_VAZIO_DO_CUPOM);
       setEditing("new");
     } else {
-      setDraft(draftOf(target));
+      setDraft(rascunhoDe(target));
       setEditing(target.id);
     }
   };
 
   const save = () => {
     setError("");
-    const value = draft.kind === "percent" ? Number(draft.value) : reaisToCents(draft.value);
+    const value = draft.kind === "percent" ? Number(draft.value) : reaisParaCentavos(draft.value);
     if (!value || !Number.isFinite(value) || value <= 0) {
       setError(draft.kind === "percent" ? "Informe o percentual de 1 a 100." : "Informe o valor do desconto, por exemplo 20,00.");
       return;
@@ -133,7 +133,7 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
     });
   };
 
-  const remove = (c: CouponRow) =>
+  const remove = (c: LinhaDeCupom) =>
     startTransition(async () => {
       const res = await excluirCupom(c.id);
       if (res.success) {
@@ -148,7 +148,7 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
   const togglePlan = (id: string) =>
     setDraft((d) => ({ ...d, planIds: d.planIds.includes(id) ? d.planIds.filter((p) => p !== id) : [...d.planIds, id] }));
 
-  const actions = (c: CouponRow) => (
+  const actions = (c: LinhaDeCupom) => (
     <>
       {deleting === c.id ? (
         <span role="group" aria-label={`Confirmar exclusão do cupom ${c.code}`} className="inline-flex items-center gap-1">
@@ -161,13 +161,13 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
         </span>
       ) : (
         <span className="inline-flex items-center gap-1">
-          <button type="button" onClick={() => open(c)} className={cn(BUTTON, "px-3 text-sm text-ameixa hover:bg-ameixa-suave")}>
+          <button type="button" onClick={() => open(c)} className={cn(ESTILO_DO_BOTAO, "px-3 text-sm text-ameixa hover:bg-ameixa-suave")}>
             Editar<span className="sr-only"> o cupom {c.code}</span>
           </button>
           <button
             type="button"
             onClick={() => setDeleting(c.id)}
-            className={cn(BUTTON, "px-3 text-sm text-tinta-suave hover:bg-perigo-suave hover:text-perigo")}
+            className={cn(ESTILO_DO_BOTAO, "px-3 text-sm text-tinta-suave hover:bg-perigo-suave hover:text-perigo")}
           >
             Excluir<span className="sr-only"> o cupom {c.code}</span>
           </button>
@@ -186,7 +186,7 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
           <p className="text-sm text-tinta-suave">O uso só conta quando o Pix é confirmado. Nenhuma cobrança fica abaixo de R$ 1,00.</p>
         </div>
         {editing === null ? (
-          <button type="button" onClick={() => open("new")} className={cn(BUTTON, "bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}>
+          <button type="button" onClick={() => open("new")} className={cn(ESTILO_DO_BOTAO, "bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}>
             <Plus className="h-4 w-4" aria-hidden="true" />
             Novo cupom
           </button>
@@ -224,7 +224,7 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
                 label="Tipo de desconto"
                 fieldClassName="w-44 shrink-0"
                 value={draft.kind}
-                onChange={(e) => setDraft({ ...draft, kind: e.target.value as Draft["kind"], value: "" })}
+                onChange={(e) => setDraft({ ...draft, kind: e.target.value as RascunhoDoCupom["kind"], value: "" })}
               >
                 <option value="percent">Percentual (%)</option>
                 <option value="amount">Valor fixo (R$)</option>
@@ -338,11 +338,11 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
             </thead>
             <tbody>
               {coupons.map((c) => {
-                const status = statusOf(c);
+                const status = situacaoDe(c);
                 return (
                   <tr key={c.id} className={cn("border-t border-linha", editing === c.id && "bg-ameixa-suave")}>
                     <td className="px-4 py-3.5 font-mono font-semibold text-tinta">{c.code}</td>
-                    <td className="px-4 py-3.5 text-tinta">{discountLabel(c)}</td>
+                    <td className="px-4 py-3.5 text-tinta">{rotuloDoDesconto(c)}</td>
                     <td className="px-4 py-3.5 text-sm text-tinta-suave">
                       {c.planIds.length === 0 ? "Todos" : c.planIds.map(planLabel).join(", ")}
                     </td>
@@ -369,7 +369,7 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
       {coupons.length > 0 ? (
         <ul className="flex flex-col gap-3 md:hidden" aria-label="Cupons de desconto">
           {coupons.map((c) => {
-            const status = statusOf(c);
+            const status = situacaoDe(c);
             return (
               <li key={c.id} className={cn("flex flex-col gap-2 rounded-2xl border border-linha bg-papel p-4", editing === c.id && "bg-ameixa-suave")}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -378,7 +378,7 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
                 </div>
                 <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
                   <dt className="text-tinta-suave">Desconto</dt>
-                  <dd className="text-tinta">{discountLabel(c)}</dd>
+                  <dd className="text-tinta">{rotuloDoDesconto(c)}</dd>
                   <dt className="text-tinta-suave">Planos</dt>
                   <dd className="text-tinta">{c.planIds.length === 0 ? "Todos" : c.planIds.map(planLabel).join(", ")}</dd>
                   <dt className="text-tinta-suave">Usos</dt>

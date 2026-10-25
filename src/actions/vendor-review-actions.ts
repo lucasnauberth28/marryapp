@@ -7,7 +7,7 @@ import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { exigirSessaoDoFornecedor } from "@/lib/security/vendor-guard";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
-import { PUBLIC_TOKEN_RE } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { PADRAO_DO_TOKEN_PUBLICO } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { avisarDepois } from "@/lib/notifications/service";
 import { avisarNovaAvaliacao } from "@/lib/notifications/events";
 
@@ -61,7 +61,7 @@ export async function responderAvaliacao(reviewId: string, reply: string): Promi
 const LIMITE_DE_AVALIACOES_POR_PEDIDO = { limit: 10, windowMs: 1000 * 60 * 10 }; // 10 tentativas / 10 min por IP
 
 const EsquemaDaAvaliacaoDoPedido = z.object({
-  token: z.string().regex(PUBLIC_TOKEN_RE, "Link inválido."),
+  token: z.string().regex(PADRAO_DO_TOKEN_PUBLICO, "Link inválido."),
   rating: z.number({ message: "Escolha de 1 a 5 estrelas." }).int().min(1, "Escolha de 1 a 5 estrelas.").max(5, "Escolha de 1 a 5 estrelas."),
   comment: z
     .string({ message: "Conte como foi a experiência." })

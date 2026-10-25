@@ -4,14 +4,14 @@ import { EsqueletoDaAtencao, EsqueletoDoPainelDeTabela } from "@/components/plat
 
 /* Esqueletos das telas de Planos e receita. */
 
-const SPLIT = "grid items-start gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]";
+const DIVISAO = "grid items-start gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]";
 
 /** Aba Resumo. */
-export function ResumoSkeleton() {
+export function EsqueletoDoResumo() {
   return (
     <>
       <SkeletonStatGrid count={4} />
-      <div className={SPLIT}>
+      <div className={DIVISAO}>
         <SkeletonCard>
           <SkeletonChart />
         </SkeletonCard>
@@ -19,7 +19,7 @@ export function ResumoSkeleton() {
           <EsqueletoDaAtencao rows={2} />
         </SkeletonCard>
       </div>
-      <div className={SPLIT}>
+      <div className={DIVISAO}>
         <EsqueletoDoPainelDeTabela columns={5} rows={3} />
         <EsqueletoDoPainelDeTabela columns={4} rows={3} />
       </div>
@@ -29,7 +29,7 @@ export function ResumoSkeleton() {
 }
 
 /** Aba Contador (e o fim do Catálogo): exportar e notas pendentes. */
-export function ContadorSkeleton() {
+export function EsqueletoDoContador() {
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <SkeletonCard>
@@ -41,7 +41,7 @@ export function ContadorSkeleton() {
 }
 
 /** Aba Reembolsos. */
-export function ReembolsosSkeleton() {
+export function EsqueletoDosReembolsos() {
   return (
     <>
       <EsqueletoDoPainelDeTabela columns={5} rows={3} />
@@ -53,7 +53,7 @@ export function ReembolsosSkeleton() {
 }
 
 /** Lista de pagamentos (Assinaturas e Pix) com os chips de filtro. */
-export function SubscriptionsListSkeleton() {
+export function EsqueletoDaListaDeAssinaturas() {
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <div className="flex flex-wrap gap-2">

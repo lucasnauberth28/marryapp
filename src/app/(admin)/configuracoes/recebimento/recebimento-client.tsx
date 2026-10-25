@@ -13,7 +13,7 @@ import { ROTULO_DO_TIPO_DE_CONTA_BANCARIA, TIPOS_DE_CONTA_BANCARIA, ROTULO_DO_TI
 import { cn } from "@/lib/utils";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
-interface AccountMask {
+interface MascaraDaConta {
   type: "PIX_KEY" | "BANK_ACCOUNT";
   holderName: string;
   holderDocumentHint: string;
@@ -22,19 +22,19 @@ interface AccountMask {
   updatedAt: string;
 }
 
-interface Props {
-  account: AccountMask | null;
+interface Propriedades {
+  account: MascaraDaConta | null;
   /** Motivo de a pessoa só poder olhar (administração vendo o casal, casamento suspenso), ou null. */
   blockedReason: string | null;
   registrationAvailable: boolean;
   feeLabel: string;
 }
 
-const dateFmt = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+const formatoDaData = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
 
-type Mode = "view" | "form" | "confirm" | "remove";
+type ModoDoRecebimento = "view" | "form" | "confirm" | "remove";
 
-function Fact({ label, children }: { label: string; children: ReactNode }) {
+function InformacaoEmDestaque({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-1">
       <dt className="text-sm font-semibold leading-5 text-tinta-suave">{label}</dt>
@@ -43,9 +43,9 @@ function Fact({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function RecebimentoClient({ account: initial, blockedReason, registrationAvailable, feeLabel }: Props) {
-  const [account, setAccount] = useState<AccountMask | null>(initial);
-  const [mode, setMode] = useState<Mode>("view");
+export function RecebimentoCliente({ account: initial, blockedReason, registrationAvailable, feeLabel }: Propriedades) {
+  const [account, setAccount] = useState<MascaraDaConta | null>(initial);
+  const [mode, setMode] = useState<ModoDoRecebimento>("view");
   const readOnly = blockedReason !== null;
 
   function applyResult(res: RespostaDoRepasse, success: string): boolean {
@@ -97,25 +97,25 @@ export function RecebimentoClient({ account: initial, blockedReason, registratio
         <Card className="gap-4">
           <CardHeader>
             <CardTitle>Destino cadastrado</CardTitle>
-            <CardDescription>Atualizado em {dateFmt.format(new Date(account.updatedAt))}.</CardDescription>
+            <CardDescription>Atualizado em {formatoDaData.format(new Date(account.updatedAt))}.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-5">
             <dl className="grid gap-4 sm:grid-cols-2">
-              <Fact label={account.type === "PIX_KEY" ? "Chave Pix" : "Conta bancária"}>
+              <InformacaoEmDestaque label={account.type === "PIX_KEY" ? "Chave Pix" : "Conta bancária"}>
                 <span className="inline-flex items-center gap-2">
                   {account.type === "PIX_KEY" ? <KeyRound className="size-4 text-ameixa" aria-hidden="true" /> : <Landmark className="size-4 text-ameixa" aria-hidden="true" />}
                   {account.keyHint}
                 </span>
-              </Fact>
-              <Fact label="Titular">
+              </InformacaoEmDestaque>
+              <InformacaoEmDestaque label="Titular">
                 {account.holderName}
                 <span className="block text-sm text-tinta-suave">{account.holderDocumentHint}</span>
-              </Fact>
-              <Fact label="Situação">
+              </InformacaoEmDestaque>
+              <InformacaoEmDestaque label="Situação">
                 {account.verifiedAt ? (
                   <span className="inline-flex items-center gap-2 font-semibold text-sucesso">
                     <CheckCircle2 className="size-4" aria-hidden="true" />
-                    Confirmado em {dateFmt.format(new Date(account.verifiedAt))}
+                    Confirmado em {formatoDaData.format(new Date(account.verifiedAt))}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-2 font-semibold text-aviso">
@@ -123,7 +123,7 @@ export function RecebimentoClient({ account: initial, blockedReason, registratio
                     Falta confirmar que está certo
                   </span>
                 )}
-              </Fact>
+              </InformacaoEmDestaque>
             </dl>
 
             {mode === "view" && !readOnly && (
@@ -139,7 +139,7 @@ export function RecebimentoClient({ account: initial, blockedReason, registratio
             )}
 
             {mode === "confirm" && (
-              <PasswordStep
+              <EtapaDaSenha
                 title="Confirmar os dados"
                 help="Ao confirmar, você diz ao Aceito que o destino acima é o certo. Pedimos sua senha para proteger essa decisão."
                 submitLabel="Confirmar"
@@ -150,7 +150,7 @@ export function RecebimentoClient({ account: initial, blockedReason, registratio
               />
             )}
             {mode === "remove" && (
-              <PasswordStep
+              <EtapaDaSenha
                 title="Remover os dados de recebimento"
                 help="Vamos apagar o destino cadastrado, inclusive a parte criptografada. Vocês poderão cadastrar de novo quando quiserem."
                 submitLabel="Remover"
@@ -196,7 +196,7 @@ export function RecebimentoClient({ account: initial, blockedReason, registratio
       )}
 
       {mode === "form" && !readOnly && (
-        <PayoutForm
+        <FormularioDeRepasse
           replacing={Boolean(account)}
           onCancel={() => setMode("view")}
           onSaved={(res) => applyResult(res, account ? "Dados trocados. Falta confirmar que estão certos." : "Dados cadastrados. Falta confirmar que estão certos.")}
@@ -215,7 +215,7 @@ export function RecebimentoClient({ account: initial, blockedReason, registratio
 }
 
 /** Pede só a senha (confirmar ou remover). A senha nunca fica guardada: some do estado ao terminar. */
-function PasswordStep({
+function EtapaDaSenha({
   title,
   help,
   submitLabel,
@@ -280,7 +280,7 @@ function PasswordStep({
   );
 }
 
-function PayoutForm({ replacing, onCancel, onSaved }: { replacing: boolean; onCancel: () => void; onSaved: (res: RespostaDoRepasse) => boolean }) {
+function FormularioDeRepasse({ replacing, onCancel, onSaved }: { replacing: boolean; onCancel: () => void; onSaved: (res: RespostaDoRepasse) => boolean }) {
   const uid = useId();
   const [kind, setKind] = useState<"PIX_KEY" | "BANK_ACCOUNT">("PIX_KEY");
   const [holderName, setHolderName] = useState("");

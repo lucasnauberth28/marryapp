@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { obterPerfis } from "@/actions/rbac-actions";
 import { obterSessao } from "@/lib/security/auth-guard";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
-import { RolesClient } from "./roles-client";
+import { PerfisCliente } from "./roles-client";
 
 export const metadata: Metadata = {
   title: "Perfis de acesso",
@@ -19,7 +19,7 @@ export default async function RolesPage() {
 
   return (
     <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <RolesClient initialRoles={roles} />
+      <PerfisCliente initialRoles={roles} />
     </div>
   );
 }

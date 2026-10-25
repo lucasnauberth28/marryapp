@@ -5,16 +5,16 @@ import Link from "next/link";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import { formatarReaisSemSinal, separarReais } from "@/lib/dashboard-summary";
 
-const pill =
+const estiloDaPilula =
   "inline-flex min-h-11 shrink-0 cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-full px-[18px] text-sm font-semibold leading-5 no-underline transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100";
 
-export const btnPrimary = `${pill} bg-ameixa text-on-ameixa hover:bg-ameixa-hover`;
-export const btnSecondary = `${pill} border border-linha-forte bg-papel text-tinta hover:bg-areia/60`;
+export const estiloDoBotaoPrimario = `${estiloDaPilula} bg-ameixa text-on-ameixa hover:bg-ameixa-hover`;
+export const estiloDoBotaoSecundario = `${estiloDaPilula} border border-linha-forte bg-papel text-tinta hover:bg-areia/60`;
 /** Botão de linha de tabela e de lista: mesma pílula, um pouco mais baixa no mouse e 44px no toque. */
-export const btnRow = `${btnSecondary} min-h-10 px-3.5 pointer-coarse:min-h-11`;
+export const estiloDaLinhaDeBotoes = `${estiloDoBotaoSecundario} min-h-10 px-3.5 pointer-coarse:min-h-11`;
 
 /** Link de texto com seta (cabeçalho de bloco, fim de lista). */
-export function TextLink({ href, children, className = "" }: { href: string; children: React.ReactNode; className?: string }) {
+export function LinkDeTexto({ href, children, className = "" }: { href: string; children: React.ReactNode; className?: string }) {
   return (
     <Link href={href} className={`inline-flex min-h-11 items-center gap-1 rounded-[8px] text-sm font-semibold text-ameixa underline-offset-4 hover:underline ${className}`}>
       {children}
@@ -23,7 +23,7 @@ export function TextLink({ href, children, className = "" }: { href: string; chi
   );
 }
 
-export function Block({
+export function BlocoDoPainel({
   id,
   title,
   aside,
@@ -51,8 +51,8 @@ export function Block({
   );
 }
 
-type Tone = "ok" | "aviso" | "perigo" | "neutro" | "ameixa";
-const TONES: Record<Tone, string> = {
+type TomDaEtiqueta = "ok" | "aviso" | "perigo" | "neutro" | "ameixa";
+const TONS: Record<TomDaEtiqueta, string> = {
   ok: "bg-sucesso-suave text-sucesso",
   aviso: "bg-aviso-suave text-aviso",
   perigo: "bg-perigo-suave text-perigo",
@@ -61,9 +61,9 @@ const TONES: Record<Tone, string> = {
 };
 
 /** Chip de estado: sempre um ícone e uma palavra (nunca só a cor). */
-export function Chip({ tone, icon: Icon, children }: { tone: Tone; icon?: LucideIcon; children: React.ReactNode }) {
+export function Etiqueta({ tone, icon: Icon, children }: { tone: TomDaEtiqueta; icon?: LucideIcon; children: React.ReactNode }) {
   return (
-    <span className={`inline-flex h-6 shrink-0 items-center gap-[5px] whitespace-nowrap rounded-full px-2.5 text-xs font-medium ${TONES[tone]}`}>
+    <span className={`inline-flex h-6 shrink-0 items-center gap-[5px] whitespace-nowrap rounded-full px-2.5 text-xs font-medium ${TONS[tone]}`}>
       {Icon && <Icon className="size-[13px]" strokeWidth={2.2} aria-hidden="true" />}
       {children}
     </span>
@@ -71,7 +71,7 @@ export function Chip({ tone, icon: Icon, children }: { tone: Tone; icon?: Lucide
 }
 
 /** Valor de destaque: reais em 600, "R$" e centavos menores em tom secundário. O texto completo vai para leitores de tela. */
-export function Money({ cents, className = "text-[32px] leading-[1.1]" }: { cents: number; className?: string }) {
+export function ValorEmDinheiro({ cents, className = "text-[32px] leading-[1.1]" }: { cents: number; className?: string }) {
   const { whole, cents: c } = separarReais(cents);
   return (
     <span className={`whitespace-nowrap font-semibold tracking-[-0.02em] tabular-nums text-tinta ${className}`}>
@@ -86,7 +86,7 @@ export function Money({ cents, className = "text-[32px] leading-[1.1]" }: { cent
 }
 
 /** Barra de segmentos (convites por estado, convites enviados, orçamento pago). `label` descreve tudo para leitores de tela. */
-export function Meter({ segments, label, height = 8 }: { segments: { value: number; className: string }[]; label: string; height?: number }) {
+export function MedidorDeProgresso({ segments, label, height = 8 }: { segments: { value: number; className: string }[]; label: string; height?: number }) {
   const shown = segments.filter((s) => s.value > 0);
   return (
     <div role="img" aria-label={label} className="flex gap-0.5" style={{ height }}>
@@ -96,6 +96,6 @@ export function Meter({ segments, label, height = 8 }: { segments: { value: numb
 }
 
 /** Rótulo pequeno de um número ("Convites confirmados"). */
-export const labelClass = "text-[13px] font-medium leading-5 text-tinta-suave";
+export const classeDoRotulo = "text-[13px] font-medium leading-5 text-tinta-suave";
 /** Linha de apoio (13px, tom secundário). */
-export const hintClass = "text-[13px] leading-5 text-tinta-suave";
+export const classeDaDica = "text-[13px] leading-5 text-tinta-suave";

@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  * Linha com título, explicação e interruptor (Switch). `locked` deixa o interruptor desligado e travado,
  * com o motivo no texto (nunca um interruptor que finge funcionar).
  */
-export function ToggleRow({
+export function LinhaDeAlternancia({
   label,
   description,
   checked,

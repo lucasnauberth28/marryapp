@@ -12,7 +12,7 @@ import { NativeSelect } from "@/components/ui/select";
 import { btn, estiloDoBotaoDePerigo, estiloDaCaixaDeErro, estiloDaDicaDoPainel, estiloDoRotuloDoPainel } from "@/components/painel/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 
-export const GUEST_CATEGORIES = [
+export const CATEGORIAS_DE_CONVIDADO = [
   "Padrinho/Madrinha",
   "Participantes de cerimônia",
   "Pais",
@@ -20,9 +20,9 @@ export const GUEST_CATEGORIES = [
   "Amigo/Colega",
 ] as const;
 
-const MAX_SEATS = 20;
+const MAXIMO_DE_LUGARES = 20;
 
-interface GuestModalProps {
+interface PropriedadesDoModalDoConvidado {
   isOpen: boolean;
   onClose: () => void;
   guest?: Guest | null;
@@ -31,7 +31,7 @@ interface GuestModalProps {
   onDelete?: (guest: Guest) => void;
 }
 
-function Field({
+function CampoDoModalDoConvidado({
   label: text,
   name,
   type = "text",
@@ -78,7 +78,7 @@ function Field({
   );
 }
 
-export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }: GuestModalProps) {
+export function ModalDoConvidado({ isOpen, onClose, guest, allGuests = [], onDelete }: PropriedadesDoModalDoConvidado) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<string>(guest?.category ?? "");
@@ -162,7 +162,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
       className="max-h-[92vh] overflow-y-auto"
     >
       <form key={formKey} action={handleSubmit} className="flex flex-col gap-5">
-        <Field
+        <CampoDoModalDoConvidado
           label="Nome no convite"
           name="name"
           placeholder="Ex.: Família Teixeira"
@@ -172,7 +172,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
           required
         />
 
-        <Field
+        <CampoDoModalDoConvidado
           label="WhatsApp"
           name="phone"
           type="tel"
@@ -183,7 +183,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
           defaultValue={guest?.phone ? formatarTelefone(guest.phone) : ""}
         />
 
-        <Field label="E-mail (opcional)" name="email" type="email" inputMode="email" autoComplete="off" placeholder="nome@exemplo.com" defaultValue={guest?.email ?? ""} />
+        <CampoDoModalDoConvidado label="E-mail (opcional)" name="email" type="email" inputMode="email" autoComplete="off" placeholder="nome@exemplo.com" defaultValue={guest?.email ?? ""} />
 
         <div className="flex flex-col gap-2">
           <span className={estiloDoRotuloDoPainel} id={ids.seats}>
@@ -196,7 +196,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
             <output aria-live="polite" className="min-w-12 text-center font-num text-[28px] leading-8 text-tinta [font-variant-numeric:lining-nums]">
               {seats}
             </output>
-            <button type="button" aria-label="Mais um lugar" disabled={seats >= MAX_SEATS} onClick={() => setSeats((n) => Math.min(MAX_SEATS, n + 1))} className={`${btn.secondary} w-12 !px-0`}>
+            <button type="button" aria-label="Mais um lugar" disabled={seats >= MAXIMO_DE_LUGARES} onClick={() => setSeats((n) => Math.min(MAXIMO_DE_LUGARES, n + 1))} className={`${btn.secondary} w-12 !px-0`}>
               <Plus className="size-4" aria-hidden="true" />
             </button>
           </div>
@@ -206,8 +206,8 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
         <div className="grid gap-5">
           <NativeSelect id={ids.category} label="Grupo" value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value=""></option>
-            {category && !GUEST_CATEGORIES.some((c) => c === category) && <option value={category}>{category}</option>}
-            {GUEST_CATEGORIES.map((cat) => (
+            {category && !CATEGORIAS_DE_CONVIDADO.some((c) => c === category) && <option value={category}>{category}</option>}
+            {CATEGORIAS_DE_CONVIDADO.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
               </option>
@@ -238,7 +238,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
             </NativeSelect>
 
             {rsvpStatus === SituacaoDaConfirmacao.CONFIRMED ? (
-              <Field label="Restrições alimentares" name="dietaryRestrictions" placeholder="Sem glúten, vegano..." defaultValue={guest?.dietaryRestrictions ?? ""} />
+              <CampoDoModalDoConvidado label="Restrições alimentares" name="dietaryRestrictions" placeholder="Sem glúten, vegano..." defaultValue={guest?.dietaryRestrictions ?? ""} />
             ) : (
               <input type="hidden" name="dietaryRestrictions" value={guest?.dietaryRestrictions ?? ""} />
             )}

@@ -6,7 +6,7 @@ import { EsqueletoDoPainel, EsqueletoDaBusca, EsqueletoDoTituloDaSecao } from "@
    para que cada bloco apareça assim que os seus dados chegam. */
 
 /** Quatro números (presentes, despesas, saldo e próxima parcela). */
-export function StatsSkeleton() {
+export function EsqueletoDosIndicadores() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {Array.from({ length: 4 }).map((_, i) => (
@@ -17,7 +17,7 @@ export function StatsSkeleton() {
 }
 
 /** Filtros de tipo e visão, botão "Nova despesa" e os grupos de despesas com a barra de quitação. */
-export function ExpensesSkeleton() {
+export function EsqueletoDasDespesas() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col items-stretch justify-between gap-3 md:flex-row md:items-center">
@@ -48,7 +48,7 @@ export function ExpensesSkeleton() {
 }
 
 /** Busca e tabela dos pagamentos de presentes (cartões no celular). */
-export function PaymentsSkeleton() {
+export function EsqueletoDosPagamentos() {
   return (
     <div className="space-y-4">
       <EsqueletoDaBusca />
@@ -58,7 +58,7 @@ export function PaymentsSkeleton() {
 }
 
 /** Título de seção de Finanças com o conteúdo logo abaixo. */
-export function SectionSkeleton({ children, bordered = false }: { children: React.ReactNode; bordered?: boolean }) {
+export function EsqueletoDaSecao({ children, bordered = false }: { children: React.ReactNode; bordered?: boolean }) {
   return (
     <section className={bordered ? "flex flex-col gap-3 border-t border-linha pt-6" : "flex flex-col gap-3"}>
       <EsqueletoDoTituloDaSecao description />

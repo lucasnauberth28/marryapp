@@ -1,5 +1,5 @@
 import { obterFornecedores } from "@/actions/vendor-actions";
-import { VendorsClient } from "./vendors-client";
+import { FornecedoresCliente } from "./vendors-client";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export default async function AdminVendorsPage() {
 
   return (
     <div className="font-sans">
-      <VendorsClient initialVendors={vendors} />
+      <FornecedoresCliente initialVendors={vendors} />
     </div>
   );
 }

@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { cadastrarContaDoPlano, type DadosDoCadastroDoPlano } from "@/actions/subscription-actions";
 import { PixDaAssinatura } from "@/components/checkout/subscription-pix";
-import { VENDOR_CATEGORIES } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { CATEGORIAS_DE_FORNECEDOR } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -86,7 +86,7 @@ export function FluxoDeCadastro({ step, type, onStepChange, onTypeChange, initia
   const [showPassword, setShowPassword] = useState(false);
   // Fornecedor
   const [companyName, setCompanyName] = useState("");
-  const [category, setCategory] = useState<string>(VENDOR_CATEGORIES[0]);
+  const [category, setCategory] = useState<string>(CATEGORIAS_DE_FORNECEDOR[0]);
   const [city, setCity] = useState("");
   const [documentType, setDocumentType] = useState<"CNPJ" | "CPF">("CNPJ");
   const [documentNumber, setDocumentNumber] = useState("");
@@ -305,7 +305,7 @@ export function FluxoDeCadastro({ step, type, onStepChange, onTypeChange, initia
                 </Campo>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <NativeSelect id="cadastro-category" label="Categoria" value={category} onChange={(e) => setCategory(e.target.value)}>
-                    {VENDOR_CATEGORIES.map((cat) => (
+                    {CATEGORIAS_DE_FORNECEDOR.map((cat) => (
                       <option key={cat}>{cat}</option>
                     ))}
                   </NativeSelect>

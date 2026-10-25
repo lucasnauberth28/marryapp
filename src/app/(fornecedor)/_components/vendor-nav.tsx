@@ -7,22 +7,22 @@ import { useFormStatus } from "react-dom";
 import { sair } from "@/actions/auth-actions";
 import { IndicadorDeCarregamento } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
-import { PLAN_HREF } from "../_lib/vendor-panel";
+import { LINK_DO_PLANO } from "../_lib/vendor-panel";
 
-const PANEL = "/fornecedor";
-const ORDERS = "/fornecedor/pedidos";
-const AGENDA = "/fornecedor/agenda";
-const PROFILE = "/fornecedor/perfil";
-const REVIEWS = "/fornecedor/avaliacoes";
-const NOTIFICATIONS = "/fornecedor/notificacoes";
+const CAMINHO_DO_PAINEL = "/fornecedor";
+const CAMINHO_DOS_PEDIDOS = "/fornecedor/pedidos";
+const CAMINHO_DA_AGENDA = "/fornecedor/agenda";
+const CAMINHO_DO_PERFIL = "/fornecedor/perfil";
+const CAMINHO_DAS_AVALIACOES = "/fornecedor/avaliacoes";
+const CAMINHO_DAS_NOTIFICACOES = "/fornecedor/notificacoes";
 
-function isActive(pathname: string, href: string) {
+function estaAtivo(pathname: string, href: string) {
   // A lista de pedidos fica em /fornecedor; o detalhe, em /fornecedor/pedidos/[id].
-  if (href === PANEL) return pathname === PANEL || pathname === ORDERS || pathname.startsWith(`${ORDERS}/`);
+  if (href === CAMINHO_DO_PAINEL) return pathname === CAMINHO_DO_PAINEL || pathname === CAMINHO_DOS_PEDIDOS || pathname.startsWith(`${CAMINHO_DOS_PEDIDOS}/`);
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-interface SideItem {
+interface ItemLateral {
   href: string;
   label: string;
   icon: LucideIcon;
@@ -31,16 +31,16 @@ interface SideItem {
 }
 
 /** Navegação lateral (desktop). */
-export function VendorSidebarNav({ newLeads, publicProfileHref }: { newLeads: number; publicProfileHref: string | null }) {
+export function MenuLateralDoFornecedor({ newLeads, publicProfileHref }: { newLeads: number; publicProfileHref: string | null }) {
   const pathname = usePathname();
 
-  const items: SideItem[] = [
-    { href: PANEL, label: "Pedidos de orçamento", icon: Inbox, count: newLeads },
-    { href: AGENDA, label: "Agenda", icon: CalendarDays },
-    { href: PROFILE, label: "Meu perfil", icon: Store },
-    { href: REVIEWS, label: "Avaliações", icon: Star },
-    { href: PLAN_HREF, label: "Plano", icon: CreditCard },
-    { href: NOTIFICATIONS, label: "Avisos", icon: Bell },
+  const items: ItemLateral[] = [
+    { href: CAMINHO_DO_PAINEL, label: "Pedidos de orçamento", icon: Inbox, count: newLeads },
+    { href: CAMINHO_DA_AGENDA, label: "Agenda", icon: CalendarDays },
+    { href: CAMINHO_DO_PERFIL, label: "Meu perfil", icon: Store },
+    { href: CAMINHO_DAS_AVALIACOES, label: "Avaliações", icon: Star },
+    { href: LINK_DO_PLANO, label: "Plano", icon: CreditCard },
+    { href: CAMINHO_DAS_NOTIFICACOES, label: "Avisos", icon: Bell },
     { href: "/conta", label: "Minha conta", icon: UserRound },
   ];
   if (publicProfileHref) {
@@ -51,7 +51,7 @@ export function VendorSidebarNav({ newLeads, publicProfileHref }: { newLeads: nu
     <nav aria-label="Painel do fornecedor">
       <ul className="flex flex-col gap-1">
         {items.map(({ href, label, icon: Icon, count, external }) => {
-          const active = !external && isActive(pathname, href);
+          const active = !external && estaAtivo(pathname, href);
           return (
             <li key={href}>
               <Link
@@ -83,12 +83,12 @@ export function VendorSidebarNav({ newLeads, publicProfileHref }: { newLeads: nu
 }
 
 /** Ícone do "Sair": vira spinner enquanto a saída roda (o botão fica desabilitado, sem mudar de tamanho). */
-function LogoutIcon({ className }: { className: string }) {
+function IconeDeSair({ className }: { className: string }) {
   const { pending } = useFormStatus();
   return pending ? <IndicadorDeCarregamento className={className} /> : <LogOut aria-hidden="true" className={className} />;
 }
 
-function LogoutSubmit({ className, children, ...props }: React.ComponentProps<"button">) {
+function EnvioDeSair({ className, children, ...props }: React.ComponentProps<"button">) {
   const { pending } = useFormStatus();
   return (
     <button type="submit" disabled={pending} aria-busy={pending || undefined} className={cn("disabled:pointer-events-none", className)} {...props}>
@@ -97,61 +97,61 @@ function LogoutSubmit({ className, children, ...props }: React.ComponentProps<"b
   );
 }
 
-export function LogoutButton({ className }: { className?: string }) {
+export function BotaoDeSair({ className }: { className?: string }) {
   return (
     <form action={sair}>
-      <LogoutSubmit
+      <EnvioDeSair
         className={cn(
           "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-[15px] font-medium text-tinta-suave transition-colors hover:bg-areia hover:text-tinta",
           className,
         )}
       >
-        <LogoutIcon className="size-[18px] shrink-0" />
+        <IconeDeSair className="size-[18px] shrink-0" />
         Sair
-      </LogoutSubmit>
+      </EnvioDeSair>
     </form>
   );
 }
 
 /** Botão "Sair" só com ícone, para o topo no celular. */
-export function LogoutIconButton() {
+export function BotaoDeIconeDeSair() {
   return (
     <form action={sair} className="shrink-0">
-      <LogoutSubmit
+      <EnvioDeSair
         aria-label="Sair"
         title="Sair"
         className="grid size-11 place-items-center rounded-xl text-tinta-suave transition-colors hover:bg-areia hover:text-tinta"
       >
-        <LogoutIcon className="size-5" />
-      </LogoutSubmit>
+        <IconeDeSair className="size-5" />
+      </EnvioDeSair>
     </form>
   );
 }
 
-const MOBILE_TITLES: { href: string; title: string }[] = [
-  { href: ORDERS, title: "Pedido" },
-  { href: AGENDA, title: "Agenda" },
-  { href: PROFILE, title: "Meu perfil" },
-  { href: REVIEWS, title: "Avaliações" },
-  { href: PLAN_HREF, title: "Plano" },
-  { href: NOTIFICATIONS, title: "Avisos" },
+const TITULOS_NO_CELULAR: { href: string; title: string }[] = [
+  { href: CAMINHO_DOS_PEDIDOS, title: "Pedido" },
+  { href: CAMINHO_DA_AGENDA, title: "Agenda" },
+  { href: CAMINHO_DO_PERFIL, title: "Meu perfil" },
+  { href: CAMINHO_DAS_AVALIACOES, title: "Avaliações" },
+  { href: LINK_DO_PLANO, title: "Plano" },
+  { href: CAMINHO_DAS_NOTIFICACOES, title: "Avisos" },
 ];
 
 /** Título do topo no celular, conforme a página. */
-export function VendorMobileTitle() {
+export function TituloMovelDoFornecedor() {
   const pathname = usePathname();
-  const match = MOBILE_TITLES.find(({ href }) => pathname === href || pathname.startsWith(`${href}/`));
+  const match = TITULOS_NO_CELULAR.find(({ href }) => pathname === href || pathname.startsWith(`${href}/`));
   return <p className="min-w-0 flex-1 truncate text-lg font-semibold">{match?.title ?? "Pedidos"}</p>;
 }
 
 /** Barra de abas inferior (celular): 80px incluindo a área segura. */
-export function VendorTabBar() {
+export function BarraDeAbasDoFornecedor() {
   const pathname = usePathname();
   const tabs = [
-    { href: PANEL, label: "Pedidos", icon: Inbox },
-    { href: AGENDA, label: "Agenda", icon: CalendarDays },
-    { href: PROFILE, label: "Perfil", icon: Store },
-    { href: PLAN_HREF, label: "Plano", icon: CreditCard },
+    { href: CAMINHO_DO_PAINEL, label: "Pedidos", icon: Inbox },
+    { href: CAMINHO_DA_AGENDA, label: "Agenda", icon: CalendarDays },
+    { href: CAMINHO_DO_PERFIL, label: "Perfil", icon: Store },
+    { href: LINK_DO_PLANO, label: "Plano", icon: CreditCard },
   ];
 
   return (
@@ -160,7 +160,7 @@ export function VendorTabBar() {
       className="fixed inset-x-0 bottom-0 z-40 grid h-20 grid-cols-4 border-t border-linha bg-papel pb-[max(16px,env(safe-area-inset-bottom))] md:hidden"
     >
       {tabs.map(({ href, label, icon: Icon }) => {
-        const active = isActive(pathname, href);
+        const active = estaAtivo(pathname, href);
         return (
           <Link
             key={href}

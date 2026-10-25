@@ -9,10 +9,10 @@ import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles
 import { formatarPrecoDoPlano, type OpcaoDePlano } from "@/app/login/auth-config";
 import { cn } from "@/lib/utils";
 
-const TIER_OF: Record<string, string> = { pro: "PRO", master: "MASTER" };
+const NIVEL_DO_PLANO: Record<string, string> = { pro: "PRO", master: "MASTER" };
 
 /** Escolha do plano pago e o Pix, sem sair do painel. Renovar soma 30 dias ao período atual. */
-export function PlanCheckout({
+export function PagamentoDoPlano({
   currentTier,
   hasActivePeriod,
   daysLeft,
@@ -40,7 +40,7 @@ export function PlanCheckout({
   const plan = options.find((o) => o.id === selected) ?? options[0];
   // Só usa o cupom se ele foi conferido para o plano escolhido.
   const couponFor = coupon && coupon.planId === plan.id ? coupon.code : null;
-  const isRenewal = TIER_OF[plan.id] === currentTier && hasActivePeriod;
+  const isRenewal = NIVEL_DO_PLANO[plan.id] === currentTier && hasActivePeriod;
   const endLabel = endLabels[plan.id];
   const remaining = daysLeft === 1 ? "ao 1 dia que falta" : `aos ${daysLeft ?? 0} dias que faltam`;
   const creditInfo = credits[plan.id];
@@ -91,7 +91,7 @@ export function PlanCheckout({
       <div role="radiogroup" aria-labelledby="planos-titulo" className="grid gap-4 md:grid-cols-2">
         {options.map((o) => {
           const active = o.id === plan.id;
-          const isCurrent = TIER_OF[o.id] === currentTier;
+          const isCurrent = NIVEL_DO_PLANO[o.id] === currentTier;
           return (
             <button
               key={o.id}
@@ -155,7 +155,7 @@ export function PlanCheckout({
           onClick={() => setPaying(true)}
           className={cn(estiloDoBotao.primary, "min-h-12 w-full shrink-0 sm:w-auto")}
         >
-          {TIER_OF[plan.id] === currentTier
+          {NIVEL_DO_PLANO[plan.id] === currentTier
             ? `Renovar o ${plan.name} com Pix`
             : currentTier === "FREE"
               ? `Assinar o ${plan.name} com Pix`

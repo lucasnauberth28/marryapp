@@ -9,15 +9,15 @@ import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { Checkbox } from "@/components/ui/checkbox";
 import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCasalAction } from "../../_components/use-casal-action";
+import { useAcaoDoCasal } from "../../_components/use-casal-action";
 
 /** "Conceder um plano à mão": cortesia de valor zero, com motivo obrigatório. Não cobra nada do casal. */
-export function GrantPlanForm({ weddingId, currentPlanId }: { weddingId: string; currentPlanId: string | null }) {
+export function FormularioDeConcederPlano({ weddingId, currentPlanId }: { weddingId: string; currentPlanId: string | null }) {
   const router = useRouter();
   const [planId, setPlanId] = useState<"classic" | "vip">(currentPlanId === "classic" ? "vip" : "classic");
   const [reason, setReason] = useState("");
   const [notify, setNotify] = useState(true);
-  const { pending, error, run } = useCasalAction();
+  const { pending, error, run } = useAcaoDoCasal();
   const name = planId === "vip" ? "VIP" : "Classic";
 
   return (

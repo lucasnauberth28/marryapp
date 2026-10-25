@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 /** "Denunciar": o fornecedor pede à administração do Aceito para analisar uma avaliação (não some sozinha). */
-export function ReportReview({ reviewId, coupleNames }: { reviewId: string; coupleNames: string }) {
+export function DenunciarAvaliacao({ reviewId, coupleNames }: { reviewId: string; coupleNames: string }) {
   const router = useRouter();
   const id = useId();
   const [open, setOpen] = useState(false);

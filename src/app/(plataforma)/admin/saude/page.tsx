@@ -10,13 +10,13 @@ import { obterFotoDaSaude, type ContagensDosServicos } from "@/lib/platform/quer
 import { ROTULO_DA_TAREFA_AGENDADA, ROTULO_DA_SITUACAO_DA_TAREFA_AGENDADA } from "@/lib/platform/health";
 import { formatarDataEHora, formatarInteiro, formatarHora, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
-import { AlertsForm } from "./_components/alerts-form";
-import { ReconnectWhatsapp } from "./_components/reconnect-whatsapp";
+import { FormularioDeAlertas } from "./_components/alerts-form";
+import { ReconectarWhatsapp } from "./_components/reconnect-whatsapp";
 
 export const metadata = { title: "Saúde do sistema" };
 export const dynamic = "force-dynamic"; // sempre medir na hora
 
-function Metric({ value, label }: { value: string; label: string }) {
+function MetricaDaSaude({ value, label }: { value: string; label: string }) {
   return (
     <div>
       <p className="font-num text-[34px] leading-10 tabular-nums text-tinta">{value}</p>
@@ -25,7 +25,7 @@ function Metric({ value, label }: { value: string; label: string }) {
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function LinhaDaSaude({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2 text-[15px] leading-5">
       <dt className="text-tinta-suave">{label}</dt>
@@ -34,10 +34,10 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   );
 }
 
-const NoRecords = ({ what }: { what: string }) => <p className="text-sm leading-5 text-tinta-suave">Sem registros ainda. {what}</p>;
+const SemRegistros = ({ what }: { what: string }) => <p className="text-sm leading-5 text-tinta-suave">Sem registros ainda. {what}</p>;
 
 /** Situação geral de um serviço, só com o que foi medido: sem configuração, sem registros, com falhas ou sem falhas. */
-function serviceChip(configured: boolean, c: ContagensDosServicos): { tone: TomDaSituacao; icon: typeof Clock; text: string } {
+function etiquetaDoServico(configured: boolean, c: ContagensDosServicos): { tone: TomDaSituacao; icon: typeof Clock; text: string } {
   if (!configured) return { tone: "neutro", icon: Info, text: "Não configurado" };
   if (c.failed > 0) return { tone: "aviso", icon: AlertTriangle, text: "Atenção" };
   if (c.total === 0) return { tone: "neutro", icon: Clock, text: "Sem registros" };
@@ -54,8 +54,8 @@ export default async function Page() {
   const cronsAllOk = h.crons.length > 0 && h.crons.every((c) => c.state === "ok");
   const cronsBad = h.crons.some((c) => c.state === "failed" || c.state === "late");
 
-  const mp = serviceChip(h.mercadopago.configured, h.mercadopago.counts);
-  const wa = serviceChip(h.whatsapp.configured, h.whatsapp.counts);
+  const mp = etiquetaDoServico(h.mercadopago.configured, h.mercadopago.counts);
+  const wa = etiquetaDoServico(h.whatsapp.configured, h.whatsapp.counts);
   const waState = !h.whatsapp.configured
     ? null
     : h.whatsapp.connected === true
@@ -63,7 +63,7 @@ export default async function Page() {
       : h.whatsapp.connected === false
         ? { tone: "perigo" as const, icon: XCircle, text: "Instância desconectada" }
         : { tone: "neutro" as const, icon: Clock, text: "Sem resposta da instância" };
-  const em = serviceChip(h.email.configured, h.email.counts);
+  const em = etiquetaDoServico(h.email.configured, h.email.counts);
 
   return (
     <>
@@ -87,12 +87,12 @@ export default async function Page() {
         <Painel title="Mercado Pago" aside={<EtiquetaDeSituacao tone={mp.tone} icon={mp.icon}>{mp.text}</EtiquetaDeSituacao>}>
           {!h.mercadopago.configured && <p className="mb-3 text-sm leading-5 text-aviso">O token do Mercado Pago não está configurado neste ambiente.</p>}
           {h.mercadopago.counts.total === 0 ? (
-            <NoRecords what="Os avisos de pagamento recebidos passam a ser contados a partir de agora." />
+            <SemRegistros what="Os avisos de pagamento recebidos passam a ser contados a partir de agora." />
           ) : (
             <>
               <div className="flex gap-10">
-                <Metric value={formatarInteiro(h.mercadopago.counts.total)} label="avisos recebidos em 24 h" />
-                <Metric value={formatarInteiro(h.mercadopago.counts.failed)} label="não aplicados" />
+                <MetricaDaSaude value={formatarInteiro(h.mercadopago.counts.total)} label="avisos recebidos em 24 h" />
+                <MetricaDaSaude value={formatarInteiro(h.mercadopago.counts.failed)} label="não aplicados" />
               </div>
               <ul className="mt-4 divide-y divide-linha">
                 {h.mercadopago.recent.map((e, i) => (
@@ -110,7 +110,7 @@ export default async function Page() {
             </>
           )}
           <dl className="mt-3 divide-y divide-linha border-t border-linha pt-2">
-            <Row label="Assinatura dos avisos">{h.mercadopago.webhookSecret ? "Conferida" : "Não configurada"}</Row>
+            <LinhaDaSaude label="Assinatura dos avisos">{h.mercadopago.webhookSecret ? "Conferida" : "Não configurada"}</LinhaDaSaude>
           </dl>
         </Painel>
 
@@ -159,16 +159,16 @@ export default async function Page() {
               )}
               {h.whatsapp.stateNote && <p className="mb-3 text-sm text-tinta-suave">{h.whatsapp.stateNote}</p>}
               {h.whatsapp.counts.total === 0 && h.whatsapp.invalidNumbers === 0 ? (
-                <NoRecords what="As mensagens enviadas passam a ser contadas a partir de agora." />
+                <SemRegistros what="As mensagens enviadas passam a ser contadas a partir de agora." />
               ) : (
                 <div className="flex gap-10">
-                  <Metric value={formatarInteiro(h.whatsapp.counts.ok)} label="enviadas em 24 h" />
-                  <Metric value={formatarInteiro(h.whatsapp.counts.failed)} label="falhas em 24 h" />
-                  <Metric value={formatarInteiro(h.whatsapp.invalidNumbers)} label="números sem WhatsApp" />
+                  <MetricaDaSaude value={formatarInteiro(h.whatsapp.counts.ok)} label="enviadas em 24 h" />
+                  <MetricaDaSaude value={formatarInteiro(h.whatsapp.counts.failed)} label="falhas em 24 h" />
+                  <MetricaDaSaude value={formatarInteiro(h.whatsapp.invalidNumbers)} label="números sem WhatsApp" />
                 </div>
               )}
               <div className="mt-3">
-                <ReconnectWhatsapp />
+                <ReconectarWhatsapp />
               </div>
             </>
           )}
@@ -177,17 +177,17 @@ export default async function Page() {
         <Painel title="E-mail e notificações" aside={<EtiquetaDeSituacao tone={em.tone} icon={em.icon}>{em.text}</EtiquetaDeSituacao>}>
           {!h.email.configured && <p className="mb-3 text-sm leading-5 text-aviso">O envio de e-mail (Resend) não está configurado neste ambiente.</p>}
           {h.email.counts.total === 0 ? (
-            <NoRecords what="Os e-mails enviados passam a ser contados a partir de agora." />
+            <SemRegistros what="Os e-mails enviados passam a ser contados a partir de agora." />
           ) : (
             <div className="flex gap-10">
-              <Metric value={formatarInteiro(h.email.counts.ok)} label="e-mails enviados em 24 h" />
-              <Metric value={formatarInteiro(h.email.counts.failed)} label="falhas de envio" />
+              <MetricaDaSaude value={formatarInteiro(h.email.counts.ok)} label="e-mails enviados em 24 h" />
+              <MetricaDaSaude value={formatarInteiro(h.email.counts.failed)} label="falhas de envio" />
             </div>
           )}
           <dl className="mt-3 divide-y divide-linha border-t border-linha pt-2">
-            <Row label="Notificações no celular">{h.push.configured ? "Configuradas" : "Não configuradas"}</Row>
-            <Row label="Aparelhos inscritos">{formatarInteiro(h.push.subscriptions)}</Row>
-            <Row label="Envios de notificação em 24 h">{h.push.counts.total === 0 ? "Sem registros ainda" : `${formatarInteiro(h.push.counts.ok)} certos, ${formatarInteiro(h.push.counts.failed)} com falha`}</Row>
+            <LinhaDaSaude label="Notificações no celular">{h.push.configured ? "Configuradas" : "Não configuradas"}</LinhaDaSaude>
+            <LinhaDaSaude label="Aparelhos inscritos">{formatarInteiro(h.push.subscriptions)}</LinhaDaSaude>
+            <LinhaDaSaude label="Envios de notificação em 24 h">{h.push.counts.total === 0 ? "Sem registros ainda" : `${formatarInteiro(h.push.counts.ok)} certos, ${formatarInteiro(h.push.counts.failed)} com falha`}</LinhaDaSaude>
           </dl>
         </Painel>
 
@@ -198,22 +198,22 @@ export default async function Page() {
           }
         >
           <dl className="divide-y divide-linha">
-            <Row label="Versão no ar">{h.version.sha ? <span className="font-mono">{h.version.sha}{h.version.env ? ` · ${h.version.env}` : ""}</span> : "Ambiente local (sem versão da Vercel)"}</Row>
-            <Row label="Banco de dados">{h.database.ok && h.database.ms !== null ? `Respondendo em ${h.database.ms} ms` : "Sem resposta"}</Row>
-            <Row label="Migrações">
+            <LinhaDaSaude label="Versão no ar">{h.version.sha ? <span className="font-mono">{h.version.sha}{h.version.env ? ` · ${h.version.env}` : ""}</span> : "Ambiente local (sem versão da Vercel)"}</LinhaDaSaude>
+            <LinhaDaSaude label="Banco de dados">{h.database.ok && h.database.ms !== null ? `Respondendo em ${h.database.ms} ms` : "Sem resposta"}</LinhaDaSaude>
+            <LinhaDaSaude label="Migrações">
               {h.database.migrationsApplied === null
                 ? "Não foi possível contar"
                 : h.database.migrationsPending === null
                   ? `${h.database.migrationsApplied} aplicadas`
                   : `${h.database.migrationsApplied} aplicadas, ${h.database.migrationsPending} pendentes`}
-            </Row>
-            <Row label="Sentry (erros do sistema)">{h.sentryConfigured ? "Configurado" : "Não configurado"}</Row>
+            </LinhaDaSaude>
+            <LinhaDaSaude label="Sentry (erros do sistema)">{h.sentryConfigured ? "Configurado" : "Não configurado"}</LinhaDaSaude>
           </dl>
           <p className="mt-3 text-sm leading-5 text-tinta-suave">Percentual de erros e erros por dia ainda não são medidos aqui.</p>
         </Painel>
       </div>
 
-      <AlertsForm
+      <FormularioDeAlertas
         initial={{ mercadoPagoFailures: alerts.mercadoPagoFailures, whatsappDisconnected: alerts.whatsappDisconnected, routineMissed: alerts.routineMissed, sendTo: alerts.sendTo }}
         emailConfigured={emailEstaConfigurado()}
       />

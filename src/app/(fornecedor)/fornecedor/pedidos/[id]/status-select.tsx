@@ -4,17 +4,17 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import { atualizarSituacaoDoPedido } from "@/actions/vendor-panel-actions";
 import { NativeSelect } from "@/components/ui/select";
-import { LEAD_STATUS_LABEL, LEAD_STATUSES, type LeadStatus } from "../../../_lib/vendor-panel";
+import { ROTULO_DA_SITUACAO_DO_PEDIDO, SITUACOES_DO_PEDIDO, type SituacaoDoPedido } from "../../../_lib/vendor-panel";
 
 /** Troca o status do pedido (mesma ação da lista de pedidos). */
-export function StatusSelect({ leadId, status, id = "status-pedido" }: { leadId: string; status: LeadStatus; id?: string }) {
+export function SelecaoDeSituacao({ leadId, status, id = "status-pedido" }: { leadId: string; status: SituacaoDoPedido; id?: string }) {
   const [isPending, startTransition] = useTransition();
 
-  function onChange(target: LeadStatus) {
+  function onChange(target: SituacaoDoPedido) {
     if (target === status) return;
     startTransition(async () => {
       const res = await atualizarSituacaoDoPedido(leadId, target);
-      if (res.success) toast.success(`Pedido marcado como “${LEAD_STATUS_LABEL[target]}”.`);
+      if (res.success) toast.success(`Pedido marcado como “${ROTULO_DA_SITUACAO_DO_PEDIDO[target]}”.`);
       else toast.error(res.error ?? "Não foi possível atualizar o pedido.");
     });
   }
@@ -26,11 +26,11 @@ export function StatusSelect({ leadId, status, id = "status-pedido" }: { leadId:
       hint={isPending ? "Salvando…" : undefined}
       value={status}
       disabled={isPending}
-      onChange={(e) => onChange(e.target.value as LeadStatus)}
+      onChange={(e) => onChange(e.target.value as SituacaoDoPedido)}
     >
-      {LEAD_STATUSES.map((s) => (
+      {SITUACOES_DO_PEDIDO.map((s) => (
         <option key={s} value={s}>
-          {LEAD_STATUS_LABEL[s]}
+          {ROTULO_DA_SITUACAO_DO_PEDIDO[s]}
         </option>
       ))}
     </NativeSelect>

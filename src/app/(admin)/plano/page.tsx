@@ -11,8 +11,8 @@ import { opcaoDePlano, nomeCurtoDoPlano, type OpcaoDePlano } from "@/app/login/a
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { Aparicao } from "@/components/motion/reveal";
 import { LoadingRegion } from "@/components/skeletons";
-import { PlanoBodySkeleton } from "./skeletons";
-import { UpgradeSection } from "./upgrade-section";
+import { EsqueletoDoCorpoDoPlano } from "./skeletons";
+import { SecaoDeUpgrade } from "./upgrade-section";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { pluralizar } from "@/lib/formatacao/plural";
@@ -23,12 +23,12 @@ export const metadata = { title: "Plano e pagamentos" };
 
 
 /** Ordem dos planos de casal: só mostramos como opção de mudança os que ficam acima do atual. */
-const PLAN_RANK: Record<string, number> = { basic: 0, custom: 1, classic: 2, vip: 3 };
-const UPGRADE_KEYS = ["classic", "vip"] as const;
+const ORDEM_DOS_PLANOS: Record<string, number> = { basic: 0, custom: 1, classic: 2, vip: 3 };
+const CHAVES_DE_UPGRADE = ["classic", "vip"] as const;
 
 /** Pix estático fica "em conferência" por até 3 dias depois de vencer o código (mesma regra de /assinaturas). */
-const STATIC_PIX_PREFIX = "ASSIN";
-const STATIC_PIX_REVIEW_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
+const PREFIXO_DO_PIX_ESTATICO = "ASSIN";
+const JANELA_DE_CONFERENCIA_DO_PIX_ESTATICO_EM_MS = 3 * 24 * 60 * 60 * 1000;
 
 export default async function PlanoPage() {
   // Plano de casal vale para o casamento (os dois do casal), não para a conta
@@ -45,17 +45,17 @@ export default async function PlanoPage() {
       <Suspense
         fallback={
           <LoadingRegion label="o plano e os pagamentos" className="flex flex-col gap-7">
-            <PlanoBodySkeleton />
+            <EsqueletoDoCorpoDoPlano />
           </LoadingRegion>
         }
       >
-        <PlanoBody userId={session.userId} weddingId={weddingId} />
+        <CorpoDoPlano userId={session.userId} weddingId={weddingId} />
       </Suspense>
     </div>
   );
 }
 
-async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: string }) {
+async function CorpoDoPlano({ userId, weddingId }: { userId: string; weddingId: string }) {
   const isSuperAdmin = userId === ID_DO_SUPER_ADMIN;
   const now = new Date();
   const catalog = await obterCatalogo();
@@ -79,8 +79,8 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
             weddingId,
             planType: "COUPLE",
             status: PaymentStatus.PENDING,
-            gatewayId: { startsWith: STATIC_PIX_PREFIX },
-            expiresAt: { gte: new Date(now.getTime() - STATIC_PIX_REVIEW_WINDOW_MS) },
+            gatewayId: { startsWith: PREFIXO_DO_PIX_ESTATICO },
+            expiresAt: { gte: new Date(now.getTime() - JANELA_DE_CONFERENCIA_DO_PIX_ESTATICO_EM_MS) },
           },
           orderBy: { createdAt: "desc" },
           select: { planId: true, planName: true, amount: true, createdAt: true },
@@ -93,11 +93,11 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
   ]);
 
   const current = subscriptions.find((s) => s.status === PaymentStatus.APPROVED) ?? null;
-  const currentRank = current ? (PLAN_RANK[current.planId] ?? 0) : 0;
+  const currentRank = current ? (ORDEM_DOS_PLANOS[current.planId] ?? 0) : 0;
   const currentName = current ? (ehChaveDePlano(current.planId) ? opcaoDePlano(current.planId, catalog).name : nomeCurtoDoPlano(current.planName)) : "Básico";
 
-  const upgrades: OpcaoDePlano[] = UPGRADE_KEYS.filter((key) => PLAN_RANK[key] > currentRank).map((key) => opcaoDePlano(key, catalog));
-  const awaitingReview = pendingStatic && (PLAN_RANK[pendingStatic.planId] ?? 0) > currentRank ? pendingStatic : null;
+  const upgrades: OpcaoDePlano[] = CHAVES_DE_UPGRADE.filter((key) => ORDEM_DOS_PLANOS[key] > currentRank).map((key) => opcaoDePlano(key, catalog));
+  const awaitingReview = pendingStatic && (ORDEM_DOS_PLANOS[pendingStatic.planId] ?? 0) > currentRank ? pendingStatic : null;
 
   const giftCount = gifts._count._all;
   const feeTotal = gifts._sum.fee ?? 0;
@@ -151,7 +151,7 @@ async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: str
         <h2 id="upgrade-titulo" className="text-xl font-semibold text-tinta">
           Mudar de plano
         </h2>
-        <UpgradeSection plans={upgrades} canPay={!isSuperAdmin} />
+        <SecaoDeUpgrade plans={upgrades} canPay={!isSuperAdmin} />
         <p className="text-[15px] text-tinta">
           Precisam só de algumas partes?{" "}
           <Link href="/monte-seu-plano" className="inline-flex min-h-11 items-center font-semibold text-ameixa underline-offset-4 hover:underline">

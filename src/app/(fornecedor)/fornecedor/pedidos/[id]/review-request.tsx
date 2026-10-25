@@ -7,13 +7,13 @@ import { toast } from "sonner";
 import { pedirAvaliacaoDoPedido } from "@/actions/vendor-panel-actions";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { whatsappHref } from "../../../_lib/vendor-panel";
+import { linkDoWhatsapp } from "../../../_lib/vendor-panel";
 
-const BTN =
+const ESTILO_DO_BOTAO =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-60";
 
 /** Pedido fechado: gera o link de avaliação verificada e abre a mensagem pronta no WhatsApp. */
-export function ReviewRequest({
+export function PedidoDeAvaliacao({
   leadId,
   coupleName,
   couplePhone,
@@ -53,7 +53,7 @@ export function ReviewRequest({
   const text = url
     ? `Olá, ${coupleName}! Aqui é ${companyName}. Foi uma alegria fazer parte do casamento de vocês! Se puderem, contem como foi a experiência, leva só um minutinho: ${url}`
     : "";
-  const waUrl = url ? whatsappHref(couplePhone, text) : null;
+  const waUrl = url ? linkDoWhatsapp(couplePhone, text) : null;
 
   function generate() {
     startTransition(async () => {
@@ -90,7 +90,7 @@ export function ReviewRequest({
           type="button"
           onClick={generate}
           disabled={isPending}
-          className={cn(BTN, "w-full bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}
+          className={cn(ESTILO_DO_BOTAO, "w-full bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}
         >
           {isPending ? <Loader2 aria-hidden="true" className="size-[18px] animate-spin" /> : <Star aria-hidden="true" className="size-[18px]" />}
           Pedir avaliação
@@ -103,7 +103,7 @@ export function ReviewRequest({
               href={waUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={cn(BTN, "w-full bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}
+              className={cn(ESTILO_DO_BOTAO, "w-full bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}
             >
               <MessageCircle aria-hidden="true" className="size-[18px]" />
               Enviar no WhatsApp
@@ -121,7 +121,7 @@ export function ReviewRequest({
           <button
             type="button"
             onClick={copy}
-            className={cn(BTN, "w-full border border-linha-forte bg-papel text-tinta hover:bg-areia")}
+            className={cn(ESTILO_DO_BOTAO, "w-full border border-linha-forte bg-papel text-tinta hover:bg-areia")}
           >
             <Link2 aria-hidden="true" className="size-[18px]" />
             Copiar link

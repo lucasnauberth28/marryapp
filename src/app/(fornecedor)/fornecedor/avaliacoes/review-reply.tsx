@@ -9,14 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-const MIN = 2;
-const MAX = 1000;
+const MINIMO_DE_CARACTERES = 2;
+const MAXIMO_DE_CARACTERES = 1000;
 
 /**
  * Resposta pública a uma avaliação: campo para responder (sem resposta) ou
  * a resposta publicada com o botão "Editar resposta".
  */
-export function ReviewReply({
+export function RespostaAAvaliacao({
   reviewId,
   coupleNames,
   reply,
@@ -63,7 +63,7 @@ export function ReviewReply({
   }
 
   return (
-    <ReplyForm
+    <FormularioDeResposta
       reviewId={reviewId}
       coupleNames={coupleNames}
       initial={reply ?? ""}
@@ -77,7 +77,7 @@ export function ReviewReply({
   );
 }
 
-function ReplyForm({
+function FormularioDeResposta({
   reviewId,
   coupleNames,
   initial,
@@ -101,7 +101,7 @@ function ReplyForm({
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const text = value.trim();
-    if (text.length < MIN) {
+    if (text.length < MINIMO_DE_CARACTERES) {
       setError("Escreva a resposta antes de publicar.");
       return;
     }
@@ -126,7 +126,7 @@ function ReplyForm({
         label="Sua resposta pública"
         rows={2}
         value={value}
-        maxLength={MAX}
+        maxLength={MAXIMO_DE_CARACTERES}
         disabled={isPending}
         autoFocus={isEdit}
         onChange={(e) => {
@@ -135,7 +135,7 @@ function ReplyForm({
         }}
         placeholder={placeholder}
         error={error ?? undefined}
-        hint={`${value.length}/${MAX} caracteres`}
+        hint={`${value.length}/${MAXIMO_DE_CARACTERES} caracteres`}
         inputClassName="min-h-[88px]"
       />
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

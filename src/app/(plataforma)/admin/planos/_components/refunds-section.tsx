@@ -8,12 +8,12 @@ import { formatarData, diaRelativo } from "@/lib/platform/format";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { ROTULO_DA_VISAO_DO_REEMBOLSO, visaoDoReembolso, type VisaoDoReembolso } from "@/lib/platform/payments";
 import type { LinhaDeReembolso } from "@/lib/platform/queries/receita";
-import { RefundDecision, RegisterRefundForm } from "./refund-forms";
+import { DecisaoDeReembolso, FormularioDeRegistrarReembolso } from "./refund-forms";
 
-const TONE: Record<VisaoDoReembolso, TomDaSituacao> = { decide: "aviso", waiting_refund: "aviso", refunded: "neutro", denied: "neutro" };
+const TONS_DA_ETIQUETA: Record<VisaoDoReembolso, TomDaSituacao> = { decide: "aviso", waiting_refund: "aviso", refunded: "neutro", denied: "neutro" };
 
 /** Reembolsos: pedidos, decisão e o aviso de que o estorno de verdade é feito no Mercado Pago. */
-export function RefundsSection({ refunds, payments, now, preview = false, policyText }: { refunds: LinhaDeReembolso[]; payments?: { id: string; label: string; amount: number }[]; now: Date; preview?: boolean; policyText?: string }) {
+export function SecaoDeReembolsos({ refunds, payments, now, preview = false, policyText }: { refunds: LinhaDeReembolso[]; payments?: { id: string; label: string; amount: number }[]; now: Date; preview?: boolean; policyText?: string }) {
   const rows = preview ? refunds.slice(0, 5) : refunds;
   return (
     <>
@@ -60,7 +60,7 @@ export function RefundsSection({ refunds, payments, now, preview = false, policy
                 header: "Situação",
                 cell: (r) => {
                   const view = visaoDoReembolso(r);
-                  return <EtiquetaDeSituacao tone={TONE[view]}>{ROTULO_DA_VISAO_DO_REEMBOLSO[view]}</EtiquetaDeSituacao>;
+                  return <EtiquetaDeSituacao tone={TONS_DA_ETIQUETA[view]}>{ROTULO_DA_VISAO_DO_REEMBOLSO[view]}</EtiquetaDeSituacao>;
                 },
               },
               {
@@ -73,7 +73,7 @@ export function RefundsSection({ refunds, payments, now, preview = false, policy
                     <div className="flex flex-col gap-2">
                       <p className="max-w-[340px] text-sm text-tinta-suave">Motivo: {r.reason}</p>
                       {r.decisionNote ? <p className="max-w-[340px] text-sm text-tinta-suave">Decisão: {r.decisionNote}</p> : null}
-                      {view === "decide" ? <RefundDecision refundId={r.id} payer={r.payer} /> : null}
+                      {view === "decide" ? <DecisaoDeReembolso refundId={r.id} payer={r.payer} /> : null}
                       <Link href={`/admin/planos/assinaturas?id=${r.subscriptionId}#painel`} className="text-sm font-semibold text-ameixa underline underline-offset-2">
                         Ver o pagamento
                       </Link>
@@ -87,7 +87,7 @@ export function RefundsSection({ refunds, payments, now, preview = false, policy
       </Painel>
       {!preview && payments ? (
         <Painel title="Registrar um pedido" description="Para pedidos que chegaram por WhatsApp ou e-mail.">
-          <RegisterRefundForm payments={payments} />
+          <FormularioDeRegistrarReembolso payments={payments} />
         </Painel>
       ) : null}
       {!preview && policyText ? (

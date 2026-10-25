@@ -10,7 +10,7 @@ import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-function useRun() {
+function useExecutar() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -31,8 +31,8 @@ function useRun() {
 }
 
 /** Decisão sobre um pedido de reembolso: aprovar (e estornar no Mercado Pago) ou recusar, sempre com a nota. */
-export function RefundDecision({ refundId, payer }: { refundId: string; payer: string }) {
-  const { pending, error, run } = useRun();
+export function DecisaoDeReembolso({ refundId, payer }: { refundId: string; payer: string }) {
+  const { pending, error, run } = useExecutar();
   const [open, setOpen] = useState<"approve" | "deny" | null>(null);
   const [note, setNote] = useState("");
   return (
@@ -78,8 +78,8 @@ export function RefundDecision({ refundId, payer }: { refundId: string; payer: s
 
 
 /** Registrar um pedido de reembolso que chegou por WhatsApp ou e-mail. */
-export function RegisterRefundForm({ payments }: { payments: { id: string; label: string; amount: number }[] }) {
-  const { pending, error, run } = useRun();
+export function FormularioDeRegistrarReembolso({ payments }: { payments: { id: string; label: string; amount: number }[] }) {
+  const { pending, error, run } = useExecutar();
   const [subscriptionId, setSubscriptionId] = useState("");
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");

@@ -1,6 +1,6 @@
 import { obterFornecedoresParceiros } from "@/actions/partner-vendor-actions";
 import { VisaoDeFornecedoresPublicos } from "@/components/public/public-vendors-view";
-import { parseIsoDate, toIsoDate, todayBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { interpretarDataIso, paraDataIso, hojeEmBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +12,10 @@ export const metadata = {
 
 export default async function PublicVendorsPage({ searchParams }: { searchParams: Promise<{ data?: string | string[] }> }) {
   const { data } = await searchParams;
-  const todayIso = toIsoDate(todayBrasilia());
+  const todayIso = paraDataIso(hojeEmBrasilia());
   // Filtro "Data do casamento" (?data=AAAA-MM-DD): datas inválidas ou passadas são ignoradas.
   const raw = typeof data === "string" ? data : undefined;
-  const weddingDate = raw && parseIsoDate(raw) && raw >= todayIso ? raw : undefined;
+  const weddingDate = raw && interpretarDataIso(raw) && raw >= todayIso ? raw : undefined;
 
   const partnerVendors = await obterFornecedoresParceiros(undefined, { weddingDate });
 

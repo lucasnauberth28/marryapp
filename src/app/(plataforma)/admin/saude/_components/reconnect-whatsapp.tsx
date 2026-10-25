@@ -10,7 +10,7 @@ import { LoadingRegion, SkeletonImage } from "@/components/skeletons";
 import { reconectarWhatsapp } from "@/actions/admin-saude-actions";
 
 /** "Reconectar": gera o QR Code do WhatsApp para parear de novo. Depois de ler, a página precisa ser atualizada. */
-export function ReconnectWhatsapp() {
+export function ReconectarWhatsapp() {
   const [pending, startTransition] = useTransition();
   const [qr, setQr] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

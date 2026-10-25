@@ -15,7 +15,7 @@ import { estiloDoBotao } from "@/components/landing/styles";
 import { estiloDoCartao, estiloDoTituloDoCartao } from "@/components/casal/ui";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 
-const AVAILABLE_MODULES = [
+const MODULOS_DISPONIVEIS = [
   { id: "*", name: "Acesso total" },
   { id: "/dashboard", name: "Início do painel" },
   { id: "/credenciamento", name: "Registro de entrada dos convidados" },
@@ -42,24 +42,24 @@ const AVAILABLE_MODULES = [
   { id: "/fornecedor", name: "Painel do fornecedor" },
 ];
 
-interface RoleItem {
+interface ItemDePerfil {
   id: string;
   name: string;
   allowedPaths: unknown; // coluna Json: array de paths
   _count?: { users: number };
 }
 
-function toPaths(value: unknown): string[] {
+function paraCaminhos(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((p): p is string => typeof p === "string") : [];
 }
 
 /** `embedded`: dentro do shell /admin (as abas e o cabeçalho vêm da página); sem ele, a tela antiga. */
-export function RolesClient({ initialRoles, embedded = false }: { initialRoles: RoleItem[]; embedded?: boolean }) {
+export function PerfisCliente({ initialRoles, embedded = false }: { initialRoles: ItemDePerfil[]; embedded?: boolean }) {
   const [isPending, startTransition] = useTransition();
   const uid = useId();
   const router = useRouter();
   const [roles] = useEstadoSincronizado(initialRoles);
-  const [editingRole, setEditingRole] = useState<RoleItem | null>(null);
+  const [editingRole, setEditingRole] = useState<ItemDePerfil | null>(null);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -76,11 +76,11 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
     setIsFormOpen(true);
   }
 
-  function openEditForm(role: RoleItem) {
+  function openEditForm(role: ItemDePerfil) {
     setEditingRole(role);
     setFormData({
       name: role.name,
-      allowedPaths: toPaths(role.allowedPaths),
+      allowedPaths: paraCaminhos(role.allowedPaths),
     });
     setIsFormOpen(true);
   }
@@ -146,9 +146,9 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
     setConfirmOpen(true);
   }
 
-  const pathsOf = (role: RoleItem) => toPaths(role.allowedPaths);
-  const nameOf = (path: string) => AVAILABLE_MODULES.find((m) => m.id === path)?.name || path;
-  const pathChips = (role: RoleItem) => (
+  const pathsOf = (role: ItemDePerfil) => paraCaminhos(role.allowedPaths);
+  const nameOf = (path: string) => MODULOS_DISPONIVEIS.find((m) => m.id === path)?.name || path;
+  const pathChips = (role: ItemDePerfil) => (
     <div className="flex flex-wrap gap-1.5">
       {pathsOf(role).includes("*") ? (
         <span className="rounded-lg bg-ameixa-suave px-2.5 py-1 text-sm font-semibold text-ameixa">Acesso total</span>
@@ -161,7 +161,7 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
       )}
     </div>
   );
-  const rowActions = (role: RoleItem) => (
+  const rowActions = (role: ItemDePerfil) => (
     <div className="flex justify-end gap-1">
       <button type="button" aria-label={`Editar ${role.name}`} className={`${estiloDoBotao.quiet} !min-w-11 !px-0`} onClick={() => openEditForm(role)}>
         <Pencil className="size-4" aria-hidden="true" />
@@ -171,7 +171,7 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
       </button>
     </div>
   );
-  const usersLabel = (role: RoleItem) => {
+  const usersLabel = (role: ItemDePerfil) => {
     const n = role._count?.users || 0;
     return `${n} ${n === 1 ? "usuário" : "usuários"}`;
   };
@@ -222,7 +222,7 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
           <fieldset className="flex flex-col gap-3">
             <legend className="text-sm font-semibold text-tinta">Áreas liberadas</legend>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-              {AVAILABLE_MODULES.map((mod) => {
+              {MODULOS_DISPONIVEIS.map((mod) => {
                 const isSelected = formData.allowedPaths.includes(mod.id);
                 return (
                   <button

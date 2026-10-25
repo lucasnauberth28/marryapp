@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingRegion } from "@/components/skeletons";
 
 /** Bloco do Resumo: a mesma caixa (borda, raio 12, margens) e a mesma altura aproximada, para a página não pular ao chegar. */
-function BlockSkeleton({ className = "", children }: { className?: string; children: React.ReactNode }) {
+function EsqueletoDoBloco({ className = "", children }: { className?: string; children: React.ReactNode }) {
   return (
     <div className={`flex min-w-0 flex-col gap-4 rounded-[12px] border border-linha bg-papel px-4 pb-[18px] pt-4 md:px-6 md:pb-6 md:pt-5 ${className}`}>
       <div className="flex min-h-8 items-center justify-between gap-3">
@@ -14,7 +14,7 @@ function BlockSkeleton({ className = "", children }: { className?: string; child
   );
 }
 
-function Rows({ count, avatar = true }: { count: number; avatar?: boolean }) {
+function LinhasDeEsqueleto({ count, avatar = true }: { count: number; avatar?: boolean }) {
   return (
     <div>
       {Array.from({ length: count }, (_, i) => (
@@ -41,7 +41,7 @@ export default function DashboardLoading() {
         <Skeleton className="h-4 w-full max-w-[560px] rounded-md" />
       </div>
       <div className="grid items-start gap-4 min-[1200px]:grid-cols-12">
-        <BlockSkeleton className="min-[1200px]:col-span-7">
+        <EsqueletoDoBloco className="min-[1200px]:col-span-7">
           <div className="grid grid-cols-[64px_minmax(0,1fr)] items-center gap-3.5 md:grid-cols-[104px_minmax(0,1fr)] md:gap-5">
             <Skeleton className="aspect-[4/5] w-full rounded-[10px]" />
             <Skeleton className="h-16 w-full rounded-[8px]" />
@@ -55,11 +55,11 @@ export default function DashboardLoading() {
             <Skeleton className="h-4 w-2/3 rounded-md" />
             <Skeleton className="h-2 w-full rounded-full" />
           </div>
-        </BlockSkeleton>
-        <BlockSkeleton className="min-[1200px]:col-span-5">
-          <Rows count={3} />
-        </BlockSkeleton>
-        <BlockSkeleton className="min-[1200px]:col-span-7">
+        </EsqueletoDoBloco>
+        <EsqueletoDoBloco className="min-[1200px]:col-span-5">
+          <LinhasDeEsqueleto count={3} />
+        </EsqueletoDoBloco>
+        <EsqueletoDoBloco className="min-[1200px]:col-span-7">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
             {[0, 1, 2].map((i) => (
               <div key={i} className="grid gap-2">
@@ -70,21 +70,21 @@ export default function DashboardLoading() {
             ))}
           </div>
           <Skeleton className="h-2.5 w-full rounded-full" />
-        </BlockSkeleton>
-        <BlockSkeleton className="min-[1200px]:col-span-5">
-          <Rows count={4} />
-        </BlockSkeleton>
-        <BlockSkeleton className="min-[1200px]:col-span-7">
+        </EsqueletoDoBloco>
+        <EsqueletoDoBloco className="min-[1200px]:col-span-5">
+          <LinhasDeEsqueleto count={4} />
+        </EsqueletoDoBloco>
+        <EsqueletoDoBloco className="min-[1200px]:col-span-7">
           <Skeleton className="h-4 w-32 rounded-md" />
           <Skeleton className="h-10 w-44 rounded-lg" />
-          <Rows count={4} avatar={false} />
-        </BlockSkeleton>
-        <BlockSkeleton className="min-[1200px]:col-span-5">
+          <LinhasDeEsqueleto count={4} avatar={false} />
+        </EsqueletoDoBloco>
+        <EsqueletoDoBloco className="min-[1200px]:col-span-5">
           <Skeleton className="h-4 w-28 rounded-md" />
           <Skeleton className="h-8 w-48 rounded-md" />
           <Skeleton className="h-2 w-full rounded-full" />
-          <Rows count={3} avatar={false} />
-        </BlockSkeleton>
+          <LinhasDeEsqueleto count={3} avatar={false} />
+        </EsqueletoDoBloco>
       </div>
     </LoadingRegion>
   );

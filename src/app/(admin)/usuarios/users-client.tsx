@@ -16,7 +16,7 @@ import { estiloDoBotao } from "@/components/landing/styles";
 import { Etiqueta, estiloDoCartao, estiloDoTituloDoCartao } from "@/components/casal/ui";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 
-interface UserItem {
+interface ItemDePessoa {
   id: string;
   name: string;
   username: string;
@@ -24,18 +24,18 @@ interface UserItem {
   role?: { name: string } | null;
 }
 
-interface RoleOption {
+interface OpcaoDePerfil {
   id: string;
   name: string;
 }
 
 /** `embedded`: dentro do shell /admin (as abas e o cabeçalho vêm da página); sem ele, a tela antiga. */
-export function UsersClient({ initialUsers, roles, embedded = false }: { initialUsers: UserItem[], roles: RoleOption[], embedded?: boolean }) {
+export function PessoasCliente({ initialUsers, roles, embedded = false }: { initialUsers: ItemDePessoa[], roles: OpcaoDePerfil[], embedded?: boolean }) {
   const [isPending, startTransition] = useTransition();
   const uid = useId();
   const router = useRouter();
   const [users] = useEstadoSincronizado(initialUsers);
-  const [editingUser, setEditingUser] = useState<UserItem | null>(null);
+  const [editingUser, setEditingUser] = useState<ItemDePessoa | null>(null);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -54,7 +54,7 @@ export function UsersClient({ initialUsers, roles, embedded = false }: { initial
     setIsFormOpen(true);
   }
 
-  function openEditForm(user: UserItem) {
+  function openEditForm(user: ItemDePessoa) {
     setEditingUser(user);
     setFormData({
       name: user.name,
@@ -116,8 +116,8 @@ export function UsersClient({ initialUsers, roles, embedded = false }: { initial
   }
 
 
-  const roleChip = (user: UserItem) => <Etiqueta tone="neutro" className="text-tinta">{user.role?.name || "Sem perfil"}</Etiqueta>;
-  const rowActions = (user: UserItem) => (
+  const roleChip = (user: ItemDePessoa) => <Etiqueta tone="neutro" className="text-tinta">{user.role?.name || "Sem perfil"}</Etiqueta>;
+  const rowActions = (user: ItemDePessoa) => (
     <div className="flex justify-end gap-1">
       <button type="button" aria-label={`Editar ${user.name}`} className={`${estiloDoBotao.quiet} !min-w-11 !px-0`} onClick={() => openEditForm(user)}>
         <Pencil className="size-4" aria-hidden="true" />

@@ -14,14 +14,14 @@ import {
   type ItemDaFila,
   type TipoDeItemDaFila,
 } from "@/lib/dashboard-summary";
-import { Block, Chip, Meter, Money, TextLink, btnPrimary, btnSecondary, hintClass, labelClass } from "./ui";
+import { BlocoDoPainel, Etiqueta, MedidorDeProgresso, ValorEmDinheiro, LinkDeTexto, estiloDoBotaoPrimario, estiloDoBotaoSecundario, classeDaDica, classeDoRotulo } from "./ui";
 
-const textButton = "inline-flex min-h-11 items-center rounded-[8px] px-1 text-sm font-semibold text-ameixa underline-offset-4 hover:underline";
+const estiloDoBotaoDeTexto = "inline-flex min-h-11 items-center rounded-[8px] px-1 text-sm font-semibold text-ameixa underline-offset-4 hover:underline";
 
-const KIND_ICON: Record<Exclude<TipoDeItemDaFila, "liz">, LucideIcon> = { pix: Gift, despesa: Receipt, data: CalendarHeart, tarefa: ListChecks, mesas: Armchair };
+const ICONE_POR_TIPO: Record<Exclude<TipoDeItemDaFila, "liz">, LucideIcon> = { pix: Gift, despesa: Receipt, data: CalendarHeart, tarefa: ListChecks, mesas: Armchair };
 
 /** Ação de um item: link interno ou âncora da própria página. */
-function ItemLink({ href, className, children }: { href: string; className: string; children: React.ReactNode }) {
+function LinkDoItem({ href, className, children }: { href: string; className: string; children: React.ReactNode }) {
   return href.startsWith("#") ? (
     <a href={href} className={className}>
       {children}
@@ -34,7 +34,7 @@ function ItemLink({ href, className, children }: { href: string; className: stri
 }
 
 /** "O que fazer agora": até 3 itens; o primeiro é a sugestão da Liz. */
-export function QueueBlock({
+export function BlocoDaFila({
   items,
   deadline,
   className = "",
@@ -45,7 +45,7 @@ export function QueueBlock({
   className?: string;
 }) {
   return (
-    <Block id="agora" title="O que fazer agora" aside={items.length > 0 ? <span>{items.length === 1 ? "1 item" : `${items.length} itens`}</span> : null} className={className}>
+    <BlocoDoPainel id="agora" title="O que fazer agora" aside={items.length > 0 ? <span>{items.length === 1 ? "1 item" : `${items.length} itens`}</span> : null} className={className}>
       {items.length === 0 ? (
         <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4">
           <IlustracaoDaLiz pose="tranquila" height={88} decorative className="h-[88px] w-auto" />
@@ -57,7 +57,7 @@ export function QueueBlock({
       ) : (
         <ol className="grid">
           {items.map((item) => {
-            const Icon = item.kind === "liz" ? null : KIND_ICON[item.kind];
+            const Icon = item.kind === "liz" ? null : ICONE_POR_TIPO[item.kind];
             const urgentDeadline = item.kind === "liz" && deadline && item.id === "rsvp-sem-resposta";
             return (
               <li key={item.id} className="grid grid-cols-[40px_minmax(0,1fr)] gap-x-3.5 gap-y-1 border-t border-linha py-3.5 first:border-t-0 first:pt-0 last:pb-0">
@@ -76,21 +76,21 @@ export function QueueBlock({
                   <div className="col-start-2 flex flex-wrap items-center gap-2">
                     {urgentDeadline && (
                       <>
-                        <Chip tone="aviso" icon={Clock}>
+                        <Etiqueta tone="aviso" icon={Clock}>
                           {deadline.chip}
-                        </Chip>
-                        <ItemLink href={deadline.remindHref} className={btnPrimary}>
+                        </Etiqueta>
+                        <LinkDoItem href={deadline.remindHref} className={estiloDoBotaoPrimario}>
                           Lembrar quem não respondeu
-                        </ItemLink>
+                        </LinkDoItem>
                       </>
                     )}
                     {item.action &&
                       (item.kind !== "liz" ? (
-                        <TextLink href={item.action.href}>{item.action.label}</TextLink>
+                        <LinkDeTexto href={item.action.href}>{item.action.label}</LinkDeTexto>
                       ) : (
-                        <ItemLink href={item.action.href} className={urgentDeadline ? textButton : btnSecondary}>
+                        <LinkDoItem href={item.action.href} className={urgentDeadline ? estiloDoBotaoDeTexto : estiloDoBotaoSecundario}>
                           {item.action.label}
-                        </ItemLink>
+                        </LinkDoItem>
                       ))}
                   </div>
                 )}
@@ -99,25 +99,25 @@ export function QueueBlock({
           })}
         </ol>
       )}
-    </Block>
+    </BlocoDoPainel>
   );
 }
 
 /** Um número do bloco de confirmações: rótulo, valor, unidade e contexto. */
-function Figure({ label, value, unit, hint }: { label: string; value: number; unit: React.ReactNode; hint?: React.ReactNode }) {
+function NumeroEmDestaque({ label, value, unit, hint }: { label: string; value: number; unit: React.ReactNode; hint?: React.ReactNode }) {
   return (
     <div className="grid min-w-0 content-start gap-1 border-linha px-5 first:pl-0 first:border-l-0 max-md:[&:nth-child(3)]:col-span-full max-md:[&:nth-child(3)]:border-l-0 max-md:[&:nth-child(3)]:border-t max-md:[&:nth-child(3)]:px-0 max-md:[&:nth-child(3)]:pt-3.5 md:border-l">
-      <span className={labelClass}>{label}</span>
+      <span className={classeDoRotulo}>{label}</span>
       <span className="text-[30px] font-semibold leading-[1.1] tracking-[-0.02em] tabular-nums text-tinta">
         {value.toLocaleString("pt-BR")}{" "}
         <span className="mt-1 block text-sm font-medium tracking-normal text-tinta-suave">{unit}</span>
       </span>
-      {hint && <span className={hintClass}>{hint}</span>}
+      {hint && <span className={classeDaDica}>{hint}</span>}
     </div>
   );
 }
 
-export function ConfirmationsBlock({
+export function BlocoDeConfirmacoes({
   counts,
   deadlineHint,
   deadlineChip,
@@ -134,19 +134,19 @@ export function ConfirmationsBlock({
 }) {
   const { invites: c, people: p } = counts;
   return (
-    <Block id="confirmacoes" title="Confirmações de presença" aside={canOpenList ? <TextLink href="/convidados">Ver lista</TextLink> : null} className={className}>
+    <BlocoDoPainel id="confirmacoes" title="Confirmações de presença" aside={canOpenList ? <LinkDeTexto href="/convidados">Ver lista</LinkDeTexto> : null} className={className}>
       <div className="grid grid-cols-2 gap-y-4 md:grid-cols-3">
-        <Figure label="Convites confirmados" value={c.confirmed} unit={`de ${rotuloDeConvites(c.total)}`} />
-        <Figure label="Pessoas confirmadas" value={p.confirmed} unit={`de ${rotuloDePessoas(p.total)}`} hint="Número para o buffet" />
-        <Figure
+        <NumeroEmDestaque label="Convites confirmados" value={c.confirmed} unit={`de ${rotuloDeConvites(c.total)}`} />
+        <NumeroEmDestaque label="Pessoas confirmadas" value={p.confirmed} unit={`de ${rotuloDePessoas(p.total)}`} hint="Número para o buffet" />
+        <NumeroEmDestaque
           label="Sem resposta"
           value={c.pending}
           unit={`${c.pending === 1 ? "convite" : "convites"} · ${rotuloDePessoas(p.pending)}`}
-          hint={deadlineChip ? <Chip tone="aviso" icon={Clock}>{deadlineChip}</Chip> : deadlineHint}
+          hint={deadlineChip ? <Etiqueta tone="aviso" icon={Clock}>{deadlineChip}</Etiqueta> : deadlineHint}
         />
       </div>
       <div className="grid gap-2.5">
-        <Meter
+        <MedidorDeProgresso
           height={10}
           label={`${c.confirmed} convites confirmados, ${c.declined} não vão e ${c.pending} sem resposta, de ${c.total} convites`}
           segments={[
@@ -173,11 +173,11 @@ export function ConfirmationsBlock({
           </li>
         </ul>
       </div>
-    </Block>
+    </BlocoDoPainel>
   );
 }
 
-export interface ResponseRow {
+export interface LinhaDeResposta {
   id: string;
   name: string;
   yes: boolean;
@@ -185,15 +185,15 @@ export interface ResponseRow {
   at: Date;
 }
 
-const initialsOf = (name: string) => {
+const iniciaisDe = (name: string) => {
   const words = name.trim().split(/\s+/).filter((w) => w.length > 2 || /^\p{Lu}/u.test(w));
   return words.slice(0, 2).map((w) => w[0]).join("").toUpperCase() || name.trim().slice(0, 1).toUpperCase();
 };
 
 /** Últimas respostas (a hora é a da última alteração do convite: o banco ainda não guarda quando a pessoa respondeu). */
-export function ResponsesBlock({ rows, canOpenList, className = "" }: { rows: ResponseRow[]; canOpenList: boolean; className?: string }) {
+export function BlocoDeRespostas({ rows, canOpenList, className = "" }: { rows: LinhaDeResposta[]; canOpenList: boolean; className?: string }) {
   return (
-    <Block id="respostas" title="Últimas respostas" aside={canOpenList && rows.length > 0 ? <TextLink href="/convidados">Ver todas</TextLink> : null} className={className}>
+    <BlocoDoPainel id="respostas" title="Últimas respostas" aside={canOpenList && rows.length > 0 ? <LinkDeTexto href="/convidados">Ver todas</LinkDeTexto> : null} className={className}>
       {rows.length === 0 ? (
         <p className="text-[14.5px] leading-[1.45] text-tinta-suave">Nenhum convidado respondeu ainda. As respostas aparecem aqui assim que chegarem.</p>
       ) : (
@@ -201,7 +201,7 @@ export function ResponsesBlock({ rows, canOpenList, className = "" }: { rows: Re
           {rows.map((r) => (
             <li key={r.id} className="grid min-h-[60px] grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-t border-linha py-2 first:border-t-0 first:pt-0 last:pb-0">
               <span aria-hidden="true" className="grid size-9 place-items-center rounded-full bg-areia text-xs font-semibold text-tinta-suave">
-                {initialsOf(r.name)}
+                {iniciaisDe(r.name)}
               </span>
               <div className="grid min-w-0">
                 <b className="truncate font-semibold text-tinta">{r.name}</b>
@@ -210,33 +210,33 @@ export function ResponsesBlock({ rows, canOpenList, className = "" }: { rows: Re
                 </small>
               </div>
               {r.yes ? (
-                <Chip tone="ok" icon={Check}>
+                <Etiqueta tone="ok" icon={Check}>
                   Confirmado
-                </Chip>
+                </Etiqueta>
               ) : (
-                <Chip tone="neutro" icon={Minus}>
+                <Etiqueta tone="neutro" icon={Minus}>
                   Não vai
-                </Chip>
+                </Etiqueta>
               )}
             </li>
           ))}
         </ul>
       )}
-    </Block>
+    </BlocoDoPainel>
   );
 }
 
-export function BudgetBlock({ budget, canOpen, className = "" }: { budget: Orcamento; canOpen: boolean; className?: string }) {
+export function BlocoDoOrcamento({ budget, canOpen, className = "" }: { budget: Orcamento; canOpen: boolean; className?: string }) {
   const hasExpenses = budget.totalCents > 0;
   return (
-    <Block id="orcamento" title="Orçamento" aside={canOpen && hasExpenses ? <TextLink href="/financas">Ver despesas</TextLink> : null} className={className}>
+    <BlocoDoPainel id="orcamento" title="Orçamento" aside={canOpen && hasExpenses ? <LinkDeTexto href="/financas">Ver despesas</LinkDeTexto> : null} className={className}>
       {!hasExpenses ? (
         <div className="grid max-w-[60ch] gap-1.5">
           <b className="text-[15px] text-tinta">Nenhuma despesa anotada</b>
           <p className="text-pretty text-tinta-suave">Anotem o que já contrataram (buffet, fotografia, vestido) para saber quanto já pagaram e quanto falta.</p>
           {canOpen && (
             <div className="mt-2">
-              <Link href="/financas" className={btnSecondary}>
+              <Link href="/financas" className={estiloDoBotaoSecundario}>
                 <Receipt className="size-[17px]" aria-hidden="true" />
                 Adicionar despesa
               </Link>
@@ -246,25 +246,25 @@ export function BudgetBlock({ budget, canOpen, className = "" }: { budget: Orcam
       ) : (
         <>
           <div className="grid gap-2">
-            <span className={labelClass}>Pago até agora</span>
+            <span className={classeDoRotulo}>Pago até agora</span>
             <span className="flex flex-wrap items-baseline gap-x-2">
-              <Money cents={budget.paidCents} className="text-[28px] leading-[1.1]" />
+              <ValorEmDinheiro cents={budget.paidCents} className="text-[28px] leading-[1.1]" />
               <span className="text-[15px] font-medium text-tinta-suave tabular-nums">de {formatarReaisSemSinal(budget.totalCents)}</span>
             </span>
-            <Meter
+            <MedidorDeProgresso
               label={`${budget.pct}% das despesas pagas`}
               segments={[
                 { value: budget.paidCents, className: "bg-ameixa" },
                 { value: budget.leftCents, className: "bg-areia" },
               ]}
             />
-            <span className={hintClass}>
+            <span className={classeDaDica}>
               <b className="font-semibold tabular-nums text-tinta">{budget.pct}%</b> pago · faltam <b className="font-semibold tabular-nums text-tinta">{formatarReaisSemSinal(budget.leftCents)}</b>
             </span>
           </div>
           {budget.upcoming.length > 0 && (
             <div>
-              <h3 className={`${labelClass} mb-1`}>Próximas despesas</h3>
+              <h3 className={`${classeDoRotulo} mb-1`}>Próximas despesas</h3>
               <ul>
                 {budget.upcoming.map((u) => (
                   <li key={u.id} className="grid min-h-[60px] grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-3 border-t border-linha py-2 first:border-t-0">
@@ -277,13 +277,13 @@ export function BudgetBlock({ budget, canOpen, className = "" }: { budget: Orcam
                       <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] text-tinta-suave">
                         {u.detail}
                         {u.days < 0 ? (
-                          <Chip tone="perigo" icon={Clock}>
+                          <Etiqueta tone="perigo" icon={Clock}>
                             Atrasada
-                          </Chip>
+                          </Etiqueta>
                         ) : u.days <= 10 ? (
-                          <Chip tone="aviso" icon={Clock}>
+                          <Etiqueta tone="aviso" icon={Clock}>
                             {u.days === 0 ? "Vence hoje" : `Vence em ${u.days} ${u.days === 1 ? "dia" : "dias"}`}
-                          </Chip>
+                          </Etiqueta>
                         ) : null}
                       </span>
                     </div>
@@ -295,17 +295,17 @@ export function BudgetBlock({ budget, canOpen, className = "" }: { budget: Orcam
           )}
         </>
       )}
-    </Block>
+    </BlocoDoPainel>
   );
 }
 
-export interface Shortcut {
+export interface Atalho {
   href: string;
   label: string;
   icon: LucideIcon;
 }
 
-export function Shortcuts({ items }: { items: Shortcut[] }) {
+export function Atalhos({ items }: { items: Atalho[] }) {
   if (items.length === 0) return null;
   return (
     <nav aria-labelledby="t-atalhos" className="flex flex-wrap items-center gap-2 min-[1200px]:col-span-12">
@@ -313,7 +313,7 @@ export function Shortcuts({ items }: { items: Shortcut[] }) {
         Atalhos
       </h2>
       {items.map(({ href, label, icon: Icon }) => (
-        <Link key={label} href={href} className={btnSecondary}>
+        <Link key={label} href={href} className={estiloDoBotaoSecundario}>
           <Icon className="size-[17px]" aria-hidden="true" />
           {label}
         </Link>

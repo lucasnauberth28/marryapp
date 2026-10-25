@@ -4,10 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { aprovarTransacaoPix } from "@/actions/finance-actions";
-import { btnRow } from "./ui";
+import { estiloDaLinhaDeBotoes } from "./ui";
 
 /** Selo "A" do Pix conferido (o mesmo círculo ameixa do logotipo), 22px. */
-export function PixSeal({ stamp = false }: { stamp?: boolean }) {
+export function SeloDoPix({ stamp = false }: { stamp?: boolean }) {
   return (
     <span role="img" aria-label="Conferido" className={`inline-grid size-[22px] shrink-0 place-items-center ${stamp ? "motion-safe:animate-[carimbo_340ms_cubic-bezier(0.16,1,0.3,1)_both]" : ""}`}>
       <svg viewBox="4 26 56 56" className="size-[22px]" aria-hidden="true">
@@ -27,7 +27,7 @@ export function PixSeal({ stamp = false }: { stamp?: boolean }) {
  * "Conferir" um Pix de presente, na própria linha do extrato. Usa a mesma ação de Finanças (approvePixTransaction):
  * a regra de conferência é uma só (o Pix pendente vira aprovado e o presente fica pago).
  */
-export function ConferirButton({ transactionId, giftId, who }: { transactionId: string; giftId: string; who: string }) {
+export function BotaoDeConferir({ transactionId, giftId, who }: { transactionId: string; giftId: string; who: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [done, setDone] = useState(false);
@@ -35,7 +35,7 @@ export function ConferirButton({ transactionId, giftId, who }: { transactionId: 
   if (done) {
     return (
       <span className="inline-flex items-center gap-2 text-[13px] text-tinta-suave">
-        <PixSeal stamp />
+        <SeloDoPix stamp />
         Conferido
       </span>
     );
@@ -47,7 +47,7 @@ export function ConferirButton({ transactionId, giftId, who }: { transactionId: 
       disabled={pending}
       aria-busy={pending || undefined}
       aria-label={`Conferir o Pix de ${who}`}
-      className={btnRow}
+      className={estiloDaLinhaDeBotoes}
       onClick={() =>
         startTransition(async () => {
           const result = await aprovarTransacaoPix(transactionId, giftId);

@@ -7,15 +7,15 @@ import { AvisoDoFormulario } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { aplicarAjusteAoCasamento, desbloquearMadrinhaDoCasamento } from "@/actions/admin-madrinha-actions";
 import type { ResultadoDeCasamento } from "@/lib/platform/queries/madrinha";
-import { useAdminAction } from "../../_sistema/use-admin-action";
-import { WeddingSearch } from "./wedding-search";
+import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
+import { BuscaDeCasamento } from "./wedding-search";
 
 /** "Ajuste para um casal": mensagens a mais neste mês (com motivo) e desbloqueio. Só configuração salva. */
-export function WeddingAdjust() {
+export function AjusteDoCasamento() {
   const [picked, setPicked] = useState<ResultadoDeCasamento | null>(null);
   const [extra, setExtra] = useState("0");
   const [reason, setReason] = useState("");
-  const { pending, errors, formError, run } = useAdminAction();
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   const [running, setRunning] = useState<"apply" | "unblock" | null>(null); // só o botão clicado mostra o spinner
 
   function pick(hit: ResultadoDeCasamento) {
@@ -34,7 +34,7 @@ export function WeddingAdjust() {
         run(() => aplicarAjusteAoCasamento({ weddingId: picked.id, extraMessages: extra, reason }));
       }}
     >
-      <WeddingSearch selectedId={picked?.id ?? null} onPick={pick} />
+      <BuscaDeCasamento selectedId={picked?.id ?? null} onPick={pick} />
       {picked && (
         <p className="rounded-xl bg-areia px-3 py-2 text-sm leading-5 text-tinta">
           Casal escolhido: <strong className="font-semibold">{picked.coupleNames}</strong>

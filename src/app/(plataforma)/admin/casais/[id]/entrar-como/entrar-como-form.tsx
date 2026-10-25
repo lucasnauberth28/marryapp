@@ -13,7 +13,7 @@ import { MAXIMO_DE_MINUTOS_DE_PERSONIFICACAO, MOTIVOS_DE_PERSONIFICACAO } from "
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 /** Confirmação para "Entrar como este casal": motivo obrigatório, chamado opcional e, para editar, uma segunda confirmação. */
-export function EntrarComoForm({ weddingId, coupleNames, backHref }: { weddingId: string; coupleNames: string; backHref: string }) {
+export function FormularioDeEntrarComo({ weddingId, coupleNames, backHref }: { weddingId: string; coupleNames: string; backHref: string }) {
   const [reason, setReason] = useState<string>(MOTIVOS_DE_PERSONIFICACAO[0]);
   const [ticket, setTicket] = useState("");
   const [canEdit, setCanEdit] = useState(false);

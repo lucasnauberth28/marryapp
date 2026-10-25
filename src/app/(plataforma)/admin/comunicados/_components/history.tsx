@@ -6,10 +6,10 @@ import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
 import { ROTULO_DO_CANAL, rotuloDoPublico, taxaDeEntrega } from "@/lib/platform/announcement";
 import { formatarDataEHora, formatarInteiro } from "@/lib/platform/format";
 import type { LinhaDoHistorico } from "@/lib/platform/queries/comunicados";
-import { ResumeButton } from "./resume-button";
+import { BotaoDeRetomar } from "./resume-button";
 
 /** Histórico: números reais. "Lidos" só existe para o aviso no painel; nos outros canais ainda não medimos. */
-export function History({ rows }: { rows: LinhaDoHistorico[] }) {
+export function HistoricoDeComunicados({ rows }: { rows: LinhaDoHistorico[] }) {
   return (
     <Painel title="Histórico" padded={false}>
       {rows.length === 0 ? (
@@ -39,7 +39,7 @@ export function History({ rows }: { rows: LinhaDoHistorico[] }) {
                         <EtiquetaDeSituacao tone="aviso" icon={Hourglass}>
                           Enviando
                         </EtiquetaDeSituacao>
-                        <ResumeButton id={r.id} />
+                        <BotaoDeRetomar id={r.id} />
                       </span>
                     );
                   const rate = taxaDeEntrega({ sent: r.sent, failed: r.failed });

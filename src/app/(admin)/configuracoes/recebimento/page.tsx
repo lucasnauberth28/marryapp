@@ -6,7 +6,7 @@ import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { cifraDoRepasseEstaConfigurada } from "@/lib/security/payout-crypto";
 import { obterVisaoDaContaDeRepasse } from "@/lib/payout-account-view";
 import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
-import { RecebimentoClient } from "./recebimento-client";
+import { RecebimentoCliente } from "./recebimento-client";
 
 export const metadata: Metadata = {
   title: "Onde receber os presentes",
@@ -34,7 +34,7 @@ export default async function RecebimentoPage() {
           title="Onde receber os presentes"
           description="Diga para onde o Aceito deve enviar o dinheiro dos presentes que vocês recebem pelo site."
         />
-        <RecebimentoClient
+        <RecebimentoCliente
           account={
             account
               ? {

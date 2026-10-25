@@ -1,7 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingRegion, SkeletonForm, SkeletonImage } from "@/components/skeletons";
 
-const CARD = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
+const ESTILO_DO_CARTAO = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
 
 // Espelha o perfil: título e botões, aviso da curadoria, portfólio (logo, capa, galeria) e os dois cartões de campos.
 export default function LoadingFornecedorPerfil() {
@@ -24,7 +24,7 @@ export default function LoadingFornecedorPerfil() {
 
       <Skeleton className="h-[74px] w-full rounded-2xl sm:h-[68px]" />
 
-      <section className={`${CARD} flex flex-col gap-6`}>
+      <section className={`${ESTILO_DO_CARTAO} flex flex-col gap-6`}>
         <div className="flex flex-col gap-1">
           <div className="flex h-7 items-center">
             <Skeleton className="h-5 w-28 rounded-md" />
@@ -65,14 +65,14 @@ export default function LoadingFornecedorPerfil() {
         </div>
       </section>
 
-      <section className={`${CARD} flex flex-col gap-5`}>
+      <section className={`${ESTILO_DO_CARTAO} flex flex-col gap-5`}>
         <div className="flex h-7 items-center">
           <Skeleton className="h-5 w-40 rounded-md" />
         </div>
         <SkeletonForm fields={["input", "input", "input", "input", "textarea"]} columns={2} submit={false} />
       </section>
 
-      <section className={`${CARD} flex flex-col gap-5`}>
+      <section className={`${ESTILO_DO_CARTAO} flex flex-col gap-5`}>
         <div className="flex h-7 items-center">
           <Skeleton className="h-5 w-36 rounded-md" />
         </div>

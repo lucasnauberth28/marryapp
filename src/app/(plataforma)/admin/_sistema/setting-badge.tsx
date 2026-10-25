@@ -3,7 +3,7 @@ import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { formatarDiaEMes } from "@/lib/platform/format";
 
 /** Mostra se a configuração já foi salva de verdade ou ainda é o padrão sugerido do código. */
-export function SettingBadge({ saved, updatedAt, updatedByName }: { saved: boolean; updatedAt: Date | null; updatedByName: string | null }) {
+export function SeloDeConfiguracao({ saved, updatedAt, updatedByName }: { saved: boolean; updatedAt: Date | null; updatedByName: string | null }) {
   if (!saved) {
     return (
       <EtiquetaDeSituacao tone="neutro" icon={Pencil}>

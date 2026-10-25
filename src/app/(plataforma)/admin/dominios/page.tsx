@@ -30,15 +30,15 @@ import {
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { vercelEstaConfigurada } from "@/lib/vercel-domains";
 import { montarLink } from "@/lib/platform/list-params";
-import { DomainPanel } from "./_components/domain-panel";
-import { RenewalButton } from "./_components/renewal-button";
+import { PainelDoDominio } from "./_components/domain-panel";
+import { BotaoDeRenovacao } from "./_components/renewal-button";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Domínios" };
 
-const TAB_LABEL: Record<AbaDeDominios, string> = { todos: "Todos", pedido: "Pedido recebido", registro: "Em registro", registrado: "Registrado", "no-ar": "No ar", recusado: "Recusado" };
+const ROTULO_DA_ABA: Record<AbaDeDominios, string> = { todos: "Todos", pedido: "Pedido recebido", registro: "Em registro", registrado: "Registrado", "no-ar": "No ar", recusado: "Recusado" };
 
-const STATUS_CHIP: Record<NomeDaSituacaoDoPedidoDeDominio, { tone: TomDaSituacao; icon: typeof Clock }> = {
+const ETIQUETA_DA_SITUACAO: Record<NomeDaSituacaoDoPedidoDeDominio, { tone: TomDaSituacao; icon: typeof Clock }> = {
   REQUESTED: { tone: "aviso", icon: Clock },
   REGISTERING: { tone: "neutro", icon: Hourglass },
   REGISTERED: { tone: "aviso", icon: Check },
@@ -76,7 +76,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
         label="Situação dos pedidos"
         basePath="/admin/dominios"
         active={tab}
-        tabs={ABAS_DE_DOMINIOS.map((value) => ({ value, label: TAB_LABEL[value], count: counts[value] }))}
+        tabs={ABAS_DE_DOMINIOS.map((value) => ({ value, label: ROTULO_DA_ABA[value], count: counts[value] }))}
       />
 
       <RegiaoPendente>
@@ -119,7 +119,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
                 key: "situacao",
                 header: "Situação",
                 cell: (r) => {
-                  const chip = STATUS_CHIP[r.status as NomeDaSituacaoDoPedidoDeDominio] ?? STATUS_CHIP.CANCELED;
+                  const chip = ETIQUETA_DA_SITUACAO[r.status as NomeDaSituacaoDoPedidoDeDominio] ?? ETIQUETA_DA_SITUACAO.CANCELED;
                   return (
                     <EtiquetaDeSituacao tone={chip.tone} icon={chip.icon}>
                       {ROTULO_DA_SITUACAO[r.status as NomeDaSituacaoDoPedidoDeDominio] ?? r.status}
@@ -153,14 +153,14 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
               </SkeletonCard>
             }
           >
-            <RenewalsBlock now={now} />
+            <BlocoDeRenovacoes now={now} />
           </Suspense>
         </div>
 
         <div id="painel" className="scroll-mt-6 lg:sticky lg:top-6">
           {/* O painel busca o pedido escolhido sozinho: a lista não espera por ele (key = pedido) */}
           <Suspense key={selectedId ?? "nenhum"} fallback={<EsqueletoDoPainelLateral />}>
-            <DomainDetailSlot selectedId={selectedId} summary={summary} />
+            <AreaDoDetalheDoDominio selectedId={selectedId} summary={summary} />
           </Suspense>
         </div>
       </div>
@@ -169,7 +169,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
   );
 }
 
-async function RenewalsBlock({ now }: { now: Date }) {
+async function BlocoDeRenovacoes({ now }: { now: Date }) {
   const renewals = await listarRenovacoes(now, 90);
   return (
     <Painel title="Renovações dos próximos 90 dias" description="O VIP inclui o primeiro ano. Avisamos o casal por e-mail 60 e 30 dias antes de vencer (rotina diária). A renovação no Registro.br é manual.">
@@ -197,7 +197,7 @@ async function RenewalsBlock({ now }: { now: Date }) {
                   ) : (
                     <EtiquetaDeSituacao tone="neutro">Sem aviso previsto</EtiquetaDeSituacao>
                   )}
-                  <RenewalButton orderId={r.id} domain={r.domain} />
+                  <BotaoDeRenovacao orderId={r.id} domain={r.domain} />
                 </div>
               </li>
             );
@@ -208,7 +208,7 @@ async function RenewalsBlock({ now }: { now: Date }) {
   );
 }
 
-async function DomainDetailSlot({ selectedId, summary }: { selectedId: string | undefined; summary: Awaited<ReturnType<typeof obterResumoDosPedidosDeDominio>> }) {
+async function AreaDoDetalheDoDominio({ selectedId, summary }: { selectedId: string | undefined; summary: Awaited<ReturnType<typeof obterResumoDosPedidosDeDominio>> }) {
   const detail = selectedId ? await obterDetalheDoDominio(selectedId) : null;
   return (
     <>
@@ -216,7 +216,7 @@ async function DomainDetailSlot({ selectedId, summary }: { selectedId: string | 
         <Painel as="article">
           <div className="flex flex-wrap items-center justify-between gap-2">
             {detail.planName?.toLowerCase().includes("vip") ? <EtiquetaDePlano plan="vip" /> : detail.planName?.toLowerCase().includes("adaptado") ? <EtiquetaDePlano plan="custom" /> : <EtiquetaDeSituacao tone="neutro">Sem assinatura</EtiquetaDeSituacao>}
-            <EtiquetaDeSituacao tone={(STATUS_CHIP[detail.status as NomeDaSituacaoDoPedidoDeDominio] ?? STATUS_CHIP.CANCELED).tone}>{ROTULO_DA_SITUACAO[detail.status as NomeDaSituacaoDoPedidoDeDominio] ?? detail.status}</EtiquetaDeSituacao>
+            <EtiquetaDeSituacao tone={(ETIQUETA_DA_SITUACAO[detail.status as NomeDaSituacaoDoPedidoDeDominio] ?? ETIQUETA_DA_SITUACAO.CANCELED).tone}>{ROTULO_DA_SITUACAO[detail.status as NomeDaSituacaoDoPedidoDeDominio] ?? detail.status}</EtiquetaDeSituacao>
           </div>
           <h2 className="mt-3 break-all font-mono text-2xl font-medium leading-8 text-tinta">{detail.domain}</h2>
           <p className="mt-1 text-sm text-tinta-suave">
@@ -240,7 +240,7 @@ async function DomainDetailSlot({ selectedId, summary }: { selectedId: string | 
             ) : null}
           </dl>
           <div className="mt-5 border-t border-linha pt-5">
-            <DomainPanel
+            <PainelDoDominio
               key={detail.id}
               vercelReady={vercelEstaConfigurada()}
               order={{

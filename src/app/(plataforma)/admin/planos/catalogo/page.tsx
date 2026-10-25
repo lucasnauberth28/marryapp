@@ -17,18 +17,18 @@ import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { cn } from "@/lib/utils";
 import { LinkPendente, RegiaoPendente } from "@/components/plataforma/pending";
-import { PlanosTabs } from "../_components/planos-tabs";
-import { ContadorSection } from "../_components/contador-section";
-import { CatalogEditForm } from "./_components/catalog-edit-form";
+import { AbasDePlanos } from "../_components/planos-tabs";
+import { SecaoDoContador } from "../_components/contador-section";
+import { FormularioDeEdicaoDoCatalogo } from "./_components/catalog-edit-form";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Catálogo e preços" };
 
-const PLAN_ORDER: ChaveDoPlano[] = ["basic", "classic", "vip", "start", "pro", "master"];
-const GIFT_FEE: Partial<Record<ChaveDoPlano, string>> = { basic: "3,99%", classic: "0% no Pix", vip: "0% no Pix" };
-const BILLING = (id: ChaveDoPlano) => (ehPlanoGratis(id) ? "Grátis" : CONFIGURACAO_DOS_PLANOS[id].type === "VENDOR" ? "Por mês" : "Pagamento único");
+const ORDEM_DOS_PLANOS: ChaveDoPlano[] = ["basic", "classic", "vip", "start", "pro", "master"];
+const TAXA_DO_PRESENTE: Partial<Record<ChaveDoPlano, string>> = { basic: "3,99%", classic: "0% no Pix", vip: "0% no Pix" };
+const COBRANCA = (id: ChaveDoPlano) => (ehPlanoGratis(id) ? "Grátis" : CONFIGURACAO_DOS_PLANOS[id].type === "VENDOR" ? "Por mês" : "Pagamento único");
 
-interface AuditDetails {
+interface DetalhesDaAuditoria {
   before?: { priceCents?: number; name?: string };
   after?: { priceCents?: number; name?: string };
   reason?: string;
@@ -52,7 +52,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
   let form: { key: string; title: string; name: string; price: number; free: boolean } | null = null;
   if (editing?.startsWith("plan:")) {
     const id = editing.slice(5) as ChaveDoPlano;
-    if (PLAN_ORDER.includes(id)) form = { key: editing, title: `o plano ${catalog.plans[id].name.replace(/^(Plano|Fornecedor)\s+/, "")}`, name: catalog.plans[id].name, price: catalog.plans[id].price, free: ehPlanoGratis(id) };
+    if (ORDEM_DOS_PLANOS.includes(id)) form = { key: editing, title: `o plano ${catalog.plans[id].name.replace(/^(Plano|Fornecedor)\s+/, "")}`, name: catalog.plans[id].name, price: catalog.plans[id].price, free: ehPlanoGratis(id) };
   } else if (editing?.startsWith("module:")) {
     const mod = catalog.modules.find((m) => chaveDoModuloNoCatalogo(m.id) === editing);
     if (mod) form = { key: editing, title: "o recurso", name: mod.name, price: mod.price, free: false };
@@ -67,7 +67,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
   return (
     <>
       <CabecalhoDaPagina eyebrow="Dinheiro" title="Catálogo e preços" description="O que cada plano custa e o que cada pagamento rende. Editar um preço não muda o que já foi pago." />
-      <PlanosTabs active="catalogo" />
+      <AbasDePlanos active="catalogo" />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="flex min-w-0 flex-col gap-6">
@@ -75,15 +75,15 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
             <div className="px-3 pb-3 md:px-4 md:pb-4">
               <TabelaResponsiva
                 caption="Planos à venda"
-                rows={PLAN_ORDER}
+                rows={ORDEM_DOS_PLANOS}
                 rowKey={(id) => id}
                 selectedKey={editing?.startsWith("plan:") ? editing.slice(5) : null}
                 columns={[
                   { key: "plano", header: "Plano", primary: true, cell: (id) => <>{catalog.plans[id].name.replace(/^(Plano|Fornecedor)\s+/, "")}{edited.has(chaveDoPlanoNoCatalogo(id)) ? <span className="ml-2 align-middle"><EtiquetaDeSituacao tone="ameixa">Editado</EtiquetaDeSituacao></span> : null}</> },
                   { key: "para", header: "Para quem", cell: (id) => (catalog.plans[id].type === "VENDOR" ? "Fornecedor" : "Casal") },
                   { key: "preco", header: "Preço", align: "right", className: "whitespace-nowrap", cell: (id) => formatarReais(catalog.plans[id].price) },
-                  { key: "cobranca", header: "Cobrança", cell: (id) => BILLING(id) },
-                  { key: "taxa", header: "Taxa nos presentes", mobileLabel: "Taxa nos presentes", cell: (id) => GIFT_FEE[id] ?? <span className="text-tinta-suave">Não se aplica</span> },
+                  { key: "cobranca", header: "Cobrança", cell: (id) => COBRANCA(id) },
+                  { key: "taxa", header: "Taxa nos presentes", mobileLabel: "Taxa nos presentes", cell: (id) => TAXA_DO_PRESENTE[id] ?? <span className="text-tinta-suave">Não se aplica</span> },
                   {
                     key: "editar",
                     header: <span className="sr-only">Editar</span>,
@@ -132,7 +132,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
         <RegiaoPendente id="editar" className="flex scroll-mt-6 flex-col gap-6 lg:sticky lg:top-6">
           <Painel>
             {form ? (
-              <CatalogEditForm key={form.key} itemKey={form.key} title={form.title} currentName={form.name} currentPriceCents={form.price} free={form.free} />
+              <FormularioDeEdicaoDoCatalogo key={form.key} itemKey={form.key} title={form.title} currentName={form.name} currentPriceCents={form.price} free={form.free} />
             ) : (
               <p className="text-sm text-tinta-suave">Escolha um plano ou módulo na lista para editar o nome e o preço. Toda mudança pede o motivo e fica no registro de atividades.</p>
             )}
@@ -143,7 +143,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
             ) : (
               <ul className="flex flex-col">
                 {history.map((h) => {
-                  const d = (h.details ?? {}) as AuditDetails;
+                  const d = (h.details ?? {}) as DetalhesDaAuditoria;
                   return (
                     <li key={h.id} className="border-b border-linha py-3 text-sm first:pt-0 last:border-b-0 last:pb-0">
                       <p className="font-semibold text-tinta">{itemLabel(h.targetId)}</p>
@@ -163,7 +163,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
         </RegiaoPendente>
       </div>
 
-      <ContadorSection month={mesDoContador(undefined, now)} now={now} invoices={invoices} pendingCount={pendingInvoices} />
+      <SecaoDoContador month={mesDoContador(undefined, now)} now={now} invoices={invoices} pendingCount={pendingInvoices} />
     </>
   );
 }

@@ -23,13 +23,13 @@ import { obterFunil, obterItensDeAtencao, obterErrosRecentes, obterListaDeConfig
 import { saudacaoParaAHora } from "@/lib/wedding-format";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
-import { loadOverviewNumbers } from "./_visao-geral/data";
-import { PeriodSelect } from "./_visao-geral/period-select";
-import { AttentionBlockSkeleton, ErrorsBlockSkeleton, ExpiringBlockSkeleton, FunnelBlockSkeleton, NumbersSkeleton, OverviewSkeleton, RevenueBlockSkeleton, UpcomingBlockSkeleton } from "./_visao-geral/skeletons";
+import { carregarNumerosDaVisaoGeral } from "./_visao-geral/data";
+import { SeletorDePeriodo } from "./_visao-geral/period-select";
+import { EsqueletoDoBlocoDeAtencao, EsqueletoDoBlocoDeErros, EsqueletoDoBlocoDeVencimentos, EsqueletoDoBlocoDoFunil, EsqueletoDosNumeros, EsqueletoDaVisaoGeral, EsqueletoDoBlocoDeReceita, EsqueletoDoBlocoDeProximos } from "./_visao-geral/skeletons";
 
 export const metadata = { title: "Visão geral" };
 
-const ICONS = { clock: Clock, alert: AlertTriangle, shield: ShieldCheck, globe: Globe, activity: Activity, life: LifeBuoy, wallet: Wallet, message: MessageSquare } as const;
+const ICONES = { clock: Clock, alert: AlertTriangle, shield: ShieldCheck, globe: Globe, activity: Activity, life: LifeBuoy, wallet: Wallet, message: MessageSquare } as const;
 
 /**
  * Visão geral. A página só espera o guard e a URL; o resto chega por streaming: o cabeçalho sai logo e cada bloco
@@ -46,56 +46,56 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
   const period = umDosValores(query, "periodo", PERIODOS) ?? "30d";
 
   return (
-    <Suspense fallback={<OverviewSkeleton />}>
-      <Overview eyebrow={eyebrow} title={greeting} period={period} now={now} />
+    <Suspense fallback={<EsqueletoDaVisaoGeral />}>
+      <ConteudoDaVisaoGeral eyebrow={eyebrow} title={greeting} period={period} now={now} />
     </Suspense>
   );
 }
 
-async function Overview({ eyebrow, title, period, now }: { eyebrow: string; title: string; period: Periodo; now: Date }) {
+async function ConteudoDaVisaoGeral({ eyebrow, title, period, now }: { eyebrow: string; title: string; period: Periodo; now: Date }) {
   const weddingCount = await prisma.wedding.count();
-  if (weddingCount === 0) return <EmptyOverview eyebrow={eyebrow} title={title} />;
+  if (weddingCount === 0) return <VisaoGeralVazia eyebrow={eyebrow} title={title} />;
 
   return (
     <>
-      <CabecalhoDaPagina eyebrow={eyebrow} title={title} description="O que pede a sua decisão hoje e como a plataforma está indo." actions={<PeriodSelect value={period} />} />
+      <CabecalhoDaPagina eyebrow={eyebrow} title={title} description="O que pede a sua decisão hoje e como a plataforma está indo." actions={<SeletorDePeriodo value={period} />} />
 
-      <Suspense fallback={<NumbersSkeleton />}>
-        <NumbersBlock period={period} now={now} />
+      <Suspense fallback={<EsqueletoDosNumeros />}>
+        <BlocoDeNumeros period={period} now={now} />
       </Suspense>
 
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-        <Suspense fallback={<AttentionBlockSkeleton />}>
-          <AttentionBlock now={now} />
+        <Suspense fallback={<EsqueletoDoBlocoDeAtencao />}>
+          <BlocoDeAtencao now={now} />
         </Suspense>
-        <Suspense fallback={<RevenueBlockSkeleton />}>
-          <RevenueBlock now={now} />
+        <Suspense fallback={<EsqueletoDoBlocoDeReceita />}>
+          <BlocoDeReceita now={now} />
         </Suspense>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-start">
-        <Suspense fallback={<FunnelBlockSkeleton />}>
-          <FunnelBlock period={period} now={now} />
+        <Suspense fallback={<EsqueletoDoBlocoDoFunil />}>
+          <BlocoDoFunil period={period} now={now} />
         </Suspense>
-        <Suspense fallback={<UpcomingBlockSkeleton />}>
-          <UpcomingBlock period={period} now={now} />
+        <Suspense fallback={<EsqueletoDoBlocoDeProximos />}>
+          <BlocoDeProximos period={period} now={now} />
         </Suspense>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-        <Suspense fallback={<ExpiringBlockSkeleton />}>
-          <ExpiringBlock now={now} />
+        <Suspense fallback={<EsqueletoDoBlocoDeVencimentos />}>
+          <BlocoDeVencimentos now={now} />
         </Suspense>
-        <Suspense fallback={<ErrorsBlockSkeleton />}>
-          <ErrorsBlock now={now} />
+        <Suspense fallback={<EsqueletoDoBlocoDeErros />}>
+          <BlocoDeErros now={now} />
         </Suspense>
       </div>
     </>
   );
 }
 
-async function NumbersBlock({ period, now }: { period: Periodo; now: Date }) {
-  const numbers = await loadOverviewNumbers(period);
+async function BlocoDeNumeros({ period, now }: { period: Periodo; now: Date }) {
+  const numbers = await carregarNumerosDaVisaoGeral(period);
   const win = janelasDoPeriodo(period, now);
   const revenueTitle = period === "mes" ? `Receita de ${formatarNomeDoMes(now)}` : `Receita, ${win.short}`;
   return (
@@ -133,9 +133,9 @@ async function NumbersBlock({ period, now }: { period: Periodo; now: Date }) {
   );
 }
 
-async function AttentionBlock({ now }: { now: Date }) {
+async function BlocoDeAtencao({ now }: { now: Date }) {
   const attention = await obterItensDeAtencao(now);
-  const attentionItems: ItemDeAtencao[] = attention.map((a) => ({ id: a.id, title: a.title, detail: a.detail, tone: a.tone, icon: ICONS[a.icon], actionLabel: a.actionLabel, href: a.href }));
+  const attentionItems: ItemDeAtencao[] = attention.map((a) => ({ id: a.id, title: a.title, detail: a.detail, tone: a.tone, icon: ICONES[a.icon], actionLabel: a.actionLabel, href: a.href }));
   return (
     <Painel
       title="Precisa da sua atenção"
@@ -158,7 +158,7 @@ async function AttentionBlock({ now }: { now: Date }) {
   );
 }
 
-async function RevenueBlock({ now }: { now: Date }) {
+async function BlocoDeReceita({ now }: { now: Date }) {
   const months = await obterReceitaPorMes(now, 7);
   const hasRevenue = months.some((m) => m.total > 0);
   const current = months[months.length - 1];
@@ -180,7 +180,7 @@ async function RevenueBlock({ now }: { now: Date }) {
   );
 }
 
-async function FunnelBlock({ period, now }: { period: Periodo; now: Date }) {
+async function BlocoDoFunil({ period, now }: { period: Periodo; now: Date }) {
   const win = janelasDoPeriodo(period, now);
   const funnel = await obterFunil(win);
   const funnelMax = Math.max(1, funnel[0]?.count ?? 0);
@@ -216,8 +216,8 @@ async function FunnelBlock({ period, now }: { period: Periodo; now: Date }) {
   );
 }
 
-async function UpcomingBlock({ period, now }: { period: Periodo; now: Date }) {
-  const [numbers, upcoming] = await Promise.all([loadOverviewNumbers(period), obterCasamentosProximos(now, 5)]);
+async function BlocoDeProximos({ period, now }: { period: Periodo; now: Date }) {
+  const [numbers, upcoming] = await Promise.all([carregarNumerosDaVisaoGeral(period), obterCasamentosProximos(now, 5)]);
   return (
     <Painel title="Casamentos nos próximos 30 dias" action={numbers.next30.count > 0 ? { label: `Ver os ${numbers.next30.count}`, href: "/admin/casais?aba=30dias" } : undefined}>
       {upcoming.length === 0 ? (
@@ -252,7 +252,7 @@ async function UpcomingBlock({ period, now }: { period: Periodo; now: Date }) {
   );
 }
 
-async function ExpiringBlock({ now }: { now: Date }) {
+async function BlocoDeVencimentos({ now }: { now: Date }) {
   const expiring = await obterPlanosDeFornecedorPrestesAVencer(now, 7, 5);
   return (
     <Painel title="Planos de fornecedores vencendo" action={{ label: "Ver todos", href: "/admin/fornecedores?aba=vencendo" }}>
@@ -288,7 +288,7 @@ async function ExpiringBlock({ now }: { now: Date }) {
   );
 }
 
-async function ErrorsBlock({ now }: { now: Date }) {
+async function BlocoDeErros({ now }: { now: Date }) {
   const errors = await obterErrosRecentes(now);
   return (
     <Painel title="Erros e falhas nas últimas 24 horas" action={{ label: "Saúde do sistema", href: "/admin/saude" }}>
@@ -336,7 +336,7 @@ async function ErrorsBlock({ now }: { now: Date }) {
 }
 
 /** Versão "Vazia" do desenho: ainda não há nenhum casamento. */
-async function EmptyOverview({ eyebrow, title }: { eyebrow: string; title: string }) {
+async function VisaoGeralVazia({ eyebrow, title }: { eyebrow: string; title: string }) {
   const checklist = await obterListaDeConfiguracao();
   const done = checklist.filter((i) => i.done).length;
   return (

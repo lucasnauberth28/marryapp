@@ -45,14 +45,14 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
-interface InstallmentBlock {
+interface BlocoDeParcelas {
   id: number;
   count: number;
   amount: string; // Ex: "300.00"
   startDate: string; // Ex: "2026-08-10"
 }
 
-interface ExpenseItem {
+interface ItemDeDespesa {
   id: string;
   description: string;
   amount: number;
@@ -67,20 +67,20 @@ interface ExpenseItem {
   vendor?: { name: string; category: string } | null;
 }
 
-interface VendorOption {
+interface OpcaoDeFornecedor {
   id: string;
   name: string;
   category: string;
 }
 
-interface WalletCard {
+interface CartaoDaCarteira {
   id: string;
   bank: string;
   nickname?: string | null;
   lastDigits?: string | null;
 }
 
-interface GroupedExpense {
+interface DespesaAgrupada {
   id: string;
   baseDescription: string;
   vendorName: string;
@@ -98,10 +98,10 @@ interface GroupedExpense {
   nextDueDate: Date | string | null;
   nextDueAmount: number | null;
   nextDueExpenseId: string | null;
-  expenses: ExpenseItem[];
+  expenses: ItemDeDespesa[];
 }
 
-const PAYMENT_METHODS = [
+const FORMAS_DE_PAGAMENTO = [
   { id: "credit_card_nubank", label: "Cartão de Crédito - Nubank", icon: CreditCard },
   { id: "credit_card_itau", label: "Cartão de Crédito - Itaú", icon: CreditCard },
   { id: "credit_card_other", label: "Cartão de Crédito (Outro)", icon: CreditCard },
@@ -109,9 +109,9 @@ const PAYMENT_METHODS = [
   { id: "boleto", label: "Boleto Bancário", icon: FileCheck },
 ];
 
-export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { initialExpenses: ExpenseItem[], vendors: VendorOption[], userCards?: WalletCard[] }) {
+export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { initialExpenses: ItemDeDespesa[], vendors: OpcaoDeFornecedor[], userCards?: CartaoDaCarteira[] }) {
   const router = useRouter();
-  const [expenses, setExpenses] = useEstadoSincronizado<ExpenseItem[]>(initialExpenses);
+  const [expenses, setExpenses] = useEstadoSincronizado<ItemDeDespesa[]>(initialExpenses);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   // Parcelas cujo status está sendo trocado: o chip fica esmaecido e sem clique até a resposta chegar
@@ -148,7 +148,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
   const [singleDueDate, setSingleDueDate] = useState(new Date().toISOString().split("T")[0]);
   const [formKey, setFormKey] = useState(0);
 
-  const [blocks, setBlocks] = useState<InstallmentBlock[]>([
+  const [blocks, setBlocks] = useState<BlocoDeParcelas[]>([
     { id: 1, count: 3, amount: "300", startDate: new Date().toISOString().split("T")[0] }
   ]);
 
@@ -238,7 +238,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
     setBlocks(blocks.filter(b => b.id !== id));
   };
 
-  const updateBlock = (id: number, field: keyof InstallmentBlock, value: InstallmentBlock[keyof InstallmentBlock]) => {
+  const updateBlock = (id: number, field: keyof BlocoDeParcelas, value: BlocoDeParcelas[keyof BlocoDeParcelas]) => {
     setBlocks(blocks.map(b => b.id === id ? { ...b, [field]: value } : b));
   };
 
@@ -262,7 +262,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
     }> = [];
     let currentIdx = 1;
 
-    const finalPaymentMethod = paymentMethod === "custom" ? customPaymentMethod : PAYMENT_METHODS.find(p => p.id === paymentMethod)?.label || paymentMethod;
+    const finalPaymentMethod = paymentMethod === "custom" ? customPaymentMethod : FORMAS_DE_PAGAMENTO.find(p => p.id === paymentMethod)?.label || paymentMethod;
 
     for (const block of blocks) {
       const count = Number(block.count) || 0;
@@ -302,8 +302,8 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
   }, [expenses, filterType]);
 
   // Agrupamento inteligente de despesas por Dívida/Contrato/Compra
-  const groupedExpenses = useMemo<GroupedExpense[]>(() => {
-    const map = new Map<string, GroupedExpense>();
+  const groupedExpenses = useMemo<DespesaAgrupada[]>(() => {
+    const map = new Map<string, DespesaAgrupada>();
 
     for (const exp of filteredExpensesByType) {
       const baseTitle = exp.description.replace(/\s*\(\d+[\/\sde]+\d+\)\s*$/i, "").trim();
@@ -396,7 +396,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
     e.preventDefault();
     setLoading(true);
 
-    const finalPaymentMethod = paymentMethod === "custom" ? customPaymentMethod : PAYMENT_METHODS.find(p => p.id === paymentMethod)?.label || paymentMethod;
+    const finalPaymentMethod = paymentMethod === "custom" ? customPaymentMethod : FORMAS_DE_PAGAMENTO.find(p => p.id === paymentMethod)?.label || paymentMethod;
 
     const toastId = toast.loading("Salvando a despesa...");
 

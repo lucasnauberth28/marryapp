@@ -11,9 +11,9 @@ import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { formatarDiaEMes } from "@/lib/platform/format";
 import { arquivarArtigoDeConhecimento, salvarArtigoDeConhecimento } from "@/actions/admin-madrinha-actions";
-import { useAdminAction } from "../../_sistema/use-admin-action";
+import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
-export interface ArticleItem {
+export interface ItemDeArtigo {
   id: string;
   title: string;
   content: string;
@@ -22,9 +22,9 @@ export interface ArticleItem {
 }
 
 /** Base de conhecimento: textos de ajuda que a Liz poderá consultar. Novo texto, editar, publicar, remover. */
-export function KnowledgeBase({ articles }: { articles: ArticleItem[] }) {
+export function BaseDeConhecimento({ articles }: { articles: ItemDeArtigo[] }) {
   // editing: null = lista; "novo" = formulário vazio; item = editando
-  const [editing, setEditing] = useState<ArticleItem | "novo" | null>(null);
+  const [editing, setEditing] = useState<ItemDeArtigo | "novo" | null>(null);
   return (
     <Painel
       title="Base de conhecimento do Aceito"
@@ -67,16 +67,16 @@ export function KnowledgeBase({ articles }: { articles: ArticleItem[] }) {
           </ul>
         )
       ) : (
-        <ArticleForm key={editing === "novo" ? "novo" : editing.id} article={editing === "novo" ? null : editing} onDone={() => setEditing(null)} />
+        <FormularioDeArtigo key={editing === "novo" ? "novo" : editing.id} article={editing === "novo" ? null : editing} onDone={() => setEditing(null)} />
       )}
     </Painel>
   );
 }
 
-function ArticleForm({ article, onDone }: { article: ArticleItem | null; onDone: () => void }) {
+function FormularioDeArtigo({ article, onDone }: { article: ItemDeArtigo | null; onDone: () => void }) {
   const [title, setTitle] = useState(article?.title ?? "");
   const [content, setContent] = useState(article?.content ?? "");
-  const { pending, errors, formError, run } = useAdminAction();
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   // Qual botão está rodando: só ele mostra o spinner, os outros ficam desabilitados
   const [running, setRunning] = useState<"PUBLISHED" | "DRAFT" | "remove" | null>(null);
   const submit = (status: "DRAFT" | "PUBLISHED") => {

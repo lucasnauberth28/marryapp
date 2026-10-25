@@ -6,10 +6,10 @@ import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { definirMadrinhaDoCasamentoAtiva } from "@/actions/admin-madrinha-actions";
-import { useAdminAction } from "../../_sistema/use-admin-action";
-import { WeddingSearch } from "./wedding-search";
+import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
+import { BuscaDeCasamento } from "./wedding-search";
 
-export interface WeddingToggleItem {
+export interface ItemDeAlternanciaDoCasamento {
   id: string;
   coupleNames: string;
   enabled: boolean | null;
@@ -17,11 +17,11 @@ export interface WeddingToggleItem {
 }
 
 /** Ligar ou desligar a Liz por casal. Lista os casais com ajuste e o que a busca encontrar. */
-export function WeddingToggles({ initial }: { initial: WeddingToggleItem[] }) {
+export function AlternanciasDoCasamento({ initial }: { initial: ItemDeAlternanciaDoCasamento[] }) {
   const [items, setItems] = useState(initial);
-  const { pending, formError, run } = useAdminAction();
+  const { pending, formError, run } = useAcaoDoAdmin();
 
-  function setEnabled(item: WeddingToggleItem, enabled: boolean | null) {
+  function setEnabled(item: ItemDeAlternanciaDoCasamento, enabled: boolean | null) {
     run(() => definirMadrinhaDoCasamentoAtiva({ weddingId: item.id, enabled }), () =>
       setItems((list) => list.map((x) => (x.id === item.id ? { ...x, enabled } : x))),
     );
@@ -29,7 +29,7 @@ export function WeddingToggles({ initial }: { initial: WeddingToggleItem[] }) {
 
   return (
     <Painel title="Ligar ou desligar por casal">
-      <WeddingSearch
+      <BuscaDeCasamento
         selectedId={null}
         label="Buscar casal"
         onPick={(hit) =>

@@ -4,7 +4,7 @@ import { EsqueletoDasLinhas } from "@/components/plataforma/loading-parts";
 
 /* Esqueletos do detalhe do casal: o corpo de cada aba e a coluna lateral (plano, ações). */
 
-function Aside() {
+function Lateral() {
   return (
     <aside className="flex flex-col gap-6">
       <SkeletonCard>
@@ -28,7 +28,7 @@ function Aside() {
   );
 }
 
-function LabelValueRows({ rows }: { rows: number }) {
+function LinhasDeRotuloEValor({ rows }: { rows: number }) {
   return (
     <div className="flex flex-col gap-3">
       {Array.from({ length: rows }).map((_, i) => (
@@ -41,16 +41,16 @@ function LabelValueRows({ rows }: { rows: number }) {
   );
 }
 
-const TWO_COL = "grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start";
-const HALVES = "grid gap-6 lg:grid-cols-2 lg:items-start";
+const DUAS_COLUNAS = "grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start";
+const METADES = "grid gap-6 lg:grid-cols-2 lg:items-start";
 
-export function CasalTabSkeleton({ tab }: { tab: string }) {
+export function EsqueletoDaAbaDoCasal({ tab }: { tab: string }) {
   if (tab === "visao")
     return (
-      <div className={TWO_COL}>
+      <div className={DUAS_COLUNAS}>
         <div className="flex min-w-0 flex-col gap-6">
           <SkeletonCard>
-            <LabelValueRows rows={7} />
+            <LinhasDeRotuloEValor rows={7} />
           </SkeletonCard>
           <SkeletonCard>
             <EsqueletoDasLinhas rows={3} chip={false} />
@@ -59,12 +59,12 @@ export function CasalTabSkeleton({ tab }: { tab: string }) {
             <EsqueletoDasLinhas rows={4} chip={false} />
           </SkeletonCard>
         </div>
-        <Aside />
+        <Lateral />
       </div>
     );
   if (tab === "pagamentos")
     return (
-      <div className={TWO_COL}>
+      <div className={DUAS_COLUNAS}>
         <div className="flex min-w-0 flex-col gap-6">
           <SkeletonCard>
             <EsqueletoDasLinhas rows={3} />
@@ -76,12 +76,12 @@ export function CasalTabSkeleton({ tab }: { tab: string }) {
             <SkeletonForm fields={["input", "textarea"]} />
           </SkeletonCard>
         </div>
-        <Aside />
+        <Lateral />
       </div>
     );
   if (tab === "atividade" || tab === "suporte")
     return (
-      <div className={HALVES}>
+      <div className={METADES}>
         <SkeletonCard>
           <EsqueletoDasLinhas rows={5} chip={false} />
         </SkeletonCard>
@@ -97,7 +97,7 @@ export function CasalTabSkeleton({ tab }: { tab: string }) {
   );
 }
 
-export function CasalDetailSkeleton() {
+export function EsqueletoDoDetalheDoCasal() {
   return (
     <>
       <div className="-mt-2 flex flex-wrap gap-2">

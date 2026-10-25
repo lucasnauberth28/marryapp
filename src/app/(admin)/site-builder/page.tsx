@@ -6,7 +6,7 @@ import {
 import { obterConfiguracoes } from "@/actions/settings-actions";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterPresentesEmDestaque } from "@/lib/wedding-data";
-import { SiteBuilderClient } from "./site-builder-client";
+import { EditorDoSiteCliente } from "./site-builder-client";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ export default async function SiteBuilderPage() {
   ]);
 
   return (
-    <SiteBuilderClient
+    <EditorDoSiteCliente
       initialSettings={settings}
       initialStoryItems={storyItems}
       initialTips={tips}

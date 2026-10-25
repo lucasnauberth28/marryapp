@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import type { ResultadoDaAcaoDoCasal } from "@/actions/admin-casais-actions";
 
 /** Chama uma Server Action do casal: trava o botão, mostra o aviso de sucesso e guarda a mensagem de erro para o formulário. */
-export function useCasalAction() {
+export function useAcaoDoCasal() {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 

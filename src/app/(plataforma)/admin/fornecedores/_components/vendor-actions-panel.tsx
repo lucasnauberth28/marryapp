@@ -20,10 +20,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { DIAS_DE_CONCESSAO, MOTIVOS_DE_RECUSA, mensagemDeRecusaPara } from "@/lib/platform/vendor-admin";
 import { cn } from "@/lib/utils";
 
-const DANGER = "border-perigo text-perigo hover:border-perigo hover:bg-perigo-suave";
+const ESTILO_DE_PERIGO = "border-perigo text-perigo hover:border-perigo hover:bg-perigo-suave";
 
 /** Ações da administração sobre um fornecedor: curadoria, destaque, plano de cortesia e suspensão. */
-export function VendorActionsPanel({
+export function PainelDeAcoesDoFornecedor({
   vendorId,
   curation,
   suspended,
@@ -107,7 +107,7 @@ export function VendorActionsPanel({
             disabled={message.trim().length < 10 || pending}
             loading={pending && running === "reject"}
             onClick={() => run("reject", () => recusarFornecedorComoAdmin({ vendorId, message }))}
-            className={cn(DANGER, "self-start")}
+            className={cn(ESTILO_DE_PERIGO, "self-start")}
           >
             Recusar com motivo
           </Button>
@@ -181,7 +181,7 @@ export function VendorActionsPanel({
                 disabled={suspendReason.trim().length < 5 || pending}
                 loading={pending && running === "suspend"}
                 onClick={() => run("suspend", () => suspenderFornecedor({ vendorId, reason: suspendReason }), () => setSuspendOpen(false))}
-                className={DANGER}
+                className={ESTILO_DE_PERIGO}
               >
                 Suspender o fornecedor
               </Button>
@@ -191,7 +191,7 @@ export function VendorActionsPanel({
             </div>
           </>
         ) : (
-          <Button type="button" variant="outline" onClick={() => setSuspendOpen(true)} className={cn(DANGER, "self-start")}>
+          <Button type="button" variant="outline" onClick={() => setSuspendOpen(true)} className={cn(ESTILO_DE_PERIGO, "self-start")}>
             Suspender o fornecedor
           </Button>
         )}

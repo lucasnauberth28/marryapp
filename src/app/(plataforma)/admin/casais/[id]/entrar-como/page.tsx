@@ -3,7 +3,7 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
-import { EntrarComoForm } from "./entrar-como-form";
+import { FormularioDeEntrarComo } from "./entrar-como-form";
 
 export const metadata = { title: "Entrar como este casal" };
 
@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         title="Entrar como este casal"
         description="Confirme o motivo. A entrada fica registrada e vale por 30 minutos."
       />
-      <EntrarComoForm weddingId={wedding.id} coupleNames={wedding.coupleNames} backHref={`/admin/casais/${id}`} />
+      <FormularioDeEntrarComo weddingId={wedding.id} coupleNames={wedding.coupleNames} backHref={`/admin/casais/${id}`} />
     </>
   );
 }

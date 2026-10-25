@@ -17,8 +17,8 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const SP = "America/Sao_Paulo";
-const FILTROS: Record<string, FiltroDeTarefas> = { abertas: "abertas", atrasadas: "atrasadas", concluidas: "concluidas" };
+const FUSO_DE_BRASILIA = "America/Sao_Paulo";
+const FILTROS_DA_PAGINA: Record<string, FiltroDeTarefas> = { abertas: "abertas", atrasadas: "atrasadas", concluidas: "concluidas" };
 
 export default async function PendenciasPage({ searchParams }: { searchParams: Promise<{ filtro?: string }> }) {
   const { weddingId } = await exigirCasamentoNaPagina("/pendencias");
@@ -34,7 +34,7 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
     );
   }
 
-  const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: SP }).format(new Date());
+  const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: FUSO_DE_BRASILIA }).format(new Date());
   const daysLeft = identity.weddingDate ? diasAte(identity.weddingDate) : null;
 
   // Sugestão da Liz por regras, com os dados reais do casamento (sem IA)
@@ -73,5 +73,5 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
     }
   }
 
-  return <QuadroDeTarefas initialTasks={tasks ?? []} todayKey={todayKey} daysLeft={daysLeft} initialFilter={FILTROS[filtro ?? ""] ?? "abertas"} suggestion={suggestion} />;
+  return <QuadroDeTarefas initialTasks={tasks ?? []} todayKey={todayKey} daysLeft={daysLeft} initialFilter={FILTROS_DA_PAGINA[filtro ?? ""] ?? "abertas"} suggestion={suggestion} />;
 }

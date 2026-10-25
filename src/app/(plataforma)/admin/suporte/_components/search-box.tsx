@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
  * Campo da "Busca em tudo": manda a busca para a própria página (?q=) e o resultado vem do servidor.
  * O botão fica ocupado até a URL chegar; o resultado antigo é trocado por um esqueleto (ver suporte/page.tsx).
  */
-export function SearchBox({ defaultValue }: { defaultValue: string }) {
+export function CaixaDeBusca({ defaultValue }: { defaultValue: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   return (

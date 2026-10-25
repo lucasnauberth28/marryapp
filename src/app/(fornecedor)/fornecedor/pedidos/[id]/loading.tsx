@@ -1,7 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingRegion, SkeletonText } from "@/components/skeletons";
 
-const CARD = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
+const ESTILO_DO_CARTAO = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
 
 // Espelha o detalhe do pedido: voltar e título do casal, "O casamento" e a proposta à esquerda,
 // contato e andamento à direita.
@@ -23,7 +23,7 @@ export default function LoadingFornecedorPedido() {
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="flex min-w-0 flex-col gap-4">
-          <section className={`${CARD} flex flex-col gap-4`}>
+          <section className={`${ESTILO_DO_CARTAO} flex flex-col gap-4`}>
             <div className="flex h-7 items-center">
               <Skeleton className="h-5 w-32 rounded-md" />
             </div>
@@ -43,7 +43,7 @@ export default function LoadingFornecedorPedido() {
             </div>
           </section>
 
-          <section className={`${CARD} flex flex-col gap-4`}>
+          <section className={`${ESTILO_DO_CARTAO} flex flex-col gap-4`}>
             <div className="flex flex-col gap-1">
               <div className="flex h-7 items-center">
                 <Skeleton className="h-5 w-36 rounded-md" />
@@ -60,7 +60,7 @@ export default function LoadingFornecedorPedido() {
         </div>
 
         <div className="flex min-w-0 flex-col gap-4">
-          <section className={`${CARD} flex flex-col gap-3`}>
+          <section className={`${ESTILO_DO_CARTAO} flex flex-col gap-3`}>
             <div className="flex h-7 items-center">
               <Skeleton className="h-5 w-36 rounded-md" />
             </div>
@@ -70,7 +70,7 @@ export default function LoadingFornecedorPedido() {
             <Skeleton className="h-11 w-52 max-w-full rounded-md" />
           </section>
 
-          <section className={`${CARD} flex flex-col gap-4`}>
+          <section className={`${ESTILO_DO_CARTAO} flex flex-col gap-4`}>
             <div className="flex h-7 items-center">
               <Skeleton className="h-5 w-24 rounded-md" />
             </div>

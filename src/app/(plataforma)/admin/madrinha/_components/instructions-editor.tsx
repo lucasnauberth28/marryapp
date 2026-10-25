@@ -10,9 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Pencil, CheckCircle2, Archive } from "lucide-react";
 import { formatarDataEHora } from "@/lib/platform/format";
 import { publicarVersaoDasInstrucoes, reverterVersaoDasInstrucoes, salvarVersaoDasInstrucoes } from "@/actions/admin-madrinha-actions";
-import { useAdminAction } from "../../_sistema/use-admin-action";
+import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
-export interface VersionItem {
+export interface ItemDeVersao {
   id: string;
   version: number;
   content: string;
@@ -22,22 +22,22 @@ export interface VersionItem {
   createdByName: string | null;
 }
 
-const STATUS = {
+const SITUACAO_DO_ITEM = {
   DRAFT: { tone: "aviso", icon: Pencil, label: "Rascunho" },
   PUBLISHED: { tone: "sucesso", icon: CheckCircle2, label: "Publicada" },
   ARCHIVED: { tone: "neutro", icon: Archive, label: "Anterior" },
 } as const;
 
 /** Instruções da Liz com histórico de versões: salvar como nova versão, publicar e reverter. */
-export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
+export function EditorDeInstrucoes({ versions }: { versions: ItemDeVersao[] }) {
   const latest = versions[0];
   const [text, setText] = useState(latest?.content ?? "");
   const [note, setNote] = useState("");
-  const save = useAdminAction();
-  const row = useAdminAction();
+  const save = useAcaoDoAdmin();
+  const row = useAcaoDoAdmin();
   const [rowBusy, setRowBusy] = useState<string | null>(null); // "publicar:<id>" ou "reverter:<id>": só esse botão mostra o spinner
   const changed = text.trim() !== (latest?.content ?? "").trim();
-  const st = latest ? STATUS[latest.status] : null;
+  const st = latest ? SITUACAO_DO_ITEM[latest.status] : null;
 
   return (
     <Painel
@@ -77,7 +77,7 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
       {row.formError && <AvisoDoFormulario>{row.formError}</AvisoDoFormulario>}
       <ul className="divide-y divide-linha overflow-hidden rounded-2xl border border-linha">
         {versions.map((v) => {
-          const s = STATUS[v.status];
+          const s = SITUACAO_DO_ITEM[v.status];
           return (
             <li key={v.id} className={v.status === "DRAFT" && v.id === latest?.id ? "bg-ameixa-suave/60" : undefined}>
               <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">

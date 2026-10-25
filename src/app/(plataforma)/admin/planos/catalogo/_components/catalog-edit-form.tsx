@@ -15,14 +15,14 @@ import { cn } from "@/lib/utils";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 /** "159,00", "1.249,90" ou "159" em centavos; NaN se não for um valor em reais. */
-function parseReais(text: string): number {
+function interpretarReais(text: string): number {
   const clean = text.replace(/\s|R\$/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".");
   if (!/^\d+(\.\d{1,2})?$/.test(clean)) return Number.NaN;
   return Math.round(Number(clean) * 100);
 }
 
 /** Editar nome e preço de um plano ou módulo. O servidor valida de novo e grava no registro de atividades. */
-export function CatalogEditForm({
+export function FormularioDeEdicaoDoCatalogo({
   itemKey,
   title,
   currentName,
@@ -44,7 +44,7 @@ export function CatalogEditForm({
   const [confirmBig, setConfirmBig] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const cents = parseReais(price);
+  const cents = interpretarReais(price);
   // Mudança grande (mais de 50% para cima ou para baixo) pede um aceite a mais
   const big = !free && Number.isFinite(cents) && currentPriceCents > 0 && Math.abs(cents - currentPriceCents) / currentPriceCents > 0.5;
 

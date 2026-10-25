@@ -33,17 +33,17 @@ import { filtroDeFornecedorPagoAtivo } from "@/lib/platform/queries/receita";
 import { ROTULO_DA_CURADORIA, ORDENACOES_DE_FORNECEDORES, ABAS_DE_FORNECEDORES, visaoDaCuradoria, fotosDaGaleria, tomDoVencimentoDoPlano, type VisaoDaCuradoria } from "@/lib/platform/vendor-admin";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
-import { VendorActionsPanel } from "./vendor-actions-panel";
-import { ReviewModeration } from "./review-moderation";
+import { PainelDeAcoesDoFornecedor } from "./vendor-actions-panel";
+import { ModeracaoDeAvaliacao } from "./review-moderation";
 
-const VIEW_CHIP: Record<VisaoDaCuradoria, { tone: TomDaSituacao; icon: typeof Check }> = {
+const ETIQUETA_DA_VISAO: Record<VisaoDaCuradoria, { tone: TomDaSituacao; icon: typeof Check }> = {
   approved: { tone: "sucesso", icon: Check },
   pending: { tone: "aviso", icon: Clock },
   adjust: { tone: "neutro", icon: Pencil },
   suspended: { tone: "perigo", icon: Ban },
 };
 
-const TAB_LABEL: Record<(typeof ABAS_DE_FORNECEDORES)[number], string> = {
+const ROTULO_DA_ABA: Record<(typeof ABAS_DE_FORNECEDORES)[number], string> = {
   todos: "Todos",
   curadoria: "Aguardando curadoria",
   "pro-master": "Pro e Master",
@@ -55,7 +55,7 @@ const TAB_LABEL: Record<(typeof ABAS_DE_FORNECEDORES)[number], string> = {
  * Tela de fornecedores da administração. `mode="curadoria"` é a mesma tela com a fila de cadastros esperando
  * análise (rota /admin/fornecedores/curadoria): sem abas, o primeiro da fila já abre no painel.
  */
-export async function VendorsScreen({ searchParams, mode }: { searchParams: ParametrosDeBusca; mode: "lista" | "curadoria" }) {
+export async function TelaDeFornecedores({ searchParams, mode }: { searchParams: ParametrosDeBusca; mode: "lista" | "curadoria" }) {
   const now = new Date();
   const basePath = mode === "curadoria" ? "/admin/fornecedores/curadoria" : "/admin/fornecedores";
   const tab = mode === "curadoria" ? "curadoria" : (umDosValores(searchParams, "aba", ABAS_DE_FORNECEDORES) ?? "todos");
@@ -141,7 +141,7 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Para
           basePath={basePath}
           active={tab}
           params={{ q, categoria, regiao, plano, curadoria, ordem: ordem === "espera" ? undefined : ordem }}
-          tabs={ABAS_DE_FORNECEDORES.map((value) => ({ value, label: TAB_LABEL[value], count: counts[value] }))}
+          tabs={ABAS_DE_FORNECEDORES.map((value) => ({ value, label: ROTULO_DA_ABA[value], count: counts[value] }))}
         />
       ) : null}
 
@@ -184,7 +184,7 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Para
                 header: "Curadoria",
                 cell: (v) => {
                   const view = visaoDaCuradoria(v);
-                  const chip = VIEW_CHIP[view];
+                  const chip = ETIQUETA_DA_VISAO[view];
                   return (
                     <EtiquetaDeSituacao tone={chip.tone} icon={chip.icon}>
                       {ROTULO_DA_CURADORIA[view]}
@@ -243,7 +243,7 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Para
         <div id="painel" className="scroll-mt-6 lg:sticky lg:top-6">
           {/* O painel busca o fornecedor escolhido sozinho: a lista não espera por ele (key = fornecedor) */}
           <Suspense key={detailId ?? "nenhum"} fallback={<EsqueletoDoPainelLateral photos />}>
-            <VendorDetailSlot detailId={detailId} now={now} basePath={basePath} />
+            <AreaDoDetalheDoFornecedor detailId={detailId} now={now} basePath={basePath} />
           </Suspense>
         </div>
       </div>
@@ -257,17 +257,17 @@ export async function VendorsScreen({ searchParams, mode }: { searchParams: Para
             </SkeletonCard>
           }
         >
-          <ModerationBlock now={now} />
+          <BlocoDeModeracao now={now} />
         </Suspense>
       ) : null}
     </>
   );
 }
 
-async function VendorDetailSlot({ detailId, now, basePath }: { detailId: string | undefined; now: Date; basePath: string }) {
+async function AreaDoDetalheDoFornecedor({ detailId, now, basePath }: { detailId: string | undefined; now: Date; basePath: string }) {
   const detail = detailId ? await obterDetalheDoFornecedorDoAdmin(detailId) : null;
   return detail ? (
-    <VendorDetailPanel detail={detail} now={now} basePath={basePath} />
+    <PainelDoDetalheDoFornecedor detail={detail} now={now} basePath={basePath} />
   ) : (
     <Painel>
       <p className="text-sm text-tinta-suave">Escolha um fornecedor na lista para ver o perfil e decidir.</p>
@@ -275,7 +275,7 @@ async function VendorDetailSlot({ detailId, now, basePath }: { detailId: string 
   );
 }
 
-async function ModerationBlock({ now }: { now: Date }) {
+async function BlocoDeModeracao({ now }: { now: Date }) {
   const moderation = await obterAvaliacoesParaModerar();
   return (
     <>
@@ -298,8 +298,8 @@ async function ModerationBlock({ now }: { now: Date }) {
             <ul className="flex flex-col">
               {moderation.reported.map((r) => (
                 <li key={r.id} className="flex flex-col gap-3 border-b border-linha py-5 first:pt-0 last:border-b-0 last:pb-0">
-                  <ReviewBlock review={r} now={now} />
-                  <ReviewModeration reviewId={r.id} hidden={false} vendorName={r.vendorName} />
+                  <BlocoDeAvaliacao review={r} now={now} />
+                  <ModeracaoDeAvaliacao reviewId={r.id} hidden={false} vendorName={r.vendorName} />
                 </li>
               ))}
             </ul>
@@ -310,8 +310,8 @@ async function ModerationBlock({ now }: { now: Date }) {
               <ul className="flex flex-col">
                 {moderation.hidden.map((r) => (
                   <li key={r.id} className="flex flex-col gap-3 border-b border-linha py-4 first:pt-0 last:border-b-0 last:pb-0">
-                    <ReviewBlock review={r} now={now} />
-                    <ReviewModeration reviewId={r.id} hidden vendorName={r.vendorName} />
+                    <BlocoDeAvaliacao review={r} now={now} />
+                    <ModeracaoDeAvaliacao reviewId={r.id} hidden vendorName={r.vendorName} />
                   </li>
                 ))}
               </ul>
@@ -323,7 +323,7 @@ async function ModerationBlock({ now }: { now: Date }) {
   );
 }
 
-function ReviewBlock({ review, now }: { review: { vendorName: string; rating: number; authorName: string; comment: string; reportReason: string | null; reportedAt: Date | null; hiddenAt: Date | null }; now: Date }) {
+function BlocoDeAvaliacao({ review, now }: { review: { vendorName: string; rating: number; authorName: string; comment: string; reportReason: string | null; reportedAt: Date | null; hiddenAt: Date | null }; now: Date }) {
   return (
     <div className="flex flex-col gap-2">
       <p className="flex flex-wrap items-center gap-x-2 text-[15px]">
@@ -349,9 +349,9 @@ function ReviewBlock({ review, now }: { review: { vendorName: string; rating: nu
   );
 }
 
-function VendorDetailPanel({ detail, now, basePath }: { detail: NonNullable<Awaited<ReturnType<typeof obterDetalheDoFornecedorDoAdmin>>>; now: Date; basePath: string }) {
+function PainelDoDetalheDoFornecedor({ detail, now, basePath }: { detail: NonNullable<Awaited<ReturnType<typeof obterDetalheDoFornecedorDoAdmin>>>; now: Date; basePath: string }) {
   const view = visaoDaCuradoria(detail);
-  const chip = VIEW_CHIP[view];
+  const chip = ETIQUETA_DA_VISAO[view];
   const photos = fotosDaGaleria(detail.galleryImages, detail.coverUrl, 3);
   const days = Math.max(0, Math.floor((now.getTime() - detail.createdAt.getTime()) / 86_400_000));
   const isApproved = detail.curationStatus === "APPROVED";
@@ -402,7 +402,7 @@ function VendorDetailPanel({ detail, now, basePath }: { detail: NonNullable<Awai
       </div>
 
       <div className="mt-5 border-t border-linha pt-5">
-        <VendorActionsPanel
+        <PainelDeAcoesDoFornecedor
           key={detail.id}
           vendorId={detail.id}
           curation={view}

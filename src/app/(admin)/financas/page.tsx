@@ -8,9 +8,9 @@ import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { LoadingRegion } from "@/components/skeletons";
 import { Aparicao } from "@/components/motion/reveal";
 import { estiloDoNumeroGrande, estiloDoCartao, estiloDoTituloDoCartao, estiloDoSobretitulo } from "@/components/casal/ui";
-import { FinanceTable } from "./finance-client";
-import { ExpensesClient } from "./expenses-client";
-import { ExpensesSkeleton, PaymentsSkeleton, StatsSkeleton } from "./skeletons";
+import { TabelaFinanceira } from "./finance-client";
+import { DespesasCliente } from "./expenses-client";
+import { EsqueletoDasDespesas, EsqueletoDosPagamentos, EsqueletoDosIndicadores } from "./skeletons";
 
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { formatarDataCivilCurta } from "@/lib/formatacao/data";
@@ -53,8 +53,8 @@ export default async function FinancasPage() {
         description="Presentes que entraram, contas a pagar e quanto sobra no fim."
       />
 
-      <Suspense fallback={<LoadingRegion label="os números das finanças"><StatsSkeleton /></LoadingRegion>}>
-        <Stats metrics={metrics} expenses={expenses} />
+      <Suspense fallback={<LoadingRegion label="os números das finanças"><EsqueletoDosIndicadores /></LoadingRegion>}>
+        <Indicadores metrics={metrics} expenses={expenses} />
       </Suspense>
 
       <section aria-labelledby="despesas-titulo" className="flex flex-col gap-3">
@@ -65,8 +65,8 @@ export default async function FinancasPage() {
           <p className="mt-0.5 text-[15px] text-tinta-suave">Contratos com fornecedores e compras avulsas, com as parcelas de cada um.</p>
         </div>
 
-        <Suspense fallback={<LoadingRegion label="as despesas"><ExpensesSkeleton /></LoadingRegion>}>
-          <Expenses expenses={expenses} vendors={vendors} walletData={walletData} />
+        <Suspense fallback={<LoadingRegion label="as despesas"><EsqueletoDasDespesas /></LoadingRegion>}>
+          <Despesas expenses={expenses} vendors={vendors} walletData={walletData} />
         </Suspense>
       </section>
 
@@ -80,8 +80,8 @@ export default async function FinancasPage() {
           </p>
         </div>
 
-        <Suspense fallback={<LoadingRegion label="os pagamentos"><PaymentsSkeleton /></LoadingRegion>}>
-          <Payments transactions={transactions} />
+        <Suspense fallback={<LoadingRegion label="os pagamentos"><EsqueletoDosPagamentos /></LoadingRegion>}>
+          <Pagamentos transactions={transactions} />
         </Suspense>
       </section>
     </div>
@@ -89,7 +89,7 @@ export default async function FinancasPage() {
 }
 
 /** Os quatro números do topo (presentes, despesas, saldo e próxima parcela). */
-async function Stats({ metrics: metricsPromise, expenses: expensesPromise }: { metrics: ReturnType<typeof obterMetricasFinanceiras>; expenses: ReturnType<typeof obterDespesas> }) {
+async function Indicadores({ metrics: metricsPromise, expenses: expensesPromise }: { metrics: ReturnType<typeof obterMetricasFinanceiras>; expenses: ReturnType<typeof obterDespesas> }) {
   const [metrics, expenses] = await Promise.all([metricsPromise, expensesPromise]);
   const isSaldoPositivo = metrics.saldoPrevisto >= 0;
 
@@ -141,7 +141,7 @@ async function Stats({ metrics: metricsPromise, expenses: expensesPromise }: { m
   );
 }
 
-async function Expenses({
+async function Despesas({
   expenses,
   vendors,
   walletData,
@@ -151,9 +151,9 @@ async function Expenses({
   walletData: ReturnType<typeof obterDadosDaCarteira>;
 }) {
   const [list, vendorList, wallet] = await Promise.all([expenses, vendors, walletData]);
-  return <ExpensesClient initialExpenses={list} vendors={vendorList} userCards={wallet.cards} />;
+  return <DespesasCliente initialExpenses={list} vendors={vendorList} userCards={wallet.cards} />;
 }
 
-async function Payments({ transactions }: { transactions: ReturnType<typeof obterTransacoes> }) {
-  return <FinanceTable transactions={await transactions} />;
+async function Pagamentos({ transactions }: { transactions: ReturnType<typeof obterTransacoes> }) {
+  return <TabelaFinanceira transactions={await transactions} />;
 }

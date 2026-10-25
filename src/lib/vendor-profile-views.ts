@@ -3,7 +3,7 @@ import { after } from "next/server";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { obterSessao } from "@/lib/security/auth-guard";
-import { todayBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { hojeEmBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
 
 const PADRAO_DE_ROBO = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|monitor|headless|lighthouse/i;
 
@@ -20,7 +20,7 @@ export async function registrarVisitaAoPerfilDoFornecedor(vendorId: string): Pro
     if (PADRAO_DE_ROBO.test(h.get("user-agent") ?? "")) return;
 
     const session = await obterSessao();
-    const day = todayBrasilia();
+    const day = hojeEmBrasilia();
 
     after(async () => {
       try {

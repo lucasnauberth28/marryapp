@@ -7,10 +7,10 @@ import { marcarNavegacaoDaLista } from "@/components/plataforma/pending";
 import { NativeSelect } from "@/components/ui/select";
 import { PERIODOS, type Periodo } from "@/lib/platform/overview-period";
 
-const LABEL: Record<Periodo, string> = { "30d": "Últimos 30 dias", mes: "Este mês", "90d": "Últimos 90 dias" };
+const ROTULO_DO_PERIODO: Record<Periodo, string> = { "30d": "Últimos 30 dias", mes: "Este mês", "90d": "Últimos 90 dias" };
 
 /** Seletor "Período" da Visão geral: escreve ?periodo= na URL (o servidor recalcula os cartões). */
-export function PeriodSelect({ value }: { value: Periodo }) {
+export function SeletorDePeriodo({ value }: { value: Periodo }) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -35,7 +35,7 @@ export function PeriodSelect({ value }: { value: Periodo }) {
       >
         {PERIODOS.map((p) => (
           <option key={p} value={p}>
-            {LABEL[p]}
+            {ROTULO_DO_PERIODO[p]}
           </option>
         ))}
       </NativeSelect>

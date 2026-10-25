@@ -18,28 +18,28 @@ import { Etiqueta, estiloDoCartao } from "@/components/casal/ui";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
-type WeddingVendor = Awaited<ReturnType<typeof obterFornecedores>>[number];
+type FornecedorDoCasamento = Awaited<ReturnType<typeof obterFornecedores>>[number];
 
-interface VendorsClientProps {
-  initialVendors: WeddingVendor[];
+interface PropriedadesDosFornecedoresCliente {
+  initialVendors: FornecedorDoCasamento[];
 }
 
 /** Categorias comuns de casamento (as mesmas da vitrine) para lembrar o que ainda falta escolher. */
-const COMMON_CATEGORIES = ["Espaço", "Buffet", "Fotografia", "Decoração", "DJ & Som", "Doces & Bolo", "Vestidos"];
+const CATEGORIAS_COMUNS = ["Espaço", "Buffet", "Fotografia", "Decoração", "DJ & Som", "Doces & Bolo", "Vestidos"];
 
-const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
+const normalizarTexto = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
 
-interface VendorForm {
+interface FormularioDoFornecedor {
   name: string;
   category: string;
   contact: string;
   notes: string;
   contractUrl: string;
 }
-const EMPTY_FORM: VendorForm = { name: "", category: "", contact: "", notes: "", contractUrl: "" };
+const FORMULARIO_VAZIO: FormularioDoFornecedor = { name: "", category: "", contact: "", notes: "", contractUrl: "" };
 
 /** Resumo do dinheiro do fornecedor a partir das despesas ligadas a ele. */
-function paymentSummary(v: WeddingVendor) {
+function resumoDoPagamento(v: FornecedorDoCasamento) {
   const list = v.expenses ?? [];
   if (list.length === 0) return "Sem despesas lançadas";
   const total = list.reduce((acc, e) => acc + e.amount, 0);
@@ -49,14 +49,14 @@ function paymentSummary(v: WeddingVendor) {
   return `${formatarReaisEnxuto(total)} · ${paid} de ${list.length} parcelas pagas`;
 }
 
-export function VendorsClient({ initialVendors }: VendorsClientProps) {
+export function FornecedoresCliente({ initialVendors }: PropriedadesDosFornecedoresCliente) {
   const router = useRouter();
   const uid = useId();
-  const [vendors, setVendors] = useEstadoSincronizado<WeddingVendor[]>(initialVendors);
+  const [vendors, setVendors] = useEstadoSincronizado<FornecedorDoCasamento[]>(initialVendors);
 
   const [formOpen, setFormOpen] = useState(false);
-  const [editingVendor, setEditingVendor] = useState<WeddingVendor | null>(null);
-  const [form, setForm] = useState<VendorForm>(EMPTY_FORM);
+  const [editingVendor, setEditingVendor] = useState<FornecedorDoCasamento | null>(null);
+  const [form, setForm] = useState<FormularioDoFornecedor>(FORMULARIO_VAZIO);
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
@@ -65,8 +65,8 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
   const [fileBase64, setFileBase64] = useState("");
   const [fileName, setFileName] = useState("");
 
-  const hiredCategories = vendors.map((v) => norm(v.category));
-  const missing = COMMON_CATEGORIES.filter((c) => !hiredCategories.some((h) => h === norm(c) || h.includes(norm(c))));
+  const hiredCategories = vendors.map((v) => normalizarTexto(v.category));
+  const missing = CATEGORIAS_COMUNS.filter((c) => !hiredCategories.some((h) => h === normalizarTexto(c) || h.includes(normalizarTexto(c))));
 
   const resetFile = () => {
     setFileBase64("");
@@ -76,12 +76,12 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
 
   const openCreate = () => {
     setEditingVendor(null);
-    setForm(EMPTY_FORM);
+    setForm(FORMULARIO_VAZIO);
     resetFile();
     setFormOpen(true);
   };
 
-  const openEdit = (vendor: WeddingVendor) => {
+  const openEdit = (vendor: FornecedorDoCasamento) => {
     setEditingVendor(vendor);
     setForm({
       name: vendor.name,
@@ -133,7 +133,7 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
     setLoading(false);
   };
 
-  const handleDelete = (v: WeddingVendor) => {
+  const handleDelete = (v: FornecedorDoCasamento) => {
     setConfirmAction(() => async () => {
       const toastId = toast.loading("Removendo o fornecedor...");
       const res = await excluirFornecedor(v.id);
@@ -208,7 +208,7 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
                       </button>
                     </div>
                   </div>
-                  <span className="text-sm text-tinta-suave">{paymentSummary(v)}</span>
+                  <span className="text-sm text-tinta-suave">{resumoDoPagamento(v)}</span>
                   {v.contact && <span className="text-sm text-tinta-suave">{v.contact}</span>}
                   {v.contractUrl && (
                     <Etiqueta tone="sucesso" icon={Check}>
@@ -264,7 +264,7 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
                 required
               />
               <datalist id={`${uid}-categories`}>
-                {COMMON_CATEGORIES.map((c) => (
+                {CATEGORIAS_COMUNS.map((c) => (
                   <option key={c} value={c} />
                 ))}
               </datalist>

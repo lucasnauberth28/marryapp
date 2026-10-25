@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-type FormValues = {
+type ValoresDoFormulario = {
   companyName: string;
   category: string;
   description: string;
@@ -23,14 +23,14 @@ type FormValues = {
   website: string;
 };
 
-const CARD = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
-const HINT = "text-[13px] text-tinta-suave";
-const BTN =
+const ESTILO_DO_CARTAO = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
+const ESTILO_DA_DICA = "text-[13px] text-tinta-suave";
+const ESTILO_DO_BOTAO =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-[15px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-60";
 
-const FORM_ID = "perfil-fornecedor";
+const ID_DO_FORMULARIO = "perfil-fornecedor";
 
-export function ProfileForm({
+export function FormularioDePerfil({
   vendorId,
   isPublic,
   categories,
@@ -41,17 +41,17 @@ export function ProfileForm({
   vendorId: string;
   isPublic: boolean;
   categories: string[];
-  initial: FormValues;
+  initial: ValoresDoFormulario;
   /** Aviso da curadoria, exibido logo abaixo do título. */
   notice?: React.ReactNode;
   /** Portfólio (fotos): vem antes dos campos de texto, como no design. */
   portfolio?: React.ReactNode;
 }) {
-  const [values, setValues] = useState<FormValues>(initial);
+  const [values, setValues] = useState<ValoresDoFormulario>(initial);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const set = (key: keyof FormValues) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+  const set = (key: keyof ValoresDoFormulario) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setValues((v) => ({ ...v, [key]: e.target.value }));
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -70,7 +70,7 @@ export function ProfileForm({
   }
 
   const saveButton = (
-    <Button type="submit" form={FORM_ID} loading={isPending}>
+    <Button type="submit" form={ID_DO_FORMULARIO} loading={isPending}>
       Salvar
     </Button>
   );
@@ -90,7 +90,7 @@ export function ProfileForm({
               href={`/fornecedores/${vendorId}`}
               target="_blank"
               rel="noopener"
-              className={cn(BTN, "border border-linha-forte bg-papel text-tinta hover:bg-areia")}
+              className={cn(ESTILO_DO_BOTAO, "border border-linha-forte bg-papel text-tinta hover:bg-areia")}
             >
               <Eye aria-hidden="true" className="size-[18px]" />
               Pré-visualizar
@@ -105,14 +105,14 @@ export function ProfileForm({
 
       {portfolio}
 
-      <form id={FORM_ID} onSubmit={onSubmit} noValidate className="flex flex-col gap-6" aria-describedby={error ? "perfil-erro" : undefined}>
+      <form id={ID_DO_FORMULARIO} onSubmit={onSubmit} noValidate className="flex flex-col gap-6" aria-describedby={error ? "perfil-erro" : undefined}>
         {error ? (
           <p id="perfil-erro" role="alert" className="rounded-xl bg-perigo-suave px-4 py-3 text-sm font-medium text-perigo">
             {error}
           </p>
         ) : null}
 
-        <Aparicao as="section" variant="up" delay={80} className={cn(CARD, "grid grid-cols-1 gap-5 sm:grid-cols-2")}>
+        <Aparicao as="section" variant="up" delay={80} className={cn(ESTILO_DO_CARTAO, "grid grid-cols-1 gap-5 sm:grid-cols-2")}>
           <h2 className="text-xl leading-7 font-semibold sm:col-span-2">Sobre o negócio</h2>
           <Input
             id="f-nome"
@@ -166,10 +166,10 @@ export function ProfileForm({
           />
         </Aparicao>
 
-        <Aparicao as="section" variant="up" delay={160} className={cn(CARD, "grid grid-cols-1 gap-5 sm:grid-cols-2")}>
+        <Aparicao as="section" variant="up" delay={160} className={cn(ESTILO_DO_CARTAO, "grid grid-cols-1 gap-5 sm:grid-cols-2")}>
           <div className="flex flex-col gap-1 sm:col-span-2">
             <h2 className="text-xl leading-7 font-semibold">Contato e redes</h2>
-            <p className={HINT}>Os pedidos de orçamento chegam aqui no painel; o WhatsApp aparece para os casais no Plano Pro.</p>
+            <p className={ESTILO_DA_DICA}>Os pedidos de orçamento chegam aqui no painel; o WhatsApp aparece para os casais no Plano Pro.</p>
           </div>
           <Input
             id="f-whats"
@@ -215,7 +215,7 @@ export function ProfileForm({
               href={`/fornecedores/${vendorId}`}
               target="_blank"
               rel="noopener"
-              className={cn(BTN, "border border-linha-forte bg-papel text-tinta hover:bg-areia")}
+              className={cn(ESTILO_DO_BOTAO, "border border-linha-forte bg-papel text-tinta hover:bg-areia")}
             >
               <Eye aria-hidden="true" className="size-[18px]" />
               Pré-visualizar

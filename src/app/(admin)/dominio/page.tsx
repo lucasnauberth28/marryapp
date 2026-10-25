@@ -5,7 +5,7 @@ import { obterPedidosDeDominioDoCasamento } from "@/lib/domain-orders";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 import { UpgradeCard } from "@/components/plan/upgrade-card";
-import { DomainClient } from "./domain-client";
+import { DominioCliente } from "./domain-client";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +27,7 @@ export default async function DominioPage() {
   if (!active && !hasModule) return <UpgradeCard moduleId="customDomain" />;
 
   return (
-    <DomainClient
+    <DominioCliente
       coupleNames={identity.coupleNames}
       weddingDate={identity.weddingDate ? identity.weddingDate.toISOString() : null}
       order={active}

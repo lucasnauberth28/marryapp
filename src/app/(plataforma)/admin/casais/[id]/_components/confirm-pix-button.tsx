@@ -7,7 +7,7 @@ import { confirmarAssinaturaManualmente } from "@/actions/subscription-admin-act
 import { Button } from "@/components/ui/button";
 
 /** "Conferir o Pix": confirma o Pix estático visto no extrato (a mesma ação de Assinaturas) e libera o plano. */
-export function ConfirmPixButton({ subscriptionId }: { subscriptionId: string }) {
+export function BotaoDeConfirmarPix({ subscriptionId }: { subscriptionId: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);

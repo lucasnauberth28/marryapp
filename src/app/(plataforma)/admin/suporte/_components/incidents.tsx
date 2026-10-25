@@ -13,9 +13,9 @@ import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { criarIncidenteDeSeguranca, atualizarIncidenteDeSeguranca } from "@/actions/admin-suporte-actions";
-import { useAdminAction } from "../../_sistema/use-admin-action";
+import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
-export interface IncidentItem {
+export interface ItemDeIncidente {
   id: string;
   title: string;
   description: string;
@@ -27,7 +27,7 @@ export interface IncidentItem {
   open: boolean;
 }
 
-export function Incidents({ rows, today }: { rows: IncidentItem[]; today: string }) {
+export function Incidentes({ rows, today }: { rows: ItemDeIncidente[]; today: string }) {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   return (
@@ -41,7 +41,7 @@ export function Incidents({ rows, today }: { rows: IncidentItem[]; today: string
         )
       }
     >
-      {formOpen && <NewIncident today={today} onDone={() => setFormOpen(false)} />}
+      {formOpen && <NovoIncidente today={today} onDone={() => setFormOpen(false)} />}
       {rows.length === 0 ? (
         <EstadoVazio icon={ShieldCheck} compact title="Nenhum incidente registrado">
           Se algo acontecer, registre aqui o que foi afetado, quando e quem foi avisado.
@@ -62,7 +62,7 @@ export function Incidents({ rows, today }: { rows: IncidentItem[]; today: string
                   </button>
                 </div>
               </div>
-              {editing === i.id && <IncidentEditor item={i} onDone={() => setEditing(null)} />}
+              {editing === i.id && <EditorDeIncidente item={i} onDone={() => setEditing(null)} />}
             </li>
           ))}
         </ul>
@@ -71,7 +71,7 @@ export function Incidents({ rows, today }: { rows: IncidentItem[]; today: string
   );
 }
 
-function NewIncident({ today, onDone }: { today: string; onDone: () => void }) {
+function NovoIncidente({ today, onDone }: { today: string; onDone: () => void }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -79,7 +79,7 @@ function NewIncident({ today, onDone }: { today: string; onDone: () => void }) {
   const [discoveredAt, setDiscoveredAt] = useState(today);
   const [notifiedOn, setNotifiedOn] = useState("");
   const [notifiedWho, setNotifiedWho] = useState("");
-  const { pending, errors, formError, run } = useAdminAction();
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   return (
     <form
       className="mb-4 flex flex-col gap-4 rounded-2xl bg-linho p-4"
@@ -110,11 +110,11 @@ function NewIncident({ today, onDone }: { today: string; onDone: () => void }) {
   );
 }
 
-function IncidentEditor({ item, onDone }: { item: IncidentItem; onDone: () => void }) {
+function EditorDeIncidente({ item, onDone }: { item: ItemDeIncidente; onDone: () => void }) {
   const router = useRouter();
   const [notifiedOn, setNotifiedOn] = useState(item.notifiedOn);
   const [notifiedWho, setNotifiedWho] = useState(item.notifiedWho ?? "");
-  const { pending, errors, formError, run } = useAdminAction();
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   const [running, setRunning] = useState<"save" | "close" | "reopen" | null>(null); // só o botão clicado mostra o spinner
   const after = () => {
     onDone();

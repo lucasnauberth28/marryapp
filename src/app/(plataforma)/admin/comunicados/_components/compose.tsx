@@ -43,9 +43,9 @@ import {
   enviarTesteDoComunicadoParaMim,
 } from "@/actions/admin-comunicados-actions";
 import type { PrevisaoDoPublico } from "@/lib/platform/queries/comunicados";
-import { useAdminAction } from "../../_sistema/use-admin-action";
+import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
-export interface ComposeInitial {
+export interface ValoresIniciaisDaRedacao {
   id?: string;
   title: string;
   emailSubject: string;
@@ -55,15 +55,15 @@ export interface ComposeInitial {
   channels: Canal[];
 }
 
-export interface DraftItem {
+export interface ItemDeRascunho {
   id: string;
   title: string;
   updatedAtLabel: string;
 }
 
-const TEMPLATE_ICON = { manutencao: Settings, novidade: Megaphone, plano: Clock } as const;
+const ICONE_DO_MODELO = { manutencao: Settings, novidade: Megaphone, plano: Clock } as const;
 
-export function Compose({ initial, initialPreview, drafts, emailConfigured }: { initial: ComposeInitial; initialPreview: PrevisaoDoPublico | null; drafts: DraftItem[]; emailConfigured: boolean }) {
+export function RedacaoDeComunicado({ initial, initialPreview, drafts, emailConfigured }: { initial: ValoresIniciaisDaRedacao; initialPreview: PrevisaoDoPublico | null; drafts: ItemDeRascunho[]; emailConfigured: boolean }) {
   const router = useRouter();
   const [draftId, setDraftId] = useState(initial.id);
   const [title, setTitle] = useState(initial.title);
@@ -77,9 +77,9 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
   const [previewing, setPreviewing] = useState(false); // recalculando o público depois de mudar um filtro
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
   const ticket = useRef(0);
-  const save = useAdminAction();
-  const send = useAdminAction();
-  const test = useAdminAction();
+  const save = useAcaoDoAdmin();
+  const send = useAcaoDoAdmin();
+  const test = useAcaoDoAdmin();
   const busy = save.pending || send.pending || test.pending;
   const errors = { ...localErrors, ...save.errors, ...test.errors, ...send.errors };
   const formError = send.formError ?? test.formError ?? save.formError;
@@ -148,7 +148,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
         </h2>
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {MODELOS_DE_COMUNICADO.map((t) => {
-            const Icon = TEMPLATE_ICON[t.id as keyof typeof TEMPLATE_ICON] ?? Megaphone;
+            const Icon = ICONE_DO_MODELO[t.id as keyof typeof ICONE_DO_MODELO] ?? Megaphone;
             return (
               <li key={t.id}>
                 <button type="button" onClick={() => applyTemplate(t.id)} className={cn(estiloDoCartao, "flex min-h-16 w-full items-center gap-3 p-4 text-left transition-shadow hover:shadow-[var(--shadow-aceito-2)] focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa")}>
@@ -382,7 +382,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
                       {d.title}
                       <span className="block text-sm font-normal text-tinta-suave">{d.updatedAtLabel}</span>
                     </Link>
-                    <DeleteDraft id={d.id} current={draftId === d.id} />
+                    <ExcluirRascunho id={d.id} current={draftId === d.id} />
                   </li>
                 ))}
               </ul>
@@ -414,9 +414,9 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
   );
 }
 
-function DeleteDraft({ id, current }: { id: string; current: boolean }) {
+function ExcluirRascunho({ id, current }: { id: string; current: boolean }) {
   const router = useRouter();
-  const { pending, run } = useAdminAction();
+  const { pending, run } = useAcaoDoAdmin();
   return (
     <button
       type="button"

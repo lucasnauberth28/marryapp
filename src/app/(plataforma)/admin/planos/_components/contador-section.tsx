@@ -8,15 +8,15 @@ import { pluralizar } from "@/lib/formatacao/plural";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { opcoesDeMesDoContador, tituloDoMes } from "@/lib/platform/payments";
 import type { NotaPendente } from "@/lib/platform/queries/receita";
-import { ContadorExport } from "./contador-export";
-import { InvoiceButton } from "./invoice-button";
+import { ExportacaoDoContador } from "./contador-export";
+import { BotaoDeNota } from "./invoice-button";
 
 /** Exportar para o contador (planilha do mês) e notas fiscais pendentes. */
-export function ContadorSection({ month, now, invoices, pendingCount }: { month: string; now: Date; invoices: NotaPendente[]; pendingCount: number }) {
+export function SecaoDoContador({ month, now, invoices, pendingCount }: { month: string; now: Date; invoices: NotaPendente[]; pendingCount: number }) {
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <Painel title="Exportar para o contador">
-        <ContadorExport month={month} options={opcoesDeMesDoContador(now).map((key) => ({ value: key, label: tituloDoMes(key) }))} />
+        <ExportacaoDoContador month={month} options={opcoesDeMesDoContador(now).map((key) => ({ value: key, label: tituloDoMes(key) }))} />
       </Painel>
 
       <Painel
@@ -44,7 +44,7 @@ export function ContadorSection({ month, now, invoices, pendingCount }: { month:
               { key: "quem", header: "Quem pagou", primary: true, cell: (i) => <>{i.payer} <span className="font-normal text-tinta-suave">({i.planName.replace(/^(Plano|Fornecedor)\s+/, "")})</span></> },
               { key: "pago", header: "Pago em", cell: (i) => (i.paidAt ? formatarDiaEMes(i.paidAt) : "Sem data") },
               { key: "valor", header: "Valor", align: "right", cell: (i) => formatarReais(i.amount) },
-              { key: "acao", header: <span className="sr-only">Ação</span>, mobileLabel: false, cell: (i) => <InvoiceButton subscriptionId={i.id} payer={i.payer} /> },
+              { key: "acao", header: <span className="sr-only">Ação</span>, mobileLabel: false, cell: (i) => <BotaoDeNota subscriptionId={i.id} payer={i.payer} /> },
             ]}
           />
           {pendingCount > invoices.length ? <p className="mt-3 text-sm text-tinta-suave">Mostrando {invoices.length} de {pendingCount}. Marque as primeiras para ver as próximas.</p> : null}

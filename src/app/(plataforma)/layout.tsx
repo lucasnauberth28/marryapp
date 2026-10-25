@@ -14,25 +14,25 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
  * O layout confere o acesso, mas NÃO basta: cada página, Server Action e rota de API chama requirePlatformAdmin*
  * por conta própria (o layout não roda de novo em toda navegação).
  */
-type Who = { name: string; initials: string; roleLabel: string };
+type Quem = { name: string; initials: string; roleLabel: string };
 
 /** Os números do menu vêm de 8 consultas: o menu já aparece sem eles e os números entram quando chegam. */
-async function SidebarWithCounts(who: Who) {
+async function BarraLateralComContagens(who: Quem) {
   return <BarraLateralDaPlataforma counts={await obterContagensDoMenuDaPlataforma()} {...who} />;
 }
-async function MobileNavWithCounts(who: Who) {
+async function MenuMovelComContagens(who: Quem) {
   return <MenuMovelDaPlataforma counts={await obterContagensDoMenuDaPlataforma()} {...who} />;
 }
 
 export default async function PlataformaLayout({ children }: { children: React.ReactNode }) {
   // O guard fica antes de qualquer streaming (sem sessão vai ao login, sem acesso total dá 404)
   const admin = await exigirAdminDaPlataformaNaPagina();
-  const who: Who = { name: admin.name ?? "Administrador", initials: admin.initials, roleLabel: admin.roleLabel };
+  const who: Quem = { name: admin.name ?? "Administrador", initials: admin.initials, roleLabel: admin.roleLabel };
 
   return (
     <div className="flex min-h-screen bg-linho">
       <Suspense fallback={<BarraLateralDaPlataforma counts={{}} {...who} />}>
-        <SidebarWithCounts {...who} />
+        <BarraLateralComContagens {...who} />
       </Suspense>
       <div className="flex min-w-0 flex-1 flex-col">
         <BarraSuperiorMovelDaPlataforma />
@@ -41,7 +41,7 @@ export default async function PlataformaLayout({ children }: { children: React.R
         </main>
       </div>
       <Suspense fallback={<MenuMovelDaPlataforma counts={{}} {...who} />}>
-        <MobileNavWithCounts {...who} />
+        <MenuMovelComContagens {...who} />
       </Suspense>
     </div>
   );

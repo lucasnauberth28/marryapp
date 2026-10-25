@@ -20,35 +20,35 @@ import { filtroDeFornecedorPagoAtivo, obterReceitaDoMes, obterPixParaConferir, f
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { cn } from "@/lib/utils";
 import { LinkPendente, RegiaoPendente } from "@/components/plataforma/pending";
-import { PlanosTabs } from "../_components/planos-tabs";
-import { FilterChips } from "../_components/filter-chips";
-import { SubscriptionPanel, type PanelSubscription } from "../_components/subscription-panel";
+import { AbasDePlanos } from "../_components/planos-tabs";
+import { EtiquetasDeFiltro } from "../_components/filter-chips";
+import { PainelDaAssinatura, type AssinaturaDoPainel } from "../_components/subscription-panel";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Assinaturas e Pix" };
 
-const FILTERS = [
+const FILTROS = [
   { value: "todos", label: "Todos" },
   { value: "a-conferir", label: "A conferir" },
   { value: "pagos", label: "Pagos" },
   { value: "recusados", label: "Recusados" },
   { value: "estornados", label: "Estornados" },
 ] as const;
-type FilterValue = (typeof FILTERS)[number]["value"];
-const PAGE_SIZE = 25;
-const BASE = "/admin/planos/assinaturas";
+type ValorDoFiltro = (typeof FILTROS)[number]["value"];
+const TAMANHO_DA_PAGINA = 25;
+const CAMINHO_BASE = "/admin/planos/assinaturas";
 
 export default async function AssinaturasPage({ searchParams }: { searchParams: Promise<ParametrosDeBusca> }) {
   await exigirAdminDaPlataformaNaPagina();
   const query = await searchParams;
-  const filter = umDosValores(query, "status", FILTERS.map((f) => f.value)) ?? "todos";
+  const filter = umDosValores(query, "status", FILTROS.map((f) => f.value)) ?? "todos";
   const idParam = parametroDaBusca(query, "id", 40);
   const selectedId = idParam && /^[0-9a-f-]{36}$/i.test(idParam) ? idParam : null;
   const now = new Date();
   const catalog = await obterCatalogo();
   const planLabel = (planId: string, planName: string) => (ehChaveDePlano(planId) ? opcaoDePlano(planId, catalog).name : nomeCurtoDoPlano(planName));
 
-  const listWhere: Record<FilterValue, Prisma.SubscriptionWhereInput> = {
+  const listWhere: Record<ValorDoFiltro, Prisma.SubscriptionWhereInput> = {
     todos: {},
     "a-conferir": filtroDePixParaConferir(now),
     pagos: { status: PaymentStatus.APPROVED },
@@ -71,7 +71,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
   } satisfies Prisma.SubscriptionSelect;
 
   const total = await prisma.subscription.count({ where: listWhere[filter] });
-  const window = janelaDaPagina(interpretarPagina(query), PAGE_SIZE, total);
+  const window = janelaDaPagina(interpretarPagina(query), TAMANHO_DA_PAGINA, total);
   const [rows, month, pix, vendorTiers, expiringSoon, selected] = await Promise.all([
     prisma.subscription.findMany({ where: listWhere[filter], orderBy: { createdAt: "desc" }, skip: window.skip, take: window.take, select }),
     obterReceitaDoMes(now),
@@ -83,9 +83,9 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
   const pro = vendorTiers.find((t) => t.planTier === "PRO")?._count._all ?? 0;
   const master = vendorTiers.find((t) => t.planTier === "MASTER")?._count._all ?? 0;
 
-  const hrefFor = (status: FilterValue, id?: string, page?: number) => `${montarLink(BASE, { status: status === "todos" ? undefined : status, id, pagina: page && page > 1 ? page : undefined })}${id ? "#painel" : ""}`;
+  const hrefFor = (status: ValorDoFiltro, id?: string, page?: number) => `${montarLink(CAMINHO_BASE, { status: status === "todos" ? undefined : status, id, pagina: page && page > 1 ? page : undefined })}${id ? "#painel" : ""}`;
 
-  const panel: PanelSubscription | null = selected
+  const panel: AssinaturaDoPainel | null = selected
     ? {
         id: selected.id,
         accountName: selected.user?.name ?? "Conta excluída",
@@ -112,7 +112,7 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
         title="Assinaturas e Pix"
         description="Pagamentos pelo Mercado Pago entram sozinhos. Pix estático precisa ser conferido no extrato."
       />
-      <PlanosTabs active="assinaturas" />
+      <AbasDePlanos active="assinaturas" />
 
       <GradeDeIndicadores>
         <CartaoDeIndicador
@@ -136,15 +136,15 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
           <h2 id="lista-titulo" className="sr-only">
             Pagamentos
           </h2>
-          <FilterChips
-            filters={FILTERS.map((f) => ({
+          <EtiquetasDeFiltro
+            filters={FILTROS.map((f) => ({
               href: hrefFor(f.value),
               label: f.value === "a-conferir" && pix.count > 0 ? `${f.label} · ${pix.count}` : f.label,
               active: f.value === filter,
             }))}
           />
           <TabelaResponsiva
-            caption={`Assinaturas${filter === "todos" ? "" : ` filtradas: ${FILTERS.find((f) => f.value === filter)?.label}`}, mais recentes primeiro`}
+            caption={`Assinaturas${filter === "todos" ? "" : ` filtradas: ${FILTROS.find((f) => f.value === filter)?.label}`}, mais recentes primeiro`}
             rows={rows}
             rowKey={(r) => r.id}
             selectedKey={selected?.id}
@@ -220,11 +220,11 @@ export default async function AssinaturasPage({ searchParams }: { searchParams: 
               },
             ]}
           />
-          <Paginacao page={window.page} pageSize={PAGE_SIZE} total={total} basePath={BASE} params={{ status: filter === "todos" ? undefined : filter }} noun={["pagamento", "pagamentos"]} />
+          <Paginacao page={window.page} pageSize={TAMANHO_DA_PAGINA} total={total} basePath={CAMINHO_BASE} params={{ status: filter === "todos" ? undefined : filter }} noun={["pagamento", "pagamentos"]} />
         </section>
 
         <div id="painel" className="scroll-mt-6">
-          {panel ? <SubscriptionPanel key={panel.id} subscription={panel} closeHref={hrefFor(filter, undefined, window.page)} /> : null}
+          {panel ? <PainelDaAssinatura key={panel.id} subscription={panel} closeHref={hrefFor(filter, undefined, window.page)} /> : null}
         </div>
       </div>
       </RegiaoPendente>

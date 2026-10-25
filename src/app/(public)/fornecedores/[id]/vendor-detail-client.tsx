@@ -30,7 +30,7 @@ import { SeletorDeData } from "@/components/ui/date-picker";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { conferirDisponibilidadeDoFornecedor, criarPedidoDeOrcamento, type FornecedorPublico } from "@/actions/partner-vendor-actions";
 import { toast } from "sonner";
-import { LEAD_BUDGET_OPTIONS, parseGallery, parseRegions } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { OPCOES_DE_ORCAMENTO_DO_PEDIDO, interpretarGaleria, interpretarRegioes } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { cn } from "@/lib/utils";
 
@@ -123,12 +123,12 @@ function ConferenciaDeDisponibilidade({ vendorId, todayIso }: { vendorId: string
 }
 
 export function DetalheDoFornecedorCliente({ vendor, todayIso }: PropriedadesDoDetalheDoFornecedor) {
-  let galleryImages = parseGallery(vendor.galleryImages);
+  let galleryImages = interpretarGaleria(vendor.galleryImages);
   if (galleryImages.length === 0 && vendor.coverUrl) {
     galleryImages = [vendor.coverUrl];
   }
 
-  const serviceRegions = parseRegions(vendor.serviceRegions);
+  const serviceRegions = interpretarRegioes(vendor.serviceRegions);
   const isMaster = vendor.planTier === "MASTER";
   // WhatsApp direto é recurso do Pro/Master (o servidor nem envia o número dos demais).
   const directWhatsapp = vendor.planTier !== "FREE" ? vendor.whatsapp?.replace(/\D/g, "") || null : null;
@@ -577,7 +577,7 @@ export function DetalheDoFornecedorCliente({ vendor, todayIso }: PropriedadesDoD
                     />
                     <NativeSelect id="lead-orcamento" label="Orçamento previsto" optional value={leadBudget} onChange={(e) => setLeadBudget(e.target.value)}>
                       <option value=""></option>
-                      {LEAD_BUDGET_OPTIONS.map((option) => (
+                      {OPCOES_DE_ORCAMENTO_DO_PEDIDO.map((option) => (
                         <option key={option} value={option}>
                           {option}
                         </option>

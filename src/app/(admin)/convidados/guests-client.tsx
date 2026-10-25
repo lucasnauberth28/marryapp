@@ -11,45 +11,45 @@ import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { EtiquetaDeConfirmacao } from "@/components/painel/status-chip";
 import { btn, estiloDoBotaoDeIconeDePerigo, estiloDoCartao, estiloDaEntradaDoPainel, estiloDoSobretitulo } from "@/components/painel/styles";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
-import { GuestModal, GUEST_CATEGORIES } from "./guest-modal";
-import { ImportGuestsModal } from "./import-guests-modal";
+import { ModalDoConvidado, CATEGORIAS_DE_CONVIDADO } from "./guest-modal";
+import { ModalDeImportacaoDeConvidados } from "./import-guests-modal";
 import { IlustracaoDaLiz } from "@/components/liz/liz-illustration";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
-type GuestRow = Guest & { table?: { name: string } | null };
+type LinhaDoConvidado = Guest & { table?: { name: string } | null };
 
-interface GuestsClientProps {
-  initialGuests: GuestRow[];
+interface PropriedadesDosConvidadosCliente {
+  initialGuests: LinhaDoConvidado[];
   /** Prazo para confirmar já formatado (ex.: "15 de março de 2027"), quando o casal definiu. */
   deadlineLabel: string | null;
   /** O plano do casal inclui o WhatsApp: só então o atalho para lembrar quem não respondeu aparece. */
   canRemind: boolean;
   /** Filtro de resposta que a lista abre já aplicado (padrão: todos). */
-  initialFilter?: Filter;
+  initialFilter?: FiltroDaLista;
 }
 
-type Filter = "all" | "CONFIRMED" | "PENDING" | "DECLINED";
+type FiltroDaLista = "all" | "CONFIRMED" | "PENDING" | "DECLINED";
 
 // Quantos convidados aparecem por vez; "Carregar mais" mostra o resto aos poucos.
-const PAGE_SIZE = 30;
+const TAMANHO_DA_PAGINA = 30;
 
-const plain = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const textoSemAcentos = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-function seats(g: Guest) {
+function quantidadeDeLugares(g: Guest) {
   return 1 + (g.allowedCompanions || 0);
 }
 
-function seatsLabel(g: Guest) {
-  const n = seats(g);
+function rotuloDosLugares(g: Guest) {
+  const n = quantidadeDeLugares(g);
   return `${n} ${n === 1 ? "lugar" : "lugares"}`;
 }
 
-function initials(name: string) {
+function iniciaisDoNome(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? (parts[parts.length - 1][0] ?? "") : "")).toUpperCase();
 }
 
-function LinkBadge({ guest }: { guest: Guest }) {
+function SeloDoLink({ guest }: { guest: Guest }) {
   if (guest.parentGuest?.name) {
     return (
       <span className="inline-flex items-center gap-1 text-sm text-tinta-suave">
@@ -69,16 +69,16 @@ function LinkBadge({ guest }: { guest: Guest }) {
   return null;
 }
 
-export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialFilter = "all" }: GuestsClientProps) {
+export function ConvidadosCliente({ initialGuests, deadlineLabel, canRemind, initialFilter = "all" }: PropriedadesDosConvidadosCliente) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [, startTransition] = useTransition();
 
-  const [filter, setFilter] = useState<Filter>(initialFilter);
+  const [filter, setFilter] = useState<FiltroDaLista>(initialFilter);
   const [group, setGroup] = useState("");
   const [query, setQuery] = useState("");
-  const [visible, setVisible] = useState(PAGE_SIZE);
+  const [visible, setVisible] = useState(TAMANHO_DA_PAGINA);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [toRemove, setToRemove] = useState<Guest | null>(null);
@@ -92,30 +92,30 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
   }, [initialGuests]);
 
   const groups = useMemo(() => {
-    const set = new Set<string>(GUEST_CATEGORIES);
+    const set = new Set<string>(CATEGORIAS_DE_CONVIDADO);
     for (const g of initialGuests) if (g.category) set.add(g.category);
     return [...set];
   }, [initialGuests]);
 
   const filtered = useMemo(() => {
-    const q = plain(query.trim());
+    const q = textoSemAcentos(query.trim());
     const digits = somenteDigitos(query);
     return initialGuests.filter((g) => {
       if (filter !== "all" && g.rsvpStatus !== filter) return false;
       if (group && g.category !== group) return false;
       if (!q) return true;
-      if (plain(g.name).includes(q)) return true;
-      if (g.email && plain(g.email).includes(q)) return true;
-      if (g.companionsNames && plain(g.companionsNames).includes(q)) return true;
+      if (textoSemAcentos(g.name).includes(q)) return true;
+      if (g.email && textoSemAcentos(g.email).includes(q)) return true;
+      if (g.companionsNames && textoSemAcentos(g.companionsNames).includes(q)) return true;
       return digits.length >= 3 && !!g.phone && somenteDigitos(g.phone).includes(digits);
     });
   }, [initialGuests, filter, group, query]);
 
   const shown = filtered.slice(0, visible);
 
-  function changeFilter(next: Filter) {
+  function changeFilter(next: FiltroDaLista) {
     setFilter(next);
-    setVisible(PAGE_SIZE);
+    setVisible(TAMANHO_DA_PAGINA);
   }
 
   function openAdd() {
@@ -147,7 +147,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
     });
   }
 
-  const chips: Array<{ value: Filter; label: string; tone: string; icon?: React.ReactNode }> = [
+  const chips: Array<{ value: FiltroDaLista; label: string; tone: string; icon?: React.ReactNode }> = [
     { value: "all", label: "Todos", tone: "bg-areia text-tinta" },
     { value: "CONFIRMED", label: "Confirmados", tone: "bg-sucesso-suave text-sucesso", icon: <Check className="size-4" aria-hidden="true" /> },
     { value: "PENDING", label: "Sem resposta", tone: "bg-aviso-suave text-aviso", icon: <Clock className="size-4" aria-hidden="true" /> },
@@ -233,7 +233,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
-                  setVisible(PAGE_SIZE);
+                  setVisible(TAMANHO_DA_PAGINA);
                 }}
                 className={`${estiloDaEntradaDoPainel} pl-10`}
               />
@@ -243,7 +243,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
               value={group}
               onChange={(e) => {
                 setGroup(e.target.value);
-                setVisible(PAGE_SIZE);
+                setVisible(TAMANHO_DA_PAGINA);
               }}
               className={`${estiloDaEntradaDoPainel} sm:w-52 sm:flex-none`}
             >
@@ -290,12 +290,12 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
                             {g.name}
                           </button>
                           <span className="block text-sm text-tinta-suave tabular-nums">{g.phone ? formatarTelefone(g.phone) : "Sem telefone"}</span>
-                          <LinkBadge guest={g} />
+                          <SeloDoLink guest={g} />
                           {g.companionsNames && <span className="block text-sm text-tinta-suave">Acompanhantes: {g.companionsNames}</span>}
                           {g.dietaryRestrictions && <span className="block text-sm text-aviso">Restrição: {g.dietaryRestrictions}</span>}
                         </td>
                         <td className="px-2 py-3 text-tinta-suave">{g.category || "Sem grupo"}</td>
-                        <td className="px-2 py-3 tabular-nums">{seats(g)}</td>
+                        <td className="px-2 py-3 tabular-nums">{quantidadeDeLugares(g)}</td>
                         <td className="px-2 py-3">
                           <EtiquetaDeConfirmacao status={g.rsvpStatus} />
                         </td>
@@ -328,11 +328,11 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
                       className={`${estiloDoCartao} flex min-h-14 w-full cursor-pointer items-center gap-3 px-3.5 py-3 text-left disabled:opacity-50`}
                     >
                       <span className="grid size-10 shrink-0 place-items-center rounded-full bg-areia text-sm font-semibold text-tinta" aria-hidden="true">
-                        {initials(g.name)}
+                        {iniciaisDoNome(g.name)}
                       </span>
                       <span className="flex min-w-0 flex-1 flex-col">
                         <strong className="truncate font-semibold text-tinta">{g.name}</strong>
-                        <span className="text-sm text-tinta-suave">{[g.category, seatsLabel(g)].filter(Boolean).join(" · ")}</span>
+                        <span className="text-sm text-tinta-suave">{[g.category, rotuloDosLugares(g)].filter(Boolean).join(" · ")}</span>
                       </span>
                       <EtiquetaDeConfirmacao status={g.rsvpStatus} />
                     </button>
@@ -346,7 +346,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
                 {shown.length < filtered.length && (
                   <>
                     {" · "}
-                    <button type="button" onClick={() => setVisible((v) => v + PAGE_SIZE)} className="inline-flex min-h-11 cursor-pointer items-center font-semibold text-ameixa underline underline-offset-2 hover:text-ameixa-hover md:min-h-0">
+                    <button type="button" onClick={() => setVisible((v) => v + TAMANHO_DA_PAGINA)} className="inline-flex min-h-11 cursor-pointer items-center font-semibold text-ameixa underline underline-offset-2 hover:text-ameixa-hover md:min-h-0">
                       Carregar mais
                     </button>
                   </>
@@ -367,13 +367,13 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
         <Plus className="size-6" aria-hidden="true" />
       </button>
 
-      <ImportGuestsModal
+      <ModalDeImportacaoDeConvidados
         isOpen={importOpen}
         onClose={() => setImportOpen(false)}
         existing={initialGuests.map((g) => ({ name: g.name, phone: g.phone ?? null }))}
       />
 
-      <GuestModal
+      <ModalDoConvidado
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         guest={editingGuest}

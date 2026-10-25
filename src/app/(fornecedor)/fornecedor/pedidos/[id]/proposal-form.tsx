@@ -9,10 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-const BTN =
+const ESTILO_DO_BOTAO =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-5 text-[15px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-60";
 
-export interface SavedProposal {
+export interface PropostaSalva {
   /** "hoje, 14:20" */
   sentAtLabel: string;
   /** Texto pronto para o casal (WhatsApp ou copiar). */
@@ -24,7 +24,7 @@ export interface SavedProposal {
   accepted: { name: string; atLabel: string } | null;
 }
 
-export function ProposalForm({
+export function FormularioDeProposta({
   leadId,
   todayIso,
   initial,
@@ -33,7 +33,7 @@ export function ProposalForm({
   leadId: string;
   todayIso: string;
   initial: { amount: string; validUntil: string; details: string };
-  saved: SavedProposal | null;
+  saved: PropostaSalva | null;
 }) {
   const [values, setValues] = useState(initial);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +84,7 @@ export function ProposalForm({
         <button
           type="button"
           onClick={() => copyText(saved.publicUrl!, "Link da proposta copiado.")}
-          className={cn(BTN, "border border-linha-forte bg-papel text-tinta hover:bg-areia")}
+          className={cn(ESTILO_DO_BOTAO, "border border-linha-forte bg-papel text-tinta hover:bg-areia")}
         >
           <Link2 aria-hidden="true" className="size-[18px]" />
           Copiar link
@@ -155,7 +155,7 @@ export function ProposalForm({
                 href={saved.whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={cn(BTN, "bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}
+                className={cn(ESTILO_DO_BOTAO, "bg-ameixa text-on-ameixa hover:bg-ameixa-hover")}
               >
                 <MessageCircle aria-hidden="true" className="size-[18px]" />
                 Enviar no WhatsApp
@@ -165,7 +165,7 @@ export function ProposalForm({
             <button
               type="button"
               onClick={() => copyText(saved.text)}
-              className={cn(BTN, "border border-linha-forte bg-papel text-tinta hover:bg-areia")}
+              className={cn(ESTILO_DO_BOTAO, "border border-linha-forte bg-papel text-tinta hover:bg-areia")}
             >
               <Copy aria-hidden="true" className="size-[18px]" />
               Copiar texto

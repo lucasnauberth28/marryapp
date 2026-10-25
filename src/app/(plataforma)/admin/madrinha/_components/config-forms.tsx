@@ -8,10 +8,10 @@ import { estiloDoCartao } from "@/components/casal/ui";
 import { cn } from "@/lib/utils";
 import { centavosParaCampoDeReais } from "@/lib/platform/madrinha";
 import { salvarLimitesContraAbusoDaMadrinha, salvarTetoGlobalDaMadrinha, salvarLimitesDaMadrinha } from "@/actions/admin-madrinha-actions";
-import { ToggleRow } from "../../_sistema/toggle-row";
-import { useAdminAction } from "../../_sistema/use-admin-action";
+import { LinhaDeAlternancia } from "../../_sistema/toggle-row";
+import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
-interface PlanLimits {
+interface LimitesDoPlano {
   perDay: number;
   perMonth: number;
   costCapCents: number;
@@ -19,7 +19,7 @@ interface PlanLimits {
   autoBlock: boolean;
 }
 
-interface PlanState {
+interface EstadoDoPlano {
   perDay: string;
   perMonth: string;
   costCap: string;
@@ -27,7 +27,7 @@ interface PlanState {
   autoBlock: boolean;
 }
 
-const toState = (l: PlanLimits): PlanState => ({
+const paraEstado = (l: LimitesDoPlano): EstadoDoPlano => ({
   perDay: String(l.perDay),
   perMonth: String(l.perMonth),
   costCap: centavosParaCampoDeReais(l.costCapCents),
@@ -35,7 +35,7 @@ const toState = (l: PlanLimits): PlanState => ({
   autoBlock: l.autoBlock,
 });
 
-function PlanCard({
+function CartaoDoPlano({
   prefix,
   title,
   subtitle,
@@ -46,11 +46,11 @@ function PlanCard({
   prefix: "subscription" | "trial";
   title: string;
   subtitle: string;
-  state: PlanState;
-  onChange: (next: PlanState) => void;
+  state: EstadoDoPlano;
+  onChange: (next: EstadoDoPlano) => void;
   errors: Record<string, string>;
 }) {
-  const set = <K extends keyof PlanState>(key: K, value: PlanState[K]) => onChange({ ...state, [key]: value });
+  const set = <K extends keyof EstadoDoPlano>(key: K, value: EstadoDoPlano[K]) => onChange({ ...state, [key]: value });
   return (
     <div className={cn(estiloDoCartao, "flex flex-col gap-4 p-5")}>
       <div>
@@ -63,7 +63,7 @@ function PlanCard({
         <Input label="Teto de custo por casal" prefix="R$" inputMode="decimal" value={state.costCap} onChange={(e) => set("costCap", e.target.value)} error={errors[`${prefix}.costCap`]} />
         <Input label="Avisar ao chegar em" suffix="%" inputMode="numeric" value={state.warnPercent} onChange={(e) => set("warnPercent", e.target.value)} error={errors[`${prefix}.warnPercent`]} />
       </div>
-      <ToggleRow
+      <LinhaDeAlternancia
         label="Bloquear sozinha ao atingir o teto"
         description="O casal vê um aviso gentil e volta no mês seguinte."
         checked={state.autoBlock}
@@ -75,10 +75,10 @@ function PlanCard({
 }
 
 /** Limites por tipo de assinatura (salvos de verdade, valem quando a Liz for ativada). */
-export function LimitsForm({ subscription, trial }: { subscription: PlanLimits; trial: PlanLimits }) {
-  const [sub, setSub] = useState(() => toState(subscription));
-  const [tri, setTri] = useState(() => toState(trial));
-  const { pending, errors, formError, run } = useAdminAction();
+export function FormularioDeLimites({ subscription, trial }: { subscription: LimitesDoPlano; trial: LimitesDoPlano }) {
+  const [sub, setSub] = useState(() => paraEstado(subscription));
+  const [tri, setTri] = useState(() => paraEstado(trial));
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   return (
     <form
       className="flex flex-col gap-4"
@@ -88,8 +88,8 @@ export function LimitsForm({ subscription, trial }: { subscription: PlanLimits; 
       }}
     >
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <PlanCard prefix="subscription" title="Assinatura" subtitle="Casais com a Liz contratada" state={sub} onChange={setSub} errors={errors} />
-        <PlanCard prefix="trial" title="Teste" subtitle="Período de teste, se o produto oferecer" state={tri} onChange={setTri} errors={errors} />
+        <CartaoDoPlano prefix="subscription" title="Assinatura" subtitle="Casais com a Liz contratada" state={sub} onChange={setSub} errors={errors} />
+        <CartaoDoPlano prefix="trial" title="Teste" subtitle="Período de teste, se o produto oferecer" state={tri} onChange={setTri} errors={errors} />
       </div>
       {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div>
@@ -101,11 +101,11 @@ export function LimitsForm({ subscription, trial }: { subscription: PlanLimits; 
   );
 }
 
-export function GlobalCapForm({ monthlyCostCapCents, warnPercent, pauseAtCap }: { monthlyCostCapCents: number; warnPercent: number; pauseAtCap: boolean }) {
+export function FormularioDoTetoGlobal({ monthlyCostCapCents, warnPercent, pauseAtCap }: { monthlyCostCapCents: number; warnPercent: number; pauseAtCap: boolean }) {
   const [cap, setCap] = useState(centavosParaCampoDeReais(monthlyCostCapCents));
   const [warn, setWarn] = useState(String(warnPercent));
   const [pause, setPause] = useState(pauseAtCap);
-  const { pending, errors, formError, run } = useAdminAction();
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   return (
     <form
       className="flex flex-1 flex-col gap-4"
@@ -116,7 +116,7 @@ export function GlobalCapForm({ monthlyCostCapCents, warnPercent, pauseAtCap }: 
     >
       <Input label="Custo máximo da Liz por mês" prefix="R$" inputMode="decimal" value={cap} onChange={(e) => setCap(e.target.value)} error={errors.monthlyCostCap} />
       <Input label="Avisar ao chegar em" suffix="%" inputMode="numeric" value={warn} onChange={(e) => setWarn(e.target.value)} error={errors.warnPercent} />
-      <ToggleRow label="Pausar tudo ao chegar no teto" description="Evita surpresa na fatura da API." checked={pause} onCheckedChange={setPause} />
+      <LinhaDeAlternancia label="Pausar tudo ao chegar no teto" description="Evita surpresa na fatura da API." checked={pause} onCheckedChange={setPause} />
       <p className="text-sm leading-5 text-tinta-suave">Ao chegar no aviso, a equipe receberá um e-mail. O envio só começa quando a Liz for ativada.</p>
       {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="mt-auto">
@@ -128,12 +128,12 @@ export function GlobalCapForm({ monthlyCostCapCents, warnPercent, pauseAtCap }: 
   );
 }
 
-export function AbuseForm({ perHour, blockHours, blockOffTopic, offTopicBeforeBlock }: { perHour: number; blockHours: number; blockOffTopic: boolean; offTopicBeforeBlock: number }) {
+export function FormularioContraAbuso({ perHour, blockHours, blockOffTopic, offTopicBeforeBlock }: { perHour: number; blockHours: number; blockOffTopic: boolean; offTopicBeforeBlock: number }) {
   const [hour, setHour] = useState(String(perHour));
   const [hours, setHours] = useState(String(blockHours));
   const [off, setOff] = useState(blockOffTopic);
   const [before, setBefore] = useState(String(offTopicBeforeBlock));
-  const { pending, errors, formError, run } = useAdminAction();
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   return (
     <form
       className="flex flex-1 flex-col gap-4"
@@ -144,7 +144,7 @@ export function AbuseForm({ perHour, blockHours, blockOffTopic, offTopicBeforeBl
     >
       <Input label="Mensagens por hora" inputMode="numeric" value={hour} onChange={(e) => setHour(e.target.value)} error={errors.perHour} />
       <Input label="Bloquear por (horas)" inputMode="numeric" value={hours} onChange={(e) => setHours(e.target.value)} error={errors.blockHours} />
-      <ToggleRow label="Bloquear quem usa como chat comum" description="Depois de algumas recusas por fuga de tema em um dia." checked={off} onCheckedChange={setOff} />
+      <LinhaDeAlternancia label="Bloquear quem usa como chat comum" description="Depois de algumas recusas por fuga de tema em um dia." checked={off} onCheckedChange={setOff} />
       {off && <Input label="Recusas antes de bloquear" inputMode="numeric" value={before} onChange={(e) => setBefore(e.target.value)} error={errors.offTopicBeforeBlock} />}
       <p className="text-sm leading-5 text-tinta-suave">Quem for bloqueado verá uma mensagem gentil e pode pedir ajuda ao suporte.</p>
       {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}

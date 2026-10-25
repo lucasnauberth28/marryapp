@@ -2,7 +2,7 @@ import { LoadingRegion, SkeletonCard, SkeletonPageHeader, SkeletonTable } from "
 import { EsqueletoDasAbasDoAdmin, EsqueletoDaBarraDeFiltros, EsqueletoDaPaginacao, EsqueletoDasLinhas, EsqueletoDoPainelLateral } from "@/components/plataforma/loading-parts";
 
 /** Fornecedores e Curadoria: a mesma tela, a curadoria sem abas e com menos filtros. */
-export function VendorsScreenSkeleton({ mode }: { mode: "lista" | "curadoria" }) {
+export function EsqueletoDaTelaDeFornecedores({ mode }: { mode: "lista" | "curadoria" }) {
   return (
     <LoadingRegion label={mode === "curadoria" ? "a curadoria" : "os fornecedores"} className="flex flex-col gap-6">
       <SkeletonPageHeader breadcrumb={mode === "curadoria"} actions={mode === "lista" ? 2 : 1} />

@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
 import { UpgradeCard } from "@/components/plan/upgrade-card";
-import { ScannerClient } from "./scanner-client";
+import { LeitorCliente } from "./scanner-client";
 
 export const metadata: Metadata = {
   title: "Registro de entrada dos convidados",
@@ -22,5 +22,5 @@ export default async function CredenciamentoPage() {
     prisma.guest.count({ where: { weddingId, rsvpStatus: "CONFIRMED" } }),
   ]);
 
-  return <ScannerClient initialArrived={arrived} confirmed={confirmed} />;
+  return <LeitorCliente initialArrived={arrived} confirmed={confirmed} />;
 }

@@ -6,14 +6,14 @@ import { iniciarProgressoDaNavegacao } from "@/components/feedback/navigation-pr
 import { marcarNavegacaoDaLista } from "@/components/plataforma/pending";
 import { cn } from "@/lib/utils";
 
-interface Filter {
+interface FiltroDeAssinaturas {
   href: string;
   label: string;
   active: boolean;
 }
 
 /** Filtros de status: botões alternáveis (aria-pressed) que mudam o ?status= da página. */
-export function FilterChips({ filters }: { filters: Filter[] }) {
+export function EtiquetasDeFiltro({ filters }: { filters: FiltroDeAssinaturas[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 

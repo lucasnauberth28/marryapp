@@ -1,5 +1,5 @@
-import { VendorsScreenSkeleton } from "../_components/skeletons";
+import { EsqueletoDaTelaDeFornecedores } from "../_components/skeletons";
 
 export default function Loading() {
-  return <VendorsScreenSkeleton mode="curadoria" />;
+  return <EsqueletoDaTelaDeFornecedores mode="curadoria" />;
 }

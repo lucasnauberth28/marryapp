@@ -10,15 +10,15 @@ import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { Button } from "@/components/ui/button";
 import { Wrench } from "lucide-react";
 import { salvarRemetenteDeEmail, salvarManutencao, salvarPoliticaDeReembolso } from "@/actions/admin-config-actions";
-import { ToggleRow } from "../../_sistema/toggle-row";
-import { useAdminAction } from "../../_sistema/use-admin-action";
+import { LinhaDeAlternancia } from "../../_sistema/toggle-row";
+import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
-export function MaintenanceForm({ initial }: { initial: { enabled: boolean; message: string; backDate: string; backTime: string } }) {
+export function FormularioDeManutencao({ initial }: { initial: { enabled: boolean; message: string; backDate: string; backTime: string } }) {
   const [enabled, setEnabled] = useState(initial.enabled);
   const [message, setMessage] = useState(initial.message);
   const [backDate, setBackDate] = useState(initial.backDate);
   const [backTime, setBackTime] = useState(initial.backTime);
-  const { pending, errors, formError, run } = useAdminAction();
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   return (
     <form
       className="flex flex-col gap-4"
@@ -29,7 +29,7 @@ export function MaintenanceForm({ initial }: { initial: { enabled: boolean; mess
     >
       <div className="flex flex-wrap items-center gap-3 border-b border-linha pb-1">
         <div className="min-w-0 flex-1">
-          <ToggleRow label="Modo de manutenção" description={enabled ? "Ligado: casais e convidados veem o aviso e o painel do casal fica só para leitura." : "Desligado agora."} checked={enabled} onCheckedChange={setEnabled} />
+          <LinhaDeAlternancia label="Modo de manutenção" description={enabled ? "Ligado: casais e convidados veem o aviso e o painel do casal fica só para leitura." : "Desligado agora."} checked={enabled} onCheckedChange={setEnabled} />
         </div>
         {initial.enabled && (
           <EtiquetaDeSituacao tone="aviso" icon={Wrench}>
@@ -55,9 +55,9 @@ export function MaintenanceForm({ initial }: { initial: { enabled: boolean; mess
   );
 }
 
-export function EmailSenderForm({ initial }: { initial: { fromName: string; fromEmail: string; replyTo: string } }) {
+export function FormularioDoRemetenteDeEmail({ initial }: { initial: { fromName: string; fromEmail: string; replyTo: string } }) {
   const [s, setS] = useState(initial);
-  const { pending, errors, formError, run } = useAdminAction();
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   return (
     <form
       className="flex flex-col gap-4"
@@ -84,10 +84,10 @@ export function EmailSenderForm({ initial }: { initial: { fromName: string; from
   );
 }
 
-export function RefundPolicyForm({ initial }: { initial: { days: number; text: string } }) {
+export function FormularioDaPoliticaDeReembolso({ initial }: { initial: { days: number; text: string } }) {
   const [days, setDays] = useState(String(initial.days));
   const [text, setText] = useState(initial.text);
-  const { pending, errors, formError, run } = useAdminAction();
+  const { pending, errors, formError, run } = useAcaoDoAdmin();
   return (
     <form
       className="flex flex-col gap-4"

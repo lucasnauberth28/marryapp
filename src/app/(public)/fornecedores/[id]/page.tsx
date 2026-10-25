@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { obterFornecedorParceiroPorId } from "@/actions/partner-vendor-actions";
 import { registrarVisitaAoPerfilDoFornecedor } from "@/lib/vendor-profile-views";
-import { toIsoDate, todayBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { paraDataIso, hojeEmBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { DetalheDoFornecedorCliente } from "./vendor-detail-client";
 
 interface PropriedadesDaPaginaDoFornecedor {
@@ -21,5 +21,5 @@ export default async function VendorDetailPage({ params }: PropriedadesDaPaginaD
   // Visita ao perfil (gravada depois da resposta; ignora o próprio fornecedor, robôs e prefetch).
   await registrarVisitaAoPerfilDoFornecedor(vendor.id);
 
-  return <DetalheDoFornecedorCliente vendor={vendor} todayIso={toIsoDate(todayBrasilia())} />;
+  return <DetalheDoFornecedorCliente vendor={vendor} todayIso={paraDataIso(hojeEmBrasilia())} />;
 }

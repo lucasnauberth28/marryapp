@@ -11,19 +11,19 @@ import { btn, estiloDoCartao, estiloDaCaixaDeErro, estiloDaEntradaDoPainel, esti
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { EsqueletoDeLinhas } from "@/components/painel/skeleton-parts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { lookupGuestForCheckIn, searchGuestsForCheckIn, type CheckInGuestInfo } from "./lookup-actions";
+import { buscarConvidadoParaEntrada, pesquisarConvidadosParaEntrada, type InformacoesDoConvidadoNaEntrada } from "./lookup-actions";
 
-type Stage = "idle" | "scanning" | "loading" | "found";
+type EtapaDoFluxo = "idle" | "scanning" | "loading" | "found";
 
-export function ScannerClient({ initialArrived, confirmed }: { initialArrived: number; confirmed: number }) {
-  const [stage, setStage] = useState<Stage>("idle");
+export function LeitorCliente({ initialArrived, confirmed }: { initialArrived: number; confirmed: number }) {
+  const [stage, setStage] = useState<EtapaDoFluxo>("idle");
   const [arrived, setArrived] = useState(initialArrived);
-  const [found, setFound] = useState<CheckInGuestInfo | null>(null);
+  const [found, setFound] = useState<InformacoesDoConvidadoNaEntrada | null>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [confirming, setConfirming] = useState(false);
 
   const [query, setQuery] = useState("");
-  const [matches, setMatches] = useState<CheckInGuestInfo[] | null>(null);
+  const [matches, setMatches] = useState<InformacoesDoConvidadoNaEntrada[] | null>(null);
   const [searching, setSearching] = useState(false);
   // A câmera demora a abrir (pede permissão e liga o leitor): até o vídeo tocar, o quadro mostra um esqueleto
   const [cameraReady, setCameraReady] = useState(false);
@@ -95,7 +95,7 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
     }
     setStage("loading");
     try {
-      const res = await lookupGuestForCheckIn(text.replace("GUEST:", ""));
+      const res = await buscarConvidadoParaEntrada(text.replace("GUEST:", ""));
       if (res.success) {
         setFound(res.guest);
         setStage("found");
@@ -119,7 +119,7 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
     }
     setSearching(true);
     try {
-      const list = await searchGuestsForCheckIn(value);
+      const list = await pesquisarConvidadosParaEntrada(value);
       // Ignora respostas antigas se a pessoa já digitou mais
       if (seq === searchSeq.current) setMatches(list);
     } finally {
@@ -127,7 +127,7 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
     }
   };
 
-  const pickGuest = (g: CheckInGuestInfo) => {
+  const pickGuest = (g: InformacoesDoConvidadoNaEntrada) => {
     setFound(g);
     setMessage(null);
     setQuery("");

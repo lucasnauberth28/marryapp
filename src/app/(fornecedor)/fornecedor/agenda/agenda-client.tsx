@@ -10,32 +10,32 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { formatTime, MONTH_NAMES, WEEKDAYS_SHORT, type VendorEventKind } from "../../_lib/vendor-panel";
+import { formatarHoraDoPainel, NOMES_DOS_MESES, DIAS_DA_SEMANA_CURTOS, type TipoDeEventoDoFornecedor } from "../../_lib/vendor-panel";
 
-const BTN =
+const ESTILO_DO_BOTAO =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-60";
-const BTN_PRIMARY = `${BTN} bg-ameixa text-on-ameixa hover:bg-ameixa-hover`;
-const BTN_SECONDARY = `${BTN} border border-linha-forte bg-papel text-tinta hover:bg-areia`;
-const BTN_QUIET = `${BTN} text-tinta-suave hover:bg-areia hover:text-tinta`;
+const ESTILO_DO_BOTAO_PRIMARIO = `${ESTILO_DO_BOTAO} bg-ameixa text-on-ameixa hover:bg-ameixa-hover`;
+const ESTILO_DO_BOTAO_SECUNDARIO = `${ESTILO_DO_BOTAO} border border-linha-forte bg-papel text-tinta hover:bg-areia`;
+const ESTILO_DO_BOTAO_DISCRETO = `${ESTILO_DO_BOTAO} text-tinta-suave hover:bg-areia hover:text-tinta`;
 
-const WEEKDAYS_LONG = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+const DIAS_DA_SEMANA_LONGOS = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
 
-export type DayItem =
+export type ItemDoDia =
   | { type: "WEDDING"; id: string; title: string; location: string | null }
   | { type: "MEETING" | "BLOCKED"; id: string; title: string; time: string | null; notes: string | null; leadId: string | null };
 
-export interface LeadOption {
+export interface OpcaoDePedido {
   id: string;
   label: string;
 }
 
 /** "2026-10-09" -> "sexta, 9 de outubro". */
-function longDate(iso: string) {
+function dataPorExtenso(iso: string) {
   const d = new Date(`${iso}T00:00:00.000Z`);
-  return `${WEEKDAYS_LONG[d.getUTCDay()]}, ${d.getUTCDate()} de ${MONTH_NAMES[d.getUTCMonth()]}`;
+  return `${DIAS_DA_SEMANA_LONGOS[d.getUTCDay()]}, ${d.getUTCDate()} de ${NOMES_DOS_MESES[d.getUTCMonth()]}`;
 }
 
-function capitalize(text: string) {
+function colocarEmMaiuscula(text: string) {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
@@ -43,7 +43,7 @@ function capitalize(text: string) {
 // Diálogo nativo (<dialog>): foco preso, Esc fecha, camada superior.
 // ==========================================
 
-function Modal({
+function JanelaDaAgenda({
   open,
   onClose,
   title,
@@ -77,7 +77,7 @@ function Modal({
             <h2 id={titleId} className="font-display text-2xl leading-8 font-medium">
               {title}
             </h2>
-            <button type="button" onClick={onClose} aria-label="Fechar" className={cn(BTN_QUIET, "-mt-1 -mr-2 px-2.5")}>
+            <button type="button" onClick={onClose} aria-label="Fechar" className={cn(ESTILO_DO_BOTAO_DISCRETO, "-mt-1 -mr-2 px-2.5")}>
               <X aria-hidden="true" className="size-5" />
             </button>
           </div>
@@ -92,55 +92,55 @@ function Modal({
 // Contexto: os botões do topo e o calendário abrem o mesmo formulário.
 // ==========================================
 
-type FormRequest = { kind: VendorEventKind; date: string };
+type PedidoDoFormulario = { kind: TipoDeEventoDoFornecedor; date: string };
 
-const AgendaContext = createContext<{ openForm: (kind: VendorEventKind, date?: string) => void } | null>(null);
+const ContextoDaAgenda = createContext<{ openForm: (kind: TipoDeEventoDoFornecedor, date?: string) => void } | null>(null);
 
 function useAgenda() {
-  const ctx = useContext(AgendaContext);
+  const ctx = useContext(ContextoDaAgenda);
   if (!ctx) throw new Error("useAgenda precisa do AgendaProvider.");
   return ctx;
 }
 
-export function AgendaProvider({
+export function ProvedorDaAgenda({
   todayIso,
   leads,
   children,
 }: {
   todayIso: string;
-  leads: LeadOption[];
+  leads: OpcaoDePedido[];
   children: React.ReactNode;
 }) {
-  const [request, setRequest] = useState<FormRequest | null>(null);
+  const [request, setRequest] = useState<PedidoDoFormulario | null>(null);
 
   return (
-    <AgendaContext.Provider value={{ openForm: (kind, date) => setRequest({ kind, date: date ?? todayIso }) }}>
+    <ContextoDaAgenda.Provider value={{ openForm: (kind, date) => setRequest({ kind, date: date ?? todayIso }) }}>
       {children}
-      <Modal
+      <JanelaDaAgenda
         open={request !== null}
         onClose={() => setRequest(null)}
         title={request?.kind === "BLOCKED" ? "Bloquear data" : "Nova reunião"}
       >
         {request ? (
-          <EventForm key={`${request.kind}-${request.date}`} request={request} leads={leads} onDone={() => setRequest(null)} />
+          <FormularioDoEvento key={`${request.kind}-${request.date}`} request={request} leads={leads} onDone={() => setRequest(null)} />
         ) : null}
-      </Modal>
-    </AgendaContext.Provider>
+      </JanelaDaAgenda>
+    </ContextoDaAgenda.Provider>
   );
 }
 
-export function NewEventButton({ kind }: { kind: VendorEventKind }) {
+export function BotaoDeNovoEvento({ kind }: { kind: TipoDeEventoDoFornecedor }) {
   const { openForm } = useAgenda();
   const Icon = kind === "BLOCKED" ? CalendarX2 : CalendarPlus;
   return (
-    <button type="button" onClick={() => openForm(kind)} className={kind === "BLOCKED" ? BTN_SECONDARY : BTN_PRIMARY}>
+    <button type="button" onClick={() => openForm(kind)} className={kind === "BLOCKED" ? ESTILO_DO_BOTAO_SECUNDARIO : ESTILO_DO_BOTAO_PRIMARIO}>
       <Icon aria-hidden="true" className="size-[18px]" />
       {kind === "BLOCKED" ? "Bloquear data" : "Nova reunião"}
     </button>
   );
 }
 
-function EventForm({ request, leads, onDone }: { request: FormRequest; leads: LeadOption[]; onDone: () => void }) {
+function FormularioDoEvento({ request, leads, onDone }: { request: PedidoDoFormulario; leads: OpcaoDePedido[]; onDone: () => void }) {
   const isMeeting = request.kind === "MEETING";
   const [values, setValues] = useState({ date: request.date, time: "", title: "", leadId: "", notes: "" });
   const [error, setError] = useState<string | null>(null);
@@ -222,7 +222,7 @@ function EventForm({ request, leads, onDone }: { request: FormRequest; leads: Le
       )}
 
       <div className="flex flex-wrap justify-end gap-2">
-        <button type="button" onClick={onDone} disabled={isPending} className={BTN_SECONDARY}>
+        <button type="button" onClick={onDone} disabled={isPending} className={ESTILO_DO_BOTAO_SECUNDARIO}>
           Cancelar
         </button>
         <Button type="submit" loading={isPending}>
@@ -237,7 +237,7 @@ function EventForm({ request, leads, onDone }: { request: FormRequest; leads: Le
 // Excluir compromisso (confirmação em dois toques)
 // ==========================================
 
-export function DeleteEventButton({ eventId, label, onDeleted }: { eventId: string; label: string; onDeleted?: () => void }) {
+export function BotaoDeExcluirEvento({ eventId, label, onDeleted }: { eventId: string; label: string; onDeleted?: () => void }) {
   const [confirming, setConfirming] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -264,7 +264,7 @@ export function DeleteEventButton({ eventId, label, onDeleted }: { eventId: stri
       onClick={onClick}
       onBlur={() => !isPending && setConfirming(false)}
       disabled={isPending}
-      className={cn(BTN, "min-h-11 px-3 text-sm", confirming ? "bg-perigo-suave text-perigo" : "text-tinta-suave hover:bg-areia hover:text-tinta")}
+      className={cn(ESTILO_DO_BOTAO, "min-h-11 px-3 text-sm", confirming ? "bg-perigo-suave text-perigo" : "text-tinta-suave hover:bg-areia hover:text-tinta")}
     >
       {isPending ? <Loader2 aria-hidden="true" className="size-4 animate-spin" /> : <Trash2 aria-hidden="true" className="size-4" />}
       {confirming ? "Confirmar exclusão" : label}
@@ -277,33 +277,33 @@ export function DeleteEventButton({ eventId, label, onDeleted }: { eventId: stri
 // ==========================================
 
 /** Pontos do calendário no celular: tons mais fortes que os das etiquetas para aparecerem no fundo claro. */
-const DOT: Record<DayItem["type"], string> = {
+const PONTO_DO_CALENDARIO: Record<ItemDoDia["type"], string> = {
   WEDDING: "bg-ameixa",
   MEETING: "bg-salvia",
   BLOCKED: "bg-linha-forte",
 };
 
-const PILL: Record<DayItem["type"], string> = {
+const PILULA_DO_CALENDARIO: Record<ItemDoDia["type"], string> = {
   WEDDING: "bg-ameixa text-on-ameixa",
   MEETING: "bg-salvia-suave text-salvia",
   BLOCKED: "bg-areia text-tinta-suave",
 };
 
-function pillText(item: DayItem) {
+function textoDaPilula(item: ItemDoDia) {
   if (item.type === "WEDDING") return item.title;
   if (item.type === "BLOCKED") return "Bloqueado";
-  const time = formatTime(item.time);
+  const time = formatarHoraDoPainel(item.time);
   return time ? `${item.title} · ${time}` : item.title;
 }
 
-function spokenItem(item: DayItem) {
+function itemFalado(item: ItemDoDia) {
   if (item.type === "WEDDING") return `Casamento de ${item.title}`;
   if (item.type === "BLOCKED") return `Data bloqueada${item.title !== "Data bloqueada" ? `: ${item.title}` : ""}`;
-  const time = formatTime(item.time);
+  const time = formatarHoraDoPainel(item.time);
   return `Reunião: ${item.title}${time ? ` às ${time}` : ""}`;
 }
 
-export function AgendaCalendar({
+export function CalendarioDaAgenda({
   year,
   month,
   todayIso,
@@ -313,7 +313,7 @@ export function AgendaCalendar({
   /** 0 a 11 */
   month: number;
   todayIso: string;
-  days: Record<string, DayItem[]>;
+  days: Record<string, ItemDoDia[]>;
 }) {
   const { openForm } = useAgenda();
   const [selected, setSelected] = useState<string | null>(null);
@@ -325,7 +325,7 @@ export function AgendaCalendar({
   const selectedItems = selected ? (days[selected] ?? []) : [];
   const selectedBlocked = selectedItems.some((i) => i.type === "BLOCKED");
 
-  function openFromDay(kind: VendorEventKind) {
+  function openFromDay(kind: TipoDeEventoDoFornecedor) {
     const date = selected ?? todayIso;
     setSelected(null);
     openForm(kind, date);
@@ -335,7 +335,7 @@ export function AgendaCalendar({
     <>
       <div className="-mx-1 overflow-x-auto px-1 pb-1">
         <div className="grid grid-cols-7 gap-1 sm:min-w-[560px] sm:gap-1.5">
-          {WEEKDAYS_SHORT.map((d) => (
+          {DIAS_DA_SEMANA_CURTOS.map((d) => (
             <span key={d} aria-hidden="true" className="text-center text-xs font-semibold tracking-[0.12em] text-tinta-suave uppercase">
               {d}
             </span>
@@ -350,8 +350,8 @@ export function AgendaCalendar({
             const isToday = iso === todayIso;
             const isPast = iso < todayIso;
             const spoken = [
-              `${longDate(iso)}${isToday ? ", hoje" : ""}`,
-              items.length > 0 ? items.map(spokenItem).join("; ") : "sem compromissos",
+              `${dataPorExtenso(iso)}${isToday ? ", hoje" : ""}`,
+              items.length > 0 ? items.map(itemFalado).join("; ") : "sem compromissos",
             ].join(". ");
             return (
               <button
@@ -376,7 +376,7 @@ export function AgendaCalendar({
                 {items.length > 0 ? (
                   <span aria-hidden="true" className="flex gap-1 sm:hidden">
                     {items.slice(0, 3).map((item) => (
-                      <span key={`d-${item.type}-${item.id}`} className={cn("size-2 rounded-full", DOT[item.type])} />
+                      <span key={`d-${item.type}-${item.id}`} className={cn("size-2 rounded-full", PONTO_DO_CALENDARIO[item.type])} />
                     ))}
                   </span>
                 ) : null}
@@ -384,9 +384,9 @@ export function AgendaCalendar({
                   <span
                     key={`${item.type}-${item.id}`}
                     aria-hidden="true"
-                    className={cn("hidden rounded-md px-1.5 py-1 text-xs leading-4 font-semibold break-words sm:line-clamp-2", PILL[item.type])}
+                    className={cn("hidden rounded-md px-1.5 py-1 text-xs leading-4 font-semibold break-words sm:line-clamp-2", PILULA_DO_CALENDARIO[item.type])}
                   >
-                    {pillText(item)}
+                    {textoDaPilula(item)}
                   </span>
                 ))}
                 {items.length > 3 ? (
@@ -400,7 +400,7 @@ export function AgendaCalendar({
         </div>
       </div>
 
-      <Modal open={selected !== null} onClose={() => setSelected(null)} title={selected ? capitalize(longDate(selected)) : ""}>
+      <JanelaDaAgenda open={selected !== null} onClose={() => setSelected(null)} title={selected ? colocarEmMaiuscula(dataPorExtenso(selected)) : ""}>
         {selectedItems.length === 0 ? (
           <p className="text-tinta-suave">Nenhum compromisso neste dia.</p>
         ) : (
@@ -408,14 +408,14 @@ export function AgendaCalendar({
             {selectedItems.map((item) => (
               <li key={`${item.type}-${item.id}`} className="flex flex-col gap-1 rounded-xl border border-linha p-3">
                 <span className="flex items-start gap-2">
-                  <span aria-hidden="true" className={cn("mt-1.5 size-3 shrink-0 rounded", PILL[item.type])} />
+                  <span aria-hidden="true" className={cn("mt-1.5 size-3 shrink-0 rounded", PILULA_DO_CALENDARIO[item.type])} />
                   <span className="flex min-w-0 flex-col">
                     <strong className="font-semibold break-words">
                       {item.type === "WEDDING"
                         ? `Casamento de ${item.title}`
                         : item.type === "BLOCKED"
                           ? "Data bloqueada"
-                          : `${item.title}${item.time ? ` · ${formatTime(item.time)}` : ""}`}
+                          : `${item.title}${item.time ? ` · ${formatarHoraDoPainel(item.time)}` : ""}`}
                     </strong>
                     {item.type === "WEDDING" && item.location ? (
                       <span className="text-sm text-tinta-suave">{item.location}</span>
@@ -432,13 +432,13 @@ export function AgendaCalendar({
                   {item.type === "WEDDING" || item.leadId ? (
                     <Link
                       href={`/fornecedor/pedidos/${item.type === "WEDDING" ? item.id : item.leadId}`}
-                      className={cn(BTN_QUIET, "px-3 text-sm text-ameixa")}
+                      className={cn(ESTILO_DO_BOTAO_DISCRETO, "px-3 text-sm text-ameixa")}
                     >
                       Ver pedido
                     </Link>
                   ) : null}
                   {item.type !== "WEDDING" ? (
-                    <DeleteEventButton
+                    <BotaoDeExcluirEvento
                       eventId={item.id}
                       label={item.type === "BLOCKED" ? "Desbloquear" : "Excluir"}
                       onDeleted={() => setSelected(null)}
@@ -450,18 +450,18 @@ export function AgendaCalendar({
           </ul>
         )}
         <div className="flex flex-wrap gap-2 border-t border-linha pt-4">
-          <button type="button" onClick={() => openFromDay("MEETING")} className={BTN_PRIMARY}>
+          <button type="button" onClick={() => openFromDay("MEETING")} className={ESTILO_DO_BOTAO_PRIMARIO}>
             <CalendarPlus aria-hidden="true" className="size-[18px]" />
             Nova reunião neste dia
           </button>
           {!selectedBlocked ? (
-            <button type="button" onClick={() => openFromDay("BLOCKED")} className={BTN_SECONDARY}>
+            <button type="button" onClick={() => openFromDay("BLOCKED")} className={ESTILO_DO_BOTAO_SECUNDARIO}>
               <CalendarX2 aria-hidden="true" className="size-[18px]" />
               Bloquear este dia
             </button>
           ) : null}
         </div>
-      </Modal>
+      </JanelaDaAgenda>
     </>
   );
 }

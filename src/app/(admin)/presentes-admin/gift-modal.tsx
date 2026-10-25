@@ -10,12 +10,12 @@ import { criarPresente } from "@/actions/gift-actions"
 import { ImagePlus } from "lucide-react"
 import { BotaoComCarregamento } from "@/components/painel/loading-button"
 
-interface GiftModalProps {
+interface PropriedadesDoModalDoPresente {
   isOpen: boolean
   onClose: () => void
 }
 
-export function GiftModal({ isOpen, onClose }: GiftModalProps) {
+export function ModalDoPresente({ isOpen, onClose }: PropriedadesDoModalDoPresente) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)

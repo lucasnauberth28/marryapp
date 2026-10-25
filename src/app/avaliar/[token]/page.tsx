@@ -4,7 +4,7 @@ import { BadgeCheck, Clock } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
 import { SOBRETITULO_DA_PAGINA_COM_TOKEN, MoldeDaPaginaComToken } from "@/components/public/token-page-shell";
-import { formatWeddingDate, PUBLIC_TOKEN_RE } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { formatarDataDoCasamento, PADRAO_DO_TOKEN_PUBLICO } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { FormularioDeAvaliacao } from "./review-form";
 
 export const metadata: Metadata = {
@@ -17,7 +17,7 @@ const LIMITE_DE_VISUALIZACOES = { limit: 60, windowMs: 1000 * 60 * 10 }; // 60 a
 
 export default async function AvaliarPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  if (!PUBLIC_TOKEN_RE.test(token)) notFound();
+  if (!PADRAO_DO_TOKEN_PUBLICO.test(token)) notFound();
 
   const ip = await obterIpDoCliente();
   const rateLimit = await conferirLimiteDeUso({ key: `REVIEW_VIEW:${ip}`, ...LIMITE_DE_VISUALIZACOES });
@@ -48,7 +48,7 @@ export default async function AvaliarPage({ params }: { params: Promise<{ token:
   });
   if (!lead || lead.locked || lead.status !== "CLOSED") notFound();
 
-  const date = formatWeddingDate(lead.weddingDate);
+  const date = formatarDataDoCasamento(lead.weddingDate);
 
   return (
     <MoldeDaPaginaComToken>

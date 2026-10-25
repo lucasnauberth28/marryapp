@@ -29,7 +29,7 @@ import { ArrowRightLeft, Box, Check, GripVertical, Plus, Trash2, TriangleAlert, 
 
 // --- Tipos ---
 
-export interface SeatGuest {
+export interface ConvidadoDaMesa {
   id: string;
   name: string;
   category?: string | null;
@@ -39,24 +39,24 @@ export interface SeatGuest {
   parentGuest?: { name: string } | null;
 }
 
-export interface TableWithGuests {
+export interface MesaComConvidados {
   id: string;
   name: string;
   capacity: number;
-  guests: SeatGuest[];
+  guests: ConvidadoDaMesa[];
 }
 
-const seatsOf = (g: SeatGuest) => 1 + (g.allowedCompanions || 0);
+const lugaresDe = (g: ConvidadoDaMesa) => 1 + (g.allowedCompanions || 0);
 
 // --- Convidado: arrastar pela alça ou escolher a mesa na lista ---
 
-function GuestRow({ guest, tables, currentTableId, onMove }: { guest: SeatGuest; tables: TableWithGuests[]; currentTableId: string | null; onMove: (guestId: string, to: string) => void }) {
+function LinhaDoConvidado({ guest, tables, currentTableId, onMove }: { guest: ConvidadoDaMesa; tables: MesaComConvidados[]; currentTableId: string | null; onMove: (guestId: string, to: string) => void }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging } = useDraggable({
     id: guest.id,
     data: { guest },
   });
 
-  const seats = seatsOf(guest);
+  const seats = lugaresDe(guest);
 
   return (
     <li
@@ -106,37 +106,37 @@ function GuestRow({ guest, tables, currentTableId, onMove }: { guest: SeatGuest;
 }
 
 /** Cópia que acompanha o ponteiro durante o arraste (não é cortada pela lista com rolagem). */
-function GuestPreview({ guest }: { guest: SeatGuest }) {
+function PreviaDoConvidado({ guest }: { guest: ConvidadoDaMesa }) {
   return (
     <div className="flex min-h-11 items-center gap-1 rounded-xl border-2 border-ameixa bg-ameixa-suave pr-3 shadow-[var(--shadow-aceito-2)]">
       <span className="grid size-11 place-items-center text-ameixa">
         <GripVertical className="size-4" aria-hidden="true" />
       </span>
       <span className="min-w-0 flex-1 truncate text-[15px] font-semibold">{guest.name}</span>
-      <span className="inline-flex min-w-7 items-center justify-center rounded-md bg-areia px-2 text-sm font-semibold leading-6 text-tinta-suave">{seatsOf(guest)}</span>
+      <span className="inline-flex min-w-7 items-center justify-center rounded-md bg-areia px-2 text-sm font-semibold leading-6 text-tinta-suave">{lugaresDe(guest)}</span>
     </div>
   );
 }
 
 // --- Mesa: cartão com o círculo, o nome e a ocupação ---
 
-function TableCard({
+function CartaoDaMesa({
   table,
   number,
   tables,
   onDelete,
   onMove,
 }: {
-  table: TableWithGuests;
+  table: MesaComConvidados;
   number: number;
-  tables: TableWithGuests[];
+  tables: MesaComConvidados[];
   onDelete: () => void;
   onMove: (guestId: string, to: string) => void;
 }) {
   const { isOver, setNodeRef } = useDroppable({ id: table.id });
 
   // Total de lugares ocupados (convidado + acompanhantes)
-  const occupied = table.guests.reduce((acc, g) => acc + seatsOf(g), 0);
+  const occupied = table.guests.reduce((acc, g) => acc + lugaresDe(g), 0);
   const over = occupied > table.capacity;
   const full = occupied === table.capacity;
 
@@ -180,7 +180,7 @@ function TableCard({
       {table.guests.length > 0 ? (
         <ul className="mt-2 flex w-full flex-col gap-1.5">
           {table.guests.map((g) => (
-            <GuestRow key={g.id} guest={g} tables={tables} currentTableId={table.id} onMove={onMove} />
+            <LinhaDoConvidado key={g.id} guest={g} tables={tables} currentTableId={table.id} onMove={onMove} />
           ))}
         </ul>
       ) : (
@@ -192,7 +192,7 @@ function TableCard({
 
 // --- Confirmados que ainda não têm mesa ---
 
-function UnassignedPanel({ guests, tables, totalConfirmed, onMove }: { guests: SeatGuest[]; tables: TableWithGuests[]; totalConfirmed: number; onMove: (guestId: string, to: string) => void }) {
+function PainelDosSemMesa({ guests, tables, totalConfirmed, onMove }: { guests: ConvidadoDaMesa[]; tables: MesaComConvidados[]; totalConfirmed: number; onMove: (guestId: string, to: string) => void }) {
   const { setNodeRef, isOver } = useDroppable({ id: "unassigned" });
   return (
     <section
@@ -207,7 +207,7 @@ function UnassignedPanel({ guests, tables, totalConfirmed, onMove }: { guests: S
       {guests.length > 0 ? (
         <ul className="flex max-h-80 flex-col gap-2 overflow-y-auto lg:max-h-[640px]">
           {guests.map((g) => (
-            <GuestRow key={g.id} guest={g} tables={tables} currentTableId={null} onMove={onMove} />
+            <LinhaDoConvidado key={g.id} guest={g} tables={tables} currentTableId={null} onMove={onMove} />
           ))}
         </ul>
       ) : (
@@ -222,18 +222,18 @@ function UnassignedPanel({ guests, tables, totalConfirmed, onMove }: { guests: S
 
 // --- Tela ---
 
-export function TablesClient({ initialTables, initialUnassigned }: { initialTables: TableWithGuests[]; initialUnassigned: SeatGuest[] }) {
+export function MesasCliente({ initialTables, initialUnassigned }: { initialTables: MesaComConvidados[]; initialUnassigned: ConvidadoDaMesa[] }) {
   const router = useRouter();
-  const [tables, setTables] = useEstadoSincronizado<TableWithGuests[]>(initialTables);
-  const [unassigned, setUnassigned] = useEstadoSincronizado<SeatGuest[]>(initialUnassigned);
+  const [tables, setTables] = useEstadoSincronizado<MesaComConvidados[]>(initialTables);
+  const [unassigned, setUnassigned] = useEstadoSincronizado<ConvidadoDaMesa[]>(initialUnassigned);
 
   const [newOpen, setNewOpen] = useState(false);
   const [newTableName, setNewTableName] = useState("");
   const [newTableCap, setNewTableCap] = useState(10);
   const [newError, setNewError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [toDelete, setToDelete] = useState<TableWithGuests | null>(null);
-  const [dragging, setDragging] = useState<SeatGuest | null>(null);
+  const [toDelete, setToDelete] = useState<MesaComConvidados | null>(null);
+  const [dragging, setDragging] = useState<ConvidadoDaMesa | null>(null);
 
   const sensors = useSensors(
     // Um pequeno deslocamento evita arrastar sem querer ao tocar
@@ -346,12 +346,12 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
         />
 
         <div className="flex flex-col items-stretch gap-6 lg:flex-row lg:items-start">
-          <UnassignedPanel guests={unassigned} tables={tables} totalConfirmed={totalConfirmed} onMove={moveGuest} />
+          <PainelDosSemMesa guests={unassigned} tables={tables} totalConfirmed={totalConfirmed} onMove={moveGuest} />
 
           {/* Planta das mesas */}
           <section aria-label="Planta das mesas" className="grid min-w-0 flex-1 grid-cols-[repeat(auto-fill,minmax(240px,1fr))] items-start gap-4">
             {tables.map((table, i) => (
-              <TableCard key={table.id} table={table} number={i + 1} tables={tables} onDelete={() => setToDelete(table)} onMove={moveGuest} />
+              <CartaoDaMesa key={table.id} table={table} number={i + 1} tables={tables} onDelete={() => setToDelete(table)} onMove={moveGuest} />
             ))}
             <button
               type="button"
@@ -365,7 +365,7 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
         </div>
       </div>
 
-      <DragOverlay dropAnimation={null}>{dragging ? <GuestPreview guest={dragging} /> : null}</DragOverlay>
+      <DragOverlay dropAnimation={null}>{dragging ? <PreviaDoConvidado guest={dragging} /> : null}</DragOverlay>
 
       <ModalPersonalizado isOpen={newOpen} onClose={() => setNewOpen(false)} title="Nova mesa" description="Escolha um nome e quantos lugares a mesa tem." size="sm">
         <form onSubmit={handleAddTable} className="flex flex-col gap-5">

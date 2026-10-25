@@ -22,7 +22,7 @@ import { ehSoPresentePendente } from "@/lib/guest-origin";
 import { cn } from "@/lib/utils";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
-export interface MessageTemplate {
+export interface ModeloDeMensagem {
   id: string;
   name: string;
   type?: string | null;
@@ -34,8 +34,8 @@ export interface MessageTemplate {
   updatedAt: Date;
 }
 
-interface MensagensClientProps {
-  initialTemplates: MessageTemplate[];
+interface PropriedadesDasMensagensCliente {
+  initialTemplates: ModeloDeMensagem[];
   initialGuests: Guest[];
   coupleNames: string;
   /** Endereço público do casamento, para os links das mensagens */
@@ -44,25 +44,25 @@ interface MensagensClientProps {
   customDomain?: string | null;
 }
 
-type LinkItem = { id: string; text: string };
+type ItemDeLink = { id: string; text: string };
 
-const DEFAULT_LINKS: LinkItem[] = [
+const LINKS_PADRAO: ItemDeLink[] = [
   { id: "confirm", text: "✅ Confirmar Presença" },
   { id: "decline", text: "❌ Não poderei ir" },
 ];
-const GIFT_LINKS: LinkItem[] = [
+const LINKS_DE_PRESENTE: ItemDeLink[] = [
   { id: "gifts", text: "🎁 Ver Lista de Presentes" },
   { id: "confirm", text: "✅ Confirmar Presença" },
 ];
 
-const TYPE_LABEL: Record<string, string> = {
+const ROTULO_DO_TIPO: Record<string, string> = {
   INITIAL_INVITE: "Convite inicial",
   RSVP_REMINDER: "Lembrete de confirmação",
   CUSTOM: "Personalizada",
 };
-const typeLabel = (t?: string | null) => TYPE_LABEL[t ?? "CUSTOM"] ?? "Personalizada";
+const rotuloDoTipo = (t?: string | null) => ROTULO_DO_TIPO[t ?? "CUSTOM"] ?? "Personalizada";
 
-function parseLinks(raw?: string | null): LinkItem[] {
+function interpretarLinks(raw?: string | null): ItemDeLink[] {
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
@@ -72,12 +72,12 @@ function parseLinks(raw?: string | null): LinkItem[] {
   }
 }
 
-const hasPhone = (g: Guest) => !!g.phone && somenteDigitos(g.phone).length >= 8;
+const temTelefone = (g: Guest) => !!g.phone && somenteDigitos(g.phone).length >= 8;
 
-type Audience = "pending" | "unsent" | "confirmed" | "all" | "custom";
+type Publico = "pending" | "unsent" | "confirmed" | "all" | "custom";
 
-function idsFor(audience: Audience, guests: Guest[]): string[] {
-  const withPhone = guests.filter(hasPhone);
+function idsPara(audience: Publico, guests: Guest[]): string[] {
+  const withPhone = guests.filter(temTelefone);
   // Quem só presenteou não foi convidado pelo casal: fica fora dos envios por grupo (só escolhendo à mão)
   const invitees = withPhone.filter((g) => !ehSoPresentePendente(g));
   switch (audience) {
@@ -94,14 +94,14 @@ function idsFor(audience: Audience, guests: Guest[]): string[] {
   }
 }
 
-const AUDIENCES: { id: Exclude<Audience, "custom">; label: string; help: string }[] = [
+const PUBLICOS: { id: Exclude<Publico, "custom">; label: string; help: string }[] = [
   { id: "pending", label: "Quem ainda não respondeu", help: "Convidados com o convite sem resposta." },
   { id: "unsent", label: "Quem ainda não recebeu mensagem", help: "Ninguém por aqui mandou nada para eles." },
   { id: "confirmed", label: "Quem confirmou presença", help: "Bom para avisos do dia e do local." },
   { id: "all", label: "Todos com telefone", help: "Cada pessoa recebe uma mensagem só." },
 ];
 
-function links2preview(links: LinkItem[], slug: string, customDomain?: string | null) {
+function linksParaPrevia(links: ItemDeLink[], slug: string, customDomain?: string | null) {
   return links
     .filter((l) => l.text.trim())
     .map((l) => {
@@ -115,7 +115,7 @@ function links2preview(links: LinkItem[], slug: string, customDomain?: string | 
 // Prévia: como a mensagem chega no WhatsApp
 // ---------------------------------------------------------------------------
 
-function WhatsAppPreview({
+function PreviaDoWhatsapp({
   coupleNames,
   text,
   sampleName,
@@ -165,7 +165,7 @@ function WhatsAppPreview({
 // Escrever ou editar uma mensagem
 // ---------------------------------------------------------------------------
 
-function EditorForm({
+function FormularioDoEditor({
   template,
   sampleName,
   slug,
@@ -175,12 +175,12 @@ function EditorForm({
   onDeleted,
   onCancel,
 }: {
-  template: MessageTemplate | null;
+  template: ModeloDeMensagem | null;
   sampleName: string;
   slug: string;
   customDomain?: string | null;
   coupleNames: string;
-  onSaved: (t: MessageTemplate, created: boolean) => void;
+  onSaved: (t: ModeloDeMensagem, created: boolean) => void;
   onDeleted: (id: string) => void;
   onCancel: () => void;
 }) {
@@ -192,7 +192,7 @@ function EditorForm({
   const [type, setType] = useState(template?.type ?? "CUSTOM");
   const [mediaUrl, setMediaUrl] = useState(template?.mediaUrl ?? "");
   const [mediaType, setMediaType] = useState(template?.mediaType ?? "image");
-  const [links, setLinks] = useState<LinkItem[]>(template ? parseLinks(template.buttons) : DEFAULT_LINKS);
+  const [links, setLinks] = useState<ItemDeLink[]>(template ? interpretarLinks(template.buttons) : LINKS_PADRAO);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -234,7 +234,7 @@ function EditorForm({
     const res = template ? await atualizarModeloDeMensagem(template.id, formData) : await criarModeloDeMensagem(formData);
     if (res.success && res.data) {
       toast.success("Mensagem salva.", { id: toastId });
-      onSaved(res.data as MessageTemplate, !template);
+      onSaved(res.data as ModeloDeMensagem, !template);
     } else {
       toast.error(res.error || "Não deu para salvar a mensagem. Tente de novo.", { id: toastId });
     }
@@ -314,10 +314,10 @@ function EditorForm({
                 Adicionar link
               </button>
             ) : null}
-            <button type="button" onClick={() => setLinks(DEFAULT_LINKS)} className={`${btn.quiet} ${btn.sm}`}>
+            <button type="button" onClick={() => setLinks(LINKS_PADRAO)} className={`${btn.quiet} ${btn.sm}`}>
               Confirmar ou recusar
             </button>
-            <button type="button" onClick={() => setLinks(GIFT_LINKS)} className={`${btn.quiet} ${btn.sm}`}>
+            <button type="button" onClick={() => setLinks(LINKS_DE_PRESENTE)} className={`${btn.quiet} ${btn.sm}`}>
               Presentes e confirmar
             </button>
           </div>
@@ -360,7 +360,7 @@ function EditorForm({
 
       <section aria-label="Prévia no WhatsApp" className="flex min-w-0 flex-col gap-2 lg:sticky lg:top-0">
         <p className={estiloDoSobretitulo}>Como chega</p>
-        <WhatsAppPreview coupleNames={coupleNames} text={content} sampleName={sampleName} links={links2preview(links, slug, customDomain)} hasMedia={!!mediaUrl} mediaType={mediaType} />
+        <PreviaDoWhatsapp coupleNames={coupleNames} text={content} sampleName={sampleName} links={linksParaPrevia(links, slug, customDomain)} hasMedia={!!mediaUrl} mediaType={mediaType} />
       </section>
 
       <ModalDeConfirmacao
@@ -382,21 +382,21 @@ function EditorForm({
 // Enviar: para quem, como vai chegar e um botão só
 // ---------------------------------------------------------------------------
 
-function SendFlow({ template, guests, slug, customDomain, coupleNames, onDone }: { template: MessageTemplate; guests: Guest[]; slug: string; customDomain?: string | null; coupleNames: string; onDone: () => void }) {
+function FluxoDeEnvio({ template, guests, slug, customDomain, coupleNames, onDone }: { template: ModeloDeMensagem; guests: Guest[]; slug: string; customDomain?: string | null; coupleNames: string; onDone: () => void }) {
   const router = useRouter();
   const searchId = useId();
   const counts = useMemo(
     () => ({
-      pending: idsFor("pending", guests).length,
-      unsent: idsFor("unsent", guests).length,
-      confirmed: idsFor("confirmed", guests).length,
-      all: idsFor("all", guests).length,
+      pending: idsPara("pending", guests).length,
+      unsent: idsPara("unsent", guests).length,
+      confirmed: idsPara("confirmed", guests).length,
+      all: idsPara("all", guests).length,
     }),
     [guests],
   );
-  const firstWith = (counts.pending > 0 ? "pending" : "all") as Audience;
-  const [audience, setAudience] = useState<Audience>(firstWith);
-  const [picked, setPicked] = useState<string[]>(() => idsFor(firstWith, guests));
+  const firstWith = (counts.pending > 0 ? "pending" : "all") as Publico;
+  const [audience, setAudience] = useState<Publico>(firstWith);
+  const [picked, setPicked] = useState<string[]>(() => idsPara(firstWith, guests));
   const [search, setSearch] = useState("");
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
@@ -408,9 +408,9 @@ function SendFlow({ template, guests, slug, customDomain, coupleNames, onDone }:
     return guests.filter((g) => g.name.toLowerCase().includes(q) || (digits.length >= 3 && !!g.phone && somenteDigitos(g.phone).includes(digits)));
   }, [guests, search]);
 
-  function changeAudience(next: Audience) {
+  function changeAudience(next: Publico) {
     setAudience(next);
-    if (next !== "custom") setPicked(idsFor(next, guests));
+    if (next !== "custom") setPicked(idsPara(next, guests));
     setResult(null);
   }
   function toggleGuest(id: string) {
@@ -437,14 +437,14 @@ function SendFlow({ template, guests, slug, customDomain, coupleNames, onDone }:
   }
 
   const sample = guests.find((g) => g.id === picked[0])?.name ?? guests[0]?.name ?? "Nome do convidado";
-  const cnt = (id: Exclude<Audience, "custom">) => counts[id];
+  const cnt = (id: Exclude<Publico, "custom">) => counts[id];
 
   return (
     <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
       <div className="flex min-w-0 flex-col gap-5">
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-base font-semibold text-tinta">Para quem vai?</legend>
-          {AUDIENCES.map((a) => {
+          {PUBLICOS.map((a) => {
             const active = audience === a.id;
             const n = cnt(a.id);
             return (
@@ -490,7 +490,7 @@ function SendFlow({ template, guests, slug, customDomain, coupleNames, onDone }:
             <ul className="max-h-72 divide-y divide-linha overflow-y-auto rounded-xl border border-linha">
               {shownGuests.length === 0 ? <li className="px-4 py-6 text-center text-sm text-tinta-suave">Ninguém com esta busca.</li> : null}
               {shownGuests.map((g) => {
-                const ok = hasPhone(g);
+                const ok = temTelefone(g);
                 return (
                   <li key={g.id}>
                     <label className={`flex min-h-14 items-center gap-3 px-3 py-2 ${ok ? "cursor-pointer hover:bg-ameixa-suave/40" : "opacity-60"}`}>
@@ -530,11 +530,11 @@ function SendFlow({ template, guests, slug, customDomain, coupleNames, onDone }:
 
       <section aria-label="Prévia no WhatsApp" className="flex min-w-0 flex-col gap-2 lg:sticky lg:top-0">
         <p className={estiloDoSobretitulo}>Como chega para {sample.split(" ")[0]}</p>
-        <WhatsAppPreview
+        <PreviaDoWhatsapp
           coupleNames={coupleNames}
           text={template.content}
           sampleName={sample.split(" ")[0]}
-          links={links2preview(parseLinks(template.buttons), slug, customDomain)}
+          links={linksParaPrevia(interpretarLinks(template.buttons), slug, customDomain)}
           hasMedia={!!template.mediaUrl}
           mediaType={template.mediaType ?? "image"}
         />
@@ -547,17 +547,17 @@ function SendFlow({ template, guests, slug, customDomain, coupleNames, onDone }:
 // Tela
 // ---------------------------------------------------------------------------
 
-export function MensagensClient({ initialTemplates, initialGuests, coupleNames, slug, customDomain }: MensagensClientProps) {
+export function MensagensCliente({ initialTemplates, initialGuests, coupleNames, slug, customDomain }: PropriedadesDasMensagensCliente) {
   const router = useRouter();
-  const [templates, setTemplates] = useState<MessageTemplate[]>(initialTemplates);
+  const [templates, setTemplates] = useState<ModeloDeMensagem[]>(initialTemplates);
   // "novo" = escrevendo uma mensagem nova
-  const [editing, setEditing] = useState<MessageTemplate | "novo" | null>(null);
-  const [sending, setSending] = useState<MessageTemplate | null>(null);
+  const [editing, setEditing] = useState<ModeloDeMensagem | "novo" | null>(null);
+  const [sending, setSending] = useState<ModeloDeMensagem | null>(null);
   const [shortcut, setShortcut] = useState<"invites" | "reminders" | null>(null);
 
-  const withPhone = initialGuests.filter(hasPhone).length;
-  const invitesToSend = initialGuests.filter((g) => !g.hasReceivedMessage && hasPhone(g) && !ehSoPresentePendente(g)).length;
-  const remindersToSend = initialGuests.filter((g) => g.rsvpStatus === "PENDING" && g.hasReceivedMessage && hasPhone(g) && !ehSoPresentePendente(g)).length;
+  const withPhone = initialGuests.filter(temTelefone).length;
+  const invitesToSend = initialGuests.filter((g) => !g.hasReceivedMessage && temTelefone(g) && !ehSoPresentePendente(g)).length;
+  const remindersToSend = initialGuests.filter((g) => g.rsvpStatus === "PENDING" && g.hasReceivedMessage && temTelefone(g) && !ehSoPresentePendente(g)).length;
   const received = initialGuests.filter((g) => g.hasReceivedMessage).length;
   const sample = initialGuests[0]?.name.split(" ")[0] ?? "Nome";
 
@@ -663,7 +663,7 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
               <li key={t.id} className={`${estiloDoCartao} flex min-w-0 flex-col gap-3 p-5`}>
                 <div className="flex flex-col gap-1.5">
                   <EtiquetaDeSituacao tone="neutro" className="self-start">
-                    {typeLabel(t.type)}
+                    {rotuloDoTipo(t.type)}
                   </EtiquetaDeSituacao>
                   <h3 className="line-clamp-2 text-lg font-semibold leading-7 text-tinta">{t.name}</h3>
                 </div>
@@ -686,7 +686,7 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
 
       <ModalPersonalizado isOpen={editing !== null} onClose={() => setEditing(null)} title={editing === "novo" ? "Nova mensagem" : "Editar mensagem"} description="Escrevam o texto e vejam, ao lado, como ele chega no WhatsApp." size="xl" className="max-h-[92dvh] overflow-y-auto">
         {editing !== null ? (
-          <EditorForm
+          <FormularioDoEditor
             key={editing === "novo" ? "novo" : editing.id}
             template={editing === "novo" ? null : editing}
             sampleName={sample}
@@ -707,7 +707,7 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
       </ModalPersonalizado>
 
       <ModalPersonalizado isOpen={sending !== null} onClose={() => setSending(null)} title={sending ? `Enviar “${sending.name}”` : "Enviar"} description="Escolham quem recebe. O envio usa o texto salvo da mensagem." size="xl" className="max-h-[92dvh] overflow-y-auto">
-        {sending ? <SendFlow key={sending.id} template={sending} guests={initialGuests} slug={slug} customDomain={customDomain} coupleNames={coupleNames} onDone={() => setSending(null)} /> : null}
+        {sending ? <FluxoDeEnvio key={sending.id} template={sending} guests={initialGuests} slug={slug} customDomain={customDomain} coupleNames={coupleNames} onDone={() => setSending(null)} /> : null}
       </ModalPersonalizado>
     </div>
   );

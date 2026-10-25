@@ -8,22 +8,22 @@ import { atualizarMidiasDoFornecedor, type MidiasDoFornecedor, type EntradaDasMi
 import { SkeletonImage } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { MAX_GALLERY_IMAGES } from "../../_lib/vendor-panel";
+import { MAXIMO_DE_IMAGENS_NA_GALERIA } from "../../_lib/vendor-panel";
 
-const CARD = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
-const HINT = "text-[13px] text-tinta-suave";
-const BTN =
+const ESTILO_DO_CARTAO = "rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6";
+const ESTILO_DA_DICA = "text-[13px] text-tinta-suave";
+const ESTILO_DO_BOTAO =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-60";
-const BTN_SECONDARY = `${BTN} border border-linha-forte bg-papel text-tinta hover:bg-areia`;
-const ICON_BTN =
+const ESTILO_DO_BOTAO_SECUNDARIO = `${ESTILO_DO_BOTAO} border border-linha-forte bg-papel text-tinta hover:bg-areia`;
+const ESTILO_DO_BOTAO_DE_ICONE =
   "grid size-11 place-items-center rounded-xl border border-linha-forte bg-papel text-tinta transition-colors hover:bg-areia disabled:pointer-events-none disabled:opacity-40";
 
-const MAX_SIDE = 1600;
-const LOGO_MAX_SIDE = 800;
-const MAX_DATA_URL_LENGTH = Math.floor(5 * 1024 * 1024 * 1.33); // ~5 MB depois do base64
-const ACCEPT = "image/jpeg,image/png,image/webp,image/avif";
+const LADO_MAXIMO = 1600;
+const LADO_MAXIMO_DO_LOGOTIPO = 800;
+const TAMANHO_MAXIMO_DA_DATA_URL = Math.floor(5 * 1024 * 1024 * 1.33); // ~5 MB depois do base64
+const TIPOS_ACEITOS = "image/jpeg,image/png,image/webp,image/avif";
 
-function loadImage(src: string): Promise<HTMLImageElement> {
+function carregarImagem(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
@@ -36,11 +36,11 @@ function loadImage(src: string): Promise<HTMLImageElement> {
  * Redimensiona no navegador (lado maior até `maxSide`) e comprime em WebP
  * (ou JPEG, se o navegador não gerar WebP). Assim cada envio fica com poucas centenas de KB.
  */
-async function compressImage(file: File, maxSide: number): Promise<string> {
+async function comprimirImagem(file: File, maxSide: number): Promise<string> {
   if (!file.type.startsWith("image/")) throw new Error("type");
   const objectUrl = URL.createObjectURL(file);
   try {
-    const img = await loadImage(objectUrl);
+    const img = await carregarImagem(objectUrl);
     const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
     const width = Math.max(1, Math.round(img.naturalWidth * scale));
     const height = Math.max(1, Math.round(img.naturalHeight * scale));
@@ -61,7 +61,7 @@ async function compressImage(file: File, maxSide: number): Promise<string> {
         ctx.globalCompositeOperation = "source-over";
         out = canvas.toDataURL("image/jpeg", quality);
       }
-      if (out.length <= MAX_DATA_URL_LENGTH) return out;
+      if (out.length <= TAMANHO_MAXIMO_DA_DATA_URL) return out;
     }
     throw new Error("size");
   } finally {
@@ -69,18 +69,18 @@ async function compressImage(file: File, maxSide: number): Promise<string> {
   }
 }
 
-function compressError(error: unknown) {
+function erroDeCompressao(error: unknown) {
   const code = error instanceof Error ? error.message : "";
   if (code === "type") return "Escolha um arquivo de imagem (JPG, PNG ou WEBP).";
   if (code === "size") return "A imagem ficou grande demais mesmo comprimida. Tente outra foto.";
   return "Não foi possível ler esta imagem. Tente uma foto em JPG ou PNG.";
 }
 
-type Busy = string | null;
+type EstadoOcupado = string | null;
 
-export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
+export function FormularioDeMidias({ initial }: { initial: MidiasDoFornecedor }) {
   const [media, setMedia] = useState<MidiasDoFornecedor>(initial);
-  const [busy, setBusy] = useState<Busy>(null);
+  const [busy, setBusy] = useState<EstadoOcupado>(null);
   const [, startTransition] = useTransition();
   const logoInput = useRef<HTMLInputElement>(null);
   const coverInput = useRef<HTMLInputElement>(null);
@@ -100,7 +100,7 @@ export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
           toast.error(res.error);
         }
       } catch (error) {
-        toast.error(compressError(error));
+        toast.error(erroDeCompressao(error));
       } finally {
         setBusy(null);
       }
@@ -116,24 +116,24 @@ export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
       const label = kind === "logo" ? "Logo atualizado." : kind === "cover" ? "Capa atualizada." : "Foto adicionada à galeria.";
       run(
         kind,
-        async () => ({ action, image: await compressImage(file, kind === "logo" ? LOGO_MAX_SIDE : MAX_SIDE) }),
+        async () => ({ action, image: await comprimirImagem(file, kind === "logo" ? LADO_MAXIMO_DO_LOGOTIPO : LADO_MAXIMO) }),
         label,
       );
     };
   }
 
   const isBusy = busy !== null;
-  const galleryFull = media.gallery.length >= MAX_GALLERY_IMAGES;
+  const galleryFull = media.gallery.length >= MAXIMO_DE_IMAGENS_NA_GALERIA;
 
   return (
     <Aparicao variant="up" delay={200}>
-    <section aria-labelledby="fotos-titulo" className={cn(CARD, "flex flex-col gap-6")}>
+    <section aria-labelledby="fotos-titulo" className={cn(ESTILO_DO_CARTAO, "flex flex-col gap-6")}>
       <div className="flex flex-col gap-1">
         <h2 id="fotos-titulo" className="text-xl leading-7 font-semibold">
           Portfólio
         </h2>
-        <p className={HINT}>
-          As fotos são salvas na hora. Reduzimos cada imagem para até {MAX_SIDE} px antes de enviar (JPG, PNG ou WEBP, até 5
+        <p className={ESTILO_DA_DICA}>
+          As fotos são salvas na hora. Reduzimos cada imagem para até {LADO_MAXIMO} px antes de enviar (JPG, PNG ou WEBP, até 5
           MB).
         </p>
       </div>
@@ -151,9 +151,9 @@ export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
               <Building2 aria-hidden="true" className="size-10 text-tinta-suave" />
             )}
           </div>
-          <input ref={logoInput} type="file" accept={ACCEPT} className="sr-only" tabIndex={-1} aria-hidden="true" onChange={onPick("logo")} />
+          <input ref={logoInput} type="file" accept={TIPOS_ACEITOS} className="sr-only" tabIndex={-1} aria-hidden="true" onChange={onPick("logo")} />
           <div className="flex gap-2">
-            <button type="button" disabled={isBusy} onClick={() => logoInput.current?.click()} className={BTN_SECONDARY}>
+            <button type="button" disabled={isBusy} onClick={() => logoInput.current?.click()} className={ESTILO_DO_BOTAO_SECUNDARIO}>
               {busy === "logo" ? <Loader2 aria-hidden="true" className="size-[18px] animate-spin" /> : <Upload aria-hidden="true" className="size-[18px]" />}
               {media.logoUrl ? "Trocar" : "Enviar"}
               <span className="sr-only"> logo</span>
@@ -164,7 +164,7 @@ export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
                 disabled={isBusy}
                 onClick={() => run("logo-remove", async () => ({ action: "remove-logo" }), "Logo removido.")}
                 aria-label="Remover logo"
-                className={ICON_BTN}
+                className={ESTILO_DO_BOTAO_DE_ICONE}
               >
                 <Trash2 aria-hidden="true" className="size-[18px]" />
               </button>
@@ -184,9 +184,9 @@ export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
               <ImagePlus aria-hidden="true" className="size-10 text-tinta-suave" />
             )}
           </div>
-          <input ref={coverInput} type="file" accept={ACCEPT} className="sr-only" tabIndex={-1} aria-hidden="true" onChange={onPick("cover")} />
+          <input ref={coverInput} type="file" accept={TIPOS_ACEITOS} className="sr-only" tabIndex={-1} aria-hidden="true" onChange={onPick("cover")} />
           <div className="flex gap-2">
-            <button type="button" disabled={isBusy} onClick={() => coverInput.current?.click()} className={BTN_SECONDARY}>
+            <button type="button" disabled={isBusy} onClick={() => coverInput.current?.click()} className={ESTILO_DO_BOTAO_SECUNDARIO}>
               {busy === "cover" ? <Loader2 aria-hidden="true" className="size-[18px] animate-spin" /> : <Upload aria-hidden="true" className="size-[18px]" />}
               {media.coverUrl ? "Trocar capa" : "Enviar capa"}
             </button>
@@ -196,13 +196,13 @@ export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
                 disabled={isBusy}
                 onClick={() => run("cover-remove", async () => ({ action: "remove-cover" }), "Capa removida.")}
                 aria-label="Remover capa"
-                className={ICON_BTN}
+                className={ESTILO_DO_BOTAO_DE_ICONE}
               >
                 <Trash2 aria-hidden="true" className="size-[18px]" />
               </button>
             ) : null}
           </div>
-          <p className={HINT}>Aparece no card da lista de fornecedores. Prefira uma foto horizontal.</p>
+          <p className={ESTILO_DA_DICA}>Aparece no card da lista de fornecedores. Prefira uma foto horizontal.</p>
         </div>
       </div>
 
@@ -211,16 +211,16 @@ export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col gap-0.5">
             <p className="text-sm font-semibold text-tinta">
-              Galeria <span className="font-normal text-tinta-suave">({media.gallery.length} de {MAX_GALLERY_IMAGES})</span>
+              Galeria <span className="font-normal text-tinta-suave">({media.gallery.length} de {MAXIMO_DE_IMAGENS_NA_GALERIA})</span>
             </p>
-            <p className={HINT}>A primeira foto abre o portfólio no seu perfil. Use as setas para mudar a ordem.</p>
+            <p className={ESTILO_DA_DICA}>A primeira foto abre o portfólio no seu perfil. Use as setas para mudar a ordem.</p>
           </div>
-          <input ref={galleryInput} type="file" accept={ACCEPT} className="sr-only" tabIndex={-1} aria-hidden="true" onChange={onPick("gallery")} />
+          <input ref={galleryInput} type="file" accept={TIPOS_ACEITOS} className="sr-only" tabIndex={-1} aria-hidden="true" onChange={onPick("gallery")} />
           <button
             type="button"
             disabled={isBusy || galleryFull}
             onClick={() => galleryInput.current?.click()}
-            className={BTN_SECONDARY}
+            className={ESTILO_DO_BOTAO_SECUNDARIO}
           >
             {busy === "gallery" ? <Loader2 aria-hidden="true" className="size-[18px] animate-spin" /> : <ImagePlus aria-hidden="true" className="size-[18px]" />}
             {galleryFull ? "Galeria completa" : "Adicionar foto"}
@@ -247,7 +247,7 @@ export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
                       disabled={isBusy || i === 0}
                       onClick={() => run(`move-${i}`, async () => ({ action: "move-gallery", index: i, direction: "up" }), "Ordem atualizada.")}
                       aria-label={`Mover foto ${i + 1} para antes`}
-                      className={ICON_BTN}
+                      className={ESTILO_DO_BOTAO_DE_ICONE}
                     >
                       <ArrowUp aria-hidden="true" className="size-[18px] md:-rotate-90" />
                     </button>
@@ -256,7 +256,7 @@ export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
                       disabled={isBusy || i === media.gallery.length - 1}
                       onClick={() => run(`move-${i}`, async () => ({ action: "move-gallery", index: i, direction: "down" }), "Ordem atualizada.")}
                       aria-label={`Mover foto ${i + 1} para depois`}
-                      className={ICON_BTN}
+                      className={ESTILO_DO_BOTAO_DE_ICONE}
                     >
                       <ArrowDown aria-hidden="true" className="size-[18px] md:-rotate-90" />
                     </button>
@@ -266,7 +266,7 @@ export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
                     disabled={isBusy}
                     onClick={() => run(`remove-${i}`, async () => ({ action: "remove-gallery", index: i }), "Foto removida.")}
                     aria-label={`Remover foto ${i + 1}`}
-                    className={ICON_BTN}
+                    className={ESTILO_DO_BOTAO_DE_ICONE}
                   >
                     {busy === `remove-${i}` ? (
                       <Loader2 aria-hidden="true" className="size-[18px] animate-spin" />

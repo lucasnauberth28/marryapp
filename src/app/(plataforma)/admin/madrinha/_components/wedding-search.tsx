@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
  * Busca de casal por nome ou endereço do site (consulta curta no servidor, até 8 resultados; espera 300 ms
  * depois de digitar). Quem escolhe recebe o casal inteiro; o id nunca decide permissão, só localiza.
  */
-export function WeddingSearch({ selectedId, onPick, label = "Buscar casal" }: { selectedId: string | null; onPick: (hit: ResultadoDeCasamento) => void; label?: string }) {
+export function BuscaDeCasamento({ selectedId, onPick, label = "Buscar casal" }: { selectedId: string | null; onPick: (hit: ResultadoDeCasamento) => void; label?: string }) {
   const [text, setText] = useState("");
   const [hits, setHits] = useState<ResultadoDeCasamento[] | null>(null);
   const [error, setError] = useState<string | null>(null);

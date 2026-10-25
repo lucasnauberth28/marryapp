@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
 import { UpgradeCard } from "@/components/plan/upgrade-card";
-import { MensagensClient } from "./mensagens-client";
+import { MensagensCliente } from "./mensagens-client";
 import { garantirModelosPadrao } from "@/actions/message-actions";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 
@@ -31,7 +31,7 @@ export default async function MensagensPage() {
   const { coupleNames } = await obterIdentidadeDoCasamentoPrincipal();
 
   return (
-    <MensagensClient
+    <MensagensCliente
       coupleNames={coupleNames}
       slug={wedding.slug}
       customDomain={wedding.customDomain ?? null}

@@ -1,10 +1,10 @@
 import { Check, CircleAlert, CircleX, Hourglass, MessageCircle, Send, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LEAD_STATUS_LABEL, type LeadStatus } from "../_lib/vendor-panel";
+import { ROTULO_DA_SITUACAO_DO_PEDIDO, type SituacaoDoPedido } from "../_lib/vendor-panel";
 
-type Tone = "aviso" | "sucesso" | "perigo" | "neutro" | "salvia";
+type TomDaEtiqueta = "aviso" | "sucesso" | "perigo" | "neutro" | "salvia";
 
-const TONE_CLASS: Record<Tone, string> = {
+const CLASSE_DO_TOM: Record<TomDaEtiqueta, string> = {
   aviso: "bg-aviso-suave text-aviso",
   sucesso: "bg-sucesso-suave text-sucesso",
   perigo: "bg-perigo-suave text-perigo",
@@ -13,13 +13,13 @@ const TONE_CLASS: Record<Tone, string> = {
 };
 
 /** Chip de status: sempre ícone + palavra (nunca só cor). */
-export function Chip({
+export function EtiquetaBase({
   tone,
   icon: Icon,
   children,
   className,
 }: {
-  tone: Tone;
+  tone: TomDaEtiqueta;
   icon?: LucideIcon;
   children: React.ReactNode;
   className?: string;
@@ -28,7 +28,7 @@ export function Chip({
     <span
       className={cn(
         "inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[13px] leading-4 font-semibold",
-        TONE_CLASS[tone],
+        CLASSE_DO_TOM[tone],
         className,
       )}
     >
@@ -38,7 +38,7 @@ export function Chip({
   );
 }
 
-const LEAD_STATUS_STYLE: Record<LeadStatus, { tone: Tone; icon: LucideIcon }> = {
+const ESTILO_DA_SITUACAO_DO_PEDIDO: Record<SituacaoDoPedido, { tone: TomDaEtiqueta; icon: LucideIcon }> = {
   NEW: { tone: "aviso", icon: Sparkles },
   CONTACTED: { tone: "salvia", icon: MessageCircle },
   PROPOSAL_SENT: { tone: "neutro", icon: Send },
@@ -46,27 +46,27 @@ const LEAD_STATUS_STYLE: Record<LeadStatus, { tone: Tone; icon: LucideIcon }> = 
   DECLINED: { tone: "perigo", icon: CircleX },
 };
 
-export function LeadStatusChip({ status, suffix, className }: { status: LeadStatus; suffix?: string; className?: string }) {
-  const { tone, icon } = LEAD_STATUS_STYLE[status];
+export function EtiquetaDaSituacaoDoPedido({ status, suffix, className }: { status: SituacaoDoPedido; suffix?: string; className?: string }) {
+  const { tone, icon } = ESTILO_DA_SITUACAO_DO_PEDIDO[status];
   return (
-    <Chip tone={tone} icon={icon} className={className}>
-      {LEAD_STATUS_LABEL[status]}
+    <EtiquetaBase tone={tone} icon={icon} className={className}>
+      {ROTULO_DA_SITUACAO_DO_PEDIDO[status]}
       {suffix ? <span className="font-medium"> · {suffix}</span> : null}
-    </Chip>
+    </EtiquetaBase>
   );
 }
 
-const CURATION_STYLE: Record<string, { tone: Tone; icon: LucideIcon; label: string }> = {
+const ESTILO_DA_CURADORIA: Record<string, { tone: TomDaEtiqueta; icon: LucideIcon; label: string }> = {
   APPROVED: { tone: "sucesso", icon: ShieldCheck, label: "Aprovado na curadoria" },
   PENDING_APPROVAL: { tone: "aviso", icon: Hourglass, label: "Em análise pela curadoria" },
   REJECTED: { tone: "perigo", icon: CircleAlert, label: "Ajustes pedidos pela curadoria" },
 };
 
-export function CurationChip({ status }: { status: string }) {
-  const style = CURATION_STYLE[status] ?? CURATION_STYLE.PENDING_APPROVAL;
+export function EtiquetaDaCuradoria({ status }: { status: string }) {
+  const style = ESTILO_DA_CURADORIA[status] ?? ESTILO_DA_CURADORIA.PENDING_APPROVAL;
   return (
-    <Chip tone={style.tone} icon={style.icon}>
+    <EtiquetaBase tone={style.tone} icon={style.icon}>
       {style.label}
-    </Chip>
+    </EtiquetaBase>
   );
 }

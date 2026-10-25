@@ -6,12 +6,12 @@ import { cn } from "@/lib/utils";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
 import { CARTAO_DA_PAGINA_COM_TOKEN, SOBRETITULO_DA_PAGINA_COM_TOKEN, MoldeDaPaginaComToken } from "@/components/public/token-page-shell";
 import {
-  formatBrl,
-  formatDateTimeBrasilia,
-  formatWeddingDate,
-  formatWeddingDateLong,
-  PUBLIC_TOKEN_RE,
-  todayBrasilia,
+  formatarReaisDoPainel,
+  formatarDataEHoraEmBrasilia,
+  formatarDataDoCasamento,
+  formatarDataDoCasamentoPorExtenso,
+  PADRAO_DO_TOKEN_PUBLICO,
+  hojeEmBrasilia,
 } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { FormularioDeAceiteDaProposta } from "./accept-form";
 
@@ -62,7 +62,7 @@ function CartaoDeSituacao({
 
 export default async function PropostaPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  if (!PUBLIC_TOKEN_RE.test(token)) notFound();
+  if (!PADRAO_DO_TOKEN_PUBLICO.test(token)) notFound();
 
   const ip = await obterIpDoCliente();
   const rateLimit = await conferirLimiteDeUso({ key: `PROPOSAL_VIEW:${ip}`, ...LIMITE_DE_VISUALIZACOES });
@@ -96,9 +96,9 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
   });
   if (!lead || lead.locked || !lead.proposalSentAt || lead.proposalAmount == null) notFound();
 
-  const expired = !!lead.proposalValidUntil && lead.proposalValidUntil < todayBrasilia();
-  const dateLong = formatWeddingDateLong(lead.weddingDate);
-  const validUntil = formatWeddingDate(lead.proposalValidUntil);
+  const expired = !!lead.proposalValidUntil && lead.proposalValidUntil < hojeEmBrasilia();
+  const dateLong = formatarDataDoCasamentoPorExtenso(lead.weddingDate);
+  const validUntil = formatarDataDoCasamento(lead.proposalValidUntil);
 
   let state: React.ReactNode;
   if (lead.proposalAcceptedAt) {
@@ -106,7 +106,7 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
       <CartaoDeSituacao icon={BadgeCheck} tone="sucesso" title="Proposta aceita">
         <p>
           Aceita por <strong className="font-semibold">{lead.proposalAcceptedName}</strong> em{" "}
-          {formatDateTimeBrasilia(lead.proposalAcceptedAt)}.
+          {formatarDataEHoraEmBrasilia(lead.proposalAcceptedAt)}.
         </p>
         <p className="font-semibold">Próximos passos</p>
         <ul className="list-disc space-y-1 pl-5">
@@ -150,7 +150,7 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-0.5 sm:col-span-2">
             <dt className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>Valor</dt>
-            <dd className="font-num text-4xl leading-tight">{formatBrl(lead.proposalAmount)}</dd>
+            <dd className="font-num text-4xl leading-tight">{formatarReaisDoPainel(lead.proposalAmount)}</dd>
           </div>
           <div className="flex flex-col gap-0.5">
             <dt className={SOBRETITULO_DA_PAGINA_COM_TOKEN}>Data do casamento</dt>
@@ -175,7 +175,7 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
             <p className="text-[15px] whitespace-pre-line break-words sm:text-base">{lead.proposalDetails}</p>
           </div>
         ) : null}
-        <p className="text-[13px] text-tinta-suave">Enviada {formatDateTimeBrasilia(lead.proposalSentAt)}.</p>
+        <p className="text-[13px] text-tinta-suave">Enviada {formatarDataEHoraEmBrasilia(lead.proposalSentAt)}.</p>
       </section>
 
       {state}

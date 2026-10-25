@@ -11,25 +11,25 @@ import { obterCatalogo } from "@/lib/catalog-server";
 import { proximoFimDoPeriodoDoFornecedor, DIAS_DO_PERIODO_DO_FORNECEDOR, nivelDoFornecedorParaOPlano } from "@/lib/subscription-period";
 import { detalharPreco } from "@/lib/checkout-pricing";
 import { creditoDeUpgrade } from "@/lib/upgrade-credit";
-import { formatWeddingDate, START_MONTHLY_LEAD_LIMIT, startOfMonthBrasilia } from "../../_lib/vendor-panel";
-import { PlanCheckout } from "./plan-checkout";
+import { formatarDataDoCasamento, LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL, inicioDoMesEmBrasilia } from "../../_lib/vendor-panel";
+import { PagamentoDoPlano } from "./plan-checkout";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 export const metadata: Metadata = { title: "Plano" };
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-const SP_OFFSET_MS = 3 * 60 * 60 * 1000; // Brasília (UTC-3, sem horário de verão desde 2019)
+const UM_DIA_EM_MS = 24 * 60 * 60 * 1000;
+const DESLOCAMENTO_DE_BRASILIA_EM_MS = 3 * 60 * 60 * 1000; // Brasília (UTC-3, sem horário de verão desde 2019)
 
 /** "14 out 2026" no horário de Brasília; sem o ano quando `short` e for o ano corrente. */
-function formatDate(date: Date, now: Date, short = false): string {
-  const local = new Date(date.getTime() - SP_OFFSET_MS);
-  const label = formatWeddingDate(local) ?? "";
+function formatarData(date: Date, now: Date, short = false): string {
+  const local = new Date(date.getTime() - DESLOCAMENTO_DE_BRASILIA_EM_MS);
+  const label = formatarDataDoCasamento(local) ?? "";
   if (!short) return label;
-  const sameYear = local.getUTCFullYear() === new Date(now.getTime() - SP_OFFSET_MS).getUTCFullYear();
+  const sameYear = local.getUTCFullYear() === new Date(now.getTime() - DESLOCAMENTO_DE_BRASILIA_EM_MS).getUTCFullYear();
   return sameYear ? label.replace(/ \d{4}$/, "") : label;
 }
 
-const TIER_PLAN: Record<string, "start" | "pro" | "master"> = { FREE: "start", PRO: "pro", MASTER: "master" };
+const PLANO_DO_NIVEL: Record<string, "start" | "pro" | "master"> = { FREE: "start", PRO: "pro", MASTER: "master" };
 
 export default async function PlanoPage() {
   const { session, vendor } = await obterContextoDaPaginaDoFornecedor();
@@ -45,14 +45,14 @@ export default async function PlanoPage() {
       take: 6,
       select: { id: true, planName: true, amount: true, status: true, paidAt: true, periodEnd: true },
     }),
-    prisma.vendorLead.count({ where: { vendorId: vendor.id, createdAt: { gte: startOfMonthBrasilia(now) } } }),
+    prisma.vendorLead.count({ where: { vendorId: vendor.id, createdAt: { gte: inicioDoMesEmBrasilia(now) } } }),
   ]);
 
   const isPaid = vendor.planTier !== "FREE";
   const expiresAt = vendor.planExpiresAt;
   const hasActivePeriod = expiresAt !== null && expiresAt.getTime() > now.getTime();
-  const daysLeft = isPaid && expiresAt ? Math.max(0, Math.ceil((expiresAt.getTime() - now.getTime()) / DAY_MS)) : null;
-  const planName = nomeCurtoDoPlano(opcaoDePlano(TIER_PLAN[vendor.planTier] ?? "start", catalog).name);
+  const daysLeft = isPaid && expiresAt ? Math.max(0, Math.ceil((expiresAt.getTime() - now.getTime()) / UM_DIA_EM_MS)) : null;
+  const planName = nomeCurtoDoPlano(opcaoDePlano(PLANO_DO_NIVEL[vendor.planTier] ?? "start", catalog).name);
 
   const options = [opcaoDePlano("pro", catalog), opcaoDePlano("master", catalog)];
   // Até quando vale cada plano se pago agora (mesma regra do webhook de confirmação).
@@ -60,7 +60,7 @@ export default async function PlanoPage() {
     options.map((o) => {
       const newTier = nivelDoFornecedorParaOPlano(o.id) ?? "PRO";
       const end = proximoFimDoPeriodoDoFornecedor({ currentTier: vendor.planTier, currentExpiresAt: expiresAt, newTier, now });
-      return [o.id, formatDate(end, now, true)];
+      return [o.id, formatarData(end, now, true)];
     }),
   );
 
@@ -87,14 +87,14 @@ export default async function PlanoPage() {
   const showRenewalWarning = daysLeft !== null && daysLeft <= 7;
   const details: { label: string; value: string }[] = isPaid
     ? [
-        ...(expiresAt ? [{ label: "Pago até", value: formatDate(expiresAt, now) }] : []),
+        ...(expiresAt ? [{ label: "Pago até", value: formatarData(expiresAt, now) }] : []),
         { label: "Pedidos este mês", value: `${monthLeads} · ilimitados` },
         { label: "Forma de pagamento", value: "Pix, mês a mês" },
       ]
     : [
         {
           label: "Pedidos este mês",
-          value: `${Math.min(monthLeads, START_MONTHLY_LEAD_LIMIT)} de ${START_MONTHLY_LEAD_LIMIT}`,
+          value: `${Math.min(monthLeads, LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL)} de ${LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL}`,
         },
         { label: "Valor", value: "Gratuito" },
       ];
@@ -123,8 +123,8 @@ export default async function PlanoPage() {
             </strong>
             <span className="text-sm text-tinta-suave">
               {hasActivePeriod
-                ? `Renove até ${formatDate(expiresAt, now, true)} para não voltar ao Start. Renovar antes soma os dias que faltam.`
-                : `O período pago terminou em ${formatDate(expiresAt, now, true)}. Renove para continuar com os benefícios do ${planName}.`}
+                ? `Renove até ${formatarData(expiresAt, now, true)} para não voltar ao Start. Renovar antes soma os dias que faltam.`
+                : `O período pago terminou em ${formatarData(expiresAt, now, true)}. Renove para continuar com os benefícios do ${planName}.`}
             </span>
           </div>
           <a href="#pagar" className={cn(estiloDoBotao.primary, estiloDoBotao.sm, "min-h-11 shrink-0")}>
@@ -155,7 +155,7 @@ export default async function PlanoPage() {
         </section>
       </Aparicao>
 
-      <PlanCheckout
+      <PagamentoDoPlano
         currentTier={vendor.planTier}
         hasActivePeriod={hasActivePeriod}
         daysLeft={hasActivePeriod ? daysLeft : null}
@@ -180,7 +180,7 @@ export default async function PlanoPage() {
                     <span className="flex min-w-0 flex-1 flex-col">
                       <strong className="font-semibold">{nomeCurtoDoPlano(p.planName)}</strong>
                       <span className="text-sm text-tinta-suave">
-                        {p.paidAt ? `Pago em ${formatDate(p.paidAt, now)}` : "Pagamento sem data"}
+                        {p.paidAt ? `Pago em ${formatarData(p.paidAt, now)}` : "Pagamento sem data"}
                         {refunded ? " · Estornado" : ""}
                       </span>
                     </span>
@@ -228,12 +228,12 @@ export default async function PlanoPage() {
                     const refunded = p.status === PaymentStatus.REFUNDED;
                     const period =
                       p.periodEnd && !refunded
-                        ? `${formatDate(new Date(p.periodEnd.getTime() - DIAS_DO_PERIODO_DO_FORNECEDOR * DAY_MS), now)} a ${formatDate(p.periodEnd, now)}`
+                        ? `${formatarData(new Date(p.periodEnd.getTime() - DIAS_DO_PERIODO_DO_FORNECEDOR * UM_DIA_EM_MS), now)} a ${formatarData(p.periodEnd, now)}`
                         : "—";
                     return (
                       <tr key={p.id} className="border-t border-linha">
                         <td className="px-5 py-3.5 font-semibold">{nomeCurtoDoPlano(p.planName)}</td>
-                        <td className="px-5 py-3.5">{p.paidAt ? formatDate(p.paidAt, now) : "—"}</td>
+                        <td className="px-5 py-3.5">{p.paidAt ? formatarData(p.paidAt, now) : "—"}</td>
                         <td className="px-5 py-3.5 text-tinta-suave">{period}</td>
                         <td className="px-5 py-3.5 text-right whitespace-nowrap tabular-nums">
                           {refunded ? <span className="mr-2 text-sm font-semibold text-aviso">Estornado</span> : null}

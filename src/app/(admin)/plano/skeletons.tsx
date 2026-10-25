@@ -3,7 +3,7 @@ import { SkeletonList } from "@/components/skeletons";
 import { EsqueletoDoPainel } from "@/components/painel/skeleton-parts";
 
 /** Corpo do plano (abaixo do cabeçalho): plano atual e taxas, planos para mudar e recibos. */
-export function PlanoBodySkeleton() {
+export function EsqueletoDoCorpoDoPlano() {
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2">

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { AlertCircle, Check, CheckCircle2, Clock, Copy, ExternalLink, Globe, Info, XCircle } from "lucide-react";
+import { AlertCircle, Check as ConferenciaDeDominio, CheckCircle2, Clock, Copy, ExternalLink, Globe, Info, XCircle } from "lucide-react";
 import { cancelarPedidoDeDominio, verificarDisponibilidadeDoDominioAcao, pedirDominio } from "@/actions/domain-actions";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import { TEXTO_DO_ACEITE_DOS_TERMOS_DE_DOMINIO, TEXTO_DOS_TERMOS_DE_DOMINIO } fr
 import type { VisaoDoPedidoDeDominio } from "@/lib/domain-orders";
 
 import { formatarDataBrasiliaLonga, formatarDataCivilLonga } from "@/lib/formatacao/data";
-interface Props {
+interface Propriedades {
   coupleNames: string;
   weddingDate: string | null;
   order: VisaoDoPedidoDeDominio | null;
@@ -31,9 +31,9 @@ interface Props {
 }
 
 // Vencimento e registro são datas de calendário, gravadas à meia-noite UTC
-const fmt = (iso: string | null, calendar = false) => (iso ? (calendar ? formatarDataCivilLonga : formatarDataBrasiliaLonga)(new Date(iso)) : null);
+const formatarDataOuVazio = (iso: string | null, calendar = false) => (iso ? (calendar ? formatarDataCivilLonga : formatarDataBrasiliaLonga)(new Date(iso)) : null);
 
-export function DomainClient({ coupleNames, weddingDate, order, lastClosed, defaults }: Props) {
+export function DominioCliente({ coupleNames, weddingDate, order, lastClosed, defaults }: Propriedades) {
   return (
     <div className="flex max-w-[880px] flex-col gap-6">
       <CabecalhoDaPagina
@@ -46,11 +46,11 @@ export function DomainClient({ coupleNames, weddingDate, order, lastClosed, defa
         }
       />
       {order ? (
-        <OrderProgress order={order} />
+        <AndamentoDoPedido order={order} />
       ) : (
         <>
-          {lastClosed?.status === "REJECTED" ? <RejectedNotice order={lastClosed} /> : null}
-          <RequestForm coupleNames={coupleNames} weddingDate={weddingDate} defaults={defaults} />
+          {lastClosed?.status === "REJECTED" ? <AvisoDeRecusa order={lastClosed} /> : null}
+          <FormularioDoPedido coupleNames={coupleNames} weddingDate={weddingDate} defaults={defaults} />
         </>
       )}
     </div>
@@ -61,7 +61,7 @@ export function DomainClient({ coupleNames, weddingDate, order, lastClosed, defa
 // PEDIDO RECUSADO
 // ==========================================
 
-function RejectedNotice({ order }: { order: VisaoDoPedidoDeDominio }) {
+function AvisoDeRecusa({ order }: { order: VisaoDoPedidoDeDominio }) {
   return (
     <section aria-labelledby="dominio-recusado" className="flex items-start gap-3 rounded-2xl border border-aviso/30 bg-aviso-suave p-4 text-[15px] text-tinta">
       <AlertCircle className="mt-0.5 size-5 shrink-0 text-aviso" aria-hidden="true" />
@@ -80,16 +80,16 @@ function RejectedNotice({ order }: { order: VisaoDoPedidoDeDominio }) {
 // FORMULÁRIO DO PEDIDO
 // ==========================================
 
-type Check =
+type ConferenciaDeDominio =
   | { state: "idle" }
   | { state: "invalid"; message: string }
   | { state: "checking" }
   | { state: "error"; message: string }
   | { state: DisponibilidadeDoDominio; domain: string };
 
-const CHECK_TONE: Record<"sucesso" | "perigo" | "aviso" | "neutro", TomDaEtiqueta> = { sucesso: "sucesso", perigo: "perigo", aviso: "aviso", neutro: "neutro" };
+const TOM_DA_CONFERENCIA: Record<"sucesso" | "perigo" | "aviso" | "neutro", TomDaEtiqueta> = { sucesso: "sucesso", perigo: "perigo", aviso: "aviso", neutro: "neutro" };
 
-function CheckResult({ check }: { check: Check }) {
+function ResultadoDaConferencia({ check }: { check: ConferenciaDeDominio }) {
   if (check.state === "idle") return null;
   if (check.state === "checking") {
     return (
@@ -112,7 +112,7 @@ function CheckResult({ check }: { check: Check }) {
   const label = check.state === "available" ? "Livre" : check.state === "taken" ? "Já tem dono" : check.state === "releasing" ? "Em liberação" : "Sem resposta agora";
   return (
     <div role="status" className="flex flex-col gap-2">
-      <Etiqueta tone={CHECK_TONE[spec.tone]} icon={Icon}>
+      <Etiqueta tone={TOM_DA_CONFERENCIA[spec.tone]} icon={Icon}>
         {label}
       </Etiqueta>
       <p className="text-sm leading-5 text-tinta">{spec.text(check.domain)}</p>
@@ -120,7 +120,7 @@ function CheckResult({ check }: { check: Check }) {
   );
 }
 
-function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "coupleNames" | "weddingDate" | "defaults">) {
+function FormularioDoPedido({ coupleNames, weddingDate, defaults }: Pick<Propriedades, "coupleNames" | "weddingDate" | "defaults">) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [name, setName] = useState("");
@@ -129,7 +129,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
   const [holderEmail, setHolderEmail] = useState(defaults.email);
   const [holderPhone, setHolderPhone] = useState("");
   const [accepted, setAccepted] = useState(false);
-  const [check, setCheck] = useState<Check>({ state: "idle" });
+  const [check, setCheck] = useState<ConferenciaDeDominio>({ state: "idle" });
   const [errors, setErrors] = useState<Partial<Record<CampoDoPedidoDeDominio, string>>>({});
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -229,7 +229,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
           </p>
         ) : null}
 
-        <CheckResult check={check} />
+        <ResultadoDaConferencia check={check} />
 
         {suggestions.length > 0 ? (
           <div className="flex flex-col gap-2">
@@ -358,14 +358,14 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
 // ANDAMENTO DO PEDIDO
 // ==========================================
 
-const STATE_LABEL: Record<SituacaoDaEtapa, string> = { done: "Concluído", current: "Em andamento", next: "A seguir", todo: "Depois" };
+const ROTULO_DA_SITUACAO_DA_ETAPA: Record<SituacaoDaEtapa, string> = { done: "Concluído", current: "Em andamento", next: "A seguir", todo: "Depois" };
 
-function StepDot({ state }: { state: SituacaoDaEtapa }) {
+function PontoDaEtapa({ state }: { state: SituacaoDaEtapa }) {
   const base = "relative z-10 grid size-8 shrink-0 place-items-center rounded-full border-2";
   if (state === "done") {
     return (
       <span className={cn(base, "border-ameixa bg-ameixa text-on-ameixa")}>
-        <Check className="size-4" aria-hidden="true" />
+        <ConferenciaDeDominio className="size-4" aria-hidden="true" />
       </span>
     );
   }
@@ -379,18 +379,18 @@ function StepDot({ state }: { state: SituacaoDaEtapa }) {
   return <span className={cn(base, "border-linha-forte bg-papel", state === "next" && "border-ameixa")} aria-hidden="true" />;
 }
 
-function OrderProgress({ order }: { order: VisaoDoPedidoDeDominio }) {
+function AndamentoDoPedido({ order }: { order: VisaoDoPedidoDeDominio }) {
   const states = situacoesDasEtapas(order.status) ?? [];
   const dates: Record<string, string | null> = {
-    REQUESTED: fmt(order.requestedAt),
+    REQUESTED: formatarDataOuVazio(order.requestedAt),
     REGISTERING: null,
-    REGISTERED: fmt(order.registeredAt, true),
-    CONNECTED: fmt(order.connectedAt),
+    REGISTERED: formatarDataOuVazio(order.registeredAt, true),
+    CONNECTED: formatarDataOuVazio(order.connectedAt),
   };
 
   return (
     <div className="flex flex-col gap-6">
-      {order.status === "CONNECTED" ? <ConnectedCard domain={order.domain} /> : null}
+      {order.status === "CONNECTED" ? <CartaoDoDominioConectado domain={order.domain} /> : null}
 
       <section aria-labelledby="dominio-andamento" className={cn(estiloDoCartao, "flex flex-col gap-5 p-5 sm:p-6")}>
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -415,11 +415,11 @@ function OrderProgress({ order }: { order: VisaoDoPedidoDeDominio }) {
                 {!last ? (
                   <span aria-hidden="true" className={cn("absolute top-8 bottom-0 left-4 w-0.5 -translate-x-1/2", state === "done" && states[index + 1] === "done" ? "bg-ameixa" : "bg-linha-forte")} />
                 ) : null}
-                <StepDot state={state} />
+                <PontoDaEtapa state={state} />
                 <div className="flex min-w-0 flex-col gap-0.5 pt-0.5">
                   <p className={cn("text-base font-semibold leading-6", state === "done" || state === "current" ? "text-tinta" : "text-tinta-suave")}>
                     {step.title}
-                    <span className="ml-2 text-sm font-normal text-tinta-suave">{STATE_LABEL[state]}</span>
+                    <span className="ml-2 text-sm font-normal text-tinta-suave">{ROTULO_DA_SITUACAO_DA_ETAPA[state]}</span>
                   </p>
                   <p className="text-[15px] leading-6 text-tinta-suave">{state === "done" ? step.doneText : step.text}</p>
                   {date && state === "done" ? <p className="text-sm text-tinta-suave">{step.status === "REQUESTED" ? `Pedido em ${date}` : step.status === "REGISTERED" ? `Registrado em ${date}` : `No ar desde ${date}`}</p> : null}
@@ -431,7 +431,7 @@ function OrderProgress({ order }: { order: VisaoDoPedidoDeDominio }) {
 
         {order.expiresAt ? (
           <p className="rounded-xl bg-areia p-4 text-[15px] leading-6 text-tinta">
-            O primeiro ano está incluído e o domínio vence em <strong className="font-semibold">{fmt(order.expiresAt, true)}</strong>.
+            O primeiro ano está incluído e o domínio vence em <strong className="font-semibold">{formatarDataOuVazio(order.expiresAt, true)}</strong>.
           </p>
         ) : null}
       </section>
@@ -441,19 +441,19 @@ function OrderProgress({ order }: { order: VisaoDoPedidoDeDominio }) {
           Titular do endereço
         </h2>
         <dl className="grid gap-4 sm:grid-cols-2">
-          <Fact label="Nome">{order.holderName}</Fact>
-          <Fact label="CPF ou CNPJ">{order.holderDocumentMasked}</Fact>
-          <Fact label="E-mail">{order.holderEmail}</Fact>
-          <Fact label="Telefone">{order.holderPhone}</Fact>
+          <InformacaoEmDestaque label="Nome">{order.holderName}</InformacaoEmDestaque>
+          <InformacaoEmDestaque label="CPF ou CNPJ">{order.holderDocumentMasked}</InformacaoEmDestaque>
+          <InformacaoEmDestaque label="E-mail">{order.holderEmail}</InformacaoEmDestaque>
+          <InformacaoEmDestaque label="Telefone">{order.holderPhone}</InformacaoEmDestaque>
         </dl>
         <p className="text-sm text-tinta-suave">{TEXTO_DOS_TERMOS_DE_DOMINIO}</p>
-        {order.status === "REQUESTED" ? <CancelButton /> : null}
+        {order.status === "REQUESTED" ? <BotaoDeCancelar /> : null}
       </section>
     </div>
   );
 }
 
-function Fact({ label, children }: { label: string; children: React.ReactNode }) {
+function InformacaoEmDestaque({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-1">
       <dt className="text-sm font-semibold leading-5 text-tinta-suave">{label}</dt>
@@ -462,7 +462,7 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
-function CancelButton() {
+function BotaoDeCancelar() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -503,7 +503,7 @@ function CancelButton() {
   );
 }
 
-function ConnectedCard({ domain }: { domain: string }) {
+function CartaoDoDominioConectado({ domain }: { domain: string }) {
   const url = `https://${domain}`;
   const [copied, setCopied] = useState(false);
 
@@ -537,7 +537,7 @@ function ConnectedCard({ domain }: { domain: string }) {
           <span className="sr-only"> (abre em outra aba)</span>
         </a>
         <button type="button" onClick={copy} className={cn(estiloDoBotao.onAmeixa, "min-h-11 bg-transparent text-on-ameixa ring-1 ring-on-ameixa/50 hover:bg-on-ameixa/10")}>
-          {copied ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
+          {copied ? <ConferenciaDeDominio className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
           {copied ? "Link copiado" : "Copiar o link"}
         </button>
       </div>

@@ -8,17 +8,17 @@ import { SinoDeNotificacoes } from "@/components/notifications/notification-bell
 import { quantidadeNaoLidaDe } from "@/lib/notifications/queries";
 import { chavePublicaVapid } from "@/lib/notifications/push";
 import { AlternadorDeTema } from "@/components/theme/theme-toggle";
-import { Chip } from "./_components/status-chip";
-import { VendorAvatar } from "./_components/vendor-avatar";
-import { LogoutButton, LogoutIconButton, VendorMobileTitle, VendorSidebarNav, VendorTabBar } from "./_components/vendor-nav";
-import { effectiveVendorTier, PLAN_LABEL, START_MONTHLY_LEAD_LIMIT, startOfMonthBrasilia } from "./_lib/vendor-panel";
+import { EtiquetaBase } from "./_components/status-chip";
+import { AvatarDoFornecedor } from "./_components/vendor-avatar";
+import { BotaoDeSair, BotaoDeIconeDeSair, TituloMovelDoFornecedor, MenuLateralDoFornecedor, BarraDeAbasDoFornecedor } from "./_components/vendor-nav";
+import { nivelEfetivoDoFornecedor, ROTULO_DO_PLANO, LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL, inicioDoMesEmBrasilia } from "./_lib/vendor-panel";
 
 export const metadata: Metadata = {
   title: { default: "Painel do fornecedor", template: "%s · Aceito para Fornecedores" },
   robots: { index: false, follow: false },
 };
 
-function BrandBlock() {
+function BlocoDaMarca() {
   return (
     <div className="flex flex-col gap-1.5 px-3">
       <Logotipo height={26} />
@@ -30,11 +30,11 @@ function BrandBlock() {
 }
 
 /** Conta com perfil "Fornecedor", mas ainda sem fornecedor vinculado. */
-function UnlinkedAccount() {
+function ContaSemVinculo() {
   return (
     <main id="conteudo" className="grid min-h-dvh place-items-center bg-linho px-4 py-12 text-tinta">
       <div className="flex w-full max-w-md flex-col gap-5 rounded-2xl border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)] sm:p-8">
-        <BrandBlock />
+        <BlocoDaMarca />
         <div className="flex flex-col gap-2 px-3">
           <h1 className="font-display text-[28px] leading-9 font-medium">Seu painel está quase pronto</h1>
           <p className="text-tinta-suave">
@@ -42,7 +42,7 @@ function UnlinkedAccount() {
             vínculo, seus pedidos de orçamento aparecem aqui.
           </p>
         </div>
-        <LogoutButton className="w-fit" />
+        <BotaoDeSair className="w-fit" />
       </div>
     </main>
   );
@@ -50,19 +50,19 @@ function UnlinkedAccount() {
 
 export default async function FornecedorLayout({ children }: { children: React.ReactNode }) {
   const { session, vendor } = await obterContextoDaPaginaDoFornecedor();
-  if (!vendor) return <UnlinkedAccount />;
+  if (!vendor) return <ContaSemVinculo />;
 
-  const tier = effectiveVendorTier(vendor.planTier, vendor.planExpiresAt);
+  const tier = nivelEfetivoDoFornecedor(vendor.planTier, vendor.planExpiresAt);
   const isFree = tier === "FREE";
   const [newLeads, monthLeads, unreadNotifications] = await Promise.all([
     prisma.vendorLead.count({ where: { vendorId: vendor.id, status: "NEW" } }),
     isFree
-      ? prisma.vendorLead.count({ where: { vendorId: vendor.id, createdAt: { gte: startOfMonthBrasilia() } } })
+      ? prisma.vendorLead.count({ where: { vendorId: vendor.id, createdAt: { gte: inicioDoMesEmBrasilia() } } })
       : Promise.resolve(0),
     quantidadeNaoLidaDe(session.userId),
   ]);
 
-  const planLabel = PLAN_LABEL[tier] ?? "Plano Start";
+  const planLabel = ROTULO_DO_PLANO[tier] ?? "Plano Start";
   const publicProfileHref = vendor.curationStatus === "APPROVED" ? `/fornecedores/${vendor.id}` : null;
 
   return (
@@ -76,7 +76,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
 
       <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col gap-5 overflow-y-auto border-r border-linha bg-linho px-4 py-6 md:flex">
         <div className="flex items-start justify-between gap-2">
-          <BrandBlock />
+          <BlocoDaMarca />
           <SinoDeNotificacoes
             initialUnread={unreadNotifications}
             allHref="/fornecedor/notificacoes"
@@ -88,16 +88,16 @@ export default async function FornecedorLayout({ children }: { children: React.R
           />
         </div>
         <div className="flex items-center gap-2.5 rounded-xl border border-linha bg-papel p-3">
-          <VendorAvatar name={vendor.companyName} logoUrl={vendor.logoUrl} size={40} />
+          <AvatarDoFornecedor name={vendor.companyName} logoUrl={vendor.logoUrl} size={40} />
           <span className="flex min-w-0 flex-col">
             <strong className="truncate text-[15px] font-semibold">{vendor.companyName}</strong>
             <span className="text-[13px] text-tinta-suave">{planLabel}</span>
           </span>
         </div>
-        <VendorSidebarNav newLeads={newLeads} publicProfileHref={publicProfileHref} />
+        <MenuLateralDoFornecedor newLeads={newLeads} publicProfileHref={publicProfileHref} />
         <div className="mt-auto flex items-center gap-1 border-t border-linha pt-3">
           <div className="min-w-0 flex-1">
-            <LogoutButton />
+            <BotaoDeSair />
           </div>
           <AlternadorDeTema align="start" />
         </div>
@@ -106,12 +106,12 @@ export default async function FornecedorLayout({ children }: { children: React.R
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-[60px] items-center gap-2.5 border-b border-linha bg-linho/95 pr-2 pl-4 backdrop-blur md:hidden">
           <Link href="/conta" aria-label="Minha conta" className="-ml-2 grid size-11 shrink-0 place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-salvia">
-            <VendorAvatar name={vendor.companyName} logoUrl={vendor.logoUrl} size={36} />
+            <AvatarDoFornecedor name={vendor.companyName} logoUrl={vendor.logoUrl} size={36} />
           </Link>
-          <VendorMobileTitle />
-          <Chip tone="salvia">
-            {isFree ? `Start · ${Math.min(monthLeads, START_MONTHLY_LEAD_LIMIT)} de ${START_MONTHLY_LEAD_LIMIT}` : planLabel}
-          </Chip>
+          <TituloMovelDoFornecedor />
+          <EtiquetaBase tone="salvia">
+            {isFree ? `Start · ${Math.min(monthLeads, LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL)} de ${LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL}` : planLabel}
+          </EtiquetaBase>
           <AlternadorDeTema />
           <SinoDeNotificacoes
             initialUnread={unreadNotifications}
@@ -120,7 +120,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
             pushPublicKey={chavePublicaVapid()}
             className="-mr-1"
           />
-          <LogoutIconButton />
+          <BotaoDeIconeDeSair />
         </header>
 
         <main
@@ -145,7 +145,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
         </main>
       </div>
 
-      <VendorTabBar />
+      <BarraDeAbasDoFornecedor />
     </div>
   );
 }
