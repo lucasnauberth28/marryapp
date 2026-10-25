@@ -7,7 +7,7 @@ import { useFormStatus } from "react-dom";
 import { sair } from "@/actions/auth-actions";
 import { IndicadorDeCarregamento } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
-import { LINK_DO_PLANO } from "../_lib/vendor-panel";
+import { LINK_DO_PLANO } from "../_lib/planos-do-fornecedor";
 
 const CAMINHO_DO_PAINEL = "/fornecedor";
 const CAMINHO_DOS_PEDIDOS = "/fornecedor/pedidos";

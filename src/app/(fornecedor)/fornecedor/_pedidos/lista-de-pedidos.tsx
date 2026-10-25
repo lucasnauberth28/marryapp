@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Inbox } from "lucide-react";
 import { Aparicao } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
-import type { SituacaoDoPedido } from "../../_lib/vendor-panel";
+import type { SituacaoDoPedido } from "../../_lib/pedidos";
 import { PedidoBloqueado, PedidoLiberado } from "./cartao-do-pedido";
 import { FILTROS, type PedidoVisivel } from "./dados";
 import { ESTILO_DO_CARTAO } from "./estilos";

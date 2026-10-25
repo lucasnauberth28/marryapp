@@ -10,18 +10,11 @@ import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { normalizarTexto, limparUrl } from "@/lib/security/sanitize";
 import { TAMANHO_MAXIMO_DA_IMAGEM_EM_BYTES, enviarImagemDeDataUrl } from "@/lib/supabase";
 import type { FornecedorDoPainel } from "@/lib/security/vendor-guard";
-import {
-  nivelEfetivoDoFornecedor,
-  pedidoEstaBloqueado,
-  SITUACOES_DO_PEDIDO,
-  MAXIMO_DE_IMAGENS_NA_GALERIA,
-  interpretarGaleria,
-  interpretarDataIso,
-  urlPublicaDaAvaliacao,
-  hojeEmBrasilia,
-  CATEGORIAS_DE_FORNECEDOR,
-  TIPOS_DE_EVENTO_DO_FORNECEDOR,
-} from "@/app/(fornecedor)/_lib/vendor-panel";
+import { interpretarDataIso, hojeEmBrasilia } from "@/app/(fornecedor)/_lib/datas-do-painel";
+import { urlPublicaDaAvaliacao } from "@/app/(fornecedor)/_lib/links-publicos";
+import { SITUACOES_DO_PEDIDO, TIPOS_DE_EVENTO_DO_FORNECEDOR } from "@/app/(fornecedor)/_lib/pedidos";
+import { MAXIMO_DE_IMAGENS_NA_GALERIA, interpretarGaleria, CATEGORIAS_DE_FORNECEDOR } from "@/app/(fornecedor)/_lib/perfil-do-fornecedor";
+import { nivelEfetivoDoFornecedor, pedidoEstaBloqueado } from "@/app/(fornecedor)/_lib/planos-do-fornecedor";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import { ERROS } from "@/lib/mensagens-de-erro";

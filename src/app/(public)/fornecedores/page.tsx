@@ -1,6 +1,6 @@
 import { obterFornecedoresParceiros } from "@/actions/partner-vendor-actions";
 import { VisaoDeFornecedoresPublicos } from "@/components/public/fornecedores-publicos/visao-de-fornecedores";
-import { interpretarDataIso, paraDataIso, hojeEmBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { interpretarDataIso, paraDataIso, hojeEmBrasilia } from "@/app/(fornecedor)/_lib/datas-do-painel";
 
 export const dynamic = "force-dynamic";
 

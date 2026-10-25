@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { formatarHoraDoPainel, type SituacaoDoPedido } from "../../../../_lib/vendor-panel";
+import { formatarHoraDoPainel } from "../../../../_lib/datas-do-painel";
+import { type SituacaoDoPedido } from "../../../../_lib/pedidos";
 import type { ContextoDaAgenda } from "./dados";
 
 export type SituacaoDaAgenda = { label: string; tone: "sucesso" | "perigo" | "suave"; note?: React.ReactNode };

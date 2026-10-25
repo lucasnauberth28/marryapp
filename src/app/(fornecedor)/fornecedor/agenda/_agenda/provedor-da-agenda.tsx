@@ -2,7 +2,7 @@
 // Os botões do topo e o calendário abrem o mesmo formulário.
 import { createContext, useContext, useState } from "react";
 import { CalendarPlus, CalendarX2 } from "lucide-react";
-import type { TipoDeEventoDoFornecedor } from "../../../_lib/vendor-panel";
+import type { TipoDeEventoDoFornecedor } from "../../../_lib/pedidos";
 import { FormularioDoEvento, type PedidoDoFormulario } from "./formulario-do-evento";
 import { JanelaDaAgenda } from "./janela-da-agenda";
 import { ESTILO_DO_BOTAO_PRIMARIO, ESTILO_DO_BOTAO_SECUNDARIO, type OpcaoDePedido } from "./tipos";

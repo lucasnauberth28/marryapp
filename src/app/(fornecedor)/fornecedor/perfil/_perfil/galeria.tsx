@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { ArrowDown, ArrowUp, ImagePlus, Loader2, Trash2 } from "lucide-react";
 import { EsqueletoDeImagem } from "@/components/skeletons";
 import { cn } from "@/lib/utils";
-import { MAXIMO_DE_IMAGENS_NA_GALERIA } from "../../../_lib/vendor-panel";
+import { MAXIMO_DE_IMAGENS_NA_GALERIA } from "../../../_lib/perfil-do-fornecedor";
 import { TIPOS_ACEITOS } from "./comprimir-imagem";
 import { ESTILO_DA_DICA, ESTILO_DO_BOTAO_DE_ICONE, ESTILO_DO_BOTAO_SECUNDARIO } from "./estilos";
 import type { Midias } from "./use-midias";

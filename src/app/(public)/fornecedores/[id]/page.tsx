@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { obterFornecedorParceiroPorId } from "@/actions/partner-vendor-actions";
 import { registrarVisitaAoPerfilDoFornecedor } from "@/lib/vendor-profile-views";
-import { paraDataIso, hojeEmBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { paraDataIso, hojeEmBrasilia } from "@/app/(fornecedor)/_lib/datas-do-painel";
 import { DetalheDoFornecedorCliente } from "./vendor-detail-client";
 
 interface PropriedadesDaPaginaDoFornecedor {

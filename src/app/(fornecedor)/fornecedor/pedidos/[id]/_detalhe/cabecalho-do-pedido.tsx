@@ -1,6 +1,6 @@
 import { Aparicao } from "@/components/motion/reveal";
 import { EtiquetaDaSituacaoDoPedido } from "../../../../_components/status-chip";
-import type { SituacaoDoPedido } from "../../../../_lib/vendor-panel";
+import type { SituacaoDoPedido } from "../../../../_lib/pedidos";
 import { formatarHoras, rotuloDeChegada } from "./mensagens-e-andamento";
 import { VoltarAosPedidos } from "./pedido-bloqueado";
 

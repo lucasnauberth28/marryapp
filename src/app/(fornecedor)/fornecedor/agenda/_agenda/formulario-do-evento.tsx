@@ -8,7 +8,7 @@ import { Entrada } from "@/components/ui/input";
 import { SelecaoNativa } from "@/components/ui/select";
 import { AreaDeTexto } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import type { TipoDeEventoDoFornecedor } from "../../../_lib/vendor-panel";
+import type { TipoDeEventoDoFornecedor } from "../../../_lib/pedidos";
 import { ESTILO_DO_BOTAO_SECUNDARIO, type OpcaoDePedido } from "./tipos";
 
 export type PedidoDoFormulario = { kind: TipoDeEventoDoFornecedor; date: string };

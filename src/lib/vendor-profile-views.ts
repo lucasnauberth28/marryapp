@@ -3,7 +3,7 @@ import { after } from "next/server";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
 import { obterSessao } from "@/lib/security/auth-guard";
-import { hojeEmBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { hojeEmBrasilia } from "@/app/(fornecedor)/_lib/datas-do-painel";
 
 const PADRAO_DE_ROBO = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|monitor|headless|lighthouse/i;
 

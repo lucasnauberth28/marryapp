@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { CalendarPlus, CalendarX2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatarHoraDoPainel, type TipoDeEventoDoFornecedor } from "../../../_lib/vendor-panel";
+import { formatarHoraDoPainel } from "../../../_lib/datas-do-painel";
+import { type TipoDeEventoDoFornecedor } from "../../../_lib/pedidos";
 import { BotaoDeExcluirEvento } from "./botao-de-excluir-evento";
 import { PILULA_DO_CALENDARIO } from "./cores-do-calendario";
 import { ESTILO_DO_BOTAO_DISCRETO, ESTILO_DO_BOTAO_PRIMARIO, ESTILO_DO_BOTAO_SECUNDARIO, type ItemDoDia } from "./tipos";

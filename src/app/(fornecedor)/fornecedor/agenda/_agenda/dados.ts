@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
-import { formatarDataDoCasamento, nivelEfetivoDoFornecedor, paraDataIso } from "../../../_lib/vendor-panel";
+import { formatarDataDoCasamento, paraDataIso } from "../../../_lib/datas-do-painel";
+import { nivelEfetivoDoFornecedor } from "../../../_lib/planos-do-fornecedor";
 import type { ItemDoDia, OpcaoDePedido } from "./tipos";
 
 const SELECAO_DO_EVENTO = { id: true, kind: true, date: true, time: true, title: true, notes: true, lead: { select: { id: true, coupleName: true } } } as const;

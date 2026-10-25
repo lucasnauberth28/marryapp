@@ -1,4 +1,4 @@
-import { formatarDataDoCasamento } from "../../../_lib/vendor-panel";
+import { formatarDataDoCasamento } from "../../../_lib/datas-do-painel";
 
 export const UM_DIA_EM_MS = 24 * 60 * 60 * 1000;
 const DESLOCAMENTO_DE_BRASILIA_EM_MS = 3 * 60 * 60 * 1000; // Brasília (UTC-3, sem horário de verão desde 2019)

@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { cadastrarContaDoPlano, type DadosDoCadastroDoPlano } from "@/actions/subscription-actions";
 import { PixDaAssinatura } from "@/components/checkout/subscription-pix";
-import { CATEGORIAS_DE_FORNECEDOR } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { CATEGORIAS_DE_FORNECEDOR } from "@/app/(fornecedor)/_lib/perfil-do-fornecedor";
 import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { Botao } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

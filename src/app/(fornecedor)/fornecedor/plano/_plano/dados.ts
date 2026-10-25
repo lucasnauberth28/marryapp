@@ -5,7 +5,8 @@ import type { obterCatalogo } from "@/lib/catalog-server";
 import { detalharPreco } from "@/lib/checkout-pricing";
 import { proximoFimDoPeriodoDoFornecedor, nivelDoFornecedorParaOPlano } from "@/lib/subscription-period";
 import { creditoDeUpgrade } from "@/lib/upgrade-credit";
-import { LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL, inicioDoMesEmBrasilia } from "../../../_lib/vendor-panel";
+import { inicioDoMesEmBrasilia } from "../../../_lib/datas-do-painel";
+import { LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL } from "../../../_lib/planos-do-fornecedor";
 import { UM_DIA_EM_MS, formatarData } from "./datas";
 
 type Catalogo = Awaited<ReturnType<typeof obterCatalogo>>;

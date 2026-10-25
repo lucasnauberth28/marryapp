@@ -2,7 +2,7 @@ import { EyeOff, Flag, ShieldCheck } from "lucide-react";
 import { Aparicao } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
 import { EtiquetaBase } from "../../../_components/status-chip";
-import { formatarDataDoCasamento } from "../../../_lib/vendor-panel";
+import { formatarDataDoCasamento } from "../../../_lib/datas-do-painel";
 import { DenunciarAvaliacao } from "../report-review";
 import { RespostaAAvaliacao } from "../review-reply";
 import { Estrelas } from "../stars";

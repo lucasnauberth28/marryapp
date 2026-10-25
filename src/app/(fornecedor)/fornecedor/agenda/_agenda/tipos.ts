@@ -1,4 +1,4 @@
-import { NOMES_DOS_MESES } from "../../../_lib/vendor-panel";
+import { NOMES_DOS_MESES } from "../../../_lib/datas-do-painel";
 
 export type ItemDoDia =
   | { type: "WEDDING"; id: string; title: string; location: string | null }

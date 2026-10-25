@@ -1,5 +1,7 @@
 import { Aparicao } from "@/components/motion/reveal";
-import { urlPublicaDaAvaliacao, formatarDataEHoraEmBrasilia, type SituacaoDoPedido } from "../../../../_lib/vendor-panel";
+import { formatarDataEHoraEmBrasilia } from "../../../../_lib/datas-do-painel";
+import { urlPublicaDaAvaliacao } from "../../../../_lib/links-publicos";
+import { type SituacaoDoPedido } from "../../../../_lib/pedidos";
 import { RecusarPedido } from "../decline-lead";
 import { PedidoDeAvaliacao } from "../review-request";
 import type { PedidoCompleto } from "./dados";

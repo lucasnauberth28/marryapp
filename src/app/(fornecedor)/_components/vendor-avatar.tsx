@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { iniciaisDe } from "../_lib/vendor-panel";
+import { iniciaisDe } from "../_lib/perfil-do-fornecedor";
 
 /** Avatar em arco (forma-assinatura do Aceito) com o logo do fornecedor ou as iniciais. */
 export function AvatarDoFornecedor({

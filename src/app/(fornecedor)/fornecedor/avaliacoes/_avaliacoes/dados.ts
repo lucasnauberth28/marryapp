@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { formatarDataDoCasamento } from "../../../_lib/vendor-panel";
+import { formatarDataDoCasamento } from "../../../_lib/datas-do-painel";
 
 export type FiltroDeAvaliacoes = "sem-resposta" | "todas";
 

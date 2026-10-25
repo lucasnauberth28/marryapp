@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, CalendarDays, Lock, MapPin } from "lucide-react";
 import { Aparicao } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
-import { LINK_DO_PLANO, LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL } from "../../../../_lib/vendor-panel";
+import { LINK_DO_PLANO, LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL } from "../../../../_lib/planos-do-fornecedor";
 import { ESTILO_DO_BOTAO_PRIMARIO, ESTILO_DO_CARTAO, ESTILO_DO_SOBRETITULO } from "./estilos";
 
 interface PropriedadesDoPedidoBloqueado {

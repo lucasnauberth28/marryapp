@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, BarChart3, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LINK_DO_PLANO } from "../../_lib/vendor-panel";
+import { LINK_DO_PLANO } from "../../_lib/planos-do-fornecedor";
 import { GraficoDeVisitas } from "./grafico-de-visitas";
 import { ESTILO_DO_SOBRETITULO, rotuloDoDia, type VisitasPorDia } from "./tipos";
 

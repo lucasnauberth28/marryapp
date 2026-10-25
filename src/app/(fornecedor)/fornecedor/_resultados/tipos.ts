@@ -1,4 +1,4 @@
-import { MESES } from "../../_lib/vendor-panel";
+import { MESES } from "../../_lib/datas-do-painel";
 
 export interface VisitasPorDia {
   /** Dia (meia-noite UTC = dia em Brasília). */

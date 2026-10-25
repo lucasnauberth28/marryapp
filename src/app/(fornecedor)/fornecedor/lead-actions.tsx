@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { atualizarSituacaoDoPedido } from "@/actions/vendor-panel-actions";
 import { Botao } from "@/components/ui/button";
 import { SelecaoNativa } from "@/components/ui/select";
-import { PROXIMO_PASSO_DO_PEDIDO, ROTULO_DA_SITUACAO_DO_PEDIDO, SITUACOES_DO_PEDIDO, type SituacaoDoPedido } from "../_lib/vendor-panel";
+import { PROXIMO_PASSO_DO_PEDIDO, ROTULO_DA_SITUACAO_DO_PEDIDO, SITUACOES_DO_PEDIDO, type SituacaoDoPedido } from "../_lib/pedidos";
 
 const estiloBaseDoBotao =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-60";

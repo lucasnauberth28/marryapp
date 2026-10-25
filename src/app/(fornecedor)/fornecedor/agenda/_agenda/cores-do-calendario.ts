@@ -1,4 +1,4 @@
-import { formatarHoraDoPainel } from "../../../_lib/vendor-panel";
+import { formatarHoraDoPainel } from "../../../_lib/datas-do-painel";
 import type { ItemDoDia } from "./tipos";
 
 /** Pontos do calendário no celular: tons mais fortes que os das etiquetas para aparecerem no fundo claro. */

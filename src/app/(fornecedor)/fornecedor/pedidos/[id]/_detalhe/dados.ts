@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import type { SituacaoDoPedido } from "../../../../_lib/vendor-panel";
+import type { SituacaoDoPedido } from "../../../../_lib/pedidos";
 
 const UM_DIA_EM_MS = 86_400_000;
 

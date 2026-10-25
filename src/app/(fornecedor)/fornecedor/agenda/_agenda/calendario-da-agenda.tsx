@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { DIAS_DA_SEMANA_CURTOS, type TipoDeEventoDoFornecedor } from "../../../_lib/vendor-panel";
+import { DIAS_DA_SEMANA_CURTOS } from "../../../_lib/datas-do-painel";
+import { type TipoDeEventoDoFornecedor } from "../../../_lib/pedidos";
 import { PILULA_DO_CALENDARIO, PONTO_DO_CALENDARIO, itemFalado, textoDaPilula } from "./cores-do-calendario";
 import { DetalheDoDia } from "./detalhe-do-dia";
 import { JanelaDaAgenda } from "./janela-da-agenda";

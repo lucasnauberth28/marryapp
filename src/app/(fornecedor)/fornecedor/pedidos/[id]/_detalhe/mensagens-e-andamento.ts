@@ -1,4 +1,7 @@
-import { formatarDataDoCasamento, formatarDataEHoraEmBrasilia, formatarReaisDoPainel, formatarTempoRelativo, linkDoWhatsapp, urlPublicaDaProposta, type SituacaoDoPedido } from "../../../../_lib/vendor-panel";
+import { formatarDataDoCasamento, formatarDataEHoraEmBrasilia, formatarTempoRelativo } from "../../../../_lib/datas-do-painel";
+import { linkDoWhatsapp, urlPublicaDaProposta } from "../../../../_lib/links-publicos";
+import { type SituacaoDoPedido } from "../../../../_lib/pedidos";
+import { formatarReaisDoPainel } from "../../../../_lib/perfil-do-fornecedor";
 import type { PropostaSalva } from "../formulario-de-proposta";
 import type { PedidoCompleto } from "./dados";
 

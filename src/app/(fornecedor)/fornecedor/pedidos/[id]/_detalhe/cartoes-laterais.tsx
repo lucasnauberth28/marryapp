@@ -6,7 +6,7 @@ import type { PedidoCompleto } from "./dados";
 import { ESTILO_DO_BOTAO_PRIMARIO, ESTILO_DO_CARTAO } from "./estilos";
 import type { PassoDoAndamento } from "./mensagens-e-andamento";
 import { SelecaoDeSituacao } from "../status-select";
-import type { SituacaoDoPedido } from "../../../../_lib/vendor-panel";
+import type { SituacaoDoPedido } from "../../../../_lib/pedidos";
 
 export function CartaoDeContato({ lead, contactWa, temData }: { lead: PedidoCompleto; contactWa: string | null; temData: boolean }) {
   return (

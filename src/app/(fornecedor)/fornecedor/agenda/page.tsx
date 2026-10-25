@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Aparicao } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
-import { NOMES_DOS_MESES, hojeEmBrasilia, paraDataIso } from "../../_lib/vendor-panel";
+import { NOMES_DOS_MESES, hojeEmBrasilia, paraDataIso } from "../../_lib/datas-do-painel";
 import { CalendarioDaAgenda } from "./_agenda/calendario-da-agenda";
 import { carregarAgenda, itensPorDia, mesDaAgenda, opcoesDePedido, proximosCompromissos } from "./_agenda/dados";
 import { NavegacaoDoMes } from "./_agenda/navegacao-do-mes";

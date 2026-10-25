@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Aparicao } from "@/components/motion/reveal";
 import { pluralizar } from "@/lib/formatacao/plural";
-import { LINK_DO_PLANO, LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL } from "../../_lib/vendor-panel";
+import { LINK_DO_PLANO, LIMITE_MENSAL_DE_PEDIDOS_DO_PLANO_INICIAL } from "../../_lib/planos-do-fornecedor";
 
 const BOTAO_PRINCIPAL = "inline-flex min-h-11 items-center gap-2 rounded-xl bg-ameixa px-4 text-[15px] font-semibold text-on-ameixa transition-colors hover:bg-ameixa-hover";
 

@@ -7,7 +7,7 @@ import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { exigirSessaoDoFornecedor } from "@/lib/security/vendor-guard";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
-import { PADRAO_DO_TOKEN_PUBLICO } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { PADRAO_DO_TOKEN_PUBLICO } from "@/app/(fornecedor)/_lib/links-publicos";
 import { avisarDepois } from "@/lib/notifications/service";
 import { avisarNovaAvaliacao } from "@/lib/notifications/events";
 

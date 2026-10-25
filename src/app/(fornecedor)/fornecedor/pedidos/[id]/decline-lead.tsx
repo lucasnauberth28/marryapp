@@ -7,7 +7,7 @@ import { recusarPedido } from "@/actions/vendor-panel-actions";
 import { Botao } from "@/components/ui/button";
 import { AreaDeTexto } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { linkDoWhatsapp } from "../../../_lib/vendor-panel";
+import { linkDoWhatsapp } from "../../../_lib/links-publicos";
 
 const ESTILO_DO_BOTAO =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-60";

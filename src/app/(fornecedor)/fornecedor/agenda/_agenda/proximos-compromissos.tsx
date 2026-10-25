@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { EtiquetaBase } from "../../../_components/status-chip";
-import { DIAS_DA_SEMANA_CURTOS, MESES, formatarHoraDoPainel, paraDataIso } from "../../../_lib/vendor-panel";
+import { DIAS_DA_SEMANA_CURTOS, MESES, formatarHoraDoPainel, paraDataIso } from "../../../_lib/datas-do-painel";
 import { BotaoDeExcluirEvento } from "./botao-de-excluir-evento";
 import type { Proximo } from "./dados";
 

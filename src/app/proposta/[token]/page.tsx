@@ -5,14 +5,9 @@ import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
 import { CARTAO_DA_PAGINA_COM_TOKEN, SOBRETITULO_DA_PAGINA_COM_TOKEN, MoldeDaPaginaComToken } from "@/components/public/token-page-shell";
-import {
-  formatarReaisDoPainel,
-  formatarDataEHoraEmBrasilia,
-  formatarDataDoCasamento,
-  formatarDataDoCasamentoPorExtenso,
-  PADRAO_DO_TOKEN_PUBLICO,
-  hojeEmBrasilia,
-} from "@/app/(fornecedor)/_lib/vendor-panel";
+import { formatarDataEHoraEmBrasilia, formatarDataDoCasamento, formatarDataDoCasamentoPorExtenso, hojeEmBrasilia } from "@/app/(fornecedor)/_lib/datas-do-painel";
+import { PADRAO_DO_TOKEN_PUBLICO } from "@/app/(fornecedor)/_lib/links-publicos";
+import { formatarReaisDoPainel } from "@/app/(fornecedor)/_lib/perfil-do-fornecedor";
 import { FormularioDeAceiteDaProposta } from "./accept-form";
 
 export const metadata: Metadata = {

@@ -1,6 +1,6 @@
 import { Check, CircleAlert, CircleX, Hourglass, MessageCircle, Send, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ROTULO_DA_SITUACAO_DO_PEDIDO, type SituacaoDoPedido } from "../_lib/vendor-panel";
+import { ROTULO_DA_SITUACAO_DO_PEDIDO, type SituacaoDoPedido } from "../_lib/pedidos";
 
 type TomDaEtiqueta = "aviso" | "sucesso" | "perigo" | "neutro" | "salvia";
 

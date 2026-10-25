@@ -1,5 +1,5 @@
 // Filtra e ordena a lista de fornecedores no navegador (a data do casamento é filtrada no servidor).
-import { interpretarRegioes } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { interpretarRegioes } from "@/app/(fornecedor)/_lib/perfil-do-fornecedor";
 import { TODAS_AS_REGIOES, VALOR_TODOS, type ChaveDeOrdenacao, type FornecedorPublico } from "./constantes";
 
 export interface FiltrosDosFornecedores {

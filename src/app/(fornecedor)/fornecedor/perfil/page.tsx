@@ -3,7 +3,7 @@ import { Aparicao } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 import { EtiquetaDaCuradoria } from "../../_components/status-chip";
-import { centavosParaCampoDeReais, MAXIMO_DE_IMAGENS_NA_GALERIA, interpretarGaleria, interpretarRegioes, CATEGORIAS_DE_FORNECEDOR } from "../../_lib/vendor-panel";
+import { centavosParaCampoDeReais, MAXIMO_DE_IMAGENS_NA_GALERIA, interpretarGaleria, interpretarRegioes, CATEGORIAS_DE_FORNECEDOR } from "../../_lib/perfil-do-fornecedor";
 import { FormularioDeMidias } from "./formulario-de-midias";
 import { FormularioDePerfil } from "./formulario-de-perfil";
 

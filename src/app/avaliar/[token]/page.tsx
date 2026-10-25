@@ -4,7 +4,8 @@ import { BadgeCheck, Clock } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
 import { SOBRETITULO_DA_PAGINA_COM_TOKEN, MoldeDaPaginaComToken } from "@/components/public/token-page-shell";
-import { formatarDataDoCasamento, PADRAO_DO_TOKEN_PUBLICO } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { formatarDataDoCasamento } from "@/app/(fornecedor)/_lib/datas-do-painel";
+import { PADRAO_DO_TOKEN_PUBLICO } from "@/app/(fornecedor)/_lib/links-publicos";
 import { FormularioDeAvaliacao } from "./review-form";
 
 export const metadata: Metadata = {

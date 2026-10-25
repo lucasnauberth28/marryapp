@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LinkPendente } from "@/components/feedback/link-pending";
 import { cn } from "@/lib/utils";
-import type { SituacaoDoPedido } from "../../_lib/vendor-panel";
+import type { SituacaoDoPedido } from "../../_lib/pedidos";
 import { FILTROS } from "./dados";
 
 export function FiltrosDosPedidos({ filter, newCount }: { filter: SituacaoDoPedido | null; newCount: number }) {

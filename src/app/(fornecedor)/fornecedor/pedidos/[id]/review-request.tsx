@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { pedirAvaliacaoDoPedido } from "@/actions/vendor-panel-actions";
 import { Entrada } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { linkDoWhatsapp } from "../../../_lib/vendor-panel";
+import { linkDoWhatsapp } from "../../../_lib/links-publicos";
 
 const ESTILO_DO_BOTAO =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-[15px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-60";

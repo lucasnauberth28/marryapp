@@ -30,7 +30,8 @@ import { SeletorDeData } from "@/components/ui/date-picker";
 import { Dialogo, ConteudoDoDialogo, DescricaoDoDialogo, TituloDoDialogo } from "@/components/ui/dialog";
 import { conferirDisponibilidadeDoFornecedor, criarPedidoDeOrcamento, type FornecedorPublico } from "@/actions/partner-vendor-actions";
 import { toast } from "sonner";
-import { OPCOES_DE_ORCAMENTO_DO_PEDIDO, interpretarGaleria, interpretarRegioes } from "@/app/(fornecedor)/_lib/vendor-panel";
+import { OPCOES_DE_ORCAMENTO_DO_PEDIDO } from "@/app/(fornecedor)/_lib/pedidos";
+import { interpretarGaleria, interpretarRegioes } from "@/app/(fornecedor)/_lib/perfil-do-fornecedor";
 import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { cn } from "@/lib/utils";
 

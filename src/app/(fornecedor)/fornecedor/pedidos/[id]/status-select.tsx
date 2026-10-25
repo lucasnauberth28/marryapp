@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import { atualizarSituacaoDoPedido } from "@/actions/vendor-panel-actions";
 import { SelecaoNativa } from "@/components/ui/select";
-import { ROTULO_DA_SITUACAO_DO_PEDIDO, SITUACOES_DO_PEDIDO, type SituacaoDoPedido } from "../../../_lib/vendor-panel";
+import { ROTULO_DA_SITUACAO_DO_PEDIDO, SITUACOES_DO_PEDIDO, type SituacaoDoPedido } from "../../../_lib/pedidos";
 
 /** Troca o status do pedido (mesma ação da lista de pedidos). */
 export function SelecaoDeSituacao({ leadId, status, id = "status-pedido" }: { leadId: string; status: SituacaoDoPedido; id?: string }) {

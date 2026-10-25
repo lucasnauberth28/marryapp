@@ -1,7 +1,8 @@
 import { Send, Mail, MessageCircle } from "lucide-react";
 import { Aparicao } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
-import { centavosParaCampoDeReais, hojeEmBrasilia, paraDataIso } from "../../../../_lib/vendor-panel";
+import { hojeEmBrasilia, paraDataIso } from "../../../../_lib/datas-do-painel";
+import { centavosParaCampoDeReais } from "../../../../_lib/perfil-do-fornecedor";
 import { FormularioDeProposta, type PropostaSalva } from "../formulario-de-proposta";
 import type { PedidoCompleto } from "./dados";
 import { ESTILO_DO_BOTAO_PRIMARIO, ESTILO_DO_BOTAO_SECUNDARIO, ESTILO_DO_CARTAO } from "./estilos";

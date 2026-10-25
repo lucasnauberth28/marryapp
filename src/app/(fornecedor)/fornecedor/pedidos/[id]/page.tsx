@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
-import { linkDoWhatsapp, nivelEfetivoDoFornecedor, pedidoEstaBloqueado, primeiroNomeDe, formatarDataDoCasamento, formatarDataDoCasamentoPorExtenso, ehSituacaoDoPedido, type SituacaoDoPedido } from "../../../_lib/vendor-panel";
+import { formatarDataDoCasamento, formatarDataDoCasamentoPorExtenso } from "../../../_lib/datas-do-painel";
+import { linkDoWhatsapp } from "../../../_lib/links-publicos";
+import { primeiroNomeDe, ehSituacaoDoPedido, type SituacaoDoPedido } from "../../../_lib/pedidos";
+import { nivelEfetivoDoFornecedor, pedidoEstaBloqueado } from "../../../_lib/planos-do-fornecedor";
 import { situacaoDaAgenda } from "./_detalhe/agenda";
 import { CabecalhoDoPedido } from "./_detalhe/cabecalho-do-pedido";
 import { BarraFixaDoCelular, CartaoDaProposta } from "./_detalhe/cartao-da-proposta";
