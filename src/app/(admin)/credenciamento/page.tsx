@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
 import { CartaoDeUpgrade } from "@/components/plan/upgrade-card";
-import { LeitorCliente } from "./scanner-client";
+import { LeitorCliente } from "./leitor-cliente";
 
 export const metadata: Metadata = {
   title: "Registro de entrada dos convidados",
