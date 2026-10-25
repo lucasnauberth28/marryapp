@@ -39,6 +39,36 @@ function useSalvarPreco(itemKey: string) {
   return { pending, error, salvar };
 }
 
+interface PropriedadesDosCampos {
+  name: string;
+  aoMudarNome: (v: string) => void;
+  price: string;
+  aoMudarPreco: (v: string) => void;
+  reason: string;
+  aoMudarMotivo: (v: string) => void;
+  free: boolean;
+  precoInvalido: boolean;
+}
+
+function CamposDoCatalogo({ name, aoMudarNome, price, aoMudarPreco, reason, aoMudarMotivo, free, precoInvalido }: PropriedadesDosCampos) {
+  return (
+    <>
+      <Entrada label="Nome" value={name} onChange={(e) => aoMudarNome(e.target.value)} maxLength={40} required />
+      <Entrada
+        label="Preço (R$)"
+        inputMode="decimal"
+        value={price}
+        onChange={(e) => aoMudarPreco(e.target.value)}
+        disabled={free}
+        hint={free ? "Este plano é gratuito e continua gratuito." : undefined}
+        error={precoInvalido ? "Use o formato 159,00." : undefined}
+        required
+      />
+      <AreaDeTexto label="Motivo da mudança" rows={3} maxLength={300} value={reason} onChange={(e) => aoMudarMotivo(e.target.value)} hint="Aparece no registro de atividades." required />
+    </>
+  );
+}
+
 function BotoesDoFormulario({ desabilitado, carregando }: { desabilitado: boolean; carregando: boolean }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
@@ -104,18 +134,7 @@ export function FormularioDeEdicaoDoCatalogo({
       }}
     >
       <h2 className="text-xl font-semibold leading-7 text-tinta">Editar {title}</h2>
-      <Entrada label="Nome" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} required />
-      <Entrada
-        label="Preço (R$)"
-        inputMode="decimal"
-        value={price}
-        onChange={(e) => setPrice(e.target.value)}
-        disabled={free}
-        hint={free ? "Este plano é gratuito e continua gratuito." : undefined}
-        error={!free && price && !Number.isFinite(cents) ? "Use o formato 159,00." : undefined}
-        required
-      />
-      <AreaDeTexto label="Motivo da mudança" rows={3} maxLength={300} value={reason} onChange={(e) => setReason(e.target.value)} hint="Aparece no registro de atividades." required />
+      <CamposDoCatalogo name={name} aoMudarNome={setName} price={price} aoMudarPreco={setPrice} reason={reason} aoMudarMotivo={setReason} free={free} precoInvalido={!free && Boolean(price) && !Number.isFinite(cents)} />
       <AvisoDoPrecoNovo />
       {big ? <ConfirmacaoDaMudancaGrande marcada={confirmBig} aoMudar={setConfirmBig} de={currentPriceCents} para={cents} /> : null}
       {error ? (

@@ -2,44 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Bell, Plus, Clock, CheckCircle2, MessageCircle, Lock } from "lucide-react";
-import { Entrada } from "@/components/ui/input";
-import { AreaDeTexto } from "@/components/ui/textarea";
-import { SelecaoNativa } from "@/components/ui/select";
-import { AvisoDoFormulario } from "@/components/ui/field";
 import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao, type TomDaSituacao } from "@/components/plataforma/status-chip";
 import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Botao } from "@/components/ui/button";
-import { SITUACOES_DO_CHAMADO, ROTULO_DA_SITUACAO_DO_CHAMADO } from "@/lib/platform/support";
-import { criarChamadoDeSuporte, atualizarChamadoDeSuporte } from "@/actions/admin-suporte-actions";
-import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
+import { ROTULO_DA_SITUACAO_DO_CHAMADO } from "@/lib/platform/support";
+import { EditorDeChamado, NovoChamado } from "../_chamados/formularios";
+import type { ItemDeChamado, PreenchimentoDoChamado } from "../_chamados/tipos";
 
-export interface ItemDeChamado {
-  id: string;
-  number: number;
-  subject: string;
-  body: string | null;
-  requesterName: string;
-  requesterEmail: string | null;
-  status: (typeof SITUACOES_DO_CHAMADO)[number];
-  assigneeName: string | null;
-  mine: boolean;
-  internalNote: string | null;
-  whenLabel: string;
-  weddingId: string | null;
-  vendorId: string | null;
-}
-
-export interface PreenchimentoDoChamado {
-  weddingId?: string;
-  vendorId?: string;
-  requesterName: string;
-  requesterEmail: string;
-  label: string;
-}
+export type { ItemDeChamado, PreenchimentoDoChamado };
 
 const TONS_DA_ETIQUETA: Record<ItemDeChamado["status"], { tone: TomDaSituacao; icon: typeof Clock }> = {
   NEW: { tone: "aviso", icon: Clock },
@@ -47,6 +19,33 @@ const TONS_DA_ETIQUETA: Record<ItemDeChamado["status"], { tone: TomDaSituacao; i
   ANSWERED: { tone: "salvia", icon: CheckCircle2 },
   CLOSED: { tone: "neutro", icon: Lock },
 };
+
+function ItemDoChamado({ t, aberto, aoAlternar }: { t: ItemDeChamado; aberto: boolean; aoAlternar: () => void }) {
+  const s = TONS_DA_ETIQUETA[t.status];
+  return (
+    <li>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+        <div className="min-w-0">
+          <p className="text-[15px] font-semibold leading-5 text-tinta">
+            <span className="text-tinta-suave">#{t.number}</span> {t.subject}
+          </p>
+          <p className="text-sm leading-5 text-tinta-suave">
+            {t.requesterName} · {t.whenLabel} · {t.assigneeName ? `Responsável: ${t.mine ? "você" : t.assigneeName.split(" ")[0]}` : "Sem responsável"}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <EtiquetaDeSituacao tone={s.tone} icon={s.icon}>
+            {ROTULO_DA_SITUACAO_DO_CHAMADO[t.status]}
+          </EtiquetaDeSituacao>
+          <button type="button" aria-expanded={aberto} onClick={aoAlternar} className={`${estiloDoBotao.quiet} ${estiloDoBotao.sm}`}>
+            {aberto ? "Fechar" : "Abrir"}
+          </button>
+        </div>
+      </div>
+      {aberto && <EditorDeChamado ticket={t} onDone={aoAlternar} />}
+    </li>
+  );
+}
 
 export function Chamados({ rows, newCount, closedCount, showClosed, prefill, openForm }: { rows: ItemDeChamado[]; newCount: number; closedCount: number; showClosed: boolean; prefill: PreenchimentoDoChamado | null; openForm: boolean }) {
   const [formOpen, setFormOpen] = useState(openForm);
@@ -77,32 +76,9 @@ export function Chamados({ rows, newCount, closedCount, showClosed, prefill, ope
         </EstadoVazio>
       ) : (
         <ul className="divide-y divide-linha overflow-hidden rounded-2xl border border-linha">
-          {rows.map((t) => {
-            const s = TONS_DA_ETIQUETA[t.status];
-            return (
-              <li key={t.id}>
-                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
-                  <div className="min-w-0">
-                    <p className="text-[15px] font-semibold leading-5 text-tinta">
-                      <span className="text-tinta-suave">#{t.number}</span> {t.subject}
-                    </p>
-                    <p className="text-sm leading-5 text-tinta-suave">
-                      {t.requesterName} · {t.whenLabel} · {t.assigneeName ? `Responsável: ${t.mine ? "você" : t.assigneeName.split(" ")[0]}` : "Sem responsável"}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <EtiquetaDeSituacao tone={s.tone} icon={s.icon}>
-                      {ROTULO_DA_SITUACAO_DO_CHAMADO[t.status]}
-                    </EtiquetaDeSituacao>
-                    <button type="button" aria-expanded={editing === t.id} onClick={() => setEditing(editing === t.id ? null : t.id)} className={`${estiloDoBotao.quiet} ${estiloDoBotao.sm}`}>
-                      {editing === t.id ? "Fechar" : "Abrir"}
-                    </button>
-                  </div>
-                </div>
-                {editing === t.id && <EditorDeChamado ticket={t} onDone={() => setEditing(null)} />}
-              </li>
-            );
-          })}
+          {rows.map((t) => (
+            <ItemDoChamado key={t.id} t={t} aberto={editing === t.id} aoAlternar={() => setEditing(editing === t.id ? null : t.id)} />
+          ))}
         </ul>
       )}
       <p className="mt-3 text-sm text-tinta-suave">
@@ -120,108 +96,3 @@ export function Chamados({ rows, newCount, closedCount, showClosed, prefill, ope
   );
 }
 
-function NovoChamado({ prefill, onDone }: { prefill: PreenchimentoDoChamado | null; onDone: () => void }) {
-  const router = useRouter();
-  const [subject, setSubject] = useState("");
-  const [body, setBody] = useState("");
-  const [name, setName] = useState(prefill?.requesterName ?? "");
-  const [email, setEmail] = useState(prefill?.requesterEmail ?? "");
-  const [phone, setPhone] = useState("");
-  const { pending, errors, formError, run } = useAcaoDoAdmin();
-  return (
-    <form
-      className="mb-4 flex flex-col gap-4 rounded-2xl bg-linho p-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        run(
-          () => criarChamadoDeSuporte({ subject, body, requesterName: name, requesterEmail: email, requesterPhone: phone, weddingId: prefill?.weddingId, vendorId: prefill?.vendorId }),
-          () => {
-            onDone();
-            router.replace("/admin/suporte#chamados");
-            router.refresh();
-          },
-        );
-      }}
-    >
-      <h3 className="text-lg font-semibold text-tinta">Registrar um pedido de ajuda</h3>
-      {prefill && <p className="text-sm text-tinta-suave">Ligado ao {prefill.label}.</p>}
-      <Entrada label="Assunto" value={subject} onChange={(e) => setSubject(e.target.value)} error={errors.subject} maxLength={140} />
-      <AreaDeTexto label="O que a pessoa contou" optional value={body} onChange={(e) => setBody(e.target.value)} error={errors.body} rows={3} maxLength={2000} />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Entrada label="Quem pediu" value={name} onChange={(e) => setName(e.target.value)} error={errors.requesterName} maxLength={120} />
-        <Entrada label="E-mail" optional type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.requesterEmail} />
-        <Entrada label="Telefone" optional value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.requesterPhone} maxLength={30} />
-      </div>
-      {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
-      <div className="flex flex-wrap gap-3">
-        <Botao type="submit" loading={pending}>
-          Registrar pedido
-        </Botao>
-        <Botao type="button" variant="quiet" onClick={onDone} disabled={pending}>
-          Cancelar
-        </Botao>
-      </div>
-    </form>
-  );
-}
-
-function EditorDeChamado({ ticket, onDone }: { ticket: ItemDeChamado; onDone: () => void }) {
-  const router = useRouter();
-  const [status, setStatus] = useState(ticket.status);
-  const [note, setNote] = useState(ticket.internalNote ?? "");
-  const [assign, setAssign] = useState<"keep" | "me" | "none">("keep");
-  const { pending, errors, formError, run } = useAcaoDoAdmin();
-  return (
-    <form
-      className="flex flex-col gap-4 border-t border-linha bg-linho px-4 py-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        run(
-          () => atualizarChamadoDeSuporte({ id: ticket.id, status, internalNote: note, assignToMe: assign === "me", unassign: assign === "none" }),
-          () => {
-            onDone();
-            router.refresh();
-          },
-        );
-      }}
-    >
-      {ticket.body && <p className="whitespace-pre-line rounded-xl bg-papel p-3 text-sm leading-5 text-tinta">{ticket.body}</p>}
-      {(ticket.requesterEmail || ticket.weddingId || ticket.vendorId) && (
-        <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-tinta-suave">
-          {ticket.requesterEmail && <span>{ticket.requesterEmail}</span>}
-          {ticket.weddingId && (
-            <Link className="font-semibold text-ameixa underline underline-offset-2" href={`/admin/casais/${ticket.weddingId}`}>
-              Abrir o casal
-            </Link>
-          )}
-          {ticket.vendorId && (
-            <Link className="font-semibold text-ameixa underline underline-offset-2" href={`/admin/fornecedores?id=${ticket.vendorId}`}>
-              Abrir o fornecedor
-            </Link>
-          )}
-        </p>
-      )}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <SelecaoNativa label="Situação" value={status} onChange={(e) => setStatus(e.target.value as ItemDeChamado["status"])} alwaysFloat>
-          {SITUACOES_DO_CHAMADO.map((s) => (
-            <option key={s} value={s}>
-              {ROTULO_DA_SITUACAO_DO_CHAMADO[s]}
-            </option>
-          ))}
-        </SelecaoNativa>
-        <SelecaoNativa label="Responsável" value={assign} onChange={(e) => setAssign(e.target.value as typeof assign)} alwaysFloat>
-          <option value="keep">{ticket.assigneeName ? `Continua ${ticket.mine ? "com você" : ticket.assigneeName.split(" ")[0]}` : "Sem responsável"}</option>
-          <option value="me">Assumir (eu)</option>
-          {ticket.assigneeName && <option value="none">Tirar o responsável</option>}
-        </SelecaoNativa>
-      </div>
-      <AreaDeTexto label="Nota interna" optional hint="Só a equipe vê." value={note} onChange={(e) => setNote(e.target.value)} error={errors.internalNote} rows={3} maxLength={2000} />
-      {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
-      <div>
-        <Botao type="submit" loading={pending}>
-          Salvar
-        </Botao>
-      </div>
-    </form>
-  );
-}

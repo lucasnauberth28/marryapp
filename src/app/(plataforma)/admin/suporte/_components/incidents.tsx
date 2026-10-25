@@ -110,15 +110,40 @@ function NovoIncidente({ today, onDone }: { today: string; onDone: () => void })
   );
 }
 
+type AcaoDoIncidente = "save" | "close" | "reopen";
+
+function BotoesDoIncidente({ item, pending, running, aoAgir }: { item: ItemDeIncidente; pending: boolean; running: AcaoDoIncidente | null; aoAgir: (acao: AcaoDoIncidente) => void }) {
+  return (
+    <>
+      <Botao type="button" variant="outline" disabled={pending} loading={pending && running === "save"} onClick={() => aoAgir("save")}>
+        Salvar aviso
+      </Botao>
+      {item.open ? (
+        <Botao type="button" disabled={pending} loading={pending && running === "close"} onClick={() => aoAgir("close")}>
+          Fechar o incidente
+        </Botao>
+      ) : (
+        <Botao type="button" variant="quiet" disabled={pending} loading={pending && running === "reopen"} onClick={() => aoAgir("reopen")}>
+          Reabrir
+        </Botao>
+      )}
+    </>
+  );
+}
+
 function EditorDeIncidente({ item, onDone }: { item: ItemDeIncidente; onDone: () => void }) {
   const router = useRouter();
   const [notifiedOn, setNotifiedOn] = useState(item.notifiedOn);
   const [notifiedWho, setNotifiedWho] = useState(item.notifiedWho ?? "");
   const { pending, errors, formError, run } = useAcaoDoAdmin();
-  const [running, setRunning] = useState<"save" | "close" | "reopen" | null>(null); // só o botão clicado mostra o spinner
+  const [running, setRunning] = useState<AcaoDoIncidente | null>(null); // só o botão clicado mostra o spinner
   const after = () => {
     onDone();
     router.refresh();
+  };
+  const agir = (acao: "save" | "close" | "reopen") => {
+    setRunning(acao);
+    run(() => atualizarIncidenteDeSeguranca({ id: item.id, notifiedOn, notifiedWho, ...(acao === "close" ? { close: true } : acao === "reopen" ? { reopen: true } : {}) }), after);
   };
   return (
     <div className="flex flex-col gap-4 border-t border-linha bg-linho px-4 py-4">
@@ -128,44 +153,7 @@ function EditorDeIncidente({ item, onDone }: { item: ItemDeIncidente; onDone: ()
       <AreaDeTexto label="Quem foi avisado" optional value={notifiedWho} onChange={(e) => setNotifiedWho(e.target.value)} rows={2} maxLength={2000} />
       {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="flex flex-wrap gap-3">
-        <Botao
-          type="button"
-          variant="outline"
-          disabled={pending}
-          loading={pending && running === "save"}
-          onClick={() => {
-            setRunning("save");
-            run(() => atualizarIncidenteDeSeguranca({ id: item.id, notifiedOn, notifiedWho }), after);
-          }}
-        >
-          Salvar aviso
-        </Botao>
-        {item.open ? (
-          <Botao
-            type="button"
-            disabled={pending}
-            loading={pending && running === "close"}
-            onClick={() => {
-              setRunning("close");
-              run(() => atualizarIncidenteDeSeguranca({ id: item.id, notifiedOn, notifiedWho, close: true }), after);
-            }}
-          >
-            Fechar o incidente
-          </Botao>
-        ) : (
-          <Botao
-            type="button"
-            variant="quiet"
-            disabled={pending}
-            loading={pending && running === "reopen"}
-            onClick={() => {
-              setRunning("reopen");
-              run(() => atualizarIncidenteDeSeguranca({ id: item.id, notifiedOn, notifiedWho, reopen: true }), after);
-            }}
-          >
-            Reabrir
-          </Botao>
-        )}
+        <BotoesDoIncidente item={item} pending={pending} running={running} aoAgir={agir} />
       </div>
     </div>
   );
