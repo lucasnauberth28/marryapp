@@ -20,6 +20,42 @@ export type ResultadoDoAceiteDoConvite =
 
 class ConviteJaUsado extends Error {}
 
+function carregarContaDoConvite(userId: string) {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      weddingId: true,
+      partnerVendorId: true,
+      role: { select: { name: true, allowedPaths: true } },
+      wedding: { select: { coupleNames: true } },
+    },
+  });
+}
+
+type ConviteValido = { id: string; weddingId: string };
+
+/** Marca o convite como usado (só uma vez), passa a conta ao perfil "Casal" do casamento e, se era a última pessoa do casamento antigo, apaga o antigo. */
+async function moverContaParaOCasamento(userId: string, invite: ConviteValido, previousWeddingId: string | null, willDeleteCurrent: boolean) {
+  await prisma.$transaction(async (tx) => {
+    const now = new Date();
+    const claimed = await tx.weddingInvite.updateMany({ where: { id: invite.id, usedAt: null, expiresAt: { gt: now } }, data: { usedAt: now, usedById: userId } });
+    if (claimed.count !== 1) throw new ConviteJaUsado();
+
+    const role = await criarOuAtualizarPapelDoCasal(tx);
+    await tx.user.update({ where: { id: userId }, data: { weddingId: invite.weddingId, roleId: role.id } });
+
+    if (previousWeddingId && willDeleteCurrent) {
+      const stillAlone = (await tx.user.count({ where: { weddingId: previousWeddingId } })) === 0;
+      if (stillAlone) {
+        await tx.transaction.deleteMany({ where: { weddingId: previousWeddingId } });
+        await tx.wedding.delete({ where: { id: previousWeddingId } });
+      }
+    }
+  });
+}
+
 /**
  * Conta logada entra no casamento do convite (perfil "Casal").
  * Se a conta já tem outro casamento, pede confirmação antes; sendo o último membro dele,
@@ -37,17 +73,7 @@ export async function aceitarConvite(input: { token: string; confirmLeave?: bool
   if (lookup.status !== "ok") return { success: false, error: MENSAGEM_DA_SITUACAO_DO_CONVITE[lookup.status] };
   const { invite } = lookup;
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.userId },
-    select: {
-      id: true,
-      name: true,
-      weddingId: true,
-      partnerVendorId: true,
-      role: { select: { name: true, allowedPaths: true } },
-      wedding: { select: { coupleNames: true } },
-    },
-  });
+  const user = await carregarContaDoConvite(session.userId);
   if (!user) return { success: false, error: "Conta não encontrada." };
 
   const kind = classificarConta(user);
@@ -64,25 +90,7 @@ export async function aceitarConvite(input: { token: string; confirmLeave?: bool
   }
 
   try {
-    await prisma.$transaction(async (tx) => {
-      const now = new Date();
-      const claimed = await tx.weddingInvite.updateMany({
-        where: { id: invite.id, usedAt: null, expiresAt: { gt: now } },
-        data: { usedAt: now, usedById: user.id },
-      });
-      if (claimed.count !== 1) throw new ConviteJaUsado();
-
-      const role = await criarOuAtualizarPapelDoCasal(tx);
-      await tx.user.update({ where: { id: user.id }, data: { weddingId: invite.weddingId, roleId: role.id } });
-
-      if (previousWeddingId && willDeleteCurrent) {
-        const stillAlone = (await tx.user.count({ where: { weddingId: previousWeddingId } })) === 0;
-        if (stillAlone) {
-          await tx.transaction.deleteMany({ where: { weddingId: previousWeddingId } });
-          await tx.wedding.delete({ where: { id: previousWeddingId } });
-        }
-      }
-    });
+    await moverContaParaOCasamento(user.id, invite, previousWeddingId, willDeleteCurrent);
   } catch (error) {
     if (error instanceof ConviteJaUsado) return { success: false, error: MENSAGEM_DA_SITUACAO_DO_CONVITE.used };
     console.error("[acceptInvite]", error);
@@ -111,6 +119,23 @@ const EsquemaDoCadastro = z.object({
 
 const CONTA_JA_EXISTENTE = "Já existe uma conta com este e-mail. Entre com ela para aceitar o convite.";
 
+/** Marca o convite como usado (só uma vez) e cria a conta do par já dentro do casamento. */
+function criarContaNoCasamento(data: { name: string; email: string }, hashedPassword: string, invite: ConviteValido): Promise<string> {
+  return prisma.$transaction(async (tx) => {
+    const now = new Date();
+    const claimed = await tx.weddingInvite.updateMany({ where: { id: invite.id, usedAt: null, expiresAt: { gt: now } }, data: { usedAt: now } });
+    if (claimed.count !== 1) throw new ConviteJaUsado();
+
+    const role = await criarOuAtualizarPapelDoCasal(tx);
+    const created = await tx.user.create({
+      data: { name: data.name, username: data.email, password: hashedPassword, roleId: role.id, weddingId: invite.weddingId },
+      select: { id: true },
+    });
+    await tx.weddingInvite.update({ where: { id: invite.id }, data: { usedById: created.id } });
+    return created.id;
+  });
+}
+
 /** Cria a conta do par já dentro do casamento do convite e inicia a sessão. */
 export async function aceitarConviteComContaNova(input: {
   token: string;
@@ -135,22 +160,7 @@ export async function aceitarConviteComContaNova(input: {
   const hashed = await bcrypt.hash(data.password, 12);
   let userId: string;
   try {
-    userId = await prisma.$transaction(async (tx) => {
-      const now = new Date();
-      const claimed = await tx.weddingInvite.updateMany({
-        where: { id: invite.id, usedAt: null, expiresAt: { gt: now } },
-        data: { usedAt: now },
-      });
-      if (claimed.count !== 1) throw new ConviteJaUsado();
-
-      const role = await criarOuAtualizarPapelDoCasal(tx);
-      const created = await tx.user.create({
-        data: { name: data.name, username: data.email, password: hashed, roleId: role.id, weddingId: invite.weddingId },
-        select: { id: true },
-      });
-      await tx.weddingInvite.update({ where: { id: invite.id }, data: { usedById: created.id } });
-      return created.id;
-    });
+    userId = await criarContaNoCasamento(data, hashed, invite);
   } catch (error) {
     if (error instanceof ConviteJaUsado) return { success: false, error: MENSAGEM_DA_SITUACAO_DO_CONVITE.used };
     if (ehViolacaoDeUnicidade(error)) return { success: false, error: CONTA_JA_EXISTENTE, existingAccount: true };
