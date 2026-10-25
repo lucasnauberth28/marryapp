@@ -44,52 +44,61 @@ function LinhasDeRotuloEValor({ rows }: { rows: number }) {
 const DUAS_COLUNAS = "grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start";
 const METADES = "grid gap-6 lg:grid-cols-2 lg:items-start";
 
+function VisaoEsqueleto() {
+  return (
+    <div className={DUAS_COLUNAS}>
+      <div className="flex min-w-0 flex-col gap-6">
+        <EsqueletoDeCartao>
+          <LinhasDeRotuloEValor rows={7} />
+        </EsqueletoDeCartao>
+        <EsqueletoDeCartao>
+          <EsqueletoDasLinhas rows={3} chip={false} />
+        </EsqueletoDeCartao>
+        <EsqueletoDeCartao>
+          <EsqueletoDasLinhas rows={4} chip={false} />
+        </EsqueletoDeCartao>
+      </div>
+      <Lateral />
+    </div>
+  );
+}
+
+function PagamentosEsqueleto() {
+  return (
+    <div className={DUAS_COLUNAS}>
+      <div className="flex min-w-0 flex-col gap-6">
+        <EsqueletoDeCartao>
+          <EsqueletoDasLinhas rows={3} />
+        </EsqueletoDeCartao>
+        <EsqueletoDeCartao title={false}>
+          <EsqueletoDeFormulario fields={["input", "textarea"]} />
+        </EsqueletoDeCartao>
+        <EsqueletoDeCartao>
+          <EsqueletoDeFormulario fields={["input", "textarea"]} />
+        </EsqueletoDeCartao>
+      </div>
+      <Lateral />
+    </div>
+  );
+}
+
+function DuasListasEsqueleto() {
+  return (
+    <div className={METADES}>
+      <EsqueletoDeCartao>
+        <EsqueletoDasLinhas rows={5} chip={false} />
+      </EsqueletoDeCartao>
+      <EsqueletoDeCartao>
+        <EsqueletoDasLinhas rows={4} />
+      </EsqueletoDeCartao>
+    </div>
+  );
+}
+
 export function EsqueletoDaAbaDoCasal({ tab }: { tab: string }) {
-  if (tab === "visao")
-    return (
-      <div className={DUAS_COLUNAS}>
-        <div className="flex min-w-0 flex-col gap-6">
-          <EsqueletoDeCartao>
-            <LinhasDeRotuloEValor rows={7} />
-          </EsqueletoDeCartao>
-          <EsqueletoDeCartao>
-            <EsqueletoDasLinhas rows={3} chip={false} />
-          </EsqueletoDeCartao>
-          <EsqueletoDeCartao>
-            <EsqueletoDasLinhas rows={4} chip={false} />
-          </EsqueletoDeCartao>
-        </div>
-        <Lateral />
-      </div>
-    );
-  if (tab === "pagamentos")
-    return (
-      <div className={DUAS_COLUNAS}>
-        <div className="flex min-w-0 flex-col gap-6">
-          <EsqueletoDeCartao>
-            <EsqueletoDasLinhas rows={3} />
-          </EsqueletoDeCartao>
-          <EsqueletoDeCartao title={false}>
-            <EsqueletoDeFormulario fields={["input", "textarea"]} />
-          </EsqueletoDeCartao>
-          <EsqueletoDeCartao>
-            <EsqueletoDeFormulario fields={["input", "textarea"]} />
-          </EsqueletoDeCartao>
-        </div>
-        <Lateral />
-      </div>
-    );
-  if (tab === "atividade" || tab === "suporte")
-    return (
-      <div className={METADES}>
-        <EsqueletoDeCartao>
-          <EsqueletoDasLinhas rows={5} chip={false} />
-        </EsqueletoDeCartao>
-        <EsqueletoDeCartao>
-          <EsqueletoDasLinhas rows={4} />
-        </EsqueletoDeCartao>
-      </div>
-    );
+  if (tab === "visao") return <VisaoEsqueleto />;
+  if (tab === "pagamentos") return <PagamentosEsqueleto />;
+  if (tab === "atividade" || tab === "suporte") return <DuasListasEsqueleto />;
   return (
     <EsqueletoDeCartao>
       <EsqueletoDasLinhas rows={3} />
