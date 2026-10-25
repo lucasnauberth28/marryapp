@@ -1,6 +1,6 @@
 import { EsqueletoDasLinhas } from "@/components/plataforma/loading-parts";
 import { EsqueletoDeCartao, EsqueletoDeFormulario, RegiaoDeCarregamento } from "@/components/skeletons";
-import { listarSolicitacoesDeDados, listarIncidentes, listarChamados, preenchimentoDoChamado } from "@/lib/platform/queries/suporte";
+import { listarSolicitacoesDeDados, listarIncidentes, listarChamados, preenchimentoDoChamado } from "@/lib/platform/queries/chamados";
 import { SolicitacoesDeDados } from "../_components/data-requests";
 import { Incidentes } from "../_components/incidents";
 import { RedefinicaoDeSenha } from "../_components/password-reset";

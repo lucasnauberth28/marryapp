@@ -97,6 +97,36 @@ export async function obterFotoDaSaude(): Promise<FotoDaSaude> {
   return coletarSaude();
 }
 
+type ExecucaoDaTarefa = { job: string; status: "FAILED" | "OK"; startedAt: Date; summary: unknown; error: string | null };
+
+/** Cada tarefa agendada esperada, com a última execução (ou "nunca rodou"). */
+function linhasDasTarefas(expected: string[], runs: ExecucaoDaTarefa[], now: Date): LinhaDeTarefaAgendada[] {
+  return expected.map((job) => {
+    const run = runs.find((r) => r.job === job) ?? null;
+    return {
+      job,
+      state: situacaoDaTarefaAgendada(run, now),
+      lastAt: run?.startedAt ?? null,
+      result: run ? descreverResumoDaTarefaAgendada(job, run.summary) : null,
+      error: run?.status === "FAILED" ? (run.error ?? "Falhou sem detalhe") : null,
+    };
+  });
+}
+
+/** Tudo o que a Saúde mede, em paralelo: eventos das últimas 24 h, últimas execuções, banco e a conexão do WhatsApp. */
+function consultarMedidas(since: Date, expected: string[], whatsappConfigured: boolean) {
+  return Promise.all([
+    prisma.serviceEvent.groupBy({ by: ["service", "ok"], where: { createdAt: { gte: since }, kind: { not: "invalid_number" } }, _count: { _all: true } }),
+    prisma.serviceEvent.findMany({ where: { service: "mercadopago" }, orderBy: { createdAt: "desc" }, take: 6, select: { createdAt: true, ok: true, kind: true, message: true } }),
+    prisma.serviceEvent.findMany({ where: { service: "mercadopago", kind: "webhook" }, orderBy: { createdAt: "desc" }, take: 5, select: { ok: true } }),
+    prisma.cronRun.findMany({ where: { job: { in: expected } }, orderBy: { startedAt: "desc" }, distinct: ["job"], select: { job: true, status: true, startedAt: true, summary: true, error: true } }),
+    prisma.pushSubscription.count(),
+    prisma.serviceEvent.count({ where: { service: "whatsapp", kind: "invalid_number", createdAt: { gte: since } } }),
+    saudeDoBanco(),
+    whatsappConfigured ? comLimiteDeTempo(obterEstadoDaConexao(), 3000) : Promise.resolve(null),
+  ]);
+}
+
 /**
  * Mede a saúde SEM conferir o acesso: só para a rotina diária de alertas (que se autentica com o CRON_SECRET).
  * Telas e actions usam getHealthSnapshot.
@@ -107,33 +137,14 @@ export async function coletarSaude(): Promise<FotoDaSaude> {
   const expected = tarefasDosAgendamentos((vercelConfig as { crons?: { path: string }[] }).crons);
   const whatsappConfigured = whatsappEstaConfigurado();
 
-  const [groups, mpRecent, mpLast, runs, subscriptions, invalidNumbers, database, connection] = await Promise.all([
-    prisma.serviceEvent.groupBy({ by: ["service", "ok"], where: { createdAt: { gte: since }, kind: { not: "invalid_number" } }, _count: { _all: true } }),
-    prisma.serviceEvent.findMany({ where: { service: "mercadopago" }, orderBy: { createdAt: "desc" }, take: 6, select: { createdAt: true, ok: true, kind: true, message: true } }),
-    prisma.serviceEvent.findMany({ where: { service: "mercadopago", kind: "webhook" }, orderBy: { createdAt: "desc" }, take: 5, select: { ok: true } }),
-    prisma.cronRun.findMany({ where: { job: { in: expected } }, orderBy: { startedAt: "desc" }, distinct: ["job"], select: { job: true, status: true, startedAt: true, summary: true, error: true } }),
-    prisma.pushSubscription.count(),
-    prisma.serviceEvent.count({ where: { service: "whatsapp", kind: "invalid_number", createdAt: { gte: since } } }),
-    saudeDoBanco(),
-    whatsappConfigured ? comLimiteDeTempo(obterEstadoDaConexao(), 3000) : Promise.resolve(null),
-  ]);
+  const [groups, mpRecent, mpLast, runs, subscriptions, invalidNumbers, database, connection] = await consultarMedidas(since, expected, whatsappConfigured);
 
   const mp = contagens(groups, "mercadopago");
   const wa = contagens(groups, "whatsapp");
   const em = contagens(groups, "email");
   const pu = contagens(groups, "push");
   const connected = whatsappConfigured ? (connection ? connection.state === "open" : null) : null;
-
-  const crons: LinhaDeTarefaAgendada[] = expected.map((job) => {
-    const run = runs.find((r) => r.job === job) ?? null;
-    return {
-      job,
-      state: situacaoDaTarefaAgendada(run, now),
-      lastAt: run?.startedAt ?? null,
-      result: run ? descreverResumoDaTarefaAgendada(job, run.summary) : null,
-      error: run?.status === "FAILED" ? (run.error ?? "Falhou sem detalhe") : null,
-    };
-  });
+  const crons = linhasDasTarefas(expected, runs, now);
   const mpFailures = falhasSeguidas(mpLast);
 
   return {

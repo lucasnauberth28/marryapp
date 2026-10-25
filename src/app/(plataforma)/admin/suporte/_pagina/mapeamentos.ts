@@ -1,7 +1,7 @@
 // Converte o que vem do banco no formato simples (textos e rótulos) que os componentes do navegador recebem.
 import { formatarData, haQuantoTempo } from "@/lib/platform/format";
 import { situacaoDoPrazo } from "@/lib/platform/support";
-import type { listarSolicitacoesDeDados, listarIncidentes, listarChamados } from "@/lib/platform/queries/suporte";
+import type { listarSolicitacoesDeDados, listarIncidentes, listarChamados } from "@/lib/platform/queries/chamados";
 import type { ItemDeSolicitacaoDeDados } from "../_components/data-requests";
 
 export const PADRAO_DE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

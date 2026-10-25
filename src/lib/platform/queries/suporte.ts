@@ -1,4 +1,3 @@
-import "server-only";
 import prisma from "@/lib/prisma";
 import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { normalizarBusca, digitosDoTelefone } from "@/lib/platform/support";
@@ -26,15 +25,14 @@ export interface ResultadosDaBusca {
 
 const POR_TIPO = 8;
 
-/** Busca em tudo: casal (nome, endereço do site, domínio), pessoa (nome, e-mail) e fornecedor (nome, telefone). Até 8 por tipo. */
-export async function buscarEmTudo(raw: string | undefined): Promise<ResultadosDaBusca | null> {
-  await exigirAdminDaPlataforma();
-  const q = normalizarBusca(raw);
-  if (!q) return null;
+const TICKET_DO_CASAL = (id: string) => `/admin/suporte?novo=1&casal=${id}#chamados`;
+const TICKET_DO_FORNECEDOR = (id: string) => `/admin/suporte?novo=1&fornecedor=${id}#chamados`;
+
+/** Os três tipos de resultado, cada um com até 8 itens. */
+async function buscarOsTresTipos(q: string) {
   const digits = digitosDoTelefone(q);
   const ci = { contains: q, mode: "insensitive" as const };
-
-  const [weddings, users, vendors] = await Promise.all([
+  return Promise.all([
     prisma.wedding.findMany({
       where: { OR: [{ coupleNames: ci }, { slug: ci }, { customDomain: ci }] },
       orderBy: { createdAt: "desc" },
@@ -48,148 +46,57 @@ export async function buscarEmTudo(raw: string | undefined): Promise<ResultadosD
       select: { id: true, name: true, username: true, weddingId: true, partnerVendorId: true, role: { select: { allowedPaths: true } } },
     }),
     prisma.partnerVendor.findMany({
-      where: {
-        OR: [
-          { companyName: ci },
-          ...(digits ? [{ phone: { contains: digits } }, { whatsapp: { contains: digits } }] : []),
-          { phone: ci },
-          { whatsapp: ci },
-        ],
-      },
+      where: { OR: [{ companyName: ci }, ...(digits ? [{ phone: { contains: digits } }, { whatsapp: { contains: digits } }] : []), { phone: ci }, { whatsapp: ci }] },
       orderBy: { createdAt: "desc" },
       take: POR_TIPO,
       select: { id: true, companyName: true, category: true, suspendedAt: true },
     }),
   ]);
+}
 
-  const hits: ResultadoDaBusca[] = [
-    ...weddings.map((w) => ({
-      kind: "wedding" as const,
+type Casamentos = Awaited<ReturnType<typeof buscarOsTresTipos>>[0];
+type Usuarios = Awaited<ReturnType<typeof buscarOsTresTipos>>[1];
+type Fornecedores = Awaited<ReturnType<typeof buscarOsTresTipos>>[2];
+
+function resultadoDoUsuario(u: Usuarios[number]): ResultadoDaBusca {
+  const isStaff = Array.isArray(u.role.allowedPaths) && (u.role.allowedPaths as string[]).includes("*");
+  return {
+    kind: "user",
+    id: u.id,
+    title: u.name,
+    detail: `${u.partnerVendorId ? "Conta de fornecedor" : u.weddingId ? "Conta de casal" : isStaff ? "Equipe" : "Conta"} · ${u.username}`,
+    href: u.weddingId ? `/admin/casais/${u.weddingId}` : u.partnerVendorId ? `/admin/fornecedores?id=${u.partnerVendorId}` : null,
+    ticketHref: u.weddingId ? TICKET_DO_CASAL(u.weddingId) : u.partnerVendorId ? TICKET_DO_FORNECEDOR(u.partnerVendorId) : null,
+  };
+}
+
+function resultadosDaBusca(weddings: Casamentos, users: Usuarios, vendors: Fornecedores): ResultadoDaBusca[] {
+  return [
+    ...weddings.map((w): ResultadoDaBusca => ({
+      kind: "wedding",
       id: w.id,
       title: w.coupleNames,
       detail: `Casal · ${w.customDomain ?? w.slug}${w.suspendedAt ? " · suspenso" : ""}`,
       href: `/admin/casais/${w.id}`,
-      ticketHref: `/admin/suporte?novo=1&casal=${w.id}#chamados`,
+      ticketHref: TICKET_DO_CASAL(w.id),
     })),
-    ...users.map((u) => {
-      const isStaff = Array.isArray(u.role.allowedPaths) && (u.role.allowedPaths as string[]).includes("*");
-      return {
-        kind: "user" as const,
-        id: u.id,
-        title: u.name,
-        detail: `${u.partnerVendorId ? "Conta de fornecedor" : u.weddingId ? "Conta de casal" : isStaff ? "Equipe" : "Conta"} · ${u.username}`,
-        href: u.weddingId ? `/admin/casais/${u.weddingId}` : u.partnerVendorId ? `/admin/fornecedores?id=${u.partnerVendorId}` : null,
-        ticketHref: u.weddingId ? `/admin/suporte?novo=1&casal=${u.weddingId}#chamados` : u.partnerVendorId ? `/admin/suporte?novo=1&fornecedor=${u.partnerVendorId}#chamados` : null,
-      };
-    }),
-    ...vendors.map((v) => ({
-      kind: "vendor" as const,
+    ...users.map(resultadoDoUsuario),
+    ...vendors.map((v): ResultadoDaBusca => ({
+      kind: "vendor",
       id: v.id,
       title: v.companyName,
       detail: `Fornecedor · ${v.category}${v.suspendedAt ? " · suspenso" : ""}`,
       href: `/admin/fornecedores?id=${v.id}`,
-      ticketHref: `/admin/suporte?novo=1&fornecedor=${v.id}#chamados`,
+      ticketHref: TICKET_DO_FORNECEDOR(v.id),
     })),
   ];
-  return { query: q, hits };
 }
 
-export interface LinhaDeChamado {
-  id: string;
-  number: number;
-  subject: string;
-  body: string | null;
-  requesterName: string;
-  requesterEmail: string | null;
-  status: "NEW" | "IN_PROGRESS" | "ANSWERED" | "CLOSED";
-  assigneeId: string | null;
-  assigneeName: string | null;
-  internalNote: string | null;
-  weddingId: string | null;
-  vendorId: string | null;
-  createdAt: Date;
-}
-
-export async function listarChamados(opts: { showClosed: boolean }): Promise<{ rows: LinhaDeChamado[]; newCount: number; closedCount: number }> {
+/** Busca em tudo: casal (nome, endereço do site, domínio), pessoa (nome, e-mail) e fornecedor (nome, telefone). Até 8 por tipo. */
+export async function buscarEmTudo(raw: string | undefined): Promise<ResultadosDaBusca | null> {
   await exigirAdminDaPlataforma();
-  const [rows, newCount, closedCount] = await Promise.all([
-    prisma.supportTicket.findMany({
-      where: opts.showClosed ? undefined : { status: { not: "CLOSED" } },
-      orderBy: [{ createdAt: "desc" }],
-      take: 40,
-      select: {
-        id: true, number: true, subject: true, body: true, requesterName: true, requesterEmail: true, status: true,
-        assigneeId: true, assigneeName: true, internalNote: true, weddingId: true, vendorId: true, createdAt: true,
-      },
-    }),
-    prisma.supportTicket.count({ where: { status: "NEW" } }),
-    prisma.supportTicket.count({ where: { status: "CLOSED" } }),
-  ]);
-  return { rows, newCount, closedCount };
-}
-
-/** Dados para preencher "Novo pedido" quando vem de um casal ou fornecedor (links de Casais e da busca). */
-export async function preenchimentoDoChamado(ref: { weddingId?: string; vendorId?: string }): Promise<{ weddingId?: string; vendorId?: string; requesterName: string; requesterEmail: string; label: string } | null> {
-  await exigirAdminDaPlataforma();
-  if (ref.weddingId) {
-    const w = await prisma.wedding.findUnique({ where: { id: ref.weddingId }, select: { id: true, coupleNames: true, members: { orderBy: { createdAt: "asc" }, take: 1, select: { name: true, username: true } } } });
-    if (!w) return null;
-    const owner = w.members[0];
-    return { weddingId: w.id, requesterName: owner?.name ?? w.coupleNames, requesterEmail: owner?.username.includes("@") ? owner.username : "", label: `casal ${w.coupleNames}` };
-  }
-  if (ref.vendorId) {
-    const v = await prisma.partnerVendor.findUnique({ where: { id: ref.vendorId }, select: { id: true, companyName: true, user: { select: { name: true, username: true } } } });
-    if (!v) return null;
-    const owner = v.user;
-    return { vendorId: v.id, requesterName: owner?.name ?? v.companyName, requesterEmail: owner?.username.includes("@") ? owner.username : "", label: `fornecedor ${v.companyName}` };
-  }
-  return null;
-}
-
-export interface LinhaDeSolicitacaoDeDados {
-  id: string;
-  type: "EXPORT" | "DELETE" | "CORRECTION" | "OTHER";
-  requesterName: string;
-  requesterEmail: string;
-  userId: string | null;
-  status: "NEW" | "IN_REVIEW" | "DONE" | "REFUSED";
-  receivedAt: Date;
-  dueAt: Date;
-  completedAt: Date | null;
-  note: string | null;
-  handledByName: string | null;
-}
-
-export async function listarSolicitacoesDeDados(): Promise<LinhaDeSolicitacaoDeDados[]> {
-  await exigirAdminDaPlataforma();
-  // Abertos primeiro (o mais perto de vencer no topo), depois os encerrados mais recentes
-  const [open, closed] = await Promise.all([
-    prisma.dataRequest.findMany({ where: { status: { in: ["NEW", "IN_REVIEW"] } }, orderBy: { dueAt: "asc" }, take: 50 }),
-    prisma.dataRequest.findMany({ where: { status: { in: ["DONE", "REFUSED"] } }, orderBy: { completedAt: "desc" }, take: 10 }),
-  ]);
-  return [...open, ...closed].map((r) => ({
-    id: r.id, type: r.type, requesterName: r.requesterName, requesterEmail: r.requesterEmail, userId: r.userId, status: r.status,
-    receivedAt: r.receivedAt, dueAt: r.dueAt, completedAt: r.completedAt, note: r.note, handledByName: r.handledByName,
-  }));
-}
-
-export interface LinhaDeIncidente {
-  id: string;
-  title: string;
-  description: string;
-  affected: string | null;
-  discoveredAt: Date;
-  notifiedAt: Date | null;
-  notifiedWho: string | null;
-  status: "OPEN" | "CLOSED";
-  closedAt: Date | null;
-}
-
-export async function listarIncidentes(): Promise<LinhaDeIncidente[]> {
-  await exigirAdminDaPlataforma();
-  return prisma.securityIncident.findMany({
-    orderBy: [{ status: "asc" }, { discoveredAt: "desc" }],
-    take: 30,
-    select: { id: true, title: true, description: true, affected: true, discoveredAt: true, notifiedAt: true, notifiedWho: true, status: true, closedAt: true },
-  });
+  const q = normalizarBusca(raw);
+  if (!q) return null;
+  const [weddings, users, vendors] = await buscarOsTresTipos(q);
+  return { query: q, hits: resultadosDaBusca(weddings, users, vendors) };
 }
