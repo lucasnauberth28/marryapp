@@ -13,19 +13,35 @@ const estiloBaseDoBotao =
 const estiloDoBotaoPrimario = `${estiloBaseDoBotao} bg-ameixa text-on-ameixa hover:bg-ameixa-hover`;
 const estiloDoBotaoSecundario = `${estiloBaseDoBotao} border border-linha-forte bg-papel text-tinta hover:bg-areia`;
 
-export function AcoesDoPedido({
-  leadId,
-  status,
-  coupleName,
-  whatsappUrl,
-  coupleEmail,
-}: {
+function BotaoDeResposta({ status, whatsappUrl, coupleEmail }: { status: SituacaoDoPedido; whatsappUrl: string | null; coupleEmail: string | null }) {
+  const estilo = status === "NEW" ? estiloDoBotaoPrimario : estiloDoBotaoSecundario;
+  if (whatsappUrl) {
+    return (
+      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={estilo}>
+        <MessageCircle aria-hidden="true" className="size-[18px]" />
+        {status === "NEW" ? "Responder no WhatsApp" : "WhatsApp"}
+        <span className="sr-only"> (abre em nova aba)</span>
+      </a>
+    );
+  }
+  if (!coupleEmail) return null;
+  return (
+    <a href={`mailto:${coupleEmail}`} className={estilo}>
+      <Mail aria-hidden="true" className="size-[18px]" />
+      Responder por e-mail
+    </a>
+  );
+}
+
+interface PropriedadesDasAcoesDoPedido {
   leadId: string;
   status: SituacaoDoPedido;
   coupleName: string;
   whatsappUrl: string | null;
   coupleEmail: string | null;
-}) {
+}
+
+export function AcoesDoPedido({ leadId, status, coupleName, whatsappUrl, coupleEmail }: PropriedadesDasAcoesDoPedido) {
   const [isPending, startTransition] = useTransition();
   const next = PROXIMO_PASSO_DO_PEDIDO[status];
 
@@ -43,23 +59,7 @@ export function AcoesDoPedido({
 
   return (
     <div className="grid w-full grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:flex sm:w-64 sm:flex-col">
-      {whatsappUrl ? (
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={status === "NEW" ? estiloDoBotaoPrimario : estiloDoBotaoSecundario}
-        >
-          <MessageCircle aria-hidden="true" className="size-[18px]" />
-          {status === "NEW" ? "Responder no WhatsApp" : "WhatsApp"}
-          <span className="sr-only"> (abre em nova aba)</span>
-        </a>
-      ) : coupleEmail ? (
-        <a href={`mailto:${coupleEmail}`} className={status === "NEW" ? estiloDoBotaoPrimario : estiloDoBotaoSecundario}>
-          <Mail aria-hidden="true" className="size-[18px]" />
-          Responder por e-mail
-        </a>
-      ) : null}
+      <BotaoDeResposta status={status} whatsappUrl={whatsappUrl} coupleEmail={coupleEmail} />
 
       {next ? (
         <Botao type="button" variant="outline" loading={isPending} onClick={() => changeStatus(next.status)}>
