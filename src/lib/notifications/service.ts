@@ -1,7 +1,8 @@
 import "server-only";
 import { after } from "next/server";
 import prisma from "@/lib/prisma";
-import { montarTexto, type EventoDeNotificacao, type TipoDeNotificacao } from "./catalog.ts";
+import type { TipoDeNotificacao } from "./catalog.ts";
+import { montarTexto, type EventoDeNotificacao } from "./textos.ts";
 import { distribuir, type ItemDaDistribuicao } from "./fanout.ts";
 import type { CanalDeNotificacao } from "./preferences.ts";
 import { dependenciasReaisDaDistribuicao } from "./senders.ts";

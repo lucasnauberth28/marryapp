@@ -94,6 +94,37 @@ export interface RepasseValido {
   bankSecret: string | null;
 }
 
+type BaseDoRepasse = Pick<RepasseValido, "holderName" | "holderDocumentKind" | "documentSecret" | "documentLast4">;
+type EntradaDoRepasse = z.infer<typeof EsquemaDaEntradaDeRepasse>;
+
+function repasseDaChavePix(input: Extract<EntradaDoRepasse, { type: "PIX_KEY" }>, base: BaseDoRepasse, document: string): ResultadoDaValidacao<RepasseValido> {
+  const key = normalizarChavePix(input.pixKeyType, input.pixKey);
+  if (!key.ok) return key;
+  if ((input.pixKeyType === "CPF" || input.pixKeyType === "CNPJ") && key.value !== document) {
+    return falhar("A chave Pix de CPF ou CNPJ precisa ser a do próprio titular. Use o mesmo documento ou escolha outro tipo de chave.");
+  }
+  return {
+    ok: true,
+    value: { ...base, type: "PIX_KEY", keyHint: dicaDaChavePix(input.pixKeyType, key.value), pixKeyType: input.pixKeyType, pixKeySecret: key.value, bankSecret: null },
+  };
+}
+
+function repasseDaContaBancaria(input: Extract<EntradaDoRepasse, { type: "BANK_ACCOUNT" }>, base: BaseDoRepasse): ResultadoDaValidacao<RepasseValido> {
+  const accountDigit = (input.accountDigit ?? "").toUpperCase();
+  const bank = { bankCode: input.bankCode, agency: input.agency, account: input.account, accountDigit, accountKind: input.accountKind };
+  return {
+    ok: true,
+    value: {
+      ...base,
+      type: "BANK_ACCOUNT",
+      keyHint: dicaDoBanco(bank.bankCode, bank.agency, bank.account + accountDigit),
+      pixKeyType: null,
+      pixKeySecret: null,
+      bankSecret: JSON.stringify(bank),
+    },
+  };
+}
+
 /** "PIX_KEY" + chave CPF/CNPJ: a chave tem de ser do próprio titular (mesmo documento). */
 export function validarEntradaDeRepasse(raw: unknown): ResultadoDaValidacao<RepasseValido> {
   const parsed = EsquemaDaEntradaDeRepasse.safeParse(raw);
@@ -106,51 +137,8 @@ export function validarEntradaDeRepasse(raw: unknown): ResultadoDaValidacao<Repa
 
   if (!/\p{L}{2,}/u.test(input.holderName)) return falhar("Informe o nome completo do titular.");
 
-  const base = {
-    holderName: input.holderName.replace(/\s+/g, " "),
-    holderDocumentKind,
-    documentSecret: document,
-    documentLast4: document.slice(-4),
-  } as const;
-
-  if (input.type === "PIX_KEY") {
-    const key = normalizarChavePix(input.pixKeyType, input.pixKey);
-    if (!key.ok) return key;
-    if ((input.pixKeyType === "CPF" || input.pixKeyType === "CNPJ") && key.value !== document) {
-      return falhar("A chave Pix de CPF ou CNPJ precisa ser a do próprio titular. Use o mesmo documento ou escolha outro tipo de chave.");
-    }
-    return {
-      ok: true,
-      value: {
-        ...base,
-        type: "PIX_KEY",
-        keyHint: dicaDaChavePix(input.pixKeyType, key.value),
-        pixKeyType: input.pixKeyType,
-        pixKeySecret: key.value,
-        bankSecret: null,
-      },
-    };
-  }
-
-  const accountDigit = (input.accountDigit ?? "").toUpperCase();
-  const bank = {
-    bankCode: input.bankCode,
-    agency: input.agency,
-    account: input.account,
-    accountDigit,
-    accountKind: input.accountKind,
-  };
-  return {
-    ok: true,
-    value: {
-      ...base,
-      type: "BANK_ACCOUNT",
-      keyHint: dicaDoBanco(bank.bankCode, bank.agency, bank.account + accountDigit),
-      pixKeyType: null,
-      pixKeySecret: null,
-      bankSecret: JSON.stringify(bank),
-    },
-  };
+  const base = { holderName: input.holderName.replace(/\s+/g, " "), holderDocumentKind, documentSecret: document, documentLast4: document.slice(-4) } as const;
+  return input.type === "PIX_KEY" ? repasseDaChavePix(input, base, document) : repasseDaContaBancaria(input, base);
 }
 
 /** Máscara da chave Pix, sem decifrar: "Pix CPF final 12", "Pix e-mail l***@gmail.com". */

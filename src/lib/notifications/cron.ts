@@ -1,7 +1,7 @@
 import "server-only";
 import { ExpenseStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { removerRepetidos } from "./catalog.ts";
+import { removerRepetidos } from "./textos.ts";
 import { avisarEvento } from "./service.ts";
 
 const UM_DIA_EM_MS = 24 * 60 * 60 * 1000;

@@ -1,7 +1,7 @@
 import "server-only";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { removerRepetidos } from "./catalog.ts";
+import { removerRepetidos } from "./textos.ts";
 import { avisarEvento } from "./service.ts";
 
 // Um gancho por fato do catálogo. Cada um recebe só o id do registro, relê os dados do banco (nunca confia

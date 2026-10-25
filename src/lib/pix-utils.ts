@@ -95,54 +95,24 @@ function formatarCampoEmv(id: string, value: string): string {
   return `${id}${len}${value}`;
 }
 
-export function gerarCodigoPix({
-  pixKey,
-  merchantName,
-  merchantCity,
-  amount,
-  txId = "MARRYAPP",
-}: OpcoesParaGerarPix): string {
-  const sanitizedKey = limparChavePix(pixKey);
-
-  // 00 - Format Indicator (Fixo 01)
-  let payload = formatarCampoEmv("00", "01");
-
-  // 26 - Merchant Account Information (GUI + Chave PIX)
+export function gerarCodigoPix({ pixKey, merchantName, merchantCity, amount, txId = "MARRYAPP" }: OpcoesParaGerarPix): string {
   const gui = formatarCampoEmv("00", "br.gov.bcb.pix");
-  const key = formatarCampoEmv("01", sanitizedKey);
-  payload += formatarCampoEmv("26", `${gui}${key}`);
+  const key = formatarCampoEmv("01", limparChavePix(pixKey));
+  const name = limparEmv(merchantName || "LUCAS E GIOVANNA", 25); // nome do recebedor, no máximo 25 caracteres
+  const city = limparEmv(merchantCity || "SAO PAULO", 15); // cidade do recebedor, no máximo 15 caracteres
+  const txIdField = formatarCampoEmv("05", limparEmv(txId || "MARRYAPP", 20) || "MARRYAPP"); // TxID alfanumérico limpo
 
-  // 52 - Merchant Category Code (0000 = Geral)
-  payload += formatarCampoEmv("52", "0000");
+  const payload =
+    formatarCampoEmv("00", "01") + // Format Indicator (fixo 01)
+    formatarCampoEmv("26", `${gui}${key}`) + // Merchant Account Information (GUI + chave Pix)
+    formatarCampoEmv("52", "0000") + // Merchant Category Code (0000 = geral)
+    formatarCampoEmv("53", "986") + // Currency (986 = real)
+    formatarCampoEmv("54", (amount / 100).toFixed(2)) + // Transaction Amount (formato 30.00)
+    formatarCampoEmv("58", "BR") + // Country Code
+    formatarCampoEmv("59", name || "MARRYAPP") +
+    formatarCampoEmv("60", city || "SAO PAULO") +
+    formatarCampoEmv("62", txIdField) + // Additional Data Field Template
+    "6304"; // CRC16 Marker
 
-  // 53 - Currency (986 = Real BRL)
-  payload += formatarCampoEmv("53", "986");
-
-  // 54 - Transaction Amount (Formato: 30.00)
-  const amountStr = (amount / 100).toFixed(2);
-  payload += formatarCampoEmv("54", amountStr);
-
-  // 58 - Country Code (BR)
-  payload += formatarCampoEmv("58", "BR");
-
-  // 59 - Merchant Name (Nome do recebedor, max 25 chars)
-  const name = limparEmv(merchantName || "LUCAS E GIOVANNA", 25);
-  payload += formatarCampoEmv("59", name || "MARRYAPP");
-
-  // 60 - Merchant City (Cidade do recebedor, max 15 chars)
-  const city = limparEmv(merchantCity || "SAO PAULO", 15);
-  payload += formatarCampoEmv("60", city || "SAO PAULO");
-
-  // 62 - Additional Data Field Template (TxID alfanumérico limpo)
-  const sanitizedTxId = limparEmv(txId || "MARRYAPP", 20);
-  const txIdField = formatarCampoEmv("05", sanitizedTxId || "MARRYAPP");
-  payload += formatarCampoEmv("62", txIdField);
-
-  // 63 - CRC16 Marker
-  payload += "6304";
-
-  // Checksum
-  const crc = calcularCrc16(payload);
-
-  return payload + crc;
+  return payload + calcularCrc16(payload);
 }

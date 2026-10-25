@@ -1,17 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  montarTexto,
-  limparTextoDaNotificacao,
-  removerRepetidos,
-  gruposPara,
-  ehTipoDeNotificacao,
-  GRUPOS_DE_NOTIFICACAO,
-  TIPOS_DE_NOTIFICACAO,
-  especificacaoDe,
-  type EventoDeNotificacao,
-} from "../catalog.ts";
+import { gruposPara, ehTipoDeNotificacao, GRUPOS_DE_NOTIFICACAO, TIPOS_DE_NOTIFICACAO, especificacaoDe } from "../catalog.ts";
+import { montarTexto, limparTextoDaNotificacao, removerRepetidos, type EventoDeNotificacao } from "../textos.ts";
 
 const DUE = new Date("2026-10-13T00:00:00Z");
 
