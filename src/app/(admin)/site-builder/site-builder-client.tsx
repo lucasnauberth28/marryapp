@@ -26,7 +26,8 @@ import { Esqueleto } from "@/components/ui/skeleton";
 import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { Etiqueta } from "@/components/casal/ui";
 import { EscopoClaro } from "@/components/theme/light-scope";
-import { VisaoDoSiteDoCasamento, type ConfiguracoesDoSiteDoCasamento } from "@/components/public/wedding-site-view";
+import { VisaoDoSiteDoCasamento } from "@/components/public/site-do-casamento/visao-do-site";
+import type { ConfiguracoesDoSiteDoCasamento } from "@/components/public/site-do-casamento/tipos";
 import { destaqueLegivel } from "@/lib/wedding-format";
 import { caminhoDoSiteDoCasamento, urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import {

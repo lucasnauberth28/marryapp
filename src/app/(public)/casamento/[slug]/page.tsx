@@ -1,5 +1,5 @@
 import { SiteIndisponivel } from "@/components/public/site-unavailable";
-import { VisaoDoSiteDoCasamento } from "@/components/public/wedding-site-view";
+import { VisaoDoSiteDoCasamento } from "@/components/public/site-do-casamento/visao-do-site";
 import { metadadosDaPaginaDoConvidado } from "@/lib/wedding";
 import { obterDadosDoSitePublico } from "@/lib/wedding-data";
 import { exigirCasamentoPublico } from "@/lib/wedding-redirect";

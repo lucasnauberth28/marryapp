@@ -1,5 +1,5 @@
 import { obterFornecedoresParceiros } from "@/actions/partner-vendor-actions";
-import { VisaoDeFornecedoresPublicos } from "@/components/public/public-vendors-view";
+import { VisaoDeFornecedoresPublicos } from "@/components/public/fornecedores-publicos/visao-de-fornecedores";
 import { interpretarDataIso, paraDataIso, hojeEmBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
 
 export const dynamic = "force-dynamic";
