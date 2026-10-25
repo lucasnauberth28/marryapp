@@ -1,7 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { gerarTokenDeLink } from "@/lib/account/tokens";
-import { brandedEmail, enviarEmail } from "@/lib/email";
+import { emailDaMarca, enviarEmail } from "@/lib/email";
 import { urlDoApp } from "@/lib/app-url";
 
 const VALIDADE_DA_REDEFINICAO_EM_MS = 60 * 60 * 1000; // 1 hora
@@ -22,7 +22,7 @@ export async function enviarLinkDeRedefinicaoDeSenha(user: { id: string; name: s
   ]);
 
   const firstName = user.name.trim().split(/\s+/)[0] || "";
-  const { html, text } = brandedEmail({
+  const { html, text } = emailDaMarca({
     heading: "Crie uma nova senha",
     preheader: "O link vale por 1 hora.",
     paragraphs: [

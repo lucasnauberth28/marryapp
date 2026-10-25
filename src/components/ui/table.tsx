@@ -105,12 +105,12 @@ function LegendaDaTabela({
 }
 
 export {
-  Tabela as Table,
-  CabecalhoDaTabela as TableHeader,
-  CorpoDaTabela as TableBody,
-  RodapeDaTabela as TableFooter,
-  TituloDaColunaDaTabela as TableHead,
-  LinhaDaTabela as TableRow,
-  CelulaDaTabela as TableCell,
-  LegendaDaTabela as TableCaption,
+  Tabela,
+  CabecalhoDaTabela,
+  CorpoDaTabela,
+  RodapeDaTabela,
+  TituloDaColunaDaTabela,
+  LinhaDaTabela,
+  CelulaDaTabela,
+  LegendaDaTabela,
 }

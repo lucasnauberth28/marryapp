@@ -5,8 +5,8 @@ import { useState } from "react";
 import { Download, Flag, Megaphone } from "lucide-react";
 import { definirMarcaDosCasamentos } from "@/actions/admin-casais-actions";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Botao } from "@/components/ui/button";
+import { CaixaDeSelecao } from "@/components/ui/checkbox";
 import { BotaoDeExportar } from "@/components/plataforma/export-button";
 import { AvatarComIniciais } from "@/components/plataforma/initials-avatar";
 import { EtiquetaDePlano } from "@/components/plataforma/status-chip";
@@ -96,9 +96,9 @@ export function ListaDeCasais({ rows }: { rows: LinhaDaListaDeCasais[] }) {
             <BotaoDeExportar href={`/api/admin/casais.csv?ids=${chosen.join(",")}`} fallbackName="casais.csv" size="sm" className="gap-1.5">
               <Download className="size-4" aria-hidden="true" /> Exportar seleção
             </BotaoDeExportar>
-            <Button type="button" variant="outline" size="sm" onClick={flag} loading={pending} className="gap-1.5">
+            <Botao type="button" variant="outline" size="sm" onClick={flag} loading={pending} className="gap-1.5">
               <Flag className="size-4" aria-hidden="true" /> {anyUnflagged ? "Marcar para acompanhar" : "Deixar de acompanhar"}
-            </Button>
+            </Botao>
             <button type="button" onClick={() => setSelected([])} className={cn(estiloDoBotao.quiet, estiloDoBotao.sm)}>
               Limpar seleção
             </button>
@@ -118,7 +118,7 @@ export function ListaDeCasais({ rows }: { rows: LinhaDaListaDeCasais[] }) {
           <thead>
             <tr className="border-b border-linha">
               <th scope="col" className={cn(estiloDoTituloDaColunaDoCasal, "w-12 pr-0")}>
-                <Checkbox checked={allOn} onCheckedChange={(v) => setSelected(v === true ? rows.map((r) => r.id) : [])} aria-label="Selecionar todos desta página" />
+                <CaixaDeSelecao checked={allOn} onCheckedChange={(v) => setSelected(v === true ? rows.map((r) => r.id) : [])} aria-label="Selecionar todos desta página" />
               </th>
               {["Casal", "Casamento", "Plano", "Convidados", "Presentes", "Última atividade", "Situação"].map((h) => (
                 <th key={h} scope="col" className={cn(estiloDoTituloDaColunaDoCasal, "normal-case tracking-normal text-[13px]")}>
@@ -131,7 +131,7 @@ export function ListaDeCasais({ rows }: { rows: LinhaDaListaDeCasais[] }) {
             {rows.map((row) => (
               <tr key={row.id} className={cn("border-b border-linha last:border-b-0 hover:bg-linho", chosen.includes(row.id) && "bg-ameixa-suave/60")}>
                 <td className="py-3 pl-6 pr-0 align-middle">
-                  <Checkbox checked={chosen.includes(row.id)} onCheckedChange={(v) => toggle(row.id, v === true)} aria-label={`Selecionar ${row.coupleNames}`} />
+                  <CaixaDeSelecao checked={chosen.includes(row.id)} onCheckedChange={(v) => toggle(row.id, v === true)} aria-label={`Selecionar ${row.coupleNames}`} />
                 </td>
                 <td className="max-w-[300px] px-3 py-3 align-middle">
                   <Link href={`/admin/casais/${row.id}`} className="block rounded-lg focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa">
@@ -166,7 +166,7 @@ export function ListaDeCasais({ rows }: { rows: LinhaDaListaDeCasais[] }) {
         {rows.map((row) => (
           <li key={row.id} className={cn("rounded-2xl border border-linha bg-papel p-4 shadow-[var(--shadow-aceito-1)]", chosen.includes(row.id) && "border-ameixa bg-ameixa-suave/60")}>
             <div className="flex items-start gap-3">
-              <Checkbox className="mt-3" checked={chosen.includes(row.id)} onCheckedChange={(v) => toggle(row.id, v === true)} aria-label={`Selecionar ${row.coupleNames}`} />
+              <CaixaDeSelecao className="mt-3" checked={chosen.includes(row.id)} onCheckedChange={(v) => toggle(row.id, v === true)} aria-label={`Selecionar ${row.coupleNames}`} />
               <Link href={`/admin/casais/${row.id}`} className="min-w-0 flex-1 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa">
                 <CelulaDoCasal row={row} />
               </Link>

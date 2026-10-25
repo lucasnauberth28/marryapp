@@ -75,4 +75,4 @@ function AreaDeTexto({
   )
 }
 
-export { AreaDeTexto as Textarea }
+export { AreaDeTexto }

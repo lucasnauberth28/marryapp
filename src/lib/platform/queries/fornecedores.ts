@@ -351,4 +351,4 @@ export async function obterAvaliacoesParaModerar(): Promise<{ reported: Avaliaca
   return { reported: reported.map(paraAvaliacaoDenunciada), hidden: hidden.map(paraAvaliacaoDenunciada) };
 }
 
-export { ORDENACOES_DE_FORNECEDORES as VENDOR_SORTS };
+export { ORDENACOES_DE_FORNECEDORES };

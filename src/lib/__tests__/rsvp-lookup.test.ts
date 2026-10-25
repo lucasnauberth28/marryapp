@@ -1,13 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { TOO_MANY_ATTEMPTS_MESSAGE, mensagemDaBusca, type BuscaDeConvidado } from "../rsvp-lookup.ts";
+import { MENSAGEM_DE_MUITAS_TENTATIVAS, mensagemDaBusca, type BuscaDeConvidado } from "../rsvp-lookup.ts";
 
 const guest = { id: "g1", name: "Ana", allowedCompanions: 1, rsvpStatus: "PENDING" as const, dietaryRestrictions: null };
 
 test("limite de tentativas tem mensagem própria, diferente de convite não encontrado", () => {
   const limitado = mensagemDaBusca({ status: "rate_limited" });
   const naoAchou = mensagemDaBusca({ status: "not_found" });
-  assert.equal(limitado, TOO_MANY_ATTEMPTS_MESSAGE);
+  assert.equal(limitado, MENSAGEM_DE_MUITAS_TENTATIVAS);
   assert.match(limitado ?? "", /Muitas tentativas seguidas\. Aguarde alguns minutos e tente de novo\./);
   assert.notEqual(limitado, naoAchou);
   assert.doesNotMatch(limitado ?? "", /convite/i);

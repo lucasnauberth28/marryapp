@@ -3,8 +3,8 @@
 import { useId, useState, useTransition } from "react"
 import { toast } from "sonner"
 import { estiloDoBotao } from "@/components/landing/styles"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { Entrada } from "@/components/ui/input"
+import { AreaDeTexto } from "@/components/ui/textarea"
 import { ModalPersonalizado } from "@/components/ui/custom-modal"
 import { criarPresente } from "@/actions/gift-actions"
 import { ImagePlus } from "lucide-react"
@@ -94,7 +94,7 @@ export function ModalDoPresente({ isOpen, onClose }: PropriedadesDoModalDoPresen
           </div>
         </div>
 
-        <Input
+        <Entrada
           id={`${uid}-title`}
           name="title"
           label="Nome do presente"
@@ -102,7 +102,7 @@ export function ModalDoPresente({ isOpen, onClose }: PropriedadesDoModalDoPresen
           required
         />
 
-        <Input
+        <Entrada
           id={`${uid}-amount`}
           name="amount"
           type="number"
@@ -116,7 +116,7 @@ export function ModalDoPresente({ isOpen, onClose }: PropriedadesDoModalDoPresen
           required
         />
 
-        <Textarea
+        <AreaDeTexto
           id={`${uid}-desc`}
           name="description"
           label="Recado para os convidados"

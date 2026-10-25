@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { X } from "lucide-react";
 import { confirmarAssinaturaManualmente, recusarAssinatura } from "@/actions/subscription-admin-actions";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export interface AssinaturaDoPainel {
@@ -169,7 +169,7 @@ export function PainelDaAssinatura({ subscription: s, closeHref }: { subscriptio
                 Marcar como não recebido? A cobrança deixa de valer e {s.accountName} precisa gerar um novo Pix.
               </p>
               <div className="flex flex-wrap gap-2">
-                <Button
+                <Botao
                   type="button"
                   onClick={() => run("reject")}
                   disabled={isPending}
@@ -177,20 +177,20 @@ export function PainelDaAssinatura({ subscription: s, closeHref }: { subscriptio
                   className="bg-perigo text-on-ameixa hover:bg-perigo/90"
                 >
                   Sim, não recebi
-                </Button>
-                <Button type="button" variant="quiet" onClick={() => setConfirmingReject(false)} disabled={isPending}>
+                </Botao>
+                <Botao type="button" variant="quiet" onClick={() => setConfirmingReject(false)} disabled={isPending}>
                   Voltar
-                </Button>
+                </Botao>
               </div>
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">
-              <Button type="submit" disabled={isPending} loading={pendingAction === "confirm"}>
+              <Botao type="submit" disabled={isPending} loading={pendingAction === "confirm"}>
                 Confirmar e liberar o plano
-              </Button>
-              <Button type="button" variant="quiet" onClick={() => setConfirmingReject(true)} disabled={isPending}>
+              </Botao>
+              <Botao type="button" variant="quiet" onClick={() => setConfirmingReject(true)} disabled={isPending}>
                 Não encontrei
-              </Button>
+              </Botao>
             </div>
           )}
         </form>

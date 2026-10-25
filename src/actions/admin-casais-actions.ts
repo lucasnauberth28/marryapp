@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
 import { enviarLinkDeRedefinicaoDeSenha } from "@/lib/account/password-reset-link";
-import { brandedEmail, enviarEmail } from "@/lib/email";
+import { emailDaMarca, enviarEmail } from "@/lib/email";
 import { urlDoApp } from "@/lib/app-url";
 import { resolverPlano } from "@/lib/plans";
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
@@ -218,7 +218,7 @@ export async function concederPlanoAoCasamento(input: unknown): Promise<Resultad
     if (data.notify) {
       const owner = wedding.members[0];
       if (owner) {
-        const { html, text } = brandedEmail({
+        const { html, text } = emailDaMarca({
           heading: `Seu plano ${plan.name} foi liberado`,
           preheader: "Já está valendo no painel.",
           paragraphs: [`Olá. A equipe do Aceito liberou o plano ${plan.name} para o casamento de ${wedding.coupleNames}, sem custo.`, "Os recursos novos já aparecem no painel."],

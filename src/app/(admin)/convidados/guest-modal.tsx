@@ -7,9 +7,9 @@ import { ConvidadoLocal as Guest, SituacaoDaConfirmacao } from "@/types/local";
 import { ModalPersonalizado } from "@/components/ui/custom-modal";
 import { criarConvidado, atualizarConvidado } from "@/actions/guest-actions";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select";
-import { btn, estiloDoBotaoDePerigo, estiloDaCaixaDeErro, estiloDaDicaDoPainel, estiloDoRotuloDoPainel } from "@/components/painel/styles";
+import { Entrada } from "@/components/ui/input";
+import { SelecaoNativa } from "@/components/ui/select";
+import { estiloDoBotao, estiloDoBotaoDePerigo, estiloDaCaixaDeErro, estiloDaDicaDoPainel, estiloDoRotuloDoPainel } from "@/components/painel/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 
 export const CATEGORIAS_DE_CONVIDADO = [
@@ -53,7 +53,7 @@ function CampoDoModalDoConvidado({
   autoComplete?: string;
 }) {
   return (
-    <Input
+    <Entrada
       label={
         required ? (
           <>
@@ -190,13 +190,13 @@ export function ModalDoConvidado({ isOpen, onClose, guest, allGuests = [], onDel
             Lugares reservados
           </span>
           <div role="group" aria-labelledby={ids.seats} className="flex items-center gap-3">
-            <button type="button" aria-label="Menos um lugar" disabled={seats <= 1} onClick={() => setSeats((n) => Math.max(1, n - 1))} className={`${btn.secondary} w-12 !px-0`}>
+            <button type="button" aria-label="Menos um lugar" disabled={seats <= 1} onClick={() => setSeats((n) => Math.max(1, n - 1))} className={`${estiloDoBotao.secondary} w-12 !px-0`}>
               <Minus className="size-4" aria-hidden="true" />
             </button>
             <output aria-live="polite" className="min-w-12 text-center font-num text-[28px] leading-8 text-tinta [font-variant-numeric:lining-nums]">
               {seats}
             </output>
-            <button type="button" aria-label="Mais um lugar" disabled={seats >= MAXIMO_DE_LUGARES} onClick={() => setSeats((n) => Math.min(MAXIMO_DE_LUGARES, n + 1))} className={`${btn.secondary} w-12 !px-0`}>
+            <button type="button" aria-label="Mais um lugar" disabled={seats >= MAXIMO_DE_LUGARES} onClick={() => setSeats((n) => Math.min(MAXIMO_DE_LUGARES, n + 1))} className={`${estiloDoBotao.secondary} w-12 !px-0`}>
               <Plus className="size-4" aria-hidden="true" />
             </button>
           </div>
@@ -204,7 +204,7 @@ export function ModalDoConvidado({ isOpen, onClose, guest, allGuests = [], onDel
         </div>
 
         <div className="grid gap-5">
-          <NativeSelect id={ids.category} label="Grupo" value={category} onChange={(e) => setCategory(e.target.value)}>
+          <SelecaoNativa id={ids.category} label="Grupo" value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value=""></option>
             {category && !CATEGORIAS_DE_CONVIDADO.some((c) => c === category) && <option value={category}>{category}</option>}
             {CATEGORIAS_DE_CONVIDADO.map((cat) => (
@@ -212,20 +212,20 @@ export function ModalDoConvidado({ isOpen, onClose, guest, allGuests = [], onDel
                 {cat}
               </option>
             ))}
-          </NativeSelect>
+          </SelecaoNativa>
 
-          <NativeSelect id={ids.parent} label="Vem junto com outro convidado?" value={parentGuestId} onChange={(e) => setParentGuestId(e.target.value)}>
+          <SelecaoNativa id={ids.parent} label="Vem junto com outro convidado?" value={parentGuestId} onChange={(e) => setParentGuestId(e.target.value)}>
             {parentOptions.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
               </option>
             ))}
-          </NativeSelect>
+          </SelecaoNativa>
         </div>
 
         {isEditing && (
           <>
-            <NativeSelect
+            <SelecaoNativa
               id={ids.rsvp}
               label="Resposta do convidado"
               hint="O convidado responde pelo link do convite. Mudem aqui só se ele avisou por outro meio."
@@ -235,7 +235,7 @@ export function ModalDoConvidado({ isOpen, onClose, guest, allGuests = [], onDel
               <option value={SituacaoDaConfirmacao.PENDING}>Sem resposta</option>
               <option value={SituacaoDaConfirmacao.CONFIRMED}>Confirmado</option>
               <option value={SituacaoDaConfirmacao.DECLINED}>Não vai</option>
-            </NativeSelect>
+            </SelecaoNativa>
 
             {rsvpStatus === SituacaoDaConfirmacao.CONFIRMED ? (
               <CampoDoModalDoConvidado label="Restrições alimentares" name="dietaryRestrictions" placeholder="Sem glúten, vegano..." defaultValue={guest?.dietaryRestrictions ?? ""} />
@@ -256,12 +256,12 @@ export function ModalDoConvidado({ isOpen, onClose, guest, allGuests = [], onDel
         )}
 
         <div className="flex flex-col gap-2 border-t border-linha pt-4">
-          <BotaoComCarregamento type="submit" loading={isPending && !addAnother} disabled={isPending} onClick={() => setAddAnother(false)} className={`${btn.primary} ${btn.block}`}>
+          <BotaoComCarregamento type="submit" loading={isPending && !addAnother} disabled={isPending} onClick={() => setAddAnother(false)} className={`${estiloDoBotao.primary} ${estiloDoBotao.block}`}>
             {isEditing ? "Salvar alterações" : "Salvar convidado"}
           </BotaoComCarregamento>
           {isEditing ? (
             <>
-              <button type="button" onClick={onClose} disabled={isPending} className={`${btn.quiet} ${btn.block}`}>
+              <button type="button" onClick={onClose} disabled={isPending} className={`${estiloDoBotao.quiet} ${estiloDoBotao.block}`}>
                 Cancelar
               </button>
               {onDelete && guest && (
@@ -271,7 +271,7 @@ export function ModalDoConvidado({ isOpen, onClose, guest, allGuests = [], onDel
               )}
             </>
           ) : (
-            <BotaoComCarregamento type="submit" loading={isPending && addAnother} disabled={isPending} onClick={() => setAddAnother(true)} className={`${btn.quiet} ${btn.block}`}>
+            <BotaoComCarregamento type="submit" loading={isPending && addAnother} disabled={isPending} onClick={() => setAddAnother(true)} className={`${estiloDoBotao.quiet} ${estiloDoBotao.block}`}>
               Salvar e adicionar outro
             </BotaoComCarregamento>
           )}

@@ -4,14 +4,14 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { marcarDominioComoRenovado } from "@/actions/domain-admin-actions";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 
 /** "Marcar como renovado": a renovação é manual no Registro.br; o Aceito só registra o novo vencimento. */
 export function BotaoDeRenovacao({ orderId, domain }: { orderId: string; domain: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   return (
-    <Button
+    <Botao
       type="button"
       variant="outline"
       size="sm"
@@ -28,6 +28,6 @@ export function BotaoDeRenovacao({ orderId, domain }: { orderId: string; domain:
     >
       Marcar como renovado
       <span className="sr-only"> o domínio {domain}</span>
-    </Button>
+    </Botao>
   );
 }

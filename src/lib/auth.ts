@@ -80,4 +80,4 @@ export function opcoesDoCookieDeSessao() {
   };
 }
 
-export { temAcessoAoCaminho as hasPathAccess } from "@/lib/permissions";
+export { temAcessoAoCaminho } from "@/lib/permissions";

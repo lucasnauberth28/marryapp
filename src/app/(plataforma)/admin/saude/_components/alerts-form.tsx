@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Bell } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Entrada } from "@/components/ui/input";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Painel } from "@/components/plataforma/panel";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { salvarAlertasDeSaude, testarAlertasDeSaude } from "@/actions/admin-saude-actions";
 import { LinhaDeAlternancia } from "../../_sistema/toggle-row";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
@@ -20,9 +20,9 @@ export function FormularioDeAlertas({ initial, emailConfigured }: { initial: { m
       title="Alertas"
       description="Você recebe um e-mail quando uma destas coisas acontecer. A verificação é feita uma vez por dia, junto da rotina diária."
       aside={
-        <Button type="button" variant="outline" size="sm" disabled={!initial.sendTo} loading={test.pending} onClick={() => test.run(() => testarAlertasDeSaude())} title={initial.sendTo ? undefined : "Salve primeiro o e-mail dos alertas"}>
+        <Botao type="button" variant="outline" size="sm" disabled={!initial.sendTo} loading={test.pending} onClick={() => test.run(() => testarAlertasDeSaude())} title={initial.sendTo ? undefined : "Salve primeiro o e-mail dos alertas"}>
           <Bell className="size-4" aria-hidden="true" /> Testar os alertas
-        </Button>
+        </Botao>
       }
     >
       <form
@@ -38,14 +38,14 @@ export function FormularioDeAlertas({ initial, emailConfigured }: { initial: { m
           <LinhaDeAlternancia label="Uma rotina diária não rodou" description="Vencimentos e avisos podem atrasar" checked={s.routineMissed} onCheckedChange={(v) => setS({ ...s, routineMissed: v })} className="border-b border-linha" />
         </div>
         <div className="max-w-md">
-          <Input label="Enviar alertas para" type="email" value={s.sendTo} onChange={(e) => setS({ ...s, sendTo: e.target.value })} error={save.errors.sendTo} hint="Sem e-mail aqui, nenhum alerta é enviado." />
+          <Entrada label="Enviar alertas para" type="email" value={s.sendTo} onChange={(e) => setS({ ...s, sendTo: e.target.value })} error={save.errors.sendTo} hint="Sem e-mail aqui, nenhum alerta é enviado." />
         </div>
         {!emailConfigured && <p className="text-sm font-semibold text-aviso">O e-mail não está configurado no servidor: nenhum alerta sai até configurar o envio.</p>}
         {(save.formError && !Object.keys(save.errors).length && <AvisoDoFormulario>{save.formError}</AvisoDoFormulario>) || (test.formError && <AvisoDoFormulario>{test.formError}</AvisoDoFormulario>)}
         <div>
-          <Button type="submit" loading={save.pending}>
+          <Botao type="submit" loading={save.pending}>
             Salvar alertas
-          </Button>
+          </Botao>
         </div>
       </form>
     </Painel>

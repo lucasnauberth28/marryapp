@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, TicketPercent } from "lucide-react";
 import { criarCupom, excluirCupom, atualizarCupom, type CamposDoCupom } from "@/actions/coupon-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
+import { SelecaoNativa } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
@@ -152,12 +152,12 @@ export function SecaoDeCupons({ coupons, plans }: { coupons: LinhaDeCupom[]; pla
     <>
       {deleting === c.id ? (
         <span role="group" aria-label={`Confirmar exclusão do cupom ${c.code}`} className="inline-flex items-center gap-1">
-          <Button type="button" size="sm" onClick={() => remove(c)} loading={isPending} className="bg-perigo text-on-ameixa hover:bg-perigo/90">
+          <Botao type="button" size="sm" onClick={() => remove(c)} loading={isPending} className="bg-perigo text-on-ameixa hover:bg-perigo/90">
             Excluir
-          </Button>
-          <Button type="button" variant="quiet" size="sm" onClick={() => setDeleting(null)} disabled={isPending}>
+          </Botao>
+          <Botao type="button" variant="quiet" size="sm" onClick={() => setDeleting(null)} disabled={isPending}>
             Voltar
-          </Button>
+          </Botao>
         </span>
       ) : (
         <span className="inline-flex items-center gap-1">
@@ -203,7 +203,7 @@ export function SecaoDeCupons({ coupons, plans }: { coupons: LinhaDeCupom[]; pla
           className="flex flex-col gap-5 rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6"
         >
           <div className="grid gap-5 sm:grid-cols-2">
-            <Input
+            <Entrada
               id="cupom-codigo"
               label="Código"
               hint={editing === "new" ? "Letras e números, sem espaços." : "O código não muda depois de criado."}
@@ -219,7 +219,7 @@ export function SecaoDeCupons({ coupons, plans }: { coupons: LinhaDeCupom[]; pla
             />
 
             <div className="flex gap-3">
-              <NativeSelect
+              <SelecaoNativa
                 id="cupom-tipo"
                 label="Tipo de desconto"
                 fieldClassName="w-44 shrink-0"
@@ -228,8 +228,8 @@ export function SecaoDeCupons({ coupons, plans }: { coupons: LinhaDeCupom[]; pla
               >
                 <option value="percent">Percentual (%)</option>
                 <option value="amount">Valor fixo (R$)</option>
-              </NativeSelect>
-              <Input
+              </SelecaoNativa>
+              <Entrada
                 id="cupom-valor"
                 label={draft.kind === "percent" ? "Percentual" : "Valor"}
                 {...(draft.kind === "percent" ? { suffix: "%" } : { prefix: "R$" })}
@@ -243,7 +243,7 @@ export function SecaoDeCupons({ coupons, plans }: { coupons: LinhaDeCupom[]; pla
               />
             </div>
 
-            <Input
+            <Entrada
               id="cupom-limite"
               label="Limite de usos"
               type="number"
@@ -255,7 +255,7 @@ export function SecaoDeCupons({ coupons, plans }: { coupons: LinhaDeCupom[]; pla
               inputClassName="tabular-nums"
             />
 
-            <Input
+            <Entrada
               id="cupom-validade"
               label="Vale até"
               type="date"
@@ -304,12 +304,12 @@ export function SecaoDeCupons({ coupons, plans }: { coupons: LinhaDeCupom[]; pla
           ) : null}
 
           <div className="flex flex-wrap gap-2">
-            <Button type="submit" loading={isPending}>
+            <Botao type="submit" loading={isPending}>
               {editing === "new" ? "Criar cupom" : "Salvar"}
-            </Button>
-            <Button type="button" variant="quiet" onClick={() => setEditing(null)} disabled={isPending}>
+            </Botao>
+            <Botao type="button" variant="quiet" onClick={() => setEditing(null)} disabled={isPending}>
               Cancelar
-            </Button>
+            </Botao>
           </div>
         </form>
       ) : null}

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { AvisoDoFormulario } from "@/components/ui/field";
-import { Switch } from "@/components/ui/switch";
+import { Interruptor } from "@/components/ui/switch";
 import { definirMadrinhaDoCasamentoAtiva } from "@/actions/admin-madrinha-actions";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 import { BuscaDeCasamento } from "./wedding-search";
@@ -61,7 +61,7 @@ export function AlternanciasDoCasamento({ initial }: { initial: ItemDeAlternanci
                   )}
                 </p>
               </div>
-              <Switch checked={item.enabled === true} disabled={pending} onCheckedChange={(v) => setEnabled(item, v)} aria-labelledby={`w-${item.id}`} />
+              <Interruptor checked={item.enabled === true} disabled={pending} onCheckedChange={(v) => setEnabled(item, v)} aria-labelledby={`w-${item.id}`} />
             </li>
           ))}
         </ul>

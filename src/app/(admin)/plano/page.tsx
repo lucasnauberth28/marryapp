@@ -10,7 +10,7 @@ import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { opcaoDePlano, nomeCurtoDoPlano, type OpcaoDePlano } from "@/app/login/auth-config";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { Aparicao } from "@/components/motion/reveal";
-import { LoadingRegion } from "@/components/skeletons";
+import { RegiaoDeCarregamento } from "@/components/skeletons";
 import { EsqueletoDoCorpoDoPlano } from "./skeletons";
 import { SecaoDeUpgrade } from "./upgrade-section";
 
@@ -44,9 +44,9 @@ export default async function PlanoPage() {
       />
       <Suspense
         fallback={
-          <LoadingRegion label="o plano e os pagamentos" className="flex flex-col gap-7">
+          <RegiaoDeCarregamento label="o plano e os pagamentos" className="flex flex-col gap-7">
             <EsqueletoDoCorpoDoPlano />
-          </LoadingRegion>
+          </RegiaoDeCarregamento>
         }
       >
         <CorpoDoPlano userId={session.userId} weddingId={weddingId} />

@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { SkeletonAvatar, SkeletonCard, SkeletonTable, SkeletonTabs } from "@/components/skeletons";
+import { Esqueleto } from "@/components/ui/skeleton";
+import { EsqueletoDeAvatar, EsqueletoDeCartao, EsqueletoDeTabela, EsqueletoDeAbas } from "@/components/skeletons";
 import { cn } from "@/lib/utils";
 
 /*
@@ -12,11 +12,11 @@ import { cn } from "@/lib/utils";
 export function EsqueletoDaBarraDeFiltros({ search = true, filters = 0, className }: { search?: boolean; filters?: number; className?: string }) {
   return (
     <div className={cn("flex flex-col gap-4", className)}>
-      {search && <Skeleton className="h-12 w-full max-w-[560px] rounded-xl" />}
+      {search && <Esqueleto className="h-12 w-full max-w-[560px] rounded-xl" />}
       {filters > 0 && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
           {Array.from({ length: filters }).map((_, i) => (
-            <Skeleton key={i} className="h-12 rounded-xl" />
+            <Esqueleto key={i} className="h-12 rounded-xl" />
           ))}
         </div>
       )}
@@ -29,16 +29,16 @@ export function EsqueletoDaPaginacao() {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex h-5 items-center">
-        <Skeleton className="h-3 w-40 rounded-md" />
+        <Esqueleto className="h-3 w-40 rounded-md" />
       </div>
-      <Skeleton className="h-11 w-full max-w-72 rounded-xl sm:h-10" />
+      <Esqueleto className="h-11 w-full max-w-72 rounded-xl sm:h-10" />
     </div>
   );
 }
 
 /** Abas por URL (faixa de areia), como o TabsNav. */
 export function EsqueletoDasAbasDoAdmin({ count = 5 }: { count?: number }) {
-  return <SkeletonTabs count={count} />;
+  return <EsqueletoDeAbas count={count} />;
 }
 
 /** Itens do "Precisa da sua atenção": ícone redondo de 40px, duas linhas e botão. */
@@ -47,16 +47,16 @@ export function EsqueletoDaAtencao({ rows = 3 }: { rows?: number }) {
     <ul className="flex flex-col">
       {Array.from({ length: rows }).map((_, i) => (
         <li key={i} className="flex flex-wrap items-center gap-x-4 gap-y-3 border-b border-linha py-4 first:pt-0 last:border-b-0 last:pb-0">
-          <SkeletonAvatar />
+          <EsqueletoDeAvatar />
           <div className="min-w-0 flex-1 basis-56">
             <div className="flex h-6 items-center">
-              <Skeleton className="h-4 w-48 max-w-full rounded-md" />
+              <Esqueleto className="h-4 w-48 max-w-full rounded-md" />
             </div>
             <div className="flex h-5 items-center">
-              <Skeleton className="h-3 w-64 max-w-full rounded-md" />
+              <Esqueleto className="h-3 w-64 max-w-full rounded-md" />
             </div>
           </div>
-          <Skeleton className="h-11 w-24 shrink-0 rounded-xl max-sm:w-full sm:h-9" />
+          <Esqueleto className="h-11 w-24 shrink-0 rounded-xl max-sm:w-full sm:h-9" />
         </li>
       ))}
     </ul>
@@ -71,13 +71,13 @@ export function EsqueletoDasLinhas({ rows = 4, chip = true }: { rows?: number; c
         <li key={i} className="flex items-center justify-between gap-3 border-b border-linha py-3 first:pt-0 last:border-b-0 last:pb-0">
           <div className="min-w-0">
             <div className="flex h-6 items-center">
-              <Skeleton className="h-4 w-40 max-w-full rounded-md" />
+              <Esqueleto className="h-4 w-40 max-w-full rounded-md" />
             </div>
             <div className="flex h-5 items-center">
-              <Skeleton className="h-3 w-28 max-w-full rounded-md" />
+              <Esqueleto className="h-3 w-28 max-w-full rounded-md" />
             </div>
           </div>
-          {chip && <Skeleton className="h-7 w-24 shrink-0 rounded-lg" />}
+          {chip && <Esqueleto className="h-7 w-24 shrink-0 rounded-lg" />}
         </li>
       ))}
     </ul>
@@ -87,40 +87,40 @@ export function EsqueletoDasLinhas({ rows = 4, chip = true }: { rows?: number; c
 /** Painel lateral de um item escolhido na lista (fornecedor, pedido de domínio, pagamento). */
 export function EsqueletoDoPainelLateral({ photos = false, className }: { photos?: boolean; className?: string }) {
   return (
-    <SkeletonCard title={false} className={className}>
+    <EsqueletoDeCartao title={false} className={className}>
       <div className="flex items-center justify-between gap-2">
-        <Skeleton className="h-7 w-24 rounded-lg" />
-        <Skeleton className="h-7 w-20 rounded-lg" />
+        <Esqueleto className="h-7 w-24 rounded-lg" />
+        <Esqueleto className="h-7 w-20 rounded-lg" />
       </div>
       <div className="mt-3 flex h-8 items-center">
-        <Skeleton className="h-6 w-3/4 rounded-lg" />
+        <Esqueleto className="h-6 w-3/4 rounded-lg" />
       </div>
       <div className="mt-1 flex h-5 items-center">
-        <Skeleton className="h-3 w-full max-w-xs rounded-md" />
+        <Esqueleto className="h-3 w-full max-w-xs rounded-md" />
       </div>
       {photos && (
         <div className="mt-4 grid grid-cols-3 gap-2">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="aspect-square rounded-xl" />
+            <Esqueleto key={i} className="aspect-square rounded-xl" />
           ))}
         </div>
       )}
       <div className="mt-5 flex flex-col gap-3 border-t border-linha pt-5">
-        <Skeleton className="h-11 w-32 rounded-xl" />
-        <Skeleton className="h-12 rounded-xl" />
-        <Skeleton className="h-24 rounded-xl" />
+        <Esqueleto className="h-11 w-32 rounded-xl" />
+        <Esqueleto className="h-12 rounded-xl" />
+        <Esqueleto className="h-24 rounded-xl" />
       </div>
-    </SkeletonCard>
+    </EsqueletoDeCartao>
   );
 }
 
 /** Painel com tabela até a borda (Vencimentos, Cupons, Reembolsos...). */
 export function EsqueletoDoPainelDeTabela({ columns = 4, rows = 4, className }: { columns?: number; rows?: number; className?: string }) {
   return (
-    <SkeletonCard padded={false} className={className}>
+    <EsqueletoDeCartao padded={false} className={className}>
       <div className="px-3 pb-3 md:px-4 md:pb-4">
-        <SkeletonTable columns={columns} rows={rows} />
+        <EsqueletoDeTabela columns={columns} rows={rows} />
       </div>
-    </SkeletonCard>
+    </EsqueletoDeCartao>
   );
 }

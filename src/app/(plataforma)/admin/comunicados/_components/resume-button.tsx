@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { retomarComunicado } from "@/actions/admin-comunicados-actions";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
@@ -10,8 +10,8 @@ export function BotaoDeRetomar({ id }: { id: string }) {
   const router = useRouter();
   const { pending, run } = useAcaoDoAdmin();
   return (
-    <Button type="button" variant="quiet" size="sm" loading={pending} onClick={() => run(() => retomarComunicado({ id }), () => router.refresh())}>
+    <Botao type="button" variant="quiet" size="sm" loading={pending} onClick={() => run(() => retomarComunicado({ id }), () => router.refresh())}>
       Retomar envio
-    </Button>
+    </Botao>
   );
 }

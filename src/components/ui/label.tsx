@@ -21,4 +21,4 @@ function Rotulo({
   )
 }
 
-export { Rotulo as Label }
+export { Rotulo }

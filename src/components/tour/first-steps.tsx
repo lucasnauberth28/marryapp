@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Check, Circle } from "lucide-react";
 import { dispensarPrimeirosPassos } from "@/actions/tour-actions";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import type { ItemDosPrimeirosPassos } from "@/lib/tour/first-steps";
 
 /**
@@ -34,9 +34,9 @@ export function PrimeirosPassos({ items, doneCount }: { items: ItemDosPrimeirosP
             {doneCount} de {items.length} {items.length === 1 ? "feito" : "feitos"}
           </p>
         </div>
-        <Button variant="quiet" size="sm" onClick={dismiss} loading={pending} className="-mr-2 shrink-0">
+        <Botao variant="quiet" size="sm" onClick={dismiss} loading={pending} className="-mr-2 shrink-0">
           Dispensar
-        </Button>
+        </Botao>
       </div>
       <ul className="flex flex-col">
         {items.map((item) => (

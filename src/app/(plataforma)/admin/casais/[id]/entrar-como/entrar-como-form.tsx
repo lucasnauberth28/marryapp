@@ -5,10 +5,10 @@ import { useState, useTransition } from "react";
 import { LogIn, ShieldAlert } from "lucide-react";
 import { iniciarPersonificacao } from "@/actions/admin-impersonation-actions";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select";
+import { Botao } from "@/components/ui/button";
+import { CaixaDeSelecao } from "@/components/ui/checkbox";
+import { Entrada } from "@/components/ui/input";
+import { SelecaoNativa } from "@/components/ui/select";
 import { MAXIMO_DE_MINUTOS_DE_PERSONIFICACAO, MOTIVOS_DE_PERSONIFICACAO } from "@/lib/security/impersonation-rules";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
@@ -54,18 +54,18 @@ export function FormularioDeEntrarComo({ weddingId, coupleNames, backHref }: { w
         <p className="mt-2 text-tinta-suave">Você vai ver o painel como o casal vê, inclusive a lista de convidados. Use só quando precisar ajudar.</p>
       </div>
 
-      <NativeSelect label="Por que você vai entrar?" value={reason} onChange={(e) => setReason(e.target.value)}>
+      <SelecaoNativa label="Por que você vai entrar?" value={reason} onChange={(e) => setReason(e.target.value)}>
         {MOTIVOS_DE_PERSONIFICACAO.map((r) => (
           <option key={r} value={r}>
             {r}
           </option>
         ))}
-      </NativeSelect>
-      <Input label="Número do chamado (opcional)" value={ticket} onChange={(e) => setTicket(e.target.value)} inputMode="numeric" placeholder="#2041" error={ticketInvalid ? "Use só o número do chamado." : undefined} />
+      </SelecaoNativa>
+      <Entrada label="Número do chamado (opcional)" value={ticket} onChange={(e) => setTicket(e.target.value)} inputMode="numeric" placeholder="#2041" error={ticketInvalid ? "Use só o número do chamado." : undefined} />
 
       <div className="flex flex-col gap-2">
         <label className="flex items-start gap-3">
-          <Checkbox
+          <CaixaDeSelecao
             checked={canEdit}
             onCheckedChange={(v) => {
               setCanEdit(v === true);
@@ -84,7 +84,7 @@ export function FormularioDeEntrarComo({ weddingId, coupleNames, backHref }: { w
               <ShieldAlert className="mt-0.5 size-5 shrink-0" aria-hidden="true" /> Cuidado: o que você alterar muda o casamento de verdade, e cada alteração fica no registro com o seu nome.
             </p>
             <label className="flex items-start gap-3 text-sm leading-5 text-tinta">
-              <Checkbox checked={confirmEdit} onCheckedChange={(v) => setConfirmEdit(v === true)} className="mt-0.5" />
+              <CaixaDeSelecao checked={confirmEdit} onCheckedChange={(v) => setConfirmEdit(v === true)} className="mt-0.5" />
               <span>Entendo e quero poder editar durante esta entrada.</span>
             </label>
           </div>
@@ -106,9 +106,9 @@ export function FormularioDeEntrarComo({ weddingId, coupleNames, backHref }: { w
         </p>
       )}
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={ticketInvalid || (canEdit && !confirmEdit)} loading={pending || redirecting}>
+        <Botao type="submit" disabled={ticketInvalid || (canEdit && !confirmEdit)} loading={pending || redirecting}>
           <LogIn className="size-4" aria-hidden="true" /> Entrar como {coupleNames}
-        </Button>
+        </Botao>
         <Link href={backHref} className={estiloDoBotao.quiet}>
           Cancelar
         </Link>

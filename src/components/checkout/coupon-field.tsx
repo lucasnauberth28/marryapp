@@ -4,8 +4,8 @@ import { useEffect, useId, useState, useTransition } from "react";
 import { TicketPercent, X } from "lucide-react";
 import { previaDoPrecoDaAssinatura } from "@/actions/subscription-actions";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 
@@ -135,7 +135,7 @@ export function CampoDeCupom({ planId, modules, applied, onChange, creditLabel =
       }}
     >
       <div className="flex items-start gap-2">
-        <Input
+        <Entrada
           id={inputId}
           label="Cupom de desconto"
           value={code}
@@ -152,9 +152,9 @@ export function CampoDeCupom({ planId, modules, applied, onChange, creditLabel =
           fieldClassName="min-w-0 flex-1"
           inputClassName="font-mono uppercase"
         />
-        <Button type="submit" variant="outline" loading={isPending} className="h-12 shrink-0 rounded-[12px] px-6">
+        <Botao type="submit" variant="outline" loading={isPending} className="h-12 shrink-0 rounded-[12px] px-6">
           Aplicar
-        </Button>
+        </Botao>
       </div>
     </form>
   );

@@ -82,11 +82,11 @@ function RodapeDoCartao({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 export {
-  Cartao as Card,
-  CabecalhoDoCartao as CardHeader,
-  RodapeDoCartao as CardFooter,
-  TituloDoCartao as CardTitle,
-  AcaoDoCartao as CardAction,
-  DescricaoDoCartao as CardDescription,
-  ConteudoDoCartao as CardContent,
+  Cartao,
+  CabecalhoDoCartao,
+  RodapeDoCartao,
+  TituloDoCartao,
+  AcaoDoCartao,
+  DescricaoDoCartao,
+  ConteudoDoCartao,
 }

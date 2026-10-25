@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { AuthorizationError } from "@/lib/security/auth-guard";
+import { ErroDeAutorizacao } from "@/lib/security/auth-guard";
 import { exigirCasamento } from "@/lib/security/wedding-context";
 
 /**
@@ -18,7 +18,7 @@ export async function GET() {
   try {
     ({ weddingId } = await exigirCasamento("/convidados"));
   } catch (error) {
-    if (error instanceof AuthorizationError) {
+    if (error instanceof ErroDeAutorizacao) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
     throw error;

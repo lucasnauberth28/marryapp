@@ -24,7 +24,7 @@ import {
  * As regras puras (validade, assinatura, recusa de escrita) ficam em impersonation-rules.ts, com testes.
  */
 
-export { COOKIE_DE_PERSONIFICACAO as IMPERSONATION_COOKIE, MAXIMO_DE_MINUTOS_DE_PERSONIFICACAO as IMPERSONATION_MAX_MINUTES };
+export { COOKIE_DE_PERSONIFICACAO, MAXIMO_DE_MINUTOS_DE_PERSONIFICACAO };
 
 export interface ContextoDePersonificacao {
   /** ImpersonationSession.id */

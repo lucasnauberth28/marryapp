@@ -24,8 +24,8 @@ import {
 import { temAcessoAoCaminho } from "@/lib/permissions";
 import { telaEstaAtiva, type ChaveDeContagemDoMenu } from "@/lib/panel-nav";
 
-export type { ChaveDeContagemDoMenu as NavCountKey };
-export { AREAS_DO_PAINEL as PANEL_AREAS, areasVisiveis as visibleAreas, areaDoCaminho as areaOfPath, TELAS_DA_CONTA as ACCOUNT_SCREENS } from "@/lib/panel-nav";
+export type { ChaveDeContagemDoMenu };
+export { AREAS_DO_PAINEL, areasVisiveis, areaDoCaminho, TELAS_DA_CONTA } from "@/lib/panel-nav";
 
 /** Ícone de cada área e tela (a estrutura e os nomes ficam em lib/panel-nav). */
 const ICONES_DO_MENU: Record<string, LucideIcon> = {

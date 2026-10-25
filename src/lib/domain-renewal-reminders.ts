@@ -1,7 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { urlDoApp } from "@/lib/app-url";
-import { brandedEmail, enviarEmail } from "@/lib/email";
+import { emailDaMarca, enviarEmail } from "@/lib/email";
 import { lembreteDeRenovacaoDevido, fimDaJanelaDeRenovacao, type DiaDoLembreteDeRenovacao } from "@/lib/domain-renewal";
 import { registrarAuditoria } from "@/lib/audit";
 
@@ -62,7 +62,7 @@ export async function enviarLembretesDeRenovacaoDeDominio(now = new Date()): Pro
 async function enviarParaTodos(recipients: string[], domain: string, expiresAt: Date, day: DiaDoLembreteDeRenovacao): Promise<number> {
   const when = formatarDataCivilLonga(expiresAt);
   const heading = `O endereço ${domain} do site vence em ${when}`;
-  const mail = brandedEmail({
+  const mail = emailDaMarca({
     heading,
     paragraphs: [
       `O endereço ${domain} do site de vocês vence em ${when}, daqui a cerca de ${day} dias.`,

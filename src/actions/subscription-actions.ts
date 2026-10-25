@@ -4,7 +4,7 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import { assinarToken, opcoesDoCookieDeSessao, hasPathAccess, NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
+import { assinarToken, opcoesDoCookieDeSessao, temAcessoAoCaminho, NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
 import { mercadoPagoEstaConfigurado, pagamentoDoMercadoPago } from "@/lib/mercadopago";
 import { gerarCodigoPix } from "@/lib/pix-utils";
 import { resolverPlanoNoCatalogo } from "@/lib/catalog";
@@ -485,7 +485,7 @@ export async function cadastrarContaDoPlano(data: DadosDoCadastroDoPlano) {
       userId: user.id,
       isFree: plan.price === 0,
       isVendor,
-      redirectTo: hasPathAccess(allowedPaths, CAMINHO_DO_PAINEL_DO_FORNECEDOR) ? CAMINHO_DO_PAINEL_DO_FORNECEDOR : null,
+      redirectTo: temAcessoAoCaminho(allowedPaths, CAMINHO_DO_PAINEL_DO_FORNECEDOR) ? CAMINHO_DO_PAINEL_DO_FORNECEDOR : null,
       slug: input.slug ? limparEndereco(input.slug) : undefined,
     };
   } catch (error) {

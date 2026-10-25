@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Compass } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 
 /**
  * Cartão de boas-vindas ao painel. Não bloqueia nada: fica no canto (acima da barra inferior no celular),
@@ -48,12 +48,12 @@ export function CartaoDeBoasVindasDoTour({ news, onStart, onDismiss }: { news: b
         </div>
       </div>
       <div className="flex flex-col gap-2 sm:flex-row-reverse">
-        <Button onClick={onStart} className="sm:flex-1">
+        <Botao onClick={onStart} className="sm:flex-1">
           {news ? "Ver as novidades" : "Ver o passo a passo"}
-        </Button>
-        <Button variant="outline" onClick={onDismiss} className="sm:flex-1">
+        </Botao>
+        <Botao variant="outline" onClick={onDismiss} className="sm:flex-1">
           Agora não
-        </Button>
+        </Botao>
       </div>
       <p className="text-sm leading-5 text-tinta-suave">Para rever depois, abram o menu da conta ou as Configurações.</p>
     </div>

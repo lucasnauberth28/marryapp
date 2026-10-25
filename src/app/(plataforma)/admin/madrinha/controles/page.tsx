@@ -5,7 +5,7 @@ import { Painel } from "@/components/plataforma/panel";
 import { Aviso, EtiquetaDeInativo } from "@/components/plataforma/notices";
 import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Input } from "@/components/ui/input";
+import { Entrada } from "@/components/ui/input";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { obterDadosDasConfiguracoesDaMadrinha, listarVersoesDasInstrucoes, listarArtigosDeConhecimento, listarExcecoesDaMadrinha } from "@/lib/platform/queries/madrinha";
@@ -80,7 +80,7 @@ export default async function Page() {
               <Pause className="size-5 text-perigo" aria-hidden="true" /> Pausar a Liz para todos
             </h2>
             <p className="text-sm leading-5 text-tinta-suave">Para quando algo sair do controle: os casais veem um aviso gentil e a Liz descansa. Só dá para pausar depois que ela for ativada.</p>
-            <Input label="Motivo (fica no registro)" disabled />
+            <Entrada label="Motivo (fica no registro)" disabled />
             <div>
               <button type="button" disabled className={`${estiloDoBotao.secondary} text-perigo`}>
                 <Pause className="size-4" aria-hidden="true" /> Pausar para todos

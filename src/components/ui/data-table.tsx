@@ -14,8 +14,8 @@ import {
   X,
   Inbox,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
+import { Botao } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export interface Coluna<T> {
@@ -174,7 +174,7 @@ export function TabelaDeDados<T>({
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div className="relative flex-1 max-w-sm">
           <Search aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-tinta-suave" />
-          <Input
+          <Entrada
             type="text"
             aria-label={searchPlaceholder}
             value={search}
@@ -291,7 +291,7 @@ export function TabelaDeDados<T>({
           </div>
 
           <div className="flex items-center gap-1">
-            <Button aria-label="Primeira página"
+            <Botao aria-label="Primeira página"
               variant="outline"
               size="icon"
               className="h-11 w-11 rounded-lg sm:h-9 sm:w-9"
@@ -300,8 +300,8 @@ export function TabelaDeDados<T>({
               title="Primeira página"
             >
               <ChevronsLeft className="w-4 h-4" />
-            </Button>
-            <Button aria-label="Anterior"
+            </Botao>
+            <Botao aria-label="Anterior"
               variant="outline"
               size="icon"
               className="h-11 w-11 rounded-lg sm:h-9 sm:w-9"
@@ -310,13 +310,13 @@ export function TabelaDeDados<T>({
               title="Página anterior"
             >
               <ChevronLeft className="w-4 h-4" />
-            </Button>
+            </Botao>
 
             <span className="px-3 font-medium text-tinta">
               Página {safePage} de {totalPages}
             </span>
 
-            <Button aria-label="Próximo"
+            <Botao aria-label="Próximo"
               variant="outline"
               size="icon"
               className="h-11 w-11 rounded-lg sm:h-9 sm:w-9"
@@ -325,8 +325,8 @@ export function TabelaDeDados<T>({
               title="Próxima página"
             >
               <ChevronRight className="w-4 h-4" />
-            </Button>
-            <Button aria-label="Última página"
+            </Botao>
+            <Botao aria-label="Última página"
               variant="outline"
               size="icon"
               className="h-11 w-11 rounded-lg sm:h-9 sm:w-9"
@@ -335,7 +335,7 @@ export function TabelaDeDados<T>({
               title="Última página"
             >
               <ChevronsRight className="w-4 h-4" />
-            </Button>
+            </Botao>
           </div>
         </div>
         )}

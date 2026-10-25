@@ -4,15 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, Plus, Clock, CheckCircle2, MessageCircle, Lock } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { NativeSelect } from "@/components/ui/select";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
+import { SelecaoNativa } from "@/components/ui/select";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao, type TomDaSituacao } from "@/components/plataforma/status-chip";
 import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { SITUACOES_DO_CHAMADO, ROTULO_DA_SITUACAO_DO_CHAMADO } from "@/lib/platform/support";
 import { criarChamadoDeSuporte, atualizarChamadoDeSuporte } from "@/actions/admin-suporte-actions";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
@@ -145,21 +145,21 @@ function NovoChamado({ prefill, onDone }: { prefill: PreenchimentoDoChamado | nu
     >
       <h3 className="text-lg font-semibold text-tinta">Registrar um pedido de ajuda</h3>
       {prefill && <p className="text-sm text-tinta-suave">Ligado ao {prefill.label}.</p>}
-      <Input label="Assunto" value={subject} onChange={(e) => setSubject(e.target.value)} error={errors.subject} maxLength={140} />
-      <Textarea label="O que a pessoa contou" optional value={body} onChange={(e) => setBody(e.target.value)} error={errors.body} rows={3} maxLength={2000} />
+      <Entrada label="Assunto" value={subject} onChange={(e) => setSubject(e.target.value)} error={errors.subject} maxLength={140} />
+      <AreaDeTexto label="O que a pessoa contou" optional value={body} onChange={(e) => setBody(e.target.value)} error={errors.body} rows={3} maxLength={2000} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Input label="Quem pediu" value={name} onChange={(e) => setName(e.target.value)} error={errors.requesterName} maxLength={120} />
-        <Input label="E-mail" optional type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.requesterEmail} />
-        <Input label="Telefone" optional value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.requesterPhone} maxLength={30} />
+        <Entrada label="Quem pediu" value={name} onChange={(e) => setName(e.target.value)} error={errors.requesterName} maxLength={120} />
+        <Entrada label="E-mail" optional type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.requesterEmail} />
+        <Entrada label="Telefone" optional value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.requesterPhone} maxLength={30} />
       </div>
       {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" loading={pending}>
+        <Botao type="submit" loading={pending}>
           Registrar pedido
-        </Button>
-        <Button type="button" variant="quiet" onClick={onDone} disabled={pending}>
+        </Botao>
+        <Botao type="button" variant="quiet" onClick={onDone} disabled={pending}>
           Cancelar
-        </Button>
+        </Botao>
       </div>
     </form>
   );
@@ -202,25 +202,25 @@ function EditorDeChamado({ ticket, onDone }: { ticket: ItemDeChamado; onDone: ()
         </p>
       )}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <NativeSelect label="Situação" value={status} onChange={(e) => setStatus(e.target.value as ItemDeChamado["status"])} alwaysFloat>
+        <SelecaoNativa label="Situação" value={status} onChange={(e) => setStatus(e.target.value as ItemDeChamado["status"])} alwaysFloat>
           {SITUACOES_DO_CHAMADO.map((s) => (
             <option key={s} value={s}>
               {ROTULO_DA_SITUACAO_DO_CHAMADO[s]}
             </option>
           ))}
-        </NativeSelect>
-        <NativeSelect label="Responsável" value={assign} onChange={(e) => setAssign(e.target.value as typeof assign)} alwaysFloat>
+        </SelecaoNativa>
+        <SelecaoNativa label="Responsável" value={assign} onChange={(e) => setAssign(e.target.value as typeof assign)} alwaysFloat>
           <option value="keep">{ticket.assigneeName ? `Continua ${ticket.mine ? "com você" : ticket.assigneeName.split(" ")[0]}` : "Sem responsável"}</option>
           <option value="me">Assumir (eu)</option>
           {ticket.assigneeName && <option value="none">Tirar o responsável</option>}
-        </NativeSelect>
+        </SelecaoNativa>
       </div>
-      <Textarea label="Nota interna" optional hint="Só a equipe vê." value={note} onChange={(e) => setNote(e.target.value)} error={errors.internalNote} rows={3} maxLength={2000} />
+      <AreaDeTexto label="Nota interna" optional hint="Só a equipe vê." value={note} onChange={(e) => setNote(e.target.value)} error={errors.internalNote} rows={3} maxLength={2000} />
       {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div>
-        <Button type="submit" loading={pending}>
+        <Botao type="submit" loading={pending}>
           Salvar
-        </Button>
+        </Botao>
       </div>
     </form>
   );

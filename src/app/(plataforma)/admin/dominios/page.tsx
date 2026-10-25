@@ -5,7 +5,7 @@ import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { Paginacao } from "@/components/plataforma/pagination";
 import { RegiaoPendente } from "@/components/plataforma/pending";
 import { EsqueletoDasLinhas, EsqueletoDoPainelLateral } from "@/components/plataforma/loading-parts";
-import { SkeletonCard } from "@/components/skeletons";
+import { EsqueletoDeCartao } from "@/components/skeletons";
 import { Painel } from "@/components/plataforma/panel";
 import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
 import { CartaoDeIndicador, GradeDeIndicadores } from "@/components/plataforma/stat-card";
@@ -148,9 +148,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 
           <Suspense
             fallback={
-              <SkeletonCard description>
+              <EsqueletoDeCartao description>
                 <EsqueletoDasLinhas rows={3} />
-              </SkeletonCard>
+              </EsqueletoDeCartao>
             }
           >
             <BlocoDeRenovacoes now={now} />

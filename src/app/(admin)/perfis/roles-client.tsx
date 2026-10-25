@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { TabelaDeDados } from "@/components/ui/data-table";
 import { criarPerfil, atualizarPerfil, excluirPerfil } from "@/actions/rbac-actions";
-import { Input } from "@/components/ui/input";
+import { Entrada } from "@/components/ui/input";
 import { Plus, Pencil, Trash2, Check } from "lucide-react";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { AbasDeAcesso } from "@/components/casal/access-tabs";
@@ -210,7 +210,7 @@ export function PerfisCliente({ initialRoles, embedded = false }: { initialRoles
             <h2 id={`${uid}-titulo`} className={estiloDoTituloDoCartao}>{editingRole ? "Editar perfil" : "Novo perfil"}</h2>
             <p className="mt-0.5 text-[15px] text-tinta-suave">Dê um nome ao perfil e marque as áreas que ele pode abrir.</p>
           </div>
-          <Input
+          <Entrada
             id={`${uid}-name`}
             label="Nome do perfil"
             fieldClassName="max-w-md"

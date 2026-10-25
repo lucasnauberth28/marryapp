@@ -4,7 +4,7 @@
  */
 import { estiloDoBotao } from "@/components/landing/styles";
 
-export { estiloDoBotao as btn };
+export { estiloDoBotao };
 
 /** Botão de ação destrutiva: contorno em perigo, fundo papel. */
 export const estiloDoBotaoDePerigo =

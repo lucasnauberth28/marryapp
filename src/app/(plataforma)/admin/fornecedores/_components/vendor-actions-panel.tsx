@@ -13,10 +13,10 @@ import {
   reativarFornecedor,
   type ResultadoDaAcaoDoFornecedor,
 } from "@/actions/admin-fornecedores-actions";
-import { Button } from "@/components/ui/button";
-import { NativeSelect } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+import { Botao } from "@/components/ui/button";
+import { SelecaoNativa } from "@/components/ui/select";
+import { Interruptor } from "@/components/ui/switch";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { DIAS_DE_CONCESSAO, MOTIVOS_DE_RECUSA, mensagemDeRecusaPara } from "@/lib/platform/vendor-admin";
 import { cn } from "@/lib/utils";
 
@@ -77,15 +77,15 @@ export function PainelDeAcoesDoFornecedor({
       ) : null}
 
       {curation !== "approved" && !suspended ? (
-        <Button type="button" disabled={pending} loading={pending && running === "approve"} onClick={() => run("approve", () => aprovarFornecedorComoAdmin({ vendorId }))} className="self-start">
+        <Botao type="button" disabled={pending} loading={pending && running === "approve"} onClick={() => run("approve", () => aprovarFornecedorComoAdmin({ vendorId }))} className="self-start">
           <Check className="size-4" aria-hidden="true" /> Aprovar
-        </Button>
+        </Botao>
       ) : null}
 
       {curation !== "approved" && !suspended ? (
         <section aria-label="Recusar com motivo" className="flex flex-col gap-3 border-t border-linha pt-4">
           <h3 className="text-[15px] font-semibold text-tinta">Recusar com motivo</h3>
-          <NativeSelect
+          <SelecaoNativa
             label="Motivo"
             alwaysFloat
             value={reasonKey}
@@ -99,9 +99,9 @@ export function PainelDeAcoesDoFornecedor({
                 {r.label}
               </option>
             ))}
-          </NativeSelect>
-          <Textarea label="Mensagem para o fornecedor" rows={4} maxLength={500} value={message} onChange={(e) => setMessage(e.target.value)} hint="Ele lê esta mensagem no painel dele." />
-          <Button
+          </SelecaoNativa>
+          <AreaDeTexto label="Mensagem para o fornecedor" rows={4} maxLength={500} value={message} onChange={(e) => setMessage(e.target.value)} hint="Ele lê esta mensagem no painel dele." />
+          <Botao
             type="button"
             variant="outline"
             disabled={message.trim().length < 10 || pending}
@@ -110,7 +110,7 @@ export function PainelDeAcoesDoFornecedor({
             className={cn(ESTILO_DE_PERIGO, "self-start")}
           >
             Recusar com motivo
-          </Button>
+          </Botao>
         </section>
       ) : null}
 
@@ -127,7 +127,7 @@ export function PainelDeAcoesDoFornecedor({
                 {canFeature ? "Aparece no topo da lista de fornecedores." : "Só quem está aprovado e ativo pode ser destacado."}
               </p>
             </div>
-            <Switch
+            <Interruptor
               id={`destaque-${vendorId}`}
               checked={featured}
               disabled={pending || (!canFeature && !featured)}
@@ -143,22 +143,22 @@ export function PainelDeAcoesDoFornecedor({
             }}
           >
             <div className="grid grid-cols-2 gap-3">
-              <NativeSelect label="Conceder plano" alwaysFloat value={tier} onChange={(e) => setTier(e.target.value as "PRO" | "MASTER")}>
+              <SelecaoNativa label="Conceder plano" alwaysFloat value={tier} onChange={(e) => setTier(e.target.value as "PRO" | "MASTER")}>
                 <option value="PRO">Pro</option>
                 <option value="MASTER">Master</option>
-              </NativeSelect>
-              <NativeSelect label="Por quantos dias" alwaysFloat value={days} onChange={(e) => setDays(e.target.value)}>
+              </SelecaoNativa>
+              <SelecaoNativa label="Por quantos dias" alwaysFloat value={days} onChange={(e) => setDays(e.target.value)}>
                 {DIAS_DE_CONCESSAO.map((d) => (
                   <option key={d} value={d}>
                     {d}
                   </option>
                 ))}
-              </NativeSelect>
+              </SelecaoNativa>
             </div>
-            <Textarea label="Motivo da cortesia" rows={2} maxLength={500} value={grantReason} onChange={(e) => setGrantReason(e.target.value)} hint="Fica no registro de atividades. Não gera cobrança." />
-            <Button type="submit" variant="outline" disabled={grantReason.trim().length < 5 || pending} loading={pending && running === "grant"} className="self-start">
+            <AreaDeTexto label="Motivo da cortesia" rows={2} maxLength={500} value={grantReason} onChange={(e) => setGrantReason(e.target.value)} hint="Fica no registro de atividades. Não gera cobrança." />
+            <Botao type="submit" variant="outline" disabled={grantReason.trim().length < 5 || pending} loading={pending && running === "grant"} className="self-start">
               Conceder plano
-            </Button>
+            </Botao>
           </form>
         </section>
       ) : null}
@@ -167,15 +167,15 @@ export function PainelDeAcoesDoFornecedor({
         {suspended ? (
           <>
             <p className="text-sm text-tinta-suave">Este fornecedor está suspenso e fora da vitrine.</p>
-            <Button type="button" variant="outline" disabled={pending} loading={pending && running === "unsuspend"} onClick={() => run("unsuspend", () => reativarFornecedor({ vendorId }))} className="self-start">
+            <Botao type="button" variant="outline" disabled={pending} loading={pending && running === "unsuspend"} onClick={() => run("unsuspend", () => reativarFornecedor({ vendorId }))} className="self-start">
               Reativar o fornecedor
-            </Button>
+            </Botao>
           </>
         ) : suspendOpen ? (
           <>
-            <Textarea label="Motivo da suspensão" rows={2} maxLength={500} value={suspendReason} onChange={(e) => setSuspendReason(e.target.value)} hint="O fornecedor vê este motivo no painel dele." />
+            <AreaDeTexto label="Motivo da suspensão" rows={2} maxLength={500} value={suspendReason} onChange={(e) => setSuspendReason(e.target.value)} hint="O fornecedor vê este motivo no painel dele." />
             <div className="flex flex-wrap gap-2">
-              <Button
+              <Botao
                 type="button"
                 variant="outline"
                 disabled={suspendReason.trim().length < 5 || pending}
@@ -184,16 +184,16 @@ export function PainelDeAcoesDoFornecedor({
                 className={ESTILO_DE_PERIGO}
               >
                 Suspender o fornecedor
-              </Button>
-              <Button type="button" variant="quiet" onClick={() => setSuspendOpen(false)} disabled={pending}>
+              </Botao>
+              <Botao type="button" variant="quiet" onClick={() => setSuspendOpen(false)} disabled={pending}>
                 Voltar
-              </Button>
+              </Botao>
             </div>
           </>
         ) : (
-          <Button type="button" variant="outline" onClick={() => setSuspendOpen(true)} className={cn(ESTILO_DE_PERIGO, "self-start")}>
+          <Botao type="button" variant="outline" onClick={() => setSuspendOpen(true)} className={cn(ESTILO_DE_PERIGO, "self-start")}>
             Suspender o fornecedor
-          </Button>
+          </Botao>
         )}
         <p className="text-sm text-tinta-suave">Toda ação aqui fica no Registro de atividades.</p>
       </section>

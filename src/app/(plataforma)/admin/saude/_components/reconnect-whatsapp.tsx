@@ -3,10 +3,10 @@
 import { useState, useTransition } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { ModalPersonalizado } from "@/components/ui/custom-modal";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { MolduraDoQr } from "@/components/ui/qr-frame";
 import { CORES_DO_QR } from "@/lib/qr-colors";
-import { LoadingRegion, SkeletonImage } from "@/components/skeletons";
+import { RegiaoDeCarregamento, EsqueletoDeImagem } from "@/components/skeletons";
 import { reconectarWhatsapp } from "@/actions/admin-saude-actions";
 
 /** "Reconectar": gera o QR Code do WhatsApp para parear de novo. Depois de ler, a página precisa ser atualizada. */
@@ -33,15 +33,15 @@ export function ReconectarWhatsapp() {
 
   return (
     <>
-      <Button type="button" variant="quiet" size="sm" onClick={start} loading={pending}>
+      <Botao type="button" variant="quiet" size="sm" onClick={start} loading={pending}>
         Reconectar
-      </Button>
+      </Botao>
       <ModalPersonalizado isOpen={open} onClose={() => setOpen(false)} title="Reconectar o WhatsApp" description="No celular do número do Aceito: WhatsApp, Aparelhos conectados, Conectar um aparelho. Aponte a câmera para o código.">
         <div className="flex min-h-64 flex-col items-center justify-center gap-3">
           {pending && (
-            <LoadingRegion label="o código">
-              <SkeletonImage ratio={1} className="size-60 rounded-xl" />
-            </LoadingRegion>
+            <RegiaoDeCarregamento label="o código">
+              <EsqueletoDeImagem ratio={1} className="size-60 rounded-xl" />
+            </RegiaoDeCarregamento>
           )}
           {error && (
             <p role="alert" className="text-sm font-semibold text-perigo">

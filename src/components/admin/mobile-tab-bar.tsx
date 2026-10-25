@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { areaOfPath, iconeDoMenu, visibleAreas } from "@/components/admin/nav-config";
+import { areaDoCaminho, iconeDoMenu, areasVisiveis } from "@/components/admin/nav-config";
 import { ancoraDoMenu } from "@/lib/tour/steps";
 
 /**
@@ -11,8 +11,8 @@ import { ancoraDoMenu } from "@/lib/tour/steps";
  */
 export function BarraDeAbasMovel({ allowedPaths }: { allowedPaths: string[] }) {
   const pathname = usePathname();
-  const areas = visibleAreas(allowedPaths);
-  const current = areaOfPath(areas, pathname);
+  const areas = areasVisiveis(allowedPaths);
+  const current = areaDoCaminho(areas, pathname);
   if (areas.length === 0) return null;
 
   return (

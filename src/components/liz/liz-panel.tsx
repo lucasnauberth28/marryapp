@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { RotateCcw, Send, X } from "lucide-react";
-import { Skeleton } from "@/components/skeletons";
+import { Esqueleto } from "@/components/skeletons";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { obterDadosDoPainelDaLiz, perguntarALiz, type DadosDoPainelDaLiz } from "@/actions/liz-actions";
 import { respondedoraDoGuiaDeAjuda, type RespondedoraDaLiz, type ContextoDaPerguntaALiz } from "@/lib/liz/answerer";
@@ -278,8 +278,8 @@ function CorpoDaDica({ load, onRetry, onNavigate }: { load: SituacaoDoCarregamen
     return (
       <div role="status" aria-busy="true" className="flex w-56 max-w-full flex-col gap-2">
         <span className="sr-only">Carregando a sugestão...</span>
-        <Skeleton className="h-4 w-full rounded-md" />
-        <Skeleton className="h-4 w-4/5 rounded-md" />
+        <Esqueleto className="h-4 w-full rounded-md" />
+        <Esqueleto className="h-4 w-4/5 rounded-md" />
       </div>
     );
   if (load.status === "error")

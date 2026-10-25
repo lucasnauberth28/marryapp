@@ -4,11 +4,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { History } from "lucide-react";
 import { concederPlanoAoCasamento } from "@/actions/admin-casais-actions";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
-import { Checkbox } from "@/components/ui/checkbox";
-import { NativeSelect } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { CaixaDeSelecao } from "@/components/ui/checkbox";
+import { SelecaoNativa } from "@/components/ui/select";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { useAcaoDoCasal } from "../../_components/use-casal-action";
 
 /** "Conceder um plano à mão": cortesia de valor zero, com motivo obrigatório. Não cobra nada do casal. */
@@ -39,13 +39,13 @@ export function FormularioDeConcederPlano({ weddingId, currentPlanId }: { weddin
         </EtiquetaDeSituacao>
       </div>
       <p className="-mt-2 text-sm leading-5 text-tinta-suave">É uma cortesia: o plano é liberado sem cobrança e vale para sempre (plano de casal é pago uma vez).</p>
-      <NativeSelect label="Plano" value={planId} onChange={(e) => setPlanId(e.target.value as "classic" | "vip")}>
+      <SelecaoNativa label="Plano" value={planId} onChange={(e) => setPlanId(e.target.value as "classic" | "vip")}>
         <option value="classic">Classic</option>
         <option value="vip">VIP</option>
-      </NativeSelect>
-      <Textarea label="Motivo (obrigatório)" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} rows={3} />
+      </SelecaoNativa>
+      <AreaDeTexto label="Motivo (obrigatório)" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} rows={3} />
       <label className="flex items-center gap-3 text-base text-tinta">
-        <Checkbox checked={notify} onCheckedChange={(v) => setNotify(v === true)} />
+        <CaixaDeSelecao checked={notify} onCheckedChange={(v) => setNotify(v === true)} />
         Avisar o casal por e-mail que o plano foi liberado
       </label>
       {error && (
@@ -54,9 +54,9 @@ export function FormularioDeConcederPlano({ weddingId, currentPlanId }: { weddin
         </p>
       )}
       <div>
-        <Button type="submit" disabled={reason.trim().length < 5} loading={pending}>
+        <Botao type="submit" disabled={reason.trim().length < 5} loading={pending}>
           Conceder o {name}
-        </Button>
+        </Botao>
       </div>
     </form>
   );

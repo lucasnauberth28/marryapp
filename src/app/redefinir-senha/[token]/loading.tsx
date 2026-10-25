@@ -1,5 +1,5 @@
 import { EsqueletoDoTituloDeAcesso, EsqueletoDoMoldeDeAcesso } from "@/components/account/auth-shell-skeleton";
-import { SkeletonForm } from "@/components/skeletons";
+import { EsqueletoDeFormulario } from "@/components/skeletons";
 
 // O link é conferido no servidor: enquanto isso, a moldura de acesso com título e os dois campos de senha.
 export default function RedefinirSenhaLoading() {
@@ -7,7 +7,7 @@ export default function RedefinirSenhaLoading() {
     <EsqueletoDoMoldeDeAcesso label="o link de nova senha">
       <div className="flex flex-col gap-6">
         <EsqueletoDoTituloDeAcesso />
-        <SkeletonForm fields={2} />
+        <EsqueletoDeFormulario fields={2} />
       </div>
     </EsqueletoDoMoldeDeAcesso>
   );

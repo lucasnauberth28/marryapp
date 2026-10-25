@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+  Dialogo,
+  ConteudoDoDialogo,
+  CabecalhoDoDialogo,
+  TituloDoDialogo,
+  DescricaoDoDialogo,
 } from "@/components/ui/dialog";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -38,16 +38,16 @@ export function ModalPersonalizado({
   size = "sm",
 }: PropriedadesDoModalPersonalizado) {
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className={cn(`p-6 sm:p-8 ${classesDeTamanho[size]}`, className)}>
-        <DialogHeader className="mb-2">
-          <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
-        </DialogHeader>
+    <Dialogo open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <ConteudoDoDialogo className={cn(`p-6 sm:p-8 ${classesDeTamanho[size]}`, className)}>
+        <CabecalhoDoDialogo className="mb-2">
+          <TituloDoDialogo>{title}</TituloDoDialogo>
+          {description && <DescricaoDoDialogo>{description}</DescricaoDoDialogo>}
+        </CabecalhoDoDialogo>
         <div className="py-2">
           {children}
         </div>
-      </DialogContent>
-    </Dialog>
+      </ConteudoDoDialogo>
+    </Dialogo>
   );
 }

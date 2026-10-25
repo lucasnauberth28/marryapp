@@ -1,7 +1,7 @@
 "use client";
 
 import { ModalPersonalizado } from "./custom-modal";
-import { Button } from "./button";
+import { Botao } from "./button";
 import { AlertTriangle } from "lucide-react";
 
 interface PropriedadesDoModalDeConfirmacao {
@@ -44,14 +44,14 @@ export function ModalDeConfirmacao({
         )}
         
         <div className="flex justify-end gap-3 pt-2">
-          <Button
+          <Botao
             variant="outline"
             onClick={onClose}
             disabled={isLoading}
           >
             {cancelText}
-          </Button>
-          <Button
+          </Botao>
+          <Botao
             variant={variant === "destructive" ? "destructive" : "default"}
             onClick={() => {
               onConfirm();
@@ -59,7 +59,7 @@ export function ModalDeConfirmacao({
             loading={isLoading}
           >
             {confirmText}
-          </Button>
+          </Botao>
         </div>
       </div>
     </ModalPersonalizado>

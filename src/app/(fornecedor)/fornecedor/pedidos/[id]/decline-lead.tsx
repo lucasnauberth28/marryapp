@@ -4,8 +4,8 @@ import { useState, useTransition } from "react";
 import { MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { recusarPedido } from "@/actions/vendor-panel-actions";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Botao } from "@/components/ui/button";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { linkDoWhatsapp } from "../../../_lib/vendor-panel";
 
@@ -89,7 +89,7 @@ export function RecusarPedido({
         </button>
       ) : (
         <form id="recusar-form" onSubmit={onSubmit} className="mt-2 flex flex-col gap-3">
-          <Textarea
+          <AreaDeTexto
             id="recusar-mensagem"
             label="Mensagem para o casal"
             hint="Depois de recusar, a mensagem abre pronta no seu WhatsApp para você enviar."
@@ -107,9 +107,9 @@ export function RecusarPedido({
             </p>
           ) : null}
           <div className="flex flex-wrap gap-2">
-            <Button type="submit" loading={isPending} className="bg-perigo text-white hover:bg-perigo hover:opacity-90">
+            <Botao type="submit" loading={isPending} className="bg-perigo text-white hover:bg-perigo hover:opacity-90">
               Recusar pedido
-            </Button>
+            </Botao>
             <button
               type="button"
               disabled={isPending}

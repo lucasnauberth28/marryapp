@@ -9,10 +9,10 @@ import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { ModalPersonalizado } from "@/components/ui/custom-modal";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { EtiquetaDeConfirmacao, EtiquetaDeSituacao } from "@/components/painel/status-chip";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { NativeSelect } from "@/components/ui/select";
-import { btn, estiloDoBotaoDePerigo, estiloDoBotaoDeIcone, estiloDoCartao, estiloBaseDaEtiqueta, estiloDoTomDaEtiqueta, estiloDaCaixaDeErro, estiloDaDicaDoPainel, estiloDaEntradaDoPainel, estiloDoSobretitulo } from "@/components/painel/styles";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
+import { SelecaoNativa } from "@/components/ui/select";
+import { estiloDoBotao, estiloDoBotaoDePerigo, estiloDoBotaoDeIcone, estiloDoCartao, estiloBaseDaEtiqueta, estiloDoTomDaEtiqueta, estiloDaCaixaDeErro, estiloDaDicaDoPainel, estiloDaEntradaDoPainel, estiloDoSobretitulo } from "@/components/painel/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { criarModeloDeMensagem, atualizarModeloDeMensagem, excluirModeloDeMensagem, enviarModeloAosConvidados } from "@/actions/message-actions";
 import { enviarLembretesDeConfirmacao, enviarConvitesIniciais } from "@/actions/whatsapp-actions";
@@ -257,16 +257,16 @@ function FormularioDoEditor({
     <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
       <form onSubmit={save} className="flex min-w-0 flex-col gap-5">
         <div className="grid gap-5 sm:grid-cols-2">
-          <Input id={ids.name} label="Nome da mensagem" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex.: Lembrete de confirmação" />
-          <NativeSelect id={ids.type} label="Para que serve" value={type} onChange={(e) => setType(e.target.value)}>
+          <Entrada id={ids.name} label="Nome da mensagem" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex.: Lembrete de confirmação" />
+          <SelecaoNativa id={ids.type} label="Para que serve" value={type} onChange={(e) => setType(e.target.value)}>
             <option value="INITIAL_INVITE">Convite inicial</option>
             <option value="RSVP_REMINDER">Lembrete de confirmação</option>
             <option value="CUSTOM">Outro assunto</option>
-          </NativeSelect>
+          </SelecaoNativa>
         </div>
 
         <div className="flex flex-col gap-2">
-          <Textarea
+          <AreaDeTexto
             id={ids.content}
             label="Texto"
             ref={textRef}
@@ -294,7 +294,7 @@ function FormularioDoEditor({
           <p className={estiloDaDicaDoPainel}>Cada link leva a pessoa direto ao convite ou à lista de presentes. Até 3.</p>
           {links.map((l, idx) => (
             <div key={l.id} className="flex items-center gap-2">
-              <Input
+              <Entrada
                 id={`${ids.name}-link-${idx}`}
                 label={`Texto do link ${idx + 1}`}
                 value={l.text}
@@ -309,15 +309,15 @@ function FormularioDoEditor({
           ))}
           <div className="flex flex-wrap gap-2">
             {links.length < 3 ? (
-              <button type="button" onClick={addLink} className={`${btn.secondary} ${btn.sm}`}>
+              <button type="button" onClick={addLink} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>
                 <Plus className="size-4" aria-hidden="true" />
                 Adicionar link
               </button>
             ) : null}
-            <button type="button" onClick={() => setLinks(LINKS_PADRAO)} className={`${btn.quiet} ${btn.sm}`}>
+            <button type="button" onClick={() => setLinks(LINKS_PADRAO)} className={`${estiloDoBotao.quiet} ${estiloDoBotao.sm}`}>
               Confirmar ou recusar
             </button>
-            <button type="button" onClick={() => setLinks(LINKS_DE_PRESENTE)} className={`${btn.quiet} ${btn.sm}`}>
+            <button type="button" onClick={() => setLinks(LINKS_DE_PRESENTE)} className={`${estiloDoBotao.quiet} ${estiloDoBotao.sm}`}>
               Presentes e confirmar
             </button>
           </div>
@@ -332,21 +332,21 @@ function FormularioDoEditor({
             <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden="true" />
           </summary>
           <div className="grid gap-5 px-4 pb-4 pt-2 sm:grid-cols-2">
-            <NativeSelect id={ids.media} label="O que é" value={mediaType} onChange={(e) => setMediaType(e.target.value)}>
+            <SelecaoNativa id={ids.media} label="O que é" value={mediaType} onChange={(e) => setMediaType(e.target.value)}>
               <option value="image">Foto ou imagem</option>
               <option value="document">Documento em PDF</option>
               <option value="audio">Áudio</option>
-            </NativeSelect>
-            <Input id={ids.mediaUrl} type="url" label="Link do arquivo" hint="O endereço do arquivo na internet, que começa com https://" value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} placeholder="https://..." />
+            </SelecaoNativa>
+            <Entrada id={ids.mediaUrl} type="url" label="Link do arquivo" hint="O endereço do arquivo na internet, que começa com https://" value={mediaUrl} onChange={(e) => setMediaUrl(e.target.value)} placeholder="https://..." />
           </div>
         </details>
 
         <div className="flex flex-wrap items-center gap-2">
-          <BotaoComCarregamento type="submit" loading={saving} className={btn.primary}>
+          <BotaoComCarregamento type="submit" loading={saving} className={estiloDoBotao.primary}>
             <Check className="size-4" aria-hidden="true" />
             {template ? "Salvar alterações" : "Salvar mensagem"}
           </BotaoComCarregamento>
-          <button type="button" onClick={onCancel} className={btn.secondary}>
+          <button type="button" onClick={onCancel} className={estiloDoBotao.secondary}>
             Cancelar
           </button>
           {template ? (
@@ -518,11 +518,11 @@ function FluxoDeEnvio({ template, guests, slug, customDomain, coupleNames, onDon
         ) : null}
 
         <div className="flex flex-wrap items-center gap-2">
-          <BotaoComCarregamento onClick={send} loading={sending} disabled={picked.length === 0} className={btn.primary}>
+          <BotaoComCarregamento onClick={send} loading={sending} disabled={picked.length === 0} className={estiloDoBotao.primary}>
             <Send className="size-4" aria-hidden="true" />
             {picked.length === 0 ? "Escolha quem recebe" : `Enviar para ${picked.length} ${picked.length === 1 ? "pessoa" : "pessoas"}`}
           </BotaoComCarregamento>
-          <button type="button" onClick={onDone} className={btn.secondary}>
+          <button type="button" onClick={onDone} className={estiloDoBotao.secondary}>
             {result?.ok ? "Fechar" : "Cancelar"}
           </button>
         </div>
@@ -600,7 +600,7 @@ export function MensagensCliente({ initialTemplates, initialGuests, coupleNames,
         title="Mensagens"
         description={`${withPhone} ${withPhone === 1 ? "convidado tem" : "convidados têm"} telefone cadastrado${received > 0 ? ` e ${received} já ${received === 1 ? "recebeu" : "receberam"} mensagem por aqui` : ""}.`}
         actions={
-          <button type="button" onClick={() => setEditing("novo")} className={btn.secondary}>
+          <button type="button" onClick={() => setEditing("novo")} className={estiloDoBotao.secondary}>
             <Plus className="size-4" aria-hidden="true" />
             Nova mensagem
           </button>
@@ -623,7 +623,7 @@ export function MensagensCliente({ initialTemplates, initialGuests, coupleNames,
                 <p className="text-[15px] leading-6 text-tinta-suave">{q.text}</p>
               </div>
               <div className="mt-auto">
-                <BotaoComCarregamento loading={shortcut === q.kind} disabled={shortcut !== null || q.n === 0} onClick={() => runShortcut(q.kind)} className={q.n === 0 ? btn.secondary : btn.primary}>
+                <BotaoComCarregamento loading={shortcut === q.kind} disabled={shortcut !== null || q.n === 0} onClick={() => runShortcut(q.kind)} className={q.n === 0 ? estiloDoBotao.secondary : estiloDoBotao.primary}>
                   {q.n === 0 ? (
                     <>
                       <Check className="size-4" aria-hidden="true" />
@@ -652,7 +652,7 @@ export function MensagensCliente({ initialTemplates, initialGuests, coupleNames,
         {templates.length === 0 ? (
           <div className={`${estiloDoCartao} flex flex-col items-start gap-3 p-6`}>
             <p className="text-[15px] leading-6 text-tinta-suave">Vocês ainda não escreveram nenhuma mensagem.</p>
-            <button type="button" onClick={() => setEditing("novo")} className={btn.primary}>
+            <button type="button" onClick={() => setEditing("novo")} className={estiloDoBotao.primary}>
               <Plus className="size-4" aria-hidden="true" />
               Escrever a primeira mensagem
             </button>
@@ -669,11 +669,11 @@ export function MensagensCliente({ initialTemplates, initialGuests, coupleNames,
                 </div>
                 <p className="line-clamp-4 whitespace-pre-line text-[15px] leading-6 text-tinta-suave">{t.content.replace(/\{nome\}/gi, sample)}</p>
                 <div className="mt-auto flex flex-wrap gap-2 pt-1">
-                  <button type="button" onClick={() => setSending(t)} className={btn.primary}>
+                  <button type="button" onClick={() => setSending(t)} className={estiloDoBotao.primary}>
                     <Send className="size-4" aria-hidden="true" />
                     Enviar
                   </button>
-                  <button type="button" onClick={() => setEditing(t)} className={btn.secondary}>
+                  <button type="button" onClick={() => setEditing(t)} className={estiloDoBotao.secondary}>
                     <Pencil className="size-4" aria-hidden="true" />
                     Editar
                   </button>

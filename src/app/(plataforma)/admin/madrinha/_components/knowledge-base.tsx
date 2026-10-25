@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { Plus, Pencil, CheckCircle2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { formatarDiaEMes } from "@/lib/platform/format";
 import { arquivarArtigoDeConhecimento, salvarArtigoDeConhecimento } from "@/actions/admin-madrinha-actions";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
@@ -92,21 +92,21 @@ function FormularioDeArtigo({ article, onDone }: { article: ItemDeArtigo | null;
         submit("PUBLISHED");
       }}
     >
-      <Input label="Título do texto" value={title} onChange={(e) => setTitle(e.target.value)} error={errors.title} maxLength={120} />
-      <Textarea label="Texto de ajuda" value={content} onChange={(e) => setContent(e.target.value)} rows={8} error={errors.content} maxLength={8000} />
+      <Entrada label="Título do texto" value={title} onChange={(e) => setTitle(e.target.value)} error={errors.title} maxLength={120} />
+      <AreaDeTexto label="Texto de ajuda" value={content} onChange={(e) => setContent(e.target.value)} rows={8} error={errors.content} maxLength={8000} />
       {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={pending} loading={pending && running === "PUBLISHED"}>
+        <Botao type="submit" disabled={pending} loading={pending && running === "PUBLISHED"}>
           Publicar
-        </Button>
-        <Button type="button" variant="outline" disabled={pending} loading={pending && running === "DRAFT"} onClick={() => submit("DRAFT")}>
+        </Botao>
+        <Botao type="button" variant="outline" disabled={pending} loading={pending && running === "DRAFT"} onClick={() => submit("DRAFT")}>
           Salvar rascunho
-        </Button>
-        <Button type="button" variant="quiet" disabled={pending} onClick={onDone}>
+        </Botao>
+        <Botao type="button" variant="quiet" disabled={pending} onClick={onDone}>
           Cancelar
-        </Button>
+        </Botao>
         {article && (
-          <Button
+          <Botao
             type="button"
             variant="quiet"
             disabled={pending}
@@ -118,7 +118,7 @@ function FormularioDeArtigo({ article, onDone }: { article: ItemDeArtigo | null;
             className="text-perigo"
           >
             Remover texto
-          </Button>
+          </Botao>
         )}
       </div>
     </form>

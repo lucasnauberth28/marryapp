@@ -6,10 +6,10 @@ import { Eye } from "lucide-react";
 import { toast } from "sonner";
 import { Aparicao } from "@/components/motion/reveal";
 import { atualizarPerfilDoFornecedor, type EntradaDoPerfilDoFornecedor } from "@/actions/vendor-panel-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { NativeSelect } from "@/components/ui/select";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
+import { SelecaoNativa } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 type ValoresDoFormulario = {
@@ -70,9 +70,9 @@ export function FormularioDePerfil({
   }
 
   const saveButton = (
-    <Button type="submit" form={ID_DO_FORMULARIO} loading={isPending}>
+    <Botao type="submit" form={ID_DO_FORMULARIO} loading={isPending}>
       Salvar
-    </Button>
+    </Botao>
   );
 
   return (
@@ -114,7 +114,7 @@ export function FormularioDePerfil({
 
         <Aparicao as="section" variant="up" delay={80} className={cn(ESTILO_DO_CARTAO, "grid grid-cols-1 gap-5 sm:grid-cols-2")}>
           <h2 className="text-xl leading-7 font-semibold sm:col-span-2">Sobre o negócio</h2>
-          <Input
+          <Entrada
             id="f-nome"
             label="Nome"
             name="companyName"
@@ -124,14 +124,14 @@ export function FormularioDePerfil({
             value={values.companyName}
             onChange={set("companyName")}
           />
-          <NativeSelect id="f-cat" label="Categoria" name="category" value={values.category} onChange={set("category")}>
+          <SelecaoNativa id="f-cat" label="Categoria" name="category" value={values.category} onChange={set("category")}>
             {categories.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
             ))}
-          </NativeSelect>
-          <Input
+          </SelecaoNativa>
+          <Entrada
             id="f-reg"
             label="Regiões que atende"
             hint="Separe por vírgula. Ex.: Campinas, Valinhos, Vinhedo"
@@ -140,7 +140,7 @@ export function FormularioDePerfil({
             value={values.serviceRegions}
             onChange={set("serviceRegions")}
           />
-          <Input
+          <Entrada
             id="f-preco"
             label="Preço inicial"
             prefix="R$"
@@ -152,7 +152,7 @@ export function FormularioDePerfil({
             value={values.startingPrice}
             onChange={set("startingPrice")}
           />
-          <Textarea
+          <AreaDeTexto
             id="f-sobre"
             label="Apresentação"
             hint="Estilo, equipe e o que está incluído."
@@ -171,7 +171,7 @@ export function FormularioDePerfil({
             <h2 className="text-xl leading-7 font-semibold">Contato e redes</h2>
             <p className={ESTILO_DA_DICA}>Os pedidos de orçamento chegam aqui no painel; o WhatsApp aparece para os casais no Plano Pro.</p>
           </div>
-          <Input
+          <Entrada
             id="f-whats"
             label="WhatsApp"
             hint="Com DDD. Ex.: (11) 99876-5432"
@@ -183,7 +183,7 @@ export function FormularioDePerfil({
             value={values.whatsapp}
             onChange={set("whatsapp")}
           />
-          <Input
+          <Entrada
             id="f-insta"
             label="Instagram"
             name="instagram"
@@ -193,7 +193,7 @@ export function FormularioDePerfil({
             value={values.instagram}
             onChange={set("instagram")}
           />
-          <Input
+          <Entrada
             id="f-site"
             label="Site"
             fieldClassName="sm:col-span-2"

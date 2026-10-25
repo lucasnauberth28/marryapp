@@ -5,11 +5,11 @@ import { useState } from "react";
 import { Ban, KeyRound, RotateCcw, Trash2 } from "lucide-react";
 import { excluirCasamento, redefinirSenhaDoCasamento, suspenderCasamento, reativarCasamento } from "@/actions/admin-casais-actions";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Botao } from "@/components/ui/button";
+import { CaixaDeSelecao } from "@/components/ui/checkbox";
 import { ModalPersonalizado } from "@/components/ui/custom-modal";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useAcaoDoCasal } from "../../_components/use-casal-action";
 
@@ -77,12 +77,12 @@ export function AcoesDeCuidado({ weddingId, coupleNames, suspended }: { weddingI
 
       <ModalPersonalizado isOpen={open !== null} onClose={close} title={current?.title ?? ""} description={current?.text}>
         <div className="flex flex-col gap-4">
-          <Textarea label={reasonRequired ? "Motivo (obrigatório)" : "Motivo (opcional)"} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} rows={3} hint="Fica no Registro de atividades." />
+          <AreaDeTexto label={reasonRequired ? "Motivo (obrigatório)" : "Motivo (opcional)"} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} rows={3} hint="Fica no Registro de atividades." />
           {open === "delete" && (
             <>
-              <Input label="Digite EXCLUIR para confirmar" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} autoComplete="off" />
+              <Entrada label="Digite EXCLUIR para confirmar" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} autoComplete="off" />
               <label className="flex items-start gap-3 text-sm leading-5 text-tinta">
-                <Checkbox checked={sure} onCheckedChange={(v) => setSure(v === true)} className="mt-0.5" />
+                <CaixaDeSelecao checked={sure} onCheckedChange={(v) => setSure(v === true)} className="mt-0.5" />
                 <span>Entendo que é para sempre e que o casal perde todos os dados do casamento.</span>
               </label>
             </>
@@ -93,12 +93,12 @@ export function AcoesDeCuidado({ weddingId, coupleNames, suspended }: { weddingI
             </p>
           )}
           <div className="flex flex-wrap gap-2">
-            <Button type="button" onClick={submit} disabled={!canSubmit} loading={pending} className={current?.danger ? "bg-perigo hover:bg-perigo" : undefined}>
+            <Botao type="button" onClick={submit} disabled={!canSubmit} loading={pending} className={current?.danger ? "bg-perigo hover:bg-perigo" : undefined}>
               {current?.cta}
-            </Button>
-            <Button type="button" variant="quiet" onClick={close} disabled={pending}>
+            </Botao>
+            <Botao type="button" variant="quiet" onClick={close} disabled={pending}>
               Cancelar
-            </Button>
+            </Botao>
           </div>
         </div>
       </ModalPersonalizado>

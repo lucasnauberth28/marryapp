@@ -88,4 +88,4 @@ function Entrada({
   )
 }
 
-export { Entrada as Input }
+export { Entrada }

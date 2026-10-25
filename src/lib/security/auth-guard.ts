@@ -3,7 +3,7 @@ import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { verificarToken, hasPathAccess, NOME_DO_COOKIE_DE_SESSAO, NOME_DO_COOKIE_DE_SESSAO_VISTA, CABECALHO_DO_CAMINHO_ATUAL } from "@/lib/auth";
+import { verificarToken, temAcessoAoCaminho, NOME_DO_COOKIE_DE_SESSAO, NOME_DO_COOKIE_DE_SESSAO_VISTA, CABECALHO_DO_CAMINHO_ATUAL } from "@/lib/auth";
 import { urlDeLogin, caminhoSeguroDeRetorno } from "@/lib/login-redirect";
 import { ErroDeAutorizacao } from "@/lib/security/authorization-error";
 
@@ -16,7 +16,7 @@ export interface ContextoDeAutenticacaoSegura {
   isAuthenticated: true;
 }
 
-export { ErroDeAutorizacao as AuthorizationError };
+export { ErroDeAutorizacao };
 
 /**
  * Lê e valida a sessão atual (uma vez por request).
@@ -64,7 +64,7 @@ export async function exigirSessaoAutenticada(): Promise<ContextoDeAutenticacaoS
  */
 export async function exigirPermissaoDoCaminho(path: string): Promise<ContextoDeAutenticacaoSegura> {
   const session = await exigirSessaoAutenticada();
-  if (!hasPathAccess(session.allowedPaths, path)) {
+  if (!temAcessoAoCaminho(session.allowedPaths, path)) {
     throw new ErroDeAutorizacao(`Acesso negado: permissão insuficiente para '${path}'.`);
   }
   return session;

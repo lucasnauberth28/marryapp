@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { areaOfPath, itemDoMenuEstaAtivo, iconeDoMenu, visibleAreas } from "@/components/admin/nav-config";
+import { areaDoCaminho, itemDoMenuEstaAtivo, iconeDoMenu, areasVisiveis } from "@/components/admin/nav-config";
 import { MarcaDeContagem, type ContagensDoMenu } from "@/components/admin/nav-list";
 
 /**
@@ -11,8 +11,8 @@ import { MarcaDeContagem, type ContagensDoMenu } from "@/components/admin/nav-li
  */
 export function AbasDeArea({ allowedPaths, counts = {} }: { allowedPaths: string[]; counts?: ContagensDoMenu }) {
   const pathname = usePathname();
-  const areas = visibleAreas(allowedPaths);
-  const area = areaOfPath(areas, pathname);
+  const areas = areasVisiveis(allowedPaths);
+  const area = areaDoCaminho(areas, pathname);
   if (!area || area.screens.length < 2) return null;
 
   return (

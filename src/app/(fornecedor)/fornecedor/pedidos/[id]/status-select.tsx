@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { atualizarSituacaoDoPedido } from "@/actions/vendor-panel-actions";
-import { NativeSelect } from "@/components/ui/select";
+import { SelecaoNativa } from "@/components/ui/select";
 import { ROTULO_DA_SITUACAO_DO_PEDIDO, SITUACOES_DO_PEDIDO, type SituacaoDoPedido } from "../../../_lib/vendor-panel";
 
 /** Troca o status do pedido (mesma ação da lista de pedidos). */
@@ -20,7 +20,7 @@ export function SelecaoDeSituacao({ leadId, status, id = "status-pedido" }: { le
   }
 
   return (
-    <NativeSelect
+    <SelecaoNativa
       id={id}
       label="Status do pedido"
       hint={isPending ? "Salvando…" : undefined}
@@ -33,6 +33,6 @@ export function SelecaoDeSituacao({ leadId, status, id = "status-pedido" }: { le
           {ROTULO_DA_SITUACAO_DO_PEDIDO[s]}
         </option>
       ))}
-    </NativeSelect>
+    </SelecaoNativa>
   );
 }

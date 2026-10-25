@@ -3,7 +3,7 @@ import { cache } from "react";
 import { notFound } from "next/navigation";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { AuthorizationError, obterSessao, redirecionarParaOLogin, ID_DO_SUPER_ADMIN, type ContextoDeAutenticacaoSegura } from "@/lib/security/auth-guard";
+import { ErroDeAutorizacao, obterSessao, redirecionarParaOLogin, ID_DO_SUPER_ADMIN, type ContextoDeAutenticacaoSegura } from "@/lib/security/auth-guard";
 import { garantirSessaoDeAdminDaPlataforma, conferirAcessoDeAdminDaPlataforma } from "@/lib/security/platform-admin-access";
 
 /**
@@ -75,7 +75,7 @@ export async function exigirAdminDaPlataforma(): Promise<ContextoDeAdminDaPlataf
   garantirSessaoDeAdminDaPlataforma(await obterSessao()); // sem sessão ou sem acesso total: lança aqui
   const result = await buscarAdminDaPlataforma();
   if (result.status === "ok") return result.ctx;
-  throw new AuthorizationError("Não autorizado: sessão ausente, expirada ou inválida.");
+  throw new ErroDeAutorizacao("Não autorizado: sessão ausente, expirada ou inválida.");
 }
 
 /** Para páginas e layouts: sem sessão vai ao login (voltando para a página depois); sem acesso, 404. */
@@ -96,7 +96,7 @@ export async function protecaoDaApiDeAdminDaPlataforma(): Promise<{ ctx: Context
 
 /** Resultado padrão de uma action que falhou: mensagem de permissão ou a mensagem genérica (o erro vai ao log). */
 export function falhaDeAdminDaPlataforma(error: unknown, context: string, fallback = "Não foi possível concluir agora. Tente de novo."): { success: false; error: string } {
-  if (error instanceof AuthorizationError) return { success: false, error: "Você não tem permissão para esta ação." };
+  if (error instanceof ErroDeAutorizacao) return { success: false, error: "Você não tem permissão para esta ação." };
   console.error(`[${context}]`, error instanceof Error ? error.message : error);
   return { success: false, error: fallback };
 }

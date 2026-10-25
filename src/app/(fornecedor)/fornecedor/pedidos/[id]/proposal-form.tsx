@@ -4,9 +4,9 @@ import { useState, useTransition } from "react";
 import { BadgeCheck, Check, Copy, Link2, MessageCircle, Send } from "lucide-react";
 import { toast } from "sonner";
 import { salvarPropostaDoPedido } from "@/actions/vendor-panel-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const ESTILO_DO_BOTAO =
@@ -72,7 +72,7 @@ export function FormularioDeProposta({
 
   const linkBox = saved?.publicUrl ? (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-      <Input
+      <Entrada
         id="proposta-link"
         label="Link da proposta para o casal"
         readOnly
@@ -183,7 +183,7 @@ export function FormularioDeProposta({
         ) : null}
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <Input
+          <Entrada
             id="proposta-valor"
             label="Valor"
             prefix="R$"
@@ -197,7 +197,7 @@ export function FormularioDeProposta({
             value={values.amount}
             onChange={set("amount")}
           />
-          <Input
+          <Entrada
             id="proposta-validade"
             label="Vale até"
             optional
@@ -209,7 +209,7 @@ export function FormularioDeProposta({
           />
         </div>
 
-        <Textarea
+        <AreaDeTexto
           id="proposta-inclui"
           label="O que está incluído"
           name="details"
@@ -223,10 +223,10 @@ export function FormularioDeProposta({
         />
 
         <div className="flex justify-end">
-          <Button type="submit" loading={isPending}>
+          <Botao type="submit" loading={isPending}>
             <Send aria-hidden="true" className="size-[18px]" />
             {saved ? "Atualizar proposta" : "Registrar proposta"}
-          </Button>
+          </Botao>
         </div>
       </form>
     </div>

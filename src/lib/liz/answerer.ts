@@ -48,4 +48,4 @@ export function chatDaLizEstaAtivo(master: ChaveGeralDaLiz, provider: Respondedo
   return master.enabled && master.pausedAt === null && provider !== null;
 }
 
-export type { ArtigoDeAjuda as HelpArticle };
+export type { ArtigoDeAjuda };

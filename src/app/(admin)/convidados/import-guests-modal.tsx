@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import { AlertTriangle, Check, CircleAlert, Download, FileSpreadsheet, Upload } from "lucide-react";
 import { ModalPersonalizado } from "@/components/ui/custom-modal";
 import { importarConvidados } from "@/actions/guest-actions";
-import { btn, estiloDoCartao, estiloDaCaixaDeErro, estiloDaDicaDoPainel, estiloDoSobretitulo } from "@/components/painel/styles";
+import { estiloDoBotao, estiloDoCartao, estiloDaCaixaDeErro, estiloDaDicaDoPainel, estiloDoSobretitulo } from "@/components/painel/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { EsqueletoDeLinhas } from "@/components/painel/skeleton-parts";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Esqueleto } from "@/components/ui/skeleton";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
 import {
   MAXIMO_DE_LINHAS_NA_IMPORTACAO,
@@ -199,11 +199,11 @@ function FluxoDeImportacao({ existing, onClose }: { existing: ConvidadoExistente
             onChange={(e) => void handleFile(e.target.files?.[0])}
           />
           <div className="flex flex-wrap items-center gap-2">
-            <BotaoComCarregamento onClick={() => fileInput.current?.click()} loading={reading} className={btn.primary}>
+            <BotaoComCarregamento onClick={() => fileInput.current?.click()} loading={reading} className={estiloDoBotao.primary}>
               <Upload className="size-4" aria-hidden="true" />
               Escolher arquivo
             </BotaoComCarregamento>
-            <button type="button" onClick={baixarPlanilhaModelo} className={btn.quiet}>
+            <button type="button" onClick={baixarPlanilhaModelo} className={estiloDoBotao.quiet}>
               <Download className="size-4" aria-hidden="true" />
               Baixar modelo de planilha
             </button>
@@ -249,7 +249,7 @@ function FluxoDeImportacao({ existing, onClose }: { existing: ConvidadoExistente
         {/* Esqueleto da confirmação que vem a seguir: três números e a lista de quem entrou */}
         <div aria-hidden="true" className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-[72px] rounded-xl" />
+            <Esqueleto key={i} className="h-[72px] rounded-xl" />
           ))}
         </div>
         <EsqueletoDeLinhas rows={3} lines={1} className="rounded-xl border border-linha px-4" />
@@ -278,7 +278,7 @@ function FluxoDeImportacao({ existing, onClose }: { existing: ConvidadoExistente
             {result.duplicates > 0 || result.invalid > 0 ? "." : ""}
           </p>
         </div>
-        <button type="button" onClick={onClose} className={btn.primary}>
+        <button type="button" onClick={onClose} className={estiloDoBotao.primary}>
           Ver a lista
         </button>
       </div>
@@ -405,11 +405,11 @@ function FluxoDeImportacao({ existing, onClose }: { existing: ConvidadoExistente
             setError(null);
             setStage("escolher");
           }}
-          className={btn.secondary}
+          className={estiloDoBotao.secondary}
         >
           Escolher outro arquivo
         </button>
-        <button type="button" onClick={() => void runImport()} disabled={addCount === 0} className={btn.primary}>
+        <button type="button" onClick={() => void runImport()} disabled={addCount === 0} className={estiloDoBotao.primary}>
           Importar {pluralizar(addCount, "convidado", "convidados")}
         </button>
       </div>

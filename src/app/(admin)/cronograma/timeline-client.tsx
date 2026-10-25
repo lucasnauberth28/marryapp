@@ -8,9 +8,9 @@ import { criarEventoDaLinhaDoTempo, excluirEventoDaLinhaDoTempo, atualizarEvento
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { ModalPersonalizado } from "@/components/ui/custom-modal";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { btn, estiloDoBotaoDePerigo, estiloDoBotaoDeIcone, estiloDoBotaoDeIconeDePerigo, estiloDoCartao, estiloDaCaixaDeErro } from "@/components/painel/styles";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
+import { estiloDoBotao, estiloDoBotaoDePerigo, estiloDoBotaoDeIcone, estiloDoBotaoDeIconeDePerigo, estiloDoCartao, estiloDaCaixaDeErro } from "@/components/painel/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { useEstadoSincronizado } from "@/hooks/use-synced-state";
 import { gerarPdfDaLinhaDoTempo, type EventoDaLinhaDoTempoNoPdf } from "@/lib/generate-timeline-pdf";
@@ -57,7 +57,7 @@ function FormularioDoEvento({ event, count, onClose, onSaved, onDelete }: { even
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-5">
-      <Input
+      <Entrada
         id={ids.title}
         label="O que acontece"
         value={title}
@@ -66,7 +66,7 @@ function FormularioDoEvento({ event, count, onClose, onSaved, onDelete }: { even
         disabled={busy}
         error={error && !title.trim() ? error : undefined}
       />
-      <Input
+      <Entrada
         id={ids.time}
         type="time"
         label="Horário"
@@ -76,7 +76,7 @@ function FormularioDoEvento({ event, count, onClose, onSaved, onDelete }: { even
         disabled={busy}
         error={error && title.trim() && !time ? error : undefined}
       />
-      <Textarea
+      <AreaDeTexto
         id={ids.description}
         label="Local ou detalhes"
         optional
@@ -92,10 +92,10 @@ function FormularioDoEvento({ event, count, onClose, onSaved, onDelete }: { even
         </p>
       )}
       <div className="flex flex-col gap-2 border-t border-linha pt-4">
-        <BotaoComCarregamento type="submit" loading={busy} className={`${btn.primary} ${btn.block}`}>
+        <BotaoComCarregamento type="submit" loading={busy} className={`${estiloDoBotao.primary} ${estiloDoBotao.block}`}>
           {event ? "Salvar alterações" : "Adicionar horário"}
         </BotaoComCarregamento>
-        <button type="button" onClick={onClose} disabled={busy} className={`${btn.quiet} ${btn.block}`}>
+        <button type="button" onClick={onClose} disabled={busy} className={`${estiloDoBotao.quiet} ${estiloDoBotao.block}`}>
           Cancelar
         </button>
         {event && (
@@ -155,11 +155,11 @@ export function LinhaDoTempoCliente({ initialEvents, coupleNames, dateLabel }: {
         description="Os convidados veem estes horários na página do dia do evento, no site de vocês."
         actions={
           <>
-            <button type="button" onClick={exportPdf} disabled={events.length === 0} className={btn.secondary}>
+            <button type="button" onClick={exportPdf} disabled={events.length === 0} className={estiloDoBotao.secondary}>
               <Download className="size-4" aria-hidden="true" />
               PDF para fornecedores
             </button>
-            <button type="button" onClick={openNew} className={btn.primary}>
+            <button type="button" onClick={openNew} className={estiloDoBotao.primary}>
               <Plus className="size-4" aria-hidden="true" />
               Novo horário
             </button>
@@ -174,7 +174,7 @@ export function LinhaDoTempoCliente({ initialEvents, coupleNames, dateLabel }: {
           </span>
           <h2 className="font-display text-[26px] font-medium leading-8 text-tinta">Nenhum horário ainda</h2>
           <p className="max-w-md text-tinta-suave">Anotem a ordem do dia, da chegada dos fornecedores à pista de dança. Com tudo aqui, fornecedores e convidados sabem a hora de cada momento.</p>
-          <button type="button" onClick={openNew} className={`${btn.primary} mt-2`}>
+          <button type="button" onClick={openNew} className={`${estiloDoBotao.primary} mt-2`}>
             Adicionar o primeiro horário
           </button>
         </div>

@@ -2,7 +2,7 @@ import "server-only";
 import { VendorPlanTier } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { urlDoApp } from "@/lib/app-url";
-import { brandedEmail, enviarEmail } from "@/lib/email";
+import { emailDaMarca, enviarEmail } from "@/lib/email";
 import { enviarMensagemDeTexto } from "@/lib/evolution";
 import { lembreteDevido, fimDaJanelaDoLembrete, type DiaDoLembreteDoPlano } from "@/lib/plan-reminders";
 import { avisarPlanoPrestesAVencer } from "@/lib/notifications/cron";
@@ -31,7 +31,7 @@ function textosDoLembrete(day: DiaDoLembreteDoPlano, planName: string, companyNa
   const body = `O plano ${planName} de ${companyName} no Aceito vence ${when}. Depois disso o perfil volta ao Start, com até 3 pedidos por mês.`;
   const renew = "Renovar antes do vencimento soma 30 dias aos que ainda faltam, sem perder nada.";
   const whatsapp = `Oi! ${body}\n\n${renew}\n\nRenove pelo Pix aqui: ${link}`;
-  const email = brandedEmail({
+  const email = emailDaMarca({
     heading,
     paragraphs: [body, renew],
     cta: { label: "Renovar com Pix", url: link },

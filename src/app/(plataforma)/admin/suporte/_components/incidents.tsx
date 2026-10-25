@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, ShieldCheck } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { SeletorDeData } from "@/components/ui/date-picker";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { criarIncidenteDeSeguranca, atualizarIncidenteDeSeguranca } from "@/actions/admin-suporte-actions";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
@@ -91,20 +91,20 @@ function NovoIncidente({ today, onDone }: { today: string; onDone: () => void })
         });
       }}
     >
-      <Input label="Título" value={title} onChange={(e) => setTitle(e.target.value)} error={errors.title} maxLength={140} />
-      <Textarea label="O que aconteceu" value={description} onChange={(e) => setDescription(e.target.value)} error={errors.description} rows={3} maxLength={3000} />
-      <Textarea label="O que foi afetado" optional value={affected} onChange={(e) => setAffected(e.target.value)} error={errors.affected} rows={2} maxLength={2000} />
+      <Entrada label="Título" value={title} onChange={(e) => setTitle(e.target.value)} error={errors.title} maxLength={140} />
+      <AreaDeTexto label="O que aconteceu" value={description} onChange={(e) => setDescription(e.target.value)} error={errors.description} rows={3} maxLength={3000} />
+      <AreaDeTexto label="O que foi afetado" optional value={affected} onChange={(e) => setAffected(e.target.value)} error={errors.affected} rows={2} maxLength={2000} />
       <SeletorDeData label="Descoberto em" value={discoveredAt} onChange={(e) => setDiscoveredAt(e.target.value)} error={errors.discoveredAt} />
       <SeletorDeData label="Quando avisou" optional value={notifiedOn} onChange={(e) => setNotifiedOn(e.target.value)} error={errors.notifiedOn} />
-      <Textarea label="Quem foi avisado" optional value={notifiedWho} onChange={(e) => setNotifiedWho(e.target.value)} error={errors.notifiedWho} rows={2} maxLength={2000} />
+      <AreaDeTexto label="Quem foi avisado" optional value={notifiedWho} onChange={(e) => setNotifiedWho(e.target.value)} error={errors.notifiedWho} rows={2} maxLength={2000} />
       {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" loading={pending}>
+        <Botao type="submit" loading={pending}>
           Registrar incidente
-        </Button>
-        <Button type="button" variant="quiet" onClick={onDone} disabled={pending}>
+        </Botao>
+        <Botao type="button" variant="quiet" onClick={onDone} disabled={pending}>
           Cancelar
-        </Button>
+        </Botao>
       </div>
     </form>
   );
@@ -125,10 +125,10 @@ function EditorDeIncidente({ item, onDone }: { item: ItemDeIncidente; onDone: ()
       <p className="whitespace-pre-line text-sm leading-5 text-tinta">{item.description}</p>
       {item.affected && <p className="whitespace-pre-line text-sm leading-5 text-tinta-suave">Afetado: {item.affected}</p>}
       <SeletorDeData label="Quando avisou" optional value={notifiedOn} onChange={(e) => setNotifiedOn(e.target.value)} error={errors.notifiedOn} />
-      <Textarea label="Quem foi avisado" optional value={notifiedWho} onChange={(e) => setNotifiedWho(e.target.value)} rows={2} maxLength={2000} />
+      <AreaDeTexto label="Quem foi avisado" optional value={notifiedWho} onChange={(e) => setNotifiedWho(e.target.value)} rows={2} maxLength={2000} />
       {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="flex flex-wrap gap-3">
-        <Button
+        <Botao
           type="button"
           variant="outline"
           disabled={pending}
@@ -139,9 +139,9 @@ function EditorDeIncidente({ item, onDone }: { item: ItemDeIncidente; onDone: ()
           }}
         >
           Salvar aviso
-        </Button>
+        </Botao>
         {item.open ? (
-          <Button
+          <Botao
             type="button"
             disabled={pending}
             loading={pending && running === "close"}
@@ -151,9 +151,9 @@ function EditorDeIncidente({ item, onDone }: { item: ItemDeIncidente; onDone: ()
             }}
           >
             Fechar o incidente
-          </Button>
+          </Botao>
         ) : (
-          <Button
+          <Botao
             type="button"
             variant="quiet"
             disabled={pending}
@@ -164,7 +164,7 @@ function EditorDeIncidente({ item, onDone }: { item: ItemDeIncidente; onDone: ()
             }}
           >
             Reabrir
-          </Button>
+          </Botao>
         )}
       </div>
     </div>

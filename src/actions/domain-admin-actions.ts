@@ -11,7 +11,7 @@ import { avisarPedidoDeDominio } from "@/lib/notifications/events";
 import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { somarUmAno } from "@/lib/domain-renewal";
 import { ehSituacaoEmAberto } from "@/lib/domain-order";
-import { conectarDominioAoProjeto, verificarDominioDoProjeto, type ConnectionResult } from "@/lib/vercel-domains";
+import { conectarDominioAoProjeto, verificarDominioDoProjeto, type ResultadoDaConexao } from "@/lib/vercel-domains";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 // Ações da administração do Aceito sobre os pedidos de domínio. Só quem tem acesso total ("*") passa.
@@ -20,7 +20,7 @@ import { ERROS } from "@/lib/mensagens-de-erro";
 type Concluido = { success: true; message?: string };
 type Falha = { success: false; error: string };
 export type ResultadoDaAcaoDeAdmin = Concluido | Falha;
-export type ResultadoDaAcaoDeConectarDominio = (Concluido & { connection: ConnectionResult }) | Falha;
+export type ResultadoDaAcaoDeConectarDominio = (Concluido & { connection: ResultadoDaConexao }) | Falha;
 
 const EsquemaDoId = z.string().uuid();
 const NAO_PERMITIDO: Falha = { success: false, error: "Só a administração do Aceito pode fazer isso." };

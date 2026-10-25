@@ -9,7 +9,7 @@ import { excluirConvidado } from "@/actions/guest-actions";
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { EtiquetaDeConfirmacao } from "@/components/painel/status-chip";
-import { btn, estiloDoBotaoDeIconeDePerigo, estiloDoCartao, estiloDaEntradaDoPainel, estiloDoSobretitulo } from "@/components/painel/styles";
+import { estiloDoBotao, estiloDoBotaoDeIconeDePerigo, estiloDoCartao, estiloDaEntradaDoPainel, estiloDoSobretitulo } from "@/components/painel/styles";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { ModalDoConvidado, CATEGORIAS_DE_CONVIDADO } from "./guest-modal";
 import { ModalDeImportacaoDeConvidados } from "./import-guests-modal";
@@ -162,19 +162,19 @@ export function ConvidadosCliente({ initialGuests, deadlineLabel, canRemind, ini
         description={deadlineLabel ? `Prazo de confirmação definido por vocês: ${deadlineLabel}.` : "Quem vocês convidam, quantos lugares cada um tem e quem já respondeu."}
         actions={
           <>
-            <button type="button" onClick={() => setImportOpen(true)} className={btn.secondary}>
+            <button type="button" onClick={() => setImportOpen(true)} className={estiloDoBotao.secondary}>
               <Upload className="size-4" aria-hidden="true" />
               Importar lista
             </button>
             {initialGuests.length > 0 && (
-              <a href="/api/export/guests" download="convidados.csv" className={btn.secondary}>
+              <a href="/api/export/guests" download="convidados.csv" className={estiloDoBotao.secondary}>
                 <Download className="size-4" aria-hidden="true" />
                 Exportar CSV
               </a>
             )}
             {/* Com a lista vazia, a ação fica no próprio estado vazio (um só botão com este nome) */}
             {initialGuests.length > 0 && (
-              <button type="button" onClick={openAdd} className={`${btn.primary} max-md:hidden`}>
+              <button type="button" onClick={openAdd} className={`${estiloDoBotao.primary} max-md:hidden`}>
                 <Plus className="size-4" aria-hidden="true" />
                 Adicionar convidado
               </button>
@@ -192,10 +192,10 @@ export function ConvidadosCliente({ initialGuests, deadlineLabel, canRemind, ini
             Adicionem o primeiro convidado para começar a organizar as confirmações. Se a lista já existe, importem uma planilha (CSV). Os convidados respondem pelo link do convite, sem criar conta.
           </p>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-            <button type="button" onClick={openAdd} className={btn.primary}>
+            <button type="button" onClick={openAdd} className={estiloDoBotao.primary}>
               Adicionar convidado
             </button>
-            <button type="button" onClick={() => setImportOpen(true)} className={btn.secondary}>
+            <button type="button" onClick={() => setImportOpen(true)} className={estiloDoBotao.secondary}>
               <Upload className="size-4" aria-hidden="true" />
               Importar lista
             </button>
@@ -257,7 +257,7 @@ export function ConvidadosCliente({ initialGuests, deadlineLabel, canRemind, ini
           </div>
 
           {canRemind && filter === "PENDING" && counts.PENDING > 0 && (
-            <Link href="/mensagens" className={`${btn.secondary} w-full md:w-fit`}>
+            <Link href="/mensagens" className={`${estiloDoBotao.secondary} w-full md:w-fit`}>
               <MessageCircle className="size-4" aria-hidden="true" />
               Abrir mensagens para os {counts.PENDING} sem resposta
             </Link>
@@ -302,7 +302,7 @@ export function ConvidadosCliente({ initialGuests, deadlineLabel, canRemind, ini
                         <td className="px-2 py-3 text-tinta-suave">{g.table?.name ?? "Sem mesa"}</td>
                         <td className="px-4 py-2">
                           <div className="flex items-center justify-end gap-1">
-                            <button type="button" onClick={() => openEdit(g)} className={`${btn.quiet} ${btn.sm}`} aria-label={`Editar ${g.name}`}>
+                            <button type="button" onClick={() => openEdit(g)} className={`${estiloDoBotao.quiet} ${estiloDoBotao.sm}`} aria-label={`Editar ${g.name}`}>
                               Editar
                             </button>
                             <button type="button" onClick={() => askRemove(g)} className={estiloDoBotaoDeIconeDePerigo} aria-label={`Excluir ${g.name}`}>

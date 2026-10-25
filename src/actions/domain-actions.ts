@@ -11,7 +11,7 @@ import { verificarDisponibilidadeDoDominio, type DisponibilidadeDoDominio } from
 import { normalizarNomeDeDominio } from "@/lib/domain-name";
 import { SITUACOES_ATIVAS, interpretarPedidoDeDominio, type CampoDoPedidoDeDominio } from "@/lib/domain-order";
 import { VERSAO_DOS_TERMOS_DE_DOMINIO } from "@/lib/domain-terms";
-import { AuthorizationError, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { ErroDeAutorizacao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
 import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 import { obterPlanoDoCasamento, recusaDeModulo } from "@/lib/wedding-plan";
@@ -29,7 +29,7 @@ async function obterContextoDaPessoa(write = true): Promise<{ ctx: Contexto; err
   try {
     return { ctx: await (write ? exigirCasamento("/dominio") : exigirCasamentoParaLeitura("/dominio")) };
   } catch (error) {
-    if (error instanceof AuthorizationError) return { error: error.message || ERRO_DE_SESSAO };
+    if (error instanceof ErroDeAutorizacao) return { error: error.message || ERRO_DE_SESSAO };
     throw error;
   }
 }

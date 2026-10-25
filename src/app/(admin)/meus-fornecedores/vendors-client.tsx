@@ -7,11 +7,11 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { criarFornecedor, atualizarFornecedor, excluirFornecedor, type obterFornecedores } from "@/actions/vendor-actions";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Entrada } from "@/components/ui/input";
+import { Rotulo } from "@/components/ui/label";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { Check, ChevronRight, Pencil, Plus, Trash2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialogo, ConteudoDoDialogo, CabecalhoDoDialogo, TituloDoDialogo, DescricaoDoDialogo } from "@/components/ui/dialog";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { Etiqueta, estiloDoCartao } from "@/components/casal/ui";
@@ -243,18 +243,18 @@ export function FornecedoresCliente({ initialVendors }: PropriedadesDosFornecedo
         </section>
       </div>
 
-      <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto rounded-2xl bg-papel">
-          <DialogHeader>
-            <DialogTitle className="font-display text-2xl font-medium text-tinta">
+      <Dialogo open={formOpen} onOpenChange={setFormOpen}>
+        <ConteudoDoDialogo className="max-h-[90vh] max-w-md overflow-y-auto rounded-2xl bg-papel">
+          <CabecalhoDoDialogo>
+            <TituloDoDialogo className="font-display text-2xl font-medium text-tinta">
               {editingVendor ? "Editar fornecedor" : "Adicionar fornecedor"}
-            </DialogTitle>
-            <DialogDescription>Quem vocês contrataram e como falar com a pessoa.</DialogDescription>
-          </DialogHeader>
+            </TituloDoDialogo>
+            <DescricaoDoDialogo>Quem vocês contrataram e como falar com a pessoa.</DescricaoDoDialogo>
+          </CabecalhoDoDialogo>
           <form onSubmit={handleSubmit} className="flex flex-col gap-5 pt-3">
-            <Input id={`${uid}-name`} label="Nome do fornecedor ou da empresa" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ex.: Buffet Flor de Sal" required />
+            <Entrada id={`${uid}-name`} label="Nome do fornecedor ou da empresa" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Ex.: Buffet Flor de Sal" required />
             <div>
-              <Input
+              <Entrada
                 id={`${uid}-category`}
                 label="Categoria"
                 list={`${uid}-categories`}
@@ -269,7 +269,7 @@ export function FornecedoresCliente({ initialVendors }: PropriedadesDosFornecedo
                 ))}
               </datalist>
             </div>
-            <Input
+            <Entrada
               id={`${uid}-contact`}
               label="Contato"
               hint="Telefone, WhatsApp ou e-mail."
@@ -277,11 +277,11 @@ export function FornecedoresCliente({ initialVendors }: PropriedadesDosFornecedo
               onChange={(e) => setForm({ ...form, contact: e.target.value })}
               placeholder="(11) 99999-9999"
             />
-            <Textarea id={`${uid}-notes`} label="Anotações" optional value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} />
+            <AreaDeTexto id={`${uid}-notes`} label="Anotações" optional value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} />
             <div>
-              <Label htmlFor={`${uid}-contract`} className={labelCls}>
+              <Rotulo htmlFor={`${uid}-contract`} className={labelCls}>
                 Contrato <span className="font-normal text-tinta-suave">(opcional, até 8 MB)</span>
-              </Label>
+              </Rotulo>
               <input
                 id={`${uid}-contract`}
                 ref={fileInputRef}
@@ -297,8 +297,8 @@ export function FornecedoresCliente({ initialVendors }: PropriedadesDosFornecedo
               {editingVendor ? "Salvar mudanças" : "Adicionar fornecedor"}
             </BotaoComCarregamento>
           </form>
-        </DialogContent>
-      </Dialog>
+        </ConteudoDoDialogo>
+      </Dialogo>
 
       <ModalDeConfirmacao
         isOpen={confirmOpen}

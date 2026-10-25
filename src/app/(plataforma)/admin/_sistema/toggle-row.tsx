@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, type ReactNode } from "react";
-import { Switch } from "@/components/ui/switch";
+import { Interruptor } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 /**
@@ -38,7 +38,7 @@ export function LinhaDeAlternancia({
           </p>
         )}
       </div>
-      <Switch
+      <Interruptor
         checked={locked ? false : checked}
         onCheckedChange={onCheckedChange}
         disabled={disabled || locked}

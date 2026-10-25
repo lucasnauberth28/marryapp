@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
+import { Entrada } from "@/components/ui/input";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { Painel } from "@/components/plataforma/panel";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { Pencil, CheckCircle2, Archive } from "lucide-react";
 import { formatarDataEHora } from "@/lib/platform/format";
 import { publicarVersaoDasInstrucoes, reverterVersaoDasInstrucoes, salvarVersaoDasInstrucoes } from "@/actions/admin-madrinha-actions";
@@ -51,14 +51,14 @@ export function EditorDeInstrucoes({ versions }: { versions: ItemDeVersao[] }) {
           save.run(() => salvarVersaoDasInstrucoes({ content: text, changeNote: note }), () => setNote(""));
         }}
       >
-        <Textarea label="O que a Liz deve fazer" value={text} onChange={(e) => setText(e.target.value)} rows={10} error={save.errors.content} maxLength={8000} />
-        <Input label="O que mudou nesta versão" value={note} onChange={(e) => setNote(e.target.value)} error={save.errors.changeNote} maxLength={160} />
+        <AreaDeTexto label="O que a Liz deve fazer" value={text} onChange={(e) => setText(e.target.value)} rows={10} error={save.errors.content} maxLength={8000} />
+        <Entrada label="O que mudou nesta versão" value={note} onChange={(e) => setNote(e.target.value)} error={save.errors.changeNote} maxLength={160} />
         {save.formError && !Object.keys(save.errors).length && <AvisoDoFormulario>{save.formError}</AvisoDoFormulario>}
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={!changed} loading={save.pending}>
+          <Botao type="submit" disabled={!changed} loading={save.pending}>
             Salvar como nova versão
-          </Button>
-          <Button
+          </Botao>
+          <Botao
             type="button"
             variant="quiet"
             disabled={!changed || save.pending}
@@ -69,7 +69,7 @@ export function EditorDeInstrucoes({ versions }: { versions: ItemDeVersao[] }) {
             }}
           >
             Descartar mudanças
-          </Button>
+          </Botao>
         </div>
       </form>
 
@@ -95,7 +95,7 @@ export function EditorDeInstrucoes({ versions }: { versions: ItemDeVersao[] }) {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {v.status !== "PUBLISHED" && (
-                    <Button
+                    <Botao
                       type="button"
                       variant="quiet"
                       size="sm"
@@ -107,10 +107,10 @@ export function EditorDeInstrucoes({ versions }: { versions: ItemDeVersao[] }) {
                       }}
                     >
                       Publicar
-                    </Button>
+                    </Botao>
                   )}
                   {v.id !== latest?.id && (
-                    <Button
+                    <Botao
                       type="button"
                       variant="quiet"
                       size="sm"
@@ -122,7 +122,7 @@ export function EditorDeInstrucoes({ versions }: { versions: ItemDeVersao[] }) {
                       }}
                     >
                       Reverter para esta
-                    </Button>
+                    </Botao>
                   )}
                 </div>
               </div>

@@ -22,7 +22,7 @@ import {
  * Valores em centavos. Nada daqui lê dado de pessoa (só somas e contagens).
  */
 
-export { PREFIXO_DO_PIX_ESTATICO as STATIC_PIX_PREFIX, JANELA_DE_CONFERENCIA_DO_PIX_EM_MS as PIX_REVIEW_WINDOW_MS };
+export { PREFIXO_DO_PIX_ESTATICO, JANELA_DE_CONFERENCIA_DO_PIX_EM_MS };
 
 /** Pix de plano a conferir: pendente, Pix estático e com o código vencido há no máximo 3 dias. */
 export function filtroDePixParaConferir(now: Date = new Date()): Prisma.SubscriptionWhereInput {
@@ -171,7 +171,7 @@ export async function contarNotasPendentes(): Promise<number> {
   return prisma.subscription.count({ where: filtroDeNotaPendente });
 }
 
-export { deslocarChaveDoMes as shiftMonthKey };
+export { deslocarChaveDoMes };
 
 // ---------------------------------------------------------------------------------------------
 // Listas da tela Planos e receita
@@ -286,4 +286,4 @@ export async function listarCuponsEmUso(now: Date = new Date(), take = 5): Promi
   });
 }
 
-export { rotuloDoPagador as payerLabel };
+export { rotuloDoPagador };

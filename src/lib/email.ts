@@ -86,4 +86,4 @@ export async function enviarEmail({ to, subject, html, text }: EntradaDoEnvioDeE
 }
 
 // O modelo dos e-mails da marca mora em email-template.ts (sem server-only, para testar e pré-visualizar).
-export { emailDaMarca as brandedEmail, type EntradaDoEmailDaMarca as BrandedEmailInput } from "./email-template.ts";
+export { emailDaMarca, type EntradaDoEmailDaMarca } from "./email-template.ts";

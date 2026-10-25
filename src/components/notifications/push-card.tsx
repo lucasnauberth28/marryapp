@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { BellRing, Send, Smartphone } from "lucide-react";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Esqueleto } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { ehMinhaInscricao, removerInscricao, salvarInscricao, enviarPushDeTeste } from "@/actions/push-actions";
 import { urlBase64ParaBytes } from "@/lib/notifications/push-support";
@@ -93,13 +93,13 @@ export function CartaoDoPush({ publicKey, variant = "card", className }: Proprie
       <div role="status" aria-busy="true" className={cn("flex flex-col gap-4 rounded-2xl border border-linha bg-papel p-4 shadow-[var(--shadow-aceito-1)] sm:p-5", className)}>
         <span className="sr-only">Verificando os avisos neste aparelho...</span>
         <div className="flex items-start gap-3.5">
-          <Skeleton className="size-11 shrink-0 rounded-xl" />
+          <Esqueleto className="size-11 shrink-0 rounded-xl" />
           <div className="flex min-w-0 flex-1 flex-col gap-2 pt-0.5">
-            <Skeleton className="h-4 w-44 rounded-md" />
-            <Skeleton className="h-4 w-full max-w-md rounded-md" />
+            <Esqueleto className="h-4 w-44 rounded-md" />
+            <Esqueleto className="h-4 w-full max-w-md rounded-md" />
           </div>
         </div>
-        <Skeleton className="h-11 w-60 rounded-xl" />
+        <Esqueleto className="h-11 w-60 rounded-xl" />
       </div>
     );
   }

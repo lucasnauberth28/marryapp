@@ -3,7 +3,7 @@
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { gerarCodigoPix } from "@/lib/pix-utils";
-import { calcularTarifaDoCartao, mercadoPagoEstaConfigurado, pagamentoDoMercadoPago, paidAmountMatches } from "@/lib/mercadopago";
+import { calcularTarifaDoCartao, mercadoPagoEstaConfigurado, pagamentoDoMercadoPago, valorPagoConfere } from "@/lib/mercadopago";
 import { acharOuCriarConvidado } from "@/lib/guest-matching";
 import { MENSAGEM_DE_MUITAS_TENTATIVAS } from "@/lib/rate-limit-message";
 import { PaymentStatus } from "@prisma/client";
@@ -181,7 +181,7 @@ export async function conferirSituacaoDaTransacao(transactionId: string) {
         if (
           mpResponse.status === "approved" &&
           mpResponse.external_reference === transaction.id &&
-          paidAmountMatches(mpResponse.transaction_amount, transaction.amount)
+          valorPagoConfere(mpResponse.transaction_amount, transaction.amount)
         ) {
           await prisma.$transaction(async (tx) => {
             const updated = await tx.transaction.updateMany({
@@ -281,7 +281,7 @@ export async function processarPagamentoComCartao(input: {
       requestOptions: { idempotencyKey: transaction.id },
     });
 
-    if (mpResponse.status === "approved" && paidAmountMatches(mpResponse.transaction_amount, finalAmount)) {
+    if (mpResponse.status === "approved" && valorPagoConfere(mpResponse.transaction_amount, finalAmount)) {
       await prisma.$transaction([
         prisma.transaction.update({
           where: { id: transaction.id },

@@ -4,7 +4,7 @@ import { padroesDoConvidadoSoPresente } from "@/lib/guest-origin";
 import { obterVariacoesDoTelefone } from "@/lib/phone-variations";
 
 import { somenteDigitos } from "./formatacao/telefone.ts";
-export { obterVariacoesDoTelefone as getPhoneVariations };
+export { obterVariacoesDoTelefone };
 
 interface EntradaParaAcharOuCriarConvidado {
   /** Casamento dono do presente: a busca e a criação ficam restritas a ele. */

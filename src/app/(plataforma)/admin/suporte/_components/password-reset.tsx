@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Lock, Mail } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Entrada } from "@/components/ui/input";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Painel } from "@/components/plataforma/panel";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { enviarRedefinicaoDeSenhaPeloSuporte } from "@/actions/admin-suporte-actions";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
 
@@ -22,16 +22,16 @@ export function RedefinicaoDeSenha() {
           run(() => enviarRedefinicaoDeSenhaPeloSuporte({ email }), () => setEmail(""));
         }}
       >
-        <Input label="E-mail da pessoa" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} autoComplete="off" />
+        <Entrada label="E-mail da pessoa" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} autoComplete="off" />
         <p className="flex items-start gap-2 rounded-xl bg-areia px-3 py-2.5 text-sm leading-5 text-tinta">
           <Lock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           <span>O link vale por 1 hora e vai só para o e-mail da conta. Ele não aparece aqui e o envio fica no registro. Nunca peça a senha para ninguém.</span>
         </p>
         {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
         <div>
-          <Button type="submit" disabled={email.trim().length < 5} loading={pending}>
+          <Botao type="submit" disabled={email.trim().length < 5} loading={pending}>
             <Mail className="size-4" aria-hidden="true" /> Enviar link de redefinição
-          </Button>
+          </Botao>
         </div>
       </form>
     </Painel>

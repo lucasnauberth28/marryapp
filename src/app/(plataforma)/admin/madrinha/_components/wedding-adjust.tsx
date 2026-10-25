@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { AvisoDoFormulario } from "@/components/ui/field";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { aplicarAjusteAoCasamento, desbloquearMadrinhaDoCasamento } from "@/actions/admin-madrinha-actions";
 import type { ResultadoDeCasamento } from "@/lib/platform/queries/madrinha";
 import { useAcaoDoAdmin } from "../../_sistema/use-admin-action";
@@ -41,14 +41,14 @@ export function AjusteDoCasamento() {
           {picked.override?.blocked ? " (hoje bloqueado)" : ""}
         </p>
       )}
-      <Input label="Mensagens a mais neste mês" inputMode="numeric" value={extra} onChange={(e) => setExtra(e.target.value)} error={errors.extraMessages} disabled={!picked} />
-      <Textarea label="Motivo" value={reason} onChange={(e) => setReason(e.target.value)} error={errors.reason} disabled={!picked} rows={3} />
+      <Entrada label="Mensagens a mais neste mês" inputMode="numeric" value={extra} onChange={(e) => setExtra(e.target.value)} error={errors.extraMessages} disabled={!picked} />
+      <AreaDeTexto label="Motivo" value={reason} onChange={(e) => setReason(e.target.value)} error={errors.reason} disabled={!picked} rows={3} />
       {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="mt-auto flex flex-wrap items-center gap-3">
-        <Button type="submit" variant="outline" disabled={pending || !picked} loading={pending && running === "apply"}>
+        <Botao type="submit" variant="outline" disabled={pending || !picked} loading={pending && running === "apply"}>
           Aplicar ajuste
-        </Button>
-        <Button
+        </Botao>
+        <Botao
           type="button"
           variant="quiet"
           disabled={pending || !picked || !picked.override?.blocked}
@@ -60,7 +60,7 @@ export function AjusteDoCasamento() {
           }}
         >
           Desbloquear o casal
-        </Button>
+        </Botao>
       </div>
     </form>
   );

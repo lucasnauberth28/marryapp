@@ -6,7 +6,7 @@ import { Painel } from "@/components/plataforma/panel";
 import { AvatarComIniciais } from "@/components/plataforma/initials-avatar";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { EsqueletoDasLinhas } from "@/components/plataforma/loading-parts";
-import { SkeletonCard, SkeletonForm, LoadingRegion } from "@/components/skeletons";
+import { EsqueletoDeCartao, EsqueletoDeFormulario, RegiaoDeCarregamento } from "@/components/skeletons";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { type ParametrosDeBusca, parametroDaBusca } from "@/lib/platform/list-params";
@@ -58,32 +58,32 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
 
 function EsqueletoDosResultadosDaBusca() {
   return (
-    <LoadingRegion label="a busca" className="mt-4">
+    <RegiaoDeCarregamento label="a busca" className="mt-4">
       <EsqueletoDasLinhas rows={3} chip={false} />
-    </LoadingRegion>
+    </RegiaoDeCarregamento>
   );
 }
 
 function EsqueletoDasListasDeSuporte() {
   return (
-    <LoadingRegion label="os pedidos de ajuda" className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+    <RegiaoDeCarregamento label="os pedidos de ajuda" className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <div className="flex min-w-0 flex-col gap-6">
-        <SkeletonCard>
+        <EsqueletoDeCartao>
           <EsqueletoDasLinhas rows={4} />
-        </SkeletonCard>
-        <SkeletonCard>
+        </EsqueletoDeCartao>
+        <EsqueletoDeCartao>
           <EsqueletoDasLinhas rows={3} />
-        </SkeletonCard>
+        </EsqueletoDeCartao>
       </div>
       <div className="flex min-w-0 flex-col gap-6">
-        <SkeletonCard description>
-          <SkeletonForm fields={1} />
-        </SkeletonCard>
-        <SkeletonCard>
+        <EsqueletoDeCartao description>
+          <EsqueletoDeFormulario fields={1} />
+        </EsqueletoDeCartao>
+        <EsqueletoDeCartao>
           <EsqueletoDasLinhas rows={2} />
-        </SkeletonCard>
+        </EsqueletoDeCartao>
       </div>
-    </LoadingRegion>
+    </RegiaoDeCarregamento>
   );
 }
 

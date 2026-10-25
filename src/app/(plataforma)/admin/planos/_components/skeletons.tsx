@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { SkeletonCard, SkeletonChart, SkeletonForm, SkeletonStatGrid, SkeletonTable } from "@/components/skeletons";
+import { Esqueleto } from "@/components/ui/skeleton";
+import { EsqueletoDeCartao, EsqueletoDeGrafico, EsqueletoDeFormulario, EsqueletoDaGradeDeIndicadores, EsqueletoDeTabela } from "@/components/skeletons";
 import { EsqueletoDaAtencao, EsqueletoDoPainelDeTabela } from "@/components/plataforma/loading-parts";
 
 /* Esqueletos das telas de Planos e receita. */
@@ -10,14 +10,14 @@ const DIVISAO = "grid items-start gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr
 export function EsqueletoDoResumo() {
   return (
     <>
-      <SkeletonStatGrid count={4} />
+      <EsqueletoDaGradeDeIndicadores count={4} />
       <div className={DIVISAO}>
-        <SkeletonCard>
-          <SkeletonChart />
-        </SkeletonCard>
-        <SkeletonCard>
+        <EsqueletoDeCartao>
+          <EsqueletoDeGrafico />
+        </EsqueletoDeCartao>
+        <EsqueletoDeCartao>
           <EsqueletoDaAtencao rows={2} />
-        </SkeletonCard>
+        </EsqueletoDeCartao>
       </div>
       <div className={DIVISAO}>
         <EsqueletoDoPainelDeTabela columns={5} rows={3} />
@@ -32,9 +32,9 @@ export function EsqueletoDoResumo() {
 export function EsqueletoDoContador() {
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-      <SkeletonCard>
-        <SkeletonForm fields={1} />
-      </SkeletonCard>
+      <EsqueletoDeCartao>
+        <EsqueletoDeFormulario fields={1} />
+      </EsqueletoDeCartao>
       <EsqueletoDoPainelDeTabela columns={4} rows={3} />
     </div>
   );
@@ -45,9 +45,9 @@ export function EsqueletoDosReembolsos() {
   return (
     <>
       <EsqueletoDoPainelDeTabela columns={5} rows={3} />
-      <SkeletonCard>
-        <SkeletonForm fields={["input", "input", "textarea"]} columns={2} />
-      </SkeletonCard>
+      <EsqueletoDeCartao>
+        <EsqueletoDeFormulario fields={["input", "input", "textarea"]} columns={2} />
+      </EsqueletoDeCartao>
     </>
   );
 }
@@ -58,10 +58,10 @@ export function EsqueletoDaListaDeAssinaturas() {
     <div className="flex min-w-0 flex-col gap-4">
       <div className="flex flex-wrap gap-2">
         {[24, 28, 20, 28, 28].map((w, i) => (
-          <Skeleton key={i} className="h-11 rounded-xl" style={{ width: `${w * 4}px` }} />
+          <Esqueleto key={i} className="h-11 rounded-xl" style={{ width: `${w * 4}px` }} />
         ))}
       </div>
-      <SkeletonTable columns={6} rows={8} mobileFields={4} />
+      <EsqueletoDeTabela columns={6} rows={8} mobileFields={4} />
     </div>
   );
 }

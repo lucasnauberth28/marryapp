@@ -4,7 +4,7 @@ import * as React from "react"
 import { Dialog as DialogPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { Botao } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 
 function Dialogo({
@@ -69,7 +69,7 @@ function ConteudoDoDialogo({
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close data-slot="dialog-close" asChild>
-            <Button
+            <Botao
               variant="ghost"
               className="absolute top-2 right-2 size-11 text-tinta-suave"
               size="icon-sm"
@@ -77,7 +77,7 @@ function ConteudoDoDialogo({
               <XIcon
               />
               <span className="sr-only">Fechar</span>
-            </Button>
+            </Botao>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>
@@ -115,7 +115,7 @@ function RodapeDoDialogo({
       {children}
       {showCloseButton && (
         <DialogPrimitive.Close asChild>
-          <Button variant="outline">Fechar</Button>
+          <Botao variant="outline">Fechar</Botao>
         </DialogPrimitive.Close>
       )}
     </div>
@@ -155,14 +155,14 @@ function DescricaoDoDialogo({
 }
 
 export {
-  Dialogo as Dialog,
-  FecharDialogo as DialogClose,
-  ConteudoDoDialogo as DialogContent,
-  DescricaoDoDialogo as DialogDescription,
-  RodapeDoDialogo as DialogFooter,
-  CabecalhoDoDialogo as DialogHeader,
-  FundoDoDialogo as DialogOverlay,
-  PortalDoDialogo as DialogPortal,
-  TituloDoDialogo as DialogTitle,
-  GatilhoDoDialogo as DialogTrigger,
+  Dialogo,
+  FecharDialogo,
+  ConteudoDoDialogo,
+  DescricaoDoDialogo,
+  RodapeDoDialogo,
+  CabecalhoDoDialogo,
+  FundoDoDialogo,
+  PortalDoDialogo,
+  TituloDoDialogo,
+  GatilhoDoDialogo,
 }

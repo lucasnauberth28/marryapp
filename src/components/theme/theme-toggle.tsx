@@ -1,14 +1,14 @@
 "use client";
 
 import { Monitor, Moon, Sun } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
+  MenuSuspenso,
+  ConteudoDoMenuSuspenso,
+  RotuloDoMenuSuspenso,
+  GrupoDeOpcoesDoMenuSuspenso,
+  OpcaoDoMenuSuspenso,
+  GatilhoDoMenuSuspenso,
 } from "@/components/ui/dropdown-menu";
 import { OPCOES_DE_TEMA, interpretarPreferenciaDeTema } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -31,18 +31,18 @@ export function ItensDeMenuDoTema() {
   const { preference, setPreference } = useTema();
   return (
     <>
-      <DropdownMenuLabel className="text-xs font-semibold text-tinta-suave">Aparência</DropdownMenuLabel>
-      <DropdownMenuRadioGroup value={preference} onValueChange={(v) => setPreference(interpretarPreferenciaDeTema(v))}>
+      <RotuloDoMenuSuspenso className="text-xs font-semibold text-tinta-suave">Aparência</RotuloDoMenuSuspenso>
+      <GrupoDeOpcoesDoMenuSuspenso value={preference} onValueChange={(v) => setPreference(interpretarPreferenciaDeTema(v))}>
         {OPCOES_DE_TEMA.map(({ value, label }) => {
           const Icon = ICONE_DA_OPCAO[value];
           return (
-            <DropdownMenuRadioItem key={value} value={value} className="min-h-11 cursor-pointer text-base">
+            <OpcaoDoMenuSuspenso key={value} value={value} className="min-h-11 cursor-pointer text-base">
               <Icon aria-hidden="true" />
               {label}
-            </DropdownMenuRadioItem>
+            </OpcaoDoMenuSuspenso>
           );
         })}
-      </DropdownMenuRadioGroup>
+      </GrupoDeOpcoesDoMenuSuspenso>
     </>
   );
 }
@@ -57,20 +57,20 @@ export function AlternadorDeTema({
   align = "end",
 }: {
   className?: string;
-  variant?: React.ComponentProps<typeof Button>["variant"];
+  variant?: React.ComponentProps<typeof Botao>["variant"];
   align?: "start" | "center" | "end";
 }) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant={variant} size="icon" className={cn("text-tinta-suave", className)} aria-label="Aparência do aplicativo">
+    <MenuSuspenso>
+      <GatilhoDoMenuSuspenso asChild>
+        <Botao variant={variant} size="icon" className={cn("text-tinta-suave", className)} aria-label="Aparência do aplicativo">
           <IconeDoTema className="size-5" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align={align} className="w-52">
+        </Botao>
+      </GatilhoDoMenuSuspenso>
+      <ConteudoDoMenuSuspenso align={align} className="w-52">
         <ItensDeMenuDoTema />
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </ConteudoDoMenuSuspenso>
+    </MenuSuspenso>
   );
 }
 

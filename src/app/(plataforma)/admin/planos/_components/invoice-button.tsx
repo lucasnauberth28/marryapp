@@ -4,8 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { marcarNotaComoEmitida } from "@/actions/admin-planos-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
 
 /** "Já emiti": marca a nota fiscal do pagamento, com o número se quiser. */
 export function BotaoDeNota({ subscriptionId, payer }: { subscriptionId: string; payer: string }) {
@@ -17,10 +17,10 @@ export function BotaoDeNota({ subscriptionId, payer }: { subscriptionId: string;
 
   if (!open) {
     return (
-      <Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)}>
+      <Botao type="button" variant="outline" size="sm" onClick={() => setOpen(true)}>
         Já emiti
         <span className="sr-only"> a nota de {payer}</span>
-      </Button>
+      </Botao>
     );
   }
   return (
@@ -38,13 +38,13 @@ export function BotaoDeNota({ subscriptionId, payer }: { subscriptionId: string;
         });
       }}
     >
-      <Input label="Número da nota (opcional)" value={number} onChange={(e) => setNumber(e.target.value)} maxLength={40} error={error ?? undefined} fieldClassName="min-w-[200px]" />
-      <Button type="submit" size="sm" loading={pending} className="mt-1">
+      <Entrada label="Número da nota (opcional)" value={number} onChange={(e) => setNumber(e.target.value)} maxLength={40} error={error ?? undefined} fieldClassName="min-w-[200px]" />
+      <Botao type="submit" size="sm" loading={pending} className="mt-1">
         Confirmar
-      </Button>
-      <Button type="button" variant="quiet" size="sm" onClick={() => setOpen(false)} disabled={pending} className="mt-1">
+      </Botao>
+      <Botao type="button" variant="quiet" size="sm" onClick={() => setOpen(false)} disabled={pending} className="mt-1">
         Voltar
-      </Button>
+      </Botao>
     </form>
   );
 }

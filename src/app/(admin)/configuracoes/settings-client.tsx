@@ -3,8 +3,8 @@
 import { useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { atualizarConfiguracoes } from "@/actions/settings-actions";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Botao } from "@/components/ui/button";
+import { Cartao, ConteudoDoCartao, CabecalhoDoCartao, TituloDoCartao, DescricaoDoCartao } from "@/components/ui/card";
 import { SeletorDeData } from "@/components/ui/date-picker";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { CartaoDeConfiguracaoDoTour } from "@/components/tour/tour-restart";
@@ -49,12 +49,12 @@ export function ConfiguracoesCliente({ initialSettings, summary, canSeePlan }: P
     <div className="flex max-w-[880px] flex-col gap-6">
       <CabecalhoDaPagina eyebrow="Conta" title="Configurações" />
 
-      <Card className="gap-4">
-        <CardHeader>
-          <CardTitle>O casamento</CardTitle>
-          <CardDescription>Nomes, data, local, cor do tema e fotos ficam no editor do site, com prévia ao vivo.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-5">
+      <Cartao className="gap-4">
+        <CabecalhoDoCartao>
+          <TituloDoCartao>O casamento</TituloDoCartao>
+          <DescricaoDoCartao>Nomes, data, local, cor do tema e fotos ficam no editor do site, com prévia ao vivo.</DescricaoDoCartao>
+        </CabecalhoDoCartao>
+        <ConteudoDoCartao className="flex flex-col gap-5">
           <dl className="grid gap-4 sm:grid-cols-2">
             <InformacaoEmDestaque label="Nomes no site">{summary.names}</InformacaoEmDestaque>
             <InformacaoEmDestaque label="Data">{summary.date ?? "Ainda sem data"}</InformacaoEmDestaque>
@@ -62,18 +62,18 @@ export function ConfiguracoesCliente({ initialSettings, summary, canSeePlan }: P
             <InformacaoEmDestaque label="Endereço do site">{summary.address ?? "Disponível depois de concluir o cadastro"}</InformacaoEmDestaque>
           </dl>
           <div>
-            <Button asChild variant="outline">
+            <Botao asChild variant="outline">
               <Link href="/site-builder">Editar no editor do site</Link>
-            </Button>
+            </Botao>
           </div>
-        </CardContent>
-      </Card>
+        </ConteudoDoCartao>
+      </Cartao>
 
-      <Card className="gap-4">
-        <CardHeader>
-          <CardTitle>Confirmação de presença</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+      <Cartao className="gap-4">
+        <CabecalhoDoCartao>
+          <TituloDoCartao>Confirmação de presença</TituloDoCartao>
+        </CabecalhoDoCartao>
+        <ConteudoDoCartao className="flex flex-col gap-4">
           <SeletorDeData
             id="rsvpDeadline"
             label="Prazo de confirmação"
@@ -83,73 +83,73 @@ export function ConfiguracoesCliente({ initialSettings, summary, canSeePlan }: P
             onChange={(e) => setRsvpDeadline(e.target.value)}
           />
           <div>
-            <Button onClick={handleSave} loading={isPending}>
+            <Botao onClick={handleSave} loading={isPending}>
               Salvar prazo
-            </Button>
+            </Botao>
           </div>
-        </CardContent>
-      </Card>
+        </ConteudoDoCartao>
+      </Cartao>
 
-      <Card className="gap-4">
-        <CardHeader>
-          <CardTitle>Aparência</CardTitle>
-          <CardDescription>Claro, escuro ou o do seu aparelho. Vale para este navegador e não muda o site do casamento, que fica sempre claro.</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <Cartao className="gap-4">
+        <CabecalhoDoCartao>
+          <TituloDoCartao>Aparência</TituloDoCartao>
+          <DescricaoDoCartao>Claro, escuro ou o do seu aparelho. Vale para este navegador e não muda o site do casamento, que fica sempre claro.</DescricaoDoCartao>
+        </CabecalhoDoCartao>
+        <ConteudoDoCartao>
           <SeletorSegmentadoDoTema />
-        </CardContent>
-      </Card>
+        </ConteudoDoCartao>
+      </Cartao>
 
-      <Card className="gap-4">
-        <CardHeader>
-          <CardTitle>Onde receber os presentes</CardTitle>
-          <CardDescription>A chave Pix ou a conta que vocês escolhem para receber o dinheiro dos presentes. Os dados ficam criptografados.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild variant="outline">
+      <Cartao className="gap-4">
+        <CabecalhoDoCartao>
+          <TituloDoCartao>Onde receber os presentes</TituloDoCartao>
+          <DescricaoDoCartao>A chave Pix ou a conta que vocês escolhem para receber o dinheiro dos presentes. Os dados ficam criptografados.</DescricaoDoCartao>
+        </CabecalhoDoCartao>
+        <ConteudoDoCartao>
+          <Botao asChild variant="outline">
             <Link href="/configuracoes/recebimento">Cadastrar ou ver o destino</Link>
-          </Button>
-        </CardContent>
-      </Card>
+          </Botao>
+        </ConteudoDoCartao>
+      </Cartao>
 
-      <Card className="gap-4">
-        <CardHeader>
-          <CardTitle>WhatsApp</CardTitle>
-          <CardDescription>Conexão do número que envia convites e lembretes aos convidados.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild variant="outline">
+      <Cartao className="gap-4">
+        <CabecalhoDoCartao>
+          <TituloDoCartao>WhatsApp</TituloDoCartao>
+          <DescricaoDoCartao>Conexão do número que envia convites e lembretes aos convidados.</DescricaoDoCartao>
+        </CabecalhoDoCartao>
+        <ConteudoDoCartao>
+          <Botao asChild variant="outline">
             <Link href="/configuracoes/whatsapp">Gerenciar conexão</Link>
-          </Button>
-        </CardContent>
-      </Card>
+          </Botao>
+        </ConteudoDoCartao>
+      </Cartao>
 
-      <Card className="gap-4">
-        <CardHeader>
-          <CardTitle>Quem pode editar</CardTitle>
-          <CardDescription>Convite para a outra pessoa do casal, senha, avisos e exclusão da conta ficam em Minha conta.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button asChild variant="outline">
+      <Cartao className="gap-4">
+        <CabecalhoDoCartao>
+          <TituloDoCartao>Quem pode editar</TituloDoCartao>
+          <DescricaoDoCartao>Convite para a outra pessoa do casal, senha, avisos e exclusão da conta ficam em Minha conta.</DescricaoDoCartao>
+        </CabecalhoDoCartao>
+        <ConteudoDoCartao>
+          <Botao asChild variant="outline">
             <Link href="/conta">Abrir Minha conta</Link>
-          </Button>
-        </CardContent>
-      </Card>
+          </Botao>
+        </ConteudoDoCartao>
+      </Cartao>
 
       <CartaoDeConfiguracaoDoTour />
 
       {canSeePlan && (
-        <Card className="gap-4">
-          <CardHeader>
-            <CardTitle>Plano</CardTitle>
-            <CardDescription>Veja o plano do casamento, o que está incluído e os pagamentos.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild variant="outline">
+        <Cartao className="gap-4">
+          <CabecalhoDoCartao>
+            <TituloDoCartao>Plano</TituloDoCartao>
+            <DescricaoDoCartao>Veja o plano do casamento, o que está incluído e os pagamentos.</DescricaoDoCartao>
+          </CabecalhoDoCartao>
+          <ConteudoDoCartao>
+            <Botao asChild variant="outline">
               <Link href="/plano">Ver plano e pagamentos</Link>
-            </Button>
-          </CardContent>
-        </Card>
+            </Botao>
+          </ConteudoDoCartao>
+        </Cartao>
       )}
     </div>
   );

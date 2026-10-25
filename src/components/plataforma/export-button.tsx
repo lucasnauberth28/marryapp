@@ -2,7 +2,7 @@
 
 import { useState, type ComponentProps, type ReactNode } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { nomeDoArquivoDoCabecalho } from "@/lib/platform/download-name";
 
 /**
@@ -18,7 +18,7 @@ export function BotaoDeExportar({
   children,
   variant = "outline",
   ...props
-}: Omit<ComponentProps<typeof Button>, "onClick" | "loading" | "type" | "asChild"> & { href: string; fallbackName: string; children: ReactNode }) {
+}: Omit<ComponentProps<typeof Botao>, "onClick" | "loading" | "type" | "asChild"> & { href: string; fallbackName: string; children: ReactNode }) {
   const [busy, setBusy] = useState(false);
 
   async function download() {
@@ -48,8 +48,8 @@ export function BotaoDeExportar({
   }
 
   return (
-    <Button type="button" variant={variant} loading={busy} onClick={download} {...props}>
+    <Botao type="button" variant={variant} loading={busy} onClick={download} {...props}>
       {children}
-    </Button>
+    </Botao>
   );
 }

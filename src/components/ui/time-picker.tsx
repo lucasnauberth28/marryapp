@@ -5,7 +5,7 @@ import { useState, useCallback, useMemo, useId } from "react";
 import { Clock, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Campo, juntarIds, type OpcoesDoCampoFlutuante } from "@/components/ui/field";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { JanelaFlutuante, ConteudoDaJanelaFlutuante, GatilhoDaJanelaFlutuante } from "@/components/ui/popover";
 
 export type PropriedadesDoSeletorDeHora = Omit<OpcoesDoCampoFlutuante, "prefix" | "suffix" | "trailing" | "icon"> & {
   id?: string;
@@ -112,9 +112,9 @@ export function SeletorDeHora({
       className={className}
     >
       {(c) => (
-        <Popover open={isOpen} onOpenChange={handleOpenChange}>
+        <JanelaFlutuante open={isOpen} onOpenChange={handleOpenChange}>
           {name && <input type="hidden" name={name} value={value} />}
-          <PopoverTrigger asChild>
+          <GatilhoDaJanelaFlutuante asChild>
             <button
               {...c}
               type="button"
@@ -126,9 +126,9 @@ export function SeletorDeHora({
                 {displayValue || placeholder}
               </span>
             </button>
-          </PopoverTrigger>
+          </GatilhoDaJanelaFlutuante>
 
-          <PopoverContent align="start" className="w-auto rounded-xl p-4 shadow-2xl">
+          <ConteudoDaJanelaFlutuante align="start" className="w-auto rounded-xl p-4 shadow-2xl">
           <div className="flex items-center gap-3">
             {/* Hours Column */}
             <div className="flex flex-col items-center gap-1">
@@ -213,8 +213,8 @@ export function SeletorDeHora({
               </button>
             ))}
           </div>
-          </PopoverContent>
-        </Popover>
+          </ConteudoDaJanelaFlutuante>
+        </JanelaFlutuante>
       )}
     </Campo>
   );

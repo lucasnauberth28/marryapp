@@ -1,32 +1,32 @@
-import { LoadingRegion, SkeletonCard, SkeletonForm, SkeletonPageHeader } from "@/components/skeletons";
-import { Skeleton } from "@/components/ui/skeleton";
+import { RegiaoDeCarregamento, EsqueletoDeCartao, EsqueletoDeFormulario, EsqueletoDoCabecalhoDaPagina } from "@/components/skeletons";
+import { Esqueleto } from "@/components/ui/skeleton";
 import { EsqueletoDasLinhas } from "@/components/plataforma/loading-parts";
 
 export default function Loading() {
   return (
-    <LoadingRegion label="o comportamento da Liz" className="flex flex-col gap-6">
-      <SkeletonPageHeader actions={1} />
-      <Skeleton className="h-16 rounded-2xl" />
+    <RegiaoDeCarregamento label="o comportamento da Liz" className="flex flex-col gap-6">
+      <EsqueletoDoCabecalhoDaPagina actions={1} />
+      <Esqueleto className="h-16 rounded-2xl" />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
-          <SkeletonCard>
-            <SkeletonForm fields={["textarea", "input"]} />
-          </SkeletonCard>
-          <SkeletonCard>
+          <EsqueletoDeCartao>
+            <EsqueletoDeFormulario fields={["textarea", "input"]} />
+          </EsqueletoDeCartao>
+          <EsqueletoDeCartao>
             <EsqueletoDasLinhas rows={4} />
-          </SkeletonCard>
+          </EsqueletoDeCartao>
         </div>
         <div className="flex min-w-0 flex-col gap-6">
-          <SkeletonCard />
-          <SkeletonCard>
+          <EsqueletoDeCartao />
+          <EsqueletoDeCartao>
             <EsqueletoDasLinhas rows={4} chip={false} />
-          </SkeletonCard>
-          <SkeletonCard>
+          </EsqueletoDeCartao>
+          <EsqueletoDeCartao>
             <EsqueletoDasLinhas rows={3} chip={false} />
-          </SkeletonCard>
+          </EsqueletoDeCartao>
         </div>
       </div>
-      <SkeletonCard />
-    </LoadingRegion>
+      <EsqueletoDeCartao />
+    </RegiaoDeCarregamento>
   );
 }

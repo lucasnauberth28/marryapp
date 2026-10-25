@@ -3,7 +3,7 @@
 
 import { MENSAGEM_DE_MUITAS_TENTATIVAS } from "./rate-limit-message.ts";
 
-export { MENSAGEM_DE_MUITAS_TENTATIVAS as TOO_MANY_ATTEMPTS_MESSAGE };
+export { MENSAGEM_DE_MUITAS_TENTATIVAS };
 
 export interface ConvidadoDaConfirmacaoPublica {
   id: string;

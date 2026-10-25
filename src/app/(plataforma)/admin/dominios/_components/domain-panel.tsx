@@ -18,11 +18,11 @@ import {
   type ResultadoDaAcaoDeConectarDominio,
 } from "@/actions/domain-admin-actions";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { ETAPAS_DA_LINHA_DO_TEMPO, situacoesDasEtapas, type NomeDaSituacaoDoPedidoDeDominio } from "@/lib/domain-order";
 import type { ResultadoDaConexao } from "@/lib/vercel-domains-core";
 import { cn } from "@/lib/utils";
@@ -117,7 +117,7 @@ export function PainelDoDominio({ order, vercelReady }: { order: DadosDoPainelDo
         <p className="flex flex-wrap items-center gap-2">
           <span className="font-mono tabular-nums text-tinta">{fullDocument ?? order.holderDocument}</span>
           {order.canRevealDocument && !fullDocument ? (
-            <Button
+            <Botao
               type="button"
               variant="outline"
               size="sm"
@@ -133,7 +133,7 @@ export function PainelDoDominio({ order, vercelReady }: { order: DadosDoPainelDo
               }}
             >
               <Eye className="size-4" aria-hidden="true" /> Mostrar completo
-            </Button>
+            </Botao>
           ) : null}
           {fullDocument ? (
             <button type="button" onClick={() => copiarTexto(fullDocument.replace(/[^0-9A-Z]/g, ""), "Número copiado (só os dígitos).")} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)}>
@@ -192,36 +192,36 @@ export function PainelDoDominio({ order, vercelReady }: { order: DadosDoPainelDo
       {/* Ações por situação */}
       {order.status === "REQUESTED" ? (
         <div className="flex flex-wrap gap-2">
-          <Button type="button" disabled={pending} loading={pending && running === "start"} onClick={() => run("start", () => iniciarRegistroDoDominio(id))}>
+          <Botao type="button" disabled={pending} loading={pending && running === "start"} onClick={() => run("start", () => iniciarRegistroDoDominio(id))}>
             Começar o registro
-          </Button>
+          </Botao>
         </div>
       ) : null}
       {order.status === "REGISTERING" ? (
         <div className="flex flex-wrap gap-2">
-          <Button type="button" disabled={pending} onClick={() => setPanel(panel === "registered" ? null : "registered")}>
+          <Botao type="button" disabled={pending} onClick={() => setPanel(panel === "registered" ? null : "registered")}>
             Marcar como registrado
-          </Button>
+          </Botao>
         </div>
       ) : null}
       {order.status === "REGISTERED" ? (
         <div className="flex flex-wrap gap-2">
-          <Button type="button" disabled={pending || !vercelReady} loading={pending && running === "connect"} onClick={() => run("connect", () => conectarDominioAcao(id))}>
+          <Botao type="button" disabled={pending || !vercelReady} loading={pending && running === "connect"} onClick={() => run("connect", () => conectarDominioAcao(id))}>
             <Link2 className="size-4" aria-hidden="true" /> Conectar à Vercel
-          </Button>
-          <Button type="button" variant="outline" disabled={pending || !vercelReady} loading={pending && running === "verify"} onClick={() => run("verify", () => verificarDominioAcao(id))}>
+          </Botao>
+          <Botao type="button" variant="outline" disabled={pending || !vercelReady} loading={pending && running === "verify"} onClick={() => run("verify", () => verificarDominioAcao(id))}>
             <RefreshCw className="size-4" aria-hidden="true" /> Verificar DNS
-          </Button>
-          <Button type="button" variant="outline" disabled={pending} onClick={() => setPanel(panel === "online" ? null : "online")}>
+          </Botao>
+          <Botao type="button" variant="outline" disabled={pending} onClick={() => setPanel(panel === "online" ? null : "online")}>
             Marcar como no ar
-          </Button>
+          </Botao>
         </div>
       ) : null}
       {order.canRenew ? (
         <div>
-          <Button type="button" variant="outline" disabled={pending} loading={pending && running === "renew"} onClick={() => run("renew", () => marcarDominioComoRenovado(id))}>
+          <Botao type="button" variant="outline" disabled={pending} loading={pending && running === "renew"} onClick={() => run("renew", () => marcarDominioComoRenovado(id))}>
             Marcar como renovado (mais 1 ano)
-          </Button>
+          </Botao>
           <p className="mt-1 text-xs text-tinta-suave">Use depois de renovar no Registro.br. O vencimento sobe 1 ano e os avisos de 60 e 30 dias voltam a valer.</p>
         </div>
       ) : null}
@@ -235,7 +235,7 @@ export function PainelDoDominio({ order, vercelReady }: { order: DadosDoPainelDo
           }}
         >
           <p className="text-sm text-tinta">Ao confirmar, o CPF/CNPJ completo é trocado pela versão escondida e o casal é avisado.</p>
-          <Input
+          <Entrada
             label="Data do registro"
             type="date"
             value={registeredAt}
@@ -245,14 +245,14 @@ export function PainelDoDominio({ order, vercelReady }: { order: DadosDoPainelDo
             }}
             required
           />
-          <Input label="Vencimento (1 ano depois)" type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} required />
+          <Entrada label="Vencimento (1 ano depois)" type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} required />
           <div className="flex flex-wrap gap-2">
-            <Button type="submit" disabled={pending} loading={pending && running === "register"}>
+            <Botao type="submit" disabled={pending} loading={pending && running === "register"}>
               Confirmar registro
-            </Button>
-            <Button type="button" variant="quiet" onClick={() => setPanel(null)} disabled={pending}>
+            </Botao>
+            <Botao type="button" variant="quiet" onClick={() => setPanel(null)} disabled={pending}>
               Voltar
-            </Button>
+            </Botao>
           </div>
         </form>
       ) : null}
@@ -267,10 +267,10 @@ export function PainelDoDominio({ order, vercelReady }: { order: DadosDoPainelDo
               run("reject", () => recusarPedidoDeDominio({ orderId: id, reason }), () => setReason(""));
             }}
           >
-            <Textarea label="Motivo da recusa" rows={3} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} hint="O casal recebe este texto por e-mail." />
-            <Button type="submit" variant="outline" disabled={reason.trim().length < 5 || pending} loading={pending && running === "reject"} className={cn(ESTILO_DE_PERIGO, "self-start")}>
+            <AreaDeTexto label="Motivo da recusa" rows={3} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} hint="O casal recebe este texto por e-mail." />
+            <Botao type="submit" variant="outline" disabled={reason.trim().length < 5 || pending} loading={pending && running === "reject"} className={cn(ESTILO_DE_PERIGO, "self-start")}>
               Recusar com motivo
-            </Button>
+            </Botao>
           </form>
         </section>
       ) : null}
@@ -294,10 +294,10 @@ export function PainelDoDominio({ order, vercelReady }: { order: DadosDoPainelDo
           run("note", () => salvarNotaDoDominio({ orderId: id, note }));
         }}
       >
-        <Textarea label="Anotação da equipe" rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} hint="O casal não vê." />
-        <Button type="submit" variant="outline" size="sm" disabled={note === (order.adminNote ?? "") || pending} loading={pending && running === "note"} className="self-start">
+        <AreaDeTexto label="Anotação da equipe" rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} hint="O casal não vê." />
+        <Botao type="submit" variant="outline" size="sm" disabled={note === (order.adminNote ?? "") || pending} loading={pending && running === "note"} className="self-start">
           Salvar anotação
-        </Button>
+        </Botao>
       </form>
     </div>
   );

@@ -298,15 +298,15 @@ function BotaoDeRolarParaBaixo({
 }
 
 export {
-  SelecaoNativa as NativeSelect,
-  Selecao as Select,
-  ConteudoDaSelecao as SelectContent,
-  GrupoDaSelecao as SelectGroup,
-  ItemDaSelecao as SelectItem,
-  RotuloDaSelecao as SelectLabel,
-  BotaoDeRolarParaBaixo as SelectScrollDownButton,
-  BotaoDeRolarParaCima as SelectScrollUpButton,
-  SeparadorDaSelecao as SelectSeparator,
-  GatilhoDaSelecao as SelectTrigger,
-  ValorDaSelecao as SelectValue,
+  SelecaoNativa,
+  Selecao,
+  ConteudoDaSelecao,
+  GrupoDaSelecao,
+  ItemDaSelecao,
+  RotuloDaSelecao,
+  BotaoDeRolarParaBaixo,
+  BotaoDeRolarParaCima,
+  SeparadorDaSelecao,
+  GatilhoDaSelecao,
+  ValorDaSelecao,
 }

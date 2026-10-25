@@ -4,14 +4,14 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, Link2, Mail, Megaphone, Send, Settings, Clock, Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Botao } from "@/components/ui/button";
+import { Esqueleto } from "@/components/ui/skeleton";
 import { IndicadorDeCarregamento } from "@/components/ui/spinner";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { NativeSelect } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
+import { SelecaoNativa } from "@/components/ui/select";
+import { CaixaDeSelecao } from "@/components/ui/checkbox";
+import { Rotulo } from "@/components/ui/label";
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { AvisoDoFormulario } from "@/components/ui/field";
 import { Painel } from "@/components/plataforma/panel";
@@ -193,7 +193,7 @@ export function RedacaoDeComunicado({ initial, initialPreview, drafts, emailConf
                 </p>
               )}
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <NativeSelect
+                <SelecaoNativa
                   label="Público"
                   value={audience.kind}
                   disabled={onlyChosen}
@@ -202,8 +202,8 @@ export function RedacaoDeComunicado({ initial, initialPreview, drafts, emailConf
                   <option value="couples">Casais</option>
                   <option value="vendors">Fornecedores</option>
                   <option value="all">Casais e fornecedores</option>
-                </NativeSelect>
-                <NativeSelect
+                </SelecaoNativa>
+                <SelecaoNativa
                   label="Plano"
                   alwaysFloat
                   value={planValue}
@@ -216,8 +216,8 @@ export function RedacaoDeComunicado({ initial, initialPreview, drafts, emailConf
                       {ROTULO_DO_GRUPO_DE_PLANO[p]}
                     </option>
                   ))}
-                </NativeSelect>
-                <NativeSelect
+                </SelecaoNativa>
+                <SelecaoNativa
                   label="Data do casamento"
                   alwaysFloat
                   value={audience.weddingWindow}
@@ -230,9 +230,9 @@ export function RedacaoDeComunicado({ initial, initialPreview, drafts, emailConf
                       {ROTULO_DA_JANELA[w]}
                     </option>
                   ))}
-                </NativeSelect>
+                </SelecaoNativa>
               </div>
-              <NativeSelect
+              <SelecaoNativa
                 label="Tipo de aviso"
                 alwaysFloat
                 value={audience.service ? "service" : "news"}
@@ -241,7 +241,7 @@ export function RedacaoDeComunicado({ initial, initialPreview, drafts, emailConf
               >
                 <option value="news">Novidade</option>
                 <option value="service">Aviso do serviço</option>
-              </NativeSelect>
+              </SelecaoNativa>
               <p aria-busy={previewing || undefined} className={cn("flex min-h-7 flex-wrap items-center gap-2 text-sm leading-5 text-tinta-suave transition-opacity", previewing && "opacity-60")} aria-live="polite">
                 {preview ? (
                   <>
@@ -251,8 +251,8 @@ export function RedacaoDeComunicado({ initial, initialPreview, drafts, emailConf
                 ) : (
                   <>
                     <span className="sr-only">Calculando o público...</span>
-                    <Skeleton className="h-7 w-44 rounded-lg" />
-                    <Skeleton className="h-4 w-32 rounded-md" />
+                    <Esqueleto className="h-7 w-44 rounded-lg" />
+                    <Esqueleto className="h-4 w-32 rounded-md" />
                   </>
                 )}
               </p>
@@ -263,22 +263,22 @@ export function RedacaoDeComunicado({ initial, initialPreview, drafts, emailConf
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {(["PANEL", "PUSH", "EMAIL"] as const).map((c) => (
                   <div key={c} className="flex min-h-11 items-start gap-3 rounded-xl py-2">
-                    <Checkbox id={`canal-${c}`} checked={channels.includes(c)} onCheckedChange={(v) => toggleChannel(c, v === true)} className="mt-0.5" />
+                    <CaixaDeSelecao id={`canal-${c}`} checked={channels.includes(c)} onCheckedChange={(v) => toggleChannel(c, v === true)} className="mt-0.5" />
                     <div className="min-w-0">
-                      <Label htmlFor={`canal-${c}`} className="text-base">
+                      <Rotulo htmlFor={`canal-${c}`} className="text-base">
                         {ROTULO_DO_CANAL[c]}
-                      </Label>
+                      </Rotulo>
                       {c === "EMAIL" && !emailConfigured && <p className="text-sm leading-5 text-aviso">O e-mail não está configurado no servidor.</p>}
                       {c === "PUSH" && <p className="text-sm leading-5 text-tinta-suave">Só para quem ativou os avisos no celular.</p>}
                     </div>
                   </div>
                 ))}
                 <div className="flex min-h-11 items-start gap-3 rounded-xl py-2">
-                  <Checkbox id="canal-WHATSAPP" checked={false} disabled className="mt-0.5" />
+                  <CaixaDeSelecao id="canal-WHATSAPP" checked={false} disabled className="mt-0.5" />
                   <div className="min-w-0">
-                    <Label htmlFor="canal-WHATSAPP" className="text-base">
+                    <Rotulo htmlFor="canal-WHATSAPP" className="text-base">
                       {ROTULO_DO_CANAL.WHATSAPP}
-                    </Label>
+                    </Rotulo>
                     <p className="text-sm leading-5 text-tinta-suave">{MOTIVO_DO_WHATSAPP_DESLIGADO}</p>
                   </div>
                 </div>
@@ -292,22 +292,22 @@ export function RedacaoDeComunicado({ initial, initialPreview, drafts, emailConf
 
             <fieldset className="flex flex-col gap-4">
               <legend className="mb-3 text-base font-semibold text-tinta">O que dizer</legend>
-              <Input label="Título" value={title} onChange={(e) => setTitle(e.target.value)} error={errors.title} maxLength={90} />
-              <Input label="Assunto do e-mail" optional value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} error={errors.emailSubject} maxLength={120} hint="Se ficar vazio, o e-mail usa o título." />
-              <Textarea label="Mensagem" value={body} onChange={(e) => setBody(e.target.value)} error={errors.body} rows={5} maxLength={1000} hint="Texto simples. Uma linha em branco separa os parágrafos." />
-              <Input label="Link do botão" optional icon={Link2} value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} error={errors.linkUrl} inputMode="url" placeholder="https://" />
+              <Entrada label="Título" value={title} onChange={(e) => setTitle(e.target.value)} error={errors.title} maxLength={90} />
+              <Entrada label="Assunto do e-mail" optional value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} error={errors.emailSubject} maxLength={120} hint="Se ficar vazio, o e-mail usa o título." />
+              <AreaDeTexto label="Mensagem" value={body} onChange={(e) => setBody(e.target.value)} error={errors.body} rows={5} maxLength={1000} hint="Texto simples. Uma linha em branco separa os parágrafos." />
+              <Entrada label="Link do botão" optional icon={Link2} value={linkUrl} onChange={(e) => setLinkUrl(e.target.value)} error={errors.linkUrl} inputMode="url" placeholder="https://" />
             </fieldset>
 
             {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button type="submit" disabled={busy}>
+              <Botao type="submit" disabled={busy}>
                 <Send className="size-4" aria-hidden="true" /> Enviar agora
-              </Button>
-              <Button type="button" variant="outline" disabled={busy && !test.pending} loading={test.pending} onClick={() => test.run(() => enviarTesteDoComunicadoParaMim(form()))}>
+              </Botao>
+              <Botao type="button" variant="outline" disabled={busy && !test.pending} loading={test.pending} onClick={() => test.run(() => enviarTesteDoComunicadoParaMim(form()))}>
                 Enviar um teste para mim
-              </Button>
-              <Button
+              </Botao>
+              <Botao
                 type="button"
                 variant="quiet"
                 disabled={busy && !save.pending}
@@ -323,7 +323,7 @@ export function RedacaoDeComunicado({ initial, initialPreview, drafts, emailConf
                 }
               >
                 Salvar rascunho
-              </Button>
+              </Botao>
             </div>
             <p className="text-sm leading-5 text-tinta-suave">O envio é imediato: não há agendamento. Quem já recebeu não recebe de novo se o envio for retomado.</p>
           </form>

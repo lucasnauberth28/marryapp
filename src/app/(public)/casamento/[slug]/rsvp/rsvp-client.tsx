@@ -8,10 +8,10 @@ import { QRCodeCanvas } from "qrcode.react";
 import { acharConvidadoPeloTelefone, confirmarPresencaPublica } from "@/actions/guest-actions";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { Selo } from "@/components/landing/seal";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select";
+import { Entrada } from "@/components/ui/input";
+import { SelecaoNativa } from "@/components/ui/select";
 import { mascararTelefone } from "@/lib/formatacao/telefone";
 import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
 import { lembrarConvidado } from "@/lib/use-saved-guest";
@@ -169,9 +169,9 @@ export function ConfirmacaoCliente({ slug, coupleNames, dateLabel, locationName 
                 />
               )}
             </Campo>
-            <Button type="submit" loading={loading} className="h-12 w-full rounded-[12px] px-6">
+            <Botao type="submit" loading={loading} className="h-12 w-full rounded-[12px] px-6">
               Encontrar meu convite
-            </Button>
+            </Botao>
           </form>
           <p className="text-sm text-tinta-suave">Não achou o seu convite? Fale com os noivos, eles ajudam.</p>
         </section>
@@ -226,7 +226,7 @@ export function ConfirmacaoCliente({ slug, coupleNames, dateLabel, locationName 
 
           {guest.allowedCompanions > 0 ? (
             <>
-              <NativeSelect
+              <SelecaoNativa
                 id="rsvp-acompanhantes"
                 label="Além de você, quantos acompanhantes?"
                 value={companionsCount}
@@ -237,13 +237,13 @@ export function ConfirmacaoCliente({ slug, coupleNames, dateLabel, locationName 
                     {i === 0 ? "Nenhum acompanhante" : i === 1 ? "1 acompanhante" : `${i} acompanhantes`}
                   </option>
                 ))}
-              </NativeSelect>
+              </SelecaoNativa>
 
               {companionsCount > 0 ? (
                 <fieldset className="flex flex-col gap-5">
                   <legend className="mb-3 text-sm font-semibold leading-5 text-tinta">Nome de cada acompanhante</legend>
                   {Array.from({ length: companionsCount }).map((_, i) => (
-                    <Input
+                    <Entrada
                       key={i}
                       id={`rsvp-acompanhante-${i + 1}`}
                       type="text"
@@ -274,7 +274,7 @@ export function ConfirmacaoCliente({ slug, coupleNames, dateLabel, locationName 
           {error ? <AvisoDoFormulario>{error}</AvisoDoFormulario> : null}
 
           <div className="flex flex-col gap-2">
-            <Button
+            <Botao
               type="button"
               onClick={() => handleConfirm("CONFIRMED")}
               disabled={submitLoading !== null}
@@ -282,8 +282,8 @@ export function ConfirmacaoCliente({ slug, coupleNames, dateLabel, locationName 
               className="h-12 w-full rounded-[12px] px-6"
             >
               Confirmar presença
-            </Button>
-            <Button
+            </Botao>
+            <Botao
               type="button"
               variant="quiet"
               onClick={() => handleConfirm("DECLINED")}
@@ -292,7 +292,7 @@ export function ConfirmacaoCliente({ slug, coupleNames, dateLabel, locationName 
               className="h-12 w-full rounded-[12px] px-6"
             >
               Não poderei ir
-            </Button>
+            </Botao>
           </div>
         </section>
       ) : null}

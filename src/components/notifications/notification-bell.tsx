@@ -4,9 +4,9 @@ import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { Bell, BellRing, CheckCheck, Settings2 } from "lucide-react";
 import { toast } from "sonner";
-import { LoadingRegion } from "@/components/skeletons";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Skeleton } from "@/components/ui/skeleton";
+import { RegiaoDeCarregamento } from "@/components/skeletons";
+import { JanelaFlutuante, ConteudoDaJanelaFlutuante, GatilhoDaJanelaFlutuante } from "@/components/ui/popover";
+import { Esqueleto } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { LinhaDeNotificacao } from "./notification-row";
 import { useFluxoDeNotificacoes } from "./use-notification-feed";
@@ -49,8 +49,8 @@ export function SinoDeNotificacoes({ initialUnread, allHref, settingsHref, pushP
   }
 
   return (
-    <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverTrigger asChild>
+    <JanelaFlutuante open={open} onOpenChange={onOpenChange}>
+      <GatilhoDaJanelaFlutuante asChild>
         <button
           ref={triggerRef}
           type="button"
@@ -70,14 +70,14 @@ export function SinoDeNotificacoes({ initialUnread, allHref, settingsHref, pushP
             </span>
           )}
         </button>
-      </PopoverTrigger>
+      </GatilhoDaJanelaFlutuante>
 
       {/* Anuncia mudanças no contador para leitores de tela, sem tirar o foco de onde está. */}
       <span role="status" aria-live="polite" className="sr-only">
         {feed.unread > 0 ? `${feed.unread} ${feed.unread === 1 ? "aviso novo" : "avisos novos"}` : ""}
       </span>
 
-      <PopoverContent
+      <ConteudoDaJanelaFlutuante
         align={align}
         side={side}
         sideOffset={8}
@@ -115,19 +115,19 @@ export function SinoDeNotificacoes({ initialUnread, allHref, settingsHref, pushP
                 </button>
               </div>
             ) : (
-              <LoadingRegion label="os avisos">
+              <RegiaoDeCarregamento label="os avisos">
                 <ul className="divide-y divide-linha">
                   {[0, 1, 2].map((i) => (
                     <li key={i} className="flex gap-3 px-4 py-3">
-                      <Skeleton className="size-9 shrink-0 rounded-xl" />
+                      <Esqueleto className="size-9 shrink-0 rounded-xl" />
                       <span className="flex-1 space-y-2 pt-1">
-                        <Skeleton className="h-3 w-2/5 rounded" />
-                        <Skeleton className="h-3 w-4/5 rounded" />
+                        <Esqueleto className="h-3 w-2/5 rounded" />
+                        <Esqueleto className="h-3 w-4/5 rounded" />
                       </span>
                     </li>
                   ))}
                 </ul>
-              </LoadingRegion>
+              </RegiaoDeCarregamento>
             )
           ) : (
             <>
@@ -203,7 +203,7 @@ export function SinoDeNotificacoes({ initialUnread, allHref, settingsHref, pushP
             <Settings2 aria-hidden="true" className="size-[18px]" />
           </Link>
         </div>
-      </PopoverContent>
-    </Popover>
+      </ConteudoDaJanelaFlutuante>
+    </JanelaFlutuante>
   );
 }

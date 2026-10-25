@@ -23,11 +23,11 @@ import {
   CalendarCheck,
   CalendarX,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
+import { SelecaoNativa } from "@/components/ui/select";
 import { SeletorDeData } from "@/components/ui/date-picker";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Dialogo, ConteudoDoDialogo, DescricaoDoDialogo, TituloDoDialogo } from "@/components/ui/dialog";
 import { conferirDisponibilidadeDoFornecedor, criarPedidoDeOrcamento, type FornecedorPublico } from "@/actions/partner-vendor-actions";
 import { toast } from "sonner";
 import { OPCOES_DE_ORCAMENTO_DO_PEDIDO, interpretarGaleria, interpretarRegioes } from "@/app/(fornecedor)/_lib/vendor-panel";
@@ -85,7 +85,7 @@ function ConferenciaDeDisponibilidade({ vendorId, todayIso }: { vendorId: string
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-2" aria-describedby="disponibilidade-resultado">
       <div className="flex items-start gap-2">
-        <Input
+        <Entrada
           id="disponibilidade-data"
           type="date"
           label="A data está livre?"
@@ -98,9 +98,9 @@ function ConferenciaDeDisponibilidade({ vendorId, todayIso }: { vendorId: string
           }}
           fieldClassName="flex-1"
         />
-        <Button type="submit" variant="outline" loading={isPending} className="h-12 rounded-[12px] px-4">
+        <Botao type="submit" variant="outline" loading={isPending} className="h-12 rounded-[12px] px-4">
           Consultar
-        </Button>
+        </Botao>
       </div>
       <div id="disponibilidade-resultado" role="status" aria-live="polite">
         {result ? (
@@ -537,7 +537,7 @@ export function DetalheDoFornecedorCliente({ vendor, todayIso }: PropriedadesDoD
                   </div>
                 ) : (
                   <form onSubmit={handleSendLead} className="flex flex-col gap-5">
-                    <Input
+                    <Entrada
                       id="lead-nome"
                       name="name"
                       label="Seu nome"
@@ -547,7 +547,7 @@ export function DetalheDoFornecedorCliente({ vendor, todayIso }: PropriedadesDoD
                       placeholder="Ex.: Giovanna"
                       required
                     />
-                    <Input
+                    <Entrada
                       id="lead-telefone"
                       name="phone"
                       label="Seu WhatsApp com DDD"
@@ -566,7 +566,7 @@ export function DetalheDoFornecedorCliente({ vendor, todayIso }: PropriedadesDoD
                       onChange={(e) => setWeddingDate(e.target.value)}
                       placeholder="Escolha a data"
                     />
-                    <Input
+                    <Entrada
                       id="lead-cidade"
                       label="Cidade do casamento"
                       value={leadLocation}
@@ -575,14 +575,14 @@ export function DetalheDoFornecedorCliente({ vendor, todayIso }: PropriedadesDoD
                       maxLength={80}
                       autoComplete="address-level2"
                     />
-                    <NativeSelect id="lead-orcamento" label="Orçamento previsto" optional value={leadBudget} onChange={(e) => setLeadBudget(e.target.value)}>
+                    <SelecaoNativa id="lead-orcamento" label="Orçamento previsto" optional value={leadBudget} onChange={(e) => setLeadBudget(e.target.value)}>
                       <option value=""></option>
                       {OPCOES_DE_ORCAMENTO_DO_PEDIDO.map((option) => (
                         <option key={option} value={option}>
                           {option}
                         </option>
                       ))}
-                    </NativeSelect>
+                    </SelecaoNativa>
 
                     <fieldset className="flex flex-col gap-2">
                       <legend className={cn(classeDoRotulo, "mb-2")}>Como prefere conversar?</legend>
@@ -612,9 +612,9 @@ export function DetalheDoFornecedorCliente({ vendor, todayIso }: PropriedadesDoD
                       </div>
                     </fieldset>
 
-                    <Button type="submit" loading={isPendingLead} className="w-full rounded-[12px] px-6">
+                    <Botao type="submit" loading={isPendingLead} className="w-full rounded-[12px] px-6">
                       Pedir orçamento
-                    </Button>
+                    </Botao>
                     {directWhatsapp ? (
                       <a
                         href={`https://wa.me/${directWhatsapp}`}
@@ -645,10 +645,10 @@ export function DetalheDoFornecedorCliente({ vendor, todayIso }: PropriedadesDoD
       </div>
 
       {/* Fotos ampliadas */}
-      <Dialog open={lightbox >= 0} onOpenChange={(open) => !open && setLightbox(-1)}>
-        <DialogContent className="max-w-[min(960px,calc(100%-1rem))] gap-3 rounded-[16px] bg-papel p-3 sm:max-w-[min(960px,calc(100%-2rem))]">
-          <DialogTitle className="sr-only">Fotos de {vendor.companyName}</DialogTitle>
-          <DialogDescription className="sr-only">Use as setas para ver as outras fotos.</DialogDescription>
+      <Dialogo open={lightbox >= 0} onOpenChange={(open) => !open && setLightbox(-1)}>
+        <ConteudoDoDialogo className="max-w-[min(960px,calc(100%-1rem))] gap-3 rounded-[16px] bg-papel p-3 sm:max-w-[min(960px,calc(100%-2rem))]">
+          <TituloDoDialogo className="sr-only">Fotos de {vendor.companyName}</TituloDoDialogo>
+          <DescricaoDoDialogo className="sr-only">Use as setas para ver as outras fotos.</DescricaoDoDialogo>
           {lightbox >= 0 ? (
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[12px] bg-areia">
               <ImagemDaPessoa src={galleryImages[lightbox]} alt={`Foto ${lightbox + 1} de ${galleryImages.length}`} sizes="960px" className="object-contain" />
@@ -667,8 +667,8 @@ export function DetalheDoFornecedorCliente({ vendor, todayIso }: PropriedadesDoD
               <ChevronRight className="size-4" aria-hidden="true" />
             </button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </ConteudoDoDialogo>
+      </Dialogo>
 
       <RodapeDaLanding />
     </div>

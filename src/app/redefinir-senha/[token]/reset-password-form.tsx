@@ -6,7 +6,7 @@ import { ArrowRight, CheckCircle2, Eye, EyeOff, Lock } from "lucide-react";
 import { redefinirSenha } from "@/actions/password-reset-actions";
 import { TituloDoMolde } from "@/components/account/auth-shell";
 import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
@@ -110,10 +110,10 @@ export function FormularioDeRedefinicaoDeSenha({ token }: { token: string }) {
             ) : null}
           </AvisoDoFormulario>
         ) : null}
-        <Button type="submit" loading={isPending} className="h-12 w-full rounded-[12px] px-6">
+        <Botao type="submit" loading={isPending} className="h-12 w-full rounded-[12px] px-6">
           Salvar nova senha
           <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
-        </Button>
+        </Botao>
       </form>
     </section>
   );

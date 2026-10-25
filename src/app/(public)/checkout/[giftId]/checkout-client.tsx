@@ -5,13 +5,13 @@ import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { ArrowRight, Check, Copy, Gift as GiftIcon, Heart, Hourglass, Lock } from "lucide-react";
 import { criarTransacaoPix, conferirSituacaoDaTransacao, processarPagamentoComCartao } from "@/actions/payment-actions";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
-import { NativeSelect } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SelecaoNativa } from "@/components/ui/select";
+import { Esqueleto } from "@/components/ui/skeleton";
 import { MolduraDoQr } from "@/components/ui/qr-frame";
 import { CORES_DO_QR } from "@/lib/qr-colors";
-import { Textarea } from "@/components/ui/textarea";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { mascararTelefone } from "@/lib/formatacao/telefone";
 import { finalDoTelefone } from "@/lib/saved-guest";
 import { useConvidadoSalvo } from "@/lib/use-saved-guest";
@@ -422,7 +422,7 @@ export function PagamentoCliente({ gift, coupleNames, slug, cardEnabled = true, 
               </Campo>
 
               {/* Parcelas (máx. 12x) */}
-              <NativeSelect
+              <SelecaoNativa
                 id="cartao-parcelas"
                 label="Parcelas"
                 fieldClassName="col-span-2"
@@ -437,7 +437,7 @@ export function PagamentoCliente({ gift, coupleNames, slug, cardEnabled = true, 
                     </option>
                   );
                 })}
-              </NativeSelect>
+              </SelecaoNativa>
             </div>
           )}
 
@@ -486,9 +486,9 @@ export function PagamentoCliente({ gift, coupleNames, slug, cardEnabled = true, 
           {error ? <AvisoDoFormulario>{error}</AvisoDoFormulario> : null}
 
           <div className="flex flex-col gap-2">
-            <Button type="button" onClick={handleProcessPayment} loading={isPending} className="h-12 w-full rounded-[12px] px-6">
+            <Botao type="button" onClick={handleProcessPayment} loading={isPending} className="h-12 w-full rounded-[12px] px-6">
               {method === "PIX" ? "Gerar Pix" : "Pagar com cartão"}
-            </Button>
+            </Botao>
             <button type="button" onClick={() => setStep("IDENTIFICATION")} className={cn(estiloDoBotao.quiet, estiloDoBotao.block)}>
               Voltar
             </button>
@@ -518,7 +518,7 @@ export function PagamentoCliente({ gift, coupleNames, slug, cardEnabled = true, 
             {pixPayload === "" ? <span role="status" className="sr-only">Gerando o código do Pix...</span> : null}
             <MolduraDoQr className="p-3">
               {pixPayload === "" ? (
-                <Skeleton className="size-[200px] rounded-lg" />
+                <Esqueleto className="size-[200px] rounded-lg" />
               ) : (
                 <QRCodeSVG value={pixPayload} size={200} {...CORES_DO_QR} marginSize={2} role="img" aria-label="QR Code do Pix" />
               )}
@@ -527,7 +527,7 @@ export function PagamentoCliente({ gift, coupleNames, slug, cardEnabled = true, 
               No celular, copie o código e cole no app do seu banco, na opção Pix copia e cola. No computador, escaneie o QR Code com o celular.
             </p>
             {pixPayload === "" ? (
-              <Skeleton className="h-[62px] w-full rounded-[12px] sm:h-[54px]" />
+              <Esqueleto className="h-[62px] w-full rounded-[12px] sm:h-[54px]" />
             ) : (
               <div className="flex w-full items-center gap-2 rounded-[12px] border border-linha-forte py-2 pl-3 pr-2">
                 <code className="min-w-0 flex-1 truncate text-left font-mono text-sm">{pixPayload}</code>
@@ -547,7 +547,7 @@ export function PagamentoCliente({ gift, coupleNames, slug, cardEnabled = true, 
             </p>
 
             {copyFailed && (
-              <Textarea
+              <AreaDeTexto
                 id="checkout-pix-codigo"
                 label="Código Pix"
                 hint="Não deu para copiar sozinho. Selecione o código e copie."
@@ -563,8 +563,8 @@ export function PagamentoCliente({ gift, coupleNames, slug, cardEnabled = true, 
 
           {pixPayload === "" ? (
             <div aria-hidden="true" className="flex flex-col gap-2">
-              <Skeleton className="h-4 w-full rounded-md" />
-              <Skeleton className="h-4 w-2/3 rounded-md" />
+              <Esqueleto className="h-4 w-full rounded-md" />
+              <Esqueleto className="h-4 w-2/3 rounded-md" />
             </div>
           ) : staticPix ? (
             <div className="flex flex-col gap-3 rounded-[16px] border border-linha bg-areia p-4 text-sm text-tinta">
@@ -601,7 +601,7 @@ export function PagamentoCliente({ gift, coupleNames, slug, cardEnabled = true, 
       {/* PASSO 3: CARTÃO EM ANÁLISE */}
       {step === "PAYMENT" && method === "CREDIT_CARD" && (
         <div className="step-in flex flex-col items-center gap-4 rounded-[16px] border border-linha bg-papel px-6 py-10 text-center shadow-[var(--shadow-aceito-1)]">
-          <Skeleton className="h-2 w-40 rounded-full" />
+          <Esqueleto className="h-2 w-40 rounded-full" />
           <h2 ref={headingRef} tabIndex={-1} className={heading}>
             Pagamento em análise
           </h2>

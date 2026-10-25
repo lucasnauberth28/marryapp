@@ -4,8 +4,8 @@ import { useTransition } from "react";
 import { Mail, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { atualizarSituacaoDoPedido } from "@/actions/vendor-panel-actions";
-import { Button } from "@/components/ui/button";
-import { NativeSelect } from "@/components/ui/select";
+import { Botao } from "@/components/ui/button";
+import { SelecaoNativa } from "@/components/ui/select";
 import { PROXIMO_PASSO_DO_PEDIDO, ROTULO_DA_SITUACAO_DO_PEDIDO, SITUACOES_DO_PEDIDO, type SituacaoDoPedido } from "../_lib/vendor-panel";
 
 const estiloBaseDoBotao =
@@ -62,12 +62,12 @@ export function AcoesDoPedido({
       ) : null}
 
       {next ? (
-        <Button type="button" variant="outline" loading={isPending} onClick={() => changeStatus(next.status)}>
+        <Botao type="button" variant="outline" loading={isPending} onClick={() => changeStatus(next.status)}>
           {next.label}
-        </Button>
+        </Botao>
       ) : null}
 
-      <NativeSelect
+      <SelecaoNativa
         label="Status"
         size="sm"
         aria-label={`Alterar status do pedido de ${coupleName}`}
@@ -81,7 +81,7 @@ export function AcoesDoPedido({
             {ROTULO_DA_SITUACAO_DO_PEDIDO[s]}
           </option>
         ))}
-      </NativeSelect>
+      </SelecaoNativa>
     </div>
   );
 }

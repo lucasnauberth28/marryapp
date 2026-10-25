@@ -5,10 +5,10 @@ import Link from "next/link";
 import { CheckCircle2, Clock, KeyRound, Landmark, Lock, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { confirmarContaDeRepasse, removerContaDeRepasse, salvarContaDeRepasse, type RespostaDoRepasse } from "@/actions/payout-actions";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select";
+import { Botao } from "@/components/ui/button";
+import { Cartao, ConteudoDoCartao, DescricaoDoCartao, CabecalhoDoCartao, TituloDoCartao } from "@/components/ui/card";
+import { Entrada } from "@/components/ui/input";
+import { SelecaoNativa } from "@/components/ui/select";
 import { ROTULO_DO_TIPO_DE_CONTA_BANCARIA, TIPOS_DE_CONTA_BANCARIA, ROTULO_DO_TIPO_DE_CHAVE_PIX, TIPOS_DE_CHAVE_PIX, type TipoDeContaBancaria, type TipoDeChavePix } from "@/lib/payout-input";
 import { cn } from "@/lib/utils";
 
@@ -66,14 +66,14 @@ export function RecebimentoCliente({ account: initial, blockedReason, registrati
 
   return (
     <>
-      <Card className="gap-3">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Cartao className="gap-3">
+        <CabecalhoDoCartao>
+          <TituloDoCartao className="flex items-center gap-2">
             <ShieldCheck className="size-5 text-ameixa" aria-hidden="true" />
             Como funciona
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3 text-base leading-6 text-tinta">
+          </TituloDoCartao>
+        </CabecalhoDoCartao>
+        <ConteudoDoCartao className="flex flex-col gap-3 text-base leading-6 text-tinta">
           <p>
             Os presentes pagos pelo site chegam ao Aceito e depois são repassados para este destino. O Aceito retém {feeLabel} quando for o caso. O prazo e a
             forma do repasse serão informados antes de o recurso ser ativado.
@@ -84,8 +84,8 @@ export function RecebimentoCliente({ account: initial, blockedReason, registrati
             Os dados ficam criptografados. Depois de salvos, mostramos só uma parte (por exemplo, o final da conta), e para cadastrar, trocar ou remover pedimos sua
             senha.
           </p>
-        </CardContent>
-      </Card>
+        </ConteudoDoCartao>
+      </Cartao>
 
       {readOnly && (
         <p role="status" className="rounded-2xl border border-aviso/40 bg-aviso-suave px-4 py-3.5 text-sm leading-5 text-tinta">
@@ -94,12 +94,12 @@ export function RecebimentoCliente({ account: initial, blockedReason, registrati
       )}
 
       {account && mode !== "form" && (
-        <Card className="gap-4">
-          <CardHeader>
-            <CardTitle>Destino cadastrado</CardTitle>
-            <CardDescription>Atualizado em {formatoDaData.format(new Date(account.updatedAt))}.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-5">
+        <Cartao className="gap-4">
+          <CabecalhoDoCartao>
+            <TituloDoCartao>Destino cadastrado</TituloDoCartao>
+            <DescricaoDoCartao>Atualizado em {formatoDaData.format(new Date(account.updatedAt))}.</DescricaoDoCartao>
+          </CabecalhoDoCartao>
+          <ConteudoDoCartao className="flex flex-col gap-5">
             <dl className="grid gap-4 sm:grid-cols-2">
               <InformacaoEmDestaque label={account.type === "PIX_KEY" ? "Chave Pix" : "Conta bancária"}>
                 <span className="inline-flex items-center gap-2">
@@ -128,13 +128,13 @@ export function RecebimentoCliente({ account: initial, blockedReason, registrati
 
             {mode === "view" && !readOnly && (
               <div className="flex flex-wrap gap-2">
-                {!account.verifiedAt && <Button onClick={() => setMode("confirm")}>Confirmar que está certo</Button>}
-                <Button variant={account.verifiedAt ? "default" : "outline"} onClick={() => setMode("form")} disabled={!registrationAvailable}>
+                {!account.verifiedAt && <Botao onClick={() => setMode("confirm")}>Confirmar que está certo</Botao>}
+                <Botao variant={account.verifiedAt ? "default" : "outline"} onClick={() => setMode("form")} disabled={!registrationAvailable}>
                   Trocar os dados
-                </Button>
-                <Button variant="quiet" onClick={() => setMode("remove")}>
+                </Botao>
+                <Botao variant="quiet" onClick={() => setMode("remove")}>
                   Remover
-                </Button>
+                </Botao>
               </div>
             )}
 
@@ -161,38 +161,38 @@ export function RecebimentoCliente({ account: initial, blockedReason, registrati
                 onDone={(res) => applyResult(res, "Dados de recebimento removidos.")}
               />
             )}
-          </CardContent>
-        </Card>
+          </ConteudoDoCartao>
+        </Cartao>
       )}
 
       {!account && !readOnly && mode === "view" && (
-        <Card className="gap-4">
-          <CardHeader>
-            <CardTitle>Nenhum destino cadastrado</CardTitle>
-            <CardDescription>Cadastre uma chave Pix ou uma conta em nome de uma pessoa ou empresa do casal.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
+        <Cartao className="gap-4">
+          <CabecalhoDoCartao>
+            <TituloDoCartao>Nenhum destino cadastrado</TituloDoCartao>
+            <DescricaoDoCartao>Cadastre uma chave Pix ou uma conta em nome de uma pessoa ou empresa do casal.</DescricaoDoCartao>
+          </CabecalhoDoCartao>
+          <ConteudoDoCartao className="flex flex-col gap-3">
             {!registrationAvailable && (
               <p role="status" className="rounded-xl border border-aviso/40 bg-aviso-suave px-4 py-3 text-sm leading-5 text-tinta">
                 O cadastro ainda não foi liberado. A equipe do Aceito está terminando a configuração de segurança; volte em breve.
               </p>
             )}
             <div>
-              <Button onClick={() => setMode("form")} disabled={!registrationAvailable}>
+              <Botao onClick={() => setMode("form")} disabled={!registrationAvailable}>
                 Cadastrar onde receber
-              </Button>
+              </Botao>
             </div>
-          </CardContent>
-        </Card>
+          </ConteudoDoCartao>
+        </Cartao>
       )}
 
       {!account && readOnly && (
-        <Card className="gap-2">
-          <CardHeader>
-            <CardTitle>Nenhum destino cadastrado</CardTitle>
-            <CardDescription>O casal ainda não informou onde receber os presentes.</CardDescription>
-          </CardHeader>
-        </Card>
+        <Cartao className="gap-2">
+          <CabecalhoDoCartao>
+            <TituloDoCartao>Nenhum destino cadastrado</TituloDoCartao>
+            <DescricaoDoCartao>O casal ainda não informou onde receber os presentes.</DescricaoDoCartao>
+          </CabecalhoDoCartao>
+        </Cartao>
       )}
 
       {mode === "form" && !readOnly && (
@@ -258,7 +258,7 @@ function EtapaDaSenha({
         <h2 className="text-lg font-semibold leading-6 text-tinta">{title}</h2>
         <p className="mt-1 text-sm leading-5 text-tinta-suave">{help}</p>
       </div>
-      <Input
+      <Entrada
         id={`${uid}-senha`}
         label="Sua senha do Aceito"
         type="password"
@@ -269,12 +269,12 @@ function EtapaDaSenha({
         fieldClassName="sm:max-w-[360px]"
       />
       <div className="flex flex-wrap gap-2">
-        <Button type="submit" variant={danger ? "danger" : "default"} loading={pending} disabled={password.length === 0}>
+        <Botao type="submit" variant={danger ? "danger" : "default"} loading={pending} disabled={password.length === 0}>
           {submitLabel}
-        </Button>
-        <Button type="button" variant="ghost" onClick={onCancel} disabled={pending}>
+        </Botao>
+        <Botao type="button" variant="ghost" onClick={onCancel} disabled={pending}>
           Cancelar
-        </Button>
+        </Botao>
       </div>
     </form>
   );
@@ -338,16 +338,16 @@ function FormularioDeRepasse({ replacing, onCancel, onSaved }: { replacing: bool
   );
 
   return (
-    <Card className="gap-4">
-      <CardHeader>
-        <CardTitle>{replacing ? "Trocar os dados de recebimento" : "Cadastrar onde receber"}</CardTitle>
-        <CardDescription>
+    <Cartao className="gap-4">
+      <CabecalhoDoCartao>
+        <TituloDoCartao>{replacing ? "Trocar os dados de recebimento" : "Cadastrar onde receber"}</TituloDoCartao>
+        <DescricaoDoCartao>
           {replacing
             ? "Os dados novos substituem os atuais, e as pessoas do casamento recebem um aviso. Por segurança, não mostramos o que está salvo."
             : "Use uma chave Pix ou uma conta que esteja no nome de quem vai receber."}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </DescricaoDoCartao>
+      </CabecalhoDoCartao>
+      <ConteudoDoCartao>
         <form onSubmit={submit} className="flex flex-col gap-6" autoComplete="off">
           <fieldset className="min-w-0">
             <legend className="mb-2 text-sm font-semibold leading-5 text-tinta-suave">Como vocês querem receber</legend>
@@ -358,8 +358,8 @@ function FormularioDeRepasse({ replacing, onCancel, onSaved }: { replacing: bool
           </fieldset>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input id={`${uid}-nome`} label="Nome completo do titular" autoComplete="off" value={holderName} onChange={(e) => setHolderName(e.target.value)} maxLength={120} required />
-            <Input
+            <Entrada id={`${uid}-nome`} label="Nome completo do titular" autoComplete="off" value={holderName} onChange={(e) => setHolderName(e.target.value)} maxLength={120} required />
+            <Entrada
               id={`${uid}-doc`}
               label="CPF ou CNPJ do titular"
               autoComplete="off"
@@ -374,14 +374,14 @@ function FormularioDeRepasse({ replacing, onCancel, onSaved }: { replacing: bool
 
           {kind === "PIX_KEY" ? (
             <div className="grid gap-4 sm:grid-cols-2">
-              <NativeSelect id={`${uid}-tipochave`} label="Tipo da chave" value={pixKeyType} onChange={(e) => setPixKeyType(e.target.value as TipoDeChavePix)}>
+              <SelecaoNativa id={`${uid}-tipochave`} label="Tipo da chave" value={pixKeyType} onChange={(e) => setPixKeyType(e.target.value as TipoDeChavePix)}>
                 {TIPOS_DE_CHAVE_PIX.map((t) => (
                   <option key={t} value={t}>
                     {ROTULO_DO_TIPO_DE_CHAVE_PIX[t]}
                   </option>
                 ))}
-              </NativeSelect>
-              <Input
+              </SelecaoNativa>
+              <Entrada
                 id={`${uid}-chave`}
                 label="Chave Pix"
                 autoComplete="off"
@@ -396,17 +396,17 @@ function FormularioDeRepasse({ replacing, onCancel, onSaved }: { replacing: bool
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              <Input id={`${uid}-banco`} label="Código do banco" inputMode="numeric" autoComplete="off" value={bankCode} onChange={(e) => setBankCode(somenteDigitos(e.target.value).slice(0, 3))} required hint="3 números, como 260 ou 001." />
-              <Input id={`${uid}-agencia`} label="Agência" inputMode="numeric" autoComplete="off" value={agency} onChange={(e) => setAgency(somenteDigitos(e.target.value).slice(0, 5))} required hint="Sem o dígito." />
-              <Input id={`${uid}-conta`} label="Conta" inputMode="numeric" autoComplete="off" value={account} onChange={(e) => setAccount(somenteDigitos(e.target.value).slice(0, 12))} required hint="Sem o dígito." />
-              <Input id={`${uid}-digito`} label="Dígito da conta" autoComplete="off" value={accountDigit} onChange={(e) => setAccountDigit(e.target.value.slice(0, 2))} optional />
-              <NativeSelect id={`${uid}-tipoconta`} label="Tipo da conta" value={accountKind} onChange={(e) => setAccountKind(e.target.value as TipoDeContaBancaria)}>
+              <Entrada id={`${uid}-banco`} label="Código do banco" inputMode="numeric" autoComplete="off" value={bankCode} onChange={(e) => setBankCode(somenteDigitos(e.target.value).slice(0, 3))} required hint="3 números, como 260 ou 001." />
+              <Entrada id={`${uid}-agencia`} label="Agência" inputMode="numeric" autoComplete="off" value={agency} onChange={(e) => setAgency(somenteDigitos(e.target.value).slice(0, 5))} required hint="Sem o dígito." />
+              <Entrada id={`${uid}-conta`} label="Conta" inputMode="numeric" autoComplete="off" value={account} onChange={(e) => setAccount(somenteDigitos(e.target.value).slice(0, 12))} required hint="Sem o dígito." />
+              <Entrada id={`${uid}-digito`} label="Dígito da conta" autoComplete="off" value={accountDigit} onChange={(e) => setAccountDigit(e.target.value.slice(0, 2))} optional />
+              <SelecaoNativa id={`${uid}-tipoconta`} label="Tipo da conta" value={accountKind} onChange={(e) => setAccountKind(e.target.value as TipoDeContaBancaria)}>
                 {TIPOS_DE_CONTA_BANCARIA.map((t) => (
                   <option key={t} value={t}>
                     {ROTULO_DO_TIPO_DE_CONTA_BANCARIA[t]}
                   </option>
                 ))}
-              </NativeSelect>
+              </SelecaoNativa>
             </div>
           )}
 
@@ -415,7 +415,7 @@ function FormularioDeRepasse({ replacing, onCancel, onSaved }: { replacing: bool
               <Lock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
               Para proteger o dinheiro de vocês, confirme com a sua senha do Aceito.
             </p>
-            <Input
+            <Entrada
               id={`${uid}-senha`}
               label="Sua senha do Aceito"
               type="password"
@@ -434,15 +434,15 @@ function FormularioDeRepasse({ replacing, onCancel, onSaved }: { replacing: bool
           )}
 
           <div className="flex flex-wrap gap-2">
-            <Button type="submit" loading={pending}>
+            <Botao type="submit" loading={pending}>
               {replacing ? "Salvar os novos dados" : "Salvar"}
-            </Button>
-            <Button type="button" variant="ghost" onClick={onCancel} disabled={pending}>
+            </Botao>
+            <Botao type="button" variant="ghost" onClick={onCancel} disabled={pending}>
               Cancelar
-            </Button>
+            </Botao>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </ConteudoDoCartao>
+    </Cartao>
   );
 }

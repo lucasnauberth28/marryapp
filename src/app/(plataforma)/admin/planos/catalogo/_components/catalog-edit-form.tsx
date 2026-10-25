@@ -7,9 +7,9 @@ import { Info } from "lucide-react";
 import { toast } from "sonner";
 import { salvarPrecoDoCatalogo } from "@/actions/admin-planos-actions";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 
@@ -65,8 +65,8 @@ export function FormularioDeEdicaoDoCatalogo({
       }}
     >
       <h2 className="text-xl font-semibold leading-7 text-tinta">Editar {title}</h2>
-      <Input label="Nome" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} required />
-      <Input
+      <Entrada label="Nome" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} required />
+      <Entrada
         label="Preço (R$)"
         inputMode="decimal"
         value={price}
@@ -76,7 +76,7 @@ export function FormularioDeEdicaoDoCatalogo({
         error={!free && price && !Number.isFinite(cents) ? "Use o formato 159,00." : undefined}
         required
       />
-      <Textarea label="Motivo da mudança" rows={3} maxLength={300} value={reason} onChange={(e) => setReason(e.target.value)} hint="Aparece no registro de atividades." required />
+      <AreaDeTexto label="Motivo da mudança" rows={3} maxLength={300} value={reason} onChange={(e) => setReason(e.target.value)} hint="Aparece no registro de atividades." required />
       <p className="flex items-start gap-2 rounded-xl bg-areia p-3 text-sm text-tinta">
         <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
         <span>O novo preço vale só para compras novas. Quem já pagou mantém o valor e os recursos. Quem já gerou um Pix também paga o valor que viu.</span>
@@ -93,9 +93,9 @@ export function FormularioDeEdicaoDoCatalogo({
         </p>
       ) : null}
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={reason.trim().length < 5 || (!free && !Number.isFinite(cents)) || (big && !confirmBig)} loading={pending}>
+        <Botao type="submit" disabled={reason.trim().length < 5 || (!free && !Number.isFinite(cents)) || (big && !confirmBig)} loading={pending}>
           Salvar preço
-        </Button>
+        </Botao>
         <Link href="/admin/planos/catalogo" scroll={false} className={cn(estiloDoBotao.quiet)}>
           Descartar
         </Link>

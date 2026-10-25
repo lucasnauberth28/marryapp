@@ -7,11 +7,11 @@ import { toast } from "sonner";
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { SituacaoDaDespesa } from "@/types/local";
 import { criarDespesa, criarDespesasEmLote, excluirDespesa, atualizarSituacaoDaDespesa } from "@/actions/expense-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
 import { SeletorDeData } from "@/components/ui/date-picker";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabela, CorpoDaTabela, CelulaDaTabela, TituloDaColunaDaTabela, CabecalhoDaTabela, LinhaDaTabela } from "@/components/ui/table";
+import { Selecao, ConteudoDaSelecao, ItemDaSelecao, GatilhoDaSelecao, ValorDaSelecao } from "@/components/ui/select";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { Etiqueta } from "@/components/casal/ui";
@@ -42,7 +42,7 @@ import {
   Check,
   ExternalLink,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialogo, ConteudoDoDialogo, CabecalhoDoDialogo, TituloDoDialogo, GatilhoDoDialogo } from "@/components/ui/dialog";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 interface BlocoDeParcelas {
@@ -562,28 +562,28 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
         </div>
 
         {/* Modal de Cadastro STEP-BY-STEP */}
-        <Dialog open={open} onOpenChange={(isOpen) => {
+        <Dialogo open={open} onOpenChange={(isOpen) => {
           setOpen(isOpen);
           if (!isOpen) resetForm();
         }}>
-          <DialogTrigger asChild>
+          <GatilhoDoDialogo asChild>
             <button type="button" className={estiloDoBotao.primary}>
               <Plus className="size-4" aria-hidden="true" /> Nova despesa
             </button>
-          </DialogTrigger>
-          <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-3xl w-full max-h-[88vh] overflow-y-auto p-6 sm:p-7">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-base">
+          </GatilhoDoDialogo>
+          <ConteudoDoDialogo className="max-w-[calc(100%-2rem)] sm:max-w-3xl w-full max-h-[88vh] overflow-y-auto p-6 sm:p-7">
+            <CabecalhoDoDialogo>
+              <TituloDoDialogo className="flex items-center gap-2 text-base">
                 <CalendarRange className="w-5 h-5 text-brand" />
                 Cadastrar despesa ou compra
-              </DialogTitle>
+              </TituloDoDialogo>
               {/* Progresso dos Passos */}
               <div className="flex items-center gap-2 pt-2">
                 <div className={`flex-1 h-1.5 rounded-full ${step >= 1 ? "bg-brand" : "bg-linha"}`} />
                 <div className={`flex-1 h-1.5 rounded-full ${step >= 2 ? "bg-brand" : "bg-linha"}`} />
                 <div className={`flex-1 h-1.5 rounded-full ${step >= 3 ? "bg-brand" : "bg-linha"}`} />
               </div>
-            </DialogHeader>
+            </CabecalhoDoDialogo>
 
             <form key={formKey} onSubmit={handleCreate} className="space-y-4 mt-2">
               {/* PASSO 1: TIPO DA DESPESA */}
@@ -642,13 +642,13 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                     </div>
                   </div>
 
-                  <Button
+                  <Botao
                     type="button"
                     onClick={() => setStep(2)}
                     className={`${estiloDoBotao.primary} ${estiloDoBotao.block} mt-4`}
                   >
                     Próximo: detalhes e origem <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
+                  </Botao>
                 </div>
               )}
 
@@ -659,13 +659,13 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                     <span className="text-sm font-semibold text-tinta">
                       Passo 2 de 3: {expenseType === "CONTRACT" ? "detalhes do contrato" : "detalhes da compra"}
                     </span>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => setStep(1)} className="text-xs text-tinta-suave">
+                    <Botao type="button" variant="ghost" size="sm" onClick={() => setStep(1)} className="text-xs text-tinta-suave">
                       Voltar ao tipo
-                    </Button>
+                    </Botao>
                   </div>
 
                   {/* Descrição Principal */}
-                  <Input
+                  <Entrada
                     label="Descrição da despesa"
                     placeholder={expenseType === "CONTRACT" ? "Ex: Sinal do Buffet ou Contrato de Fotos" : "Ex: Lembrancinhas para Padrinhos"}
                     value={description}
@@ -675,26 +675,26 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
 
                   {/* Fornecedor (Contrato) vs Loja/Link (Compra) */}
                   {expenseType === "CONTRACT" ? (
-                    <Select value={vendorId} onValueChange={setVendorId}>
-                      <SelectTrigger label="Fornecedor">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
+                    <Selecao value={vendorId} onValueChange={setVendorId}>
+                      <GatilhoDaSelecao label="Fornecedor">
+                        <ValorDaSelecao />
+                      </GatilhoDaSelecao>
+                      <ConteudoDaSelecao>
                         {vendors.map(v => (
-                          <SelectItem key={v.id} value={v.id}>{v.name} ({v.category})</SelectItem>
+                          <ItemDaSelecao key={v.id} value={v.id}>{v.name} ({v.category})</ItemDaSelecao>
                         ))}
-                      </SelectContent>
-                    </Select>
+                      </ConteudoDaSelecao>
+                    </Selecao>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <Input
+                      <Entrada
                         label="Loja ou local"
                         optional
                         placeholder="Ex: Shopee, Mercado Livre, Loja X"
                         value={storeName}
                         onChange={(e) => setStoreName(e.target.value)}
                       />
-                      <Input
+                      <Entrada
                         label="Link da compra ou do produto"
                         placeholder="https://shopee.com.br/produto..."
                         value={purchaseUrl}
@@ -747,7 +747,7 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                         <div className="flex items-center gap-3">
                           <img src={imageBase64} alt="Preview" className="w-10 h-10 object-cover rounded-lg border border-linha" />
                           <span className="text-xs font-medium text-tinta truncate max-w-[200px]">{imageFileName}</span>
-                          <Button type="button" variant="ghost" size="sm" onClick={() => setImageBase64("")} className="text-xs text-perigo h-6 px-2">Remover</Button>
+                          <Botao type="button" variant="ghost" size="sm" onClick={() => setImageBase64("")} className="text-xs text-perigo h-6 px-2">Remover</Botao>
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 text-tinta-suave text-xs py-1">
@@ -759,10 +759,10 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                   </div>
 
                   <div className="flex gap-2 pt-2">
-                    <Button type="button" variant="outline" onClick={() => setStep(1)} className="w-1/3">
+                    <Botao type="button" variant="outline" onClick={() => setStep(1)} className="w-1/3">
                       Voltar
-                    </Button>
-                    <Button
+                    </Botao>
+                    <Botao
                       type="button"
                       onClick={() => {
                         if (!description.trim()) {
@@ -778,7 +778,7 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                       className={`${estiloDoBotao.primary} w-2/3`}
                     >
                       Próximo: condição de pagamento <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
+                    </Botao>
                   </div>
                 </div>
               )}
@@ -790,14 +790,14 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                     <span className="text-sm font-semibold text-tinta">
                       Passo 3 de 3: condição de pagamento
                     </span>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => setStep(2)} className="text-xs text-tinta-suave">
+                    <Botao type="button" variant="ghost" size="sm" onClick={() => setStep(2)} className="text-xs text-tinta-suave">
                       Voltar aos detalhes
-                    </Button>
+                    </Botao>
                   </div>
 
                   {/* Seletor de Modo: Única vs Parcelada */}
                   <div className="flex bg-areia p-1 rounded-lg border border-linha">
-                    <Button
+                    <Botao
                       type="button"
                       variant={mode === "single" ? "default" : "ghost"}
                       size="sm"
@@ -805,8 +805,8 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                       className={`flex-1 h-8 text-xs font-semibold rounded-md ${mode === "single" ? "shadow-sm" : ""}`}
                     >
                       Pagamento único
-                    </Button>
-                    <Button
+                    </Botao>
+                    <Botao
                       type="button"
                       variant={mode === "installment" ? "default" : "ghost"}
                       size="sm"
@@ -814,12 +814,12 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                       className={`flex-1 h-8 text-xs font-semibold rounded-md ${mode === "installment" ? "shadow-sm" : ""}`}
                     >
                       Parcelado
-                    </Button>
+                    </Botao>
                   </div>
 
                   {mode === "single" ? (
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                      <Input
+                      <Entrada
                         label="Valor"
                         prefix="R$"
                         placeholder="Ex: 350.00"
@@ -845,9 +845,9 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                             <Layers className="w-3.5 h-3.5 text-brand" />
                             Blocos de parcelas
                           </span>
-                          <Button type="button" variant="outline" size="sm" onClick={addBlock} className="text-xs h-7">
+                          <Botao type="button" variant="outline" size="sm" onClick={addBlock} className="text-xs h-7">
                             + Adicionar bloco
-                          </Button>
+                          </Botao>
                         </div>
 
                         {blocks.map((block, idx) => (
@@ -866,7 +866,7 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                             </div>
 
                             <div className="grid grid-cols-1 gap-5 pt-1 sm:grid-cols-3 sm:gap-3">
-                              <Input
+                              <Entrada
                                 label="Número de parcelas"
                                 type="number"
                                 min={1}
@@ -875,7 +875,7 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                                 onChange={(e) => updateBlock(block.id, "count", Number(e.target.value))}
                                 placeholder="Ex: 3"
                               />
-                              <Input
+                              <Entrada
                                 label="Valor da parcela"
                                 prefix="R$"
                                 type="number"
@@ -923,18 +923,18 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                   )}
 
                   <div className="flex gap-2 pt-2">
-                    <Button type="button" variant="outline" onClick={() => setStep(2)} className="w-1/3">
+                    <Botao type="button" variant="outline" onClick={() => setStep(2)} className="w-1/3">
                       Voltar
-                    </Button>
-                    <Button type="submit" className={`${estiloDoBotao.primary} w-2/3`} loading={loading}>
+                    </Botao>
+                    <Botao type="submit" className={`${estiloDoBotao.primary} w-2/3`} loading={loading}>
                       {mode === "single" ? "Cadastrar despesa" : `Gerar ${generatedInstallments.length} Parcelas`}
-                    </Button>
+                    </Botao>
                   </div>
                 </div>
               )}
             </form>
-          </DialogContent>
-        </Dialog>
+          </ConteudoDoDialogo>
+        </Dialogo>
       </div>
 
       {/* CONTEÚDO PRINCIPAL: VISÃO AGRUPADA OU DETALHADA */}
@@ -942,7 +942,7 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
         <div className="space-y-4">
           {/* Busca na visão agrupada */}
           <div className="relative max-w-xs">
-            <Input
+            <Entrada
               placeholder="Buscar por descrição ou loja..."
               value={groupedSearch}
               onChange={(e) => {
@@ -1057,7 +1057,7 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
 
                         {/* Atalho de Quitar a próxima Parcela */}
                         {!isFullyPaid && group.nextDueExpenseId && (
-                          <Button
+                          <Botao
                             size="sm"
                             onClick={() => handleToggleStatus(group.nextDueExpenseId!, "PENDING")}
                             loading={!!toggling[group.nextDueExpenseId]}
@@ -1066,11 +1066,11 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                           >
                             <CheckCircle className="w-3.5 h-3.5 mr-1" />
                             Quitar a próxima
-                          </Button>
+                          </Botao>
                         )}
 
                         {/* Botão de Expansão (Sanfona) */}
-                        <Button
+                        <Botao
                           variant="outline"
                           size="sm"
                           onClick={() => toggleGroupExpand(group.id)}
@@ -1085,7 +1085,7 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                               <ChevronDown className="w-4 h-4 mr-1 text-tinta-suave" /> Parcelas ({group.totalCount})
                             </>
                           )}
-                        </Button>
+                        </Botao>
                       </div>
                     </div>
 
@@ -1093,35 +1093,35 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                     {isExpanded && (
                       <div className="border-t border-areia bg-linho/50 p-4 animate-in slide-in-from-top-2 duration-200">
                         <div className="bg-papel rounded-lg border border-linha/80 overflow-hidden shadow-2xs">
-                          <Table>
-                            <TableHeader className="bg-linho/80">
-                              <TableRow className="text-xs">
-                                <TableHead className="py-2.5">Vencimento</TableHead>
-                                <TableHead className="py-2.5">Descrição</TableHead>
-                                <TableHead className="py-2.5">Meio de pagamento</TableHead>
-                                <TableHead className="py-2.5">Valor</TableHead>
-                                <TableHead className="py-2.5">Status</TableHead>
-                                <TableHead className="py-2.5 text-right">Ação</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
+                          <Tabela>
+                            <CabecalhoDaTabela className="bg-linho/80">
+                              <LinhaDaTabela className="text-xs">
+                                <TituloDaColunaDaTabela className="py-2.5">Vencimento</TituloDaColunaDaTabela>
+                                <TituloDaColunaDaTabela className="py-2.5">Descrição</TituloDaColunaDaTabela>
+                                <TituloDaColunaDaTabela className="py-2.5">Meio de pagamento</TituloDaColunaDaTabela>
+                                <TituloDaColunaDaTabela className="py-2.5">Valor</TituloDaColunaDaTabela>
+                                <TituloDaColunaDaTabela className="py-2.5">Status</TituloDaColunaDaTabela>
+                                <TituloDaColunaDaTabela className="py-2.5 text-right">Ação</TituloDaColunaDaTabela>
+                              </LinhaDaTabela>
+                            </CabecalhoDaTabela>
+                            <CorpoDaTabela>
                               {group.expenses.map((expense) => {
                                 const isPaid = expense.status === "PAID";
                                 return (
-                                  <TableRow key={expense.id} className={isPaid ? "bg-linho/50" : ""}>
-                                    <TableCell className={`text-xs ${isPaid ? "text-tinta-suave" : "font-medium text-tinta"}`}>
+                                  <LinhaDaTabela key={expense.id} className={isPaid ? "bg-linho/50" : ""}>
+                                    <CelulaDaTabela className={`text-xs ${isPaid ? "text-tinta-suave" : "font-medium text-tinta"}`}>
                                       {new Date(expense.dueDate).toLocaleDateString('pt-BR')}
-                                    </TableCell>
-                                    <TableCell className={`text-xs ${isPaid ? "text-tinta-suave line-through" : "text-tinta font-medium"}`}>
+                                    </CelulaDaTabela>
+                                    <CelulaDaTabela className={`text-xs ${isPaid ? "text-tinta-suave line-through" : "text-tinta font-medium"}`}>
                                       {expense.description}
-                                    </TableCell>
-                                    <TableCell className="text-xs text-tinta-suave">
+                                    </CelulaDaTabela>
+                                    <CelulaDaTabela className="text-xs text-tinta-suave">
                                       {expense.paymentMethod || "—"}
-                                    </TableCell>
-                                    <TableCell className={`text-xs font-bold ${isPaid ? "text-tinta-suave" : "text-tinta"}`}>
+                                    </CelulaDaTabela>
+                                    <CelulaDaTabela className={`text-xs font-bold ${isPaid ? "text-tinta-suave" : "text-tinta"}`}>
                                       {formatarReais(expense.amount)}
-                                    </TableCell>
-                                    <TableCell>
+                                    </CelulaDaTabela>
+                                    <CelulaDaTabela>
                                       <button
                                         type="button"
                                         onClick={() => handleToggleStatus(expense.id, expense.status)}
@@ -1134,17 +1134,17 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                                           {isPaid ? "Pago" : "Pendente"}
                                         </Etiqueta>
                                       </button>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                      <Button aria-label="Excluir" variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(expense.id)}>
+                                    </CelulaDaTabela>
+                                    <CelulaDaTabela className="text-right">
+                                      <Botao aria-label="Excluir" variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(expense.id)}>
                                         <Trash2 className="w-3.5 h-3.5 text-perigo" />
-                                      </Button>
-                                    </TableCell>
-                                  </TableRow>
+                                      </Botao>
+                                    </CelulaDaTabela>
+                                  </LinhaDaTabela>
                                 );
                               })}
-                            </TableBody>
-                          </Table>
+                            </CorpoDaTabela>
+                          </Tabela>
                         </div>
                       </div>
                     )}
@@ -1160,7 +1160,7 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                     <span className="font-semibold text-tinta">{totalGroupPages}</span> ({filteredGroupedExpenses.length} itens)
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button aria-label="Primeira página"
+                    <Botao aria-label="Primeira página"
                       variant="outline"
                       size="icon"
                       className="h-8 w-8 rounded-lg border-linha"
@@ -1168,8 +1168,8 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                       disabled={safeGroupPage <= 1}
                     >
                       <ChevronsLeft className="w-4 h-4" />
-                    </Button>
-                    <Button aria-label="Anterior"
+                    </Botao>
+                    <Botao aria-label="Anterior"
                       variant="outline"
                       size="icon"
                       className="h-8 w-8 rounded-lg border-linha"
@@ -1177,11 +1177,11 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                       disabled={safeGroupPage <= 1}
                     >
                       <ChevronLeft className="w-4 h-4" />
-                    </Button>
+                    </Botao>
                     <span className="px-3 font-medium text-tinta">
                       Página {safeGroupPage} de {totalGroupPages}
                     </span>
-                    <Button aria-label="Próximo"
+                    <Botao aria-label="Próximo"
                       variant="outline"
                       size="icon"
                       className="h-8 w-8 rounded-lg border-linha"
@@ -1189,8 +1189,8 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                       disabled={safeGroupPage >= totalGroupPages}
                     >
                       <ChevronRight className="w-4 h-4" />
-                    </Button>
-                    <Button aria-label="Última página"
+                    </Botao>
+                    <Botao aria-label="Última página"
                       variant="outline"
                       size="icon"
                       className="h-8 w-8 rounded-lg border-linha"
@@ -1198,7 +1198,7 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
                       disabled={safeGroupPage >= totalGroupPages}
                     >
                       <ChevronsRight className="w-4 h-4" />
-                    </Button>
+                    </Botao>
                   </div>
                 </div>
               )}
@@ -1319,9 +1319,9 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: { 
               headerClassName: "text-right pr-4",
               cell: (exp) => (
                 <div className="flex justify-end gap-1">
-                  <Button aria-label="Excluir" variant="ghost" size="icon" onClick={() => handleDelete(exp.id)}>
+                  <Botao aria-label="Excluir" variant="ghost" size="icon" onClick={() => handleDelete(exp.id)}>
                     <Trash2 className="w-4 h-4 text-perigo" />
-                  </Button>
+                  </Botao>
                 </div>
               ),
             },

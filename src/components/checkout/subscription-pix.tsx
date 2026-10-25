@@ -5,9 +5,9 @@ import { QRCodeSVG } from "qrcode.react";
 import { Check, Copy, RefreshCw } from "lucide-react";
 import { gerarPixDaAssinatura, verificarSituacaoDoPagamentoDaAssinatura } from "@/actions/subscription-actions";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { LoadingRegion } from "@/components/skeletons";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { RegiaoDeCarregamento } from "@/components/skeletons";
+import { Botao } from "@/components/ui/button";
+import { Esqueleto } from "@/components/ui/skeleton";
 import { MolduraDoQr } from "@/components/ui/qr-frame";
 import { CORES_DO_QR } from "@/lib/qr-colors";
 import { cn } from "@/lib/utils";
@@ -118,9 +118,9 @@ export function PixDaAssinatura({ planId, modules, planName, couponCode, onPaid 
     return (
       <div role="alert" className="flex flex-col gap-3 rounded-[16px] border border-perigo/25 bg-perigo-suave p-5 text-sm font-semibold text-perigo">
         {error}
-        <Button type="button" variant="outline" size="sm" loading={isPending} onClick={() => startTransition(create)} className="self-start rounded-[12px]">
+        <Botao type="button" variant="outline" size="sm" loading={isPending} onClick={() => startTransition(create)} className="self-start rounded-[12px]">
           Tentar de novo
-        </Button>
+        </Botao>
       </div>
     );
   }
@@ -128,22 +128,22 @@ export function PixDaAssinatura({ planId, modules, planName, couponCode, onPaid 
   if (!charge) {
     return (
       // Esqueleto do cartão do Pix (preço, QR, validade, botão de copiar e "Já paguei"): nada pula quando o código chega.
-      <LoadingRegion label="o código do Pix" className="flex flex-col gap-4">
+      <RegiaoDeCarregamento label="o código do Pix" className="flex flex-col gap-4">
         <div className="flex flex-col items-center gap-5 rounded-[16px] border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)]">
           <div className="flex w-full items-center justify-between gap-3">
-            <Skeleton className="h-5 w-32 rounded-md" />
-            <Skeleton className="h-9 w-28 rounded-lg" />
+            <Esqueleto className="h-5 w-32 rounded-md" />
+            <Esqueleto className="h-9 w-28 rounded-lg" />
           </div>
-          <Skeleton className="size-[218px] rounded-[12px]" />
-          <Skeleton className="h-5 w-32 rounded-md" />
-          <Skeleton className="h-11 w-full rounded-[12px]" />
+          <Esqueleto className="size-[218px] rounded-[12px]" />
+          <Esqueleto className="h-5 w-32 rounded-md" />
+          <Esqueleto className="h-11 w-full rounded-[12px]" />
           <div className="flex w-full flex-col items-center gap-1">
-            <Skeleton className="h-4 w-full rounded-md" />
-            <Skeleton className="h-4 w-2/3 rounded-md" />
+            <Esqueleto className="h-4 w-full rounded-md" />
+            <Esqueleto className="h-4 w-2/3 rounded-md" />
           </div>
         </div>
-        <Skeleton className="h-12 w-full rounded-[12px]" />
-      </LoadingRegion>
+        <Esqueleto className="h-12 w-full rounded-[12px]" />
+      </RegiaoDeCarregamento>
     );
   }
 
@@ -163,9 +163,9 @@ export function PixDaAssinatura({ planId, modules, planName, couponCode, onPaid 
             : `Válido por ${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")}`}
         </p>
         {expired ? (
-          <Button type="button" variant="outline" loading={isPending} onClick={() => startTransition(create)} className="w-full rounded-[12px]">
+          <Botao type="button" variant="outline" loading={isPending} onClick={() => startTransition(create)} className="w-full rounded-[12px]">
             <RefreshCw aria-hidden="true" className="size-4" /> Gerar novo código
-          </Button>
+          </Botao>
         ) : (
           <button type="button" onClick={copy} className={cn(estiloDoBotao.secondary, estiloDoBotao.block)}>
             {copied ? <Check aria-hidden="true" className="size-4 text-sucesso" /> : <Copy aria-hidden="true" className="size-4" />}
@@ -178,9 +178,9 @@ export function PixDaAssinatura({ planId, modules, planName, couponCode, onPaid 
         </p>
       </div>
       {!expired ? (
-        <Button type="button" loading={isPending} onClick={checkNow} className="h-12 w-full rounded-[12px]">
+        <Botao type="button" loading={isPending} onClick={checkNow} className="h-12 w-full rounded-[12px]">
           Já paguei
-        </Button>
+        </Botao>
       ) : null}
       {message ? (
         <p role="status" className="text-center text-sm text-tinta-suave">

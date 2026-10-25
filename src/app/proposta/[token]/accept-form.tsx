@@ -4,8 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BadgeCheck } from "lucide-react";
 import { aceitarPropostaDoPedido } from "@/actions/partner-vendor-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { CARTAO_DA_PAGINA_COM_TOKEN } from "@/components/public/token-page-shell";
 
@@ -62,7 +62,7 @@ export function FormularioDeAceiteDaProposta({ token, companyName }: { token: st
             {error}
           </p>
         ) : null}
-        <Input
+        <Entrada
           id="aceitar-nome"
           label="Nome completo"
           name="fullName"
@@ -81,9 +81,9 @@ export function FormularioDeAceiteDaProposta({ token, companyName }: { token: st
           />
           <span>Li e aceito esta proposta</span>
         </label>
-        <Button type="submit" loading={isPending} className="h-12">
+        <Botao type="submit" loading={isPending} className="h-12">
           Aceitar proposta
-        </Button>
+        </Botao>
       </form>
     </section>
   );

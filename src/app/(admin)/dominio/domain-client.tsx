@@ -6,11 +6,11 @@ import { toast } from "sonner";
 import { AlertCircle, Check as ConferenciaDeDominio, CheckCircle2, Clock, Copy, ExternalLink, Globe, Info, XCircle } from "lucide-react";
 import { cancelarPedidoDeDominio, verificarDisponibilidadeDoDominioAcao, pedirDominio } from "@/actions/domain-actions";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Botao } from "@/components/ui/button";
+import { CaixaDeSelecao } from "@/components/ui/checkbox";
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
+import { Esqueleto } from "@/components/ui/skeleton";
+import { Entrada } from "@/components/ui/input";
 import { Etiqueta, estiloDoCartao, estiloDoTituloDoCartao, type TomDaEtiqueta } from "@/components/casal/ui";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
@@ -95,8 +95,8 @@ function ResultadoDaConferencia({ check }: { check: ConferenciaDeDominio }) {
     return (
       <div role="status" aria-busy="true" className="flex flex-col gap-2">
         <span className="sr-only">Conferindo se está livre…</span>
-        <Skeleton className="h-7 w-24 rounded-lg" />
-        <Skeleton className="h-5 w-72 max-w-full rounded-md" />
+        <Esqueleto className="h-7 w-24 rounded-lg" />
+        <Esqueleto className="h-5 w-72 max-w-full rounded-md" />
       </div>
     );
   }
@@ -208,7 +208,7 @@ function FormularioDoPedido({ coupleNames, weddingDate, defaults }: Pick<Proprie
           <p className="text-[15px] text-tinta-suave">Hoje registramos endereços terminados em {SUFIXO_DO_DOMINIO}.</p>
         </div>
 
-        <Input
+        <Entrada
           id="dominio-nome"
           label="Nome do endereço"
           suffix={SUFIXO_DO_DOMINIO}
@@ -263,7 +263,7 @@ function FormularioDoPedido({ coupleNames, weddingDate, defaults }: Pick<Proprie
           </p>
         </div>
         <div className="grid gap-5 sm:grid-cols-2">
-          <Input
+          <Entrada
             id="dominio-titular-nome"
             label="Nome completo ou razão social"
             fieldClassName="sm:col-span-2"
@@ -272,7 +272,7 @@ function FormularioDoPedido({ coupleNames, weddingDate, defaults }: Pick<Proprie
             onChange={(e) => setHolderName(e.target.value)}
             autoComplete="name"
           />
-          <Input
+          <Entrada
             id="dominio-titular-doc"
             label="CPF ou CNPJ"
             hint="Guardamos só até concluir o registro. Depois escondemos os números."
@@ -283,7 +283,7 @@ function FormularioDoPedido({ coupleNames, weddingDate, defaults }: Pick<Proprie
             autoComplete="off"
             inputMode="text"
           />
-          <Input
+          <Entrada
             id="dominio-titular-tel"
             type="tel"
             label="Telefone com DDD"
@@ -293,7 +293,7 @@ function FormularioDoPedido({ coupleNames, weddingDate, defaults }: Pick<Proprie
             autoComplete="tel"
             placeholder="(11) 91234-5678"
           />
-          <Input
+          <Entrada
             id="dominio-titular-email"
             type="email"
             label="E-mail do titular"
@@ -313,7 +313,7 @@ function FormularioDoPedido({ coupleNames, weddingDate, defaults }: Pick<Proprie
         <p className="rounded-xl bg-areia p-4 text-[15px] leading-6 text-tinta">{TEXTO_DOS_TERMOS_DE_DOMINIO}</p>
         <div className="flex flex-col gap-2">
           <div className="flex items-start gap-3">
-            <Checkbox
+            <CaixaDeSelecao
               id="dominio-aceite"
               checked={accepted}
               onCheckedChange={(v) => {
@@ -345,9 +345,9 @@ function FormularioDoPedido({ coupleNames, weddingDate, defaults }: Pick<Proprie
           <p className="text-sm text-tinta-suave">
             {blocked ? "Escolham outro nome para continuar." : "Depois do pedido, acompanhem cada etapa aqui."}
           </p>
-          <Button type="submit" size="lg" loading={pending} disabled={blocked} className="w-full sm:w-auto">
+          <Botao type="submit" size="lg" loading={pending} disabled={blocked} className="w-full sm:w-auto">
             Pedir este endereço
-          </Button>
+          </Botao>
         </div>
       </section>
     </form>
@@ -485,9 +485,9 @@ function BotaoDeCancelar() {
     <div className="flex flex-col gap-2 border-t border-linha pt-4">
       <p className="text-sm text-tinta-suave">Mudaram de ideia? Dá para cancelar enquanto o registro não começou.</p>
       <div>
-        <Button type="button" variant="danger" onClick={() => setOpen(true)}>
+        <Botao type="button" variant="danger" onClick={() => setOpen(true)}>
           Cancelar o pedido
-        </Button>
+        </Botao>
       </div>
       <ModalDeConfirmacao
         isOpen={open}

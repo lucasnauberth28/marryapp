@@ -2,9 +2,9 @@
 
 import { useRef, useState } from "react";
 import { Search } from "lucide-react";
-import { LoadingRegion } from "@/components/skeletons";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { RegiaoDeCarregamento } from "@/components/skeletons";
+import { Entrada } from "@/components/ui/input";
+import { Esqueleto } from "@/components/ui/skeleton";
 import { buscarCasamentosDaMadrinha } from "@/actions/admin-madrinha-actions";
 import type { ResultadoDeCasamento } from "@/lib/platform/queries/madrinha";
 import { cn } from "@/lib/utils";
@@ -51,17 +51,17 @@ export function BuscaDeCasamento({ selectedId, onPick, label = "Buscar casal" }:
 
   return (
     <div className="flex flex-col gap-2">
-      <Input label={label} icon={Search} value={text} onChange={(e) => onType(e.target.value)} autoComplete="off" hint="Digite pelo menos 2 letras do nome ou do endereço do site." />
+      <Entrada label={label} icon={Search} value={text} onChange={(e) => onType(e.target.value)} autoComplete="off" hint="Digite pelo menos 2 letras do nome ou do endereço do site." />
       {error && (
         <p role="alert" className="text-sm font-semibold text-perigo">
           {error}
         </p>
       )}
       {searching && hits === null && (
-        <LoadingRegion label="os casais" className="flex flex-col gap-1">
-          <Skeleton className="h-14 rounded-xl" />
-          <Skeleton className="h-14 rounded-xl" />
-        </LoadingRegion>
+        <RegiaoDeCarregamento label="os casais" className="flex flex-col gap-1">
+          <Esqueleto className="h-14 rounded-xl" />
+          <Esqueleto className="h-14 rounded-xl" />
+        </RegiaoDeCarregamento>
       )}
       {hits && hits.length === 0 && !searching && <p className="text-sm text-tinta-suave">Nenhum casal encontrado.</p>}
       {hits && hits.length > 0 && (

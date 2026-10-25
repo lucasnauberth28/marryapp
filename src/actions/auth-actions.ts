@@ -6,7 +6,7 @@ import { createHash, timingSafeEqual } from "node:crypto";
 
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { assinarToken, opcoesDoCookieDeSessao, hasPathAccess, NOME_DO_COOKIE_DE_SESSAO, NOME_DO_COOKIE_DE_SESSAO_VISTA } from "@/lib/auth";
+import { assinarToken, opcoesDoCookieDeSessao, temAcessoAoCaminho, NOME_DO_COOKIE_DE_SESSAO, NOME_DO_COOKIE_DE_SESSAO_VISTA } from "@/lib/auth";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
 import { INICIO_DO_ADMIN_DA_PLATAFORMA, resolverCaminhoPosLogin } from "@/lib/login-redirect";
 import { conferirLimiteDeUso, limitarUsoPorIp, LimitesDeSeguranca } from "@/lib/security/rate-limiter";
@@ -43,10 +43,10 @@ function caminhoDeChegadaPara(user: {
   const allowedPaths = Array.isArray(user.role.allowedPaths) ? (user.role.allowedPaths as string[]) : [];
   if (ehAcessoDeAdminDaPlataforma(allowedPaths)) return INICIO_DO_ADMIN_DA_PLATAFORMA;
   const kind = classificarConta(user);
-  if (kind === "vendor") return hasPathAccess(allowedPaths, "/fornecedor") ? "/fornecedor" : "/dashboard";
+  if (kind === "vendor") return temAcessoAoCaminho(allowedPaths, "/fornecedor") ? "/fornecedor" : "/dashboard";
   if (kind === "couple" && !user.weddingId) return "/boas-vindas";
-  if (hasPathAccess(allowedPaths, "/dashboard")) return "/dashboard";
-  if (hasPathAccess(allowedPaths, "/fornecedor")) return "/fornecedor";
+  if (temAcessoAoCaminho(allowedPaths, "/dashboard")) return "/dashboard";
+  if (temAcessoAoCaminho(allowedPaths, "/fornecedor")) return "/fornecedor";
   return "/dashboard";
 }
 

@@ -19,4 +19,4 @@ export const vercelEstaConfigurada = () => configuracaoDaVercelDoAmbiente() !== 
 
 export const conectarDominioAoProjeto = (domain: string): Promise<ResultadoDaConexao> => conectarDominio(configuracaoDaVercelDoAmbiente(), domain);
 export const verificarDominioDoProjeto = (domain: string): Promise<ResultadoDaConexao> => verificarDominio(configuracaoDaVercelDoAmbiente(), domain);
-export type { ResultadoDaConexao as ConnectionResult, RegistroDns as DnsRecord } from "@/lib/vercel-domains-core";
+export type { ResultadoDaConexao, RegistroDns } from "@/lib/vercel-domains-core";

@@ -1,8 +1,8 @@
 "use server";
 
 import { registrarAuditoria } from "@/lib/audit";
-import { exigirSessaoAutenticada, exigirPermissaoDoCaminho, AuthorizationError } from "@/lib/security/auth-guard";
-import { hasPathAccess } from "@/lib/auth";
+import { exigirSessaoAutenticada, exigirPermissaoDoCaminho, ErroDeAutorizacao } from "@/lib/security/auth-guard";
+import { temAcessoAoCaminho } from "@/lib/auth";
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -48,8 +48,8 @@ const EsquemaDaPessoa = z.object({
 function garantirQuePodeConceder(sessionPaths: string[], grantedPaths: unknown) {
   if (sessionPaths.includes("*")) return;
   const granted = Array.isArray(grantedPaths) ? (grantedPaths as string[]) : [];
-  if (granted.some((p) => !hasPathAccess(sessionPaths, p))) {
-    throw new AuthorizationError("Acesso negado: você não pode conceder permissões que não possui.");
+  if (granted.some((p) => !temAcessoAoCaminho(sessionPaths, p))) {
+    throw new ErroDeAutorizacao("Acesso negado: você não pode conceder permissões que não possui.");
   }
 }
 

@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { iniciarProgressoDaNavegacao } from "@/components/feedback/navigation-progress";
 import { marcarNavegacaoDaLista } from "@/components/plataforma/pending";
-import { NativeSelect } from "@/components/ui/select";
+import { SelecaoNativa } from "@/components/ui/select";
 import { PERIODOS, type Periodo } from "@/lib/platform/overview-period";
 
 const ROTULO_DO_PERIODO: Record<Periodo, string> = { "30d": "Últimos 30 dias", mes: "Este mês", "90d": "Últimos 90 dias" };
@@ -18,7 +18,7 @@ export function SeletorDePeriodo({ value }: { value: Periodo }) {
 
   return (
     <div aria-busy={pending} className="w-full sm:w-[240px]">
-      <NativeSelect
+      <SelecaoNativa
         label="Período"
         alwaysFloat
         value={value}
@@ -38,7 +38,7 @@ export function SeletorDePeriodo({ value }: { value: Periodo }) {
             {ROTULO_DO_PERIODO[p]}
           </option>
         ))}
-      </NativeSelect>
+      </SelecaoNativa>
     </div>
   );
 }

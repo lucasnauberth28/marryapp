@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import prisma from "@/lib/prisma";
 import {
-  AuthorizationError,
+  ErroDeAutorizacao,
   obterSessao,
   redirecionarParaOLogin,
   exigirSessaoAutenticada,
@@ -139,7 +139,7 @@ export async function exigirCasamentoParaLeitura(path?: string): Promise<Context
   if (path) await exigirPermissaoDoCaminho(path);
   else await exigirSessaoAutenticada();
   const ctx = await obterContextoDoCasamento();
-  if (!ctx) throw new AuthorizationError("Esta conta ainda não tem um casamento. Conclua o cadastro do casamento.");
+  if (!ctx) throw new ErroDeAutorizacao("Esta conta ainda não tem um casamento. Conclua o cadastro do casamento.");
   return ctx;
 }
 
@@ -155,10 +155,10 @@ export async function exigirCasamentoParaLeitura(path?: string): Promise<Context
 export async function exigirCasamento(path?: string): Promise<ContextoDoCasamento> {
   const ctx = await exigirCasamentoParaLeitura(path);
   const refusal = recusaDeEscritaNoCasamento({ impersonation: ctx.impersonation, suspendedAt: ctx.wedding.suspendedAt });
-  if (refusal) throw new AuthorizationError(refusal);
+  if (refusal) throw new ErroDeAutorizacao(refusal);
   // Modo de manutenção (administração > Configurações): painel só para leitura; a administração nunca é barrada
   const maintenance = await recusaDeEscritaPorManutencao(ctx.session.allowedPaths);
-  if (maintenance) throw new AuthorizationError(maintenance);
+  if (maintenance) throw new ErroDeAutorizacao(maintenance);
   if (ctx.impersonation?.canEdit) {
     await registrarAuditoria({
       action: "impersonation.write",

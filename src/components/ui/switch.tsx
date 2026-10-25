@@ -30,4 +30,4 @@ function Interruptor({
   )
 }
 
-export { Interruptor as Switch }
+export { Interruptor }

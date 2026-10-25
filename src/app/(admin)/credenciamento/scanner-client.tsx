@@ -7,10 +7,10 @@ import { registrarEntradaDoConvidado } from "@/actions/guest-actions";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { Selo } from "@/components/painel/seal";
 import { EtiquetaDeSituacao } from "@/components/painel/status-chip";
-import { btn, estiloDoCartao, estiloDaCaixaDeErro, estiloDaEntradaDoPainel, estiloDoSobretitulo } from "@/components/painel/styles";
+import { estiloDoBotao, estiloDoCartao, estiloDaCaixaDeErro, estiloDaEntradaDoPainel, estiloDoSobretitulo } from "@/components/painel/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { EsqueletoDeLinhas } from "@/components/painel/skeleton-parts";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Esqueleto } from "@/components/ui/skeleton";
 import { buscarConvidadoParaEntrada, pesquisarConvidadosParaEntrada, type InformacoesDoConvidadoNaEntrada } from "./lookup-actions";
 
 type EtapaDoFluxo = "idle" | "scanning" | "loading" | "found";
@@ -179,15 +179,15 @@ export function LeitorCliente({ initialArrived, confirmed }: { initialArrived: n
           <section role="status" aria-busy="true" className={`${estiloDoCartao} flex flex-col items-center gap-4 p-6 text-center`}>
             <span className="sr-only">Conferindo o convite...</span>
             {/* Esqueleto do convite lido: selo, situação, nome, pessoas e mesa, botões */}
-            <Skeleton className="size-24 rounded-full" />
-            <Skeleton className="h-7 w-36 rounded-lg" />
-            <Skeleton className="h-10 w-56 max-w-full rounded-lg" />
+            <Esqueleto className="size-24 rounded-full" />
+            <Esqueleto className="h-7 w-36 rounded-lg" />
+            <Esqueleto className="h-10 w-56 max-w-full rounded-lg" />
             <div aria-hidden="true" className="grid w-full grid-cols-2 gap-3 rounded-2xl border border-linha p-4">
-              <Skeleton className="h-[60px] rounded-lg" />
-              <Skeleton className="h-[60px] rounded-lg" />
+              <Esqueleto className="h-[60px] rounded-lg" />
+              <Esqueleto className="h-[60px] rounded-lg" />
             </div>
-            <Skeleton className="h-11 w-full rounded-xl" />
-            <Skeleton className="h-11 w-full rounded-xl" />
+            <Esqueleto className="h-11 w-full rounded-xl" />
+            <Esqueleto className="h-11 w-full rounded-xl" />
           </section>
         )}
 
@@ -198,7 +198,7 @@ export function LeitorCliente({ initialArrived, confirmed }: { initialArrived: n
               {!cameraReady && (
                 <div role="status" className="absolute inset-0">
                   <span className="sr-only">Abrindo a câmera...</span>
-                  <Skeleton className="size-full rounded-none bg-[#2a2330]" />
+                  <Esqueleto className="size-full rounded-none bg-[#2a2330]" />
                 </div>
               )}
               <div aria-hidden="true" className="relative size-56 rounded-3xl border-[3px] border-[#ffffff] shadow-[0_0_0_999px_rgba(27,22,32,0.45)]">
@@ -246,7 +246,7 @@ export function LeitorCliente({ initialArrived, confirmed }: { initialArrived: n
             </dl>
             <div className="flex w-full flex-col gap-2">
               {!found.alreadyIn && (
-                <BotaoComCarregamento onClick={confirmEntry} loading={confirming} className={`${btn.primary} ${btn.block}`}>
+                <BotaoComCarregamento onClick={confirmEntry} loading={confirming} className={`${estiloDoBotao.primary} ${estiloDoBotao.block}`}>
                   Registrar entrada de {found.people}
                 </BotaoComCarregamento>
               )}
@@ -257,7 +257,7 @@ export function LeitorCliente({ initialArrived, confirmed }: { initialArrived: n
                   setStage("idle");
                 }}
                 disabled={confirming}
-                className={`${btn.quiet} ${btn.block}`}
+                className={`${estiloDoBotao.quiet} ${estiloDoBotao.block}`}
               >
                 {found.alreadyIn ? "Voltar" : "Cancelar"}
               </button>
@@ -273,7 +273,7 @@ export function LeitorCliente({ initialArrived, confirmed }: { initialArrived: n
               </span>
               <h2 className="font-display text-[26px] font-medium leading-8 text-tinta">Pronto para ler</h2>
               <p className="text-tinta-suave">Peça o código QR que o convidado recebeu ao confirmar presença e aproxime da câmera.</p>
-              <button type="button" onClick={startScanning} className={`${btn.primary} ${btn.block} sm:w-auto`}>
+              <button type="button" onClick={startScanning} className={`${estiloDoBotao.primary} ${estiloDoBotao.block} sm:w-auto`}>
                 <QrCode className="size-5" aria-hidden="true" />
                 Ler código QR do convidado
               </button>

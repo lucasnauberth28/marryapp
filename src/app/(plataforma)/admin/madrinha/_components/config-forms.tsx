@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
+import { Entrada } from "@/components/ui/input";
 import { AvisoDoFormulario } from "@/components/ui/field";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { estiloDoCartao } from "@/components/casal/ui";
 import { cn } from "@/lib/utils";
 import { centavosParaCampoDeReais } from "@/lib/platform/madrinha";
@@ -58,10 +58,10 @@ function CartaoDoPlano({
         <p className="text-sm text-tinta-suave">{subtitle}</p>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Input label="Mensagens por dia" inputMode="numeric" value={state.perDay} onChange={(e) => set("perDay", e.target.value)} error={errors[`${prefix}.perDay`]} />
-        <Input label="Mensagens por mês" inputMode="numeric" value={state.perMonth} onChange={(e) => set("perMonth", e.target.value)} error={errors[`${prefix}.perMonth`]} />
-        <Input label="Teto de custo por casal" prefix="R$" inputMode="decimal" value={state.costCap} onChange={(e) => set("costCap", e.target.value)} error={errors[`${prefix}.costCap`]} />
-        <Input label="Avisar ao chegar em" suffix="%" inputMode="numeric" value={state.warnPercent} onChange={(e) => set("warnPercent", e.target.value)} error={errors[`${prefix}.warnPercent`]} />
+        <Entrada label="Mensagens por dia" inputMode="numeric" value={state.perDay} onChange={(e) => set("perDay", e.target.value)} error={errors[`${prefix}.perDay`]} />
+        <Entrada label="Mensagens por mês" inputMode="numeric" value={state.perMonth} onChange={(e) => set("perMonth", e.target.value)} error={errors[`${prefix}.perMonth`]} />
+        <Entrada label="Teto de custo por casal" prefix="R$" inputMode="decimal" value={state.costCap} onChange={(e) => set("costCap", e.target.value)} error={errors[`${prefix}.costCap`]} />
+        <Entrada label="Avisar ao chegar em" suffix="%" inputMode="numeric" value={state.warnPercent} onChange={(e) => set("warnPercent", e.target.value)} error={errors[`${prefix}.warnPercent`]} />
       </div>
       <LinhaDeAlternancia
         label="Bloquear sozinha ao atingir o teto"
@@ -93,9 +93,9 @@ export function FormularioDeLimites({ subscription, trial }: { subscription: Lim
       </div>
       {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div>
-        <Button type="submit" loading={pending}>
+        <Botao type="submit" loading={pending}>
           Salvar limites
-        </Button>
+        </Botao>
       </div>
     </form>
   );
@@ -114,15 +114,15 @@ export function FormularioDoTetoGlobal({ monthlyCostCapCents, warnPercent, pause
         run(() => salvarTetoGlobalDaMadrinha({ monthlyCostCap: cap, warnPercent: warn, pauseAtCap: pause }));
       }}
     >
-      <Input label="Custo máximo da Liz por mês" prefix="R$" inputMode="decimal" value={cap} onChange={(e) => setCap(e.target.value)} error={errors.monthlyCostCap} />
-      <Input label="Avisar ao chegar em" suffix="%" inputMode="numeric" value={warn} onChange={(e) => setWarn(e.target.value)} error={errors.warnPercent} />
+      <Entrada label="Custo máximo da Liz por mês" prefix="R$" inputMode="decimal" value={cap} onChange={(e) => setCap(e.target.value)} error={errors.monthlyCostCap} />
+      <Entrada label="Avisar ao chegar em" suffix="%" inputMode="numeric" value={warn} onChange={(e) => setWarn(e.target.value)} error={errors.warnPercent} />
       <LinhaDeAlternancia label="Pausar tudo ao chegar no teto" description="Evita surpresa na fatura da API." checked={pause} onCheckedChange={setPause} />
       <p className="text-sm leading-5 text-tinta-suave">Ao chegar no aviso, a equipe receberá um e-mail. O envio só começa quando a Liz for ativada.</p>
       {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="mt-auto">
-        <Button type="submit" variant="outline" loading={pending}>
+        <Botao type="submit" variant="outline" loading={pending}>
           Salvar teto
-        </Button>
+        </Botao>
       </div>
     </form>
   );
@@ -142,16 +142,16 @@ export function FormularioContraAbuso({ perHour, blockHours, blockOffTopic, offT
         run(() => salvarLimitesContraAbusoDaMadrinha({ perHour: hour, blockHours: hours, blockOffTopic: off, offTopicBeforeBlock: before }));
       }}
     >
-      <Input label="Mensagens por hora" inputMode="numeric" value={hour} onChange={(e) => setHour(e.target.value)} error={errors.perHour} />
-      <Input label="Bloquear por (horas)" inputMode="numeric" value={hours} onChange={(e) => setHours(e.target.value)} error={errors.blockHours} />
+      <Entrada label="Mensagens por hora" inputMode="numeric" value={hour} onChange={(e) => setHour(e.target.value)} error={errors.perHour} />
+      <Entrada label="Bloquear por (horas)" inputMode="numeric" value={hours} onChange={(e) => setHours(e.target.value)} error={errors.blockHours} />
       <LinhaDeAlternancia label="Bloquear quem usa como chat comum" description="Depois de algumas recusas por fuga de tema em um dia." checked={off} onCheckedChange={setOff} />
-      {off && <Input label="Recusas antes de bloquear" inputMode="numeric" value={before} onChange={(e) => setBefore(e.target.value)} error={errors.offTopicBeforeBlock} />}
+      {off && <Entrada label="Recusas antes de bloquear" inputMode="numeric" value={before} onChange={(e) => setBefore(e.target.value)} error={errors.offTopicBeforeBlock} />}
       <p className="text-sm leading-5 text-tinta-suave">Quem for bloqueado verá uma mensagem gentil e pode pedir ajuda ao suporte.</p>
       {formError && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="mt-auto">
-        <Button type="submit" variant="outline" loading={pending}>
+        <Botao type="submit" variant="outline" loading={pending}>
           Salvar bloqueio
-        </Button>
+        </Botao>
       </div>
     </form>
   );

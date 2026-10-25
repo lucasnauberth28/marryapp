@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, CheckCircle2, Clock, Download, Plus, ShieldCheck, XCircle } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { NativeSelect } from "@/components/ui/select";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
+import { SelecaoNativa } from "@/components/ui/select";
 import { SeletorDeData } from "@/components/ui/date-picker";
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { AvisoDoFormulario } from "@/components/ui/field";
@@ -13,7 +13,7 @@ import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao, type TomDaSituacao } from "@/components/plataforma/status-chip";
 import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { BotaoDeExportar } from "@/components/plataforma/export-button";
 import { TIPOS_DE_SOLICITACAO_DE_DADOS, ROTULO_DO_TIPO_DE_SOLICITACAO_DE_DADOS } from "@/lib/platform/support";
 import { criarSolicitacaoDeDados, cumprirSolicitacaoDeExclusao, atualizarSolicitacaoDeDados } from "@/actions/admin-suporte-actions";
@@ -125,26 +125,26 @@ function NovaSolicitacao({ onDone }: { onDone: () => void }) {
     >
       <h3 className="text-lg font-semibold text-tinta">Registrar um pedido de titular</h3>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <NativeSelect label="Tipo de pedido" alwaysFloat value={type} onChange={(e) => setType(e.target.value as typeof type)}>
+        <SelecaoNativa label="Tipo de pedido" alwaysFloat value={type} onChange={(e) => setType(e.target.value as typeof type)}>
           {TIPOS_DE_SOLICITACAO_DE_DADOS.map((t) => (
             <option key={t} value={t}>
               {ROTULO_DO_TIPO_DE_SOLICITACAO_DE_DADOS[t]}
             </option>
           ))}
-        </NativeSelect>
+        </SelecaoNativa>
         <SeletorDeData label="Recebido em" optional value={receivedOn} onChange={(e) => setReceivedOn(e.target.value)} error={errors.receivedOn} hint="Vazio vale hoje." />
-        <Input label="Quem pediu" value={name} onChange={(e) => setName(e.target.value)} error={errors.requesterName} maxLength={120} />
-        <Input label="E-mail da pessoa" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.requesterEmail} hint="Se for o e-mail de uma conta, o pedido se liga a ela." />
+        <Entrada label="Quem pediu" value={name} onChange={(e) => setName(e.target.value)} error={errors.requesterName} maxLength={120} />
+        <Entrada label="E-mail da pessoa" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.requesterEmail} hint="Se for o e-mail de uma conta, o pedido se liga a ela." />
       </div>
-      <Textarea label="Observação" optional value={note} onChange={(e) => setNote(e.target.value)} error={errors.note} rows={2} maxLength={2000} />
+      <AreaDeTexto label="Observação" optional value={note} onChange={(e) => setNote(e.target.value)} error={errors.note} rows={2} maxLength={2000} />
       {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" loading={pending}>
+        <Botao type="submit" loading={pending}>
           Registrar pedido
-        </Button>
-        <Button type="button" variant="quiet" onClick={onDone} disabled={pending}>
+        </Botao>
+        <Botao type="button" variant="quiet" onClick={onDone} disabled={pending}>
           Cancelar
-        </Button>
+        </Botao>
       </div>
     </form>
   );
@@ -173,12 +173,12 @@ function TratarSolicitacao({ item, onDone }: { item: ItemDeSolicitacaoDeDados; o
           <p className="mt-1 text-sm text-tinta-suave">Sem senhas nem tokens. Envie o arquivo ao titular pelo e-mail dele e marque como pronto. O download fica no registro.</p>
         </div>
       )}
-      <Textarea label="Nota do atendimento" optional hint="Obrigatória para recusar. Fica no registro." value={note} onChange={(e) => setNote(e.target.value)} error={errors.note} rows={2} maxLength={2000} />
+      <AreaDeTexto label="Nota do atendimento" optional hint="Obrigatória para recusar. Fica no registro." value={note} onChange={(e) => setNote(e.target.value)} error={errors.note} rows={2} maxLength={2000} />
       {formError && !Object.keys(errors).length && <AvisoDoFormulario>{formError}</AvisoDoFormulario>}
       {!closed && (
         <div className="flex flex-wrap gap-3">
           {item.status === "NEW" && (
-            <Button
+            <Botao
               type="button"
               variant="outline"
               disabled={pending}
@@ -189,9 +189,9 @@ function TratarSolicitacao({ item, onDone }: { item: ItemDeSolicitacaoDeDados; o
               }}
             >
               Marcar em análise
-            </Button>
+            </Botao>
           )}
-          <Button
+          <Botao
             type="button"
             disabled={pending}
             loading={pending && running === "done"}
@@ -201,8 +201,8 @@ function TratarSolicitacao({ item, onDone }: { item: ItemDeSolicitacaoDeDados; o
             }}
           >
             Marcar como pronto
-          </Button>
-          <Button
+          </Botao>
+          <Botao
             type="button"
             variant="quiet"
             disabled={pending}
@@ -214,18 +214,18 @@ function TratarSolicitacao({ item, onDone }: { item: ItemDeSolicitacaoDeDados; o
             className="text-perigo"
           >
             Recusar
-          </Button>
+          </Botao>
         </div>
       )}
       {item.type === "DELETE" && item.linked && !closed && (
         <div className="flex flex-col gap-3 rounded-2xl border border-perigo/40 bg-papel p-4">
           <p className="font-semibold text-tinta">Excluir a conta agora</p>
           <p className="text-sm leading-5 text-tinta-suave">Apaga a conta e, se for o último membro, o casamento (ou o perfil de fornecedor) com tudo dentro. Os pagamentos ficam guardados sem vínculo, para fins fiscais. Não dá para desfazer.</p>
-          <Input label="Digite o e-mail do titular para confirmar" value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} error={errors.confirmEmail} autoComplete="off" />
+          <Entrada label="Digite o e-mail do titular para confirmar" value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} error={errors.confirmEmail} autoComplete="off" />
           <div>
-            <Button type="button" variant="outline" disabled={pending || confirmEmail.trim().length < 5} onClick={() => setConfirmOpen(true)} className="text-perigo">
+            <Botao type="button" variant="outline" disabled={pending || confirmEmail.trim().length < 5} onClick={() => setConfirmOpen(true)} className="text-perigo">
               Excluir a conta
-            </Button>
+            </Botao>
           </div>
           <ModalDeConfirmacao
             isOpen={confirmOpen}

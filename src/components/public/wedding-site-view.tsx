@@ -19,15 +19,15 @@ import {
   ExternalLink,
   X,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { estiloDoBotao, estiloDoSobretituloDaLanding } from "@/components/landing/styles";
 import { criarRecadoNoLivro } from "@/actions/site-builder-actions";
 import { estiloDoTemaDaMarca, obterIniciaisDoCasal } from "@/lib/wedding-format";
 import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
 import { toast } from "sonner";
 import { Aparicao } from "@/components/motion/reveal";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { ContagemRegressivaDoCasamento, instanteDoCasamento } from "@/components/public/wedding-site-countdown";
 
@@ -792,7 +792,7 @@ export function VisaoDoSiteDoCasamento({
 
           {formOpen && (
             <form id="form-recado" onSubmit={handleSendGuestbook} className="flex flex-col gap-5 rounded-2xl border border-linha bg-papel p-6 shadow-[var(--shadow-aceito-1)] md:max-w-[560px]">
-              <Input
+              <Entrada
                 id="guestbook-name"
                 label="Seu nome"
                 value={authorName}
@@ -802,7 +802,7 @@ export function VisaoDoSiteDoCasamento({
                 disabled={preview}
                 autoComplete="name"
               />
-              <Textarea
+              <AreaDeTexto
                 id="guestbook-message"
                 label="Mensagem"
                 value={message}
@@ -812,9 +812,9 @@ export function VisaoDoSiteDoCasamento({
                 maxLength={1000}
                 disabled={preview}
               />
-              <Button type="submit" disabled={preview} loading={isPending} className="rounded-[12px] px-6">
+              <Botao type="submit" disabled={preview} loading={isPending} className="rounded-[12px] px-6">
                 Enviar recado
-              </Button>
+              </Botao>
             </form>
           )}
 

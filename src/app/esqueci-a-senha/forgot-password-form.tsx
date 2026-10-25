@@ -6,7 +6,7 @@ import { ArrowRight, Mail, MailCheck } from "lucide-react";
 import { pedirRedefinicaoDeSenha } from "@/actions/password-reset-actions";
 import { TituloDoMolde } from "@/components/account/auth-shell";
 import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
@@ -81,10 +81,10 @@ export function FormularioDeEsqueciASenha() {
           )}
         </Campo>
         {error ? <AvisoDoFormulario>{error}</AvisoDoFormulario> : null}
-        <Button type="submit" loading={isPending} className="h-12 w-full rounded-[12px] px-6">
+        <Botao type="submit" loading={isPending} className="h-12 w-full rounded-[12px] px-6">
           Enviar link
           <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
-        </Button>
+        </Botao>
       </form>
     </section>
   );

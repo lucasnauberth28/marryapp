@@ -3,8 +3,8 @@
 import { useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select";
+import { Entrada } from "@/components/ui/input";
+import { SelecaoNativa } from "@/components/ui/select";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { iniciarProgressoDaNavegacao } from "@/components/feedback/navigation-progress";
 import { marcarNavegacaoDaLista } from "@/components/plataforma/pending";
@@ -98,7 +98,7 @@ export function BarraDeFiltros({
       {searchPlaceholder && (
         <div className="relative max-w-[560px]">
           <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-tinta-suave" strokeWidth={1.6} aria-hidden="true" />
-          <Input
+          <Entrada
             type="search"
             value={text}
             onChange={(e) => onSearch(e.target.value)}
@@ -112,7 +112,7 @@ export function BarraDeFiltros({
       {filters.length > 0 && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
           {filters.map((f) => (
-            <NativeSelect
+            <SelecaoNativa
               key={f.key}
               label={f.label}
               alwaysFloat
@@ -125,7 +125,7 @@ export function BarraDeFiltros({
                   {o.label}
                 </option>
               ))}
-            </NativeSelect>
+            </SelecaoNativa>
           ))}
         </div>
       )}

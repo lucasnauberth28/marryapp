@@ -1,7 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
-import { brandedEmail, emailEstaConfigurado, enviarEmail } from "@/lib/email";
+import { emailDaMarca, emailEstaConfigurado, enviarEmail } from "@/lib/email";
 import { urlDoApp } from "@/lib/app-url";
 import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { coletarSaude } from "@/lib/platform/queries/saude";
@@ -48,7 +48,7 @@ export async function rodarAlertasDeSaude(now = new Date()): Promise<ResultadoDa
 }
 
 export function emailDoAlerta(lines: string[]) {
-  return brandedEmail({
+  return emailDaMarca({
     heading: "Algo pede a sua atenção",
     preheader: lines[0]?.slice(0, 100),
     paragraphs: lines,

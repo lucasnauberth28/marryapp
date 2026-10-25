@@ -5,7 +5,7 @@ import { obterFornecedores } from "@/actions/vendor-actions";
 import { obterDadosDaCarteira } from "@/actions/wallet-actions";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
-import { LoadingRegion } from "@/components/skeletons";
+import { RegiaoDeCarregamento } from "@/components/skeletons";
 import { Aparicao } from "@/components/motion/reveal";
 import { estiloDoNumeroGrande, estiloDoCartao, estiloDoTituloDoCartao, estiloDoSobretitulo } from "@/components/casal/ui";
 import { TabelaFinanceira } from "./finance-client";
@@ -53,7 +53,7 @@ export default async function FinancasPage() {
         description="Presentes que entraram, contas a pagar e quanto sobra no fim."
       />
 
-      <Suspense fallback={<LoadingRegion label="os números das finanças"><EsqueletoDosIndicadores /></LoadingRegion>}>
+      <Suspense fallback={<RegiaoDeCarregamento label="os números das finanças"><EsqueletoDosIndicadores /></RegiaoDeCarregamento>}>
         <Indicadores metrics={metrics} expenses={expenses} />
       </Suspense>
 
@@ -65,7 +65,7 @@ export default async function FinancasPage() {
           <p className="mt-0.5 text-[15px] text-tinta-suave">Contratos com fornecedores e compras avulsas, com as parcelas de cada um.</p>
         </div>
 
-        <Suspense fallback={<LoadingRegion label="as despesas"><EsqueletoDasDespesas /></LoadingRegion>}>
+        <Suspense fallback={<RegiaoDeCarregamento label="as despesas"><EsqueletoDasDespesas /></RegiaoDeCarregamento>}>
           <Despesas expenses={expenses} vendors={vendors} walletData={walletData} />
         </Suspense>
       </section>
@@ -80,7 +80,7 @@ export default async function FinancasPage() {
           </p>
         </div>
 
-        <Suspense fallback={<LoadingRegion label="os pagamentos"><EsqueletoDosPagamentos /></LoadingRegion>}>
+        <Suspense fallback={<RegiaoDeCarregamento label="os pagamentos"><EsqueletoDosPagamentos /></RegiaoDeCarregamento>}>
           <Pagamentos transactions={transactions} />
         </Suspense>
       </section>

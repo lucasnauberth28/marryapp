@@ -13,16 +13,16 @@ import {
   Check,
   EyeOff,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
+import { Interruptor } from "@/components/ui/switch";
 import { SeletorDeData } from "@/components/ui/date-picker";
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Selecao, ConteudoDaSelecao, ItemDaSelecao, GatilhoDaSelecao, ValorDaSelecao } from "@/components/ui/select";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Esqueleto } from "@/components/ui/skeleton";
 import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { Etiqueta } from "@/components/casal/ui";
 import { EscopoClaro } from "@/components/theme/light-scope";
@@ -341,7 +341,7 @@ export function EditorDoSiteCliente({
             {uploading === field ? (
               <>
                 <span className="sr-only" role="status">Enviando a foto...</span>
-                <Skeleton className="absolute inset-0 rounded-none" />
+                <Esqueleto className="absolute inset-0 rounded-none" />
               </>
             ) : url ? (
               <ImagemDaPessoa src={url} alt={`Foto atual: ${label.toLowerCase()}`} sizes="72px" className="object-cover" />
@@ -362,7 +362,7 @@ export function EditorDoSiteCliente({
             {url ? "Trocar foto" : "Enviar foto"}
           </BotaoComCarregamento>
         </div>
-        <Input
+        <Entrada
           id={`${field}-link`}
           label="Ou cole o link da foto"
           value={url || ""}
@@ -416,7 +416,7 @@ export function EditorDoSiteCliente({
         </label>
         {desc && <p className="text-sm text-tinta-suave">{desc}</p>}
       </div>
-      <Switch id={`block-${key}`} checked={settings[key] !== false} onCheckedChange={(checked) => toggleBlock(key, checked)} />
+      <Interruptor id={`block-${key}`} checked={settings[key] !== false} onCheckedChange={(checked) => toggleBlock(key, checked)} />
     </div>
   );
 
@@ -461,14 +461,14 @@ export function EditorDoSiteCliente({
               >
                 {section.id === "COVER" && (
                   <>
-                    <Input id="title" label="Nomes do casal" value={settings.title || ""} onChange={(e) => update({ title: e.target.value })} placeholder="Ana & Pedro" inputClassName="text-base font-semibold" />
+                    <Entrada id="title" label="Nomes do casal" value={settings.title || ""} onChange={(e) => update({ title: e.target.value })} placeholder="Ana & Pedro" inputClassName="text-base font-semibold" />
                     <SeletorDeData
                       id="weddingDate"
                       label="Data do casamento"
                       value={paraCampoDeData(settings.weddingDate)}
                       onChange={(e) => update({ weddingDate: e.target.value ? `${e.target.value}T12:00:00.000Z` : null })}
                     />
-                    <Input id="subtitle" label="Frase acima dos nomes" optional hint="Ex.: “Vamos nos casar!”" value={settings.subtitle || ""} onChange={(e) => update({ subtitle: e.target.value })} />
+                    <Entrada id="subtitle" label="Frase acima dos nomes" optional hint="Ex.: “Vamos nos casar!”" value={settings.subtitle || ""} onChange={(e) => update({ subtitle: e.target.value })} />
                     <CampoDoEditor id="themeColor" label="Cor do site">
                       <div className="flex items-center gap-2">
                         <input
@@ -479,7 +479,7 @@ export function EditorDoSiteCliente({
                           className="h-12 w-14 shrink-0 cursor-pointer rounded-xl border border-linha-forte bg-papel p-1"
                           aria-describedby="themeColor-hint"
                         />
-                        <Input
+                        <Entrada
                           id="themeColorCode"
                           label="Código da cor"
                           value={settings.themeColor || ""}
@@ -507,14 +507,14 @@ export function EditorDoSiteCliente({
                 {section.id === "STORY" && section.key && (
                   <>
                     {visibilityToggle(section.key, section.desc)}
-                    <Textarea id="welcomeMessage" label="Mensagem de boas-vindas" rows={3} value={settings.welcomeMessage || ""} onChange={(e) => update({ welcomeMessage: e.target.value })} />
+                    <AreaDeTexto id="welcomeMessage" label="Mensagem de boas-vindas" rows={3} value={settings.welcomeMessage || ""} onChange={(e) => update({ welcomeMessage: e.target.value })} />
                     {photoField("couplePhotoUrl", "Foto do casal", "Aparece na seção “Nossa história”.", coupleInput)}
 
                     <fieldset className="flex flex-col gap-5 rounded-xl border border-linha p-3 pt-4">
                       <legend className="px-1 text-sm font-semibold text-tinta">Novo momento</legend>
-                      <Input id="story-title" label="Título" value={story.title} onChange={(e) => setStory({ ...story, title: e.target.value })} placeholder="O primeiro encontro" />
-                      <Input id="story-date" label="Quando" value={story.dateLabel} onChange={(e) => setStory({ ...story, dateLabel: e.target.value })} placeholder="Outubro de 2021" />
-                      <Textarea id="story-desc" label="O que aconteceu" rows={3} value={story.description} onChange={(e) => setStory({ ...story, description: e.target.value })} />
+                      <Entrada id="story-title" label="Título" value={story.title} onChange={(e) => setStory({ ...story, title: e.target.value })} placeholder="O primeiro encontro" />
+                      <Entrada id="story-date" label="Quando" value={story.dateLabel} onChange={(e) => setStory({ ...story, dateLabel: e.target.value })} placeholder="Outubro de 2021" />
+                      <AreaDeTexto id="story-desc" label="O que aconteceu" rows={3} value={story.description} onChange={(e) => setStory({ ...story, description: e.target.value })} />
                       <BotaoComCarregamento onClick={handleAddStory} loading={busyAction === "story"} disabled={isPending} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm} w-fit`}>
                         <Plus className="size-4" aria-hidden="true" /> Adicionar momento
                       </BotaoComCarregamento>
@@ -532,23 +532,23 @@ export function EditorDoSiteCliente({
                   <>
                     {visibilityToggle(section.key)}
                     <p className="text-sm text-tinta-suave">Se vocês não informarem os links de rota, o site cria os botões a partir do endereço.</p>
-                    <Input id="locationName" label="Nome do local" value={settings.locationName || ""} onChange={(e) => update({ locationName: e.target.value })} />
-                    <Input id="locationAddress" label="Endereço completo" value={settings.locationAddress || ""} onChange={(e) => update({ locationAddress: e.target.value })} />
+                    <Entrada id="locationName" label="Nome do local" value={settings.locationName || ""} onChange={(e) => update({ locationName: e.target.value })} />
+                    <Entrada id="locationAddress" label="Endereço completo" value={settings.locationAddress || ""} onChange={(e) => update({ locationAddress: e.target.value })} />
                     <div className="grid grid-cols-2 gap-3">
-                      <Input id="ceremonyTime" label="Horário da cerimônia" type="time" value={settings.ceremonyTime || ""} onChange={(e) => update({ ceremonyTime: e.target.value })} />
-                      <Input id="receptionTime" label="Horário da recepção" type="time" value={settings.receptionTime || ""} onChange={(e) => update({ receptionTime: e.target.value })} />
+                      <Entrada id="ceremonyTime" label="Horário da cerimônia" type="time" value={settings.ceremonyTime || ""} onChange={(e) => update({ ceremonyTime: e.target.value })} />
+                      <Entrada id="receptionTime" label="Horário da recepção" type="time" value={settings.receptionTime || ""} onChange={(e) => update({ receptionTime: e.target.value })} />
                     </div>
-                    <Input id="locationMapUrl" label="Link do Google Maps" optional value={settings.locationMapUrl || ""} onChange={(e) => update({ locationMapUrl: e.target.value })} placeholder="https://maps.app.goo.gl/..." />
-                    <Input id="wazeUrl" label="Link do Waze" optional value={settings.wazeUrl || ""} onChange={(e) => update({ wazeUrl: e.target.value })} placeholder="https://waze.com/ul/..." />
-                    <Input id="uberUrl" label="Link do Uber" optional value={settings.uberUrl || ""} onChange={(e) => update({ uberUrl: e.target.value })} placeholder="https://m.uber.com/ul/..." />
+                    <Entrada id="locationMapUrl" label="Link do Google Maps" optional value={settings.locationMapUrl || ""} onChange={(e) => update({ locationMapUrl: e.target.value })} placeholder="https://maps.app.goo.gl/..." />
+                    <Entrada id="wazeUrl" label="Link do Waze" optional value={settings.wazeUrl || ""} onChange={(e) => update({ wazeUrl: e.target.value })} placeholder="https://waze.com/ul/..." />
+                    <Entrada id="uberUrl" label="Link do Uber" optional value={settings.uberUrl || ""} onChange={(e) => update({ uberUrl: e.target.value })} placeholder="https://m.uber.com/ul/..." />
                   </>
                 )}
 
                 {section.id === "DRESS" && section.key && (
                   <>
                     {visibilityToggle(section.key, section.desc)}
-                    <Input id="dressCodeTitle" label="Tipo de traje" value={settings.dressCodeTitle || ""} onChange={(e) => update({ dressCodeTitle: e.target.value })} placeholder="Passeio completo" />
-                    <Textarea id="dressCodeDesc" label="Orientações" rows={3} value={settings.dressCodeDesc || ""} onChange={(e) => update({ dressCodeDesc: e.target.value })} />
+                    <Entrada id="dressCodeTitle" label="Tipo de traje" value={settings.dressCodeTitle || ""} onChange={(e) => update({ dressCodeTitle: e.target.value })} placeholder="Passeio completo" />
+                    <AreaDeTexto id="dressCodeDesc" label="Orientações" rows={3} value={settings.dressCodeDesc || ""} onChange={(e) => update({ dressCodeDesc: e.target.value })} />
                     <fieldset className="flex flex-col gap-2">
                       <legend className="text-sm font-semibold text-tinta">Cores sugeridas</legend>
                       <div className="flex flex-wrap items-center gap-3">
@@ -590,24 +590,24 @@ export function EditorDoSiteCliente({
                     {visibilityToggle(section.key, section.desc)}
                     <fieldset className="flex flex-col gap-5 rounded-xl border border-linha p-3 pt-4">
                       <legend className="px-1 text-sm font-semibold text-tinta">Nova dica</legend>
-                      <Select value={tip.category} onValueChange={(v) => setTip({ ...tip, category: v })}>
-                        <SelectTrigger id="tip-category" label="Categoria">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
+                      <Selecao value={tip.category} onValueChange={(v) => setTip({ ...tip, category: v })}>
+                        <GatilhoDaSelecao id="tip-category" label="Categoria">
+                          <ValorDaSelecao />
+                        </GatilhoDaSelecao>
+                        <ConteudoDaSelecao>
                           {Object.entries(ROTULOS_DAS_DICAS).map(([value, label]) => (
-                            <SelectItem key={value} value={value}>
+                            <ItemDaSelecao key={value} value={value}>
                               {label}
-                            </SelectItem>
+                            </ItemDaSelecao>
                           ))}
-                        </SelectContent>
-                      </Select>
-                      <Input id="tip-title" label="Nome do lugar" value={tip.title} onChange={(e) => setTip({ ...tip, title: e.target.value })} />
-                      <Input id="tip-address" label="Endereço" value={tip.address} onChange={(e) => setTip({ ...tip, address: e.target.value })} />
-                      <Input id="tip-phone" label="Telefone" value={tip.phone} onChange={(e) => setTip({ ...tip, phone: e.target.value })} />
-                      <Input id="tip-link" label="Site ou link de reserva" value={tip.linkUrl} onChange={(e) => setTip({ ...tip, linkUrl: e.target.value })} placeholder="https://..." />
-                      <Input id="tip-discount" label="Cupom de desconto" value={tip.discountCode} onChange={(e) => setTip({ ...tip, discountCode: e.target.value.toUpperCase() })} inputClassName="font-semibold uppercase" />
-                      <Textarea id="tip-desc" label="Descrição" rows={2} value={tip.description} onChange={(e) => setTip({ ...tip, description: e.target.value })} />
+                        </ConteudoDaSelecao>
+                      </Selecao>
+                      <Entrada id="tip-title" label="Nome do lugar" value={tip.title} onChange={(e) => setTip({ ...tip, title: e.target.value })} />
+                      <Entrada id="tip-address" label="Endereço" value={tip.address} onChange={(e) => setTip({ ...tip, address: e.target.value })} />
+                      <Entrada id="tip-phone" label="Telefone" value={tip.phone} onChange={(e) => setTip({ ...tip, phone: e.target.value })} />
+                      <Entrada id="tip-link" label="Site ou link de reserva" value={tip.linkUrl} onChange={(e) => setTip({ ...tip, linkUrl: e.target.value })} placeholder="https://..." />
+                      <Entrada id="tip-discount" label="Cupom de desconto" value={tip.discountCode} onChange={(e) => setTip({ ...tip, discountCode: e.target.value.toUpperCase() })} inputClassName="font-semibold uppercase" />
+                      <AreaDeTexto id="tip-desc" label="Descrição" rows={2} value={tip.description} onChange={(e) => setTip({ ...tip, description: e.target.value })} />
                       <BotaoComCarregamento onClick={handleAddTip} loading={busyAction === "tip"} disabled={isPending} className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm} w-fit`}>
                         <Plus className="size-4" aria-hidden="true" /> Adicionar dica
                       </BotaoComCarregamento>
@@ -624,7 +624,7 @@ export function EditorDoSiteCliente({
                 {section.id === "MUSIC" && section.key && (
                   <>
                     {visibilityToggle(section.key, section.desc)}
-                    <Input id="spotifyPlaylistUrl" label="Link da playlist" value={settings.spotifyPlaylistUrl || ""} onChange={(e) => update({ spotifyPlaylistUrl: e.target.value })} placeholder="https://open.spotify.com/playlist/..." />
+                    <Entrada id="spotifyPlaylistUrl" label="Link da playlist" value={settings.spotifyPlaylistUrl || ""} onChange={(e) => update({ spotifyPlaylistUrl: e.target.value })} placeholder="https://open.spotify.com/playlist/..." />
                   </>
                 )}
 
@@ -687,7 +687,7 @@ function ListaDeItens({
                 <p className="truncate font-semibold text-tinta">{item.title}</p>
                 {item.text && <p className="line-clamp-2 text-sm text-tinta-suave">{item.text}</p>}
               </div>
-              <Button
+              <Botao
                 aria-label={`Remover ${item.title}`}
                 variant="ghost"
                 size="icon"
@@ -695,7 +695,7 @@ function ListaDeItens({
                 className="size-11 shrink-0 rounded-xl text-tinta-suave hover:bg-perigo-suave hover:text-perigo"
               >
                 <Trash2 className="size-4" aria-hidden="true" />
-              </Button>
+              </Botao>
             </li>
           ))}
         </ul>

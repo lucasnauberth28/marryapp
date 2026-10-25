@@ -8,8 +8,8 @@ import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { ModalPersonalizado } from "@/components/ui/custom-modal";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { EtiquetaDeSituacao } from "@/components/painel/status-chip";
-import { Input } from "@/components/ui/input";
-import { btn, estiloDoBotaoDeIconeDePerigo, estiloDoCartao, estiloDaDicaDoPainel, estiloDaCaixaDeErro } from "@/components/painel/styles";
+import { Entrada } from "@/components/ui/input";
+import { estiloDoBotao, estiloDoBotaoDeIconeDePerigo, estiloDoCartao, estiloDaDicaDoPainel, estiloDaCaixaDeErro } from "@/components/painel/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import {
   DndContext,
@@ -333,11 +333,11 @@ export function MesasCliente({ initialTables, initialUnassigned }: { initialTabl
           description={summary}
           actions={
             <>
-              <Link href="/mesas/3d" className={btn.secondary}>
+              <Link href="/mesas/3d" className={estiloDoBotao.secondary}>
                 <Box className="size-4" aria-hidden="true" />
                 Ver em 3D
               </Link>
-              <button type="button" onClick={() => setNewOpen(true)} className={btn.primary}>
+              <button type="button" onClick={() => setNewOpen(true)} className={estiloDoBotao.primary}>
                 <Plus className="size-4" aria-hidden="true" />
                 Nova mesa
               </button>
@@ -369,7 +369,7 @@ export function MesasCliente({ initialTables, initialUnassigned }: { initialTabl
 
       <ModalPersonalizado isOpen={newOpen} onClose={() => setNewOpen(false)} title="Nova mesa" description="Escolha um nome e quantos lugares a mesa tem." size="sm">
         <form onSubmit={handleAddTable} className="flex flex-col gap-5">
-          <Input
+          <Entrada
             id="new-table-name"
             label="Nome da mesa"
             value={newTableName}
@@ -378,7 +378,7 @@ export function MesasCliente({ initialTables, initialUnassigned }: { initialTabl
             autoComplete="off"
             invalid={!!newError}
           />
-          <Input
+          <Entrada
             id="new-table-capacity"
             type="number"
             inputMode="numeric"
@@ -393,7 +393,7 @@ export function MesasCliente({ initialTables, initialUnassigned }: { initialTabl
               {newError}
             </p>
           )}
-          <BotaoComCarregamento type="submit" loading={loading} className={`${btn.primary} ${btn.block}`}>
+          <BotaoComCarregamento type="submit" loading={loading} className={`${estiloDoBotao.primary} ${estiloDoBotao.block}`}>
             Criar mesa
           </BotaoComCarregamento>
         </form>

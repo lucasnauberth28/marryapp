@@ -8,7 +8,7 @@ import { CartaoDeIndicador, GradeDeIndicadores } from "@/components/plataforma/s
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Switch } from "@/components/ui/switch";
+import { Interruptor } from "@/components/ui/switch";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { obterVisaoGeralDaMadrinha, listarExcecoesDaMadrinha } from "@/lib/platform/queries/madrinha";
 import { formatarDiaEMes } from "@/lib/platform/format";
@@ -71,7 +71,7 @@ export default async function Page() {
                 Travado: só libera depois que a conexão com a API estiver pronta.
               </p>
             </div>
-            <Switch checked={false} disabled aria-labelledby="master-t" aria-describedby="master-d" className="mt-0.5" />
+            <Interruptor checked={false} disabled aria-labelledby="master-t" aria-describedby="master-d" className="mt-0.5" />
           </div>
           <ul className="mt-2 divide-y divide-linha">
             {checklist.map((item) => (

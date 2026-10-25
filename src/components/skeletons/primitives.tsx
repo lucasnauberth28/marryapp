@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Esqueleto } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 /* Peças pequenas que as composições (sections.tsx) e as telas reaproveitam. */
@@ -26,7 +26,7 @@ export function EsqueletoDeTexto({
     <div className={cn("flex flex-col", className)}>
       {Array.from({ length: lines }).map((_, i) => (
         <div key={i} className={cn("flex items-center", size === "base" ? "h-6" : "h-5")}>
-          <Skeleton className={cn("rounded-md", size === "base" ? "h-4" : "h-3", i === lines - 1 ? lastLineWidth : "w-full")} />
+          <Esqueleto className={cn("rounded-md", size === "base" ? "h-4" : "h-3", i === lines - 1 ? lastLineWidth : "w-full")} />
         </div>
       ))}
     </div>
@@ -50,7 +50,7 @@ export function EsqueletoDeAvatar({
   shape?: "circle" | "square";
   className?: string;
 }) {
-  return <Skeleton className={cn("shrink-0", TAMANHO_DO_AVATAR[size], shape === "circle" ? "rounded-full" : "rounded-xl", className)} />;
+  return <Esqueleto className={cn("shrink-0", TAMANHO_DO_AVATAR[size], shape === "circle" ? "rounded-full" : "rounded-xl", className)} />;
 }
 
 /**
@@ -67,7 +67,7 @@ export function EsqueletoDeImagem({
   className?: string;
 }) {
   const style: CSSProperties = { aspectRatio: typeof ratio === "number" ? String(ratio) : ratio };
-  return <Skeleton className={cn("w-full rounded-2xl", className)} style={style} />;
+  return <Esqueleto className={cn("w-full rounded-2xl", className)} style={style} />;
 }
 
 const ALTURAS_DAS_BARRAS = [38, 62, 48, 80, 56, 92, 70, 44, 66, 84, 52, 74];
@@ -95,22 +95,22 @@ export function EsqueletoDeGrafico({
     <div className={cn("min-w-0", className)}>
       {legend && (
         <div className="mb-4 flex h-5 items-center gap-5">
-          <Skeleton className="h-3 w-28 rounded-md" />
-          <Skeleton className="h-3 w-32 rounded-md" />
+          <Esqueleto className="h-3 w-28 rounded-md" />
+          <Esqueleto className="h-3 w-32 rounded-md" />
         </div>
       )}
       {variant === "area" ? (
-        <Skeleton className="w-full rounded-xl" style={{ height }} />
+        <Esqueleto className="w-full rounded-xl" style={{ height }} />
       ) : (
         <div className="grid grid-cols-[3.25rem_1fr] gap-x-2 pt-3">
           <div className="flex flex-col justify-between" style={{ height }} aria-hidden="true">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-3 w-9 self-end rounded-md" />
+              <Esqueleto key={i} className="h-3 w-9 self-end rounded-md" />
             ))}
           </div>
           <div className="grid items-end gap-2 border-b border-linha sm:gap-4" style={{ height, gridTemplateColumns: `repeat(${bars}, minmax(0, 1fr))` }}>
             {Array.from({ length: bars }).map((_, i) => (
-              <Skeleton key={i} className="mx-auto w-full max-w-[44px] rounded-b-none rounded-t-[4px]" style={{ height: `${ALTURAS_DAS_BARRAS[i % ALTURAS_DAS_BARRAS.length]}%` }} />
+              <Esqueleto key={i} className="mx-auto w-full max-w-[44px] rounded-b-none rounded-t-[4px]" style={{ height: `${ALTURAS_DAS_BARRAS[i % ALTURAS_DAS_BARRAS.length]}%` }} />
             ))}
           </div>
         </div>
@@ -139,7 +139,7 @@ export function EsqueletoDeAbas({
     return (
       <div className={cn("-mx-4 flex gap-2 overflow-hidden px-4 md:mx-0 md:px-0", className)}>
         {Array.from({ length: count }).map((_, i) => (
-          <Skeleton key={i} className={cn("h-11 shrink-0 rounded-md md:h-10", i % 2 ? "w-24" : "w-32")} />
+          <Esqueleto key={i} className={cn("h-11 shrink-0 rounded-md md:h-10", i % 2 ? "w-24" : "w-32")} />
         ))}
       </div>
     );
@@ -149,7 +149,7 @@ export function EsqueletoDeAbas({
       <div className="inline-flex max-w-full items-center gap-1 rounded-xl bg-areia p-1" aria-hidden="true">
         {Array.from({ length: count }).map((_, i) => (
           <div key={i} className={cn("flex min-h-11 items-center rounded-lg px-4 sm:min-h-9", i === 0 && "bg-papel shadow-[var(--shadow-aceito-1)]")}>
-            <Skeleton className={cn("h-4 rounded-md", LARGURAS_DAS_ABAS[i % LARGURAS_DAS_ABAS.length], i !== 0 && "bg-linha")} />
+            <Esqueleto className={cn("h-4 rounded-md", LARGURAS_DAS_ABAS[i % LARGURAS_DAS_ABAS.length], i !== 0 && "bg-linha")} />
           </div>
         ))}
       </div>

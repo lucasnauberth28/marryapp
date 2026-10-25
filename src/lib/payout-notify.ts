@@ -1,6 +1,6 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { brandedEmail, enviarEmail } from "@/lib/email";
+import { emailDaMarca, enviarEmail } from "@/lib/email";
 import { urlDoApp } from "@/lib/app-url";
 import { avisarDepois } from "@/lib/notifications/service";
 
@@ -44,7 +44,7 @@ export function avisarMudancaNoRepasse(params: { weddingId: string; actorName: s
       skipDuplicates: true,
     });
 
-    const { html, text } = brandedEmail({
+    const { html, text } = emailDaMarca({
       heading: title,
       paragraphs: [
         `Os dados de recebimento dos presentes do casamento ${FRASES_DO_REPASSE[params.change]} por ${who}.`,

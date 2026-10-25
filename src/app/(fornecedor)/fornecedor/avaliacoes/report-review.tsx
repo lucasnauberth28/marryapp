@@ -6,8 +6,8 @@ import { Flag } from "lucide-react";
 import { toast } from "sonner";
 import { denunciarAvaliacao } from "@/actions/vendor-report-actions";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Botao } from "@/components/ui/button";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 /** "Denunciar": o fornecedor pede à administração do Aceito para analisar uma avaliação (não some sozinha). */
@@ -51,7 +51,7 @@ export function DenunciarAvaliacao({ reviewId, coupleNames }: { reviewId: string
       <p className="text-sm text-tinta">
         Use a denúncia quando a avaliação for falsa, ofensiva ou de alguém que não foi seu cliente. A equipe analisa e decide se ela fica no ar.
       </p>
-      <Textarea
+      <AreaDeTexto
         id={`${id}-motivo`}
         label="Por que você está denunciando?"
         rows={3}
@@ -66,9 +66,9 @@ export function DenunciarAvaliacao({ reviewId, coupleNames }: { reviewId: string
         <button type="button" onClick={() => setOpen(false)} disabled={pending} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm, "min-h-11")}>
           Cancelar
         </button>
-        <Button type="submit" size="sm" loading={pending}>
+        <Botao type="submit" size="sm" loading={pending}>
           Enviar denúncia
-        </Button>
+        </Botao>
       </div>
     </form>
   );

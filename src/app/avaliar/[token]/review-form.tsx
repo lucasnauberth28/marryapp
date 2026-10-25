@@ -4,8 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BadgeCheck, Star } from "lucide-react";
 import { enviarAvaliacaoDoPedido } from "@/actions/vendor-review-actions";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Botao } from "@/components/ui/button";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { CARTAO_DA_PAGINA_COM_TOKEN } from "@/components/public/token-page-shell";
 
@@ -93,7 +93,7 @@ export function FormularioDeAvaliacao({ token, companyName }: { token: string; c
           </div>
         </fieldset>
 
-        <Textarea
+        <AreaDeTexto
           id="avaliar-comentario"
           label="Conte como foi"
           rows={5}
@@ -106,9 +106,9 @@ export function FormularioDeAvaliacao({ token, companyName }: { token: string; c
           inputClassName="min-h-32"
         />
 
-        <Button type="submit" loading={isPending} className="h-12">
+        <Botao type="submit" loading={isPending} className="h-12">
           Enviar avaliação
-        </Button>
+        </Botao>
       </form>
     </section>
   );

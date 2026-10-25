@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { SkeletonCard, SkeletonForm, SkeletonText } from "@/components/skeletons";
+import { Esqueleto } from "@/components/ui/skeleton";
+import { EsqueletoDeCartao, EsqueletoDeFormulario, EsqueletoDeTexto } from "@/components/skeletons";
 import { EsqueletoDasLinhas } from "@/components/plataforma/loading-parts";
 
 /* Esqueletos do detalhe do casal: o corpo de cada aba e a coluna lateral (plano, ações). */
@@ -7,23 +7,23 @@ import { EsqueletoDasLinhas } from "@/components/plataforma/loading-parts";
 function Lateral() {
   return (
     <aside className="flex flex-col gap-6">
-      <SkeletonCard>
+      <EsqueletoDeCartao>
         <div className="flex h-10 items-center">
-          <Skeleton className="h-7 w-28 rounded-lg" />
+          <Esqueleto className="h-7 w-28 rounded-lg" />
         </div>
-        <SkeletonText lines={2} size="sm" className="mt-1" />
-        <Skeleton className="mt-4 h-9 w-36 rounded-xl" />
-      </SkeletonCard>
-      <SkeletonCard>
+        <EsqueletoDeTexto lines={2} size="sm" className="mt-1" />
+        <Esqueleto className="mt-4 h-9 w-36 rounded-xl" />
+      </EsqueletoDeCartao>
+      <EsqueletoDeCartao>
         <EsqueletoDasLinhas rows={3} chip={false} />
-      </SkeletonCard>
-      <SkeletonCard>
+      </EsqueletoDeCartao>
+      <EsqueletoDeCartao>
         <div className="flex flex-col gap-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-11 rounded-xl" />
+            <Esqueleto key={i} className="h-11 rounded-xl" />
           ))}
         </div>
-      </SkeletonCard>
+      </EsqueletoDeCartao>
     </aside>
   );
 }
@@ -33,8 +33,8 @@ function LinhasDeRotuloEValor({ rows }: { rows: number }) {
     <div className="flex flex-col gap-3">
       {Array.from({ length: rows }).map((_, i) => (
         <div key={i} className="grid gap-1 sm:grid-cols-[170px_1fr]">
-          <Skeleton className="h-4 w-24 rounded-md" />
-          <Skeleton className="h-4 w-56 max-w-full rounded-md" />
+          <Esqueleto className="h-4 w-24 rounded-md" />
+          <Esqueleto className="h-4 w-56 max-w-full rounded-md" />
         </div>
       ))}
     </div>
@@ -49,15 +49,15 @@ export function EsqueletoDaAbaDoCasal({ tab }: { tab: string }) {
     return (
       <div className={DUAS_COLUNAS}>
         <div className="flex min-w-0 flex-col gap-6">
-          <SkeletonCard>
+          <EsqueletoDeCartao>
             <LinhasDeRotuloEValor rows={7} />
-          </SkeletonCard>
-          <SkeletonCard>
+          </EsqueletoDeCartao>
+          <EsqueletoDeCartao>
             <EsqueletoDasLinhas rows={3} chip={false} />
-          </SkeletonCard>
-          <SkeletonCard>
+          </EsqueletoDeCartao>
+          <EsqueletoDeCartao>
             <EsqueletoDasLinhas rows={4} chip={false} />
-          </SkeletonCard>
+          </EsqueletoDeCartao>
         </div>
         <Lateral />
       </div>
@@ -66,15 +66,15 @@ export function EsqueletoDaAbaDoCasal({ tab }: { tab: string }) {
     return (
       <div className={DUAS_COLUNAS}>
         <div className="flex min-w-0 flex-col gap-6">
-          <SkeletonCard>
+          <EsqueletoDeCartao>
             <EsqueletoDasLinhas rows={3} />
-          </SkeletonCard>
-          <SkeletonCard title={false}>
-            <SkeletonForm fields={["input", "textarea"]} />
-          </SkeletonCard>
-          <SkeletonCard>
-            <SkeletonForm fields={["input", "textarea"]} />
-          </SkeletonCard>
+          </EsqueletoDeCartao>
+          <EsqueletoDeCartao title={false}>
+            <EsqueletoDeFormulario fields={["input", "textarea"]} />
+          </EsqueletoDeCartao>
+          <EsqueletoDeCartao>
+            <EsqueletoDeFormulario fields={["input", "textarea"]} />
+          </EsqueletoDeCartao>
         </div>
         <Lateral />
       </div>
@@ -82,18 +82,18 @@ export function EsqueletoDaAbaDoCasal({ tab }: { tab: string }) {
   if (tab === "atividade" || tab === "suporte")
     return (
       <div className={METADES}>
-        <SkeletonCard>
+        <EsqueletoDeCartao>
           <EsqueletoDasLinhas rows={5} chip={false} />
-        </SkeletonCard>
-        <SkeletonCard>
+        </EsqueletoDeCartao>
+        <EsqueletoDeCartao>
           <EsqueletoDasLinhas rows={4} />
-        </SkeletonCard>
+        </EsqueletoDeCartao>
       </div>
     );
   return (
-    <SkeletonCard>
+    <EsqueletoDeCartao>
       <EsqueletoDasLinhas rows={3} />
-    </SkeletonCard>
+    </EsqueletoDeCartao>
   );
 }
 
@@ -102,7 +102,7 @@ export function EsqueletoDoDetalheDoCasal() {
     <>
       <div className="-mt-2 flex flex-wrap gap-2">
         {[24, 20, 24].map((w, i) => (
-          <Skeleton key={i} className="h-7 rounded-lg" style={{ width: `${w * 4}px` }} />
+          <Esqueleto key={i} className="h-7 rounded-lg" style={{ width: `${w * 4}px` }} />
         ))}
       </div>
     </>

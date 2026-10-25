@@ -4,10 +4,10 @@ import { useId, useState } from "react";
 import { ItemDoQuadro, SituacaoDaTarefa } from "@/types/kanban";
 import { ModalPersonalizado } from "@/components/ui/custom-modal";
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { NativeSelect } from "@/components/ui/select";
-import { btn, estiloDoBotaoDePerigo } from "@/components/painel/styles";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
+import { SelecaoNativa } from "@/components/ui/select";
+import { estiloDoBotao, estiloDoBotaoDePerigo } from "@/components/painel/styles";
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 
 export interface DadosDoFormularioDaTarefa {
@@ -61,7 +61,7 @@ function FormularioDaTarefa({ task, onSave, onDelete, onClose }: { task: ItemDoQ
   return (
     <>
       <form onSubmit={submit} className="flex flex-col gap-5">
-        <Input
+        <Entrada
           id={ids.title}
           label="O que precisa ser feito?"
           value={title}
@@ -71,24 +71,24 @@ function FormularioDaTarefa({ task, onSave, onDelete, onClose }: { task: ItemDoQ
           error={error && !title.trim() ? error : undefined}
         />
 
-        <Textarea id={ids.description} label="Detalhes" optional value={description} onChange={(e) => setDescription(e.target.value)} rows={3} disabled={busy} />
+        <AreaDeTexto id={ids.description} label="Detalhes" optional value={description} onChange={(e) => setDescription(e.target.value)} rows={3} disabled={busy} />
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Input id={ids.due} type="date" label="Prazo" value={dueDate} onChange={(e) => setDueDate(e.target.value)} disabled={busy} />
-          <Input id={ids.assignee} label="Quem cuida" value={assignee} onChange={(e) => setAssignee(e.target.value)} placeholder="Nome" disabled={busy} />
+          <Entrada id={ids.due} type="date" label="Prazo" value={dueDate} onChange={(e) => setDueDate(e.target.value)} disabled={busy} />
+          <Entrada id={ids.assignee} label="Quem cuida" value={assignee} onChange={(e) => setAssignee(e.target.value)} placeholder="Nome" disabled={busy} />
         </div>
 
-        <NativeSelect id={ids.status} label="Como está" value={status} onChange={(e) => setStatus(e.target.value as SituacaoDaTarefa)} disabled={busy}>
+        <SelecaoNativa id={ids.status} label="Como está" value={status} onChange={(e) => setStatus(e.target.value as SituacaoDaTarefa)} disabled={busy}>
           <option value={SituacaoDaTarefa.TODO}>A fazer</option>
           <option value={SituacaoDaTarefa.IN_PROGRESS}>Em andamento</option>
           <option value={SituacaoDaTarefa.DONE}>Concluída</option>
-        </NativeSelect>
+        </SelecaoNativa>
 
         <div className="flex flex-col gap-2 border-t border-linha pt-4">
-          <BotaoComCarregamento type="submit" loading={busy} className={`${btn.primary} ${btn.block}`}>
+          <BotaoComCarregamento type="submit" loading={busy} className={`${estiloDoBotao.primary} ${estiloDoBotao.block}`}>
             {task ? "Salvar alterações" : "Criar tarefa"}
           </BotaoComCarregamento>
-          <button type="button" onClick={onClose} disabled={busy} className={`${btn.quiet} ${btn.block}`}>
+          <button type="button" onClick={onClose} disabled={busy} className={`${estiloDoBotao.quiet} ${estiloDoBotao.block}`}>
             Cancelar
           </button>
           {task && (

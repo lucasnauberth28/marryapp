@@ -1,7 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { urlDoApp } from "@/lib/app-url";
-import { brandedEmail, enviarEmail } from "@/lib/email";
+import { emailDaMarca, enviarEmail } from "@/lib/email";
 import { enviarPushParaAPessoa } from "@/lib/notifications/push";
 import { montarConteudoDoPush } from "@/lib/notifications/push-payload";
 import { carregarPreferencias } from "@/lib/notifications/senders";
@@ -68,7 +68,7 @@ export async function liberarReservasAntigas(announcementId: string): Promise<nu
 const textoDaFalha = (reason: string) => (reason === "not_configured" ? "E-mail não configurado no servidor" : reason === "invalid_recipient" ? TEXTO_DO_PULO.no_email : "Falha no envio");
 
 function emailPara(content: Pick<ConteudoDoComunicado, "title" | "body" | "linkUrl">, service: boolean) {
-  const { html, text } = brandedEmail({
+  const { html, text } = emailDaMarca({
     heading: content.title,
     preheader: content.body.slice(0, 100),
     paragraphs: paragrafosDoCorpo(content.body),

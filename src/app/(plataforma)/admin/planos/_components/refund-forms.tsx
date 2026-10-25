@@ -4,10 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { decidirReembolso, registrarPedidoDeReembolso, type ResultadoDaAcaoDePlanos } from "@/actions/admin-planos-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
+import { SelecaoNativa } from "@/components/ui/select";
+import { AreaDeTexto } from "@/components/ui/textarea";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 function useExecutar() {
@@ -50,26 +50,26 @@ export function DecisaoDeReembolso({ refundId, payer }: { refundId: string; paye
               Ao aprovar, o Aceito só registra a decisão. Depois, abra o pagamento no painel do Mercado Pago e faça o estorno: quando o aviso do Mercado Pago chegar, o pedido e o pagamento ficam como estornados.
             </p>
           ) : null}
-          <Textarea label={open === "approve" ? "Anotação da aprovação" : "Motivo da recusa"} rows={2} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} error={error ?? undefined} hint="Fica no registro de atividades." />
+          <AreaDeTexto label={open === "approve" ? "Anotação da aprovação" : "Motivo da recusa"} rows={2} maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} error={error ?? undefined} hint="Fica no registro de atividades." />
           <div className="flex flex-wrap gap-2">
-            <Button type="submit" size="sm" disabled={note.trim().length < 5} loading={pending}>
+            <Botao type="submit" size="sm" disabled={note.trim().length < 5} loading={pending}>
               {open === "approve" ? "Aprovar reembolso" : "Recusar pedido"}
-            </Button>
-            <Button type="button" variant="quiet" size="sm" onClick={() => setOpen(null)} disabled={pending}>
+            </Botao>
+            <Botao type="button" variant="quiet" size="sm" onClick={() => setOpen(null)} disabled={pending}>
               Voltar
-            </Button>
+            </Botao>
           </div>
         </form>
       ) : (
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => setOpen("approve")}>
+          <Botao type="button" variant="outline" size="sm" onClick={() => setOpen("approve")}>
             Aprovar
             <span className="sr-only"> o reembolso de {payer}</span>
-          </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => setOpen("deny")}>
+          </Botao>
+          <Botao type="button" variant="outline" size="sm" onClick={() => setOpen("deny")}>
             Recusar
             <span className="sr-only"> o reembolso de {payer}</span>
-          </Button>
+          </Botao>
         </div>
       )}
     </div>
@@ -107,7 +107,7 @@ export function FormularioDeRegistrarReembolso({ payments }: { payments: { id: s
         });
       }}
     >
-      <NativeSelect
+      <SelecaoNativa
         label="Pagamento"
         alwaysFloat
         value={subscriptionId}
@@ -124,15 +124,15 @@ export function FormularioDeRegistrarReembolso({ payments }: { payments: { id: s
             {p.label} · {formatarReais(p.amount)}
           </option>
         ))}
-      </NativeSelect>
-      <Input label="Valor a devolver (R$)" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} hint={chosen ? `Pago: ${formatarReais(chosen.amount)}` : undefined} required />
+      </SelecaoNativa>
+      <Entrada label="Valor a devolver (R$)" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} hint={chosen ? `Pago: ${formatarReais(chosen.amount)}` : undefined} required />
       <div className="md:col-span-2">
-        <Textarea label="Motivo do pedido" rows={2} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} error={error ?? undefined} required />
+        <AreaDeTexto label="Motivo do pedido" rows={2} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} error={error ?? undefined} required />
       </div>
       <div className="md:col-span-2">
-        <Button type="submit" variant="outline" disabled={!subscriptionId || reason.trim().length < 5} loading={pending}>
+        <Botao type="submit" variant="outline" disabled={!subscriptionId || reason.trim().length < 5} loading={pending}>
           Registrar pedido
-        </Button>
+        </Botao>
       </div>
     </form>
   );

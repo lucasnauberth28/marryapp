@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { salvarPreferenciasDeNotificacao } from "@/actions/notification-preferences-actions";
 import { ROTULO_DO_GRUPO, type PublicoDaNotificacao, type GrupoDeNotificacao } from "@/lib/notifications/catalog";
 import { canaisOferecidos, type CanalDeNotificacao, type PreferenciasDeNotificacao } from "@/lib/notifications/preferences";
-import { NativeSelect } from "@/components/ui/select";
+import { SelecaoNativa } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { CartaoDoPush } from "./push-card";
 import { InterruptorDeAlternancia } from "./toggle-switch";
@@ -124,7 +124,7 @@ export function FormularioDePreferencias({ initial, audience, groups, pushPublic
         </div>
 
         <div className={cn("mt-4 flex flex-wrap items-center gap-x-4 gap-y-4 pl-[52px]", !quiet.enabled && "opacity-80")}>
-          <NativeSelect
+          <SelecaoNativa
             id="silencio-inicio"
             label="Das"
             fieldClassName="w-32"
@@ -137,8 +137,8 @@ export function FormularioDePreferencias({ initial, audience, groups, pushPublic
                 {rotuloDaHora(h)}
               </option>
             ))}
-          </NativeSelect>
-          <NativeSelect
+          </SelecaoNativa>
+          <SelecaoNativa
             id="silencio-fim"
             label="Até"
             fieldClassName="w-32"
@@ -151,7 +151,7 @@ export function FormularioDePreferencias({ initial, audience, groups, pushPublic
                 {rotuloDaHora(h)}
               </option>
             ))}
-          </NativeSelect>
+          </SelecaoNativa>
           <span className="text-xs text-tinta-suave">Horário de Brasília</span>
         </div>
         {quiet.enabled && quiet.startHour === quiet.endHour && (

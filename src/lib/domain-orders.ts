@@ -90,4 +90,4 @@ export const obterPedidosDeDominioDoCasamento = cache(
   },
 );
 
-export { ehSituacaoAtiva as isActiveStatus };
+export { ehSituacaoAtiva };

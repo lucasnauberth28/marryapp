@@ -20,11 +20,11 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
+import { SelecaoNativa } from "@/components/ui/select";
+import { AreaDeTexto } from "@/components/ui/textarea";
+import { Dialogo, ConteudoDoDialogo, DescricaoDoDialogo, CabecalhoDoDialogo, TituloDoDialogo } from "@/components/ui/dialog";
 import { SeletorDeData } from "@/components/ui/date-picker";
 import { criarPedidoDeOrcamento, type ItemDaListaDeFornecedoresPublicos } from "@/actions/partner-vendor-actions";
 import { interpretarRegioes } from "@/app/(fornecedor)/_lib/vendor-panel";
@@ -253,7 +253,7 @@ export function VisaoDeFornecedoresPublicos({ initialPartners, weddingDate: acti
             onSubmit={(e) => e.preventDefault()}
             className="grid grid-cols-1 gap-x-3 gap-y-5 rounded-[16px] border border-linha bg-papel p-4 pt-5 shadow-aceito-1 sm:grid-cols-2 lg:grid-cols-4"
           >
-            <Input
+            <Entrada
               id="filtro-busca"
               type="search"
               label="O que você procura?"
@@ -263,16 +263,16 @@ export function VisaoDeFornecedoresPublicos({ initialPartners, weddingDate: acti
               placeholder="Espaço, fotógrafo, buffet..."
             />
 
-            <NativeSelect id="filtro-regiao" label="Onde vai ser?" icon={MapPin} value={selectedRegion} onChange={(e) => setSelectedRegion(e.target.value)}>
+            <SelecaoNativa id="filtro-regiao" label="Onde vai ser?" icon={MapPin} value={selectedRegion} onChange={(e) => setSelectedRegion(e.target.value)}>
               {REGIOES.map((reg) => (
                 <option key={reg} value={reg}>
                   {reg === TODAS_AS_REGIOES ? "Todas as regiões" : reg}
                 </option>
               ))}
-            </NativeSelect>
+            </SelecaoNativa>
 
             <div className={cn("min-w-0 flex-col sm:flex", moreOpen || dateInput ? "flex" : "hidden")}>
-              <Input
+              <Entrada
                 id="filtro-data"
                 type="date"
                 label="Data do casamento"
@@ -302,13 +302,13 @@ export function VisaoDeFornecedoresPublicos({ initialPartners, weddingDate: acti
             </div>
 
             <div className={cn("min-w-0 flex-col sm:flex", moreOpen || budget || dateInput ? "flex" : "hidden")}>
-              <NativeSelect id="filtro-valor" label="Até quanto?" alwaysFloat value={budget} onChange={(e) => setBudget(e.target.value)}>
+              <SelecaoNativa id="filtro-valor" label="Até quanto?" alwaysFloat value={budget} onChange={(e) => setBudget(e.target.value)}>
                 {FAIXAS_DE_ORCAMENTO.map((b) => (
                   <option key={b.value} value={b.value}>
                     {b.label}
                   </option>
                 ))}
-              </NativeSelect>
+              </SelecaoNativa>
             </div>
 
             <button
@@ -570,20 +570,20 @@ export function VisaoDeFornecedoresPublicos({ initialPartners, weddingDate: acti
       </section>
 
       {/* Modal de Agendamento de Reunião e Orçamento */}
-      <Dialog open={leadModalOpen} onOpenChange={setLeadModalOpen}>
-        <DialogContent className="sm:max-w-md bg-papel rounded-[16px] p-6">
-          <DialogHeader>
-            <DialogTitle className="font-display text-xl text-tinta">
+      <Dialogo open={leadModalOpen} onOpenChange={setLeadModalOpen}>
+        <ConteudoDoDialogo className="sm:max-w-md bg-papel rounded-[16px] p-6">
+          <CabecalhoDoDialogo>
+            <TituloDoDialogo className="font-display text-xl text-tinta">
               {leadSent ? "Pedido enviado" : "Pedir orçamento ou reunião"}
-            </DialogTitle>
-            <DialogDescription className="text-sm text-tinta-suave mt-1">
+            </TituloDoDialogo>
+            <DescricaoDoDialogo className="text-sm text-tinta-suave mt-1">
               {leadSent ? (
                 <>Recebemos os seus dados, {leadSent.first}.</>
               ) : (
                 <>Os seus dados vão direto para <strong>{selectedPartner?.companyName}</strong>, que responde pelo WhatsApp.</>
               )}
-            </DialogDescription>
-          </DialogHeader>
+            </DescricaoDoDialogo>
+          </CabecalhoDoDialogo>
 
           {leadSent ? (
             <div role="status" className="space-y-3 pt-2 text-sm text-tinta">
@@ -602,13 +602,13 @@ export function VisaoDeFornecedoresPublicos({ initialPartners, weddingDate: acti
                   <span className="sr-only"> (abre em nova aba)</span>
                 </a>
               ) : null}
-              <Button type="button" variant="ghost" className="h-11 w-full rounded-full font-semibold text-ameixa" onClick={() => setLeadModalOpen(false)}>
+              <Botao type="button" variant="ghost" className="h-11 w-full rounded-full font-semibold text-ameixa" onClick={() => setLeadModalOpen(false)}>
                 Voltar aos fornecedores
-              </Button>
+              </Botao>
             </div>
           ) : (
           <form onSubmit={handleSubmitLead} className="flex flex-col gap-5 pt-5">
-            <Input
+            <Entrada
               id="vl-nome"
               name="name"
               label="Seu nome ou o nome do casal"
@@ -620,7 +620,7 @@ export function VisaoDeFornecedoresPublicos({ initialPartners, weddingDate: acti
             />
 
             <div className="grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 min-[480px]:gap-3">
-              <Input
+              <Entrada
                 id="vl-telefone"
                 name="phone"
                 label="WhatsApp com DDD"
@@ -632,7 +632,7 @@ export function VisaoDeFornecedoresPublicos({ initialPartners, weddingDate: acti
                 placeholder="(11) 99999-9999"
                 required
               />
-              <Input
+              <Entrada
                 id="vl-email"
                 name="email"
                 label="E-mail"
@@ -646,7 +646,7 @@ export function VisaoDeFornecedoresPublicos({ initialPartners, weddingDate: acti
             </div>
 
             <div className="grid grid-cols-1 gap-5 min-[480px]:grid-cols-2 min-[480px]:gap-3">
-              <Input
+              <Entrada
                 id="vl-convidados"
                 label="Nº de convidados"
                 inputMode="numeric"
@@ -698,7 +698,7 @@ export function VisaoDeFornecedoresPublicos({ initialPartners, weddingDate: acti
               </div>
             </div>
 
-            <Textarea
+            <AreaDeTexto
               id="vl-mensagem"
               label="Recado para o fornecedor"
               optional
@@ -708,18 +708,18 @@ export function VisaoDeFornecedoresPublicos({ initialPartners, weddingDate: acti
               rows={3}
             />
 
-            <Button
+            <Botao
               type="submit"
               loading={isPendingLead}
               className="w-full bg-brand hover:bg-brand-600 text-white rounded-full font-bold h-12 text-sm shadow-md gap-2 mt-2"
             >
               <Calendar className="w-4 h-4" />
               <span>Enviar pedido</span>
-            </Button>
+            </Botao>
           </form>
           )}
-        </DialogContent>
-      </Dialog>
+        </ConteudoDoDialogo>
+      </Dialogo>
 
       <RodapeDaLanding />
     </div>

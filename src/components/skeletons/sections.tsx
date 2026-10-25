@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { estiloDoCartao } from "@/components/casal/ui";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Esqueleto } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { EsqueletoDeAvatar, EsqueletoDeTexto } from "./primitives";
 
@@ -32,28 +32,28 @@ export function EsqueletoDoCabecalhoDaPagina({
       <div className="min-w-0 max-w-3xl flex-1">
         {breadcrumb && (
           <div className="mb-4 flex h-5 items-center gap-2">
-            <Skeleton className="h-3.5 w-16 rounded-md" />
-            <Skeleton className="h-3.5 w-24 rounded-md" />
+            <Esqueleto className="h-3.5 w-16 rounded-md" />
+            <Esqueleto className="h-3.5 w-24 rounded-md" />
           </div>
         )}
         {eyebrow && (
           <div className="mb-1 flex h-4 items-center">
-            <Skeleton className="h-3 w-28 rounded-md" />
+            <Esqueleto className="h-3 w-28 rounded-md" />
           </div>
         )}
         <div className="flex h-9 items-center md:h-[46px]">
-          <Skeleton className="h-7 w-3/4 max-w-sm rounded-lg md:h-9" />
+          <Esqueleto className="h-7 w-3/4 max-w-sm rounded-lg md:h-9" />
         </div>
         {description && (
           <div className="mt-1.5 flex h-6 items-center">
-            <Skeleton className="h-4 w-full max-w-md rounded-md" />
+            <Esqueleto className="h-4 w-full max-w-md rounded-md" />
           </div>
         )}
       </div>
       {actions > 0 && (
         <div className="flex flex-wrap items-center gap-2 md:shrink-0 md:justify-end">
           {Array.from({ length: actions }).map((_, i) => (
-            <Skeleton key={i} className={cn("h-11 rounded-xl", i === 0 ? "w-36" : "w-28")} />
+            <Esqueleto key={i} className={cn("h-11 rounded-xl", i === 0 ? "w-36" : "w-28")} />
           ))}
         </div>
       )}
@@ -69,14 +69,14 @@ export function EsqueletoDeIndicador({ hint = true, className }: { hint?: boolea
   return (
     <div className={cn(estiloDoCartao, "block p-5", className)}>
       <div className="flex h-4 items-center">
-        <Skeleton className="h-3 w-24 rounded-md" />
+        <Esqueleto className="h-3 w-24 rounded-md" />
       </div>
       <div className="mt-2 flex h-10 items-center md:h-11">
-        <Skeleton className="h-8 w-28 rounded-lg" />
+        <Esqueleto className="h-8 w-28 rounded-lg" />
       </div>
       {hint && (
         <div className="mt-2 flex h-5 items-center">
-          <Skeleton className="h-3 w-36 rounded-md" />
+          <Esqueleto className="h-3 w-36 rounded-md" />
         </div>
       )}
     </div>
@@ -129,12 +129,12 @@ export function EsqueletoDeCartao({
     <div className={cn(estiloDoCartao, "min-w-0", padded && "p-5 md:p-6", className)}>
       {title && (
         <div className={cn("mb-4 flex h-7 items-center", !padded && "px-5 pt-5 md:px-6 md:pt-6")}>
-          <Skeleton className="h-5 w-40 rounded-md" />
+          <Esqueleto className="h-5 w-40 rounded-md" />
         </div>
       )}
       {description && (
         <div className={cn("-mt-2 mb-4 flex h-5 items-center", !padded && "px-5 md:px-6")}>
-          <Skeleton className="h-3 w-56 max-w-full rounded-md" />
+          <Esqueleto className="h-3 w-56 max-w-full rounded-md" />
         </div>
       )}
       {children ?? <EsqueletoDeTexto lines={3} />}
@@ -173,11 +173,11 @@ export function EsqueletoDeLista({
           {leading === "avatar" && <EsqueletoDeAvatar />}
           {leading === "icon" && <EsqueletoDeAvatar shape="square" />}
           <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
-            <Skeleton className={cn("h-4 rounded-md", i % 3 === 0 ? "w-44" : i % 3 === 1 ? "w-36" : "w-52", "max-w-full")} />
-            {lines === 2 && <Skeleton className="h-3 w-28 max-w-full rounded-md" />}
+            <Esqueleto className={cn("h-4 rounded-md", i % 3 === 0 ? "w-44" : i % 3 === 1 ? "w-36" : "w-52", "max-w-full")} />
+            {lines === 2 && <Esqueleto className="h-3 w-28 max-w-full rounded-md" />}
           </div>
-          {trailing === "chip" && <Skeleton className="h-7 w-20 shrink-0 rounded-lg" />}
-          {trailing === "action" && <Skeleton className="size-9 shrink-0 rounded-lg" />}
+          {trailing === "chip" && <Esqueleto className="h-7 w-20 shrink-0 rounded-lg" />}
+          {trailing === "action" && <Esqueleto className="size-9 shrink-0 rounded-lg" />}
         </div>
       ))}
     </div>
@@ -214,7 +214,7 @@ export function EsqueletoDeTabela({
       <div className="hidden overflow-hidden rounded-2xl border border-linha bg-papel shadow-[var(--shadow-aceito-1)] md:block">
         <div className="grid h-11 items-center gap-3 border-b border-linha px-6" style={template}>
           {Array.from({ length: columns }).map((_, c) => (
-            <Skeleton key={c} className={cn("h-3 rounded-md", c === 0 ? "w-20" : LARGURAS_DAS_COLUNAS[c % LARGURAS_DAS_COLUNAS.length], c === columns - 1 && columns > 2 && "justify-self-end")} />
+            <Esqueleto key={c} className={cn("h-3 rounded-md", c === 0 ? "w-20" : LARGURAS_DAS_COLUNAS[c % LARGURAS_DAS_COLUNAS.length], c === columns - 1 && columns > 2 && "justify-self-end")} />
           ))}
         </div>
         {Array.from({ length: rows }).map((_, r) => (
@@ -223,10 +223,10 @@ export function EsqueletoDeTabela({
               c === 0 ? (
                 <div key={c} className="flex min-w-0 items-center gap-3">
                   {avatar && <EsqueletoDeAvatar />}
-                  <Skeleton className={cn("h-4 max-w-full rounded-md", r % 2 ? "w-36" : "w-44")} />
+                  <Esqueleto className={cn("h-4 max-w-full rounded-md", r % 2 ? "w-36" : "w-44")} />
                 </div>
               ) : (
-                <Skeleton key={c} className={cn("h-4 rounded-md", LARGURAS_DAS_COLUNAS[(c + r) % LARGURAS_DAS_COLUNAS.length], c === columns - 1 && columns > 2 && "justify-self-end")} />
+                <Esqueleto key={c} className={cn("h-4 rounded-md", LARGURAS_DAS_COLUNAS[(c + r) % LARGURAS_DAS_COLUNAS.length], c === columns - 1 && columns > 2 && "justify-self-end")} />
               ),
             )}
           </div>
@@ -240,15 +240,15 @@ export function EsqueletoDeTabela({
             <div className="flex items-center gap-3">
               {avatar && <EsqueletoDeAvatar />}
               <div className="flex h-6 flex-1 items-center">
-                <Skeleton className={cn("h-4 max-w-full rounded-md", r % 2 ? "w-36" : "w-44")} />
+                <Esqueleto className={cn("h-4 max-w-full rounded-md", r % 2 ? "w-36" : "w-44")} />
               </div>
             </div>
             {mobileFields > 0 && (
               <div className="mt-3 grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2">
                 {Array.from({ length: mobileFields }).map((_, f) => (
                   <div key={f} className="col-span-2 grid h-5 grid-cols-subgrid items-center">
-                    <Skeleton className="h-3 w-16 rounded-md" />
-                    <Skeleton className={cn("h-3 rounded-md", f % 2 ? "w-20" : "w-28")} />
+                    <Esqueleto className="h-3 w-16 rounded-md" />
+                    <Esqueleto className={cn("h-3 rounded-md", f % 2 ? "w-20" : "w-28")} />
                   </div>
                 ))}
               </div>
@@ -293,11 +293,11 @@ export function EsqueletoDeFormulario({
               kind === "textarea" ? "min-h-24 items-start pt-[18px] sm:col-span-full" : "h-12 items-center",
             )}
           >
-            <Skeleton className={cn("h-3 rounded-md", i % 3 === 0 ? "w-28" : i % 3 === 1 ? "w-20" : "w-36")} />
+            <Esqueleto className={cn("h-3 rounded-md", i % 3 === 0 ? "w-28" : i % 3 === 1 ? "w-20" : "w-36")} />
           </div>
         ))}
       </div>
-      {submit && <Skeleton className="h-11 w-36 rounded-xl" />}
+      {submit && <Esqueleto className="h-11 w-36 rounded-xl" />}
     </div>
   );
 }

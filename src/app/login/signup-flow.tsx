@@ -24,10 +24,10 @@ import { cadastrarContaDoPlano, type DadosDoCadastroDoPlano } from "@/actions/su
 import { PixDaAssinatura } from "@/components/checkout/subscription-pix";
 import { CATEGORIAS_DE_FORNECEDOR } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
-import { NativeSelect } from "@/components/ui/select";
+import { SelecaoNativa } from "@/components/ui/select";
 import { mascararDocumentoDigitando } from "@/lib/formatacao/documento";
 import { mascararTelefone } from "@/lib/formatacao/telefone";
 import { formatarPrecoDoPlano, planosPara, type TipoDeConta, type OpcaoDePlano, type EtapaDoCadastro } from "./auth-config";
@@ -304,11 +304,11 @@ export function FluxoDeCadastro({ step, type, onStepChange, onTypeChange, initia
                   )}
                 </Campo>
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <NativeSelect id="cadastro-category" label="Categoria" value={category} onChange={(e) => setCategory(e.target.value)}>
+                  <SelecaoNativa id="cadastro-category" label="Categoria" value={category} onChange={(e) => setCategory(e.target.value)}>
                     {CATEGORIAS_DE_FORNECEDOR.map((cat) => (
                       <option key={cat}>{cat}</option>
                     ))}
-                  </NativeSelect>
+                  </SelecaoNativa>
                   <Campo id="cadastro-city" label="Cidade onde atende" icon={MapPin} error={errors.city}>
                     {(c) => (
                       <input
@@ -440,10 +440,10 @@ export function FluxoDeCadastro({ step, type, onStepChange, onTypeChange, initia
 
             <div className="mt-1 flex items-center gap-3">
               <BotaoVoltar onClick={() => onStepChange("plano")} />
-              <Button type="submit" loading={isPending || leaving} className="h-12 flex-1 rounded-[12px] px-6">
+              <Botao type="submit" loading={isPending || leaving} className="h-12 flex-1 rounded-[12px] px-6">
                 {plan.price > 0 ? "Criar conta e pagar" : "Criar conta"}
                 <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
-              </Button>
+              </Botao>
             </div>
             <p className="text-center text-sm leading-5 text-tinta-suave">
               Ao criar a conta, você concorda com os{" "}

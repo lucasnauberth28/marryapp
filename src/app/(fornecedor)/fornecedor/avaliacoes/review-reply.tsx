@@ -5,8 +5,8 @@ import { Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { responderAvaliacao } from "@/actions/vendor-review-actions";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Botao } from "@/components/ui/button";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 const MINIMO_DE_CARACTERES = 2;
@@ -121,7 +121,7 @@ function FormularioDeResposta({
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
-      <Textarea
+      <AreaDeTexto
         id={fieldId}
         label="Sua resposta pública"
         rows={2}
@@ -144,9 +144,9 @@ function FormularioDeResposta({
             Cancelar
           </button>
         ) : null}
-        <Button type="submit" size="sm" loading={isPending}>
+        <Botao type="submit" size="sm" loading={isPending}>
           {isEdit ? "Salvar resposta" : "Publicar resposta"}
-        </Button>
+        </Botao>
       </div>
     </form>
   );

@@ -30,4 +30,4 @@ function CaixaDeSelecao({
   )
 }
 
-export { CaixaDeSelecao as Checkbox }
+export { CaixaDeSelecao }

@@ -101,4 +101,4 @@ function Botao({
   )
 }
 
-export { Botao as Button, variantesDoBotao as buttonVariants }
+export { Botao, variantesDoBotao }

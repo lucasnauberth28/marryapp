@@ -5,10 +5,10 @@ import { useEstadoSincronizado } from "@/hooks/use-synced-state";
 import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Selecao, ConteudoDaSelecao, ItemDaSelecao, GatilhoDaSelecao, ValorDaSelecao } from "@/components/ui/select";
 import { TabelaDeDados } from "@/components/ui/data-table";
 import { criarPessoa, atualizarPessoa, excluirPessoa } from "@/actions/rbac-actions";
-import { Input } from "@/components/ui/input";
+import { Entrada } from "@/components/ui/input";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { AbasDeAcesso } from "@/components/casal/access-tabs";
@@ -165,14 +165,14 @@ export function PessoasCliente({ initialUsers, roles, embedded = false }: { init
             </p>
           </div>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-            <Input
+            <Entrada
               id={`${uid}-name`}
               label="Nome completo"
               placeholder="Ex.: João da Silva"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
-            <Input
+            <Entrada
               id={`${uid}-username`}
               label="Login"
               placeholder="Ex.: joao.silva"
@@ -180,7 +180,7 @@ export function PessoasCliente({ initialUsers, roles, embedded = false }: { init
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase() })}
             />
-            <Input
+            <Entrada
               id={`${uid}-password`}
               label="Senha"
               type="password"
@@ -189,16 +189,16 @@ export function PessoasCliente({ initialUsers, roles, embedded = false }: { init
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
-            <Select value={formData.roleId} onValueChange={(value) => setFormData({ ...formData, roleId: value })}>
-              <SelectTrigger id={`${uid}-role`} label="Perfil de acesso">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
+            <Selecao value={formData.roleId} onValueChange={(value) => setFormData({ ...formData, roleId: value })}>
+              <GatilhoDaSelecao id={`${uid}-role`} label="Perfil de acesso">
+                <ValorDaSelecao />
+              </GatilhoDaSelecao>
+              <ConteudoDaSelecao>
                 {roles.map((r) => (
-                  <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                  <ItemDaSelecao key={r.id} value={r.id}>{r.name}</ItemDaSelecao>
                 ))}
-              </SelectContent>
-            </Select>
+              </ConteudoDaSelecao>
+            </Selecao>
           </div>
 
           <div className="flex flex-wrap justify-end gap-3 border-t border-linha pt-4">

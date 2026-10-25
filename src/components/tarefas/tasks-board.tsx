@@ -8,7 +8,7 @@ import { ItemDoQuadro, SituacaoDaTarefa } from "@/types/kanban";
 import { criarTarefa, excluirTarefa, atualizarTarefa, atualizarSituacaoDaTarefa } from "@/actions/tasks";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { EtiquetaDeSituacao } from "@/components/painel/status-chip";
-import { btn, estiloDoCartao, estiloDoSobretitulo } from "@/components/painel/styles";
+import { estiloDoBotao, estiloDoCartao, estiloDoSobretitulo } from "@/components/painel/styles";
 import { ModalDaTarefa, type DadosDoFormularioDaTarefa } from "./task-form-modal";
 
 import { formatarDataCivilCurta } from "@/lib/formatacao/data";
@@ -169,7 +169,7 @@ export function QuadroDeTarefas({ initialTasks, todayKey, daysLeft, initialFilte
         title="Tarefas"
         description={total === 0 ? "O que falta fazer até o grande dia, num só lugar." : `${done} de ${total} ${total === 1 ? "concluída" : "concluídas"}${left}`}
         actions={
-          <button type="button" onClick={openNew} className={`${btn.primary} max-md:hidden`}>
+          <button type="button" onClick={openNew} className={`${estiloDoBotao.primary} max-md:hidden`}>
             <Plus className="size-4" aria-hidden="true" />
             Nova tarefa
           </button>
@@ -189,7 +189,7 @@ export function QuadroDeTarefas({ initialTasks, todayKey, daysLeft, initialFilte
           </span>
           <h2 className="font-display text-[26px] font-medium leading-8 text-tinta">Nenhuma tarefa ainda</h2>
           <p className="max-w-md text-tinta-suave">Anotem o que não pode ser esquecido, como escolher o local, fechar o buffet e montar a lista de convidados. Cada tarefa pode ter prazo e um responsável.</p>
-          <button type="button" onClick={openNew} className={`${btn.primary} mt-2`}>
+          <button type="button" onClick={openNew} className={`${estiloDoBotao.primary} mt-2`}>
             Criar a primeira tarefa
           </button>
         </div>

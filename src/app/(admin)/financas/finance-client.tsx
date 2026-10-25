@@ -5,7 +5,7 @@ import type { TransacaoComPresente } from "@/actions/finance-actions";
 import { aprovarTransacaoPix, alternarAgradecimentoEnviado } from "@/actions/finance-actions";
 import { TabelaDeDados } from "@/components/ui/data-table";
 import { Etiqueta, type TomDaEtiqueta } from "@/components/casal/ui";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import {
   CheckCircle2,
   CreditCard,
@@ -243,7 +243,7 @@ export function TabelaFinanceira({ transactions }: PropriedadesDaTabelaFinanceir
   const actionFor = (tx: TransacaoComPresente) => (
               <div className="flex items-center justify-center gap-2">
                 {tx.status === "PENDING" && tx.paymentMethod === "PIX" ? (
-                  <Button
+                  <Botao
                     size="sm"
                     onClick={() => handleApprove(tx.id, tx.gift.id)}
                     loading={isPending && approvingId === tx.id}
@@ -252,9 +252,9 @@ export function TabelaFinanceira({ transactions }: PropriedadesDaTabelaFinanceir
                   >
                     <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                     Confirmar
-                  </Button>
+                  </Botao>
                 ) : tx.status === "APPROVED" ? (
-                  <Button
+                  <Botao
                     size="sm"
                     variant={tx.thankYouSent ? "secondary" : "outline"}
                     onClick={() => handleThankYou(tx.id, tx.thankYouSent, tx.guest?.phone, tx.guest?.name, tx.gift.title)}
@@ -268,7 +268,7 @@ export function TabelaFinanceira({ transactions }: PropriedadesDaTabelaFinanceir
                   >
                     <Heart className={`w-3.5 h-3.5 mr-1 ${tx.thankYouSent ? "fill-ameixa text-ameixa" : ""}`} />
                     {tx.thankYouSent ? "Agradecido" : "Agradecer"}
-                  </Button>
+                  </Botao>
                 ) : (
                   <span className="text-tinta-suave text-xs">—</span>
                 )}

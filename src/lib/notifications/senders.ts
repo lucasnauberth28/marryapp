@@ -1,7 +1,7 @@
 import "server-only";
 import prisma from "@/lib/prisma";
 import { urlDoApp } from "@/lib/app-url";
-import { brandedEmail, emailEstaConfigurado, enviarEmail } from "@/lib/email";
+import { emailDaMarca, emailEstaConfigurado, enviarEmail } from "@/lib/email";
 import { whatsappEstaConfigurado, enviarMensagemDeTexto } from "@/lib/evolution";
 import { conteudoDoEmail, textoDoWhatsapp } from "./channel-texts.ts";
 import type { DependenciasDaDistribuicao, ItemDaDistribuicao } from "./fanout.ts";
@@ -44,7 +44,7 @@ async function enviarAvisoPorEmail(item: ItemDaDistribuicao): Promise<boolean> {
   const to = user?.username && PADRAO_DE_EMAIL.test(user.username) ? user.username : null;
   if (!to) return false;
   const content = conteudoDoEmail(item, linkDe(item), urlDoApp("/conta#avisos"));
-  const { html, text } = brandedEmail({
+  const { html, text } = emailDaMarca({
     heading: content.heading,
     paragraphs: content.paragraphs,
     cta: content.cta,

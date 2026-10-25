@@ -3,10 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { solicitarReembolsoDoCasamento } from "@/actions/admin-casais-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
+import { SelecaoNativa } from "@/components/ui/select";
+import { AreaDeTexto } from "@/components/ui/textarea";
 import { useAcaoDoCasal } from "../../_components/use-casal-action";
 
 export interface OpcaoDeReembolso {
@@ -46,7 +46,7 @@ export function FormularioDeReembolso({ weddingId, options }: { weddingId: strin
       }}
     >
       <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
-        <NativeSelect
+        <SelecaoNativa
           label="Pagamento"
           value={subId}
           onChange={(e) => {
@@ -60,10 +60,10 @@ export function FormularioDeReembolso({ weddingId, options }: { weddingId: strin
               {o.label}
             </option>
           ))}
-        </NativeSelect>
-        <Input label="Valor a devolver (R$)" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" />
+        </SelecaoNativa>
+        <Entrada label="Valor a devolver (R$)" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" />
       </div>
-      <Textarea label="Motivo (obrigatório)" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} rows={3} />
+      <AreaDeTexto label="Motivo (obrigatório)" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} rows={3} />
       <p className="text-sm leading-5 text-tinta-suave">O pedido fica registrado e aparece em Planos e receita para decidir. O estorno em si é feito no painel do Mercado Pago.</p>
       {error && (
         <p role="alert" className="text-sm font-semibold text-perigo">
@@ -71,9 +71,9 @@ export function FormularioDeReembolso({ weddingId, options }: { weddingId: strin
         </p>
       )}
       <div>
-        <Button type="submit" variant="outline" disabled={cents === null || reason.trim().length < 5} loading={pending}>
+        <Botao type="submit" variant="outline" disabled={cents === null || reason.trim().length < 5} loading={pending}>
           Registrar pedido de reembolso
-        </Button>
+        </Botao>
       </div>
     </form>
   );

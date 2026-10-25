@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, MousePointerClick } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { IlustracaoDaLiz } from "@/components/liz/liz-illustration";
 import { posicionarBalao, type Caixa, type Posicionamento } from "@/lib/tour/positioning";
 import { textoDoLugar, type LugarDoPasso, type PassoDoTour } from "@/lib/tour/steps";
@@ -282,9 +282,9 @@ export function FocoDoTour({ steps, places, onDone }: { steps: PassoDoTour[]; pl
           <p className="text-sm font-semibold leading-5 text-tinta-suave" aria-hidden="true">
             Passo {index + 1} de {list.length}
           </p>
-          <Button variant="quiet" size="sm" onClick={skip} className="-mr-2 -mt-1">
+          <Botao variant="quiet" size="sm" onClick={skip} className="-mr-2 -mt-1">
             Pular
-          </Button>
+          </Botao>
         </div>
 
         <div className="flex items-start gap-3">
@@ -309,21 +309,21 @@ export function FocoDoTour({ steps, places, onDone }: { steps: PassoDoTour[]; pl
 
         <div className="flex flex-col gap-2">
           {step.cta && step.href && (
-            <Button asChild variant="outline">
+            <Botao asChild variant="outline">
               <Link href={step.href} onClick={() => onDone({ outcome: isLast ? "completed" : "skipped", navigated: true })}>
                 {step.cta}
               </Link>
-            </Button>
+            </Botao>
           )}
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={back} disabled={index === 0} className="flex-1">
+            <Botao variant="ghost" onClick={back} disabled={index === 0} className="flex-1">
               <ArrowLeft aria-hidden="true" />
               Voltar
-            </Button>
-            <Button onClick={next} className="flex-1">
+            </Botao>
+            <Botao onClick={next} className="flex-1">
               {isLast ? "Concluir" : "Próximo"}
               {!isLast && <ArrowRight aria-hidden="true" />}
-            </Button>
+            </Botao>
           </div>
         </div>
       </div>

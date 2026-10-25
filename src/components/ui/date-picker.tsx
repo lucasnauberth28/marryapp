@@ -5,7 +5,7 @@ import { useState, useMemo } from "react";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Campo, juntarIds, type OpcoesDoCampoFlutuante } from "@/components/ui/field";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { JanelaFlutuante, ConteudoDaJanelaFlutuante, GatilhoDaJanelaFlutuante } from "@/components/ui/popover";
 import {
   format,
   addMonths,
@@ -137,7 +137,7 @@ export function SeletorDeData({
       }
     >
       {(c) => (
-        <Popover open={open} onOpenChange={setOpen}>
+        <JanelaFlutuante open={open} onOpenChange={setOpen}>
           {name && (
             <input
               type="hidden"
@@ -145,7 +145,7 @@ export function SeletorDeData({
               value={controlledValue !== undefined ? controlledValue : internalValue}
             />
           )}
-          <PopoverTrigger asChild>
+          <GatilhoDaJanelaFlutuante asChild>
             <button
               {...c}
               type="button"
@@ -155,9 +155,9 @@ export function SeletorDeData({
             >
               <span className={cn(!selectedDate && "text-tinta-suave")}>{formattedDisplay || placeholder}</span>
             </button>
-          </PopoverTrigger>
+          </GatilhoDaJanelaFlutuante>
 
-          <PopoverContent className="w-[280px] p-3 shadow-2xl border-linha rounded-xl" align="start">
+          <ConteudoDaJanelaFlutuante className="w-[280px] p-3 shadow-2xl border-linha rounded-xl" align="start">
             {/* Header de Navegação por Mês e Ano */}
             <div className="flex items-center justify-between mb-3 px-1">
               <button
@@ -237,8 +237,8 @@ export function SeletorDeData({
                 </button>
               )}
             </div>
-          </PopoverContent>
-        </Popover>
+          </ConteudoDaJanelaFlutuante>
+        </JanelaFlutuante>
       )}
     </Campo>
   );

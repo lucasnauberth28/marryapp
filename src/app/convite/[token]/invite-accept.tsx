@@ -6,7 +6,7 @@ import { aceitarConvite, aceitarConviteComContaNova } from "@/actions/invite-act
 import { entrar, sair } from "@/actions/auth-actions";
 import { TituloDoMolde } from "@/components/account/auth-shell";
 import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
@@ -97,19 +97,19 @@ function AceiteDeQuemTemConta({ token, viewer }: { token: string; viewer: Extrac
               : `Ao entrar neste casamento, você sai de ${confirm.currentCoupleNames}. Quem continua lá não perde nada.`}
           </p>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button type="button" onClick={() => accept(true)} loading={isPending} className="flex-1 rounded-[12px] px-6">
+            <Botao type="button" onClick={() => accept(true)} loading={isPending} className="flex-1 rounded-[12px] px-6">
               Entendi, entrar mesmo assim
-            </Button>
+            </Botao>
             <button type="button" onClick={() => setConfirm(null)} disabled={isPending} className={cn(estiloDoBotao.secondary, "min-h-11")}>
               Cancelar
             </button>
           </div>
         </div>
       ) : (
-        <Button type="button" onClick={() => accept(false)} loading={isPending} className="h-12 w-full rounded-[12px] px-6">
+        <Botao type="button" onClick={() => accept(false)} loading={isPending} className="h-12 w-full rounded-[12px] px-6">
           Entrar neste casamento
           <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
-        </Button>
+        </Botao>
       )}
 
       {error ? <AvisoDoFormulario>{error}</AvisoDoFormulario> : null}
@@ -266,10 +266,10 @@ function AceiteDeQuemNaoTemConta({ token }: { token: string }) {
           </AvisoDoFormulario>
         ) : null}
 
-        <Button type="submit" loading={isPending} className="h-12 w-full rounded-[12px] px-6">
+        <Botao type="submit" loading={isPending} className="h-12 w-full rounded-[12px] px-6">
           {mode === "criar" ? "Criar conta e entrar no casamento" : "Entrar"}
           <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
-        </Button>
+        </Botao>
 
         {mode === "criar" ? (
           <p className="text-center text-sm leading-5 text-tinta-suave">

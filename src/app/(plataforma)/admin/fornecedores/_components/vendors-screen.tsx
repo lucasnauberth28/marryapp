@@ -9,7 +9,7 @@ import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
 import { Paginacao } from "@/components/plataforma/pagination";
 import { RegiaoPendente } from "@/components/plataforma/pending";
 import { EsqueletoDoPainelLateral } from "@/components/plataforma/loading-parts";
-import { SkeletonCard, SkeletonText } from "@/components/skeletons";
+import { EsqueletoDeCartao, EsqueletoDeTexto } from "@/components/skeletons";
 import { Painel } from "@/components/plataforma/panel";
 import { TabelaResponsiva } from "@/components/plataforma/responsive-table";
 import { ImagemDaPessoa } from "@/components/ui/user-image";
@@ -252,9 +252,9 @@ export async function TelaDeFornecedores({ searchParams, mode }: { searchParams:
       {mode === "lista" ? (
         <Suspense
           fallback={
-            <SkeletonCard>
-              <SkeletonText lines={2} />
-            </SkeletonCard>
+            <EsqueletoDeCartao>
+              <EsqueletoDeTexto lines={2} />
+            </EsqueletoDeCartao>
           }
         >
           <BlocoDeModeracao now={now} />

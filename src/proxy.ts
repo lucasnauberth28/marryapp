@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import {
   verificarToken,
-  hasPathAccess,
+  temAcessoAoCaminho,
   NOME_DO_COOKIE_DE_SESSAO,
   NOME_DO_COOKIE_DE_SESSAO_VISTA,
   opcoesDoCookieDeSessaoVista,
@@ -147,7 +147,7 @@ export default async function proxy(request: NextRequest) {
     }
 
     // /admin exige acesso total ("*"): um "/admin" solto na lista do perfil não vale
-    const allowed = ehCaminhoDeAdminDaPlataforma(path) ? ehAcessoDeAdminDaPlataforma(payload.allowedPaths) : hasPathAccess(payload.allowedPaths, path);
+    const allowed = ehCaminhoDeAdminDaPlataforma(path) ? ehAcessoDeAdminDaPlataforma(payload.allowedPaths) : temAcessoAoCaminho(payload.allowedPaths, path);
     if (!isPublic && !ehCaminhoDeSessao(path) && !path.startsWith("/api/") && !allowed) {
       return NextResponse.redirect(new URL(dest, request.url));
     }

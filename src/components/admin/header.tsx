@@ -4,12 +4,12 @@ import { useTransition } from "react";
 import Link from "next/link";
 import { Settings as SettingsIcon, LogOut, CreditCard as CreditCardIcon, UserRound, LayoutDashboard, ChevronDown } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  MenuSuspenso,
+  ConteudoDoMenuSuspenso,
+  ItemDoMenuSuspenso,
+  RotuloDoMenuSuspenso,
+  SeparadorDoMenuSuspenso,
+  GatilhoDoMenuSuspenso,
 } from "@/components/ui/dropdown-menu";
 import { sair } from "@/actions/auth-actions";
 import { IndicadorDeCarregamento } from "@/components/ui/spinner";
@@ -75,8 +75,8 @@ export function Cabecalho({ role = "Admin", allowedPaths = [], coupleNames, init
         <AlternadorDeTema />
         <SinoDeNotificacoes initialUnread={unreadNotifications} allHref="/notificacoes" settingsHref="/conta#avisos" pushPublicKey={pushPublicKey} />
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        <MenuSuspenso>
+          <GatilhoDoMenuSuspenso asChild>
             <button
               className="flex h-11 cursor-pointer items-center gap-1 rounded-full pl-1 pr-1 text-tinta-suave md:pr-1.5 transition-colors hover:bg-areia/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ameixa data-[state=open]:bg-areia/70"
               aria-label="Menu da conta"
@@ -87,69 +87,69 @@ export function Cabecalho({ role = "Admin", allowedPaths = [], coupleNames, init
               </span>
               <ChevronDown className="hidden size-4 md:block" aria-hidden="true" />
             </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-72 overflow-hidden rounded-[12px] border-linha bg-papel p-0 shadow-[var(--shadow-aceito-2)]" align="end">
+          </GatilhoDoMenuSuspenso>
+          <ConteudoDoMenuSuspenso className="w-72 overflow-hidden rounded-[12px] border-linha bg-papel p-0 shadow-[var(--shadow-aceito-2)]" align="end">
             <div className="border-b border-linha px-4 py-3">
               <p className="truncate font-display text-base font-semibold text-tinta">{label.menuTitle}</p>
               <p className="text-sm text-tinta-suave">{label.menuSubtitle}</p>
             </div>
             <div className="space-y-0.5 p-1.5">
               {can("/configuracoes") && (
-                <DropdownMenuItem asChild className={classeDoItemDoMenu}>
+                <ItemDoMenuSuspenso asChild className={classeDoItemDoMenu}>
                   <Link href="/configuracoes" className="flex items-center gap-2.5">
                     <SettingsIcon className="h-4 w-4 text-tinta-suave" /> Configurações
                   </Link>
-                </DropdownMenuItem>
+                </ItemDoMenuSuspenso>
               )}
               {can("/plano") && (
-                <DropdownMenuItem asChild className={classeDoItemDoMenu}>
+                <ItemDoMenuSuspenso asChild className={classeDoItemDoMenu}>
                   <Link href="/plano" className="flex items-center gap-2.5">
                     <CreditCardIcon className="h-4 w-4 text-tinta-suave" /> Plano e pagamentos
                     {planName && <span className="ml-auto text-xs text-tinta-suave">{planName}</span>}
                   </Link>
-                </DropdownMenuItem>
+                </ItemDoMenuSuspenso>
               )}
-              <DropdownMenuItem asChild className={classeDoItemDoMenu}>
+              <ItemDoMenuSuspenso asChild className={classeDoItemDoMenu}>
                 <Link href="/conta" className="flex items-center gap-2.5">
                   <UserRound className="h-4 w-4 text-tinta-suave" /> Minha conta
                 </Link>
-              </DropdownMenuItem>
+              </ItemDoMenuSuspenso>
               <ItemDeMenuDoTour />
               {isPlatformAdmin && (
-                <DropdownMenuItem asChild className={`${classeDoItemDoMenu} md:hidden`}>
+                <ItemDoMenuSuspenso asChild className={`${classeDoItemDoMenu} md:hidden`}>
                   <Link href="/admin" className="flex items-center gap-2.5">
                     <LayoutDashboard className="h-4 w-4 text-tinta-suave" /> Administração
                   </Link>
-                </DropdownMenuItem>
+                </ItemDoMenuSuspenso>
               )}
             </div>
             {/* No computador as ferramentas de administração ficam na barra lateral */}
             {adminItems.length > 0 && (
               <div className="md:hidden">
-                <DropdownMenuSeparator className="my-0 bg-linha" />
+                <SeparadorDoMenuSuspenso className="my-0 bg-linha" />
                 <div className="space-y-0.5 p-1.5">
-                  <DropdownMenuLabel className="text-xs font-medium text-tinta-suave">Gestão da plataforma</DropdownMenuLabel>
+                  <RotuloDoMenuSuspenso className="text-xs font-medium text-tinta-suave">Gestão da plataforma</RotuloDoMenuSuspenso>
                   {adminItems.map((item) => {
                     const Icon = item.icon;
                     return (
-                      <DropdownMenuItem key={item.href} asChild className={classeDoItemDoMenu}>
+                      <ItemDoMenuSuspenso key={item.href} asChild className={classeDoItemDoMenu}>
                         <Link href={item.href} className="flex items-center gap-2.5">
                           <Icon className="h-4 w-4 text-tinta-suave" /> {item.name}
                         </Link>
-                      </DropdownMenuItem>
+                      </ItemDoMenuSuspenso>
                     );
                   })}
                 </div>
               </div>
             )}
             {/* No computador o seletor fica no botão sol/lua do cabeçalho */}
-            <DropdownMenuSeparator className="my-0 bg-linha md:hidden" />
+            <SeparadorDoMenuSuspenso className="my-0 bg-linha md:hidden" />
             <div className="p-1.5 md:hidden">
               <ItensDeMenuDoTema />
             </div>
-            <DropdownMenuSeparator className="my-0 bg-linha" />
+            <SeparadorDoMenuSuspenso className="my-0 bg-linha" />
             <div className="p-1.5">
-              <DropdownMenuItem
+              <ItemDoMenuSuspenso
                 disabled={leaving}
                 aria-busy={leaving || undefined}
                 // Fica aberto até a saída terminar, mostrando o andamento
@@ -160,10 +160,10 @@ export function Cabecalho({ role = "Admin", allowedPaths = [], coupleNames, init
                 className="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-perigo focus:bg-perigo-suave focus:text-perigo"
               >
                 {leaving ? <IndicadorDeCarregamento /> : <LogOut className="h-4 w-4" />} Sair
-              </DropdownMenuItem>
+              </ItemDoMenuSuspenso>
             </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </ConteudoDoMenuSuspenso>
+        </MenuSuspenso>
       </div>
     </header>
   );

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { temAcessoAoCaminho } from "@/lib/permissions";
-import { AuthorizationError, obterSessao, redirecionarParaOLogin, type ContextoDeAutenticacaoSegura } from "@/lib/security/auth-guard";
+import { ErroDeAutorizacao, obterSessao, redirecionarParaOLogin, type ContextoDeAutenticacaoSegura } from "@/lib/security/auth-guard";
 
 /** Path do painel do fornecedor (o perfil "Fornecedor" libera só este módulo). */
 export const CAMINHO_DO_PAINEL_DO_FORNECEDOR = "/fornecedor";
@@ -71,11 +71,11 @@ export async function exigirSessaoDoFornecedor(): Promise<ContextoDaSessaoDoForn
     case "ok":
       return { session: result.session, vendor: result.vendor };
     case "no-session":
-      throw new AuthorizationError("Não autorizado: sessão ausente, expirada ou inválida.");
+      throw new ErroDeAutorizacao("Não autorizado: sessão ausente, expirada ou inválida.");
     case "forbidden":
-      throw new AuthorizationError(`Acesso negado: permissão insuficiente para '${CAMINHO_DO_PAINEL_DO_FORNECEDOR}'.`);
+      throw new ErroDeAutorizacao(`Acesso negado: permissão insuficiente para '${CAMINHO_DO_PAINEL_DO_FORNECEDOR}'.`);
     case "no-vendor":
-      throw new AuthorizationError("Acesso negado: esta conta não está vinculada a um fornecedor.");
+      throw new ErroDeAutorizacao("Acesso negado: esta conta não está vinculada a um fornecedor.");
   }
 }
 

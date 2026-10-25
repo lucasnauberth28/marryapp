@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { areaOfPath, iconeDoMenu, itensVisiveisDoAdmin, visibleAreas, itemDoMenuEstaAtivo, type NavCountKey } from "@/components/admin/nav-config";
+import { areaDoCaminho, iconeDoMenu, itensVisiveisDoAdmin, areasVisiveis, itemDoMenuEstaAtivo, type ChaveDeContagemDoMenu } from "@/components/admin/nav-config";
 import { ancoraDoMenu } from "@/lib/tour/steps";
 
-export type ContagensDoMenu = Partial<Record<NavCountKey, number>>;
+export type ContagensDoMenu = Partial<Record<ChaveDeContagemDoMenu, number>>;
 
-const DICA_DE_CONTAGEM: Record<NavCountKey, string> = { guests: "no total", messages: "sem resposta", tasks: "em aberto", domains: "aguardando" };
+const DICA_DE_CONTAGEM: Record<ChaveDeContagemDoMenu, string> = { guests: "no total", messages: "sem resposta", tasks: "em aberto", domains: "aguardando" };
 
 /** Número ao lado do nome; o complemento fica só para leitores de tela. */
-export function MarcaDeContagem({ n, kind, className = "" }: { n: number; kind: NavCountKey; className?: string }) {
+export function MarcaDeContagem({ n, kind, className = "" }: { n: number; kind: ChaveDeContagemDoMenu; className?: string }) {
   return (
     <span className={`text-xs font-semibold leading-4 tabular-nums text-tinta-suave ${className}`}>
       {n > 999 ? "999+" : n}
@@ -27,8 +27,8 @@ const classeDaLinha = (active: boolean) =>
 /** As 5 áreas do painel (barra lateral do computador) e, para quem tem a permissão, as ferramentas de administração. */
 export function ListaDoMenu({ allowedPaths, counts = {} }: { allowedPaths: string[]; counts?: ContagensDoMenu }) {
   const pathname = usePathname();
-  const areas = visibleAreas(allowedPaths);
-  const current = areaOfPath(areas, pathname);
+  const areas = areasVisiveis(allowedPaths);
+  const current = areaDoCaminho(areas, pathname);
   const adminItems = itensVisiveisDoAdmin(allowedPaths);
 
   return (

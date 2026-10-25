@@ -5,10 +5,10 @@ import Link from "next/link";
 import { CalendarPlus, CalendarX2, Loader2, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { criarEventoDoFornecedor, excluirEventoDoFornecedor } from "@/actions/vendor-panel-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { NativeSelect } from "@/components/ui/select";
+import { Botao } from "@/components/ui/button";
+import { Entrada } from "@/components/ui/input";
+import { AreaDeTexto } from "@/components/ui/textarea";
+import { SelecaoNativa } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { formatarHoraDoPainel, NOMES_DOS_MESES, DIAS_DA_SEMANA_CURTOS, type TipoDeEventoDoFornecedor } from "../../_lib/vendor-panel";
 
@@ -174,22 +174,22 @@ function FormularioDoEvento({ request, leads, onDone }: { request: PedidoDoFormu
         </p>
       ) : null}
       <div className={cn("grid gap-5", isMeeting && "grid-cols-1 min-[420px]:grid-cols-2")}>
-        <Input id={`${uid}-data`} label="Data" type="date" required value={values.date} onChange={set("date")} />
-        {isMeeting ? <Input id={`${uid}-hora`} label="Horário" type="time" required value={values.time} onChange={set("time")} /> : null}
+        <Entrada id={`${uid}-data`} label="Data" type="date" required value={values.date} onChange={set("date")} />
+        {isMeeting ? <Entrada id={`${uid}-hora`} label="Horário" type="time" required value={values.time} onChange={set("time")} /> : null}
       </div>
 
       {isMeeting ? (
-        <NativeSelect id={`${uid}-pedido`} label="Pedido" optional value={values.leadId} onChange={set("leadId")}>
+        <SelecaoNativa id={`${uid}-pedido`} label="Pedido" optional value={values.leadId} onChange={set("leadId")}>
           <option value="">Sem pedido vinculado</option>
           {leads.map((l) => (
             <option key={l.id} value={l.id}>
               {l.label}
             </option>
           ))}
-        </NativeSelect>
+        </SelecaoNativa>
       ) : null}
 
-      <Input
+      <Entrada
         id={`${uid}-titulo`}
         label={isMeeting ? "Título" : "Motivo"}
         optional={!isMeeting || Boolean(linkedLead)}
@@ -206,7 +206,7 @@ function FormularioDoEvento({ request, leads, onDone }: { request: PedidoDoFormu
       />
 
       {isMeeting ? (
-        <Textarea
+        <AreaDeTexto
           id={`${uid}-notas`}
           label="Observações"
           optional
@@ -225,9 +225,9 @@ function FormularioDoEvento({ request, leads, onDone }: { request: PedidoDoFormu
         <button type="button" onClick={onDone} disabled={isPending} className={ESTILO_DO_BOTAO_SECUNDARIO}>
           Cancelar
         </button>
-        <Button type="submit" loading={isPending}>
+        <Botao type="submit" loading={isPending}>
           {isMeeting ? "Marcar reunião" : "Bloquear data"}
-        </Button>
+        </Botao>
       </div>
     </form>
   );

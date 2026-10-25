@@ -12,7 +12,7 @@ import { EtiquetaDePlano, EtiquetaDeSituacao, type TomDaSituacao } from "@/compo
 import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { Aviso } from "@/components/plataforma/notices";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { Switch } from "@/components/ui/switch";
+import { Interruptor } from "@/components/ui/switch";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { umDosValores, type ParametrosDeBusca } from "@/lib/platform/list-params";
 import { diasEntre, formatarData, formatarDataEHora, formatarInteiro, formatarDataPorExtenso, formatarPercentual, formatarDiaDaSemana, haQuantoTempo } from "@/lib/platform/format";
@@ -613,7 +613,7 @@ async function AbaMadrinha({ id }: { id: string }) {
           <p className="font-semibold">Liz para este casal</p>
           <p className="text-sm text-tinta-suave">Ainda não ativada na plataforma</p>
         </div>
-        <Switch checked={false} disabled aria-label="Liz para este casal (ainda não ativada na plataforma)" />
+        <Interruptor checked={false} disabled aria-label="Liz para este casal (ainda não ativada na plataforma)" />
       </div>
       <p className="mt-4 text-sm leading-6 text-tinta-suave">
         Quando a Liz for ativada, aqui você vê o limite deste casal e pode bloquear por abuso.

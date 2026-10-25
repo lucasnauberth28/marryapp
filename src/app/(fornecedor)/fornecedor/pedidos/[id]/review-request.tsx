@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Link2, Loader2, MessageCircle, Star } from "lucide-react";
 import { toast } from "sonner";
 import { pedirAvaliacaoDoPedido } from "@/actions/vendor-panel-actions";
-import { Input } from "@/components/ui/input";
+import { Entrada } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { linkDoWhatsapp } from "../../../_lib/vendor-panel";
 
@@ -110,7 +110,7 @@ export function PedidoDeAvaliacao({
               <span className="sr-only"> (abre em nova aba)</span>
             </a>
           ) : null}
-          <Input
+          <Entrada
             id="avaliacao-link"
             label="Link de avaliação"
             readOnly

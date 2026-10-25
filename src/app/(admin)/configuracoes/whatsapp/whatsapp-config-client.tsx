@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { obterSituacaoDoWhatsapp } from "@/actions/evolution-actions";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 import { RefreshCw, CheckCircle2, XCircle } from "lucide-react";
 import { EsqueletoDoBlocoDeSituacao } from "@/components/painel/skeleton-parts";
 import { motion, AnimatePresence } from "framer-motion";
@@ -50,10 +50,10 @@ export function ConfiguracaoDoWhatsappCliente() {
     <div className="rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] md:p-6">
       <div className="mb-5 flex items-center justify-between gap-3">
         <h2 className="text-xl font-semibold leading-7 text-tinta">Status da conexão</h2>
-        <Button variant="outline" size="sm" onClick={refreshManually} loading={loading}>
+        <Botao variant="outline" size="sm" onClick={refreshManually} loading={loading}>
           <RefreshCw aria-hidden="true" />
           Atualizar
-        </Button>
+        </Botao>
       </div>
 
       <AnimatePresence mode="wait">

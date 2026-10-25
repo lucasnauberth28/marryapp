@@ -11,7 +11,7 @@ import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { gerarTokenDeLink } from "@/lib/account/tokens";
 import { classificarConta } from "@/lib/account/wedding-provisioning";
 import { VALIDADE_DO_CONVITE_EM_MS, MAXIMO_DE_CONVITES_PENDENTES } from "@/lib/account/invites";
-import { brandedEmail, enviarEmail } from "@/lib/email";
+import { emailDaMarca, enviarEmail } from "@/lib/email";
 import { urlDoApp } from "@/lib/app-url";
 import { registrarAuditoria } from "@/lib/audit";
 
@@ -135,7 +135,7 @@ export async function criarConviteDePessoaParceira(input: { email?: string }): P
   let emailSent = false;
   if (email) {
     const firstName = user.name.trim().split(/\s+/)[0] || "Seu par";
-    const { html, text } = brandedEmail({
+    const { html, text } = emailDaMarca({
       heading: `${firstName} convidou você`,
       preheader: `Entre no casamento ${user.wedding.coupleNames} no Aceito.`,
       paragraphs: [

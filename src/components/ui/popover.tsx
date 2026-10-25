@@ -44,4 +44,4 @@ function ConteudoDaJanelaFlutuante({
   );
 }
 
-export { JanelaFlutuante as Popover, GatilhoDaJanelaFlutuante as PopoverTrigger, ConteudoDaJanelaFlutuante as PopoverContent, AncoraDaJanelaFlutuante as PopoverAnchor };
+export { JanelaFlutuante, GatilhoDaJanelaFlutuante, ConteudoDaJanelaFlutuante, AncoraDaJanelaFlutuante };

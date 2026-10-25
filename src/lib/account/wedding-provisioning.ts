@@ -2,7 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { hasPathAccess, opcoesDoCookieDeSessao, assinarToken, NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
+import { temAcessoAoCaminho, opcoesDoCookieDeSessao, assinarToken, NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
 import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { CAMINHOS_DO_CASAL, NOME_DO_PAPEL_DO_CASAL, gerarEnderecoDosNomesDoCasal } from "@/lib/wedding-rules";
 import { COR_PADRAO_DO_TEMA } from "@/lib/onboarding-options";
@@ -29,7 +29,7 @@ export function classificarConta(user: {
   if (paths.includes("*") || CAMINHOS_DA_PLATAFORMA.some((p) => paths.includes(p))) return "admin";
   if (user.partnerVendorId) return "vendor";
   if (/^fornecedor/i.test(user.role?.name ?? "")) return "vendor";
-  if (hasPathAccess(paths, "/fornecedor") && !hasPathAccess(paths, "/dashboard")) return "vendor";
+  if (temAcessoAoCaminho(paths, "/fornecedor") && !temAcessoAoCaminho(paths, "/dashboard")) return "vendor";
   return "couple";
 }
 

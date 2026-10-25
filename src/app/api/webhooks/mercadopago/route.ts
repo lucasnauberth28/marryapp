@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { pagamentoDoMercadoPago, paidAmountMatches, verifyMercadoPagoSignature } from "@/lib/mercadopago";
+import { pagamentoDoMercadoPago, valorPagoConfere, verificarAssinaturaDoMercadoPago } from "@/lib/mercadopago";
 import { enviarMensagemDeTexto } from "@/lib/evolution";
 import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -21,7 +21,7 @@ async function tratarAviso(req: Request) {
     // 1. Autenticidade da notificação (x-signature). O status real é sempre reconsultado na API do MP.
     const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
     if (secret) {
-      const valid = verifyMercadoPagoSignature({
+      const valid = verificarAssinaturaDoMercadoPago({
         signatureHeader: req.headers.get("x-signature"),
         requestId: req.headers.get("x-request-id"),
         dataId: url.searchParams.get("data.id") ?? (paymentId || null),
@@ -76,7 +76,7 @@ async function tratarAviso(req: Request) {
       }
 
       // 3. O valor pago precisa ser exatamente o valor cobrado
-      if (!paidAmountMatches(mpResponse.transaction_amount, transaction.amount)) {
+      if (!valorPagoConfere(mpResponse.transaction_amount, transaction.amount)) {
         console.error(
           `[Webhook MP] Valor divergente na transação ${internalTxId}: pago ${mpResponse.transaction_amount}, esperado ${transaction.amount / 100}.`
         );

@@ -5,8 +5,8 @@ import { ArrowDown, ArrowUp, Building2, ImagePlus, Loader2, Trash2, Upload } fro
 import { toast } from "sonner";
 import { Aparicao } from "@/components/motion/reveal";
 import { atualizarMidiasDoFornecedor, type MidiasDoFornecedor, type EntradaDasMidiasDoFornecedor } from "@/actions/vendor-panel-actions";
-import { SkeletonImage } from "@/components/skeletons";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EsqueletoDeImagem } from "@/components/skeletons";
+import { Esqueleto } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { MAXIMO_DE_IMAGENS_NA_GALERIA } from "../../_lib/vendor-panel";
 
@@ -143,7 +143,7 @@ export function FormularioDeMidias({ initial }: { initial: MidiasDoFornecedor })
         <div className="flex flex-col gap-2">
           <p className="text-sm font-semibold text-tinta">Logo</p>
           <div className="relative grid size-28 place-items-center overflow-hidden rounded-2xl border border-linha bg-areia">
-            {busy === "logo" ? <Skeleton className="absolute inset-0 z-10 rounded-none" /> : null}
+            {busy === "logo" ? <Esqueleto className="absolute inset-0 z-10 rounded-none" /> : null}
             {media.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={media.logoUrl} alt="Logo atual" className="size-full object-cover" />
@@ -176,7 +176,7 @@ export function FormularioDeMidias({ initial }: { initial: MidiasDoFornecedor })
         <div className="flex min-w-0 flex-col gap-2">
           <p className="text-sm font-semibold text-tinta">Capa</p>
           <div className="relative grid aspect-[16/7] w-full place-items-center overflow-hidden rounded-2xl border border-linha bg-areia">
-            {busy === "cover" ? <Skeleton className="absolute inset-0 z-10 rounded-none" /> : null}
+            {busy === "cover" ? <Esqueleto className="absolute inset-0 z-10 rounded-none" /> : null}
             {media.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={media.coverUrl} alt="Capa atual" className="size-full object-cover" />
@@ -279,7 +279,7 @@ export function FormularioDeMidias({ initial }: { initial: MidiasDoFornecedor })
             ))}
             {busy === "gallery" ? (
               <li aria-hidden="true" className="flex flex-col gap-2 rounded-xl border border-linha bg-linho p-2">
-                <SkeletonImage ratio="4/3" className="rounded-lg" />
+                <EsqueletoDeImagem ratio="4/3" className="rounded-lg" />
                 <div className="h-11" />
               </li>
             ) : null}

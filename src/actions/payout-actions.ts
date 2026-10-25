@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import { AuthorizationError, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { ErroDeAutorizacao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { exigirCasamento, type ContextoDoCasamento } from "@/lib/security/wedding-context";
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { cifrarSegredoDoRepasse, cifraDoRepasseEstaConfigurada, versaoAtualDaChaveDoRepasse, ErroDeCifraDoRepasse } from "@/lib/security/payout-crypto";
@@ -35,7 +35,7 @@ async function autorizarEscrita(password: unknown, action: string): Promise<{ ct
   try {
     ctx = await exigirCasamento("/configuracoes");
   } catch (error) {
-    if (error instanceof AuthorizationError) return { success: false, error: error.message };
+    if (error instanceof ErroDeAutorizacao) return { success: false, error: error.message };
     throw error;
   }
 

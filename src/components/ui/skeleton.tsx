@@ -20,4 +20,4 @@ function Esqueleto({
   );
 }
 
-export { Esqueleto as Skeleton };
+export { Esqueleto };

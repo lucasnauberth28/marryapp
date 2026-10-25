@@ -5,10 +5,10 @@ import Link from "next/link";
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { entrar } from "@/actions/auth-actions";
 import { estiloDoBotaoComSeta } from "@/components/landing/styles";
-import { Button } from "@/components/ui/button";
+import { Botao } from "@/components/ui/button";
 
 import { AvisoDoFormulario } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Entrada } from "@/components/ui/input";
 
 export function FormularioDeLogin({
   initialEmail = "",
@@ -46,7 +46,7 @@ export function FormularioDeLogin({
 
   return (
     <form onSubmit={handleSubmit} noValidate={false} className="flex flex-col gap-5" aria-describedby={error ? "login-erro" : undefined}>
-      <Input
+      <Entrada
         id="login-email"
         name="email"
         type="text"
@@ -64,7 +64,7 @@ export function FormularioDeLogin({
       />
 
       <div className="flex flex-col gap-1">
-        <Input
+        <Entrada
           id="login-senha"
           name="password"
           type={showPassword ? "text" : "password"}
@@ -101,10 +101,10 @@ export function FormularioDeLogin({
 
       {error ? <AvisoDoFormulario id="login-erro">{error}</AvisoDoFormulario> : null}
 
-      <Button type="submit" loading={isLoading} className="mt-1 h-12 w-full rounded-[12px] px-6">
+      <Botao type="submit" loading={isLoading} className="mt-1 h-12 w-full rounded-[12px] px-6">
         Entrar
         <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
-      </Button>
+      </Botao>
 
       <p className="text-center text-[15px] text-tinta-suave">
         Ainda não tem conta?{" "}
