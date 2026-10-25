@@ -1,6 +1,6 @@
 "use client";
 // Pagamentos de presentes recebidos: tabela com busca e ordenação (cartões no celular) e as ações de cada linha.
-import type { TransacaoComPresente } from "@/actions/finance-actions";
+import type { TransacaoComPresente } from "@/actions/financas/transacoes";
 import { TabelaDeDados } from "@/components/ui/data-table";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 import { AcaoDoPagamento } from "./acao-do-pagamento";

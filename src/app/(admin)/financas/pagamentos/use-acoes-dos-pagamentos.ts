@@ -1,6 +1,6 @@
 // Ações sobre um pagamento de presente: confirmar o Pix e marcar/desmarcar o agradecimento (abrindo o WhatsApp).
 import { useState, useTransition } from "react";
-import { alternarAgradecimentoEnviado, aprovarTransacaoPix } from "@/actions/finance-actions";
+import { alternarAgradecimentoEnviado, aprovarTransacaoPix } from "@/actions/financas/transacoes";
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import type { AvisoDaTabela } from "./aviso-temporario";
 

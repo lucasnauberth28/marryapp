@@ -1,6 +1,6 @@
 // O botão de ação de cada pagamento: confirmar o Pix (a conferir) ou agradecer (recebido).
 import { CheckCircle2, Heart } from "lucide-react";
-import type { TransacaoComPresente } from "@/actions/finance-actions";
+import type { TransacaoComPresente } from "@/actions/financas/transacoes";
 import { Botao } from "@/components/ui/button";
 import type { AcoesDosPagamentos } from "./use-acoes-dos-pagamentos";
 

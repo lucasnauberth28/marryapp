@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { aprovarTransacaoPix } from "@/actions/finance-actions";
+import { aprovarTransacaoPix } from "@/actions/financas/transacoes";
 import { estiloDaLinhaDeBotoes } from "../../ui";
 
 /** Selo "A" do Pix conferido (o mesmo círculo ameixa do logotipo), 22px. */

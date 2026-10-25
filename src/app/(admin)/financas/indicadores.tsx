@@ -1,6 +1,6 @@
 // Os quatro números do topo das finanças: presentes recebidos, despesas, saldo previsto e próxima parcela.
 import type { obterDespesas } from "@/actions/expense-actions";
-import type { obterMetricasFinanceiras } from "@/actions/finance-actions";
+import type { obterMetricasFinanceiras } from "@/actions/financas/metricas";
 import { estiloDoCartao, estiloDoNumeroGrande, estiloDoSobretitulo } from "@/components/casal/ui";
 import { Aparicao } from "@/components/motion/reveal";
 import { formatarDataCivilCurta } from "@/lib/formatacao/data";

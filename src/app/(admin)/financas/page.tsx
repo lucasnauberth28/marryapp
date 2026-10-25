@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { obterDespesas } from "@/actions/expense-actions";
-import { obterMetricasFinanceiras, obterTransacoes } from "@/actions/finance-actions";
+import { obterMetricasFinanceiras } from "@/actions/financas/metricas";
+import { obterTransacoes } from "@/actions/financas/transacoes";
 import { obterFornecedores } from "@/actions/vendor-actions";
 import { obterDadosDaCarteira } from "@/actions/wallet-actions";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
