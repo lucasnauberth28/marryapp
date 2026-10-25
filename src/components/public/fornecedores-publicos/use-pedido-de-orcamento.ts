@@ -1,7 +1,7 @@
 // O pedido de orçamento (ou reunião) feito ao fornecedor, dentro de uma janela.
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { criarPedidoDeOrcamento } from "@/actions/partner-vendor-actions";
+import { criarPedidoDeOrcamento } from "@/actions/vitrine/pedido";
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import type { FornecedorPublico } from "./constantes";
 

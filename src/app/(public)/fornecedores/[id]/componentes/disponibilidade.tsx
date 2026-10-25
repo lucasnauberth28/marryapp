@@ -2,7 +2,7 @@ import { useState, useTransition } from "react";
 import { CalendarCheck, CalendarX } from "lucide-react";
 import { Botao } from "@/components/ui/button";
 import { Entrada } from "@/components/ui/input";
-import { conferirDisponibilidadeDoFornecedor } from "@/actions/partner-vendor-actions";
+import { conferirDisponibilidadeDoFornecedor } from "@/actions/vitrine/disponibilidade";
 
 const dateLabel = (iso: string) => {
   const [y, m, d] = iso.split("-");

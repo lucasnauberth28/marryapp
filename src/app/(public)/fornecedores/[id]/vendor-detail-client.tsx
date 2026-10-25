@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { CabecalhoDaLanding } from "@/components/landing/landing-header";
 import { RodapeDaLanding } from "@/components/landing/landing-footer";
 import { estiloDoBotao, estiloDoContainerDaLanding } from "@/components/landing/styles";
-import type { FornecedorPublico } from "@/actions/partner-vendor-actions";
+import type { FornecedorPublico } from "@/actions/vitrine/consulta";
 import { interpretarGaleria, interpretarRegioes } from "@/app/(fornecedor)/_lib/perfil-do-fornecedor";
 import { formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
 import { cn } from "@/lib/utils";

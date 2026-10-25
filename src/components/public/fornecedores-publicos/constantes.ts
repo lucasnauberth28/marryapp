@@ -1,6 +1,6 @@
 // Opções dos filtros e da ordenação da lista pública de fornecedores.
 import { interpretarRegioes } from "@/app/(fornecedor)/_lib/perfil-do-fornecedor";
-import type { ItemDaListaDeFornecedoresPublicos } from "@/actions/partner-vendor-actions";
+import type { ItemDaListaDeFornecedoresPublicos } from "@/actions/vitrine/consulta";
 
 export type FornecedorPublico = ItemDaListaDeFornecedoresPublicos;
 

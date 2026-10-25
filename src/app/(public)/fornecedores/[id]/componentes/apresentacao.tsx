@@ -1,5 +1,5 @@
 import { Building2, Camera, Check, ExternalLink, Globe, MapPin, Sparkles, Star, Video } from "lucide-react";
-import type { FornecedorPublico } from "@/actions/partner-vendor-actions";
+import type { FornecedorPublico } from "@/actions/vitrine/consulta";
 import { ImagemDaPessoa } from "@/components/ui/user-image";
 import { estiloDoTituloDaSecao } from "./estilos";
 

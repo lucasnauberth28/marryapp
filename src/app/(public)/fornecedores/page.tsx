@@ -1,4 +1,4 @@
-import { obterFornecedoresParceiros } from "@/actions/partner-vendor-actions";
+import { obterFornecedoresParceiros } from "@/actions/vitrine/consulta";
 import { VisaoDeFornecedoresPublicos } from "@/components/public/fornecedores-publicos/visao-de-fornecedores";
 import { interpretarDataIso, paraDataIso, hojeEmBrasilia } from "@/app/(fornecedor)/_lib/datas-do-painel";
 

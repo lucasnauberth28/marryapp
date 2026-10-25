@@ -1,7 +1,8 @@
 // O formulário do pedido de orçamento: campos, envio e a confirmação que fica na tela.
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { criarPedidoDeOrcamento, type FornecedorPublico } from "@/actions/partner-vendor-actions";
+import { criarPedidoDeOrcamento } from "@/actions/vitrine/pedido";
+import type { FornecedorPublico } from "@/actions/vitrine/consulta";
 
 export type TipoDeReuniao = "ONLINE" | "PRESENTIAL";
 

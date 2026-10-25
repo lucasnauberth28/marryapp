@@ -1,5 +1,5 @@
 import { Building2, CheckCircle2, Video } from "lucide-react";
-import type { FornecedorPublico } from "@/actions/partner-vendor-actions";
+import type { FornecedorPublico } from "@/actions/vitrine/consulta";
 import { Botao } from "@/components/ui/button";
 import { Entrada } from "@/components/ui/input";
 import { SelecaoNativa } from "@/components/ui/select";

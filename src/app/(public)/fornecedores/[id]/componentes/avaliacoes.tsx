@@ -1,5 +1,5 @@
 import { CheckCircle2, Star } from "lucide-react";
-import type { FornecedorPublico } from "@/actions/partner-vendor-actions";
+import type { FornecedorPublico } from "@/actions/vitrine/consulta";
 import { cn } from "@/lib/utils";
 import { estiloDoTituloDaSecao } from "./estilos";
 

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BadgeCheck } from "lucide-react";
-import { aceitarPropostaDoPedido } from "@/actions/partner-vendor-actions";
+import { aceitarPropostaDoPedido } from "@/actions/vitrine/proposta";
 import { Botao } from "@/components/ui/button";
 import { Entrada } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
