@@ -11,45 +11,82 @@ import { CARTAO_DA_PAGINA_COM_TOKEN } from "@/components/public/token-page-shell
 
 const ROTULO_DAS_ESTRELAS = ["", "Ruim", "Regular", "Bom", "Muito bom", "Excelente"];
 
-export function FormularioDeAvaliacao({ token, companyName }: { token: string; companyName: string }) {
+function AvaliacaoEnviada({ done, companyName }: { done: "sent" | "already"; companyName: string }) {
+  return (
+    <section role="status" className="flex flex-col gap-2 rounded-2xl bg-sucesso-suave p-5 sm:p-6">
+      <h2 className="flex items-center gap-2 text-lg font-semibold text-sucesso">
+        <BadgeCheck aria-hidden="true" className="size-5" />
+        {done === "sent" ? "Avaliação enviada. Obrigado!" : "Avaliação já enviada"}
+      </h2>
+      <p>Ela aparece no perfil de {companyName} com o selo “Casamento Verificado” e ajuda outros casais a escolher.</p>
+    </section>
+  );
+}
+
+function EscolhaDeEstrelas({ rating, aoEscolher }: { rating: number; aoEscolher: (n: number) => void }) {
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="mb-2 text-sm font-semibold text-tinta">Sua nota</legend>
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <label key={n} className="cursor-pointer rounded-lg p-1 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ameixa">
+            <input
+              type="radio"
+              name="rating"
+              value={n}
+              checked={rating === n}
+              onChange={() => aoEscolher(n)}
+              className="sr-only"
+            />
+            <Star
+              aria-hidden="true"
+              className={cn("size-9 transition-colors", n <= rating ? "fill-amber-400 text-amber-400" : "text-linha-forte")}
+            />
+            <span className="sr-only">
+              {n} {n === 1 ? "estrela" : "estrelas"} ({ROTULO_DAS_ESTRELAS[n]})
+            </span>
+          </label>
+        ))}
+        <span className="ml-2 text-sm font-semibold text-tinta-suave" aria-hidden="true">
+          {rating > 0 ? ROTULO_DAS_ESTRELAS[rating] : ""}
+        </span>
+      </div>
+    </fieldset>
+  );
+}
+
+function useEnvioDaAvaliacao(token: string) {
   const router = useRouter();
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<"sent" | "already" | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  function enviar(rating: number, comment: string) {
     setError(null);
-    if (rating < 1) {
-      setError("Escolha de 1 a 5 estrelas.");
-      return;
-    }
+    if (rating < 1) return setError("Escolha de 1 a 5 estrelas.");
     startTransition(async () => {
       const res = await enviarAvaliacaoDoPedido({ token, rating, comment });
       if (res.success) {
         setDone("sent");
         router.refresh();
-      } else if (res.alreadyReviewed) {
-        setDone("already");
-      } else {
-        setError(res.error);
-      }
+      } else if (res.alreadyReviewed) setDone("already");
+      else setError(res.error);
     });
   }
 
-  if (done) {
-    return (
-      <section role="status" className="flex flex-col gap-2 rounded-2xl bg-sucesso-suave p-5 sm:p-6">
-        <h2 className="flex items-center gap-2 text-lg font-semibold text-sucesso">
-          <BadgeCheck aria-hidden="true" className="size-5" />
-          {done === "sent" ? "Avaliação enviada. Obrigado!" : "Avaliação já enviada"}
-        </h2>
-        <p>Ela aparece no perfil de {companyName} com o selo “Casamento Verificado” e ajuda outros casais a escolher.</p>
-      </section>
-    );
-  }
+  return { error, done, isPending, enviar };
+}
+
+export function FormularioDeAvaliacao({ token, companyName }: { token: string; companyName: string }) {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const { error, done, isPending, enviar } = useEnvioDaAvaliacao(token);
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    enviar(rating, comment);
+  };
+
+  if (done) return <AvaliacaoEnviada done={done} companyName={companyName} />;
 
   const length = comment.trim().length;
 
@@ -65,33 +102,7 @@ export function FormularioDeAvaliacao({ token, companyName }: { token: string; c
           </p>
         ) : null}
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-semibold text-tinta">Sua nota</legend>
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <label key={n} className="cursor-pointer rounded-lg p-1 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ameixa">
-                <input
-                  type="radio"
-                  name="rating"
-                  value={n}
-                  checked={rating === n}
-                  onChange={() => setRating(n)}
-                  className="sr-only"
-                />
-                <Star
-                  aria-hidden="true"
-                  className={cn("size-9 transition-colors", n <= rating ? "fill-amber-400 text-amber-400" : "text-linha-forte")}
-                />
-                <span className="sr-only">
-                  {n} {n === 1 ? "estrela" : "estrelas"} ({ROTULO_DAS_ESTRELAS[n]})
-                </span>
-              </label>
-            ))}
-            <span className="ml-2 text-sm font-semibold text-tinta-suave" aria-hidden="true">
-              {rating > 0 ? ROTULO_DAS_ESTRELAS[rating] : ""}
-            </span>
-          </div>
-        </fieldset>
+        <EscolhaDeEstrelas rating={rating} aoEscolher={setRating} />
 
         <AreaDeTexto
           id="avaliar-comentario"

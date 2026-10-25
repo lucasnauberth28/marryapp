@@ -1,22 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
-import { ArrowRight, CalendarHeart, Check, Copy, Globe, Heart, Palette, User } from "lucide-react";
-import { concluirInicio } from "@/actions/onboarding-actions";
-import { MoldeDeAcesso, FOTOS_DO_MOLDE, TituloDoMolde } from "@/components/account/auth-shell";
-import { Selo } from "@/components/landing/seal";
-import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
-import { BotaoComCarregamento } from "@/components/painel/loading-button";
-import { Campo, AvisoDoFormulario } from "@/components/ui/field";
-import { juntarNomesDoCasal, validarDadosBasicosDoInicio, type ErrosDosDadosBasicosDoInicio } from "@/lib/onboarding-options";
-import { cn } from "@/lib/utils";
+import { useEffect, useRef } from "react";
+import { MoldeDeAcesso, FOTOS_DO_MOLDE } from "@/components/account/auth-shell";
+import { EtapaDeDados } from "./componentes/etapa-dados";
+import { EtapaPronta } from "./componentes/etapa-pronta";
+import { useDadosDoInicio, type Resultado, type ValoresIniciais } from "./componentes/use-dados-do-inicio";
 
-type Etapa = "dados" | "pronto";
-
-interface ValoresIniciais {
-  yourName: string;
-  partnerName: string;
-  weddingDate: string | null;
+/** Ao trocar de etapa o foco vai para o título: quem usa leitor de tela ouve a nova etapa. */
+function useFocoNoTitulo(titulo: React.RefObject<HTMLHeadingElement | null>, step: string) {
+  const primeiraRenderizacao = useRef(true);
+  useEffect(() => {
+    if (primeiraRenderizacao.current) {
+      primeiraRenderizacao.current = false;
+      return;
+    }
+    titulo.current?.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step, titulo]);
 }
 
 /**
@@ -31,156 +31,16 @@ export function FluxoDeBoasVindas({
   firstName: string;
   initial: ValoresIniciais;
   /** Casamento recém-configurado: abre direto na tela final. */
-  done: { slug: string; coupleNames: string } | null;
+  done: Resultado | null;
 }) {
-  const [step, setStep] = useState<Etapa>(done ? "pronto" : "dados");
-  const [yourName, setYourName] = useState(initial.yourName);
-  const [partnerName, setPartnerName] = useState(initial.partnerName);
-  const [weddingDate, setWeddingDate] = useState(initial.weddingDate ?? "");
-
-  const [errors, setErrors] = useState<ErrosDosDadosBasicosDoInicio>({});
-  const [formError, setFormError] = useState("");
-  const [isPending, startTransition] = useTransition();
-  const [result, setResult] = useState<{ slug: string; coupleNames: string } | null>(done);
-  const [copied, setCopied] = useState(false);
-
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const firstRender = useRef(true);
-  useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
-    headingRef.current?.focus({ preventScroll: true });
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [step]);
-
-  const coupleNames = juntarNomesDoCasal(yourName, partnerName) || "Vocês dois";
-  // O erro some assim que a pessoa mexe no campo a que ele se refere.
-  const edit = (key: keyof ErrosDosDadosBasicosDoInicio, set: (v: string) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    set(e.target.value);
-    setErrors((prev) => (prev[key] ? { ...prev, [key]: undefined } : prev));
-  };
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-    const found = validarDadosBasicosDoInicio({ yourName, partnerName, weddingDate });
-    setErrors(found);
-    const first = (["yourName", "partnerName", "weddingDate"] as const).find((k) => found[k]);
-    if (first) return document.getElementById(`onb-${first}`)?.focus();
-
-    startTransition(async () => {
-      const res = await concluirInicio({ yourName, partnerName, weddingDate: weddingDate || null });
-      if (!res.success) {
-        if (res.redirectTo) {
-          window.location.href = res.redirectTo;
-          return;
-        }
-        setFormError(res.error);
-        return;
-      }
-      setResult({ slug: res.slug, coupleNames: res.coupleNames });
-      setStep("pronto");
-    });
-  };
-
-  const sitePath = result ? `/casamento/${result.slug}` : "";
-  // "pronto" só aparece depois de uma ação no navegador: não há renderização no servidor aqui.
-  const origin = result && typeof window !== "undefined" ? window.location.origin : "";
-  const copyAddress = async () => {
-    try {
-      await navigator.clipboard.writeText(`${origin}${sitePath}`);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
-    }
-  };
+  const d = useDadosDoInicio(initial, done);
+  const titulo = useRef<HTMLHeadingElement>(null);
+  useFocoNoTitulo(titulo, d.step);
 
   return (
-    <MoldeDeAcesso
-      photo={step === "pronto" ? FOTOS_DO_MOLDE.pronto : FOTOS_DO_MOLDE.boasVindas}
-      footnote="Nomes e data podem ser alterados depois, em Editar o site."
-    >
-      {step === "dados" ? (
-        <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-          <TituloDoMolde
-            ref={headingRef}
-            overline="Vamos começar"
-            title="Quem vai casar, e quando?"
-            text={`${firstName ? `Boas-vindas, ${firstName}. ` : ""}É só isso para abrir o site de vocês. Cor, local e fotos ficam para depois, em Editar o site.`}
-          />
-          <form onSubmit={submit} noValidate className="flex flex-col gap-5">
-            <Campo id="onb-yourName" label="Seu nome" icon={User} error={errors.yourName}>
-              {(c) => (
-                <input {...c} id="onb-yourName" autoComplete="given-name" maxLength={60} value={yourName} onChange={edit("yourName", setYourName)} />
-              )}
-            </Campo>
-            <Campo id="onb-partnerName" label="Nome de quem vai casar com você" icon={Heart} error={errors.partnerName}>
-              {(c) => (
-                <input {...c} id="onb-partnerName" autoComplete="off" maxLength={60} value={partnerName} onChange={edit("partnerName", setPartnerName)} />
-              )}
-            </Campo>
-            <Campo
-              id="onb-weddingDate"
-              label="Data do casamento"
-              icon={CalendarHeart}
-              optional
-              error={errors.weddingDate}
-              hint="Se ainda não têm a data, deixem em branco."
-            >
-              {(c) => <input {...c} id="onb-weddingDate" type="date" value={weddingDate} onChange={edit("weddingDate", setWeddingDate)} />}
-            </Campo>
-            <p className="rounded-[12px] border border-linha bg-papel px-4 py-3 text-[15px] text-tinta-suave">
-              No site vai aparecer <strong className="font-display text-lg font-medium text-tinta">{coupleNames}</strong>
-            </p>
-
-            {formError ? <AvisoDoFormulario id="onb-erro">{formError}</AvisoDoFormulario> : null}
-
-            <BotaoComCarregamento type="submit" loading={isPending} className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}>
-              Criar o site de vocês
-              <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
-            </BotaoComCarregamento>
-          </form>
-        </section>
-      ) : null}
-
-      {step === "pronto" && result ? (
-        <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
-          <Selo label="Casamento criado" className="size-24 [&>span]:text-[54px]" />
-          <TituloDoMolde ref={headingRef} title="Tudo pronto" text={`O site de ${result.coupleNames} já tem um endereço no Aceito.`} />
-
-          <div className="flex flex-col gap-2 rounded-[16px] border border-linha bg-papel p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-tinta-suave">Endereço do site no Aceito</p>
-            <div className="flex items-center gap-2">
-              <Globe aria-hidden="true" className="size-[18px] shrink-0 text-ameixa" strokeWidth={1.6} />
-              <a href={sitePath} target="_blank" rel="noopener" className="min-w-0 flex-1 break-all font-semibold text-tinta underline decoration-linha underline-offset-4 hover:decoration-ameixa">
-                {origin ? `${origin.replace(/^https?:\/\//, "")}${sitePath}` : sitePath}
-              </a>
-              <button type="button" onClick={copyAddress} className={cn(estiloDoBotao.quiet, estiloDoBotao.sm, "min-h-11 shrink-0")}>
-                {copied ? <Check aria-hidden="true" className="size-4" /> : <Copy aria-hidden="true" className="size-4" />}
-                {copied ? "Copiado" : "Copiar"}
-              </button>
-            </div>
-            <p className="text-sm text-tinta-suave" aria-live="polite">
-              {copied ? "Link copiado." : "Compartilhem o endereço quando o site estiver do jeito de vocês."}
-            </p>
-          </div>
-
-          {/* Navegação completa: o painel precisa ler o cookie de sessão atualizado no onboarding. */}
-          <div className="flex flex-col gap-3">
-            <a href="/dashboard" className={cn(estiloDoBotao.primary, estiloDoBotao.block, "min-h-12")}>
-              Ir para o painel
-              <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
-            </a>
-            <a href="/site-builder" className={cn(estiloDoBotao.secondary, estiloDoBotao.block, "min-h-12")}>
-              <Palette aria-hidden="true" className="size-4" />
-              Escolher cor e fotos do site
-            </a>
-          </div>
-        </section>
-      ) : null}
+    <MoldeDeAcesso photo={d.step === "pronto" ? FOTOS_DO_MOLDE.pronto : FOTOS_DO_MOLDE.boasVindas} footnote="Nomes e data podem ser alterados depois, em Editar o site.">
+      {d.step === "dados" ? <EtapaDeDados titulo={titulo} firstName={firstName} d={d} /> : null}
+      {d.step === "pronto" && d.result ? <EtapaPronta titulo={titulo} result={d.result} /> : null}
     </MoldeDeAcesso>
   );
 }

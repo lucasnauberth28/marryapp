@@ -16,6 +16,32 @@ export const metadata: Metadata = {
 
 const LIMITE_DE_VISUALIZACOES = { limit: 60, windowMs: 1000 * 60 * 10 }; // 60 aberturas / 10 min por IP
 
+function MuitasTentativas() {
+  return (
+    <MoldeDaPaginaComToken>
+      <section role="status" className="flex flex-col gap-2 rounded-2xl bg-aviso-suave p-5 sm:p-6">
+        <h1 className="flex items-center gap-2 text-lg font-semibold text-aviso">
+          <Clock aria-hidden="true" className="size-5" />
+          Muitas tentativas
+        </h1>
+        <p>Tente novamente daqui a alguns minutos.</p>
+      </section>
+    </MoldeDaPaginaComToken>
+  );
+}
+
+function AvaliacaoJaEnviada({ companyName }: { companyName: string }) {
+  return (
+    <section role="status" className="flex flex-col gap-2 rounded-2xl bg-sucesso-suave p-5 sm:p-6">
+      <h2 className="flex items-center gap-2 text-lg font-semibold text-sucesso">
+        <BadgeCheck aria-hidden="true" className="size-5" />
+        Avaliação já enviada
+      </h2>
+      <p>Obrigado! A avaliação deste casamento já está publicada no perfil de {companyName}.</p>
+    </section>
+  );
+}
+
 export default async function AvaliarPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   if (!PADRAO_DO_TOKEN_PUBLICO.test(token)) notFound();
@@ -23,17 +49,7 @@ export default async function AvaliarPage({ params }: { params: Promise<{ token:
   const ip = await obterIpDoCliente();
   const rateLimit = await conferirLimiteDeUso({ key: `REVIEW_VIEW:${ip}`, ...LIMITE_DE_VISUALIZACOES });
   if (!rateLimit.success) {
-    return (
-      <MoldeDaPaginaComToken>
-        <section role="status" className="flex flex-col gap-2 rounded-2xl bg-aviso-suave p-5 sm:p-6">
-          <h1 className="flex items-center gap-2 text-lg font-semibold text-aviso">
-            <Clock aria-hidden="true" className="size-5" />
-            Muitas tentativas
-          </h1>
-          <p>Tente novamente daqui a alguns minutos.</p>
-        </section>
-      </MoldeDaPaginaComToken>
-    );
+    return <MuitasTentativas />;
   }
 
   const lead = await prisma.vendorLead.findUnique({
@@ -65,13 +81,7 @@ export default async function AvaliarPage({ params }: { params: Promise<{ token:
       </div>
 
       {lead.review ? (
-        <section role="status" className="flex flex-col gap-2 rounded-2xl bg-sucesso-suave p-5 sm:p-6">
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-sucesso">
-            <BadgeCheck aria-hidden="true" className="size-5" />
-            Avaliação já enviada
-          </h2>
-          <p>Obrigado! A avaliação deste casamento já está publicada no perfil de {lead.vendor.companyName}.</p>
-        </section>
+        <AvaliacaoJaEnviada companyName={lead.vendor.companyName} />
       ) : (
         <FormularioDeAvaliacao token={token} companyName={lead.vendor.companyName} />
       )}
