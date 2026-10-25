@@ -86,6 +86,58 @@ function notFoundResponse(request: NextRequest): NextResponse {
   return NextResponse.rewrite(url, { request: { headers: withoutSession(request) } });
 }
 
+type Respostas = { pass: () => NextResponse; toLogin: (expired: boolean) => NextResponse };
+
+/** Respostas comuns da checagem: seguir adiante (levando o caminho atual) ou mandar ao login. */
+function respostasDoProxy(request: NextRequest, here: string): Respostas {
+  const forwardedHeaders = new Headers(request.headers);
+  forwardedHeaders.set(CABECALHO_DO_CAMINHO_ATUAL, here);
+  return {
+    pass: () => NextResponse.next({ request: { headers: forwardedHeaders } }),
+    toLogin: (expired) => {
+      const response = NextResponse.redirect(new URL(urlDeLogin(here, expired), request.url));
+      // O aviso aparece uma vez: depois dele a marca de "já esteve logada" é apagada
+      if (expired) response.cookies.delete(NOME_DO_COOKIE_DE_SESSAO_VISTA);
+      return response;
+    },
+  };
+}
+
+const ehApi = (path: string) => path.startsWith("/api/");
+
+/** Quem tem cookie de sessão: valida o token e decide entre seguir, voltar ao login ou ir ao primeiro destino permitido. */
+async function conferirSessao(request: NextRequest, token: string, isPublic: boolean, { pass, toLogin }: Respostas): Promise<NextResponse> {
+  const path = request.nextUrl.pathname;
+  const payload = await verificarToken(token);
+
+  if (!payload) {
+    // Token inválido ou vencido: limpa o cookie. Em rotas públicas apenas segue sem sessão.
+    const response = isPublic ? pass() : ehApi(path) ? NextResponse.json({ error: "Unauthorized" }, { status: 401 }) : toLogin(true);
+    response.cookies.delete(NOME_DO_COOKIE_DE_SESSAO);
+    return response;
+  }
+
+  const dest = primeiroDestinoPermitido(payload.allowedPaths);
+
+  if (path === "/login") {
+    // ?expirou=1 vindo do servidor (a sessão é válida no token mas não existe mais): mostra o login
+    // para não girar em círculos. Perfil sem nenhum módulo liberado também permanece no login.
+    if (request.nextUrl.searchParams.get("expirou") === "1" || dest === "/login") return pass();
+    const target = resolverCaminhoPosLogin(request.nextUrl.searchParams.get("proxima"), dest, payload.allowedPaths);
+    return NextResponse.redirect(new URL(target, request.url));
+  }
+
+  // /admin exige acesso total ("*"): um "/admin" solto na lista do perfil não vale
+  const allowed = ehCaminhoDeAdminDaPlataforma(path) ? ehAcessoDeAdminDaPlataforma(payload.allowedPaths) : temAcessoAoCaminho(payload.allowedPaths, path);
+  if (!isPublic && !ehCaminhoDeSessao(path) && !ehApi(path) && !allowed) {
+    return NextResponse.redirect(new URL(dest, request.url));
+  }
+
+  const response = pass();
+  if (!request.cookies.has(NOME_DO_COOKIE_DE_SESSAO_VISTA)) response.cookies.set(NOME_DO_COOKIE_DE_SESSAO_VISTA, "1", opcoesDoCookieDeSessaoVista());
+  return response;
+}
+
 export default async function proxy(request: NextRequest) {
   const host = classificarHost(request.headers.get("host"), process.env.NEXT_PUBLIC_BASE_URL);
   if (host.kind === "candidate") {
@@ -101,65 +153,14 @@ export default async function proxy(request: NextRequest) {
 
   const isPublic = kind === "public";
   const sessionCookie = request.cookies.get(NOME_DO_COOKIE_DE_SESSAO);
-  const seenBefore = request.cookies.has(NOME_DO_COOKIE_DE_SESSAO_VISTA);
-
   // Caminho que a pessoa abriu (com a busca), para voltar a ele depois do login
-  const here = `${path}${request.nextUrl.search}`;
-  const forwardedHeaders = new Headers(request.headers);
-  forwardedHeaders.set(CABECALHO_DO_CAMINHO_ATUAL, here);
-  const pass = () => NextResponse.next({ request: { headers: forwardedHeaders } });
+  const respostas = respostasDoProxy(request, `${path}${request.nextUrl.search}`);
 
-  const toLogin = (expired: boolean) => {
-    const response = NextResponse.redirect(new URL(urlDeLogin(here, expired), request.url));
-    // O aviso aparece uma vez: depois dele a marca de "já esteve logada" é apagada
-    if (expired) response.cookies.delete(NOME_DO_COOKIE_DE_SESSAO_VISTA);
-    return response;
-  };
-
-  if (!isPublic && !sessionCookie) {
-    if (path.startsWith("/api/")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    // Sem o cookie mas com a marca: a sessão venceu
-    return toLogin(seenBefore);
-  }
-
-  if (sessionCookie) {
-    const payload = await verificarToken(sessionCookie.value);
-
-    if (!payload) {
-      // Token inválido ou vencido: limpa o cookie. Em rotas públicas apenas segue sem sessão.
-      const response = isPublic
-        ? pass()
-        : path.startsWith("/api/")
-          ? NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-          : toLogin(true);
-      response.cookies.delete(NOME_DO_COOKIE_DE_SESSAO);
-      return response;
-    }
-
-    const dest = primeiroDestinoPermitido(payload.allowedPaths);
-
-    if (path === "/login") {
-      // ?expirou=1 vindo do servidor (a sessão é válida no token mas não existe mais): mostra o login
-      // para não girar em círculos. Perfil sem nenhum módulo liberado também permanece no login.
-      if (request.nextUrl.searchParams.get("expirou") === "1" || dest === "/login") return pass();
-      const target = resolverCaminhoPosLogin(request.nextUrl.searchParams.get("proxima"), dest, payload.allowedPaths);
-      return NextResponse.redirect(new URL(target, request.url));
-    }
-
-    // /admin exige acesso total ("*"): um "/admin" solto na lista do perfil não vale
-    const allowed = ehCaminhoDeAdminDaPlataforma(path) ? ehAcessoDeAdminDaPlataforma(payload.allowedPaths) : temAcessoAoCaminho(payload.allowedPaths, path);
-    if (!isPublic && !ehCaminhoDeSessao(path) && !path.startsWith("/api/") && !allowed) {
-      return NextResponse.redirect(new URL(dest, request.url));
-    }
-
-    const response = pass();
-    if (!seenBefore) response.cookies.set(NOME_DO_COOKIE_DE_SESSAO_VISTA, "1", opcoesDoCookieDeSessaoVista());
-    return response;
-  }
-
-  return pass();
+  if (sessionCookie) return conferirSessao(request, sessionCookie.value, isPublic, respostas);
+  if (isPublic) return respostas.pass();
+  if (ehApi(path)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Sem o cookie mas com a marca: a sessão venceu
+  return respostas.toLogin(request.cookies.has(NOME_DO_COOKIE_DE_SESSAO_VISTA));
 }
 
 export const config = {

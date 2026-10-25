@@ -73,6 +73,34 @@ const EsquemaDaAvaliacaoDoPedido = z.object({
 export type EntradaDoEnvioDaAvaliacao = { token: string; rating: number; comment: string };
 export type ResultadoDoEnvioDaAvaliacao = { success: true } | { success: false; error: string; alreadyReviewed?: boolean };
 
+type PedidoAvaliavel = { id: string; vendorId: string; coupleName: string; weddingDate: Date | null };
+
+/** Grava a avaliação e recalcula a média do fornecedor no banco, sem carregar todas as avaliações. */
+async function gravarAvaliacaoVerificada(lead: PedidoAvaliavel, data: { rating: number; comment: string }) {
+  await prisma.$transaction(async (tx) => {
+    await tx.vendorReview.create({
+      data: {
+        vendorId: lead.vendorId,
+        leadId: lead.id,
+        coupleNames: lead.coupleName,
+        weddingDate: lead.weddingDate,
+        rating: data.rating,
+        comment: data.comment.replace(/\r\n/g, "\n"),
+        isVerified: true,
+      },
+    });
+    const stats = await tx.vendorReview.aggregate({
+      where: { vendorId: lead.vendorId, hiddenAt: null }, // avaliação ocultada pela administração não conta
+      _avg: { rating: true },
+      _count: { _all: true },
+    });
+    await tx.partnerVendor.update({
+      where: { id: lead.vendorId },
+      data: { rating: Number((stats._avg.rating ?? 0).toFixed(1)), reviewCount: stats._count._all },
+    });
+  });
+}
+
 /**
  * Pública: o casal de um pedido fechado avalia o fornecedor pelo link recebido.
  * Uma avaliação por pedido (leadId único); entra como verificada, com nome e data do pedido.
@@ -104,30 +132,7 @@ export async function enviarAvaliacaoDoPedido(input: EntradaDoEnvioDaAvaliacao):
     if (!lead || lead.locked || lead.status !== "CLOSED") return { success: false, error: "Link de avaliação inválido." };
     if (lead.review) return { success: false, error: "Avaliação já enviada.", alreadyReviewed: true };
 
-    await prisma.$transaction(async (tx) => {
-      await tx.vendorReview.create({
-        data: {
-          vendorId: lead.vendorId,
-          leadId: lead.id,
-          coupleNames: lead.coupleName,
-          weddingDate: lead.weddingDate,
-          rating: data.rating,
-          comment: data.comment.replace(/\r\n/g, "\n"),
-          isVerified: true,
-        },
-      });
-
-      // Recalcula a média no banco, sem carregar todas as avaliações
-      const stats = await tx.vendorReview.aggregate({
-        where: { vendorId: lead.vendorId, hiddenAt: null }, // avaliação ocultada pela administração não conta
-        _avg: { rating: true },
-        _count: { _all: true },
-      });
-      await tx.partnerVendor.update({
-        where: { id: lead.vendorId },
-        data: { rating: Number((stats._avg.rating ?? 0).toFixed(1)), reviewCount: stats._count._all },
-      });
-    });
+    await gravarAvaliacaoVerificada(lead, data);
 
     avisarDepois(() => avisarNovaAvaliacao(lead.id));
 
