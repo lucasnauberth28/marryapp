@@ -7,11 +7,24 @@ import { dispensarPrimeirosPassos } from "@/actions/tour-actions";
 import { Botao } from "@/components/ui/button";
 import type { ItemDosPrimeirosPassos } from "@/lib/tour/first-steps";
 
-/**
- * "Primeiros passos" do Resumo. Os itens vêm de dados reais do casamento (calculados no servidor);
- * a lista some sozinha quando tudo está feito, ou quando esta pessoa a dispensa.
- */
-export function PrimeirosPassos({ items, doneCount }: { items: ItemDosPrimeirosPassos[]; doneCount: number }) {
+function ItemDaLista({ item }: { item: ItemDosPrimeirosPassos }) {
+  return (
+    <li className="flex min-h-14 items-center gap-3 border-b border-linha py-2 last:border-b-0">
+      {item.done ? <Check className="size-5 shrink-0 text-sucesso" aria-hidden="true" /> : <Circle className="size-5 shrink-0 text-linha-forte" aria-hidden="true" />}
+      <span className={`min-w-0 flex-1 text-base leading-6 ${item.done ? "text-tinta-suave line-through" : "text-tinta"}`}>
+        {item.label}
+        <span className="sr-only">{item.done ? ", feito" : ", ainda não feito"}</span>
+      </span>
+      {!item.done && (
+        <Link href={item.href} className="inline-flex min-h-11 shrink-0 items-center rounded-lg px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
+          {item.action}
+        </Link>
+      )}
+    </li>
+  );
+}
+
+function useDispensar() {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -22,6 +35,15 @@ export function PrimeirosPassos({ items, doneCount }: { items: ItemDosPrimeirosP
       if (!res || !res.success) setError(res && !res.success ? res.error : "Não deu para dispensar a lista. Tente de novo.");
     });
   }
+  return { pending, error, dismiss };
+}
+
+/**
+ * "Primeiros passos" do Resumo. Os itens vêm de dados reais do casamento (calculados no servidor);
+ * a lista some sozinha quando tudo está feito, ou quando esta pessoa a dispensa.
+ */
+export function PrimeirosPassos({ items, doneCount }: { items: ItemDosPrimeirosPassos[]; doneCount: number }) {
+  const { pending, error, dismiss } = useDispensar();
 
   return (
     <section aria-labelledby="primeiros-passos" data-testid="primeiros-passos" className="flex flex-col gap-3 rounded-2xl border border-linha bg-papel p-4 shadow-[var(--shadow-aceito-1)] md:p-6">
@@ -40,22 +62,7 @@ export function PrimeirosPassos({ items, doneCount }: { items: ItemDosPrimeirosP
       </div>
       <ul className="flex flex-col">
         {items.map((item) => (
-          <li key={item.id} className="flex min-h-14 items-center gap-3 border-b border-linha py-2 last:border-b-0">
-            {item.done ? (
-              <Check className="size-5 shrink-0 text-sucesso" aria-hidden="true" />
-            ) : (
-              <Circle className="size-5 shrink-0 text-linha-forte" aria-hidden="true" />
-            )}
-            <span className={`min-w-0 flex-1 text-base leading-6 ${item.done ? "text-tinta-suave line-through" : "text-tinta"}`}>
-              {item.label}
-              <span className="sr-only">{item.done ? ", feito" : ", ainda não feito"}</span>
-            </span>
-            {!item.done && (
-              <Link href={item.href} className="inline-flex min-h-11 shrink-0 items-center rounded-lg px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave">
-                {item.action}
-              </Link>
-            )}
-          </li>
+          <ItemDaLista key={item.id} item={item} />
         ))}
       </ul>
       {error && (

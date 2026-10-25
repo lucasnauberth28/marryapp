@@ -1,12 +1,10 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { concluirTourDoPainel, reiniciarTourDoPainel, pularTourDoPainel } from "@/actions/tour-actions";
-import { ATRIBUTO_DO_TOUR_ATIVO } from "@/lib/tour/events";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 import type { ConfiguracaoDoTourDoPainel } from "@/lib/tour/panel-tour";
-import type { PassoDoTour } from "@/lib/tour/steps";
 import { CartaoDeBoasVindasDoTour } from "./tour-welcome-card";
-import { FocoDoTour, type TourConcluido } from "./tour-spotlight";
+import { FocoDoTour } from "./tour-spotlight";
+import { useFasesDoTour } from "./use-fases-do-tour";
 
 /**
  * Passo a passo do painel. O provedor fica no layout do painel (persiste entre as telas) e guarda:
@@ -30,85 +28,8 @@ export function useTour(): ApiDoTour {
   return useContext(ContextoDoTour);
 }
 
-type FaseDoTour = "idle" | "welcome" | "steps";
-
-/** O elemento existe na página? (o botão da Liz fica `hidden` durante o passo a passo, mas continua nela) */
-function ancoraExiste(anchor: string) {
-  return document.querySelector(`[data-tour="${anchor}"]`) !== null;
-}
-
 export function ProvedorDoTourDoPainel({ config, children }: { config: ConfiguracaoDoTourDoPainel | null; children: ReactNode }) {
-  const [phase, setPhase] = useState<FaseDoTour>(config && config.mode !== "none" ? "welcome" : "idle");
-  const [run, setRun] = useState<PassoDoTour[]>([]);
-  /** Quem tinha o foco antes de abrir, para devolver o foco ao fechar. */
-  const returnFocus = useRef<HTMLElement | null>(null);
-
-  // Sinal para o resto do painel (botão flutuante da Liz): enquanto o passo a passo está na tela, o body leva o atributo
-  useEffect(() => {
-    if (phase === "idle") return;
-    document.body.setAttribute(ATRIBUTO_DO_TOUR_ATIVO, "true");
-    return () => document.body.removeAttribute(ATRIBUTO_DO_TOUR_ATIVO);
-  }, [phase]);
-
-  const open = useCallback(
-    (steps: PassoDoTour[]) => {
-      // Passo da Liz só entra se o botão dela existir nesta tela
-      const usable = steps.filter((s) => !s.floating || ancoraExiste(s.anchor));
-      if (usable.length === 0) return;
-      const active = document.activeElement;
-      if (!returnFocus.current && active instanceof HTMLElement && active !== document.body) returnFocus.current = active;
-      setRun(usable);
-      setPhase("steps");
-    },
-    [],
-  );
-
-  const restoreFocus = useCallback(() => {
-    const prev = returnFocus.current;
-    returnFocus.current = null;
-    requestAnimationFrame(() => {
-      const target =
-        prev?.isConnected && prev.getClientRects().length > 0
-          ? prev
-          : (document.querySelector<HTMLElement>('[aria-label="Menu da conta"]') ?? document.getElementById("conteudo"));
-      if (!target) return;
-      if (!target.hasAttribute("tabindex") && !/^(A|BUTTON|INPUT|SELECT|TEXTAREA)$/.test(target.tagName)) target.setAttribute("tabindex", "-1");
-      target.focus({ preventScroll: true });
-    });
-  }, []);
-
-  // Começa pelo cartão: mostra os passos do modo atual (tudo, ou só as novidades)
-  const startFromCard = useCallback(() => {
-    if (!config) return;
-    const ids = new Set(config.autoIds);
-    open(config.steps.filter((s) => ids.has(s.id)));
-  }, [config, open]);
-
-  const dismissCard = useCallback(() => {
-    setPhase("idle");
-    void pularTourDoPainel().catch(() => {});
-    restoreFocus();
-  }, [restoreFocus]);
-
-  const start = useCallback(() => {
-    if (!config) return;
-    // Volta ao zero no servidor: se a pessoa recarregar no meio, as boas-vindas reaparecem
-    void reiniciarTourDoPainel().catch(() => {});
-    open(config.steps);
-  }, [config, open]);
-
-  const finish = useCallback(
-    (done: TourConcluido) => {
-      setPhase("idle");
-      setRun([]);
-      void (done.outcome === "completed" ? concluirTourDoPainel() : pularTourDoPainel()).catch(() => {});
-      // Indo para outra tela, o foco é da tela nova
-      if (done.navigated) returnFocus.current = null;
-      else restoreFocus();
-    },
-    [restoreFocus],
-  );
-
+  const { phase, run, start, startFromCard, dismissCard, finish } = useFasesDoTour(config);
   const api = useMemo<ApiDoTour>(() => ({ available: config !== null, start }), [config, start]);
 
   return (
