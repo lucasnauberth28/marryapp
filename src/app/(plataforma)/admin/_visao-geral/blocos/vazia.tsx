@@ -5,7 +5,7 @@ import { Painel } from "@/components/plataforma/panel";
 import { EstadoVazio } from "@/components/plataforma/empty-state";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { obterListaDeConfiguracao } from "@/lib/platform/queries/atencao";
+import { obterListaDeConfiguracao } from "@/lib/platform/queries/erros-e-configuracao";
 import { cn } from "@/lib/utils";
 
 type ItemDaConfiguracao = Awaited<ReturnType<typeof obterListaDeConfiguracao>>[number];

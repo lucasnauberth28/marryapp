@@ -3,7 +3,7 @@ import { Painel } from "@/components/plataforma/panel";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { formatarHora, haQuantoTempo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
-import { obterErrosRecentes } from "@/lib/platform/queries/atencao";
+import { obterErrosRecentes } from "@/lib/platform/queries/erros-e-configuracao";
 
 export async function BlocoDeErros({ now }: { now: Date }) {
   const errors = await obterErrosRecentes(now);
