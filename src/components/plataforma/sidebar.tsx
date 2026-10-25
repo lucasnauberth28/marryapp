@@ -5,22 +5,47 @@ import { Logotipo } from "@/components/brand/logo";
 import { AlternadorDeTema } from "@/components/theme/theme-toggle";
 import { ListaDoMenuDaPlataforma, type ContagensDoMenuDaPlataformaNaPropriedade } from "@/components/plataforma/nav-list";
 
+/** O rodapé da barra: o perfil (leva à conta), o tema e "Sair". */
+function PerfilDaBarra({ name, initials, roleLabel }: Pick<Propriedades, "name" | "initials" | "roleLabel">) {
+  return (
+    <div className="flex items-center gap-1 border-t border-linha pt-3">
+      <Link href="/conta" className="flex min-h-11 min-w-0 flex-1 items-center gap-2.5 rounded-xl px-1 transition-colors hover:bg-areia" aria-label={`Minha conta, ${name}`}>
+        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-ameixa-suave text-sm font-semibold text-ameixa" aria-hidden="true">
+          {initials}
+        </span>
+        <span className="flex min-w-0 flex-col text-sm leading-[18px]">
+          <strong className="truncate font-semibold text-tinta">{name}</strong>
+          <span className="truncate text-tinta-suave">{roleLabel}</span>
+        </span>
+      </Link>
+      <AlternadorDeTema align="start" />
+      <form action={sair}>
+        <button
+          type="submit"
+          aria-label="Sair"
+          title="Sair"
+          className="grid size-11 cursor-pointer place-items-center rounded-xl text-perigo transition-colors hover:bg-perigo-suave focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa"
+        >
+          <LogOut className="size-5" strokeWidth={1.6} aria-hidden="true" />
+        </button>
+      </form>
+    </div>
+  );
+}
+
+interface Propriedades {
+  counts: ContagensDoMenuDaPlataformaNaPropriedade;
+  name: string;
+  initials: string;
+  roleLabel: string;
+}
+
 /**
  * Barra lateral da administração (computador): marca, cartão "Administração", "Buscar em tudo" (leva à busca
  * de Suporte e LGPD), menu com contadores reais e o perfil de quem está logado, com "Sair".
  * Componente de servidor: o botão Sair é um formulário que chama a Server Action `logout`.
  */
-export function BarraLateralDaPlataforma({
-  counts,
-  name,
-  initials,
-  roleLabel,
-}: {
-  counts: ContagensDoMenuDaPlataformaNaPropriedade;
-  name: string;
-  initials: string;
-  roleLabel: string;
-}) {
+export function BarraLateralDaPlataforma({ counts, name, initials, roleLabel }: Propriedades) {
   return (
     <aside className="sticky top-0 hidden h-screen w-[264px] shrink-0 flex-col gap-5 border-r border-linha bg-linho px-4 pb-4 pt-6 md:flex">
       <Link href="/admin" aria-label="Aceito, início da administração" className="px-3">
@@ -44,28 +69,7 @@ export function BarraLateralDaPlataforma({
         <ListaDoMenuDaPlataforma counts={counts} />
       </nav>
 
-      <div className="flex items-center gap-1 border-t border-linha pt-3">
-        <Link href="/conta" className="flex min-h-11 min-w-0 flex-1 items-center gap-2.5 rounded-xl px-1 transition-colors hover:bg-areia" aria-label={`Minha conta, ${name}`}>
-          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-ameixa-suave text-sm font-semibold text-ameixa" aria-hidden="true">
-            {initials}
-          </span>
-          <span className="flex min-w-0 flex-col text-sm leading-[18px]">
-            <strong className="truncate font-semibold text-tinta">{name}</strong>
-            <span className="truncate text-tinta-suave">{roleLabel}</span>
-          </span>
-        </Link>
-        <AlternadorDeTema align="start" />
-        <form action={sair}>
-          <button
-            type="submit"
-            aria-label="Sair"
-            title="Sair"
-            className="grid size-11 cursor-pointer place-items-center rounded-xl text-perigo transition-colors hover:bg-perigo-suave focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-ameixa"
-          >
-            <LogOut className="size-5" strokeWidth={1.6} aria-hidden="true" />
-          </button>
-        </form>
-      </div>
+      <PerfilDaBarra name={name} initials={initials} roleLabel={roleLabel} />
     </aside>
   );
 }

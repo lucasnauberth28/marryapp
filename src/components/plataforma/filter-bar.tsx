@@ -1,14 +1,11 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { Entrada } from "@/components/ui/input";
 import { SelecaoNativa } from "@/components/ui/select";
 import { estiloDoBotao } from "@/components/landing/styles";
-import { iniciarProgressoDaNavegacao } from "@/components/feedback/navigation-progress";
-import { marcarNavegacaoDaLista } from "@/components/plataforma/pending";
 import { cn } from "@/lib/utils";
+import { useFiltrosPorUrl } from "./use-filtros-por-url";
 
 /**
  * Barra de busca e filtros por URL, para listas de servidor (casais, fornecedores, domínios...).
@@ -31,67 +28,18 @@ export interface DefinicaoDoFiltro {
   options: { value: string; label: string }[];
 }
 
-export function BarraDeFiltros({
-  filters = [],
-  searchPlaceholder,
-  searchKey = "q",
-  searchLabel,
-  className,
-}: {
+interface Propriedades {
   filters?: DefinicaoDoFiltro[];
   searchPlaceholder?: string;
   searchKey?: string;
   /** Nome acessível da busca (padrão: o próprio placeholder). */
   searchLabel?: string;
   className?: string;
-}) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [pending, startTransition] = useTransition();
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const urlSearch = searchParams.get(searchKey) ?? "";
-  const [text, setText] = useState(urlSearch);
-  const [seenUrl, setSeenUrl] = useState(urlSearch);
-  // Voltar do navegador ou "Limpar filtros" muda a URL: o campo acompanha (ajuste durante a renderização, sem efeito)
-  if (urlSearch !== seenUrl) {
-    setSeenUrl(urlSearch);
-    setText(urlSearch);
-  }
+}
 
-  const push = (next: URLSearchParams) => {
-    next.delete("pagina");
-    const qs = next.toString();
-    const href = qs ? `${pathname}?${qs}` : pathname;
-    // Mesma URL (mesmo filtro escolhido de novo): nada a buscar
-    if (qs === searchParams.toString()) return;
-    iniciarProgressoDaNavegacao();
-    marcarNavegacaoDaLista(href); // a lista (PendingRegion) fica mais clara até chegar
-    startTransition(() => router.replace(href, { scroll: false }));
-  };
-
-  const setParam = (key: string, value: string) => {
-    const next = new URLSearchParams(searchParams.toString());
-    if (value) next.set(key, value);
-    else next.delete(key);
-    push(next);
-  };
-
-  const onSearch = (value: string) => {
-    setText(value);
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => setParam(searchKey, value.trim()), 300);
-  };
-
+export function BarraDeFiltros({ filters = [], searchPlaceholder, searchKey = "q", searchLabel, className }: Propriedades) {
+  const { pending, text, urlSearch, searchParams, setParam, onSearch, clear } = useFiltrosPorUrl(searchKey);
   const active = Boolean(urlSearch) || filters.some((f) => searchParams.get(f.key));
-  const clear = () => {
-    if (timer.current) clearTimeout(timer.current);
-    const next = new URLSearchParams();
-    const tab = searchParams.get("aba");
-    if (tab) next.set("aba", tab);
-    setText("");
-    push(next);
-  };
 
   return (
     <div className={cn("flex flex-col gap-4", className)} aria-busy={pending}>
@@ -112,13 +60,7 @@ export function BarraDeFiltros({
       {filters.length > 0 && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
           {filters.map((f) => (
-            <SelecaoNativa
-              key={f.key}
-              label={f.label}
-              alwaysFloat
-              value={searchParams.get(f.key) ?? ""}
-              onChange={(e) => setParam(f.key, e.target.value)}
-            >
+            <SelecaoNativa key={f.key} label={f.label} alwaysFloat value={searchParams.get(f.key) ?? ""} onChange={(e) => setParam(f.key, e.target.value)}>
               <option value="">{f.allLabel}</option>
               {f.options.map((o) => (
                 <option key={o.value} value={o.value}>

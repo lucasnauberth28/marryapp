@@ -29,7 +29,7 @@ import {
 
 export type ChaveDeContagemDaPlataforma = "curadoria" | "planos" | "dominios" | "suporte" | "saude";
 
-interface ItemDoMenuDaPlataforma {
+export interface ItemDoMenuDaPlataforma {
   name: string;
   href: string;
   icon: LucideIcon;
