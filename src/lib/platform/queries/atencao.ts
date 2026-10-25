@@ -1,6 +1,6 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { whatsappEstaConfigurado } from "@/lib/evolution";
+import { whatsappEstaConfigurado } from "@/lib/whatsapp/config";
 import { filtroSemSoPresente } from "@/lib/guest-origin";
 import { assinaturaDoCasal, filtroDosProximos30Dias, filtroDeProblema } from "@/lib/platform/casais-filters";
 import { obterUltimosPlanos } from "@/lib/platform/queries/casais";

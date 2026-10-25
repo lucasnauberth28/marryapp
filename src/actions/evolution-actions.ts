@@ -2,7 +2,7 @@
 
 import { exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 
-import { obterEstadoDaConexao } from "@/lib/evolution";
+import { obterEstadoDaConexao } from "@/lib/whatsapp/instancia";
 
 /**
  * Estado da conexão do WhatsApp do Aceito (um número só, da plataforma). O casal só consulta:

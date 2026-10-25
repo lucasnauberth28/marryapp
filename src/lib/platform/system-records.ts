@@ -13,7 +13,7 @@ import prisma from "@/lib/prisma";
  *  - prunePlatformRecords()   apaga eventos com mais de 30 dias e rotinas com mais de 90 (chamada pela rotina "avisos").
  *
  * Instrumentadas até agora: rotinas /api/cron/expirar-planos e /api/cron/avisos. Pendentes (agente da Saúde do
- * sistema): webhook do Mercado Pago, lib/email.ts, lib/evolution.ts (WhatsApp) e push.
+ * sistema): webhook do Mercado Pago, lib/email.ts, lib/whatsapp (WhatsApp) e push.
  */
 
 export async function registrarRodadaDaTarefaAgendada(run: {

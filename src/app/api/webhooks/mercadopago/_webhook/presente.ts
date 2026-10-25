@@ -3,7 +3,7 @@ import { PaymentStatus, type Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { valorPagoConfere } from "@/lib/mercadopago";
-import { enviarMensagemDeTexto } from "@/lib/evolution";
+import { enviarMensagemDeTexto } from "@/lib/whatsapp/mensagens";
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import { avisarDepois } from "@/lib/notifications/service";
 import { avisarPresentePago } from "@/lib/notifications/events";

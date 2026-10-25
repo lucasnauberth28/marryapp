@@ -8,7 +8,8 @@ import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { obterConfiguracaoDaPlataforma, salvarConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { emailDoAlerta } from "@/lib/platform/health-alerts";
-import { conectarInstancia, whatsappEstaConfigurado } from "@/lib/evolution";
+import { whatsappEstaConfigurado } from "@/lib/whatsapp/config";
+import { conectarInstancia } from "@/lib/whatsapp/instancia";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 type Falha = { success: false; error: string; fieldErrors?: Record<string, string> };

@@ -3,7 +3,7 @@ import { VendorPlanTier } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { urlDoApp } from "@/lib/app-url";
 import { emailDaMarca, enviarEmail } from "@/lib/email";
-import { enviarMensagemDeTexto } from "@/lib/evolution";
+import { enviarMensagemDeTexto } from "@/lib/whatsapp/mensagens";
 import { lembreteDevido, fimDaJanelaDoLembrete, type DiaDoLembreteDoPlano } from "@/lib/plan-reminders";
 import { avisarPlanoPrestesAVencer } from "@/lib/notifications/cron";
 import { PREFERENCIAS_PADRAO, decidirCanais } from "@/lib/notifications/preferences";

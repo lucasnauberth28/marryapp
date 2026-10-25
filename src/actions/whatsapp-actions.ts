@@ -5,7 +5,7 @@ import { recusaDeModulo } from "@/lib/wedding-plan";
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 
 import prisma from "@/lib/prisma";
-import { enviarMensagensEmLote } from "@/lib/evolution";
+import { enviarMensagensEmLote } from "@/lib/whatsapp/mensagens";
 import { RsvpStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { filtroSemSoPresente } from "@/lib/guest-origin";

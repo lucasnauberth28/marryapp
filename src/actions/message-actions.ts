@@ -6,7 +6,7 @@ import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import { modelosPadraoParaCriar } from "@/lib/default-message-templates";
 
 import prisma from "@/lib/prisma";
-import { enviarMensagensEmLote } from "@/lib/evolution";
+import { enviarMensagensEmLote } from "@/lib/whatsapp/mensagens";
 import { idsDeConvidadosAlcancados, motivoDaFalhaNoEnvio, resumoDoEnvio } from "@/lib/whatsapp-results";
 import { revalidatePath } from "next/cache";
 
