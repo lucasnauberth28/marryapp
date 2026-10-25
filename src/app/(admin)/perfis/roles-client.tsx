@@ -6,7 +6,7 @@ import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { DataTable } from "@/components/ui/data-table";
-import { createRole, updateRole, deleteRole } from "@/actions/rbac-actions";
+import { criarPerfil, atualizarPerfil, excluirPerfil } from "@/actions/rbac-actions";
 import { Input } from "@/components/ui/input";
 import { Plus, Pencil, Trash2, Check } from "lucide-react";
 import { PageHeader } from "@/components/admin/page-header";
@@ -108,9 +108,9 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
     startTransition(async () => {
       let result;
       if (editingRole) {
-        result = await updateRole(editingRole.id, formData);
+        result = await atualizarPerfil(editingRole.id, formData);
       } else {
-        result = await createRole(formData);
+        result = await criarPerfil(formData);
       }
 
       if (result.success) {
@@ -131,7 +131,7 @@ export function RolesClient({ initialRoles, embedded = false }: { initialRoles: 
     setConfirmAction(() => () => {
       const toastId = toast.loading("Excluindo o perfil...");
       startTransition(async () => {
-        const result = await deleteRole(id);
+        const result = await excluirPerfil(id);
         if (result.success) {
           toast.success("Perfil excluído.", { id: toastId });
           router.refresh();

@@ -12,7 +12,7 @@ import { StatusChip } from "@/components/plataforma/status-chip";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
-import { createSecurityIncident, updateSecurityIncident } from "@/actions/admin-suporte-actions";
+import { criarIncidenteDeSeguranca, atualizarIncidenteDeSeguranca } from "@/actions/admin-suporte-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
 export interface IncidentItem {
@@ -85,7 +85,7 @@ function NewIncident({ today, onDone }: { today: string; onDone: () => void }) {
       className="mb-4 flex flex-col gap-4 rounded-2xl bg-linho p-4"
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => createSecurityIncident({ title, description, affected, discoveredAt, notifiedOn, notifiedWho }), () => {
+        run(() => criarIncidenteDeSeguranca({ title, description, affected, discoveredAt, notifiedOn, notifiedWho }), () => {
           onDone();
           router.refresh();
         });
@@ -135,7 +135,7 @@ function IncidentEditor({ item, onDone }: { item: IncidentItem; onDone: () => vo
           loading={pending && running === "save"}
           onClick={() => {
             setRunning("save");
-            run(() => updateSecurityIncident({ id: item.id, notifiedOn, notifiedWho }), after);
+            run(() => atualizarIncidenteDeSeguranca({ id: item.id, notifiedOn, notifiedWho }), after);
           }}
         >
           Salvar aviso
@@ -147,7 +147,7 @@ function IncidentEditor({ item, onDone }: { item: IncidentItem; onDone: () => vo
             loading={pending && running === "close"}
             onClick={() => {
               setRunning("close");
-              run(() => updateSecurityIncident({ id: item.id, notifiedOn, notifiedWho, close: true }), after);
+              run(() => atualizarIncidenteDeSeguranca({ id: item.id, notifiedOn, notifiedWho, close: true }), after);
             }}
           >
             Fechar o incidente
@@ -160,7 +160,7 @@ function IncidentEditor({ item, onDone }: { item: IncidentItem; onDone: () => vo
             loading={pending && running === "reopen"}
             onClick={() => {
               setRunning("reopen");
-              run(() => updateSecurityIncident({ id: item.id, notifiedOn, notifiedWho, reopen: true }), after);
+              run(() => atualizarIncidenteDeSeguranca({ id: item.id, notifiedOn, notifiedWho, reopen: true }), after);
             }}
           >
             Reabrir

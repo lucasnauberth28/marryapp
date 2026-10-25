@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { Bell, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
-import { markAllNotificationsRead, markNotificationRead, type NotificationItem } from "@/actions/notification-actions";
+import { marcarTodasAsNotificacoesComoLidas, marcarNotificacaoComoLida, type ItemDeNotificacao } from "@/actions/notification-actions";
 import { NotificationRow } from "./notification-row";
 import { NOTIFICATIONS_CHANGED_EVENT } from "./use-notification-feed";
 import { useNow } from "./use-now";
 
 interface Props {
-  initialItems: NotificationItem[];
+  initialItems: ItemDeNotificacao[];
   /** Hora do servidor: a primeira pintura do "há 5 min" fica igual no servidor e no navegador. */
   nowIso: string;
 }
@@ -26,7 +26,7 @@ export function HistoryList({ initialItems, nowIso }: Props) {
     const stamp = new Date().toISOString();
     setItems((current) => current.map((n) => (n.readAt ? n : { ...n, readAt: stamp })));
     try {
-      const res = await markAllNotificationsRead();
+      const res = await marcarTodasAsNotificacoesComoLidas();
       if (!res.success) throw new Error("falhou");
       announce();
     } catch {
@@ -35,11 +35,11 @@ export function HistoryList({ initialItems, nowIso }: Props) {
     }
   }
 
-  function onOpen(item: NotificationItem) {
+  function onOpen(item: ItemDeNotificacao) {
     if (item.readAt) return;
     const stamp = new Date().toISOString();
     setItems((current) => current.map((n) => (n.id === item.id ? { ...n, readAt: stamp } : n)));
-    void markNotificationRead(item.id).then(announce, () => {});
+    void marcarNotificacaoComoLida(item.id).then(announce, () => {});
   }
 
   return (

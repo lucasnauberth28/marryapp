@@ -8,17 +8,17 @@ import { registrarAuditoria } from "@/lib/audit";
 import { PLANOS_ACEITOS_PELO_CUPOM, normalizarCodigoDoCupom } from "@/lib/checkout-pricing";
 import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 
-type ActionResult = { success: true } | { success: false; error: string };
+type ResultadoDaAcao = { success: true } | { success: false; error: string };
 
-const SP_OFFSET_MS = 3 * 60 * 60 * 1000; // Brasília (UTC-3)
+const DESLOCAMENTO_DE_BRASILIA_EM_MS = 3 * 60 * 60 * 1000; // Brasília (UTC-3)
 
 /** "2026-12-31" -> fim desse dia no horário de Brasília (o cupom vale o dia inteiro). */
-function endOfDayBrasilia(date: string): Date {
+function fimDoDiaEmBrasilia(date: string): Date {
   const [y, m, d] = date.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999) + SP_OFFSET_MS);
+  return new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999) + DESLOCAMENTO_DE_BRASILIA_EM_MS);
 }
 
-const FieldsSchema = z
+const EsquemaDosCampos = z
   .object({
     kind: z.enum(["percent", "amount"]),
     /** Percentual (1 a 100) ou valor em centavos. */
@@ -34,20 +34,20 @@ const FieldsSchema = z
   .refine((v) => v.kind !== "percent" || v.value <= 100, { message: "O percentual vai de 1 a 100.", path: ["value"] })
   .refine((v) => v.kind !== "amount" || v.value <= 1_000_000, { message: "Desconto alto demais.", path: ["value"] });
 
-export type CouponFields = z.input<typeof FieldsSchema>;
+export type CamposDoCupom = z.input<typeof EsquemaDosCampos>;
 
-function toData(fields: z.output<typeof FieldsSchema>) {
+function paraDadosDoBanco(fields: z.output<typeof EsquemaDosCampos>) {
   return {
     percentOff: fields.kind === "percent" ? fields.value : null,
     amountOff: fields.kind === "amount" ? fields.value : null,
     planIds: fields.planIds.length > 0 ? fields.planIds : Prisma.DbNull,
     maxRedemptions: fields.maxRedemptions,
-    expiresAt: fields.expiresAt ? endOfDayBrasilia(fields.expiresAt) : null,
+    expiresAt: fields.expiresAt ? fimDoDiaEmBrasilia(fields.expiresAt) : null,
     active: fields.active,
   };
 }
 
-function auditDetails(code: string, fields: z.output<typeof FieldsSchema>) {
+function detalhesDaAuditoria(code: string, fields: z.output<typeof EsquemaDosCampos>) {
   return {
     code,
     kind: fields.kind,
@@ -59,51 +59,51 @@ function auditDetails(code: string, fields: z.output<typeof FieldsSchema>) {
   };
 }
 
-function failure(error: unknown, context: string): ActionResult {
+function falha(error: unknown, context: string): ResultadoDaAcao {
   return falhaDeAdminDaPlataforma(error, context, "Não foi possível salvar agora. Tente de novo.");
 }
 
-export async function createCoupon(input: { code: string } & CouponFields): Promise<ActionResult> {
+export async function criarCupom(input: { code: string } & CamposDoCupom): Promise<ResultadoDaAcao> {
   try {
     await exigirAdminDaPlataforma();
     const code = normalizarCodigoDoCupom(input?.code);
     if (!code) return { success: false, error: "O código precisa ter de 3 a 30 letras ou números, sem espaços." };
-    const parsed = FieldsSchema.safeParse(input);
+    const parsed = EsquemaDosCampos.safeParse(input);
     if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
-    const created = await prisma.coupon.create({ data: { code, ...toData(parsed.data) }, select: { id: true } });
-    await registrarAuditoria({ action: "coupon.create", targetType: "coupon", targetId: created.id, details: auditDetails(code, parsed.data) });
+    const created = await prisma.coupon.create({ data: { code, ...paraDadosDoBanco(parsed.data) }, select: { id: true } });
+    await registrarAuditoria({ action: "coupon.create", targetType: "coupon", targetId: created.id, details: detalhesDaAuditoria(code, parsed.data) });
     revalidatePath("/admin/planos", "layout");
     return { success: true };
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return { success: false, error: "Já existe um cupom com este código." };
     }
-    return failure(error, "createCoupon");
+    return falha(error, "createCoupon");
   }
 }
 
 /** O código não muda depois de criado: ele fica gravado nas cobranças que o usaram. */
-export async function updateCoupon(id: string, input: CouponFields): Promise<ActionResult> {
+export async function atualizarCupom(id: string, input: CamposDoCupom): Promise<ResultadoDaAcao> {
   try {
     await exigirAdminDaPlataforma();
     if (!z.string().uuid().safeParse(id).success) return { success: false, error: "Cupom inválido." };
-    const parsed = FieldsSchema.safeParse(input);
+    const parsed = EsquemaDosCampos.safeParse(input);
     if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
     const coupon = await prisma.coupon.findUnique({ where: { id }, select: { code: true } });
     if (!coupon) return { success: false, error: "Cupom não encontrado. Atualize a página." };
-    await prisma.coupon.update({ where: { id }, data: toData(parsed.data) });
-    await registrarAuditoria({ action: "coupon.update", targetType: "coupon", targetId: id, details: auditDetails(coupon.code, parsed.data) });
+    await prisma.coupon.update({ where: { id }, data: paraDadosDoBanco(parsed.data) });
+    await registrarAuditoria({ action: "coupon.update", targetType: "coupon", targetId: id, details: detalhesDaAuditoria(coupon.code, parsed.data) });
     revalidatePath("/admin/planos", "layout");
     return { success: true };
   } catch (error) {
-    return failure(error, "updateCoupon");
+    return falha(error, "updateCoupon");
   }
 }
 
 /** Excluir não mexe nas cobranças já feitas: elas guardam o código e o desconto. */
-export async function deleteCoupon(id: string): Promise<ActionResult> {
+export async function excluirCupom(id: string): Promise<ResultadoDaAcao> {
   try {
     await exigirAdminDaPlataforma();
     if (!z.string().uuid().safeParse(id).success) return { success: false, error: "Cupom inválido." };
@@ -118,6 +118,6 @@ export async function deleteCoupon(id: string): Promise<ActionResult> {
     revalidatePath("/admin/planos", "layout");
     return { success: true };
   } catch (error) {
-    return failure(error, "deleteCoupon");
+    return falha(error, "deleteCoupon");
   }
 }

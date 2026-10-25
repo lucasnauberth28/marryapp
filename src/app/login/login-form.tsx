@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { login } from "@/actions/auth-actions";
+import { entrar } from "@/actions/auth-actions";
 import { btnArrow } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 
@@ -31,7 +31,7 @@ export function LoginForm({
     setIsLoading(true);
 
     try {
-      const res = await login(password, username, nextPath ?? undefined);
+      const res = await entrar(password, username, nextPath ?? undefined);
       if (res.success) {
         window.location.href = ("redirectTo" in res && res.redirectTo) || "/dashboard";
       } else {

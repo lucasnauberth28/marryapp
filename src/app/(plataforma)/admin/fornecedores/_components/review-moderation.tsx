@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { moderateReviewAction } from "@/actions/admin-fornecedores-actions";
+import { moderarAvaliacao } from "@/actions/admin-fornecedores-actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -21,7 +21,7 @@ export function ReviewModeration({ reviewId, hidden, vendorName }: { reviewId: s
     setError(null);
     setRunning(decision);
     startTransition(async () => {
-      const res = await moderateReviewAction({ reviewId, decision, reason: decision === "hide" ? reason : undefined });
+      const res = await moderarAvaliacao({ reviewId, decision, reason: decision === "hide" ? reason : undefined });
       if (res.success) {
         toast.success(res.message);
         setHiding(false);

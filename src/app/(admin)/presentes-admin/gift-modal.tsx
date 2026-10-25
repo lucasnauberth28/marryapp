@@ -6,7 +6,7 @@ import { btn } from "@/components/landing/styles"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { CustomModal } from "@/components/ui/custom-modal"
-import { createGiftAction } from "@/actions/gift-actions"
+import { criarPresente } from "@/actions/gift-actions"
 import { ImagePlus } from "lucide-react"
 import { LoadingButton } from "@/components/painel/loading-button"
 
@@ -37,7 +37,7 @@ export function GiftModal({ isOpen, onClose }: GiftModalProps) {
 
     const toastId = toast.loading("Cadastrando o presente...")
     startTransition(async () => {
-      const result = await createGiftAction(formData)
+      const result = await criarPresente(formData)
 
       if (result.success) {
         toast.success("Presente cadastrado.", { id: toastId })

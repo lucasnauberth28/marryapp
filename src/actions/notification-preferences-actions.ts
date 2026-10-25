@@ -10,29 +10,29 @@ import { CANAIS_DE_NOTIFICACAO, limparPreferenciasGuardadas, type PreferenciasDe
 
 // Escolhas de avisos da própria conta. O id do usuário vem sempre da sessão.
 
-const SAVE_LIMIT = { limit: 60, windowMs: 1000 * 60 * 10 }; // 60 gravações / 10 min por conta
+const LIMITE_DE_GRAVACAO = { limit: 60, windowMs: 1000 * 60 * 10 }; // 60 gravações / 10 min por conta
 
-const hour = z.number().int().min(0).max(23);
-const groupFlags = z.object(Object.fromEntries(GRUPOS_DE_NOTIFICACAO.map((g) => [g, z.boolean()])) as Record<(typeof GRUPOS_DE_NOTIFICACAO)[number], z.ZodBoolean>);
+const horaValidaDoSilencio = z.number().int().min(0).max(23);
+const marcasDoGrupo = z.object(Object.fromEntries(GRUPOS_DE_NOTIFICACAO.map((g) => [g, z.boolean()])) as Record<(typeof GRUPOS_DE_NOTIFICACAO)[number], z.ZodBoolean>);
 
-const PrefsSchema = z.object({
-  channels: z.object(Object.fromEntries(CANAIS_DE_NOTIFICACAO.map((c) => [c, groupFlags])) as Record<(typeof CANAIS_DE_NOTIFICACAO)[number], typeof groupFlags>),
-  quietHours: z.object({ enabled: z.boolean(), startHour: hour, endHour: hour }),
+const EsquemaDasPreferencias = z.object({
+  channels: z.object(Object.fromEntries(CANAIS_DE_NOTIFICACAO.map((c) => [c, marcasDoGrupo])) as Record<(typeof CANAIS_DE_NOTIFICACAO)[number], typeof marcasDoGrupo>),
+  quietHours: z.object({ enabled: z.boolean(), startHour: horaValidaDoSilencio, endHour: horaValidaDoSilencio }),
 });
 
-export type SavePrefsResult = { success: true } | { success: false; error: string };
+export type ResultadoDaGravacaoDasPreferencias = { success: true } | { success: false; error: string };
 
 /** Salva as escolhas de avisos da conta da sessão. */
-export async function saveNotificationPreferences(input: PreferenciasDeNotificacao): Promise<SavePrefsResult> {
+export async function salvarPreferenciasDeNotificacao(input: PreferenciasDeNotificacao): Promise<ResultadoDaGravacaoDasPreferencias> {
   const session = await obterSessao();
   if (!session) return { success: false, error: "Entre na sua conta para salvar." };
   if (session.userId === ID_DO_SUPER_ADMIN) return { success: false, error: "A conta de administração não tem avisos próprios." };
 
-  const parsed = PrefsSchema.safeParse(input);
+  const parsed = EsquemaDasPreferencias.safeParse(input);
   if (!parsed.success) return { success: false, error: "Não entendemos essa escolha. Recarregue a página e tente de novo." };
 
   try {
-    const limit = await conferirLimiteDeUso({ key: `NOTIF_PREFS:${session.userId}`, ...SAVE_LIMIT });
+    const limit = await conferirLimiteDeUso({ key: `NOTIF_PREFS:${session.userId}`, ...LIMITE_DE_GRAVACAO });
     if (!limit.success) return { success: false, error: "Muitas mudanças em pouco tempo. Aguarde um instante." };
 
     const stored = limparPreferenciasGuardadas(parsed.data);

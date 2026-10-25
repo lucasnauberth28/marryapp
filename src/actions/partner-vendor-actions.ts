@@ -22,7 +22,7 @@ import {
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import { ERROS } from "@/lib/mensagens-de-erro";
-const PUBLIC_VENDOR_SELECT = {
+const SELECAO_PUBLICA_DO_FORNECEDOR = {
   id: true,
   companyName: true,
   category: true,
@@ -52,7 +52,7 @@ const PUBLIC_VENDOR_SELECT = {
   createdAt: true,
 } satisfies Prisma.PartnerVendorSelect;
 
-const PUBLIC_REVIEW_SELECT = {
+const SELECAO_PUBLICA_DA_AVALIACAO = {
   id: true,
   coupleNames: true,
   weddingDate: true,
@@ -64,7 +64,7 @@ const PUBLIC_REVIEW_SELECT = {
   createdAt: true,
 } satisfies Prisma.VendorReviewSelect;
 
-type PublicVendorRow = Prisma.PartnerVendorGetPayload<{ select: typeof PUBLIC_VENDOR_SELECT }>;
+type LinhaPublicaDoFornecedor = Prisma.PartnerVendorGetPayload<{ select: typeof SELECAO_PUBLICA_DO_FORNECEDOR }>;
 
 /**
  * DTO público do fornecedor:
@@ -72,7 +72,7 @@ type PublicVendorRow = Prisma.PartnerVendorGetPayload<{ select: typeof PUBLIC_VE
  * - WhatsApp e telefone só saem para o cliente no Pro/Master (plano em vigor).
  * - planTier vira o plano efetivo (pago vencido = FREE) e a data de expiração não sai.
  */
-function toPublicVendor<T extends PublicVendorRow>(vendor: T) {
+function paraFornecedorPublico<T extends LinhaPublicaDoFornecedor>(vendor: T) {
   const { planExpiresAt, ...rest } = vendor;
   const tier = effectiveVendorTier(vendor.planTier, planExpiresAt);
   const paid = tier !== "FREE";
@@ -86,7 +86,7 @@ function toPublicVendor<T extends PublicVendorRow>(vendor: T) {
 }
 
 /** "2027-04-17" válido (2000–2100) ou null. */
-function parseWeddingDay(value: string | undefined | null): Date | null {
+function interpretarDiaDoCasamento(value: string | undefined | null): Date | null {
   if (!value) return null;
   const day = parseIsoDate(value);
   if (!day || day.getUTCFullYear() < 2000 || day.getUTCFullYear() > 2100) return null;
@@ -97,7 +97,7 @@ function parseWeddingDay(value: string | undefined | null): Date | null {
  * Pública: fornecedores aprovados para o Marketplace.
  * Com `weddingDate` ("AAAA-MM-DD"), deixa de fora quem já está ocupado nessa data.
  */
-export async function getPartnerVendorsAction(category?: string, options?: { weddingDate?: string }) {
+export async function obterFornecedoresParceirosAcao(category?: string, options?: { weddingDate?: string }) {
   try {
     const where: Prisma.PartnerVendorWhereInput = {
       curationStatus: "APPROVED", // Apenas fornecedores aprovados na curadoria aparecem publicamente
@@ -107,7 +107,7 @@ export async function getPartnerVendorsAction(category?: string, options?: { wed
       where.category = category;
     }
 
-    const day = parseWeddingDay(options?.weddingDate);
+    const day = interpretarDiaDoCasamento(options?.weddingDate);
     if (day) {
       const busy = await obterIdsDeFornecedoresIndisponiveis(day);
       if (busy.size > 0) where.id = { notIn: [...busy] };
@@ -116,9 +116,9 @@ export async function getPartnerVendorsAction(category?: string, options?: { wed
     const vendors = await prisma.partnerVendor.findMany({
       where,
       select: {
-        ...PUBLIC_VENDOR_SELECT,
+        ...SELECAO_PUBLICA_DO_FORNECEDOR,
         isFeatured: true, // só para ordenar: não sai no DTO público
-        reviews: { where: { hiddenAt: null }, select: PUBLIC_REVIEW_SELECT, orderBy: { createdAt: "desc" }, take: 5 },
+        reviews: { where: { hiddenAt: null }, select: SELECAO_PUBLICA_DA_AVALIACAO, orderBy: { createdAt: "desc" }, take: 5 },
       },
       orderBy: [{ planTier: "desc" }, { isVerified: "desc" }, { rating: "desc" }],
     });
@@ -129,7 +129,7 @@ export async function getPartnerVendorsAction(category?: string, options?: { wed
     return vendors
       .map((vendor, index) => {
         const { isFeatured, ...rest } = vendor;
-        const v = toPublicVendor(rest);
+        const v = paraFornecedorPublico(rest);
         return { v, featured: isFeatured, tierRank: rank[v.planTier], index };
       })
       .sort(posicaoNaVitrine)
@@ -140,39 +140,39 @@ export async function getPartnerVendorsAction(category?: string, options?: { wed
   }
 }
 
-export const getPartnerVendors = getPartnerVendorsAction;
+export const obterFornecedoresParceiros = obterFornecedoresParceirosAcao;
 
 /**
  * Pública: um fornecedor aprovado, com suas avaliações
  */
-export async function getPartnerVendorById(id: string) {
+export async function obterFornecedorParceiroPorId(id: string) {
   try {
     if (!z.string().uuid().safeParse(id).success) return null;
 
     const vendor = await prisma.partnerVendor.findFirst({
       where: { id, curationStatus: "APPROVED", suspendedAt: null },
       select: {
-        ...PUBLIC_VENDOR_SELECT,
-        reviews: { where: { hiddenAt: null }, select: PUBLIC_REVIEW_SELECT, orderBy: { createdAt: "desc" } },
+        ...SELECAO_PUBLICA_DO_FORNECEDOR,
+        reviews: { where: { hiddenAt: null }, select: SELECAO_PUBLICA_DA_AVALIACAO, orderBy: { createdAt: "desc" } },
       },
     });
 
-    return vendor ? toPublicVendor(vendor) : null;
+    return vendor ? paraFornecedorPublico(vendor) : null;
   } catch (error) {
     console.error("[getPartnerVendorById Error]:", error);
     return null;
   }
 }
 
-export type PublicVendor = NonNullable<Awaited<ReturnType<typeof getPartnerVendorById>>>;
-export type PublicVendorListItem = Awaited<ReturnType<typeof getPartnerVendorsAction>>[number];
+export type FornecedorPublico = NonNullable<Awaited<ReturnType<typeof obterFornecedorParceiroPorId>>>;
+export type ItemDaListaDeFornecedoresPublicos = Awaited<ReturnType<typeof obterFornecedoresParceirosAcao>>[number];
 
-const AVAILABILITY_LIMIT = { limit: 30, windowMs: 1000 * 60 * 10 }; // 30 consultas / 10 min por IP
+const LIMITE_DE_CONSULTA_DE_DISPONIBILIDADE = { limit: 30, windowMs: 1000 * 60 * 10 }; // 30 consultas / 10 min por IP
 
-const AvailabilitySchema = z.object({
+const EsquemaDaDisponibilidade = z.object({
   vendorId: z.string().uuid("Fornecedor inválido."),
   date: z.string().transform((v, ctx) => {
-    const day = parseWeddingDay(v);
+    const day = interpretarDiaDoCasamento(v);
     if (!day) {
       ctx.addIssue({ code: "custom", message: "Escolha uma data válida." });
       return z.NEVER;
@@ -185,18 +185,18 @@ const AvailabilitySchema = z.object({
   }),
 });
 
-export type VendorAvailabilityResult = { success: true; available: boolean } | { success: false; error: string };
+export type ResultadoDaDisponibilidadeDoFornecedor = { success: true; available: boolean } | { success: false; error: string };
 
 /**
  * Pública: o fornecedor está livre nesta data? Responde só sim/não (sem detalhes da agenda).
  */
-export async function checkVendorAvailability(vendorId: string, date: string): Promise<VendorAvailabilityResult> {
-  const parsed = AvailabilitySchema.safeParse({ vendorId, date });
+export async function conferirDisponibilidadeDoFornecedor(vendorId: string, date: string): Promise<ResultadoDaDisponibilidadeDoFornecedor> {
+  const parsed = EsquemaDaDisponibilidade.safeParse({ vendorId, date });
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
   try {
     const ip = await obterIpDoCliente();
-    const rateLimit = await conferirLimiteDeUso({ key: `VENDOR_AVAILABILITY:${ip}`, ...AVAILABILITY_LIMIT });
+    const rateLimit = await conferirLimiteDeUso({ key: `VENDOR_AVAILABILITY:${ip}`, ...LIMITE_DE_CONSULTA_DE_DISPONIBILIDADE });
     if (!rateLimit.success) {
       return { success: false, error: "Muitas consultas em pouco tempo. Tente novamente daqui a alguns minutos." };
     }
@@ -214,7 +214,7 @@ export async function checkVendorAvailability(vendorId: string, date: string): P
   }
 }
 
-const LeadSchema = z.object({
+const EsquemaDoPedidoDeOrcamento = z.object({
   vendorId: z.string().uuid(),
   coupleName: z.string().trim().min(3, "Informe seu nome.").max(120),
   couplePhone: z
@@ -236,7 +236,7 @@ const LeadSchema = z.object({
  * bloqueado: o fornecedor vê só o primeiro nome, a data e a cidade até assinar o Pro.
  * Para o casal, a resposta é a mesma.
  */
-export async function createVendorLead(data: {
+export async function criarPedidoDeOrcamento(data: {
   vendorId: string;
   coupleName: string;
   couplePhone: string;
@@ -248,7 +248,7 @@ export async function createVendorLead(data: {
   location?: string; // cidade do casamento
   budget?: string; // uma das LEAD_BUDGET_OPTIONS
 }) {
-  const parsed = LeadSchema.safeParse(data);
+  const parsed = EsquemaDoPedidoDeOrcamento.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const input = parsed.data;
 
@@ -303,17 +303,17 @@ export async function createVendorLead(data: {
 // ACEITE DA PROPOSTA PELO CASAL (link /proposta/<token>)
 // ==========================================
 
-const PROPOSAL_ACCEPT_LIMIT = { limit: 10, windowMs: 1000 * 60 * 10 }; // 10 tentativas / 10 min por IP
+const LIMITE_DE_ACEITE_DE_PROPOSTA = { limit: 10, windowMs: 1000 * 60 * 10 }; // 10 tentativas / 10 min por IP
 
 /** Hash do IP (prova do aceite sem guardar o IP em claro). */
-function hashIp(ip: string): string {
+function calcularHashDoIp(ip: string): string {
   const secret = process.env.JWT_SECRET;
   return secret
     ? createHmac("sha256", secret).update(`proposta:${ip}`).digest("hex")
     : createHash("sha256").update(`proposta:${ip}`).digest("hex");
 }
 
-const AcceptProposalSchema = z.object({
+const EsquemaDoAceiteDaProposta = z.object({
   token: z.string().regex(PUBLIC_TOKEN_RE, "Link inválido."),
   fullName: z
     .string({ message: "Informe seu nome completo." })
@@ -324,18 +324,18 @@ const AcceptProposalSchema = z.object({
   agreed: z.literal(true, { message: "Marque “Li e aceito esta proposta” para continuar." }),
 });
 
-export type AcceptProposalInput = { token: string; fullName: string; agreed: boolean };
-export type AcceptProposalResult = { success: true; acceptedAt: string; name: string } | { success: false; error: string };
+export type EntradaDoAceiteDaProposta = { token: string; fullName: string; agreed: boolean };
+export type ResultadoDoAceiteDaProposta = { success: true; acceptedAt: string; name: string } | { success: false; error: string };
 
 /** Pública: o casal aceita a proposta registrada pelo fornecedor. */
-export async function acceptLeadProposal(input: AcceptProposalInput): Promise<AcceptProposalResult> {
-  const parsed = AcceptProposalSchema.safeParse(input);
+export async function aceitarPropostaDoPedido(input: EntradaDoAceiteDaProposta): Promise<ResultadoDoAceiteDaProposta> {
+  const parsed = EsquemaDoAceiteDaProposta.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const { token, fullName } = parsed.data;
 
   try {
     const ip = await obterIpDoCliente();
-    const rateLimit = await conferirLimiteDeUso({ key: `PROPOSAL_ACCEPT:${ip}`, ...PROPOSAL_ACCEPT_LIMIT });
+    const rateLimit = await conferirLimiteDeUso({ key: `PROPOSAL_ACCEPT:${ip}`, ...LIMITE_DE_ACEITE_DE_PROPOSTA });
     if (!rateLimit.success) {
       return { success: false, error: "Muitas tentativas em pouco tempo. Tente novamente daqui a alguns minutos." };
     }
@@ -371,7 +371,7 @@ export async function acceptLeadProposal(input: AcceptProposalInput): Promise<Ac
       data: {
         proposalAcceptedAt: now,
         proposalAcceptedName: name,
-        proposalAcceptedIp: hashIp(ip),
+        proposalAcceptedIp: calcularHashDoIp(ip),
         status: "CLOSED",
         closedAt: now,
         declinedAt: null,

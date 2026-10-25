@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { History } from "lucide-react";
-import { grantWeddingPlan } from "@/actions/admin-casais-actions";
+import { concederPlanoAoCasamento } from "@/actions/admin-casais-actions";
 import { Button } from "@/components/ui/button";
 import { StatusChip } from "@/components/plataforma/status-chip";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,7 +26,7 @@ export function GrantPlanForm({ weddingId, currentPlanId }: { weddingId: string;
       className="flex scroll-mt-24 flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => grantWeddingPlan({ weddingId, planId, reason, notify }), () => {
+        run(() => concederPlanoAoCasamento({ weddingId, planId, reason, notify }), () => {
           setReason("");
           router.refresh();
         });

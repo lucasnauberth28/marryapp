@@ -14,7 +14,7 @@ const FILES = [
   "subscription-admin-actions.ts",
 ];
 
-const GUARDS = ["exigirAdminDaPlataforma()", "adminOnly()", "salvarConfiguracaoDaPlataforma("];
+const GUARDS = ["exigirAdminDaPlataforma()", "somenteAdmin()", "salvarConfiguracaoDaPlataforma("];
 
 for (const file of FILES) {
   test(`${file}: cada ação confere a administração antes de tocar no banco`, () => {

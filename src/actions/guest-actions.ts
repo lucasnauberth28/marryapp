@@ -31,7 +31,7 @@ import { ERROS } from "@/lib/mensagens-de-erro";
 // VALIDAÇÕES ZOD
 // ==========================================
 
-const GuestSchema = z.object({
+const EsquemaDoConvidado = z.object({
   name: z.string().min(2, "Nome deve ter ao menos 2 caracteres.").trim(),
   phone: z
     .unknown()
@@ -84,7 +84,7 @@ const GuestSchema = z.object({
 // QUERIES
 // ==========================================
 
-export async function getGuests(filter?: RsvpStatus) {
+export async function obterConvidados(filter?: RsvpStatus) {
   const { weddingId } = await exigirCasamentoParaLeitura("/convidados");
   return prisma.guest.findMany({
     where: filter ? { weddingId, rsvpStatus: filter } : { weddingId },
@@ -97,7 +97,7 @@ export async function getGuests(filter?: RsvpStatus) {
   });
 }
 /** O titular vinculado precisa ser um convidado do mesmo casamento. */
-async function resolveParentGuestId(weddingId: string, parentGuestId: string | null, selfId?: string) {
+async function resolverIdDoConvidadoPrincipal(weddingId: string, parentGuestId: string | null, selfId?: string) {
   if (!parentGuestId || parentGuestId === selfId) return { ok: true as const, value: null };
   const parent = await prisma.guest.findFirst({ where: { id: parentGuestId, weddingId }, select: { id: true } });
   if (!parent) return { ok: false as const, error: "Convidado titular não encontrado." };
@@ -108,7 +108,7 @@ async function resolveParentGuestId(weddingId: string, parentGuestId: string | n
 // MUTATIONS
 // ==========================================
 
-export async function createGuest(formData: FormData) {
+export async function criarConvidado(formData: FormData) {
   const { weddingId } = await exigirCasamento("/convidados");
   const raw = {
     name: formData.get("name"),
@@ -119,13 +119,13 @@ export async function createGuest(formData: FormData) {
     allowedCompanions: formData.get("allowedCompanions"),
   };
 
-  const parsed = GuestSchema.safeParse(raw);
+  const parsed = EsquemaDoConvidado.safeParse(raw);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0].message };
   }
 
   try {
-    const parent = await resolveParentGuestId(weddingId, parsed.data.parentGuestId || null);
+    const parent = await resolverIdDoConvidadoPrincipal(weddingId, parsed.data.parentGuestId || null);
     if (!parent.ok) return { success: false, error: parent.error };
 
     await prisma.guest.create({
@@ -153,7 +153,7 @@ export async function createGuest(formData: FormData) {
 // IMPORTAR LISTA (planilha lida no navegador)
 // ==========================================
 
-const ImportGuestSchema = z.object({
+const EsquemaDoConvidadoImportado = z.object({
   line: z.number().int().min(1).max(1_000_000),
   name: z.string().trim().min(2, "o nome é curto demais").max(TAMANHO_MAXIMO_DO_NOME, "o nome é longo demais"),
   phone: z
@@ -166,8 +166,8 @@ const ImportGuestSchema = z.object({
   dietary: z.string().trim().min(1).max(TAMANHO_MAXIMO_DA_RESTRICAO_ALIMENTAR, "a restrição alimentar é longa demais").nullable(),
 });
 
-const ImportGuestsSchema = z
-  .array(ImportGuestSchema)
+const EsquemaDosConvidadosImportados = z
+  .array(EsquemaDoConvidadoImportado)
   .min(1, "Não há nenhum convidado para importar.")
   .max(MAXIMO_DE_LINHAS_NA_IMPORTACAO, `Dá para importar até ${MAXIMO_DE_LINHAS_NA_IMPORTACAO} convidados por vez.`);
 
@@ -177,10 +177,10 @@ const ImportGuestsSchema = z
  * casamento, ou o mesmo nome entre quem não tem telefone) são pulados e a gravação é única
  * (tudo ou nada), sempre no casamento da sessão.
  */
-export async function importGuests(input: unknown) {
+export async function importarConvidados(input: unknown) {
   const { weddingId } = await exigirCasamento("/convidados");
 
-  const parsed = ImportGuestsSchema.safeParse(input);
+  const parsed = EsquemaDosConvidadosImportados.safeParse(input);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
     const index = typeof issue.path[0] === "number" ? issue.path[0] : null;
@@ -245,7 +245,7 @@ export async function importGuests(input: unknown) {
   }
 }
 
-export async function updateGuest(id: string, formData: FormData) {
+export async function atualizarConvidado(id: string, formData: FormData) {
   const { weddingId } = await exigirCasamento("/convidados");
   if (typeof id !== "string") return { success: false, error: ERROS.convidadoNaoEncontrado };
   const raw = {
@@ -261,14 +261,14 @@ export async function updateGuest(id: string, formData: FormData) {
     dietaryRestrictions: formData.get("dietaryRestrictions"),
   };
 
-  const parsed = GuestSchema.safeParse(raw);
+  const parsed = EsquemaDoConvidado.safeParse(raw);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0].message };
   }
 
   try {
     // Prevenir que um convidado seja vinculado a si próprio ou a alguém de outro casamento
-    const parent = await resolveParentGuestId(weddingId, parsed.data.parentGuestId || null, id);
+    const parent = await resolverIdDoConvidadoPrincipal(weddingId, parsed.data.parentGuestId || null, id);
     if (!parent.ok) return { success: false, error: parent.error };
 
     const result = await prisma.guest.updateMany({
@@ -296,7 +296,7 @@ export async function updateGuest(id: string, formData: FormData) {
   }
 }
 
-export async function deleteGuest(id: string) {
+export async function excluirConvidado(id: string) {
   const { weddingId } = await exigirCasamento("/convidados");
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.convidadoNaoEncontrado };
@@ -317,7 +317,7 @@ export async function deleteGuest(id: string) {
  * Pública: localiza o convite pelo telefone, só dentro do casamento do endereço (slug).
  * Retorna apenas o necessário para o RSVP.
  */
-export async function findGuestByPhone(slug: string, phone: string): Promise<BuscaDeConvidado> {
+export async function acharConvidadoPeloTelefone(slug: string, phone: string): Promise<BuscaDeConvidado> {
   if (typeof slug !== "string" || typeof phone !== "string") return { status: "not_found" };
   const cleanPhone = somenteDigitos(phone);
   if (cleanPhone.length < 10 || cleanPhone.length > 13) return { status: "invalid_phone" };
@@ -343,7 +343,7 @@ export async function findGuestByPhone(slug: string, phone: string): Promise<Bus
   return guest ? { status: "found", guest } : { status: "not_found" };
 }
 
-const PublicRsvpSchema = z.object({
+const EsquemaDaConfirmacaoPublica = z.object({
   slug: z.string().min(1).max(100),
   id: z.string().uuid(),
   status: z.enum(["CONFIRMED", "DECLINED"]),
@@ -353,7 +353,7 @@ const PublicRsvpSchema = z.object({
 });
 
 /** Pública: confirma ou recusa o convite de um convidado do casamento do endereço (slug). */
-export async function publicConfirmRsvp(
+export async function confirmarPresencaPublica(
   slug: string,
   id: string,
   status: RsvpStatus,
@@ -361,7 +361,7 @@ export async function publicConfirmRsvp(
   companionsNames: string,
   dietaryRestrictions?: string
 ) {
-  const parsed = PublicRsvpSchema.safeParse({ slug, id, status, confirmedCompanions, companionsNames, dietaryRestrictions });
+  const parsed = EsquemaDaConfirmacaoPublica.safeParse({ slug, id, status, confirmedCompanions, companionsNames, dietaryRestrictions });
   if (!parsed.success) return { success: false, error: "Dados de confirmação inválidos." };
   const data = parsed.data;
 
@@ -414,7 +414,7 @@ export async function publicConfirmRsvp(
   }
 }
 
-export async function checkInGuest(guestId: string) {
+export async function registrarEntradaDoConvidado(guestId: string) {
   const { weddingId, session } = await exigirCasamento("/credenciamento");
   const refusal = await recusaDeModulo({ weddingId, session }, "qrcode");
   if (refusal) return { success: false, error: refusal };

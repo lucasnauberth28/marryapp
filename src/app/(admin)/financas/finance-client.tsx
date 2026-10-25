@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { TransactionWithGift } from "@/actions/finance-actions";
-import { approvePixTransaction, toggleThankYouSent } from "@/actions/finance-actions";
+import type { TransacaoComPresente } from "@/actions/finance-actions";
+import { aprovarTransacaoPix, alternarAgradecimentoEnviado } from "@/actions/finance-actions";
 import { DataTable } from "@/components/ui/data-table";
 import { Chip, type ChipTone } from "@/components/casal/ui";
 import { Button } from "@/components/ui/button";
@@ -112,7 +112,7 @@ function MethodBadge({ method }: { method: string }) {
 // ==========================================
 
 interface FinanceTableProps {
-  transactions: TransactionWithGift[];
+  transactions: TransacaoComPresente[];
 }
 
 type SortField = "createdAt" | "amount" | "guestName";
@@ -170,7 +170,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
   function handleApprove(transactionId: string, giftId: string) {
     setApprovingId(transactionId);
     startTransition(async () => {
-      const result = await approvePixTransaction(transactionId, giftId);
+      const result = await aprovarTransacaoPix(transactionId, giftId);
       if (result.success) {
         setToast({
           message: "Pix confirmado. O presente foi marcado como pago.",
@@ -190,7 +190,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
   function handleThankYou(transactionId: string, currentStatus: boolean, phone?: string | null, guestName?: string | null, giftName?: string | null) {
     setThankingId(transactionId);
     startTransition(async () => {
-      const result = await toggleThankYouSent(transactionId, currentStatus);
+      const result = await alternarAgradecimentoEnviado(transactionId, currentStatus);
       if (result.success && !currentStatus && phone) {
         // Se acabou de marcar como enviado e tem telefone, abre o WhatsApp
         const cleanPhone = somenteDigitos(phone);
@@ -240,7 +240,7 @@ export function FinanceTable({ transactions }: FinanceTableProps) {
     </button>
   );
 
-  const actionFor = (tx: TransactionWithGift) => (
+  const actionFor = (tx: TransacaoComPresente) => (
               <div className="flex items-center justify-center gap-2">
                 {tx.status === "PENDING" && tx.paymentMethod === "PIX" ? (
                   <Button

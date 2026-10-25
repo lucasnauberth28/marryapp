@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { X } from "lucide-react";
-import { confirmSubscriptionManually, rejectSubscription } from "@/actions/subscription-admin-actions";
+import { confirmarAssinaturaManualmente, recusarAssinatura } from "@/actions/subscription-admin-actions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -58,7 +58,7 @@ export function SubscriptionPanel({ subscription: s, closeHref }: { subscription
     setError("");
     setPendingAction(kind);
     startTransition(async () => {
-      const res = kind === "confirm" ? await confirmSubscriptionManually(s.id) : await rejectSubscription(s.id);
+      const res = kind === "confirm" ? await confirmarAssinaturaManualmente(s.id) : await recusarAssinatura(s.id);
       if (res.success) {
         toast.success(kind === "confirm" ? `Plano ${s.planName} liberado para ${s.accountName}.` : "Cobrança marcada como não recebida.");
         setConfirmingReject(false);

@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { BrowserQRCodeReader, IScannerControls } from "@zxing/browser";
 import { Camera, Check, Clock, Search, QrCode, TriangleAlert, X } from "lucide-react";
-import { checkInGuest } from "@/actions/guest-actions";
+import { registrarEntradaDoConvidado } from "@/actions/guest-actions";
 import { PageHeader } from "@/components/admin/page-header";
 import { Seal } from "@/components/painel/seal";
 import { StatusChip } from "@/components/painel/status-chip";
@@ -139,7 +139,7 @@ export function ScannerClient({ initialArrived, confirmed }: { initialArrived: n
     if (!found) return;
     setConfirming(true);
     try {
-      const res = await checkInGuest(found.id);
+      const res = await registrarEntradaDoConvidado(found.id);
       if (res.success) {
         setArrived((n) => n + 1);
         setMessage({ ok: true, text: `Entrada registrada: ${res.guestName}.` });

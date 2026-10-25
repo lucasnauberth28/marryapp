@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
 import {
-  approveVendorAdminAction,
-  grantVendorPlanAction,
-  rejectVendorAdminAction,
-  setVendorFeaturedAction,
-  suspendVendorAction,
-  unsuspendVendorAction,
-  type AdminVendorResult,
+  aprovarFornecedorComoAdmin,
+  concederPlanoAoFornecedor,
+  recusarFornecedorComoAdmin,
+  definirFornecedorEmDestaque,
+  suspenderFornecedor,
+  reativarFornecedor,
+  type ResultadoDaAcaoDoFornecedor,
 } from "@/actions/admin-fornecedores-actions";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/select";
@@ -52,7 +52,7 @@ export function VendorActionsPanel({
   // Qual ação está rodando: só o botão clicado mostra o spinner, os outros ficam desabilitados
   const [running, setRunning] = useState<string | null>(null);
 
-  const run = (key: string, action: () => Promise<AdminVendorResult>, after?: () => void) => {
+  const run = (key: string, action: () => Promise<ResultadoDaAcaoDoFornecedor>, after?: () => void) => {
     setError(null);
     setRunning(key);
     startTransition(async () => {
@@ -77,7 +77,7 @@ export function VendorActionsPanel({
       ) : null}
 
       {curation !== "approved" && !suspended ? (
-        <Button type="button" disabled={pending} loading={pending && running === "approve"} onClick={() => run("approve", () => approveVendorAdminAction({ vendorId }))} className="self-start">
+        <Button type="button" disabled={pending} loading={pending && running === "approve"} onClick={() => run("approve", () => aprovarFornecedorComoAdmin({ vendorId }))} className="self-start">
           <Check className="size-4" aria-hidden="true" /> Aprovar
         </Button>
       ) : null}
@@ -106,7 +106,7 @@ export function VendorActionsPanel({
             variant="outline"
             disabled={message.trim().length < 10 || pending}
             loading={pending && running === "reject"}
-            onClick={() => run("reject", () => rejectVendorAdminAction({ vendorId, message }))}
+            onClick={() => run("reject", () => recusarFornecedorComoAdmin({ vendorId, message }))}
             className={cn(DANGER, "self-start")}
           >
             Recusar com motivo
@@ -131,7 +131,7 @@ export function VendorActionsPanel({
               id={`destaque-${vendorId}`}
               checked={featured}
               disabled={pending || (!canFeature && !featured)}
-              onCheckedChange={(checked) => run("feature", () => setVendorFeaturedAction({ vendorId, featured: checked }))}
+              onCheckedChange={(checked) => run("feature", () => definirFornecedorEmDestaque({ vendorId, featured: checked }))}
             />
           </div>
 
@@ -139,7 +139,7 @@ export function VendorActionsPanel({
             className="flex flex-col gap-3"
             onSubmit={(e) => {
               e.preventDefault();
-              run("grant", () => grantVendorPlanAction({ vendorId, tier, days: Number(days), reason: grantReason }), () => setGrantReason(""));
+              run("grant", () => concederPlanoAoFornecedor({ vendorId, tier, days: Number(days), reason: grantReason }), () => setGrantReason(""));
             }}
           >
             <div className="grid grid-cols-2 gap-3">
@@ -167,7 +167,7 @@ export function VendorActionsPanel({
         {suspended ? (
           <>
             <p className="text-sm text-tinta-suave">Este fornecedor está suspenso e fora da vitrine.</p>
-            <Button type="button" variant="outline" disabled={pending} loading={pending && running === "unsuspend"} onClick={() => run("unsuspend", () => unsuspendVendorAction({ vendorId }))} className="self-start">
+            <Button type="button" variant="outline" disabled={pending} loading={pending && running === "unsuspend"} onClick={() => run("unsuspend", () => reativarFornecedor({ vendorId }))} className="self-start">
               Reativar o fornecedor
             </Button>
           </>
@@ -180,7 +180,7 @@ export function VendorActionsPanel({
                 variant="outline"
                 disabled={suspendReason.trim().length < 5 || pending}
                 loading={pending && running === "suspend"}
-                onClick={() => run("suspend", () => suspendVendorAction({ vendorId, reason: suspendReason }), () => setSuspendOpen(false))}
+                onClick={() => run("suspend", () => suspenderFornecedor({ vendorId, reason: suspendReason }), () => setSuspendOpen(false))}
                 className={DANGER}
               >
                 Suspender o fornecedor

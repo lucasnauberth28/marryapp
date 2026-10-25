@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Ban, KeyRound, RotateCcw, Trash2 } from "lucide-react";
-import { deleteWedding, resetWeddingPassword, suspendWedding, unsuspendWedding } from "@/actions/admin-casais-actions";
+import { excluirCasamento, redefinirSenhaDoCasamento, suspenderCasamento, reativarCasamento } from "@/actions/admin-casais-actions";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -38,10 +38,10 @@ export function CareActions({ weddingId, coupleNames, suspended }: { weddingId: 
   };
 
   const submit = () => {
-    if (open === "reset") run(() => resetWeddingPassword({ weddingId, reason }), done());
-    if (open === "suspend") run(() => suspendWedding({ weddingId, reason }), done());
-    if (open === "unsuspend") run(() => unsuspendWedding({ weddingId, reason }), done());
-    if (open === "delete") run(() => deleteWedding({ weddingId, reason, confirmation: confirmText, acknowledged: sure }), done("/admin/casais"));
+    if (open === "reset") run(() => redefinirSenhaDoCasamento({ weddingId, reason }), done());
+    if (open === "suspend") run(() => suspenderCasamento({ weddingId, reason }), done());
+    if (open === "unsuspend") run(() => reativarCasamento({ weddingId, reason }), done());
+    if (open === "delete") run(() => excluirCasamento({ weddingId, reason, confirmation: confirmText, acknowledged: sure }), done("/admin/casais"));
   };
 
   const base = `${btn.secondary} w-full justify-start gap-2`;

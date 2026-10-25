@@ -16,7 +16,7 @@ import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { ExportButton } from "@/components/plataforma/export-button";
 import { TIPOS_DE_SOLICITACAO_DE_DADOS, ROTULO_DO_TIPO_DE_SOLICITACAO_DE_DADOS } from "@/lib/platform/support";
-import { createDataRequest, fulfillDeletionRequest, updateDataRequest } from "@/actions/admin-suporte-actions";
+import { criarSolicitacaoDeDados, cumprirSolicitacaoDeExclusao, atualizarSolicitacaoDeDados } from "@/actions/admin-suporte-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
 export interface DataRequestItem {
@@ -117,7 +117,7 @@ function NewRequest({ onDone }: { onDone: () => void }) {
       className="mb-4 flex flex-col gap-4 rounded-2xl bg-linho p-4"
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => createDataRequest({ type, requesterName: name, requesterEmail: email, receivedOn, note }), () => {
+        run(() => criarSolicitacaoDeDados({ type, requesterName: name, requesterEmail: email, receivedOn, note }), () => {
           onDone();
           router.refresh();
         });
@@ -185,7 +185,7 @@ function Handle({ item, onDone }: { item: DataRequestItem; onDone: () => void })
               loading={pending && running === "review"}
               onClick={() => {
                 setRunning("review");
-                run(() => updateDataRequest({ id: item.id, status: "IN_REVIEW", note }), after);
+                run(() => atualizarSolicitacaoDeDados({ id: item.id, status: "IN_REVIEW", note }), after);
               }}
             >
               Marcar em análise
@@ -197,7 +197,7 @@ function Handle({ item, onDone }: { item: DataRequestItem; onDone: () => void })
             loading={pending && running === "done"}
             onClick={() => {
               setRunning("done");
-              run(() => updateDataRequest({ id: item.id, status: "DONE", note }), after);
+              run(() => atualizarSolicitacaoDeDados({ id: item.id, status: "DONE", note }), after);
             }}
           >
             Marcar como pronto
@@ -209,7 +209,7 @@ function Handle({ item, onDone }: { item: DataRequestItem; onDone: () => void })
             loading={pending && running === "refuse"}
             onClick={() => {
               setRunning("refuse");
-              run(() => updateDataRequest({ id: item.id, status: "REFUSED", note }));
+              run(() => atualizarSolicitacaoDeDados({ id: item.id, status: "REFUSED", note }));
             }}
             className="text-perigo"
           >
@@ -236,7 +236,7 @@ function Handle({ item, onDone }: { item: DataRequestItem; onDone: () => void })
             isLoading={pending}
             onConfirm={() =>
               run(
-                () => fulfillDeletionRequest({ id: item.id, confirmEmail }),
+                () => cumprirSolicitacaoDeExclusao({ id: item.id, confirmEmail }),
                 () => {
                   setConfirmOpen(false);
                   after();

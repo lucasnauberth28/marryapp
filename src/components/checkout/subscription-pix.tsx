@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Check, Copy, RefreshCw } from "lucide-react";
-import { generateSubscriptionPix, verifySubscriptionPaymentStatus } from "@/actions/subscription-actions";
+import { gerarPixDaAssinatura, verificarSituacaoDoPagamentoDaAssinatura } from "@/actions/subscription-actions";
 import { btn } from "@/components/landing/styles";
 import { LoadingRegion } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,7 @@ export function SubscriptionPix({ planId, modules, planName, couponCode, onPaid 
   const create = useCallback(async () => {
     setError("");
     setMessage("");
-    const res = await generateSubscriptionPix({ planId, modules, couponCode });
+    const res = await gerarPixDaAssinatura({ planId, modules, couponCode });
     if (res.success && res.pixPayload && res.subscriptionId) {
       setCharge({
         subscriptionId: res.subscriptionId,
@@ -80,7 +80,7 @@ export function SubscriptionPix({ planId, modules, planName, couponCode, onPaid 
     // O Pix estático não tem confirmação automática: não adianta consultar.
     const poll = charge.isDynamic
       ? setInterval(async () => {
-          const res = await verifySubscriptionPaymentStatus(charge.subscriptionId);
+          const res = await verificarSituacaoDoPagamentoDaAssinatura(charge.subscriptionId);
           if (res.paid) markPaid();
         }, 5000)
       : null;
@@ -104,7 +104,7 @@ export function SubscriptionPix({ planId, modules, planName, couponCode, onPaid 
   const checkNow = () =>
     startTransition(async () => {
       if (!charge) return;
-      const res = await verifySubscriptionPaymentStatus(charge.subscriptionId);
+      const res = await verificarSituacaoDoPagamentoDaAssinatura(charge.subscriptionId);
       if (res.paid) markPaid();
       else
         setMessage(

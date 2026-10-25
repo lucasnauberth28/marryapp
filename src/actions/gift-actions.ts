@@ -9,7 +9,7 @@ import { z } from "zod"
 import { enviarImagemDoPresente } from "@/lib/supabase"
 
 import { ERROS } from "@/lib/mensagens-de-erro";
-const GiftSchema = z.object({
+const EsquemaDoPresente = z.object({
   title: z.string().min(2, "O título deve ter ao menos 2 caracteres.").max(120).trim(),
   description: z.string().max(1000).optional(),
   amount: z.coerce.number().int().min(100, "O valor mínimo é R$ 1,00.").max(100_000_00, "Valor acima do permitido."), // em centavos
@@ -17,7 +17,7 @@ const GiftSchema = z.object({
 
 // Painel do casal: presentes do casamento da sessão. A lista pública (/casamento/<slug>/presentes)
 // lê direto no servidor pelo casamento do endereço (lib/wedding-data).
-export async function getGifts() {
+export async function obterPresentes() {
   const { weddingId } = await exigirCasamentoParaLeitura("/presentes-admin")
   try {
     const gifts = await obterPresentesDoCasamento(weddingId)
@@ -28,7 +28,7 @@ export async function getGifts() {
   }
 }
 
-export async function createGiftAction(formData: FormData) {
+export async function criarPresente(formData: FormData) {
   const { weddingId } = await exigirCasamento("/presentes-admin")
 
   // O valor chega digitado em reais (ex: "150,50") e é convertido para centavos
@@ -37,7 +37,7 @@ export async function createGiftAction(formData: FormData) {
     ? Math.round(parseFloat(amountStr.replace(',', '.')) * 100)
     : 0
 
-  const parsed = GiftSchema.safeParse({
+  const parsed = EsquemaDoPresente.safeParse({
     title: formData.get('title'),
     description: formData.get('description') || undefined,
     amount: amountInCents,
@@ -75,7 +75,7 @@ export async function createGiftAction(formData: FormData) {
   }
 }
 
-export async function deleteGift(id: string) {
+export async function excluirPresente(id: string) {
   const { weddingId } = await exigirCasamento("/presentes-admin")
 
   try {

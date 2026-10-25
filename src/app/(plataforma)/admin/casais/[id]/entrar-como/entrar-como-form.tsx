@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { LogIn, ShieldAlert } from "lucide-react";
-import { startImpersonation } from "@/actions/admin-impersonation-actions";
+import { iniciarPersonificacao } from "@/actions/admin-impersonation-actions";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,7 +32,7 @@ export function EntrarComoForm({ weddingId, coupleNames, backHref }: { weddingId
     setError(null);
     startTransition(async () => {
       try {
-        const result = await startImpersonation({ weddingId, reason, ticketNumber, canEdit, confirmEdit: canEdit && confirmEdit });
+        const result = await iniciarPersonificacao({ weddingId, reason, ticketNumber, canEdit, confirmEdit: canEdit && confirmEdit });
         if (result.success) {
           // Carga completa: o painel e a faixa fixa já nascem com a sessão nova
           setRedirecting(true);

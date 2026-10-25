@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { LogOut, Search } from "lucide-react";
-import { logout } from "@/actions/auth-actions";
+import { sair } from "@/actions/auth-actions";
 import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { PlatformNavList, type PlatformNavCountsProp } from "@/components/plataforma/nav-list";
@@ -55,7 +55,7 @@ export function PlatformSidebar({
           </span>
         </Link>
         <ThemeToggle align="start" />
-        <form action={logout}>
+        <form action={sair}>
           <button
             type="submit"
             aria-label="Sair"

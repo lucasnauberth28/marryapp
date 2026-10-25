@@ -9,7 +9,7 @@ import { FormAlert } from "@/components/ui/field";
 import { StatusChip } from "@/components/plataforma/status-chip";
 import { Button } from "@/components/ui/button";
 import { Wrench } from "lucide-react";
-import { saveEmailSender, saveMaintenance, saveRefundPolicy } from "@/actions/admin-config-actions";
+import { salvarRemetenteDeEmail, salvarManutencao, salvarPoliticaDeReembolso } from "@/actions/admin-config-actions";
 import { ToggleRow } from "../../_sistema/toggle-row";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
@@ -24,7 +24,7 @@ export function MaintenanceForm({ initial }: { initial: { enabled: boolean; mess
       className="flex flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => saveMaintenance({ enabled, message, backDate, backTime }));
+        run(() => salvarManutencao({ enabled, message, backDate, backTime }));
       }}
     >
       <div className="flex flex-wrap items-center gap-3 border-b border-linha pb-1">
@@ -63,7 +63,7 @@ export function EmailSenderForm({ initial }: { initial: { fromName: string; from
       className="flex flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => saveEmailSender(s));
+        run(() => salvarRemetenteDeEmail(s));
       }}
     >
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -93,7 +93,7 @@ export function RefundPolicyForm({ initial }: { initial: { days: number; text: s
       className="flex flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => saveRefundPolicy({ days, text }));
+        run(() => salvarPoliticaDeReembolso({ days, text }));
       }}
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

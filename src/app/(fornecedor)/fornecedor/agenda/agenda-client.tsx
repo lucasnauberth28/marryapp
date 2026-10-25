@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useId, useRef, useState, useTrans
 import Link from "next/link";
 import { CalendarPlus, CalendarX2, Loader2, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
-import { createVendorEvent, deleteVendorEvent } from "@/actions/vendor-panel-actions";
+import { criarEventoDoFornecedor, excluirEventoDoFornecedor } from "@/actions/vendor-panel-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -156,7 +156,7 @@ function EventForm({ request, leads, onDone }: { request: FormRequest; leads: Le
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const res = await createVendorEvent({ kind: request.kind, ...values });
+      const res = await criarEventoDoFornecedor({ kind: request.kind, ...values });
       if (res.success) {
         toast.success(isMeeting ? "Reunião marcada na agenda." : "Data bloqueada na agenda.");
         onDone();
@@ -247,7 +247,7 @@ export function DeleteEventButton({ eventId, label, onDeleted }: { eventId: stri
       return;
     }
     startTransition(async () => {
-      const res = await deleteVendorEvent(eventId);
+      const res = await excluirEventoDoFornecedor(eventId);
       if (res.success) {
         toast.success("Compromisso removido da agenda.");
         onDeleted?.();

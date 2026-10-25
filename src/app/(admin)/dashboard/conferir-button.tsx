@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { approvePixTransaction } from "@/actions/finance-actions";
+import { aprovarTransacaoPix } from "@/actions/finance-actions";
 import { btnRow } from "./ui";
 
 /** Selo "A" do Pix conferido (o mesmo círculo ameixa do logotipo), 22px. */
@@ -50,7 +50,7 @@ export function ConferirButton({ transactionId, giftId, who }: { transactionId: 
       className={btnRow}
       onClick={() =>
         startTransition(async () => {
-          const result = await approvePixTransaction(transactionId, giftId);
+          const result = await aprovarTransacaoPix(transactionId, giftId);
           if (result.success) {
             setDone(true);
             toast.success("Pix conferido. O presente foi marcado como pago.");

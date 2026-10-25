@@ -4,7 +4,7 @@ import { useId, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Flag } from "lucide-react";
 import { toast } from "sonner";
-import { reportReview } from "@/actions/vendor-report-actions";
+import { denunciarAvaliacao } from "@/actions/vendor-report-actions";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +37,7 @@ export function ReportReview({ reviewId, coupleNames }: { reviewId: string; coup
         e.preventDefault();
         setError(null);
         startTransition(async () => {
-          const res = await reportReview(reviewId, reason);
+          const res = await denunciarAvaliacao(reviewId, reason);
           if (res.success) {
             toast.success("Denúncia enviada. A equipe do Aceito vai analisar.");
             setOpen(false);

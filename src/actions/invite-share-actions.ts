@@ -5,17 +5,17 @@ import prisma from "@/lib/prisma";
 import { exigirCasamento } from "@/lib/security/wedding-context";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
-const InputSchema = z.object({ guestId: z.string().uuid("Convidado não encontrado.") });
+const EsquemaDaEntrada = z.object({ guestId: z.string().uuid("Convidado não encontrado.") });
 
-export type MarkInviteSharedResult = { success: true } | { success: false; error: string };
+export type ResultadoDaMarcacaoDoConvite = { success: true } | { success: false; error: string };
 
 /**
  * O casal abriu o WhatsApp de um convidado, com o convite pronto, no próprio aparelho: guarda quando.
  * Só marca (não envia nada): o casal manda a mensagem por lá. O convidado precisa ser deste casamento
  * (nada vem do navegador além do id) e a permissão é a da lista de convidados.
  */
-export async function markInviteShared(input: unknown): Promise<MarkInviteSharedResult> {
-  const parsed = InputSchema.safeParse(input);
+export async function marcarConviteComoCompartilhado(input: unknown): Promise<ResultadoDaMarcacaoDoConvite> {
+  const parsed = EsquemaDaEntrada.safeParse(input);
   if (!parsed.success) return { success: false, error: ERROS.convidadoNaoEncontrado };
 
   const { weddingId } = await exigirCasamento("/convidados");

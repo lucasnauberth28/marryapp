@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { replyToReview } from "@/actions/vendor-review-actions";
+import { responderAvaliacao } from "@/actions/vendor-review-actions";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -107,7 +107,7 @@ function ReplyForm({
     }
     setError(null);
     startTransition(async () => {
-      const res = await replyToReview(reviewId, text);
+      const res = await responderAvaliacao(reviewId, text);
       if (res.success) {
         toast.success(
           isEdit ? "Resposta atualizada no seu perfil." : `Resposta para ${coupleNames} publicada no seu perfil.`,

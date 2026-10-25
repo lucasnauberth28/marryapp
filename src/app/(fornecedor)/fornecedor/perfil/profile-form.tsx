@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Eye } from "lucide-react";
 import { toast } from "sonner";
 import { Reveal } from "@/components/motion/reveal";
-import { updateVendorProfile, type VendorProfileInput } from "@/actions/vendor-panel-actions";
+import { atualizarPerfilDoFornecedor, type EntradaDoPerfilDoFornecedor } from "@/actions/vendor-panel-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,7 +58,7 @@ export function ProfileForm({
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const res = await updateVendorProfile(values satisfies VendorProfileInput);
+      const res = await atualizarPerfilDoFornecedor(values satisfies EntradaDoPerfilDoFornecedor);
       if (res.success) {
         toast.success(isPublic ? "Perfil salvo. Os casais já veem a nova versão." : "Perfil salvo.");
       } else {

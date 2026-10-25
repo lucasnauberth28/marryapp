@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronRight, LogOut, X } from "lucide-react";
-import { logout } from "@/actions/auth-actions";
+import { sair } from "@/actions/auth-actions";
 import { PlatformNavList, type PlatformNavCountsProp } from "@/components/plataforma/nav-list";
 import { PLATFORM_MOBILE_TABS, PLATFORM_MORE_ICON, isPlatformItemActive, platformMoreGroups } from "@/components/plataforma/nav-config";
 
@@ -121,7 +121,7 @@ export function PlatformMobileNav({
                 <nav aria-label="Todas as áreas da administração">
                   <PlatformNavList variant="cards" groups={moreGroups} counts={counts} onNavigate={() => setMoreOpen(false)} />
                 </nav>
-                <form action={logout} className="rounded-2xl border border-linha bg-papel px-4 shadow-[var(--shadow-aceito-1)]">
+                <form action={sair} className="rounded-2xl border border-linha bg-papel px-4 shadow-[var(--shadow-aceito-1)]">
                   <button type="submit" className="flex min-h-[52px] w-full cursor-pointer items-center gap-3 text-base text-perigo">
                     <LogOut className="size-5" strokeWidth={1.6} aria-hidden="true" /> Sair
                   </button>

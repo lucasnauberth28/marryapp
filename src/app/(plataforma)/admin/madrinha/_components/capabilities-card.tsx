@@ -5,7 +5,7 @@ import { Panel } from "@/components/plataforma/panel";
 import { FormAlert } from "@/components/ui/field";
 import { ToggleRow } from "../../_sistema/toggle-row";
 import { useAdminAction } from "../../_sistema/use-admin-action";
-import { saveMadrinhaCapabilities } from "@/actions/admin-madrinha-actions";
+import { salvarCapacidadesDaMadrinha } from "@/actions/admin-madrinha-actions";
 
 type Caps = { draftReminder: boolean; suggestTasks: boolean; buildTimeline: boolean; compareQuotes: boolean };
 
@@ -24,7 +24,7 @@ export function CapabilitiesCard({ initial, badge }: { initial: Caps; badge: Rea
   function toggle(key: keyof Caps, value: boolean) {
     const next = { ...caps, [key]: value };
     setCaps(next);
-    run(() => saveMadrinhaCapabilities(next));
+    run(() => salvarCapacidadesDaMadrinha(next));
     // Se não salvou, o formError aparece e o interruptor volta ao que estava
   }
 

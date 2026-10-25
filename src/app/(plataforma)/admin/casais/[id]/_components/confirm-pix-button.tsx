@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { confirmSubscriptionManually } from "@/actions/subscription-admin-actions";
+import { confirmarAssinaturaManualmente } from "@/actions/subscription-admin-actions";
 import { Button } from "@/components/ui/button";
 
 /** "Conferir o Pix": confirma o Pix estático visto no extrato (a mesma ação de Assinaturas) e libera o plano. */
@@ -17,7 +17,7 @@ export function ConfirmPixButton({ subscriptionId }: { subscriptionId: string })
     startTransition(async () => {
       setError(null);
       try {
-        const result = await confirmSubscriptionManually(subscriptionId);
+        const result = await confirmarAssinaturaManualmente(subscriptionId);
         if (result.success) {
           toast.success("Pix conferido. O plano do casal foi liberado.");
           setAsking(false);

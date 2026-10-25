@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { addWeddingNote } from "@/actions/admin-casais-actions";
+import { adicionarNotaAoCasamento } from "@/actions/admin-casais-actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useCasalAction } from "../../_components/use-casal-action";
@@ -18,7 +18,7 @@ export function NoteForm({ weddingId }: { weddingId: string }) {
       className="flex flex-col gap-3"
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => addWeddingNote({ weddingId, body }), () => {
+        run(() => adicionarNotaAoCasamento({ weddingId, body }), () => {
           setBody("");
           router.refresh();
         });

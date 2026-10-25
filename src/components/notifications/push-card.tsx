@@ -5,7 +5,7 @@ import { BellRing, Send, Smartphone } from "lucide-react";
 import { LoadingButton } from "@/components/painel/loading-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { isMySubscription, removeSubscription, saveSubscription, sendTestPush } from "@/actions/push-actions";
+import { ehMinhaInscricao, removerInscricao, salvarInscricao, enviarPushDeTeste } from "@/actions/push-actions";
 import { urlBase64ParaBytes } from "@/lib/notifications/push-support";
 import { cn } from "@/lib/utils";
 import { ToggleSwitch } from "./toggle-switch";
@@ -75,7 +75,7 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
       const registration = await navigator.serviceWorker.getRegistration("/");
       const sub = await registration?.pushManager.getSubscription();
       // A inscrição do navegador precisa ser desta conta: outra conta no mesmo aparelho não conta.
-      const mine = sub ? await isMySubscription(sub.endpoint) : false;
+      const mine = sub ? await ehMinhaInscricao(sub.endpoint) : false;
       if (!cancelled) setSubscribed(mine);
     })().catch(() => {
       if (!cancelled) setSubscribed(false);
@@ -120,7 +120,7 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
       }
       const registration = await withTimeout(registerWorker(), 15_000);
       const subscription = await withTimeout(subscribeBrowser(registration, publicKey), 20_000);
-      const result = await saveSubscription(subscription.toJSON());
+      const result = await salvarInscricao(subscription.toJSON());
       if (!result.success) {
         toast.error(result.error);
         return;
@@ -141,7 +141,7 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
       const registration = await navigator.serviceWorker.getRegistration("/");
       const subscription = await registration?.pushManager.getSubscription();
       if (subscription) {
-        await removeSubscription(subscription.endpoint);
+        await removerInscricao(subscription.endpoint);
         await subscription.unsubscribe();
       }
       setSubscribed(false);
@@ -156,7 +156,7 @@ export function PushCard({ publicKey, variant = "card", className }: Props) {
   async function test() {
     setTesting(true);
     try {
-      const result = await sendTestPush();
+      const result = await enviarPushDeTeste();
       if (result.success) toast.success("Aviso de teste enviado. Ele deve chegar em instantes.");
       else toast.error(result.error);
     } catch {

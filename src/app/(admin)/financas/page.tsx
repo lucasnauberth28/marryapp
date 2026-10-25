@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import { getFinancialMetrics, getTransactions } from "@/actions/finance-actions";
-import { getExpenses } from "@/actions/expense-actions";
-import { getVendors } from "@/actions/vendor-actions";
-import { getWalletData } from "@/actions/wallet-actions";
+import { obterMetricasFinanceiras, obterTransacoes } from "@/actions/finance-actions";
+import { obterDespesas } from "@/actions/expense-actions";
+import { obterFornecedores } from "@/actions/vendor-actions";
+import { obterDadosDaCarteira } from "@/actions/wallet-actions";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { PageHeader } from "@/components/admin/page-header";
 import { LoadingRegion } from "@/components/skeletons";
@@ -37,11 +37,11 @@ export default async function FinancasPage() {
 
   // As consultas começam todas já, em paralelo; cada bloco da tela espera só pelo que usa (streaming)
   // e aparece quando chega, sem segurar o cabeçalho nem os outros blocos.
-  const metrics = getFinancialMetrics();
-  const transactions = getTransactions();
-  const expenses = getExpenses();
-  const vendors = getVendors();
-  const walletData = getWalletData();
+  const metrics = obterMetricasFinanceiras();
+  const transactions = obterTransacoes();
+  const expenses = obterDespesas();
+  const vendors = obterFornecedores();
+  const walletData = obterDadosDaCarteira();
   // Falha de uma consulta que ainda ninguém aguarda não pode derrubar o processo: quem a usa é que mostra o erro.
   for (const p of [metrics, transactions, expenses, vendors, walletData]) p.catch(() => {});
 
@@ -89,7 +89,7 @@ export default async function FinancasPage() {
 }
 
 /** Os quatro números do topo (presentes, despesas, saldo e próxima parcela). */
-async function Stats({ metrics: metricsPromise, expenses: expensesPromise }: { metrics: ReturnType<typeof getFinancialMetrics>; expenses: ReturnType<typeof getExpenses> }) {
+async function Stats({ metrics: metricsPromise, expenses: expensesPromise }: { metrics: ReturnType<typeof obterMetricasFinanceiras>; expenses: ReturnType<typeof obterDespesas> }) {
   const [metrics, expenses] = await Promise.all([metricsPromise, expensesPromise]);
   const isSaldoPositivo = metrics.saldoPrevisto >= 0;
 
@@ -146,14 +146,14 @@ async function Expenses({
   vendors,
   walletData,
 }: {
-  expenses: ReturnType<typeof getExpenses>;
-  vendors: ReturnType<typeof getVendors>;
-  walletData: ReturnType<typeof getWalletData>;
+  expenses: ReturnType<typeof obterDespesas>;
+  vendors: ReturnType<typeof obterFornecedores>;
+  walletData: ReturnType<typeof obterDadosDaCarteira>;
 }) {
   const [list, vendorList, wallet] = await Promise.all([expenses, vendors, walletData]);
   return <ExpensesClient initialExpenses={list} vendors={vendorList} userCards={wallet.cards} />;
 }
 
-async function Payments({ transactions }: { transactions: ReturnType<typeof getTransactions> }) {
+async function Payments({ transactions }: { transactions: ReturnType<typeof obterTransacoes> }) {
   return <FinanceTable transactions={await transactions} />;
 }

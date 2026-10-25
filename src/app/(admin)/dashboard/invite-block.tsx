@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { Check, ChevronRight, Clock, Copy, Link2, MessageCircle, Send } from "lucide-react";
 import { toast } from "sonner";
-import { markInviteShared } from "@/actions/invite-share-actions";
+import { marcarConviteComoCompartilhado } from "@/actions/invite-share-actions";
 import { rotuloDeConvites } from "@/lib/dashboard-summary";
 import { UserImage } from "@/components/ui/user-image";
 import { Block, Chip, Meter, TextLink, btnPrimary, btnRow, btnSecondary, hintClass, labelClass } from "./ui";
@@ -85,7 +85,7 @@ export function InviteBlock(props: InviteBlockProps) {
   function onOpenWhatsapp(row: InviteRow) {
     setDone((prev) => new Set(prev).add(row.id));
     if (row.kind !== "invite") return;
-    void markInviteShared({ guestId: row.id }).then((res) => {
+    void marcarConviteComoCompartilhado({ guestId: row.id }).then((res) => {
       if (!res.success) {
         setDone((prev) => {
           const next = new Set(prev);

@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Info } from "lucide-react";
 import { toast } from "sonner";
-import { saveCatalogPriceAction } from "@/actions/admin-planos-actions";
+import { salvarPrecoDoCatalogo } from "@/actions/admin-planos-actions";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,7 +55,7 @@ export function CatalogEditForm({
         e.preventDefault();
         setError(null);
         startTransition(async () => {
-          const res = await saveCatalogPriceAction({ key: itemKey, name, priceCents: cents, reason });
+          const res = await salvarPrecoDoCatalogo({ key: itemKey, name, priceCents: cents, reason });
           if (res.success) {
             toast.success(res.message);
             router.replace("/admin/planos/catalogo", { scroll: false });

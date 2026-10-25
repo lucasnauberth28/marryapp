@@ -17,7 +17,7 @@ import { ERROS } from "@/lib/mensagens-de-erro";
  * Seguro para rodar a cada visita e em paralelo: um bloqueio por casamento (advisory lock da transação)
  * impede que duas aberturas da tela criem os modelos em dobro. Quem já tem modelos não é alterado.
  */
-export async function ensureDefaultTemplates() {
+export async function garantirModelosPadrao() {
   const { weddingId, impersonation } = await exigirCasamentoParaLeitura("/mensagens");
   // Abrir a tela não grava nada em "entrar como" somente leitura (a administração só olha)
   if (impersonation && !impersonation.canEdit) return;
@@ -34,7 +34,7 @@ export async function ensureDefaultTemplates() {
     console.error("[ensureDefaultTemplates Error]:", err);
   }
 }
-export async function createMessageTemplate(formData: FormData) {
+export async function criarModeloDeMensagem(formData: FormData) {
   const { weddingId } = await exigirCasamento("/mensagens");
   try {
     const name = formData.get("name") as string;
@@ -60,7 +60,7 @@ export async function createMessageTemplate(formData: FormData) {
   }
 }
 
-export async function updateMessageTemplate(id: string, formData: FormData) {
+export async function atualizarModeloDeMensagem(id: string, formData: FormData) {
   const { weddingId } = await exigirCasamento("/mensagens");
   try {
     const name = formData.get("name") as string;
@@ -90,7 +90,7 @@ export async function updateMessageTemplate(id: string, formData: FormData) {
   }
 }
 
-export async function deleteMessageTemplate(id: string) {
+export async function excluirModeloDeMensagem(id: string) {
   const { weddingId } = await exigirCasamento("/mensagens");
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.modeloNaoEncontrado };
@@ -107,7 +107,7 @@ export async function deleteMessageTemplate(id: string) {
 /**
  * Dispara um template para vários convidados
  */
-export async function sendTemplateToGuests(templateId: string, guestIds: string[]) {
+export async function enviarModeloAosConvidados(templateId: string, guestIds: string[]) {
   const { weddingId, wedding, session } = await exigirCasamento("/mensagens");
   const refusal = await recusaDeModulo({ weddingId, session }, "whatsapp");
   if (refusal) return { success: false, error: refusal };

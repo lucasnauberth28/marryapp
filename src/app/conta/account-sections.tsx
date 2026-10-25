@@ -22,7 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { cancelPartnerInvite, changePassword, createPartnerInvite, deleteMyAccount } from "@/actions/account-actions";
+import { cancelarConviteDePessoaParceira, trocarSenha, criarConviteDePessoaParceira, excluirMinhaConta } from "@/actions/account-actions";
 import { btn } from "@/components/landing/styles";
 import { LoadingButton } from "@/components/painel/loading-button";
 import { Field, FormAlert } from "@/components/ui/field";
@@ -177,7 +177,7 @@ function PasswordSection() {
       return;
     }
     startTransition(async () => {
-      const res = await changePassword({ currentPassword: current, newPassword: next, confirm });
+      const res = await trocarSenha({ currentPassword: current, newPassword: next, confirm });
       if (!res.success) {
         setError(res.error);
         return;
@@ -250,7 +250,7 @@ function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> })
     }
     setEmailError("");
     startTransition(async () => {
-      const res = await createPartnerInvite({ email: value });
+      const res = await criarConviteDePessoaParceira({ email: value });
       if (!res.success) {
         setError(res.error);
         return;
@@ -276,7 +276,7 @@ function PartnerSection({ wedding }: { wedding: NonNullable<Props["wedding"]> })
   const cancel = (id: string) => {
     setCancelling(id);
     startTransition(async () => {
-      const res = await cancelPartnerInvite(id);
+      const res = await cancelarConviteDePessoaParceira(id);
       setCancelling(null);
       if (!res.success) {
         toast.error(res.error);
@@ -490,7 +490,7 @@ function DeleteSection({ kind, isLastMember }: { kind: Props["kind"]; isLastMemb
     if (!ready) return;
     setError("");
     startTransition(async () => {
-      const res = await deleteMyAccount({ confirmation, password });
+      const res = await excluirMinhaConta({ confirmation, password });
       if (!res.success) {
         setError(res.error);
         return;

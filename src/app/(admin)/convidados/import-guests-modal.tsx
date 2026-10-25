@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AlertTriangle, Check, CircleAlert, Download, FileSpreadsheet, Upload } from "lucide-react";
 import { CustomModal } from "@/components/ui/custom-modal";
-import { importGuests } from "@/actions/guest-actions";
+import { importarConvidados } from "@/actions/guest-actions";
 import { btn, card, errorBox, hint, overline } from "@/components/painel/styles";
 import { LoadingButton } from "@/components/painel/loading-button";
 import { SkeletonRows } from "@/components/painel/skeleton-parts";
@@ -140,7 +140,7 @@ function ImportFlow({ existing, onClose }: { existing: ConvidadoExistente[]; onC
     setStage("importando");
     const toastId = toast.loading("Importando a lista...");
     try {
-      const res = await importGuests(
+      const res = await importarConvidados(
         plan.toAdd.map(({ line, name, phone, email, companions, category, dietary }) => ({
           line,
           name,

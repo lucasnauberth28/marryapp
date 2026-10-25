@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getGuests } from "@/actions/guest-actions";
+import { obterConvidados } from "@/actions/guest-actions";
 import { GuestsClient } from "./guests-client";
 import prisma from "@/lib/prisma";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
@@ -24,7 +24,7 @@ export default async function ConvidadosPage({ searchParams }: { searchParams: P
 
   // Só leitura: o prazo de confirmação definido em Configurações, se houver
   const [guests, settings, canRemind] = await Promise.all([
-    getGuests(),
+    obterConvidados(),
     prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } }),
     casamentoTemModulo({ weddingId, session }, "whatsapp"),
   ]);

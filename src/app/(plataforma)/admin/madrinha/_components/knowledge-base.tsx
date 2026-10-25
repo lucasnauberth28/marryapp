@@ -10,7 +10,7 @@ import { StatusChip } from "@/components/plataforma/status-chip";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { formatarDiaEMes } from "@/lib/platform/format";
-import { archiveKnowledgeArticle, saveKnowledgeArticle } from "@/actions/admin-madrinha-actions";
+import { arquivarArtigoDeConhecimento, salvarArtigoDeConhecimento } from "@/actions/admin-madrinha-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
 export interface ArticleItem {
@@ -81,7 +81,7 @@ function ArticleForm({ article, onDone }: { article: ArticleItem | null; onDone:
   const [running, setRunning] = useState<"PUBLISHED" | "DRAFT" | "remove" | null>(null);
   const submit = (status: "DRAFT" | "PUBLISHED") => {
     setRunning(status);
-    run(() => saveKnowledgeArticle({ id: article?.id, title, content, status }), onDone);
+    run(() => salvarArtigoDeConhecimento({ id: article?.id, title, content, status }), onDone);
   };
 
   return (
@@ -113,7 +113,7 @@ function ArticleForm({ article, onDone }: { article: ArticleItem | null; onDone:
             loading={pending && running === "remove"}
             onClick={() => {
               setRunning("remove");
-              run(() => archiveKnowledgeArticle({ id: article.id }), onDone);
+              run(() => arquivarArtigoDeConhecimento({ id: article.id }), onDone);
             }}
             className="text-perigo"
           >

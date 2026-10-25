@@ -19,22 +19,22 @@ import { obterPlanoDoCasamento, recusaDeModulo } from "@/lib/wedding-plan";
 // Ações do casal para o domínio próprio. Tudo é do casamento da sessão: o navegador nunca diz de qual
 // casamento é o pedido. O CPF/CNPJ completo só é gravado e nunca volta para o navegador.
 
-const ERR_SESSION = "Entre na sua conta de novo para continuar.";
-const ERR_BUSY = "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo.";
+const ERRO_DE_SESSAO = "Entre na sua conta de novo para continuar.";
+const ERRO_DE_OCUPADO = "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo.";
 
-type Ctx = Awaited<ReturnType<typeof exigirCasamento>>;
+type Contexto = Awaited<ReturnType<typeof exigirCasamento>>;
 
 /** `write: false` para consultas (só leem): valem também em "entrar como" somente leitura e casamento suspenso. */
-async function context(write = true): Promise<{ ctx: Ctx; error?: undefined } | { ctx?: undefined; error: string }> {
+async function obterContextoDaPessoa(write = true): Promise<{ ctx: Contexto; error?: undefined } | { ctx?: undefined; error: string }> {
   try {
     return { ctx: await (write ? exigirCasamento("/dominio") : exigirCasamentoParaLeitura("/dominio")) };
   } catch (error) {
-    if (error instanceof AuthorizationError) return { error: error.message || ERR_SESSION };
+    if (error instanceof AuthorizationError) return { error: error.message || ERRO_DE_SESSAO };
     throw error;
   }
 }
 
-async function limited(scope: string, userId: string, limit: number, windowMs: number): Promise<boolean> {
+async function limiteExcedido(scope: string, userId: string, limit: number, windowMs: number): Promise<boolean> {
   const ip = await obterIpDoCliente();
   const [byUser, byIp] = await Promise.all([
     conferirLimiteDeUso({ key: `${scope}:u:${userId}`, limit, windowMs }),
@@ -43,13 +43,13 @@ async function limited(scope: string, userId: string, limit: number, windowMs: n
   return !byUser.success || !byIp.success;
 }
 
-export type CheckDomainResult =
+export type ResultadoDaVerificacaoDoDominio =
   | { success: true; domain: string; availability: DisponibilidadeDoDominio }
   | { success: false; error: string };
 
 /** Confere se o nome está livre no Registro.br. É só um aviso: a conferência final é na hora de registrar. */
-export async function checkDomainAvailabilityAction(input: { domain: string }): Promise<CheckDomainResult> {
-  const got = await context(false);
+export async function verificarDisponibilidadeDoDominioAcao(input: { domain: string }): Promise<ResultadoDaVerificacaoDoDominio> {
+  const got = await obterContextoDaPessoa(false);
   if (got.error !== undefined) return { success: false, error: got.error };
   const { ctx } = got;
 
@@ -60,19 +60,19 @@ export async function checkDomainAvailabilityAction(input: { domain: string }): 
   if (!name.ok) return { success: false, error: name.error };
   if (ehDominioReservado(name.domain, urlBaseDoApp())) return { success: false, error: "Esse endereço não está disponível. Escolham outro nome." };
 
-  if (await limited("DOMAIN_CHECK", ctx.session.userId, 40, 60_000)) return { success: false, error: ERR_BUSY };
+  if (await limiteExcedido("DOMAIN_CHECK", ctx.session.userId, 40, 60_000)) return { success: false, error: ERRO_DE_OCUPADO };
 
   const availability = await verificarDisponibilidadeDoDominio(name.domain);
   return { success: true, domain: name.domain, availability };
 }
 
-export type RequestDomainResult =
+export type ResultadoDoPedidoDeDominio =
   | { success: true }
   | { success: false; error?: string; fieldErrors?: Partial<Record<CampoDoPedidoDeDominio, string>> };
 
 /** Cria o pedido de domínio do casamento, no nome do titular informado. */
-export async function requestDomainAction(input: unknown): Promise<RequestDomainResult> {
-  const got = await context();
+export async function pedirDominio(input: unknown): Promise<ResultadoDoPedidoDeDominio> {
+  const got = await obterContextoDaPessoa();
   if (got.error !== undefined) return { success: false, error: got.error };
   const { ctx } = got;
   const { weddingId, session } = ctx;
@@ -80,7 +80,7 @@ export async function requestDomainAction(input: unknown): Promise<RequestDomain
   const refusal = await recusaDeModulo(ctx, "customDomain");
   if (refusal) return { success: false, error: refusal };
 
-  if (await limited("DOMAIN_REQUEST", session.userId, 6, 10 * 60_000)) return { success: false, error: ERR_BUSY };
+  if (await limiteExcedido("DOMAIN_REQUEST", session.userId, 6, 10 * 60_000)) return { success: false, error: ERRO_DE_OCUPADO };
 
   const parsed = interpretarPedidoDeDominio(input);
   if (!parsed.ok) return { success: false, fieldErrors: parsed.fieldErrors };
@@ -142,15 +142,15 @@ export async function requestDomainAction(input: unknown): Promise<RequestDomain
   return { success: true };
 }
 
-export type CancelDomainResult = { success: true } | { success: false; error: string };
+export type ResultadoDoCancelamentoDoDominio = { success: true } | { success: false; error: string };
 
 /** O casal desiste do pedido, enquanto ninguém começou o registro. O documento completo é apagado. */
-export async function cancelDomainOrderAction(): Promise<CancelDomainResult> {
-  const got = await context();
+export async function cancelarPedidoDeDominio(): Promise<ResultadoDoCancelamentoDoDominio> {
+  const got = await obterContextoDaPessoa();
   if (got.error !== undefined) return { success: false, error: got.error };
   const { weddingId, session } = got.ctx;
 
-  if (await limited("DOMAIN_CANCEL", session.userId, 10, 10 * 60_000)) return { success: false, error: ERR_BUSY };
+  if (await limiteExcedido("DOMAIN_CANCEL", session.userId, 10, 10 * 60_000)) return { success: false, error: ERRO_DE_OCUPADO };
 
   const order = await prisma.domainOrder.findFirst({
     where: { weddingId, status: { in: [...SITUACOES_ATIVAS] } },

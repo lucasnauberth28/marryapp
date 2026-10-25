@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BadgeCheck } from "lucide-react";
-import { acceptLeadProposal } from "@/actions/partner-vendor-actions";
+import { aceitarPropostaDoPedido } from "@/actions/partner-vendor-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -22,7 +22,7 @@ export function AcceptProposalForm({ token, companyName }: { token: string; comp
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const res = await acceptLeadProposal({ token, fullName, agreed });
+      const res = await aceitarPropostaDoPedido({ token, fullName, agreed });
       if (res.success) {
         setDone(res.name);
         router.refresh();

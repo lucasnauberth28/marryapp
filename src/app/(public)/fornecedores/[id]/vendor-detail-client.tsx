@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { checkVendorAvailability, createVendorLead, type PublicVendor } from "@/actions/partner-vendor-actions";
+import { conferirDisponibilidadeDoFornecedor, criarPedidoDeOrcamento, type FornecedorPublico } from "@/actions/partner-vendor-actions";
 import { toast } from "sonner";
 import { LEAD_BUDGET_OPTIONS, parseGallery, parseRegions } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { UserImage } from "@/components/ui/user-image";
@@ -36,7 +36,7 @@ import { cn } from "@/lib/utils";
 
 import { formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
 interface VendorDetailClientProps {
-  vendor: PublicVendor;
+  vendor: FornecedorPublico;
   /** Hoje em Brasília ("AAAA-MM-DD"), mínimo da consulta de disponibilidade. */
   todayIso: string;
 }
@@ -71,7 +71,7 @@ function AvailabilityCheck({ vendorId, todayIso }: { vendorId: string; todayIso:
       return;
     }
     startTransition(async () => {
-      const res = await checkVendorAvailability(vendorId, date);
+      const res = await conferirDisponibilidadeDoFornecedor(vendorId, date);
       if (res.success) setResult({ date, available: res.available });
       else setError(res.error);
     });
@@ -161,7 +161,7 @@ export function VendorDetailClient({ vendor, todayIso }: VendorDetailClientProps
 
     const toastId = toast.loading(`Enviando o pedido para ${vendor.companyName}...`);
     startTransitionLead(async () => {
-      const res = await createVendorLead({
+      const res = await criarPedidoDeOrcamento({
         vendorId: vendor.id,
         coupleName,
         couplePhone,

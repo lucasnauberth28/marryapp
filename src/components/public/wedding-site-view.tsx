@@ -22,7 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { btn, overline } from "@/components/landing/styles";
-import { createGuestBookEntry } from "@/actions/site-builder-actions";
+import { criarRecadoNoLivro } from "@/actions/site-builder-actions";
 import { estiloDoTemaDaMarca, obterIniciaisDoCasal } from "@/lib/wedding-format";
 import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
 import { toast } from "sonner";
@@ -316,7 +316,7 @@ export function WeddingSiteView({
     }
 
     startTransition(async () => {
-      const res = await createGuestBookEntry(slug, { authorName, message });
+      const res = await criarRecadoNoLivro(slug, { authorName, message });
       if (res.success && res.entry) {
         setEntries((prev) => [res.entry as GuestbookEntry, ...prev]);
         setAuthorName("");

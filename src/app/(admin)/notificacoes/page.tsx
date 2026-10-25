@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Settings2 } from "lucide-react";
-import { listNotificationHistory } from "@/actions/notification-actions";
+import { listarHistoricoDeNotificacoes } from "@/actions/notification-actions";
 import { PageHeader } from "@/components/admin/page-header";
 import { HistoryList } from "@/components/notifications/history-list";
 import { PushCard } from "@/components/notifications/push-card";
@@ -21,7 +21,7 @@ export default async function NotificacoesPage() {
     redirect(temAcessoAoCaminho(session.allowedPaths, "/fornecedor") ? "/fornecedor/notificacoes" : "/boas-vindas");
   }
 
-  const { items } = await listNotificationHistory();
+  const { items } = await listarHistoricoDeNotificacoes();
   return (
     <div className="flex flex-col gap-6">
       <PageHeader

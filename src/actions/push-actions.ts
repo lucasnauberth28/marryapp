@@ -10,34 +10,34 @@ import { pushEstaConfigurado, enviarPushParaAPessoa } from "@/lib/notifications/
 
 // Avisos no aparelho (Web Push). Tudo vale só para o usuário da sessão.
 
-const MAX_DEVICES_PER_USER = 10;
-const TEST_LIMIT = { limit: 5, windowMs: 1000 * 60 * 10 }; // 5 testes / 10 min por conta
+const MAXIMO_DE_APARELHOS_POR_PESSOA = 10;
+const LIMITE_DE_TESTES = { limit: 5, windowMs: 1000 * 60 * 10 }; // 5 testes / 10 min por conta
 
-const B64URL = /^[A-Za-z0-9_-]{10,200}$/;
+const PADRAO_BASE64_DE_URL = /^[A-Za-z0-9_-]{10,200}$/;
 
-const SubscriptionSchema = z.object({
+const EsquemaDaInscricao = z.object({
   endpoint: z.string().refine(ehEnderecoDePushPermitido, "Aparelho não reconhecido."),
   keys: z.object({
-    p256dh: z.string().regex(B64URL, "Chaves inválidas."),
-    auth: z.string().regex(B64URL, "Chaves inválidas."),
+    p256dh: z.string().regex(PADRAO_BASE64_DE_URL, "Chaves inválidas."),
+    auth: z.string().regex(PADRAO_BASE64_DE_URL, "Chaves inválidas."),
   }),
 });
 
-export type PushActionResult = { success: true } | { success: false; error: string };
+export type ResultadoDaAcaoDePush = { success: true } | { success: false; error: string };
 
-async function sessionUserId(): Promise<string | null> {
+async function idDaPessoaDaSessao(): Promise<string | null> {
   const session = await obterSessao();
   if (!session || session.userId === ID_DO_SUPER_ADMIN) return null;
   return session.userId;
 }
 
 /** Guarda (ou renova) o aparelho que acabou de ativar os avisos. */
-export async function saveSubscription(input: unknown): Promise<PushActionResult> {
-  const userId = await sessionUserId();
+export async function salvarInscricao(input: unknown): Promise<ResultadoDaAcaoDePush> {
+  const userId = await idDaPessoaDaSessao();
   if (!userId) return { success: false, error: "Entre na sua conta para ativar os avisos." };
   if (!pushEstaConfigurado()) return { success: false, error: "Os avisos no aparelho ainda não estão disponíveis." };
 
-  const parsed = SubscriptionSchema.safeParse(input);
+  const parsed = EsquemaDaInscricao.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Aparelho não reconhecido." };
   const { endpoint, keys } = parsed.data;
 
@@ -56,9 +56,9 @@ export async function saveSubscription(input: unknown): Promise<PushActionResult
       orderBy: { lastUsedAt: "desc" },
       select: { id: true },
     });
-    if (devices.length > MAX_DEVICES_PER_USER) {
+    if (devices.length > MAXIMO_DE_APARELHOS_POR_PESSOA) {
       await prisma.pushSubscription.deleteMany({
-        where: { userId, id: { in: devices.slice(MAX_DEVICES_PER_USER).map((d) => d.id) } },
+        where: { userId, id: { in: devices.slice(MAXIMO_DE_APARELHOS_POR_PESSOA).map((d) => d.id) } },
       });
     }
     return { success: true };
@@ -69,8 +69,8 @@ export async function saveSubscription(input: unknown): Promise<PushActionResult
 }
 
 /** Remove o aparelho da própria conta (desativar avisos). Endereço de outra conta não é afetado. */
-export async function removeSubscription(endpoint: unknown): Promise<PushActionResult> {
-  const userId = await sessionUserId();
+export async function removerInscricao(endpoint: unknown): Promise<ResultadoDaAcaoDePush> {
+  const userId = await idDaPessoaDaSessao();
   if (!userId) return { success: false, error: "Entre na sua conta." };
   if (typeof endpoint !== "string" || endpoint.length > 2048) return { success: false, error: "Aparelho não reconhecido." };
   try {
@@ -83,8 +83,8 @@ export async function removeSubscription(endpoint: unknown): Promise<PushActionR
 }
 
 /** Este endereço (do navegador de quem pergunta) está cadastrado nesta conta? Outra conta no mesmo aparelho diz que não. */
-export async function isMySubscription(endpoint: unknown): Promise<boolean> {
-  const userId = await sessionUserId();
+export async function ehMinhaInscricao(endpoint: unknown): Promise<boolean> {
+  const userId = await idDaPessoaDaSessao();
   if (!userId || typeof endpoint !== "string" || endpoint.length > 2048) return false;
   try {
     return (await prisma.pushSubscription.count({ where: { endpoint, userId } })) > 0;
@@ -93,17 +93,17 @@ export async function isMySubscription(endpoint: unknown): Promise<boolean> {
   }
 }
 
-export type TestPushResult =
+export type ResultadoDoPushDeTeste =
   | { success: true; devices: number }
   | { success: false; error: string };
 
 /** Manda um aviso de teste a todos os aparelhos da própria conta. No máximo 5 a cada 10 minutos. */
-export async function sendTestPush(): Promise<TestPushResult> {
-  const userId = await sessionUserId();
+export async function enviarPushDeTeste(): Promise<ResultadoDoPushDeTeste> {
+  const userId = await idDaPessoaDaSessao();
   if (!userId) return { success: false, error: "Entre na sua conta." };
   if (!pushEstaConfigurado()) return { success: false, error: "Os avisos no aparelho ainda não estão disponíveis." };
 
-  const limit = await conferirLimiteDeUso({ key: `PUSH_TEST:${userId}`, ...TEST_LIMIT });
+  const limit = await conferirLimiteDeUso({ key: `PUSH_TEST:${userId}`, ...LIMITE_DE_TESTES });
   if (!limit.success) {
     return { success: false, error: "Você já fez vários testes. Tente de novo daqui a alguns minutos." };
   }

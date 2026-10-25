@@ -8,7 +8,7 @@ import { toast } from "sonner"
 import { Check, Clock, CreditCard, ImageOff, Plus, Trash2, Undo2 } from "lucide-react"
 import { ConfirmModal } from "@/components/ui/confirm-modal"
 import { GiftLocal as Gift } from "@/types/local"
-import { deleteGift } from "@/actions/gift-actions"
+import { excluirPresente } from "@/actions/gift-actions"
 import { PageHeader } from "@/components/admin/page-header"
 import { btn } from "@/components/landing/styles"
 import { Chip, bigNumber, card, cardTitle, overline, th, type ChipTone } from "@/components/casal/ui"
@@ -65,7 +65,7 @@ export function GiftsClient({ initialGifts, payments, summary, siteGiftsHref }: 
       setDeletingId(id)
       const toastId = toast.loading("Excluindo o presente...")
       startTransition(async () => {
-        const result = await deleteGift(id)
+        const result = await excluirPresente(id)
         if (!result.success) {
           toast.error(result.error || "Não deu para excluir o presente. Tente de novo.", {
             id: toastId,

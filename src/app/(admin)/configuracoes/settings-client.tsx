@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
-import { updateSettings } from "@/actions/settings-actions";
+import { atualizarConfiguracoes } from "@/actions/settings-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -36,7 +36,7 @@ export function SettingsClient({ initialSettings, summary, canSeePlan }: Setting
   function handleSave() {
     const toastId = toast.loading("Salvando o prazo…");
     startTransition(async () => {
-      const res = await updateSettings({ rsvpDeadline: rsvpDeadline ? new Date(rsvpDeadline) : null });
+      const res = await atualizarConfiguracoes({ rsvpDeadline: rsvpDeadline ? new Date(rsvpDeadline) : null });
       if (res.success) {
         toast.success("Prazo de confirmação salvo.", { id: toastId });
       } else {

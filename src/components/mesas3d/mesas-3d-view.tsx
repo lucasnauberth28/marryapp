@@ -4,8 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Box, Image as ImageIcon, Share2, TriangleAlert, X } from "lucide-react";
 import { toast } from "sonner";
-import { assignGuestToTable } from "@/actions/table-actions";
-import { setTables3DScene } from "@/actions/table3d-actions";
+import { colocarConvidadoNaMesa } from "@/actions/table-actions";
+import { definirCenarioDasMesas3D } from "@/actions/table3d-actions";
 import { btn } from "@/components/landing/styles";
 import type { PredefinicaoDaCamera, MotorDasMesas3D } from "@/lib/mesas3d/engine";
 import { calcularDisposicao, type MesaDeEntrada, type PosicaoDaMesa } from "@/lib/mesas3d/layout";
@@ -109,7 +109,7 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
     const before = latest.tableId;
     setGuests((gs) => gs.map((g) => (g.id === guest.id ? { ...g, tableId } : g)));
     try {
-      const res = await assignGuestToTable(guest.id, tableId);
+      const res = await colocarConvidadoNaMesa(guest.id, tableId);
       if (!res.success) throw new Error(res.error);
       const first = guest.name.split(" ")[0];
       toast.success(tableId ? `${first} sentou na ${byId.get(tableId)?.nome ?? "mesa"}.` : `${first} voltou para “sem mesa”.`);
@@ -262,7 +262,7 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
     setGalleryOpen(false);
     setOpenId(null);
     if (edit) {
-      void setTables3DScene(id).then((r) => {
+      void definirCenarioDasMesas3D(id).then((r) => {
         if (!r.success) toast.error(r.error);
       });
     }

@@ -26,29 +26,29 @@ import {
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import { ERROS } from "@/lib/mensagens-de-erro";
 // Painel do fornecedor: toda escrita é limitada ao fornecedor vinculado à sessão.
-const VENDOR_PANEL_LIMIT = { limit: 60, windowMs: 1000 * 60 }; // 60 alterações / minuto por conta
+const LIMITE_DO_PAINEL_DO_FORNECEDOR = { limit: 60, windowMs: 1000 * 60 }; // 60 alterações / minuto por conta
 
-async function rateLimitVendor(userId: string) {
-  return conferirLimiteDeUso({ key: `VENDOR_PANEL:${userId}`, ...VENDOR_PANEL_LIMIT });
+async function limitarUsoDoFornecedor(userId: string) {
+  return conferirLimiteDeUso({ key: `VENDOR_PANEL:${userId}`, ...LIMITE_DO_PAINEL_DO_FORNECEDOR });
 }
 
-const RATE_LIMIT_ERROR = "Muitas alterações em pouco tempo. Aguarde um instante e tente novamente.";
-const LOCKED_ERROR = "Este pedido está bloqueado pelo limite do Plano Start. Assine o Pro para desbloquear.";
+const ERRO_DE_LIMITE_DE_USO = "Muitas alterações em pouco tempo. Aguarde um instante e tente novamente.";
+const ERRO_DE_BLOQUEIO = "Este pedido está bloqueado pelo limite do Plano Start. Assine o Pro para desbloquear.";
 
 /** Pedido bloqueado pelo limite do Start (considerando o plano em vigor do fornecedor). */
-function lockedFor(vendor: FornecedorDoPainel, lead: { locked: boolean }) {
+function bloqueadoPara(vendor: FornecedorDoPainel, lead: { locked: boolean }) {
   return isLeadLocked(lead, effectiveVendorTier(vendor.planTier, vendor.planExpiresAt));
 }
 
 /** Token público (proposta / avaliação): 24 bytes aleatórios em base64url (32 caracteres). */
-function newPublicToken() {
+function novoTokenPublico() {
   return randomBytes(24).toString("base64url");
 }
 
-const optionalText = (max: number) => z.string().trim().max(max).optional().or(z.literal(""));
+const textoOpcional = (max: number) => z.string().trim().max(max).optional().or(z.literal(""));
 
 /** Aceita "6.800", "6800,50" ou "R$ 6.800,00" e devolve centavos. */
-function parseBrlToCents(value: string): number | null {
+function interpretarReaisEmCentavos(value: string): number | null {
   const cleaned = value.replace(/[R$\s]/g, "");
   if (!cleaned) return null;
   if (!/^\d{1,3}(\.\d{3})*(,\d{1,2})?$|^\d+(,\d{1,2})?$/.test(cleaned)) return NaN;
@@ -60,21 +60,21 @@ function parseBrlToCents(value: string): number | null {
 // PEDIDOS DE ORÇAMENTO
 // ==========================================
 
-const LeadStatusSchema = z.object({
+const EsquemaDaSituacaoDoPedido = z.object({
   leadId: z.string().uuid("Pedido inválido."),
   status: z.enum(LEAD_STATUSES, { message: "Situação do pedido inválida." }),
 });
 
-export async function updateLeadStatus(leadId: string, status: string) {
+export async function atualizarSituacaoDoPedido(leadId: string, status: string) {
   const { session, vendor } = await exigirSessaoDoFornecedor();
 
-  const parsed = LeadStatusSchema.safeParse({ leadId, status });
+  const parsed = EsquemaDaSituacaoDoPedido.safeParse({ leadId, status });
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const target = parsed.data.status;
 
   try {
-    const rateLimit = await rateLimitVendor(session.userId);
-    if (!rateLimit.success) return { success: false, error: RATE_LIMIT_ERROR };
+    const rateLimit = await limitarUsoDoFornecedor(session.userId);
+    if (!rateLimit.success) return { success: false, error: ERRO_DE_LIMITE_DE_USO };
 
     // Posse: o filtro por vendorId garante que um fornecedor nunca leia ou altere pedidos de outro.
     const current = await prisma.vendorLead.findFirst({
@@ -82,7 +82,7 @@ export async function updateLeadStatus(leadId: string, status: string) {
       select: { status: true, respondedAt: true, locked: true },
     });
     if (!current) return { success: false, error: ERROS.pedidoNaoEncontrado };
-    if (lockedFor(vendor, current)) return { success: false, error: LOCKED_ERROR };
+    if (bloqueadoPara(vendor, current)) return { success: false, error: ERRO_DE_BLOQUEIO };
     if (current.status === target) return { success: true };
 
     const now = new Date();
@@ -107,13 +107,13 @@ export async function updateLeadStatus(leadId: string, status: string) {
   }
 }
 
-const ProposalSchema = z.object({
+const EsquemaDaProposta = z.object({
   leadId: z.string().uuid("Pedido inválido."),
   amount: z
     .string()
     .max(30)
     .transform((v, ctx) => {
-      const cents = parseBrlToCents(v);
+      const cents = interpretarReaisEmCentavos(v);
       if (cents === null) {
         ctx.addIssue({ code: "custom", message: "Informe o valor da proposta." });
         return z.NEVER;
@@ -147,26 +147,26 @@ const ProposalSchema = z.object({
     .max(4000, "Use até 4.000 caracteres no que está incluído."),
 });
 
-export type LeadProposalInput = { leadId: string; amount: string; validUntil?: string; details: string };
+export type EntradaDaPropostaDoPedido = { leadId: string; amount: string; validUntil?: string; details: string };
 
 /** Registra a proposta no pedido (o envio ao casal é feito pelo fornecedor, no WhatsApp). */
-export async function saveLeadProposal(input: LeadProposalInput) {
+export async function salvarPropostaDoPedido(input: EntradaDaPropostaDoPedido) {
   const { session, vendor } = await exigirSessaoDoFornecedor();
 
-  const parsed = ProposalSchema.safeParse(input);
+  const parsed = EsquemaDaProposta.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const data = parsed.data;
 
   try {
-    const rateLimit = await rateLimitVendor(session.userId);
-    if (!rateLimit.success) return { success: false, error: RATE_LIMIT_ERROR };
+    const rateLimit = await limitarUsoDoFornecedor(session.userId);
+    if (!rateLimit.success) return { success: false, error: ERRO_DE_LIMITE_DE_USO };
 
     const current = await prisma.vendorLead.findFirst({
       where: { id: data.leadId, vendorId: vendor.id },
       select: { status: true, respondedAt: true, locked: true, proposalToken: true, proposalAcceptedAt: true },
     });
     if (!current) return { success: false, error: ERROS.pedidoNaoEncontrado };
-    if (lockedFor(vendor, current)) return { success: false, error: LOCKED_ERROR };
+    if (bloqueadoPara(vendor, current)) return { success: false, error: ERRO_DE_BLOQUEIO };
     // O que o casal aceitou fica registrado como foi aceito.
     if (current.proposalAcceptedAt) {
       return { success: false, error: "O casal já aceitou esta proposta. Ela não pode mais ser alterada." };
@@ -177,7 +177,7 @@ export async function saveLeadProposal(input: LeadProposalInput) {
       where: { id: data.leadId, vendorId: vendor.id, proposalAcceptedAt: null },
       data: {
         // Link para o casal aceitar a proposta (o mesmo link continua valendo nas atualizações).
-        ...(!current.proposalToken ? { proposalToken: newPublicToken() } : {}),
+        ...(!current.proposalToken ? { proposalToken: novoTokenPublico() } : {}),
         proposalAmount: data.amount,
         proposalValidUntil: data.validUntil,
         proposalDetails: data.details.replace(/\r\n/g, "\n"),
@@ -197,31 +197,31 @@ export async function saveLeadProposal(input: LeadProposalInput) {
   }
 }
 
-const DeclineSchema = z.object({
+const EsquemaDaRecusa = z.object({
   leadId: z.string().uuid("Pedido inválido."),
   message: z.string().trim().max(2000, "Use até 2.000 caracteres na mensagem.").optional(),
 });
 
-export type DeclineLeadInput = { leadId: string; message?: string };
+export type EntradaDaRecusaDoPedido = { leadId: string; message?: string };
 
 /** Recusa o pedido, guardando a mensagem que o fornecedor vai mandar ao casal. */
-export async function declineLead(input: DeclineLeadInput) {
+export async function recusarPedido(input: EntradaDaRecusaDoPedido) {
   const { session, vendor } = await exigirSessaoDoFornecedor();
 
-  const parsed = DeclineSchema.safeParse(input);
+  const parsed = EsquemaDaRecusa.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const data = parsed.data;
 
   try {
-    const rateLimit = await rateLimitVendor(session.userId);
-    if (!rateLimit.success) return { success: false, error: RATE_LIMIT_ERROR };
+    const rateLimit = await limitarUsoDoFornecedor(session.userId);
+    if (!rateLimit.success) return { success: false, error: ERRO_DE_LIMITE_DE_USO };
 
     const current = await prisma.vendorLead.findFirst({
       where: { id: data.leadId, vendorId: vendor.id },
       select: { respondedAt: true, locked: true },
     });
     if (!current) return { success: false, error: ERROS.pedidoNaoEncontrado };
-    if (lockedFor(vendor, current)) return { success: false, error: LOCKED_ERROR };
+    if (bloqueadoPara(vendor, current)) return { success: false, error: ERRO_DE_BLOQUEIO };
 
     const now = new Date();
     const result = await prisma.vendorLead.updateMany({
@@ -244,36 +244,36 @@ export async function declineLead(input: DeclineLeadInput) {
   }
 }
 
-const RequestReviewSchema = z.string().uuid("Pedido inválido.");
+const EsquemaDoPedidoDeAvaliacao = z.string().uuid("Pedido inválido.");
 
-export type RequestLeadReviewResult = { success: true; url: string } | { success: false; error: string };
+export type ResultadoDoPedidoDeAvaliacao = { success: true; url: string } | { success: false; error: string };
 
 /**
  * Pedido fechado: gera (uma vez) o link para o casal avaliar o fornecedor.
  * A avaliação feita por esse link entra como verificada.
  */
-export async function requestLeadReview(leadId: string): Promise<RequestLeadReviewResult> {
+export async function pedirAvaliacaoDoPedido(leadId: string): Promise<ResultadoDoPedidoDeAvaliacao> {
   const { session, vendor } = await exigirSessaoDoFornecedor();
 
-  const parsed = RequestReviewSchema.safeParse(leadId);
+  const parsed = EsquemaDoPedidoDeAvaliacao.safeParse(leadId);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
   try {
-    const rateLimit = await rateLimitVendor(session.userId);
-    if (!rateLimit.success) return { success: false, error: RATE_LIMIT_ERROR };
+    const rateLimit = await limitarUsoDoFornecedor(session.userId);
+    if (!rateLimit.success) return { success: false, error: ERRO_DE_LIMITE_DE_USO };
 
     const current = await prisma.vendorLead.findFirst({
       where: { id: parsed.data, vendorId: vendor.id },
       select: { status: true, locked: true, reviewToken: true, review: { select: { id: true } } },
     });
     if (!current) return { success: false, error: ERROS.pedidoNaoEncontrado };
-    if (lockedFor(vendor, current)) return { success: false, error: LOCKED_ERROR };
+    if (bloqueadoPara(vendor, current)) return { success: false, error: ERRO_DE_BLOQUEIO };
     if (current.status !== "CLOSED") {
       return { success: false, error: "Só dá para pedir avaliação de pedidos fechados." };
     }
     if (current.review) return { success: false, error: "Este casal já avaliou o seu trabalho." };
 
-    const token = current.reviewToken ?? newPublicToken();
+    const token = current.reviewToken ?? novoTokenPublico();
     const result = await prisma.vendorLead.updateMany({
       where: { id: parsed.data, vendorId: vendor.id },
       data: { reviewToken: token, reviewRequestedAt: new Date() },
@@ -292,7 +292,7 @@ export async function requestLeadReview(leadId: string): Promise<RequestLeadRevi
 // AGENDA
 // ==========================================
 
-const VendorEventSchema = z
+const EsquemaDoEventoDoFornecedor = z
   .object({
     kind: z.enum(VENDOR_EVENT_KINDS, { message: "Tipo de compromisso inválido." }),
     date: z.string().transform((v, ctx) => {
@@ -308,13 +308,13 @@ const VendorEventSchema = z
       .optional()
       .transform((v) => v || null)
       .refine((v) => v === null || /^([01]\d|2[0-3]):[0-5]\d$/.test(v), "Horário inválido."),
-    title: optionalText(120),
-    notes: optionalText(1000),
+    title: textoOpcional(120),
+    notes: textoOpcional(1000),
     leadId: z.string().uuid("Pedido inválido.").optional().or(z.literal("")),
   })
   .refine((v) => v.kind !== "MEETING" || v.time !== null, { message: "Informe o horário da reunião.", path: ["time"] });
 
-export type VendorEventInput = {
+export type EntradaDoEventoDoFornecedor = {
   kind: string;
   date: string;
   time?: string;
@@ -323,16 +323,16 @@ export type VendorEventInput = {
   leadId?: string;
 };
 
-export async function createVendorEvent(input: VendorEventInput) {
+export async function criarEventoDoFornecedor(input: EntradaDoEventoDoFornecedor) {
   const { session, vendor } = await exigirSessaoDoFornecedor();
 
-  const parsed = VendorEventSchema.safeParse(input);
+  const parsed = EsquemaDoEventoDoFornecedor.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const data = parsed.data;
 
   try {
-    const rateLimit = await rateLimitVendor(session.userId);
-    if (!rateLimit.success) return { success: false, error: RATE_LIMIT_ERROR };
+    const rateLimit = await limitarUsoDoFornecedor(session.userId);
+    if (!rateLimit.success) return { success: false, error: ERRO_DE_LIMITE_DE_USO };
 
     // O pedido vinculado precisa ser do próprio fornecedor.
     let lead: { id: string; coupleName: string } | null = null;
@@ -342,7 +342,7 @@ export async function createVendorEvent(input: VendorEventInput) {
         select: { id: true, coupleName: true, locked: true },
       });
       if (!found) return { success: false, error: ERROS.pedidoNaoEncontrado };
-      if (lockedFor(vendor, found)) return { success: false, error: LOCKED_ERROR };
+      if (bloqueadoPara(vendor, found)) return { success: false, error: ERRO_DE_BLOQUEIO };
       lead = { id: found.id, coupleName: found.coupleName };
     }
 
@@ -382,15 +382,15 @@ export async function createVendorEvent(input: VendorEventInput) {
   }
 }
 
-export async function deleteVendorEvent(eventId: string) {
+export async function excluirEventoDoFornecedor(eventId: string) {
   const { session, vendor } = await exigirSessaoDoFornecedor();
 
   const parsed = z.string().uuid("Compromisso inválido.").safeParse(eventId);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
   try {
-    const rateLimit = await rateLimitVendor(session.userId);
-    if (!rateLimit.success) return { success: false, error: RATE_LIMIT_ERROR };
+    const rateLimit = await limitarUsoDoFornecedor(session.userId);
+    if (!rateLimit.success) return { success: false, error: ERRO_DE_LIMITE_DE_USO };
 
     const result = await prisma.vendorEvent.deleteMany({ where: { id: parsed.data, vendorId: vendor.id } });
     if (result.count === 0) return { success: false, error: "Compromisso não encontrado." };
@@ -407,16 +407,16 @@ export async function deleteVendorEvent(eventId: string) {
 // PERFIL DO FORNECEDOR
 // ==========================================
 
-const VendorProfileSchema = z.object({
+const EsquemaDoPerfilDoFornecedor = z.object({
   companyName: z.string().trim().min(2, "Informe o nome do negócio.").max(120),
   category: z.enum(VENDOR_CATEGORIES, { message: "Escolha uma categoria." }),
-  description: optionalText(4000),
+  description: textoOpcional(4000),
   startingPrice: z
     .string()
     .max(30)
     .optional()
     .transform((v, ctx) => {
-      const cents = parseBrlToCents(v ?? "");
+      const cents = interpretarReaisEmCentavos(v ?? "");
       if (cents !== null && (!Number.isFinite(cents) || cents < 0 || cents > 1_000_000_000)) {
         ctx.addIssue({ code: "custom", message: "Preço inicial inválido. Use, por exemplo, 6.800 ou 6.800,00." });
         return z.NEVER;
@@ -463,7 +463,7 @@ const VendorProfileSchema = z.object({
 });
 
 /** Valores do formulário (texto puro); a validação e a conversão acontecem no servidor. */
-export type VendorProfileInput = {
+export type EntradaDoPerfilDoFornecedor = {
   companyName: string;
   category: string;
   description?: string;
@@ -474,16 +474,16 @@ export type VendorProfileInput = {
   website?: string;
 };
 
-export async function updateVendorProfile(input: VendorProfileInput) {
+export async function atualizarPerfilDoFornecedor(input: EntradaDoPerfilDoFornecedor) {
   const { session, vendor } = await exigirSessaoDoFornecedor();
 
-  const parsed = VendorProfileSchema.safeParse(input);
+  const parsed = EsquemaDoPerfilDoFornecedor.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const data = parsed.data;
 
   try {
-    const rateLimit = await rateLimitVendor(session.userId);
-    if (!rateLimit.success) return { success: false, error: RATE_LIMIT_ERROR };
+    const rateLimit = await limitarUsoDoFornecedor(session.userId);
+    if (!rateLimit.success) return { success: false, error: ERRO_DE_LIMITE_DE_USO };
 
     await prisma.partnerVendor.update({
       // O id vem da sessão (vínculo do usuário), nunca do cliente.
@@ -520,38 +520,38 @@ export async function updateVendorProfile(input: VendorProfileInput) {
 
 // Imagem já redimensionada no navegador (até 1600 px), enviada como data URL.
 // O helper de upload confere tipo real (magic bytes) e tamanho (até 5 MB).
-const ImageDataUrl = z
+const ImagemEmDataUrl = z
   .string({ message: "Imagem inválida." })
   .max(Math.ceil((TAMANHO_MAXIMO_DA_IMAGEM_EM_BYTES * 4) / 3) + 64, "Imagem acima do limite de 5 MB.")
   .regex(/^data:image\/(jpeg|png|webp|avif);base64,[A-Za-z0-9+/=]+$/, "Formato de imagem não suportado (use JPG, PNG ou WEBP).");
 
-const GalleryIndex = z.number().int().min(0).max(MAX_GALLERY_IMAGES - 1);
+const IndiceDaGaleria = z.number().int().min(0).max(MAX_GALLERY_IMAGES - 1);
 
-const VendorMediaSchema = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("set-logo"), image: ImageDataUrl }),
+const EsquemaDasMidiasDoFornecedor = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("set-logo"), image: ImagemEmDataUrl }),
   z.object({ action: z.literal("remove-logo") }),
-  z.object({ action: z.literal("set-cover"), image: ImageDataUrl }),
+  z.object({ action: z.literal("set-cover"), image: ImagemEmDataUrl }),
   z.object({ action: z.literal("remove-cover") }),
-  z.object({ action: z.literal("add-gallery"), image: ImageDataUrl }),
-  z.object({ action: z.literal("remove-gallery"), index: GalleryIndex }),
-  z.object({ action: z.literal("move-gallery"), index: GalleryIndex, direction: z.enum(["up", "down"]) }),
+  z.object({ action: z.literal("add-gallery"), image: ImagemEmDataUrl }),
+  z.object({ action: z.literal("remove-gallery"), index: IndiceDaGaleria }),
+  z.object({ action: z.literal("move-gallery"), index: IndiceDaGaleria, direction: z.enum(["up", "down"]) }),
 ]);
 
-export type VendorMediaInput = z.input<typeof VendorMediaSchema>;
-export type VendorMedia = { logoUrl: string | null; coverUrl: string | null; gallery: string[] };
-export type VendorMediaResult = { success: true; media: VendorMedia } | { success: false; error: string };
+export type EntradaDasMidiasDoFornecedor = z.input<typeof EsquemaDasMidiasDoFornecedor>;
+export type MidiasDoFornecedor = { logoUrl: string | null; coverUrl: string | null; gallery: string[] };
+export type ResultadoDasMidiasDoFornecedor = { success: true; media: MidiasDoFornecedor } | { success: false; error: string };
 
 /** Uma alteração por vez nas fotos do perfil do fornecedor da sessão; devolve como ficaram. */
-export async function updateVendorMedia(input: VendorMediaInput): Promise<VendorMediaResult> {
+export async function atualizarMidiasDoFornecedor(input: EntradaDasMidiasDoFornecedor): Promise<ResultadoDasMidiasDoFornecedor> {
   const { session, vendor } = await exigirSessaoDoFornecedor();
 
-  const parsed = VendorMediaSchema.safeParse(input);
+  const parsed = EsquemaDasMidiasDoFornecedor.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const op = parsed.data;
 
   try {
-    const rateLimit = await rateLimitVendor(session.userId);
-    if (!rateLimit.success) return { success: false, error: RATE_LIMIT_ERROR };
+    const rateLimit = await limitarUsoDoFornecedor(session.userId);
+    if (!rateLimit.success) return { success: false, error: ERRO_DE_LIMITE_DE_USO };
 
     const current = await prisma.partnerVendor.findUnique({
       where: { id: vendor.id },
@@ -559,7 +559,7 @@ export async function updateVendorMedia(input: VendorMediaInput): Promise<Vendor
     });
     if (!current) return { success: false, error: ERROS.fornecedorNaoEncontrado };
 
-    const media: VendorMedia = {
+    const media: MidiasDoFornecedor = {
       logoUrl: current.logoUrl,
       coverUrl: current.coverUrl,
       gallery: parseGallery(current.galleryImages).slice(0, MAX_GALLERY_IMAGES),

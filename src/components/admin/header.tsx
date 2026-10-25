@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { logout } from "@/actions/auth-actions";
+import { sair } from "@/actions/auth-actions";
 import { Spinner } from "@/components/ui/spinner";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { temAcessoAoCaminho, ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
@@ -155,7 +155,7 @@ export function Header({ role = "Admin", allowedPaths = [], coupleNames, initial
                 // Fica aberto até a saída terminar, mostrando o andamento
                 onSelect={(e) => {
                   e.preventDefault();
-                  startLeave(() => logout());
+                  startLeave(() => sair());
                 }}
                 className="flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-perigo focus:bg-perigo-suave focus:text-perigo"
               >

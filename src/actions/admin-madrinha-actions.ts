@@ -26,42 +26,42 @@ import { ERROS } from "@/lib/mensagens-de-erro";
  * interruptor geral nem que pause para todos: enquanto não houver conexão, isso não pode ser feito daqui.
  */
 
-type Fail = { success: false; error: string; fieldErrors?: Record<string, string> };
-type Ok = { success: true; message: string };
+type Falha = { success: false; error: string; fieldErrors?: Record<string, string> };
+type Sucesso = { success: true; message: string };
 
-const REVALIDATE = ["/admin/madrinha", "/admin/madrinha/controles"] as const;
-const refresh = () => REVALIDATE.forEach((p) => revalidatePath(p));
+const PAGINAS_PARA_ATUALIZAR = ["/admin/madrinha", "/admin/madrinha/controles"] as const;
+const atualizarPaginas = () => PAGINAS_PARA_ATUALIZAR.forEach((p) => revalidatePath(p));
 
-const planLimitsShape = z.object({ perDay: z.string().max(12), perMonth: z.string().max(12), costCap: z.string().max(16), warnPercent: z.string().max(4), autoBlock: z.boolean() });
+const formatoDosLimitesDoPlano = z.object({ perDay: z.string().max(12), perMonth: z.string().max(12), costCap: z.string().max(16), warnPercent: z.string().max(4), autoBlock: z.boolean() });
 
 /** Falha de campo: devolve as mensagens por nome de campo (com prefixo opcional) e uma mensagem geral. */
-function fieldFail(errors: Record<string, string | undefined>, prefix = ""): Fail {
+function falhaDeCampo(errors: Record<string, string | undefined>, prefix = ""): Falha {
   const fieldErrors: Record<string, string> = {};
   for (const [key, message] of Object.entries(errors)) if (message) fieldErrors[`${prefix}${key}`] = message;
   return { success: false, error: ERROS.camposInvalidos, fieldErrors };
 }
 
-export async function saveMadrinhaLimits(input: unknown): Promise<Ok | Fail> {
+export async function salvarLimitesDaMadrinha(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
-    const data = z.object({ subscription: planLimitsShape, trial: planLimitsShape }).parse(input);
+    const data = z.object({ subscription: formatoDosLimitesDoPlano, trial: formatoDosLimitesDoPlano }).parse(input);
     const sub = interpretarLimitesDoPlano(data.subscription as FormularioDeLimitesDoPlano);
     const trial = interpretarLimitesDoPlano(data.trial as FormularioDeLimitesDoPlano);
     if (!sub.ok || !trial.ok) {
-      return fieldFail({
+      return falhaDeCampo({
         ...Object.fromEntries(Object.entries(sub.ok ? {} : sub.errors).map(([k, v]) => [`subscription.${k}`, v])),
         ...Object.fromEntries(Object.entries(trial.ok ? {} : trial.errors).map(([k, v]) => [`trial.${k}`, v])),
       });
     }
     await salvarConfiguracaoDaPlataforma("madrinha.limits", { subscription: sub.value, trial: trial.value });
-    refresh();
+    atualizarPaginas();
     return { success: true, message: "Limites salvos. Valem quando a Liz for ativada." };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "saveMadrinhaLimits");
   }
 }
 
-export async function saveMadrinhaGlobalCap(input: unknown): Promise<Ok | Fail> {
+export async function salvarTetoGlobalDaMadrinha(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
     const data = z.object({ monthlyCostCap: z.string().max(16), warnPercent: z.string().max(4), pauseAtCap: z.boolean() }).parse(input);
@@ -70,16 +70,16 @@ export async function saveMadrinhaGlobalCap(input: unknown): Promise<Ok | Fail> 
     const errors: ErrosDosCampos<"monthlyCostCap" | "warnPercent"> = {};
     if (cap === null || cap > 100_000_00) errors.monthlyCostCap = "Use um valor em reais, como 300,00.";
     if (warn === null || warn > 100) errors.warnPercent = "Use de 0 a 100.";
-    if (cap === null || warn === null || Object.keys(errors).length) return fieldFail(errors);
+    if (cap === null || warn === null || Object.keys(errors).length) return falhaDeCampo(errors);
     await salvarConfiguracaoDaPlataforma("madrinha.globalCap", { monthlyCostCapCents: cap, warnPercent: warn, pauseAtCap: data.pauseAtCap });
-    refresh();
+    atualizarPaginas();
     return { success: true, message: "Teto mensal salvo." };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "saveMadrinhaGlobalCap");
   }
 }
 
-export async function saveMadrinhaAbuse(input: unknown): Promise<Ok | Fail> {
+export async function salvarLimitesContraAbusoDaMadrinha(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
     const data = z
@@ -92,9 +92,9 @@ export async function saveMadrinhaAbuse(input: unknown): Promise<Ok | Fail> {
     if (perHour === null || perHour > 1_000) errors.perHour = "Use um número inteiro, até 1.000.";
     if (blockHours === null || blockHours < 1 || blockHours > 720) errors.blockHours = "Use de 1 a 720 horas.";
     if (before === null || before < 1 || before > 100) errors.offTopicBeforeBlock = "Use de 1 a 100 recusas.";
-    if (perHour === null || blockHours === null || before === null || Object.keys(errors).length) return fieldFail(errors);
+    if (perHour === null || blockHours === null || before === null || Object.keys(errors).length) return falhaDeCampo(errors);
     await salvarConfiguracaoDaPlataforma("madrinha.abuse", { perHour, blockHours, blockOffTopic: data.blockOffTopic, offTopicBeforeBlock: before });
-    refresh();
+    atualizarPaginas();
     return { success: true, message: "Bloqueio por abuso salvo." };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "saveMadrinhaAbuse");
@@ -102,7 +102,7 @@ export async function saveMadrinhaAbuse(input: unknown): Promise<Ok | Fail> {
 }
 
 /** "Enviar mensagens sozinha" não existe no formato: a Liz nunca envia sozinha. `.strict()` recusa qualquer campo a mais. */
-export async function saveMadrinhaCapabilities(input: unknown): Promise<Ok | Fail> {
+export async function salvarCapacidadesDaMadrinha(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
     const data = z
@@ -110,7 +110,7 @@ export async function saveMadrinhaCapabilities(input: unknown): Promise<Ok | Fai
       .strict()
       .parse(input);
     await salvarConfiguracaoDaPlataforma("madrinha.capabilities", data);
-    refresh();
+    atualizarPaginas();
     return { success: true, message: "Salvo." };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "saveMadrinhaCapabilities");
@@ -121,12 +121,12 @@ export async function saveMadrinhaCapabilities(input: unknown): Promise<Ok | Fai
 // Instruções versionadas
 // ---------------------------------------------------------------------------
 
-function isUniqueViolation(error: unknown) {
+function ehViolacaoDeUnicidade(error: unknown) {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 }
 
 /** Cria a versão seguinte com o conteúdo dado (rascunho). Repete se duas pessoas salvarem ao mesmo tempo. */
-async function createVersion(content: string, changeNote: string, author: { userId: string; name: string | null }) {
+async function criarVersao(content: string, changeNote: string, author: { userId: string; name: string | null }) {
   for (let attempt = 0; attempt < 3; attempt++) {
     const versions = await prisma.madrinhaInstructionVersion.findMany({ select: { version: true } });
     const version = proximaVersao(versions.map((v) => v.version));
@@ -136,13 +136,13 @@ async function createVersion(content: string, changeNote: string, author: { user
         select: { id: true, version: true },
       });
     } catch (error) {
-      if (!isUniqueViolation(error)) throw error;
+      if (!ehViolacaoDeUnicidade(error)) throw error;
     }
   }
   throw new Error("Não foi possível numerar a versão.");
 }
 
-export async function saveInstructionVersion(input: unknown): Promise<(Ok & { version: number }) | Fail> {
+export async function salvarVersaoDasInstrucoes(input: unknown): Promise<(Sucesso & { version: number }) | Falha> {
   try {
     const admin = await exigirAdminDaPlataforma();
     const parsed = entradaDasInstrucoes.safeParse(input);
@@ -155,14 +155,14 @@ export async function saveInstructionVersion(input: unknown): Promise<(Ok & { ve
     if (latest && latest.content.trim() === parsed.data.content) {
       return { success: false, error: "O texto é igual ao da última versão. Mude alguma coisa antes de salvar.", fieldErrors: { content: "Nada mudou neste texto." } };
     }
-    const created = await createVersion(parsed.data.content, parsed.data.changeNote, admin);
+    const created = await criarVersao(parsed.data.content, parsed.data.changeNote, admin);
     await registrarAuditoria({
       action: "madrinha.instructions_save",
       targetType: "madrinha_instructions",
       targetId: created.id,
       details: { version: created.version, changeNote: parsed.data.changeNote, length: parsed.data.content.length },
     });
-    refresh();
+    atualizarPaginas();
     return { success: true, message: `Versão ${created.version} salva como rascunho.`, version: created.version };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "saveInstructionVersion");
@@ -170,7 +170,7 @@ export async function saveInstructionVersion(input: unknown): Promise<(Ok & { ve
 }
 
 /** Publica uma versão: ela vira a única publicada e a anterior passa a "arquivada". */
-export async function publishInstructionVersion(input: unknown): Promise<Ok | Fail> {
+export async function publicarVersaoDasInstrucoes(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
     const { id } = z.object({ id: z.string().uuid() }).parse(input);
@@ -190,7 +190,7 @@ export async function publishInstructionVersion(input: unknown): Promise<Ok | Fa
       targetId: id,
       details: { version: target.version, previousPublished: previous },
     });
-    refresh();
+    atualizarPaginas();
     return { success: true, message: `Versão ${target.version} publicada. A Liz só a usará quando for ativada.` };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "publishInstructionVersion");
@@ -198,20 +198,20 @@ export async function publishInstructionVersion(input: unknown): Promise<Ok | Fa
 }
 
 /** Reverter = criar uma versão nova (rascunho) com o texto de uma antiga. Nada do histórico é apagado. */
-export async function revertInstructionVersion(input: unknown): Promise<(Ok & { version: number }) | Fail> {
+export async function reverterVersaoDasInstrucoes(input: unknown): Promise<(Sucesso & { version: number }) | Falha> {
   try {
     const admin = await exigirAdminDaPlataforma();
     const { id } = z.object({ id: z.string().uuid() }).parse(input);
     const source = await prisma.madrinhaInstructionVersion.findUnique({ where: { id }, select: { id: true, version: true, content: true } });
     if (!source) return { success: false, error: "Versão não encontrada." };
-    const created = await createVersion(source.content, `Voltou ao texto da versão ${source.version}`, admin);
+    const created = await criarVersao(source.content, `Voltou ao texto da versão ${source.version}`, admin);
     await registrarAuditoria({
       action: "madrinha.instructions_revert",
       targetType: "madrinha_instructions",
       targetId: created.id,
       details: { fromVersion: source.version, newVersion: created.version },
     });
-    refresh();
+    atualizarPaginas();
     return { success: true, message: `Criamos a versão ${created.version} com o texto da versão ${source.version}. Publique quando quiser.`, version: created.version };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "revertInstructionVersion");
@@ -222,7 +222,7 @@ export async function revertInstructionVersion(input: unknown): Promise<(Ok & { 
 // Base de conhecimento
 // ---------------------------------------------------------------------------
 
-export async function saveKnowledgeArticle(input: unknown): Promise<Ok | Fail> {
+export async function salvarArtigoDeConhecimento(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
     const raw = z.object({ status: z.enum(["DRAFT", "PUBLISHED"]) }).passthrough().parse(input);
@@ -255,14 +255,14 @@ export async function saveKnowledgeArticle(input: unknown): Promise<Ok | Fail> {
       targetId: articleId,
       details: { title, status: raw.status, length: content.length },
     });
-    refresh();
+    atualizarPaginas();
     return { success: true, message: publishing ? "Texto publicado." : "Rascunho salvo." };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "saveKnowledgeArticle");
   }
 }
 
-export async function archiveKnowledgeArticle(input: unknown): Promise<Ok | Fail> {
+export async function arquivarArtigoDeConhecimento(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
     const { id } = z.object({ id: z.string().uuid() }).parse(input);
@@ -270,7 +270,7 @@ export async function archiveKnowledgeArticle(input: unknown): Promise<Ok | Fail
     if (!found) return { success: false, error: "Texto não encontrado." };
     await prisma.madrinhaKnowledgeArticle.update({ where: { id }, data: { status: "ARCHIVED" } });
     await registrarAuditoria({ action: "madrinha.article_archive", targetType: "madrinha_article", targetId: id, details: { title: found.title } });
-    refresh();
+    atualizarPaginas();
     return { success: true, message: "Texto removido da base." };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "archiveKnowledgeArticle");
@@ -281,14 +281,14 @@ export async function archiveKnowledgeArticle(input: unknown): Promise<Ok | Fail
 // Ajustes por casal
 // ---------------------------------------------------------------------------
 
-const weddingId = z.string().uuid();
+const idDoCasamentoValido = z.string().uuid();
 
-async function ensureWedding(id: string) {
+async function garantirCasamento(id: string) {
   return prisma.wedding.findUnique({ where: { id }, select: { id: true, coupleNames: true } });
 }
 
 /** Busca de casais para o seletor (consulta limitada). */
-export async function searchMadrinhaWeddings(input: unknown): Promise<{ success: true; hits: ResultadoDeCasamento[] } | Fail> {
+export async function buscarCasamentosDaMadrinha(input: unknown): Promise<{ success: true; hits: ResultadoDeCasamento[] } | Falha> {
   try {
     await exigirAdminDaPlataforma();
     const { q } = z.object({ q: z.string().max(100) }).parse(input);
@@ -299,14 +299,14 @@ export async function searchMadrinhaWeddings(input: unknown): Promise<{ success:
 }
 
 /** "Aplicar ajuste": mensagens a mais neste mês e uma nota (o motivo). Não mexe em ligado/bloqueado. */
-export async function applyWeddingAdjustment(input: unknown): Promise<Ok | Fail> {
+export async function aplicarAjusteAoCasamento(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
-    const data = z.object({ weddingId, extraMessages: z.string().max(8), reason: z.string().trim().max(300) }).parse(input);
+    const data = z.object({ weddingId: idDoCasamentoValido, extraMessages: z.string().max(8), reason: z.string().trim().max(300) }).parse(input);
     const extra = interpretarCampoInteiro(data.extraMessages);
-    if (extra === null || extra > 10_000) return fieldFail({ extraMessages: "Use um número inteiro, até 10.000." });
-    if (data.reason.length < 3) return fieldFail({ reason: "Conte o motivo do ajuste (fica no registro)." });
-    const wedding = await ensureWedding(data.weddingId);
+    if (extra === null || extra > 10_000) return falhaDeCampo({ extraMessages: "Use um número inteiro, até 10.000." });
+    if (data.reason.length < 3) return falhaDeCampo({ reason: "Conte o motivo do ajuste (fica no registro)." });
+    const wedding = await garantirCasamento(data.weddingId);
     if (!wedding) return { success: false, error: ERROS.casalNaoEncontrado };
     await prisma.madrinhaWeddingOverride.upsert({
       where: { weddingId: wedding.id },
@@ -319,21 +319,21 @@ export async function applyWeddingAdjustment(input: unknown): Promise<Ok | Fail>
       targetId: wedding.id,
       details: { extraMessages: extra, reason: data.reason },
     });
-    refresh();
+    atualizarPaginas();
     return { success: true, message: `Ajuste aplicado para ${wedding.coupleNames}.` };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "applyWeddingAdjustment");
   }
 }
-export async function unblockWeddingMadrinha(input: unknown): Promise<Ok | Fail> {
+export async function desbloquearMadrinhaDoCasamento(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
-    const data = z.object({ weddingId }).parse(input);
-    const wedding = await ensureWedding(data.weddingId);
+    const data = z.object({ weddingId: idDoCasamentoValido }).parse(input);
+    const wedding = await garantirCasamento(data.weddingId);
     if (!wedding) return { success: false, error: ERROS.casalNaoEncontrado };
     await prisma.madrinhaWeddingOverride.updateMany({ where: { weddingId: wedding.id }, data: { blockedAt: null, blockedReason: null } });
     await registrarAuditoria({ action: "madrinha.override_unblock", targetType: "wedding", targetId: wedding.id });
-    refresh();
+    atualizarPaginas();
     return { success: true, message: `${wedding.coupleNames} foi desbloqueado.` };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "unblockWeddingMadrinha");
@@ -341,11 +341,11 @@ export async function unblockWeddingMadrinha(input: unknown): Promise<Ok | Fail>
 }
 
 /** Ligar ou desligar a Liz de um casal (null = segue o padrão do plano). */
-export async function setWeddingMadrinhaEnabled(input: unknown): Promise<Ok | Fail> {
+export async function definirMadrinhaDoCasamentoAtiva(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
-    const data = z.object({ weddingId, enabled: z.boolean().nullable() }).parse(input);
-    const wedding = await ensureWedding(data.weddingId);
+    const data = z.object({ weddingId: idDoCasamentoValido, enabled: z.boolean().nullable() }).parse(input);
+    const wedding = await garantirCasamento(data.weddingId);
     if (!wedding) return { success: false, error: ERROS.casalNaoEncontrado };
     await prisma.madrinhaWeddingOverride.upsert({
       where: { weddingId: wedding.id },
@@ -353,7 +353,7 @@ export async function setWeddingMadrinhaEnabled(input: unknown): Promise<Ok | Fa
       update: { enabled: data.enabled },
     });
     await registrarAuditoria({ action: "madrinha.override_enabled", targetType: "wedding", targetId: wedding.id, details: { enabled: data.enabled } });
-    refresh();
+    atualizarPaginas();
     return { success: true, message: data.enabled === null ? "Voltou ao padrão." : data.enabled ? "Ligada para este casal." : "Desligada para este casal." };
   } catch (error) {
     return falhaDeAdminDaPlataforma(error, "setWeddingMadrinhaEnabled");

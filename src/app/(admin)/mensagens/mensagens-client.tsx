@@ -14,8 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { NativeSelect } from "@/components/ui/select";
 import { btn, btnDanger, btnIcon, card, chipBase, chipTone, errorBox, hint, input, overline } from "@/components/painel/styles";
 import { LoadingButton } from "@/components/painel/loading-button";
-import { createMessageTemplate, updateMessageTemplate, deleteMessageTemplate, sendTemplateToGuests } from "@/actions/message-actions";
-import { sendRsvpReminders, sendInitialInvites } from "@/actions/whatsapp-actions";
+import { criarModeloDeMensagem, atualizarModeloDeMensagem, excluirModeloDeMensagem, enviarModeloAosConvidados } from "@/actions/message-actions";
+import { enviarLembretesDeConfirmacao, enviarConvitesIniciais } from "@/actions/whatsapp-actions";
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { ehSoPresentePendente } from "@/lib/guest-origin";
@@ -231,7 +231,7 @@ function EditorForm({
     formData.append("type", type);
     formData.append("buttons", JSON.stringify(links.filter((l) => l.text.trim())));
     const toastId = toast.loading("Salvando a mensagem...");
-    const res = template ? await updateMessageTemplate(template.id, formData) : await createMessageTemplate(formData);
+    const res = template ? await atualizarModeloDeMensagem(template.id, formData) : await criarModeloDeMensagem(formData);
     if (res.success && res.data) {
       toast.success("Mensagem salva.", { id: toastId });
       onSaved(res.data as MessageTemplate, !template);
@@ -244,7 +244,7 @@ function EditorForm({
   async function remove() {
     if (!template) return;
     const toastId = toast.loading("Excluindo a mensagem...");
-    const res = await deleteMessageTemplate(template.id);
+    const res = await excluirModeloDeMensagem(template.id);
     if (res.success) {
       toast.success("Mensagem excluída.", { id: toastId });
       onDeleted(template.id);
@@ -424,7 +424,7 @@ function SendFlow({ template, guests, slug, customDomain, coupleNames, onDone }:
     setSending(true);
     setResult(null);
     const toastId = toast.loading(`Enviando para ${picked.length} ${picked.length === 1 ? "pessoa" : "pessoas"}...`);
-    const res = await sendTemplateToGuests(template.id, picked);
+    const res = await enviarModeloAosConvidados(template.id, picked);
     if (res.success) {
       setResult({ ok: true, text: res.message || "Mensagens enviadas." });
       toast.success(res.message || "Mensagens enviadas.", { id: toastId });
@@ -564,7 +564,7 @@ export function MensagensClient({ initialTemplates, initialGuests, coupleNames, 
   async function runShortcut(kind: "invites" | "reminders") {
     setShortcut(kind);
     const toastId = toast.loading(kind === "invites" ? "Enviando os convites..." : "Enviando os lembretes...");
-    const res = kind === "invites" ? await sendInitialInvites() : await sendRsvpReminders();
+    const res = kind === "invites" ? await enviarConvitesIniciais() : await enviarLembretesDeConfirmacao();
     if (res.success) {
       toast.success(res.message, { id: toastId });
       router.refresh();

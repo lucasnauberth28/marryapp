@@ -20,7 +20,7 @@ import {
   Store,
   User,
 } from "lucide-react";
-import { registerPlanAccount, type PlanRegistrationData } from "@/actions/subscription-actions";
+import { cadastrarContaDoPlano, type DadosDoCadastroDoPlano } from "@/actions/subscription-actions";
 import { SubscriptionPix } from "@/components/checkout/subscription-pix";
 import { VENDOR_CATEGORIES } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { btn, btnArrow } from "@/components/landing/styles";
@@ -114,9 +114,9 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
 
-  const payload = (): PlanRegistrationData => ({
+  const payload = (): DadosDoCadastroDoPlano => ({
     planType: isVendor ? "VENDOR" : "COUPLE",
-    planId: (plan?.id ?? "basic") as PlanRegistrationData["planId"],
+    planId: (plan?.id ?? "basic") as DadosDoCadastroDoPlano["planId"],
     modules: plan?.id === "custom" ? customModules : undefined,
     planName: plan?.name ?? "",
     amount: plan?.price ?? 0,
@@ -160,7 +160,7 @@ export function SignupFlow({ step, type, onStepChange, onTypeChange, initialPlan
     }
 
     startTransition(async () => {
-      const res = await registerPlanAccount(payload());
+      const res = await cadastrarContaDoPlano(payload());
       if (!res.success) {
         const message = res.error || "Não foi possível criar a conta agora. Tentem novamente.";
         const field = fieldOfServerError(message);

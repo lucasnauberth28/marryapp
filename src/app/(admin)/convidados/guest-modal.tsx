@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Minus, Plus } from "lucide-react";
 import { GuestLocal as Guest, RsvpStatus } from "@/types/local";
 import { CustomModal } from "@/components/ui/custom-modal";
-import { createGuest, updateGuest } from "@/actions/guest-actions";
+import { criarConvidado, atualizarConvidado } from "@/actions/guest-actions";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
@@ -132,7 +132,7 @@ export function GuestModal({ isOpen, onClose, guest, allGuests = [], onDelete }:
 
     const toastId = toast.loading(isEditing ? "Salvando as alterações..." : "Adicionando à lista...");
     startTransition(async () => {
-      const result = isEditing ? await updateGuest(guest.id, formData) : await createGuest(formData);
+      const result = isEditing ? await atualizarConvidado(guest.id, formData) : await criarConvidado(formData);
 
       if (result.success) {
         toast.success(isEditing ? "Informações salvas." : "Convidado adicionado à lista.", { id: toastId });

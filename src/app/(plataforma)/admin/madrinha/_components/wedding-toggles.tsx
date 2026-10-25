@@ -5,7 +5,7 @@ import { Panel } from "@/components/plataforma/panel";
 import { StatusChip } from "@/components/plataforma/status-chip";
 import { FormAlert } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
-import { setWeddingMadrinhaEnabled } from "@/actions/admin-madrinha-actions";
+import { definirMadrinhaDoCasamentoAtiva } from "@/actions/admin-madrinha-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 import { WeddingSearch } from "./wedding-search";
 
@@ -22,7 +22,7 @@ export function WeddingToggles({ initial }: { initial: WeddingToggleItem[] }) {
   const { pending, formError, run } = useAdminAction();
 
   function setEnabled(item: WeddingToggleItem, enabled: boolean | null) {
-    run(() => setWeddingMadrinhaEnabled({ weddingId: item.id, enabled }), () =>
+    run(() => definirMadrinhaDoCasamentoAtiva({ weddingId: item.id, enabled }), () =>
       setItems((list) => list.map((x) => (x.id === item.id ? { ...x, enabled } : x))),
     );
   }

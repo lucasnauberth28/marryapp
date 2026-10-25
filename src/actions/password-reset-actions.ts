@@ -10,35 +10,35 @@ import { enviarLinkDeRedefinicaoDeSenha } from "@/lib/account/password-reset-lin
 import { registrarAuditoria } from "@/lib/audit";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
-const MINUTE = 60 * 1000;
+const UM_MINUTO_EM_MS = 60 * 1000;
 
 /** Mesma resposta exista ou não a conta: não revela quais e-mails estão cadastrados. */
-const NEUTRAL_MESSAGE =
+const MENSAGEM_NEUTRA =
   "Se houver uma conta com este e-mail, enviamos um link para criar uma nova senha. Ele vale por 1 hora. Confira também a caixa de spam.";
 
-const RequestSchema = z.object({
+const EsquemaDoPedido = z.object({
   email: z.string().trim().toLowerCase().email("Confira o e-mail.").max(200),
 });
 
-export type ResetRequestResult = { success: true; message: string } | { success: false; error: string };
+export type ResultadoDoPedidoDeRedefinicao = { success: true; message: string } | { success: false; error: string };
 
 /**
  * "Esqueci a senha": se o e-mail for de uma conta, cria um token (só o hash vai ao banco, 1 h de validade)
  * e envia o link /redefinir-senha/<token>. A busca e o envio rodam depois da resposta (after),
  * para que o tempo de resposta também não revele se a conta existe.
  */
-export async function requestPasswordReset(input: { email: string }): Promise<ResetRequestResult> {
-  const parsed = RequestSchema.safeParse(input);
+export async function pedirRedefinicaoDeSenha(input: { email: string }): Promise<ResultadoDoPedidoDeRedefinicao> {
+  const parsed = EsquemaDoPedido.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira o e-mail." };
   const { email } = parsed.data;
 
   const ip = await obterIpDoCliente();
-  const byIp = await conferirLimiteDeUso({ key: `PWRESET_REQ_IP:${ip}`, limit: 5, windowMs: 15 * MINUTE });
+  const byIp = await conferirLimiteDeUso({ key: `PWRESET_REQ_IP:${ip}`, limit: 5, windowMs: 15 * UM_MINUTO_EM_MS });
   if (!byIp.success) return { success: false, error: "Muitos pedidos seguidos. Aguarde alguns minutos e tente de novo." };
 
   // Por e-mail: no máximo 3 links por hora. Acima disso, responde igual e não envia nada.
-  const byEmail = await conferirLimiteDeUso({ key: `PWRESET_REQ_EMAIL:${email}`, limit: 3, windowMs: 60 * MINUTE });
-  if (!byEmail.success) return { success: true, message: NEUTRAL_MESSAGE };
+  const byEmail = await conferirLimiteDeUso({ key: `PWRESET_REQ_EMAIL:${email}`, limit: 3, windowMs: 60 * UM_MINUTO_EM_MS });
+  if (!byEmail.success) return { success: true, message: MENSAGEM_NEUTRA };
 
   after(async () => {
     try {
@@ -51,10 +51,10 @@ export async function requestPasswordReset(input: { email: string }): Promise<Re
     }
   });
 
-  return { success: true, message: NEUTRAL_MESSAGE };
+  return { success: true, message: MENSAGEM_NEUTRA };
 }
 
-const ResetSchema = z
+const EsquemaDaRedefinicao = z
   .object({
     token: z.string().refine(tokenDeLinkTemFormatoValido, "Link inválido."),
     password: z.string().min(8, "Use pelo menos 8 caracteres.").max(200, "Senha longa demais."),
@@ -62,13 +62,13 @@ const ResetSchema = z
   })
   .refine((v) => v.password === v.confirm, { message: "As senhas não conferem.", path: ["confirm"] });
 
-export type ResetPasswordResult = { success: true } | { success: false; error: string; expired?: boolean };
+export type ResultadoDaRedefinicaoDeSenha = { success: true } | { success: false; error: string; expired?: boolean };
 
-const EXPIRED_MESSAGE = "Este link expirou ou já foi usado. Peça um novo para criar a senha.";
+const MENSAGEM_DE_EXPIRADO = "Este link expirou ou já foi usado. Peça um novo para criar a senha.";
 
 /** Troca a senha pelo link do e-mail e invalida este e todos os outros links da conta. */
-export async function resetPassword(input: { token: string; password: string; confirm: string }): Promise<ResetPasswordResult> {
-  const parsed = ResetSchema.safeParse(input);
+export async function redefinirSenha(input: { token: string; password: string; confirm: string }): Promise<ResultadoDaRedefinicaoDeSenha> {
+  const parsed = EsquemaDaRedefinicao.safeParse(input);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
     return { success: false, error: issue?.message ?? "Confira os dados.", expired: issue?.path[0] === "token" };
@@ -76,7 +76,7 @@ export async function resetPassword(input: { token: string; password: string; co
   const { token, password } = parsed.data;
 
   const ip = await obterIpDoCliente();
-  const byIp = await conferirLimiteDeUso({ key: `PWRESET_USE_IP:${ip}`, limit: 10, windowMs: 15 * MINUTE });
+  const byIp = await conferirLimiteDeUso({ key: `PWRESET_USE_IP:${ip}`, limit: 10, windowMs: 15 * UM_MINUTO_EM_MS });
   if (!byIp.success) return { success: false, error: ERROS.muitasTentativas };
 
   const tokenHash = calcularHashDoTokenDeLink(token);
@@ -84,9 +84,9 @@ export async function resetPassword(input: { token: string; password: string; co
     where: { tokenHash },
     select: { id: true, userId: true, usedAt: true, expiresAt: true, user: { select: { name: true, username: true } } },
   });
-  if (!record || record.usedAt || record.expiresAt <= new Date()) return { success: false, error: EXPIRED_MESSAGE, expired: true };
+  if (!record || record.usedAt || record.expiresAt <= new Date()) return { success: false, error: MENSAGEM_DE_EXPIRADO, expired: true };
 
-  const byAccount = await conferirLimiteDeUso({ key: `PWRESET_USE_ACCOUNT:${record.userId}`, limit: 5, windowMs: 15 * MINUTE });
+  const byAccount = await conferirLimiteDeUso({ key: `PWRESET_USE_ACCOUNT:${record.userId}`, limit: 5, windowMs: 15 * UM_MINUTO_EM_MS });
   if (!byAccount.success) return { success: false, error: ERROS.muitasTentativas };
 
   const hashed = await bcrypt.hash(password, 12);
@@ -103,7 +103,7 @@ export async function resetPassword(input: { token: string; password: string; co
       await tx.passwordResetToken.updateMany({ where: { userId: record.userId, usedAt: null }, data: { usedAt: now } });
     });
   } catch (error) {
-    if (error instanceof Error && error.message === "TOKEN_USED") return { success: false, error: EXPIRED_MESSAGE, expired: true };
+    if (error instanceof Error && error.message === "TOKEN_USED") return { success: false, error: MENSAGEM_DE_EXPIRADO, expired: true };
     console.error("[resetPassword]", error);
     return { success: false, error: "Não conseguimos trocar a senha agora. Tente de novo em instantes." };
   }

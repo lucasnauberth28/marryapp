@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BadgeCheck, Star } from "lucide-react";
-import { submitLeadReview } from "@/actions/vendor-review-actions";
+import { enviarAvaliacaoDoPedido } from "@/actions/vendor-review-actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -27,7 +27,7 @@ export function ReviewForm({ token, companyName }: { token: string; companyName:
       return;
     }
     startTransition(async () => {
-      const res = await submitLeadReview({ token, rating, comment });
+      const res = await enviarAvaliacaoDoPedido({ token, rating, comment });
       if (res.success) {
         setDone("sent");
         router.refresh();

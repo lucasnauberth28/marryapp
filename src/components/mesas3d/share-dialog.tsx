@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Copy, Link2, RefreshCw, Link2Off } from "lucide-react";
 import { toast } from "sonner";
-import { createTables3DShare, disableTables3DShare } from "@/actions/table3d-actions";
+import { criarLinkDeCompartilhamentoDasMesas3D, desativarLinkDeCompartilhamentoDasMesas3D } from "@/actions/table3d-actions";
 import { CustomModal } from "@/components/ui/custom-modal";
 import { btn } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
@@ -61,12 +61,12 @@ export function ShareDialog({ open, onClose, token, onChange }: { open: boolean;
             <button
               type="button"
               disabled={busy}
-              onClick={() => run(createTables3DShare, (r) => onChange(r.token ?? null), "Link novo criado. O anterior não funciona mais.")}
+              onClick={() => run(criarLinkDeCompartilhamentoDasMesas3D, (r) => onChange(r.token ?? null), "Link novo criado. O anterior não funciona mais.")}
               className={cn(btn.secondary, "min-h-11 gap-2")}
             >
               <RefreshCw aria-hidden="true" className="size-4" /> Gerar um novo
             </button>
-            <button type="button" disabled={busy} onClick={() => run(disableTables3DShare, () => onChange(null), "Link desligado.")} className={cn(btn.secondary, "min-h-11 gap-2")}>
+            <button type="button" disabled={busy} onClick={() => run(desativarLinkDeCompartilhamentoDasMesas3D, () => onChange(null), "Link desligado.")} className={cn(btn.secondary, "min-h-11 gap-2")}>
               <Link2Off aria-hidden="true" className="size-4" /> Desligar
             </button>
           </div>
@@ -75,7 +75,7 @@ export function ShareDialog({ open, onClose, token, onChange }: { open: boolean;
         <div className="flex flex-col gap-4">
           <p className="text-[15px] leading-6 text-tinta-suave">Criem um link para os convidados verem o mapa das mesas em 3D e acharem o próprio lugar. O link é só de leitura: ninguém além de vocês altera as mesas.</p>
           <div>
-            <button type="button" disabled={busy} onClick={() => run(createTables3DShare, (r) => onChange(r.token ?? null), "Link criado.")} className={cn(btn.primary, "min-h-11 gap-2")}>
+            <button type="button" disabled={busy} onClick={() => run(criarLinkDeCompartilhamentoDasMesas3D, (r) => onChange(r.token ?? null), "Link criado.")} className={cn(btn.primary, "min-h-11 gap-2")}>
               <Link2 aria-hidden="true" className="size-4" /> Criar link
             </button>
           </div>

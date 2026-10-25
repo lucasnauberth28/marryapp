@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  getUnreadNotificationCount,
-  listNotifications,
-  markAllNotificationsRead,
-  markNotificationRead,
-  type NotificationItem,
-  type ReminderItem,
+  obterQuantidadeDeNotificacoesNaoLidas,
+  listarNotificacoes,
+  marcarTodasAsNotificacoesComoLidas,
+  marcarNotificacaoComoLida,
+  type ItemDeNotificacao,
+  type ItemDeLembrete,
 } from "@/actions/notification-actions";
 
 const POLL_MS = 60_000;
@@ -22,8 +22,8 @@ export const NOTIFICATIONS_CHANGED_EVENT = "aceito:notifications-changed";
  */
 export function useNotificationFeed(initialUnread: number, isActive: () => boolean = () => true) {
   const [unread, setUnread] = useState(initialUnread);
-  const [items, setItems] = useState<NotificationItem[] | null>(null);
-  const [reminders, setReminders] = useState<ReminderItem[]>([]);
+  const [items, setItems] = useState<ItemDeNotificacao[] | null>(null);
+  const [reminders, setReminders] = useState<ItemDeLembrete[]>([]);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
   const openRef = useRef(false);
@@ -32,7 +32,7 @@ export function useNotificationFeed(initialUnread: number, isActive: () => boole
   const loadList = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await listNotifications();
+      const res = await listarNotificacoes();
       setItems(res.items);
       setReminders(res.reminders);
       setUnread(res.unreadCount);
@@ -49,7 +49,7 @@ export function useNotificationFeed(initialUnread: number, isActive: () => boole
     busy.current = true;
     try {
       if (openRef.current) await loadList();
-      else setUnread(await getUnreadNotificationCount());
+      else setUnread(await obterQuantidadeDeNotificacoesNaoLidas());
     } catch {
       // Sem rede por um instante: mantém o que já está na tela.
     } finally {
@@ -88,7 +88,7 @@ export function useNotificationFeed(initialUnread: number, isActive: () => boole
     if (wasUnread) setUnread((c) => Math.max(0, c - 1));
     setItems((current) => (current ? current.map((n) => (n.id === id && !n.readAt ? { ...n, readAt: now } : n)) : current));
     try {
-      const res = await markNotificationRead(id);
+      const res = await marcarNotificacaoComoLida(id);
       setUnread(res.unreadCount);
     } catch {
       // A leitura é só conforto: na próxima consulta o contador se acerta.
@@ -100,7 +100,7 @@ export function useNotificationFeed(initialUnread: number, isActive: () => boole
     setItems((current) => (current ? current.map((n) => (n.readAt ? n : { ...n, readAt: now })) : current));
     setUnread(0);
     try {
-      const res = await markAllNotificationsRead();
+      const res = await marcarTodasAsNotificacoesComoLidas();
       setUnread(res.unreadCount);
       return res.success;
     } catch {

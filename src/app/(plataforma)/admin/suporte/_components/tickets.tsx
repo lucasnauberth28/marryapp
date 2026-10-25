@@ -14,7 +14,7 @@ import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { SITUACOES_DO_CHAMADO, ROTULO_DA_SITUACAO_DO_CHAMADO } from "@/lib/platform/support";
-import { createSupportTicket, updateSupportTicket } from "@/actions/admin-suporte-actions";
+import { criarChamadoDeSuporte, atualizarChamadoDeSuporte } from "@/actions/admin-suporte-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
 export interface TicketItem {
@@ -134,7 +134,7 @@ function NewTicket({ prefill, onDone }: { prefill: TicketPrefill | null; onDone:
       onSubmit={(e) => {
         e.preventDefault();
         run(
-          () => createSupportTicket({ subject, body, requesterName: name, requesterEmail: email, requesterPhone: phone, weddingId: prefill?.weddingId, vendorId: prefill?.vendorId }),
+          () => criarChamadoDeSuporte({ subject, body, requesterName: name, requesterEmail: email, requesterPhone: phone, weddingId: prefill?.weddingId, vendorId: prefill?.vendorId }),
           () => {
             onDone();
             router.replace("/admin/suporte#chamados");
@@ -177,7 +177,7 @@ function TicketEditor({ ticket, onDone }: { ticket: TicketItem; onDone: () => vo
       onSubmit={(e) => {
         e.preventDefault();
         run(
-          () => updateSupportTicket({ id: ticket.id, status, internalNote: note, assignToMe: assign === "me", unassign: assign === "none" }),
+          () => atualizarChamadoDeSuporte({ id: ticket.id, status, internalNote: note, assignToMe: assign === "me", unassign: assign === "none" }),
           () => {
             onDone();
             router.refresh();

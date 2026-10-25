@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 import { ExpenseStatus, ExpenseType } from "@prisma/client";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
-const ExpenseSchema = z.object({
+const EsquemaDaDespesa = z.object({
   description: z.string().min(2, "Descrição é obrigatória."),
   amount: z.coerce.number().min(1, "O valor deve ser maior que zero."),
   dueDate: z.string().min(10, "Data de vencimento inválida"),
@@ -22,17 +22,17 @@ const ExpenseSchema = z.object({
 });
 
 /** O fornecedor vinculado precisa ser do mesmo casamento. Devolve o id validado, null ou false (inválido). */
-async function resolveVendorId(weddingId: string, vendorId: string | null | undefined): Promise<string | null | false> {
+async function resolverIdDoFornecedor(weddingId: string, vendorId: string | null | undefined): Promise<string | null | false> {
   if (!vendorId) return null;
   if (typeof vendorId !== "string") return false;
   const vendor = await prisma.vendor.findFirst({ where: { id: vendorId, weddingId }, select: { id: true } });
   return vendor ? vendor.id : false;
 }
 
-const EXPENSE_STATUSES = new Set<string>(Object.values(ExpenseStatus));
-const EXPENSE_TYPES = new Set<string>(Object.values(ExpenseType));
+const SITUACOES_DA_DESPESA = new Set<string>(Object.values(ExpenseStatus));
+const TIPOS_DE_DESPESA = new Set<string>(Object.values(ExpenseType));
 
-export async function getExpenses() {
+export async function obterDespesas() {
   const { weddingId } = await exigirCasamentoParaLeitura("/financas");
   return prisma.expense.findMany({
     where: { weddingId },
@@ -41,7 +41,7 @@ export async function getExpenses() {
   });
 }
 
-export async function createExpense(formData: FormData) {
+export async function criarDespesa(formData: FormData) {
   const { weddingId } = await exigirCasamento("/financas");
   const raw = {
     description: formData.get("description"),
@@ -55,13 +55,13 @@ export async function createExpense(formData: FormData) {
     storeName: formData.get("storeName") || undefined,
   };
 
-  const parsed = ExpenseSchema.safeParse(raw);
+  const parsed = EsquemaDaDespesa.safeParse(raw);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0].message };
   }
 
   try {
-    const vendorId = await resolveVendorId(weddingId, parsed.data.vendorId || null);
+    const vendorId = await resolverIdDoFornecedor(weddingId, parsed.data.vendorId || null);
     if (vendorId === false) return { success: false, error: ERROS.fornecedorNaoEncontrado };
 
     await prisma.expense.create({
@@ -87,10 +87,10 @@ export async function createExpense(formData: FormData) {
   }
 }
 
-export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
+export async function atualizarSituacaoDaDespesa(id: string, status: ExpenseStatus) {
   const { weddingId } = await exigirCasamento("/financas");
   try {
-    if (typeof id !== "string" || !EXPENSE_STATUSES.has(status)) {
+    if (typeof id !== "string" || !SITUACOES_DA_DESPESA.has(status)) {
       return { success: false, error: "Não deu para salvar a despesa. Tente de novo." };
     }
     const result = await prisma.expense.updateMany({
@@ -107,7 +107,7 @@ export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
   }
 }
 
-export async function deleteExpense(id: string) {
+export async function excluirDespesa(id: string) {
   const { weddingId } = await exigirCasamento("/financas");
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.despesaNaoEncontrada };
@@ -122,7 +122,7 @@ export async function deleteExpense(id: string) {
   }
 }
 
-export async function createBatchExpenses(items: Array<{
+export async function criarDespesasEmLote(items: Array<{
   description: string;
   amount: number;
   dueDate: string;
@@ -149,7 +149,7 @@ export async function createBatchExpenses(items: Array<{
       const owned = await prisma.vendor.count({ where: { id: { in: vendorIds }, weddingId } });
       if (owned !== vendorIds.length) return { success: false, error: ERROS.fornecedorNaoEncontrado };
     }
-    if (items.some((item) => item.type && !EXPENSE_TYPES.has(item.type))) {
+    if (items.some((item) => item.type && !TIPOS_DE_DESPESA.has(item.type))) {
       return { success: false, error: "Tipo de despesa inválido." };
     }
 

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { FormAlert } from "@/components/ui/field";
 import { Panel } from "@/components/plataforma/panel";
 import { Button } from "@/components/ui/button";
-import { sendSupportPasswordReset } from "@/actions/admin-suporte-actions";
+import { enviarRedefinicaoDeSenhaPeloSuporte } from "@/actions/admin-suporte-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
 /** Esqueci a senha: manda o link de redefinição ao e-mail da pessoa. A resposta é sempre a mesma e o link nunca aparece. */
@@ -19,7 +19,7 @@ export function PasswordReset() {
         className="flex flex-col gap-4"
         onSubmit={(e) => {
           e.preventDefault();
-          run(() => sendSupportPasswordReset({ email }), () => setEmail(""));
+          run(() => enviarRedefinicaoDeSenhaPeloSuporte({ email }), () => setEmail(""));
         }}
       >
         <Input label="E-mail da pessoa" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} autoComplete="off" />

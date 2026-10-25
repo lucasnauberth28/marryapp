@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getPartnerVendorById } from "@/actions/partner-vendor-actions";
+import { obterFornecedorParceiroPorId } from "@/actions/partner-vendor-actions";
 import { registrarVisitaAoPerfilDoFornecedor } from "@/lib/vendor-profile-views";
 import { toIsoDate, todayBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { VendorDetailClient } from "./vendor-detail-client";
@@ -12,7 +12,7 @@ interface VendorDetailPageProps {
 
 export default async function VendorDetailPage({ params }: VendorDetailPageProps) {
   const { id } = await params;
-  const vendor = await getPartnerVendorById(id);
+  const vendor = await obterFornecedorParceiroPorId(id);
 
   if (!vendor) {
     notFound();

@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 // convidado do casamento da sessão. Teste de código-fonte (o fluxo real roda no e2e do Resumo).
 
 const source = readFileSync(fileURLToPath(new URL("../invite-share-actions.ts", import.meta.url)), "utf8");
-const body = source.slice(source.indexOf("export async function markInviteShared"));
+const body = source.slice(source.indexOf("export async function marcarConviteComoCompartilhado"));
 
 test("é uma Server Action que escreve: usa o guard de escrita (leitura, suspensão e manutenção recusam)", () => {
   assert.match(source, /^"use server";/);

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { requestWeddingRefund } from "@/actions/admin-casais-actions";
+import { solicitarReembolsoDoCasamento } from "@/actions/admin-casais-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
@@ -39,7 +39,7 @@ export function RefundForm({ weddingId, options }: { weddingId: string; options:
       onSubmit={(e) => {
         e.preventDefault();
         if (cents === null) return;
-        run(() => requestWeddingRefund({ weddingId, subscriptionId: subId, amountCents: cents, reason }), () => {
+        run(() => solicitarReembolsoDoCasamento({ weddingId, subscriptionId: subId, amountCents: cents, reason }), () => {
           setReason("");
           router.refresh();
         });

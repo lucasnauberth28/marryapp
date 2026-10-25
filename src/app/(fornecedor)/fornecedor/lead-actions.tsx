@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { Mail, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
-import { updateLeadStatus } from "@/actions/vendor-panel-actions";
+import { atualizarSituacaoDoPedido } from "@/actions/vendor-panel-actions";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/select";
 import { LEAD_NEXT_STEP, LEAD_STATUS_LABEL, LEAD_STATUSES, type LeadStatus } from "../_lib/vendor-panel";
@@ -32,7 +32,7 @@ export function LeadActions({
   function changeStatus(target: LeadStatus) {
     if (target === status) return;
     startTransition(async () => {
-      const res = await updateLeadStatus(leadId, target);
+      const res = await atualizarSituacaoDoPedido(leadId, target);
       if (res.success) {
         toast.success(`Pedido de ${coupleName} marcado como “${LEAD_STATUS_LABEL[target]}”.`);
       } else {

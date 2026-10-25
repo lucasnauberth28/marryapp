@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { FormAlert } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
-import { applyWeddingAdjustment, unblockWeddingMadrinha } from "@/actions/admin-madrinha-actions";
+import { aplicarAjusteAoCasamento, desbloquearMadrinhaDoCasamento } from "@/actions/admin-madrinha-actions";
 import type { ResultadoDeCasamento } from "@/lib/platform/queries/madrinha";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 import { WeddingSearch } from "./wedding-search";
@@ -31,7 +31,7 @@ export function WeddingAdjust() {
         e.preventDefault();
         if (!picked) return;
         setRunning("apply");
-        run(() => applyWeddingAdjustment({ weddingId: picked.id, extraMessages: extra, reason }));
+        run(() => aplicarAjusteAoCasamento({ weddingId: picked.id, extraMessages: extra, reason }));
       }}
     >
       <WeddingSearch selectedId={picked?.id ?? null} onPick={pick} />
@@ -56,7 +56,7 @@ export function WeddingAdjust() {
           onClick={() => {
             if (!picked) return;
             setRunning("unblock");
-            run(() => unblockWeddingMadrinha({ weddingId: picked.id }), () => setPicked({ ...picked, override: picked.override && { ...picked.override, blocked: false } }));
+            run(() => desbloquearMadrinhaDoCasamento({ weddingId: picked.id }), () => setPicked({ ...picked, override: picked.override && { ...picked.override, blocked: false } }));
           }}
         >
           Desbloquear o casal

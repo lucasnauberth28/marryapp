@@ -18,17 +18,17 @@ import {
 } from "@/lib/account/wedding-provisioning";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
-const personName = (label: string) =>
+const nomeDaPessoa = (label: string) =>
   z
     .string()
     .transform((v) => normalizarTexto(v).replace(/[&+]/g, " ").replace(/\s+/g, " ").trim())
     .pipe(z.string().min(2, `Informe ${label}.`).max(60, `${label[0].toUpperCase()}${label.slice(1)} está longo demais.`));
 
-const THEME_HEXES = TEMAS_PRONTOS.map((p) => p.hex) as [string, ...string[]];
+const CORES_DOS_TEMAS = TEMAS_PRONTOS.map((p) => p.hex) as [string, ...string[]];
 
-const OnboardingSchema = z.object({
-  yourName: personName("o seu nome"),
-  partnerName: personName("o nome de quem vai casar com você"),
+const EsquemaDoInicio = z.object({
+  yourName: nomeDaPessoa("o seu nome"),
+  partnerName: nomeDaPessoa("o nome de quem vai casar com você"),
   /** "AAAA-MM-DD", ou null quando o casal ainda não tem a data. */
   weddingDate: z
     .string()
@@ -41,17 +41,17 @@ const OnboardingSchema = z.object({
     .optional(),
   guestEstimate: z.enum(FAIXAS_DE_CONVIDADOS).nullable().optional(),
   // Cor, cidade e faixa de convidados saíram do onboarding (ficam em Editar o site); seguem aceitos se vierem.
-  themeColor: z.enum(THEME_HEXES).optional(),
+  themeColor: z.enum(CORES_DOS_TEMAS).optional(),
 });
 
-export type OnboardingInput = z.input<typeof OnboardingSchema>;
+export type EntradaDoInicio = z.input<typeof EsquemaDoInicio>;
 
-export type OnboardingResult =
+export type ResultadoDoInicio =
   | { success: true; slug: string; coupleNames: string }
   | { success: false; error: string; redirectTo?: string };
 
 /** "2027-10-11" -> meio-dia em Brasília (evita virar o dia anterior ao exibir). */
-function parseWeddingDate(value: string | null): Date | null | "invalid" {
+function interpretarDataDoCasamento(value: string | null): Date | null | "invalid" {
   if (!value) return null;
   const [y, m, d] = value.split("-").map(Number);
   const date = new Date(Date.UTC(y, m - 1, d, 15));
@@ -61,7 +61,7 @@ function parseWeddingDate(value: string | null): Date | null | "invalid" {
   return date;
 }
 
-class OnboardingConflict extends Error {}
+class ConflitoNoInicio extends Error {}
 
 /**
  * Conclui o onboarding do casamento da conta logada.
@@ -70,18 +70,18 @@ class OnboardingConflict extends Error {}
  * - Atualiza nomes e data (e cidade, faixa de convidados e cor, só se vierem); o endereço do site é
  *   refeito a partir dos nomes enquanto ainda for o automático. Marca onboardedAt.
  */
-export async function completeOnboarding(input: OnboardingInput): Promise<OnboardingResult> {
+export async function concluirInicio(input: EntradaDoInicio): Promise<ResultadoDoInicio> {
   const session = await obterSessao();
   if (!session) return { success: false, error: ERROS.sessaoExpirada, redirectTo: "/login" };
   if (session.userId === ID_DO_SUPER_ADMIN) {
     return { success: false, error: "A conta de emergência não tem casamento próprio.", redirectTo: "/dashboard" };
   }
 
-  const parsed = OnboardingSchema.safeParse(input);
+  const parsed = EsquemaDoInicio.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira os dados." };
   const data = parsed.data;
 
-  const weddingDate = parseWeddingDate(data.weddingDate);
+  const weddingDate = interpretarDataDoCasamento(data.weddingDate);
   if (weddingDate === "invalid") return { success: false, error: "Confira a data do casamento." };
 
   const limit = await conferirLimiteDeUso({ key: `ONBOARDING:${session.userId}`, limit: 10, windowMs: 10 * 60 * 1000 });
@@ -131,7 +131,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
             where: { id: user.id, weddingId: null },
             data: { weddingId: wedding.id, roleId: role.id },
           });
-          if (linked.count !== 1) throw new OnboardingConflict();
+          if (linked.count !== 1) throw new ConflitoNoInicio();
           weddingId = wedding.id;
           slug = wedding.slug;
         } else {
@@ -149,7 +149,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
           where: { id: weddingId, onboardedAt: null },
           data: { coupleNames, slug, weddingDate, ...optional, onboardedAt: new Date() },
         });
-        if (updated.count !== 1) throw new OnboardingConflict();
+        if (updated.count !== 1) throw new ConflitoNoInicio();
 
         await tx.siteCustomization.upsert({
           where: { weddingId },
@@ -183,7 +183,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
 
     return { success: true, slug, coupleNames };
   } catch (error) {
-    if (error instanceof OnboardingConflict) {
+    if (error instanceof ConflitoNoInicio) {
       return { success: false, error: "O casamento já foi configurado em outra aba.", redirectTo: "/dashboard" };
     }
     console.error("[completeOnboarding]", error);

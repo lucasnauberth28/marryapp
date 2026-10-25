@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { card } from "@/components/casal/ui";
 import { cn } from "@/lib/utils";
 import { centavosParaCampoDeReais } from "@/lib/platform/madrinha";
-import { saveMadrinhaAbuse, saveMadrinhaGlobalCap, saveMadrinhaLimits } from "@/actions/admin-madrinha-actions";
+import { salvarLimitesContraAbusoDaMadrinha, salvarTetoGlobalDaMadrinha, salvarLimitesDaMadrinha } from "@/actions/admin-madrinha-actions";
 import { ToggleRow } from "../../_sistema/toggle-row";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
@@ -84,7 +84,7 @@ export function LimitsForm({ subscription, trial }: { subscription: PlanLimits; 
       className="flex flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => saveMadrinhaLimits({ subscription: sub, trial: tri }));
+        run(() => salvarLimitesDaMadrinha({ subscription: sub, trial: tri }));
       }}
     >
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -111,7 +111,7 @@ export function GlobalCapForm({ monthlyCostCapCents, warnPercent, pauseAtCap }: 
       className="flex flex-1 flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => saveMadrinhaGlobalCap({ monthlyCostCap: cap, warnPercent: warn, pauseAtCap: pause }));
+        run(() => salvarTetoGlobalDaMadrinha({ monthlyCostCap: cap, warnPercent: warn, pauseAtCap: pause }));
       }}
     >
       <Input label="Custo máximo da Liz por mês" prefix="R$" inputMode="decimal" value={cap} onChange={(e) => setCap(e.target.value)} error={errors.monthlyCostCap} />
@@ -139,7 +139,7 @@ export function AbuseForm({ perHour, blockHours, blockOffTopic, offTopicBeforeBl
       className="flex flex-1 flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => saveMadrinhaAbuse({ perHour: hour, blockHours: hours, blockOffTopic: off, offTopicBeforeBlock: before }));
+        run(() => salvarLimitesContraAbusoDaMadrinha({ perHour: hour, blockHours: hours, blockOffTopic: off, offTopicBeforeBlock: before }));
       }}
     >
       <Input label="Mensagens por hora" inputMode="numeric" value={hour} onChange={(e) => setHour(e.target.value)} error={errors.perHour} />

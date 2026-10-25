@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Check, ListChecks, Plus, TriangleAlert } from "lucide-react";
 import type { ReactNode } from "react";
 import { BoardItem, TaskStatus } from "@/types/kanban";
-import { createTask, deleteTask, updateTask, updateTaskStatus } from "@/actions/tasks";
+import { criarTarefa, excluirTarefa, atualizarTarefa, atualizarSituacaoDaTarefa } from "@/actions/tasks";
 import { PageHeader } from "@/components/admin/page-header";
 import { StatusChip } from "@/components/painel/status-chip";
 import { btn, card, overline } from "@/components/painel/styles";
@@ -94,7 +94,7 @@ export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, su
   async function toggle(task: BoardItem) {
     const next = isDoneTask(task) ? TaskStatus.TODO : TaskStatus.DONE;
     setTasks((cur) => cur.map((t) => (t.id === task.id ? { ...t, status: next } : t)));
-    const res = await updateTaskStatus(task.id, next, task.position, task.type);
+    const res = await atualizarSituacaoDaTarefa(task.id, next, task.position, task.type);
     if (!res.success) {
       setTasks((cur) => cur.map((t) => (t.id === task.id ? { ...t, status: task.status } : t)));
       toast.error(res.error || "Não deu para atualizar a tarefa. Tente de novo.");
@@ -116,7 +116,7 @@ export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, su
   async function save(data: TaskFormData): Promise<boolean> {
     const toastId = toast.loading(editing ? "Salvando a tarefa..." : "Criando a tarefa...");
     if (editing) {
-      const res = await updateTask(editing.id, data);
+      const res = await atualizarTarefa(editing.id, data);
       if (res.success && res.data) {
         const updated: BoardItem = { ...res.data, type: "MANUAL" };
         setTasks((cur) => cur.map((t) => (t.id === updated.id ? updated : t)));
@@ -126,7 +126,7 @@ export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, su
       toast.error(res.error || "Não deu para salvar a tarefa. Tente de novo.", { id: toastId });
       return false;
     }
-    const res = await createTask({
+    const res = await criarTarefa({
       title: data.title,
       status: data.status,
       description: data.description ?? undefined,
@@ -144,7 +144,7 @@ export function TasksBoard({ initialTasks, todayKey, daysLeft, initialFilter, su
 
   async function remove(id: string) {
     const toastId = toast.loading("Removendo a tarefa...");
-    const res = await deleteTask(id);
+    const res = await excluirTarefa(id);
     if (res.success) {
       setTasks((cur) => cur.filter((t) => t.id !== id));
       toast.success("Tarefa removida.", { id: toastId });

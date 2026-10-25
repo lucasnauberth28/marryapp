@@ -5,17 +5,17 @@ import { useRouter } from "next/navigation";
 import { AlertCircle, Check, CheckCircle2, Clock, Copy, Eye, Link2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import {
-  connectDomainAction,
-  markDomainOnlineAction,
-  markDomainRegisteredAction,
-  markDomainRenewedAction,
-  rejectDomainOrderAction,
-  revealDomainHolderDocumentAction,
-  saveDomainNoteAction,
-  startDomainRegistrationAction,
-  verifyDomainAction,
-  type AdminResult,
-  type ConnectResult,
+  conectarDominioAcao,
+  marcarDominioComoNoAr,
+  marcarDominioComoRegistrado,
+  marcarDominioComoRenovado,
+  recusarPedidoDeDominio,
+  revelarDocumentoDoTitularDoDominio,
+  salvarNotaDoDominio,
+  iniciarRegistroDoDominio,
+  verificarDominioAcao,
+  type ResultadoDaAcaoDeAdmin,
+  type ResultadoDaAcaoDeConectarDominio,
 } from "@/actions/domain-admin-actions";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
@@ -84,7 +84,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
   const id = order.id;
   const states = situacoesDasEtapas(order.status);
 
-  function run(key: string, action: () => Promise<AdminResult | ConnectResult>, afterOk?: () => void) {
+  function run(key: string, action: () => Promise<ResultadoDaAcaoDeAdmin | ResultadoDaAcaoDeConectarDominio>, afterOk?: () => void) {
     setError(null);
     setRunning(key);
     startTransition(async () => {
@@ -126,7 +126,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
               onClick={() => {
                 setRunning("reveal");
                 startTransition(async () => {
-                  const res = await revealDomainHolderDocumentAction(id);
+                  const res = await revelarDocumentoDoTitularDoDominio(id);
                   if (res.success) setFullDocument(res.document);
                   else toast.error(res.error);
                 });
@@ -192,7 +192,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
       {/* Ações por situação */}
       {order.status === "REQUESTED" ? (
         <div className="flex flex-wrap gap-2">
-          <Button type="button" disabled={pending} loading={pending && running === "start"} onClick={() => run("start", () => startDomainRegistrationAction(id))}>
+          <Button type="button" disabled={pending} loading={pending && running === "start"} onClick={() => run("start", () => iniciarRegistroDoDominio(id))}>
             Começar o registro
           </Button>
         </div>
@@ -206,10 +206,10 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
       ) : null}
       {order.status === "REGISTERED" ? (
         <div className="flex flex-wrap gap-2">
-          <Button type="button" disabled={pending || !vercelReady} loading={pending && running === "connect"} onClick={() => run("connect", () => connectDomainAction(id))}>
+          <Button type="button" disabled={pending || !vercelReady} loading={pending && running === "connect"} onClick={() => run("connect", () => conectarDominioAcao(id))}>
             <Link2 className="size-4" aria-hidden="true" /> Conectar à Vercel
           </Button>
-          <Button type="button" variant="outline" disabled={pending || !vercelReady} loading={pending && running === "verify"} onClick={() => run("verify", () => verifyDomainAction(id))}>
+          <Button type="button" variant="outline" disabled={pending || !vercelReady} loading={pending && running === "verify"} onClick={() => run("verify", () => verificarDominioAcao(id))}>
             <RefreshCw className="size-4" aria-hidden="true" /> Verificar DNS
           </Button>
           <Button type="button" variant="outline" disabled={pending} onClick={() => setPanel(panel === "online" ? null : "online")}>
@@ -219,7 +219,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
       ) : null}
       {order.canRenew ? (
         <div>
-          <Button type="button" variant="outline" disabled={pending} loading={pending && running === "renew"} onClick={() => run("renew", () => markDomainRenewedAction(id))}>
+          <Button type="button" variant="outline" disabled={pending} loading={pending && running === "renew"} onClick={() => run("renew", () => marcarDominioComoRenovado(id))}>
             Marcar como renovado (mais 1 ano)
           </Button>
           <p className="mt-1 text-xs text-tinta-suave">Use depois de renovar no Registro.br. O vencimento sobe 1 ano e os avisos de 60 e 30 dias voltam a valer.</p>
@@ -231,7 +231,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
           className="flex flex-col gap-3 rounded-xl bg-areia p-4"
           onSubmit={(e) => {
             e.preventDefault();
-            run("register", () => markDomainRegisteredAction({ orderId: id, registeredAt, expiresAt }), () => setPanel(null));
+            run("register", () => marcarDominioComoRegistrado({ orderId: id, registeredAt, expiresAt }), () => setPanel(null));
           }}
         >
           <p className="text-sm text-tinta">Ao confirmar, o CPF/CNPJ completo é trocado pela versão escondida e o casal é avisado.</p>
@@ -264,7 +264,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
             className="flex flex-col gap-3"
             onSubmit={(e) => {
               e.preventDefault();
-              run("reject", () => rejectDomainOrderAction({ orderId: id, reason }), () => setReason(""));
+              run("reject", () => recusarPedidoDeDominio({ orderId: id, reason }), () => setReason(""));
             }}
           >
             <Textarea label="Motivo da recusa" rows={3} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} hint="O casal recebe este texto por e-mail." />
@@ -278,7 +278,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
       <ConfirmModal
         isOpen={panel === "online"}
         onClose={() => setPanel(null)}
-        onConfirm={() => run("online", () => markDomainOnlineAction(id), () => setPanel(null))}
+        onConfirm={() => run("online", () => marcarDominioComoNoAr(id), () => setPanel(null))}
         title="Marcar como no ar?"
         description={`Confirme só se ${order.domain} já abre o site do casal. A partir daí os links dos convidados passam a usar este endereço e o casal é avisado.`}
         confirmText="Marcar como no ar"
@@ -291,7 +291,7 @@ export function DomainPanel({ order, vercelReady }: { order: DomainPanelData; ve
         className="flex flex-col gap-2 border-t border-linha pt-4"
         onSubmit={(e) => {
           e.preventDefault();
-          run("note", () => saveDomainNoteAction({ orderId: id, note }));
+          run("note", () => salvarNotaDoDominio({ orderId: id, note }));
         }}
       >
         <Textarea label="Anotação da equipe" rows={2} maxLength={1000} value={note} onChange={(e) => setNote(e.target.value)} hint="O casal não vê." />

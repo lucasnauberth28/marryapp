@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { MessageCircle } from "lucide-react";
 import { toast } from "sonner";
-import { declineLead } from "@/actions/vendor-panel-actions";
+import { recusarPedido } from "@/actions/vendor-panel-actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -61,7 +61,7 @@ export function DeclineLead({
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const res = await declineLead({ leadId, message });
+      const res = await recusarPedido({ leadId, message });
       if (res.success) {
         toast.success("Pedido recusado. Agora é só avisar o casal.");
         setOpen(false);

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { completePanelTour, restartPanelTour, skipPanelTour } from "@/actions/tour-actions";
+import { concluirTourDoPainel, reiniciarTourDoPainel, pularTourDoPainel } from "@/actions/tour-actions";
 import { ATRIBUTO_DO_TOUR_ATIVO } from "@/lib/tour/events";
 import type { ConfiguracaoDoTourDoPainel } from "@/lib/tour/panel-tour";
 import type { PassoDoTour } from "@/lib/tour/steps";
@@ -86,14 +86,14 @@ export function PanelTourProvider({ config, children }: { config: ConfiguracaoDo
 
   const dismissCard = useCallback(() => {
     setPhase("idle");
-    void skipPanelTour().catch(() => {});
+    void pularTourDoPainel().catch(() => {});
     restoreFocus();
   }, [restoreFocus]);
 
   const start = useCallback(() => {
     if (!config) return;
     // Volta ao zero no servidor: se a pessoa recarregar no meio, as boas-vindas reaparecem
-    void restartPanelTour().catch(() => {});
+    void reiniciarTourDoPainel().catch(() => {});
     open(config.steps);
   }, [config, open]);
 
@@ -101,7 +101,7 @@ export function PanelTourProvider({ config, children }: { config: ConfiguracaoDo
     (done: TourDone) => {
       setPhase("idle");
       setRun([]);
-      void (done.outcome === "completed" ? completePanelTour() : skipPanelTour()).catch(() => {});
+      void (done.outcome === "completed" ? concluirTourDoPainel() : pularTourDoPainel()).catch(() => {});
       // Indo para outra tela, o foco é da tela nova
       if (done.navigated) returnFocus.current = null;
       else restoreFocus();

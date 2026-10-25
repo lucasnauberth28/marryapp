@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getSettings } from "@/actions/settings-actions";
+import { obterConfiguracoes } from "@/actions/settings-actions";
 import { SettingsClient } from "./settings-client";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default async function SettingsPage() {
   const { session, wedding } = await exigirCasamentoNaPagina("/configuracoes");
-  const [settings, identity] = await Promise.all([getSettings(), obterIdentidadeDoCasamentoPrincipal()]);
+  const [settings, identity] = await Promise.all([obterConfiguracoes(), obterIdentidadeDoCasamentoPrincipal()]);
 
   return (
     <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">

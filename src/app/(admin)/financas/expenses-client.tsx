@@ -6,7 +6,7 @@ import { useState, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { ExpenseStatus } from "@/types/local";
-import { createExpense, createBatchExpenses, deleteExpense, updateExpenseStatus } from "@/actions/expense-actions";
+import { criarDespesa, criarDespesasEmLote, excluirDespesa, atualizarSituacaoDaDespesa } from "@/actions/expense-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -415,7 +415,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
       if (finalPaymentMethod) formData.append("paymentMethod", finalPaymentMethod);
       if (imageBase64) formData.append("imageUrl", imageBase64);
 
-      const res = await createExpense(formData);
+      const res = await criarDespesa(formData);
       if (res.success) {
         toast.success("Despesa cadastrada.", { id: toastId });
         resetForm();
@@ -445,7 +445,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
         return;
       }
 
-      const res = await createBatchExpenses(generatedInstallments);
+      const res = await criarDespesasEmLote(generatedInstallments);
       if (res.success) {
         toast.success(`${generatedInstallments.length} parcelas registradas.`, { id: toastId });
         resetForm();
@@ -464,7 +464,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
   const handleDelete = async (id: string) => {
     setConfirmAction(() => async () => {
       const toastId = toast.loading("Excluindo despesa...");
-      const res = await deleteExpense(id);
+      const res = await excluirDespesa(id);
       if (res.success) {
         setExpenses(expenses.filter(e => e.id !== id));
         toast.success("Despesa excluída.", { id: toastId });
@@ -482,7 +482,7 @@ export function ExpensesClient({ initialExpenses, vendors, userCards = [] }: { i
     if (toggling[id]) return;
     const newStatus = currentStatus === "PAID" ? "PENDING" : "PAID";
     setToggling((prev) => ({ ...prev, [id]: true }));
-    const res = await updateExpenseStatus(id, newStatus as ExpenseStatus).finally(() =>
+    const res = await atualizarSituacaoDaDespesa(id, newStatus as ExpenseStatus).finally(() =>
       setToggling((prev) => {
         const rest = { ...prev };
         delete rest[id];

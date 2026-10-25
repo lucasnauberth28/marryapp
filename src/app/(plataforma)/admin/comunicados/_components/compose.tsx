@@ -36,11 +36,11 @@ import {
 import { formatarInteiro } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import {
-  deleteAnnouncementDraft,
-  previewAnnouncementAudience,
-  saveAnnouncementDraft,
-  sendAnnouncementNow,
-  sendAnnouncementTestToMe,
+  excluirRascunhoDoComunicado,
+  preverPublicoDoComunicado,
+  salvarRascunhoDoComunicado,
+  enviarComunicadoAgora,
+  enviarTesteDoComunicadoParaMim,
 } from "@/actions/admin-comunicados-actions";
 import type { PrevisaoDoPublico } from "@/lib/platform/queries/comunicados";
 import { useAdminAction } from "../../_sistema/use-admin-action";
@@ -101,7 +101,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
   async function refreshPreview(next: Publico) {
     const mine = ++ticket.current;
     setPreviewing(true);
-    const result = await previewAnnouncementAudience(next).catch(() => null);
+    const result = await preverPublicoDoComunicado(next).catch(() => null);
     if (mine !== ticket.current) return; // chegou uma resposta mais nova
     if (result?.success) setPreview(result.preview);
     setPreviewing(false);
@@ -304,7 +304,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
               <Button type="submit" disabled={busy}>
                 <Send className="size-4" aria-hidden="true" /> Enviar agora
               </Button>
-              <Button type="button" variant="outline" disabled={busy && !test.pending} loading={test.pending} onClick={() => test.run(() => sendAnnouncementTestToMe(form()))}>
+              <Button type="button" variant="outline" disabled={busy && !test.pending} loading={test.pending} onClick={() => test.run(() => enviarTesteDoComunicadoParaMim(form()))}>
                 Enviar um teste para mim
               </Button>
               <Button
@@ -314,7 +314,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
                 loading={save.pending}
                 onClick={() =>
                   save.run(
-                    () => saveAnnouncementDraft(form()),
+                    () => salvarRascunhoDoComunicado(form()),
                     (r) => {
                       setDraftId(r.id);
                       router.refresh();
@@ -401,7 +401,7 @@ export function Compose({ initial, initialPreview, drafts, emailConfigured }: { 
         isLoading={send.pending}
         onConfirm={() =>
           send.run(
-            () => sendAnnouncementNow(form()),
+            () => enviarComunicadoAgora(form()),
             () => {
               setConfirmOpen(false);
               router.replace("/admin/comunicados");
@@ -425,7 +425,7 @@ function DeleteDraft({ id, current }: { id: string; current: boolean }) {
       aria-label="Excluir este rascunho"
       onClick={() =>
         run(
-          () => deleteAnnouncementDraft({ id }),
+          () => excluirRascunhoDoComunicado({ id }),
           () => {
             if (current) router.replace("/admin/comunicados");
             router.refresh();

@@ -11,11 +11,11 @@ import { emailDoAlerta } from "@/lib/platform/health-alerts";
 import { conectarInstancia, whatsappEstaConfigurado } from "@/lib/evolution";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
-type Fail = { success: false; error: string; fieldErrors?: Record<string, string> };
-type Ok = { success: true; message: string };
+type Falha = { success: false; error: string; fieldErrors?: Record<string, string> };
+type Sucesso = { success: true; message: string };
 
 /** Quais alertas por e-mail ficam ligados e para onde vão (verificados uma vez por dia). */
-export async function saveHealthAlerts(input: unknown): Promise<Ok | Fail> {
+export async function salvarAlertasDeSaude(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
     const parsed = z
@@ -40,7 +40,7 @@ export async function saveHealthAlerts(input: unknown): Promise<Ok | Fail> {
 }
 
 /** Manda um e-mail de teste para o endereço salvo dos alertas. */
-export async function testHealthAlerts(): Promise<Ok | Fail> {
+export async function testarAlertasDeSaude(): Promise<Sucesso | Falha> {
   try {
     const admin = await exigirAdminDaPlataforma();
     const limit = await conferirLimiteDeUso({ key: `HEALTH_ALERT_TEST:${admin.userId}`, limit: 5, windowMs: 60 * 60_000 });
@@ -61,7 +61,7 @@ export async function testHealthAlerts(): Promise<Ok | Fail> {
  * Gera o QR Code para reconectar o WhatsApp (mesma função da tela de WhatsApp do painel). O QR é uma credencial
  * de pareamento: só volta para quem pediu e nunca vai ao registro. Erros técnicos ficam só no log do servidor.
  */
-export async function reconnectWhatsapp(): Promise<{ success: true; qrCode: string } | Fail> {
+export async function reconectarWhatsapp(): Promise<{ success: true; qrCode: string } | Falha> {
   try {
     const admin = await exigirAdminDaPlataforma();
     if (!whatsappEstaConfigurado()) return { success: false, error: "O WhatsApp não está configurado neste ambiente." };

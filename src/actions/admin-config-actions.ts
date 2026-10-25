@@ -14,14 +14,14 @@ import { ERROS } from "@/lib/mensagens-de-erro";
  * savePlatformSetting (valida com zod e registra antes e depois no AuditLog).
  */
 
-type Fail = { success: false; error: string; fieldErrors?: Record<string, string> };
-type Ok = { success: true; message: string };
+type Falha = { success: false; error: string; fieldErrors?: Record<string, string> };
+type Sucesso = { success: true; message: string };
 
 /**
  * Liga ou desliga o modo de manutenção. Vale em até 30 segundos no máximo (a leitura tem cache curto; o cache é
  * limpo na hora aqui). Aviso a casais e convidados, painel do casal só para leitura; o /admin e os webhooks seguem normais.
  */
-export async function saveMaintenance(input: unknown): Promise<Ok | Fail> {
+export async function salvarManutencao(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
     const parsed = interpretarManutencao(input);
@@ -40,7 +40,7 @@ export async function saveMaintenance(input: unknown): Promise<Ok | Fail> {
 }
 
 /** Remetente dos e-mails. Vazio = o remetente do servidor (EMAIL_FROM). Não dá para validar o domínio na Resend daqui. */
-export async function saveEmailSender(input: unknown): Promise<Ok | Fail> {
+export async function salvarRemetenteDeEmail(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
     const parsed = interpretarRemetenteDeEmail(input);
@@ -55,7 +55,7 @@ export async function saveEmailSender(input: unknown): Promise<Ok | Fail> {
 }
 
 /** Política de reembolso: prazo e texto. Quem decide é sempre a administração (a decisão automática não existe). */
-export async function saveRefundPolicy(input: unknown): Promise<Ok | Fail> {
+export async function salvarPoliticaDeReembolso(input: unknown): Promise<Sucesso | Falha> {
   try {
     await exigirAdminDaPlataforma();
     const parsed = entradaDaPoliticaDeReembolso.safeParse(input);

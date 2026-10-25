@@ -18,9 +18,9 @@ import { obterProvedorDaLiz, lerSeOChatDaLizEstaAtivo } from "@/lib/liz/provider
 // Painel da Liz. Só leitura: a Liz orienta e nunca executa. Tudo é escopado pelo casamento da sessão
 // (requireWeddingRead), vale em "entrar como" somente leitura, e nenhum id vem do navegador.
 
-const SP = "America/Sao_Paulo";
+const FUSO_DE_BRASILIA = "America/Sao_Paulo";
 
-export interface LizPanelData {
+export interface DadosDoPainelDaLiz {
   /** Sugestão para agora, ou null quando não há nada a sugerir. */
   tip: DicaDaLiz | null;
   /** O que o plano do casamento inclui, para o guia avisar "é do plano Classic". */
@@ -29,18 +29,18 @@ export interface LizPanelData {
   chatEnabled: boolean;
 }
 
-export type LizPanelResult = { success: true; data: LizPanelData } | { success: false; error: string };
+export type ResultadoDoPainelDaLiz = { success: true; data: DadosDoPainelDaLiz } | { success: false; error: string };
 
-const LOAD_ERROR = "Não deu para carregar a sugestão agora. Tente de novo.";
+const ERRO_AO_CARREGAR = "Não deu para carregar a sugestão agora. Tente de novo.";
 
 /** Dados do painel: a sugestão para agora (mesmas regras do Início e das Tarefas) e o plano do casamento. */
-export async function getLizPanelData(): Promise<LizPanelResult> {
+export async function obterDadosDoPainelDaLiz(): Promise<ResultadoDoPainelDaLiz> {
   try {
     const ctx = await exigirCasamentoParaLeitura();
     const { weddingId, session } = ctx;
     const can = (path: string) => temAcessoAoCaminho(session.allowedPaths, path);
     const now = new Date();
-    const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: SP }).format(now);
+    const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: FUSO_DE_BRASILIA }).format(now);
 
     const [whatsapp, qrcode, customDomain, tables3d, chatEnabled] = await Promise.all([
       casamentoTemModulo({ weddingId, session }, "whatsapp"),
@@ -93,24 +93,24 @@ export async function getLizPanelData(): Promise<LizPanelResult> {
     return { success: true, data: { tip, planModules: { whatsapp, qrcode, customDomain, tables3d }, chatEnabled } };
   } catch (error) {
     if (!(error instanceof ErroDeAutorizacao)) console.error("[getLizPanelData Error]:", error);
-    return { success: false, error: LOAD_ERROR };
+    return { success: false, error: ERRO_AO_CARREGAR };
   }
 }
 
-const askInput = z.object({
+const entradaDaPergunta = z.object({
   question: z.string().trim().min(1).max(300),
   pathname: z.string().max(120).optional(),
 });
 
-export type AskLizResult = { success: true; answer: RespostaDaLiz } | { success: false; error: string };
+export type ResultadoDaPerguntaALiz = { success: true; answer: RespostaDaLiz } | { success: false; error: string };
 
 /**
  * Pergunta à Liz. Se a administração ligou a IA E existe um provedor, a pergunta passa a ele; caso contrário
  * (o caso de hoje) é respondida pelo guia de ajuda. A tela chama esta ação só quando `chatEnabled` é verdadeiro:
  * com a IA desligada ela busca no guia direto no navegador.
  */
-export async function askLiz(input: unknown): Promise<AskLizResult> {
-  const parsed = askInput.safeParse(input);
+export async function perguntarALiz(input: unknown): Promise<ResultadoDaPerguntaALiz> {
+  const parsed = entradaDaPergunta.safeParse(input);
   if (!parsed.success) return { success: false, error: "Escreva a sua pergunta com até 300 letras." };
   try {
     const { session, weddingId } = await exigirCasamentoParaLeitura();

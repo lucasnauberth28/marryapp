@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { BadgeCheck, Check, Copy, Link2, MessageCircle, Send } from "lucide-react";
 import { toast } from "sonner";
-import { saveLeadProposal } from "@/actions/vendor-panel-actions";
+import { salvarPropostaDoPedido } from "@/actions/vendor-panel-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,7 +49,7 @@ export function ProposalForm({
     e.preventDefault();
     setError(null);
     startTransition(async () => {
-      const res = await saveLeadProposal({ leadId, ...values });
+      const res = await salvarPropostaDoPedido({ leadId, ...values });
       if (res.success) {
         setJustSaved(true);
         toast.success("Proposta registrada no pedido.");

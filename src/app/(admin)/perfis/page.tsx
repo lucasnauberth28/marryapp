@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getRoles } from "@/actions/rbac-actions";
+import { obterPerfis } from "@/actions/rbac-actions";
 import { obterSessao } from "@/lib/security/auth-guard";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
 import { RolesClient } from "./roles-client";
@@ -15,7 +15,7 @@ export default async function RolesPage() {
   const session = await obterSessao();
   if (session && ehAcessoDeAdminDaPlataforma(session.allowedPaths)) redirect("/admin/usuarios?aba=perfis");
 
-  const roles = await getRoles();
+  const roles = await obterPerfis();
 
   return (
     <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">

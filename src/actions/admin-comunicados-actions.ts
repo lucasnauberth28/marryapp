@@ -19,11 +19,11 @@ import { ERROS } from "@/lib/mensagens-de-erro";
  * Agendamento não existe: não há rotina que envie na hora marcada.
  */
 
-type Fail = { success: false; error: string; fieldErrors?: Record<string, string> };
-const MINUTE = 60_000;
+type Falha = { success: false; error: string; fieldErrors?: Record<string, string> };
+const UM_MINUTO_EM_MS = 60_000;
 
 /** Valida o formulário e devolve os dados limpos ou a falha com mensagens por campo. */
-function validate(input: unknown): { ok: true; data: EntradaDoComunicado; linkUrl: string | null } | { ok: false; fail: Fail } {
+function validarComunicado(input: unknown): { ok: true; data: EntradaDoComunicado; linkUrl: string | null } | { ok: false; fail: Falha } {
   const parsed = entradaDoComunicado.safeParse(input);
   if (!parsed.success) {
     const fieldErrors: Record<string, string> = {};
@@ -36,7 +36,7 @@ function validate(input: unknown): { ok: true; data: EntradaDoComunicado; linkUr
 }
 
 /** Quantas pessoas o público alcança agora (contagem real, para o texto "Chega a N casais"). */
-export async function previewAnnouncementAudience(input: unknown): Promise<{ success: true; preview: PrevisaoDoPublico } | Fail> {
+export async function preverPublicoDoComunicado(input: unknown): Promise<{ success: true; preview: PrevisaoDoPublico } | Falha> {
   try {
     await exigirAdminDaPlataforma();
     const audience = esquemaDoPublico.parse(input);
@@ -46,7 +46,7 @@ export async function previewAnnouncementAudience(input: unknown): Promise<{ suc
   }
 }
 
-async function saveDraftRow(data: EntradaDoComunicado, linkUrl: string | null, admin: { userId: string; name: string | null }) {
+async function gravarLinhaDoRascunho(data: EntradaDoComunicado, linkUrl: string | null, admin: { userId: string; name: string | null }) {
   const values = {
     title: data.title,
     emailSubject: data.emailSubject || null,
@@ -64,12 +64,12 @@ async function saveDraftRow(data: EntradaDoComunicado, linkUrl: string | null, a
   return created.id;
 }
 
-export async function saveAnnouncementDraft(input: unknown): Promise<{ success: true; id: string; message: string } | Fail> {
+export async function salvarRascunhoDoComunicado(input: unknown): Promise<{ success: true; id: string; message: string } | Falha> {
   try {
     const admin = await exigirAdminDaPlataforma();
-    const v = validate(input);
+    const v = validarComunicado(input);
     if (!v.ok) return v.fail;
-    const id = await saveDraftRow(v.data, v.linkUrl, admin);
+    const id = await gravarLinhaDoRascunho(v.data, v.linkUrl, admin);
     if (!id) return { success: false, error: "Este comunicado não pode mais ser editado (já foi enviado ou não existe)." };
     await registrarAuditoria({ action: "announcement.draft_save", targetType: "announcement", targetId: id, details: { title: v.data.title, channels: v.data.channels, audience: rotuloDoPublico(v.data.audience) } });
     revalidatePath("/admin/comunicados");
@@ -79,7 +79,7 @@ export async function saveAnnouncementDraft(input: unknown): Promise<{ success: 
   }
 }
 
-export async function deleteAnnouncementDraft(input: unknown): Promise<{ success: true; message: string } | Fail> {
+export async function excluirRascunhoDoComunicado(input: unknown): Promise<{ success: true; message: string } | Falha> {
   try {
     await exigirAdminDaPlataforma();
     const { id } = z.object({ id: z.string().uuid() }).parse(input);
@@ -94,12 +94,12 @@ export async function deleteAnnouncementDraft(input: unknown): Promise<{ success
 }
 
 /** Envia um teste só para a pessoa logada (painel, celular e e-mail), sem registrar destinatários. */
-export async function sendAnnouncementTestToMe(input: unknown): Promise<{ success: true; message: string } | Fail> {
+export async function enviarTesteDoComunicadoParaMim(input: unknown): Promise<{ success: true; message: string } | Falha> {
   try {
     const admin = await exigirAdminDaPlataforma();
-    const v = validate(input);
+    const v = validarComunicado(input);
     if (!v.ok) return v.fail;
-    const limit = await conferirLimiteDeUso({ key: `ANNOUNCE_TEST:${admin.userId}`, limit: 10, windowMs: 60 * MINUTE });
+    const limit = await conferirLimiteDeUso({ key: `ANNOUNCE_TEST:${admin.userId}`, limit: 10, windowMs: 60 * UM_MINUTO_EM_MS });
     if (!limit.success) return { success: false, error: "Muitos testes seguidos. Aguarde um pouco." };
     const result = await enviarTesteDoComunicado(admin, {
       title: v.data.title,
@@ -118,24 +118,24 @@ export async function sendAnnouncementTestToMe(input: unknown): Promise<{ succes
 }
 
 /** Envia o comunicado agora. O envio roda depois da resposta (after) e pode ser retomado se for interrompido. */
-export async function sendAnnouncementNow(input: unknown): Promise<{ success: true; id: string; message: string } | Fail> {
+export async function enviarComunicadoAgora(input: unknown): Promise<{ success: true; id: string; message: string } | Falha> {
   try {
     const admin = await exigirAdminDaPlataforma();
-    const v = validate(input);
+    const v = validarComunicado(input);
     if (!v.ok) return v.fail;
     const { data } = v;
 
     if (data.channels.includes("EMAIL") && !emailEstaConfigurado()) {
       return { success: false, error: "O e-mail não está configurado no servidor (RESEND_API_KEY). Tire o canal E-mail ou configure o envio." };
     }
-    const limit = await conferirLimiteDeUso({ key: `ANNOUNCE_SEND:${admin.userId}`, limit: 5, windowMs: 60 * MINUTE });
+    const limit = await conferirLimiteDeUso({ key: `ANNOUNCE_SEND:${admin.userId}`, limit: 5, windowMs: 60 * UM_MINUTO_EM_MS });
     if (!limit.success) return { success: false, error: "Você já fez 5 envios na última hora. Aguarde um pouco." };
 
     const users = await resolverPessoasDoPublico(data.audience);
     if (users.length === 0) return { success: false, error: "Esse público não alcança ninguém. Mude o filtro." };
     if (users.length > MAXIMO_DE_DESTINATARIOS) return { success: false, error: `Esse público tem ${users.length} pessoas e o limite por envio é ${MAXIMO_DE_DESTINATARIOS}. Restrinja o público.` };
 
-    const id = await saveDraftRow(data, v.linkUrl, admin);
+    const id = await gravarLinhaDoRascunho(data, v.linkUrl, admin);
     if (!id) return { success: false, error: "Este comunicado já foi enviado ou não existe." };
 
     // Só o primeiro clique passa de DRAFT para SENDING: duplo clique ou reenvio não duplica nada
@@ -158,11 +158,11 @@ export async function sendAnnouncementNow(input: unknown): Promise<{ success: tr
 }
 
 /** Retoma um envio interrompido: libera as reservas velhas e processa o que sobrou (quem já recebeu não repete). */
-export async function resumeAnnouncement(input: unknown): Promise<{ success: true; message: string } | Fail> {
+export async function retomarComunicado(input: unknown): Promise<{ success: true; message: string } | Falha> {
   try {
     const admin = await exigirAdminDaPlataforma();
     const { id } = z.object({ id: z.string().uuid() }).parse(input);
-    const limit = await conferirLimiteDeUso({ key: `ANNOUNCE_RESUME:${admin.userId}`, limit: 10, windowMs: 60 * MINUTE });
+    const limit = await conferirLimiteDeUso({ key: `ANNOUNCE_RESUME:${admin.userId}`, limit: 10, windowMs: 60 * UM_MINUTO_EM_MS });
     if (!limit.success) return { success: false, error: "Muitas tentativas seguidas. Aguarde um pouco." };
     const found = await prisma.announcement.findUnique({ where: { id }, select: { status: true } });
     if (!found || found.status !== "SENDING") return { success: false, error: "Este envio não está em andamento." };

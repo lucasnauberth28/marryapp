@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Link2, Loader2, MessageCircle, Star } from "lucide-react";
 import { toast } from "sonner";
-import { requestLeadReview } from "@/actions/vendor-panel-actions";
+import { pedirAvaliacaoDoPedido } from "@/actions/vendor-panel-actions";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { whatsappHref } from "../../../_lib/vendor-panel";
@@ -57,7 +57,7 @@ export function ReviewRequest({
 
   function generate() {
     startTransition(async () => {
-      const res = await requestLeadReview(leadId);
+      const res = await pedirAvaliacaoDoPedido(leadId);
       if (res.success) {
         setUrl(res.url);
         toast.success("Link de avaliação pronto. Envie ao casal.");

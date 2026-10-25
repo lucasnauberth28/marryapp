@@ -2,7 +2,7 @@ import { PageHeader } from "@/components/plataforma/page-header";
 import { TabsNav } from "@/components/plataforma/tabs-nav";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type ParametrosDeBusca, umDosValores } from "@/lib/platform/list-params";
-import { getRoles, getUsers } from "@/actions/rbac-actions";
+import { obterPerfis, obterPessoas } from "@/actions/rbac-actions";
 import { UsersClient } from "@/app/(admin)/usuarios/users-client";
 import { RolesClient } from "@/app/(admin)/perfis/roles-client";
 
@@ -16,7 +16,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
   const aba = umDosValores(query, "aba", ["usuarios", "perfis"] as const) ?? "usuarios";
-  const [users, roles] = await Promise.all([aba === "usuarios" ? getUsers() : Promise.resolve([]), getRoles()]);
+  const [users, roles] = await Promise.all([aba === "usuarios" ? obterPessoas() : Promise.resolve([]), obterPerfis()]);
 
   return (
     <>

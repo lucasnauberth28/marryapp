@@ -1,7 +1,7 @@
 import { Metadata } from "next"
 import { PaymentMethod, PaymentStatus } from "@prisma/client"
 import prisma from "@/lib/prisma"
-import { getGifts } from "@/actions/gift-actions"
+import { obterPresentes } from "@/actions/gift-actions"
 import { GiftsClient, type GiftPayment } from "./gifts-client"
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context"
 import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links"
@@ -29,7 +29,7 @@ function whenLabel(date: Date, now: Date) {
 export default async function PresentesAdminPage() {
   const { weddingId, wedding } = await exigirCasamentoNaPagina("/presentes-admin")
 
-  const result = await getGifts()
+  const result = await obterPresentes()
   const gifts = result.success ? result.data : []
 
   // Pagamentos reais dos presentes, só do casamento da sessão (leitura).

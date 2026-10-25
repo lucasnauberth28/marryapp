@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getUsers, getRoles } from "@/actions/rbac-actions";
+import { obterPessoas, obterPerfis } from "@/actions/rbac-actions";
 import { obterSessao } from "@/lib/security/auth-guard";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
 import { UsersClient } from "./users-client";
@@ -16,8 +16,8 @@ export default async function UsersPage() {
   if (session && ehAcessoDeAdminDaPlataforma(session.allowedPaths)) redirect("/admin/usuarios");
 
   const [users, roles] = await Promise.all([
-    getUsers(),
-    getRoles()
+    obterPessoas(),
+    obterPerfis()
   ]);
 
   return (

@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, TicketPercent } from "lucide-react";
-import { createCoupon, deleteCoupon, updateCoupon, type CouponFields } from "@/actions/coupon-actions";
+import { criarCupom, excluirCupom, atualizarCupom, type CamposDoCupom } from "@/actions/coupon-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
@@ -113,16 +113,16 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
       setError(draft.kind === "percent" ? "Informe o percentual de 1 a 100." : "Informe o valor do desconto, por exemplo 20,00.");
       return;
     }
-    const fields: CouponFields = {
+    const fields: CamposDoCupom = {
       kind: draft.kind,
       value,
-      planIds: draft.planIds as CouponFields["planIds"],
+      planIds: draft.planIds as CamposDoCupom["planIds"],
       maxRedemptions: draft.maxRedemptions.trim() ? Number(draft.maxRedemptions) : null,
       expiresAt: draft.expiresAt || null,
       active: draft.active,
     };
     startTransition(async () => {
-      const res = editing === "new" ? await createCoupon({ code: draft.code, ...fields }) : await updateCoupon(editing ?? "", fields);
+      const res = editing === "new" ? await criarCupom({ code: draft.code, ...fields }) : await atualizarCupom(editing ?? "", fields);
       if (res.success) {
         toast.success(editing === "new" ? `Cupom ${draft.code.trim().toUpperCase()} criado.` : "Cupom atualizado.");
         setEditing(null);
@@ -135,7 +135,7 @@ export function CouponsSection({ coupons, plans }: { coupons: CouponRow[]; plans
 
   const remove = (c: CouponRow) =>
     startTransition(async () => {
-      const res = await deleteCoupon(c.id);
+      const res = await excluirCupom(c.id);
       if (res.success) {
         toast.success(`Cupom ${c.code} excluído.`);
         setDeleting(null);

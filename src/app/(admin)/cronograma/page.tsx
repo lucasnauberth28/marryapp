@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { getTimelineEvents } from "@/actions/timeline-actions";
+import { obterEventosDaLinhaDoTempo } from "@/actions/timeline-actions";
 import { TimelineClient } from "./timeline-client";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 
@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 export default async function CronogramaPage() {
   await exigirCasamentoNaPagina("/cronograma");
-  const [events, identity] = await Promise.all([getTimelineEvents(), obterIdentidadeDoCasamentoPrincipal()]);
+  const [events, identity] = await Promise.all([obterEventosDaLinhaDoTempo(), obterIdentidadeDoCasamentoPrincipal()]);
 
   // "Sábado, 17 de abril de 2027"
   const dateLabel = identity.weddingDate ? format(identity.weddingDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR }) : null;

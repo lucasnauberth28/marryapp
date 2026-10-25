@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Eye, Pencil } from "lucide-react";
-import { endImpersonation } from "@/actions/admin-impersonation-actions";
+import { encerrarPersonificacao } from "@/actions/admin-impersonation-actions";
 import { btn } from "@/components/landing/styles";
 import { LoadingButton } from "@/components/painel/loading-button";
 import { minutosRestantes } from "@/lib/security/impersonation-rules";
@@ -25,7 +25,7 @@ export function ImpersonationBanner({ coupleNames, canEdit, expiresAt }: { coupl
     leaving.current = true;
     startTransition(async () => {
       try {
-        const result = await endImpersonation();
+        const result = await encerrarPersonificacao();
         if (result.success) {
           window.location.assign(result.redirectTo);
           return;

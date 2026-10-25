@@ -9,7 +9,7 @@ import { Panel } from "@/components/plataforma/panel";
 import { Button } from "@/components/ui/button";
 import { Pencil, CheckCircle2, Archive } from "lucide-react";
 import { formatarDataEHora } from "@/lib/platform/format";
-import { publishInstructionVersion, revertInstructionVersion, saveInstructionVersion } from "@/actions/admin-madrinha-actions";
+import { publicarVersaoDasInstrucoes, reverterVersaoDasInstrucoes, salvarVersaoDasInstrucoes } from "@/actions/admin-madrinha-actions";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
 export interface VersionItem {
@@ -48,7 +48,7 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
         className="flex flex-col gap-4"
         onSubmit={(e) => {
           e.preventDefault();
-          save.run(() => saveInstructionVersion({ content: text, changeNote: note }), () => setNote(""));
+          save.run(() => salvarVersaoDasInstrucoes({ content: text, changeNote: note }), () => setNote(""));
         }}
       >
         <Textarea label="O que a Liz deve fazer" value={text} onChange={(e) => setText(e.target.value)} rows={10} error={save.errors.content} maxLength={8000} />
@@ -103,7 +103,7 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
                       loading={row.pending && rowBusy === `publicar:${v.id}`}
                       onClick={() => {
                         setRowBusy(`publicar:${v.id}`);
-                        row.run(() => publishInstructionVersion({ id: v.id }));
+                        row.run(() => publicarVersaoDasInstrucoes({ id: v.id }));
                       }}
                     >
                       Publicar
@@ -118,7 +118,7 @@ export function InstructionsEditor({ versions }: { versions: VersionItem[] }) {
                       loading={row.pending && rowBusy === `reverter:${v.id}`}
                       onClick={() => {
                         setRowBusy(`reverter:${v.id}`);
-                        row.run(() => revertInstructionVersion({ id: v.id }));
+                        row.run(() => reverterVersaoDasInstrucoes({ id: v.id }));
                       }}
                     >
                       Reverter para esta

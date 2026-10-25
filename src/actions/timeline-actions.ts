@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 // Campos que o cronograma pode gravar. Qualquer outro campo enviado (ex.: weddingId) é ignorado.
-const TimelineEventSchema = z.object({
+const EsquemaDoEventoDaLinhaDoTempo = z.object({
   title: z.string().trim().min(1, "Informe o título do evento.").max(160),
   time: z.string().trim().min(1, "Informe o horário.").max(20),
   description: z.string().trim().max(2000).optional(),
@@ -17,17 +17,17 @@ const TimelineEventSchema = z.object({
   position: z.coerce.number().int().default(0),
 });
 
-type TimelineEventInput = { title: string; time: string; description?: string; icon: string; position: number };
+type EntradaDoEventoDaLinhaDoTempo = { title: string; time: string; description?: string; icon: string; position: number };
 
 /** Cronograma do casamento da sessão (painel). O público lê pelo endereço do casamento. */
-export async function getTimelineEvents() {
+export async function obterEventosDaLinhaDoTempo() {
   const { weddingId } = await exigirCasamentoParaLeitura("/cronograma");
   return obterLinhaDoTempoDoCasamento(weddingId);
 }
 
-export async function createTimelineEvent(data: TimelineEventInput) {
+export async function criarEventoDaLinhaDoTempo(data: EntradaDoEventoDaLinhaDoTempo) {
   const { weddingId } = await exigirCasamento("/cronograma");
-  const parsed = TimelineEventSchema.safeParse(data);
+  const parsed = EsquemaDoEventoDaLinhaDoTempo.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   try {
     await prisma.timelineEvent.create({ data: { ...parsed.data, weddingId } });
@@ -39,10 +39,10 @@ export async function createTimelineEvent(data: TimelineEventInput) {
   }
 }
 
-export async function updateTimelineEvent(id: string, data: TimelineEventInput) {
+export async function atualizarEventoDaLinhaDoTempo(id: string, data: EntradaDoEventoDaLinhaDoTempo) {
   const { weddingId } = await exigirCasamento("/cronograma");
   if (typeof id !== "string") return { success: false, error: ERROS.horarioNaoEncontrado };
-  const parsed = TimelineEventSchema.safeParse(data);
+  const parsed = EsquemaDoEventoDaLinhaDoTempo.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   try {
     const result = await prisma.timelineEvent.updateMany({ where: { id, weddingId }, data: parsed.data });
@@ -55,7 +55,7 @@ export async function updateTimelineEvent(id: string, data: TimelineEventInput) 
   }
 }
 
-export async function deleteTimelineEvent(id: string) {
+export async function excluirEventoDaLinhaDoTempo(id: string) {
   const { weddingId } = await exigirCasamento("/cronograma");
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.horarioNaoEncontrado };

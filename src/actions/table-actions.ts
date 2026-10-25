@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
-export async function getTablesWithGuests() {
+export async function obterMesasComConvidados() {
   const { weddingId } = await exigirCasamentoParaLeitura();
   return prisma.table.findMany({
     where: { weddingId },
@@ -23,7 +23,7 @@ export async function getTablesWithGuests() {
   });
 }
 
-export async function getUnassignedGuests() {
+export async function obterConvidadosSemMesa() {
   const { weddingId } = await exigirCasamentoParaLeitura();
   return prisma.guest.findMany({
     where: {
@@ -39,7 +39,7 @@ export async function getUnassignedGuests() {
   });
 }
 
-export async function createTable(name: string, capacity: number) {
+export async function criarMesa(name: string, capacity: number) {
   const { weddingId } = await exigirCasamento("/mesas");
   try {
     const cleanName = typeof name === "string" ? name.trim().slice(0, 120) : "";
@@ -57,7 +57,7 @@ export async function createTable(name: string, capacity: number) {
   }
 }
 
-export async function deleteTable(id: string) {
+export async function excluirMesa(id: string) {
   const { weddingId } = await exigirCasamento("/mesas");
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.mesaNaoEncontrada };
@@ -77,7 +77,7 @@ export async function deleteTable(id: string) {
   }
 }
 
-export async function assignGuestToTable(guestId: string, tableId: string | null) {
+export async function colocarConvidadoNaMesa(guestId: string, tableId: string | null) {
   const { weddingId } = await exigirCasamento("/mesas");
   try {
     if (typeof guestId !== "string") return { success: false, error: ERROS.convidadoNaoEncontrado };

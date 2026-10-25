@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useState, useTransition } from "react";
 import { TicketPercent, X } from "lucide-react";
-import { previewSubscriptionPrice } from "@/actions/subscription-actions";
+import { previaDoPrecoDaAssinatura } from "@/actions/subscription-actions";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +41,7 @@ export function CouponField({ planId, modules, applied, onChange, creditLabel = 
   const [isPending, startTransition] = useTransition();
 
   const check = (couponCode: string) =>
-    previewSubscriptionPrice({ planId, modules, couponCode }).then((res) => {
+    previaDoPrecoDaAssinatura({ planId, modules, couponCode }).then((res) => {
       if (res.success && res.couponCode) {
         setError("");
         onChange({ code: res.couponCode, planId, price: res.price, credit: res.credit, discount: res.discount, total: res.total });
@@ -55,7 +55,7 @@ export function CouponField({ planId, modules, applied, onChange, creditLabel = 
   useEffect(() => {
     if (!applied || applied.planId === planId) return;
     let cancelled = false;
-    previewSubscriptionPrice({ planId, modules, couponCode: applied.code }).then((res) => {
+    previaDoPrecoDaAssinatura({ planId, modules, couponCode: applied.code }).then((res) => {
       if (cancelled) return;
       if (res.success && res.couponCode) {
         onChange({ code: res.couponCode, planId, price: res.price, credit: res.credit, discount: res.discount, total: res.total });

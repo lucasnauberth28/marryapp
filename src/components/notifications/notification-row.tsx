@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import type { NotificationItem } from "@/actions/notification-actions";
+import type { ItemDeNotificacao } from "@/actions/notification-actions";
 import { tempoRelativo } from "@/lib/notifications/relative-time";
 import { cn } from "@/lib/utils";
 import { NotificationIconBadge } from "./visuals";
 
 interface Props {
-  item: NotificationItem;
+  item: ItemDeNotificacao;
   now: Date;
   /** Chamado ao abrir o aviso (marca como lido e fecha o painel). */
-  onOpen: (item: NotificationItem) => void;
+  onOpen: (item: ItemDeNotificacao) => void;
 }
 
 /** Uma linha da lista: não lido tem fundo suave, ponto e título em negrito. A linha toda é o alvo de toque (44px+). */

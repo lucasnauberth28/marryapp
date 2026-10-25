@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { QrFrame } from "@/components/ui/qr-frame";
 import { CORES_DO_QR } from "@/lib/qr-colors";
 import { LoadingRegion, SkeletonImage } from "@/components/skeletons";
-import { reconnectWhatsapp } from "@/actions/admin-saude-actions";
+import { reconectarWhatsapp } from "@/actions/admin-saude-actions";
 
 /** "Reconectar": gera o QR Code do WhatsApp para parear de novo. Depois de ler, a página precisa ser atualizada. */
 export function ReconnectWhatsapp() {
@@ -22,7 +22,7 @@ export function ReconnectWhatsapp() {
     setOpen(true);
     startTransition(async () => {
       try {
-        const res = await reconnectWhatsapp();
+        const res = await reconectarWhatsapp();
         if (res.success) setQr(res.qrCode);
         else setError(res.error);
       } catch {

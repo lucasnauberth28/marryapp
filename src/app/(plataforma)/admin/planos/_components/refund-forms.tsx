@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { decideRefundAction, registerRefundRequestAction, type AdminPlanosResult } from "@/actions/admin-planos-actions";
+import { decidirReembolso, registrarPedidoDeReembolso, type ResultadoDaAcaoDePlanos } from "@/actions/admin-planos-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
@@ -14,7 +14,7 @@ function useRun() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const run = (action: () => Promise<AdminPlanosResult>, after?: () => void) => {
+  const run = (action: () => Promise<ResultadoDaAcaoDePlanos>, after?: () => void) => {
     setError(null);
     startTransition(async () => {
       const res = await action();
@@ -42,7 +42,7 @@ export function RefundDecision({ refundId, payer }: { refundId: string; payer: s
           className="flex flex-col gap-3"
           onSubmit={(e) => {
             e.preventDefault();
-            run(() => decideRefundAction({ refundId, decision: open, note }), () => setOpen(null));
+            run(() => decidirReembolso({ refundId, decision: open, note }), () => setOpen(null));
           }}
         >
           {open === "approve" ? (
@@ -100,7 +100,7 @@ export function RegisterRefundForm({ payments }: { payments: { id: string; label
       className="grid gap-4 md:grid-cols-2"
       onSubmit={(e) => {
         e.preventDefault();
-        run(() => registerRefundRequestAction({ subscriptionId, amountCents: toCents(amount), reason }), () => {
+        run(() => registrarPedidoDeReembolso({ subscriptionId, amountCents: toCents(amount), reason }), () => {
           setSubscriptionId("");
           setAmount("");
           setReason("");

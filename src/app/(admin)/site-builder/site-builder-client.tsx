@@ -30,13 +30,13 @@ import { WeddingSiteView, type WeddingSiteSettings } from "@/components/public/w
 import { destaqueLegivel } from "@/lib/wedding-format";
 import { caminhoDoSiteDoCasamento, urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import {
-  updateSiteCustomization,
-  uploadSiteImageAction,
-  createStoryItem,
-  deleteStoryItem,
-  createWeddingTip,
-  deleteWeddingTip,
-  type SiteCustomizationInput,
+  atualizarPersonalizacaoDoSite,
+  enviarImagemDoSite,
+  criarItemDaHistoria,
+  excluirItemDaHistoria,
+  criarDicaDoCasamento,
+  excluirDicaDoCasamento,
+  type EntradaDaPersonalizacaoDoSite,
 } from "@/actions/site-builder-actions";
 import { toast } from "sonner";
 
@@ -232,12 +232,12 @@ export function SiteBuilderClient({
   const handleSave = () => {
     const payload = Object.fromEntries(
       EDITABLE_KEYS.filter((k) => settings[k] !== undefined).map((k) => [k, settings[k]])
-    ) as SiteCustomizationInput;
+    ) as EntradaDaPersonalizacaoDoSite;
 
     const toastId = toast.loading("Publicando as alterações...");
     setBusyAction("publish");
     startTransition(async () => {
-      const res = await updateSiteCustomization(payload);
+      const res = await atualizarPersonalizacaoDoSite(payload);
       setBusyAction(null);
       if (res.success) {
         setDirty(false);
@@ -255,7 +255,7 @@ export function SiteBuilderClient({
     const data = new FormData();
     data.append("image", file);
     startTransition(async () => {
-      const res = await uploadSiteImageAction(data);
+      const res = await enviarImagemDoSite(data);
       setUploading(null);
       if (res.success && res.url) {
         update({ [field]: res.url });
@@ -273,7 +273,7 @@ export function SiteBuilderClient({
     }
     setBusyAction("story");
     startTransition(async () => {
-      const res = await createStoryItem({ ...story, position: storyItems.length });
+      const res = await criarItemDaHistoria({ ...story, position: storyItems.length });
       setBusyAction(null);
       if (res.success && res.item) {
         setStoryItems((prev) => [...prev, res.item as StoryItem]);
@@ -292,7 +292,7 @@ export function SiteBuilderClient({
     }
     setBusyAction("tip");
     startTransition(async () => {
-      const res = await createWeddingTip({ ...tip, position: tips.length });
+      const res = await criarDicaDoCasamento({ ...tip, position: tips.length });
       setBusyAction(null);
       if (res.success && res.tip) {
         setTips((prev) => [...prev, res.tip as Tip]);
@@ -308,7 +308,7 @@ export function SiteBuilderClient({
     if (!pendingDelete) return;
     const { kind, id } = pendingDelete;
     startTransition(async () => {
-      const res = kind === "story" ? await deleteStoryItem(id) : await deleteWeddingTip(id);
+      const res = kind === "story" ? await excluirItemDaHistoria(id) : await excluirDicaDoCasamento(id);
       if (res.success) {
         if (kind === "story") setStoryItems((prev) => prev.filter((i) => i.id !== id));
         else setTips((prev) => prev.filter((t) => t.id !== id));
@@ -323,7 +323,7 @@ export function SiteBuilderClient({
   const toggleBlock = (key: keyof WeddingSiteSettings, checked: boolean) => {
     setSettings((prev) => ({ ...prev, [key]: checked }));
     startTransition(async () => {
-      const res = await updateSiteCustomization({ [key]: checked } as SiteCustomizationInput);
+      const res = await atualizarPersonalizacaoDoSite({ [key]: checked } as EntradaDaPersonalizacaoDoSite);
       if (res.success) toast.success(checked ? "Seção exibida no site." : "Seção ocultada do site.");
       else {
         setSettings((prev) => ({ ...prev, [key]: !checked }));

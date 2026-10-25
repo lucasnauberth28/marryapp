@@ -22,10 +22,10 @@ import { ehViolacaoDeUnicidade, prepararCasamento, criarOuAtualizarPapelDoCasal,
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 /** Perfil das contas de fornecedor (o mesmo criado pelo seed). */
-const VENDOR_ROLE_NAME = "Fornecedor";
-const VENDOR_PANEL_PATH = "/fornecedor";
+const NOME_DO_PAPEL_DE_FORNECEDOR = "Fornecedor";
+const CAMINHO_DO_PAINEL_DO_FORNECEDOR = "/fornecedor";
 
-export interface PlanRegistrationData {
+export interface DadosDoCadastroDoPlano {
   planType: "COUPLE" | "VENDOR";
   planId: "basic" | "classic" | "vip" | "start" | "pro" | "master" | "custom";
   modules?: string[]; // módulos do plano personalizado
@@ -56,9 +56,9 @@ export interface PlanRegistrationData {
   website?: string;
 }
 
-const optionalText = (max: number) => z.string().trim().max(max).optional().or(z.literal(""));
+const textoOpcional = (max: number) => z.string().trim().max(max).optional().or(z.literal(""));
 
-const RegistrationSchema = z.object({
+const EsquemaDoCadastro = z.object({
   planId: z.string(),
   modules: z.array(z.string().max(40)).max(20).optional(),
   name: z.string().trim().min(3, "Informe seu nome completo.").max(120),
@@ -68,11 +68,11 @@ const RegistrationSchema = z.object({
     .transform((v) => somenteDigitos(v))
     .refine((v) => v.length >= 10 && v.length <= 13, "Telefone inválido."),
   password: z.string().min(8, "A senha deve ter ao menos 8 caracteres.").max(200),
-  slug: optionalText(100),
+  slug: textoOpcional(100),
   weddingDate: z.coerce.date().optional().nullable(),
-  companyName: optionalText(120),
-  vendorCategory: optionalText(60),
-  vendorRegion: optionalText(80),
+  companyName: textoOpcional(120),
+  vendorCategory: textoOpcional(60),
+  vendorRegion: textoOpcional(80),
   logoUrl: z.string().max(8_000_000).optional(),
   coverUrl: z.string().max(8_000_000).optional(),
   galleryImages: z.array(z.string().max(8_000_000)).max(8).optional(),
@@ -80,16 +80,16 @@ const RegistrationSchema = z.object({
   averageTicket: z.coerce.number().int().min(0).max(1_000_000_00).optional(),
   priceRange: z.enum(["$", "$$", "$$$", "$$$$"]).optional(),
   documentType: z.enum(["CNPJ", "CPF"]).optional(),
-  documentNumber: optionalText(20),
-  instagram: optionalText(80),
-  tiktok: optionalText(80),
-  website: optionalText(200),
+  documentNumber: textoOpcional(20),
+  instagram: textoOpcional(80),
+  tiktok: textoOpcional(80),
+  website: textoOpcional(200),
 });
 
 /**
  * Calcula a faixa de preço ($ / $$ / $$$ / $$$$) baseado no ticket médio / valor inicial
  */
-function calculatePriceRange(avgTicketInCents?: number, startingPriceInCents?: number): string {
+function calcularFaixaDePreco(avgTicketInCents?: number, startingPriceInCents?: number): string {
   const value = (avgTicketInCents || startingPriceInCents || 0) / 100;
   if (value <= 3000) return "$";
   if (value <= 8000) return "$$";
@@ -101,7 +101,7 @@ function calculatePriceRange(avgTicketInCents?: number, startingPriceInCents?: n
  * Imagens chegam como data URL do formulário público: valida tipo/tamanho e envia ao storage.
  * Também aceita URLs https já hospedadas.
  */
-async function storeImage(value: string | undefined, folder: string): Promise<string | null> {
+async function guardarImagem(value: string | undefined, folder: string): Promise<string | null> {
   if (!value) return null;
   if (value.startsWith("data:")) {
     const upload = await enviarImagemDeDataUrl(value, folder);
@@ -113,20 +113,20 @@ async function storeImage(value: string | undefined, folder: string): Promise<st
 }
 
 /** Plano a cobrar: só a chave do catálogo (e os módulos do plano adaptado). O preço vem do servidor. */
-export interface SubscriptionCheckoutInput {
+export interface EntradaDoPagamentoDaAssinatura {
   planId: string;
   modules?: string[];
   /** Cupom opcional: validado de novo no servidor ao gerar o Pix. */
   couponCode?: string | null;
 }
 
-const PIX_VALIDITY_MS = 10 * 60 * 1000;
+const VALIDADE_DO_PIX_EM_MS = 10 * 60 * 1000;
 
 /**
  * Prévia do preço no checkout (crédito de troca e cupom), sem gerar cobrança.
  * Limitada por conta para ninguém sair testando códigos de cupom.
  */
-export async function previewSubscriptionPrice(input: SubscriptionCheckoutInput) {
+export async function previaDoPrecoDaAssinatura(input: EntradaDoPagamentoDaAssinatura) {
   try {
     const session = await obterSessao();
     if (!session || session.userId === ID_DO_SUPER_ADMIN) {
@@ -155,7 +155,7 @@ export async function previewSubscriptionPrice(input: SubscriptionCheckoutInput)
  * Cria a assinatura pendente; o plano é liberado quando o pagamento é aprovado
  * (webhook do Mercado Pago ou conferência em verifySubscriptionPaymentStatus).
  */
-export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) {
+export async function gerarPixDaAssinatura(input: EntradaDoPagamentoDaAssinatura) {
   try {
     const session = await obterSessao();
     if (!session || session.userId === ID_DO_SUPER_ADMIN) {
@@ -178,7 +178,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
     const { plan, user, modules, breakdown, couponCode } = quoted.quote;
     const amount = breakdown.total;
 
-    const expiresAt = new Date(Date.now() + PIX_VALIDITY_MS);
+    const expiresAt = new Date(Date.now() + VALIDADE_DO_PIX_EM_MS);
     const subscription = await prisma.subscription.create({
       data: {
         userId: session.userId,
@@ -274,7 +274,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
  * Confere o pagamento de uma assinatura da conta logada. Se o Mercado Pago já aprovou e o
  * webhook ainda não chegou, ativa o plano aqui mesmo (a ativação é idempotente).
  */
-export async function verifySubscriptionPaymentStatus(subscriptionId: string) {
+export async function verificarSituacaoDoPagamentoDaAssinatura(subscriptionId: string) {
   try {
     const session = await obterSessao();
     if (!session) return { success: false, paid: false, message: "Sessão expirada. Entre de novo." };
@@ -306,7 +306,7 @@ export async function verifySubscriptionPaymentStatus(subscriptionId: string) {
             amountInReais: mpResponse.transaction_amount,
           });
           if (result === "activated" || result === "already") {
-            revalidatePlanPages();
+            atualizarPaginasDoPlano();
             return { success: true, paid: true, status: "approved" };
           }
           return { success: false, paid: false, status: "rejected", message: "O valor pago não confere. Fale com o suporte." };
@@ -327,13 +327,13 @@ export async function verifySubscriptionPaymentStatus(subscriptionId: string) {
   }
 }
 
-function revalidatePlanPages() {
+function atualizarPaginasDoPlano() {
   revalidatePath("/fornecedor", "layout");
   revalidatePath("/fornecedores");
 }
 
 /** Data do casamento do cadastro: só datas plausíveis (o resto vira "ainda sem data"). */
-function validWeddingDate(date: Date | null | undefined): Date | null {
+function dataDeCasamentoValida(date: Date | null | undefined): Date | null {
   if (!date || Number.isNaN(date.getTime())) return null;
   const year = date.getUTCFullYear();
   const now = new Date().getUTCFullYear();
@@ -344,12 +344,12 @@ function validWeddingDate(date: Date | null | undefined): Date | null {
  * Registra a conta do usuário (Casal ou Fornecedor).
  * Casal: cria o casamento junto com a conta e devolve redirectTo "/boas-vindas" (onboarding).
  */
-export async function registerPlanAccount(data: PlanRegistrationData) {
+export async function cadastrarContaDoPlano(data: DadosDoCadastroDoPlano) {
   // O preço vem do catálogo do servidor; o `amount` enviado pelo navegador é ignorado.
   const plan = resolverPlanoNoCatalogo(await obterCatalogo(), data.planId, data.modules);
   if (!plan) return { success: false, error: "Plano inválido." };
 
-  const parsed = RegistrationSchema.safeParse(data);
+  const parsed = EsquemaDoCadastro.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const input = parsed.data;
 
@@ -376,9 +376,9 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
       }
 
       const [logoUrl, coverUrl, gallery] = await Promise.all([
-        storeImage(input.logoUrl, "vendors/logos"),
-        storeImage(input.coverUrl, "vendors/covers"),
-        Promise.all((input.galleryImages ?? []).map((img) => storeImage(img, "vendors/gallery"))),
+        guardarImagem(input.logoUrl, "vendors/logos"),
+        guardarImagem(input.coverUrl, "vendors/covers"),
+        Promise.all((input.galleryImages ?? []).map((img) => guardarImagem(img, "vendors/gallery"))),
       ]);
 
       const tier =
@@ -395,7 +395,7 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
         galleryImages: gallery.filter(Boolean).length > 0 ? JSON.stringify(gallery.filter(Boolean)) : null,
         startingPrice: input.startingPrice ?? null,
         averageTicket: input.averageTicket ?? null,
-        priceRange: input.priceRange || calculatePriceRange(input.averageTicket, input.startingPrice),
+        priceRange: input.priceRange || calcularFaixaDePreco(input.averageTicket, input.startingPrice),
         documentType: input.documentType || "CNPJ",
         documentNumber: input.documentNumber.replace(/[^\d./-]/g, ""),
         instagram: input.instagram || null,
@@ -413,7 +413,7 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
     const name = normalizarTexto(input.name);
 
     if (!isVendor) {
-      const weddingDate = validWeddingDate(input.weddingDate);
+      const weddingDate = dataDeCasamentoValida(input.weddingDate);
       // Casamento, site, regras, perfil "Casal" e usuário nascem juntos (tudo ou nada).
       const created = await comNovaTentativaDeEndereco(() =>
         prisma.$transaction(async (tx) => {
@@ -454,9 +454,9 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
     }
 
     const role = await prisma.role.upsert({
-      where: { name: VENDOR_ROLE_NAME },
+      where: { name: NOME_DO_PAPEL_DE_FORNECEDOR },
       update: {},
-      create: { name: VENDOR_ROLE_NAME, allowedPaths: [VENDOR_PANEL_PATH] },
+      create: { name: NOME_DO_PAPEL_DE_FORNECEDOR, allowedPaths: [CAMINHO_DO_PAINEL_DO_FORNECEDOR] },
     });
 
     const user = await prisma.$transaction(async (tx) => {
@@ -485,7 +485,7 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
       userId: user.id,
       isFree: plan.price === 0,
       isVendor,
-      redirectTo: hasPathAccess(allowedPaths, VENDOR_PANEL_PATH) ? VENDOR_PANEL_PATH : null,
+      redirectTo: hasPathAccess(allowedPaths, CAMINHO_DO_PAINEL_DO_FORNECEDOR) ? CAMINHO_DO_PAINEL_DO_FORNECEDOR : null,
       slug: input.slug ? limparEndereco(input.slug) : undefined,
     };
   } catch (error) {

@@ -5,7 +5,7 @@ import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Check, Clock, Download, HeartHandshake, MessageCircle, Plus, Search, Trash2, Upload, UserCheck, X } from "lucide-react";
 import { GuestLocal as Guest } from "@/types/local";
-import { deleteGuest } from "@/actions/guest-actions";
+import { excluirConvidado } from "@/actions/guest-actions";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { PageHeader } from "@/components/admin/page-header";
 import { RsvpChip } from "@/components/painel/status-chip";
@@ -137,7 +137,7 @@ export function GuestsClient({ initialGuests, deadlineLabel, canRemind, initialF
     const toastId = toast.loading("Removendo convidado...");
     setRemovingId(id);
     startTransition(async () => {
-      const res = await deleteGuest(id);
+      const res = await excluirConvidado(id);
       if (res.success) {
         toast.success("Convidado removido.", { id: toastId });
       } else {

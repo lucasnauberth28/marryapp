@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Check, Circle } from "lucide-react";
-import { dismissFirstSteps } from "@/actions/tour-actions";
+import { dispensarPrimeirosPassos } from "@/actions/tour-actions";
 import { Button } from "@/components/ui/button";
 import type { ItemDosPrimeirosPassos } from "@/lib/tour/first-steps";
 
@@ -18,7 +18,7 @@ export function FirstSteps({ items, doneCount }: { items: ItemDosPrimeirosPassos
   function dismiss() {
     setError(null);
     startTransition(async () => {
-      const res = await dismissFirstSteps().catch(() => null);
+      const res = await dispensarPrimeirosPassos().catch(() => null);
       if (!res || !res.success) setError(res && !res.success ? res.error : "Não deu para dispensar a lista. Tente de novo.");
     });
   }

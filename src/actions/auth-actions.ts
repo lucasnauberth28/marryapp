@@ -15,26 +15,26 @@ import { classificarConta } from "@/lib/account/wedding-provisioning";
 
 // Hash válido usado quando o usuário não existe, para que o tempo de resposta
 // não revele quais logins estão cadastrados.
-const DUMMY_HASH = "$2b$10$HdQS57clr9d1VjdlqcanTOmPx0ns8oLM8qFY5CmXwqlFneJlhHQi6";
+const HASH_DE_ENGANO = "$2b$10$HdQS57clr9d1VjdlqcanTOmPx0ns8oLM8qFY5CmXwqlFneJlhHQi6";
 
-function safeEqual(a: string, b: string) {
+function iguaisComSeguranca(a: string, b: string) {
   const ha = createHash("sha256").update(a).digest();
   const hb = createHash("sha256").update(b).digest();
   return timingSafeEqual(ha, hb);
 }
 
-async function setSessionCookie(token: string) {
+async function gravarCookieDeSessao(token: string) {
   const cookieStore = await cookies();
   cookieStore.set(NOME_DO_COOKIE_DE_SESSAO, token, opcoesDoCookieDeSessao());
 }
 
-const GENERIC_LOGIN_ERROR = "Usuário ou senha incorretos.";
+const ERRO_GENERICO_DE_LOGIN = "Usuário ou senha incorretos.";
 
 /**
  * Destino após o login: a administração (/admin) para a conta com acesso total ("*"); o painel do fornecedor
  * para contas de fornecedor; o onboarding (/boas-vindas) para contas de casal ainda sem casamento; senão o painel do casal.
  */
-function landingPathFor(user: {
+function caminhoDeChegadaPara(user: {
   id: string;
   weddingId: string | null;
   partnerVendorId: string | null;
@@ -54,9 +54,9 @@ function landingPathFor(user: {
  * `proxima`: caminho de onde a pessoa saiu (vem do `?proxima=` do login). Vale só se for um caminho
  * interno do app que o perfil pode abrir; senão o destino padrão do perfil.
  */
-export async function login(password: string, username?: string, proxima?: string) {
+export async function entrar(password: string, username?: string, proxima?: string) {
   if (typeof password !== "string" || password.length === 0 || password.length > 200) {
-    return { success: false, error: GENERIC_LOGIN_ERROR };
+    return { success: false, error: ERRO_GENERICO_DE_LOGIN };
   }
 
   const normalizedUsername = (username || "admin").toLowerCase().trim();
@@ -76,18 +76,18 @@ export async function login(password: string, username?: string, proxima?: strin
 
   // Conta de emergência (Super Admin), só ativa se ADMIN_PASSWORD estiver configurada
   const adminPassword = process.env.ADMIN_PASSWORD;
-  if (adminPassword && normalizedUsername === "admin" && safeEqual(password, adminPassword)) {
+  if (adminPassword && normalizedUsername === "admin" && iguaisComSeguranca(password, adminPassword)) {
     const token = await assinarToken({
       userId: ID_DO_SUPER_ADMIN,
       role: "Super Admin",
       allowedPaths: ["*"],
     });
-    await setSessionCookie(token);
+    await gravarCookieDeSessao(token);
     return { success: true, redirectTo: resolverCaminhoPosLogin(proxima, INICIO_DO_ADMIN_DA_PLATAFORMA, ["*"]) };
   }
 
   if (!username) {
-    return { success: false, error: GENERIC_LOGIN_ERROR };
+    return { success: false, error: ERRO_GENERICO_DE_LOGIN };
   }
 
   const user = await prisma.user.findUnique({
@@ -102,9 +102,9 @@ export async function login(password: string, username?: string, proxima?: strin
     },
   });
 
-  const passwordOk = await bcrypt.compare(password, user?.password ?? DUMMY_HASH);
+  const passwordOk = await bcrypt.compare(password, user?.password ?? HASH_DE_ENGANO);
   if (!user || !passwordOk) {
-    return { success: false, error: GENERIC_LOGIN_ERROR };
+    return { success: false, error: ERRO_GENERICO_DE_LOGIN };
   }
 
   const allowedPaths = Array.isArray(user.role.allowedPaths) ? (user.role.allowedPaths as string[]) : [];
@@ -114,14 +114,14 @@ export async function login(password: string, username?: string, proxima?: strin
     role: user.role.name,
     allowedPaths,
   });
-  await setSessionCookie(token);
+  await gravarCookieDeSessao(token);
   // "Última atividade" na administração; uma falha aqui nunca impede a entrada
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() }, select: { id: true } }).catch(() => null);
 
-  return { success: true, redirectTo: resolverCaminhoPosLogin(proxima, landingPathFor(user), allowedPaths) };
+  return { success: true, redirectTo: resolverCaminhoPosLogin(proxima, caminhoDeChegadaPara(user), allowedPaths) };
 }
 
-export async function logout() {
+export async function sair() {
   const cookieStore = await cookies();
   cookieStore.delete(NOME_DO_COOKIE_DE_SESSAO);
   // Saiu de propósito: não é sessão expirada

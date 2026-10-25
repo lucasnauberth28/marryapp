@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import { getWhatsAppStatus } from "@/actions/evolution-actions";
+import { obterSituacaoDoWhatsapp } from "@/actions/evolution-actions";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, CheckCircle2, XCircle } from "lucide-react";
 import { SkeletonStatusBlock } from "@/components/painel/skeleton-parts";
@@ -16,7 +16,7 @@ export function WhatsAppConfigClient() {
   // Só consulta o estado: a conexão é do Aceito (compartilhada) e quem reconecta é a administração da plataforma
   const checkStatus = useCallback(async (isManualRefresh = false, toastId?: string | number) => {
     try {
-      const statusRes = await getWhatsAppStatus();
+      const statusRes = await obterSituacaoDoWhatsapp();
       if (statusRes.state === "open" || statusRes.state === "CONNECTED") {
         setStatus("CONNECTED");
         setMessage("");

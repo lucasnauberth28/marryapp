@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { Moon } from "lucide-react";
 import { toast } from "sonner";
-import { saveNotificationPreferences } from "@/actions/notification-preferences-actions";
+import { salvarPreferenciasDeNotificacao } from "@/actions/notification-preferences-actions";
 import { ROTULO_DO_GRUPO, type PublicoDaNotificacao, type GrupoDeNotificacao } from "@/lib/notifications/catalog";
 import { canaisOferecidos, type CanalDeNotificacao, type PreferenciasDeNotificacao } from "@/lib/notifications/preferences";
 import { NativeSelect } from "@/components/ui/select";
@@ -45,7 +45,7 @@ export function PreferencesForm({ initial, audience, groups, pushPublicKey }: Pr
     setPrefs(next);
     const mine = ++seq.current;
     try {
-      const res = await saveNotificationPreferences(next);
+      const res = await salvarPreferenciasDeNotificacao(next);
       if (res.success) {
         saved.current = next;
         return;

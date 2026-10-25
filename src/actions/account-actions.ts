@@ -16,12 +16,12 @@ import { urlDoApp } from "@/lib/app-url";
 import { registrarAuditoria } from "@/lib/audit";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
-const MINUTE = 60 * 1000;
+const UM_MINUTO_EM_MS = 60 * 1000;
 
-type Fail = { success: false; error: string };
+type Falha = { success: false; error: string };
 
 /** Conta logada (nunca a de emergência), com o necessário para as ações de "Minha conta". */
-async function currentAccount() {
+async function contaAtual() {
   const session = await obterSessao();
   if (!session || session.userId === ID_DO_SUPER_ADMIN) return null;
   const user = await prisma.user.findUnique({
@@ -39,13 +39,13 @@ async function currentAccount() {
   return user ? { ...user, kind: classificarConta(user) } : null;
 }
 
-const NO_SESSION: Fail = { success: false, error: ERROS.sessaoExpirada };
+const SEM_SESSAO: Falha = { success: false, error: ERROS.sessaoExpirada };
 
 // ---------------------------------------------------------------------------
 // Senha
 // ---------------------------------------------------------------------------
 
-const ChangePasswordSchema = z
+const EsquemaDaTrocaDeSenha = z
   .object({
     currentPassword: z.string().min(1, "Informe a senha atual.").max(200),
     newPassword: z.string().min(8, "A nova senha precisa ter pelo menos 8 caracteres.").max(200, "Senha longa demais."),
@@ -54,14 +54,14 @@ const ChangePasswordSchema = z
   .refine((v) => v.newPassword === v.confirm, { message: "As senhas novas não conferem.", path: ["confirm"] })
   .refine((v) => v.newPassword !== v.currentPassword, { message: "A nova senha precisa ser diferente da atual.", path: ["newPassword"] });
 
-export async function changePassword(input: { currentPassword: string; newPassword: string; confirm: string }): Promise<{ success: true } | Fail> {
-  const user = await currentAccount();
-  if (!user) return NO_SESSION;
+export async function trocarSenha(input: { currentPassword: string; newPassword: string; confirm: string }): Promise<{ success: true } | Falha> {
+  const user = await contaAtual();
+  if (!user) return SEM_SESSAO;
 
-  const parsed = ChangePasswordSchema.safeParse(input);
+  const parsed = EsquemaDaTrocaDeSenha.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira os dados." };
 
-  const limit = await conferirLimiteDeUso({ key: `ACCOUNT_PASSWORD:${user.id}`, limit: 5, windowMs: 15 * MINUTE });
+  const limit = await conferirLimiteDeUso({ key: `ACCOUNT_PASSWORD:${user.id}`, limit: 5, windowMs: 15 * UM_MINUTO_EM_MS });
   if (!limit.success) return { success: false, error: ERROS.muitasTentativas };
 
   if (!(await bcrypt.compare(parsed.data.currentPassword, user.password))) {
@@ -82,7 +82,7 @@ export async function changePassword(input: { currentPassword: string; newPasswo
 // Convite do par
 // ---------------------------------------------------------------------------
 
-const InviteSchema = z.object({
+const EsquemaDoConvite = z.object({
   email: z
     .string()
     .trim()
@@ -92,11 +92,11 @@ const InviteSchema = z.object({
     .optional(),
 });
 
-export type CreateInviteResult =
-  | { success: true; path: string; expiresAt: string; email: string | null; emailSent: boolean; invite: PendingInvite }
-  | Fail;
+export type ResultadoDaCriacaoDoConvite =
+  | { success: true; path: string; expiresAt: string; email: string | null; emailSent: boolean; invite: ConvitePendente }
+  | Falha;
 
-export interface PendingInvite {
+export interface ConvitePendente {
   id: string;
   email: string | null;
   createdAt: string;
@@ -107,16 +107,16 @@ export interface PendingInvite {
  * Cria um convite (7 dias) para o par entrar no casamento. O link /convite/<token> só existe
  * nesta resposta: o banco guarda apenas o hash. Com e-mail informado, envia o convite também.
  */
-export async function createPartnerInvite(input: { email?: string }): Promise<CreateInviteResult> {
-  const user = await currentAccount();
-  if (!user) return NO_SESSION;
+export async function criarConviteDePessoaParceira(input: { email?: string }): Promise<ResultadoDaCriacaoDoConvite> {
+  const user = await contaAtual();
+  if (!user) return SEM_SESSAO;
   if (user.kind !== "couple" || !user.wedding) return { success: false, error: "Só contas de casal podem convidar o par." };
 
-  const parsed = InviteSchema.safeParse(input ?? {});
+  const parsed = EsquemaDoConvite.safeParse(input ?? {});
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira o e-mail." };
   const email = parsed.data.email || null;
 
-  const limit = await conferirLimiteDeUso({ key: `WEDDING_INVITE:${user.id}`, limit: 10, windowMs: 60 * MINUTE });
+  const limit = await conferirLimiteDeUso({ key: `WEDDING_INVITE:${user.id}`, limit: 10, windowMs: 60 * UM_MINUTO_EM_MS });
   if (!limit.success) return { success: false, error: "Muitos convites em pouco tempo. Aguarde um pouco." };
 
   const now = new Date();
@@ -161,9 +161,9 @@ export async function createPartnerInvite(input: { email?: string }): Promise<Cr
   };
 }
 
-export async function cancelPartnerInvite(inviteId: string): Promise<{ success: true } | Fail> {
-  const user = await currentAccount();
-  if (!user) return NO_SESSION;
+export async function cancelarConviteDePessoaParceira(inviteId: string): Promise<{ success: true } | Falha> {
+  const user = await contaAtual();
+  if (!user) return SEM_SESSAO;
   if (!user.wedding) return { success: false, error: "Convite não encontrado." };
   if (!z.string().uuid().safeParse(inviteId).success) return { success: false, error: "Convite não encontrado." };
 
@@ -179,7 +179,7 @@ export async function cancelPartnerInvite(inviteId: string): Promise<{ success: 
 // Excluir conta
 // ---------------------------------------------------------------------------
 
-const DeleteSchema = z.object({
+const EsquemaDaExclusao = z.object({
   confirmation: z.string().refine((v) => v.trim().toUpperCase() === "EXCLUIR", 'Digite EXCLUIR para confirmar.'),
   password: z.string().min(1, "Informe sua senha para confirmar.").max(200),
 });
@@ -188,17 +188,17 @@ const DeleteSchema = z.object({
  * Exclui a conta logada. Último membro de um casamento: o casamento vai junto (com tudo dele).
  * Fornecedor: o perfil do marketplace vai junto (pedidos, avaliações, agenda). Encerra a sessão.
  */
-export async function deleteMyAccount(input: { confirmation: string; password: string }): Promise<{ success: true } | Fail> {
-  const user = await currentAccount();
-  if (!user) return NO_SESSION;
+export async function excluirMinhaConta(input: { confirmation: string; password: string }): Promise<{ success: true } | Falha> {
+  const user = await contaAtual();
+  if (!user) return SEM_SESSAO;
   if (user.kind === "admin") {
     return { success: false, error: "Contas da administração são removidas pela tela Usuários, por outra pessoa da equipe." };
   }
 
-  const parsed = DeleteSchema.safeParse(input);
+  const parsed = EsquemaDaExclusao.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira os dados." };
 
-  const limit = await conferirLimiteDeUso({ key: `ACCOUNT_DELETE:${user.id}`, limit: 5, windowMs: 15 * MINUTE });
+  const limit = await conferirLimiteDeUso({ key: `ACCOUNT_DELETE:${user.id}`, limit: 5, windowMs: 15 * UM_MINUTO_EM_MS });
   if (!limit.success) return { success: false, error: ERROS.muitasTentativas };
 
   if (!(await bcrypt.compare(parsed.data.password, user.password))) return { success: false, error: "A senha não confere." };

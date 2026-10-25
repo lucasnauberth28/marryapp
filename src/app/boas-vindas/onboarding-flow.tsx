@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { ArrowRight, CalendarHeart, Check, Copy, Globe, Heart, Palette, User } from "lucide-react";
-import { completeOnboarding } from "@/actions/onboarding-actions";
+import { concluirInicio } from "@/actions/onboarding-actions";
 import { AuthShell, SHELL_PHOTOS, ShellHeading } from "@/components/account/auth-shell";
 import { Seal } from "@/components/landing/seal";
 import { btn, btnArrow } from "@/components/landing/styles";
@@ -71,7 +71,7 @@ export function OnboardingFlow({
     if (first) return document.getElementById(`onb-${first}`)?.focus();
 
     startTransition(async () => {
-      const res = await completeOnboarding({ yourName, partnerName, weddingDate: weddingDate || null });
+      const res = await concluirInicio({ yourName, partnerName, weddingDate: weddingDate || null });
       if (!res.success) {
         if (res.redirectTo) {
           window.location.href = res.redirectTo;

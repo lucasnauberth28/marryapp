@@ -9,7 +9,7 @@ import { obterEstadoDaConexao } from "@/lib/evolution";
  * parear ou trocar o aparelho é da administração da plataforma (reconnectWhatsapp, em /admin/saude),
  * porque a conexão é compartilhada por todos os casamentos.
  */
-export async function getWhatsAppStatus() {
+export async function obterSituacaoDoWhatsapp() {
   await exigirCasamentoParaLeitura("/configuracoes");
   return obterEstadoDaConexao();
 }

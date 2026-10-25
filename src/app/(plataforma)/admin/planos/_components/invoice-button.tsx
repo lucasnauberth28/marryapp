@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { markInvoiceIssuedAction } from "@/actions/admin-planos-actions";
+import { marcarNotaComoEmitida } from "@/actions/admin-planos-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -30,7 +30,7 @@ export function InvoiceButton({ subscriptionId, payer }: { subscriptionId: strin
         e.preventDefault();
         setError(null);
         startTransition(async () => {
-          const res = await markInvoiceIssuedAction({ subscriptionId, number });
+          const res = await marcarNotaComoEmitida({ subscriptionId, number });
           if (res.success) {
             toast.success(res.message);
             router.refresh();

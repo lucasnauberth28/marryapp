@@ -1,9 +1,9 @@
 import {
-  getSiteCustomization,
-  getStoryItems,
-  getWeddingTips,
+  obterPersonalizacaoDoSite,
+  obterItensDaHistoria,
+  obterDicasParaEdicao,
 } from "@/actions/site-builder-actions";
-import { getSettings } from "@/actions/settings-actions";
+import { obterConfiguracoes } from "@/actions/settings-actions";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterPresentesEmDestaque } from "@/lib/wedding-data";
 import { SiteBuilderClient } from "./site-builder-client";
@@ -18,11 +18,11 @@ export const metadata = {
 export default async function SiteBuilderPage() {
   const { weddingId, wedding } = await exigirCasamentoNaPagina("/site-builder");
   const [settings, storyItems, tips, previewGifts, rules] = await Promise.all([
-    getSiteCustomization(),
-    getStoryItems(),
-    getWeddingTips(),
+    obterPersonalizacaoDoSite(),
+    obterItensDaHistoria(),
+    obterDicasParaEdicao(),
     obterPresentesEmDestaque(weddingId),
-    getSettings(),
+    obterConfiguracoes(),
   ]);
 
   return (

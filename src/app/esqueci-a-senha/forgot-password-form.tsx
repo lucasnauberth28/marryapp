@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { ArrowRight, Mail, MailCheck } from "lucide-react";
-import { requestPasswordReset } from "@/actions/password-reset-actions";
+import { pedirRedefinicaoDeSenha } from "@/actions/password-reset-actions";
 import { ShellHeading } from "@/components/account/auth-shell";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ export function ForgotPasswordForm() {
     setFieldError("");
     startTransition(async () => {
       try {
-        const res = await requestPasswordReset({ email: value });
+        const res = await pedirRedefinicaoDeSenha({ email: value });
         if (!res.success) {
           setError(res.error);
           return;

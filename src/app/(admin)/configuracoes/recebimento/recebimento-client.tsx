@@ -4,7 +4,7 @@ import { useId, useState, useTransition, type FormEvent, type ReactNode } from "
 import Link from "next/link";
 import { CheckCircle2, Clock, KeyRound, Landmark, Lock, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import { confirmPayoutAccount, removePayoutAccount, savePayoutAccount, type PayoutResponse } from "@/actions/payout-actions";
+import { confirmarContaDeRepasse, removerContaDeRepasse, salvarContaDeRepasse, type RespostaDoRepasse } from "@/actions/payout-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -48,7 +48,7 @@ export function RecebimentoClient({ account: initial, blockedReason, registratio
   const [mode, setMode] = useState<Mode>("view");
   const readOnly = blockedReason !== null;
 
-  function applyResult(res: PayoutResponse, success: string): boolean {
+  function applyResult(res: RespostaDoRepasse, success: string): boolean {
     if (!res.success) return false;
     setAccount(
       res.account
@@ -145,7 +145,7 @@ export function RecebimentoClient({ account: initial, blockedReason, registratio
                 submitLabel="Confirmar"
                 pendingToast="Confirmando…"
                 onCancel={() => setMode("view")}
-                run={(password) => confirmPayoutAccount({ password })}
+                run={(password) => confirmarContaDeRepasse({ password })}
                 onDone={(res) => applyResult(res, "Dados confirmados.")}
               />
             )}
@@ -157,7 +157,7 @@ export function RecebimentoClient({ account: initial, blockedReason, registratio
                 danger
                 pendingToast="Removendo…"
                 onCancel={() => setMode("view")}
-                run={(password) => removePayoutAccount({ password })}
+                run={(password) => removerContaDeRepasse({ password })}
                 onDone={(res) => applyResult(res, "Dados de recebimento removidos.")}
               />
             )}
@@ -231,8 +231,8 @@ function PasswordStep({
   danger?: boolean;
   pendingToast: string;
   onCancel: () => void;
-  run: (password: string) => Promise<PayoutResponse>;
-  onDone: (res: PayoutResponse) => boolean;
+  run: (password: string) => Promise<RespostaDoRepasse>;
+  onDone: (res: RespostaDoRepasse) => boolean;
 }) {
   const uid = useId();
   const [password, setPassword] = useState("");
@@ -280,7 +280,7 @@ function PasswordStep({
   );
 }
 
-function PayoutForm({ replacing, onCancel, onSaved }: { replacing: boolean; onCancel: () => void; onSaved: (res: PayoutResponse) => boolean }) {
+function PayoutForm({ replacing, onCancel, onSaved }: { replacing: boolean; onCancel: () => void; onSaved: (res: RespostaDoRepasse) => boolean }) {
   const uid = useId();
   const [kind, setKind] = useState<"PIX_KEY" | "BANK_ACCOUNT">("PIX_KEY");
   const [holderName, setHolderName] = useState("");
@@ -306,7 +306,7 @@ function PayoutForm({ replacing, onCancel, onSaved }: { replacing: boolean; onCa
         : { type: "BANK_ACCOUNT", ...common, bankCode, agency, account, accountDigit, accountKind };
     const toastId = toast.loading("Salvando…");
     startTransition(async () => {
-      const res = await savePayoutAccount(payload);
+      const res = await salvarContaDeRepasse(payload);
       toast.dismiss(toastId);
       setPassword("");
       if (!res.success) {

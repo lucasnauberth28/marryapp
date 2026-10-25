@@ -10,9 +10,9 @@ import { ehIdDeCenario } from "@/lib/mesas3d/scenarios";
 // Mesas em 3D: cenário escolhido e link de visualização. Só o casal altera (requireWedding), e só com o módulo do plano.
 // Sentar convidados continua pela ação assignGuestToTable, a mesma da lista de mesas.
 
-type Result<T = object> = ({ success: true } & T) | { success: false; error: string };
+type Resultado<T = object> = ({ success: true } & T) | { success: false; error: string };
 
-export async function setTables3DScene(scene: string): Promise<Result> {
+export async function definirCenarioDasMesas3D(scene: string): Promise<Resultado> {
   const ctx = await exigirCasamento("/mesas");
   const refusal = await recusaDeModulo(ctx, "tables3d");
   if (refusal) return { success: false, error: refusal };
@@ -29,7 +29,7 @@ export async function setTables3DScene(scene: string): Promise<Result> {
  * Cria o link de visualização, ou troca por um novo (o antigo deixa de funcionar na hora).
  * O código tem 144 bits aleatórios: não dá para adivinhar nem listar.
  */
-export async function createTables3DShare(): Promise<Result<{ token: string }>> {
+export async function criarLinkDeCompartilhamentoDasMesas3D(): Promise<Resultado<{ token: string }>> {
   const ctx = await exigirCasamento("/mesas");
   const refusal = await recusaDeModulo(ctx, "tables3d");
   if (refusal) return { success: false, error: refusal };
@@ -43,7 +43,7 @@ export async function createTables3DShare(): Promise<Result<{ token: string }>> 
   }
 }
 
-export async function disableTables3DShare(): Promise<Result> {
+export async function desativarLinkDeCompartilhamentoDasMesas3D(): Promise<Resultado> {
   const ctx = await exigirCasamento("/mesas");
   const refusal = await recusaDeModulo(ctx, "tables3d");
   if (refusal) return { success: false, error: refusal };

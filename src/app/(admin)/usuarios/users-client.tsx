@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DataTable } from "@/components/ui/data-table";
-import { createUser, updateUser, deleteUser } from "@/actions/rbac-actions";
+import { criarPessoa, atualizarPessoa, excluirPessoa } from "@/actions/rbac-actions";
 import { Input } from "@/components/ui/input";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/admin/page-header";
@@ -77,9 +77,9 @@ export function UsersClient({ initialUsers, roles, embedded = false }: { initial
     startTransition(async () => {
       let result;
       if (editingUser) {
-        result = await updateUser(editingUser.id, formData);
+        result = await atualizarPessoa(editingUser.id, formData);
       } else {
-        result = await createUser(formData);
+        result = await criarPessoa(formData);
       }
 
       if (result.success) {
@@ -100,7 +100,7 @@ export function UsersClient({ initialUsers, roles, embedded = false }: { initial
     setConfirmAction(() => () => {
       const toastId = toast.loading("Excluindo o usuário...");
       startTransition(async () => {
-        const result = await deleteUser(id);
+        const result = await excluirPessoa(id);
         if (result.success) {
           toast.success("Usuário excluído.", { id: toastId });
           router.refresh();

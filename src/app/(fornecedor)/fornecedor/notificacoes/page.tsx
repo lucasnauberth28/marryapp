@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Settings2 } from "lucide-react";
-import { listNotificationHistory } from "@/actions/notification-actions";
+import { listarHistoricoDeNotificacoes } from "@/actions/notification-actions";
 import { HistoryList } from "@/components/notifications/history-list";
 import { PushCard } from "@/components/notifications/push-card";
 import { chavePublicaVapid } from "@/lib/notifications/push";
@@ -13,7 +13,7 @@ export default async function FornecedorNotificacoesPage() {
   const { vendor } = await obterContextoDaPaginaDoFornecedor();
   if (!vendor) return null; // o layout explica que a conta ainda não foi vinculada
 
-  const { items } = await listNotificationHistory();
+  const { items } = await listarHistoricoDeNotificacoes();
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">

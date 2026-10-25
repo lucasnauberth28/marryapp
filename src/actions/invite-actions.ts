@@ -11,20 +11,20 @@ import { classificarConta, ehViolacaoDeUnicidade, renovarCookieDeSessao, criarOu
 import { registrarAuditoria } from "@/lib/audit";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
-type Fail = { success: false; error: string };
-export type AcceptInviteResult =
+type Falha = { success: false; error: string };
+export type ResultadoDoAceiteDoConvite =
   | { success: true; redirectTo: string }
   | { success: false; needsConfirm: true; currentCoupleNames: string; willDeleteCurrent: boolean }
-  | Fail;
+  | Falha;
 
-class InviteTaken extends Error {}
+class ConviteJaUsado extends Error {}
 
 /**
  * Conta logada entra no casamento do convite (perfil "Casal").
  * Se a conta já tem outro casamento, pede confirmação antes; sendo o último membro dele,
  * o casamento antigo é excluído junto (e o aviso diz isso).
  */
-export async function acceptInvite(input: { token: string; confirmLeave?: boolean }): Promise<AcceptInviteResult> {
+export async function aceitarConvite(input: { token: string; confirmLeave?: boolean }): Promise<ResultadoDoAceiteDoConvite> {
   const session = await obterSessao();
   if (!session) return { success: false, error: "Entre na sua conta para aceitar o convite." };
   if (session.userId === ID_DO_SUPER_ADMIN) return { success: false, error: "A conta de emergência não pode entrar em um casamento." };
@@ -69,7 +69,7 @@ export async function acceptInvite(input: { token: string; confirmLeave?: boolea
         where: { id: invite.id, usedAt: null, expiresAt: { gt: now } },
         data: { usedAt: now, usedById: user.id },
       });
-      if (claimed.count !== 1) throw new InviteTaken();
+      if (claimed.count !== 1) throw new ConviteJaUsado();
 
       const role = await criarOuAtualizarPapelDoCasal(tx);
       await tx.user.update({ where: { id: user.id }, data: { weddingId: invite.weddingId, roleId: role.id } });
@@ -83,7 +83,7 @@ export async function acceptInvite(input: { token: string; confirmLeave?: boolea
       }
     });
   } catch (error) {
-    if (error instanceof InviteTaken) return { success: false, error: MENSAGEM_DA_SITUACAO_DO_CONVITE.used };
+    if (error instanceof ConviteJaUsado) return { success: false, error: MENSAGEM_DA_SITUACAO_DO_CONVITE.used };
     console.error("[acceptInvite]", error);
     return { success: false, error: "Não conseguimos aceitar o convite agora. Tente de novo em instantes." };
   }
@@ -98,7 +98,7 @@ export async function acceptInvite(input: { token: string; confirmLeave?: boolea
   return { success: true, redirectTo: "/dashboard" };
 }
 
-const SignupSchema = z.object({
+const EsquemaDoCadastro = z.object({
   token: z.string().max(100),
   name: z
     .string()
@@ -108,16 +108,16 @@ const SignupSchema = z.object({
   password: z.string().min(8, "A senha precisa ter pelo menos 8 caracteres.").max(200, "Senha longa demais."),
 });
 
-const EXISTING_ACCOUNT = "Já existe uma conta com este e-mail. Entre com ela para aceitar o convite.";
+const CONTA_JA_EXISTENTE = "Já existe uma conta com este e-mail. Entre com ela para aceitar o convite.";
 
 /** Cria a conta do par já dentro do casamento do convite e inicia a sessão. */
-export async function acceptInviteWithNewAccount(input: {
+export async function aceitarConviteComContaNova(input: {
   token: string;
   name: string;
   email: string;
   password: string;
-}): Promise<{ success: true; redirectTo: string } | (Fail & { existingAccount?: boolean })> {
-  const parsed = SignupSchema.safeParse(input);
+}): Promise<{ success: true; redirectTo: string } | (Falha & { existingAccount?: boolean })> {
+  const parsed = EsquemaDoCadastro.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira os dados." };
   const data = parsed.data;
 
@@ -129,7 +129,7 @@ export async function acceptInviteWithNewAccount(input: {
   const { invite } = lookup;
 
   const existing = await prisma.user.findUnique({ where: { username: data.email }, select: { id: true } });
-  if (existing) return { success: false, error: EXISTING_ACCOUNT, existingAccount: true };
+  if (existing) return { success: false, error: CONTA_JA_EXISTENTE, existingAccount: true };
 
   const hashed = await bcrypt.hash(data.password, 12);
   let userId: string;
@@ -140,7 +140,7 @@ export async function acceptInviteWithNewAccount(input: {
         where: { id: invite.id, usedAt: null, expiresAt: { gt: now } },
         data: { usedAt: now },
       });
-      if (claimed.count !== 1) throw new InviteTaken();
+      if (claimed.count !== 1) throw new ConviteJaUsado();
 
       const role = await criarOuAtualizarPapelDoCasal(tx);
       const created = await tx.user.create({
@@ -151,8 +151,8 @@ export async function acceptInviteWithNewAccount(input: {
       return created.id;
     });
   } catch (error) {
-    if (error instanceof InviteTaken) return { success: false, error: MENSAGEM_DA_SITUACAO_DO_CONVITE.used };
-    if (ehViolacaoDeUnicidade(error)) return { success: false, error: EXISTING_ACCOUNT, existingAccount: true };
+    if (error instanceof ConviteJaUsado) return { success: false, error: MENSAGEM_DA_SITUACAO_DO_CONVITE.used };
+    if (ehViolacaoDeUnicidade(error)) return { success: false, error: CONTA_JA_EXISTENTE, existingAccount: true };
     console.error("[acceptInviteWithNewAccount]", error);
     return { success: false, error: "Não conseguimos criar a conta agora. Tente de novo em instantes." };
   }

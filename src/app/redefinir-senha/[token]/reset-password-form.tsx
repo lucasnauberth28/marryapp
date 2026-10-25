@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Eye, EyeOff, Lock } from "lucide-react";
-import { resetPassword } from "@/actions/password-reset-actions";
+import { redefinirSenha } from "@/actions/password-reset-actions";
 import { ShellHeading } from "@/components/account/auth-shell";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
     startTransition(async () => {
       try {
-        const res = await resetPassword({ token, password, confirm });
+        const res = await redefinirSenha({ token, password, confirm });
         if (!res.success) {
           setError({ message: res.error, expired: res.expired });
           return;

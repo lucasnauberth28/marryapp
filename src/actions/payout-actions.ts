@@ -20,17 +20,17 @@ import { avisarMudancaNoRepasse } from "@/lib/payout-notify";
 //  - nada bancário entra em log, AuditLog, e-mail, aviso ou mensagem de erro;
 //  - a resposta devolve só a máscara (PayoutAccountView), nunca o dado nem o texto cifrado.
 
-type Fail = { success: false; error: string };
-export type PayoutResponse = { success: true; account: VisaoDaContaDeRepasse | null } | Fail;
+type Falha = { success: false; error: string };
+export type RespostaDoRepasse = { success: true; account: VisaoDaContaDeRepasse | null } | Falha;
 
-const MINUTE = 60 * 1000;
-const NO_WRITE = "Só quem é do casal pode cadastrar ou alterar os dados de recebimento.";
-const GENERIC_ERROR = "Não deu para salvar agora. Tente de novo em instantes.";
+const UM_MINUTO_EM_MS = 60 * 1000;
+const SEM_PERMISSAO_DE_ESCRITA = "Só quem é do casal pode cadastrar ou alterar os dados de recebimento.";
+const ERRO_GENERICO = "Não deu para salvar agora. Tente de novo em instantes.";
 
-const PasswordSchema = z.string().min(1, "Informe sua senha para confirmar.").max(200, "Senha longa demais.");
+const EsquemaDaSenha = z.string().min(1, "Informe sua senha para confirmar.").max(200, "Senha longa demais.");
 
 /** Sessão que escreve, pessoa real do casamento e senha conferida. Devolve o contexto ou o motivo da recusa. */
-async function authorizeWrite(password: unknown, action: string): Promise<{ ctx: ContextoDoCasamento; userId: string; name: string } | Fail> {
+async function autorizarEscrita(password: unknown, action: string): Promise<{ ctx: ContextoDoCasamento; userId: string; name: string } | Falha> {
   let ctx: ContextoDoCasamento;
   try {
     ctx = await exigirCasamento("/configuracoes");
@@ -40,12 +40,12 @@ async function authorizeWrite(password: unknown, action: string): Promise<{ ctx:
   }
 
   // Administração vendo o casal (entrar como, conta de emergência, perfil "*" sem casamento): nunca escreve aqui.
-  if (ctx.impersonation || ctx.viaAdmin || ctx.session.userId === ID_DO_SUPER_ADMIN) return { success: false, error: NO_WRITE };
+  if (ctx.impersonation || ctx.viaAdmin || ctx.session.userId === ID_DO_SUPER_ADMIN) return { success: false, error: SEM_PERMISSAO_DE_ESCRITA };
 
-  const pw = PasswordSchema.safeParse(password);
+  const pw = EsquemaDaSenha.safeParse(password);
   if (!pw.success) return { success: false, error: pw.error.issues[0]?.message ?? "Informe sua senha para confirmar." };
 
-  const limit = await conferirLimiteDeUso({ key: `PAYOUT_ACCOUNT:${ctx.session.userId}`, limit: 6, windowMs: 15 * MINUTE });
+  const limit = await conferirLimiteDeUso({ key: `PAYOUT_ACCOUNT:${ctx.session.userId}`, limit: 6, windowMs: 15 * UM_MINUTO_EM_MS });
   if (!limit.success) return { success: false, error: "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo." };
 
   // O weddingId da conta precisa ser o da sessão (defesa em profundidade contra IDOR).
@@ -53,7 +53,7 @@ async function authorizeWrite(password: unknown, action: string): Promise<{ ctx:
     where: { id: ctx.session.userId, weddingId: ctx.weddingId },
     select: { id: true, name: true, password: true },
   });
-  if (!user) return { success: false, error: NO_WRITE };
+  if (!user) return { success: false, error: SEM_PERMISSAO_DE_ESCRITA };
 
   if (!(await bcrypt.compare(pw.data, user.password))) {
     await registrarAuditoria({ action: `${action}_denied`, targetType: "Wedding", targetId: ctx.weddingId, details: { reason: "wrong_password" } });
@@ -65,7 +65,7 @@ async function authorizeWrite(password: unknown, action: string): Promise<{ ctx:
  * Cadastra ou troca os dados de recebimento. Pede a senha atual. Trocar deixa os dados "sem confirmação" de novo,
  * grava no AuditLog (sem o dado) e avisa as pessoas do casamento.
  */
-export async function savePayoutAccount(input: unknown): Promise<PayoutResponse> {
+export async function salvarContaDeRepasse(input: unknown): Promise<RespostaDoRepasse> {
   const { password, ...fields } = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
 
   const valid = validarEntradaDeRepasse(fields);
@@ -74,7 +74,7 @@ export async function savePayoutAccount(input: unknown): Promise<PayoutResponse>
     return { success: false, error: "O cadastro dos dados de recebimento ainda não foi liberado. A equipe do Aceito está terminando a configuração de segurança." };
   }
 
-  const auth = await authorizeWrite(password, "payout.account_save");
+  const auth = await autorizarEscrita(password, "payout.account_save");
   if ("success" in auth) return auth;
   const { ctx, userId, name } = auth;
   const { weddingId } = ctx;
@@ -119,13 +119,13 @@ export async function savePayoutAccount(input: unknown): Promise<PayoutResponse>
   } catch (error) {
     // Só o tipo do erro: a mensagem do banco ou da cifra pode conter pedaços do dado.
     console.error("[payout] falha ao salvar", error instanceof ErroDeCifraDoRepasse ? error.code : error instanceof Error ? error.name : "erro");
-    return { success: false, error: GENERIC_ERROR };
+    return { success: false, error: ERRO_GENERICO };
   }
 }
 
 /** O casal confirma que os dados cadastrados estão certos (pede a senha). Sem isso, o repasse não é liberado. */
-export async function confirmPayoutAccount(input: unknown): Promise<PayoutResponse> {
-  const auth = await authorizeWrite((input as { password?: unknown } | null)?.password, "payout.account_verify");
+export async function confirmarContaDeRepasse(input: unknown): Promise<RespostaDoRepasse> {
+  const auth = await autorizarEscrita((input as { password?: unknown } | null)?.password, "payout.account_verify");
   if ("success" in auth) return auth;
   const { weddingId } = auth.ctx;
 
@@ -144,13 +144,13 @@ export async function confirmPayoutAccount(input: unknown): Promise<PayoutRespon
     return { success: true, account: await obterVisaoDaContaDeRepasse(weddingId) };
   } catch (error) {
     console.error("[payout] falha ao confirmar", error instanceof Error ? error.name : "erro");
-    return { success: false, error: GENERIC_ERROR };
+    return { success: false, error: ERRO_GENERICO };
   }
 }
 
 /** Remove os dados de recebimento (pede a senha). Direito do casal: apaga as colunas cifradas junto. */
-export async function removePayoutAccount(input: unknown): Promise<PayoutResponse> {
-  const auth = await authorizeWrite((input as { password?: unknown } | null)?.password, "payout.account_delete");
+export async function removerContaDeRepasse(input: unknown): Promise<RespostaDoRepasse> {
+  const auth = await autorizarEscrita((input as { password?: unknown } | null)?.password, "payout.account_delete");
   if ("success" in auth) return auth;
   const { weddingId } = auth.ctx;
 
@@ -164,6 +164,6 @@ export async function removePayoutAccount(input: unknown): Promise<PayoutRespons
     return { success: true, account: null };
   } catch (error) {
     console.error("[payout] falha ao remover", error instanceof Error ? error.name : "erro");
-    return { success: false, error: GENERIC_ERROR };
+    return { success: false, error: ERRO_GENERICO };
   }
 }

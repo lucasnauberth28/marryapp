@@ -5,7 +5,7 @@ import { Search } from "lucide-react";
 import { LoadingRegion } from "@/components/skeletons";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { searchMadrinhaWeddings } from "@/actions/admin-madrinha-actions";
+import { buscarCasamentosDaMadrinha } from "@/actions/admin-madrinha-actions";
 import type { ResultadoDeCasamento } from "@/lib/platform/queries/madrinha";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +35,7 @@ export function WeddingSearch({ selectedId, onPick, label = "Buscar casal" }: { 
       const mine = ++ticket.current;
       setSearching(true);
       try {
-        const result = await searchMadrinhaWeddings({ q: value });
+        const result = await buscarCasamentosDaMadrinha({ q: value });
         if (mine !== ticket.current) return; // chegou uma busca mais nova
         if (result.success) {
           setHits(result.hits);

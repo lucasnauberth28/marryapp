@@ -17,23 +17,23 @@ import { ERROS } from "@/lib/mensagens-de-erro";
 // Ações da administração sobre um casal (Casais e Casal). Toda uma: requirePlatformAdmin primeiro, zod no servidor,
 // o id da tela só BUSCA o registro, e toda escrita vai ao AuditLog com ator, alvo e motivo.
 
-export type CasalActionResult = { success: true; message?: string } | { success: false; error: string };
+export type ResultadoDaAcaoDoCasal = { success: true; message?: string } | { success: false; error: string };
 
-const id = z.string().uuid("Casamento inválido.");
-const reason = z.string().trim().min(5, "Conte o motivo em poucas palavras (mínimo de 5 letras).").max(500, "O motivo está longo demais (máximo de 500 letras).");
+const idDoCasamentoValido = z.string().uuid("Casamento inválido.");
+const motivoValido = z.string().trim().min(5, "Conte o motivo em poucas palavras (mínimo de 5 letras).").max(500, "O motivo está longo demais (máximo de 500 letras).");
 
-function fail(error: unknown, context: string): CasalActionResult {
+function falhar(error: unknown, context: string): ResultadoDaAcaoDoCasal {
   if (error instanceof z.ZodError) return { success: false, error: error.issues[0]?.message ?? "Confira os dados." };
   return falhaDeAdminDaPlataforma(error, context);
 }
 
-function refresh(weddingId?: string) {
+function atualizarPaginas(weddingId?: string) {
   revalidatePath("/admin/casais");
   if (weddingId) revalidatePath(`/admin/casais/${weddingId}`);
   revalidatePath("/admin");
 }
 
-function maskEmail(email: string): string {
+function esconderEmailDoCasal(email: string): string {
   const [local, domain] = email.split("@");
   if (!domain) return "o e-mail cadastrado";
   return `${local.slice(0, 2)}${"*".repeat(Math.max(2, local.length - 2))}@${domain}`;
@@ -41,61 +41,61 @@ function maskEmail(email: string): string {
 
 // ---------- Marcar para acompanhar ----------
 
-export async function setWeddingsFlag(input: unknown): Promise<CasalActionResult> {
+export async function definirMarcaDosCasamentos(input: unknown): Promise<ResultadoDaAcaoDoCasal> {
   try {
     await exigirAdminDaPlataforma();
-    const data = z.object({ weddingIds: z.array(id).min(1).max(100), flagged: z.boolean() }).parse(input);
+    const data = z.object({ weddingIds: z.array(idDoCasamentoValido).min(1).max(100), flagged: z.boolean() }).parse(input);
     const found = await prisma.wedding.findMany({ where: { id: { in: data.weddingIds } }, select: { id: true } });
     const ids = found.map((w) => w.id);
     await prisma.wedding.updateMany({ where: { id: { in: ids } }, data: { flaggedAt: data.flagged ? new Date() : null } });
     for (const weddingId of ids) {
       await registrarAuditoria({ action: data.flagged ? "wedding.flag" : "wedding.unflag", targetType: "wedding", targetId: weddingId });
     }
-    refresh();
+    atualizarPaginas();
     return { success: true, message: data.flagged ? "Marcado para acompanhar." : "Deixou de ser acompanhado." };
   } catch (error) {
-    return fail(error, "setWeddingsFlag");
+    return falhar(error, "setWeddingsFlag");
   }
 }
 
 // ---------- Suspender e reativar ----------
 
-export async function suspendWedding(input: unknown): Promise<CasalActionResult> {
+export async function suspenderCasamento(input: unknown): Promise<ResultadoDaAcaoDoCasal> {
   try {
     await exigirAdminDaPlataforma();
-    const data = z.object({ weddingId: id, reason }).parse(input);
+    const data = z.object({ weddingId: idDoCasamentoValido, reason: motivoValido }).parse(input);
     const { count } = await prisma.wedding.updateMany({ where: { id: data.weddingId, suspendedAt: null }, data: { suspendedAt: new Date(), suspendedReason: data.reason } });
     if (count === 0) return { success: false, error: "Este casamento já está suspenso ou não existe mais." };
     await registrarAuditoria({ action: "wedding.suspend", targetType: "wedding", targetId: data.weddingId, details: { reason: data.reason } });
     revalidatePath("/casamento", "layout");
-    refresh(data.weddingId);
+    atualizarPaginas(data.weddingId);
     return { success: true, message: "Casamento suspenso. O site público saiu do ar e o painel do casal ficou só para leitura." };
   } catch (error) {
-    return fail(error, "suspendWedding");
+    return falhar(error, "suspendWedding");
   }
 }
 
-export async function unsuspendWedding(input: unknown): Promise<CasalActionResult> {
+export async function reativarCasamento(input: unknown): Promise<ResultadoDaAcaoDoCasal> {
   try {
     await exigirAdminDaPlataforma();
-    const data = z.object({ weddingId: id, reason: z.string().trim().max(500).optional() }).parse(input);
+    const data = z.object({ weddingId: idDoCasamentoValido, reason: z.string().trim().max(500).optional() }).parse(input);
     const { count } = await prisma.wedding.updateMany({ where: { id: data.weddingId, suspendedAt: { not: null } }, data: { suspendedAt: null, suspendedReason: null } });
     if (count === 0) return { success: false, error: "Este casamento não está suspenso." };
     await registrarAuditoria({ action: "wedding.unsuspend", targetType: "wedding", targetId: data.weddingId, details: { reason: data.reason ?? null } });
     revalidatePath("/casamento", "layout");
-    refresh(data.weddingId);
+    atualizarPaginas(data.weddingId);
     return { success: true, message: "Casamento reativado." };
   } catch (error) {
-    return fail(error, "unsuspendWedding");
+    return falhar(error, "unsuspendWedding");
   }
 }
 
 // ---------- Notas internas ----------
 
-export async function addWeddingNote(input: unknown): Promise<CasalActionResult> {
+export async function adicionarNotaAoCasamento(input: unknown): Promise<ResultadoDaAcaoDoCasal> {
   try {
     const admin = await exigirAdminDaPlataforma();
-    const data = z.object({ weddingId: id, body: z.string().trim().min(2, "Escreva a nota.").max(2000, "A nota está longa demais (máximo de 2000 letras).") }).parse(input);
+    const data = z.object({ weddingId: idDoCasamentoValido, body: z.string().trim().min(2, "Escreva a nota.").max(2000, "A nota está longa demais (máximo de 2000 letras).") }).parse(input);
     const wedding = await prisma.wedding.findUnique({ where: { id: data.weddingId }, select: { id: true } });
     if (!wedding) return { success: false, error: ERROS.casamentoNaoEncontrado };
     const note = await prisma.adminNote.create({
@@ -106,17 +106,17 @@ export async function addWeddingNote(input: unknown): Promise<CasalActionResult>
     revalidatePath(`/admin/casais/${wedding.id}`);
     return { success: true, message: "Nota salva. Só a equipe vê." };
   } catch (error) {
-    return fail(error, "addWeddingNote");
+    return falhar(error, "addWeddingNote");
   }
 }
 
 // ---------- Redefinir a senha ----------
 
 /** Envia o link de nova senha ao e-mail do dono do casamento. Nunca mostra o link nem a senha. */
-export async function resetWeddingPassword(input: unknown): Promise<CasalActionResult> {
+export async function redefinirSenhaDoCasamento(input: unknown): Promise<ResultadoDaAcaoDoCasal> {
   try {
     await exigirAdminDaPlataforma();
-    const data = z.object({ weddingId: id, reason }).parse(input);
+    const data = z.object({ weddingId: idDoCasamentoValido, reason: motivoValido }).parse(input);
     const owner = await prisma.user.findFirst({ where: { weddingId: data.weddingId }, orderBy: { createdAt: "asc" }, select: { id: true, name: true, username: true } });
     if (!owner) return { success: false, error: "Este casamento não tem nenhuma conta ligada." };
 
@@ -126,9 +126,9 @@ export async function resetWeddingPassword(input: unknown): Promise<CasalActionR
     const { sent } = await enviarLinkDeRedefinicaoDeSenha(owner);
     await registrarAuditoria({ action: "wedding.password_reset", targetType: "wedding", targetId: data.weddingId, details: { reason: data.reason, userId: owner.id, sent } });
     if (!sent) return { success: false, error: "O e-mail não saiu (envio de e-mail não configurado ou recusado). Nenhuma senha foi alterada." };
-    return { success: true, message: `Enviamos o link de nova senha para ${maskEmail(owner.username)}. Ele vale por 1 hora.` };
+    return { success: true, message: `Enviamos o link de nova senha para ${esconderEmailDoCasal(owner.username)}. Ele vale por 1 hora.` };
   } catch (error) {
-    return fail(error, "resetWeddingPassword");
+    return falhar(error, "resetWeddingPassword");
   }
 }
 
@@ -139,13 +139,13 @@ export async function resetWeddingPassword(input: unknown): Promise<CasalActionR
  * (voltam ao cadastro do casamento); as assinaturas ficam com o casamento nulo. Irreversível: motivo, o texto
  * EXCLUIR e a segunda confirmação da tela são exigidos aqui também.
  */
-export async function deleteWedding(input: unknown): Promise<CasalActionResult> {
+export async function excluirCasamento(input: unknown): Promise<ResultadoDaAcaoDoCasal> {
   try {
     await exigirAdminDaPlataforma();
     const data = z
       .object({
-        weddingId: id,
-        reason,
+        weddingId: idDoCasamentoValido,
+        reason: motivoValido,
         confirmation: z.string().refine((v) => v.trim().toUpperCase() === "EXCLUIR", "Digite EXCLUIR para confirmar."),
         acknowledged: z.literal(true, { error: "Marque a confirmação final." }),
       })
@@ -166,22 +166,22 @@ export async function deleteWedding(input: unknown): Promise<CasalActionResult> 
       details: { reason: data.reason, coupleNames: wedding.coupleNames, slug: wedding.slug, guests: wedding._count.guests, accounts: wedding._count.members },
     });
     revalidatePath("/casamento", "layout");
-    refresh();
+    atualizarPaginas();
     return { success: true, message: "Casamento excluído." };
   } catch (error) {
-    return fail(error, "deleteWedding");
+    return falhar(error, "deleteWedding");
   }
 }
 
 // ---------- Conceder um plano à mão ----------
 
-const GRANTABLE = ["classic", "vip"] as const;
+const PLANOS_QUE_PODEM_SER_CONCEDIDOS = ["classic", "vip"] as const;
 
 /** Plano de casal liberado como cortesia: assinatura APROVADA de valor zero, com motivo no registro. Não cobra nada. */
-export async function grantWeddingPlan(input: unknown): Promise<CasalActionResult> {
+export async function concederPlanoAoCasamento(input: unknown): Promise<ResultadoDaAcaoDoCasal> {
   try {
     await exigirAdminDaPlataforma();
-    const data = z.object({ weddingId: id, planId: z.enum(GRANTABLE, { error: "Escolha o plano." }), reason, notify: z.boolean() }).parse(input);
+    const data = z.object({ weddingId: idDoCasamentoValido, planId: z.enum(PLANOS_QUE_PODEM_SER_CONCEDIDOS, { error: "Escolha o plano." }), reason: motivoValido, notify: z.boolean() }).parse(input);
     const wedding = await prisma.wedding.findUnique({
       where: { id: data.weddingId },
       select: { id: true, coupleNames: true, members: { orderBy: { createdAt: "asc" }, select: { id: true, name: true, username: true } } },
@@ -231,22 +231,22 @@ export async function grantWeddingPlan(input: unknown): Promise<CasalActionResul
 
     await registrarAuditoria({ action: "wedding.grant_plan", targetType: "wedding", targetId: wedding.id, details: { planId: data.planId, subscriptionId: sub.id, reason: data.reason, notified } });
     revalidatePath("/plano");
-    refresh(wedding.id);
+    atualizarPaginas(wedding.id);
     const mail = data.notify ? (notified ? " O casal foi avisado por e-mail." : " O e-mail de aviso não saiu.") : "";
     return { success: true, message: `Plano ${plan.name} liberado.${mail}` };
   } catch (error) {
-    return fail(error, "grantWeddingPlan");
+    return falhar(error, "grantWeddingPlan");
   }
 }
 
 // ---------- Pedido de reembolso ----------
 
 /** Registra o pedido de reembolso de um pagamento do casal. O estorno em si é feito no painel do Mercado Pago. */
-export async function requestWeddingRefund(input: unknown): Promise<CasalActionResult> {
+export async function solicitarReembolsoDoCasamento(input: unknown): Promise<ResultadoDaAcaoDoCasal> {
   try {
     const admin = await exigirAdminDaPlataforma();
     const data = z
-      .object({ weddingId: id, subscriptionId: z.string().uuid("Escolha o pagamento."), amountCents: z.number().int("Valor inválido.").min(1, "Informe o valor."), reason })
+      .object({ weddingId: idDoCasamentoValido, subscriptionId: z.string().uuid("Escolha o pagamento."), amountCents: z.number().int("Valor inválido.").min(1, "Informe o valor."), reason: motivoValido })
       .parse(input);
 
     const sub = await prisma.subscription.findFirst({
@@ -270,10 +270,10 @@ export async function requestWeddingRefund(input: unknown): Promise<CasalActionR
       select: { id: true },
     });
     await registrarAuditoria({ action: "refund.request", targetType: "wedding", targetId: data.weddingId, details: { refundId: created.id, subscriptionId: sub.id, amount: data.amountCents, reason: data.reason } });
-    refresh(data.weddingId);
+    atualizarPaginas(data.weddingId);
     revalidatePath("/admin/planos");
     return { success: true, message: "Pedido registrado. Ele aparece em Planos e receita para decidir." };
   } catch (error) {
-    return fail(error, "requestWeddingRefund");
+    return falhar(error, "requestWeddingRefund");
   }
 }

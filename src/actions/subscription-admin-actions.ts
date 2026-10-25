@@ -9,34 +9,34 @@ import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/securit
 import { aplicarPagamentoAprovado, marcarPagamentoComoFalho } from "@/lib/subscriptions";
 
 /** Pix estático (sem confirmação automática): o txid gerado em generateSubscriptionPix começa assim. */
-const STATIC_PIX_PREFIX = "ASSIN";
+const PREFIXO_DO_PIX_ESTATICO = "ASSIN";
 
-const IdSchema = z.string().uuid();
+const EsquemaDoId = z.string().uuid();
 
-type ActionResult = { success: true } | { success: false; error: string };
+type ResultadoDaAcao = { success: true } | { success: false; error: string };
 
 /** Só cobranças de Pix estático ainda pendentes podem ser conferidas à mão. */
-async function findCheckableSubscription(subscriptionId: string) {
+async function acharAssinaturaConferivel(subscriptionId: string) {
   const sub = await prisma.subscription.findUnique({
     where: { id: subscriptionId },
     select: { id: true, status: true, amount: true, gatewayId: true },
   });
   if (!sub) return { error: "Cobrança não encontrada." } as const;
   if (sub.status !== PaymentStatus.PENDING) return { error: "Esta cobrança já foi resolvida. Atualize a página." } as const;
-  if (!sub.gatewayId?.startsWith(STATIC_PIX_PREFIX)) {
+  if (!sub.gatewayId?.startsWith(PREFIXO_DO_PIX_ESTATICO)) {
     return { error: "Só o Pix estático é conferido à mão. Pagamentos do Mercado Pago entram sozinhos." } as const;
   }
   return { sub: { ...sub, gatewayId: sub.gatewayId } } as const;
 }
 
-function revalidateSubscriptionPages() {
+function atualizarPaginasDasAssinaturas() {
   revalidatePath("/admin/planos", "layout");
   revalidatePath("/plano");
   revalidatePath("/fornecedor", "layout");
   revalidatePath("/fornecedores");
 }
 
-function failure(error: unknown, context: string): ActionResult {
+function falha(error: unknown, context: string): ResultadoDaAcao {
   return falhaDeAdminDaPlataforma(error, context);
 }
 
@@ -44,13 +44,13 @@ function failure(error: unknown, context: string): ActionResult {
  * Confirma à mão um Pix estático visto no extrato e libera o plano.
  * A ativação é a mesma do webhook (idempotente) e o valor é o gravado na cobrança.
  */
-export async function confirmSubscriptionManually(subscriptionId: string): Promise<ActionResult> {
+export async function confirmarAssinaturaManualmente(subscriptionId: string): Promise<ResultadoDaAcao> {
   try {
     const session = await exigirAdminDaPlataforma();
-    const parsed = IdSchema.safeParse(subscriptionId);
+    const parsed = EsquemaDoId.safeParse(subscriptionId);
     if (!parsed.success) return { success: false, error: "Cobrança inválida." };
 
-    const found = await findCheckableSubscription(parsed.data);
+    const found = await acharAssinaturaConferivel(parsed.data);
     if ("error" in found) return { success: false, error: found.error ?? "Cobrança inválida." };
     const { sub } = found;
 
@@ -67,21 +67,21 @@ export async function confirmSubscriptionManually(subscriptionId: string): Promi
       targetId: sub.id,
       details: { gatewayId: sub.gatewayId, amount: sub.amount, alreadyPaid: result === "already" },
     });
-    revalidateSubscriptionPages();
+    atualizarPaginasDasAssinaturas();
     return { success: true };
   } catch (error) {
-    return failure(error, "confirmSubscriptionManually");
+    return falha(error, "confirmSubscriptionManually");
   }
 }
 
 /** O crédito não apareceu no extrato: a cobrança deixa de valer e o cliente precisa gerar outro Pix. */
-export async function rejectSubscription(subscriptionId: string): Promise<ActionResult> {
+export async function recusarAssinatura(subscriptionId: string): Promise<ResultadoDaAcao> {
   try {
     const session = await exigirAdminDaPlataforma();
-    const parsed = IdSchema.safeParse(subscriptionId);
+    const parsed = EsquemaDoId.safeParse(subscriptionId);
     if (!parsed.success) return { success: false, error: "Cobrança inválida." };
 
-    const found = await findCheckableSubscription(parsed.data);
+    const found = await acharAssinaturaConferivel(parsed.data);
     if ("error" in found) return { success: false, error: found.error ?? "Cobrança inválida." };
 
     await marcarPagamentoComoFalho(found.sub.id);
@@ -92,9 +92,9 @@ export async function rejectSubscription(subscriptionId: string): Promise<Action
       targetId: found.sub.id,
       details: { gatewayId: found.sub.gatewayId, amount: found.sub.amount },
     });
-    revalidateSubscriptionPages();
+    atualizarPaginasDasAssinaturas();
     return { success: true };
   } catch (error) {
-    return failure(error, "rejectSubscription");
+    return falha(error, "rejectSubscription");
   }
 }

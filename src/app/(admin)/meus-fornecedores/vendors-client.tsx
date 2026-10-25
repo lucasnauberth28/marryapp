@@ -6,7 +6,7 @@ import { useId, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
-import { createVendor, updateVendor, deleteVendor, type getVendors } from "@/actions/vendor-actions";
+import { criarFornecedor, atualizarFornecedor, excluirFornecedor, type obterFornecedores } from "@/actions/vendor-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,7 +18,7 @@ import { Chip, card } from "@/components/casal/ui";
 import { LoadingButton } from "@/components/painel/loading-button";
 
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
-type WeddingVendor = Awaited<ReturnType<typeof getVendors>>[number];
+type WeddingVendor = Awaited<ReturnType<typeof obterFornecedores>>[number];
 
 interface VendorsClientProps {
   initialVendors: WeddingVendor[];
@@ -122,7 +122,7 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
     const contract = fileBase64 || form.contractUrl || (editingVendor?.contractUrl ?? "");
     if (contract) formData.set("contractUrl", contract);
 
-    const res = editingVendor ? await updateVendor(editingVendor.id, formData) : await createVendor(formData);
+    const res = editingVendor ? await atualizarFornecedor(editingVendor.id, formData) : await criarFornecedor(formData);
     if (res.success) {
       toast.success(editingVendor ? "Fornecedor atualizado." : "Fornecedor adicionado.", { id: toastId });
       setFormOpen(false);
@@ -136,7 +136,7 @@ export function VendorsClient({ initialVendors }: VendorsClientProps) {
   const handleDelete = (v: WeddingVendor) => {
     setConfirmAction(() => async () => {
       const toastId = toast.loading("Removendo o fornecedor...");
-      const res = await deleteVendor(v.id);
+      const res = await excluirFornecedor(v.id);
       if (res.success) {
         setVendors((prev) => prev.filter((x) => x.id !== v.id));
         toast.success("Fornecedor removido.", { id: toastId });

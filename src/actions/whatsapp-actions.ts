@@ -14,7 +14,7 @@ import { idsDeConvidadosAlcancados, motivoDaFalhaNoEnvio, resumoDoEnvio } from "
 /**
  * Dispara lembretes em massa para convidados com RSVP pendente.
  */
-export async function sendRsvpReminders() {
+export async function enviarLembretesDeConfirmacao() {
   const { weddingId, wedding, session } = await exigirCasamento("/mensagens");
   const refusal = await recusaDeModulo({ weddingId, session }, "whatsapp");
   if (refusal) return { success: false, error: refusal };
@@ -84,7 +84,7 @@ export async function sendRsvpReminders() {
 /**
  * Dispara convites para convidados que ainda não receberam mensagem.
  */
-export async function sendInitialInvites() {
+export async function enviarConvitesIniciais() {
   const { weddingId, wedding, session } = await exigirCasamento("/mensagens");
   const refusal = await recusaDeModulo({ weddingId, session }, "whatsapp");
   if (refusal) return { success: false, error: refusal };

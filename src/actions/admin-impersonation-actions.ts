@@ -21,9 +21,9 @@ import { ERROS } from "@/lib/mensagens-de-erro";
 // "Entrar como este casal": início e fim da sessão. A pessoa vem sempre da sessão de login (nunca do navegador);
 // o cookie é assinado e guarda só o id da ImpersonationSession; tudo confere de novo no banco (impersonation.ts).
 
-export type ImpersonationResult = { success: true; redirectTo: string } | { success: false; error: string };
+export type ResultadoDaPersonificacao = { success: true; redirectTo: string } | { success: false; error: string };
 
-const StartSchema = z.object({
+const EsquemaDoInicio = z.object({
   weddingId: z.string().uuid("Casamento inválido."),
   reason: z.string().refine(ehMotivoDePersonificacao, "Escolha o motivo da entrada."),
   ticketNumber: z.number().int().positive().max(2_000_000_000).nullable(),
@@ -32,10 +32,10 @@ const StartSchema = z.object({
   confirmEdit: z.boolean(),
 });
 
-export async function startImpersonation(input: unknown): Promise<ImpersonationResult> {
+export async function iniciarPersonificacao(input: unknown): Promise<ResultadoDaPersonificacao> {
   try {
     const admin = await exigirAdminDaPlataforma();
-    const parsed = StartSchema.safeParse(input);
+    const parsed = EsquemaDoInicio.safeParse(input);
     if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira os dados." };
     const data = parsed.data;
     if (data.canEdit && !data.confirmEdit) return { success: false, error: "Para permitir edição, confirme que entendeu que as mudanças valem de verdade." };
@@ -82,7 +82,7 @@ export async function startImpersonation(input: unknown): Promise<ImpersonationR
 }
 
 /** Sair do casal (botão da faixa ou fim dos 30 minutos). Só mexe na sessão da própria pessoa logada. */
-export async function endImpersonation(): Promise<ImpersonationResult> {
+export async function encerrarPersonificacao(): Promise<ResultadoDaPersonificacao> {
   try {
     const session = await exigirSessaoAutenticada();
     const store = await cookies();

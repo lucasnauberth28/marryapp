@@ -21,7 +21,7 @@ import { ERROS } from "@/lib/mensagens-de-erro";
  * Obtém ou inicializa as configurações visuais e seções do site do casamento da sessão.
  * O site público lê pelo endereço do casamento (lib/wedding-data).
  */
-export async function getSiteCustomization() {
+export async function obterPersonalizacaoDoSite() {
   const { wedding } = await exigirCasamentoParaLeitura("/site-builder");
   try {
     return await garantirPersonalizacaoDoSite(wedding);
@@ -31,7 +31,7 @@ export async function getSiteCustomization() {
   }
 }
 
-const optionalUrl = z
+const urlOpcional = z
   .string()
   .trim()
   .max(2000)
@@ -39,36 +39,36 @@ const optionalUrl = z
   .optional()
   .nullable();
 // Fotos do site: https://, data:image/ (sem storage) ou arquivo estático do próprio app (/images/...)
-const optionalImage = z
+const imagemOpcional = z
   .string()
   .trim()
   .max(2000)
   .refine(ehImagemPermitidaNoSite, "Use um link começando com https:// ou escolha uma foto do computador.")
   .optional()
   .nullable();
-const optionalText = (max: number) => z.string().trim().max(max).optional().nullable();
+const textoOpcional = (max: number) => z.string().trim().max(max).optional().nullable();
 
 // Campos que o editor do site pode alterar. Qualquer outro campo enviado é ignorado.
-const SiteCustomizationSchema = z
+const EsquemaDaPersonalizacaoDoSite = z
   .object({
     title: z.string().trim().min(2, "Informe os nomes do casal.").max(120),
     subtitle: z.string().trim().max(160).optional(),
     weddingDate: z.coerce.date().optional().nullable(),
-    ceremonyTime: optionalText(10),
-    receptionTime: optionalText(10),
-    locationName: optionalText(160),
-    locationAddress: optionalText(300),
-    locationMapUrl: optionalUrl,
-    wazeUrl: optionalUrl,
-    uberUrl: optionalUrl,
+    ceremonyTime: textoOpcional(10),
+    receptionTime: textoOpcional(10),
+    locationName: textoOpcional(160),
+    locationAddress: textoOpcional(300),
+    locationMapUrl: urlOpcional,
+    wazeUrl: urlOpcional,
+    uberUrl: urlOpcional,
     themeColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Cor inválida."),
-    heroImageUrl: optionalImage,
-    couplePhotoUrl: optionalImage,
-    dressCodeTitle: optionalText(160),
-    dressCodeDesc: optionalText(2000),
-    dressCodePalette: optionalText(500),
-    spotifyPlaylistUrl: optionalUrl,
-    welcomeMessage: optionalText(2000),
+    heroImageUrl: imagemOpcional,
+    couplePhotoUrl: imagemOpcional,
+    dressCodeTitle: textoOpcional(160),
+    dressCodeDesc: textoOpcional(2000),
+    dressCodePalette: textoOpcional(500),
+    spotifyPlaylistUrl: urlOpcional,
+    welcomeMessage: textoOpcional(2000),
     showStory: z.boolean(),
     showLocation: z.boolean(),
     showDressCode: z.boolean(),
@@ -80,15 +80,15 @@ const SiteCustomizationSchema = z
   })
   .partial();
 
-export type SiteCustomizationInput = z.input<typeof SiteCustomizationSchema>;
+export type EntradaDaPersonalizacaoDoSite = z.input<typeof EsquemaDaPersonalizacaoDoSite>;
 
 /**
  * Atualiza as configurações e blocos do site do casal
  */
-export async function updateSiteCustomization(data: SiteCustomizationInput) {
+export async function atualizarPersonalizacaoDoSite(data: EntradaDaPersonalizacaoDoSite) {
   const { weddingId, wedding } = await exigirCasamento("/site-builder");
 
-  const parsed = SiteCustomizationSchema.safeParse(data);
+  const parsed = EsquemaDaPersonalizacaoDoSite.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
   // Strings vazias viram null nos campos opcionais (título, subtítulo e cor são obrigatórios no banco)
@@ -118,7 +118,7 @@ export async function updateSiteCustomization(data: SiteCustomizationInput) {
 /**
  * Envia uma foto do site (capa ou casal) ao storage e devolve a URL pública.
  */
-export async function uploadSiteImageAction(formData: FormData) {
+export async function enviarImagemDoSite(formData: FormData) {
   await exigirCasamento("/site-builder");
 
   const file = formData.get("image");
@@ -133,7 +133,7 @@ export async function uploadSiteImageAction(formData: FormData) {
 /**
  * Gerenciamento de Momentos da História do Casal (Storytelling)
  */
-export async function getStoryItems() {
+export async function obterItensDaHistoria() {
   const { weddingId } = await exigirCasamentoParaLeitura("/site-builder");
   try {
     return await obterItensDaHistoriaDoCasamento(weddingId);
@@ -143,7 +143,7 @@ export async function getStoryItems() {
   }
 }
 
-export async function createStoryItem(data: {
+export async function criarItemDaHistoria(data: {
   title: string;
   dateLabel?: string;
   description: string;
@@ -171,7 +171,7 @@ export async function createStoryItem(data: {
   }
 }
 
-export async function deleteStoryItem(id: string) {
+export async function excluirItemDaHistoria(id: string) {
   const { weddingId } = await exigirCasamento("/site-builder");
   try {
     if (typeof id !== "string") return { success: false, error: "Momento não encontrado." };
@@ -188,7 +188,7 @@ export async function deleteStoryItem(id: string) {
 /**
  * Gerenciamento de Dicas aos Convidados (Hotéis, Salões, Transporte)
  */
-export async function getWeddingTips() {
+export async function obterDicasParaEdicao() {
   const { weddingId } = await exigirCasamentoParaLeitura("/site-builder");
   try {
     return await obterDicasDoCasamento(weddingId);
@@ -198,7 +198,7 @@ export async function getWeddingTips() {
   }
 }
 
-export async function createWeddingTip(data: {
+export async function criarDicaDoCasamento(data: {
   category: string;
   title: string;
   description?: string;
@@ -232,7 +232,7 @@ export async function createWeddingTip(data: {
   }
 }
 
-export async function deleteWeddingTip(id: string) {
+export async function excluirDicaDoCasamento(id: string) {
   const { weddingId } = await exigirCasamento("/site-builder");
   try {
     if (typeof id !== "string") return { success: false, error: "Dica não encontrada." };
@@ -245,7 +245,7 @@ export async function deleteWeddingTip(id: string) {
     return { success: false, error: (error instanceof Error ? error.message : undefined) || "Não deu para remover a dica. Tente de novo." };
   }
 }
-const GuestBookSchema = z.object({
+const EsquemaDoLivroDeRecados = z.object({
   authorName: z.string().trim().min(2, "Informe seu nome.").max(80),
   message: z.string().trim().min(2, "Escreva uma mensagem.").max(1000, "Mensagem muito longa (máx. 1000 caracteres)."),
   imageUrl: z.string().trim().url().max(2000).optional().or(z.literal("")),
@@ -254,7 +254,7 @@ const GuestBookSchema = z.object({
 /**
  * Pública: recado de convidado no mural do site do casamento do endereço (slug).
  */
-export async function createGuestBookEntry(
+export async function criarRecadoNoLivro(
   slug: string,
   data: {
     authorName: string;
@@ -263,7 +263,7 @@ export async function createGuestBookEntry(
   }
 ) {
   if (typeof slug !== "string") return { success: false, error: ERROS.casamentoNaoEncontrado };
-  const parsed = GuestBookSchema.safeParse(data);
+  const parsed = EsquemaDoLivroDeRecados.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
   const imageUrl = parsed.data.imageUrl ? limparUrl(parsed.data.imageUrl) : null;

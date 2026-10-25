@@ -23,7 +23,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { createTable, deleteTable, assignGuestToTable } from "@/actions/table-actions";
+import { criarMesa, excluirMesa, colocarConvidadoNaMesa } from "@/actions/table-actions";
 import Link from "next/link";
 import { ArrowRightLeft, Box, Check, GripVertical, Plus, Trash2, TriangleAlert, Users as UsersIcon } from "lucide-react";
 
@@ -264,7 +264,7 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
       setTables((prev) => prev.map((t) => (t.id === toContainerId ? { ...t, guests: [...t.guests, guestObj] } : t)));
     }
 
-    const res = await assignGuestToTable(guestId, toContainerId === "unassigned" ? null : toContainerId);
+    const res = await colocarConvidadoNaMesa(guestId, toContainerId === "unassigned" ? null : toContainerId);
     if (res.success) {
       toast.success(toContainerId === "unassigned" ? `${guestObj.name} voltou para a lista sem mesa.` : `${guestObj.name} está na mesa.`);
     } else {
@@ -294,7 +294,7 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
     setNewError(null);
     setLoading(true);
     const toastId = toast.loading("Criando a mesa...");
-    const res = await createTable(newTableName, Number.isFinite(newTableCap) ? newTableCap : 10);
+    const res = await criarMesa(newTableName, Number.isFinite(newTableCap) ? newTableCap : 10);
     if (res.success) {
       toast.success("Mesa criada.", { id: toastId });
       setNewTableName("");
@@ -310,7 +310,7 @@ export function TablesClient({ initialTables, initialUnassigned }: { initialTabl
 
   async function handleDeleteTable(id: string) {
     const toastId = toast.loading("Removendo a mesa...");
-    const res = await deleteTable(id);
+    const res = await excluirMesa(id);
     if (res.success) {
       toast.success("Mesa removida.", { id: toastId });
       router.refresh();

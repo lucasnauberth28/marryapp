@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CalendarClock, Download, Pencil, Plus, Trash2 } from "lucide-react";
-import { createTimelineEvent, deleteTimelineEvent, updateTimelineEvent } from "@/actions/timeline-actions";
+import { criarEventoDaLinhaDoTempo, excluirEventoDaLinhaDoTempo, atualizarEventoDaLinhaDoTempo } from "@/actions/timeline-actions";
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { CustomModal } from "@/components/ui/custom-modal";
 import { PageHeader } from "@/components/admin/page-header";
@@ -43,7 +43,7 @@ function EventForm({ event, count, onClose, onSaved, onDelete }: { event: Timeli
     setBusy(true);
     const toastId = toast.loading(event ? "Salvando o horário..." : "Adicionando o horário...");
     const payload = { title: title.trim(), time, description: description.trim(), icon: event?.icon ?? "Clock", position: event?.position ?? count };
-    const res = event ? await updateTimelineEvent(event.id, payload) : await createTimelineEvent(payload);
+    const res = event ? await atualizarEventoDaLinhaDoTempo(event.id, payload) : await criarEventoDaLinhaDoTempo(payload);
     setBusy(false);
     if (res.success) {
       toast.success(event ? "Horário salvo." : "Horário adicionado.", { id: toastId });
@@ -129,7 +129,7 @@ export function TimelineClient({ initialEvents, coupleNames, dateLabel }: { init
 
   async function executeDelete(target: TimelineEvent) {
     const toastId = toast.loading("Removendo o horário...");
-    const res = await deleteTimelineEvent(target.id);
+    const res = await excluirEventoDaLinhaDoTempo(target.id);
     if (res.success) {
       setEvents((prev) => prev.filter((e) => e.id !== target.id));
       toast.success("Horário removido.", { id: toastId });

@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { ArrowDown, ArrowUp, Building2, ImagePlus, Loader2, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Reveal } from "@/components/motion/reveal";
-import { updateVendorMedia, type VendorMedia, type VendorMediaInput } from "@/actions/vendor-panel-actions";
+import { atualizarMidiasDoFornecedor, type MidiasDoFornecedor, type EntradaDasMidiasDoFornecedor } from "@/actions/vendor-panel-actions";
 import { SkeletonImage } from "@/components/skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -78,21 +78,21 @@ function compressError(error: unknown) {
 
 type Busy = string | null;
 
-export function MediaForm({ initial }: { initial: VendorMedia }) {
-  const [media, setMedia] = useState<VendorMedia>(initial);
+export function MediaForm({ initial }: { initial: MidiasDoFornecedor }) {
+  const [media, setMedia] = useState<MidiasDoFornecedor>(initial);
   const [busy, setBusy] = useState<Busy>(null);
   const [, startTransition] = useTransition();
   const logoInput = useRef<HTMLInputElement>(null);
   const coverInput = useRef<HTMLInputElement>(null);
   const galleryInput = useRef<HTMLInputElement>(null);
 
-  function run(key: string, op: () => Promise<VendorMediaInput | null>, success: string) {
+  function run(key: string, op: () => Promise<EntradaDasMidiasDoFornecedor | null>, success: string) {
     setBusy(key);
     startTransition(async () => {
       try {
         const input = await op();
         if (!input) return;
-        const res = await updateVendorMedia(input);
+        const res = await atualizarMidiasDoFornecedor(input);
         if (res.success) {
           setMedia(res.media);
           toast.success(success);

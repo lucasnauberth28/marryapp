@@ -26,7 +26,7 @@ import { NativeSelect } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DatePicker } from "@/components/ui/date-picker";
-import { createVendorLead, type PublicVendorListItem } from "@/actions/partner-vendor-actions";
+import { criarPedidoDeOrcamento, type ItemDaListaDeFornecedoresPublicos } from "@/actions/partner-vendor-actions";
 import { parseRegions } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { toast } from "sonner";
 import { startNavigationProgress } from "@/components/feedback/navigation-progress";
@@ -74,7 +74,7 @@ const field =
 
 interface PublicVendorsViewProps {
   /** Já filtrados pelo servidor quando há data do casamento (sem quem está ocupado nela). */
-  initialPartners: PublicVendorListItem[];
+  initialPartners: ItemDaListaDeFornecedoresPublicos[];
   /** Filtro "Data do casamento" em vigor ("AAAA-MM-DD" ou ""). */
   weddingDate?: string;
   todayIso: string;
@@ -86,7 +86,7 @@ function formatIsoDate(iso: string) {
 }
 
 /** Cidades e regiões atendidas, em uma linha curta ("A, B e mais 2"). */
-function regionsLabel(serviceRegions: PublicVendorListItem["serviceRegions"]) {
+function regionsLabel(serviceRegions: ItemDaListaDeFornecedoresPublicos["serviceRegions"]) {
   const regions = parseRegions(serviceRegions);
   if (regions.length === 0) return null;
   if (regions.length <= 2) return regions.join(" e ");
@@ -109,7 +109,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
 
   // Modal de Agendamento de Reunião & Lead
   const [leadModalOpen, setLeadModalOpen] = useState(false);
-  const [selectedPartner, setSelectedPartner] = useState<PublicVendorListItem | null>(null);
+  const [selectedPartner, setSelectedPartner] = useState<ItemDaListaDeFornecedoresPublicos | null>(null);
   const [coupleName, setCoupleName] = useState("");
   const [couplePhone, setCouplePhone] = useState("");
   const [coupleEmail, setCoupleEmail] = useState("");
@@ -184,7 +184,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
     });
   }
 
-  const handleOpenLeadModal = (partner: PublicVendorListItem) => {
+  const handleOpenLeadModal = (partner: ItemDaListaDeFornecedoresPublicos) => {
     setSelectedPartner(partner);
     setLeadSent(null);
     setLeadModalOpen(true);
@@ -198,7 +198,7 @@ export function PublicVendorsView({ initialPartners, weddingDate: activeDate = "
     }
 
     startTransitionLead(async () => {
-      const res = await createVendorLead({
+      const res = await criarPedidoDeOrcamento({
         vendorId: selectedPartner.id,
         coupleName,
         couplePhone,

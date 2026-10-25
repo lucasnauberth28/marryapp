@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, CalendarDays, CreditCard, ExternalLink, Inbox, LogOut, Star, Store, UserRound, type LucideIcon } from "lucide-react";
 import { useFormStatus } from "react-dom";
-import { logout } from "@/actions/auth-actions";
+import { sair } from "@/actions/auth-actions";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { PLAN_HREF } from "../_lib/vendor-panel";
@@ -99,7 +99,7 @@ function LogoutSubmit({ className, children, ...props }: React.ComponentProps<"b
 
 export function LogoutButton({ className }: { className?: string }) {
   return (
-    <form action={logout}>
+    <form action={sair}>
       <LogoutSubmit
         className={cn(
           "flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-[15px] font-medium text-tinta-suave transition-colors hover:bg-areia hover:text-tinta",
@@ -116,7 +116,7 @@ export function LogoutButton({ className }: { className?: string }) {
 /** Botão "Sair" só com ícone, para o topo no celular. */
 export function LogoutIconButton() {
   return (
-    <form action={logout} className="shrink-0">
+    <form action={sair} className="shrink-0">
       <LogoutSubmit
         aria-label="Sair"
         title="Sair"

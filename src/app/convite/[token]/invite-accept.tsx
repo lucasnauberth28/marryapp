@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { ArrowRight, Eye, EyeOff, Heart, Lock, LogOut, Mail, TriangleAlert, User } from "lucide-react";
-import { acceptInvite, acceptInviteWithNewAccount } from "@/actions/invite-actions";
-import { login, logout } from "@/actions/auth-actions";
+import { aceitarConvite, aceitarConviteComContaNova } from "@/actions/invite-actions";
+import { entrar, sair } from "@/actions/auth-actions";
 import { ShellHeading } from "@/components/account/auth-shell";
 import { btn, btnArrow } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ export function InviteAccept({ token, coupleNames, viewer }: { token: string; co
         <div className="flex flex-col gap-4">
           <FormAlert>{viewer.reason}</FormAlert>
           <p className="text-[15px] text-tinta-suave">Depois de sair, abra o link do convite de novo.</p>
-          <button type="button" onClick={() => logout()} className={cn(btn.secondary, btn.block, "min-h-12")}>
+          <button type="button" onClick={() => sair()} className={cn(btn.secondary, btn.block, "min-h-12")}>
             <LogOut aria-hidden="true" className="size-4" />
             Sair desta conta
           </button>
@@ -51,7 +51,7 @@ function MemberAccept({ token, viewer }: { token: string; viewer: Extract<Viewer
     setError("");
     startTransition(async () => {
       try {
-        const res = await acceptInvite({ token, confirmLeave });
+        const res = await aceitarConvite({ token, confirmLeave });
         if (res.success) {
           window.location.href = res.redirectTo;
           return;
@@ -114,7 +114,7 @@ function MemberAccept({ token, viewer }: { token: string; viewer: Extract<Viewer
 
       {error ? <FormAlert>{error}</FormAlert> : null}
 
-      <button type="button" onClick={() => logout()} className={cn(btn.quiet, "self-center")}>
+      <button type="button" onClick={() => sair()} className={cn(btn.quiet, "self-center")}>
         Não é você? Sair
       </button>
     </div>
@@ -156,7 +156,7 @@ function AnonymousAccept({ token }: { token: string }) {
     startTransition(async () => {
       try {
         if (mode === "criar") {
-          const res = await acceptInviteWithNewAccount({ token, name, email: email.trim().toLowerCase(), password });
+          const res = await aceitarConviteComContaNova({ token, name, email: email.trim().toLowerCase(), password });
           if (res.success) {
             window.location.href = res.redirectTo;
             return;
@@ -164,7 +164,7 @@ function AnonymousAccept({ token }: { token: string }) {
           setError({ message: res.error, existingAccount: "existingAccount" in res ? res.existingAccount : false });
           return;
         }
-        const res = await login(password, email.trim().toLowerCase());
+        const res = await entrar(password, email.trim().toLowerCase());
         if (!res.success) {
           setError({ message: res.error || "E-mail ou senha não conferem." });
           return;

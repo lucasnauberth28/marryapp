@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { updateLeadStatus } from "@/actions/vendor-panel-actions";
+import { atualizarSituacaoDoPedido } from "@/actions/vendor-panel-actions";
 import { NativeSelect } from "@/components/ui/select";
 import { LEAD_STATUS_LABEL, LEAD_STATUSES, type LeadStatus } from "../../../_lib/vendor-panel";
 
@@ -13,7 +13,7 @@ export function StatusSelect({ leadId, status, id = "status-pedido" }: { leadId:
   function onChange(target: LeadStatus) {
     if (target === status) return;
     startTransition(async () => {
-      const res = await updateLeadStatus(leadId, target);
+      const res = await atualizarSituacaoDoPedido(leadId, target);
       if (res.success) toast.success(`Pedido marcado como “${LEAD_STATUS_LABEL[target]}”.`);
       else toast.error(res.error ?? "Não foi possível atualizar o pedido.");
     });

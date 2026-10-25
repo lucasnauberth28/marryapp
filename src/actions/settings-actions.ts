@@ -7,7 +7,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 /** Regras do casamento da sessão. As páginas públicas leem o prazo pelo endereço (lib/wedding-data). */
-export async function getSettings() {
+export async function obterConfiguracoes() {
   const { weddingId } = await exigirCasamentoParaLeitura();
   return garantirConfiguracoesDoSistema(weddingId);
 }
@@ -16,7 +16,7 @@ export async function getSettings() {
  * Regras do casamento editáveis em Configurações. Aparência e dados exibidos no site
  * ficam em updateSiteCustomization (editor do site).
  */
-export async function updateSettings(data: { rsvpDeadline: Date | null }) {
+export async function atualizarConfiguracoes(data: { rsvpDeadline: Date | null }) {
   const { weddingId } = await exigirCasamento("/configuracoes");
 
   const rsvpDeadline = data?.rsvpDeadline ? new Date(data.rsvpDeadline) : null;

@@ -20,7 +20,7 @@ import { ERROS } from "@/lib/mensagens-de-erro";
 // pagamento por conta própria: aprovação só vem do Mercado Pago (webhook/consulta)
 // ou da conferência manual do casal em /financas.
 
-const GuestIdentitySchema = z.object({
+const EsquemaDaIdentidadeDoConvidado = z.object({
   giftId: z.string().uuid("Presente inválido."),
   guestName: z.string().trim().min(3, "Informe seu nome.").max(120),
   guestPhone: z
@@ -30,14 +30,14 @@ const GuestIdentitySchema = z.object({
   guestEmail: z.string().trim().email().max(200).optional().or(z.literal("")),
 });
 
-const CardPaymentSchema = GuestIdentitySchema.extend({
+const EsquemaDoPagamentoComCartao = EsquemaDaIdentidadeDoConvidado.extend({
   cardToken: z.string().min(10).max(200),
   paymentMethodId: z.string().regex(/^[a-z_]{2,30}$/),
   installments: z.coerce.number().int().min(1).max(12),
   payerEmail: z.string().trim().email("Informe um e-mail válido.").max(200),
 });
 
-function splitName(name: string) {
+function separarNome(name: string) {
   const [first, ...rest] = name.split(" ");
   return { first_name: first, last_name: rest.join(" ") || "Convidado" };
 }
@@ -45,13 +45,13 @@ function splitName(name: string) {
 /**
  * Cria uma transação PIX (dinâmico via Mercado Pago, ou estático como fallback)
  */
-export async function createPixTransactionAction(input: {
+export async function criarTransacaoPix(input: {
   giftId: string;
   guestName: string;
   guestPhone: string;
   guestEmail?: string;
 }) {
-  const parsed = GuestIdentitySchema.safeParse(input);
+  const parsed = EsquemaDaIdentidadeDoConvidado.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const { giftId, guestPhone, guestEmail } = parsed.data;
   const guestName = normalizarTexto(parsed.data.guestName);
@@ -99,7 +99,7 @@ export async function createPixTransactionAction(input: {
             description: `Presente de Casamento: ${gift.title}`,
             payer: {
               email: guestEmail || "convidado@casamento.com",
-              ...splitName(guestName),
+              ...separarNome(guestName),
             },
             external_reference: transaction.id,
           },
@@ -160,7 +160,7 @@ export async function createPixTransactionAction(input: {
  * Polling público do status de uma transação. Somente leitura do gateway: nunca aprova
  * sem que o Mercado Pago confirme o pagamento com o valor exato.
  */
-export async function checkTransactionStatusAction(transactionId: string) {
+export async function conferirSituacaoDaTransacao(transactionId: string) {
   try {
     if (!z.string().uuid().safeParse(transactionId).success) return { approved: false };
 
@@ -218,7 +218,7 @@ export async function checkTransactionStatusAction(transactionId: string) {
  * Processa o checkout com cartão de crédito via Mercado Pago (Checkout Transparente).
  * Recebe apenas o token gerado no navegador pelo MercadoPago.js: os dados do cartão nunca passam por aqui.
  */
-export async function processCardPaymentAction(input: {
+export async function processarPagamentoComCartao(input: {
   giftId: string;
   guestName: string;
   guestPhone: string;
@@ -227,7 +227,7 @@ export async function processCardPaymentAction(input: {
   installments: number;
   payerEmail: string;
 }) {
-  const parsed = CardPaymentSchema.safeParse(input);
+  const parsed = EsquemaDoPagamentoComCartao.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const { giftId, guestPhone, cardToken, paymentMethodId, installments } = parsed.data;
   const guestName = normalizarTexto(parsed.data.guestName);
@@ -275,7 +275,7 @@ export async function processCardPaymentAction(input: {
         description: `Presente de Casamento: ${gift.title}`,
         installments,
         payment_method_id: paymentMethodId,
-        payer: { email: payerEmail, ...splitName(guestName) },
+        payer: { email: payerEmail, ...separarNome(guestName) },
         external_reference: transaction.id,
       },
       requestOptions: { idempotencyKey: transaction.id },

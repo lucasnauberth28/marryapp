@@ -8,7 +8,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
-const CreditCardSchema = z.object({
+const EsquemaDoCartaoDeCredito = z.object({
   bank: z.string().min(2, "Informe o nome do banco."),
   brand: z.string().min(2, "Informe a bandeira do cartão."),
   nickname: z.string().optional().or(z.literal("")),
@@ -17,7 +17,7 @@ const CreditCardSchema = z.object({
   color: z.string().optional().default("#18181b"),
 });
 
-export async function getWalletData() {
+export async function obterDadosDaCarteira() {
   const { weddingId } = await exigirCasamentoParaLeitura();
   const wallet = await garantirSaldoDaCarteira(weddingId);
 
@@ -31,7 +31,7 @@ export async function getWalletData() {
     cards,
   };
 }
-export async function createCreditCard(formData: FormData) {
+export async function criarCartaoDeCredito(formData: FormData) {
   const { weddingId } = await exigirCasamento("/carteira");
   const limitAmount = Math.round(parseFloat((formData.get("limit") as string || "0").replace(',', '.')) * 100);
 
@@ -44,7 +44,7 @@ export async function createCreditCard(formData: FormData) {
     color: formData.get("color") || "#18181b",
   };
 
-  const parsed = CreditCardSchema.safeParse(raw);
+  const parsed = EsquemaDoCartaoDeCredito.safeParse(raw);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0].message };
   }
@@ -62,7 +62,7 @@ export async function createCreditCard(formData: FormData) {
   }
 }
 
-export async function updateCreditCard(id: string, formData: FormData) {
+export async function atualizarCartaoDeCredito(id: string, formData: FormData) {
   const { weddingId } = await exigirCasamento("/carteira");
   const limitAmount = Math.round(parseFloat((formData.get("limit") as string || "0").replace(',', '.')) * 100);
 
@@ -75,7 +75,7 @@ export async function updateCreditCard(id: string, formData: FormData) {
     color: formData.get("color") || "#18181b",
   };
 
-  const parsed = CreditCardSchema.safeParse(raw);
+  const parsed = EsquemaDoCartaoDeCredito.safeParse(raw);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0].message };
   }
@@ -96,7 +96,7 @@ export async function updateCreditCard(id: string, formData: FormData) {
   }
 }
 
-export async function deleteCreditCard(id: string) {
+export async function excluirCartaoDeCredito(id: string) {
   const { weddingId } = await exigirCasamento("/carteira");
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.cartaoNaoEncontrado };

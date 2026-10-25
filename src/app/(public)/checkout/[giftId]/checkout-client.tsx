@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
 import { ArrowRight, Check, Copy, Gift as GiftIcon, Heart, Hourglass, Lock } from "lucide-react";
-import { createPixTransactionAction, checkTransactionStatusAction, processCardPaymentAction } from "@/actions/payment-actions";
+import { criarTransacaoPix, conferirSituacaoDaTransacao, processarPagamentoComCartao } from "@/actions/payment-actions";
 import { Button } from "@/components/ui/button";
 import { Field, FormAlert } from "@/components/ui/field";
 import { NativeSelect } from "@/components/ui/select";
@@ -76,7 +76,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
     if (step !== "PAYMENT" || !transactionId) return;
 
     const interval = setInterval(async () => {
-      const res = await checkTransactionStatusAction(transactionId);
+      const res = await conferirSituacaoDaTransacao(transactionId);
       if (res.approved) {
         clearInterval(interval);
         setStep("SUCCESS");
@@ -112,7 +112,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
 
     startTransition(async () => {
       if (method === "PIX") {
-        const result = await createPixTransactionAction({
+        const result = await criarTransacaoPix({
           giftId: gift.id,
           guestName,
           guestPhone,
@@ -143,7 +143,7 @@ export function CheckoutClient({ gift, coupleNames, slug, cardEnabled = true, ca
           return;
         }
 
-        const result = await processCardPaymentAction({
+        const result = await processarPagamentoComCartao({
           giftId: gift.id,
           guestName,
           guestPhone,

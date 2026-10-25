@@ -5,7 +5,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { ArrowRight, CalendarDays, Check, Download, Gift, MapPin, Phone } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
-import { findGuestByPhone, publicConfirmRsvp } from "@/actions/guest-actions";
+import { acharConvidadoPeloTelefone, confirmarPresencaPublica } from "@/actions/guest-actions";
 import { btn } from "@/components/landing/styles";
 import { Seal } from "@/components/landing/seal";
 import { Button } from "@/components/ui/button";
@@ -65,7 +65,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
     setLoading(true);
 
     try {
-      const result = await findGuestByPhone(slug, phone);
+      const result = await acharConvidadoPeloTelefone(slug, phone);
       if (result.status === "found") {
         const found = result.guest;
         setGuest(found);
@@ -101,7 +101,7 @@ export function RsvpClient({ slug, coupleNames, dateLabel, locationName }: RsvpC
       .join(", ");
 
     try {
-      const res = await publicConfirmRsvp(
+      const res = await confirmarPresencaPublica(
         slug,
         guest.id,
         status,

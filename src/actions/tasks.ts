@@ -9,26 +9,26 @@ import { revalidatePath } from "next/cache";
 import { BoardItem, BoardItemType } from "@/types/kanban";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
-const TASK_STATUSES = new Set<string>(Object.values(TaskStatus));
+const SITUACOES_DA_TAREFA = new Set<string>(Object.values(TaskStatus));
 
-function isTaskStatus(value: unknown): value is TaskStatus {
-  return typeof value === "string" && TASK_STATUSES.has(value);
+function ehSituacaoDeTarefa(value: unknown): value is TaskStatus {
+  return typeof value === "string" && SITUACOES_DA_TAREFA.has(value);
 }
 
-function optionalText(value: unknown, max: number): string | null | undefined {
+function textoOpcional(value: unknown, max: number): string | null | undefined {
   if (value === undefined) return undefined;
   if (value === null) return null;
   return typeof value === "string" ? value.slice(0, max) : undefined;
 }
 
-function optionalDate(value: unknown): Date | null | undefined {
+function dataOpcional(value: unknown): Date | null | undefined {
   if (value === undefined) return undefined;
   if (value === null || value === "") return null;
   const date = new Date(value as string | number | Date);
   return Number.isNaN(date.getTime()) ? undefined : date;
 }
 
-export async function getTasks() {
+export async function obterTarefas() {
   const { weddingId } = await exigirCasamentoParaLeitura("/pendencias");
   try {
     const tasks = await prisma.task.findMany({
@@ -56,7 +56,7 @@ export async function getTasks() {
   }
 }
 
-export async function createTask(data: {
+export async function criarTarefa(data: {
   title: string;
   description?: string;
   dueDate?: Date;
@@ -67,7 +67,7 @@ export async function createTask(data: {
   // Só os campos da tarefa: nada do que o navegador enviar decide o casamento
   const title = typeof data?.title === "string" ? data.title.trim().slice(0, 200) : "";
   if (!title) return { success: false, error: "Informem o que precisa ser feito." };
-  if (!isTaskStatus(data.status)) return { success: false, error: "Situação da tarefa inválida." };
+  if (!ehSituacaoDeTarefa(data.status)) return { success: false, error: "Situação da tarefa inválida." };
 
   try {
     // Acha a maior posição atual para essa coluna
@@ -83,9 +83,9 @@ export async function createTask(data: {
       data: {
         weddingId,
         title,
-        description: optionalText(data.description, 5000) ?? null,
-        dueDate: optionalDate(data.dueDate) ?? null,
-        assignee: optionalText(data.assignee, 120) ?? null,
+        description: textoOpcional(data.description, 5000) ?? null,
+        dueDate: dataOpcional(data.dueDate) ?? null,
+        assignee: textoOpcional(data.assignee, 120) ?? null,
         status: data.status,
         position: newPosition,
       },
@@ -99,14 +99,14 @@ export async function createTask(data: {
   }
 }
 
-export async function updateTaskStatus(
+export async function atualizarSituacaoDaTarefa(
   taskId: string,
   newStatus: TaskStatus,
   newPosition: number,
   type: BoardItemType = "MANUAL"
 ) {
   const { weddingId } = await exigirCasamento("/pendencias");
-  if (typeof taskId !== "string" || !isTaskStatus(newStatus) || !Number.isFinite(Number(newPosition))) {
+  if (typeof taskId !== "string" || !ehSituacaoDeTarefa(newStatus) || !Number.isFinite(Number(newPosition))) {
     return { success: false, error: "Não deu para atualizar a tarefa. Tente de novo." };
   }
   try {
@@ -128,7 +128,7 @@ export async function updateTaskStatus(
   }
 }
 
-export async function updateTask(taskId: string, data: Partial<{
+export async function atualizarTarefa(taskId: string, data: Partial<{
   title: string;
   description: string | null;
   dueDate: Date | null;
@@ -147,14 +147,14 @@ export async function updateTask(taskId: string, data: Partial<{
     if (!title) return { success: false, error: "Informem o que precisa ser feito." };
     update.title = title;
   }
-  const description = optionalText(data.description, 5000);
+  const description = textoOpcional(data.description, 5000);
   if (description !== undefined) update.description = description;
-  const dueDate = optionalDate(data.dueDate);
+  const dueDate = dataOpcional(data.dueDate);
   if (dueDate !== undefined) update.dueDate = dueDate;
-  const assignee = optionalText(data.assignee, 120);
+  const assignee = textoOpcional(data.assignee, 120);
   if (assignee !== undefined) update.assignee = assignee;
   if (data.status !== undefined) {
-    if (!isTaskStatus(data.status)) return { success: false, error: "Situação da tarefa inválida." };
+    if (!ehSituacaoDeTarefa(data.status)) return { success: false, error: "Situação da tarefa inválida." };
     update.status = data.status;
   }
 
@@ -174,7 +174,7 @@ export async function updateTask(taskId: string, data: Partial<{
   }
 }
 
-export async function deleteTask(taskId: string) {
+export async function excluirTarefa(taskId: string) {
   const { weddingId } = await exigirCasamento("/pendencias");
   try {
     if (typeof taskId !== "string") return { success: false, error: ERROS.tarefaNaoEncontrada };

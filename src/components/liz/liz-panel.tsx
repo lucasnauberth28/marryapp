@@ -5,7 +5,7 @@ import Link from "next/link";
 import { RotateCcw, Send, X } from "lucide-react";
 import { Skeleton } from "@/components/skeletons";
 import { btn } from "@/components/landing/styles";
-import { getLizPanelData, askLiz, type LizPanelData } from "@/actions/liz-actions";
+import { obterDadosDoPainelDaLiz, perguntarALiz, type DadosDoPainelDaLiz } from "@/actions/liz-actions";
 import { respondedoraDoGuiaDeAjuda, type RespondedoraDaLiz, type ContextoDaPerguntaALiz } from "@/lib/liz/answerer";
 import { ARTIGOS_DE_AJUDA } from "@/lib/liz/help-articles";
 import { artigosVisiveis, type ResultadoDaAjuda } from "@/lib/liz/help-search";
@@ -18,13 +18,13 @@ import { LizAvatar, LizIllustration } from "./liz-illustration";
 /** Respondedor que passa a pergunta ao servidor (provedor de IA). Só é usado quando a administração liga a Liz. */
 const serverAnswerer: RespondedoraDaLiz = {
   async answer(question, context) {
-    const result = await askLiz({ question, pathname: context.pathname });
+    const result = await perguntarALiz({ question, pathname: context.pathname });
     if (!result.success) throw new Error(result.error);
     return result.answer;
   },
 };
 
-type Load = { status: "loading" } | { status: "error"; message: string } | { status: "ready"; data: LizPanelData };
+type Load = { status: "loading" } | { status: "error"; message: string } | { status: "ready"; data: DadosDoPainelDaLiz };
 
 type MsgBody =
   | { from: "liz" | "you"; kind: "text"; text: string }
@@ -67,7 +67,7 @@ export function LizPanel({
   const uid = useId();
 
   const fetchData = useCallback(() => {
-    getLizPanelData()
+    obterDadosDoPainelDaLiz()
       .then((res) => setLoad(res.success ? { status: "ready", data: res.data } : { status: "error", message: res.error }))
       .catch(() => setLoad({ status: "error", message: "Não deu para carregar a sugestão agora. Tente de novo." }));
   }, []);

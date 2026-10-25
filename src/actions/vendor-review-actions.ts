@@ -12,9 +12,9 @@ import { avisarDepois } from "@/lib/notifications/service";
 import { avisarNovaAvaliacao } from "@/lib/notifications/events";
 
 // Painel do fornecedor > Avaliações: o fornecedor responde publicamente às avaliações que recebeu.
-const REVIEW_REPLY_LIMIT = { limit: 30, windowMs: 1000 * 60 }; // 30 respostas / minuto por conta
+const LIMITE_DE_RESPOSTAS_A_AVALIACOES = { limit: 30, windowMs: 1000 * 60 }; // 30 respostas / minuto por conta
 
-const ReplySchema = z.object({
+const EsquemaDaResposta = z.object({
   reviewId: z.string().uuid("Avaliação inválida."),
   reply: z
     .string({ message: "Escreva a resposta." })
@@ -23,17 +23,17 @@ const ReplySchema = z.object({
     .max(1000, "A resposta pode ter até 1000 caracteres."),
 });
 
-export type ReplyToReviewResult = { success: boolean; error?: string };
+export type ResultadoDaRespostaAAvaliacao = { success: boolean; error?: string };
 
 /** Publica (ou edita) a resposta do fornecedor da sessão a uma avaliação dele. */
-export async function replyToReview(reviewId: string, reply: string): Promise<ReplyToReviewResult> {
+export async function responderAvaliacao(reviewId: string, reply: string): Promise<ResultadoDaRespostaAAvaliacao> {
   const { session, vendor } = await exigirSessaoDoFornecedor();
 
-  const parsed = ReplySchema.safeParse({ reviewId, reply });
+  const parsed = EsquemaDaResposta.safeParse({ reviewId, reply });
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
   try {
-    const rateLimit = await conferirLimiteDeUso({ key: `VENDOR_REVIEW_REPLY:${session.userId}`, ...REVIEW_REPLY_LIMIT });
+    const rateLimit = await conferirLimiteDeUso({ key: `VENDOR_REVIEW_REPLY:${session.userId}`, ...LIMITE_DE_RESPOSTAS_A_AVALIACOES });
     if (!rateLimit.success) {
       return { success: false, error: "Muitas respostas em pouco tempo. Aguarde um instante e tente novamente." };
     }
@@ -58,9 +58,9 @@ export async function replyToReview(reviewId: string, reply: string): Promise<Re
 // AVALIAÇÃO VERIFICADA PELO CASAL (link /avaliar/<token>)
 // ==========================================
 
-const LEAD_REVIEW_LIMIT = { limit: 10, windowMs: 1000 * 60 * 10 }; // 10 tentativas / 10 min por IP
+const LIMITE_DE_AVALIACOES_POR_PEDIDO = { limit: 10, windowMs: 1000 * 60 * 10 }; // 10 tentativas / 10 min por IP
 
-const LeadReviewSchema = z.object({
+const EsquemaDaAvaliacaoDoPedido = z.object({
   token: z.string().regex(PUBLIC_TOKEN_RE, "Link inválido."),
   rating: z.number({ message: "Escolha de 1 a 5 estrelas." }).int().min(1, "Escolha de 1 a 5 estrelas.").max(5, "Escolha de 1 a 5 estrelas."),
   comment: z
@@ -70,21 +70,21 @@ const LeadReviewSchema = z.object({
     .max(2000, "Use até 2.000 caracteres."),
 });
 
-export type SubmitLeadReviewInput = { token: string; rating: number; comment: string };
-export type SubmitLeadReviewResult = { success: true } | { success: false; error: string; alreadyReviewed?: boolean };
+export type EntradaDoEnvioDaAvaliacao = { token: string; rating: number; comment: string };
+export type ResultadoDoEnvioDaAvaliacao = { success: true } | { success: false; error: string; alreadyReviewed?: boolean };
 
 /**
  * Pública: o casal de um pedido fechado avalia o fornecedor pelo link recebido.
  * Uma avaliação por pedido (leadId único); entra como verificada, com nome e data do pedido.
  */
-export async function submitLeadReview(input: SubmitLeadReviewInput): Promise<SubmitLeadReviewResult> {
-  const parsed = LeadReviewSchema.safeParse(input);
+export async function enviarAvaliacaoDoPedido(input: EntradaDoEnvioDaAvaliacao): Promise<ResultadoDoEnvioDaAvaliacao> {
+  const parsed = EsquemaDaAvaliacaoDoPedido.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const data = parsed.data;
 
   try {
     const ip = await obterIpDoCliente();
-    const rateLimit = await conferirLimiteDeUso({ key: `LEAD_REVIEW:${ip}`, ...LEAD_REVIEW_LIMIT });
+    const rateLimit = await conferirLimiteDeUso({ key: `LEAD_REVIEW:${ip}`, ...LIMITE_DE_AVALIACOES_POR_PEDIDO });
     if (!rateLimit.success) {
       return { success: false, error: "Muitas tentativas em pouco tempo. Tente novamente daqui a alguns minutos." };
     }

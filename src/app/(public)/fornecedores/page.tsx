@@ -1,4 +1,4 @@
-import { getPartnerVendors } from "@/actions/partner-vendor-actions";
+import { obterFornecedoresParceiros } from "@/actions/partner-vendor-actions";
 import { PublicVendorsView } from "@/components/public/public-vendors-view";
 import { parseIsoDate, toIsoDate, todayBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
 
@@ -17,7 +17,7 @@ export default async function PublicVendorsPage({ searchParams }: { searchParams
   const raw = typeof data === "string" ? data : undefined;
   const weddingDate = raw && parseIsoDate(raw) && raw >= todayIso ? raw : undefined;
 
-  const partnerVendors = await getPartnerVendors(undefined, { weddingDate });
+  const partnerVendors = await obterFornecedoresParceiros(undefined, { weddingDate });
 
   return <PublicVendorsView initialPartners={partnerVendors} weddingDate={weddingDate ?? ""} todayIso={todayIso} />;
 }

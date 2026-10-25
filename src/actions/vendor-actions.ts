@@ -7,7 +7,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
-const VendorSchema = z.object({
+const EsquemaDoFornecedor = z.object({
   name: z.string().min(2, "Nome deve ter ao menos 2 caracteres."),
   category: z.string().min(2, "Categoria é obrigatória."),
   contact: z.string().optional(),
@@ -15,7 +15,7 @@ const VendorSchema = z.object({
   notes: z.string().optional(),
 });
 
-export async function getVendors() {
+export async function obterFornecedores() {
   const { weddingId } = await exigirCasamentoParaLeitura();
   return prisma.vendor.findMany({
     where: { weddingId },
@@ -26,7 +26,7 @@ export async function getVendors() {
   });
 }
 
-export async function createVendor(formData: FormData) {
+export async function criarFornecedor(formData: FormData) {
   const { weddingId } = await exigirCasamento("/meus-fornecedores");
   const raw = {
     name: formData.get("name"),
@@ -36,7 +36,7 @@ export async function createVendor(formData: FormData) {
     notes: formData.get("notes") || undefined,
   };
 
-  const parsed = VendorSchema.safeParse(raw);
+  const parsed = EsquemaDoFornecedor.safeParse(raw);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0].message };
   }
@@ -51,7 +51,7 @@ export async function createVendor(formData: FormData) {
   }
 }
 
-export async function updateVendor(id: string, formData: FormData) {
+export async function atualizarFornecedor(id: string, formData: FormData) {
   const { weddingId } = await exigirCasamento("/meus-fornecedores");
   const raw = {
     name: formData.get("name"),
@@ -61,7 +61,7 @@ export async function updateVendor(id: string, formData: FormData) {
     notes: formData.get("notes") || undefined,
   };
 
-  const parsed = VendorSchema.safeParse(raw);
+  const parsed = EsquemaDoFornecedor.safeParse(raw);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0].message };
   }
@@ -82,7 +82,7 @@ export async function updateVendor(id: string, formData: FormData) {
   }
 }
 
-export async function deleteVendor(id: string) {
+export async function excluirFornecedor(id: string) {
   const { weddingId } = await exigirCasamento("/meus-fornecedores");
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.fornecedorNaoEncontrado };

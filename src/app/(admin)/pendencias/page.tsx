@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getTasks } from "@/actions/tasks";
+import { obterTarefas } from "@/actions/tasks";
 import prisma from "@/lib/prisma";
 import { MadrinhaCard } from "@/components/admin/madrinha-card";
 import { TasksBoard, type Filter } from "@/components/tarefas/tasks-board";
@@ -24,7 +24,7 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
   const { weddingId } = await exigirCasamentoNaPagina("/pendencias");
   const { filtro } = await searchParams;
 
-  const [{ data: tasks, success }, identity] = await Promise.all([getTasks(), obterIdentidadeDoCasamentoPrincipal()]);
+  const [{ data: tasks, success }, identity] = await Promise.all([obterTarefas(), obterIdentidadeDoCasamentoPrincipal()]);
 
   if (!success) {
     return (

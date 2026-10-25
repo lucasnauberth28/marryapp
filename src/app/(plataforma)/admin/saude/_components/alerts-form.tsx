@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { FormAlert } from "@/components/ui/field";
 import { Panel } from "@/components/plataforma/panel";
 import { Button } from "@/components/ui/button";
-import { saveHealthAlerts, testHealthAlerts } from "@/actions/admin-saude-actions";
+import { salvarAlertasDeSaude, testarAlertasDeSaude } from "@/actions/admin-saude-actions";
 import { ToggleRow } from "../../_sistema/toggle-row";
 import { useAdminAction } from "../../_sistema/use-admin-action";
 
@@ -20,7 +20,7 @@ export function AlertsForm({ initial, emailConfigured }: { initial: { mercadoPag
       title="Alertas"
       description="Você recebe um e-mail quando uma destas coisas acontecer. A verificação é feita uma vez por dia, junto da rotina diária."
       aside={
-        <Button type="button" variant="outline" size="sm" disabled={!initial.sendTo} loading={test.pending} onClick={() => test.run(() => testHealthAlerts())} title={initial.sendTo ? undefined : "Salve primeiro o e-mail dos alertas"}>
+        <Button type="button" variant="outline" size="sm" disabled={!initial.sendTo} loading={test.pending} onClick={() => test.run(() => testarAlertasDeSaude())} title={initial.sendTo ? undefined : "Salve primeiro o e-mail dos alertas"}>
           <Bell className="size-4" aria-hidden="true" /> Testar os alertas
         </Button>
       }
@@ -29,7 +29,7 @@ export function AlertsForm({ initial, emailConfigured }: { initial: { mercadoPag
         className="flex flex-col gap-4"
         onSubmit={(e) => {
           e.preventDefault();
-          save.run(() => saveHealthAlerts(s));
+          save.run(() => salvarAlertasDeSaude(s));
         }}
       >
         <div className="grid grid-cols-1 gap-x-10 md:grid-cols-2">

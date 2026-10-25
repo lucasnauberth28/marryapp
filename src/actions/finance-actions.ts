@@ -11,7 +11,7 @@ import { ERROS } from "@/lib/mensagens-de-erro";
 // TYPES
 // ==========================================
 
-export interface FinancialMetrics {
+export interface MetricasFinanceiras {
   totalBruto: number;
   totalLiquido: number;
   totalTaxas: number;
@@ -28,7 +28,7 @@ export interface FinancialMetrics {
 }
 
 // Query args usada no getTransactions — definida uma vez, reutilizada no tipo
-const transactionQueryArgs = {
+const argumentosDaConsultaDeTransacoes = {
   orderBy: { createdAt: "desc" as const },
   include: {
     gift: { select: { id: true, title: true } },
@@ -37,8 +37,8 @@ const transactionQueryArgs = {
 } satisfies Prisma.TransactionFindManyArgs;
 
 // Tipo derivado direto do Prisma — sempre sincronizado com o schema
-export type TransactionWithGift = Prisma.TransactionGetPayload<
-  typeof transactionQueryArgs
+export type TransacaoComPresente = Prisma.TransactionGetPayload<
+  typeof argumentosDaConsultaDeTransacoes
 >;
 
 // ==========================================
@@ -49,7 +49,7 @@ export type TransactionWithGift = Prisma.TransactionGetPayload<
  * Retorna as métricas financeiras agregadas direto do banco (Entradas e Saídas).
  * Todos os valores estão em centavos (Int).
  */
-export async function getFinancialMetrics(): Promise<FinancialMetrics> {
+export async function obterMetricasFinanceiras(): Promise<MetricasFinanceiras> {
   const { weddingId } = await exigirCasamentoParaLeitura("/financas");
   const [
     approved,
@@ -131,9 +131,9 @@ export async function getFinancialMetrics(): Promise<FinancialMetrics> {
  * Retorna a lista de transações ordenadas pela mais recente,
  * incluindo o presente (Gift) e convidado (Guest) associados.
  */
-export async function getTransactions(): Promise<TransactionWithGift[]> {
+export async function obterTransacoes(): Promise<TransacaoComPresente[]> {
   const { weddingId } = await exigirCasamentoParaLeitura("/financas");
-  return prisma.transaction.findMany({ ...transactionQueryArgs, where: { weddingId } });
+  return prisma.transaction.findMany({ ...argumentosDaConsultaDeTransacoes, where: { weddingId } });
 }
 
 /**
@@ -142,7 +142,7 @@ export async function getTransactions(): Promise<TransactionWithGift[]> {
  * 1. Marca a Transaction como APPROVED
  * 2. Marca o Gift como isPurchased = true
  */
-export async function approvePixTransaction(
+export async function aprovarTransacaoPix(
   transactionId: string,
   giftId: string
 ): Promise<{ success: boolean; error?: string }> {
@@ -193,7 +193,7 @@ export async function approvePixTransaction(
 /**
  * Alterna o status do envio do agradecimento (Thank You Note)
  */
-export async function toggleThankYouSent(
+export async function alternarAgradecimentoEnviado(
   transactionId: string,
   currentStatus: boolean
 ): Promise<{ success: boolean; error?: string }> {

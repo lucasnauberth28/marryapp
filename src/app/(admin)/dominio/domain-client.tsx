@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AlertCircle, Check, CheckCircle2, Clock, Copy, ExternalLink, Globe, Info, XCircle } from "lucide-react";
-import { cancelDomainOrderAction, checkDomainAvailabilityAction, requestDomainAction } from "@/actions/domain-actions";
+import { cancelarPedidoDeDominio, verificarDisponibilidadeDoDominioAcao, pedirDominio } from "@/actions/domain-actions";
 import { PageHeader } from "@/components/admin/page-header";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -159,7 +159,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
     setCheck({ state: "checking" });
     timer.current = setTimeout(
       async () => {
-        const result = await checkDomainAvailabilityAction({ domain: parsed.domain });
+        const result = await verificarDisponibilidadeDoDominioAcao({ domain: parsed.domain });
         if (mine !== sequence.current) return;
         setCheck(result.success ? { state: result.availability, domain: result.domain } : { state: "error", message: result.error });
       },
@@ -184,7 +184,7 @@ function RequestForm({ coupleNames, weddingDate, defaults }: Pick<Props, "couple
     event.preventDefault();
     setFormError(null);
     startTransition(async () => {
-      const result = await requestDomainAction({ domain: name, holderName, holderDocument, holderEmail, holderPhone, accepted });
+      const result = await pedirDominio({ domain: name, holderName, holderDocument, holderEmail, holderPhone, accepted });
       if (result.success) {
         toast.success("Pedido enviado. Avisaremos quando o endereço for registrado.");
         router.refresh();
@@ -469,7 +469,7 @@ function CancelButton() {
 
   function confirm() {
     startTransition(async () => {
-      const result = await cancelDomainOrderAction();
+      const result = await cancelarPedidoDeDominio();
       if (result.success) {
         toast.success("Pedido cancelado.");
         setOpen(false);

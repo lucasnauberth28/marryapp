@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Download, Flag, Megaphone } from "lucide-react";
-import { setWeddingsFlag } from "@/actions/admin-casais-actions";
+import { definirMarcaDosCasamentos } from "@/actions/admin-casais-actions";
 import { btn } from "@/components/landing/styles";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -80,7 +80,7 @@ export function CasaisList({ rows }: { rows: CasalListRow[] }) {
   const chosen = selected.filter((id) => rows.some((r) => r.id === id));
   const anyUnflagged = rows.some((r) => chosen.includes(r.id) && !r.flagged);
 
-  const flag = () => run(() => setWeddingsFlag({ weddingIds: chosen, flagged: anyUnflagged }), () => setSelected([]));
+  const flag = () => run(() => definirMarcaDosCasamentos({ weddingIds: chosen, flagged: anyUnflagged }), () => setSelected([]));
 
   return (
     <div className="flex flex-col gap-4">
