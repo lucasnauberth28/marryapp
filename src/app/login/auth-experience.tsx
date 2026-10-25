@@ -55,37 +55,11 @@ export function ExperienciaDeAcesso({ initialMode, initialType = null, initialPl
       photo={photo}
       footnote="Foi convidado para um casamento? Use o link enviado pelo casal. Você não precisa criar uma conta."
     >
-      {!accountCreated ? (
-        <div role="tablist" aria-label="Acesso" className="mb-8 grid grid-cols-2 gap-1 rounded-[12px] bg-areia p-1">
-          <BotaoDeAba id="aba-entrar" controls="painel-acesso" active={mode === "entrar"} onClick={() => setMode("entrar")}>
-            Entrar
-          </BotaoDeAba>
-          <BotaoDeAba id="aba-criar" controls="painel-acesso" active={mode === "criar"} onClick={() => setMode("criar")}>
-            Criar conta
-          </BotaoDeAba>
-        </div>
-      ) : null}
+      {!accountCreated ? <AbasDeAcesso mode={mode} aoEscolher={setMode} /> : null}
 
       <div id="painel-acesso" role="tabpanel" aria-labelledby={mode === "entrar" ? "aba-entrar" : "aba-criar"}>
         {mode === "entrar" ? (
-          <div key="entrar" className="step-in flex flex-col gap-6">
-            <div className="flex flex-col gap-2">
-              <h1 className="font-display text-[30px] font-medium leading-9 tracking-[-0.015em] lg:text-[36px] lg:leading-[42px]">
-                Que bom ver vocês
-              </h1>
-              <p className="text-base leading-6 text-tinta-suave">Entrem para continuar organizando o casamento.</p>
-            </div>
-            {sessionExpired ? (
-              <p
-                role="status"
-                className="flex items-start gap-2.5 rounded-[12px] border border-linha bg-areia px-4 py-3 text-[15px] leading-6 text-tinta"
-              >
-                <Clock aria-hidden="true" className="mt-0.5 size-[18px] shrink-0 text-tinta-suave" strokeWidth={1.6} />
-                Sua sessão expirou. Entre de novo para continuar.
-              </p>
-            ) : null}
-            <FormularioDeLogin key={loginEmail} initialEmail={loginEmail} nextPath={nextPath} onCreateAccount={() => setMode("criar")} />
-          </div>
+          <PainelDeEntrar key="entrar" sessionExpired={sessionExpired} loginEmail={loginEmail} nextPath={nextPath} aoCriarConta={() => setMode("criar")} />
         ) : (
           <FluxoDeCadastro
             step={step}
@@ -100,6 +74,44 @@ export function ExperienciaDeAcesso({ initialMode, initialType = null, initialPl
         )}
       </div>
     </PalcoDeAcesso>
+  );
+}
+
+function AbasDeAcesso({ mode, aoEscolher }: { mode: ModoDeAcesso; aoEscolher: (m: ModoDeAcesso) => void }) {
+  return (
+    <div role="tablist" aria-label="Acesso" className="mb-8 grid grid-cols-2 gap-1 rounded-[12px] bg-areia p-1">
+      <BotaoDeAba id="aba-entrar" controls="painel-acesso" active={mode === "entrar"} onClick={() => aoEscolher("entrar")}>
+        Entrar
+      </BotaoDeAba>
+      <BotaoDeAba id="aba-criar" controls="painel-acesso" active={mode === "criar"} onClick={() => aoEscolher("criar")}>
+        Criar conta
+      </BotaoDeAba>
+    </div>
+  );
+}
+
+interface PropriedadesDoPainelDeEntrar {
+  sessionExpired: boolean;
+  loginEmail: string;
+  nextPath: string | null;
+  aoCriarConta: () => void;
+}
+
+function PainelDeEntrar({ sessionExpired, loginEmail, nextPath, aoCriarConta }: PropriedadesDoPainelDeEntrar) {
+  return (
+    <div className="step-in flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display text-[30px] font-medium leading-9 tracking-[-0.015em] lg:text-[36px] lg:leading-[42px]">Que bom ver vocês</h1>
+        <p className="text-base leading-6 text-tinta-suave">Entrem para continuar organizando o casamento.</p>
+      </div>
+      {sessionExpired ? (
+        <p role="status" className="flex items-start gap-2.5 rounded-[12px] border border-linha bg-areia px-4 py-3 text-[15px] leading-6 text-tinta">
+          <Clock aria-hidden="true" className="mt-0.5 size-[18px] shrink-0 text-tinta-suave" strokeWidth={1.6} />
+          Sua sessão expirou. Entre de novo para continuar.
+        </p>
+      ) : null}
+      <FormularioDeLogin key={loginEmail} initialEmail={loginEmail} nextPath={nextPath} onCreateAccount={aoCriarConta} />
+    </div>
   );
 }
 
