@@ -1,6 +1,6 @@
 // O estado da tela de boas-vindas: nomes e data, validação por campo e a criação do casamento.
 import { useState, useTransition } from "react";
-import { concluirInicio } from "@/actions/onboarding-actions";
+import { concluirInicio } from "@/actions/inicio/concluir";
 import { juntarNomesDoCasal, validarDadosBasicosDoInicio, type ErrosDosDadosBasicosDoInicio } from "@/lib/onboarding-options";
 
 export type Etapa = "dados" | "pronto";
