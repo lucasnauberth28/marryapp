@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { marcarDominioComoRenovado } from "@/actions/domain-admin-actions";
+import { marcarDominioComoRenovado } from "@/actions/dominio-admin/conexao";
 import { Botao } from "@/components/ui/button";
 
 /** "Marcar como renovado": a renovação é manual no Registro.br; o Aceito só registra o novo vencimento. */

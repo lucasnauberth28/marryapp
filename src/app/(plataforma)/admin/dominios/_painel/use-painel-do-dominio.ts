@@ -1,7 +1,8 @@
 // O estado do painel do pedido: qual painel está aberto, o documento revelado e o DNS devolvido pela Vercel.
 import { useState } from "react";
 import { toast } from "sonner";
-import { revelarDocumentoDoTitularDoDominio, type ResultadoDaAcaoDeAdmin, type ResultadoDaAcaoDeConectarDominio } from "@/actions/domain-admin-actions";
+import { revelarDocumentoDoTitularDoDominio } from "@/actions/dominio-admin/conexao";
+import type { ResultadoDaAcaoDeAdmin, ResultadoDaAcaoDeConectarDominio } from "@/actions/dominio-admin/comum";
 import type { ResultadoDaConexao } from "@/lib/vercel-domains-core";
 import { useAcaoDoPainel } from "../../_sistema/use-acao-do-painel";
 

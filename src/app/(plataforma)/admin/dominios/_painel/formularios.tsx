@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { marcarDominioComoRegistrado, recusarPedidoDeDominio, salvarNotaDoDominio } from "@/actions/domain-admin-actions";
+import { marcarDominioComoRegistrado, recusarPedidoDeDominio, salvarNotaDoDominio } from "@/actions/dominio-admin/registro";
 import { Botao } from "@/components/ui/button";
 import { Entrada } from "@/components/ui/input";
 import { AreaDeTexto } from "@/components/ui/textarea";

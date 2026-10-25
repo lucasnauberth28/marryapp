@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertCircle } from "lucide-react";
-import { marcarDominioComoNoAr } from "@/actions/domain-admin-actions";
+import { marcarDominioComoNoAr } from "@/actions/dominio-admin/conexao";
 import { ModalDeConfirmacao } from "@/components/ui/confirm-modal";
 import { AcoesDoPedido } from "../_painel/acoes-do-pedido";
 import { SecaoDeDns } from "../_painel/dns-da-vercel";

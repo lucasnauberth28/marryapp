@@ -1,5 +1,6 @@
 import { Link2, RefreshCw } from "lucide-react";
-import { conectarDominioAcao, iniciarRegistroDoDominio, marcarDominioComoRenovado, verificarDominioAcao } from "@/actions/domain-admin-actions";
+import { conectarDominioAcao, marcarDominioComoRenovado, verificarDominioAcao } from "@/actions/dominio-admin/conexao";
+import { iniciarRegistroDoDominio } from "@/actions/dominio-admin/registro";
 import { Botao } from "@/components/ui/button";
 import type { PainelDoDominioEstado } from "./use-painel-do-dominio";
 import type { DadosDoPainelDoDominio } from "./tipos-e-textos";
