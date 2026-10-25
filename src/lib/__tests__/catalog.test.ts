@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { CONFIGURACAO_DOS_PLANOS } from "../pagamento/plans.ts";
+import { CONFIGURACAO_DOS_PLANOS, resolverPlano } from "../pagamento/plans.ts";
 import { MODULOS_DO_CASAL, calcularPrecoDoPlanoPersonalizado } from "../pagamento/pricing-modules.ts";
 import {
   PRECO_MAXIMO_EM_CENTAVOS,
@@ -153,8 +153,9 @@ test("arredondamento com centavos ímpares", () => {
   assert.equal(calc.total, 8499);
   assert.ok(Number.isInteger(calc.total) && Number.isInteger(calc.discountAmount));
   // 5 x 1,01 = 505 centavos; 25% = 126,25 -> 126
-  const cheap = mesclarCatalogo(["site", "pixZero", "whatsapp", "qrcode", "tables"].map((id) => ov(chaveDoModuloNoCatalogo(id), 101)));
-  const five = precoDoPlanoPersonalizadoNoCatalogo(cheap, ["site", "pixZero", "whatsapp", "qrcode", "tables"]);
+  const cinco = ["pixZero", "whatsapp", "tables", "tables3d", "customDomain"];
+  const cheap = mesclarCatalogo(cinco.map((id) => ov(chaveDoModuloNoCatalogo(id), 101)));
+  const five = precoDoPlanoPersonalizadoNoCatalogo(cheap, cinco);
   assert.equal(five.subtotal, 505);
   assert.equal(five.discountAmount, 126);
   assert.equal(five.total, 379);
@@ -171,4 +172,37 @@ test("módulo repetido ou inexistente não infla nem derruba o preço", () => {
 
 test("o texto do desconto vem do que o código faz", () => {
   assert.equal(textoDoDescontoDoCombo(), "Com 3 recursos o plano ganha 15% de desconto. Com 5 ou mais, 25%.");
+});
+
+test("plano adaptado nunca sai mais barato que o VIP quando leva todos os recursos", () => {
+  const catalog = catalogoPadrao();
+  const todos = catalog.modules.map((m) => m.id);
+  const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, todos);
+  assert.equal(calc.total, catalog.plans.vip.price);
+  assert.equal(calc.planoEquivalente, "vip");
+  assert.deepEqual(resolverPlanoNoCatalogo(catalog, "custom", todos), { type: "COUPLE", name: "Plano Adaptado", price: catalog.plans.vip.price });
+});
+
+test("plano adaptado com os recursos do Classic não custa menos que o Classic, mesmo com preços editados", () => {
+  const catalog = mesclarCatalogo([
+    { key: "module:site", priceCents: 1000, name: null },
+    { key: "module:pixZero", priceCents: 1000, name: null },
+    { key: "module:whatsapp", priceCents: 1000, name: null },
+    { key: "module:qrcode", priceCents: 1000, name: null },
+  ]);
+  const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, ["site", "pixZero", "whatsapp", "qrcode"]);
+  assert.equal(calc.total, catalog.plans.classic.price);
+  assert.equal(calc.planoEquivalente, "classic");
+});
+
+test("plano adaptado com parte dos recursos segue pela conta normal, sem piso", () => {
+  const catalog = catalogoPadrao();
+  const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, ["site", "pixZero"]);
+  assert.equal(calc.total, 10800);
+  assert.equal(calc.planoEquivalente, null);
+});
+
+test("piso também vale na conta com os preços do código (cadastro sem catálogo)", () => {
+  const todos = MODULOS_DO_CASAL.map((m) => m.id);
+  assert.equal(resolverPlano("custom", todos)?.price, resolverPlano("vip")?.price);
 });

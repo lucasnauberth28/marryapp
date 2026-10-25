@@ -8,7 +8,7 @@
 //  - Planos gratuitos (Básico e Start) continuam gratuitos: a mescla ignora preço de override nesses planos.
 //  - Preço pago fica entre R$ 1,00 (a menor cobrança que o Pix aceita) e R$ 10.000,00; valor fora disso é ignorado.
 import { CONFIGURACAO_DOS_PLANOS, type ChaveDoPlano } from "./plans.ts";
-import { MODULOS_DO_CASAL, calcularPrecoDoPlanoPersonalizado, type ModuloDePreco } from "./pricing-modules.ts";
+import { MODULOS_DO_CASAL, calcularPrecoDoPlanoPersonalizado, pisosDosPlanosProntos, type ModuloDePreco } from "./pricing-modules.ts";
 
 /** Menor preço de um plano ou módulo pago, em centavos. */
 export const PRECO_MINIMO_PAGO_EM_CENTAVOS = 100;
@@ -114,7 +114,7 @@ export function ehChaveDePlanoDoCatalogo(catalog: Catalogo, value: string): valu
  */
 export function resolverPlanoNoCatalogo(catalog: Catalogo, planId: string, modules?: readonly string[]): { type: "COUPLE" | "VENDOR"; name: string; price: number } | null {
   if (planId === "custom") {
-    const calc = calcularPrecoDoPlanoPersonalizado([...(modules ?? [])], catalog.modules);
+    const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, modules ?? []);
     if (calc.selectedModules.length === 0) return null;
     return { type: "COUPLE", name: "Plano Adaptado", price: calc.total };
   }
@@ -125,7 +125,8 @@ export function resolverPlanoNoCatalogo(catalog: Catalogo, planId: string, modul
 
 /** Preço do plano adaptado com os módulos do catálogo vigente (a tela de montar o plano e o servidor usam a mesma conta). */
 export function precoDoPlanoPersonalizadoNoCatalogo(catalog: Catalogo, moduleIds: readonly string[]) {
-  return calcularPrecoDoPlanoPersonalizado([...moduleIds], catalog.modules);
+  const pisos = pisosDosPlanosProntos({ classic: catalog.plans.classic.price, vip: catalog.plans.vip.price });
+  return calcularPrecoDoPlanoPersonalizado([...moduleIds], catalog.modules, pisos);
 }
 
 /** Texto do desconto por combinação de módulos, tirado do que o código faz (nunca de número escrito à mão). */

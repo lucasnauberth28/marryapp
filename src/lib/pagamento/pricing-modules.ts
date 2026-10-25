@@ -73,12 +73,36 @@ export const MODULOS_DO_CASAL: ModuloDePreco[] = [
   },
 ];
 
+/** Módulos que o plano Classic inclui; o VIP inclui todos. */
+export const MODULOS_DO_CLASSIC = ["site", "pixZero", "whatsapp", "qrcode"];
+
+/** Preço mínimo de um plano pronto: quem escolhe todos os recursos dele não paga menos que o plano. */
+export interface PisoDoPlano {
+  id: "classic" | "vip";
+  modulos: readonly string[];
+  preco: number;
+}
+
+/** Os pisos de Classic e VIP, com os preços vigentes (centavos). */
+export function pisosDosPlanosProntos(precos: { classic: number; vip: number }): PisoDoPlano[] {
+  return [
+    { id: "classic", modulos: MODULOS_DO_CLASSIC, preco: precos.classic },
+    { id: "vip", modulos: MODULOS_DO_CASAL.map((m) => m.id), preco: precos.vip },
+  ];
+}
+
+/** O maior piso que a seleção alcança: tem todos os módulos daquele plano pronto. */
+function pisoAlcancado(ids: readonly string[], pisos: readonly PisoDoPlano[]): PisoDoPlano | null {
+  const alcancados = pisos.filter((p) => p.preco > 0 && p.modulos.every((id) => ids.includes(id)));
+  return alcancados.sort((a, b) => b.preco - a.preco)[0] ?? null;
+}
+
 /**
  * Calcula o valor total e o desconto progressivo por combo.
  * `modules` é a lista com os preços vigentes (o catálogo mesclado da administração, lib/catalog.ts);
  * sem ela valem os preços do código.
  */
-export function calcularPrecoDoPlanoPersonalizado(selectedModuleIds: string[], modules: readonly ModuloDePreco[] = MODULOS_DO_CASAL) {
+export function calcularPrecoDoPlanoPersonalizado(selectedModuleIds: string[], modules: readonly ModuloDePreco[] = MODULOS_DO_CASAL, pisos: readonly PisoDoPlano[] = []) {
   const selectedModules = modules.filter((m) =>
     selectedModuleIds.includes(m.id)
   );
@@ -98,8 +122,11 @@ export function calcularPrecoDoPlanoPersonalizado(selectedModuleIds: string[], m
     discountBadge = "Combo Especial (15% OFF)";
   }
 
-  const discountAmount = Math.round((subtotal * discountPercent) / 100);
-  const total = Math.max(0, subtotal - discountAmount);
+  const totalComDesconto = Math.max(0, subtotal - Math.round((subtotal * discountPercent) / 100));
+  // Nunca sai mais barato que o plano pronto que tem os mesmos recursos (ou menos)
+  const piso = pisoAlcancado(selectedModules.map((m) => m.id), pisos);
+  const total = piso ? Math.max(totalComDesconto, piso.preco) : totalComDesconto;
+  const discountAmount = Math.max(0, subtotal - total);
 
   return {
     selectedModules,
@@ -109,5 +136,7 @@ export function calcularPrecoDoPlanoPersonalizado(selectedModuleIds: string[], m
     discountBadge,
     discountAmount,
     total,
+    /** Plano pronto que cobre estes recursos, quando o preço dele passou a valer (o desconto não chega abaixo dele). */
+    planoEquivalente: piso && total === piso.preco ? piso.id : null,
   };
 }

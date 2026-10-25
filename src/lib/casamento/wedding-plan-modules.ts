@@ -1,5 +1,5 @@
 // Regras puras: o que cada plano de casal libera (sem banco nem Next), testáveis isoladamente.
-import { MODULOS_DO_CASAL } from "../pagamento/pricing-modules.ts";
+import { MODULOS_DO_CASAL, MODULOS_DO_CLASSIC } from "../pagamento/pricing-modules.ts";
 
 /**
  * Módulos do catálogo (lib/pricing-modules) que cada plano fechado inclui, segundo a lista de
@@ -7,7 +7,6 @@ import { MODULOS_DO_CASAL } from "../pagamento/pricing-modules.ts";
  * VIP = tudo do Classic + domínio próprio (na prática, todos os módulos).
  * O plano adaptado (custom) vale pelos módulos escolhidos; o Básico não inclui nenhum.
  */
-const MODULOS_DO_CLASSIC = ["site", "pixZero", "whatsapp", "qrcode"];
 
 /**
  * Módulos que o servidor realmente bloqueia hoje: os claramente premium e que existem no app.

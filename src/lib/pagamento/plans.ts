@@ -3,7 +3,7 @@
  * nunca confiando no valor enviado pelo navegador.
  */
 import { ROTULO_DA_TAXA_DO_PRESENTE } from "./gift-fee.ts";
-import { calcularPrecoDoPlanoPersonalizado } from "./pricing-modules.ts";
+import { calcularPrecoDoPlanoPersonalizado, pisosDosPlanosProntos } from "./pricing-modules.ts";
 
 export const CONFIGURACAO_DOS_PLANOS = {
   // Casais
@@ -100,7 +100,8 @@ export function ehChaveDePlano(value: string): value is ChaveDoPlano {
  */
 export function resolverPlano(planId: string, modules?: string[]): { type: "COUPLE" | "VENDOR"; name: string; price: number } | null {
   if (planId === "custom") {
-    const calc = calcularPrecoDoPlanoPersonalizado(modules ?? []);
+    const pisos = pisosDosPlanosProntos({ classic: CONFIGURACAO_DOS_PLANOS.classic.price, vip: CONFIGURACAO_DOS_PLANOS.vip.price });
+    const calc = calcularPrecoDoPlanoPersonalizado(modules ?? [], undefined, pisos);
     if (calc.selectedModules.length === 0) return null;
     return { type: "COUPLE", name: "Plano Adaptado", price: calc.total };
   }
