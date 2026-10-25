@@ -1,7 +1,7 @@
-import {
-  chaveDeHojeDe, chaveDoDiaDe, contarConvidados, diasEntreChaves, informacoesDoPrazo, planoDaTaxaDoPresenteDe,
-  resumirOrcamento, resumirPresentes, type LinhaDeConvidado, type TransacaoDePresente,
-} from "@/lib/dashboard-summary";
+import { chaveDeHojeDe, chaveDoDiaDe, diasEntreChaves } from "@/lib/resumo/datas";
+import { contarConvidados, informacoesDoPrazo, type LinhaDeConvidado } from "@/lib/resumo/convidados";
+import { planoDaTaxaDoPresenteDe, resumirPresentes, type TransacaoDePresente } from "@/lib/resumo/presentes";
+import { resumirOrcamento } from "@/lib/resumo/orcamento";
 import type { DadosDoResumo } from "./carregar-dados";
 import type { IdentidadeDoCasamento, PlanoDoCasamento } from "./tipos";
 

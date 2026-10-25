@@ -1,4 +1,4 @@
-import { rotuloDeConvites } from "@/lib/dashboard-summary";
+import { rotuloDeConvites } from "@/lib/resumo/datas";
 import { LinkDeTexto, MedidorDeProgresso, classeDaDica, classeDoRotulo } from "../../ui";
 import { LinhaDoConvidado } from "./linha-do-convidado";
 import type { LinhaDeConvite } from "./tipos";

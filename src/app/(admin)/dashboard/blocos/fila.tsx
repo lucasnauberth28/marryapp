@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Armchair, CalendarHeart, Clock, Gift, ListChecks, Receipt, type LucideIcon } from "lucide-react";
 import { AvatarDaLiz, IlustracaoDaLiz } from "@/components/liz/liz-illustration";
-import type { ItemDaFila, TipoDeItemDaFila } from "@/lib/dashboard-summary";
+import type { ItemDaFila, TipoDeItemDaFila } from "@/lib/resumo/fila";
 import { BlocoDoPainel, Etiqueta, LinkDeTexto, estiloDoBotaoPrimario, estiloDoBotaoSecundario } from "../ui";
 
 const estiloDoBotaoDeTexto = "inline-flex min-h-11 items-center rounded-[8px] px-1 text-sm font-semibold text-ameixa underline-offset-4 hover:underline";

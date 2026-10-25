@@ -1,7 +1,7 @@
 import { formatDistanceToNowStrict } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Check, Minus } from "lucide-react";
-import { rotuloDePessoas } from "@/lib/dashboard-summary";
+import { rotuloDePessoas } from "@/lib/resumo/datas";
 import { BlocoDoPainel, Etiqueta, LinkDeTexto } from "../ui";
 
 export interface LinhaDeResposta {

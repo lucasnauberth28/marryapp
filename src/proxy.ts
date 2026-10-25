@@ -11,7 +11,9 @@ import {
 import { classificarCaminho, ehCaminhoDeAdminDaPlataforma, ehCaminhoDeSessao } from "@/lib/route-access";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
 import { primeiroDestinoPermitido, urlDeLogin, resolverCaminhoPosLogin } from "@/lib/login-redirect";
-import { classificarHost, criarCacheComValidade, urlDeRedirecionamentoPrincipal, rotearCaminhoDoDominioPersonalizado } from "@/lib/custom-domain-host";
+import { classificarHost, urlDeRedirecionamentoPrincipal } from "@/lib/custom-domain-host";
+import { rotearCaminhoDoDominioPersonalizado } from "@/lib/custom-domain-routes";
+import { criarCacheComValidade } from "@/lib/memory-cache";
 import prisma from "@/lib/prisma";
 
 // As listas de rotas (públicas, de qualquer conta logada e do painel) ficam em src/lib/route-access.ts.

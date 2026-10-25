@@ -1,6 +1,7 @@
 // Presentes e dinheiro no Resumo: um extrato só (recebido bruto, taxa do Aceito, líquido e a conferir).
 import { Check, Clock } from "lucide-react";
-import { formatarReaisDeSaida, formatarReaisSemSinal, type ExtratoDePresentes, type LinhaDePresente } from "@/lib/dashboard-summary";
+import { formatarReaisDeSaida, formatarReaisSemSinal } from "@/lib/resumo/dinheiro";
+import type { ExtratoDePresentes, LinhaDePresente } from "@/lib/resumo/presentes";
 import { pluralizar } from "@/lib/formatacao/plural";
 import type { PlanoDaTaxaDoPresente } from "@/lib/gift-fee";
 import { BlocoDoPainel, Etiqueta, LinkDeTexto, ValorEmDinheiro, classeDaDica, classeDoRotulo } from "../../ui";

@@ -1,4 +1,5 @@
-import { chaveDoDiaDe, convidadosParaConvidar, convidadosParaLembrar, conviteChegou, lugaresDe, rotuloCurtoDoDia, type LinhaDeConvidado } from "@/lib/dashboard-summary";
+import { chaveDoDiaDe, rotuloCurtoDoDia } from "@/lib/resumo/datas";
+import { convidadosParaConvidar, convidadosParaLembrar, conviteChegou, lugaresDe, type LinhaDeConvidado } from "@/lib/resumo/convidados";
 import { linkDoWhatsapp, textoDoConviteGeral, textoDoConvitePessoal, textoDoLembrete } from "@/lib/invite-share";
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import type { LinhaDeConvite } from "../blocos/convite/tipos";

@@ -1,5 +1,7 @@
 import { Clock } from "lucide-react";
-import { chaveDoDiaDe, formatarReaisSemSinal, rotuloCurtoDoDia, type LinhaDePresente } from "@/lib/dashboard-summary";
+import { chaveDoDiaDe, rotuloCurtoDoDia } from "@/lib/resumo/datas";
+import { formatarReaisSemSinal } from "@/lib/resumo/dinheiro";
+import type { LinhaDePresente } from "@/lib/resumo/presentes";
 import { Etiqueta } from "../../ui";
 import { BotaoDeConferir, SeloDoPix } from "./botao-de-conferir";
 

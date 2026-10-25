@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
-import { FUSO_DE_BRASILIA, rotuloDoDia } from "@/lib/dashboard-summary";
+import { FUSO_DE_BRASILIA, rotuloDoDia } from "@/lib/resumo/datas";
 import { rotuloDosDiasRestantes } from "@/lib/wedding-format";
 import { estiloDoBotaoSecundario } from "../ui";
 import type { ContasDoResumo } from "./contas";

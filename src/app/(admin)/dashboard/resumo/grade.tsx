@@ -1,6 +1,8 @@
 import { Gift, LayoutTemplate, Upload, UserPlus } from "lucide-react";
 import { RsvpStatus } from "@prisma/client";
-import { rotuloCurtoDoDia, ultimasLinhasDePresentes, type ItemDaFila } from "@/lib/dashboard-summary";
+import { rotuloCurtoDoDia } from "@/lib/resumo/datas";
+import { ultimasLinhasDePresentes } from "@/lib/resumo/presentes";
+import type { ItemDaFila } from "@/lib/resumo/fila";
 import { Atalhos, type Atalho } from "../blocos/atalhos";
 import { BlocoDeConfirmacoes } from "../blocos/confirmacoes";
 import { BlocoDeConvites } from "../blocos/convite/bloco-de-convites";

@@ -1,5 +1,6 @@
 import { Check, Clock, Minus } from "lucide-react";
-import { rotuloDeConvites, rotuloDePessoas, type ContagemDeConvidados } from "@/lib/dashboard-summary";
+import { rotuloDeConvites, rotuloDePessoas } from "@/lib/resumo/datas";
+import type { ContagemDeConvidados } from "@/lib/resumo/convidados";
 import { BlocoDoPainel, Etiqueta, LinkDeTexto, MedidorDeProgresso, classeDaDica, classeDoRotulo } from "../ui";
 
 /** Um número do bloco de confirmações: rótulo, valor, unidade e contexto. */

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Gift } from "lucide-react";
-import { formatarReaisDeSaida, formatarReaisSemSinal } from "@/lib/dashboard-summary";
+import { formatarReaisDeSaida, formatarReaisSemSinal } from "@/lib/resumo/dinheiro";
 import { calcularValoresDoPresente, type PlanoDaTaxaDoPresente } from "@/lib/gift-fee";
 import { Etiqueta, estiloDoBotaoPrimario } from "../../ui";
 import { Extrato, LinhaDoExtrato, notaDaTaxa } from "./extrato";

@@ -1,4 +1,5 @@
-import { chaveDoDiaDe, montarFila } from "@/lib/dashboard-summary";
+import { chaveDoDiaDe } from "@/lib/resumo/datas";
+import { montarFila } from "@/lib/resumo/fila";
 import { decidirDicaDaLiz } from "@/lib/liz/tip";
 import type { DadosDoResumo } from "./carregar-dados";
 import type { ContasDoResumo } from "./contas";

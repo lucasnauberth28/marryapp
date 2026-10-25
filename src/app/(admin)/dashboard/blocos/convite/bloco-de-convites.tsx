@@ -2,7 +2,7 @@
 // O convite: endereço para copiar, envio pelo WhatsApp, progresso dos envios e lembretes de quem não respondeu.
 import { useRef, useState } from "react";
 import { Check, Clock } from "lucide-react";
-import { rotuloDeConvites } from "@/lib/dashboard-summary";
+import { rotuloDeConvites } from "@/lib/resumo/datas";
 import { BlocoDoPainel, Etiqueta } from "../../ui";
 import { AcoesDoConvite } from "./acoes-do-convite";
 import { LembretesDeResposta } from "./lembretes";

@@ -1,29 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  montarFila,
-  contarConvidados,
-  diasEntreChaves,
-  informacoesDoPrazo,
-  rotuloDaDespesa,
-  formatarReaisSemSinal,
-  formatarReaisDeSaida,
-  planoDaTaxaDoPresenteDe,
-  convidadosParaConvidar,
-  convidadosParaLembrar,
-  conviteChegou,
-  ultimasLinhasDePresentes,
-  rotuloCurtoDoDia,
-  separarReais,
-  resumirOrcamento,
-  resumirPresentes,
-  chaveDeHojeDe,
-  valoresDaTransacao,
-  type LinhaDeDespesa,
-  type TransacaoDePresente,
-  type LinhaDeConvidado,
-} from "../dashboard-summary.ts";
+import { montarFila } from "../resumo/fila.ts";
+import { contarConvidados, informacoesDoPrazo, convidadosParaConvidar, convidadosParaLembrar, conviteChegou, type LinhaDeConvidado } from "../resumo/convidados.ts";
+import { diasEntreChaves, rotuloCurtoDoDia, chaveDeHojeDe } from "../resumo/datas.ts";
+import { rotuloDaDespesa, resumirOrcamento, type LinhaDeDespesa } from "../resumo/orcamento.ts";
+import { formatarReaisSemSinal, formatarReaisDeSaida, separarReais } from "../resumo/dinheiro.ts";
+import { planoDaTaxaDoPresenteDe, ultimasLinhasDePresentes, resumirPresentes, valoresDaTransacao, type TransacaoDePresente } from "../resumo/presentes.ts";
 
 let n = 0;
 const guest = (over: Partial<LinhaDeConvidado> = {}): LinhaDeConvidado => ({

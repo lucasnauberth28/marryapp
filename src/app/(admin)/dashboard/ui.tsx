@@ -3,7 +3,7 @@
 // segmentos em pílula; números em Geist com algarismos tabulares; estado sempre com ícone e palavra.
 import Link from "next/link";
 import { ChevronRight, type LucideIcon } from "lucide-react";
-import { formatarReaisSemSinal, separarReais } from "@/lib/dashboard-summary";
+import { formatarReaisSemSinal, separarReais } from "@/lib/resumo/dinheiro";
 
 const estiloDaPilula =
   "inline-flex min-h-11 shrink-0 cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-full px-[18px] text-sm font-semibold leading-5 no-underline transition-[background-color,border-color,color,transform] duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100";

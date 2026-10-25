@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Clock, Receipt } from "lucide-react";
-import { formatarReaisSemSinal, rotuloCurtoDoDia, type Orcamento } from "@/lib/dashboard-summary";
+import { formatarReaisSemSinal } from "@/lib/resumo/dinheiro";
+import { rotuloCurtoDoDia } from "@/lib/resumo/datas";
+import type { Orcamento } from "@/lib/resumo/orcamento";
 import { BlocoDoPainel, Etiqueta, LinkDeTexto, MedidorDeProgresso, ValorEmDinheiro, classeDaDica, classeDoRotulo, estiloDoBotaoSecundario } from "../ui";
 
 type DespesaProxima = Orcamento["upcoming"][number];
