@@ -5,7 +5,7 @@ import { obterPedidosDeDominioDoCasamento } from "@/lib/domain-orders";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 import { CartaoDeUpgrade } from "@/components/plan/upgrade-card";
-import { DominioCliente } from "./domain-client";
+import { DominioCliente } from "./dominio-cliente";
 
 export const dynamic = "force-dynamic";
 
