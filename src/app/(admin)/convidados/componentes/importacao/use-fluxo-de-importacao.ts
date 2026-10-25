@@ -30,18 +30,17 @@ export function useFluxoDeImportacao(existing: ConvidadoExistente[], stageHeadin
     setReading(true);
     const leitura = await lerArquivoDaPlanilha(file);
     setReading(false);
-    // Permite escolher o mesmo arquivo de novo depois de corrigi-lo
-    if (fileInput.current) fileInput.current.value = "";
+    if (fileInput.current) fileInput.current.value = ""; // permite escolher o mesmo arquivo de novo
     if (!leitura.ok) return setError(leitura.error);
     setSheet(leitura.planilha);
     setStage("previa");
   }
 
-  function falhar(message: string, toastId: string | number) {
+  const falhar = (message: string, toastId: string | number) => {
     setError(message);
     setStage("previa");
     toast.error(message, { id: toastId, duration: 6000 });
-  }
+  };
 
   async function runImport() {
     if (!plan || plan.toAdd.length === 0) return;
@@ -61,7 +60,6 @@ export function useFluxoDeImportacao(existing: ConvidadoExistente[], stageHeadin
     setError(null);
     setStage("escolher");
   };
-
   return { stage, sheet, plan, reading, error, result, fileInput, handleFile, runImport, escolherOutro };
 }
 
