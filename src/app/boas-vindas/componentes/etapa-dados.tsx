@@ -4,6 +4,7 @@ import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles
 import { BotaoComCarregamento } from "@/components/painel/loading-button";
 import { Campo, AvisoDoFormulario } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
+import { EscolhaDoModelo } from "./escolha-do-modelo";
 import type { DadosDoInicio } from "./use-dados-do-inicio";
 
 interface Propriedades {
@@ -19,7 +20,7 @@ export function EtapaDeDados({ titulo, firstName, d }: Propriedades) {
         ref={titulo}
         overline="Vamos começar"
         title="Quem vai casar, e quando?"
-        text={`${firstName ? `Boas-vindas, ${firstName}. ` : ""}É só isso para abrir o site de vocês. Cor, local e fotos ficam para depois, em Editar o site.`}
+        text={`${firstName ? `Boas-vindas, ${firstName}. ` : ""}É só isso para abrir o site de vocês: nomes, data e o modelo. Local e fotos ficam para depois, em Editar o site.`}
       />
       <form onSubmit={d.submit} noValidate className="flex flex-col gap-5">
         <Campo id="onb-yourName" label="Seu nome" icon={User} error={d.errors.yourName}>
@@ -34,6 +35,8 @@ export function EtapaDeDados({ titulo, firstName, d }: Propriedades) {
         <p className="rounded-[12px] border border-linha bg-papel px-4 py-3 text-[15px] text-tinta-suave">
           No site vai aparecer <strong className="font-display text-lg font-medium text-tinta">{d.coupleNames}</strong>
         </p>
+
+        <EscolhaDoModelo escolhido={d.template} aoEscolher={d.escolherModelo} coupleNames={d.coupleNames} weddingDate={d.weddingDate} />
 
         {d.formError ? <AvisoDoFormulario id="onb-erro">{d.formError}</AvisoDoFormulario> : null}
 

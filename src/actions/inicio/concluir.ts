@@ -10,6 +10,7 @@ import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { COR_PADRAO_DO_TEMA, juntarNomesDoCasal } from "@/lib/painel/onboarding-options";
 import { classificarConta, ehEnderecoAutomatico, prepararCasamento, renovarCookieDeSessao, enderecoUnicoDoCasamento, criarOuAtualizarPapelDoCasal, comNovaTentativaDeEndereco } from "@/lib/account/wedding-provisioning";
 import { ERROS } from "@/lib/mensagens-de-erro";
+import { modeloDoSite } from "@/components/public/site-do-casamento/modelos/catalogo";
 import { ConflitoNoInicio, type EntradaDoInicio, EsquemaDoInicio, type ResultadoDoInicio, interpretarDataDoCasamento } from "@/actions/inicio/comum";
 
 type Sessao = NonNullable<Awaited<ReturnType<typeof obterSessao>>>;
@@ -48,11 +49,14 @@ interface PlanoDoInicio {
 }
 
 /** O site e as configurações do casamento acompanham os nomes, a data e a cor escolhidos no início. */
-async function gravarSiteEConfiguracoes(tx: Prisma.TransactionClient, v: { weddingId: string; slug: string; coupleNames: string; weddingDate: Date | null; themeColor?: string }) {
-  const { weddingId, slug, coupleNames, weddingDate, themeColor } = v;
+async function gravarSiteEConfiguracoes(tx: Prisma.TransactionClient, v: { weddingId: string; slug: string; coupleNames: string; weddingDate: Date | null; themeColor?: string; template?: string }) {
+  const { weddingId, slug, coupleNames, weddingDate, template } = v;
+  // Escolheu um modelo: o site nasce com o modelo e a cor de destaque dele
+  const themeColor = template ? modeloDoSite(template).destaque : v.themeColor;
+  const modelo = template ? { template } : {};
   await tx.siteCustomization.upsert({
     where: { weddingId },
-    update: { title: coupleNames, slug, weddingDate, ...(themeColor ? { themeColor } : {}) },
+    update: { title: coupleNames, slug, weddingDate, ...modelo, ...(themeColor ? { themeColor } : {}) },
     create: {
       weddingId,
       slug,
@@ -60,6 +64,7 @@ async function gravarSiteEConfiguracoes(tx: Prisma.TransactionClient, v: { weddi
       subtitle: "",
       weddingDate,
       themeColor: themeColor ?? COR_PADRAO_DO_TEMA,
+      ...modelo,
       ceremonyTime: null,
       receptionTime: null,
       locationName: null,
@@ -105,7 +110,7 @@ async function gravarInicio(tx: Prisma.TransactionClient, { user, coupleNames, w
   const updated = await tx.wedding.updateMany({ where: { id: weddingId, onboardedAt: null }, data: { coupleNames, slug, weddingDate, ...optional, onboardedAt: new Date() } });
   if (updated.count !== 1) throw new ConflitoNoInicio();
 
-  await gravarSiteEConfiguracoes(tx, { weddingId, slug, coupleNames, weddingDate, themeColor: data.themeColor });
+  await gravarSiteEConfiguracoes(tx, { weddingId, slug, coupleNames, weddingDate, themeColor: data.themeColor, template: data.template });
   return slug;
 }
 

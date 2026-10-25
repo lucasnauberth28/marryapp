@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { normalizarTexto } from "@/lib/security/sanitize";
 import { FAIXAS_DE_CONVIDADOS, TEMAS_PRONTOS } from "@/lib/painel/onboarding-options";
+import { ehIdDeModelo } from "@/components/public/site-do-casamento/modelos/catalogo";
 
 const nomeDaPessoa = (label: string) =>
   z
@@ -27,6 +28,8 @@ export const EsquemaDoInicio = z.object({
   guestEstimate: z.enum(FAIXAS_DE_CONVIDADOS).nullable().optional(),
   // Cor, cidade e faixa de convidados saíram do onboarding (ficam em Editar o site); seguem aceitos se vierem.
   themeColor: z.enum(CORES_DOS_TEMAS).optional(),
+  /** Modelo do site escolhido no início (a cor de destaque do site passa a ser a do modelo). */
+  template: z.string().refine(ehIdDeModelo, "Modelo inválido.").optional(),
 });
 
 export type EntradaDoInicio = z.input<typeof EsquemaDoInicio>;

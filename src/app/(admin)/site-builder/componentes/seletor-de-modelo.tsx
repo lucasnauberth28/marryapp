@@ -9,7 +9,7 @@ function CartaoDoModelo({ modelo, escolhido, aoEscolher }: { modelo: ModeloDoSit
     <li className="flex">
       <label
         className={cn(
-          "flex w-full cursor-pointer flex-col gap-2 rounded-xl border bg-papel p-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ameixa",
+          "relative flex w-full cursor-pointer flex-col gap-2 rounded-xl border bg-papel p-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ameixa",
           escolhido ? "border-2 border-ameixa p-[7px]" : "border-linha hover:border-linha-forte",
         )}
       >
