@@ -9,6 +9,35 @@ import { CORES_DO_QR } from "@/lib/qr-colors";
 import { RegiaoDeCarregamento, EsqueletoDeImagem } from "@/components/skeletons";
 import { reconectarWhatsapp } from "@/actions/admin-saude-actions";
 
+function CorpoDoModal({ pending, error, qr }: { pending: boolean; error: string | null; qr: string | null }) {
+  return (
+    <div className="flex min-h-64 flex-col items-center justify-center gap-3">
+      {pending && (
+        <RegiaoDeCarregamento label="o código">
+          <EsqueletoDeImagem ratio={1} className="size-60 rounded-xl" />
+        </RegiaoDeCarregamento>
+      )}
+      {error && (
+        <p role="alert" className="text-sm font-semibold text-perigo">
+          {error}
+        </p>
+      )}
+      {qr &&
+        (qr.startsWith("data:image") ? (
+          <MolduraDoQr className="p-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={qr} alt="QR Code para conectar o WhatsApp" className="h-60 w-60 object-contain" />
+          </MolduraDoQr>
+        ) : (
+          <MolduraDoQr className="p-3">
+            <QRCodeSVG value={qr} size={240} {...CORES_DO_QR} marginSize={2} aria-label="QR Code para conectar o WhatsApp" />
+          </MolduraDoQr>
+        ))}
+      {qr && <p className="text-center text-sm text-tinta-suave">O código vale por pouco tempo. Depois de conectar, atualize esta página.</p>}
+    </div>
+  );
+}
+
 /** "Reconectar": gera o QR Code do WhatsApp para parear de novo. Depois de ler, a página precisa ser atualizada. */
 export function ReconectarWhatsapp() {
   const [pending, startTransition] = useTransition();
@@ -37,30 +66,7 @@ export function ReconectarWhatsapp() {
         Reconectar
       </Botao>
       <ModalPersonalizado isOpen={open} onClose={() => setOpen(false)} title="Reconectar o WhatsApp" description="No celular do número do Aceito: WhatsApp, Aparelhos conectados, Conectar um aparelho. Aponte a câmera para o código.">
-        <div className="flex min-h-64 flex-col items-center justify-center gap-3">
-          {pending && (
-            <RegiaoDeCarregamento label="o código">
-              <EsqueletoDeImagem ratio={1} className="size-60 rounded-xl" />
-            </RegiaoDeCarregamento>
-          )}
-          {error && (
-            <p role="alert" className="text-sm font-semibold text-perigo">
-              {error}
-            </p>
-          )}
-          {qr &&
-            (qr.startsWith("data:image") ? (
-              <MolduraDoQr className="p-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={qr} alt="QR Code para conectar o WhatsApp" className="h-60 w-60 object-contain" />
-              </MolduraDoQr>
-            ) : (
-              <MolduraDoQr className="p-3">
-                <QRCodeSVG value={qr} size={240} {...CORES_DO_QR} marginSize={2} aria-label="QR Code para conectar o WhatsApp" />
-              </MolduraDoQr>
-            ))}
-          {qr && <p className="text-center text-sm text-tinta-suave">O código vale por pouco tempo. Depois de conectar, atualize esta página.</p>}
-        </div>
+        <CorpoDoModal pending={pending} error={error} qr={qr} />
       </ModalPersonalizado>
     </>
   );

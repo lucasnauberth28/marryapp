@@ -1,216 +1,60 @@
-import { AlertTriangle, CheckCircle2, Clock, Info, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import { CabecalhoDaPagina } from "@/components/plataforma/page-header";
-import { Painel } from "@/components/plataforma/panel";
 import { Aviso } from "@/components/plataforma/notices";
-import { EtiquetaDeSituacao, type TomDaSituacao } from "@/components/plataforma/status-chip";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { emailEstaConfigurado } from "@/lib/email";
-import { obterFotoDaSaude, type ContagensDosServicos } from "@/lib/platform/queries/saude";
-import { ROTULO_DA_TAREFA_AGENDADA, ROTULO_DA_SITUACAO_DA_TAREFA_AGENDADA } from "@/lib/platform/health";
-import { formatarDataEHora, formatarInteiro, formatarHora, haQuantoTempo } from "@/lib/platform/format";
+import { obterFotoDaSaude } from "@/lib/platform/queries/saude";
+import { formatarHora } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
 import { FormularioDeAlertas } from "./_components/alerts-form";
-import { ReconectarWhatsapp } from "./_components/reconnect-whatsapp";
+import type { FotoDaSaude } from "./_paineis/comuns";
+import { PainelDeEmail, PainelDoBanco } from "./_paineis/email-e-banco";
+import { PainelDoMercadoPago } from "./_paineis/mercado-pago";
+import { PainelDasRotinas } from "./_paineis/rotinas";
+import { PainelDoWhatsapp } from "./_paineis/whatsapp";
 
 export const metadata = { title: "Saúde do sistema" };
 export const dynamic = "force-dynamic"; // sempre medir na hora
 
-function MetricaDaSaude({ value, label }: { value: string; label: string }) {
+function ResumoDaSaude({ h }: { h: FotoDaSaude }) {
+  if (h.attention.length > 0) {
+    return (
+      <Aviso tone="aviso" icon={AlertTriangle} title={`${pluralizar(h.attention.length, "coisa pede", "coisas pedem")} atenção`}>
+        {h.attention.map((a) => `${a.title}: ${a.detail}`).join(" ")}
+      </Aviso>
+    );
+  }
+  const nothingMeasured = h.mercadopago.counts.total + h.email.counts.total + h.whatsapp.counts.total + h.push.counts.total === 0 && h.crons.every((c) => c.state === "never");
+  if (nothingMeasured) {
+    return (
+      <Aviso tone="neutro" icon={Info} title="Ainda estamos medindo">
+        Ainda não há registros das últimas 24 horas. Assim que chegarem pagamentos, e-mails e mensagens, os números aparecem aqui. Enquanto isso, só o que dá para conferir na hora (banco e configuração) está medido.
+      </Aviso>
+    );
+  }
   return (
-    <div>
-      <p className="font-num text-[34px] leading-10 tabular-nums text-tinta">{value}</p>
-      <p className="text-sm leading-5 text-tinta-suave">{label}</p>
-    </div>
+    <Aviso tone="sucesso" icon={CheckCircle2} title="Nada pede atenção agora">
+      Considerando só o que foi medido nas últimas 24 horas.
+    </Aviso>
   );
-}
-
-function LinhaDaSaude({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-2 text-[15px] leading-5">
-      <dt className="text-tinta-suave">{label}</dt>
-      <dd className="text-right font-semibold text-tinta">{children}</dd>
-    </div>
-  );
-}
-
-const SemRegistros = ({ what }: { what: string }) => <p className="text-sm leading-5 text-tinta-suave">Sem registros ainda. {what}</p>;
-
-/** Situação geral de um serviço, só com o que foi medido: sem configuração, sem registros, com falhas ou sem falhas. */
-function etiquetaDoServico(configured: boolean, c: ContagensDosServicos): { tone: TomDaSituacao; icon: typeof Clock; text: string } {
-  if (!configured) return { tone: "neutro", icon: Info, text: "Não configurado" };
-  if (c.failed > 0) return { tone: "aviso", icon: AlertTriangle, text: "Atenção" };
-  if (c.total === 0) return { tone: "neutro", icon: Clock, text: "Sem registros" };
-  return { tone: "sucesso", icon: CheckCircle2, text: "Sem falhas em 24 h" };
 }
 
 export default async function Page() {
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const [h, alerts] = await Promise.all([obterFotoDaSaude(), obterConfiguracaoDaPlataforma("healthAlerts")]);
-  const now = h.measuredAt;
-
-  const nothingMeasured =
-    h.mercadopago.counts.total + h.email.counts.total + h.whatsapp.counts.total + h.push.counts.total === 0 && h.crons.every((c) => c.state === "never");
-  const cronsAllOk = h.crons.length > 0 && h.crons.every((c) => c.state === "ok");
-  const cronsBad = h.crons.some((c) => c.state === "failed" || c.state === "late");
-
-  const mp = etiquetaDoServico(h.mercadopago.configured, h.mercadopago.counts);
-  const wa = etiquetaDoServico(h.whatsapp.configured, h.whatsapp.counts);
-  const waState = !h.whatsapp.configured
-    ? null
-    : h.whatsapp.connected === true
-      ? { tone: "sucesso" as const, icon: CheckCircle2, text: "Instância conectada" }
-      : h.whatsapp.connected === false
-        ? { tone: "perigo" as const, icon: XCircle, text: "Instância desconectada" }
-        : { tone: "neutro" as const, icon: Clock, text: "Sem resposta da instância" };
-  const em = etiquetaDoServico(h.email.configured, h.email.counts);
 
   return (
     <>
-      <CabecalhoDaPagina eyebrow="Sistema" title="Saúde do sistema" description={`O que faz o Aceito funcionar, num lugar só. Atualizado às ${formatarHora(now)}.`} />
-
-      {h.attention.length > 0 ? (
-        <Aviso tone="aviso" icon={AlertTriangle} title={`${pluralizar(h.attention.length, "coisa pede", "coisas pedem")} atenção`}>
-          {h.attention.map((a) => `${a.title}: ${a.detail}`).join(" ")}
-        </Aviso>
-      ) : nothingMeasured ? (
-        <Aviso tone="neutro" icon={Info} title="Ainda estamos medindo">
-          Ainda não há registros das últimas 24 horas. Assim que chegarem pagamentos, e-mails e mensagens, os números aparecem aqui. Enquanto isso, só o que dá para conferir na hora (banco e configuração) está medido.
-        </Aviso>
-      ) : (
-        <Aviso tone="sucesso" icon={CheckCircle2} title="Nada pede atenção agora">
-          Considerando só o que foi medido nas últimas 24 horas.
-        </Aviso>
-      )}
+      <CabecalhoDaPagina eyebrow="Sistema" title="Saúde do sistema" description={`O que faz o Aceito funcionar, num lugar só. Atualizado às ${formatarHora(h.measuredAt)}.`} />
+      <ResumoDaSaude h={h} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Painel title="Mercado Pago" aside={<EtiquetaDeSituacao tone={mp.tone} icon={mp.icon}>{mp.text}</EtiquetaDeSituacao>}>
-          {!h.mercadopago.configured && <p className="mb-3 text-sm leading-5 text-aviso">O token do Mercado Pago não está configurado neste ambiente.</p>}
-          {h.mercadopago.counts.total === 0 ? (
-            <SemRegistros what="Os avisos de pagamento recebidos passam a ser contados a partir de agora." />
-          ) : (
-            <>
-              <div className="flex gap-10">
-                <MetricaDaSaude value={formatarInteiro(h.mercadopago.counts.total)} label="avisos recebidos em 24 h" />
-                <MetricaDaSaude value={formatarInteiro(h.mercadopago.counts.failed)} label="não aplicados" />
-              </div>
-              <ul className="mt-4 divide-y divide-linha">
-                {h.mercadopago.recent.map((e, i) => (
-                  <li key={i} className="flex items-center justify-between gap-3 py-2.5 text-[15px]">
-                    <span className="flex min-w-0 items-baseline gap-3">
-                      <span className="text-sm tabular-nums text-tinta-suave">{formatarHora(e.at)}</span>
-                      <span className="truncate text-tinta">{e.message ?? "Aviso aplicado"}</span>
-                    </span>
-                    <EtiquetaDeSituacao tone={e.ok ? "sucesso" : "perigo"} icon={e.ok ? CheckCircle2 : XCircle}>
-                      {e.ok ? "Recebido" : "Falhou"}
-                    </EtiquetaDeSituacao>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-          <dl className="mt-3 divide-y divide-linha border-t border-linha pt-2">
-            <LinhaDaSaude label="Assinatura dos avisos">{h.mercadopago.webhookSecret ? "Conferida" : "Não configurada"}</LinhaDaSaude>
-          </dl>
-        </Painel>
-
-        <Painel
-          title="Rotinas diárias"
-          aside={
-            h.crons.length === 0 ? undefined : cronsAllOk ? (
-              <EtiquetaDeSituacao tone="sucesso" icon={CheckCircle2}>Todas rodaram</EtiquetaDeSituacao>
-            ) : cronsBad ? (
-              <EtiquetaDeSituacao tone="aviso" icon={AlertTriangle}>Atenção</EtiquetaDeSituacao>
-            ) : (
-              <EtiquetaDeSituacao tone="neutro" icon={Clock}>Ainda não rodou</EtiquetaDeSituacao>
-            )
-          }
-        >
-          <ul className="divide-y divide-linha overflow-hidden rounded-2xl border border-linha">
-            {h.crons.map((c) => (
-              <li key={c.job} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3">
-                <div className="min-w-0">
-                  <p className="text-[15px] font-semibold leading-5 text-tinta">{ROTULO_DA_TAREFA_AGENDADA[c.job] ?? c.job}</p>
-                  <p className="text-sm leading-5 text-tinta-suave">{c.lastAt ? `${haQuantoTempo(c.lastAt, now)}, ${formatarDataEHora(c.lastAt)}` : "Ainda não rodou"}</p>
-                  {c.error && <p className="text-sm leading-5 text-perigo">{c.error.slice(0, 160)}</p>}
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <EtiquetaDeSituacao tone={c.state === "ok" ? "sucesso" : c.state === "never" ? "neutro" : "perigo"} icon={c.state === "ok" ? CheckCircle2 : c.state === "never" ? Clock : XCircle}>
-                    {ROTULO_DA_SITUACAO_DA_TAREFA_AGENDADA[c.state]}
-                  </EtiquetaDeSituacao>
-                  {c.result && <span className="text-sm text-tinta-suave">{c.result}</span>}
-                </div>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-sm leading-5 text-tinta-suave">As rotinas rodam uma vez por dia e só aparecem aqui depois da primeira execução.</p>
-        </Painel>
-
-        <Painel title="WhatsApp" aside={<EtiquetaDeSituacao tone={wa.tone} icon={wa.icon}>{wa.text}</EtiquetaDeSituacao>}>
-          {!h.whatsapp.configured ? (
-            <p className="text-sm leading-5 text-tinta-suave">O WhatsApp não está configurado neste ambiente. Configure na Vercel (variáveis de ambiente da Evolution API).</p>
-          ) : (
-            <>
-              {waState && (
-                <p className="mb-4 flex items-center gap-2 text-[15px] text-tinta">
-                  <waState.icon className={waState.tone === "sucesso" ? "size-5 text-sucesso" : waState.tone === "perigo" ? "size-5 text-perigo" : "size-5 text-tinta-suave"} aria-hidden="true" />
-                  {waState.text}
-                </p>
-              )}
-              {h.whatsapp.stateNote && <p className="mb-3 text-sm text-tinta-suave">{h.whatsapp.stateNote}</p>}
-              {h.whatsapp.counts.total === 0 && h.whatsapp.invalidNumbers === 0 ? (
-                <SemRegistros what="As mensagens enviadas passam a ser contadas a partir de agora." />
-              ) : (
-                <div className="flex gap-10">
-                  <MetricaDaSaude value={formatarInteiro(h.whatsapp.counts.ok)} label="enviadas em 24 h" />
-                  <MetricaDaSaude value={formatarInteiro(h.whatsapp.counts.failed)} label="falhas em 24 h" />
-                  <MetricaDaSaude value={formatarInteiro(h.whatsapp.invalidNumbers)} label="números sem WhatsApp" />
-                </div>
-              )}
-              <div className="mt-3">
-                <ReconectarWhatsapp />
-              </div>
-            </>
-          )}
-        </Painel>
-
-        <Painel title="E-mail e notificações" aside={<EtiquetaDeSituacao tone={em.tone} icon={em.icon}>{em.text}</EtiquetaDeSituacao>}>
-          {!h.email.configured && <p className="mb-3 text-sm leading-5 text-aviso">O envio de e-mail (Resend) não está configurado neste ambiente.</p>}
-          {h.email.counts.total === 0 ? (
-            <SemRegistros what="Os e-mails enviados passam a ser contados a partir de agora." />
-          ) : (
-            <div className="flex gap-10">
-              <MetricaDaSaude value={formatarInteiro(h.email.counts.ok)} label="e-mails enviados em 24 h" />
-              <MetricaDaSaude value={formatarInteiro(h.email.counts.failed)} label="falhas de envio" />
-            </div>
-          )}
-          <dl className="mt-3 divide-y divide-linha border-t border-linha pt-2">
-            <LinhaDaSaude label="Notificações no celular">{h.push.configured ? "Configuradas" : "Não configuradas"}</LinhaDaSaude>
-            <LinhaDaSaude label="Aparelhos inscritos">{formatarInteiro(h.push.subscriptions)}</LinhaDaSaude>
-            <LinhaDaSaude label="Envios de notificação em 24 h">{h.push.counts.total === 0 ? "Sem registros ainda" : `${formatarInteiro(h.push.counts.ok)} certos, ${formatarInteiro(h.push.counts.failed)} com falha`}</LinhaDaSaude>
-          </dl>
-        </Painel>
-
-        <Painel
-          title="Banco e versão no ar"
-          aside={
-            h.database.ok ? <EtiquetaDeSituacao tone="sucesso" icon={CheckCircle2}>Banco respondendo</EtiquetaDeSituacao> : <EtiquetaDeSituacao tone="perigo" icon={XCircle}>Banco sem resposta</EtiquetaDeSituacao>
-          }
-        >
-          <dl className="divide-y divide-linha">
-            <LinhaDaSaude label="Versão no ar">{h.version.sha ? <span className="font-mono">{h.version.sha}{h.version.env ? ` · ${h.version.env}` : ""}</span> : "Ambiente local (sem versão da Vercel)"}</LinhaDaSaude>
-            <LinhaDaSaude label="Banco de dados">{h.database.ok && h.database.ms !== null ? `Respondendo em ${h.database.ms} ms` : "Sem resposta"}</LinhaDaSaude>
-            <LinhaDaSaude label="Migrações">
-              {h.database.migrationsApplied === null
-                ? "Não foi possível contar"
-                : h.database.migrationsPending === null
-                  ? `${h.database.migrationsApplied} aplicadas`
-                  : `${h.database.migrationsApplied} aplicadas, ${h.database.migrationsPending} pendentes`}
-            </LinhaDaSaude>
-            <LinhaDaSaude label="Sentry (erros do sistema)">{h.sentryConfigured ? "Configurado" : "Não configurado"}</LinhaDaSaude>
-          </dl>
-          <p className="mt-3 text-sm leading-5 text-tinta-suave">Percentual de erros e erros por dia ainda não são medidos aqui.</p>
-        </Painel>
+        <PainelDoMercadoPago h={h} />
+        <PainelDasRotinas h={h} />
+        <PainelDoWhatsapp h={h} />
+        <PainelDeEmail h={h} />
+        <PainelDoBanco h={h} />
       </div>
 
       <FormularioDeAlertas

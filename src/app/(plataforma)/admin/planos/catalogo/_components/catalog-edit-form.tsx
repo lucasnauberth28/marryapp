@@ -39,6 +39,19 @@ function useSalvarPreco(itemKey: string) {
   return { pending, error, salvar };
 }
 
+function BotoesDoFormulario({ desabilitado, carregando }: { desabilitado: boolean; carregando: boolean }) {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <Botao type="submit" disabled={desabilitado} loading={carregando}>
+        Salvar preço
+      </Botao>
+      <Link href="/admin/planos/catalogo" scroll={false} className={cn(estiloDoBotao.quiet)}>
+        Descartar
+      </Link>
+    </div>
+  );
+}
+
 function AvisoDoPrecoNovo() {
   return (
     <p className="flex items-start gap-2 rounded-xl bg-areia p-3 text-sm text-tinta">
@@ -110,14 +123,7 @@ export function FormularioDeEdicaoDoCatalogo({
           {error}
         </p>
       ) : null}
-      <div className="flex flex-wrap items-center gap-3">
-        <Botao type="submit" disabled={reason.trim().length < 5 || (!free && !Number.isFinite(cents)) || (big && !confirmBig)} loading={pending}>
-          Salvar preço
-        </Botao>
-        <Link href="/admin/planos/catalogo" scroll={false} className={cn(estiloDoBotao.quiet)}>
-          Descartar
-        </Link>
-      </div>
+      <BotoesDoFormulario desabilitado={reason.trim().length < 5 || (!free && !Number.isFinite(cents)) || (big && !confirmBig)} carregando={pending} />
     </form>
   );
 }
