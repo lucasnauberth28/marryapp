@@ -1,5 +1,6 @@
 import { InterruptorDeVisibilidade } from "./interruptor-de-visibilidade";
 import { SeletorDeModelo } from "./seletor-de-modelo";
+import { SecaoDaProgramacao } from "./secoes/secao-programacao";
 import { SecaoDaGaleria } from "./secoes/secao-galeria";
 import { SecaoCapa } from "./secoes/secao-capa";
 import { SecaoDasDicas } from "./secoes/secao-dicas";
@@ -29,6 +30,7 @@ interface PropriedadesDoConteudoDaSecao {
 export function ConteudoDaSecao({ id, chave, descricao, site, foto, historia, dicas, galeria, ocupado, pedirExclusao }: PropriedadesDoConteudoDaSecao) {
   if (id === "TEMPLATE") return <SeletorDeModelo site={site} />;
   if (id === "COVER") return <SecaoCapa site={site} foto={foto} />;
+  if (id === "PROGRAM") return <SecaoDaProgramacao site={site} />;
   if (!chave) return null;
   if (id === "STORY") return <SecaoDaHistoria chave={chave} descricao={descricao} site={site} foto={foto} historia={historia} ocupado={ocupado} pedirExclusao={pedirExclusao} />;
   if (id === "GALLERY") return <SecaoDaGaleria chave={chave} descricao={descricao} site={site} galeria={galeria} />;

@@ -31,7 +31,7 @@ export function SecaoDePresentes({ site, presentes, linkProps }: { site: DadosDo
   return (
     <FaixaDaSecao id="presentes" tone={site.toneOf("presentes")}>
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <TituloDaSecao eyebrow="Presentes em dinheiro" title="Um carinho para a vida nova">
+        <TituloDaSecao title="Um carinho para a vida nova">
           Sua presença é o nosso maior presente. Se quiser contribuir, escolha um item: cada um representa um valor em dinheiro para o casal.
         </TituloDaSecao>
         <Link href={site.giftsHref} className={`${estiloDoBotao.secondary} max-md:hidden`} {...linkProps}>Ver todos os presentes</Link>

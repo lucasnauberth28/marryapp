@@ -27,7 +27,7 @@ export interface PresenteDaPrevia {
   imageUrl?: string | null;
 }
 
-export type IdDaSecao = "TEMPLATE" | "COVER" | "GALLERY" | "STORY" | "LOCATION" | "DRESS" | "TIPS" | "RSVP" | "MUSIC" | "GIFTS" | "GUESTBOOK";
+export type IdDaSecao = "TEMPLATE" | "COVER" | "GALLERY" | "PROGRAM" | "STORY" | "LOCATION" | "DRESS" | "TIPS" | "RSVP" | "MUSIC" | "GIFTS" | "GUESTBOOK";
 export type ChaveDaConfiguracao = keyof ConfiguracoesDoSiteDoCasamento;
 export type CampoDeFoto = "heroImageUrl" | "couplePhotoUrl";
 export type ItemParaExcluir = { tipo: "story" | "tip"; id: string; title: string };
@@ -38,6 +38,7 @@ export const SECOES: { id: IdDaSecao; label: string; key?: ChaveDaConfiguracao; 
   { id: "COVER", label: "Capa" },
   { id: "STORY", label: "Nossa história", key: "showStory", desc: "Mensagem de boas-vindas, foto do casal e momentos marcantes." },
   { id: "GALLERY", label: "Galeria de fotos", key: "showGallery", desc: "Até 8 fotos de vocês, na ordem que escolherem." },
+  { id: "PROGRAM", label: "Programação do dia", desc: "Os momentos do casamento (jantar, cerimônia, festa...) com dia, horário e local." },
   { id: "LOCATION", label: "Cerimônia e recepção", key: "showLocation", desc: "Endereço, horários e botões de rota (Maps, Waze, Uber)." },
   { id: "DRESS", label: "Traje", key: "showDressCode", desc: "Orientação de traje e cores sugeridas." },
   { id: "TIPS", label: "Dicas aos convidados", key: "showTips", desc: "Hospedagem, beleza e transporte indicados." },
@@ -60,7 +61,7 @@ export const CHAVES_EDITAVEIS = [
   "locationMapUrl", "wazeUrl", "uberUrl", "themeColor", "heroImageUrl", "couplePhotoUrl", "dressCodeTitle",
   "dressCodeDesc", "dressCodePalette", "spotifyPlaylistUrl", "welcomeMessage",
   "showStory", "showLocation", "showDressCode", "showTips", "showGifts", "showRsvp", "showGuestbook", "showMusic",
-  "showGallery", "template", "galleryUrls",
+  "showGallery", "template", "galleryUrls", "programJson",
 ] as const;
 
 export const NOVO_MOMENTO = { title: "", dateLabel: "", description: "" };

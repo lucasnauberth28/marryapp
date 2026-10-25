@@ -33,6 +33,8 @@ export interface ConfiguracoesDoSiteDoCasamento {
   template?: string | null;
   /** Fotos da galeria, em JSON (lista de endereços). */
   galleryUrls?: string | null;
+  /** Programação do casamento, em JSON (lista de momentos). */
+  programJson?: string | null;
 }
 
 export interface ItemDaHistoria {

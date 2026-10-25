@@ -21,7 +21,7 @@ export function ConviteDigital({ slug, settings, nomeDoConvidado, frase }: Propr
   const site = prepararDadosDoSite({ slug, settings, storyItems: [], tips: [], gifts: [] });
   const { fase, abrir } = useAbertura();
   return (
-    <div style={site.themeStyle} data-modelo={site.modelo.id} data-fotos={site.modelo.fotos} className={`${CLASSES_DAS_FONTES} min-h-dvh bg-linho font-sans text-tinta antialiased`}>
+    <div style={site.themeStyle} data-modelo={site.modelo.id} className={`${CLASSES_DAS_FONTES} min-h-dvh bg-linho font-sans text-tinta antialiased`}>
       {fase === "aberto" ? (
         <Carta site={site} nomeDoConvidado={nomeDoConvidado} frase={frase} enderecoDoSite={caminhoDoSiteDoCasamento(slug)} />
       ) : (

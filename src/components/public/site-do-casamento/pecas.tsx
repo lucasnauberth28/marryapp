@@ -1,6 +1,5 @@
 // Peças visuais repetidas no site do casal: faixa de seção, título, foto em arco, nomes e iniciais com o "&" em destaque.
 import type { ReactNode } from "react";
-import { estiloDoSobretituloDaLanding } from "@/components/landing/styles";
 import { Aparicao } from "@/components/motion/reveal";
 import { ImagemDaPessoa } from "@/components/ui/user-image";
 import type { TomDaFaixa } from "./tipos";
@@ -45,10 +44,9 @@ export function FaixaDaSecao({ id, tone, compact = false, children }: { id?: str
   );
 }
 
-export function TituloDaSecao({ eyebrow, title, children }: { eyebrow: string; title: string; children?: ReactNode }) {
+export function TituloDaSecao({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <div className="flex max-w-[560px] flex-col gap-3">
-      <p className={estiloDoSobretituloDaLanding}>{eyebrow}</p>
       <h2 className={classeDoTitulo}>{title}</h2>
       {children && <p className="text-base leading-6 text-tinta-suave">{children}</p>}
     </div>

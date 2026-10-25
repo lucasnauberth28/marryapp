@@ -6,7 +6,8 @@ import { instanteDoCasamento } from "@/components/public/wedding-site-countdown"
 import { estiloDoTemaDaMarca, obterIniciaisDoCasal } from "@/lib/casamento/wedding-format";
 import { caminhoDoSiteDoCasamento } from "@/lib/casamento/wedding-links";
 import type { ConfiguracoesDoSiteDoCasamento, DicaDoSite, ItemDaHistoria, PresenteDoSite, TomDaFaixa } from "./tipos";
-import { fotosDaGaleria, modeloDoSite, type ModeloDoSite } from "./modelos/catalogo";
+import { fotosDaGaleria, modeloDoSite, momentosDaProgramacao, type ModeloDoSite } from "./modelos/catalogo";
+import { programaDoSite } from "./modelos/programacao";
 import { destaqueParaFundoEscuro, estiloDoModelo } from "./modelos/estilo";
 import { diaDoCasamento, formatarHoraDoSite, interpretarPaleta, linhaDeDataELocal } from "./utilitarios";
 
@@ -96,6 +97,7 @@ export function prepararDadosDoSite(e: EntradaDoSite) {
     s, coupleNames: nomes, initials: obterIniciaisDoCasal(nomes), ...datas, ...local, ...visiveis, locationName,
     countdownTarget: s.weddingDate ? instanteDoCasamento(new Date(s.weddingDate), s.ceremonyTime) : null,
     palette: interpretarPaleta(s.dressCodePalette), themeStyle: estiloDoTema(s.themeColor, modelo), modelo, galleryPhotos: fotosDaGaleria(s.galleryUrls),
+    program: programaDoSite({ momentos: momentosDaProgramacao(s.programJson), diaPorExtenso: datas.weekdayLabel, cerimonia: formatarHoraDoSite(s.ceremonyTime), recepcao: formatarHoraDoSite(s.receptionTime), local: locationName }),
     coverUrl: s.heroImageUrl || s.couplePhotoUrl || null, storyCouplePhoto,
     toneOf: faixasEmOrdem(visiveis), navLinks: linksDoMenu(visiveis),
     rsvpHref: caminhoDoSiteDoCasamento(e.slug, "rsvp"), giftsHref: caminhoDoSiteDoCasamento(e.slug, "presentes"),

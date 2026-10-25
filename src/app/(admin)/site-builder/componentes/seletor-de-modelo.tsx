@@ -1,31 +1,8 @@
 import { Check } from "lucide-react";
 import { MODELOS_DO_SITE, modeloDoSite, type ModeloDoSite } from "@/components/public/site-do-casamento/modelos/catalogo";
 import { cn } from "@/lib/utils";
+import { EsbocoDoModelo } from "./esboco-do-modelo";
 import type { EditorDoSite } from "./use-configuracoes-do-site";
-
-/** Miniatura do modelo: as cores e o desenho da capa, em escala de cartão. */
-function Miniatura({ modelo }: { modelo: ModeloDoSite }) {
-  const { paleta } = modelo;
-  const capaCheia = modelo.capa === "tela-cheia";
-  return (
-    <span aria-hidden="true" className="block overflow-hidden rounded-lg border" style={{ backgroundColor: paleta.fundo, borderColor: paleta.linha }}>
-      <span className="relative flex h-24 items-end gap-2 p-2" style={{ backgroundColor: capaCheia ? modelo.destaque : paleta.fundo }}>
-        {capaCheia ? <span className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" /> : null}
-        <span className={cn("relative flex min-w-0 flex-1 flex-col gap-1", modelo.alinhamento === "centro" && capaCheia && "items-center")}>
-          <span className="h-2 w-16 rounded-sm" style={{ backgroundColor: capaCheia ? "#fff" : paleta.texto }} />
-          <span className="h-1 w-10 rounded-sm opacity-70" style={{ backgroundColor: capaCheia ? "#fff" : paleta.apoio }} />
-          <span className="mt-1 h-3 w-9 rounded-full" style={{ backgroundColor: modelo.destaque }} />
-        </span>
-        {modelo.capa === "dividida" ? <span className="relative h-20 w-14 rounded-t-full" style={{ backgroundColor: paleta.linha }} /> : null}
-      </span>
-      <span className="flex h-6 items-center gap-1 px-2" style={{ backgroundColor: paleta.faixa }}>
-        {[paleta.texto, paleta.apoio, modelo.destaque].map((cor) => (
-          <span key={cor} className="size-2.5 rounded-full" style={{ backgroundColor: cor }} />
-        ))}
-      </span>
-    </span>
-  );
-}
 
 function CartaoDoModelo({ modelo, escolhido, aoEscolher }: { modelo: ModeloDoSite; escolhido: boolean; aoEscolher: () => void }) {
   return (
@@ -37,7 +14,7 @@ function CartaoDoModelo({ modelo, escolhido, aoEscolher }: { modelo: ModeloDoSit
         )}
       >
         <input type="radio" name="modelo-do-site" value={modelo.id} checked={escolhido} onChange={aoEscolher} className="sr-only" />
-        <Miniatura modelo={modelo} />
+        <EsbocoDoModelo modelo={modelo} />
         <span className="flex items-center gap-1.5 px-1 text-sm font-semibold text-tinta">
           {escolhido ? <Check className="size-4 text-ameixa" aria-hidden="true" /> : null}
           {modelo.nome}

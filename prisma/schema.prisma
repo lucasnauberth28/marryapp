@@ -513,6 +513,9 @@ model SiteCustomization {
   galleryUrls        String?  @db.Text
 
   // Convite digital animado (Classic e VIP): o nome do convidado vai no convite? e a frase do casal no convite
+  // Programação do casamento: JSON com até 6 momentos ({ title, day, time, place }), na ordem em que aparecem
+  programJson        String?  @db.Text
+
   inviteGuestName    Boolean  @default(true)
   inviteMessage      String?  @db.Text
 

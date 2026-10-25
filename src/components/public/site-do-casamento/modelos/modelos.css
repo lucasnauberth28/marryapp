@@ -1,45 +1,44 @@
 /* Modelos do site do casal: forma das fotos, cantos, vidro do modelo Noturno e a borda de papel rasgado.
    As cores e as letras vêm das variáveis que o site define na raiz (modelos/estilo.ts). */
 
-/* Forma das fotos: .arch é a classe das fotos em arco; cada modelo escolhe a forma pelo atributo data-fotos. */
-[data-fotos="reta"] .arch { border-radius: 0; }
-[data-fotos="suave"] .arch { border-radius: 28px; }
-[data-fotos="oval"] .arch { border-radius: 999px; }
-[data-fotos="reta"] { --radius-2xl: 2px; --radius-xl: 2px; }
-[data-fotos="suave"] { --radius-2xl: 24px; }
-[data-fotos="oval"] { --radius-2xl: 20px; }
+/* Galeria do modelo Clássico: o primeiro quadro em arco, os outros com o canto do tema */
 .foto-da-galeria { border-radius: var(--radius-2xl); }
-[data-fotos="arco"] .foto-da-galeria:first-child { border-radius: 999px 999px var(--radius-2xl) var(--radius-2xl); }
-[data-fotos="oval"] .foto-da-galeria { border-radius: 999px; }
+.foto-da-galeria:first-child { border-radius: 999px 999px var(--radius-2xl) var(--radius-2xl); }
 
 /* Botões de canto reto nos modelos de revista */
 [data-modelo="editorial"] :is(a, button).rounded-full,
 [data-modelo="monocromo"] :is(a, button).rounded-full { border-radius: 2px; }
 
-/* Noturno: cartões de vidro com fio dourado */
-[data-modelo="noturno"] .cartao-do-site {
-  background: color-mix(in oklab, #fff 5%, transparent);
-  border-color: color-mix(in oklab, var(--color-ameixa) 35%, transparent);
-  backdrop-filter: blur(14px);
-  box-shadow: inset 0 1px 0 color-mix(in oklab, #fff 8%, transparent);
-}
-
-/* Papel rasgado: cada faixa começa com uma borda irregular na cor da faixa */
-[data-divisor="rasgado"] section[data-tone] { position: relative; border-color: transparent; --cor-da-faixa: var(--color-linho); }
-[data-divisor="rasgado"] section[data-tone="papel"] { --cor-da-faixa: var(--color-papel); }
-[data-divisor="rasgado"] section[data-tone="areia"] { --cor-da-faixa: var(--color-areia); }
-[data-divisor="rasgado"] section[data-tone]::before,
-[data-divisor="rasgado"] .borda-rasgada::after {
+/* Papel rasgado: as folhas de papel cobrem a foto com a borda de cima irregular; a que vem antes de uma faixa de foto
+   também rasga embaixo. A máscara é um recorte de 600px que se repete. */
+.papel-folha { position: relative; --recorte: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 18' preserveAspectRatio='none'%3E%3Cpath d='M0 18L0 9L24 5L50 13L65 4L82 8L97 11L117 3L133 9L160 4L181 12L205 6L224 10L246 3L270 9L291 5L318 12L340 7L362 10L385 4L410 11L432 6L455 9L478 3L502 10L527 5L549 12L572 7L600 9L600 18Z'/%3E%3C/svg%3E"); }
+.papel-folha::before {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
+  top: -17px;
   height: 18px;
-  background: var(--cor-da-faixa, var(--color-linho));
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 18' preserveAspectRatio='none'%3E%3Cpath d='M0%2018L0%209L24%205L50%2013L65%204L82%208L97%2011L117%203L133%209L160%204L181%204L208%203L225%206L240%2012L266%203L287%203L305%207L332%205L349%2012L372%2011L391%204L411%208L428%2011L444%2012L459%2012L479%2010L506%208L534%2012L562%208L585%206L600%209L600%2018Z'/%3E%3C/svg%3E") bottom / 600px 100% repeat-x;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 18' preserveAspectRatio='none'%3E%3Cpath d='M0%2018L0%209L24%205L50%2013L65%204L82%208L97%2011L117%203L133%209L160%204L181%204L208%203L225%206L240%2012L266%203L287%203L305%207L332%205L349%2012L372%2011L391%204L411%208L428%2011L444%2012L459%2012L479%2010L506%208L534%2012L562%208L585%206L600%209L600%2018Z'/%3E%3C/svg%3E") bottom / 600px 100% repeat-x;
+  background: var(--color-papel);
+  -webkit-mask: var(--recorte) bottom / 600px 100% repeat-x;
+  mask: var(--recorte) bottom / 600px 100% repeat-x;
   pointer-events: none;
 }
-[data-divisor="rasgado"] section[data-tone]::before { top: -17px; }
-[data-divisor="rasgado"] .borda-rasgada { --cor-da-faixa: var(--color-linho); }
-[data-divisor="rasgado"] .borda-rasgada::after { bottom: -1px; }
+
+/* Arco bege: o selo de texto em círculo gira devagar */
+.selo-gira { animation: selo-gira 24s linear infinite; }
+@keyframes selo-gira { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .selo-gira { animation: none; } }
+
+/* Noturno: cartões de vidro (efeito escolhido pelo modelo, com fio dourado e brilho no topo) */
+.vidro {
+  background: color-mix(in oklab, #fff 6%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-ameixa) 40%, transparent);
+  border-radius: 20px;
+  backdrop-filter: blur(16px);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, #fff 10%, transparent), 0 18px 40px -24px rgb(0 0 0 / 0.7);
+}
+
+/* Campo: a contagem regressiva em blocos verdes e retos, como na referência */
+.contagem-campo [role="timer"] > div { border-radius: 2px; border-color: transparent; background: color-mix(in oklab, var(--color-ameixa) 88%, black); }
+.contagem-campo [role="timer"] span { color: #fff; }

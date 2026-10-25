@@ -1,6 +1,6 @@
 // Convite para confirmar presença, com o botão que leva ao formulário de RSVP.
 import Link from "next/link";
-import { estiloDoBotao, estiloDoSobretituloDaLanding } from "@/components/landing/styles";
+import { estiloDoBotao } from "@/components/landing/styles";
 import { Aparicao } from "@/components/motion/reveal";
 import type { DadosDoSite, PropriedadesDeLink } from "./dados-do-site";
 
@@ -15,7 +15,6 @@ export function SecaoDeConfirmacao({ site, linkProps }: { site: DadosDoSite; lin
         <div className="relative w-full max-w-[560px] rounded-2xl border border-linha bg-papel px-6 py-10 text-center shadow-[var(--shadow-aceito-2)] md:px-8 md:py-12">
           <span className="pointer-events-none absolute inset-2 rounded-[10px] border border-rosa" aria-hidden="true" />
           <div className="relative flex flex-col items-center gap-2">
-            <p className={estiloDoSobretituloDaLanding}>Confirmação de presença</p>
             <h2 className="m-0 mt-2 font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-balance md:text-[40px] md:leading-[46px]">Contamos com você?</h2>
             <p className="m-0 mb-4 max-w-[40ch] text-tinta-suave">{texto}</p>
             <Link href={site.rsvpHref} className={`${estiloDoBotao.primary} ${estiloDoBotao.block}`} {...linkProps}>Confirmar presença</Link>

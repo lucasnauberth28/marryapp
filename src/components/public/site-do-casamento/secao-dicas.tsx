@@ -63,7 +63,7 @@ function CartaoDaDica({ dica, linkProps }: { dica: DicaDoSite; linkProps: Propri
 export function SecaoDeDicas({ site, dicas, linkProps }: { site: DadosDoSite; dicas: DicaDoSite[]; linkProps: PropriedadesDeLink }) {
   return (
     <FaixaDaSecao id="dicas" tone={site.toneOf("dicas")}>
-      <TituloDaSecao eyebrow="Para os convidados" title="Dicas para aproveitar o dia">Hospedagem, beleza e transporte que indicamos.</TituloDaSecao>
+      <TituloDaSecao title="Dicas para aproveitar o dia">Hospedagem, beleza e transporte que indicamos.</TituloDaSecao>
       <ul className="m-0 grid list-none grid-cols-[repeat(auto-fit,minmax(min(100%,300px),1fr))] gap-6 p-0">
         {dicas.map((dica) => <CartaoDaDica key={dica.id} dica={dica} linkProps={linkProps} />)}
       </ul>

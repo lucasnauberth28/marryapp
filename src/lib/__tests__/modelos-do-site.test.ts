@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { MAXIMO_DE_FOTOS_DA_GALERIA, MODELOS_DO_SITE, ehIdDeModelo, fotosDaGaleria, modeloDoSite, textoDaGaleria } from "../../components/public/site-do-casamento/modelos/catalogo.ts";
+import { MAXIMO_DE_FOTOS_DA_GALERIA, MAXIMO_DE_MOMENTOS_DA_PROGRAMACAO, MODELOS_DO_SITE, momentosDaProgramacao, textoDaProgramacao, ehIdDeModelo, fotosDaGaleria, modeloDoSite, textoDaGaleria } from "../../components/public/site-do-casamento/modelos/catalogo.ts";
 import { corDoTextoSobre, destaqueParaFundoEscuro, estiloDoModelo, variaveisDoModelo } from "../../components/public/site-do-casamento/modelos/estilo.ts";
 
 test("são oito modelos, cada um com id único e cores em hexadecimal", () => {
@@ -48,4 +48,15 @@ test("o estilo do modelo troca as cores da página e deixa a cor de destaque par
 
 test("o modelo clássico mantém a letra padrão do Aceito", () => {
   assert.equal(variaveisDoModelo(modeloDoSite("classico"))["--font-display"], undefined);
+});
+
+test("a programação lê só momentos com título, limpa os textos e para em seis", () => {
+  assert.deepEqual(momentosDaProgramacao(null), []);
+  assert.deepEqual(momentosDaProgramacao("quebrado"), []);
+  assert.deepEqual(momentosDaProgramacao('{"a":1}'), []);
+  const lista = JSON.stringify([{ title: " Cerimônia ", day: "Sábado", time: "17h", place: "Villa" }, { title: "", day: "x" }, { day: "sem título" }, 7]);
+  assert.deepEqual(momentosDaProgramacao(lista), [{ title: "Cerimônia", day: "Sábado", time: "17h", place: "Villa" }]);
+  const muitos = JSON.stringify(Array.from({ length: 10 }, (_, i) => ({ title: `Momento ${i}` })));
+  assert.equal(momentosDaProgramacao(muitos).length, MAXIMO_DE_MOMENTOS_DA_PROGRAMACAO);
+  assert.equal(momentosDaProgramacao(textoDaProgramacao([{ title: "A", day: "", time: "", place: "" }])).length, 1);
 });

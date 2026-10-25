@@ -12,7 +12,7 @@ export function SecaoDaGaleria({ site }: { site: DadosDoSite }) {
   const fotos = site.galleryPhotos;
   return (
     <FaixaDaSecao id="galeria" tone={site.toneOf("galeria")}>
-      <TituloDaSecao eyebrow="Fotos" title="Nossos momentos" />
+      <TituloDaSecao title="Nossos momentos" />
       <ul className="m-0 grid list-none grid-cols-2 gap-3 p-0 md:grid-cols-4 md:gap-4">
         {fotos.map((src, i) => (
           <li key={src} className={`foto-da-galeria relative overflow-hidden bg-areia ${classeDaFoto(i, fotos.length)}`}>
