@@ -6,7 +6,7 @@ import {
 import { obterConfiguracoes } from "@/actions/settings-actions";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterPresentesEmDestaque } from "@/lib/wedding-data";
-import { EditorDoSiteCliente } from "./site-builder-client";
+import { EditorDoSiteCliente } from "./editor-do-site-cliente";
 
 export const dynamic = "force-dynamic";
 
