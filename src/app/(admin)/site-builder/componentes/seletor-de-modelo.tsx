@@ -1,7 +1,7 @@
+import Image from "next/image";
 import { Check } from "lucide-react";
 import { MODELOS_DO_SITE, modeloDoSite, type ModeloDoSite } from "@/components/public/site-do-casamento/modelos/catalogo";
 import { cn } from "@/lib/utils";
-import { EsbocoDoModelo } from "./esboco-do-modelo";
 import type { EditorDoSite } from "./use-configuracoes-do-site";
 
 function CartaoDoModelo({ modelo, escolhido, aoEscolher }: { modelo: ModeloDoSite; escolhido: boolean; aoEscolher: () => void }) {
@@ -14,7 +14,7 @@ function CartaoDoModelo({ modelo, escolhido, aoEscolher }: { modelo: ModeloDoSit
         )}
       >
         <input type="radio" name="modelo-do-site" value={modelo.id} checked={escolhido} onChange={aoEscolher} className="sr-only" />
-        <EsbocoDoModelo modelo={modelo} />
+        <Image src={`/images/modelos/${modelo.id}.webp`} alt="" width={800} height={500} sizes="200px" className="aspect-[8/5] w-full rounded-lg border border-linha object-cover" />
         <span className="flex items-center gap-1.5 px-1 text-sm font-semibold text-tinta">
           {escolhido ? <Check className="size-4 text-ameixa" aria-hidden="true" /> : null}
           {modelo.nome}

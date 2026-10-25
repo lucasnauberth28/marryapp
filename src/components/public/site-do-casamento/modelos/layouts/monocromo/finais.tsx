@@ -18,8 +18,7 @@ export function GaleriaEmPretoEBranco({ fotos }: { fotos: { foto: (i: number) =>
 export function PresentesEmTabela({ site, presentes, linkProps }: Pick<PropriedadesDoLayout, "site" | "presentes" | "linkProps">) {
   return (
     <section id="presentes" className="mx-auto max-w-[1200px] px-4 pb-20 md:px-8 md:pb-28">
-      <p className={rotulo}>Presentes em dinheiro</p>
-      <h2 className={`${titulo} mb-10 mt-3`}>Um carinho para a vida nova</h2>
+      <h2 className={`${titulo} mb-10`}>Um carinho para a vida nova</h2>
       <ul className="m-0 grid list-none gap-px bg-linha p-0 sm:grid-cols-2 lg:grid-cols-4">
         {presentes.slice(0, 4).map((p) => (
           <li key={p.id} className="bg-linho"><Link href={`/checkout/${p.id}`} className="flex flex-col gap-3 p-4 text-tinta no-underline hover:bg-papel" {...linkProps}>
@@ -37,7 +36,7 @@ export function PresentesEmTabela({ site, presentes, linkProps }: Pick<Proprieda
 export function DicasDeViagem({ dicas }: Pick<PropriedadesDoLayout, "dicas">) {
   return (
     <section id="dicas" className="mx-auto grid max-w-[1200px] gap-10 px-4 pb-20 md:grid-cols-[1fr_1.4fr] md:px-8 md:pb-28">
-      <div><p className={rotulo}>Viagem e hospedagem</p><h2 className={`${titulo} mt-3`}>Para se programar</h2></div>
+      <h2 className={titulo}>Para se programar</h2>
       <div className="grid gap-x-12 gap-y-8 sm:grid-cols-2">
         {dicas.map((d) => (
           <article key={d.id} className="flex flex-col gap-2 border-t border-tinta pt-4"><h3 className="m-0 font-display text-2xl font-normal text-tinta">{d.title}</h3>

@@ -18,7 +18,7 @@ export function CapaDoPapel({ site, linkProps, preview, foto }: Pick<Propriedade
         preview={preview}
       />
       <div className="mx-auto flex min-h-[84vh] max-w-[1200px] flex-col items-center justify-center gap-4 px-4 pb-28 pt-24 text-center">
-        <h1 className="m-0 font-display text-[clamp(56px,13vw,176px)] font-normal uppercase leading-[0.92] tracking-[-0.01em] [text-shadow:0_2px_30px_rgb(0_0_0/0.3)]">{site.coupleNames}</h1>
+        <h1 className="m-0 font-display text-[clamp(56px,12vw,152px)] font-normal uppercase leading-[0.92] tracking-[-0.01em] [text-shadow:0_2px_30px_rgb(0_0_0/0.3)]">{site.coupleNames}</h1>
         <p className="m-0 max-w-[40ch] text-lg tracking-wide opacity-95">{site.s.subtitle?.trim() || site.whenWhere}</p>
         {site.showRsvp && (
           <Link href={site.rsvpHref} className="mt-4 inline-flex items-center gap-2 border-b border-[#fff]/80 pb-1 text-sm font-semibold uppercase tracking-[0.16em] text-[#fff] no-underline hover:opacity-75" {...linkProps}>

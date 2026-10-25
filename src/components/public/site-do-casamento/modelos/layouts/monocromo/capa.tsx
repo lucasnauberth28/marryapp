@@ -19,7 +19,7 @@ export function CapaMonocromo({ site, preview, foto }: Pick<PropriedadesDoLayout
       />
       <div className="mx-auto w-full max-w-[1200px] px-4 pb-14 md:px-8 md:pb-20">
         <p className="m-0 mb-6 text-[11px] uppercase tracking-[0.3em]">{site.s.subtitle?.trim() || "Com a bênção de nossas famílias"}</p>
-        <h1 className="m-0 font-display text-[clamp(56px,10vw,132px)] font-normal uppercase leading-[0.95] tracking-[-0.01em]">
+        <h1 className="m-0 font-display text-[clamp(56px,9vw,120px)] font-normal uppercase leading-[0.95] tracking-[-0.01em]">
           {primeiro}
           {resto.length > 0 && <><br /><span className="my-1 block text-[0.42em] font-normal normal-case italic leading-none tracking-normal">e</span>{resto.join(" e ")}</>}
         </h1>

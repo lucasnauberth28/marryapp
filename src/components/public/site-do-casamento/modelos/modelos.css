@@ -42,3 +42,8 @@
 /* Campo: a contagem regressiva em blocos verdes e retos, como na referência */
 .contagem-campo [role="timer"] > div { border-radius: 2px; border-color: transparent; background: color-mix(in oklab, var(--color-ameixa) 88%, black); }
 .contagem-campo [role="timer"] span { color: #fff; }
+
+/* Partes do navegador que não desenhamos também seguem o modelo: cor dos campos marcados, do cursor e da seleção */
+[data-modelo] { accent-color: var(--color-ameixa); caret-color: var(--color-ameixa); }
+[data-modelo] ::selection { background: color-mix(in oklab, var(--color-ameixa) 30%, transparent); }
+[data-modelo="noturno"] { color-scheme: dark; scrollbar-color: color-mix(in oklab, var(--color-ameixa) 50%, transparent) var(--color-linho); }

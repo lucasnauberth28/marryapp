@@ -21,7 +21,7 @@ export function CapaEditorial({ site, linkProps, preview, foto }: Pick<Proprieda
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/55 via-black/15 to-transparent" aria-hidden="true" />
         <div className="mx-auto w-full max-w-[1200px] px-4 py-20 md:px-8">
           <p className="m-0 mb-5 text-[11px] font-semibold uppercase tracking-[0.2em]">{site.s.subtitle?.trim() || "Juntos para sempre"}</p>
-          <h1 className="m-0 font-display text-[clamp(64px,11vw,148px)] font-normal leading-[0.9] tracking-[-0.02em]">{primeiro}{resto.length > 0 ? <> &amp;<br />{resto.join(" e ")}</> : null}</h1>
+          <h1 className="m-0 font-display text-[clamp(64px,10vw,128px)] font-normal leading-[0.9] tracking-[-0.02em]">{primeiro}{resto.length > 0 ? <> &amp;<br />{resto.join(" e ")}</> : null}</h1>
           <p className="m-0 mt-6 text-[11px] font-semibold uppercase leading-5 tracking-[0.2em]">{site.dateLabel ?? "Em breve"}<br />{site.locationName}</p>
           {site.showRsvp && <Link href={site.rsvpHref} className="mt-8 inline-flex min-h-12 items-center gap-3 bg-ameixa px-6 text-[11px] font-semibold uppercase tracking-[0.2em] text-on-ameixa no-underline hover:bg-ameixa-hover" {...linkProps}>Você está convidado <ArrowRight className="size-4" aria-hidden="true" /></Link>}
         </div>

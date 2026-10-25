@@ -1,6 +1,7 @@
 "use client";
 // Convite digital animado: o casal escolhe se o nome de cada convidado aparece e qual frase vai no convite.
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink, Mail } from "lucide-react";
 import { toast } from "sonner";
@@ -61,6 +62,21 @@ function Escolhas({ guestName, message, linkDeExemplo }: Omit<Propriedades, "dis
   );
 }
 
+/** Quem ainda não tem o convite vê como ele fica: o envelope fechado e a carta aberta, com o nome da pessoa. */
+function PreviaDoConvite() {
+  return (
+    <div className="flex flex-wrap items-center gap-6">
+      <div className="flex gap-3" aria-hidden="true">
+        {["envelope", "carta"].map((nome) => <Image key={nome} src={`/images/convite/${nome}.webp`} alt="" width={390} height={780} sizes="120px" className="h-[180px] w-auto rounded-2xl border border-linha shadow-[var(--shadow-aceito-1)]" />)}
+      </div>
+      <div className="flex min-w-[220px] flex-1 flex-col items-start gap-3">
+        <p className="m-0 text-sm leading-6 text-tinta-suave">Exemplo do convite com o nome da pessoa. Ele faz parte dos planos Classic e VIP e segue o modelo do site de vocês.</p>
+        <Link href="/plano" className={`${estiloDoBotao.secondary} ${estiloDoBotao.sm}`}>Ver os planos</Link>
+      </div>
+    </div>
+  );
+}
+
 export function CartaoDoConvite({ disponivel, ...escolhas }: Propriedades) {
   return (
     <section aria-labelledby="convite-digital" className={`${estiloDoCartao} flex flex-col gap-4 p-5 md:p-6`}>
@@ -75,7 +91,7 @@ export function CartaoDoConvite({ disponivel, ...escolhas }: Propriedades) {
         </div>
         {disponivel ? <Etiqueta tone="sucesso">Ativo</Etiqueta> : <Etiqueta tone="neutro">Classic e VIP</Etiqueta>}
       </div>
-      {disponivel ? <Escolhas {...escolhas} /> : <p className="text-sm text-tinta-suave">O convite digital faz parte dos planos Classic e VIP. <Link href="/plano" className="font-semibold text-ameixa">Ver os planos</Link></p>}
+      {disponivel ? <Escolhas {...escolhas} /> : <PreviaDoConvite />}
     </section>
   );
 }
