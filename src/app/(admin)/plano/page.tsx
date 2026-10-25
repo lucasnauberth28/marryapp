@@ -1,34 +1,13 @@
 import { Suspense } from "react";
-import Link from "next/link";
-import { Clock, FileText, Receipt } from "lucide-react";
-import { PaymentStatus } from "@prisma/client";
-import prisma from "@/lib/prisma";
-import { ehChaveDePlano } from "@/lib/plans";
-import { obterCatalogo } from "@/lib/catalog-server";
-import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { opcaoDePlano, nomeCurtoDoPlano, type OpcaoDePlano } from "@/app/login/auth-config";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
-import { Aparicao } from "@/components/motion/reveal";
 import { RegiaoDeCarregamento } from "@/components/skeletons";
+import { CorpoDoPlano } from "./componentes/corpo-do-plano";
 import { EsqueletoDoCorpoDoPlano } from "./skeletons";
-import { SecaoDeUpgrade } from "./upgrade-section";
 
-import { formatarReais } from "@/lib/formatacao/dinheiro";
-import { pluralizar } from "@/lib/formatacao/plural";
-import { formatarDataBrasiliaCurtaComAno } from "@/lib/formatacao/data";
 export const dynamic = "force-dynamic";
 
 export const metadata = { title: "Plano e pagamentos" };
-
-
-/** Ordem dos planos de casal: só mostramos como opção de mudança os que ficam acima do atual. */
-const ORDEM_DOS_PLANOS: Record<string, number> = { basic: 0, custom: 1, classic: 2, vip: 3 };
-const CHAVES_DE_UPGRADE = ["classic", "vip"] as const;
-
-/** Pix estático fica "em conferência" por até 3 dias depois de vencer o código (mesma regra de /assinaturas). */
-const PREFIXO_DO_PIX_ESTATICO = "ASSIN";
-const JANELA_DE_CONFERENCIA_DO_PIX_ESTATICO_EM_MS = 3 * 24 * 60 * 60 * 1000;
 
 export default async function PlanoPage() {
   // Plano de casal vale para o casamento (os dois do casal), não para a conta
@@ -37,11 +16,7 @@ export default async function PlanoPage() {
   // O cabeçalho sai logo; planos, taxas e recibos (várias consultas) entram quando ficam prontos.
   return (
     <div className="flex flex-col gap-7">
-      <CabecalhoDaPagina
-        eyebrow="Conta"
-        title="Plano e pagamentos"
-        description="O plano vale para o casamento inteiro. Pagamento único, sem mensalidade."
-      />
+      <CabecalhoDaPagina eyebrow="Conta" title="Plano e pagamentos" description="O plano vale para o casamento inteiro. Pagamento único, sem mensalidade." />
       <Suspense
         fallback={
           <RegiaoDeCarregamento label="o plano e os pagamentos" className="flex flex-col gap-7">
@@ -52,157 +27,5 @@ export default async function PlanoPage() {
         <CorpoDoPlano userId={session.userId} weddingId={weddingId} />
       </Suspense>
     </div>
-  );
-}
-
-async function CorpoDoPlano({ userId, weddingId }: { userId: string; weddingId: string }) {
-  const isSuperAdmin = userId === ID_DO_SUPER_ADMIN;
-  const now = new Date();
-  const catalog = await obterCatalogo();
-
-  const [subscriptions, pendingStatic, gifts] = await Promise.all([
-    isSuperAdmin
-      ? Promise.resolve([])
-      : prisma.subscription.findMany({
-          where: {
-            weddingId,
-            planType: "COUPLE",
-            status: { in: [PaymentStatus.APPROVED, PaymentStatus.REFUNDED] },
-          },
-          orderBy: [{ paidAt: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
-          select: { id: true, planId: true, planName: true, amount: true, status: true, paidAt: true, createdAt: true },
-        }),
-    isSuperAdmin
-      ? Promise.resolve(null)
-      : prisma.subscription.findFirst({
-          where: {
-            weddingId,
-            planType: "COUPLE",
-            status: PaymentStatus.PENDING,
-            gatewayId: { startsWith: PREFIXO_DO_PIX_ESTATICO },
-            expiresAt: { gte: new Date(now.getTime() - JANELA_DE_CONFERENCIA_DO_PIX_ESTATICO_EM_MS) },
-          },
-          orderBy: { createdAt: "desc" },
-          select: { planId: true, planName: true, amount: true, createdAt: true },
-        }),
-    prisma.transaction.aggregate({
-      where: { weddingId, status: PaymentStatus.APPROVED },
-      _sum: { fee: true },
-      _count: { _all: true },
-    }),
-  ]);
-
-  const current = subscriptions.find((s) => s.status === PaymentStatus.APPROVED) ?? null;
-  const currentRank = current ? (ORDEM_DOS_PLANOS[current.planId] ?? 0) : 0;
-  const currentName = current ? (ehChaveDePlano(current.planId) ? opcaoDePlano(current.planId, catalog).name : nomeCurtoDoPlano(current.planName)) : "Básico";
-
-  const upgrades: OpcaoDePlano[] = CHAVES_DE_UPGRADE.filter((key) => ORDEM_DOS_PLANOS[key] > currentRank).map((key) => opcaoDePlano(key, catalog));
-  const awaitingReview = pendingStatic && (ORDEM_DOS_PLANOS[pendingStatic.planId] ?? 0) > currentRank ? pendingStatic : null;
-
-  const giftCount = gifts._count._all;
-  const feeTotal = gifts._sum.fee ?? 0;
-
-  return (
-    <>
-      <Aparicao className="grid gap-4 md:grid-cols-2">
-        <section aria-labelledby="plano-atual-titulo" className="flex flex-col gap-2 rounded-2xl border border-linha bg-papel p-5 shadow-[var(--shadow-aceito-1)] sm:p-6">
-          <h2 id="plano-atual-titulo" className="text-sm text-tinta-suave">
-            Plano atual
-          </h2>
-          <p className="font-display text-4xl leading-10 text-tinta">{currentName}</p>
-          <p className="text-[15px] text-tinta">
-            {current
-              ? `Pagamento único de ${formatarReais(current.amount)}${current.paidAt ? ` · pago em ${formatarDataBrasiliaCurtaComAno(current.paidAt)}` : ""}`
-              : "Gratuito · taxa de 3,99% por presente recebido"}
-          </p>
-        </section>
-
-        <section aria-labelledby="taxas-titulo" className="flex flex-col gap-2 rounded-2xl bg-ameixa p-5 text-on-ameixa shadow-[var(--shadow-aceito-2)] sm:p-6">
-          <h2 id="taxas-titulo" className="text-xs font-semibold uppercase tracking-[0.08em]">
-            Taxas nos presentes até agora
-          </h2>
-          {giftCount === 0 ? (
-            <p className="text-[15px]">Nenhum presente recebido ainda. Quando chegar o primeiro, as taxas aparecem aqui.</p>
-          ) : (
-            <>
-              <p className="font-num text-[40px] leading-[44px] tabular-nums">{formatarReais(feeTotal)}</p>
-              <p className="text-[15px]">
-                {pluralizar(giftCount, "presente recebido", "presentes recebidos")}
-                {feeTotal === 0 ? ", sem taxa até agora." : "."}
-              </p>
-            </>
-          )}
-        </section>
-      </Aparicao>
-
-      {awaitingReview ? (
-        <Aparicao className="flex items-start gap-3 rounded-2xl border border-aviso/30 bg-aviso-suave p-4 text-[15px] text-tinta">
-          <Clock className="mt-0.5 h-5 w-5 shrink-0 text-aviso" aria-hidden="true" />
-          <p>
-            Há um Pix de {formatarReais(awaitingReview.amount)} do plano{" "}
-            {ehChaveDePlano(awaitingReview.planId) ? opcaoDePlano(awaitingReview.planId, catalog).name : nomeCurtoDoPlano(awaitingReview.planName)} gerado em{" "}
-            {formatarDataBrasiliaCurtaComAno(awaitingReview.createdAt)}. Se vocês já pagaram, nossa equipe confere no extrato e libera o plano em até 1
-            dia útil.
-          </p>
-        </Aparicao>
-      ) : null}
-
-      <section aria-labelledby="upgrade-titulo" className="flex flex-col gap-4">
-        <h2 id="upgrade-titulo" className="text-xl font-semibold text-tinta">
-          Mudar de plano
-        </h2>
-        <SecaoDeUpgrade plans={upgrades} canPay={!isSuperAdmin} />
-        <p className="text-[15px] text-tinta">
-          Precisam só de algumas partes?{" "}
-          <Link href="/monte-seu-plano" className="inline-flex min-h-11 items-center font-semibold text-ameixa underline-offset-4 hover:underline">
-            Montem o plano de vocês
-          </Link>
-        </p>
-      </section>
-
-      <section aria-labelledby="recibos-titulo" className="flex flex-col gap-3">
-        <h2 id="recibos-titulo" className="text-xl font-semibold text-tinta">
-          Recibos
-        </h2>
-        {subscriptions.length === 0 ? (
-          <div className="flex items-center gap-3 rounded-2xl border border-linha bg-linho p-5 text-[15px] text-tinta-suave">
-            <FileText className="h-5 w-5 shrink-0" aria-hidden="true" />
-            Nenhum pagamento ainda. Os recibos aparecem aqui depois de cada Pix.
-          </div>
-        ) : (
-          <ul className="flex flex-col divide-y divide-linha rounded-2xl border border-linha bg-papel">
-            {subscriptions.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-5 py-4">
-                <Receipt className="h-4 w-4 shrink-0 text-tinta-suave" aria-hidden="true" />
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-tinta">
-                    {ehChaveDePlano(s.planId) ? opcaoDePlano(s.planId, catalog).name : nomeCurtoDoPlano(s.planName)}
-                  </p>
-                  <p className="text-sm text-tinta-suave">
-                    {s.paidAt ? `Pago em ${formatarDataBrasiliaCurtaComAno(s.paidAt)}` : `Gerado em ${formatarDataBrasiliaCurtaComAno(s.createdAt)}`} · Pix
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  {s.status === PaymentStatus.REFUNDED ? (
-                    <span className="inline-flex items-center rounded-full bg-areia px-2.5 py-1 text-[13px] font-semibold leading-4 text-tinta">
-                      Estornado
-                    </span>
-                  ) : null}
-                  <span className="font-semibold tabular-nums text-tinta">{formatarReais(s.amount)}</span>
-                  {s.status === PaymentStatus.APPROVED ? (
-                    <Link
-                      href={`/recibo/${s.id}`}
-                      className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold text-ameixa hover:bg-ameixa-suave"
-                    >
-                      Ver recibo
-                    </Link>
-                  ) : null}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </>
   );
 }
