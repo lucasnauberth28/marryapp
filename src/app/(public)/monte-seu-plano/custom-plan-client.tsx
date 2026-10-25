@@ -7,7 +7,7 @@ import { calcularPrecoDoPlanoPersonalizado, type ModuloDePreco } from "@/lib/pri
 import { Check, ArrowLeft, Zap } from "lucide-react";
 import { CabecalhoDaLanding } from "@/components/landing/landing-header";
 import { RodapeDaLanding } from "@/components/landing/landing-footer";
-import { estiloDoBotao, estiloDoContainerDaLanding, overline } from "@/components/landing/styles";
+import { estiloDoBotao, estiloDoContainerDaLanding, estiloDoSobretituloDaLanding } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
 
 
@@ -45,7 +45,7 @@ export function PlanoPersonalizadoCliente({ modules }: { modules: ModuloDePreco[
             <ArrowLeft className="size-4" aria-hidden="true" />
             Ver planos prontos
           </Link>
-          <p className={overline}>Plano sob medida</p>
+          <p className={estiloDoSobretituloDaLanding}>Plano sob medida</p>
           <h1 className="font-display text-[34px] font-medium leading-[40px] tracking-[-0.015em] sm:text-5xl sm:leading-[54px] lg:text-[56px] lg:leading-[62px]">
             Escolham só o que vão usar
           </h1>
@@ -88,7 +88,7 @@ export function PlanoPersonalizadoCliente({ modules }: { modules: ModuloDePreco[
                         {isSelected ? <Check className="size-4" strokeWidth={3} /> : null}
                       </span>
                       <span className="flex min-w-0 flex-col gap-1">
-                        <span className={overline}>{mod.category}</span>
+                        <span className={estiloDoSobretituloDaLanding}>{mod.category}</span>
                         <span className="text-lg font-semibold leading-6">{mod.name}</span>
                         <span className="text-base leading-6 text-tinta-suave">{mod.description}</span>
                         <span className="mt-1 font-semibold">

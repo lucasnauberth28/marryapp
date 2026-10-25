@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { mensagemDeUpgrade, tituloDeUpgrade, type ModuloComBloqueio } from "@/lib/wedding-plan-modules";
 
 /** Aviso amigável no lugar de um recurso que o plano do casamento ainda não inclui. */
-export function UpgradeCard({ moduleId }: { moduleId: ModuloComBloqueio }) {
+export function CartaoDeUpgrade({ moduleId }: { moduleId: ModuloComBloqueio }) {
   return (
     <section
       aria-labelledby="upgrade-recurso-titulo"

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CabecalhoDaLanding } from "@/components/landing/landing-header";
 import { RodapeDaLanding } from "@/components/landing/landing-footer";
-import { estiloDoBotao, estiloDoContainerDaLanding, overline } from "@/components/landing/styles";
+import { estiloDoBotao, estiloDoContainerDaLanding, estiloDoSobretituloDaLanding } from "@/components/landing/styles";
 import {
   Building2,
   Check,
@@ -238,7 +238,7 @@ export function VisaoDeFornecedoresPublicos({ initialPartners, weddingDate: acti
       <section className="bg-salvia-suave">
         <div className={cn(estiloDoContainerDaLanding, "flex flex-col gap-6 py-10 sm:py-16")}>
           <div className="flex max-w-[720px] flex-col gap-3">
-            <p className={cn(overline, "text-salvia")}>Fornecedores para o casamento</p>
+            <p className={cn(estiloDoSobretituloDaLanding, "text-salvia")}>Fornecedores para o casamento</p>
             <h1 className="font-display text-[34px] font-medium leading-[40px] tracking-[-0.02em] text-tinta sm:text-5xl sm:leading-[1.05] lg:text-6xl">
               Encontre fornecedores para o seu casamento
             </h1>

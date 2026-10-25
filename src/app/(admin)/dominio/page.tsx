@@ -4,7 +4,7 @@ import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterPedidosDeDominioDoCasamento } from "@/lib/domain-orders";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
-import { UpgradeCard } from "@/components/plan/upgrade-card";
+import { CartaoDeUpgrade } from "@/components/plan/upgrade-card";
 import { DominioCliente } from "./domain-client";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +24,7 @@ export default async function DominioPage() {
   ]);
 
   // Quem já tem pedido vê o andamento mesmo que o plano mude; sem pedido e sem o módulo, o aviso do plano que inclui o recurso
-  if (!active && !hasModule) return <UpgradeCard moduleId="customDomain" />;
+  if (!active && !hasModule) return <CartaoDeUpgrade moduleId="customDomain" />;
 
   return (
     <DominioCliente

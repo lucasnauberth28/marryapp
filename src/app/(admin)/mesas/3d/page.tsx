@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import prisma from "@/lib/prisma";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
-import { UpgradeCard } from "@/components/plan/upgrade-card";
+import { CartaoDeUpgrade } from "@/components/plan/upgrade-card";
 import { VisaoDasMesas3D } from "@/components/mesas3d/mesas-3d-view";
 import { ehIdDeCenario } from "@/lib/mesas3d/scenarios";
 import { lugaresDoConvidado } from "@/lib/mesas3d/seating";
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Mesas em 3D" };
 
 export default async function Mesas3DPage() {
   const { session, weddingId, wedding } = await exigirCasamentoNaPagina("/mesas");
-  if (!(await casamentoTemModulo({ weddingId, session }, "tables3d"))) return <UpgradeCard moduleId="tables3d" />;
+  if (!(await casamentoTemModulo({ weddingId, session }, "tables3d"))) return <CartaoDeUpgrade moduleId="tables3d" />;
 
   const [row, tables, guests] = await Promise.all([
     prisma.wedding.findUnique({ where: { id: weddingId }, select: { tables3dScene: true, tables3dShareToken: true } }),

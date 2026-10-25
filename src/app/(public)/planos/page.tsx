@@ -5,7 +5,7 @@ import { CartaoDoPlanoDoCasal } from "@/components/landing/couple-plan-card";
 import { RodapeDaLanding } from "@/components/landing/landing-footer";
 import { SecaoDePerguntasFrequentes } from "@/components/landing/faq-section";
 import { CabecalhoDaLanding } from "@/components/landing/landing-header";
-import { estiloDoBotao, estiloDoContainerDaLanding, estiloDoTextoDeApoio, overline } from "@/components/landing/styles";
+import { estiloDoBotao, estiloDoContainerDaLanding, estiloDoTextoDeApoio, estiloDoSobretituloDaLanding } from "@/components/landing/styles";
 import { compartilhamentoDaMarca } from "@/lib/brand-meta";
 import { obterCatalogo } from "@/lib/catalog-server";
 import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
@@ -44,7 +44,7 @@ export default async function PlanosPage() {
 
       <div>
         <section aria-labelledby="planos-titulo" className={cn(estiloDoContainerDaLanding, "flex flex-col items-center gap-4 pb-8 pt-12 text-center sm:pt-16")}>
-          <p className={overline}>Planos para casais</p>
+          <p className={estiloDoSobretituloDaLanding}>Planos para casais</p>
           <h1
             id="planos-titulo"
             className="max-w-[20ch] font-display text-[40px] font-medium leading-[1.05] tracking-[-0.02em] text-balance sm:text-[clamp(40px,5vw,60px)]"
@@ -77,7 +77,7 @@ export default async function PlanosPage() {
         <section id="presentes" aria-labelledby="presentes-titulo" className="scroll-mt-24 border-y border-linha bg-papel">
           <div className={cn(estiloDoContainerDaLanding, "grid gap-8 py-14 lg:grid-cols-[5fr_7fr] lg:gap-16")}>
             <div className="flex flex-col gap-3">
-              <p className={overline}>Presentes em dinheiro</p>
+              <p className={estiloDoSobretituloDaLanding}>Presentes em dinheiro</p>
               <h2 id="presentes-titulo" className="font-display text-[32px] font-medium leading-10 tracking-[-0.015em] sm:text-[40px] sm:leading-[46px]">
                 Taxas e condições dos presentes
               </h2>
@@ -123,7 +123,7 @@ export default async function PlanosPage() {
         <section id="fornecedores" aria-labelledby="fornecedores-titulo" className="scroll-mt-16 bg-salvia-suave">
           <div className={cn(estiloDoContainerDaLanding, "flex flex-col gap-8 py-16")}>
             <div className="flex flex-col gap-2">
-              <p className={cn(overline, "text-salvia")}>Aceito para empresas</p>
+              <p className={cn(estiloDoSobretituloDaLanding, "text-salvia")}>Aceito para empresas</p>
               <h2 id="fornecedores-titulo" className="max-w-[24ch] font-display text-[34px] font-medium leading-10 tracking-[-0.015em] sm:text-[40px] sm:leading-[46px]">
                 Planos para fornecedores
               </h2>

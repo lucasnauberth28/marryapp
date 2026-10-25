@@ -19,7 +19,7 @@ export const estiloDoBotao = {
 /** Seta que avança levemente ao passar o mouse no botão. */
 export const estiloDoBotaoComSeta = "size-4 transition-transform duration-300 ease-[var(--ease-aceito)] group-hover/btn:translate-x-0.5";
 
-export const overline = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
+export const estiloDoSobretituloDaLanding = "text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave";
 
 export const estiloDoTituloDaSecao =
   "font-display text-[34px] font-medium leading-[40px] tracking-[-0.015em] text-tinta sm:text-[40px] sm:leading-[46px] lg:text-[52px] lg:leading-[58px]";

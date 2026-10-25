@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { estiloDoBotao, overline } from "@/components/landing/styles";
+import { estiloDoBotao, estiloDoSobretituloDaLanding } from "@/components/landing/styles";
 import { criarRecadoNoLivro } from "@/actions/site-builder-actions";
 import { estiloDoTemaDaMarca, obterIniciaisDoCasal } from "@/lib/wedding-format";
 import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links";
@@ -196,7 +196,7 @@ function FaixaDaSecao({
 function TituloDaSecao({ eyebrow, title, children }: { eyebrow: string; title: string; children?: ReactNode }) {
   return (
     <div className="flex max-w-[560px] flex-col gap-3">
-      <p className={overline}>{eyebrow}</p>
+      <p className={estiloDoSobretituloDaLanding}>{eyebrow}</p>
       <h2 className={classeDoTitulo}>{title}</h2>
       {children && <p className="text-base leading-6 text-tinta-suave">{children}</p>}
     </div>
@@ -443,7 +443,7 @@ export function VisaoDoSiteDoCasamento({
         </div>
 
         <div className="flex max-w-full flex-col items-center gap-3 pt-2 md:pt-0">
-          {s.subtitle?.trim() && <p className={overline}>{s.subtitle.trim()}</p>}
+          {s.subtitle?.trim() && <p className={estiloDoSobretituloDaLanding}>{s.subtitle.trim()}</p>}
           <h1 className="m-0 max-w-full font-display text-[52px] font-medium leading-[54px] tracking-[-0.02em] text-tinta text-balance md:[font-size:clamp(56px,8vw,96px)] md:leading-none">
             <NomesDoCasal names={coupleNames} />
           </h1>
@@ -478,7 +478,7 @@ export function VisaoDoSiteDoCasamento({
             }`}
           >
             <div className="flex flex-col gap-3 md:self-end">
-              <p className={overline}>Nossa história</p>
+              <p className={estiloDoSobretituloDaLanding}>Nossa história</p>
               <h2 className={classeDoTitulo}>Como tudo começou</h2>
             </div>
 
@@ -530,13 +530,13 @@ export function VisaoDoSiteDoCasamento({
           {showLocation && (
             <>
               <div className="flex flex-col items-start gap-3 md:items-center md:text-center">
-                <p className={overline}>O grande dia</p>
+                <p className={estiloDoSobretituloDaLanding}>O grande dia</p>
                 <h2 className={classeDoTitulo}>{weekdayLabel ? weekdayLabel.charAt(0).toUpperCase() + weekdayLabel.slice(1) : "Onde vamos celebrar"}</h2>
               </div>
 
               <article className={`${estiloDoCartao} grid gap-6 md:grid-cols-[1.4fr_1fr] md:gap-12`}>
                 <div className="flex min-w-0 flex-col gap-3">
-                  <p className={overline}>Local</p>
+                  <p className={estiloDoSobretituloDaLanding}>Local</p>
                   {locationName && <h3 className="m-0 font-display text-2xl font-medium leading-[30px] text-tinta md:text-[26px] md:leading-8">{locationName}</h3>}
                   {address && (
                     <p className="m-0 flex gap-2 text-tinta-suave">
@@ -572,13 +572,13 @@ export function VisaoDoSiteDoCasamento({
                   <dl className="m-0 flex flex-col justify-center gap-4 border-t border-linha pt-6 md:border-l md:border-t-0 md:pl-12 md:pt-0">
                     {ceremonyTime && (
                       <div>
-                        <dt className={overline}>Cerimônia</dt>
+                        <dt className={estiloDoSobretituloDaLanding}>Cerimônia</dt>
                         <dd className="m-0 font-num text-4xl leading-[44px] text-ameixa tabular-nums">{ceremonyTime}</dd>
                       </div>
                     )}
                     {receptionTime && (
                       <div>
-                        <dt className={overline}>Recepção</dt>
+                        <dt className={estiloDoSobretituloDaLanding}>Recepção</dt>
                         <dd className="m-0 font-num text-4xl leading-[44px] text-ameixa tabular-nums">{receptionTime}</dd>
                       </div>
                     )}
@@ -591,7 +591,7 @@ export function VisaoDoSiteDoCasamento({
           {showDress && (
             <div className="flex flex-wrap items-center gap-x-12 gap-y-4 rounded-2xl bg-areia p-6">
               <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-1">
-                <p className={overline}>Traje</p>
+                <p className={estiloDoSobretituloDaLanding}>Traje</p>
                 {s.dressCodeTitle && <p className="m-0 text-[17px] leading-7 text-tinta md:text-lg">{s.dressCodeTitle}</p>}
                 {s.dressCodeDesc && <p className="m-0 whitespace-pre-line text-tinta-suave">{s.dressCodeDesc}</p>}
                 {palette.length > 0 && (
@@ -635,7 +635,7 @@ export function VisaoDoSiteDoCasamento({
                       <Icon className="size-5" aria-hidden="true" />
                     </span>
                     <div className="min-w-0">
-                      <p className={overline}>{cat.label}</p>
+                      <p className={estiloDoSobretituloDaLanding}>{cat.label}</p>
                       <h3 className="m-0 font-display text-[22px] font-medium leading-7 text-tinta">{tip.title}</h3>
                     </div>
                   </div>
@@ -726,7 +726,7 @@ export function VisaoDoSiteDoCasamento({
             <div className="relative w-full max-w-[560px] rounded-2xl border border-linha bg-papel px-6 py-10 text-center shadow-[var(--shadow-aceito-2)] md:px-8 md:py-12">
               <span className="pointer-events-none absolute inset-2 rounded-[10px] border border-rosa" aria-hidden="true" />
               <div className="relative flex flex-col items-center gap-2">
-                <p className={overline}>Confirmação de presença</p>
+                <p className={estiloDoSobretituloDaLanding}>Confirmação de presença</p>
                 <h2 className="m-0 mt-2 font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-balance md:text-[40px] md:leading-[46px]">
                   Contamos com você?
                 </h2>
@@ -767,7 +767,7 @@ export function VisaoDoSiteDoCasamento({
         <FaixaDaSecao id="recados" tone="areia">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="flex flex-col gap-3">
-              <p className={overline}>Mural de recados</p>
+              <p className={estiloDoSobretituloDaLanding}>Mural de recados</p>
               <h2 className="m-0 font-display text-[34px] font-medium leading-10 text-tinta text-balance md:text-[40px] md:leading-[46px]">
                 Deixe um recado para os noivos
               </h2>

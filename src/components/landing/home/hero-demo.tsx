@@ -16,7 +16,7 @@ type Passo = "inicio" | "pessoas";
 const BASE = { confirmados: 86, semResposta: 42, naoVao: 12 };
 const TOTAL_DE_CONVITES = 140;
 
-function Chip({ tipo }: { tipo: "sim" | "nao" | "sem" }) {
+function EtiquetaDaDemonstracao({ tipo }: { tipo: "sim" | "nao" | "sem" }) {
   if (tipo === "sim")
     return (
       <span className="lp-chip lp-chip-ok">
@@ -181,7 +181,7 @@ export function HeroDemo() {
       <div className="lp-balao lp-balao-evento" aria-live="polite">
         {enviado && resp ? (
           <>
-            <Chip tipo={resp} />
+            <EtiquetaDaDemonstracao tipo={resp} />
             <span>
               <b>Marina</b> {resp === "sim" ? "confirmou presença" : "não poderá ir"}
             </span>

@@ -8,7 +8,7 @@ import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
 import { CONDICOES_DO_PRESENTE, rotuloDoPlano } from "@/lib/plan-copy";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { cn } from "@/lib/utils";
-import { estiloDoContainerDaLanding, estiloDoTituloDaSecao, estiloDoTextoDeApoio, overline } from "./styles";
+import { estiloDoContainerDaLanding, estiloDoTituloDaSecao, estiloDoTextoDeApoio, estiloDoSobretituloDaLanding } from "./styles";
 
 const classeDoLinkDasPerguntas = "font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 hover:decoration-ameixa";
 
@@ -89,7 +89,7 @@ export async function SecaoDePerguntasFrequentes() {
     <section id="duvidas" aria-labelledby="duvidas-titulo" className="py-16 sm:py-24 lg:py-28">
       <div className={cn(estiloDoContainerDaLanding, "grid gap-10 lg:grid-cols-[5fr_7fr] lg:gap-20")}>
         <Aparicao className="flex flex-col gap-4 lg:sticky lg:top-28 lg:self-start">
-          <p className={cn(overline, "flex items-center gap-3")}>
+          <p className={cn(estiloDoSobretituloDaLanding, "flex items-center gap-3")}>
             <span aria-hidden="true" className="h-px w-8 shrink-0 bg-rosa" />
             Dúvidas
           </p>

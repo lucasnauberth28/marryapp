@@ -2,7 +2,7 @@
 import prisma from "@/lib/prisma";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
-import { UpgradeCard } from "@/components/plan/upgrade-card";
+import { CartaoDeUpgrade } from "@/components/plan/upgrade-card";
 import { MensagensCliente } from "./mensagens-client";
 import { garantirModelosPadrao } from "@/actions/message-actions";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
@@ -11,7 +11,7 @@ export const metadata = { title: "Mensagens" };
 
 export default async function MensagensPage() {
   const { session, weddingId, wedding } = await exigirCasamentoNaPagina("/mensagens");
-  if (!(await casamentoTemModulo({ weddingId, session }, "whatsapp"))) return <UpgradeCard moduleId="whatsapp" />;
+  if (!(await casamentoTemModulo({ weddingId, session }, "whatsapp"))) return <CartaoDeUpgrade moduleId="whatsapp" />;
 
   // Casal novo começa com os modelos padrão (convite e lembrete); quem já tem modelos não muda
   await garantirModelosPadrao();
