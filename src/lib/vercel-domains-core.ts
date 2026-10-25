@@ -12,6 +12,8 @@
 //  - Autenticação: Authorization: Bearer <token>; conta de time: ?teamId=<id>
 // Tolerante: campos que faltam viram valores padrão e a resposta nunca derruba a tela.
 
+import { type RegistroDns, type RespostaBruta, codigoDoErro, converterEmTexto, ehObjeto, registrosDeVerificacao, registrosDnsDaConfiguracao } from "./vercel-domains-dns.ts";
+
 export interface ConfiguracaoDaVercel {
   token: string;
   projectId: string;
@@ -21,14 +23,6 @@ export interface ConfiguracaoDaVercel {
   timeoutMs?: number;
 }
 
-export interface RegistroDns {
-  type: "A" | "CNAME" | "TXT";
-  /** Nome do registro na zona do domínio: "@" (raiz), "www" ou "_vercel". */
-  name: string;
-  value: string;
-  /** "vercel" = valor devolvido pela Vercel; "default" = valor padrão conhecido quando a Vercel não devolveu. */
-  source: "vercel" | "default";
-}
 
 type EstadoDaConexao =
   /** Domínio no projeto e apontado: dá para marcar como no ar. */
@@ -43,18 +37,11 @@ export type ResultadoDaConexao =
   | { ok: false; reason: "not_configured" | "auth" | "api" | "network"; message: string };
 
 const API_PADRAO_DA_VERCEL = "https://api.vercel.com";
-/** Valores padrão da Vercel, usados só se a resposta não trouxer os recomendados. */
-export const REGISTRO_A_PADRAO = "76.76.21.21";
-export const CNAME_PADRAO = "cname.vercel-dns.com";
 
 const NAO_CONFIGURADO = "A conexão automática com a Vercel não está configurada (faltam VERCEL_API_TOKEN e VERCEL_PROJECT_ID). Configure o domínio na Vercel à mão e use \"Marcar como no ar\".";
 
 type BuscaCompativel = typeof fetch;
 
-interface RespostaBruta {
-  status: number;
-  body: Record<string, unknown> | null;
-}
 
 async function chamarApiDaVercel(cfg: ConfiguracaoDaVercel, doFetch: BuscaCompativel, method: "GET" | "POST", path: string, json?: unknown): Promise<RespostaBruta> {
   const url = new URL(`${(cfg.base || API_PADRAO_DA_VERCEL).replace(/\/+$/, "")}${path}`);
@@ -77,54 +64,7 @@ async function chamarApiDaVercel(cfg: ConfiguracaoDaVercel, doFetch: BuscaCompat
   }
 }
 
-const ehObjeto = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
-const converterEmTexto = (v: unknown) => (typeof v === "string" ? v : "");
 
-/** Código de erro da Vercel: { error: { code, message } }. */
-function codigoDoErro(body: RespostaBruta["body"]): string {
-  const err = body && ehObjeto(body.error) ? body.error : null;
-  return err ? converterEmTexto(err.code) : "";
-}
-
-/** Registros TXT que a Vercel pede quando o domínio ainda não foi provado como nosso. */
-export function registrosDeVerificacao(domainBody: RespostaBruta["body"]): RegistroDns[] {
-  const list = domainBody && Array.isArray(domainBody.verification) ? domainBody.verification : [];
-  const out: RegistroDns[] = [];
-  for (const item of list) {
-    if (!ehObjeto(item)) continue;
-    const type = converterEmTexto(item.type).toUpperCase();
-    const value = converterEmTexto(item.value);
-    const host = converterEmTexto(item.domain);
-    if (type !== "TXT" || !value || !host) continue;
-    out.push({ type: "TXT", name: host, value, source: "vercel" });
-  }
-  return out;
-}
-
-/** Registros A (raiz) e CNAME (www) a criar, com os valores recomendados da Vercel. */
-export function registrosDnsDaConfiguracao(configBody: RespostaBruta["body"]): RegistroDns[] {
-  let ipv4 = "";
-  let cname = "";
-  if (configBody) {
-    const ips = Array.isArray(configBody.recommendedIPv4) ? configBody.recommendedIPv4.filter(ehObjeto) : [];
-    ips.sort((a, b) => Number(a.rank ?? 99) - Number(b.rank ?? 99));
-    for (const entry of ips) {
-      const value = Array.isArray(entry.value) ? entry.value.find((v): v is string => typeof v === "string") : converterEmTexto(entry.value);
-      if (value) {
-        ipv4 = value;
-        break;
-      }
-    }
-    const names = Array.isArray(configBody.recommendedCNAME) ? configBody.recommendedCNAME.filter(ehObjeto) : [];
-    names.sort((a, b) => Number(a.rank ?? 99) - Number(b.rank ?? 99));
-    cname = names.map((n) => converterEmTexto(n.value)).find(Boolean) ?? "";
-  }
-  const fromVercel = Boolean(ipv4);
-  return [
-    { type: "A", name: "@", value: ipv4 || REGISTRO_A_PADRAO, source: fromVercel ? "vercel" : "default" },
-    { type: "CNAME", name: "www", value: (cname || CNAME_PADRAO).replace(/\.$/, ""), source: cname ? "vercel" : "default" },
-  ];
-}
 
 function falhar(status: number, body: RespostaBruta["body"]): ResultadoDaConexao {
   if (status === 401 || status === 403) {

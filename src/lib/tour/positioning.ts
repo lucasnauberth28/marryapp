@@ -23,6 +23,36 @@ const BORDA_DA_SETA = 22;
 
 const limitarEntre = (n: number, min: number, max: number) => Math.min(Math.max(n, min), Math.max(min, max));
 
+type Tela = { width: number; height: number };
+
+/** O lado preferido; se não couber, o oposto e depois os outros dois; se nenhum couber, o de mais espaço. */
+function escolherLado(target: Caixa, vw: Tela, b: Tela, prefer: Lado, gap: number, margin: number): Lado {
+  const spaceOf = (side: Lado) => {
+    if (side === "top") return target.top - gap - margin;
+    if (side === "bottom") return vw.height - (target.top + target.height) - gap - margin;
+    if (side === "left") return target.left - gap - margin;
+    return vw.width - (target.left + target.width) - gap - margin;
+  };
+  const need = (side: Lado) => (side === "top" || side === "bottom" ? b.height : b.width);
+  const alternatives: Lado[] = prefer === "left" || prefer === "right" ? ["top", "bottom"] : ["right", "left"];
+  const order: Lado[] = [prefer, LADO_OPOSTO[prefer], ...alternatives];
+  return order.find((s) => spaceOf(s) >= need(s)) ?? [...order].sort((a, c) => spaceOf(c) - spaceOf(a))[0];
+}
+
+/** Canto do balão colado ao lado escolhido, centrado no elemento (ainda sem o ajuste final à tela). */
+function posicaoNoLado(side: Lado, target: Caixa, b: Tela, vw: Tela, gap: number, margin: number) {
+  if (side === "top" || side === "bottom") {
+    return {
+      top: side === "top" ? target.top - gap - b.height : target.top + target.height + gap,
+      left: limitarEntre(target.left + target.width / 2 - b.width / 2, margin, vw.width - b.width - margin),
+    };
+  }
+  return {
+    left: side === "left" ? target.left - gap - b.width : target.left + target.width + gap,
+    top: limitarEntre(target.top + target.height / 2 - b.height / 2, margin, vw.height - b.height - margin),
+  };
+}
+
 /**
  * Posiciona o balão no lado preferido e, se não couber, tenta o oposto e depois os outros dois.
  * Sempre devolve algo dentro da tela (com `margin` de respiro); sem elemento, centraliza.
@@ -48,27 +78,8 @@ export function posicionarBalao(opts: {
     };
   }
 
-  const spaceOf = (side: Lado) => {
-    if (side === "top") return target.top - gap - margin;
-    if (side === "bottom") return vw.height - (target.top + target.height) - gap - margin;
-    if (side === "left") return target.left - gap - margin;
-    return vw.width - (target.left + target.width) - gap - margin;
-  };
-  const need = (side: Lado) => (side === "top" || side === "bottom" ? b.height : b.width);
-
-  const alternatives: Lado[] = prefer === "left" || prefer === "right" ? ["top", "bottom"] : ["right", "left"];
-  const order: Lado[] = [prefer, LADO_OPOSTO[prefer], ...alternatives];
-  const side = order.find((s) => spaceOf(s) >= need(s)) ?? [...order].sort((a, c) => spaceOf(c) - spaceOf(a))[0];
-
-  let top: number;
-  let left: number;
-  if (side === "top" || side === "bottom") {
-    top = side === "top" ? target.top - gap - b.height : target.top + target.height + gap;
-    left = limitarEntre(target.left + target.width / 2 - b.width / 2, margin, vw.width - b.width - margin);
-  } else {
-    left = side === "left" ? target.left - gap - b.width : target.left + target.width + gap;
-    top = limitarEntre(target.top + target.height / 2 - b.height / 2, margin, vw.height - b.height - margin);
-  }
+  const side = escolherLado(target, vw, b, prefer, gap, margin);
+  let { top, left } = posicaoNoLado(side, target, b, vw, gap, margin);
   // Último recurso (tela muito pequena): mantém o balão dentro da tela
   top = limitarEntre(top, margin, vw.height - b.height - margin);
   left = limitarEntre(left, margin, vw.width - b.width - margin);

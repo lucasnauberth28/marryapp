@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { conectarDominio, REGISTRO_A_PADRAO, CNAME_PADRAO, registrosDnsDaConfiguracao, registrosDeVerificacao, verificarDominio, type ConfiguracaoDaVercel } from "../vercel-domains-core.ts";
+import { conectarDominio, verificarDominio, type ConfiguracaoDaVercel } from "../vercel-domains-core.ts";
+import { REGISTRO_A_PADRAO, CNAME_PADRAO, registrosDnsDaConfiguracao, registrosDeVerificacao } from "../vercel-domains-dns.ts";
 
 const CFG: ConfiguracaoDaVercel = { token: "tok_secreto", projectId: "prj_123", teamId: "team_9", base: "https://api.vercel.test" };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
