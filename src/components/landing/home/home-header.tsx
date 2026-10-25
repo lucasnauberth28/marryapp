@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react";
 import { Logotipo } from "@/components/brand/logo";
 import { SeletorSegmentadoDoTema, AlternadorDeTema } from "@/components/theme/theme-toggle";
 import { LinkDeAncora } from "../anchor-link";
+import { prenderOTab } from "../prender-o-tab";
 import { LinkEmFormaDeBotao } from "./home-ui";
 
 const NAVEGACAO = [
@@ -16,11 +17,8 @@ const NAVEGACAO = [
   { label: "Planos", href: "/#planos" },
 ] as const;
 
-/**
- * Cabeçalho da home: fixo no alto, com fundo translúcido e fio inferior. No celular, o botão abre um menu
- * em tela cheia (diálogo com foco preso, Esc fecha). Os links levam às seções da própria página.
- */
-export function CabecalhoDaHome() {
+/** Menu em tela cheia: trava a rolagem, leva o foco ao "Fechar", Esc fecha e o Tab não escapa. */
+function useMenuDaHome() {
   const [open, setOpen] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
@@ -36,21 +34,7 @@ export function CabecalhoDaHome() {
       if (e.key === "Escape") {
         setOpen(false);
         menuButton.current?.focus();
-        return;
-      }
-      if (e.key === "Tab" && dialog.current) {
-        const items = dialog.current.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), input:not([disabled])");
-        if (!items.length) return;
-        const first = items[0];
-        const last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
+      } else if (e.key === "Tab" && dialog.current) prenderOTab(e, dialog.current, "a[href], button:not([disabled]), input:not([disabled])");
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -59,6 +43,61 @@ export function CabecalhoDaHome() {
     };
   }, [open]);
 
+  return { open, setOpen, menuButton, closeButton, dialog };
+}
+
+interface PropriedadesDoMenu {
+  dialog: React.RefObject<HTMLDivElement | null>;
+  closeButton: React.RefObject<HTMLButtonElement | null>;
+  open: boolean;
+  aoFechar: () => void;
+  aoFecharComFoco: () => void;
+}
+
+function MenuEmTelaCheiaDaHome({ dialog, closeButton, open, aoFechar, aoFecharComFoco }: PropriedadesDoMenu) {
+  return (
+    <div ref={dialog} id="lp-menu" className="lp-menu" role="dialog" aria-modal="true" aria-label="Menu" data-lenis-prevent inert={!open} data-aberto={open ? "" : undefined}>
+      <div className="lp-menu-topo">
+        <Link href="/" className="lp-marca" aria-label="Aceito, início" onClick={aoFechar}>
+          <Logotipo height={26} />
+        </Link>
+        <button ref={closeButton} type="button" className="lp-menu-btn" aria-label="Fechar menu" onClick={aoFecharComFoco}>
+          <X aria-hidden="true" className="lp-ico" />
+        </button>
+      </div>
+      <nav aria-label="Principal">
+        {NAVEGACAO.map((item) => (
+          <LinkDeAncora key={item.href} href={item.href} onClick={aoFechar}>
+            {item.label}
+          </LinkDeAncora>
+        ))}
+        <LinkDeAncora href="/#duvidas" onClick={aoFechar}>
+          Perguntas frequentes
+        </LinkDeAncora>
+      </nav>
+      <div className="lp-menu-pe">
+        <div className="lp-menu-tema">
+          <p>Aparência</p>
+          <SeletorSegmentadoDoTema />
+        </div>
+        <p className="lp-mudo">Foi convidado para um casamento? Use o link enviado pelo casal. Você não precisa criar uma conta.</p>
+        <LinkEmFormaDeBotao href="/cadastro?plano=basic" arrow>
+          Criar conta grátis
+        </LinkEmFormaDeBotao>
+        <LinkEmFormaDeBotao href="/login" tone="branco">
+          Entrar
+        </LinkEmFormaDeBotao>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Cabeçalho da home: fixo no alto, com fundo translúcido e fio inferior. No celular, o botão abre um menu
+ * em tela cheia (diálogo com foco preso, Esc fecha). Os links levam às seções da própria página.
+ */
+export function CabecalhoDaHome() {
+  const { open, setOpen, menuButton, closeButton, dialog } = useMenuDaHome();
   const close = () => setOpen(false);
 
   return (
@@ -83,63 +122,23 @@ export function CabecalhoDaHome() {
             <LinkEmFormaDeBotao href="/cadastro?plano=basic" className="lp-nav-cta">
               Criar conta grátis
             </LinkEmFormaDeBotao>
-            <button
-              ref={menuButton}
-              type="button"
-              className="lp-menu-btn"
-              onClick={() => setOpen(true)}
-              aria-label="Abrir menu"
-              aria-expanded={open}
-              aria-controls="lp-menu"
-            >
+            <button ref={menuButton} type="button" className="lp-menu-btn" onClick={() => setOpen(true)} aria-label="Abrir menu" aria-expanded={open} aria-controls="lp-menu">
               <Menu aria-hidden="true" className="lp-ico" />
             </button>
           </div>
         </div>
       </header>
 
-      <div ref={dialog} id="lp-menu" className="lp-menu" role="dialog" aria-modal="true" aria-label="Menu" data-lenis-prevent inert={!open} data-aberto={open ? "" : undefined}>
-        <div className="lp-menu-topo">
-          <Link href="/" className="lp-marca" aria-label="Aceito, início" onClick={close}>
-            <Logotipo height={26} />
-          </Link>
-          <button
-            ref={closeButton}
-            type="button"
-            className="lp-menu-btn"
-            aria-label="Fechar menu"
-            onClick={() => {
-              close();
-              menuButton.current?.focus();
-            }}
-          >
-            <X aria-hidden="true" className="lp-ico" />
-          </button>
-        </div>
-        <nav aria-label="Principal">
-          {NAVEGACAO.map((item) => (
-            <LinkDeAncora key={item.href} href={item.href} onClick={close}>
-              {item.label}
-            </LinkDeAncora>
-          ))}
-          <LinkDeAncora href="/#duvidas" onClick={close}>
-            Perguntas frequentes
-          </LinkDeAncora>
-        </nav>
-        <div className="lp-menu-pe">
-          <div className="lp-menu-tema">
-            <p>Aparência</p>
-            <SeletorSegmentadoDoTema />
-          </div>
-          <p className="lp-mudo">Foi convidado para um casamento? Use o link enviado pelo casal. Você não precisa criar uma conta.</p>
-          <LinkEmFormaDeBotao href="/cadastro?plano=basic" arrow>
-            Criar conta grátis
-          </LinkEmFormaDeBotao>
-          <LinkEmFormaDeBotao href="/login" tone="branco">
-            Entrar
-          </LinkEmFormaDeBotao>
-        </div>
-      </div>
+      <MenuEmTelaCheiaDaHome
+        dialog={dialog}
+        closeButton={closeButton}
+        open={open}
+        aoFechar={close}
+        aoFecharComFoco={() => {
+          close();
+          menuButton.current?.focus();
+        }}
+      />
     </>
   );
 }

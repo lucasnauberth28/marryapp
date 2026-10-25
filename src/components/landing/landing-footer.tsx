@@ -31,6 +31,52 @@ const LINKS_DO_RODAPE: { title: string; items: { label: string; href: string }[]
   },
 ];
 
+function ColunasDeLinks() {
+  return (
+    <nav aria-label="Rodapé" className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3">
+      {LINKS_DO_RODAPE.map((group) => (
+        <div key={group.title} className="flex flex-col gap-1">
+          <p className="mb-1 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">{group.title}</p>
+          <ul className="flex flex-col">
+            {group.items.map((item) => (
+              <li key={item.href}>
+                {item.href.startsWith("/#") ? (
+                  <LinkDeAncora href={item.href as `/#${string}`} className={classeDoLink}>
+                    {item.label}
+                  </LinkDeAncora>
+                ) : (
+                  <Link href={item.href} className={classeDoLink}>
+                    {item.label}
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </nav>
+  );
+}
+
+function FaixaLegal() {
+  return (
+    <div className="border-t border-linha">
+      <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-2 px-4 py-6 text-sm text-tinta-suave sm:px-6 md:flex-row md:items-center md:justify-between">
+        <p>© {new Date().getFullYear()} Aceito. Feito no Brasil para quem vai dizer sim.</p>
+        <nav aria-label="Documentos legais" className="flex flex-wrap items-center gap-x-5">
+          <Link href="/termos" className={classeDoLink}>
+            Termos de uso
+          </Link>
+          <Link href="/privacidade" className={classeDoLink}>
+            Privacidade
+          </Link>
+        </nav>
+        <p>Foi convidado? Use o link enviado pelo casal. Você não precisa criar uma conta.</p>
+      </div>
+    </div>
+  );
+}
+
 /** Rodapé público do Aceito. Sem estado: pode ser usado em componentes de servidor ou de cliente. */
 export function RodapeDaLanding() {
   return (
@@ -40,49 +86,11 @@ export function RodapeDaLanding() {
           <Link href="/" aria-label="Aceito, início" className="-m-2 self-start rounded-[12px] p-2">
             <Logotipo height={26} />
           </Link>
-          <p className="max-w-[32ch] text-[15px] leading-6 text-tinta-suave">
-            Do convite ao grande dia, tudo num só sim.
-          </p>
+          <p className="max-w-[32ch] text-[15px] leading-6 text-tinta-suave">Do convite ao grande dia, tudo num só sim.</p>
         </div>
-
-        <nav aria-label="Rodapé" className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3">
-          {LINKS_DO_RODAPE.map((group) => (
-            <div key={group.title} className="flex flex-col gap-1">
-              <p className="mb-1 text-xs font-semibold uppercase leading-4 tracking-[0.08em] text-tinta-suave">{group.title}</p>
-              <ul className="flex flex-col">
-                {group.items.map((item) => (
-                  <li key={item.href}>
-                    {item.href.startsWith("/#") ? (
-                      <LinkDeAncora href={item.href as `/#${string}`} className={classeDoLink}>
-                        {item.label}
-                      </LinkDeAncora>
-                    ) : (
-                      <Link href={item.href} className={classeDoLink}>
-                        {item.label}
-                      </Link>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </nav>
+        <ColunasDeLinks />
       </div>
-
-      <div className="border-t border-linha">
-        <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-2 px-4 py-6 text-sm text-tinta-suave sm:px-6 md:flex-row md:items-center md:justify-between">
-          <p>© {new Date().getFullYear()} Aceito. Feito no Brasil para quem vai dizer sim.</p>
-          <nav aria-label="Documentos legais" className="flex flex-wrap items-center gap-x-5">
-            <Link href="/termos" className={classeDoLink}>
-              Termos de uso
-            </Link>
-            <Link href="/privacidade" className={classeDoLink}>
-              Privacidade
-            </Link>
-          </nav>
-          <p>Foi convidado? Use o link enviado pelo casal. Você não precisa criar uma conta.</p>
-        </div>
-      </div>
+      <FaixaLegal />
     </footer>
   );
 }

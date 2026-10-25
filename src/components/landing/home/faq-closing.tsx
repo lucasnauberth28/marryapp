@@ -8,11 +8,13 @@ import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
 import { Aparicao } from "@/components/motion/reveal";
 import { LinkEmFormaDeBotao } from "./home-ui";
 
-/** Perguntas mais comuns, em acordeão nativo (<details>, sem JavaScript). Preços, taxa e nomes vêm do catálogo. */
-export function PerguntasFrequentesDaHome({ catalog }: { catalog: Catalogo }) {
+type Pergunta = { q: string; a: React.ReactNode };
+
+/** Perguntas da home. Preços, taxa e nomes dos planos vêm do catálogo. */
+function perguntasDaHome(catalog: Catalogo): Pergunta[] {
   const classic = rotuloDoPlano(catalog.plans.classic.name);
   const vip = rotuloDoPlano(catalog.plans.vip.name);
-  const faqs: { q: string; a: React.ReactNode }[] = [
+  return [
     {
       q: "Preciso pagar para começar?",
       a: `Não. O Básico não tem mensalidade nem pede cartão. Há uma taxa de ${ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido. ${classic} (${formatarReaisEnxuto(catalog.plans.classic.price)}) e ${vip} (${formatarReaisEnxuto(catalog.plans.vip.price)}) têm pagamento único.`,
@@ -44,6 +46,11 @@ export function PerguntasFrequentesDaHome({ catalog }: { catalog: Catalogo }) {
       a: `Quem confirma recebe um código QR. Na festa, a equipe lê o código pela câmera do painel. Faz parte do ${classic} e do ${vip}.`,
     },
   ];
+}
+
+/** Perguntas mais comuns, em acordeão nativo (<details>, sem JavaScript). */
+export function PerguntasFrequentesDaHome({ catalog }: { catalog: Catalogo }) {
+  const faqs = perguntasDaHome(catalog);
   return (
     <>
       <section className="lp-sec lp-dentro" id="duvidas" aria-labelledby="lp-t-faq">

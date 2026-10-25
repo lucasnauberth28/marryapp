@@ -5,6 +5,62 @@ import { ROTULO_DA_TAXA_DO_PRESENTE, calcularValoresDoPresente, type PlanoDaTaxa
 import { formatarCentavos, interpretarCentavos } from "./home-money";
 import { formatarReais } from "@/lib/formatacao/dinheiro";
 
+interface PropriedadesDoCampo {
+  texto: string;
+  setTexto: (t: string) => void;
+  cents: number | null;
+}
+
+function CampoDoValor({ texto, setTexto, cents }: PropriedadesDoCampo) {
+  return (
+    <div className="lp-sim-bloco">
+      <label htmlFor="lp-v-presente">Valor do presente por Pix</label>
+      <div className="lp-valor">
+        <span aria-hidden="true">R$</span>
+        <input
+          id="lp-v-presente"
+          inputMode="decimal"
+          autoComplete="off"
+          value={texto}
+          aria-describedby={cents === null ? "lp-v-erro" : undefined}
+          aria-invalid={cents === null}
+          onChange={(e) => setTexto(e.target.value)}
+          onBlur={() => {
+            if (cents !== null) setTexto(formatarCentavos(cents));
+          }}
+        />
+      </div>
+      {cents === null ? (
+        <p id="lp-v-erro" className="lp-sim-erro">
+          Digitem um valor, como 200,00.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function ResultadoDoSimulador({ plano, valor, feeCents, netCents }: { plano: PlanoDaTaxaDoPresente; valor: number; feeCents: number; netCents: number }) {
+  return (
+    <div className="lp-sim-bloco" aria-live="polite">
+      <span className="lp-r">Vocês recebem</span>
+      <p className="lp-recebe">
+        <small>R$</small>
+        {formatarCentavos(netCents)}
+      </p>
+      <div className="lp-sim-linhas">
+        <div>
+          <span>{plano === "basic" ? `Taxa do Aceito (${ROTULO_DA_TAXA_DO_PRESENTE})` : "Taxa do Aceito no Pix"}</span>
+          <b>{feeCents ? `− ${formatarReais(feeCents)}` : formatarReais(0)}</b>
+        </div>
+        <div>
+          <span>Quem presenteia paga</span>
+          <b>{formatarReais(valor)}</b>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Simulador de presente por Pix. A conta é a mesma do painel e do checkout (giftAmounts):
  * no Básico vale a taxa do Aceito; no Classic e no VIP o Pix não tem taxa.
@@ -26,46 +82,8 @@ export function SimuladorDePresentes({ classicLabel, vipLabel }: { classicLabel:
           {classicLabel} ou {vipLabel}
         </button>
       </div>
-      <div className="lp-sim-bloco">
-        <label htmlFor="lp-v-presente">Valor do presente por Pix</label>
-        <div className="lp-valor">
-          <span aria-hidden="true">R$</span>
-          <input
-            id="lp-v-presente"
-            inputMode="decimal"
-            autoComplete="off"
-            value={texto}
-            aria-describedby={cents === null ? "lp-v-erro" : undefined}
-            aria-invalid={cents === null}
-            onChange={(e) => setTexto(e.target.value)}
-            onBlur={() => {
-              if (cents !== null) setTexto(formatarCentavos(cents));
-            }}
-          />
-        </div>
-        {cents === null ? (
-          <p id="lp-v-erro" className="lp-sim-erro">
-            Digitem um valor, como 200,00.
-          </p>
-        ) : null}
-      </div>
-      <div className="lp-sim-bloco" aria-live="polite">
-        <span className="lp-r">Vocês recebem</span>
-        <p className="lp-recebe">
-          <small>R$</small>
-          {formatarCentavos(netCents)}
-        </p>
-        <div className="lp-sim-linhas">
-          <div>
-            <span>{plano === "basic" ? `Taxa do Aceito (${ROTULO_DA_TAXA_DO_PRESENTE})` : "Taxa do Aceito no Pix"}</span>
-            <b>{feeCents ? `− ${formatarReais(feeCents)}` : formatarReais(0)}</b>
-          </div>
-          <div>
-            <span>Quem presenteia paga</span>
-            <b>{formatarReais(valor)}</b>
-          </div>
-        </div>
-      </div>
+      <CampoDoValor texto={texto} setTexto={setTexto} cents={cents} />
+      <ResultadoDoSimulador plano={plano} valor={valor} feeCents={feeCents} netCents={netCents} />
     </div>
   );
 }

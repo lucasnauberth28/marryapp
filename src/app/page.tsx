@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Encerramento, PerguntasFrequentesDaHome } from "@/components/landing/home/faq-closing";
-import { SecaoDaLiz, SecaoDaFesta, SecaoDeMesas, SecaoDeFornecedores } from "@/components/landing/home/extras";
+import { SecaoDaLiz, SecaoDaFesta, SecaoDeFornecedores } from "@/components/landing/home/extras";
+import { SecaoDeMesas } from "@/components/landing/home/secao-de-mesas";
 import { SecaoDePresentes } from "@/components/landing/home/gifts";
 import { RodapeDaHome } from "@/components/landing/home/home-footer";
 import { CabecalhoDaHome } from "@/components/landing/home/home-header";
