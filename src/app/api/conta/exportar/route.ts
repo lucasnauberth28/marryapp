@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { checkRateLimit } from "@/lib/security/rate-limiter";
-import { buildAccountExport } from "@/lib/account/export-data";
+import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
+import { montarExportacaoDaConta } from "@/lib/account/export-data";
 
 export const dynamic = "force-dynamic";
 
@@ -11,17 +11,17 @@ export const dynamic = "force-dynamic";
  * Nunca inclui hashes de senha ou de tokens.
  */
 export async function GET() {
-  const session = await getSession();
+  const session = await obterSessao();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (session.userId === SUPER_ADMIN_USER_ID) {
+  if (session.userId === ID_DO_SUPER_ADMIN) {
     return NextResponse.json({ error: "A conta de emergência não tem dados próprios." }, { status: 400 });
   }
 
-  const limit = await checkRateLimit({ key: `ACCOUNT_EXPORT:${session.userId}`, limit: 5, windowMs: 10 * 60 * 1000 });
+  const limit = await conferirLimiteDeUso({ key: `ACCOUNT_EXPORT:${session.userId}`, limit: 5, windowMs: 10 * 60 * 1000 });
   if (!limit.success) return NextResponse.json({ error: "Muitas exportações seguidas. Aguarde alguns minutos." }, { status: 429 });
 
   try {
-    const exported = await buildAccountExport(session.userId);
+    const exported = await montarExportacaoDaConta(session.userId);
     if (!exported) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     return new NextResponse(exported.json, {

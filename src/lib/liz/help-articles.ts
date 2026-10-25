@@ -4,7 +4,7 @@
 import { ROTULO_DA_TAXA_DO_PRESENTE } from "../gift-fee.ts";
 import type { ModuloComBloqueio } from "../wedding-plan-modules.ts";
 
-export interface HelpArticle {
+export interface ArtigoDeAjuda {
   id: string;
   /** A pergunta, como a pessoa a faria: "Como adiciono convidados?". */
   title: string;
@@ -24,7 +24,7 @@ export interface HelpArticle {
   common?: number;
 }
 
-export const HELP_ARTICLES: readonly HelpArticle[] = [
+export const ARTIGOS_DE_AJUDA: readonly ArtigoDeAjuda[] = [
   {
     id: "adicionar-convidados",
     title: "Como adiciono convidados?",
@@ -403,6 +403,6 @@ export const HELP_ARTICLES: readonly HelpArticle[] = [
 ];
 
 /** Os artigos de "Dúvidas comuns", na ordem. */
-export function commonArticles(articles: readonly HelpArticle[]): HelpArticle[] {
+export function artigosComuns(articles: readonly ArtigoDeAjuda[]): ArtigoDeAjuda[] {
   return articles.filter((a) => a.common !== undefined).sort((a, b) => (a.common ?? 0) - (b.common ?? 0));
 }

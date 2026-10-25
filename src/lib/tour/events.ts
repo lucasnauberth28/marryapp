@@ -5,4 +5,4 @@
  * `data-tour-active="true"`. O botão flutuante da Liz se esconde com isso, por exemplo em CSS:
  * `body[data-tour-active] .meu-botao { display: none }`, ou no Tailwind: `group-data-[tour-active]:hidden`.
  */
-export const TOUR_ACTIVE_ATTR = "data-tour-active";
+export const ATRIBUTO_DO_TOUR_ATIVO = "data-tour-active";

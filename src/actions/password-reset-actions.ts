@@ -4,9 +4,9 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { after } from "next/server";
 import prisma from "@/lib/prisma";
-import { checkRateLimit, getClientIp } from "@/lib/security/rate-limiter";
-import { hashLinkToken, isLinkTokenShape } from "@/lib/account/tokens";
-import { sendPasswordResetLink } from "@/lib/account/password-reset-link";
+import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
+import { calcularHashDoTokenDeLink, tokenDeLinkTemFormatoValido } from "@/lib/account/tokens";
+import { enviarLinkDeRedefinicaoDeSenha } from "@/lib/account/password-reset-link";
 import { registrarAuditoria } from "@/lib/audit";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
@@ -32,12 +32,12 @@ export async function requestPasswordReset(input: { email: string }): Promise<Re
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira o e-mail." };
   const { email } = parsed.data;
 
-  const ip = await getClientIp();
-  const byIp = await checkRateLimit({ key: `PWRESET_REQ_IP:${ip}`, limit: 5, windowMs: 15 * MINUTE });
+  const ip = await obterIpDoCliente();
+  const byIp = await conferirLimiteDeUso({ key: `PWRESET_REQ_IP:${ip}`, limit: 5, windowMs: 15 * MINUTE });
   if (!byIp.success) return { success: false, error: "Muitos pedidos seguidos. Aguarde alguns minutos e tente de novo." };
 
   // Por e-mail: no máximo 3 links por hora. Acima disso, responde igual e não envia nada.
-  const byEmail = await checkRateLimit({ key: `PWRESET_REQ_EMAIL:${email}`, limit: 3, windowMs: 60 * MINUTE });
+  const byEmail = await conferirLimiteDeUso({ key: `PWRESET_REQ_EMAIL:${email}`, limit: 3, windowMs: 60 * MINUTE });
   if (!byEmail.success) return { success: true, message: NEUTRAL_MESSAGE };
 
   after(async () => {
@@ -45,7 +45,7 @@ export async function requestPasswordReset(input: { email: string }): Promise<Re
       const user = await prisma.user.findUnique({ where: { username: email }, select: { id: true, name: true } });
       if (!user) return;
 
-      await sendPasswordResetLink({ id: user.id, name: user.name, username: email });
+      await enviarLinkDeRedefinicaoDeSenha({ id: user.id, name: user.name, username: email });
     } catch (error) {
       console.error("[requestPasswordReset] Falha ao preparar o link:", error instanceof Error ? error.message : error);
     }
@@ -56,7 +56,7 @@ export async function requestPasswordReset(input: { email: string }): Promise<Re
 
 const ResetSchema = z
   .object({
-    token: z.string().refine(isLinkTokenShape, "Link inválido."),
+    token: z.string().refine(tokenDeLinkTemFormatoValido, "Link inválido."),
     password: z.string().min(8, "Use pelo menos 8 caracteres.").max(200, "Senha longa demais."),
     confirm: z.string(),
   })
@@ -75,18 +75,18 @@ export async function resetPassword(input: { token: string; password: string; co
   }
   const { token, password } = parsed.data;
 
-  const ip = await getClientIp();
-  const byIp = await checkRateLimit({ key: `PWRESET_USE_IP:${ip}`, limit: 10, windowMs: 15 * MINUTE });
+  const ip = await obterIpDoCliente();
+  const byIp = await conferirLimiteDeUso({ key: `PWRESET_USE_IP:${ip}`, limit: 10, windowMs: 15 * MINUTE });
   if (!byIp.success) return { success: false, error: ERROS.muitasTentativas };
 
-  const tokenHash = hashLinkToken(token);
+  const tokenHash = calcularHashDoTokenDeLink(token);
   const record = await prisma.passwordResetToken.findUnique({
     where: { tokenHash },
     select: { id: true, userId: true, usedAt: true, expiresAt: true, user: { select: { name: true, username: true } } },
   });
   if (!record || record.usedAt || record.expiresAt <= new Date()) return { success: false, error: EXPIRED_MESSAGE, expired: true };
 
-  const byAccount = await checkRateLimit({ key: `PWRESET_USE_ACCOUNT:${record.userId}`, limit: 5, windowMs: 15 * MINUTE });
+  const byAccount = await conferirLimiteDeUso({ key: `PWRESET_USE_ACCOUNT:${record.userId}`, limit: 5, windowMs: 15 * MINUTE });
   if (!byAccount.success) return { success: false, error: ERROS.muitasTentativas };
 
   const hashed = await bcrypt.hash(password, 12);

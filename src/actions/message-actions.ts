@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
+import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 import { recusaDeModulo } from "@/lib/wedding-plan";
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import { modelosPadraoParaCriar } from "@/lib/default-message-templates";
@@ -18,7 +18,7 @@ import { ERROS } from "@/lib/mensagens-de-erro";
  * impede que duas aberturas da tela criem os modelos em dobro. Quem já tem modelos não é alterado.
  */
 export async function ensureDefaultTemplates() {
-  const { weddingId, impersonation } = await requireWeddingRead("/mensagens");
+  const { weddingId, impersonation } = await exigirCasamentoParaLeitura("/mensagens");
   // Abrir a tela não grava nada em "entrar como" somente leitura (a administração só olha)
   if (impersonation && !impersonation.canEdit) return;
   try {
@@ -35,7 +35,7 @@ export async function ensureDefaultTemplates() {
   }
 }
 export async function createMessageTemplate(formData: FormData) {
-  const { weddingId } = await requireWedding("/mensagens");
+  const { weddingId } = await exigirCasamento("/mensagens");
   try {
     const name = formData.get("name") as string;
     const content = formData.get("content") as string;
@@ -61,7 +61,7 @@ export async function createMessageTemplate(formData: FormData) {
 }
 
 export async function updateMessageTemplate(id: string, formData: FormData) {
-  const { weddingId } = await requireWedding("/mensagens");
+  const { weddingId } = await exigirCasamento("/mensagens");
   try {
     const name = formData.get("name") as string;
     const content = formData.get("content") as string;
@@ -91,7 +91,7 @@ export async function updateMessageTemplate(id: string, formData: FormData) {
 }
 
 export async function deleteMessageTemplate(id: string) {
-  const { weddingId } = await requireWedding("/mensagens");
+  const { weddingId } = await exigirCasamento("/mensagens");
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.modeloNaoEncontrado };
     const result = await prisma.messageTemplate.deleteMany({ where: { id, weddingId } });
@@ -108,7 +108,7 @@ export async function deleteMessageTemplate(id: string) {
  * Dispara um template para vários convidados
  */
 export async function sendTemplateToGuests(templateId: string, guestIds: string[]) {
-  const { weddingId, wedding, session } = await requireWedding("/mensagens");
+  const { weddingId, wedding, session } = await exigirCasamento("/mensagens");
   const refusal = await recusaDeModulo({ weddingId, session }, "whatsapp");
   if (refusal) return { success: false, error: refusal };
   try {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
 import { caminhoSeguroDeRetorno } from "@/lib/login-redirect";
-import { getSession } from "@/lib/security/auth-guard";
+import { obterSessao } from "@/lib/security/auth-guard";
 import { obterCatalogo } from "@/lib/catalog-server";
 import { AuthExperience } from "./auth-experience";
 
@@ -26,7 +26,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
 
   let expired = first(params.expirou) === "1";
   if (!expired && (await cookies()).has(NOME_DO_COOKIE_DE_SESSAO)) {
-    expired = (await getSession()) === null;
+    expired = (await obterSessao()) === null;
   }
 
   return <AuthExperience initialMode="entrar" nextPath={nextPath} sessionExpired={expired} catalog={await obterCatalogo()} />;

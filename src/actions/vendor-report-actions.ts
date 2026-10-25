@@ -3,8 +3,8 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import { requireVendorSession } from "@/lib/security/vendor-guard";
-import { checkRateLimit } from "@/lib/security/rate-limiter";
+import { exigirSessaoDoFornecedor } from "@/lib/security/vendor-guard";
+import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 
 export type ReportReviewResult = { success: true } | { success: false; error: string };
 
@@ -18,11 +18,11 @@ const Schema = z.object({
  * Posse: o filtro por vendorId garante que ninguém denuncia avaliação de outro fornecedor.
  */
 export async function reportReview(reviewId: string, reason: string): Promise<ReportReviewResult> {
-  const { session, vendor } = await requireVendorSession();
+  const { session, vendor } = await exigirSessaoDoFornecedor();
   const parsed = Schema.safeParse({ reviewId, reason });
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   try {
-    const limit = await checkRateLimit({ key: `VENDOR_REVIEW_REPORT:${session.userId}`, limit: 10, windowMs: 1000 * 60 * 60 });
+    const limit = await conferirLimiteDeUso({ key: `VENDOR_REVIEW_REPORT:${session.userId}`, limit: 10, windowMs: 1000 * 60 * 60 });
     if (!limit.success) return { success: false, error: "Muitas denúncias em pouco tempo. Tente de novo mais tarde." };
     const done = await prisma.vendorReview.updateMany({
       where: { id: parsed.data.reviewId, vendorId: vendor.id, reportedAt: null },

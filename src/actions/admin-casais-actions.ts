@@ -5,13 +5,13 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
-import { sendPasswordResetLink } from "@/lib/account/password-reset-link";
+import { enviarLinkDeRedefinicaoDeSenha } from "@/lib/account/password-reset-link";
 import { brandedEmail, enviarEmail } from "@/lib/email";
 import { urlDoApp } from "@/lib/app-url";
 import { resolverPlano } from "@/lib/plans";
-import { checkRateLimit } from "@/lib/security/rate-limiter";
-import { adminDisplayName } from "@/lib/security/impersonation";
-import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
+import { nomeDeExibicaoDoAdmin } from "@/lib/security/impersonation";
+import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 // Ações da administração sobre um casal (Casais e Casal). Toda uma: requirePlatformAdmin primeiro, zod no servidor,
@@ -24,7 +24,7 @@ const reason = z.string().trim().min(5, "Conte o motivo em poucas palavras (mín
 
 function fail(error: unknown, context: string): CasalActionResult {
   if (error instanceof z.ZodError) return { success: false, error: error.issues[0]?.message ?? "Confira os dados." };
-  return platformAdminFailure(error, context);
+  return falhaDeAdminDaPlataforma(error, context);
 }
 
 function refresh(weddingId?: string) {
@@ -43,7 +43,7 @@ function maskEmail(email: string): string {
 
 export async function setWeddingsFlag(input: unknown): Promise<CasalActionResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const data = z.object({ weddingIds: z.array(id).min(1).max(100), flagged: z.boolean() }).parse(input);
     const found = await prisma.wedding.findMany({ where: { id: { in: data.weddingIds } }, select: { id: true } });
     const ids = found.map((w) => w.id);
@@ -62,7 +62,7 @@ export async function setWeddingsFlag(input: unknown): Promise<CasalActionResult
 
 export async function suspendWedding(input: unknown): Promise<CasalActionResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const data = z.object({ weddingId: id, reason }).parse(input);
     const { count } = await prisma.wedding.updateMany({ where: { id: data.weddingId, suspendedAt: null }, data: { suspendedAt: new Date(), suspendedReason: data.reason } });
     if (count === 0) return { success: false, error: "Este casamento já está suspenso ou não existe mais." };
@@ -77,7 +77,7 @@ export async function suspendWedding(input: unknown): Promise<CasalActionResult>
 
 export async function unsuspendWedding(input: unknown): Promise<CasalActionResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const data = z.object({ weddingId: id, reason: z.string().trim().max(500).optional() }).parse(input);
     const { count } = await prisma.wedding.updateMany({ where: { id: data.weddingId, suspendedAt: { not: null } }, data: { suspendedAt: null, suspendedReason: null } });
     if (count === 0) return { success: false, error: "Este casamento não está suspenso." };
@@ -94,12 +94,12 @@ export async function unsuspendWedding(input: unknown): Promise<CasalActionResul
 
 export async function addWeddingNote(input: unknown): Promise<CasalActionResult> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     const data = z.object({ weddingId: id, body: z.string().trim().min(2, "Escreva a nota.").max(2000, "A nota está longa demais (máximo de 2000 letras).") }).parse(input);
     const wedding = await prisma.wedding.findUnique({ where: { id: data.weddingId }, select: { id: true } });
     if (!wedding) return { success: false, error: ERROS.casamentoNaoEncontrado };
     const note = await prisma.adminNote.create({
-      data: { weddingId: wedding.id, authorId: admin.userId, authorName: adminDisplayName(admin.userId, admin.name), body: data.body },
+      data: { weddingId: wedding.id, authorId: admin.userId, authorName: nomeDeExibicaoDoAdmin(admin.userId, admin.name), body: data.body },
       select: { id: true },
     });
     await registrarAuditoria({ action: "wedding.note_add", targetType: "wedding", targetId: wedding.id, details: { noteId: note.id } });
@@ -115,15 +115,15 @@ export async function addWeddingNote(input: unknown): Promise<CasalActionResult>
 /** Envia o link de nova senha ao e-mail do dono do casamento. Nunca mostra o link nem a senha. */
 export async function resetWeddingPassword(input: unknown): Promise<CasalActionResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const data = z.object({ weddingId: id, reason }).parse(input);
     const owner = await prisma.user.findFirst({ where: { weddingId: data.weddingId }, orderBy: { createdAt: "asc" }, select: { id: true, name: true, username: true } });
     if (!owner) return { success: false, error: "Este casamento não tem nenhuma conta ligada." };
 
-    const limit = await checkRateLimit({ key: `ADMIN_PWRESET:${data.weddingId}`, limit: 3, windowMs: 60 * 60 * 1000 });
+    const limit = await conferirLimiteDeUso({ key: `ADMIN_PWRESET:${data.weddingId}`, limit: 3, windowMs: 60 * 60 * 1000 });
     if (!limit.success) return { success: false, error: "Já foram enviados vários links para este casal na última hora. Aguarde um pouco." };
 
-    const { sent } = await sendPasswordResetLink(owner);
+    const { sent } = await enviarLinkDeRedefinicaoDeSenha(owner);
     await registrarAuditoria({ action: "wedding.password_reset", targetType: "wedding", targetId: data.weddingId, details: { reason: data.reason, userId: owner.id, sent } });
     if (!sent) return { success: false, error: "O e-mail não saiu (envio de e-mail não configurado ou recusado). Nenhuma senha foi alterada." };
     return { success: true, message: `Enviamos o link de nova senha para ${maskEmail(owner.username)}. Ele vale por 1 hora.` };
@@ -141,7 +141,7 @@ export async function resetWeddingPassword(input: unknown): Promise<CasalActionR
  */
 export async function deleteWedding(input: unknown): Promise<CasalActionResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const data = z
       .object({
         weddingId: id,
@@ -180,7 +180,7 @@ const GRANTABLE = ["classic", "vip"] as const;
 /** Plano de casal liberado como cortesia: assinatura APROVADA de valor zero, com motivo no registro. Não cobra nada. */
 export async function grantWeddingPlan(input: unknown): Promise<CasalActionResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const data = z.object({ weddingId: id, planId: z.enum(GRANTABLE, { error: "Escolha o plano." }), reason, notify: z.boolean() }).parse(input);
     const wedding = await prisma.wedding.findUnique({
       where: { id: data.weddingId },
@@ -244,7 +244,7 @@ export async function grantWeddingPlan(input: unknown): Promise<CasalActionResul
 /** Registra o pedido de reembolso de um pagamento do casal. O estorno em si é feito no painel do Mercado Pago. */
 export async function requestWeddingRefund(input: unknown): Promise<CasalActionResult> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     const data = z
       .object({ weddingId: id, subscriptionId: z.string().uuid("Escolha o pagamento."), amountCents: z.number().int("Valor inválido.").min(1, "Informe o valor."), reason })
       .parse(input);
@@ -263,7 +263,7 @@ export async function requestWeddingRefund(input: unknown): Promise<CasalActionR
         subscriptionId: sub.id,
         amount: data.amountCents,
         reason: data.reason,
-        requestedByName: adminDisplayName(admin.userId, admin.name),
+        requestedByName: nomeDeExibicaoDoAdmin(admin.userId, admin.name),
         status: "REQUESTED",
         dueAt: new Date(Date.now() + 10 * 86_400_000),
       },

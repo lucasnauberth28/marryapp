@@ -1,9 +1,9 @@
 // Assuntos da conversa com a Liz: cada artigo do guia pertence a um assunto, na ordem em que aparece.
 // Puro (sem Next): roda no navegador e nos testes.
-import { HELP_ARTICLES } from "./help-articles.ts";
-import type { HelpHit } from "./help-search.ts";
+import { ARTIGOS_DE_AJUDA } from "./help-articles.ts";
+import type { ResultadoDaAjuda } from "./help-search.ts";
 
-export interface LizTopic {
+export interface AssuntoDaLiz {
   id: string;
   label: string;
   /** Frase da Liz ao abrir o assunto. */
@@ -11,7 +11,7 @@ export interface LizTopic {
   articleIds: readonly string[];
 }
 
-export const LIZ_TOPICS: readonly LizTopic[] = [
+export const ASSUNTOS_DA_LIZ: readonly AssuntoDaLiz[] = [
   {
     id: "convidados",
     label: "Convidados",
@@ -56,25 +56,25 @@ export const LIZ_TOPICS: readonly LizTopic[] = [
   },
 ];
 
-export interface TopicWithHits {
-  topic: LizTopic;
-  hits: HelpHit[];
+export interface AssuntoComResultados {
+  topic: AssuntoDaLiz;
+  hits: ResultadoDaAjuda[];
 }
 
 /** Assuntos com ao menos uma dúvida que o perfil pode ver, cada um com as dúvidas na ordem do assunto. */
-export function topicsFor(visible: readonly HelpHit[]): TopicWithHits[] {
+export function assuntosPara(visible: readonly ResultadoDaAjuda[]): AssuntoComResultados[] {
   const byId = new Map(visible.map((h) => [h.article.id, h]));
-  return LIZ_TOPICS.map((topic) => ({
+  return ASSUNTOS_DA_LIZ.map((topic) => ({
     topic,
-    hits: topic.articleIds.map((id) => byId.get(id)).filter((h): h is HelpHit => h !== undefined),
+    hits: topic.articleIds.map((id) => byId.get(id)).filter((h): h is ResultadoDaAjuda => h !== undefined),
   })).filter((t) => t.hits.length > 0);
 }
 
-export function topicOfArticle(articleId: string): LizTopic | null {
-  return LIZ_TOPICS.find((t) => t.articleIds.includes(articleId)) ?? null;
+export function assuntoDoArtigo(articleId: string): AssuntoDaLiz | null {
+  return ASSUNTOS_DA_LIZ.find((t) => t.articleIds.includes(articleId)) ?? null;
 }
 
 /** Garante, nos testes, que nenhum artigo ficou sem assunto nem aparece em dois. */
-export function articlesWithoutTopic(): string[] {
-  return HELP_ARTICLES.filter((a) => LIZ_TOPICS.filter((t) => t.articleIds.includes(a.id)).length !== 1).map((a) => a.id);
+export function artigosSemAssunto(): string[] {
+  return ARTIGOS_DE_AJUDA.filter((a) => ASSUNTOS_DA_LIZ.filter((t) => t.articleIds.includes(a.id)).length !== 1).map((a) => a.id);
 }

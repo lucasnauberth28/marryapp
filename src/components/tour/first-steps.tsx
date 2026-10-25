@@ -5,13 +5,13 @@ import Link from "next/link";
 import { Check, Circle } from "lucide-react";
 import { dismissFirstSteps } from "@/actions/tour-actions";
 import { Button } from "@/components/ui/button";
-import type { FirstStepItem } from "@/lib/tour/first-steps";
+import type { ItemDosPrimeirosPassos } from "@/lib/tour/first-steps";
 
 /**
  * "Primeiros passos" do Resumo. Os itens vêm de dados reais do casamento (calculados no servidor);
  * a lista some sozinha quando tudo está feito, ou quando esta pessoa a dispensa.
  */
-export function FirstSteps({ items, doneCount }: { items: FirstStepItem[]; doneCount: number }) {
+export function FirstSteps({ items, doneCount }: { items: ItemDosPrimeirosPassos[]; doneCount: number }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 

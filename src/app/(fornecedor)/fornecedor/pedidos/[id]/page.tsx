@@ -5,7 +5,7 @@ import { ArrowLeft, CalendarDays, Lock, Mail, MapPin, MessageCircle, Send } from
 import { Reveal } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
-import { getVendorPageContext } from "@/lib/security/vendor-guard";
+import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 import { LeadStatusChip } from "../../../_components/status-chip";
 import { centsToBrlInput, effectiveVendorTier, firstNameOf, isLeadLocked, PLAN_HREF, proposalPublicUrl, reviewPublicUrl, START_MONTHLY_LEAD_LIMIT, formatBrl, formatDateTimeBrasilia, formatRelative, formatTime, formatWeddingDate, formatWeddingDateLong, isLeadStatus, toIsoDate, todayBrasilia, whatsappHref, type LeadStatus } from "../../../_lib/vendor-panel";
 import { formatarTelefone } from "@/lib/formatacao/telefone";
@@ -48,7 +48,7 @@ function formatHours(hours: number) {
 type AgendaState = { label: string; tone: "sucesso" | "perigo" | "suave"; note?: React.ReactNode };
 
 export default async function PedidoPage({ params }: { params: Promise<{ id: string }> }) {
-  const { vendor } = await getVendorPageContext();
+  const { vendor } = await obterContextoDaPaginaDoFornecedor();
   if (!vendor) return null; // o layout explica que a conta ainda não foi vinculada
 
   const { id } = await params;

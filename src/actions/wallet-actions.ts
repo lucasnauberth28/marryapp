@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
+import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 import { garantirSaldoDaCarteira } from "@/lib/wedding-data";
 
 import { z } from "zod";
@@ -18,7 +18,7 @@ const CreditCardSchema = z.object({
 });
 
 export async function getWalletData() {
-  const { weddingId } = await requireWeddingRead();
+  const { weddingId } = await exigirCasamentoParaLeitura();
   const wallet = await garantirSaldoDaCarteira(weddingId);
 
   const cards = await prisma.creditCard.findMany({
@@ -32,7 +32,7 @@ export async function getWalletData() {
   };
 }
 export async function createCreditCard(formData: FormData) {
-  const { weddingId } = await requireWedding("/carteira");
+  const { weddingId } = await exigirCasamento("/carteira");
   const limitAmount = Math.round(parseFloat((formData.get("limit") as string || "0").replace(',', '.')) * 100);
 
   const raw = {
@@ -63,7 +63,7 @@ export async function createCreditCard(formData: FormData) {
 }
 
 export async function updateCreditCard(id: string, formData: FormData) {
-  const { weddingId } = await requireWedding("/carteira");
+  const { weddingId } = await exigirCasamento("/carteira");
   const limitAmount = Math.round(parseFloat((formData.get("limit") as string || "0").replace(',', '.')) * 100);
 
   const raw = {
@@ -97,7 +97,7 @@ export async function updateCreditCard(id: string, formData: FormData) {
 }
 
 export async function deleteCreditCard(id: string) {
-  const { weddingId } = await requireWedding("/carteira");
+  const { weddingId } = await exigirCasamento("/carteira");
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.cartaoNaoEncontrado };
     const result = await prisma.creditCard.deleteMany({ where: { id, weddingId } });

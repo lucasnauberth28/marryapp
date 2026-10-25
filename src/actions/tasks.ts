@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
+import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 
 import prisma from "@/lib/prisma";
 import { Prisma, TaskStatus } from "@prisma/client";
@@ -29,7 +29,7 @@ function optionalDate(value: unknown): Date | null | undefined {
 }
 
 export async function getTasks() {
-  const { weddingId } = await requireWeddingRead("/pendencias");
+  const { weddingId } = await exigirCasamentoParaLeitura("/pendencias");
   try {
     const tasks = await prisma.task.findMany({
       where: { weddingId },
@@ -63,7 +63,7 @@ export async function createTask(data: {
   assignee?: string;
   status: TaskStatus;
 }) {
-  const { weddingId } = await requireWedding("/pendencias");
+  const { weddingId } = await exigirCasamento("/pendencias");
   // Só os campos da tarefa: nada do que o navegador enviar decide o casamento
   const title = typeof data?.title === "string" ? data.title.trim().slice(0, 200) : "";
   if (!title) return { success: false, error: "Informem o que precisa ser feito." };
@@ -105,7 +105,7 @@ export async function updateTaskStatus(
   newPosition: number,
   type: BoardItemType = "MANUAL"
 ) {
-  const { weddingId } = await requireWedding("/pendencias");
+  const { weddingId } = await exigirCasamento("/pendencias");
   if (typeof taskId !== "string" || !isTaskStatus(newStatus) || !Number.isFinite(Number(newPosition))) {
     return { success: false, error: "Não deu para atualizar a tarefa. Tente de novo." };
   }
@@ -135,7 +135,7 @@ export async function updateTask(taskId: string, data: Partial<{
   assignee: string | null;
   status: TaskStatus;
 }>) {
-  const { weddingId } = await requireWedding("/pendencias");
+  const { weddingId } = await exigirCasamento("/pendencias");
   if (typeof taskId !== "string" || !data || typeof data !== "object") {
     return { success: false, error: "Não deu para salvar a tarefa. Tente de novo." };
   }
@@ -175,7 +175,7 @@ export async function updateTask(taskId: string, data: Partial<{
 }
 
 export async function deleteTask(taskId: string) {
-  const { weddingId } = await requireWedding("/pendencias");
+  const { weddingId } = await exigirCasamento("/pendencias");
   try {
     if (typeof taskId !== "string") return { success: false, error: ERROS.tarefaNaoEncontrada };
     const result = await prisma.task.deleteMany({

@@ -3,25 +3,25 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { checkRateLimit } from "@/lib/security/rate-limiter";
-import { normalizeText } from "@/lib/security/sanitize";
+import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
+import { normalizarTexto } from "@/lib/security/sanitize";
 import { COR_PADRAO_DO_TEMA, FAIXAS_DE_CONVIDADOS, TEMAS_PRONTOS, juntarNomesDoCasal } from "@/lib/onboarding-options";
 import {
-  classifyAccount,
-  isAutoSlug,
-  provisionWedding,
-  refreshSessionCookie,
-  uniqueWeddingSlug,
-  upsertCoupleRole,
-  withSlugRetry,
+  classificarConta,
+  ehEnderecoAutomatico,
+  prepararCasamento,
+  renovarCookieDeSessao,
+  enderecoUnicoDoCasamento,
+  criarOuAtualizarPapelDoCasal,
+  comNovaTentativaDeEndereco,
 } from "@/lib/account/wedding-provisioning";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 const personName = (label: string) =>
   z
     .string()
-    .transform((v) => normalizeText(v).replace(/[&+]/g, " ").replace(/\s+/g, " ").trim())
+    .transform((v) => normalizarTexto(v).replace(/[&+]/g, " ").replace(/\s+/g, " ").trim())
     .pipe(z.string().min(2, `Informe ${label}.`).max(60, `${label[0].toUpperCase()}${label.slice(1)} está longo demais.`));
 
 const THEME_HEXES = TEMAS_PRONTOS.map((p) => p.hex) as [string, ...string[]];
@@ -37,7 +37,7 @@ const OnboardingSchema = z.object({
   city: z
     .string()
     .max(80, "Cidade longa demais.")
-    .transform((v) => normalizeText(v))
+    .transform((v) => normalizarTexto(v))
     .optional(),
   guestEstimate: z.enum(FAIXAS_DE_CONVIDADOS).nullable().optional(),
   // Cor, cidade e faixa de convidados saíram do onboarding (ficam em Editar o site); seguem aceitos se vierem.
@@ -71,9 +71,9 @@ class OnboardingConflict extends Error {}
  *   refeito a partir dos nomes enquanto ainda for o automático. Marca onboardedAt.
  */
 export async function completeOnboarding(input: OnboardingInput): Promise<OnboardingResult> {
-  const session = await getSession();
+  const session = await obterSessao();
   if (!session) return { success: false, error: ERROS.sessaoExpirada, redirectTo: "/login" };
-  if (session.userId === SUPER_ADMIN_USER_ID) {
+  if (session.userId === ID_DO_SUPER_ADMIN) {
     return { success: false, error: "A conta de emergência não tem casamento próprio.", redirectTo: "/dashboard" };
   }
 
@@ -84,7 +84,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
   const weddingDate = parseWeddingDate(data.weddingDate);
   if (weddingDate === "invalid") return { success: false, error: "Confira a data do casamento." };
 
-  const limit = await checkRateLimit({ key: `ONBOARDING:${session.userId}`, limit: 10, windowMs: 10 * 60 * 1000 });
+  const limit = await conferirLimiteDeUso({ key: `ONBOARDING:${session.userId}`, limit: 10, windowMs: 10 * 60 * 1000 });
   if (!limit.success) return { success: false, error: ERROS.muitasTentativas };
 
   const user = await prisma.user.findUnique({
@@ -99,7 +99,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
   });
   if (!user) return { success: false, error: "Conta não encontrada.", redirectTo: "/login" };
 
-  const kind = classifyAccount(user);
+  const kind = classificarConta(user);
   if (kind === "vendor") return { success: false, error: "Contas de fornecedor usam o painel do fornecedor.", redirectTo: "/fornecedor" };
   if (kind === "admin" && !user.wedding) {
     return { success: false, error: "Contas da administração não têm casamento próprio.", redirectTo: "/dashboard" };
@@ -118,14 +118,14 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
   const needsCoupleRole = kind === "couple" && paths.length === 0;
 
   try {
-    const slug = await withSlugRetry(() =>
+    const slug = await comNovaTentativaDeEndereco(() =>
       prisma.$transaction(async (tx) => {
         let weddingId: string;
         let slug: string;
 
         if (!user.wedding) {
-          const role = await upsertCoupleRole(tx);
-          const wedding = await provisionWedding(tx, { coupleNames, weddingDate });
+          const role = await criarOuAtualizarPapelDoCasal(tx);
+          const wedding = await prepararCasamento(tx, { coupleNames, weddingDate });
           // Só vincula se a conta continua sem casamento (duas abas concluindo ao mesmo tempo).
           const linked = await tx.user.updateMany({
             where: { id: user.id, weddingId: null },
@@ -136,11 +136,11 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
           slug = wedding.slug;
         } else {
           weddingId = user.wedding.id;
-          slug = isAutoSlug(user.wedding.slug, user.wedding.coupleNames)
-            ? await uniqueWeddingSlug(tx, coupleNames, weddingId)
+          slug = ehEnderecoAutomatico(user.wedding.slug, user.wedding.coupleNames)
+            ? await enderecoUnicoDoCasamento(tx, coupleNames, weddingId)
             : user.wedding.slug;
           if (needsCoupleRole) {
-            const role = await upsertCoupleRole(tx);
+            const role = await criarOuAtualizarPapelDoCasal(tx);
             await tx.user.update({ where: { id: user.id }, data: { roleId: role.id } });
           }
         }
@@ -178,7 +178,7 @@ export async function completeOnboarding(input: OnboardingInput): Promise<Onboar
       }),
     );
 
-    if (!user.wedding || needsCoupleRole) await refreshSessionCookie(user.id);
+    if (!user.wedding || needsCoupleRole) await renovarCookieDeSessao(user.id);
     revalidatePath("/", "layout");
 
     return { success: true, slug, coupleNames };

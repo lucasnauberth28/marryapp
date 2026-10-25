@@ -3,39 +3,39 @@
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { checkRateLimit } from "@/lib/security/rate-limiter";
-import { NOTIFICATION_GROUPS } from "@/lib/notifications/catalog";
-import { NOTIFICATION_CHANNELS, sanitizeStoredPrefs, type NotificationPrefs } from "@/lib/notifications/preferences";
+import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
+import { GRUPOS_DE_NOTIFICACAO } from "@/lib/notifications/catalog";
+import { CANAIS_DE_NOTIFICACAO, limparPreferenciasGuardadas, type PreferenciasDeNotificacao } from "@/lib/notifications/preferences";
 
 // Escolhas de avisos da própria conta. O id do usuário vem sempre da sessão.
 
 const SAVE_LIMIT = { limit: 60, windowMs: 1000 * 60 * 10 }; // 60 gravações / 10 min por conta
 
 const hour = z.number().int().min(0).max(23);
-const groupFlags = z.object(Object.fromEntries(NOTIFICATION_GROUPS.map((g) => [g, z.boolean()])) as Record<(typeof NOTIFICATION_GROUPS)[number], z.ZodBoolean>);
+const groupFlags = z.object(Object.fromEntries(GRUPOS_DE_NOTIFICACAO.map((g) => [g, z.boolean()])) as Record<(typeof GRUPOS_DE_NOTIFICACAO)[number], z.ZodBoolean>);
 
 const PrefsSchema = z.object({
-  channels: z.object(Object.fromEntries(NOTIFICATION_CHANNELS.map((c) => [c, groupFlags])) as Record<(typeof NOTIFICATION_CHANNELS)[number], typeof groupFlags>),
+  channels: z.object(Object.fromEntries(CANAIS_DE_NOTIFICACAO.map((c) => [c, groupFlags])) as Record<(typeof CANAIS_DE_NOTIFICACAO)[number], typeof groupFlags>),
   quietHours: z.object({ enabled: z.boolean(), startHour: hour, endHour: hour }),
 });
 
 export type SavePrefsResult = { success: true } | { success: false; error: string };
 
 /** Salva as escolhas de avisos da conta da sessão. */
-export async function saveNotificationPreferences(input: NotificationPrefs): Promise<SavePrefsResult> {
-  const session = await getSession();
+export async function saveNotificationPreferences(input: PreferenciasDeNotificacao): Promise<SavePrefsResult> {
+  const session = await obterSessao();
   if (!session) return { success: false, error: "Entre na sua conta para salvar." };
-  if (session.userId === SUPER_ADMIN_USER_ID) return { success: false, error: "A conta de administração não tem avisos próprios." };
+  if (session.userId === ID_DO_SUPER_ADMIN) return { success: false, error: "A conta de administração não tem avisos próprios." };
 
   const parsed = PrefsSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: "Não entendemos essa escolha. Recarregue a página e tente de novo." };
 
   try {
-    const limit = await checkRateLimit({ key: `NOTIF_PREFS:${session.userId}`, ...SAVE_LIMIT });
+    const limit = await conferirLimiteDeUso({ key: `NOTIF_PREFS:${session.userId}`, ...SAVE_LIMIT });
     if (!limit.success) return { success: false, error: "Muitas mudanças em pouco tempo. Aguarde um instante." };
 
-    const stored = sanitizeStoredPrefs(parsed.data);
+    const stored = limparPreferenciasGuardadas(parsed.data);
     if (!stored) return { success: false, error: "Não entendemos essa escolha." };
     const settings = JSON.parse(JSON.stringify(stored)) as Prisma.InputJsonObject;
     await prisma.notificationPreference.upsert({

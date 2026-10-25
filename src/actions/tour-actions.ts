@@ -2,10 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import { getSession } from "@/lib/security/auth-guard";
-import { getWeddingContext } from "@/lib/security/wedding-context";
-import { getTourUserRow, tourAccountOf } from "@/lib/tour/panel-tour";
-import { tourEligible, tourMayWrite, tourWrite, type TourOutcome } from "@/lib/tour/rules";
+import { obterSessao } from "@/lib/security/auth-guard";
+import { obterContextoDoCasamento } from "@/lib/security/wedding-context";
+import { obterLinhaDaPessoaDoTour, contaDoTourDe } from "@/lib/tour/panel-tour";
+import { tourElegivel, tourPodeGravar, gravacaoDoTour, type DesfechoDoTour } from "@/lib/tour/rules";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 // Passo a passo do painel. Tudo aqui vale só para a pessoa da sessão: nenhum id vem do navegador.
@@ -20,21 +20,21 @@ const EXPIRED: TourResult = { success: false, error: ERROS.sessaoExpirada };
 
 /** Id da pessoa quando ela pode gravar o passo a passo; senão o motivo da recusa. */
 async function writableUserId(): Promise<{ userId: string } | { refusal: TourResult }> {
-  const session = await getSession();
+  const session = await obterSessao();
   if (!session) return { refusal: EXPIRED };
-  const ctx = await getWeddingContext();
-  const row = await getTourUserRow(session.userId);
+  const ctx = await obterContextoDoCasamento();
+  const row = await obterLinhaDaPessoaDoTour(session.userId);
   if (!row || !ctx) return { refusal: REFUSED };
-  const account = tourAccountOf({ session, ctx, row });
-  if (!tourMayWrite(account) || !tourEligible(account)) return { refusal: REFUSED };
+  const account = contaDoTourDe({ session, ctx, row });
+  if (!tourPodeGravar(account) || !tourElegivel(account)) return { refusal: REFUSED };
   return { userId: row.id };
 }
 
-async function record(outcome: TourOutcome): Promise<TourResult> {
+async function record(outcome: DesfechoDoTour): Promise<TourResult> {
   const who = await writableUserId();
   if ("refusal" in who) return who.refusal;
   try {
-    await prisma.user.update({ where: { id: who.userId }, data: tourWrite(outcome, new Date()) });
+    await prisma.user.update({ where: { id: who.userId }, data: gravacaoDoTour(outcome, new Date()) });
     return { success: true };
   } catch (error) {
     console.error("[tour]", outcome, error);

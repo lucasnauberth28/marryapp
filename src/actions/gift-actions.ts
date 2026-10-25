@@ -1,6 +1,6 @@
 'use server'
 
-import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context"
+import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context"
 import { obterPresentesDoCasamento } from "@/lib/wedding-data"
 
 import prisma from "@/lib/prisma"
@@ -18,7 +18,7 @@ const GiftSchema = z.object({
 // Painel do casal: presentes do casamento da sessão. A lista pública (/casamento/<slug>/presentes)
 // lê direto no servidor pelo casamento do endereço (lib/wedding-data).
 export async function getGifts() {
-  const { weddingId } = await requireWeddingRead("/presentes-admin")
+  const { weddingId } = await exigirCasamentoParaLeitura("/presentes-admin")
   try {
     const gifts = await obterPresentesDoCasamento(weddingId)
     return { success: true, data: gifts }
@@ -29,7 +29,7 @@ export async function getGifts() {
 }
 
 export async function createGiftAction(formData: FormData) {
-  const { weddingId } = await requireWedding("/presentes-admin")
+  const { weddingId } = await exigirCasamento("/presentes-admin")
 
   // O valor chega digitado em reais (ex: "150,50") e é convertido para centavos
   const amountStr = formData.get('amount')
@@ -76,7 +76,7 @@ export async function createGiftAction(formData: FormData) {
 }
 
 export async function deleteGift(id: string) {
-  const { weddingId } = await requireWedding("/presentes-admin")
+  const { weddingId } = await exigirCasamento("/presentes-admin")
 
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.presenteNaoEncontrado }

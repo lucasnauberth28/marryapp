@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { hasPathAccess, opcoesDoCookieDeSessao, assinarToken, NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
-import { SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { CAMINHOS_DO_CASAL, NOME_DO_PAPEL_DO_CASAL, gerarEnderecoDosNomesDoCasal } from "@/lib/wedding-rules";
 import { COR_PADRAO_DO_TEMA } from "@/lib/onboarding-options";
 
@@ -12,21 +12,21 @@ import { COR_PADRAO_DO_TEMA } from "@/lib/onboarding-options";
  * Não é uma Server Action: só recebe dados já validados no servidor.
  */
 
-type Tx = Prisma.TransactionClient;
+type Transacao = Prisma.TransactionClient;
 
 /** Módulos da administração da plataforma: quem tem algum deles não é conta de casal. */
-const PLATFORM_PATHS = ["/curadoria", "/assinaturas", "/usuarios", "/perfis"];
+const CAMINHOS_DA_PLATAFORMA = ["/curadoria", "/assinaturas", "/usuarios", "/perfis"];
 
-export type AccountKind = "admin" | "vendor" | "couple";
+export type TipoDeConta = "admin" | "vendor" | "couple";
 
-export function classifyAccount(user: {
+export function classificarConta(user: {
   id: string;
   partnerVendorId?: string | null;
   role?: { name: string; allowedPaths: unknown } | null;
-}): AccountKind {
-  if (user.id === SUPER_ADMIN_USER_ID) return "admin";
+}): TipoDeConta {
+  if (user.id === ID_DO_SUPER_ADMIN) return "admin";
   const paths = Array.isArray(user.role?.allowedPaths) ? (user.role.allowedPaths as string[]) : [];
-  if (paths.includes("*") || PLATFORM_PATHS.some((p) => paths.includes(p))) return "admin";
+  if (paths.includes("*") || CAMINHOS_DA_PLATAFORMA.some((p) => paths.includes(p))) return "admin";
   if (user.partnerVendorId) return "vendor";
   if (/^fornecedor/i.test(user.role?.name ?? "")) return "vendor";
   if (hasPathAccess(paths, "/fornecedor") && !hasPathAccess(paths, "/dashboard")) return "vendor";
@@ -34,7 +34,7 @@ export function classifyAccount(user: {
 }
 
 /** Erro de índice único do Postgres (ex.: slug ou e-mail criados ao mesmo tempo). */
-export function isUniqueViolation(error: unknown) {
+export function ehViolacaoDeUnicidade(error: unknown) {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 }
 
@@ -42,7 +42,7 @@ export function isUniqueViolation(error: unknown) {
  * Endereço livre para o site: "ana-e-rafael", depois "ana-e-rafael-2", "-3"...
  * `excludeWeddingId` permite manter o próprio endereço ao regenerar.
  */
-export async function uniqueWeddingSlug(tx: Tx, source: string, excludeWeddingId?: string): Promise<string> {
+export async function enderecoUnicoDoCasamento(tx: Transacao, source: string, excludeWeddingId?: string): Promise<string> {
   const base = gerarEnderecoDosNomesDoCasal(source);
   const taken = new Set(
     (
@@ -61,14 +61,14 @@ export async function uniqueWeddingSlug(tx: Tx, source: string, excludeWeddingId
 }
 
 /** O endereço ainda é o gerado automaticamente a partir dos nomes (com ou sem sufixo numérico)? */
-export function isAutoSlug(slug: string, coupleNames: string) {
+export function ehEnderecoAutomatico(slug: string, coupleNames: string) {
   const base = gerarEnderecoDosNomesDoCasal(coupleNames);
   if (slug === base) return true;
   return slug.startsWith(`${base}-`) && /^\d+$/.test(slug.slice(base.length + 1));
 }
 
 /** Perfil "Casal". Se já existir, mantém os módulos que a administração tiver ajustado. */
-export function upsertCoupleRole(tx: Tx) {
+export function criarOuAtualizarPapelDoCasal(tx: Transacao) {
   return tx.role.upsert({
     where: { name: NOME_DO_PAPEL_DO_CASAL },
     update: {},
@@ -81,11 +81,11 @@ export function upsertCoupleRole(tx: Tx) {
  * Cria o casamento com o site e as regras (uma linha de cada por casamento).
  * Deve rodar dentro de uma transação junto com a vinculação do usuário.
  */
-export async function provisionWedding(
-  tx: Tx,
+export async function prepararCasamento(
+  tx: Transacao,
   { coupleNames, weddingDate, slugSource }: { coupleNames: string; weddingDate?: Date | null; slugSource?: string },
 ) {
-  const slug = await uniqueWeddingSlug(tx, slugSource || coupleNames);
+  const slug = await enderecoUnicoDoCasamento(tx, slugSource || coupleNames);
   const wedding = await tx.wedding.create({
     data: { slug, coupleNames, weddingDate: weddingDate ?? null, themeColor: COR_PADRAO_DO_TEMA },
     select: { id: true, slug: true, coupleNames: true },
@@ -123,12 +123,12 @@ export async function provisionWedding(
  * Executa uma transação que cria casamento e repete se outro cadastro pegou o mesmo endereço
  * no meio do caminho (índice único do slug).
  */
-export async function withSlugRetry<T>(run: () => Promise<T>, attempts = 3): Promise<T> {
+export async function comNovaTentativaDeEndereco<T>(run: () => Promise<T>, attempts = 3): Promise<T> {
   for (let i = 1; ; i++) {
     try {
       return await run();
     } catch (error) {
-      if (i >= attempts || !isUniqueViolation(error)) throw error;
+      if (i >= attempts || !ehViolacaoDeUnicidade(error)) throw error;
     }
   }
 }
@@ -137,7 +137,7 @@ export async function withSlugRetry<T>(run: () => Promise<T>, attempts = 3): Pro
  * Regrava o cookie de sessão com o perfil atual do banco. Necessário depois de trocar o perfil
  * da conta (ex.: "aguardando ativação" -> "Casal"): o proxy decide a navegação pelo JWT.
  */
-export async function refreshSessionCookie(userId: string) {
+export async function renovarCookieDeSessao(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { id: true, role: { select: { name: true, allowedPaths: true } } },

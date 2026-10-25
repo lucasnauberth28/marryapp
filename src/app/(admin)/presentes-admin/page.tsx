@@ -3,7 +3,7 @@ import { PaymentMethod, PaymentStatus } from "@prisma/client"
 import prisma from "@/lib/prisma"
 import { getGifts } from "@/actions/gift-actions"
 import { GiftsClient, type GiftPayment } from "./gifts-client"
-import { requireWeddingPage } from "@/lib/security/wedding-context"
+import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context"
 import { caminhoDoSiteDoCasamento } from "@/lib/wedding-links"
 
 import { formatarDataBrasiliaCurtaComAno } from "@/lib/formatacao/data";
@@ -27,7 +27,7 @@ function whenLabel(date: Date, now: Date) {
 }
 
 export default async function PresentesAdminPage() {
-  const { weddingId, wedding } = await requireWeddingPage("/presentes-admin")
+  const { weddingId, wedding } = await exigirCasamentoNaPagina("/presentes-admin")
 
   const result = await getGifts()
   const gifts = result.success ? result.data : []

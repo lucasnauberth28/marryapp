@@ -7,7 +7,7 @@ import { somenteDigitos } from "../formatacao/telefone.ts";
 /**
  * Mascara número de telefone: (11) 95730-5051 -> (11) 9****-5051
  */
-export function maskPhone(phone: string | null | undefined): string {
+export function esconderTelefone(phone: string | null | undefined): string {
   if (!phone) return "";
   const clean = somenteDigitos(phone);
   if (clean.length < 8) return "***";
@@ -22,7 +22,7 @@ export function maskPhone(phone: string | null | undefined): string {
 /**
  * Mascara endereço de e-mail: lucasnauberth@gmail.com -> l***h@gmail.com
  */
-export function maskEmail(email: string | null | undefined): string {
+export function esconderEmail(email: string | null | undefined): string {
   if (!email || !email.includes("@")) return "***";
 
   const [user, domain] = email.split("@");
@@ -39,7 +39,7 @@ export function maskEmail(email: string | null | undefined): string {
 /**
  * Mascara números de cartão de crédito mantendo apenas os 4 últimos dígitos: **** **** **** 9422
  */
-export function maskCardNumber(cardNumber: string | null | undefined): string {
+export function esconderNumeroDoCartao(cardNumber: string | null | undefined): string {
   if (!cardNumber) return "**** **** **** ****";
   const clean = somenteDigitos(cardNumber);
   const lastFour = clean.slice(-4);

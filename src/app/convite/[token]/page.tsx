@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CircleAlert } from "lucide-react";
 import prisma from "@/lib/prisma";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { AuthShell, SHELL_PHOTOS, ShellHeading } from "@/components/account/auth-shell";
 import { btn } from "@/components/landing/styles";
-import { INVITE_STATUS_MESSAGE, lookupInvite } from "@/lib/account/invites";
-import { classifyAccount } from "@/lib/account/wedding-provisioning";
+import { MENSAGEM_DA_SITUACAO_DO_CONVITE, buscarConvite } from "@/lib/account/invites";
+import { classificarConta } from "@/lib/account/wedding-provisioning";
 import { cn } from "@/lib/utils";
 import { InviteAccept, type Viewer } from "./invite-accept";
 
@@ -22,7 +22,7 @@ const TITLES = { invalid: "Convite não encontrado", expired: "Este convite expi
 
 export default async function ConvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const lookup = await lookupInvite(token);
+  const lookup = await buscarConvite(token);
 
   if (lookup.status !== "ok") {
     return (
@@ -31,7 +31,7 @@ export default async function ConvitePage({ params }: { params: Promise<{ token:
           <span className="grid size-14 place-items-center rounded-full bg-aviso-suave text-aviso">
             <CircleAlert aria-hidden="true" className="size-7" strokeWidth={1.6} />
           </span>
-          <ShellHeading title={TITLES[lookup.status]} text={INVITE_STATUS_MESSAGE[lookup.status]} />
+          <ShellHeading title={TITLES[lookup.status]} text={MENSAGEM_DA_SITUACAO_DO_CONVITE[lookup.status]} />
           <Link href="/login" className={cn(btn.primary, btn.block, "min-h-12")}>
             Entrar na minha conta
           </Link>
@@ -43,9 +43,9 @@ export default async function ConvitePage({ params }: { params: Promise<{ token:
     );
   }
 
-  const session = await getSession();
+  const session = await obterSessao();
   let viewer: Viewer = { kind: "anonymous" };
-  if (session?.userId === SUPER_ADMIN_USER_ID) {
+  if (session?.userId === ID_DO_SUPER_ADMIN) {
     viewer = { kind: "blocked", name: "Super Admin", reason: "A conta de emergência não pode entrar em um casamento." };
   } else if (session) {
     const user = await prisma.user.findUnique({
@@ -60,7 +60,7 @@ export default async function ConvitePage({ params }: { params: Promise<{ token:
       },
     });
     if (user) {
-      const kind = classifyAccount(user);
+      const kind = classificarConta(user);
       if (kind === "vendor") {
         viewer = { kind: "blocked", name: user.name, reason: "Você está numa conta de fornecedor. Para entrar no casamento, use uma conta pessoal." };
       } else if (kind === "admin") {

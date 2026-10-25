@@ -2,7 +2,7 @@
 /**
  * Sanitiza e normaliza URLs garantindo que apenas protocolos seguros (http, https, whatsapp) sejam aceitos.
  */
-export function sanitizeUrl(url: string | null | undefined): string | null {
+export function limparUrl(url: string | null | undefined): string | null {
   if (!url || typeof url !== "string") return null;
   const trimmed = url.trim();
 
@@ -26,7 +26,7 @@ export function sanitizeUrl(url: string | null | undefined): string | null {
 /**
  * Sanitiza identificadores e slugs para URLs seguras.
  */
-export function sanitizeSlug(slug: string | null | undefined): string {
+export function limparEndereco(slug: string | null | undefined): string {
   if (!slug) return "";
   return String(slug)
     .toLowerCase()
@@ -42,7 +42,7 @@ export function sanitizeSlug(slug: string | null | undefined): string {
  * Não escapa HTML: o React já escapa na renderização, e escapar antes de gravar corromperia
  * nomes como "Lucas & Giovanna". Use sanitizeHtmlText apenas ao montar HTML manualmente.
  */
-export function normalizeText(str: string | null | undefined): string {
+export function normalizarTexto(str: string | null | undefined): string {
   if (!str) return "";
    
   return String(str).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "").replace(/\s+/g, " ").trim();

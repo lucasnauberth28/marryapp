@@ -6,7 +6,7 @@ import { LoadingButton } from "@/components/painel/loading-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { isMySubscription, removeSubscription, saveSubscription, sendTestPush } from "@/actions/push-actions";
-import { urlBase64ToUint8Array } from "@/lib/notifications/push-support";
+import { urlBase64ParaBytes } from "@/lib/notifications/push-support";
 import { cn } from "@/lib/utils";
 import { ToggleSwitch } from "./toggle-switch";
 import { notifyPushStateChanged, usePushSupport } from "./use-push-state";
@@ -49,7 +49,7 @@ async function registerWorker() {
 async function subscribeBrowser(registration: ServiceWorkerRegistration, publicKey: string) {
   const existing = await registration.pushManager.getSubscription();
   if (existing) return existing;
-  const options = { userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) };
+  const options = { userVisibleOnly: true, applicationServerKey: urlBase64ParaBytes(publicKey) };
   try {
     return await registration.pushManager.subscribe(options);
   } catch (error) {

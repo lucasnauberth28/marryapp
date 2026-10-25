@@ -11,40 +11,40 @@ import { headers } from "next/headers";
  *   o seu contador, então isso só é adequado para desenvolvimento ou servidor único.
  */
 
-interface RateLimitRecord {
+interface RegistroDeLimiteDeUso {
   timestamps: number[];
 }
 
-const store = new Map<string, RateLimitRecord>();
+const armazemDeLimites = new Map<string, RegistroDeLimiteDeUso>();
 
 if (typeof setInterval !== "undefined") {
   setInterval(() => {
     const now = Date.now();
-    for (const [key, record] of store.entries()) {
+    for (const [key, record] of armazemDeLimites.entries()) {
       record.timestamps = record.timestamps.filter((ts) => now - ts < 1000 * 60 * 60);
-      if (record.timestamps.length === 0) store.delete(key);
+      if (record.timestamps.length === 0) armazemDeLimites.delete(key);
     }
   }, 1000 * 60 * 5).unref?.();
 }
 
-export interface RateLimitOptions {
+export interface OpcoesDoLimiteDeUso {
   key: string;
   limit: number; // Máximo de requisições permitidas
   windowMs: number; // Janela de tempo em milissegundos
 }
 
-export interface RateLimitResult {
+export interface ResultadoDoLimiteDeUso {
   success: boolean;
   remaining: number;
   resetMs: number;
 }
 
-function checkMemory({ key, limit, windowMs }: RateLimitOptions): RateLimitResult {
+function conferirNaMemoria({ key, limit, windowMs }: OpcoesDoLimiteDeUso): ResultadoDoLimiteDeUso {
   const now = Date.now();
-  let record = store.get(key);
+  let record = armazemDeLimites.get(key);
   if (!record) {
     record = { timestamps: [] };
-    store.set(key, record);
+    armazemDeLimites.set(key, record);
   }
 
   record.timestamps = record.timestamps.filter((ts) => now - ts < windowMs);
@@ -58,11 +58,11 @@ function checkMemory({ key, limit, windowMs }: RateLimitOptions): RateLimitResul
   return { success: true, remaining: limit - record.timestamps.length, resetMs: windowMs };
 }
 
-async function checkUpstash(
-  { key, limit, windowMs }: RateLimitOptions,
+async function conferirNoUpstash(
+  { key, limit, windowMs }: OpcoesDoLimiteDeUso,
   url: string,
   token: string
-): Promise<RateLimitResult> {
+): Promise<ResultadoDoLimiteDeUso> {
   const redisKey = `ratelimit:${key}`;
   const res = await fetch(`${url}/pipeline`, {
     method: "POST",
@@ -86,25 +86,25 @@ async function checkUpstash(
  * Valida se a chave atual excedeu o limite de requisições.
  * Em caso de falha do Redis, degrada para o limitador em memória em vez de bloquear tudo.
  */
-export async function checkRateLimit(options: RateLimitOptions): Promise<RateLimitResult> {
+export async function conferirLimiteDeUso(options: OpcoesDoLimiteDeUso): Promise<ResultadoDoLimiteDeUso> {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (url && token) {
     try {
-      return await checkUpstash(options, url, token);
+      return await conferirNoUpstash(options, url, token);
     } catch (error) {
       console.error("[RateLimit] Falha no Redis, usando memória local:", error);
     }
   }
 
-  return checkMemory(options);
+  return conferirNaMemoria(options);
 }
 
 /**
  * IP do cliente a partir dos headers do proxy/CDN (Vercel, Cloudflare, Nginx).
  */
-export async function getClientIp(): Promise<string> {
+export async function obterIpDoCliente(): Promise<string> {
   const h = await headers();
   const forwarded = h.get("x-forwarded-for")?.split(",")[0]?.trim();
   return forwarded || h.get("x-real-ip") || h.get("cf-connecting-ip") || "unknown";
@@ -114,19 +114,19 @@ export async function getClientIp(): Promise<string> {
  * Atalho: aplica o limite combinando o tipo de operação com o IP do cliente
  * (e, opcionalmente, um identificador extra como telefone ou usuário).
  */
-export async function rateLimitByIp(
-  scope: keyof typeof SecurityLimits,
+export async function limitarUsoPorIp(
+  scope: keyof typeof LimitesDeSeguranca,
   extra?: string
-): Promise<RateLimitResult> {
-  const ip = await getClientIp();
+): Promise<ResultadoDoLimiteDeUso> {
+  const ip = await obterIpDoCliente();
   const key = extra ? `${scope}:${ip}:${extra}` : `${scope}:${ip}`;
-  return checkRateLimit({ key, ...SecurityLimits[scope] });
+  return conferirLimiteDeUso({ key, ...LimitesDeSeguranca[scope] });
 }
 
 /**
  * Predefinições de segurança por tipo de operação
  */
-export const SecurityLimits = {
+export const LimitesDeSeguranca = {
   LOGIN: { limit: 5, windowMs: 1000 * 60 }, // 5 tentativas / minuto
   LOGIN_ACCOUNT: { limit: 20, windowMs: 1000 * 60 * 15 }, // 20 tentativas / 15 min por conta (qualquer IP)
   CHECKOUT: { limit: 10, windowMs: 1000 * 60 * 5 }, // 10 tentativas / 5 minutos

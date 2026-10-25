@@ -2,7 +2,7 @@
 // Lista de telas permitidas (e não de proibidas): uma tela nova de administração nunca ganha o botão sem querer.
 
 /** Telas do painel do casal. Ficam de fora a administração da plataforma, as ferramentas antigas dela e as páginas públicas. */
-export const LIZ_FAB_PATHS = [
+export const CAMINHOS_DO_ATALHO_DA_LIZ = [
   "/dashboard",
   "/convidados",
   "/mensagens",
@@ -22,7 +22,7 @@ export const LIZ_FAB_PATHS = [
 ] as const;
 
 /** Verdadeiro nas telas do painel do casal. Compara por segmento: "/dominio" não libera "/dominios". */
-export function shouldShowLizFab(pathname: string | null | undefined): boolean {
+export function deveMostrarOAtalhoDaLiz(pathname: string | null | undefined): boolean {
   if (!pathname) return false;
-  return LIZ_FAB_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return CAMINHOS_DO_ATALHO_DA_LIZ.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }

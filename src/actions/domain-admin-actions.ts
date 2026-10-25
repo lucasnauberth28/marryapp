@@ -6,9 +6,9 @@ import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
 import { formatarDocumento, ehDocumentoEscondido, esconderDocumento } from "@/lib/document-br";
 import { obterRegistrador } from "@/lib/domain-registrar";
-import { deferNotify } from "@/lib/notifications/service";
-import { notifyDomainOrder } from "@/lib/notifications/events";
-import { requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { avisarDepois } from "@/lib/notifications/service";
+import { avisarPedidoDeDominio } from "@/lib/notifications/events";
+import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { somarUmAno } from "@/lib/domain-renewal";
 import { ehSituacaoEmAberto } from "@/lib/domain-order";
 import { conectarDominioAoProjeto, verificarDominioDoProjeto, type ConnectionResult } from "@/lib/vercel-domains";
@@ -29,7 +29,7 @@ const STALE: Fail = { success: false, error: "O pedido mudou enquanto você olha
 /** Só a administração da plataforma (acesso total) passa: o guard único confere a sessão e o perfil no banco. */
 async function adminOnly(): Promise<boolean> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     return true;
   } catch {
     return false;
@@ -74,7 +74,7 @@ export async function startDomainRegistrationAction(orderId: string): Promise<Ad
     });
     if (done.count !== 1) return STALE;
     await registrarAuditoria({ action: "domain.registered", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain, registrar: registrar.id } });
-    deferNotify(() => notifyDomainOrder(order.id, "registered"));
+    avisarDepois(() => avisarPedidoDeDominio(order.id, "registered"));
     refresh();
     return { success: true, message: "Domínio registrado." };
   }
@@ -115,7 +115,7 @@ export async function markDomainRegisteredAction(input: { orderId: string; regis
     targetId: order.id,
     details: { domain: order.domain, registeredAt: input.registeredAt, expiresAt: input.expiresAt },
   });
-  deferNotify(() => notifyDomainOrder(order.id, "registered"));
+  avisarDepois(() => avisarPedidoDeDominio(order.id, "registered"));
   refresh();
   return { success: true, message: "Marcado como registrado. O documento do titular foi escondido e o casal foi avisado." };
 }
@@ -142,7 +142,7 @@ export async function rejectDomainOrderAction(input: { orderId: string; reason: 
   if (done.count !== 1) return STALE;
 
   await registrarAuditoria({ action: "domain.reject", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain, reason } });
-  deferNotify(() => notifyDomainOrder(order.id, "rejected"));
+  avisarDepois(() => avisarPedidoDeDominio(order.id, "rejected"));
   refresh();
   return { success: true, message: "Pedido recusado e o casal foi avisado." };
 }
@@ -184,7 +184,7 @@ async function finishConnection(order: { id: string; domain: string; weddingId: 
     return { success: false, error: "Não foi possível marcar como no ar. Confira se outro casamento já usa este domínio." };
   }
   await registrarAuditoria({ action: "domain.online", targetType: "DomainOrder", targetId: order.id, details: { domain: order.domain, vercelState } });
-  deferNotify(() => notifyDomainOrder(order.id, "ready"));
+  avisarDepois(() => avisarPedidoDeDominio(order.id, "ready"));
   refresh();
   return { success: true, message: "No ar! O casal foi avisado e os links dos convidados já usam o domínio novo." };
 }

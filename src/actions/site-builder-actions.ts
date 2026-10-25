@@ -1,6 +1,6 @@
 "use server";
 
-import { getWeddingBySlug, requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
+import { obterCasamentoPeloEndereco, exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 import {
   garantirPersonalizacaoDoSite,
   obterItensDaHistoriaDoCasamento,
@@ -11,8 +11,8 @@ import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { rateLimitByIp } from "@/lib/security/rate-limiter";
-import { sanitizeUrl } from "@/lib/security/sanitize";
+import { limitarUsoPorIp } from "@/lib/security/rate-limiter";
+import { limparUrl } from "@/lib/security/sanitize";
 import { enviarArquivoDeImagem } from "@/lib/supabase";
 import { ehImagemPermitidaNoSite } from "@/lib/image-source";
 
@@ -22,7 +22,7 @@ import { ERROS } from "@/lib/mensagens-de-erro";
  * O site público lê pelo endereço do casamento (lib/wedding-data).
  */
 export async function getSiteCustomization() {
-  const { wedding } = await requireWeddingRead("/site-builder");
+  const { wedding } = await exigirCasamentoParaLeitura("/site-builder");
   try {
     return await garantirPersonalizacaoDoSite(wedding);
   } catch (error) {
@@ -86,7 +86,7 @@ export type SiteCustomizationInput = z.input<typeof SiteCustomizationSchema>;
  * Atualiza as configurações e blocos do site do casal
  */
 export async function updateSiteCustomization(data: SiteCustomizationInput) {
-  const { weddingId, wedding } = await requireWedding("/site-builder");
+  const { weddingId, wedding } = await exigirCasamento("/site-builder");
 
   const parsed = SiteCustomizationSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -119,7 +119,7 @@ export async function updateSiteCustomization(data: SiteCustomizationInput) {
  * Envia uma foto do site (capa ou casal) ao storage e devolve a URL pública.
  */
 export async function uploadSiteImageAction(formData: FormData) {
-  await requireWedding("/site-builder");
+  await exigirCasamento("/site-builder");
 
   const file = formData.get("image");
   if (!(file instanceof File) || file.size === 0) {
@@ -134,7 +134,7 @@ export async function uploadSiteImageAction(formData: FormData) {
  * Gerenciamento de Momentos da História do Casal (Storytelling)
  */
 export async function getStoryItems() {
-  const { weddingId } = await requireWeddingRead("/site-builder");
+  const { weddingId } = await exigirCasamentoParaLeitura("/site-builder");
   try {
     return await obterItensDaHistoriaDoCasamento(weddingId);
   } catch (error) {
@@ -150,7 +150,7 @@ export async function createStoryItem(data: {
   imageUrl?: string;
   position?: number;
 }) {
-  const { weddingId } = await requireWedding("/site-builder");
+  const { weddingId } = await exigirCasamento("/site-builder");
   try {
     const item = await prisma.weddingStoryItem.create({
       data: {
@@ -172,7 +172,7 @@ export async function createStoryItem(data: {
 }
 
 export async function deleteStoryItem(id: string) {
-  const { weddingId } = await requireWedding("/site-builder");
+  const { weddingId } = await exigirCasamento("/site-builder");
   try {
     if (typeof id !== "string") return { success: false, error: "Momento não encontrado." };
     const result = await prisma.weddingStoryItem.deleteMany({ where: { id, weddingId } });
@@ -189,7 +189,7 @@ export async function deleteStoryItem(id: string) {
  * Gerenciamento de Dicas aos Convidados (Hotéis, Salões, Transporte)
  */
 export async function getWeddingTips() {
-  const { weddingId } = await requireWeddingRead("/site-builder");
+  const { weddingId } = await exigirCasamentoParaLeitura("/site-builder");
   try {
     return await obterDicasDoCasamento(weddingId);
   } catch (error) {
@@ -208,7 +208,7 @@ export async function createWeddingTip(data: {
   discountCode?: string;
   position?: number;
 }) {
-  const { weddingId } = await requireWedding("/site-builder");
+  const { weddingId } = await exigirCasamento("/site-builder");
   try {
     const tip = await prisma.weddingTip.create({
       data: {
@@ -233,7 +233,7 @@ export async function createWeddingTip(data: {
 }
 
 export async function deleteWeddingTip(id: string) {
-  const { weddingId } = await requireWedding("/site-builder");
+  const { weddingId } = await exigirCasamento("/site-builder");
   try {
     if (typeof id !== "string") return { success: false, error: "Dica não encontrada." };
     const result = await prisma.weddingTip.deleteMany({ where: { id, weddingId } });
@@ -266,18 +266,18 @@ export async function createGuestBookEntry(
   const parsed = GuestBookSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
-  const imageUrl = parsed.data.imageUrl ? sanitizeUrl(parsed.data.imageUrl) : null;
+  const imageUrl = parsed.data.imageUrl ? limparUrl(parsed.data.imageUrl) : null;
   if (imageUrl && !imageUrl.startsWith("https://")) {
     return { success: false, error: "Link de imagem inválido." };
   }
 
   try {
-    const rateLimit = await rateLimitByIp("PUBLIC_FORM");
+    const rateLimit = await limitarUsoPorIp("PUBLIC_FORM");
     if (!rateLimit.success) {
       return { success: false, error: "Você enviou muitos recados em pouco tempo. Tente novamente mais tarde." };
     }
 
-    const wedding = await getWeddingBySlug(slug);
+    const wedding = await obterCasamentoPeloEndereco(slug);
     if (!wedding) return { success: false, error: ERROS.casamentoNaoEncontrado };
     if (wedding.suspendedAt) return { success: false, error: "Este site está indisponível no momento." };
 

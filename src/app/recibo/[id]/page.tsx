@@ -8,7 +8,7 @@ import { Logo } from "@/components/brand/logo";
 import { btn } from "@/components/landing/styles";
 import { temAcessoAoCaminho } from "@/lib/permissions";
 import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
-import { getSession, SUPER_ADMIN_USER_ID, redirectToLogin } from "@/lib/security/auth-guard";
+import { obterSessao, ID_DO_SUPER_ADMIN, redirecionarParaOLogin } from "@/lib/security/auth-guard";
 import { DIAS_DO_PERIODO_DO_FORNECEDOR } from "@/lib/subscription-period";
 import { cn } from "@/lib/utils";
 import { PrintButton } from "./print-button";
@@ -33,8 +33,8 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * contas do casamento) e quem tem acesso a /assinaturas. Para os outros, a página não existe.
  */
 export default async function ReciboPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await getSession();
-  if (!session) return redirectToLogin();
+  const session = await obterSessao();
+  if (!session) return redirecionarParaOLogin();
 
   const { id } = await params;
   if (!UUID.test(id)) notFound();
@@ -71,7 +71,7 @@ export default async function ReciboPage({ params }: { params: Promise<{ id: str
 
   const isAdmin = temAcessoAoCaminho(session.allowedPaths, "/assinaturas");
   let isOwner = sub.userId !== null && sub.userId === session.userId;
-  if (!isOwner && sub.planType === "COUPLE" && sub.weddingId && session.userId !== SUPER_ADMIN_USER_ID) {
+  if (!isOwner && sub.planType === "COUPLE" && sub.weddingId && session.userId !== ID_DO_SUPER_ADMIN) {
     const me = await prisma.user.findUnique({ where: { id: session.userId }, select: { weddingId: true } });
     isOwner = me?.weddingId === sub.weddingId;
   }

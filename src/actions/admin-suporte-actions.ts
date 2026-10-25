@@ -4,10 +4,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
-import { checkRateLimit } from "@/lib/security/rate-limiter";
-import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
-import { sendPasswordResetLink } from "@/lib/account/password-reset-link";
-import { deleteAccountById } from "@/lib/account/delete-account";
+import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
+import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
+import { enviarLinkDeRedefinicaoDeSenha } from "@/lib/account/password-reset-link";
+import { excluirContaPorId } from "@/lib/account/delete-account";
 import {
   dataRequestDueAt,
   dataRequestInput,
@@ -19,7 +19,7 @@ import {
   ticketInput,
   ticketUpdateInput,
 } from "@/lib/platform/support";
-import { SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 /**
@@ -44,7 +44,7 @@ function zodFail(error: z.ZodError): Fail {
 
 export async function createSupportTicket(input: unknown): Promise<(Ok & { number: number }) | Fail> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     const parsed = ticketInput.safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
@@ -72,13 +72,13 @@ export async function createSupportTicket(input: unknown): Promise<(Ok & { numbe
     refresh();
     return { success: true, number: created.number, message: `Pedido #${created.number} registrado.` };
   } catch (error) {
-    return platformAdminFailure(error, "createSupportTicket");
+    return falhaDeAdminDaPlataforma(error, "createSupportTicket");
   }
 }
 
 export async function updateSupportTicket(input: unknown): Promise<Ok | Fail> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     const parsed = ticketUpdateInput.safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
@@ -111,7 +111,7 @@ export async function updateSupportTicket(input: unknown): Promise<Ok | Fail> {
     refresh();
     return { success: true, message: `Pedido #${current.number} atualizado.` };
   } catch (error) {
-    return platformAdminFailure(error, "updateSupportTicket");
+    return falhaDeAdminDaPlataforma(error, "updateSupportTicket");
   }
 }
 
@@ -122,7 +122,7 @@ export async function updateSupportTicket(input: unknown): Promise<Ok | Fail> {
 /** Registra um pedido de titular. O prazo é recebimento + 15 dias (confirme com o jurídico). */
 export async function createDataRequest(input: unknown): Promise<Ok | Fail> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const parsed = dataRequestInput.safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
@@ -152,13 +152,13 @@ export async function createDataRequest(input: unknown): Promise<Ok | Fail> {
     refresh();
     return { success: true, message: user ? "Pedido registrado e ligado à conta." : "Pedido registrado. O e-mail não é de uma conta, então não dá para exportar nem excluir por aqui." };
   } catch (error) {
-    return platformAdminFailure(error, "createDataRequest");
+    return falhaDeAdminDaPlataforma(error, "createDataRequest");
   }
 }
 
 export async function updateDataRequest(input: unknown): Promise<Ok | Fail> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     const parsed = dataRequestUpdateInput.safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
@@ -179,7 +179,7 @@ export async function updateDataRequest(input: unknown): Promise<Ok | Fail> {
     refresh();
     return { success: true, message: d.status === "DONE" ? "Pedido marcado como pronto." : d.status === "REFUSED" ? "Pedido recusado." : "Pedido atualizado." };
   } catch (error) {
-    return platformAdminFailure(error, "updateDataRequest");
+    return falhaDeAdminDaPlataforma(error, "updateDataRequest");
   }
 }
 
@@ -189,10 +189,10 @@ export async function updateDataRequest(input: unknown): Promise<Ok | Fail> {
  */
 export async function fulfillDeletionRequest(input: unknown): Promise<Ok | Fail> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     const parsed = z.object({ id: z.string().uuid(), confirmEmail: z.string().trim().toLowerCase().max(200) }).safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
-    const limit = await checkRateLimit({ key: `ADMIN_DATA_DELETE:${admin.userId}`, limit: 5, windowMs: 60 * MINUTE });
+    const limit = await conferirLimiteDeUso({ key: `ADMIN_DATA_DELETE:${admin.userId}`, limit: 5, windowMs: 60 * MINUTE });
     if (!limit.success) return { success: false, error: "Muitas exclusões seguidas. Aguarde um pouco." };
 
     const request = await prisma.dataRequest.findUnique({ where: { id: parsed.data.id }, select: { id: true, type: true, status: true, userId: true, requesterEmail: true } });
@@ -203,9 +203,9 @@ export async function fulfillDeletionRequest(input: unknown): Promise<Ok | Fail>
     if (parsed.data.confirmEmail !== request.requesterEmail.toLowerCase()) {
       return { success: false, error: "Confira o e-mail digitado.", fieldErrors: { confirmEmail: "Digite o e-mail do titular, igual ao do pedido." } };
     }
-    if (request.userId === SUPER_ADMIN_USER_ID) return { success: false, error: "A conta de emergência não pode ser excluída." };
+    if (request.userId === ID_DO_SUPER_ADMIN) return { success: false, error: "A conta de emergência não pode ser excluída." };
 
-    const result = await deleteAccountById(request.userId);
+    const result = await excluirContaPorId(request.userId);
     if (!result.ok) {
       return { success: false, error: result.reason === "admin_account" ? "Contas da equipe são removidas em Usuários e perfis." : "A conta não existe mais." };
     }
@@ -222,7 +222,7 @@ export async function fulfillDeletionRequest(input: unknown): Promise<Ok | Fail>
     refresh();
     return { success: true, message: "Conta excluída e pedido encerrado." };
   } catch (error) {
-    return platformAdminFailure(error, "fulfillDeletionRequest");
+    return falhaDeAdminDaPlataforma(error, "fulfillDeletionRequest");
   }
 }
 
@@ -235,14 +235,14 @@ const NEUTRAL = "Se existir uma conta com este e-mail, enviamos o link de redefi
 /** Resposta sempre neutra (não revela se a conta existe). O link NUNCA aparece na tela nem no registro. */
 export async function sendSupportPasswordReset(input: unknown): Promise<Ok | Fail> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     const parsed = z.object({ email: z.string().trim().toLowerCase().email("Confira o e-mail.").max(200) }).safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
-    const limit = await checkRateLimit({ key: `ADMIN_PWRESET:${admin.userId}`, limit: 10, windowMs: 60 * MINUTE });
+    const limit = await conferirLimiteDeUso({ key: `ADMIN_PWRESET:${admin.userId}`, limit: 10, windowMs: 60 * MINUTE });
     if (!limit.success) return { success: false, error: "Muitos envios seguidos. Aguarde um pouco." };
-    const byEmail = await checkRateLimit({ key: `PWRESET_REQ_EMAIL:${parsed.data.email}`, limit: 3, windowMs: 60 * MINUTE });
+    const byEmail = await conferirLimiteDeUso({ key: `PWRESET_REQ_EMAIL:${parsed.data.email}`, limit: 3, windowMs: 60 * MINUTE });
     const user = byEmail.success ? await prisma.user.findUnique({ where: { username: parsed.data.email }, select: { id: true, name: true, username: true } }) : null;
-    const result = user ? await sendPasswordResetLink(user) : null;
+    const result = user ? await enviarLinkDeRedefinicaoDeSenha(user) : null;
     await registrarAuditoria({
       action: "support.password_reset",
       targetType: "user",
@@ -251,7 +251,7 @@ export async function sendSupportPasswordReset(input: unknown): Promise<Ok | Fai
     });
     return { success: true, message: NEUTRAL };
   } catch (error) {
-    return platformAdminFailure(error, "sendSupportPasswordReset");
+    return falhaDeAdminDaPlataforma(error, "sendSupportPasswordReset");
   }
 }
 
@@ -261,7 +261,7 @@ export async function sendSupportPasswordReset(input: unknown): Promise<Ok | Fai
 
 export async function createSecurityIncident(input: unknown): Promise<Ok | Fail> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     const parsed = incidentInput.safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
@@ -282,14 +282,14 @@ export async function createSecurityIncident(input: unknown): Promise<Ok | Fail>
     refresh();
     return { success: true, message: "Incidente registrado." };
   } catch (error) {
-    return platformAdminFailure(error, "createSecurityIncident");
+    return falhaDeAdminDaPlataforma(error, "createSecurityIncident");
   }
 }
 
 /** Atualiza quando e quem foi avisado, ou fecha/reabre o incidente. */
 export async function updateSecurityIncident(input: unknown): Promise<Ok | Fail> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const parsed = incidentUpdateInput.safeParse(input);
     if (!parsed.success) return zodFail(parsed.error);
     const d = parsed.data;
@@ -307,6 +307,6 @@ export async function updateSecurityIncident(input: unknown): Promise<Ok | Fail>
     refresh();
     return { success: true, message: d.close ? "Incidente fechado." : d.reopen ? "Incidente reaberto." : "Incidente atualizado." };
   } catch (error) {
-    return platformAdminFailure(error, "updateSecurityIncident");
+    return falhaDeAdminDaPlataforma(error, "updateSecurityIncident");
   }
 }

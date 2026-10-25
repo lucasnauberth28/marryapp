@@ -2,9 +2,9 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { completePanelTour, restartPanelTour, skipPanelTour } from "@/actions/tour-actions";
-import { TOUR_ACTIVE_ATTR } from "@/lib/tour/events";
-import type { PanelTourConfig } from "@/lib/tour/panel-tour";
-import type { TourStep } from "@/lib/tour/steps";
+import { ATRIBUTO_DO_TOUR_ATIVO } from "@/lib/tour/events";
+import type { ConfiguracaoDoTourDoPainel } from "@/lib/tour/panel-tour";
+import type { PassoDoTour } from "@/lib/tour/steps";
 import { TourWelcomeCard } from "./tour-welcome-card";
 import { TourSpotlight, type TourDone } from "./tour-spotlight";
 
@@ -37,21 +37,21 @@ function anchorExists(anchor: string) {
   return document.querySelector(`[data-tour="${anchor}"]`) !== null;
 }
 
-export function PanelTourProvider({ config, children }: { config: PanelTourConfig | null; children: ReactNode }) {
+export function PanelTourProvider({ config, children }: { config: ConfiguracaoDoTourDoPainel | null; children: ReactNode }) {
   const [phase, setPhase] = useState<Phase>(config && config.mode !== "none" ? "welcome" : "idle");
-  const [run, setRun] = useState<TourStep[]>([]);
+  const [run, setRun] = useState<PassoDoTour[]>([]);
   /** Quem tinha o foco antes de abrir, para devolver o foco ao fechar. */
   const returnFocus = useRef<HTMLElement | null>(null);
 
   // Sinal para o resto do painel (botão flutuante da Liz): enquanto o passo a passo está na tela, o body leva o atributo
   useEffect(() => {
     if (phase === "idle") return;
-    document.body.setAttribute(TOUR_ACTIVE_ATTR, "true");
-    return () => document.body.removeAttribute(TOUR_ACTIVE_ATTR);
+    document.body.setAttribute(ATRIBUTO_DO_TOUR_ATIVO, "true");
+    return () => document.body.removeAttribute(ATRIBUTO_DO_TOUR_ATIVO);
   }, [phase]);
 
   const open = useCallback(
-    (steps: TourStep[]) => {
+    (steps: PassoDoTour[]) => {
       // Passo da Liz só entra se o botão dela existir nesta tela
       const usable = steps.filter((s) => !s.floating || anchorExists(s.anchor));
       if (usable.length === 0) return;

@@ -4,7 +4,7 @@ import { EyeOff, ExternalLink, Flag, ShieldCheck, Star } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
-import { getVendorPageContext } from "@/lib/security/vendor-guard";
+import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 import { LinkPending } from "@/components/feedback/link-pending";
 import { Chip } from "../../_components/status-chip";
 import { formatWeddingDate } from "../../_lib/vendor-panel";
@@ -35,7 +35,7 @@ function formatShortDate(date: Date, now: Date): string {
 const oneDecimal = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 export default async function AvaliacoesPage({ searchParams }: { searchParams: Promise<{ filtro?: string }> }) {
-  const { vendor } = await getVendorPageContext();
+  const { vendor } = await obterContextoDaPaginaDoFornecedor();
   if (!vendor) return null; // o layout explica que a conta ainda não foi vinculada
 
   // Todas as consultas filtram pelo fornecedor da sessão.

@@ -29,8 +29,8 @@ import { Field, FormAlert } from "@/components/ui/field";
 import { ThemeSegmented } from "@/components/theme/theme-toggle";
 import { cn } from "@/lib/utils";
 import { PreferencesForm } from "@/components/notifications/preferences-form";
-import type { NotificationAudience, NotificationGroup } from "@/lib/notifications/catalog";
-import type { NotificationPrefs } from "@/lib/notifications/preferences";
+import type { PublicoDaNotificacao, GrupoDeNotificacao } from "@/lib/notifications/catalog";
+import type { PreferenciasDeNotificacao } from "@/lib/notifications/preferences";
 
 import { formatarDataBrasiliaLonga } from "@/lib/formatacao/data";
 interface Member {
@@ -54,7 +54,7 @@ interface Props {
   /** Chave pública do push (null com o push desligado no servidor). */
   pushPublicKey: string | null;
   /** Escolhas de avisos da conta e o que a tela oferece para este tipo de conta. */
-  notifications: { prefs: NotificationPrefs; audience: NotificationAudience; groups: NotificationGroup[] };
+  notifications: { prefs: PreferenciasDeNotificacao; audience: PublicoDaNotificacao; groups: GrupoDeNotificacao[] };
 }
 
 const shortFmt = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", timeZone: "America/Sao_Paulo" });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { classifyPushSupport, isIosDevice, type PushSupportState } from "@/lib/notifications/push-support";
+import { classificarSuporteAoPush, ehAparelhoIos, type SituacaoDoSuporteAoPush } from "@/lib/notifications/push-support";
 
 // Estado do aparelho para avisos, lido do navegador como uma "fonte externa" (sem setState em efeito).
 // Muda quando a permissão muda (inclusive nas configurações do navegador) ou o app é instalado.
@@ -14,16 +14,16 @@ export function notifyPushStateChanged() {
   emit();
 }
 
-function read(): PushSupportState {
+function read(): SituacaoDoSuporteAoPush {
   const standalone =
     window.matchMedia?.("(display-mode: standalone)").matches === true ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true;
-  return classifyPushSupport({
+  return classificarSuporteAoPush({
     hasServiceWorker: "serviceWorker" in navigator,
     hasPushManager: "PushManager" in window,
     hasNotification: "Notification" in window,
     permission: "Notification" in window ? Notification.permission : "default",
-    isIos: isIosDevice(navigator.userAgent, navigator.maxTouchPoints ?? 0),
+    isIos: ehAparelhoIos(navigator.userAgent, navigator.maxTouchPoints ?? 0),
     isStandalone: standalone,
   });
 }
@@ -50,6 +50,6 @@ function subscribe(onChange: () => void) {
   };
 }
 
-export function usePushSupport(): PushSupportState {
+export function usePushSupport(): SituacaoDoSuporteAoPush {
   return useSyncExternalStore(subscribe, read, () => "checking" as const);
 }

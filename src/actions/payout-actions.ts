@@ -4,10 +4,10 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import { AuthorizationError, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { requireWedding, type WeddingContext } from "@/lib/security/wedding-context";
-import { checkRateLimit } from "@/lib/security/rate-limiter";
-import { encryptPayoutSecret, isPayoutCryptoConfigured, payoutCurrentKeyVersion, PayoutCryptoError } from "@/lib/security/payout-crypto";
+import { AuthorizationError, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { exigirCasamento, type ContextoDoCasamento } from "@/lib/security/wedding-context";
+import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
+import { cifrarSegredoDoRepasse, cifraDoRepasseEstaConfigurada, versaoAtualDaChaveDoRepasse, ErroDeCifraDoRepasse } from "@/lib/security/payout-crypto";
 import { registrarAuditoria } from "@/lib/audit";
 import { contextoDaCifraDoRepasse, validarEntradaDeRepasse } from "@/lib/payout-input";
 import { obterVisaoDaContaDeRepasse, type VisaoDaContaDeRepasse } from "@/lib/payout-account-view";
@@ -30,22 +30,22 @@ const GENERIC_ERROR = "Não deu para salvar agora. Tente de novo em instantes.";
 const PasswordSchema = z.string().min(1, "Informe sua senha para confirmar.").max(200, "Senha longa demais.");
 
 /** Sessão que escreve, pessoa real do casamento e senha conferida. Devolve o contexto ou o motivo da recusa. */
-async function authorizeWrite(password: unknown, action: string): Promise<{ ctx: WeddingContext; userId: string; name: string } | Fail> {
-  let ctx: WeddingContext;
+async function authorizeWrite(password: unknown, action: string): Promise<{ ctx: ContextoDoCasamento; userId: string; name: string } | Fail> {
+  let ctx: ContextoDoCasamento;
   try {
-    ctx = await requireWedding("/configuracoes");
+    ctx = await exigirCasamento("/configuracoes");
   } catch (error) {
     if (error instanceof AuthorizationError) return { success: false, error: error.message };
     throw error;
   }
 
   // Administração vendo o casal (entrar como, conta de emergência, perfil "*" sem casamento): nunca escreve aqui.
-  if (ctx.impersonation || ctx.viaAdmin || ctx.session.userId === SUPER_ADMIN_USER_ID) return { success: false, error: NO_WRITE };
+  if (ctx.impersonation || ctx.viaAdmin || ctx.session.userId === ID_DO_SUPER_ADMIN) return { success: false, error: NO_WRITE };
 
   const pw = PasswordSchema.safeParse(password);
   if (!pw.success) return { success: false, error: pw.error.issues[0]?.message ?? "Informe sua senha para confirmar." };
 
-  const limit = await checkRateLimit({ key: `PAYOUT_ACCOUNT:${ctx.session.userId}`, limit: 6, windowMs: 15 * MINUTE });
+  const limit = await conferirLimiteDeUso({ key: `PAYOUT_ACCOUNT:${ctx.session.userId}`, limit: 6, windowMs: 15 * MINUTE });
   if (!limit.success) return { success: false, error: "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo." };
 
   // O weddingId da conta precisa ser o da sessão (defesa em profundidade contra IDOR).
@@ -70,7 +70,7 @@ export async function savePayoutAccount(input: unknown): Promise<PayoutResponse>
 
   const valid = validarEntradaDeRepasse(fields);
   if (!valid.ok) return { success: false, error: valid.error };
-  if (!isPayoutCryptoConfigured()) {
+  if (!cifraDoRepasseEstaConfigurada()) {
     return { success: false, error: "O cadastro dos dados de recebimento ainda não foi liberado. A equipe do Aceito está terminando a configuração de segurança." };
   }
 
@@ -81,16 +81,16 @@ export async function savePayoutAccount(input: unknown): Promise<PayoutResponse>
   const data = valid.value;
 
   try {
-    const encKeyVersion = payoutCurrentKeyVersion();
+    const encKeyVersion = versaoAtualDaChaveDoRepasse();
     const columns = {
       type: data.type,
       holderName: data.holderName,
       holderDocumentKind: data.holderDocumentKind,
-      holderDocumentEnc: encryptPayoutSecret(data.documentSecret, contextoDaCifraDoRepasse(weddingId, "document")),
+      holderDocumentEnc: cifrarSegredoDoRepasse(data.documentSecret, contextoDaCifraDoRepasse(weddingId, "document")),
       holderDocumentLast4: data.documentLast4,
       pixKeyType: data.pixKeyType,
-      pixKeyEnc: data.pixKeySecret ? encryptPayoutSecret(data.pixKeySecret, contextoDaCifraDoRepasse(weddingId, "pix")) : null,
-      bankAccountEnc: data.bankSecret ? encryptPayoutSecret(data.bankSecret, contextoDaCifraDoRepasse(weddingId, "bank")) : null,
+      pixKeyEnc: data.pixKeySecret ? cifrarSegredoDoRepasse(data.pixKeySecret, contextoDaCifraDoRepasse(weddingId, "pix")) : null,
+      bankAccountEnc: data.bankSecret ? cifrarSegredoDoRepasse(data.bankSecret, contextoDaCifraDoRepasse(weddingId, "bank")) : null,
       keyHint: data.keyHint,
       encKeyVersion,
       verifiedAt: null,
@@ -118,7 +118,7 @@ export async function savePayoutAccount(input: unknown): Promise<PayoutResponse>
     return { success: true, account: await obterVisaoDaContaDeRepasse(weddingId) };
   } catch (error) {
     // Só o tipo do erro: a mensagem do banco ou da cifra pode conter pedaços do dado.
-    console.error("[payout] falha ao salvar", error instanceof PayoutCryptoError ? error.code : error instanceof Error ? error.name : "erro");
+    console.error("[payout] falha ao salvar", error instanceof ErroDeCifraDoRepasse ? error.code : error instanceof Error ? error.name : "erro");
     return { success: false, error: GENERIC_ERROR };
   }
 }

@@ -4,7 +4,7 @@ import { PLANOS_ACEITOS_PELO_CUPOM, planosDoCupom } from "@/lib/checkout-pricing
 import { obterCatalogo } from "@/lib/catalog-server";
 import { planOption, shortPlanName } from "@/app/login/auth-config";
 import prisma from "@/lib/prisma";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { CouponsSection, type CouponRow } from "../_components/coupons-section";
 import { PlanosTabs } from "../_components/planos-tabs";
 
@@ -16,7 +16,7 @@ const SP_OFFSET_MS = 3 * 60 * 60 * 1000;
 const dayKey = (d: Date) => new Date(d.getTime() - SP_OFFSET_MS).toISOString().slice(0, 10);
 
 export default async function CuponsPage() {
-  await requirePlatformAdminPage();
+  await exigirAdminDaPlataformaNaPagina();
   const now = new Date();
   const catalog = await obterCatalogo();
   const coupons = await prisma.coupon.findMany({ orderBy: { createdAt: "desc" }, take: 200 });

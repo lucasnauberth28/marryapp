@@ -4,27 +4,27 @@ import { useRef, useState } from "react";
 import { Moon } from "lucide-react";
 import { toast } from "sonner";
 import { saveNotificationPreferences } from "@/actions/notification-preferences-actions";
-import { GROUP_LABEL, type NotificationAudience, type NotificationGroup } from "@/lib/notifications/catalog";
-import { offeredChannels, type NotificationChannel, type NotificationPrefs } from "@/lib/notifications/preferences";
+import { ROTULO_DO_GRUPO, type PublicoDaNotificacao, type GrupoDeNotificacao } from "@/lib/notifications/catalog";
+import { canaisOferecidos, type CanalDeNotificacao, type PreferenciasDeNotificacao } from "@/lib/notifications/preferences";
 import { NativeSelect } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { PushCard } from "./push-card";
 import { ToggleSwitch } from "./toggle-switch";
 
 interface Props {
-  initial: NotificationPrefs;
-  audience: NotificationAudience;
-  groups: NotificationGroup[];
+  initial: PreferenciasDeNotificacao;
+  audience: PublicoDaNotificacao;
+  groups: GrupoDeNotificacao[];
   pushPublicKey: string | null;
 }
 
-const CHANNEL_LABEL: Record<NotificationChannel, { title: string; hint: string }> = {
+const CHANNEL_LABEL: Record<CanalDeNotificacao, { title: string; hint: string }> = {
   push: { title: "Aviso no aparelho", hint: "Notificação no celular ou no computador" },
   whatsapp: { title: "WhatsApp", hint: "Só para o que não pode esperar" },
   email: { title: "E-mail", hint: "Uma mensagem na sua caixa de entrada" },
 };
 
-const WHATSAPP_HINT: Partial<Record<NotificationGroup, string>> = {
+const WHATSAPP_HINT: Partial<Record<GrupoDeNotificacao, string>> = {
   requests: "Só para novos pedidos de orçamento",
   account: "Só para plano ativado e perto de vencer",
 };
@@ -41,7 +41,7 @@ export function PreferencesForm({ initial, audience, groups, pushPublicKey }: Pr
   const saved = useRef(initial);
   const seq = useRef(0);
 
-  async function commit(next: NotificationPrefs) {
+  async function commit(next: PreferenciasDeNotificacao) {
     setPrefs(next);
     const mine = ++seq.current;
     try {
@@ -58,10 +58,10 @@ export function PreferencesForm({ initial, audience, groups, pushPublicKey }: Pr
     }
   }
 
-  const setChannel = (channel: NotificationChannel, group: NotificationGroup, value: boolean) =>
+  const setChannel = (channel: CanalDeNotificacao, group: GrupoDeNotificacao, value: boolean) =>
     commit({ ...prefs, channels: { ...prefs.channels, [channel]: { ...prefs.channels[channel], [group]: value } } });
 
-  const setQuiet = (patch: Partial<NotificationPrefs["quietHours"]>) => commit({ ...prefs, quietHours: { ...prefs.quietHours, ...patch } });
+  const setQuiet = (patch: Partial<PreferenciasDeNotificacao["quietHours"]>) => commit({ ...prefs, quietHours: { ...prefs.quietHours, ...patch } });
 
   const quiet = prefs.quietHours;
 
@@ -72,15 +72,15 @@ export function PreferencesForm({ initial, audience, groups, pushPublicKey }: Pr
       <div className="flex flex-col gap-3">
         <h3 className="text-base font-semibold text-tinta">O que você quer receber</h3>
         {groups.map((group) => {
-          const channels = offeredChannels(group, audience);
+          const channels = canaisOferecidos(group, audience);
           return (
             <fieldset key={group} className="rounded-2xl border border-linha bg-papel p-4">
-              <legend className="sr-only">{GROUP_LABEL[group].title}</legend>
+              <legend className="sr-only">{ROTULO_DO_GRUPO[group].title}</legend>
               <p className="text-[15px] font-semibold text-tinta" aria-hidden="true">
-                {GROUP_LABEL[group].title}
+                {ROTULO_DO_GRUPO[group].title}
               </p>
               <p className="mt-0.5 text-sm leading-5 text-tinta-suave" aria-hidden="true">
-                {GROUP_LABEL[group].hint}
+                {ROTULO_DO_GRUPO[group].hint}
               </p>
               <ul className="mt-2 divide-y divide-linha">
                 {channels.map((channel) => (
@@ -94,7 +94,7 @@ export function PreferencesForm({ initial, audience, groups, pushPublicKey }: Pr
                     <ToggleSwitch
                       checked={prefs.channels[channel][group]}
                       onChange={(value) => void setChannel(channel, group, value)}
-                      label={`${GROUP_LABEL[group].title}: ${CHANNEL_LABEL[channel].title}`}
+                      label={`${ROTULO_DO_GRUPO[group].title}: ${CHANNEL_LABEL[channel].title}`}
                     />
                   </li>
                 ))}

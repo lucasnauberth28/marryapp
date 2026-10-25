@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { NotificationItem } from "@/actions/notification-actions";
-import { relativeTime } from "@/lib/notifications/relative-time";
+import { tempoRelativo } from "@/lib/notifications/relative-time";
 import { cn } from "@/lib/utils";
 import { NotificationIconBadge } from "./visuals";
 
@@ -17,7 +17,7 @@ interface Props {
 /** Uma linha da lista: não lido tem fundo suave, ponto e título em negrito. A linha toda é o alvo de toque (44px+). */
 export function NotificationRow({ item, now, onOpen }: Props) {
   const unread = !item.readAt;
-  const time = relativeTime(new Date(item.createdAt), now);
+  const time = tempoRelativo(new Date(item.createdAt), now);
   const content = (
     <>
       <NotificationIconBadge type={item.type} />

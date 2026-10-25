@@ -3,8 +3,8 @@
 import { useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
 import { btn } from "@/components/landing/styles";
-import { openLiz } from "@/lib/liz/events";
-import type { LizTipPose } from "@/lib/liz/pose";
+import { abrirALiz } from "@/lib/liz/events";
+import type { PoseDaDicaDaLiz } from "@/lib/liz/pose";
 import { LizIllustration } from "@/components/liz/liz-illustration";
 
 /**
@@ -55,7 +55,7 @@ interface MadrinhaCardProps {
   actionLabel: string;
   actionHref: string;
   /** Pose da Liz conforme o motivo da dica (lib/liz/pose: lizTipPose). */
-  pose?: LizTipPose;
+  pose?: PoseDaDicaDaLiz;
   className?: string;
 }
 
@@ -91,7 +91,7 @@ export function MadrinhaCard({ id, text, actionLabel, actionHref, pose = "sugeri
         <button type="button" onClick={() => adiar(id)} className={`${btn.quiet} ${btn.sm}`}>
           Agora não
         </button>
-        <button type="button" onClick={openLiz} className={`${btn.quiet} ${btn.sm}`}>
+        <button type="button" onClick={abrirALiz} className={`${btn.quiet} ${btn.sm}`}>
           Falar com a Liz
         </button>
       </div>

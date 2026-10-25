@@ -8,7 +8,7 @@ import { PendingRegion } from "@/components/plataforma/pending";
 import { Pagination } from "@/components/plataforma/pagination";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type SearchParams, buildHref, oneOf, param, parsePage, DEFAULT_PAGE_SIZE } from "@/lib/platform/list-params";
 import { formatInt } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
@@ -29,7 +29,7 @@ export const metadata = { title: "Casais" };
 const ACOMPANHAR = ["marcados"] as const;
 
 export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
 
   const tab = oneOf(query, "aba", CASAIS_TABS) ?? "todos";

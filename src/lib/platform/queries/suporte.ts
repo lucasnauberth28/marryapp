@@ -1,6 +1,6 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { normalizeSearch, phoneDigits } from "@/lib/platform/support";
 
 /**
@@ -28,7 +28,7 @@ const PER_TYPE = 8;
 
 /** Busca em tudo: casal (nome, endereço do site, domínio), pessoa (nome, e-mail) e fornecedor (nome, telefone). Até 8 por tipo. */
 export async function searchEverything(raw: string | undefined): Promise<SearchResults | null> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   const q = normalizeSearch(raw);
   if (!q) return null;
   const digits = phoneDigits(q);
@@ -111,7 +111,7 @@ export interface TicketRow {
 }
 
 export async function listTickets(opts: { showClosed: boolean }): Promise<{ rows: TicketRow[]; newCount: number; closedCount: number }> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   const [rows, newCount, closedCount] = await Promise.all([
     prisma.supportTicket.findMany({
       where: opts.showClosed ? undefined : { status: { not: "CLOSED" } },
@@ -130,7 +130,7 @@ export async function listTickets(opts: { showClosed: boolean }): Promise<{ rows
 
 /** Dados para preencher "Novo pedido" quando vem de um casal ou fornecedor (links de Casais e da busca). */
 export async function ticketPrefill(ref: { weddingId?: string; vendorId?: string }): Promise<{ weddingId?: string; vendorId?: string; requesterName: string; requesterEmail: string; label: string } | null> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   if (ref.weddingId) {
     const w = await prisma.wedding.findUnique({ where: { id: ref.weddingId }, select: { id: true, coupleNames: true, members: { orderBy: { createdAt: "asc" }, take: 1, select: { name: true, username: true } } } });
     if (!w) return null;
@@ -161,7 +161,7 @@ export interface DataRequestRow {
 }
 
 export async function listDataRequests(): Promise<DataRequestRow[]> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   // Abertos primeiro (o mais perto de vencer no topo), depois os encerrados mais recentes
   const [open, closed] = await Promise.all([
     prisma.dataRequest.findMany({ where: { status: { in: ["NEW", "IN_REVIEW"] } }, orderBy: { dueAt: "asc" }, take: 50 }),
@@ -186,7 +186,7 @@ export interface IncidentRow {
 }
 
 export async function listIncidents(): Promise<IncidentRow[]> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   return prisma.securityIncident.findMany({
     orderBy: [{ status: "asc" }, { discoveredAt: "desc" }],
     take: 30,

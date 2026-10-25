@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/plataforma/page-header";
 import { TabsNav } from "@/components/plataforma/tabs-nav";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type SearchParams, oneOf } from "@/lib/platform/list-params";
 import { getRoles, getUsers } from "@/actions/rbac-actions";
 import { UsersClient } from "@/app/(admin)/usuarios/users-client";
@@ -13,7 +13,7 @@ export const metadata = { title: "Usuários e perfis" };
  * antes (rbac-actions, com as mesmas permissões e travas de escalada de privilégio); aqui só mudam o shell e as abas.
  */
 export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
   const aba = oneOf(query, "aba", ["usuarios", "perfis"] as const) ?? "usuarios";
   const [users, roles] = await Promise.all([aba === "usuarios" ? getUsers() : Promise.resolve([]), getRoles()]);

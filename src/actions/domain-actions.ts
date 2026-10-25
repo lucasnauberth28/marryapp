@@ -4,16 +4,16 @@ import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { urlBaseDoApp } from "@/lib/app-url";
 import { registrarAuditoria } from "@/lib/audit";
-import { isUniqueViolation } from "@/lib/account/wedding-provisioning";
+import { ehViolacaoDeUnicidade } from "@/lib/account/wedding-provisioning";
 import { ehDominioReservado } from "@/lib/custom-domain-host";
 import { esconderDocumento } from "@/lib/document-br";
 import { verificarDisponibilidadeDoDominio, type DisponibilidadeDoDominio } from "@/lib/domain-availability";
 import { normalizarNomeDeDominio } from "@/lib/domain-name";
 import { SITUACOES_ATIVAS, interpretarPedidoDeDominio, type CampoDoPedidoDeDominio } from "@/lib/domain-order";
 import { VERSAO_DOS_TERMOS_DE_DOMINIO } from "@/lib/domain-terms";
-import { AuthorizationError, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { checkRateLimit, getClientIp } from "@/lib/security/rate-limiter";
-import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
+import { AuthorizationError, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
+import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 import { obterPlanoDoCasamento, recusaDeModulo } from "@/lib/wedding-plan";
 
 // Ações do casal para o domínio próprio. Tudo é do casamento da sessão: o navegador nunca diz de qual
@@ -22,12 +22,12 @@ import { obterPlanoDoCasamento, recusaDeModulo } from "@/lib/wedding-plan";
 const ERR_SESSION = "Entre na sua conta de novo para continuar.";
 const ERR_BUSY = "Muitas tentativas seguidas. Aguarde alguns minutos e tente de novo.";
 
-type Ctx = Awaited<ReturnType<typeof requireWedding>>;
+type Ctx = Awaited<ReturnType<typeof exigirCasamento>>;
 
 /** `write: false` para consultas (só leem): valem também em "entrar como" somente leitura e casamento suspenso. */
 async function context(write = true): Promise<{ ctx: Ctx; error?: undefined } | { ctx?: undefined; error: string }> {
   try {
-    return { ctx: await (write ? requireWedding("/dominio") : requireWeddingRead("/dominio")) };
+    return { ctx: await (write ? exigirCasamento("/dominio") : exigirCasamentoParaLeitura("/dominio")) };
   } catch (error) {
     if (error instanceof AuthorizationError) return { error: error.message || ERR_SESSION };
     throw error;
@@ -35,10 +35,10 @@ async function context(write = true): Promise<{ ctx: Ctx; error?: undefined } | 
 }
 
 async function limited(scope: string, userId: string, limit: number, windowMs: number): Promise<boolean> {
-  const ip = await getClientIp();
+  const ip = await obterIpDoCliente();
   const [byUser, byIp] = await Promise.all([
-    checkRateLimit({ key: `${scope}:u:${userId}`, limit, windowMs }),
-    checkRateLimit({ key: `${scope}:ip:${ip}`, limit: limit * 3, windowMs }),
+    conferirLimiteDeUso({ key: `${scope}:u:${userId}`, limit, windowMs }),
+    conferirLimiteDeUso({ key: `${scope}:ip:${ip}`, limit: limit * 3, windowMs }),
   ]);
   return !byUser.success || !byIp.success;
 }
@@ -105,14 +105,14 @@ export async function requestDomainAction(input: unknown): Promise<RequestDomain
     return { success: false, fieldErrors: { domain: `${data.domain} está em liberação e não dá para pedir agora. Escolham outro nome.` } };
   }
 
-  const plan = session.userId === SUPER_ADMIN_USER_ID ? null : await obterPlanoDoCasamento(weddingId);
+  const plan = session.userId === ID_DO_SUPER_ADMIN ? null : await obterPlanoDoCasamento(weddingId);
 
   let orderId: string;
   try {
     const order = await prisma.domainOrder.create({
       data: {
         weddingId,
-        requestedByUserId: session.userId === SUPER_ADMIN_USER_ID ? null : session.userId,
+        requestedByUserId: session.userId === ID_DO_SUPER_ADMIN ? null : session.userId,
         subscriptionId: plan?.subscriptionId ?? null,
         domain: data.domain,
         holderName: data.holderName,
@@ -124,7 +124,7 @@ export async function requestDomainAction(input: unknown): Promise<RequestDomain
     });
     orderId = order.id;
   } catch (error) {
-    if (isUniqueViolation(error)) return { success: false, error: "Já existe um pedido para este casamento ou para este endereço. Atualize a página." };
+    if (ehViolacaoDeUnicidade(error)) return { success: false, error: "Já existe um pedido para este casamento ou para este endereço. Atualize a página." };
     console.error("[requestDomainAction]", error instanceof Error ? error.message : error);
     return { success: false, error: "Não conseguimos registrar o pedido agora. Tente de novo em instantes." };
   }

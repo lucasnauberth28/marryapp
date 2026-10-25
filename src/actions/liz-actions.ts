@@ -4,16 +4,16 @@ import { z } from "zod";
 import { ExpenseStatus, RsvpStatus, TaskStatus } from "@prisma/client";
 import { startOfDay } from "date-fns";
 import prisma from "@/lib/prisma";
-import { requireWeddingRead } from "@/lib/security/wedding-context";
-import { AuthorizationError } from "@/lib/security/authorization-error";
+import { exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
+import { ErroDeAutorizacao } from "@/lib/security/authorization-error";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
 import { filtroSemSoPresente } from "@/lib/guest-origin";
 import { temAcessoAoCaminho } from "@/lib/permissions";
 import { diasAte } from "@/lib/wedding-format";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
-import { decideLizTip, type LizTip } from "@/lib/liz/tip";
-import { helpGuideAnswerer, type LizAnswer } from "@/lib/liz/answerer";
-import { getLizProvider, readLizChatEnabled } from "@/lib/liz/provider";
+import { decidirDicaDaLiz, type DicaDaLiz } from "@/lib/liz/tip";
+import { respondedoraDoGuiaDeAjuda, type RespostaDaLiz } from "@/lib/liz/answerer";
+import { obterProvedorDaLiz, lerSeOChatDaLizEstaAtivo } from "@/lib/liz/provider";
 
 // Painel da Liz. Só leitura: a Liz orienta e nunca executa. Tudo é escopado pelo casamento da sessão
 // (requireWeddingRead), vale em "entrar como" somente leitura, e nenhum id vem do navegador.
@@ -22,7 +22,7 @@ const SP = "America/Sao_Paulo";
 
 export interface LizPanelData {
   /** Sugestão para agora, ou null quando não há nada a sugerir. */
-  tip: LizTip | null;
+  tip: DicaDaLiz | null;
   /** O que o plano do casamento inclui, para o guia avisar "é do plano Classic". */
   planModules: { whatsapp: boolean; qrcode: boolean; customDomain: boolean; tables3d: boolean };
   /** As perguntas vão a um provedor de IA? Hoje é sempre false: a Liz responde pelo guia de ajuda. */
@@ -36,7 +36,7 @@ const LOAD_ERROR = "Não deu para carregar a sugestão agora. Tente de novo.";
 /** Dados do painel: a sugestão para agora (mesmas regras do Início e das Tarefas) e o plano do casamento. */
 export async function getLizPanelData(): Promise<LizPanelResult> {
   try {
-    const ctx = await requireWeddingRead();
+    const ctx = await exigirCasamentoParaLeitura();
     const { weddingId, session } = ctx;
     const can = (path: string) => temAcessoAoCaminho(session.allowedPaths, path);
     const now = new Date();
@@ -47,7 +47,7 @@ export async function getLizPanelData(): Promise<LizPanelResult> {
       casamentoTemModulo({ weddingId, session }, "qrcode"),
       casamentoTemModulo({ weddingId, session }, "customDomain"),
       casamentoTemModulo({ weddingId, session }, "tables3d"),
-      readLizChatEnabled(),
+      lerSeOChatDaLizEstaAtivo(),
     ]);
 
     // Só consulta o que o perfil pode abrir: a dica nunca aponta para uma tela sem acesso.
@@ -77,7 +77,7 @@ export async function getLizPanelData(): Promise<LizPanelResult> {
 
     const { weddingDate } = await obterIdentidadeDoCasamentoPrincipal();
     const days = weddingDate ? diasAte(weddingDate) : null;
-    const tip = decideLizTip({
+    const tip = decidirDicaDaLiz({
       pendingGuests,
       pendingPeople,
       deadlineKey: settings?.rsvpDeadline ? settings.rsvpDeadline.toISOString().slice(0, 10) : null,
@@ -92,7 +92,7 @@ export async function getLizPanelData(): Promise<LizPanelResult> {
 
     return { success: true, data: { tip, planModules: { whatsapp, qrcode, customDomain, tables3d }, chatEnabled } };
   } catch (error) {
-    if (!(error instanceof AuthorizationError)) console.error("[getLizPanelData Error]:", error);
+    if (!(error instanceof ErroDeAutorizacao)) console.error("[getLizPanelData Error]:", error);
     return { success: false, error: LOAD_ERROR };
   }
 }
@@ -102,7 +102,7 @@ const askInput = z.object({
   pathname: z.string().max(120).optional(),
 });
 
-export type AskLizResult = { success: true; answer: LizAnswer } | { success: false; error: string };
+export type AskLizResult = { success: true; answer: RespostaDaLiz } | { success: false; error: string };
 
 /**
  * Pergunta à Liz. Se a administração ligou a IA E existe um provedor, a pergunta passa a ele; caso contrário
@@ -113,7 +113,7 @@ export async function askLiz(input: unknown): Promise<AskLizResult> {
   const parsed = askInput.safeParse(input);
   if (!parsed.success) return { success: false, error: "Escreva a sua pergunta com até 300 letras." };
   try {
-    const { session, weddingId } = await requireWeddingRead();
+    const { session, weddingId } = await exigirCasamentoParaLeitura();
     const context = {
       allowedPaths: session.allowedPaths,
       pathname: parsed.data.pathname,
@@ -124,11 +124,11 @@ export async function askLiz(input: unknown): Promise<AskLizResult> {
         tables3d: await casamentoTemModulo({ weddingId, session }, "tables3d"),
       },
     };
-    const provider = getLizProvider();
-    const answerer = provider && (await readLizChatEnabled()) ? provider : helpGuideAnswerer;
+    const provider = obterProvedorDaLiz();
+    const answerer = provider && (await lerSeOChatDaLizEstaAtivo()) ? provider : respondedoraDoGuiaDeAjuda;
     return { success: true, answer: await answerer.answer(parsed.data.question, context) };
   } catch (error) {
-    if (!(error instanceof AuthorizationError)) console.error("[askLiz Error]:", error);
+    if (!(error instanceof ErroDeAutorizacao)) console.error("[askLiz Error]:", error);
     return { success: false, error: "Não deu para responder agora. Tente de novo." };
   }
 }

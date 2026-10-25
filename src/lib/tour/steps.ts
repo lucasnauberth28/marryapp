@@ -3,9 +3,9 @@ import { temAcessoAoCaminho } from "../permissions.ts";
 import { AREAS_DO_PAINEL, type IdDaArea } from "../panel-nav.ts";
 
 /** Módulos de plano que fecham uma tela inteira (o resto do painel abre para todos os planos). */
-export type TourModule = "whatsapp" | "qrcode" | "customDomain";
+export type ModuloDoTour = "whatsapp" | "qrcode" | "customDomain";
 
-interface StepDef {
+interface DefinicaoDoPasso {
   id: string;
   /** Versão do passo a passo em que o passo nasceu. */
   since: number;
@@ -15,14 +15,14 @@ interface StepDef {
    */
   targets: readonly string[];
   /** Tela que o plano precisa incluir; sem o módulo o passo não aparece. */
-  needs?: TourModule;
+  needs?: ModuloDoTour;
   /** Âncora que não é do menu (botão flutuante da Liz): sem ela na tela, o passo some. */
   floating?: string;
   /** Âncora própria que não é item do menu (o botão do menu da conta). */
   anchor?: string;
   title: string;
   /** O que se faz ali. Pode variar conforme as áreas que o perfil abre e os módulos do plano. */
-  what: string | ((opens: (href: string) => boolean, has: (module: TourModule) => boolean) => string);
+  what: string | ((opens: (href: string) => boolean, has: (module: ModuloDoTour) => boolean) => string);
   /** Texto do botão que leva à tela (recebe a área escolhida); sem ele o passo só explica. */
   cta?: string | ((href: string) => string);
   /** Onde clicar, para âncoras que não são do menu. */
@@ -30,13 +30,13 @@ interface StepDef {
 }
 
 /** Telas de cada área, na mesma ordem do menu (lib/panel-nav). */
-const screensOf = (id: IdDaArea) => AREAS_DO_PAINEL.find((a) => a.id === id)!.screens.map((s) => s.href);
+const telasDe = (id: IdDaArea) => AREAS_DO_PAINEL.find((a) => a.id === id)!.screens.map((s) => s.href);
 
-const DEFS: readonly StepDef[] = [
+const DEFINICOES: readonly DefinicaoDoPasso[] = [
   {
     id: "resumo",
     since: 2,
-    targets: screensOf("resumo"),
+    targets: telasDe("resumo"),
     title: "Resumo do casamento",
     what: "Vocês veem num só lugar o convite para mandar aos convidados, as confirmações de presença, os presentes recebidos e o orçamento, com o que fazer agora no topo.",
     cta: "Ir para o Resumo",
@@ -44,7 +44,7 @@ const DEFS: readonly StepDef[] = [
   {
     id: "convidados",
     since: 2,
-    targets: screensOf("convidados"),
+    targets: telasDe("convidados"),
     title: "Convidados",
     what: (opens, has) => {
       const extras = [opens("/mensagens") && has("whatsapp") ? "as Mensagens" : null, opens("/mesas") ? "as Mesas" : null, opens("/credenciamento") && has("qrcode") ? "o Registro de entrada" : null].filter(Boolean);
@@ -56,7 +56,7 @@ const DEFS: readonly StepDef[] = [
   {
     id: "site",
     since: 2,
-    targets: screensOf("site"),
+    targets: telasDe("site"),
     title: "Site e convite",
     what: "Editem as informações, as fotos e a história de vocês. Ao publicar, o aviso mostra o endereço do site, que é o link do convite para compartilhar com os convidados.",
     cta: "Ir para Site e convite",
@@ -64,7 +64,7 @@ const DEFS: readonly StepDef[] = [
   {
     id: "presentes",
     since: 2,
-    targets: screensOf("presentes"),
+    targets: telasDe("presentes"),
     title: "Presentes e dinheiro",
     what: "Criem presentes com valores em reais. O convidado escolhe um e paga por Pix ou cartão. Nenhum produto é entregue: o presente é o valor. Aqui vocês acompanham o que já chegou e confirmam os Pix que esperam conferência.",
     cta: "Ir para Presentes e dinheiro",
@@ -72,7 +72,7 @@ const DEFS: readonly StepDef[] = [
   {
     id: "organizacao",
     since: 2,
-    targets: screensOf("organizacao"),
+    targets: telasDe("organizacao"),
     title: "Organização",
     what: (opens) => {
       const parts = [
@@ -109,7 +109,7 @@ const DEFS: readonly StepDef[] = [
 ];
 
 /** Passo pronto para a pessoa: já filtrado pelo perfil e pelo plano. */
-export interface TourStep {
+export interface PassoDoTour {
   id: string;
   since: number;
   title: string;
@@ -126,7 +126,7 @@ export interface TourStep {
 }
 
 /** `data-tour` de um item do menu: "/site-builder" vira "nav-site-builder". */
-export function navAnchor(href: string): string {
+export function ancoraDoMenu(href: string): string {
   return `nav-${href.replace(/^\//, "").replace(/\//g, "-")}`;
 }
 
@@ -134,11 +134,11 @@ export function navAnchor(href: string): string {
  * Passos que esta pessoa vê. Cada passo respeita as MESMAS permissões do menu (hasPathAccess sobre os
  * caminhos do perfil) e os módulos do plano: o passo a passo nunca explica o que a pessoa não pode abrir.
  */
-export function buildTourSteps(opts: { allowedPaths: readonly string[]; modules: readonly string[] }): TourStep[] {
+export function montarPassosDoTour(opts: { allowedPaths: readonly string[]; modules: readonly string[] }): PassoDoTour[] {
   const paths = [...opts.allowedPaths];
   const opens = (href: string) => temAcessoAoCaminho(paths, href);
-  const steps: TourStep[] = [];
-  for (const def of DEFS) {
+  const steps: PassoDoTour[] = [];
+  for (const def of DEFINICOES) {
     if (def.needs && !opts.modules.includes(def.needs)) continue;
     const href = def.targets.find(opens);
     if (!href) continue;
@@ -149,7 +149,7 @@ export function buildTourSteps(opts: { allowedPaths: readonly string[]; modules:
       title: def.title,
       what: text,
       href: def.floating ? null : href,
-      anchor: def.floating ?? def.anchor ?? navAnchor(href),
+      anchor: def.floating ?? def.anchor ?? ancoraDoMenu(href),
       floating: Boolean(def.floating),
       cta: def.cta && !def.floating ? (typeof def.cta === "function" ? def.cta(href) : def.cta) : null,
       where: def.where ?? null,
@@ -159,7 +159,7 @@ export function buildTourSteps(opts: { allowedPaths: readonly string[]; modules:
 }
 
 /** Nome da área no menu, para dizer onde clicar. */
-export interface StepPlace {
+export interface LugarDoPasso {
   /** Nome da área no menu lateral ("Site e convite"). */
   menuLabel: string;
   /** Nome na barra de baixo do celular ("Site"). */
@@ -167,7 +167,7 @@ export interface StepPlace {
 }
 
 /** Onde clicar, no computador ou no celular, com os nomes reais do menu. */
-export function whereText(step: Pick<TourStep, "where">, place: StepPlace | null, device: "desktop" | "mobile"): string {
+export function textoDoLugar(step: Pick<PassoDoTour, "where">, place: LugarDoPasso | null, device: "desktop" | "mobile"): string {
   if (step.where) return step.where;
   if (!place) return "";
   if (device === "desktop") return `No menu ao lado, clique em “${place.menuLabel}”.`;

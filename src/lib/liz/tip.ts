@@ -5,7 +5,7 @@ import { temAcessoAoCaminho } from "../permissions.ts";
 import { ACAO_DAS_CONFIRMACOES_PENDENTES, LINK_DAS_CONFIRMACOES_PENDENTES, textoDaDicaDeConfirmacaoPendente, dicaDeConfirmacaoUrgente } from "../liz-tips.ts";
 
 import { escolherPlural } from "../formatacao/plural.ts";
-export interface LizTip {
+export interface DicaDaLiz {
   /** Id estável por tipo de dica (o cartão do Início lembra o "Agora não" por ele). */
   id: string;
   /** Situação observada + motivo relevante, já com os números reais. */
@@ -17,7 +17,7 @@ export interface LizTip {
   urgent: boolean;
 }
 
-export interface LizTipInput {
+export interface EntradaDaDicaDaLiz {
   /** Convites sem resposta (um por convidado; quem só presenteou fica de fora). */
   pendingGuests: number;
   /** Pessoas nesses convites (convidado e acompanhantes), para a frase dizer convites e pessoas. */
@@ -39,7 +39,7 @@ export interface LizTipInput {
 }
 
 /** Primeira dica que se aplica, na ordem de importância; null quando não há nada a sugerir. */
-export function decideLizTip(input: LizTipInput): LizTip | null {
+export function decidirDicaDaLiz(input: EntradaDaDicaDaLiz): DicaDaLiz | null {
   const can = (path: string) => temAcessoAoCaminho([...input.allowedPaths], path);
 
   if (input.pendingGuests > 0 && can("/convidados")) {

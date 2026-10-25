@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { areaOfPath, navIcon, visibleAreas } from "@/components/admin/nav-config";
-import { navAnchor } from "@/lib/tour/steps";
+import { ancoraDoMenu } from "@/lib/tour/steps";
 
 /**
  * Navegação do painel no celular: barra inferior fixa com as mesmas 5 áreas do menu do computador.
@@ -28,7 +28,7 @@ export function MobileTabBar({ allowedPaths }: { allowedPaths: string[] }) {
           <Link
             key={area.id}
             href={area.href}
-            data-tour={navAnchor(area.href)}
+            data-tour={ancoraDoMenu(area.href)}
             aria-current={active ? "page" : undefined}
             className={`flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-lg text-[11px] leading-4 transition-colors ${
               active ? "font-semibold text-ameixa" : "font-medium text-tinta-suave"

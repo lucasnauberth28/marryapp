@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { areaOfPath, navIcon, visibleAdminItems, visibleAreas, isNavItemActive, type NavCountKey } from "@/components/admin/nav-config";
-import { navAnchor } from "@/lib/tour/steps";
+import { ancoraDoMenu } from "@/lib/tour/steps";
 
 export type NavCounts = Partial<Record<NavCountKey, number>>;
 
@@ -39,7 +39,7 @@ export function NavList({ allowedPaths, counts = {} }: { allowedPaths: string[];
           const active = current?.id === area.id;
           return (
             <li key={area.id}>
-              <Link href={area.href} data-tour={navAnchor(area.href)} aria-current={active ? "page" : undefined} className={rowClass(active)}>
+              <Link href={area.href} data-tour={ancoraDoMenu(area.href)} aria-current={active ? "page" : undefined} className={rowClass(active)}>
                 <Icon className="size-[18px] shrink-0" strokeWidth={1.6} aria-hidden="true" />
                 <span className="min-w-0 flex-1 truncate">{area.name}</span>
               </Link>

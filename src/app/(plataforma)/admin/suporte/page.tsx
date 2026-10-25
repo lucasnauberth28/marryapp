@@ -7,8 +7,8 @@ import { InitialsAvatar } from "@/components/plataforma/initials-avatar";
 import { btn } from "@/components/landing/styles";
 import { RowsSkeleton } from "@/components/plataforma/loading-parts";
 import { SkeletonCard, SkeletonForm, LoadingRegion } from "@/components/skeletons";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
-import { checkRateLimit } from "@/lib/security/rate-limiter";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
+import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { type SearchParams, param } from "@/lib/platform/list-params";
 import { formatDate, timeAgo } from "@/lib/platform/format";
 import { dueState } from "@/lib/platform/support";
@@ -25,7 +25,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ymd = (d: Date | null) => (d ? new Date(d.getTime() - 3 * 3_600_000).toISOString().slice(0, 10) : "");
 
 export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const admin = await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  const admin = await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
   const searchText = param(query, "q", 100);
   const showClosed = param(query, "encerrados", 2) === "1";
@@ -89,7 +89,7 @@ function SupportListsSkeleton() {
 
 async function SearchResults({ searchText, userId }: { searchText: string; userId: string }) {
   // Busca limitada por pessoa da administração: 60 por minuto
-  const allowed = (await checkRateLimit({ key: `ADMIN_SEARCH:${userId}`, limit: 60, windowMs: 60_000 })).success;
+  const allowed = (await conferirLimiteDeUso({ key: `ADMIN_SEARCH:${userId}`, limit: 60, windowMs: 60_000 })).success;
   const results = allowed ? await searchEverything(searchText) : null;
   return (
     <>

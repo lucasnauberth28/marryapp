@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Check } from "lucide-react";
 import { CustomModal } from "@/components/ui/custom-modal";
-import { SCENES, type SceneId } from "@/lib/mesas3d/scenarios";
+import { CENARIOS, type IdDoCenario } from "@/lib/mesas3d/scenarios";
 import { cn } from "@/lib/utils";
 
 /** Escolha do cenário: três salões com prévia. Sem escolha feita, não dá para fechar (a cena precisa de um cenário). */
@@ -14,8 +14,8 @@ export function SceneGallery({
   onClose,
 }: {
   open: boolean;
-  current: SceneId | null;
-  onPick: (id: SceneId) => void;
+  current: IdDoCenario | null;
+  onPick: (id: IdDoCenario) => void;
   onClose: () => void;
 }) {
   return (
@@ -29,7 +29,7 @@ export function SceneGallery({
       size="xl"
     >
       <ul className="grid gap-4 sm:grid-cols-3">
-        {SCENES.map((s) => {
+        {CENARIOS.map((s) => {
           const active = s.id === current;
           return (
             <li key={s.id}>

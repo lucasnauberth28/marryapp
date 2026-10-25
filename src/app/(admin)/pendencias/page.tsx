@@ -3,11 +3,11 @@ import { getTasks } from "@/actions/tasks";
 import prisma from "@/lib/prisma";
 import { MadrinhaCard } from "@/components/admin/madrinha-card";
 import { TasksBoard, type Filter } from "@/components/tarefas/tasks-board";
-import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 import { diasAte } from "@/lib/wedding-format";
 import { ACAO_DAS_CONFIRMACOES_PENDENTES, LINK_DAS_CONFIRMACOES_PENDENTES, textoDaDicaDeConfirmacaoPendente, dicaDeConfirmacaoUrgente } from "@/lib/liz-tips";
-import { lizTipPose } from "@/lib/liz/pose";
+import { poseDaDicaDaLiz } from "@/lib/liz/pose";
 import { filtroSemSoPresente } from "@/lib/guest-origin";
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ const SP = "America/Sao_Paulo";
 const FILTROS: Record<string, Filter> = { abertas: "abertas", atrasadas: "atrasadas", concluidas: "concluidas" };
 
 export default async function PendenciasPage({ searchParams }: { searchParams: Promise<{ filtro?: string }> }) {
-  const { weddingId } = await requireWeddingPage("/pendencias");
+  const { weddingId } = await exigirCasamentoNaPagina("/pendencias");
   const { filtro } = await searchParams;
 
   const [{ data: tasks, success }, identity] = await Promise.all([getTasks(), obterIdentidadeDoCasamentoPrincipal()]);
@@ -47,7 +47,7 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
         text={`${overdue === 1 ? "Uma tarefa passou do prazo" : `${overdue} tarefas passaram do prazo`}. Rever as datas ou marcar o que já foi feito mantém a lista fiel ao que falta.`}
         actionLabel={overdue === 1 ? "Ver a atrasada" : `Ver as ${overdue} atrasadas`}
         actionHref="/pendencias?filtro=atrasadas"
-        pose={lizTipPose({ urgent: true })}
+        pose={poseDaDicaDaLiz({ urgent: true })}
       />
     );
   } else {
@@ -67,7 +67,7 @@ export default async function PendenciasPage({ searchParams }: { searchParams: P
           text={textoDaDicaDeConfirmacaoPendente({ pending, ...when })}
           actionLabel={ACAO_DAS_CONFIRMACOES_PENDENTES}
           actionHref={LINK_DAS_CONFIRMACOES_PENDENTES}
-          pose={lizTipPose({ urgent: dicaDeConfirmacaoUrgente(when) })}
+          pose={poseDaDicaDaLiz({ urgent: dicaDeConfirmacaoUrgente(when) })}
         />
       );
     }

@@ -3,10 +3,10 @@ import Link from "next/link";
 import { CircleAlert } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import prisma from "@/lib/prisma";
-import { getVendorPageContext } from "@/lib/security/vendor-guard";
+import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import { unreadCountFor } from "@/lib/notifications/queries";
-import { vapidPublicKey } from "@/lib/notifications/push";
+import { quantidadeNaoLidaDe } from "@/lib/notifications/queries";
+import { chavePublicaVapid } from "@/lib/notifications/push";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Chip } from "./_components/status-chip";
 import { VendorAvatar } from "./_components/vendor-avatar";
@@ -49,7 +49,7 @@ function UnlinkedAccount() {
 }
 
 export default async function FornecedorLayout({ children }: { children: React.ReactNode }) {
-  const { session, vendor } = await getVendorPageContext();
+  const { session, vendor } = await obterContextoDaPaginaDoFornecedor();
   if (!vendor) return <UnlinkedAccount />;
 
   const tier = effectiveVendorTier(vendor.planTier, vendor.planExpiresAt);
@@ -59,7 +59,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
     isFree
       ? prisma.vendorLead.count({ where: { vendorId: vendor.id, createdAt: { gte: startOfMonthBrasilia() } } })
       : Promise.resolve(0),
-    unreadCountFor(session.userId),
+    quantidadeNaoLidaDe(session.userId),
   ]);
 
   const planLabel = PLAN_LABEL[tier] ?? "Plano Start";
@@ -81,7 +81,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
             initialUnread={unreadNotifications}
             allHref="/fornecedor/notificacoes"
             settingsHref="/conta#avisos"
-            pushPublicKey={vapidPublicKey()}
+            pushPublicKey={chavePublicaVapid()}
             side="right"
             align="start"
             className="-mt-2.5"
@@ -117,7 +117,7 @@ export default async function FornecedorLayout({ children }: { children: React.R
             initialUnread={unreadNotifications}
             allHref="/fornecedor/notificacoes"
             settingsHref="/conta#avisos"
-            pushPublicKey={vapidPublicKey()}
+            pushPublicKey={chavePublicaVapid()}
             className="-mr-1"
           />
           <LogoutIconButton />

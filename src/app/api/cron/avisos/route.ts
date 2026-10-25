@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { rejectUnlessCron } from "@/lib/security/cron-auth";
-import { sendExpenseReminders } from "@/lib/notifications/cron";
+import { recusarSeNaoForCron } from "@/lib/security/cron-auth";
+import { enviarLembretesDeDespesa } from "@/lib/notifications/cron";
 import { prunePlatformRecords, recordCronRun } from "@/lib/platform/system-records";
 import { runHealthAlerts } from "@/lib/platform/health-alerts";
 import { enviarLembretesDeRenovacaoDeDominio } from "@/lib/domain-renewal-reminders";
@@ -11,12 +11,12 @@ import { enviarLembretesDeRenovacaoDeDominio } from "@/lib/domain-renewal-remind
  * Autenticada pelo CRON_SECRET; sem ele a rota não roda.
  */
 export async function GET(req: Request) {
-  const rejected = rejectUnlessCron(req);
+  const rejected = recusarSeNaoForCron(req);
   if (rejected) return rejected;
 
   const startedAt = new Date();
   let failure: string | null = null;
-  const expenses = await sendExpenseReminders().catch((error) => {
+  const expenses = await enviarLembretesDeDespesa().catch((error) => {
     failure = error instanceof Error ? error.message : String(error);
     console.error("[Cron avisos] Falha nos avisos de despesas:", failure);
     return null;

@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/plataforma/page-header";
 import { Panel } from "@/components/plataforma/panel";
 import { Notice } from "@/components/plataforma/notices";
 import { StatusChip, type StatusTone } from "@/components/plataforma/status-chip";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { getPlatformSetting } from "@/lib/platform/settings";
 import { emailEstaConfigurado } from "@/lib/email";
 import { getHealthSnapshot, type ServiceCounts } from "@/lib/platform/queries/saude";
@@ -45,7 +45,7 @@ function serviceChip(configured: boolean, c: ServiceCounts): { tone: StatusTone;
 }
 
 export default async function Page() {
-  await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const [h, alerts] = await Promise.all([getHealthSnapshot(), getPlatformSetting("healthAlerts")]);
   const now = h.measuredAt;
 

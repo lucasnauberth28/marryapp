@@ -1,7 +1,7 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { groupPrefixes } from "@/lib/platform/activity";
 
 /** Registro de atividades (AuditLog) com filtro por tipo, período, pessoa e alvo. Só leitura; os detalhes são resumidos na tela. */
@@ -38,7 +38,7 @@ function activityWhere(f: ActivityFilters, now = new Date()): Prisma.AuditLogWhe
 }
 
 export async function listActivity(filters: ActivityFilters, skip: number, take: number): Promise<{ rows: ActivityRow[]; total: number }> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   const where = activityWhere(filters);
   const [rows, total] = await Promise.all([
     prisma.auditLog.findMany({ where, orderBy: { createdAt: "desc" }, skip, take, select: { id: true, createdAt: true, actorName: true, action: true, targetType: true, targetId: true, details: true } }),
@@ -49,7 +49,7 @@ export async function listActivity(filters: ActivityFilters, skip: number, take:
 
 /** Nome do casamento do filtro "?alvo=wedding:<id>", para o cabeçalho do filtro (null se não achar). */
 export async function targetCaption(target: { type: string; id: string } | null): Promise<string | null> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   if (!target) return null;
   const type = target.type.toLowerCase();
   if (type === "wedding" && /^[0-9a-f-]{36}$/i.test(target.id)) {

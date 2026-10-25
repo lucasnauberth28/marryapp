@@ -1,12 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { HELP_ARTICLES, commonArticles, type HelpArticle } from "../help-articles.ts";
-import { normalizeSearchText, searchHelp, visibleArticles } from "../help-search.ts";
+import { ARTIGOS_DE_AJUDA, artigosComuns, type ArtigoDeAjuda } from "../help-articles.ts";
+import { normalizarTextoDaBusca, buscarAjuda, artigosVisiveis } from "../help-search.ts";
 import { classificarCaminho } from "../../route-access.ts";
 
 const COUPLE = ["/dashboard", "/convidados", "/mensagens", "/mesas", "/presentes-admin", "/site-builder", "/fornecedores", "/plano"];
 
-const make = (over: Partial<HelpArticle> & { id: string }): HelpArticle => ({
+const make = (over: Partial<ArtigoDeAjuda> & { id: string }): ArtigoDeAjuda => ({
   title: "Título",
   keywords: [],
   answer: "Resposta.",
@@ -17,10 +17,10 @@ const make = (over: Partial<HelpArticle> & { id: string }): HelpArticle => ({
 });
 
 test("a busca ignora acento, maiúsculas e plural", () => {
-  assert.equal(normalizeSearchText("  Confirmações DE Presença! "), "confirmacoes de presenca");
+  assert.equal(normalizarTextoDaBusca("  Confirmações DE Presença! "), "confirmacoes de presenca");
   const articles = [make({ id: "a", title: "Como acompanho a confirmação de presença?" })];
   for (const q of ["confirmacao", "CONFIRMAÇÕES", "presença", "Confirmacoes de presenca"]) {
-    assert.deepEqual(searchHelp(q, articles, { allowedPaths: ["*"] }).map((h) => h.article.id), ["a"], q);
+    assert.deepEqual(buscarAjuda(q, articles, { allowedPaths: ["*"] }).map((h) => h.article.id), ["a"], q);
   }
 });
 
@@ -31,14 +31,14 @@ test("título pesa mais que palavra-chave, que pesa mais que o texto; empate fic
     make({ id: "no-titulo", title: "Como adiciono um convidado?" }),
     make({ id: "no-titulo-2", title: "Convidado novo" }),
   ];
-  const ids = searchHelp("convidado", articles, { allowedPaths: ["*"] }).map((h) => h.article.id);
+  const ids = buscarAjuda("convidado", articles, { allowedPaths: ["*"] }).map((h) => h.article.id);
   assert.deepEqual(ids, ["no-titulo", "no-titulo-2", "na-chave", "no-texto"]);
 });
 
 test("a pergunta pela metade já acha (digitando) e mais palavras certas sobem o artigo", () => {
   const articles = [make({ id: "a", title: "Mesas dos convidados" }), make({ id: "b", title: "Convidados e presentes" })];
-  assert.equal(searchHelp("convid", articles, { allowedPaths: ["*"] }).length, 2);
-  assert.equal(searchHelp("convidados presentes", articles, { allowedPaths: ["*"] })[0].article.id, "b");
+  assert.equal(buscarAjuda("convid", articles, { allowedPaths: ["*"] }).length, 2);
+  assert.equal(buscarAjuda("convidados presentes", articles, { allowedPaths: ["*"] })[0].article.id, "b");
 });
 
 test("módulo sem acesso some; tela de qualquer conta (Minha conta) não depende do perfil", () => {
@@ -46,7 +46,7 @@ test("módulo sem acesso some; tela de qualquer conta (Minha conta) não depende
     make({ id: "fin", title: "Despesas", path: "/financas" }),
     make({ id: "conta", title: "Despesas da conta", path: "/conta" }),
   ];
-  const ids = (paths: string[]) => searchHelp("despesas", articles, { allowedPaths: paths }).map((h) => h.article.id);
+  const ids = (paths: string[]) => buscarAjuda("despesas", articles, { allowedPaths: paths }).map((h) => h.article.id);
   assert.deepEqual(ids(["/convidados"]), ["conta"]);
   assert.deepEqual(ids(["/financas"]), ["fin", "conta"]);
   assert.deepEqual(ids(["*"]), ["fin", "conta"]);
@@ -55,7 +55,7 @@ test("módulo sem acesso some; tela de qualquer conta (Minha conta) não depende
 
 test("recurso de outro plano continua visível, marcado como bloqueado só quando o plano não inclui", () => {
   const articles = [make({ id: "wa", title: "Enviar WhatsApp", path: "/mensagens", planModule: "whatsapp" })];
-  const hit = (planModules?: { whatsapp: boolean }) => visibleArticles(articles, { allowedPaths: ["/mensagens"], planModules })[0];
+  const hit = (planModules?: { whatsapp: boolean }) => artigosVisiveis(articles, { allowedPaths: ["/mensagens"], planModules })[0];
   assert.equal(hit({ whatsapp: false }).locked, true);
   assert.equal(hit({ whatsapp: true }).locked, false);
   assert.equal(hit().locked, false, "plano ainda não carregado não bloqueia");
@@ -63,22 +63,22 @@ test("recurso de outro plano continua visível, marcado como bloqueado só quand
 
 test("pergunta vazia, só com palavras comuns ou sem correspondência não devolve nada", () => {
   const audience = { allowedPaths: ["*"] };
-  assert.deepEqual(searchHelp("", HELP_ARTICLES, audience), []);
-  assert.deepEqual(searchHelp("   ", HELP_ARTICLES, audience), []);
-  assert.deepEqual(searchHelp("como eu", HELP_ARTICLES, audience), []);
-  assert.deepEqual(searchHelp("zzzxqw", HELP_ARTICLES, audience), []);
+  assert.deepEqual(buscarAjuda("", ARTIGOS_DE_AJUDA, audience), []);
+  assert.deepEqual(buscarAjuda("   ", ARTIGOS_DE_AJUDA, audience), []);
+  assert.deepEqual(buscarAjuda("como eu", ARTIGOS_DE_AJUDA, audience), []);
+  assert.deepEqual(buscarAjuda("zzzxqw", ARTIGOS_DE_AJUDA, audience), []);
 });
 
 test("no guia de verdade: 'convidado' abre primeiro o artigo de adicionar convidados", () => {
-  const hits = searchHelp("convidado", HELP_ARTICLES, { allowedPaths: COUPLE });
+  const hits = buscarAjuda("convidado", ARTIGOS_DE_AJUDA, { allowedPaths: COUPLE });
   assert.equal(hits[0].article.id, "adicionar-convidados");
   assert.ok(hits.length <= 5);
 });
 
 test("guia: ids únicos, passos, destinos que existem no app e 'Dúvidas comuns' sem repetir posição", () => {
-  const ids = new Set(HELP_ARTICLES.map((a) => a.id));
-  assert.equal(ids.size, HELP_ARTICLES.length);
-  for (const a of HELP_ARTICLES) {
+  const ids = new Set(ARTIGOS_DE_AJUDA.map((a) => a.id));
+  assert.equal(ids.size, ARTIGOS_DE_AJUDA.length);
+  for (const a of ARTIGOS_DE_AJUDA) {
     assert.ok(a.steps.length >= 2, `${a.id}: passos`);
     assert.notEqual(classificarCaminho(a.action.href.split(/[?#]/)[0]), "unknown", `${a.id}: destino ${a.action.href}`);
     assert.notEqual(classificarCaminho(a.path), "unknown", `${a.id}: módulo ${a.path}`);
@@ -86,6 +86,6 @@ test("guia: ids únicos, passos, destinos que existem no app e 'Dúvidas comuns'
     assert.ok(!text.includes("—"), `${a.id}: sem travessão`);
     assert.ok(!/em breve|breve/i.test(text), `${a.id}: sem promessa de data`);
   }
-  const positions = commonArticles(HELP_ARTICLES).map((a) => a.common);
+  const positions = artigosComuns(ARTIGOS_DE_AJUDA).map((a) => a.common);
   assert.equal(new Set(positions).size, positions.length);
 });

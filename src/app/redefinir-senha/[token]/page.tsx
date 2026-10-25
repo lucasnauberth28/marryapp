@@ -4,7 +4,7 @@ import { CircleAlert } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { AuthShell, SHELL_PHOTOS, ShellHeading } from "@/components/account/auth-shell";
 import { btn } from "@/components/landing/styles";
-import { hashLinkToken, isLinkTokenShape } from "@/lib/account/tokens";
+import { calcularHashDoTokenDeLink, tokenDeLinkTemFormatoValido } from "@/lib/account/tokens";
 import { cn } from "@/lib/utils";
 import { ResetPasswordForm } from "./reset-password-form";
 
@@ -19,9 +19,9 @@ export default async function RedefinirSenhaPage({ params }: { params: Promise<{
   const { token } = await params;
 
   let valid = false;
-  if (isLinkTokenShape(token)) {
+  if (tokenDeLinkTemFormatoValido(token)) {
     const record = await prisma.passwordResetToken.findUnique({
-      where: { tokenHash: hashLinkToken(token) },
+      where: { tokenHash: calcularHashDoTokenDeLink(token) },
       select: { usedAt: true, expiresAt: true },
     });
     valid = Boolean(record && !record.usedAt && record.expiresAt > new Date());

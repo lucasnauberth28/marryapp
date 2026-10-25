@@ -5,27 +5,27 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { computeLayout, type Layout, type TableInput, type TableSlot } from "./layout.ts";
-import type { SceneDef, SceneId } from "./scenarios.ts";
+import { calcularDisposicao, type Disposicao, type MesaDeEntrada, type PosicaoDaMesa } from "./layout.ts";
+import type { DefinicaoDoCenario, IdDoCenario } from "./scenarios.ts";
 
-const TAU = Math.PI * 2;
+const VOLTA_COMPLETA = Math.PI * 2;
 
-export type CameraPreset = "cenario" | "panoramica" | "topo";
+export type PredefinicaoDaCamera = "cenario" | "panoramica" | "topo";
 
-export interface EngineOptions {
+export interface OpcoesDoMotor {
   canvas: HTMLCanvasElement;
   /** Elemento que dá o tamanho do desenho; observado para redimensionar. */
   host: HTMLElement;
   /** Chamado depois de cada quadro desenhado (a tela usa para reposicionar os rótulos). */
   onRender?: (info: { calls: number; triangles: number }) => void;
   /** Toque ou clique (sem arrastar) na cena. Recebe a mesa sob o ponto, ou null. */
-  onTablePick?: (table: TableSlot | null) => void;
+  onTablePick?: (table: PosicaoDaMesa | null) => void;
   /** A pessoa começou a girar ou mover a câmera com a mão. */
   onCameraGrab?: () => void;
   onContextLost?: () => void;
 }
 
-interface Inst {
+interface InstanciaDeMalha {
   x: number;
   y: number;
   z: number;
@@ -38,7 +38,7 @@ interface Inst {
   cor?: string;
 }
 
-interface ChairGroup {
+interface GrupoDeCadeiras {
   tableId: string;
   start: number;
   n: number;
@@ -46,7 +46,7 @@ interface ChairGroup {
 }
 
 /** O navegador consegue criar um contexto WebGL? Para mostrar um aviso em vez de uma tela em branco. */
-export function webglAvailable(): boolean {
+export function webglEstaDisponivel(): boolean {
   try {
     const c = document.createElement("canvas");
     return !!(c.getContext("webgl2") || c.getContext("webgl"));
@@ -55,7 +55,7 @@ export function webglAvailable(): boolean {
   }
 }
 
-export function createMesas3DEngine(opts: EngineOptions) {
+export function criarMotorDasMesas3D(opts: OpcoesDoMotor) {
   const { canvas, host } = opts;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "low-power" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -91,10 +91,10 @@ export function createMesas3DEngine(opts: EngineOptions) {
   let disposed = false;
 
   // Estado do cenário atual
-  let layout: Layout = computeLayout("jardim", []);
-  let tablesInput: TableInput[] = [];
+  let layout: Disposicao = calcularDisposicao("jardim", []);
+  let tablesInput: MesaDeEntrada[] = [];
   let fills: Record<string, string[]> = {};
-  let chairGroups: ChairGroup[] = [];
+  let chairGroups: GrupoDeCadeiras[] = [];
   let ribbons: THREE.InstancedMesh | null = null;
   let ribbonBase: { x: number; z: number; ry: number }[] = [];
   let targetRing: THREE.Mesh | null = null;
@@ -224,10 +224,10 @@ export function createMesas3DEngine(opts: EngineOptions) {
     }, rx, ry);
   const tLinho = (chave: string, rx: number, ry: number) =>
     pixTex(chave, 256, 256, (u, v) => {
-      const h = 0.5 + 0.28 * Math.sin(u * 32 * TAU) * Math.sin(v * 32 * TAU) + 0.2 * fb(u * 16, v * 16, 3, 2, 16, 16), s = 0.94 + 0.06 * h;
+      const h = 0.5 + 0.28 * Math.sin(u * 32 * VOLTA_COMPLETA) * Math.sin(v * 32 * VOLTA_COMPLETA) + 0.2 * fb(u * 16, v * 16, 3, 2, 16, 16), s = 0.94 + 0.06 * h;
       return [255 * s, 255 * s, 255 * s, h];
     }, rx, ry);
-  function tCeuImagem(c: SceneDef): THREE.Texture {
+  function tCeuImagem(c: DefinicaoDoCenario): THREE.Texture {
     const key = "ceu" + c.id;
     const hit = texCache[key] as THREE.Texture | undefined;
     if (hit) return hit;
@@ -239,7 +239,7 @@ export function createMesas3DEngine(opts: EngineOptions) {
     const sp = c.sol.pos, sl = Math.hypot(sp[0], sp[1], sp[2]), sd = [sp[0] / sl, sp[1] / sl, sp[2] / sl];
     for (let y = 0; y < h; y++)
       for (let x = 0; x < w; x++) {
-        const u = x / w, v = y / h, th = v * Math.PI, ph = u * TAU, dx = -Math.cos(ph) * Math.sin(th), dy = Math.cos(th), dz = Math.sin(ph) * Math.sin(th);
+        const u = x / w, v = y / h, th = v * Math.PI, ph = u * VOLTA_COMPLETA, dx = -Math.cos(ph) * Math.sin(th), dy = Math.cos(th), dz = Math.sin(ph) * Math.sin(th);
         const t = Math.max(0, Math.min(1, (0.5 - v) / 0.5)), col = hor.clone().lerp(topo, Math.pow(t, 0.55));
         if (v > 0.5) col.lerp(chao, Math.min(1, (v - 0.5) * 3));
         const dot = Math.max(0, dx * sd[0] + dy * sd[1] + dz * sd[2]), glow = Math.pow(dot, 90) * 1.3 + Math.pow(dot, 7) * 0.32;
@@ -287,7 +287,7 @@ export function createMesas3DEngine(opts: EngineOptions) {
     m.position.set(x, y, z);
     return add(m, cast !== false, true);
   }
-  function instanciar(geo: THREE.BufferGeometry, mat: THREE.Material, itens: Inst[], cast?: boolean) {
+  function instanciar(geo: THREE.BufferGeometry, mat: THREE.Material, itens: InstanciaDeMalha[], cast?: boolean) {
     const im = new THREE.InstancedMesh(geo, mat, Math.max(1, itens.length));
     im.count = itens.length;
     itens.forEach((it, i) => {
@@ -320,7 +320,7 @@ export function createMesas3DEngine(opts: EngineOptions) {
     g.translate(x, y, z);
     return comCor(g, cor);
   }
-  function geoCadeira(c: SceneDef) { // cadeira com travessas e almofada, encosto para trás (-z) e frente em +z
+  function geoCadeira(c: DefinicaoDoCenario) { // cadeira com travessas e almofada, encosto para trás (-z) e frente em +z
     const m = c.cadeira;
     const partes = [pc(new THREE.BoxGeometry(0.46, 0.04, 0.46), 0, 0.43, 0, m), pc(new THREE.BoxGeometry(0.42, 0.06, 0.42), 0, 0.48, 0.005, c.almofada)];
     for (const s of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) partes.push(pc(new THREE.CylinderGeometry(0.017, 0.024, 0.43, 8), s[0] * 0.2, 0.215, s[1] * 0.2, m));
@@ -355,7 +355,7 @@ export function createMesas3DEngine(opts: EngineOptions) {
     raiz.add(new THREE.Points(g, new THREE.PointsMaterial({ map: glowTex(), size: tam, sizeAttenuation: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, color: K(cor) })));
   }
   function luzes(pontos: [number[], number[], number?][], cor?: string) { // cordão de luzes entre dois pontos, com a curva natural do fio
-    const seg: number[] = [], bulbs: Inst[] = [];
+    const seg: number[] = [], bulbs: InstanciaDeMalha[] = [];
     for (const p of pontos) {
       const a = p[0], b = p[1], n = Math.max(8, Math.round(Math.hypot(b[0] - a[0], b[2] - a[2]) * 1.4)), sag = p[2] == null ? 0.7 : p[2];
       let prev: number[] | null = null;
@@ -393,12 +393,12 @@ export function createMesas3DEngine(opts: EngineOptions) {
     return (geoFolhaCache = g);
   }
   function arvores(pos: number[][], escala: number, cores: string[]) {
-    const tr: Inst[] = [], fo: Inst[] = [];
+    const tr: InstanciaDeMalha[] = [], fo: InstanciaDeMalha[] = [];
     for (const p of pos) {
       const s = (escala || 1) * (0.8 + rnd() * 0.6);
-      tr.push({ x: p[0], y: 1.8 * s, z: p[1], sx: s, ry: rnd() * TAU });
+      tr.push({ x: p[0], y: 1.8 * s, z: p[1], sx: s, ry: rnd() * VOLTA_COMPLETA });
       for (let k = 0; k < 5; k++)
-        fo.push({ x: p[0] + (rnd() - 0.5) * 2.6 * s, y: (3.5 + k * 0.8) * s, z: p[1] + (rnd() - 0.5) * 2.6 * s, sx: (2.0 - k * 0.2) * s * (0.85 + rnd() * 0.3), ry: rnd() * TAU, cor: cores[(rnd() * cores.length) | 0] });
+        fo.push({ x: p[0] + (rnd() - 0.5) * 2.6 * s, y: (3.5 + k * 0.8) * s, z: p[1] + (rnd() - 0.5) * 2.6 * s, sx: (2.0 - k * 0.2) * s * (0.85 + rnd() * 0.3), ry: rnd() * VOLTA_COMPLETA, cor: cores[(rnd() * cores.length) | 0] });
     }
     instanciar(new THREE.CylinderGeometry(0.26, 0.42, 3.6, 10), std("#5C4330", 0.95), tr, true);
     instanciar(geoFolha(), std("#ffffff", 0.9, { vertexColors: true }), fo, true);
@@ -410,11 +410,11 @@ export function createMesas3DEngine(opts: EngineOptions) {
     const top = new THREE.Mesh(new THREE.TorusGeometry(1.9, 0.08, 10, 40, Math.PI), m);
     top.position.set(x, h, z);
     add(top, true);
-    const fl: Inst[] = [], fo: Inst[] = [];
+    const fl: InstanciaDeMalha[] = [], fo: InstanciaDeMalha[] = [];
     for (let i = 0; i <= 90; i++) {
       const a = (i / 90) * Math.PI;
       fl.push({ x: x + Math.cos(a) * 1.9 + (rnd() - 0.5) * 0.4, y: h + Math.sin(a) * 1.9 + (rnd() - 0.5) * 0.4, z: z + (rnd() - 0.5) * 0.35, sx: 0.1 + rnd() * 0.12, cor: flores[(rnd() * flores.length) | 0] });
-      fo.push({ x: x + Math.cos(a) * 1.9, y: h + Math.sin(a) * 1.9, z: z + (rnd() - 0.5) * 0.2, sx: 0.3, sy: 0.07, sz: 0.14, ry: rnd() * TAU, rz: (rnd() - 0.5) * 2, cor: "#5E7F4F" });
+      fo.push({ x: x + Math.cos(a) * 1.9, y: h + Math.sin(a) * 1.9, z: z + (rnd() - 0.5) * 0.2, sx: 0.3, sy: 0.07, sz: 0.14, ry: rnd() * VOLTA_COMPLETA, rz: (rnd() - 0.5) * 2, cor: "#5E7F4F" });
     }
     for (let k = 0; k < 36; k++) {
       const s = k % 2 ? 1 : -1;
@@ -443,34 +443,34 @@ export function createMesas3DEngine(opts: EngineOptions) {
       add(rg, true);
     }
     cil(0.03, 0.03, 1.6, dour, x, y + 1.3, z, 6, false);
-    const cr: Inst[] = [];
+    const cr: InstanciaDeMalha[] = [];
     for (let i = 0; i < 18; i++) {
-      const a = (i / 18) * TAU;
+      const a = (i / 18) * VOLTA_COMPLETA;
       cr.push({ x: x + Math.cos(a) * 1.1, y: y - 0.12, z: z + Math.sin(a) * 1.1, ry: a, sx: 1, sy: 2.2 });
     }
     for (let j = 0; j < 10; j++) {
-      const a2 = (j / 10) * TAU;
+      const a2 = (j / 10) * VOLTA_COMPLETA;
       cr.push({ x: x + Math.cos(a2) * 0.6, y: y + 0.4, z: z + Math.sin(a2) * 0.6, ry: a2, sx: 0.8, sy: 1.8 });
     }
     instanciar(new THREE.OctahedronGeometry(0.06, 0), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.6, envMapIntensity: 2 }), cr, false);
     for (let k = 0; k < 14; k++) {
-      const a3 = (k / 14) * TAU;
+      const a3 = (k / 14) * VOLTA_COMPLETA;
       brilho(x + Math.cos(a3) * 1.1, y + 0.14, z + Math.sin(a3) * 1.1);
     }
     for (let q = 0; q < 8; q++) {
-      const a4 = (q / 8) * TAU;
+      const a4 = (q / 8) * VOLTA_COMPLETA;
       brilho(x + Math.cos(a4) * 0.6, y + 0.62, z + Math.sin(a4) * 0.6);
     }
-    const b: Inst[] = [];
+    const b: InstanciaDeMalha[] = [];
     for (let m = 0; m < 14; m++) {
-      const a5 = (m / 14) * TAU;
+      const a5 = (m / 14) * VOLTA_COMPLETA;
       b.push({ x: x + Math.cos(a5) * 1.1, y: y + 0.12, z: z + Math.sin(a5) * 1.1 });
     }
     instanciar(new THREE.SphereGeometry(0.06, 8, 6), emis("#FFE8B8"), b, false);
   }
 
   /* ---------- Ambiente: luz refletida por todo o cenário (reflexos nos pratos, copos e mármore) ---------- */
-  function ambiente(c: SceneDef) {
+  function ambiente(c: DefinicaoDoCenario) {
     const es = new THREE.Scene();
     if (c.externo) {
       es.add(new THREE.Mesh(new THREE.SphereGeometry(60, 32, 16), new THREE.MeshBasicMaterial({ map: tCeuImagem(c), side: THREE.BackSide })));
@@ -498,7 +498,7 @@ export function createMesas3DEngine(opts: EngineOptions) {
   }
 
   /* ---------- Construtores dos cenários (ambiente; as mesas vêm depois) ---------- */
-  const CONS: Record<SceneId, (c: SceneDef, sala: [number, number]) => void> = {
+  const CONS: Record<IdDoCenario, (c: DefinicaoDoCenario, sala: [number, number]) => void> = {
     jardim(c, sala) {
       const W = sala[0], D = sala[1], gr = tGrama();
       const ceu = new THREE.Mesh(new THREE.SphereGeometry(300, 32, 16), new THREE.MeshBasicMaterial({ map: tCeuImagem(c), side: THREE.BackSide, fog: false, depthWrite: false, toneMapped: false }));
@@ -513,7 +513,7 @@ export function createMesas3DEngine(opts: EngineOptions) {
       for (const z of [0, 10]) caixa(12.6, 0.28, 0.3, mad, 0, 4.2, z, true);
       for (let i = -5; i <= 5; i += 1.25) caixa(0.16, 0.16, 10.6, mad, i, 4.4, 5, true);
       luzes([[[-6, 4.1, 0], [6, 4.1, 10], 0.6], [[6, 4.1, 0], [-6, 4.1, 10], 0.6], [[-6, 4.1, 5], [6, 4.1, 5], 0.8], [[-6, 4.1, 2.5], [6, 4.1, 2.5], 0.7], [[-6, 4.1, 7.5], [6, 4.1, 7.5], 0.7]]);
-      const lan: Inst[] = [];
+      const lan: InstanciaDeMalha[] = [];
       for (const p of [[-6, 1], [6, 1], [-6, 9], [6, 9]]) lan.push({ x: p[0] * 0.98, y: 3.2, z: p[1] });
       instanciar(new THREE.CylinderGeometry(0.11, 0.11, 0.3, 10), std("#2b2527", 0.5, { metalness: 0.4 }), lan, true);
       lan.forEach((p) => brilho(p.x, p.y, p.z));
@@ -524,11 +524,11 @@ export function createMesas3DEngine(opts: EngineOptions) {
         ps.push([Math.cos(t) * rx, Math.sin(t) * rz - 2]);
       }
       arvores(ps, 1.15, ["#4A7545", "#5A8650", "#68934F", "#3F6B3D", "#7A9C58"]);
-      const fl: Inst[] = [], fo: Inst[] = [];
+      const fl: InstanciaDeMalha[] = [], fo: InstanciaDeMalha[] = [];
       for (let k = 0; k < 150; k++) {
-        const tt = rnd() * TAU, rr = W / 2 - 0.5 + rnd() * 2, fx = Math.cos(tt) * rr * 0.98, fz = Math.sin(tt) * (D / 2 - 1) - 2;
+        const tt = rnd() * VOLTA_COMPLETA, rr = W / 2 - 0.5 + rnd() * 2, fx = Math.cos(tt) * rr * 0.98, fz = Math.sin(tt) * (D / 2 - 1) - 2;
         fl.push({ x: fx, y: 0.28, z: fz, sx: 0.14 + rnd() * 0.1, cor: c.flores[(rnd() * 3) | 0] });
-        fo.push({ x: fx, y: 0.12, z: fz, sx: 0.3, sy: 0.12, sz: 0.3, ry: rnd() * TAU, cor: "#58774A" });
+        fo.push({ x: fx, y: 0.12, z: fz, sx: 0.3, sy: 0.12, sz: 0.3, ry: rnd() * VOLTA_COMPLETA, cor: "#58774A" });
       }
       instanciar(new THREE.SphereGeometry(1, 8, 6), std("#ffffff", 0.8), fl, false);
       instanciar(new THREE.SphereGeometry(1, 8, 6), std("#ffffff", 0.9), fo, false);
@@ -558,7 +558,7 @@ export function createMesas3DEngine(opts: EngineOptions) {
         caixa(0.1, 3.4, 4, mold, -W / 2 + 0.3, 2.6, z0 + 3, false, true);
         caixa(0.1, 3.4, 4, mold, W / 2 - 0.3, 2.6, z0 + 3, false, true);
       }
-      const col: Inst[] = [];
+      const col: InstanciaDeMalha[] = [];
       for (const s of [-1, 1]) for (let z = -D / 2 + 3; z <= D / 2 - 2; z += 6) col.push({ x: s * (W / 2 - 1.2), y: H / 2, z });
       const mc = std("#F6F0E8", 0.45, { envMapIntensity: 0.8 });
       instanciar(new THREE.CylinderGeometry(0.55, 0.62, H, 28), mc, col, true);
@@ -568,7 +568,7 @@ export function createMesas3DEngine(opts: EngineOptions) {
       const cg = new THREE.PlaneGeometry(2.4, H - 1.3, 60, 6), cp = cg.attributes.position;
       for (let q = 0; q < cp.count; q++) cp.setZ(q, Math.sin(cp.getX(q) * 11) * 0.16 + Math.sin(cp.getX(q) * 27) * 0.04);
       cg.computeVertexNormals();
-      const cortina = std("#6B2A45", 0.72, { side: THREE.DoubleSide, envMapIntensity: 0.5 }), cs2: Inst[] = [];
+      const cortina = std("#6B2A45", 0.72, { side: THREE.DoubleSide, envMapIntensity: 0.5 }), cs2: InstanciaDeMalha[] = [];
       for (let i = -3; i <= 3; i++) cs2.push({ x: i * 2.45, y: (H - 1.3) / 2 + 0.3, z: -D / 2 + 1.1 });
       instanciar(cg, cortina, cs2, true);
       caixa(W - 6, 0.5, 0.5, std("#C9A66B", 0.3, { metalness: 0.8 }), 0, H - 0.8, -D / 2 + 1.1, true);
@@ -608,15 +608,15 @@ export function createMesas3DEngine(opts: EngineOptions) {
       for (let q = -D / 2 + 4; q <= D / 2 - 2; q += 5) lz.push([[-W / 2 + 1, H - 1.3, q], [W / 2 - 1, H - 1.3, q], 1.1]);
       lz.push([[-W / 2 + 1, H - 1.3, -D / 2 + 2], [W / 2 - 1, H - 1.3, D / 2 - 2], 1.2], [[W / 2 - 1, H - 1.3, -D / 2 + 2], [-W / 2 + 1, H - 1.3, D / 2 - 2], 1.2]);
       luzes(lz);
-      const bar: Inst[] = [];
+      const bar: InstanciaDeMalha[] = [];
       for (let b = 0; b < 6; b++) bar.push({ x: -W / 2 + 2.2 + (b % 3) * 1.3, y: 0.55, z: D / 2 - 3 - Math.floor(b / 3) * 1.4 });
       instanciar(new THREE.CylinderGeometry(0.5, 0.45, 1.1, 18), std("#6A4429", 0.7), bar, true);
       instanciar(new THREE.TorusGeometry(0.48, 0.02, 6, 24), std("#2B2527", 0.4, { metalness: 0.6 }), bar.map((p) => ({ x: p.x, y: p.y + 0.3, z: p.z, rx: Math.PI / 2 })), false);
-      const fd: Inst[] = [];
+      const fd: InstanciaDeMalha[] = [];
       for (let f = 0; f < 5; f++) fd.push({ x: W / 2 - 2.5 - (f % 3) * 1.1, y: 0.3 + Math.floor(f / 3) * 0.6, z: D / 2 - 3 });
       instanciar(new THREE.BoxGeometry(1, 0.6, 0.6), std("#D8B96A", 0.95), fd, true);
       caixa(8, 0.5, 3.2, std("#5E4330", 0.8), 0, 0.25, -D / 2 + 2.4 + 0.8, true, true);
-      const pend: Inst[] = [];
+      const pend: InstanciaDeMalha[] = [];
       for (const x of [-8, 0, 8])
         for (const z of [-3, 4]) {
           pend.push({ x, y: H - 2.6, z });
@@ -677,28 +677,28 @@ export function createMesas3DEngine(opts: EngineOptions) {
     const toalha = c.toalha ? std(c.toalha, 0.9, { bumpMap: lin.bump, bumpScale: 0.6 }) : null;
     const madT = tTabuas("mesa_r", false, [[86, 56, 36], [124, 84, 56]], 5, 2, 1);
     const mesaMat = toalha || std("#ffffff", 0.55, { map: madT.map, bumpMap: madT.bump, bumpScale: 1.2 });
-    const flor: Inst[] = [], folha: Inst[] = [], vela: Inst[] = [], tampos: Inst[] = [], saias: Inst[] = [], pes: Inst[] = [], prato: Inst[] = [], carga: Inst[] = [], gua: Inst[] = [], copo: Inst[] = [];
+    const flor: InstanciaDeMalha[] = [], folha: InstanciaDeMalha[] = [], vela: InstanciaDeMalha[] = [], tampos: InstanciaDeMalha[] = [], saias: InstanciaDeMalha[] = [], pes: InstanciaDeMalha[] = [], prato: InstanciaDeMalha[] = [], carga: InstanciaDeMalha[] = [], gua: InstanciaDeMalha[] = [], copo: InstanciaDeMalha[] = [];
     let totalCad = 0;
     for (const t of layout.slots) {
-      const pos: ChairGroup["pos"] = [];
+      const pos: GrupoDeCadeiras["pos"] = [];
       if (t.forma === "round") {
         const k = t.r / 0.97;
-        tampos.push({ x: t.x, y: 0.76, z: t.z, ry: rnd() * TAU, sx: k, sy: 1, sz: k });
-        if (c.toalha) saias.push({ x: t.x, y: 0.38, z: t.z, ry: rnd() * TAU, sx: k, sy: 1, sz: k });
+        tampos.push({ x: t.x, y: 0.76, z: t.z, ry: rnd() * VOLTA_COMPLETA, sx: k, sy: 1, sz: k });
+        if (c.toalha) saias.push({ x: t.x, y: 0.38, z: t.z, ry: rnd() * VOLTA_COMPLETA, sx: k, sy: 1, sz: k });
         else pes.push({ x: t.x, y: 0.38, z: t.z });
         for (let i = 0; i < 7; i++) {
-          const a = (i / 7) * TAU;
+          const a = (i / 7) * VOLTA_COMPLETA;
           flor.push({ x: t.x + Math.cos(a) * 0.15, y: 0.98 + (i % 2) * 0.05, z: t.z + Math.sin(a) * 0.15, sx: 0.085 + (i % 3) * 0.015, cor: c.flores[i % c.flores.length] });
           folha.push({ x: t.x + Math.cos(a + 0.4) * 0.22, y: 0.92, z: t.z + Math.sin(a + 0.4) * 0.22, sx: 0.12, sy: 0.025, sz: 0.06, ry: -a, rz: 0.4, cor: "#5E7F4F" });
         }
         flor.push({ x: t.x, y: 1.1, z: t.z, sx: 0.12, cor: c.flores[0] });
         if (c.velas)
           for (let v = 0; v < 3; v++) {
-            const av = (v / 3) * TAU + 0.5;
+            const av = (v / 3) * VOLTA_COMPLETA + 0.5;
             vela.push({ x: t.x + Math.cos(av) * 0.5 * k, y: 0.86, z: t.z + Math.sin(av) * 0.5 * k });
           }
         for (let i = 0; i < t.cadeiras; i++) {
-          const ak = (i / t.cadeiras) * TAU;
+          const ak = (i / t.cadeiras) * VOLTA_COMPLETA;
           pos.push({ x: t.x + Math.cos(ak) * (t.r + 0.35), z: t.z + Math.sin(ak) * (t.r + 0.35), ry: -ak - Math.PI / 2, px: t.x + Math.cos(ak) * t.r * 0.72, pz: t.z + Math.sin(ak) * t.r * 0.72 });
         }
       } else {
@@ -721,7 +721,7 @@ export function createMesas3DEngine(opts: EngineOptions) {
           const fx = t.x - w / 2 + (f + 0.5) * (w / n);
           for (let q = 0; q < 5; q++) {
             flor.push({ x: fx + (rnd() - 0.5) * 0.28, y: 0.93 + rnd() * 0.1, z: t.z + (rnd() - 0.5) * 0.2, sx: 0.08 + rnd() * 0.04, cor: c.flores[(rnd() * c.flores.length) | 0] });
-            folha.push({ x: fx + (rnd() - 0.5) * 0.4, y: 0.86, z: t.z + (rnd() - 0.5) * 0.25, sx: 0.14, sy: 0.025, sz: 0.06, ry: rnd() * TAU, cor: "#5E7F4F" });
+            folha.push({ x: fx + (rnd() - 0.5) * 0.4, y: 0.86, z: t.z + (rnd() - 0.5) * 0.25, sx: 0.14, sy: 0.025, sz: 0.06, ry: rnd() * VOLTA_COMPLETA, cor: "#5E7F4F" });
           }
           if (c.velas) vela.push({ x: fx + 0.35, y: 0.86, z: t.z });
         }
@@ -898,7 +898,7 @@ export function createMesas3DEngine(opts: EngineOptions) {
     const d = dist();
     return { pos: new THREE.Vector3(0.001, d * 1.18, 0.8), alvo: new THREE.Vector3(0, 0, 0.5) };
   }
-  function preset(nome: CameraPreset, rapido?: boolean) {
+  function preset(nome: PredefinicaoDaCamera, rapido?: boolean) {
     const q = nome === "cenario" ? poseCenario() : nome === "panoramica" ? posePanoramica() : poseTopo();
     if (rapido) {
       camera.position.copy(q.pos);
@@ -931,10 +931,10 @@ export function createMesas3DEngine(opts: EngineOptions) {
     ray.setFromCamera(ndc, camera);
     return ray.ray.intersectPlane(plano, hit) ? hit.clone() : null;
   }
-  function tableAtPoint(cx: number, cy: number): TableSlot | null {
+  function tableAtPoint(cx: number, cy: number): PosicaoDaMesa | null {
     const p = pontoNoChao(cx, cy);
     if (!p) return null;
-    let melhor: TableSlot | null = null, d2 = 1e9;
+    let melhor: PosicaoDaMesa | null = null, d2 = 1e9;
     for (const t of layout.slots) {
       const dx = Math.abs(p.x - t.x), dz = Math.abs(p.z - t.z);
       if (dx <= t.hx && dz <= t.hz) {
@@ -954,7 +954,7 @@ export function createMesas3DEngine(opts: EngineOptions) {
   canvas.addEventListener("pointerdown", onDown);
   canvas.addEventListener("pointerup", onUp);
 
-  function ringAt(ring: THREE.Mesh | null, t: TableSlot | null, grow: number) {
+  function ringAt(ring: THREE.Mesh | null, t: PosicaoDaMesa | null, grow: number) {
     if (!ring) return;
     if (!t) { ring.visible = false; return; }
     ring.position.x = t.x;
@@ -965,7 +965,7 @@ export function createMesas3DEngine(opts: EngineOptions) {
 
   /* ---------- API ---------- */
   function rebuild(sceneId: string) {
-    layout = computeLayout(sceneId, tablesInput);
+    layout = calcularDisposicao(sceneId, tablesInput);
     construir();
     pedirRender();
   }
@@ -977,7 +977,7 @@ export function createMesas3DEngine(opts: EngineOptions) {
       else pedirRender();
     },
     /** Mesas do painel. Refaz o cenário quando muda a quantidade, os nomes ou as capacidades. */
-    setTables(tables: TableInput[]) {
+    setTables(tables: MesaDeEntrada[]) {
       const same = tables.length === tablesInput.length && tables.every((t, i) => t.id === tablesInput[i].id && t.name === tablesInput[i].name && t.capacity === tablesInput[i].capacity);
       tablesInput = tables;
       if (!same && built) rebuild(layout.scene.id);
@@ -1030,4 +1030,4 @@ export function createMesas3DEngine(opts: EngineOptions) {
   };
 }
 
-export type Mesas3DEngine = ReturnType<typeof createMesas3DEngine>;
+export type MotorDasMesas3D = ReturnType<typeof criarMotorDasMesas3D>;

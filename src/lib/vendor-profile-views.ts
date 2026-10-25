@@ -2,7 +2,7 @@ import "server-only";
 import { after } from "next/server";
 import { headers } from "next/headers";
 import prisma from "@/lib/prisma";
-import { getSession } from "@/lib/security/auth-guard";
+import { obterSessao } from "@/lib/security/auth-guard";
 import { todayBrasilia } from "@/app/(fornecedor)/_lib/vendor-panel";
 
 const PADRAO_DE_ROBO = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|monitor|headless|lighthouse/i;
@@ -19,7 +19,7 @@ export async function registrarVisitaAoPerfilDoFornecedor(vendorId: string): Pro
     if (h.get("next-router-prefetch") || h.get("purpose") === "prefetch" || h.get("sec-purpose")?.includes("prefetch")) return;
     if (PADRAO_DE_ROBO.test(h.get("user-agent") ?? "")) return;
 
-    const session = await getSession();
+    const session = await obterSessao();
     const day = todayBrasilia();
 
     after(async () => {

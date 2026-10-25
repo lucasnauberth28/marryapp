@@ -1,15 +1,15 @@
 "use server";
 
-import { requireWedding, requireWeddingRead, getWeddingBySlug } from "@/lib/security/wedding-context";
+import { exigirCasamento, exigirCasamentoParaLeitura, obterCasamentoPeloEndereco } from "@/lib/security/wedding-context";
 import { recusaDeModulo } from "@/lib/wedding-plan";
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { RsvpStatus } from "@prisma/client";
-import { rateLimitByIp } from "@/lib/security/rate-limiter";
-import { deferNotify } from "@/lib/notifications/service";
-import { notifyRsvp } from "@/lib/notifications/events";
+import { limitarUsoPorIp } from "@/lib/security/rate-limiter";
+import { avisarDepois } from "@/lib/notifications/service";
+import { avisarConfirmacao } from "@/lib/notifications/events";
 import { MENSAGEM_DE_MUITAS_TENTATIVAS } from "@/lib/rate-limit-message";
 import type { BuscaDeConvidado } from "@/lib/rsvp-lookup";
 import { registrarAuditoria } from "@/lib/audit";
@@ -85,7 +85,7 @@ const GuestSchema = z.object({
 // ==========================================
 
 export async function getGuests(filter?: RsvpStatus) {
-  const { weddingId } = await requireWeddingRead("/convidados");
+  const { weddingId } = await exigirCasamentoParaLeitura("/convidados");
   return prisma.guest.findMany({
     where: filter ? { weddingId, rsvpStatus: filter } : { weddingId },
     include: {
@@ -109,7 +109,7 @@ async function resolveParentGuestId(weddingId: string, parentGuestId: string | n
 // ==========================================
 
 export async function createGuest(formData: FormData) {
-  const { weddingId } = await requireWedding("/convidados");
+  const { weddingId } = await exigirCasamento("/convidados");
   const raw = {
     name: formData.get("name"),
     phone: formData.get("phone"),
@@ -178,7 +178,7 @@ const ImportGuestsSchema = z
  * (tudo ou nada), sempre no casamento da sessão.
  */
 export async function importGuests(input: unknown) {
-  const { weddingId } = await requireWedding("/convidados");
+  const { weddingId } = await exigirCasamento("/convidados");
 
   const parsed = ImportGuestsSchema.safeParse(input);
   if (!parsed.success) {
@@ -246,7 +246,7 @@ export async function importGuests(input: unknown) {
 }
 
 export async function updateGuest(id: string, formData: FormData) {
-  const { weddingId } = await requireWedding("/convidados");
+  const { weddingId } = await exigirCasamento("/convidados");
   if (typeof id !== "string") return { success: false, error: ERROS.convidadoNaoEncontrado };
   const raw = {
     name: formData.get("name"),
@@ -297,7 +297,7 @@ export async function updateGuest(id: string, formData: FormData) {
 }
 
 export async function deleteGuest(id: string) {
-  const { weddingId } = await requireWedding("/convidados");
+  const { weddingId } = await exigirCasamento("/convidados");
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.convidadoNaoEncontrado };
     const result = await prisma.guest.deleteMany({ where: { id, weddingId } });
@@ -323,10 +323,10 @@ export async function findGuestByPhone(slug: string, phone: string): Promise<Bus
   if (cleanPhone.length < 10 || cleanPhone.length > 13) return { status: "invalid_phone" };
 
   // Limite de tentativas: resposta própria (não pode parecer "convite não encontrado")
-  const rateLimit = await rateLimitByIp("RSVP");
+  const rateLimit = await limitarUsoPorIp("RSVP");
   if (!rateLimit.success) return { status: "rate_limited" };
 
-  const wedding = await getWeddingBySlug(slug);
+  const wedding = await obterCasamentoPeloEndereco(slug);
   if (!wedding || wedding.suspendedAt) return { status: "not_found" };
 
   const guest = await prisma.guest.findFirst({
@@ -366,12 +366,12 @@ export async function publicConfirmRsvp(
   const data = parsed.data;
 
   try {
-    const rateLimit = await rateLimitByIp("RSVP");
+    const rateLimit = await limitarUsoPorIp("RSVP");
     if (!rateLimit.success) {
       return { success: false, error: MENSAGEM_DE_MUITAS_TENTATIVAS };
     }
 
-    const wedding = await getWeddingBySlug(data.slug);
+    const wedding = await obterCasamentoPeloEndereco(data.slug);
     if (!wedding) return { success: false, error: ERROS.convidadoNaoEncontrado };
     if (wedding.suspendedAt) return { success: false, error: "Este site está indisponível no momento." };
 
@@ -395,8 +395,8 @@ export async function publicConfirmRsvp(
 
     // Avisa o casal só quando a resposta mudou (reenviar o mesmo formulário não vira outro aviso)
     if (guest.rsvpStatus !== data.status) {
-      deferNotify(() =>
-        notifyRsvp({
+      avisarDepois(() =>
+        avisarConfirmacao({
           weddingId: wedding.id,
           guestId: guest.id,
           guestName: guest.name,
@@ -415,7 +415,7 @@ export async function publicConfirmRsvp(
 }
 
 export async function checkInGuest(guestId: string) {
-  const { weddingId, session } = await requireWedding("/credenciamento");
+  const { weddingId, session } = await exigirCasamento("/credenciamento");
   const refusal = await recusaDeModulo({ weddingId, session }, "qrcode");
   if (refusal) return { success: false, error: refusal };
   try {

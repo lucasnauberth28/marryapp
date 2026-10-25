@@ -2,7 +2,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
-import { requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { SETTING_DEFS, parseSetting, type SettingKey, type SettingValue } from "@/lib/platform/settings-schema";
 
 /**
@@ -28,7 +28,7 @@ export async function getPlatformSetting<K extends SettingKey>(key: K): Promise<
 }
 
 export async function savePlatformSetting<K extends SettingKey>(key: K, value: SettingValue<K>, note?: string): Promise<SettingValue<K>> {
-  const admin = await requirePlatformAdmin();
+  const admin = await exigirAdminDaPlataforma();
   const clean = SETTING_DEFS[key].schema.parse(value) as SettingValue<K>;
   const before = await getPlatformSetting(key);
   await prisma.platformSetting.upsert({

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { PlatformSidebar } from "@/components/plataforma/sidebar";
 import { PlatformMobileNav } from "@/components/plataforma/mobile-nav";
 import { PlatformMobileTopBar } from "@/components/plataforma/mobile-top-bar";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { getPlatformNavCounts } from "@/lib/platform/nav-counts";
 
 // A administração nunca aparece em buscadores
@@ -26,7 +26,7 @@ async function MobileNavWithCounts(who: Who) {
 
 export default async function PlataformaLayout({ children }: { children: React.ReactNode }) {
   // O guard fica antes de qualquer streaming (sem sessão vai ao login, sem acesso total dá 404)
-  const admin = await requirePlatformAdminPage();
+  const admin = await exigirAdminDaPlataformaNaPagina();
   const who: Who = { name: admin.name ?? "Administrador", initials: admin.initials, roleLabel: admin.roleLabel };
 
   return (

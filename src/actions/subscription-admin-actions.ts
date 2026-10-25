@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
-import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { aplicarPagamentoAprovado, marcarPagamentoComoFalho } from "@/lib/subscriptions";
 
 /** Pix estático (sem confirmação automática): o txid gerado em generateSubscriptionPix começa assim. */
@@ -37,7 +37,7 @@ function revalidateSubscriptionPages() {
 }
 
 function failure(error: unknown, context: string): ActionResult {
-  return platformAdminFailure(error, context);
+  return falhaDeAdminDaPlataforma(error, context);
 }
 
 /**
@@ -46,7 +46,7 @@ function failure(error: unknown, context: string): ActionResult {
  */
 export async function confirmSubscriptionManually(subscriptionId: string): Promise<ActionResult> {
   try {
-    const session = await requirePlatformAdmin();
+    const session = await exigirAdminDaPlataforma();
     const parsed = IdSchema.safeParse(subscriptionId);
     if (!parsed.success) return { success: false, error: "Cobrança inválida." };
 
@@ -77,7 +77,7 @@ export async function confirmSubscriptionManually(subscriptionId: string): Promi
 /** O crédito não apareceu no extrato: a cobrança deixa de valer e o cliente precisa gerar outro Pix. */
 export async function rejectSubscription(subscriptionId: string): Promise<ActionResult> {
   try {
-    const session = await requirePlatformAdmin();
+    const session = await exigirAdminDaPlataforma();
     const parsed = IdSchema.safeParse(subscriptionId);
     if (!parsed.success) return { success: false, error: "Cobrança inválida." };
 

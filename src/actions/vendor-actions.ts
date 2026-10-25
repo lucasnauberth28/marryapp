@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
+import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
@@ -16,7 +16,7 @@ const VendorSchema = z.object({
 });
 
 export async function getVendors() {
-  const { weddingId } = await requireWeddingRead();
+  const { weddingId } = await exigirCasamentoParaLeitura();
   return prisma.vendor.findMany({
     where: { weddingId },
     orderBy: { createdAt: "desc" },
@@ -27,7 +27,7 @@ export async function getVendors() {
 }
 
 export async function createVendor(formData: FormData) {
-  const { weddingId } = await requireWedding("/meus-fornecedores");
+  const { weddingId } = await exigirCasamento("/meus-fornecedores");
   const raw = {
     name: formData.get("name"),
     category: formData.get("category"),
@@ -52,7 +52,7 @@ export async function createVendor(formData: FormData) {
 }
 
 export async function updateVendor(id: string, formData: FormData) {
-  const { weddingId } = await requireWedding("/meus-fornecedores");
+  const { weddingId } = await exigirCasamento("/meus-fornecedores");
   const raw = {
     name: formData.get("name"),
     category: formData.get("category"),
@@ -83,7 +83,7 @@ export async function updateVendor(id: string, formData: FormData) {
 }
 
 export async function deleteVendor(id: string) {
-  const { weddingId } = await requireWedding("/meus-fornecedores");
+  const { weddingId } = await exigirCasamento("/meus-fornecedores");
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.fornecedorNaoEncontrado };
     const result = await prisma.vendor.deleteMany({ where: { id, weddingId } });

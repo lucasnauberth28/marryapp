@@ -41,4 +41,4 @@ export function calcularTarifaDoCartao(amountInCents: number) {
   };
 }
 
-export { paidAmountMatches, verifyMercadoPagoSignature } from "@/lib/security/webhook-signature";
+export { valorPagoConfere as paidAmountMatches, verificarAssinaturaDoMercadoPago as verifyMercadoPagoSignature } from "@/lib/security/webhook-signature";

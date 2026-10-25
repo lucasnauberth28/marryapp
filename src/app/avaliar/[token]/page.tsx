@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BadgeCheck, Clock } from "lucide-react";
 import prisma from "@/lib/prisma";
-import { checkRateLimit, getClientIp } from "@/lib/security/rate-limiter";
+import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
 import { TOKEN_OVERLINE, TokenPageShell } from "@/components/public/token-page-shell";
 import { formatWeddingDate, PUBLIC_TOKEN_RE } from "@/app/(fornecedor)/_lib/vendor-panel";
 import { ReviewForm } from "./review-form";
@@ -19,8 +19,8 @@ export default async function AvaliarPage({ params }: { params: Promise<{ token:
   const { token } = await params;
   if (!PUBLIC_TOKEN_RE.test(token)) notFound();
 
-  const ip = await getClientIp();
-  const rateLimit = await checkRateLimit({ key: `REVIEW_VIEW:${ip}`, ...VIEW_LIMIT });
+  const ip = await obterIpDoCliente();
+  const rateLimit = await conferirLimiteDeUso({ key: `REVIEW_VIEW:${ip}`, ...VIEW_LIMIT });
   if (!rateLimit.success) {
     return (
       <TokenPageShell>

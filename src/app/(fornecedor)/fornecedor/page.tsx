@@ -4,7 +4,7 @@ import { ArrowRight, CalendarDays, ExternalLink, Inbox, Lock, MapPin, Users } fr
 import { Reveal } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
-import { getVendorPageContext } from "@/lib/security/vendor-guard";
+import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 import { LinkPending } from "@/components/feedback/link-pending";
 import { LeadStatusChip } from "../_components/status-chip";
 import { effectiveVendorTier, firstNameOf, formatRelative, formatWeddingDate, isLeadLocked, isLeadStatus, PLAN_HREF, START_MONTHLY_LEAD_LIMIT, startOfMonthBrasilia, todayBrasilia, whatsappHref, type LeadStatus } from "../_lib/vendor-panel";
@@ -31,7 +31,7 @@ const DAY_MS = 86_400_000;
 const RESULTS_DAYS = 30;
 
 export default async function PedidosPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
-  const { vendor } = await getVendorPageContext();
+  const { vendor } = await obterContextoDaPaginaDoFornecedor();
   if (!vendor) return null; // o layout explica que a conta ainda não foi vinculada
 
   const { status: statusParam } = await searchParams;

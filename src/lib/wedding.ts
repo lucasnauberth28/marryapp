@@ -4,8 +4,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import prisma from "@/lib/prisma";
 import { obterIniciaisDoCasal } from "@/lib/wedding-format";
-import { getWeddingBySlug, getWeddingContext, type WeddingSummary } from "@/lib/security/wedding-context";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { obterCasamentoPeloEndereco, obterContextoDoCasamento, type ResumoDoCasamento } from "@/lib/security/wedding-context";
+import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { urlDoSiteDoCasamento, type PaginaDoConvidadoNoCasamento } from "@/lib/wedding-links";
 
 export interface IdentidadeDoCasamento {
@@ -26,7 +26,7 @@ export interface IdentidadeDoCasamento {
 const NOMES_DE_APOIO = "Nosso Casamento";
 
 function montarIdentidade(
-  wedding: WeddingSummary | null,
+  wedding: ResumoDoCasamento | null,
   site: { title: string; weddingDate: Date | null; locationName: string | null } | null
 ): IdentidadeDoCasamento {
   const coupleNames = site?.title?.trim() || wedding?.coupleNames?.trim() || NOMES_DE_APOIO;
@@ -43,7 +43,7 @@ function montarIdentidade(
 }
 
 /** Identidade de um casamento já resolvido (nomes do site do casal, com o cadastro como reserva). */
-export const obterIdentidadeDoCasamento = cache(async (wedding: WeddingSummary | null): Promise<IdentidadeDoCasamento> => {
+export const obterIdentidadeDoCasamento = cache(async (wedding: ResumoDoCasamento | null): Promise<IdentidadeDoCasamento> => {
   if (!wedding) return montarIdentidade(null, null);
   try {
     const site = await prisma.siteCustomization.findUnique({
@@ -63,7 +63,7 @@ export const obterIdentidadeDoCasamento = cache(async (wedding: WeddingSummary |
  */
 export const obterIdentidadeDoCasamentoPrincipal = cache(async (): Promise<IdentidadeDoCasamento> => {
   try {
-    const ctx = await getWeddingContext();
+    const ctx = await obterContextoDoCasamento();
     return await obterIdentidadeDoCasamento(ctx?.wedding ?? null);
   } catch (error) {
     console.error("[getWeddingIdentity]", error);
@@ -84,10 +84,10 @@ export interface VisaoDaConta {
  */
 export const obterVisaoDaConta = cache(async (): Promise<VisaoDaConta> => {
   try {
-    const [session, ctx] = await Promise.all([getSession(), getWeddingContext()]);
+    const [session, ctx] = await Promise.all([obterSessao(), obterContextoDoCasamento()]);
     if (!session?.allowedPaths.includes("*")) return { adminView: false, userName: null };
     if (ctx && !ctx.viaAdmin) return { adminView: false, userName: null };
-    if (session.userId === SUPER_ADMIN_USER_ID) return { adminView: true, userName: null };
+    if (session.userId === ID_DO_SUPER_ADMIN) return { adminView: true, userName: null };
     const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { name: true } });
     return { adminView: true, userName: user?.name ?? null };
   } catch (error) {
@@ -99,7 +99,7 @@ export const obterVisaoDaConta = cache(async (): Promise<VisaoDaConta> => {
  * Metadados das páginas públicas do convidado: "Página · Nomes do casal".
  */
 export async function metadadosDaPaginaDoConvidado(slug: string, page: string | null, description?: string, guestPage?: PaginaDoConvidadoNoCasamento) {
-  const wedding = await getWeddingBySlug(slug).catch(() => null);
+  const wedding = await obterCasamentoPeloEndereco(slug).catch(() => null);
   // Suspenso: nada do casal nos metadados e fora dos buscadores
   if (wedding?.suspendedAt) return { title: { absolute: "Site indisponível" }, robots: { index: false, follow: false } };
   const identity = wedding ? await obterIdentidadeDoCasamento(wedding) : montarIdentidade(null, null);

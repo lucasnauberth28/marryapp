@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { registrarAuditoria } from "@/lib/audit";
-import { platformAdminApiGuard } from "@/lib/security/platform-admin";
+import { protecaoDaApiDeAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { oneOf, param, type SearchParams } from "@/lib/platform/list-params";
 import { csvLine } from "@/lib/platform/csv";
 import { CURATION_LABEL, VENDOR_SORTS, VENDOR_TABS, curationView } from "@/lib/platform/vendor-admin";
@@ -10,7 +10,7 @@ const MAX_ROWS = 5000;
 
 /** Exporta os fornecedores (com os filtros da lista) em CSV. Nunca traz CPF/CNPJ, telefone nem e-mail. */
 export async function GET(request: NextRequest) {
-  const { ctx, response } = await platformAdminApiGuard();
+  const { ctx, response } = await protecaoDaApiDeAdminDaPlataforma();
   if (response) return response;
 
   const query: SearchParams = Object.fromEntries(request.nextUrl.searchParams.entries());

@@ -1,16 +1,16 @@
 // Textos de WhatsApp e e-mail de cada aviso. Puro: o link absoluto chega pronto (appUrl no servidor).
 
-export interface TextSource {
+export interface OrigemDoTexto {
   title: string;
   body: string;
 }
 
 /** Mensagem curta de WhatsApp: o aviso e o link para abrir direto na tela certa. */
-export function whatsappText(item: TextSource, url: string): string {
+export function textoDoWhatsapp(item: OrigemDoTexto, url: string): string {
   return `Oi! ${item.title}.\n${item.body}\n\nAbra no Aceito: ${url}`;
 }
 
-export interface EmailContent {
+export interface ConteudoDoEmail {
   subject: string;
   heading: string;
   paragraphs: string[];
@@ -20,7 +20,7 @@ export interface EmailContent {
 }
 
 /** Conteúdo do e-mail (o modelo visual é o brandedEmail, em lib/email). */
-export function emailContent(item: TextSource, url: string, settingsUrl: string): EmailContent {
+export function conteudoDoEmail(item: OrigemDoTexto, url: string, settingsUrl: string): ConteudoDoEmail {
   return {
     subject: item.title,
     heading: item.title,

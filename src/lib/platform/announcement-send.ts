@@ -2,10 +2,10 @@ import "server-only";
 import prisma from "@/lib/prisma";
 import { urlDoApp } from "@/lib/app-url";
 import { brandedEmail, enviarEmail } from "@/lib/email";
-import { sendPushToUser } from "@/lib/notifications/push";
-import { buildPushPayload } from "@/lib/notifications/push-payload";
-import { loadPrefs } from "@/lib/notifications/senders";
-import { DEFAULT_PREFS, type NotificationPrefs } from "@/lib/notifications/preferences";
+import { enviarPushParaAPessoa } from "@/lib/notifications/push";
+import { montarConteudoDoPush } from "@/lib/notifications/push-payload";
+import { carregarPreferencias } from "@/lib/notifications/senders";
+import { PREFERENCIAS_PADRAO, type PreferenciasDeNotificacao } from "@/lib/notifications/preferences";
 import {
   SKIP_TEXT,
   bodyParagraphs,
@@ -39,15 +39,15 @@ interface AnnouncementContent {
 
 /** Cria as linhas de destinatário (PENDING, ou SKIPPED com o motivo). Pode rodar de novo sem duplicar. */
 export async function queueRecipients(announcementId: string, users: RecipientUser[], channels: Channel[], service: boolean, now = new Date()): Promise<void> {
-  const prefs = new Map<string, NotificationPrefs>();
+  const prefs = new Map<string, PreferenciasDeNotificacao>();
   for (let i = 0; i < users.length; i += 500) {
     const chunk = users.slice(i, i + 500).map((u) => u.id);
-    for (const [id, p] of await loadPrefs(chunk)) prefs.set(id, p);
+    for (const [id, p] of await carregarPreferencias(chunk)) prefs.set(id, p);
   }
   const rows: { announcementId: string; userId: string; channel: Channel; status: "PENDING" | "SKIPPED"; error: string | null }[] = [];
   for (const user of users) {
     for (const channel of channels) {
-      const decision = decideDelivery({ channel, service, username: user.username, prefs: prefs.get(user.id) ?? DEFAULT_PREFS, now });
+      const decision = decideDelivery({ channel, service, username: user.username, prefs: prefs.get(user.id) ?? PREFERENCIAS_PADRAO, now });
       rows.push({ announcementId, userId: user.id, channel, status: decision.status, error: decision.status === "SKIPPED" ? SKIP_TEXT[decision.reason] : null });
     }
   }
@@ -139,7 +139,7 @@ export async function processAnnouncement(announcementId: string): Promise<void>
 
       // Notificação no celular: uma pessoa por vez (cada uma pode ter vários aparelhos)
       for (const row of claimed.filter((r) => r.channel === "PUSH")) {
-        const report = await sendPushToUser(row.userId, buildPushPayload({ title: announcement.title, body: announcement.body, href: announcement.linkUrl, dedupeKey: `announcement:${announcementId}` }));
+        const report = await enviarPushParaAPessoa(row.userId, montarConteudoDoPush({ title: announcement.title, body: announcement.body, href: announcement.linkUrl, dedupeKey: `announcement:${announcementId}` }));
         if (report.devices === 0) await prisma.announcementRecipient.update({ where: { id: row.id }, data: { status: "SKIPPED", error: SKIP_TEXT.no_device, sentAt: new Date() } });
         else if (report.sent > 0) await finish(row.id, "SENT");
         else await finish(row.id, "FAILED", "Falha no envio");
@@ -193,7 +193,7 @@ export async function sendAnnouncementTest(
     done.push("aviso no painel");
   }
   if (input.channels.includes("PUSH")) {
-    const report = await sendPushToUser(user.id, buildPushPayload({ title, body: input.body, href: input.linkUrl, dedupeKey: "announcement-test" }));
+    const report = await enviarPushParaAPessoa(user.id, montarConteudoDoPush({ title, body: input.body, href: input.linkUrl, dedupeKey: "announcement-test" }));
     if (report.sent > 0) done.push("notificação no celular");
     else notes.push(report.devices === 0 ? "Notificação: você não tem aparelho com avisos ativados." : "Notificação: não foi possível enviar.");
   }

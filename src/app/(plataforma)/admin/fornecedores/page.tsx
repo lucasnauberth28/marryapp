@@ -1,10 +1,10 @@
 import { VendorsScreen } from "./_components/vendors-screen";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import type { SearchParams } from "@/lib/platform/list-params";
 
 export const metadata = { title: "Fornecedores" };
 
 export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   return <VendorsScreen searchParams={await searchParams} mode="lista" />;
 }

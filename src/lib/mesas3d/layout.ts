@@ -1,20 +1,20 @@
 // Onde cada mesa do casamento fica em cada cenário. Puro: recebe as mesas do painel e devolve posições e medidas.
-import { sceneById, SCENES, type SceneDef, type TableShape } from "./scenarios.ts";
+import { cenarioPorId, CENARIOS, type DefinicaoDoCenario, type FormatoDaMesa } from "./scenarios.ts";
 
-export interface TableInput {
+export interface MesaDeEntrada {
   id: string;
   name: string;
   capacity: number;
 }
 
-export interface TableSlot {
+export interface PosicaoDaMesa {
   id: string;
   nome: string;
   /** Lugares da mesa no painel (o que conta para sentar convidados). */
   cap: number;
   /** Cadeiras desenhadas: no máximo MAX_CHAIRS, para a cena não pesar. */
   cadeiras: number;
-  forma: TableShape;
+  forma: FormatoDaMesa;
   x: number;
   z: number;
   /** Mesa dos noivos (cabeceira). */
@@ -31,18 +31,18 @@ export interface TableSlot {
   hz: number;
 }
 
-export interface Layout {
-  scene: SceneDef;
+export interface Disposicao {
+  scene: DefinicaoDoCenario;
   /** Largura e profundidade da sala depois de crescer para caber todas as mesas. */
   sala: [number, number];
-  slots: TableSlot[];
+  slots: PosicaoDaMesa[];
 }
 
-export const MAX_CHAIRS = 24;
-export const DECOR_HEAD_ID = "__cabeceira";
+export const MAXIMO_DE_CADEIRAS = 24;
+export const ID_DA_MESA_DE_HONRA_DECORATIVA = "__cabeceira";
 
 /** Mesas que o casal chamou de "dos noivos", "principal" etc. viram a cabeceira do cenário. */
-export function isHeadTableName(name: string): boolean {
+export function ehNomeDeMesaDeHonra(name: string): boolean {
   const n = name
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
@@ -50,48 +50,48 @@ export function isHeadTableName(name: string): boolean {
   return /\bnoiv[oa]s?\b|\bprincipal\b|\bhonra\b|\bpadrinhos?\b/.test(n);
 }
 
-export function roundRadius(cap: number): number {
+export function raioDaMesaRedonda(cap: number): number {
   return cap <= 8 ? 0.97 : Math.min(1.55, 0.97 + (cap - 8) * 0.075);
 }
 
-function round(v: number) {
+function arredondarParaDecimais(v: number) {
   return Math.round(v * 100) / 100;
 }
 
-function headSlot(scene: SceneDef, id: string, nome: string, cap: number, decor: boolean): TableSlot {
-  const cadeiras = decor ? 2 : Math.min(cap, MAX_CHAIRS);
-  const w = Math.max(decor ? 3.4 : 3.4, round(Math.max(1, cadeiras) * 0.64));
+function posicaoDaMesaDeHonra(scene: DefinicaoDoCenario, id: string, nome: string, cap: number, decor: boolean): PosicaoDaMesa {
+  const cadeiras = decor ? 2 : Math.min(cap, MAXIMO_DE_CADEIRAS);
+  const w = Math.max(decor ? 3.4 : 3.4, arredondarParaDecimais(Math.max(1, cadeiras) * 0.64));
   const d = 1.1;
   return { id, nome, cap: decor ? 0 : cap, cadeiras, forma: "rect", x: 0, z: scene.noivosZ, noivos: true, decor, r: 0, w, d, hx: w / 2 + 0.9, hz: d / 2 + 1.1 };
 }
 
-function guestSlot(scene: SceneDef, t: TableInput, x: number, z: number): TableSlot {
+function posicaoDaMesaDeConvidados(scene: DefinicaoDoCenario, t: MesaDeEntrada, x: number, z: number): PosicaoDaMesa {
   const cap = Math.max(1, Math.round(t.capacity));
-  const cadeiras = Math.min(cap, MAX_CHAIRS);
+  const cadeiras = Math.min(cap, MAXIMO_DE_CADEIRAS);
   if (scene.forma === "round") {
-    const r = round(roundRadius(cadeiras));
-    return { id: t.id, nome: t.name, cap, cadeiras, forma: "round", x, z, noivos: false, decor: false, r, w: 0, d: 0, hx: round(r + 1.43), hz: round(r + 1.43) };
+    const r = arredondarParaDecimais(raioDaMesaRedonda(cadeiras));
+    return { id: t.id, nome: t.name, cap, cadeiras, forma: "round", x, z, noivos: false, decor: false, r, w: 0, d: 0, hx: arredondarParaDecimais(r + 1.43), hz: arredondarParaDecimais(r + 1.43) };
   }
   const lado = Math.ceil(cadeiras / 2);
-  const w = round(Math.max(5.4, lado * 0.9 + 0.9));
+  const w = arredondarParaDecimais(Math.max(5.4, lado * 0.9 + 0.9));
   const d = 1.3;
-  return { id: t.id, nome: t.name, cap, cadeiras, forma: "rect", x, z, noivos: false, decor: false, r: 0, w, d, hx: round(w / 2 + 0.9), hz: round(d / 2 + 1.1) };
+  return { id: t.id, nome: t.name, cap, cadeiras, forma: "rect", x, z, noivos: false, decor: false, r: 0, w, d, hx: arredondarParaDecimais(w / 2 + 0.9), hz: arredondarParaDecimais(d / 2 + 1.1) };
 }
 
 /**
  * Distribui as mesas do casal no cenário: a cabeceira ao fundo e as demais em fileiras, preenchendo de dentro para
  * fora e alternando os lados, para um número ímpar ou pequeno de mesas continuar simétrico. Se faltar espaço, a sala cresce.
  */
-export function computeLayout(sceneId: string, tables: TableInput[]): Layout {
-  const scene = sceneById(sceneId) ?? SCENES[0];
-  const headIdx = tables.findIndex((t) => isHeadTableName(t.name));
-  const slots: TableSlot[] = [];
+export function calcularDisposicao(sceneId: string, tables: MesaDeEntrada[]): Disposicao {
+  const scene = cenarioPorId(sceneId) ?? CENARIOS[0];
+  const headIdx = tables.findIndex((t) => ehNomeDeMesaDeHonra(t.name));
+  const slots: PosicaoDaMesa[] = [];
 
   if (headIdx >= 0) {
     const h = tables[headIdx];
-    slots.push(headSlot(scene, h.id, h.name, Math.max(1, Math.round(h.capacity)), false));
+    slots.push(posicaoDaMesaDeHonra(scene, h.id, h.name, Math.max(1, Math.round(h.capacity)), false));
   } else {
-    slots.push(headSlot(scene, DECOR_HEAD_ID, "Mesa dos noivos", 2, true));
+    slots.push(posicaoDaMesaDeHonra(scene, ID_DA_MESA_DE_HONRA_DECORATIVA, "Mesa dos noivos", 2, true));
   }
 
   const others = tables.filter((_, i) => i !== headIdx);
@@ -102,12 +102,12 @@ export function computeLayout(sceneId: string, tables: TableInput[]): Layout {
   others.forEach((t, i) => {
     const row = Math.floor(i / cols);
     const col = i % cols;
-    const z = round(scene.z0 + row * passo);
+    const z = arredondarParaDecimais(scene.z0 + row * passo);
     lastZ = z;
-    slots.push(guestSlot(scene, t, scene.colunas[col], z));
+    slots.push(posicaoDaMesaDeConvidados(scene, t, scene.colunas[col], z));
   });
 
   const need = 2 * (lastZ + 7);
-  const D = Math.max(scene.sala[1], round(need));
+  const D = Math.max(scene.sala[1], arredondarParaDecimais(need));
   return { scene, sala: [scene.sala[0], D], slots };
 }

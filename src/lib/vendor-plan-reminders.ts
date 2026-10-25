@@ -5,9 +5,9 @@ import { urlDoApp } from "@/lib/app-url";
 import { brandedEmail, enviarEmail } from "@/lib/email";
 import { enviarMensagemDeTexto } from "@/lib/evolution";
 import { lembreteDevido, fimDaJanelaDoLembrete, type DiaDoLembreteDoPlano } from "@/lib/plan-reminders";
-import { notifyPlanExpiring } from "@/lib/notifications/cron";
-import { DEFAULT_PREFS, decideChannels } from "@/lib/notifications/preferences";
-import { loadPrefsFor } from "@/lib/notifications/senders";
+import { avisarPlanoPrestesAVencer } from "@/lib/notifications/cron";
+import { PREFERENCIAS_PADRAO, decidirCanais } from "@/lib/notifications/preferences";
+import { carregarPreferenciasDe } from "@/lib/notifications/senders";
 
 import { formatarDataBrasiliaSemAno } from "./formatacao/data.ts";
 const NOME_DO_NIVEL: Record<string, string> = { PRO: "Pro", MASTER: "Master Elite" };
@@ -83,7 +83,7 @@ export async function enviarLembretesDoPlanoDoFornecedor(now = new Date()): Prom
     if (claimed.count === 0) continue;
 
     // Aviso no sino (e push) além do WhatsApp e do e-mail abaixo; nunca lança erro.
-    await notifyPlanExpiring({
+    await avisarPlanoPrestesAVencer({
       vendorId: vendor.id,
       planName: NOME_DO_NIVEL[vendor.planTier] ?? "pago",
       expiresAt: vendor.planExpiresAt,
@@ -96,9 +96,9 @@ export async function enviarLembretesDoPlanoDoFornecedor(now = new Date()): Prom
     const email = vendor.user?.username && PADRAO_DE_EMAIL.test(vendor.user.username) ? vendor.user.username : null;
 
     // Respeita as escolhas de "Avisos" da pessoa (padrão: WhatsApp e e-mail ligados, como sempre foi)
-    const prefs = vendor.user?.id ? await loadPrefsFor(vendor.user.id).catch(() => DEFAULT_PREFS) : DEFAULT_PREFS;
+    const prefs = vendor.user?.id ? await carregarPreferenciasDe(vendor.user.id).catch(() => PREFERENCIAS_PADRAO) : PREFERENCIAS_PADRAO;
     // O horário de silêncio não entra aqui: a rotina já roda às 8h e o aviso de cada período sai uma vez só.
-    const channels = decideChannels({ type: "plan_expiring", prefs: { ...prefs, quietHours: { ...prefs.quietHours, enabled: false } }, now });
+    const channels = decidirCanais({ type: "plan_expiring", prefs: { ...prefs, quietHours: { ...prefs.quietHours, enabled: false } }, now });
 
     let attempted = 0;
     let delivered = 0;

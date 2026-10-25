@@ -5,17 +5,17 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
-import { requireAuthSession } from "@/lib/security/auth-guard";
+import { exigirSessaoAutenticada } from "@/lib/security/auth-guard";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
-import { adminDisplayName, impersonationCookieOptions } from "@/lib/security/impersonation";
+import { nomeDeExibicaoDoAdmin, opcoesDoCookieDePersonificacao } from "@/lib/security/impersonation";
 import {
-  IMPERSONATION_COOKIE,
-  impersonationExpiry,
-  isImpersonationReason,
-  signImpersonationCookie,
-  verifyImpersonationCookie,
+  COOKIE_DE_PERSONIFICACAO,
+  validadeDaPersonificacao,
+  ehMotivoDePersonificacao,
+  assinarCookieDePersonificacao,
+  verificarCookieDePersonificacao,
 } from "@/lib/security/impersonation-rules";
-import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 // "Entrar como este casal": início e fim da sessão. A pessoa vem sempre da sessão de login (nunca do navegador);
@@ -25,7 +25,7 @@ export type ImpersonationResult = { success: true; redirectTo: string } | { succ
 
 const StartSchema = z.object({
   weddingId: z.string().uuid("Casamento inválido."),
-  reason: z.string().refine(isImpersonationReason, "Escolha o motivo da entrada."),
+  reason: z.string().refine(ehMotivoDePersonificacao, "Escolha o motivo da entrada."),
   ticketNumber: z.number().int().positive().max(2_000_000_000).nullable(),
   canEdit: z.boolean(),
   /** Segunda confirmação de "Permitir editar": obrigatória quando canEdit é verdadeiro. */
@@ -34,7 +34,7 @@ const StartSchema = z.object({
 
 export async function startImpersonation(input: unknown): Promise<ImpersonationResult> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     const parsed = StartSchema.safeParse(input);
     if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira os dados." };
     const data = parsed.data;
@@ -48,7 +48,7 @@ export async function startImpersonation(input: unknown): Promise<ImpersonationR
       if (!ticket) return { success: false, error: `Não existe o chamado #${data.ticketNumber}. Deixe o campo vazio se não houver.` };
     }
 
-    const adminName = adminDisplayName(admin.userId, admin.name);
+    const adminName = nomeDeExibicaoDoAdmin(admin.userId, admin.name);
     const now = new Date();
     // Uma entrada por vez: as anteriores desta pessoa são encerradas
     await prisma.impersonationSession.updateMany({ where: { adminUserId: admin.userId, endedAt: null }, data: { endedAt: now, endedReason: "replaced" } });
@@ -62,12 +62,12 @@ export async function startImpersonation(input: unknown): Promise<ImpersonationR
         ticketNumber: data.ticketNumber,
         canEdit: data.canEdit,
         startedAt: now,
-        expiresAt: impersonationExpiry(now),
+        expiresAt: validadeDaPersonificacao(now),
       },
     });
 
     const store = await cookies();
-    store.set(IMPERSONATION_COOKIE, await signImpersonationCookie({ sessionId: row.id, adminUserId: admin.userId, expiresAt: row.expiresAt }), impersonationCookieOptions(row.expiresAt));
+    store.set(COOKIE_DE_PERSONIFICACAO, await assinarCookieDePersonificacao({ sessionId: row.id, adminUserId: admin.userId, expiresAt: row.expiresAt }), opcoesDoCookieDePersonificacao(row.expiresAt));
 
     await registrarAuditoria({
       action: "impersonation.start",
@@ -77,17 +77,17 @@ export async function startImpersonation(input: unknown): Promise<ImpersonationR
     });
     return { success: true, redirectTo: "/dashboard" };
   } catch (error) {
-    return platformAdminFailure(error, "startImpersonation");
+    return falhaDeAdminDaPlataforma(error, "startImpersonation");
   }
 }
 
 /** Sair do casal (botão da faixa ou fim dos 30 minutos). Só mexe na sessão da própria pessoa logada. */
 export async function endImpersonation(): Promise<ImpersonationResult> {
   try {
-    const session = await requireAuthSession();
+    const session = await exigirSessaoAutenticada();
     const store = await cookies();
-    const signed = await verifyImpersonationCookie(store.get(IMPERSONATION_COOKIE)?.value);
-    store.delete(IMPERSONATION_COOKIE);
+    const signed = await verificarCookieDePersonificacao(store.get(COOKIE_DE_PERSONIFICACAO)?.value);
+    store.delete(COOKIE_DE_PERSONIFICACAO);
 
     let weddingId: string | null = null;
     if (signed && signed.adminUserId === session.userId && ehAcessoDeAdminDaPlataforma(session.allowedPaths)) {
@@ -109,6 +109,6 @@ export async function endImpersonation(): Promise<ImpersonationResult> {
     revalidatePath("/", "layout");
     return { success: true, redirectTo: weddingId ? `/admin/casais/${weddingId}` : "/admin/casais" };
   } catch (error) {
-    return platformAdminFailure(error, "endImpersonation");
+    return falhaDeAdminDaPlataforma(error, "endImpersonation");
   }
 }

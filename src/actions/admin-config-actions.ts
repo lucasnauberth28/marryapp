@@ -2,7 +2,7 @@
 
 import { revalidatePath, updateTag } from "next/cache";
 import { registrarAuditoria } from "@/lib/audit";
-import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { getPlatformSetting, savePlatformSetting } from "@/lib/platform/settings";
 import { parseEmailSender, parseMaintenance, refundPolicyInput } from "@/lib/platform/config-core";
 import { MAINTENANCE_TAG } from "@/lib/platform/maintenance";
@@ -23,7 +23,7 @@ type Ok = { success: true; message: string };
  */
 export async function saveMaintenance(input: unknown): Promise<Ok | Fail> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const parsed = parseMaintenance(input);
     if (!parsed.ok) return { success: false, error: ERROS.camposInvalidos, fieldErrors: parsed.errors };
     const before = await getPlatformSetting("maintenance");
@@ -35,14 +35,14 @@ export async function saveMaintenance(input: unknown): Promise<Ok | Fail> {
     revalidatePath("/admin/configuracoes");
     return { success: true, message: parsed.value.enabled ? "Modo de manutenção ligado. Casais e convidados já veem o aviso." : "Modo de manutenção desligado." };
   } catch (error) {
-    return platformAdminFailure(error, "saveMaintenance");
+    return falhaDeAdminDaPlataforma(error, "saveMaintenance");
   }
 }
 
 /** Remetente dos e-mails. Vazio = o remetente do servidor (EMAIL_FROM). Não dá para validar o domínio na Resend daqui. */
 export async function saveEmailSender(input: unknown): Promise<Ok | Fail> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const parsed = parseEmailSender(input);
     if (!parsed.ok) return { success: false, error: ERROS.camposInvalidos, fieldErrors: parsed.errors };
     await savePlatformSetting("emailSender", parsed.value);
@@ -50,14 +50,14 @@ export async function saveEmailSender(input: unknown): Promise<Ok | Fail> {
     revalidatePath("/admin/configuracoes");
     return { success: true, message: parsed.value.fromEmail ? "Remetente salvo. Vale para os próximos e-mails." : "Voltamos ao remetente do servidor." };
   } catch (error) {
-    return platformAdminFailure(error, "saveEmailSender");
+    return falhaDeAdminDaPlataforma(error, "saveEmailSender");
   }
 }
 
 /** Política de reembolso: prazo e texto. Quem decide é sempre a administração (a decisão automática não existe). */
 export async function saveRefundPolicy(input: unknown): Promise<Ok | Fail> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const parsed = refundPolicyInput.safeParse(input);
     if (!parsed.success) {
       const fieldErrors: Record<string, string> = {};
@@ -69,7 +69,7 @@ export async function saveRefundPolicy(input: unknown): Promise<Ok | Fail> {
     revalidatePath("/admin/planos");
     return { success: true, message: "Política de reembolso salva." };
   } catch (error) {
-    return platformAdminFailure(error, "saveRefundPolicy");
+    return falhaDeAdminDaPlataforma(error, "saveRefundPolicy");
   }
 }
 

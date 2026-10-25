@@ -5,11 +5,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import prisma from "@/lib/prisma";
-import { requireVendorSession, VENDOR_PANEL_PATH } from "@/lib/security/vendor-guard";
-import { checkRateLimit } from "@/lib/security/rate-limiter";
-import { normalizeText, sanitizeUrl } from "@/lib/security/sanitize";
+import { exigirSessaoDoFornecedor, CAMINHO_DO_PAINEL_DO_FORNECEDOR } from "@/lib/security/vendor-guard";
+import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
+import { normalizarTexto, limparUrl } from "@/lib/security/sanitize";
 import { TAMANHO_MAXIMO_DA_IMAGEM_EM_BYTES, enviarImagemDeDataUrl } from "@/lib/supabase";
-import type { VendorPanelVendor } from "@/lib/security/vendor-guard";
+import type { FornecedorDoPainel } from "@/lib/security/vendor-guard";
 import {
   effectiveVendorTier,
   isLeadLocked,
@@ -29,14 +29,14 @@ import { ERROS } from "@/lib/mensagens-de-erro";
 const VENDOR_PANEL_LIMIT = { limit: 60, windowMs: 1000 * 60 }; // 60 alterações / minuto por conta
 
 async function rateLimitVendor(userId: string) {
-  return checkRateLimit({ key: `VENDOR_PANEL:${userId}`, ...VENDOR_PANEL_LIMIT });
+  return conferirLimiteDeUso({ key: `VENDOR_PANEL:${userId}`, ...VENDOR_PANEL_LIMIT });
 }
 
 const RATE_LIMIT_ERROR = "Muitas alterações em pouco tempo. Aguarde um instante e tente novamente.";
 const LOCKED_ERROR = "Este pedido está bloqueado pelo limite do Plano Start. Assine o Pro para desbloquear.";
 
 /** Pedido bloqueado pelo limite do Start (considerando o plano em vigor do fornecedor). */
-function lockedFor(vendor: VendorPanelVendor, lead: { locked: boolean }) {
+function lockedFor(vendor: FornecedorDoPainel, lead: { locked: boolean }) {
   return isLeadLocked(lead, effectiveVendorTier(vendor.planTier, vendor.planExpiresAt));
 }
 
@@ -66,7 +66,7 @@ const LeadStatusSchema = z.object({
 });
 
 export async function updateLeadStatus(leadId: string, status: string) {
-  const { session, vendor } = await requireVendorSession();
+  const { session, vendor } = await exigirSessaoDoFornecedor();
 
   const parsed = LeadStatusSchema.safeParse({ leadId, status });
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -99,7 +99,7 @@ export async function updateLeadStatus(leadId: string, status: string) {
     });
     if (result.count === 0) return { success: false, error: ERROS.pedidoNaoEncontrado };
 
-    revalidatePath(VENDOR_PANEL_PATH, "layout");
+    revalidatePath(CAMINHO_DO_PAINEL_DO_FORNECEDOR, "layout");
     return { success: true };
   } catch (error) {
     console.error("[updateLeadStatus Error]:", error);
@@ -151,7 +151,7 @@ export type LeadProposalInput = { leadId: string; amount: string; validUntil?: s
 
 /** Registra a proposta no pedido (o envio ao casal é feito pelo fornecedor, no WhatsApp). */
 export async function saveLeadProposal(input: LeadProposalInput) {
-  const { session, vendor } = await requireVendorSession();
+  const { session, vendor } = await exigirSessaoDoFornecedor();
 
   const parsed = ProposalSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -189,7 +189,7 @@ export async function saveLeadProposal(input: LeadProposalInput) {
     });
     if (result.count === 0) return { success: false, error: ERROS.pedidoNaoEncontrado };
 
-    revalidatePath(VENDOR_PANEL_PATH, "layout");
+    revalidatePath(CAMINHO_DO_PAINEL_DO_FORNECEDOR, "layout");
     return { success: true };
   } catch (error) {
     console.error("[saveLeadProposal Error]:", error);
@@ -206,7 +206,7 @@ export type DeclineLeadInput = { leadId: string; message?: string };
 
 /** Recusa o pedido, guardando a mensagem que o fornecedor vai mandar ao casal. */
 export async function declineLead(input: DeclineLeadInput) {
-  const { session, vendor } = await requireVendorSession();
+  const { session, vendor } = await exigirSessaoDoFornecedor();
 
   const parsed = DeclineSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -236,7 +236,7 @@ export async function declineLead(input: DeclineLeadInput) {
     });
     if (result.count === 0) return { success: false, error: ERROS.pedidoNaoEncontrado };
 
-    revalidatePath(VENDOR_PANEL_PATH, "layout");
+    revalidatePath(CAMINHO_DO_PAINEL_DO_FORNECEDOR, "layout");
     return { success: true };
   } catch (error) {
     console.error("[declineLead Error]:", error);
@@ -253,7 +253,7 @@ export type RequestLeadReviewResult = { success: true; url: string } | { success
  * A avaliação feita por esse link entra como verificada.
  */
 export async function requestLeadReview(leadId: string): Promise<RequestLeadReviewResult> {
-  const { session, vendor } = await requireVendorSession();
+  const { session, vendor } = await exigirSessaoDoFornecedor();
 
   const parsed = RequestReviewSchema.safeParse(leadId);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -280,7 +280,7 @@ export async function requestLeadReview(leadId: string): Promise<RequestLeadRevi
     });
     if (result.count === 0) return { success: false, error: ERROS.pedidoNaoEncontrado };
 
-    revalidatePath(VENDOR_PANEL_PATH, "layout");
+    revalidatePath(CAMINHO_DO_PAINEL_DO_FORNECEDOR, "layout");
     return { success: true, url: reviewPublicUrl(token) };
   } catch (error) {
     console.error("[requestLeadReview Error]:", error);
@@ -324,7 +324,7 @@ export type VendorEventInput = {
 };
 
 export async function createVendorEvent(input: VendorEventInput) {
-  const { session, vendor } = await requireVendorSession();
+  const { session, vendor } = await exigirSessaoDoFornecedor();
 
   const parsed = VendorEventSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -354,7 +354,7 @@ export async function createVendorEvent(input: VendorEventInput) {
     }
 
     const title = data.title
-      ? normalizeText(data.title)
+      ? normalizarTexto(data.title)
       : data.kind === "BLOCKED"
         ? "Data bloqueada"
         : lead
@@ -374,7 +374,7 @@ export async function createVendorEvent(input: VendorEventInput) {
       },
     });
 
-    revalidatePath(VENDOR_PANEL_PATH, "layout");
+    revalidatePath(CAMINHO_DO_PAINEL_DO_FORNECEDOR, "layout");
     return { success: true };
   } catch (error) {
     console.error("[createVendorEvent Error]:", error);
@@ -383,7 +383,7 @@ export async function createVendorEvent(input: VendorEventInput) {
 }
 
 export async function deleteVendorEvent(eventId: string) {
-  const { session, vendor } = await requireVendorSession();
+  const { session, vendor } = await exigirSessaoDoFornecedor();
 
   const parsed = z.string().uuid("Compromisso inválido.").safeParse(eventId);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -395,7 +395,7 @@ export async function deleteVendorEvent(eventId: string) {
     const result = await prisma.vendorEvent.deleteMany({ where: { id: parsed.data, vendorId: vendor.id } });
     if (result.count === 0) return { success: false, error: "Compromisso não encontrado." };
 
-    revalidatePath(VENDOR_PANEL_PATH, "layout");
+    revalidatePath(CAMINHO_DO_PAINEL_DO_FORNECEDOR, "layout");
     return { success: true };
   } catch (error) {
     console.error("[deleteVendorEvent Error]:", error);
@@ -430,7 +430,7 @@ const VendorProfileSchema = z.object({
     .transform((v) =>
       (v ?? "")
         .split(/[,\n;]/)
-        .map((r) => normalizeText(r))
+        .map((r) => normalizarTexto(r))
         .filter(Boolean)
         .slice(0, 20)
         .map((r) => r.slice(0, 80)),
@@ -458,7 +458,7 @@ const VendorProfileSchema = z.object({
     .trim()
     .max(200)
     .optional()
-    .transform((v) => (v ? sanitizeUrl(v) : null))
+    .transform((v) => (v ? limparUrl(v) : null))
     .refine((v) => v === null || /^https?:\/\/[^\s/$.?#].[^\s]*$/i.test(v), "Site inválido."),
 });
 
@@ -475,7 +475,7 @@ export type VendorProfileInput = {
 };
 
 export async function updateVendorProfile(input: VendorProfileInput) {
-  const { session, vendor } = await requireVendorSession();
+  const { session, vendor } = await exigirSessaoDoFornecedor();
 
   const parsed = VendorProfileSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -489,7 +489,7 @@ export async function updateVendorProfile(input: VendorProfileInput) {
       // O id vem da sessão (vínculo do usuário), nunca do cliente.
       where: { id: vendor.id },
       data: {
-        companyName: normalizeText(data.companyName),
+        companyName: normalizarTexto(data.companyName),
         category: data.category,
         description: data.description ? data.description.replace(/\r\n/g, "\n").trim() : null,
         startingPrice: data.startingPrice,
@@ -502,7 +502,7 @@ export async function updateVendorProfile(input: VendorProfileInput) {
       },
     });
 
-    revalidatePath(VENDOR_PANEL_PATH, "layout");
+    revalidatePath(CAMINHO_DO_PAINEL_DO_FORNECEDOR, "layout");
     revalidatePath("/fornecedores");
     revalidatePath(`/fornecedores/${vendor.id}`);
     revalidatePath("/curadoria");
@@ -543,7 +543,7 @@ export type VendorMediaResult = { success: true; media: VendorMedia } | { succes
 
 /** Uma alteração por vez nas fotos do perfil do fornecedor da sessão; devolve como ficaram. */
 export async function updateVendorMedia(input: VendorMediaInput): Promise<VendorMediaResult> {
-  const { session, vendor } = await requireVendorSession();
+  const { session, vendor } = await exigirSessaoDoFornecedor();
 
   const parsed = VendorMediaSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -617,7 +617,7 @@ export async function updateVendorMedia(input: VendorMediaInput): Promise<Vendor
       },
     });
 
-    revalidatePath(VENDOR_PANEL_PATH, "layout");
+    revalidatePath(CAMINHO_DO_PAINEL_DO_FORNECEDOR, "layout");
     revalidatePath("/fornecedores");
     revalidatePath(`/fornecedores/${vendor.id}`);
     revalidatePath("/curadoria");

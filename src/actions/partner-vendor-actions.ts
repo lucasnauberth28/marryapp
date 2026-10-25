@@ -4,10 +4,10 @@ import { createHmac, createHash } from "node:crypto";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { checkRateLimit, getClientIp, rateLimitByIp } from "@/lib/security/rate-limiter";
-import { normalizeText } from "@/lib/security/sanitize";
-import { deferNotify } from "@/lib/notifications/service";
-import { notifyLeadNew, notifyProposalAccepted } from "@/lib/notifications/events";
+import { conferirLimiteDeUso, obterIpDoCliente, limitarUsoPorIp } from "@/lib/security/rate-limiter";
+import { normalizarTexto } from "@/lib/security/sanitize";
+import { avisarDepois } from "@/lib/notifications/service";
+import { avisarNovoPedidoDeOrcamento, avisarPropostaAceita } from "@/lib/notifications/events";
 import { obterIdsDeFornecedoresIndisponiveis, fornecedorEstaDisponivel } from "@/lib/vendor-availability";
 import { vitrineRank } from "@/lib/platform/vendor-admin";
 import {
@@ -195,8 +195,8 @@ export async function checkVendorAvailability(vendorId: string, date: string): P
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
   try {
-    const ip = await getClientIp();
-    const rateLimit = await checkRateLimit({ key: `VENDOR_AVAILABILITY:${ip}`, ...AVAILABILITY_LIMIT });
+    const ip = await obterIpDoCliente();
+    const rateLimit = await conferirLimiteDeUso({ key: `VENDOR_AVAILABILITY:${ip}`, ...AVAILABILITY_LIMIT });
     if (!rateLimit.success) {
       return { success: false, error: "Muitas consultas em pouco tempo. Tente novamente daqui a alguns minutos." };
     }
@@ -253,7 +253,7 @@ export async function createVendorLead(data: {
   const input = parsed.data;
 
   try {
-    const rateLimit = await rateLimitByIp("PUBLIC_FORM", `lead:${input.vendorId}`);
+    const rateLimit = await limitarUsoPorIp("PUBLIC_FORM", `lead:${input.vendorId}`);
     if (!rateLimit.success) {
       return { success: false, error: "Muitas solicitações em pouco tempo. Tente novamente mais tarde." };
     }
@@ -275,14 +275,14 @@ export async function createVendorLead(data: {
     const lead = await prisma.vendorLead.create({
       data: {
         vendorId: input.vendorId,
-        coupleName: normalizeText(input.coupleName),
+        coupleName: normalizarTexto(input.coupleName),
         couplePhone: input.couplePhone,
         coupleEmail: input.coupleEmail || null,
         weddingDate: input.weddingDate ?? null,
         guestCount: input.guestCount ?? null,
         message: input.message || null,
         meetingType: input.meetingType || "ONLINE",
-        location: input.location ? normalizeText(input.location) || null : null,
+        location: input.location ? normalizarTexto(input.location) || null : null,
         budget: input.budget || null,
         locked,
       },
@@ -290,7 +290,7 @@ export async function createVendorLead(data: {
     });
 
     // Aviso no sino do fornecedor (e push), depois da resposta ao casal
-    deferNotify(() => notifyLeadNew(lead.id));
+    avisarDepois(() => avisarNovoPedidoDeOrcamento(lead.id));
 
     return { success: true, lead };
   } catch (error) {
@@ -334,8 +334,8 @@ export async function acceptLeadProposal(input: AcceptProposalInput): Promise<Ac
   const { token, fullName } = parsed.data;
 
   try {
-    const ip = await getClientIp();
-    const rateLimit = await checkRateLimit({ key: `PROPOSAL_ACCEPT:${ip}`, ...PROPOSAL_ACCEPT_LIMIT });
+    const ip = await obterIpDoCliente();
+    const rateLimit = await conferirLimiteDeUso({ key: `PROPOSAL_ACCEPT:${ip}`, ...PROPOSAL_ACCEPT_LIMIT });
     if (!rateLimit.success) {
       return { success: false, error: "Muitas tentativas em pouco tempo. Tente novamente daqui a alguns minutos." };
     }
@@ -364,7 +364,7 @@ export async function acceptLeadProposal(input: AcceptProposalInput): Promise<Ac
     }
 
     const now = new Date();
-    const name = normalizeText(fullName);
+    const name = normalizarTexto(fullName);
     // Condições repetidas no update: duas abas aceitando ao mesmo tempo gravam só uma vez.
     const result = await prisma.vendorLead.updateMany({
       where: { id: lead.id, proposalToken: token, proposalAcceptedAt: null, locked: false, status: { not: "DECLINED" } },
@@ -380,7 +380,7 @@ export async function acceptLeadProposal(input: AcceptProposalInput): Promise<Ac
     });
     if (result.count === 0) return { success: false, error: "Esta proposta já foi aceita." };
 
-    deferNotify(() => notifyProposalAccepted(lead.id));
+    avisarDepois(() => avisarPropostaAceita(lead.id));
 
     return { success: true, acceptedAt: now.toISOString(), name };
   } catch (error) {

@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 import { PageHeader } from "@/components/admin/page-header";
-import { requireWeddingPage } from "@/lib/security/wedding-context";
-import { weddingWriteRefusal } from "@/lib/security/impersonation-rules";
-import { SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { isPayoutCryptoConfigured } from "@/lib/security/payout-crypto";
+import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
+import { recusaDeEscritaNoCasamento } from "@/lib/security/impersonation-rules";
+import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { cifraDoRepasseEstaConfigurada } from "@/lib/security/payout-crypto";
 import { obterVisaoDaContaDeRepasse } from "@/lib/payout-account-view";
 import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/gift-fee";
 import { RecebimentoClient } from "./recebimento-client";
@@ -14,17 +14,17 @@ export const metadata: Metadata = {
 };
 
 export default async function RecebimentoPage() {
-  const ctx = await requireWeddingPage("/configuracoes");
+  const ctx = await exigirCasamentoNaPagina("/configuracoes");
   const account = await obterVisaoDaContaDeRepasse(ctx.weddingId);
 
   // Quem pode mexer: só a própria pessoa do casal (a administração vendo o casal, mesmo editando, só lê).
   let blockedReason: string | null = null;
-  if (ctx.impersonation || ctx.viaAdmin || ctx.session.userId === SUPER_ADMIN_USER_ID) {
+  if (ctx.impersonation || ctx.viaAdmin || ctx.session.userId === ID_DO_SUPER_ADMIN) {
     blockedReason = "Você está vendo este casamento como administração. Só quem é do casal cadastra ou altera os dados de recebimento.";
   } else {
-    blockedReason = weddingWriteRefusal({ impersonation: ctx.impersonation, suspendedAt: ctx.wedding.suspendedAt });
+    blockedReason = recusaDeEscritaNoCasamento({ impersonation: ctx.impersonation, suspendedAt: ctx.wedding.suspendedAt });
   }
-  const registrationAvailable = isPayoutCryptoConfigured();
+  const registrationAvailable = cifraDoRepasseEstaConfigurada();
 
   return (
     <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">

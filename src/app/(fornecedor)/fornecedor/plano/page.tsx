@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 import { Reveal } from "@/components/motion/reveal";
 import { btn } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
-import { getVendorPageContext } from "@/lib/security/vendor-guard";
+import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 import { planOption, shortPlanName } from "@/app/login/auth-config";
 import { obterCatalogo } from "@/lib/catalog-server";
 import { proximoFimDoPeriodoDoFornecedor, DIAS_DO_PERIODO_DO_FORNECEDOR, nivelDoFornecedorParaOPlano } from "@/lib/subscription-period";
@@ -32,7 +32,7 @@ function formatDate(date: Date, now: Date, short = false): string {
 const TIER_PLAN: Record<string, "start" | "pro" | "master"> = { FREE: "start", PRO: "pro", MASTER: "master" };
 
 export default async function PlanoPage() {
-  const { session, vendor } = await getVendorPageContext();
+  const { session, vendor } = await obterContextoDaPaginaDoFornecedor();
   if (!vendor) return null; // o layout explica que a conta ainda não foi vinculada
 
   // Página dinâmica (sessão): a data de agora é lida a cada requisição.

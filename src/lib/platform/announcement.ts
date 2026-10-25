@@ -1,7 +1,7 @@
 // Regras puras dos comunicados: público, link, modelos prontos e decisão de quem recebe por qual canal.
 // Sem banco nem Next: roda nos testes. O envio de verdade fica em lib/platform/announcement-send.ts.
 import { z } from "zod";
-import { isQuietNow, type NotificationPrefs } from "../notifications/preferences.ts";
+import { estaEmSilencioAgora, type PreferenciasDeNotificacao } from "../notifications/preferences.ts";
 
 const ANNOUNCEMENT_TITLE_MAX = 90;
 const ANNOUNCEMENT_SUBJECT_MAX = 120;
@@ -200,7 +200,7 @@ export function decideDelivery(input: {
   channel: Channel;
   service: boolean;
   username: string;
-  prefs: NotificationPrefs;
+  prefs: PreferenciasDeNotificacao;
   now: Date;
 }): { status: "PENDING" } | { status: "SKIPPED"; reason: SkipReason } {
   const { channel, service, username, prefs, now } = input;
@@ -209,7 +209,7 @@ export function decideDelivery(input: {
   if (service) return { status: "PENDING" };
   const key = channel === "PUSH" ? "push" : "email";
   if (!prefs.channels[key].account) return { status: "SKIPPED", reason: "opted_out" };
-  if (channel === "PUSH" && isQuietNow(prefs.quietHours, now)) return { status: "SKIPPED", reason: "quiet_hours" };
+  if (channel === "PUSH" && estaEmSilencioAgora(prefs.quietHours, now)) return { status: "SKIPPED", reason: "quiet_hours" };
   return { status: "PENDING" };
 }
 

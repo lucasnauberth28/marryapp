@@ -1,6 +1,6 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { classifyAccount, type AccountKind } from "@/lib/account/wedding-provisioning";
+import { classificarConta, type TipoDeConta } from "@/lib/account/wedding-provisioning";
 
 /**
  * Exclui uma conta pelo id, pela administração (pedido de exclusão de titular, LGPD). Mesma sequência de
@@ -8,17 +8,17 @@ import { classifyAccount, type AccountKind } from "@/lib/account/wedding-provisi
  * presentes saem antes, por causa do RESTRICT); fornecedor leva o perfil do marketplace. Assinaturas ficam com
  * userId/weddingId nulos (guardadas para fins fiscais). Recusa contas da administração.
  */
-export type DeleteAccountResult =
-  | { ok: true; kind: AccountKind; deletedWedding: boolean; deletedVendorProfile: boolean; weddingId: string | null }
+export type ResultadoDaExclusaoDaConta =
+  | { ok: true; kind: TipoDeConta; deletedWedding: boolean; deletedVendorProfile: boolean; weddingId: string | null }
   | { ok: false; reason: "not_found" | "admin_account" };
 
-export async function deleteAccountById(userId: string): Promise<DeleteAccountResult> {
+export async function excluirContaPorId(userId: string): Promise<ResultadoDaExclusaoDaConta> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { id: true, weddingId: true, partnerVendorId: true, role: { select: { name: true, allowedPaths: true } } },
   });
   if (!user) return { ok: false, reason: "not_found" };
-  const kind = classifyAccount(user);
+  const kind = classificarConta(user);
   if (kind === "admin") return { ok: false, reason: "admin_account" };
 
   const outcome = await prisma.$transaction(async (tx) => {

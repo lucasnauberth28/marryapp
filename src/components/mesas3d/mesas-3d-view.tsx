@@ -7,10 +7,10 @@ import { toast } from "sonner";
 import { assignGuestToTable } from "@/actions/table-actions";
 import { setTables3DScene } from "@/actions/table3d-actions";
 import { btn } from "@/components/landing/styles";
-import type { CameraPreset, Mesas3DEngine } from "@/lib/mesas3d/engine";
-import { computeLayout, type TableInput, type TableSlot } from "@/lib/mesas3d/layout";
-import { DEFAULT_SCENE, type SceneId } from "@/lib/mesas3d/scenarios";
-import { canSeat, colorOfGuest, groupsOf, matchesName, occupancyByTable, seatColors, type SeatGuest } from "@/lib/mesas3d/seating";
+import type { PredefinicaoDaCamera, MotorDasMesas3D } from "@/lib/mesas3d/engine";
+import { calcularDisposicao, type MesaDeEntrada, type PosicaoDaMesa } from "@/lib/mesas3d/layout";
+import { CENARIO_PADRAO, type IdDoCenario } from "@/lib/mesas3d/scenarios";
+import { podeSentar, corDoConvidado, gruposDe, combinaComNome, ocupacaoPorMesa, coresDosLugares, type ConvidadoParaSentar } from "@/lib/mesas3d/seating";
 import { cn } from "@/lib/utils";
 import { SceneGallery } from "./scene-gallery";
 import { ShareDialog } from "./share-dialog";
@@ -18,9 +18,9 @@ import { ShareDialog } from "./share-dialog";
 interface Props {
   mode: "edit" | "view";
   coupleNames: string;
-  initialScene: SceneId | null;
-  tables: TableInput[];
-  guests: SeatGuest[];
+  initialScene: IdDoCenario | null;
+  tables: MesaDeEntrada[];
+  guests: ConvidadoParaSentar[];
   initialShareToken?: string | null;
 }
 
@@ -35,15 +35,15 @@ const initials = (n: string) => {
  */
 export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: initialGuests, initialShareToken = null }: Props) {
   const edit = mode === "edit";
-  const [scene, setScene] = useState<SceneId | null>(initialScene);
+  const [scene, setScene] = useState<IdDoCenario | null>(initialScene);
   const [galleryOpen, setGalleryOpen] = useState(edit && !initialScene);
-  const [guests, setGuests] = useState<SeatGuest[]>(initialGuests);
+  const [guests, setGuests] = useState<ConvidadoParaSentar[]>(initialGuests);
   const [filter, setFilter] = useState<"sem" | "todos">("sem");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [dropId, setDropId] = useState<string | null>(null);
-  const [cam, setCam] = useState<CameraPreset | null>("cenario");
+  const [cam, setCam] = useState<PredefinicaoDaCamera | null>("cenario");
   const [shareOpen, setShareOpen] = useState(false);
   const [shareToken, setShareToken] = useState<string | null>(initialShareToken);
   const [noGl, setNoGl] = useState(false);
@@ -51,21 +51,21 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
-  const engineRef = useRef<Mesas3DEngine | null>(null);
+  const engineRef = useRef<MotorDasMesas3D | null>(null);
   const labelRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const ghostRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ guest: SeatGuest; x: number; y: number; live: boolean } | null>(null);
+  const dragRef = useRef<{ guest: ConvidadoParaSentar; x: number; y: number; live: boolean } | null>(null);
   const suppressClickRef = useRef(false);
 
-  const effectiveScene = scene ?? DEFAULT_SCENE;
-  const layout = useMemo(() => computeLayout(effectiveScene, tables), [effectiveScene, tables]);
-  const groups = useMemo(() => groupsOf(guests), [guests]);
-  const occ = useMemo(() => occupancyByTable(layout.slots.map((s) => s.id), guests), [layout.slots, guests]);
+  const effectiveScene = scene ?? CENARIO_PADRAO;
+  const layout = useMemo(() => calcularDisposicao(effectiveScene, tables), [effectiveScene, tables]);
+  const groups = useMemo(() => gruposDe(guests), [guests]);
+  const occ = useMemo(() => ocupacaoPorMesa(layout.slots.map((s) => s.id), guests), [layout.slots, guests]);
   const slotsById = useMemo(() => new Map(layout.slots.map((s) => [s.id, s])), [layout.slots]);
   const fills = useMemo(() => {
     const out: Record<string, string[]> = {};
-    for (const s of layout.slots) if (!s.decor) out[s.id] = seatColors(occ[s.id], groups, s.cadeiras);
+    for (const s of layout.slots) if (!s.decor) out[s.id] = coresDosLugares(occ[s.id], groups, s.cadeiras);
     return out;
   }, [layout.slots, occ, groups]);
 
@@ -91,7 +91,7 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
   }, []);
 
   /* ---------- Sentar ---------- */
-  const seat = useCallback(async (guest: SeatGuest, tableId: string | null): Promise<boolean> => {
+  const seat = useCallback(async (guest: ConvidadoParaSentar, tableId: string | null): Promise<boolean> => {
     const { slotsById: byId, occ: current, guests: all } = live.current;
     const latest = all.find((g) => g.id === guest.id) ?? guest;
     if (tableId) {
@@ -101,7 +101,7 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
         return false;
       }
       if (latest.tableId === tableId) return true;
-      if (!canSeat(slot.cap, current[tableId], latest, tableId)) {
+      if (!podeSentar(slot.cap, current[tableId], latest, tableId)) {
         toast.error(`${slot.nome} está cheia (${slot.cap} ${slot.cap === 1 ? "lugar" : "lugares"}). Aumentem a capacidade na lista de mesas ou escolham outra.`);
         return false;
       }
@@ -124,15 +124,15 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
   /* ---------- Motor 3D ---------- */
   useEffect(() => {
     let cancelled = false;
-    let engine: Mesas3DEngine | null = null;
+    let engine: MotorDasMesas3D | null = null;
     (async () => {
       const mod = await import("@/lib/mesas3d/engine");
       if (cancelled) return;
-      if (!mod.webglAvailable() || !canvasRef.current || !hostRef.current) {
+      if (!mod.webglEstaDisponivel() || !canvasRef.current || !hostRef.current) {
         setNoGl(true);
         return;
       }
-      engine = mod.createMesas3DEngine({
+      engine = mod.criarMotorDasMesas3D({
         canvas: canvasRef.current,
         host: hostRef.current,
         onRender: () => updateLabels(),
@@ -233,10 +233,10 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
   /* ---------- Lista ---------- */
   const q = query.trim();
   const list = useMemo(() => {
-    if (!edit) return q ? guests.filter((g) => matchesName(g.name, q)) : [];
+    if (!edit) return q ? guests.filter((g) => combinaComNome(g.name, q)) : [];
     return guests.filter((g) => {
       if (filter === "sem" && g.tableId) return false;
-      return !q || matchesName(g.name, q);
+      return !q || combinaComNome(g.name, q);
     });
   }, [edit, guests, filter, q]);
   const seatedSeats = guests.reduce((n, g) => n + (g.tableId ? g.seats : 0), 0);
@@ -245,7 +245,7 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
   const openSlot = openId ? (slotsById.get(openId) ?? null) : null;
   const openOcc = openSlot ? occ[openSlot.id] : null;
 
-  function focusGuest(g: SeatGuest) {
+  function focusGuest(g: ConvidadoParaSentar) {
     const eng = engineRef.current;
     if (!g.tableId) {
       toast(`${g.name.split(" ")[0]} ainda não tem mesa.`);
@@ -257,7 +257,7 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
     setOpenId(g.tableId);
   }
 
-  function pickScene(id: SceneId) {
+  function pickScene(id: IdDoCenario) {
     setScene(id);
     setGalleryOpen(false);
     setOpenId(null);
@@ -268,7 +268,7 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
     }
   }
 
-  function goCam(p: CameraPreset) {
+  function goCam(p: PredefinicaoDaCamera) {
     engineRef.current?.preset(p);
     setCam(p);
   }
@@ -360,7 +360,7 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
                       selected ? "border-ameixa bg-ameixa-suave" : "border-linha bg-papel hover:border-ameixa",
                     )}
                   >
-                    <span aria-hidden="true" className="grid size-8 place-items-center rounded-full text-xs font-semibold text-white" style={{ background: colorOfGuest(groups, g) }}>
+                    <span aria-hidden="true" className="grid size-8 place-items-center rounded-full text-xs font-semibold text-white" style={{ background: corDoConvidado(groups, g) }}>
                       {initials(g.name)}
                     </span>
                     <button
@@ -500,7 +500,7 @@ export function Mesas3DView({ mode, coupleNames, initialScene, tables, guests: i
                       openOcc.guests.map((g) => (
                         <li key={g.id} className="flex items-center justify-between gap-2 border-b border-linha py-1 text-sm text-tinta">
                           <span className="flex min-w-0 items-center gap-2">
-                            <i aria-hidden="true" className="inline-block size-2 shrink-0 rounded-full" style={{ background: colorOfGuest(groups, g) }} />
+                            <i aria-hidden="true" className="inline-block size-2 shrink-0 rounded-full" style={{ background: corDoConvidado(groups, g) }} />
                             <span className="truncate">{g.name}</span>
                           </span>
                           {edit ? (
@@ -570,7 +570,7 @@ function FilterChip({ pressed, onClick, children }: { pressed: boolean; onClick:
   );
 }
 
-function TableLabel({ slot, used, target, refCb }: { slot: TableSlot; used: number; target: boolean; refCb: (el: HTMLDivElement | null) => void }) {
+function TableLabel({ slot, used, target, refCb }: { slot: PosicaoDaMesa; used: number; target: boolean; refCb: (el: HTMLDivElement | null) => void }) {
   const full = !slot.decor && used >= slot.cap;
   return (
     <div

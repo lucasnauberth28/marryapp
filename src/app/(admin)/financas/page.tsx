@@ -3,7 +3,7 @@ import { getFinancialMetrics, getTransactions } from "@/actions/finance-actions"
 import { getExpenses } from "@/actions/expense-actions";
 import { getVendors } from "@/actions/vendor-actions";
 import { getWalletData } from "@/actions/wallet-actions";
-import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { PageHeader } from "@/components/admin/page-header";
 import { LoadingRegion } from "@/components/skeletons";
 import { Reveal } from "@/components/motion/reveal";
@@ -33,7 +33,7 @@ export const metadata = {
 // ==========================================
 
 export default async function FinancasPage() {
-  await requireWeddingPage("/financas");
+  await exigirCasamentoNaPagina("/financas");
 
   // As consultas começam todas já, em paralelo; cada bloco da tela espera só pelo que usa (streaming)
   // e aparece quando chega, sem segurar o cabeçalho nem os outros blocos.

@@ -3,13 +3,13 @@ import { formatarDataCivilSemAno } from "../formatacao/data.ts";
 // Catálogo dos avisos do Aceito: quais existem, para quem, em que grupo ficam e o texto de cada um.
 // Arquivo puro (sem banco nem Next), usado no servidor e no navegador, e testado isoladamente.
 
-export type NotificationAudience = "couple" | "vendor";
+export type PublicoDaNotificacao = "couple" | "vendor";
 
 /** Grupos que a pessoa liga e desliga em "Avisos" (Minha conta). */
-export const NOTIFICATION_GROUPS = ["money", "requests", "reminders", "guests", "account"] as const;
-export type NotificationGroup = (typeof NOTIFICATION_GROUPS)[number];
+export const GRUPOS_DE_NOTIFICACAO = ["money", "requests", "reminders", "guests", "account"] as const;
+export type GrupoDeNotificacao = (typeof GRUPOS_DE_NOTIFICACAO)[number];
 
-export const GROUP_LABEL: Record<NotificationGroup, { title: string; hint: string }> = {
+export const ROTULO_DO_GRUPO: Record<GrupoDeNotificacao, { title: string; hint: string }> = {
   money: { title: "Dinheiro e presentes", hint: "Presentes recebidos e Pix para conferir." },
   requests: { title: "Pedidos e propostas", hint: "Novos pedidos de orçamento, propostas aceitas e avaliações." },
   reminders: { title: "Lembretes", hint: "Despesas perto de vencer ou vencidas." },
@@ -17,15 +17,15 @@ export const GROUP_LABEL: Record<NotificationGroup, { title: string; hint: strin
   account: { title: "Plano e conta", hint: "Plano ativado, perto de vencer ou vencido, e o andamento do endereço personalizado do site." },
 };
 
-export type NotificationTone = "success" | "info" | "warning" | "alert";
-export type NotificationIcon = "gift" | "wallet" | "check" | "x" | "calendar" | "sparkles" | "inbox" | "handshake" | "star" | "clock";
+export type TomDaNotificacao = "success" | "info" | "warning" | "alert";
+export type IconeDaNotificacao = "gift" | "wallet" | "check" | "x" | "calendar" | "sparkles" | "inbox" | "handshake" | "star" | "clock";
 
-export interface NotificationTypeSpec {
+export interface EspecificacaoDoTipoDeNotificacao {
   /** Quem recebe: o casal, o fornecedor ou os dois (plano ativado). */
-  audiences: NotificationAudience[];
-  group: NotificationGroup;
-  tone: NotificationTone;
-  icon: NotificationIcon;
+  audiences: PublicoDaNotificacao[];
+  group: GrupoDeNotificacao;
+  tone: TomDaNotificacao;
+  icon: IconeDaNotificacao;
   /** WhatsApp só para o fornecedor e só para o que não pode esperar. */
   whatsapp: boolean;
   /** Todo aviso pode ir por e-mail, se a pessoa quiser. */
@@ -34,7 +34,7 @@ export interface NotificationTypeSpec {
   ignoresQuietHours: boolean;
 }
 
-export const NOTIFICATION_TYPES = {
+export const TIPOS_DE_NOTIFICACAO = {
   gift_paid: { audiences: ["couple"], group: "money", tone: "success", icon: "gift", whatsapp: false, email: true, ignoresQuietHours: true },
   pix_to_check: { audiences: ["couple"], group: "money", tone: "warning", icon: "wallet", whatsapp: false, email: true, ignoresQuietHours: false },
   rsvp_confirmed: { audiences: ["couple"], group: "guests", tone: "success", icon: "check", whatsapp: false, email: true, ignoresQuietHours: false },
@@ -49,41 +49,41 @@ export const NOTIFICATION_TYPES = {
   review_new: { audiences: ["vendor"], group: "requests", tone: "info", icon: "star", whatsapp: false, email: true, ignoresQuietHours: false },
   plan_expiring: { audiences: ["vendor"], group: "account", tone: "warning", icon: "clock", whatsapp: true, email: true, ignoresQuietHours: false },
   plan_expired: { audiences: ["vendor"], group: "account", tone: "alert", icon: "clock", whatsapp: false, email: true, ignoresQuietHours: false },
-} as const satisfies Record<string, NotificationTypeSpec>;
+} as const satisfies Record<string, EspecificacaoDoTipoDeNotificacao>;
 
-export type NotificationType = keyof typeof NOTIFICATION_TYPES;
+export type TipoDeNotificacao = keyof typeof TIPOS_DE_NOTIFICACAO;
 
-export function isNotificationType(value: unknown): value is NotificationType {
-  return typeof value === "string" && Object.prototype.hasOwnProperty.call(NOTIFICATION_TYPES, value);
+export function ehTipoDeNotificacao(value: unknown): value is TipoDeNotificacao {
+  return typeof value === "string" && Object.prototype.hasOwnProperty.call(TIPOS_DE_NOTIFICACAO, value);
 }
 
 /** Spec de um tipo qualquer vindo do banco (tipo desconhecido, de uma versão futura, cai no neutro). */
-export function specOf(type: string): NotificationTypeSpec {
-  return isNotificationType(type)
-    ? NOTIFICATION_TYPES[type]
+export function especificacaoDe(type: string): EspecificacaoDoTipoDeNotificacao {
+  return ehTipoDeNotificacao(type)
+    ? TIPOS_DE_NOTIFICACAO[type]
     : { audiences: ["couple", "vendor"], group: "account", tone: "info", icon: "sparkles", whatsapp: false, email: false, ignoresQuietHours: false };
 }
 
 /** Grupos que fazem sentido para cada painel (o fornecedor não vê "Convidados"). */
-export function groupsFor(audience: NotificationAudience): NotificationGroup[] {
-  const present = new Set<NotificationGroup>();
-  for (const spec of Object.values(NOTIFICATION_TYPES) as NotificationTypeSpec[]) {
+export function gruposPara(audience: PublicoDaNotificacao): GrupoDeNotificacao[] {
+  const present = new Set<GrupoDeNotificacao>();
+  for (const spec of Object.values(TIPOS_DE_NOTIFICACAO) as EspecificacaoDoTipoDeNotificacao[]) {
     if (spec.audiences.includes(audience)) present.add(spec.group);
   }
-  return NOTIFICATION_GROUPS.filter((g) => present.has(g));
+  return GRUPOS_DE_NOTIFICACAO.filter((g) => present.has(g));
 }
 
 // ==========================================
 // TEXTOS
 // ==========================================
 
-export type NotificationEvent =
+export type EventoDeNotificacao =
   | { type: "gift_paid"; guestName: string | null; giftTitle: string; amountCents: number }
   | { type: "pix_to_check"; guestName: string | null; giftTitle: string; amountCents: number }
   | { type: "rsvp_confirmed"; guestName: string; companions: number }
   | { type: "rsvp_declined"; guestName: string }
   | { type: "expense_due"; description: string; amountCents: number; dueDate: Date; overdue: boolean }
-  | { type: "plan_activated"; audience: NotificationAudience; planName: string; periodEnd?: Date | null }
+  | { type: "plan_activated"; audience: PublicoDaNotificacao; planName: string; periodEnd?: Date | null }
   | { type: "domain_registered"; domain: string }
   | { type: "domain_ready"; domain: string }
   | { type: "domain_rejected"; domain: string; reason: string }
@@ -93,45 +93,45 @@ export type NotificationEvent =
   | { type: "plan_expiring"; planName: string; daysLeft: number }
   | { type: "plan_expired"; planName: string };
 
-export interface NotificationCopy {
+export interface TextoDaNotificacao {
   title: string;
   body: string;
   href: string;
 }
 
 // Datas de vencimento e de casamento ficam gravadas à meia-noite UTC: formatar em UTC evita voltar um dia.
-const shortDate = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
+const dataCurta = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
 
 /** Nomes digitados por convidados e casais entram no texto: limita o tamanho e tira quebras de linha. */
-export function clean(value: string | null | undefined, max = 60, fallback = ""): string {
+export function limparTextoDaNotificacao(value: string | null | undefined, max = 60, fallback = ""): string {
   const text = (value ?? "").replace(/\s+/g, " ").trim();
   if (!text) return fallback;
   return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text;
 }
 
-const firstName = (name: string) => clean(name.split(/[\s&,]+/)[0], 30, "Um casal");
+const primeiroNome = (name: string) => limparTextoDaNotificacao(name.split(/[\s&,]+/)[0], 30, "Um casal");
 
 /** Monta título, texto e destino de cada aviso. Sem travessão, sem jargão. */
-export function buildCopy(event: NotificationEvent): NotificationCopy {
+export function montarTexto(event: EventoDeNotificacao): TextoDaNotificacao {
   switch (event.type) {
     case "gift_paid": {
-      const who = clean(event.guestName, 60, "Um convidado");
+      const who = limparTextoDaNotificacao(event.guestName, 60, "Um convidado");
       return {
         title: "Presente recebido",
-        body: `${who} deu "${clean(event.giftTitle, 60, "um presente")}" para vocês (${formatarReais(event.amountCents)}).`,
+        body: `${who} deu "${limparTextoDaNotificacao(event.giftTitle, 60, "um presente")}" para vocês (${formatarReais(event.amountCents)}).`,
         href: "/financas",
       };
     }
     case "pix_to_check": {
-      const who = clean(event.guestName, 60, "Um convidado");
+      const who = limparTextoDaNotificacao(event.guestName, 60, "Um convidado");
       return {
         title: "Pix para conferir",
-        body: `${who} gerou um Pix de ${formatarReais(event.amountCents)} para "${clean(event.giftTitle, 60, "um presente")}". Quando o valor aparecer no extrato de vocês, confirmem em Finanças.`,
+        body: `${who} gerou um Pix de ${formatarReais(event.amountCents)} para "${limparTextoDaNotificacao(event.giftTitle, 60, "um presente")}". Quando o valor aparecer no extrato de vocês, confirmem em Finanças.`,
         href: "/financas",
       };
     }
     case "rsvp_confirmed": {
-      const who = clean(event.guestName, 60, "Um convidado");
+      const who = limparTextoDaNotificacao(event.guestName, 60, "Um convidado");
       const body =
         event.companions > 0
           ? `${who} e mais ${event.companions} ${event.companions === 1 ? "pessoa" : "pessoas"} vão ao casamento.`
@@ -141,17 +141,17 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
     case "rsvp_declined":
       return {
         title: "Resposta de um convidado",
-        body: `${clean(event.guestName, 60, "Um convidado")} avisou que não poderá ir.`,
+        body: `${limparTextoDaNotificacao(event.guestName, 60, "Um convidado")} avisou que não poderá ir.`,
         href: "/convidados",
       };
     case "expense_due": {
-      const what = `"${clean(event.description, 60, "Despesa")}" (${formatarReais(event.amountCents)})`;
+      const what = `"${limparTextoDaNotificacao(event.description, 60, "Despesa")}" (${formatarReais(event.amountCents)})`;
       return event.overdue
-        ? { title: "Despesa vencida", body: `${what} venceu em ${shortDate.format(event.dueDate)}.`, href: "/financas" }
-        : { title: "Despesa perto de vencer", body: `${what} vence em ${shortDate.format(event.dueDate)}.`, href: "/financas" };
+        ? { title: "Despesa vencida", body: `${what} venceu em ${dataCurta.format(event.dueDate)}.`, href: "/financas" }
+        : { title: "Despesa perto de vencer", body: `${what} vence em ${dataCurta.format(event.dueDate)}.`, href: "/financas" };
     }
     case "plan_activated": {
-      const plan = clean(event.planName, 40, "novo plano");
+      const plan = limparTextoDaNotificacao(event.planName, 40, "novo plano");
       if (event.audience === "vendor") {
         const until = event.periodEnd ? ` até ${formatarDataCivilSemAno(event.periodEnd)}` : "";
         return {
@@ -165,19 +165,19 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
     case "domain_registered":
       return {
         title: "Endereço do site registrado",
-        body: `${clean(event.domain, 70)} já está registrado no nome do titular. Falta ligar ao site de vocês; avisamos quando estiver no ar.`,
+        body: `${limparTextoDaNotificacao(event.domain, 70)} já está registrado no nome do titular. Falta ligar ao site de vocês; avisamos quando estiver no ar.`,
         href: "/dominio",
       };
     case "domain_ready":
       return {
         title: "Endereço do site no ar",
-        body: `O site de vocês já abre em ${clean(event.domain, 70)}. Os links enviados aos convidados passam a usar este endereço.`,
+        body: `O site de vocês já abre em ${limparTextoDaNotificacao(event.domain, 70)}. Os links enviados aos convidados passam a usar este endereço.`,
         href: "/dominio",
       };
     case "domain_rejected":
       return {
         title: "Pedido de endereço recusado",
-        body: `Não foi possível registrar o endereço ${clean(event.domain, 70)}. Motivo: ${clean(event.reason, 110, "sem detalhes")}. Vocês podem fazer um novo pedido.`,
+        body: `Não foi possível registrar o endereço ${limparTextoDaNotificacao(event.domain, 70)}. Motivo: ${limparTextoDaNotificacao(event.reason, 110, "sem detalhes")}. Vocês podem fazer um novo pedido.`,
         href: "/dominio",
       };
     case "lead_new": {
@@ -185,33 +185,33 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
       if (event.locked) {
         return {
           title: "Novo pedido de orçamento",
-          body: `Chegou um pedido de ${firstName(event.coupleName)}. Assine o Pro para ver os detalhes e responder.`,
+          body: `Chegou um pedido de ${primeiroNome(event.coupleName)}. Assine o Pro para ver os detalhes e responder.`,
           href,
         };
       }
       const when = event.weddingDate ? ` para ${formatarDataCivilSemAno(event.weddingDate)}` : "";
       return {
         title: "Novo pedido de orçamento",
-        body: `${clean(event.coupleName, 60, "Um casal")} quer um orçamento${when}. Quem responde rápido sai na frente.`,
+        body: `${limparTextoDaNotificacao(event.coupleName, 60, "Um casal")} quer um orçamento${when}. Quem responde rápido sai na frente.`,
         href,
       };
     }
     case "proposal_accepted":
       return {
         title: "Proposta aceita",
-        body: `${clean(event.coupleName, 60, "O casal")} aceitou a sua proposta. O pedido foi marcado como fechado.`,
+        body: `${limparTextoDaNotificacao(event.coupleName, 60, "O casal")} aceitou a sua proposta. O pedido foi marcado como fechado.`,
         href: `/fornecedor/pedidos/${event.leadId}`,
       };
     case "review_new": {
       const stars = Math.min(5, Math.max(1, Math.round(event.rating)));
       return {
         title: "Nova avaliação",
-        body: `${clean(event.coupleNames, 60, "Um casal")} deu ${stars} ${stars === 1 ? "estrela" : "estrelas"} para o seu perfil.`,
+        body: `${limparTextoDaNotificacao(event.coupleNames, 60, "Um casal")} deu ${stars} ${stars === 1 ? "estrela" : "estrelas"} para o seu perfil.`,
         href: "/fornecedor/avaliacoes",
       };
     }
     case "plan_expiring": {
-      const plan = clean(event.planName, 40, "plano");
+      const plan = limparTextoDaNotificacao(event.planName, 40, "plano");
       const title = event.daysLeft <= 1 ? "Seu plano vence amanhã" : `Seu plano vence em ${event.daysLeft} dias`;
       return {
         title,
@@ -222,7 +222,7 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
     case "plan_expired":
       return {
         title: "Seu plano venceu",
-        body: `O plano ${clean(event.planName, 40, "pago")} chegou ao fim e o perfil voltou ao Start, com até 3 pedidos por mês. Renove quando quiser.`,
+        body: `O plano ${limparTextoDaNotificacao(event.planName, 40, "pago")} chegou ao fim e o perfil voltou ao Start, com até 3 pedidos por mês. Renove quando quiser.`,
         href: "/fornecedor/plano",
       };
   }
@@ -233,7 +233,7 @@ export function buildCopy(event: NotificationEvent): NotificationCopy {
 // ==========================================
 
 /** Uma chave por fato: o mesmo fato nunca avisa duas vezes a mesma pessoa. */
-export const dedupe = {
+export const removerRepetidos = {
   giftPaid: (transactionId: string) => `gift_paid:${transactionId}`,
   pixToCheck: (transactionId: string) => `pix_to_check:${transactionId}`,
   /** Uma resposta por convidado e dia: quem muda de ideia no mesmo dia não gera outro aviso. */

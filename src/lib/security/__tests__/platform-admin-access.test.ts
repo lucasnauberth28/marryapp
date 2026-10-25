@@ -2,8 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { ehAcessoDeAdminDaPlataforma } from "../../permissions.ts";
-import { AuthorizationError } from "../authorization-error.ts";
-import { assertPlatformAdminSession, checkPlatformAdminAccess } from "../platform-admin-access.ts";
+import { ErroDeAutorizacao } from "../authorization-error.ts";
+import { garantirSessaoDeAdminDaPlataforma, conferirAcessoDeAdminDaPlataforma } from "../platform-admin-access.ts";
 
 test("só o acesso total (\"*\") é administração da plataforma", () => {
   assert.equal(ehAcessoDeAdminDaPlataforma(["*"]), true);
@@ -18,17 +18,17 @@ test("só o acesso total (\"*\") é administração da plataforma", () => {
 });
 
 test("o guard distingue sem sessão, sem acesso e acesso", () => {
-  assert.equal(checkPlatformAdminAccess(null), "no-session");
-  assert.equal(checkPlatformAdminAccess(undefined), "no-session");
-  assert.equal(checkPlatformAdminAccess({ allowedPaths: ["*"] }), "ok");
+  assert.equal(conferirAcessoDeAdminDaPlataforma(null), "no-session");
+  assert.equal(conferirAcessoDeAdminDaPlataforma(undefined), "no-session");
+  assert.equal(conferirAcessoDeAdminDaPlataforma({ allowedPaths: ["*"] }), "ok");
   // casal
-  assert.equal(checkPlatformAdminAccess({ allowedPaths: ["/dashboard", "/convidados", "/plano"] }), "forbidden");
+  assert.equal(conferirAcessoDeAdminDaPlataforma({ allowedPaths: ["/dashboard", "/convidados", "/plano"] }), "forbidden");
   // fornecedor
-  assert.equal(checkPlatformAdminAccess({ allowedPaths: ["/fornecedor"] }), "forbidden");
+  assert.equal(conferirAcessoDeAdminDaPlataforma({ allowedPaths: ["/fornecedor"] }), "forbidden");
   // perfil sem nenhum módulo
-  assert.equal(checkPlatformAdminAccess({ allowedPaths: [] }), "forbidden");
+  assert.equal(conferirAcessoDeAdminDaPlataforma({ allowedPaths: [] }), "forbidden");
   // perfil parcial e "/admin" solto
-  assert.equal(checkPlatformAdminAccess({ allowedPaths: ["/admin", "/curadoria"] }), "forbidden");
+  assert.equal(conferirAcessoDeAdminDaPlataforma({ allowedPaths: ["/admin", "/curadoria"] }), "forbidden");
 });
 
 test("Server Action da administração: casal, fornecedor, perfil parcial e sem sessão são recusados com AuthorizationError", () => {
@@ -41,18 +41,18 @@ test("Server Action da administração: casal, fornecedor, perfil parcial e sem 
     { allowedPaths: [] },
   ];
   for (const sessao of recusados) {
-    assert.throws(() => assertPlatformAdminSession(sessao), (e: unknown) => e instanceof AuthorizationError, JSON.stringify(sessao));
+    assert.throws(() => garantirSessaoDeAdminDaPlataforma(sessao), (e: unknown) => e instanceof ErroDeAutorizacao, JSON.stringify(sessao));
   }
   const admin = { userId: "u1", allowedPaths: ["*"] };
-  assert.equal(assertPlatformAdminSession(admin), admin, "devolve a própria sessão para a action seguir");
+  assert.equal(garantirSessaoDeAdminDaPlataforma(admin), admin, "devolve a própria sessão para a action seguir");
 });
 
 test("a mensagem não revela detalhes de quem é a administração", () => {
   try {
-    assertPlatformAdminSession({ allowedPaths: ["/dashboard"] });
+    garantirSessaoDeAdminDaPlataforma({ allowedPaths: ["/dashboard"] });
     assert.fail("deveria lançar");
   } catch (e) {
-    assert.ok(e instanceof AuthorizationError);
+    assert.ok(e instanceof ErroDeAutorizacao);
     assert.doesNotMatch(e.message, /\*|senha|token/i);
   }
 });

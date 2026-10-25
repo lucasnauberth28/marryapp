@@ -1,11 +1,11 @@
 // Cenários das mesas em 3D: só dados (cores, luz, medidas e a grade onde as mesas se distribuem).
 // Sem dependências de navegador nem de Three.js, para o layout poder ser testado no Node.
 
-export type SceneId = "jardim" | "classico" | "rustico";
-export type TableShape = "round" | "rect";
+export type IdDoCenario = "jardim" | "classico" | "rustico";
+export type FormatoDaMesa = "round" | "rect";
 
-export interface SceneDef {
-  id: SceneId;
+export interface DefinicaoDoCenario {
+  id: IdDoCenario;
   nome: string;
   frase: string;
   /** Largura e profundidade da sala (ou do gramado) em metros; a profundidade cresce se faltar espaço para as mesas. */
@@ -27,7 +27,7 @@ export interface SceneDef {
   guardanapo: string;
   flores: string[];
   velas: boolean;
-  forma: TableShape;
+  forma: FormatoDaMesa;
   /** Posições x das colunas, na ordem em que são preenchidas (alternando esquerda e direita para ficar simétrico). */
   colunas: number[];
   /** Primeira fileira de mesas (z) e a distância entre fileiras. */
@@ -37,7 +37,7 @@ export interface SceneDef {
   noivosZ: number;
 }
 
-export const SCENES: readonly SceneDef[] = [
+export const CENARIOS: readonly DefinicaoDoCenario[] = [
   {
     id: "jardim",
     nome: "Jardim ao entardecer",
@@ -111,12 +111,12 @@ export const SCENES: readonly SceneDef[] = [
   },
 ];
 
-export const DEFAULT_SCENE: SceneId = "jardim";
+export const CENARIO_PADRAO: IdDoCenario = "jardim";
 
-export function isSceneId(v: unknown): v is SceneId {
-  return typeof v === "string" && SCENES.some((s) => s.id === v);
+export function ehIdDeCenario(v: unknown): v is IdDoCenario {
+  return typeof v === "string" && CENARIOS.some((s) => s.id === v);
 }
 
-export function sceneById(id: string | null | undefined): SceneDef | null {
-  return SCENES.find((s) => s.id === id) ?? null;
+export function cenarioPorId(id: string | null | undefined): DefinicaoDoCenario | null {
+  return CENARIOS.find((s) => s.id === id) ?? null;
 }

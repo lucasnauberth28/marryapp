@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { BadgeCheck, CalendarX, CircleX, Clock } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
-import { checkRateLimit, getClientIp } from "@/lib/security/rate-limiter";
+import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
 import { TOKEN_CARD, TOKEN_OVERLINE, TokenPageShell } from "@/components/public/token-page-shell";
 import {
   formatBrl,
@@ -64,8 +64,8 @@ export default async function PropostaPage({ params }: { params: Promise<{ token
   const { token } = await params;
   if (!PUBLIC_TOKEN_RE.test(token)) notFound();
 
-  const ip = await getClientIp();
-  const rateLimit = await checkRateLimit({ key: `PROPOSAL_VIEW:${ip}`, ...VIEW_LIMIT });
+  const ip = await obterIpDoCliente();
+  const rateLimit = await conferirLimiteDeUso({ key: `PROPOSAL_VIEW:${ip}`, ...VIEW_LIMIT });
   if (!rateLimit.success) {
     return (
       <TokenPageShell>

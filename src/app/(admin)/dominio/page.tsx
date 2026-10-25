@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
-import { SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterPedidosDeDominioDoCasamento } from "@/lib/domain-orders";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
@@ -12,13 +12,13 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Endereço personalizado do site" };
 
 export default async function DominioPage() {
-  const { session, weddingId } = await requireWeddingPage("/dominio");
+  const { session, weddingId } = await exigirCasamentoNaPagina("/dominio");
 
   const [{ active, lastClosed }, hasModule, identity, user] = await Promise.all([
     obterPedidosDeDominioDoCasamento(weddingId),
     casamentoTemModulo({ weddingId, session }, "customDomain"),
     obterIdentidadeDoCasamentoPrincipal(),
-    session.userId === SUPER_ADMIN_USER_ID
+    session.userId === ID_DO_SUPER_ADMIN
       ? Promise.resolve(null)
       : prisma.user.findUnique({ where: { id: session.userId }, select: { name: true, username: true } }),
   ]);

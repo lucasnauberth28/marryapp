@@ -3,11 +3,11 @@ import { CheckCircle2, Info, MinusCircle } from "lucide-react";
 import { PageHeader } from "@/components/plataforma/page-header";
 import { Panel } from "@/components/plataforma/panel";
 import { StatusChip } from "@/components/plataforma/status-chip";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { getPlatformSetting } from "@/lib/platform/settings";
 import { INTEGRATIONS, describeLimit, integrationStatus } from "@/lib/platform/config-core";
 import { splitBackAt } from "@/lib/platform/maintenance-core";
-import { SecurityLimits } from "@/lib/security/rate-limiter";
+import { LimitesDeSeguranca } from "@/lib/security/rate-limiter";
 import { MODULOS_DO_CASAL } from "@/lib/pricing-modules";
 import { modulosDoPlano } from "@/lib/wedding-plan-modules";
 import { EmailSenderForm, MaintenanceForm, RefundPolicyForm } from "./_components/config-forms";
@@ -26,7 +26,7 @@ const SECTIONS = [
   { id: "limites", label: "Limites de uso" },
 ] as const;
 
-const LIMITS: { key: keyof typeof SecurityLimits; label: string }[] = [
+const LIMITS: { key: keyof typeof LimitesDeSeguranca; label: string }[] = [
   { key: "SIGNUP", label: "Cadastros por rede" },
   { key: "LOGIN", label: "Tentativas de entrar por rede" },
   { key: "LOGIN_ACCOUNT", label: "Tentativas de entrar por conta" },
@@ -48,7 +48,7 @@ function Section({ id, title, description, children }: { id: string; title: stri
 }
 
 export default async function Page() {
-  await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const [maintenance, emailSender, refund] = await Promise.all([getPlatformSetting("maintenance"), getPlatformSetting("emailSender"), getPlatformSetting("refundPolicy")]);
   const back = splitBackAt(maintenance.backAt);
   const integrations = INTEGRATIONS.map((def) => integrationStatus(def, process.env));
@@ -185,7 +185,7 @@ export default async function Page() {
               {LIMITS.map((l) => (
                 <div key={l.key} className="flex flex-wrap justify-between gap-2 py-2.5">
                   <dt className="text-tinta-suave">{l.label}</dt>
-                  <dd className="font-semibold text-tinta">{describeLimit(SecurityLimits[l.key].limit, SecurityLimits[l.key].windowMs)}</dd>
+                  <dd className="font-semibold text-tinta">{describeLimit(LimitesDeSeguranca[l.key].limit, LimitesDeSeguranca[l.key].windowMs)}</dd>
                 </div>
               ))}
             </dl>

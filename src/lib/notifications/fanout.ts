@@ -1,9 +1,9 @@
 // Distribuição de um aviso já guardado para os canais extras (push, WhatsApp, e-mail).
 // Puro: quem envia de verdade entra por `deps`, o que deixa a regra testável sem rede nem banco.
 
-import { decideChannels, type NotificationChannel, type NotificationPrefs } from "./preferences.ts";
+import { decidirCanais, type CanalDeNotificacao, type PreferenciasDeNotificacao } from "./preferences.ts";
 
-export interface FanOutItem {
+export interface ItemDaDistribuicao {
   userId: string;
   type: string;
   title: string;
@@ -12,32 +12,32 @@ export interface FanOutItem {
   dedupeKey: string;
 }
 
-export interface FanOutDeps {
+export interface DependenciasDaDistribuicao {
   now: () => Date;
   /** Preferências de cada pessoa (quem nunca mexeu fica com o padrão). */
-  loadPrefs: (userIds: string[]) => Promise<Map<string, NotificationPrefs>>;
+  loadPrefs: (userIds: string[]) => Promise<Map<string, PreferenciasDeNotificacao>>;
   /** Cada envio devolve true se entregou ao serviço do canal, false se não havia para onde enviar. */
-  send: Record<NotificationChannel, (item: FanOutItem) => Promise<boolean>>;
+  send: Record<CanalDeNotificacao, (item: ItemDaDistribuicao) => Promise<boolean>>;
   /** Padrão das preferências quando `loadPrefs` não devolve a pessoa. */
-  defaults: NotificationPrefs;
+  defaults: PreferenciasDeNotificacao;
 }
 
-export interface FanOutReport {
-  sent: Record<NotificationChannel, number>;
-  failed: Record<NotificationChannel, number>;
+export interface RelatorioDaDistribuicao {
+  sent: Record<CanalDeNotificacao, number>;
+  failed: Record<CanalDeNotificacao, number>;
 }
 
-const zero = (): Record<NotificationChannel, number> => ({ push: 0, whatsapp: 0, email: 0 });
+const relatorioVazioDaDistribuicao = (): Record<CanalDeNotificacao, number> => ({ push: 0, whatsapp: 0, email: 0 });
 
 /**
  * Envia cada aviso pelos canais que as preferências e o tipo permitem. Um canal que falha
  * (rede, serviço fora do ar) nunca derruba os outros nem lança erro para quem chamou.
  */
-export async function fanOut(items: FanOutItem[], deps: FanOutDeps, only?: readonly NotificationChannel[]): Promise<FanOutReport> {
-  const report: FanOutReport = { sent: zero(), failed: zero() };
+export async function distribuir(items: ItemDaDistribuicao[], deps: DependenciasDaDistribuicao, only?: readonly CanalDeNotificacao[]): Promise<RelatorioDaDistribuicao> {
+  const report: RelatorioDaDistribuicao = { sent: relatorioVazioDaDistribuicao(), failed: relatorioVazioDaDistribuicao() };
   if (items.length === 0) return report;
 
-  let prefsByUser = new Map<string, NotificationPrefs>();
+  let prefsByUser = new Map<string, PreferenciasDeNotificacao>();
   try {
     prefsByUser = await deps.loadPrefs([...new Set(items.map((i) => i.userId))]);
   } catch {
@@ -48,7 +48,7 @@ export async function fanOut(items: FanOutItem[], deps: FanOutDeps, only?: reado
   const jobs: Promise<void>[] = [];
   for (const item of items) {
     const prefs = prefsByUser.get(item.userId) ?? deps.defaults;
-    for (const channel of decideChannels({ type: item.type, prefs, now, only })) {
+    for (const channel of decidirCanais({ type: item.type, prefs, now, only })) {
       jobs.push(
         (async () => {
           try {

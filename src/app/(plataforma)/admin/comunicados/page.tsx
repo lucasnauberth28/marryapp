@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { PageHeader } from "@/components/plataforma/page-header";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type SearchParams, param } from "@/lib/platform/list-params";
 import { emailEstaConfigurado } from "@/lib/email";
 import { audienceSchema, parseWeddingIdsParam, parseAudience, type Audience } from "@/lib/platform/announcement";
@@ -15,7 +15,7 @@ export const metadata = { title: "Comunicados" };
 export const maxDuration = 300;
 
 export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
   const drafts = await listDrafts();
 

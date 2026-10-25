@@ -9,7 +9,7 @@ import { StatusChip } from "@/components/plataforma/status-chip";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
 import { Switch } from "@/components/ui/switch";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { getMadrinhaOverview, listMadrinhaOverrides } from "@/lib/platform/queries/madrinha";
 import { formatDayMonth } from "@/lib/platform/format";
 import { AbuseForm, GlobalCapForm, LimitsForm } from "./_components/config-forms";
@@ -19,7 +19,7 @@ import { SettingBadge } from "../_sistema/setting-badge";
 export const metadata = { title: "Liz" };
 
 export default async function Page() {
-  await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const [overview, overrides] = await Promise.all([getMadrinhaOverview(), listMadrinhaOverrides(20)]);
   const { limits, globalCap, abuse, meta, latestInstruction, suggestedOnly } = overview;
 

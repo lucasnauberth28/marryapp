@@ -1,6 +1,6 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { MAX_RECIPIENTS, couplePlanKeys, parseAudience, vendorTierKeys, weddingWindowRange, type Audience } from "@/lib/platform/announcement";
 
 /**
@@ -86,7 +86,7 @@ async function vendorUsers(audience: Audience, now: Date): Promise<(RecipientUse
 
 /** Quem recebe, sem repetir ninguém. Passa de MAX_RECIPIENTS? Devolve o tamanho real para a tela recusar. */
 export async function resolveAudienceUsers(audienceInput: unknown, now = new Date()): Promise<RecipientUser[]> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   const audience = parseAudience(audienceInput);
   const [couples, vendors] = await Promise.all([coupleUsers(audience, now), vendorUsers(audience, now)]);
   const seen = new Set<string>();
@@ -101,7 +101,7 @@ export async function resolveAudienceUsers(audienceInput: unknown, now = new Dat
 
 /** "Chega a 83 casais de 1.236": contagem real, calculada na hora. */
 export async function previewAudience(audienceInput: unknown, now = new Date()): Promise<AudiencePreview> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   const audience = parseAudience(audienceInput);
   const [couples, vendors, weddingTotal, vendorTotal] = await Promise.all([
     coupleUsers(audience, now),
@@ -130,7 +130,7 @@ export interface DraftRow {
 }
 
 export async function listDrafts(): Promise<DraftRow[]> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   const rows = await prisma.announcement.findMany({ where: { status: "DRAFT" }, orderBy: { updatedAt: "desc" }, take: 20 });
   return rows.map((r) => ({
     id: r.id,
@@ -163,7 +163,7 @@ export interface HistoryRow {
 
 /** Histórico: enviados e em envio, com contagens reais por situação dos destinatários. */
 export async function listHistory(limit = 20): Promise<HistoryRow[]> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   const rows = await prisma.announcement.findMany({ where: { status: { in: ["SENDING", "SENT"] } }, orderBy: { createdAt: "desc" }, take: limit });
   if (rows.length === 0) return [];
   const ids = rows.map((r) => r.id);

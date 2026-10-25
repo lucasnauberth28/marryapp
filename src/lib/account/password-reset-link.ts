@@ -1,23 +1,23 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { generateLinkToken } from "@/lib/account/tokens";
+import { gerarTokenDeLink } from "@/lib/account/tokens";
 import { brandedEmail, enviarEmail } from "@/lib/email";
 import { urlDoApp } from "@/lib/app-url";
 
-const RESET_TTL_MS = 60 * 60 * 1000; // 1 hora
+const VALIDADE_DA_REDEFINICAO_EM_MS = 60 * 60 * 1000; // 1 hora
 
 /**
  * Cria o link de nova senha (só o hash vai ao banco, 1 h de validade, um por vez) e envia ao e-mail da conta.
  * Usado pelo "Esqueci a senha" público e pela administração. Nunca devolve o link nem o token: quem chama
  * só sabe se o e-mail foi aceito pelo provedor.
  */
-export async function sendPasswordResetLink(user: { id: string; name: string; username: string }): Promise<{ sent: boolean }> {
-  const { token, tokenHash } = generateLinkToken();
+export async function enviarLinkDeRedefinicaoDeSenha(user: { id: string; name: string; username: string }): Promise<{ sent: boolean }> {
+  const { token, tokenHash } = gerarTokenDeLink();
   await prisma.$transaction([
     // Um link por vez: pedir de novo invalida o anterior.
     prisma.passwordResetToken.deleteMany({ where: { userId: user.id, usedAt: null } }),
     prisma.passwordResetToken.create({
-      data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + RESET_TTL_MS) },
+      data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + VALIDADE_DA_REDEFINICAO_EM_MS) },
     }),
   ]);
 

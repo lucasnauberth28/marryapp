@@ -4,7 +4,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 /**
  * Confere se o valor pago no gateway (em reais) corresponde ao valor esperado (em centavos).
  */
-export function paidAmountMatches(transactionAmountInReais: number | undefined, expectedCents: number) {
+export function valorPagoConfere(transactionAmountInReais: number | undefined, expectedCents: number) {
   if (typeof transactionAmountInReais !== "number") return false;
   return Math.round(transactionAmountInReais * 100) === expectedCents;
 }
@@ -13,7 +13,7 @@ export function paidAmountMatches(transactionAmountInReais: number | undefined, 
  * Valida a assinatura (x-signature) das notificações do Mercado Pago.
  * Documentação: o manifest é "id:{data.id};request-id:{x-request-id};ts:{ts};" assinado com HMAC-SHA256.
  */
-export function verifyMercadoPagoSignature(params: {
+export function verificarAssinaturaDoMercadoPago(params: {
   signatureHeader: string | null;
   requestId: string | null;
   dataId: string | null;

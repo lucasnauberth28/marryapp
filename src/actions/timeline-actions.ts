@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
+import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 import { obterLinhaDoTempoDoCasamento } from "@/lib/wedding-data";
 
 import prisma from "@/lib/prisma";
@@ -21,12 +21,12 @@ type TimelineEventInput = { title: string; time: string; description?: string; i
 
 /** Cronograma do casamento da sessão (painel). O público lê pelo endereço do casamento. */
 export async function getTimelineEvents() {
-  const { weddingId } = await requireWeddingRead("/cronograma");
+  const { weddingId } = await exigirCasamentoParaLeitura("/cronograma");
   return obterLinhaDoTempoDoCasamento(weddingId);
 }
 
 export async function createTimelineEvent(data: TimelineEventInput) {
-  const { weddingId } = await requireWedding("/cronograma");
+  const { weddingId } = await exigirCasamento("/cronograma");
   const parsed = TimelineEventSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   try {
@@ -40,7 +40,7 @@ export async function createTimelineEvent(data: TimelineEventInput) {
 }
 
 export async function updateTimelineEvent(id: string, data: TimelineEventInput) {
-  const { weddingId } = await requireWedding("/cronograma");
+  const { weddingId } = await exigirCasamento("/cronograma");
   if (typeof id !== "string") return { success: false, error: ERROS.horarioNaoEncontrado };
   const parsed = TimelineEventSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -56,7 +56,7 @@ export async function updateTimelineEvent(id: string, data: TimelineEventInput) 
 }
 
 export async function deleteTimelineEvent(id: string) {
-  const { weddingId } = await requireWedding("/cronograma");
+  const { weddingId } = await exigirCasamento("/cronograma");
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.horarioNaoEncontrado };
     const result = await prisma.timelineEvent.deleteMany({ where: { id, weddingId } });

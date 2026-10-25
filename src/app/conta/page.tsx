@@ -4,11 +4,11 @@ import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { Logo } from "@/components/brand/logo";
-import { getSession, SUPER_ADMIN_USER_ID, redirectToLogin } from "@/lib/security/auth-guard";
-import { classifyAccount } from "@/lib/account/wedding-provisioning";
-import { groupsFor } from "@/lib/notifications/catalog";
-import { resolvePrefs } from "@/lib/notifications/preferences";
-import { vapidPublicKey } from "@/lib/notifications/push";
+import { obterSessao, ID_DO_SUPER_ADMIN, redirecionarParaOLogin } from "@/lib/security/auth-guard";
+import { classificarConta } from "@/lib/account/wedding-provisioning";
+import { gruposPara } from "@/lib/notifications/catalog";
+import { resolverPreferencias } from "@/lib/notifications/preferences";
+import { chavePublicaVapid } from "@/lib/notifications/push";
 import { AccountSections } from "./account-sections";
 
 export const metadata: Metadata = {
@@ -20,9 +20,9 @@ export const metadata: Metadata = {
 const KIND_LABEL = { couple: "Conta de casal", vendor: "Conta de fornecedor", admin: "Conta da administração" } as const;
 
 export default async function ContaPage() {
-  const session = await getSession();
-  if (!session) return redirectToLogin();
-  if (session.userId === SUPER_ADMIN_USER_ID) redirect("/admin");
+  const session = await obterSessao();
+  if (!session) return redirecionarParaOLogin();
+  if (session.userId === ID_DO_SUPER_ADMIN) redirect("/admin");
 
   const now = new Date();
   const user = await prisma.user.findUnique({
@@ -53,7 +53,7 @@ export default async function ContaPage() {
   if (!user) redirect("/login");
   const storedPrefs = await prisma.notificationPreference.findUnique({ where: { userId: user.id }, select: { settings: true } });
 
-  const kind = classifyAccount(user);
+  const kind = classificarConta(user);
   const kindIsVendor = kind === "vendor";
   const panelHref = kind === "vendor" ? "/fornecedor" : user.weddingId ? "/dashboard" : kind === "admin" ? (session.allowedPaths.includes("*") ? "/admin" : "/dashboard") : "/boas-vindas";
 
@@ -85,11 +85,11 @@ export default async function ContaPage() {
 
         <AccountSections
           kind={kind}
-          pushPublicKey={vapidPublicKey()}
+          pushPublicKey={chavePublicaVapid()}
           notifications={{
-            prefs: resolvePrefs(storedPrefs?.settings),
+            prefs: resolverPreferencias(storedPrefs?.settings),
             audience: kindIsVendor ? "vendor" : "couple",
-            groups: groupsFor(kindIsVendor ? "vendor" : "couple"),
+            groups: gruposPara(kindIsVendor ? "vendor" : "couple"),
           }}
           account={{
             name: user.name,

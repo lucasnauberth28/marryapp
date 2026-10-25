@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
-import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { cleanInvoiceNumber, refundAmountProblem, refundDueAt } from "@/lib/platform/payments";
 import {
   PRECO_MAXIMO_EM_CENTAVOS,
@@ -29,7 +29,7 @@ export type AdminPlanosResult = { success: true; message?: string } | { success:
 const firstIssue = (error: unknown) => (error instanceof z.ZodError ? (error.issues[0]?.message ?? null) : null);
 const fail = (error: unknown, context: string): AdminPlanosResult => {
   const issue = firstIssue(error);
-  return issue ? { success: false, error: issue } : platformAdminFailure(error, context);
+  return issue ? { success: false, error: issue } : falhaDeAdminDaPlataforma(error, context);
 };
 
 const Text = (min: number, max: number, minMessage: string) =>
@@ -47,7 +47,7 @@ function refresh() {
 /** Registra um pedido de reembolso de um pagamento aprovado (quem pediu avisou por WhatsApp ou e-mail). */
 export async function registerRefundRequestAction(input: unknown): Promise<AdminPlanosResult> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     const data = z
       .object({
         subscriptionId: z.string().uuid("Pagamento inválido."),
@@ -83,7 +83,7 @@ export async function registerRefundRequestAction(input: unknown): Promise<Admin
  */
 export async function decideRefundAction(input: unknown): Promise<AdminPlanosResult> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     const data = z
       .object({ refundId: z.string().uuid("Pedido inválido."), decision: z.enum(["approve", "deny"]), note: Text(5, 500, "Escreva a decisão em poucas palavras.") })
       .parse(input);
@@ -119,7 +119,7 @@ export async function decideRefundAction(input: unknown): Promise<AdminPlanosRes
 /** "Já emiti": marca a nota fiscal de um pagamento aprovado (controle interno do contador). */
 export async function markInvoiceIssuedAction(input: unknown): Promise<AdminPlanosResult> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     const data = z.object({ subscriptionId: z.string().uuid("Pagamento inválido."), number: z.string().max(80).optional() }).parse(input);
     const number = cleanInvoiceNumber(data.number);
     const done = await prisma.subscription.updateMany({
@@ -157,7 +157,7 @@ function catalogItem(key: string): { baseName: string; basePrice: number; free: 
  */
 export async function saveCatalogPriceAction(input: unknown): Promise<AdminPlanosResult> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     const data = z
       .object({
         key: KeySchema,

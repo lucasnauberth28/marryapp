@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { getSession, SUPER_ADMIN_USER_ID, redirectToLogin } from "@/lib/security/auth-guard";
-import { classifyAccount } from "@/lib/account/wedding-provisioning";
+import { obterSessao, ID_DO_SUPER_ADMIN, redirecionarParaOLogin } from "@/lib/security/auth-guard";
+import { classificarConta } from "@/lib/account/wedding-provisioning";
 import { separarNomesDoCasal } from "@/lib/onboarding-options";
 import { OnboardingFlow } from "./onboarding-flow";
 
@@ -25,9 +25,9 @@ function toDateInput(date: Date | null) {
 }
 
 export default async function BoasVindasPage() {
-  const session = await getSession();
-  if (!session) return redirectToLogin();
-  if (session.userId === SUPER_ADMIN_USER_ID) redirect("/admin");
+  const session = await obterSessao();
+  if (!session) return redirecionarParaOLogin();
+  if (session.userId === ID_DO_SUPER_ADMIN) redirect("/admin");
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
@@ -43,7 +43,7 @@ export default async function BoasVindasPage() {
   });
   if (!user) redirect("/login");
 
-  const kind = classifyAccount(user);
+  const kind = classificarConta(user);
   if (kind === "vendor") redirect("/fornecedor");
   // Concluir o onboarding grava a sessão nova, e isso recarrega esta página: logo depois de concluir
   // ela mostra a tela "pronto" (endereço do site e primeiros passos) em vez de pular para o painel.

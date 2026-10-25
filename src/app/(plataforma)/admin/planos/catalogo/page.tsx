@@ -14,7 +14,7 @@ import { param, type SearchParams } from "@/lib/platform/list-params";
 import { accountantMonth } from "@/lib/platform/payments";
 import { countPendingInvoices, listPendingInvoices } from "@/lib/platform/queries/receita";
 import prisma from "@/lib/prisma";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { cn } from "@/lib/utils";
 import { PendingLink, PendingRegion } from "@/components/plataforma/pending";
 import { PlanosTabs } from "../_components/planos-tabs";
@@ -35,7 +35,7 @@ interface AuditDetails {
 }
 
 export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requirePlatformAdminPage();
+  await exigirAdminDaPlataformaNaPagina();
   const query = await searchParams;
   const editing = param(query, "editar", 60);
   const now = new Date();

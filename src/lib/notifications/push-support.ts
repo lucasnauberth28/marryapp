@@ -1,7 +1,7 @@
 // O que este aparelho consegue fazer com avisos. Puro: recebe o que o navegador informa
 // e devolve um estado simples para a tela. Testado sem navegador.
 
-export type PushSupportState =
+export type SituacaoDoSuporteAoPush =
   | "checking" // ainda no servidor, sem saber
   | "unsupported" // navegador sem suporte a avisos
   | "ios-install" // iPhone/iPad: só funciona depois de "Adicionar à Tela de Início" (iOS 16.4 ou mais novo)
@@ -9,7 +9,7 @@ export type PushSupportState =
   | "granted" // já permitiu
   | "denied"; // bloqueou nas configurações do navegador
 
-export interface PushSupportInput {
+export interface EntradaDoSuporteAoPush {
   hasServiceWorker: boolean;
   hasPushManager: boolean;
   hasNotification: boolean;
@@ -19,7 +19,7 @@ export interface PushSupportInput {
   isStandalone: boolean;
 }
 
-export function classifyPushSupport(i: PushSupportInput): PushSupportState {
+export function classificarSuporteAoPush(i: EntradaDoSuporteAoPush): SituacaoDoSuporteAoPush {
   // No iPhone, o Safari comum não oferece push: só o app instalado na tela de início (iOS 16.4+).
   if (i.isIos && !i.isStandalone) return "ios-install";
   if (!i.hasServiceWorker || !i.hasPushManager || !i.hasNotification) return "unsupported";
@@ -27,13 +27,13 @@ export function classifyPushSupport(i: PushSupportInput): PushSupportState {
 }
 
 /** iPhone, iPad (inclusive iPadOS que se identifica como Mac com tela de toque). */
-export function isIosDevice(userAgent: string, maxTouchPoints: number): boolean {
+export function ehAparelhoIos(userAgent: string, maxTouchPoints: number): boolean {
   if (/iPad|iPhone|iPod/.test(userAgent)) return true;
   return /Macintosh/.test(userAgent) && maxTouchPoints > 1;
 }
 
 /** Chave pública VAPID (base64url) no formato que o navegador pede. */
-export function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
+export function urlBase64ParaBytes(base64: string): Uint8Array<ArrayBuffer> {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
   const raw = atob((base64 + padding).replace(/-/g, "+").replace(/_/g, "/"));
   const out = new Uint8Array(new ArrayBuffer(raw.length));

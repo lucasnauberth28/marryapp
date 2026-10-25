@@ -1,6 +1,6 @@
 // Regras de sentar convidados nas mesas em 3D, sem banco nem navegador: lugares, grupos por cor, ocupação e busca.
 
-export interface SeatGuest {
+export interface ConvidadoParaSentar {
   id: string;
   name: string;
   /** Grupo do convidado no painel (Pais, Amigos...). */
@@ -10,51 +10,51 @@ export interface SeatGuest {
   tableId: string | null;
 }
 
-export interface Group {
+export interface GrupoDeConvidados {
   key: string;
   label: string;
   color: string;
 }
 
-const NO_GROUP = "__sem_grupo";
-const GROUP_COLORS = ["#B2467F", "#5E2B4E", "#D18DB8", "#5F7FA6", "#6F9A6B", "#C8963E", "#7A6AA8", "#C06A5A"] as const;
-const NEUTRAL_COLOR = "#8E878B";
+const SEM_GRUPO = "__sem_grupo";
+const CORES_DOS_GRUPOS = ["#B2467F", "#5E2B4E", "#D18DB8", "#5F7FA6", "#6F9A6B", "#C8963E", "#7A6AA8", "#C06A5A"] as const;
+const COR_NEUTRA = "#8E878B";
 
 /** Lugares de um convidado: ele e quem ele pode levar. */
-export function seatsOfGuest(allowedCompanions: number | null | undefined): number {
+export function lugaresDoConvidado(allowedCompanions: number | null | undefined): number {
   return 1 + Math.max(0, Math.round(allowedCompanions ?? 0));
 }
 
-function groupKey(category: string | null | undefined): string {
+function chaveDoGrupo(category: string | null | undefined): string {
   const c = (category ?? "").trim();
-  return c ? c.toLowerCase() : NO_GROUP;
+  return c ? c.toLowerCase() : SEM_GRUPO;
 }
 
 /** Um grupo por categoria, na ordem alfabética, cada um com sua cor; quem não tem categoria fica em cinza. */
-export function groupsOf(guests: Pick<SeatGuest, "category">[]): Group[] {
+export function gruposDe(guests: Pick<ConvidadoParaSentar, "category">[]): GrupoDeConvidados[] {
   const labels = new Map<string, string>();
   for (const g of guests) {
-    const k = groupKey(g.category);
-    if (k !== NO_GROUP && !labels.has(k)) labels.set(k, (g.category ?? "").trim());
+    const k = chaveDoGrupo(g.category);
+    if (k !== SEM_GRUPO && !labels.has(k)) labels.set(k, (g.category ?? "").trim());
   }
   const sorted = [...labels.entries()].sort((a, b) => a[1].localeCompare(b[1], "pt-BR"));
-  const out: Group[] = sorted.map(([key, label], i) => ({ key, label, color: GROUP_COLORS[i % GROUP_COLORS.length] }));
-  if (guests.some((g) => groupKey(g.category) === NO_GROUP)) out.push({ key: NO_GROUP, label: "Sem grupo", color: NEUTRAL_COLOR });
+  const out: GrupoDeConvidados[] = sorted.map(([key, label], i) => ({ key, label, color: CORES_DOS_GRUPOS[i % CORES_DOS_GRUPOS.length] }));
+  if (guests.some((g) => chaveDoGrupo(g.category) === SEM_GRUPO)) out.push({ key: SEM_GRUPO, label: "Sem grupo", color: COR_NEUTRA });
   return out;
 }
 
-export function colorOfGuest(groups: Group[], guest: Pick<SeatGuest, "category">): string {
-  const k = groupKey(guest.category);
-  return groups.find((g) => g.key === k)?.color ?? NEUTRAL_COLOR;
+export function corDoConvidado(groups: GrupoDeConvidados[], guest: Pick<ConvidadoParaSentar, "category">): string {
+  const k = chaveDoGrupo(guest.category);
+  return groups.find((g) => g.key === k)?.color ?? COR_NEUTRA;
 }
 
-export interface TableOccupancy {
+export interface OcupacaoDaMesa {
   used: number;
-  guests: SeatGuest[];
+  guests: ConvidadoParaSentar[];
 }
 
-export function occupancyByTable(tableIds: string[], guests: SeatGuest[]): Record<string, TableOccupancy> {
-  const out: Record<string, TableOccupancy> = {};
+export function ocupacaoPorMesa(tableIds: string[], guests: ConvidadoParaSentar[]): Record<string, OcupacaoDaMesa> {
+  const out: Record<string, OcupacaoDaMesa> = {};
   for (const id of tableIds) out[id] = { used: 0, guests: [] };
   for (const g of guests) {
     if (!g.tableId || !out[g.tableId]) continue;
@@ -65,22 +65,22 @@ export function occupancyByTable(tableIds: string[], guests: SeatGuest[]): Recor
 }
 
 /** Cabe na mesa? O convidado que já está nela não conta duas vezes. */
-export function canSeat(capacity: number, occupied: TableOccupancy, guest: SeatGuest, tableId: string): boolean {
+export function podeSentar(capacity: number, occupied: OcupacaoDaMesa, guest: ConvidadoParaSentar, tableId: string): boolean {
   const already = guest.tableId === tableId ? guest.seats : 0;
   return occupied.used - already + guest.seats <= capacity;
 }
 
 /** Cor de cada cadeira ocupada, na ordem em que os convidados foram sentando; o que passa da capacidade não tem cadeira. */
-export function seatColors(occ: TableOccupancy, groups: Group[], chairs: number): string[] {
+export function coresDosLugares(occ: OcupacaoDaMesa, groups: GrupoDeConvidados[], chairs: number): string[] {
   const colors: string[] = [];
   for (const g of occ.guests) {
-    const c = colorOfGuest(groups, g);
+    const c = corDoConvidado(groups, g);
     for (let i = 0; i < g.seats; i++) colors.push(c);
   }
   return colors.slice(0, chairs);
 }
 
-function normalizeName(s: string): string {
+function normalizarNome(s: string): string {
   return s
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
@@ -89,9 +89,9 @@ function normalizeName(s: string): string {
 }
 
 /** Busca por nome sem se importar com acento, maiúscula nem a ordem das palavras. */
-export function matchesName(name: string, query: string): boolean {
-  const q = normalizeName(query);
+export function combinaComNome(name: string, query: string): boolean {
+  const q = normalizarNome(query);
   if (!q) return false;
-  const n = normalizeName(name);
+  const n = normalizarNome(name);
   return q.split(/\s+/).every((part) => n.includes(part));
 }

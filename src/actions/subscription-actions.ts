@@ -9,16 +9,16 @@ import { mercadoPagoEstaConfigurado, pagamentoDoMercadoPago } from "@/lib/mercad
 import { gerarCodigoPix } from "@/lib/pix-utils";
 import { resolverPlanoNoCatalogo } from "@/lib/catalog";
 import { obterCatalogo } from "@/lib/catalog-server";
-import { checkRateLimit, rateLimitByIp } from "@/lib/security/rate-limiter";
-import { normalizeText, sanitizeSlug, sanitizeUrl } from "@/lib/security/sanitize";
+import { conferirLimiteDeUso, limitarUsoPorIp } from "@/lib/security/rate-limiter";
+import { normalizarTexto, limparEndereco, limparUrl } from "@/lib/security/sanitize";
 import { enviarImagemDeDataUrl } from "@/lib/supabase";
 import { PaymentStatus, VendorPlanTier } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { aplicarPagamentoAprovado, marcarPagamentoComoFalho } from "@/lib/subscriptions";
 import { referenciaDaAssinatura } from "@/lib/subscription-period";
 import { cotarAssinatura } from "@/lib/subscription-quote";
-import { isUniqueViolation, provisionWedding, upsertCoupleRole, withSlugRetry } from "@/lib/account/wedding-provisioning";
+import { ehViolacaoDeUnicidade, prepararCasamento, criarOuAtualizarPapelDoCasal, comNovaTentativaDeEndereco } from "@/lib/account/wedding-provisioning";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 /** Perfil das contas de fornecedor (o mesmo criado pelo seed). */
@@ -108,7 +108,7 @@ async function storeImage(value: string | undefined, folder: string): Promise<st
     if (!upload.success) throw new Error(upload.error);
     return upload.url;
   }
-  const url = sanitizeUrl(value);
+  const url = limparUrl(value);
   return url && url.startsWith("https://") ? url : null;
 }
 
@@ -128,12 +128,12 @@ const PIX_VALIDITY_MS = 10 * 60 * 1000;
  */
 export async function previewSubscriptionPrice(input: SubscriptionCheckoutInput) {
   try {
-    const session = await getSession();
-    if (!session || session.userId === SUPER_ADMIN_USER_ID) {
+    const session = await obterSessao();
+    if (!session || session.userId === ID_DO_SUPER_ADMIN) {
       return { success: false as const, error: "Entre na sua conta para ver o preço." };
     }
     if (input.couponCode) {
-      const limit = await checkRateLimit({ key: `COUPON_PREVIEW:${session.userId}`, limit: 20, windowMs: 10 * 60 * 1000 });
+      const limit = await conferirLimiteDeUso({ key: `COUPON_PREVIEW:${session.userId}`, limit: 20, windowMs: 10 * 60 * 1000 });
       if (!limit.success) return { success: false as const, error: "Muitas tentativas de cupom. Aguarde alguns minutos.", field: "coupon" as const };
     }
     const result = await cotarAssinatura({
@@ -157,12 +157,12 @@ export async function previewSubscriptionPrice(input: SubscriptionCheckoutInput)
  */
 export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) {
   try {
-    const session = await getSession();
-    if (!session || session.userId === SUPER_ADMIN_USER_ID) {
+    const session = await obterSessao();
+    if (!session || session.userId === ID_DO_SUPER_ADMIN) {
       return { success: false, error: "Entre na sua conta para assinar um plano." };
     }
 
-    const rateLimit = await rateLimitByIp("CHECKOUT");
+    const rateLimit = await limitarUsoPorIp("CHECKOUT");
     if (!rateLimit.success) {
       return { success: false, error: "Muitas tentativas de geração de pagamento. Aguarde alguns minutos." };
     }
@@ -198,7 +198,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
     });
 
     const email = z.string().email().safeParse(user.username);
-    const name = normalizeText(user.name) || "Cliente";
+    const name = normalizarTexto(user.name) || "Cliente";
 
     if (mercadoPagoEstaConfigurado()) {
       try {
@@ -276,7 +276,7 @@ export async function generateSubscriptionPix(input: SubscriptionCheckoutInput) 
  */
 export async function verifySubscriptionPaymentStatus(subscriptionId: string) {
   try {
-    const session = await getSession();
+    const session = await obterSessao();
     if (!session) return { success: false, paid: false, message: "Sessão expirada. Entre de novo." };
     if (typeof subscriptionId !== "string" || !/^[0-9a-f-]{36}$/i.test(subscriptionId)) {
       return { success: false, paid: false, message: "Cobrança não encontrada." };
@@ -292,7 +292,7 @@ export async function verifySubscriptionPaymentStatus(subscriptionId: string) {
       return { success: false, paid: false, status: "rejected", message: "Este Pix foi recusado ou expirou. Gere um novo código." };
     }
 
-    const rateLimit = await rateLimitByIp("PAYMENT_STATUS");
+    const rateLimit = await limitarUsoPorIp("PAYMENT_STATUS");
     if (!rateLimit.success) {
       return { success: true, paid: false, status: "pending", message: "Aguardando confirmação..." };
     }
@@ -354,7 +354,7 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
   const input = parsed.data;
 
   try {
-    const rateLimit = await rateLimitByIp("SIGNUP");
+    const rateLimit = await limitarUsoPorIp("SIGNUP");
     if (!rateLimit.success) {
       return { success: false, error: "Muitos cadastros em pouco tempo. Aguarde alguns minutos." };
     }
@@ -385,7 +385,7 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
         data.planId === "master" ? VendorPlanTier.MASTER : data.planId === "pro" ? VendorPlanTier.PRO : VendorPlanTier.FREE;
 
       vendorData = {
-        companyName: normalizeText(input.companyName),
+        companyName: normalizarTexto(input.companyName),
         category: input.vendorCategory || "Outros",
         description: `Profissional de excelência em ${input.vendorCategory || "serviços de casamento"}.`,
         phone: input.phone,
@@ -400,7 +400,7 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
         documentNumber: input.documentNumber.replace(/[^\d./-]/g, ""),
         instagram: input.instagram || null,
         tiktok: input.tiktok || null,
-        website: input.website ? sanitizeUrl(input.website) : null,
+        website: input.website ? limparUrl(input.website) : null,
         serviceRegions: JSON.stringify([input.vendorRegion || "São Paulo - Capital"]),
         // O plano pago só é aplicado após confirmação do pagamento; até lá fica no gratuito.
         planTier: plan.price > 0 ? VendorPlanTier.FREE : tier,
@@ -410,15 +410,15 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
     }
 
     const hashedPassword = await bcrypt.hash(input.password, 12);
-    const name = normalizeText(input.name);
+    const name = normalizarTexto(input.name);
 
     if (!isVendor) {
       const weddingDate = validWeddingDate(input.weddingDate);
       // Casamento, site, regras, perfil "Casal" e usuário nascem juntos (tudo ou nada).
-      const created = await withSlugRetry(() =>
+      const created = await comNovaTentativaDeEndereco(() =>
         prisma.$transaction(async (tx) => {
-          const role = await upsertCoupleRole(tx);
-          const wedding = await provisionWedding(tx, {
+          const role = await criarOuAtualizarPapelDoCasal(tx);
+          const wedding = await prepararCasamento(tx, {
             coupleNames: name,
             weddingDate,
             slugSource: input.slug || name,
@@ -431,7 +431,7 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
         }),
       ).catch(async (error) => {
         // Dois envios do mesmo formulário ao mesmo tempo: o segundo bate no e-mail único.
-        if (isUniqueViolation(error) && (await prisma.user.findUnique({ where: { username: input.email }, select: { id: true } }))) {
+        if (ehViolacaoDeUnicidade(error) && (await prisma.user.findUnique({ where: { username: input.email }, select: { id: true } }))) {
           return null;
         }
         throw error;
@@ -486,7 +486,7 @@ export async function registerPlanAccount(data: PlanRegistrationData) {
       isFree: plan.price === 0,
       isVendor,
       redirectTo: hasPathAccess(allowedPaths, VENDOR_PANEL_PATH) ? VENDOR_PANEL_PATH : null,
-      slug: input.slug ? sanitizeSlug(input.slug) : undefined,
+      slug: input.slug ? limparEndereco(input.slug) : undefined,
     };
   } catch (error) {
     console.error("[registerPlanAccount Error]:", error);

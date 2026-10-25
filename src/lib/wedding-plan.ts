@@ -2,8 +2,8 @@ import "server-only";
 import { cache } from "react";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { SUPER_ADMIN_USER_ID, type SecureAuthContext } from "@/lib/security/auth-guard";
-import { getPrincipalWedding } from "@/lib/security/wedding-context";
+import { ID_DO_SUPER_ADMIN, type ContextoDeAutenticacaoSegura } from "@/lib/security/auth-guard";
+import { obterCasamentoPrincipal } from "@/lib/security/wedding-context";
 import { modulosDoPlano, planoInclui, mensagemDeUpgrade, type ModuloComBloqueio } from "@/lib/wedding-plan-modules";
 
 export interface PlanoDoCasamento {
@@ -37,12 +37,12 @@ export const obterPlanoDoCasamento = cache(async (weddingId: string): Promise<Pl
  * já existia antes dos planos) nem a administração da plataforma ("*" / super admin).
  */
 export async function casamentoTemModulo(
-  ctx: { weddingId: string; session: SecureAuthContext },
+  ctx: { weddingId: string; session: ContextoDeAutenticacaoSegura },
   moduleId: ModuloComBloqueio,
 ): Promise<boolean> {
   const { weddingId, session } = ctx;
-  if (session.userId === SUPER_ADMIN_USER_ID || session.allowedPaths.includes("*")) return true;
-  const principal = await getPrincipalWedding();
+  if (session.userId === ID_DO_SUPER_ADMIN || session.allowedPaths.includes("*")) return true;
+  const principal = await obterCasamentoPrincipal();
   if (principal?.id === weddingId) return true;
   const plan = await obterPlanoDoCasamento(weddingId);
   return planoInclui(plan.modules, moduleId);
@@ -50,7 +50,7 @@ export async function casamentoTemModulo(
 
 /** Para Server Actions: texto de recusa quando o plano não inclui o módulo, ou null se pode seguir. */
 export async function recusaDeModulo(
-  ctx: { weddingId: string; session: SecureAuthContext },
+  ctx: { weddingId: string; session: ContextoDeAutenticacaoSegura },
   moduleId: ModuloComBloqueio,
 ): Promise<string | null> {
   return (await casamentoTemModulo(ctx, moduleId)) ? null : mensagemDeUpgrade(moduleId);

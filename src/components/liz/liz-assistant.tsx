@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
-import { LIZ_OPEN_EVENT } from "@/lib/liz/events";
-import { shouldShowLizFab } from "@/lib/liz/visibility";
+import { EVENTO_DE_ABRIR_A_LIZ } from "@/lib/liz/events";
+import { deveMostrarOAtalhoDaLiz } from "@/lib/liz/visibility";
 import { LizAvatar } from "./liz-illustration";
 import { LizPanel } from "./liz-panel";
 import { useLizHidden } from "./use-liz-hidden";
@@ -30,7 +30,7 @@ const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabi
 
 export function LizAssistant({ allowedPaths }: { allowedPaths: readonly string[] }) {
   const pathname = usePathname();
-  const visible = shouldShowLizFab(pathname);
+  const visible = deveMostrarOAtalhoDaLiz(pathname);
   const hidden = useLizHidden();
   const mobile = useSyncExternalStore(subscribeMobile, isMobileNow, () => false);
   // Guarda a tela em que abriu: ao navegar, a folha fecha sozinha (sem efeito para sincronizar).
@@ -57,8 +57,8 @@ export function LizAssistant({ allowedPaths }: { allowedPaths: readonly string[]
   useEffect(() => {
     if (!visible) return;
     const onOpen = () => setOpenAt(pathname);
-    window.addEventListener(LIZ_OPEN_EVENT, onOpen);
-    return () => window.removeEventListener(LIZ_OPEN_EVENT, onOpen);
+    window.addEventListener(EVENTO_DE_ABRIR_A_LIZ, onOpen);
+    return () => window.removeEventListener(EVENTO_DE_ABRIR_A_LIZ, onOpen);
   }, [visible, pathname]);
 
   // Aberto: foco no painel, Esc e clique fora fecham, no celular a rolagem do fundo trava e o Tab não escapa.

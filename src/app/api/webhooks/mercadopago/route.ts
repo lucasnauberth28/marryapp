@@ -7,8 +7,8 @@ import { revalidatePath } from "next/cache";
 import { interpretarReferenciaDaAssinatura } from "@/lib/subscription-period";
 import { aplicarPagamentoAprovado, marcarPagamentoComoFalho, reembolsarAssinatura } from "@/lib/subscriptions";
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
-import { deferNotify } from "@/lib/notifications/service";
-import { notifyGiftPaid } from "@/lib/notifications/events";
+import { avisarDepois } from "@/lib/notifications/service";
+import { avisarPresentePago } from "@/lib/notifications/events";
 import { recordServiceEvent } from "@/lib/platform/system-records";
 
 import { formatarReais } from "@/lib/formatacao/dinheiro";
@@ -110,7 +110,7 @@ async function handleWebhook(req: Request) {
       revalidatePath("/financas");
 
       // Aviso no sino do casal: depois da resposta, e uma falha aqui nunca atrapalha o webhook.
-      deferNotify(() => notifyGiftPaid(internalTxId));
+      avisarDepois(() => avisarPresentePago(internalTxId));
 
       const guest = transaction.guest;
       if (guest?.phone) {

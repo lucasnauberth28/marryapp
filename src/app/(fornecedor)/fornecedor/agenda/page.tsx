@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Reveal } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
-import { getVendorPageContext } from "@/lib/security/vendor-guard";
+import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 import { LinkPending } from "@/components/feedback/link-pending";
 import { Chip } from "../../_components/status-chip";
 import {
@@ -61,7 +61,7 @@ type Upcoming =
     };
 
 export default async function AgendaPage({ searchParams }: { searchParams: Promise<{ mes?: string }> }) {
-  const { vendor } = await getVendorPageContext();
+  const { vendor } = await obterContextoDaPaginaDoFornecedor();
   if (!vendor) return null; // o layout explica que a conta ainda não foi vinculada
 
   const today = todayBrasilia();

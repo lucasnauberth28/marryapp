@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { getTimelineEvents } from "@/actions/timeline-actions";
 import { TimelineClient } from "./timeline-client";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function CronogramaPage() {
-  await requireWeddingPage("/cronograma");
+  await exigirCasamentoNaPagina("/cronograma");
   const [events, identity] = await Promise.all([getTimelineEvents(), obterIdentidadeDoCasamentoPrincipal()]);
 
   // "Sábado, 17 de abril de 2027"

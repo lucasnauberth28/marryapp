@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image, { type ImageLoader } from "next/image";
-import { LIZ_ASSETS, lizAssetSrc, type LizPose } from "@/lib/liz/pose";
+import { IMAGENS_DA_LIZ, enderecoDaImagemDaLiz, type PoseDaLiz } from "@/lib/liz/pose";
 
 /**
  * Ilustrações da Liz, a fada madrinha do Aceito. Os arquivos já saem em WebP no tamanho de uso
@@ -16,16 +16,16 @@ import { LIZ_ASSETS, lizAssetSrc, type LizPose } from "@/lib/liz/pose";
 
 const LIZ_ALT = "Liz, assistente do Aceito";
 
-function loaderFor(pose: LizPose): ImageLoader {
-  return ({ width }) => lizAssetSrc(pose, width);
+function loaderFor(pose: PoseDaLiz): ImageLoader {
+  return ({ width }) => enderecoDaImagemDaLiz(pose, width);
 }
 
 const LOADERS = Object.fromEntries(
-  (Object.keys(LIZ_ASSETS) as LizPose[]).map((pose) => [pose, loaderFor(pose)]),
-) as Record<LizPose, ImageLoader>;
+  (Object.keys(IMAGENS_DA_LIZ) as PoseDaLiz[]).map((pose) => [pose, loaderFor(pose)]),
+) as Record<PoseDaLiz, ImageLoader>;
 
 interface LizIllustrationProps {
-  pose: Exclude<LizPose, "rosto">;
+  pose: Exclude<PoseDaLiz, "rosto">;
   /** Altura na tela, em px; a largura sai da proporção da pose (sem salto de layout). */
   height: number;
   decorative?: boolean;
@@ -34,7 +34,7 @@ interface LizIllustrationProps {
 
 /** Pose de corpo inteiro (acima de 96px de altura). Lazy por padrão. */
 export function LizIllustration({ pose, height, decorative = false, className = "" }: LizIllustrationProps) {
-  const width = Math.round(height / LIZ_ASSETS[pose].ratio);
+  const width = Math.round(height / IMAGENS_DA_LIZ[pose].ratio);
   return (
     <Image
       loader={LOADERS[pose]}

@@ -2,10 +2,10 @@ import "server-only";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import prisma from "@/lib/prisma";
-import { requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { obterEstadoDaConexao, whatsappEstaConfigurado } from "@/lib/evolution";
 import { emailEstaConfigurado } from "@/lib/email";
-import { isPushConfigured } from "@/lib/notifications/push";
+import { pushEstaConfigurado } from "@/lib/notifications/push";
 import vercelConfig from "../../../../vercel.json";
 import { attentionItems, consecutiveFailures, cronState, describeCronSummary, jobsFromCrons, type AttentionItem, type CronState } from "@/lib/platform/health";
 
@@ -92,7 +92,7 @@ async function databaseHealth(): Promise<HealthSnapshot["database"]> {
 
 /** Tela da administração: confere o acesso e mede. */
 export async function getHealthSnapshot(): Promise<HealthSnapshot> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   return collectHealth();
 }
 
@@ -153,7 +153,7 @@ export async function collectHealth(): Promise<HealthSnapshot> {
       invalidNumbers,
     },
     email: { configured: emailEstaConfigurado(), counts: em },
-    push: { configured: isPushConfigured(), subscriptions, counts: pu },
+    push: { configured: pushEstaConfigurado(), subscriptions, counts: pu },
     database,
     version: { sha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null, env: process.env.VERCEL_ENV ?? null },
     sentryConfigured: Boolean(process.env.SENTRY_DSN?.trim()),

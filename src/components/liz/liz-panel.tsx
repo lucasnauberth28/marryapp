@@ -6,17 +6,17 @@ import { RotateCcw, Send, X } from "lucide-react";
 import { Skeleton } from "@/components/skeletons";
 import { btn } from "@/components/landing/styles";
 import { getLizPanelData, askLiz, type LizPanelData } from "@/actions/liz-actions";
-import { helpGuideAnswerer, type LizAnswerer, type LizAskContext } from "@/lib/liz/answerer";
-import { HELP_ARTICLES } from "@/lib/liz/help-articles";
-import { visibleArticles, type HelpHit } from "@/lib/liz/help-search";
-import { LIZ_TOPICS, topicOfArticle, topicsFor } from "@/lib/liz/topics";
+import { respondedoraDoGuiaDeAjuda, type RespondedoraDaLiz, type ContextoDaPerguntaALiz } from "@/lib/liz/answerer";
+import { ARTIGOS_DE_AJUDA } from "@/lib/liz/help-articles";
+import { artigosVisiveis, type ResultadoDaAjuda } from "@/lib/liz/help-search";
+import { ASSUNTOS_DA_LIZ, assuntoDoArtigo, assuntosPara } from "@/lib/liz/topics";
 import { rotuloDoPlanoNecessario } from "@/lib/wedding-plan-modules";
 import { temAcessoAoCaminho } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 import { LizAvatar, LizIllustration } from "./liz-illustration";
 
 /** Respondedor que passa a pergunta ao servidor (provedor de IA). Só é usado quando a administração liga a Liz. */
-const serverAnswerer: LizAnswerer = {
+const serverAnswerer: RespondedoraDaLiz = {
   async answer(question, context) {
     const result = await askLiz({ question, pathname: context.pathname });
     if (!result.success) throw new Error(result.error);
@@ -77,9 +77,9 @@ export function LizPanel({
 
   const data = load.status === "ready" ? load.data : null;
   const chatEnabled = data?.chatEnabled ?? false;
-  const context: LizAskContext = useMemo(() => ({ allowedPaths, pathname, planModules: data?.planModules }), [allowedPaths, pathname, data]);
-  const visible = useMemo(() => visibleArticles(HELP_ARTICLES, context), [context]);
-  const topics = useMemo(() => topicsFor(visible), [visible]);
+  const context: ContextoDaPerguntaALiz = useMemo(() => ({ allowedPaths, pathname, planModules: data?.planModules }), [allowedPaths, pathname, data]);
+  const visible = useMemo(() => artigosVisiveis(ARTIGOS_DE_AJUDA, context), [context]);
+  const topics = useMemo(() => assuntosPara(visible), [visible]);
   const hitById = useMemo(() => new Map(visible.map((h) => [h.article.id, h])), [visible]);
   const canOpenPlans = temAcessoAoCaminho([...allowedPaths], "/plano");
 
@@ -112,7 +112,7 @@ export function LizPanel({
     go("O que fazer agora?", { kind: "tip" }, { from: "liz", kind: "tip" });
   }
   function pickTopic(topicId: string) {
-    const t = LIZ_TOPICS.find((x) => x.id === topicId)!;
+    const t = ASSUNTOS_DA_LIZ.find((x) => x.id === topicId)!;
     go(t.label, { kind: "topic", topicId }, lizText(t.intro));
   }
   function pickArticle(articleId: string) {
@@ -136,7 +136,7 @@ export function LizPanel({
     setText("");
     setAsking(true);
     try {
-      const answerer = chatEnabled ? serverAnswerer : helpGuideAnswerer;
+      const answerer = chatEnabled ? serverAnswerer : respondedoraDoGuiaDeAjuda;
       const answer = await answerer.answer(q, context);
       const hits = answer.kind === "articles" ? answer.hits : answer.sources;
       const ids = hits.map((h) => h.article.id);
@@ -172,12 +172,12 @@ export function LizPanel({
         return [...(t?.hits ?? []).map((h) => ({ key: h.article.id, label: h.article.title, onPick: () => pickArticle(h.article.id) })), others];
       }
       case "article": {
-        const topic = topicOfArticle(stage.articleId);
+        const topic = assuntoDoArtigo(stage.articleId);
         const more = topic && topics.some((x) => x.topic.id === topic.id && x.hits.length > 1);
         return [...(more ? [{ key: "mais", label: `Mais dúvidas de ${topic.label.toLowerCase()}`, onPick: () => pickTopic(topic.id) }] : []), others];
       }
       case "hits":
-        return [...stage.articleIds.map((id) => hitById.get(id)).filter((h): h is HelpHit => !!h).map((h) => ({ key: h.article.id, label: h.article.title, onPick: () => pickArticle(h.article.id) })), others];
+        return [...stage.articleIds.map((id) => hitById.get(id)).filter((h): h is ResultadoDaAjuda => !!h).map((h) => ({ key: h.article.id, label: h.article.title, onPick: () => pickArticle(h.article.id) })), others];
       case "tip":
         return [others];
     }
@@ -309,7 +309,7 @@ function TipBody({ load, onRetry, onNavigate }: { load: Load; onRetry: () => voi
   );
 }
 
-function ArticleBody({ hit, canOpenPlans, onNavigate }: { hit: HelpHit | undefined; canOpenPlans: boolean; onNavigate: () => void }) {
+function ArticleBody({ hit, canOpenPlans, onNavigate }: { hit: ResultadoDaAjuda | undefined; canOpenPlans: boolean; onNavigate: () => void }) {
   if (!hit) return <p>Não achei essa dúvida agora.</p>;
   const { article, locked } = hit;
   return (

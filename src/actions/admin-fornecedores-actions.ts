@@ -4,7 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
-import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { aprovarFornecedor, recusarFornecedor } from "@/lib/vendor-curation";
 import { GRANT_DAYS, grantedPlanEnd } from "@/lib/platform/vendor-admin";
 
@@ -32,7 +32,7 @@ function firstIssue(error: unknown): string | null {
 
 export async function approveVendorAdminAction(input: unknown): Promise<AdminVendorResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const { vendorId } = z.object({ vendorId: VendorId }).parse(input);
     const vendor = await prisma.partnerVendor.findUnique({ where: { id: vendorId }, select: { companyName: true } });
     if (!vendor) return { success: false, error: "Fornecedor não encontrado. Atualize a página." };
@@ -40,13 +40,13 @@ export async function approveVendorAdminAction(input: unknown): Promise<AdminVen
     refresh(vendorId);
     return { success: true, message: `${vendor.companyName} aprovado e publicado na vitrine.` };
   } catch (error) {
-    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : platformAdminFailure(error, "approveVendorAdminAction");
+    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : falhaDeAdminDaPlataforma(error, "approveVendorAdminAction");
   }
 }
 
 export async function rejectVendorAdminAction(input: unknown): Promise<AdminVendorResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const data = z
       .object({ vendorId: VendorId, message: Reason(10, "Explique o que falta, para o fornecedor poder corrigir.") })
       .parse(input);
@@ -56,14 +56,14 @@ export async function rejectVendorAdminAction(input: unknown): Promise<AdminVend
     refresh(data.vendorId);
     return { success: true, message: `Cadastro de ${vendor.companyName} devolvido com a mensagem.` };
   } catch (error) {
-    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : platformAdminFailure(error, "rejectVendorAdminAction");
+    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : falhaDeAdminDaPlataforma(error, "rejectVendorAdminAction");
   }
 }
 
 /** Suspender: some da vitrine, do orçamento e da agenda pública (as consultas públicas filtram suspendedAt). */
 export async function suspendVendorAction(input: unknown): Promise<AdminVendorResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const data = z.object({ vendorId: VendorId, reason: Reason(5, "Diga o motivo da suspensão.") }).parse(input);
     const done = await prisma.partnerVendor.updateMany({
       where: { id: data.vendorId, suspendedAt: null },
@@ -74,13 +74,13 @@ export async function suspendVendorAction(input: unknown): Promise<AdminVendorRe
     refresh(data.vendorId);
     return { success: true, message: "Fornecedor suspenso. Ele saiu da vitrine." };
   } catch (error) {
-    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : platformAdminFailure(error, "suspendVendorAction");
+    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : falhaDeAdminDaPlataforma(error, "suspendVendorAction");
   }
 }
 
 export async function unsuspendVendorAction(input: unknown): Promise<AdminVendorResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const { vendorId } = z.object({ vendorId: VendorId }).parse(input);
     const done = await prisma.partnerVendor.updateMany({ where: { id: vendorId, suspendedAt: { not: null } }, data: { suspendedAt: null, suspendedReason: null } });
     if (done.count === 0) return { success: false, error: "O fornecedor não estava suspenso. Atualize a página." };
@@ -88,14 +88,14 @@ export async function unsuspendVendorAction(input: unknown): Promise<AdminVendor
     refresh(vendorId);
     return { success: true, message: "Suspensão desfeita. O fornecedor voltou para a vitrine, se estiver aprovado." };
   } catch (error) {
-    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : platformAdminFailure(error, "unsuspendVendorAction");
+    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : falhaDeAdminDaPlataforma(error, "unsuspendVendorAction");
   }
 }
 
 /** Destaque na vitrine: só para aprovado e não suspenso. A ordenação lê isFeatured (getPartnerVendorsAction). */
 export async function setVendorFeaturedAction(input: unknown): Promise<AdminVendorResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const data = z.object({ vendorId: VendorId, featured: z.boolean() }).parse(input);
     const done = await prisma.partnerVendor.updateMany({
       where: { id: data.vendorId, ...(data.featured ? { curationStatus: "APPROVED", suspendedAt: null } : {}) },
@@ -106,14 +106,14 @@ export async function setVendorFeaturedAction(input: unknown): Promise<AdminVend
     refresh(data.vendorId);
     return { success: true, message: data.featured ? "Destacado no topo da vitrine." : "Destaque removido." };
   } catch (error) {
-    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : platformAdminFailure(error, "setVendorFeaturedAction");
+    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : falhaDeAdminDaPlataforma(error, "setVendorFeaturedAction");
   }
 }
 
 /** Plano de cortesia: não cria cobrança nem Subscription. Vale por N dias e some sozinho no vencimento (rotina diária). */
 export async function grantVendorPlanAction(input: unknown): Promise<AdminVendorResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const data = z
       .object({
         vendorId: VendorId,
@@ -145,7 +145,7 @@ export async function grantVendorPlanAction(input: unknown): Promise<AdminVendor
     refresh(data.vendorId);
     return { success: true, message: `Plano ${data.tier === "PRO" ? "Pro" : "Master"} concedido por ${data.days} dias, sem cobrança.` };
   } catch (error) {
-    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : platformAdminFailure(error, "grantVendorPlanAction");
+    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : falhaDeAdminDaPlataforma(error, "grantVendorPlanAction");
   }
 }
 
@@ -158,7 +158,7 @@ async function recalcRating(vendorId: string) {
 /** Moderar uma avaliação denunciada: manter no ar, ocultar ou reexibir. */
 export async function moderateReviewAction(input: unknown): Promise<AdminVendorResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const data = z
       .object({
         reviewId: z.string().uuid("Avaliação inválida."),
@@ -192,6 +192,6 @@ export async function moderateReviewAction(input: unknown): Promise<AdminVendorR
       message: data.decision === "hide" ? "Avaliação ocultada. A nota do fornecedor foi recalculada." : data.decision === "show" ? "Avaliação voltou ao perfil." : "Avaliação mantida no ar.",
     };
   } catch (error) {
-    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : platformAdminFailure(error, "moderateReviewAction");
+    return firstIssue(error) ? { success: false, error: firstIssue(error)! } : falhaDeAdminDaPlataforma(error, "moderateReviewAction");
   }
 }

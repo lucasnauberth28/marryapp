@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
-import { buildAccountExport } from "@/lib/account/export-data";
-import { checkRateLimit } from "@/lib/security/rate-limiter";
-import { platformAdminApiGuard } from "@/lib/security/platform-admin";
+import { montarExportacaoDaConta } from "@/lib/account/export-data";
+import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
+import { protecaoDaApiDeAdminDaPlataforma } from "@/lib/security/platform-admin";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 export const dynamic = "force-dynamic";
@@ -15,13 +15,13 @@ export const dynamic = "force-dynamic";
  * O mesmo exportador de "Minha conta" (sem senhas nem tokens). Cada download vai ao registro de atividades.
  */
 export async function GET(req: Request) {
-  const { ctx, response } = await platformAdminApiGuard();
+  const { ctx, response } = await protecaoDaApiDeAdminDaPlataforma();
   if (response) return response;
 
   const id = new URL(req.url).searchParams.get("pedido") ?? "";
   if (!z.string().uuid().safeParse(id).success) return NextResponse.json({ error: ERROS.pedidoInvalido }, { status: 400, headers: { "cache-control": "no-store" } });
 
-  const limit = await checkRateLimit({ key: `ADMIN_DATA_EXPORT:${ctx.userId}`, limit: 20, windowMs: 10 * 60 * 1000 });
+  const limit = await conferirLimiteDeUso({ key: `ADMIN_DATA_EXPORT:${ctx.userId}`, limit: 20, windowMs: 10 * 60 * 1000 });
   if (!limit.success) return NextResponse.json({ error: "Muitas exportações seguidas. Aguarde alguns minutos." }, { status: 429 });
 
   try {
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
     if (!request || request.type !== "EXPORT") return NextResponse.json({ error: "Pedido de exportação não encontrado." }, { status: 404 });
     if (!request.userId) return NextResponse.json({ error: "Este pedido não está ligado a uma conta." }, { status: 409 });
 
-    const exported = await buildAccountExport(request.userId);
+    const exported = await montarExportacaoDaConta(request.userId);
     if (!exported) return NextResponse.json({ error: "A conta não existe mais." }, { status: 404 });
 
     await registrarAuditoria({ action: "data_request.export", targetType: "data_request", targetId: request.id, details: { userId: request.userId, bytes: exported.json.length } });

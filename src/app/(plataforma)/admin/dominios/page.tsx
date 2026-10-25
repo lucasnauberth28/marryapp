@@ -27,7 +27,7 @@ import {
   listRenewals,
   type DomainTab,
 } from "@/lib/platform/queries/dominios";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { vercelEstaConfigurada } from "@/lib/vercel-domains";
 import { buildHref } from "@/lib/platform/list-params";
 import { DomainPanel } from "./_components/domain-panel";
@@ -48,7 +48,7 @@ const STATUS_CHIP: Record<NomeDaSituacaoDoPedidoDeDominio, { tone: StatusTone; i
 };
 
 export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
   const tab = oneOf(query, "aba", DOMAIN_TABS) ?? "todos";
   const selectedId = param(query, "id", 40);

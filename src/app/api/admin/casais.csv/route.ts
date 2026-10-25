@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { registrarAuditoria } from "@/lib/audit";
-import { platformAdminApiGuard } from "@/lib/security/platform-admin";
+import { protecaoDaApiDeAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { oneOf, param, type SearchParams } from "@/lib/platform/list-params";
 import { ATIVIDADE_FILTERS, CASAIS_TABS, DATA_FILTERS, DOMINIO_FILTERS, ONBOARDING_FILTERS, PLANO_FILTERS, type CasaisFilters } from "@/lib/platform/casais-filters";
 import { CASAIS_ORDERS, listCasaisForExport, weddingIdsForPlan } from "@/lib/platform/queries/casais";
@@ -12,7 +12,7 @@ const MAX_ROWS = 5000;
 
 /** Exporta os casais (da lista filtrada ou só os selecionados) em CSV. Nunca traz documento, telefone nem dado de convidado. */
 export async function GET(request: NextRequest) {
-  const { ctx, response } = await platformAdminApiGuard();
+  const { ctx, response } = await protecaoDaApiDeAdminDaPlataforma();
   if (response) return response;
 
   const query: SearchParams = Object.fromEntries(request.nextUrl.searchParams.entries());

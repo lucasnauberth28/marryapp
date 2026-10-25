@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
 
 import { temAcessoAoCaminho } from "../../permissions.ts";
-import { normalizeText, sanitizeSlug, sanitizeUrl } from "../sanitize.ts";
-import { paidAmountMatches, verifyMercadoPagoSignature } from "../webhook-signature.ts";
+import { normalizarTexto, limparEndereco, limparUrl } from "../sanitize.ts";
+import { valorPagoConfere, verificarAssinaturaDoMercadoPago } from "../webhook-signature.ts";
 
 test("hasPathAccess compara por segmento", () => {
   assert.equal(temAcessoAoCaminho(["*"], "/qualquer"), true);
@@ -15,25 +15,25 @@ test("hasPathAccess compara por segmento", () => {
 });
 
 test("normalizeText não escapa HTML (React já escapa) e remove controles", () => {
-  assert.equal(normalizeText("  Lucas   &  Giovanna \u0000"), "Lucas & Giovanna");
-  assert.equal(normalizeText(null), "");
+  assert.equal(normalizarTexto("  Lucas   &  Giovanna \u0000"), "Lucas & Giovanna");
+  assert.equal(normalizarTexto(null), "");
 });
 
 test("sanitizeUrl bloqueia protocolos perigosos", () => {
-  assert.equal(sanitizeUrl("javascript:alert(1)"), null);
-  assert.equal(sanitizeUrl("data:text/html,x"), null);
-  assert.equal(sanitizeUrl("https://ok.com"), "https://ok.com");
-  assert.equal(sanitizeUrl("site.com.br"), "https://site.com.br");
+  assert.equal(limparUrl("javascript:alert(1)"), null);
+  assert.equal(limparUrl("data:text/html,x"), null);
+  assert.equal(limparUrl("https://ok.com"), "https://ok.com");
+  assert.equal(limparUrl("site.com.br"), "https://site.com.br");
 });
 
 test("sanitizeSlug normaliza acentos e símbolos", () => {
-  assert.equal(sanitizeSlug("João & Maria!"), "joao-maria");
+  assert.equal(limparEndereco("João & Maria!"), "joao-maria");
 });
 
 test("paidAmountMatches exige valor exato em centavos", () => {
-  assert.equal(paidAmountMatches(150.5, 15050), true);
-  assert.equal(paidAmountMatches(0.01, 15050), false);
-  assert.equal(paidAmountMatches(undefined, 100), false);
+  assert.equal(valorPagoConfere(150.5, 15050), true);
+  assert.equal(valorPagoConfere(0.01, 15050), false);
+  assert.equal(valorPagoConfere(undefined, 100), false);
 });
 
 test("verifyMercadoPagoSignature valida o HMAC do manifest", () => {
@@ -43,10 +43,10 @@ test("verifyMercadoPagoSignature valida o HMAC do manifest", () => {
   const v1 = createHmac("sha256", secret).update(manifest).digest("hex");
 
   const base = { requestId: "req-1", dataId: "123456", secret };
-  assert.equal(verifyMercadoPagoSignature({ ...base, signatureHeader: `ts=${ts},v1=${v1}` }), true);
-  assert.equal(verifyMercadoPagoSignature({ ...base, signatureHeader: `ts=${ts},v1=${"0".repeat(64)}` }), false);
-  assert.equal(verifyMercadoPagoSignature({ ...base, dataId: "999", signatureHeader: `ts=${ts},v1=${v1}` }), false);
-  assert.equal(verifyMercadoPagoSignature({ ...base, signatureHeader: null }), false);
+  assert.equal(verificarAssinaturaDoMercadoPago({ ...base, signatureHeader: `ts=${ts},v1=${v1}` }), true);
+  assert.equal(verificarAssinaturaDoMercadoPago({ ...base, signatureHeader: `ts=${ts},v1=${"0".repeat(64)}` }), false);
+  assert.equal(verificarAssinaturaDoMercadoPago({ ...base, dataId: "999", signatureHeader: `ts=${ts},v1=${v1}` }), false);
+  assert.equal(verificarAssinaturaDoMercadoPago({ ...base, signatureHeader: null }), false);
 });
 
 test("readableAccent escurece cores claras até contraste AA", async () => {

@@ -9,12 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
-import { IMPERSONATION_MAX_MINUTES, IMPERSONATION_REASONS } from "@/lib/security/impersonation-rules";
+import { MAXIMO_DE_MINUTOS_DE_PERSONIFICACAO, MOTIVOS_DE_PERSONIFICACAO } from "@/lib/security/impersonation-rules";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 /** Confirmação para "Entrar como este casal": motivo obrigatório, chamado opcional e, para editar, uma segunda confirmação. */
 export function EntrarComoForm({ weddingId, coupleNames, backHref }: { weddingId: string; coupleNames: string; backHref: string }) {
-  const [reason, setReason] = useState<string>(IMPERSONATION_REASONS[0]);
+  const [reason, setReason] = useState<string>(MOTIVOS_DE_PERSONIFICACAO[0]);
   const [ticket, setTicket] = useState("");
   const [canEdit, setCanEdit] = useState(false);
   const [confirmEdit, setConfirmEdit] = useState(false);
@@ -55,7 +55,7 @@ export function EntrarComoForm({ weddingId, coupleNames, backHref }: { weddingId
       </div>
 
       <NativeSelect label="Por que você vai entrar?" value={reason} onChange={(e) => setReason(e.target.value)}>
-        {IMPERSONATION_REASONS.map((r) => (
+        {MOTIVOS_DE_PERSONIFICACAO.map((r) => (
           <option key={r} value={r}>
             {r}
           </option>
@@ -93,7 +93,7 @@ export function EntrarComoForm({ weddingId, coupleNames, backHref }: { weddingId
 
       <dl className="grid grid-cols-[88px_1fr] gap-x-4 gap-y-3 text-[15px] leading-6">
         <dt className="text-tinta-suave">Duração</dt>
-        <dd className="text-tinta">{IMPERSONATION_MAX_MINUTES} minutos, depois sai sozinho</dd>
+        <dd className="text-tinta">{MAXIMO_DE_MINUTOS_DE_PERSONIFICACAO} minutos, depois sai sozinho</dd>
         <dt className="text-tinta-suave">Registro</dt>
         <dd className="text-tinta">Sua entrada, o motivo e cada ação ficam no Registro de atividades</dd>
         <dt className="text-tinta-suave">Faixa</dt>

@@ -6,7 +6,7 @@ import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
 import { PLANOS_ACEITOS_PELO_CUPOM, normalizarCodigoDoCupom } from "@/lib/checkout-pricing";
-import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 
 type ActionResult = { success: true } | { success: false; error: string };
 
@@ -60,12 +60,12 @@ function auditDetails(code: string, fields: z.output<typeof FieldsSchema>) {
 }
 
 function failure(error: unknown, context: string): ActionResult {
-  return platformAdminFailure(error, context, "Não foi possível salvar agora. Tente de novo.");
+  return falhaDeAdminDaPlataforma(error, context, "Não foi possível salvar agora. Tente de novo.");
 }
 
 export async function createCoupon(input: { code: string } & CouponFields): Promise<ActionResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const code = normalizarCodigoDoCupom(input?.code);
     if (!code) return { success: false, error: "O código precisa ter de 3 a 30 letras ou números, sem espaços." };
     const parsed = FieldsSchema.safeParse(input);
@@ -86,7 +86,7 @@ export async function createCoupon(input: { code: string } & CouponFields): Prom
 /** O código não muda depois de criado: ele fica gravado nas cobranças que o usaram. */
 export async function updateCoupon(id: string, input: CouponFields): Promise<ActionResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     if (!z.string().uuid().safeParse(id).success) return { success: false, error: "Cupom inválido." };
     const parsed = FieldsSchema.safeParse(input);
     if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
@@ -105,7 +105,7 @@ export async function updateCoupon(id: string, input: CouponFields): Promise<Act
 /** Excluir não mexe nas cobranças já feitas: elas guardam o código e o desconto. */
 export async function deleteCoupon(id: string): Promise<ActionResult> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     if (!z.string().uuid().safeParse(id).success) return { success: false, error: "Cupom inválido." };
     const deleted = await prisma.coupon.delete({ where: { id }, select: { code: true, redemptions: true } }).catch(() => null);
     if (!deleted) return { success: false, error: "Cupom não encontrado. Atualize a página." };

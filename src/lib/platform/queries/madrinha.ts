@@ -1,6 +1,6 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { getPlatformSetting } from "@/lib/platform/settings";
 import { MADRINHA_SETTING_KEYS, DEFAULT_MADRINHA_INSTRUCTIONS } from "@/lib/platform/madrinha";
 
@@ -18,7 +18,7 @@ export interface SettingMeta {
 
 /** Quais configurações da Liz já foram salvas de verdade (e por quem). */
 export async function getMadrinhaSettingsMeta(): Promise<Record<(typeof MADRINHA_SETTING_KEYS)[number], SettingMeta>> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   const rows = await prisma.platformSetting.findMany({
     where: { key: { in: [...MADRINHA_SETTING_KEYS] } },
     select: { key: true, updatedAt: true, updatedByName: true },
@@ -50,7 +50,7 @@ export interface MadrinhaOverview {
 }
 
 export async function getMadrinhaOverview(): Promise<MadrinhaOverview> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   const [limits, globalCap, abuse, meta, latest, articleCount, versionCount] = await Promise.all([
     getPlatformSetting("madrinha.limits"),
     getPlatformSetting("madrinha.globalCap"),
@@ -83,7 +83,7 @@ export interface OverrideRow {
 
 /** Casais que têm algum ajuste (ligado/desligado à mão, mensagens a mais ou bloqueio). */
 export async function listMadrinhaOverrides(limit = 50): Promise<OverrideRow[]> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   const rows = await prisma.madrinhaWeddingOverride.findMany({
     where: { OR: [{ enabled: { not: null } }, { extraMessages: { gt: 0 } }, { blockedAt: { not: null } }] },
     orderBy: { updatedAt: "desc" },
@@ -122,7 +122,7 @@ export interface WeddingHit {
 
 /** Busca de casais por nome ou endereço do site: consulta curta (até 8), nunca carrega todos. */
 export async function searchWeddingsForMadrinha(query: string): Promise<WeddingHit[]> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   const q = query.trim().slice(0, 100);
   if (q.length < 2) return [];
   const rows = await prisma.wedding.findMany({
@@ -157,7 +157,7 @@ export interface InstructionVersionRow {
  * primeira versão como rascunho com o texto inicial sugerido (idempotente: a versão 1 é única no banco).
  */
 export async function listInstructionVersions(): Promise<InstructionVersionRow[]> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   const select = { id: true, version: true, content: true, changeNote: true, status: true, createdByName: true, createdAt: true, publishedAt: true } as const;
   let rows = await prisma.madrinhaInstructionVersion.findMany({ orderBy: { version: "desc" }, take: 50, select });
   if (rows.length === 0) {
@@ -182,7 +182,7 @@ export interface ArticleRow {
 }
 
 export async function listKnowledgeArticles(): Promise<ArticleRow[]> {
-  await requirePlatformAdmin();
+  await exigirAdminDaPlataforma();
   return prisma.madrinhaKnowledgeArticle.findMany({
     where: { status: { not: "ARCHIVED" } },
     orderBy: { updatedAt: "desc" },

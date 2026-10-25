@@ -3,11 +3,11 @@
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { checkRateLimit, rateLimitByIp } from "@/lib/security/rate-limiter";
-import { normalizeText } from "@/lib/security/sanitize";
-import { INVITE_STATUS_MESSAGE, lookupInvite } from "@/lib/account/invites";
-import { classifyAccount, isUniqueViolation, refreshSessionCookie, upsertCoupleRole } from "@/lib/account/wedding-provisioning";
+import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { conferirLimiteDeUso, limitarUsoPorIp } from "@/lib/security/rate-limiter";
+import { normalizarTexto } from "@/lib/security/sanitize";
+import { MENSAGEM_DA_SITUACAO_DO_CONVITE, buscarConvite } from "@/lib/account/invites";
+import { classificarConta, ehViolacaoDeUnicidade, renovarCookieDeSessao, criarOuAtualizarPapelDoCasal } from "@/lib/account/wedding-provisioning";
 import { registrarAuditoria } from "@/lib/audit";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
@@ -25,15 +25,15 @@ class InviteTaken extends Error {}
  * o casamento antigo é excluído junto (e o aviso diz isso).
  */
 export async function acceptInvite(input: { token: string; confirmLeave?: boolean }): Promise<AcceptInviteResult> {
-  const session = await getSession();
+  const session = await obterSessao();
   if (!session) return { success: false, error: "Entre na sua conta para aceitar o convite." };
-  if (session.userId === SUPER_ADMIN_USER_ID) return { success: false, error: "A conta de emergência não pode entrar em um casamento." };
+  if (session.userId === ID_DO_SUPER_ADMIN) return { success: false, error: "A conta de emergência não pode entrar em um casamento." };
 
-  const limit = await checkRateLimit({ key: `INVITE_ACCEPT:${session.userId}`, limit: 10, windowMs: 10 * 60 * 1000 });
+  const limit = await conferirLimiteDeUso({ key: `INVITE_ACCEPT:${session.userId}`, limit: 10, windowMs: 10 * 60 * 1000 });
   if (!limit.success) return { success: false, error: ERROS.muitasTentativas };
 
-  const lookup = await lookupInvite(input?.token);
-  if (lookup.status !== "ok") return { success: false, error: INVITE_STATUS_MESSAGE[lookup.status] };
+  const lookup = await buscarConvite(input?.token);
+  if (lookup.status !== "ok") return { success: false, error: MENSAGEM_DA_SITUACAO_DO_CONVITE[lookup.status] };
   const { invite } = lookup;
 
   const user = await prisma.user.findUnique({
@@ -49,7 +49,7 @@ export async function acceptInvite(input: { token: string; confirmLeave?: boolea
   });
   if (!user) return { success: false, error: "Conta não encontrada." };
 
-  const kind = classifyAccount(user);
+  const kind = classificarConta(user);
   if (kind === "vendor") return { success: false, error: "Contas de fornecedor não entram em casamentos. Crie uma conta pessoal com outro e-mail." };
   if (kind === "admin") return { success: false, error: "Contas da administração não entram em casamentos por convite." };
   if (user.weddingId === invite.weddingId) return { success: true, redirectTo: "/dashboard" };
@@ -71,7 +71,7 @@ export async function acceptInvite(input: { token: string; confirmLeave?: boolea
       });
       if (claimed.count !== 1) throw new InviteTaken();
 
-      const role = await upsertCoupleRole(tx);
+      const role = await criarOuAtualizarPapelDoCasal(tx);
       await tx.user.update({ where: { id: user.id }, data: { weddingId: invite.weddingId, roleId: role.id } });
 
       if (previousWeddingId && willDeleteCurrent) {
@@ -83,12 +83,12 @@ export async function acceptInvite(input: { token: string; confirmLeave?: boolea
       }
     });
   } catch (error) {
-    if (error instanceof InviteTaken) return { success: false, error: INVITE_STATUS_MESSAGE.used };
+    if (error instanceof InviteTaken) return { success: false, error: MENSAGEM_DA_SITUACAO_DO_CONVITE.used };
     console.error("[acceptInvite]", error);
     return { success: false, error: "Não conseguimos aceitar o convite agora. Tente de novo em instantes." };
   }
 
-  await refreshSessionCookie(user.id);
+  await renovarCookieDeSessao(user.id);
   await registrarAuditoria({
     action: "wedding.invite_accept",
     targetType: "Wedding",
@@ -102,7 +102,7 @@ const SignupSchema = z.object({
   token: z.string().max(100),
   name: z
     .string()
-    .transform((v) => normalizeText(v))
+    .transform((v) => normalizarTexto(v))
     .pipe(z.string().min(3, "Informe seu nome completo.").max(120, "Nome longo demais.")),
   email: z.string().trim().toLowerCase().email("Confira o e-mail.").max(200),
   password: z.string().min(8, "A senha precisa ter pelo menos 8 caracteres.").max(200, "Senha longa demais."),
@@ -121,11 +121,11 @@ export async function acceptInviteWithNewAccount(input: {
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira os dados." };
   const data = parsed.data;
 
-  const limit = await rateLimitByIp("SIGNUP");
+  const limit = await limitarUsoPorIp("SIGNUP");
   if (!limit.success) return { success: false, error: "Muitos cadastros em pouco tempo. Aguarde alguns minutos." };
 
-  const lookup = await lookupInvite(data.token);
-  if (lookup.status !== "ok") return { success: false, error: INVITE_STATUS_MESSAGE[lookup.status] };
+  const lookup = await buscarConvite(data.token);
+  if (lookup.status !== "ok") return { success: false, error: MENSAGEM_DA_SITUACAO_DO_CONVITE[lookup.status] };
   const { invite } = lookup;
 
   const existing = await prisma.user.findUnique({ where: { username: data.email }, select: { id: true } });
@@ -142,7 +142,7 @@ export async function acceptInviteWithNewAccount(input: {
       });
       if (claimed.count !== 1) throw new InviteTaken();
 
-      const role = await upsertCoupleRole(tx);
+      const role = await criarOuAtualizarPapelDoCasal(tx);
       const created = await tx.user.create({
         data: { name: data.name, username: data.email, password: hashed, roleId: role.id, weddingId: invite.weddingId },
         select: { id: true },
@@ -151,13 +151,13 @@ export async function acceptInviteWithNewAccount(input: {
       return created.id;
     });
   } catch (error) {
-    if (error instanceof InviteTaken) return { success: false, error: INVITE_STATUS_MESSAGE.used };
-    if (isUniqueViolation(error)) return { success: false, error: EXISTING_ACCOUNT, existingAccount: true };
+    if (error instanceof InviteTaken) return { success: false, error: MENSAGEM_DA_SITUACAO_DO_CONVITE.used };
+    if (ehViolacaoDeUnicidade(error)) return { success: false, error: EXISTING_ACCOUNT, existingAccount: true };
     console.error("[acceptInviteWithNewAccount]", error);
     return { success: false, error: "Não conseguimos criar a conta agora. Tente de novo em instantes." };
   }
 
-  await refreshSessionCookie(userId);
+  await renovarCookieDeSessao(userId);
   await registrarAuditoria({
     action: "wedding.invite_accept",
     targetType: "Wedding",

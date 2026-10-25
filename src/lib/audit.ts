@@ -1,7 +1,7 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
+import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 
 export interface RegistroDeAuditoria {
   /** Ex.: "account.delete", "wedding.invite_accept", "subscription.confirm". */
@@ -27,10 +27,10 @@ export async function registrarAuditoria({ action, targetType, targetId, details
     let actorName: string | null = actor?.name ?? null;
 
     if (!actor) {
-      const session = await getSession().catch(() => null);
+      const session = await obterSessao().catch(() => null);
       if (session) {
         actorId = session.userId;
-        if (session.userId === SUPER_ADMIN_USER_ID) {
+        if (session.userId === ID_DO_SUPER_ADMIN) {
           actorName = "Super Admin";
         } else {
           const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { name: true } });

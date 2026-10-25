@@ -3,19 +3,19 @@ import "./painel.css"
 import { Sidebar } from "@/components/admin/sidebar"
 import { Header } from "@/components/admin/header"
 import { MobileTabBar } from "@/components/admin/mobile-tab-bar"
-import { getSession, redirectToLogin } from "@/lib/security/auth-guard"
+import { obterSessao, redirecionarParaOLogin } from "@/lib/security/auth-guard"
 import { obterVisaoDaConta, obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding"
-import { getWeddingContext } from "@/lib/security/wedding-context"
+import { obterContextoDoCasamento } from "@/lib/security/wedding-context"
 import { obterContagensDoMenu } from "@/lib/nav-counts"
 import { diasAte, rotuloDosDiasRestantes } from "@/lib/wedding-format"
 import { MainWeddingNote } from "@/components/admin/main-wedding-note"
 import { MaintenanceBanner } from "@/components/admin/maintenance-banner"
-import { unreadCountFor } from "@/lib/notifications/queries"
-import { vapidPublicKey } from "@/lib/notifications/push"
+import { quantidadeNaoLidaDe } from "@/lib/notifications/queries"
+import { chavePublicaVapid } from "@/lib/notifications/push"
 import { ImpersonationBanner } from "@/components/admin/impersonation-banner"
 import { LizAssistant } from "@/components/liz/liz-assistant"
 import { PanelTourProvider } from "@/components/tour/panel-tour-provider"
-import { loadPanelTour } from "@/lib/tour/panel-tour"
+import { carregarTourDoPainel } from "@/lib/tour/panel-tour"
 import { AreaTabs } from "@/components/admin/area-tabs"
 import { obterPlanoDoCasamento } from "@/lib/wedding-plan"
 import { nomeCurtoDoPlano } from "@/lib/panel-nav"
@@ -23,19 +23,19 @@ import { urlDoSiteDoCasamento } from "@/lib/wedding-links"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Perfil e permissões vêm do banco (não só do JWT), refletindo alterações de acesso na hora.
-  const session = await getSession();
-  if (!session) return redirectToLogin();
+  const session = await obterSessao();
+  if (!session) return redirecionarParaOLogin();
 
   const { role, allowedPaths } = session;
   const [wedding, account, ctx, unreadNotifications] = await Promise.all([
     obterIdentidadeDoCasamentoPrincipal(),
     obterVisaoDaConta(),
-    getWeddingContext(),
-    unreadCountFor(session.userId),
+    obterContextoDoCasamento(),
+    quantidadeNaoLidaDe(session.userId),
   ]);
   const [counts, tour, plan] = await Promise.all([
     ctx ? obterContagensDoMenu(ctx.weddingId, allowedPaths.includes("*")) : undefined,
-    loadPanelTour(session, ctx), // passo a passo do painel (null para administração, visita "Entrar como" e fornecedor)
+    carregarTourDoPainel(session, ctx), // passo a passo do painel (null para administração, visita "Entrar como" e fornecedor)
     ctx && !account.adminView ? obterPlanoDoCasamento(ctx.weddingId) : null,
   ]);
   // Cabeçalho: "17 abr 2027 · faltam 191 dias" (casal); a administração não mostra data
@@ -65,7 +65,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           userName={account.userName}
           planName={planName}
           unreadNotifications={unreadNotifications}
-          pushPublicKey={vapidPublicKey()}
+          pushPublicKey={chavePublicaVapid()}
         />
         <main id="conteudo" className="page-in flex-1 px-4 pb-32 pt-6 md:px-8 md:pb-24 md:pt-7">
           <div className="mx-auto w-full max-w-[1240px]">

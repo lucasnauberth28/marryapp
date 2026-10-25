@@ -1,7 +1,7 @@
 "use server";
 
 import { registrarAuditoria } from "@/lib/audit";
-import { requireAuthSession, requirePathPermission, AuthorizationError } from "@/lib/security/auth-guard";
+import { exigirSessaoAutenticada, exigirPermissaoDoCaminho, AuthorizationError } from "@/lib/security/auth-guard";
 import { hasPathAccess } from "@/lib/auth";
 
 import prisma from "@/lib/prisma";
@@ -16,7 +16,7 @@ import { ERROS } from "@/lib/mensagens-de-erro";
 // ==========================================
 
 export async function getRoles() {
-  await requireAuthSession();
+  await exigirSessaoAutenticada();
   return prisma.role.findMany({
     orderBy: { name: "asc" },
     include: {
@@ -58,7 +58,7 @@ function prismaErrorCode(error: unknown) {
 }
 
 export async function createRole(data: { name: string; allowedPaths: string[] }) {
-  const session = await requirePathPermission("/perfis");
+  const session = await exigirPermissaoDoCaminho("/perfis");
   const parsed = RoleSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   assertCanGrant(session.allowedPaths, parsed.data.allowedPaths);
@@ -83,7 +83,7 @@ export async function createRole(data: { name: string; allowedPaths: string[] })
 }
 
 export async function updateRole(id: string, data: { name: string; allowedPaths: string[] }) {
-  const session = await requirePathPermission("/perfis");
+  const session = await exigirPermissaoDoCaminho("/perfis");
   const parsed = RoleSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
@@ -114,7 +114,7 @@ export async function updateRole(id: string, data: { name: string; allowedPaths:
 }
 
 export async function deleteRole(id: string) {
-  const session = await requirePathPermission("/perfis");
+  const session = await exigirPermissaoDoCaminho("/perfis");
   const current = await prisma.role.findUnique({ where: { id }, select: { name: true, allowedPaths: true } });
   if (!current) return { success: false, error: ERROS.perfilNaoEncontrado };
   assertCanGrant(session.allowedPaths, current.allowedPaths);
@@ -135,7 +135,7 @@ export async function deleteRole(id: string) {
 // ==========================================
 
 export async function getUsers() {
-  await requirePathPermission("/usuarios");
+  await exigirPermissaoDoCaminho("/usuarios");
   return prisma.user.findMany({
     orderBy: { name: "asc" },
     // Nunca selecionar o hash da senha
@@ -159,7 +159,7 @@ async function assertRoleAssignable(sessionPaths: string[], roleId: string) {
 }
 
 export async function createUser(data: { name: string; username: string; password?: string; roleId: string }) {
-  const session = await requirePathPermission("/usuarios");
+  const session = await exigirPermissaoDoCaminho("/usuarios");
   const parsed = UserSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const password = PASSWORD_RULE.safeParse(parsed.data.password ?? "");
@@ -196,7 +196,7 @@ export async function createUser(data: { name: string; username: string; passwor
 }
 
 export async function updateUser(id: string, data: { name: string; username: string; password?: string; roleId: string }) {
-  const session = await requirePathPermission("/usuarios");
+  const session = await exigirPermissaoDoCaminho("/usuarios");
   const parsed = UserSchema.safeParse(data);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
@@ -248,7 +248,7 @@ export async function updateUser(id: string, data: { name: string; username: str
 }
 
 export async function deleteUser(id: string) {
-  const session = await requirePathPermission("/usuarios");
+  const session = await exigirPermissaoDoCaminho("/usuarios");
   if (session.userId === id) {
     return { success: false, error: "Você não pode excluir o próprio usuário." };
   }

@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { expirarPlanosDeFornecedor } from "@/lib/subscriptions";
 import { enviarLembretesDoPlanoDoFornecedor } from "@/lib/vendor-plan-reminders";
-import { rejectUnlessCron } from "@/lib/security/cron-auth";
-import { notifyPlanExpired } from "@/lib/notifications/cron";
+import { recusarSeNaoForCron } from "@/lib/security/cron-auth";
+import { avisarPlanoVencido } from "@/lib/notifications/cron";
 import { recordCronRun } from "@/lib/platform/system-records";
 
 /**
@@ -13,7 +13,7 @@ import { recordCronRun } from "@/lib/platform/system-records";
  * A Vercel envia "Authorization: Bearer <CRON_SECRET>"; sem o segredo configurado, a rota não roda.
  */
 export async function GET(req: Request) {
-  const rejected = rejectUnlessCron(req);
+  const rejected = recusarSeNaoForCron(req);
   if (rejected) return rejected;
 
   const startedAt = new Date();
@@ -31,7 +31,7 @@ export async function GET(req: Request) {
   }
   // O aviso no sino nunca atrapalha a expiração, que já aconteceu (notifyPlanExpired não lança erro).
   for (const vendor of vendors) {
-    await notifyPlanExpired({ vendorId: vendor.id, planName: vendor.planName, expiredAt: vendor.expiredAt });
+    await avisarPlanoVencido({ vendorId: vendor.id, planName: vendor.planName, expiredAt: vendor.expiredAt });
   }
   // Um erro nos avisos não pode desfazer a expiração, que já aconteceu.
   let reminderFailure: string | null = null;

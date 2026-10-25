@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { registrarAuditoria } from "@/lib/audit";
 import { emailEstaConfigurado, enviarEmail } from "@/lib/email";
-import { checkRateLimit } from "@/lib/security/rate-limiter";
-import { platformAdminFailure, requirePlatformAdmin } from "@/lib/security/platform-admin";
+import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
+import { falhaDeAdminDaPlataforma, exigirAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { getPlatformSetting, savePlatformSetting } from "@/lib/platform/settings";
 import { alertEmail } from "@/lib/platform/health-alerts";
 import { conectarInstancia, whatsappEstaConfigurado } from "@/lib/evolution";
@@ -17,7 +17,7 @@ type Ok = { success: true; message: string };
 /** Quais alertas por e-mail ficam ligados e para onde vão (verificados uma vez por dia). */
 export async function saveHealthAlerts(input: unknown): Promise<Ok | Fail> {
   try {
-    await requirePlatformAdmin();
+    await exigirAdminDaPlataforma();
     const parsed = z
       .object({
         mercadoPagoFailures: z.boolean(),
@@ -35,15 +35,15 @@ export async function saveHealthAlerts(input: unknown): Promise<Ok | Fail> {
     revalidatePath("/admin/saude");
     return { success: true, message: "Alertas salvos." };
   } catch (error) {
-    return platformAdminFailure(error, "saveHealthAlerts");
+    return falhaDeAdminDaPlataforma(error, "saveHealthAlerts");
   }
 }
 
 /** Manda um e-mail de teste para o endereço salvo dos alertas. */
 export async function testHealthAlerts(): Promise<Ok | Fail> {
   try {
-    const admin = await requirePlatformAdmin();
-    const limit = await checkRateLimit({ key: `HEALTH_ALERT_TEST:${admin.userId}`, limit: 5, windowMs: 60 * 60_000 });
+    const admin = await exigirAdminDaPlataforma();
+    const limit = await conferirLimiteDeUso({ key: `HEALTH_ALERT_TEST:${admin.userId}`, limit: 5, windowMs: 60 * 60_000 });
     if (!limit.success) return { success: false, error: "Muitos testes seguidos. Aguarde um pouco." };
     const settings = await getPlatformSetting("healthAlerts");
     if (!settings.sendTo) return { success: false, error: "Salve primeiro o e-mail que recebe os alertas." };
@@ -53,7 +53,7 @@ export async function testHealthAlerts(): Promise<Ok | Fail> {
     await registrarAuditoria({ action: "health.alert_test", targetType: "health", details: { sent: result.sent } });
     return result.sent ? { success: true, message: "Teste enviado. Confira a caixa de entrada." } : { success: false, error: "Não foi possível enviar o teste. Confira o e-mail e a configuração." };
   } catch (error) {
-    return platformAdminFailure(error, "testHealthAlerts");
+    return falhaDeAdminDaPlataforma(error, "testHealthAlerts");
   }
 }
 
@@ -63,9 +63,9 @@ export async function testHealthAlerts(): Promise<Ok | Fail> {
  */
 export async function reconnectWhatsapp(): Promise<{ success: true; qrCode: string } | Fail> {
   try {
-    const admin = await requirePlatformAdmin();
+    const admin = await exigirAdminDaPlataforma();
     if (!whatsappEstaConfigurado()) return { success: false, error: "O WhatsApp não está configurado neste ambiente." };
-    const limit = await checkRateLimit({ key: `ADMIN_WA_RECONNECT:${admin.userId}`, limit: 6, windowMs: 10 * 60_000 });
+    const limit = await conferirLimiteDeUso({ key: `ADMIN_WA_RECONNECT:${admin.userId}`, limit: 6, windowMs: 10 * 60_000 });
     if (!limit.success) return { success: false, error: ERROS.muitasTentativas };
     const result = await conectarInstancia();
     await registrarAuditoria({ action: "whatsapp.reconnect", targetType: "whatsapp", details: { qrGenerated: Boolean(result.success && result.qrCode) } });
@@ -73,6 +73,6 @@ export async function reconnectWhatsapp(): Promise<{ success: true; qrCode: stri
     console.error("[reconnectWhatsapp]", result.error);
     return { success: false, error: "Não deu para gerar o QR Code agora. Tente de novo em instantes." };
   } catch (error) {
-    return platformAdminFailure(error, "reconnectWhatsapp");
+    return falhaDeAdminDaPlataforma(error, "reconnectWhatsapp");
   }
 }

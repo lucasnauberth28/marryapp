@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
-import { platformAdminApiGuard } from "@/lib/security/platform-admin";
+import { protecaoDaApiDeAdminDaPlataforma } from "@/lib/security/platform-admin";
 import { csvLine } from "@/lib/platform/csv";
 import { accountantMonth, monthRange, paymentMethodOf } from "@/lib/platform/payments";
 
@@ -13,7 +13,7 @@ const MAX_ROWS = 10_000;
  * Nunca traz CPF, CNPJ, e-mail nem a taxa do Mercado Pago (a assinatura não guarda taxa).
  */
 export async function GET(request: NextRequest) {
-  const { ctx, response } = await platformAdminApiGuard();
+  const { ctx, response } = await protecaoDaApiDeAdminDaPlataforma();
   if (response) return response;
 
   const month = accountantMonth(request.nextUrl.searchParams.get("mes") ?? undefined, new Date());

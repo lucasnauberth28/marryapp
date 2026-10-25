@@ -1,6 +1,6 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import { classifyAccount } from "@/lib/account/wedding-provisioning";
+import { classificarConta } from "@/lib/account/wedding-provisioning";
 import { esconderDocumento } from "@/lib/document-br";
 
 /**
@@ -10,7 +10,7 @@ import { esconderDocumento } from "@/lib/document-br";
  * Nunca inclui hashes de senha ou de tokens; o CPF/CNPJ do titular de domínio sai sempre mascarado.
  * Devolve null se a conta não existe.
  */
-export async function buildAccountExport(userId: string): Promise<{ filename: string; json: string } | null> {
+export async function montarExportacaoDaConta(userId: string): Promise<{ filename: string; json: string } | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -44,7 +44,7 @@ export async function buildAccountExport(userId: string): Promise<{ filename: st
   });
   if (!user) return null;
 
-  const kind = classifyAccount(user);
+  const kind = classificarConta(user);
 
   const wedding =
     kind !== "vendor" && user.weddingId

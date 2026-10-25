@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWeddingRead } from "@/lib/security/wedding-context";
+import { exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 
 import { obterEstadoDaConexao } from "@/lib/evolution";
 
@@ -10,6 +10,6 @@ import { obterEstadoDaConexao } from "@/lib/evolution";
  * porque a conexão é compartilhada por todos os casamentos.
  */
 export async function getWhatsAppStatus() {
-  await requireWeddingRead("/configuracoes");
+  await exigirCasamentoParaLeitura("/configuracoes");
   return obterEstadoDaConexao();
 }

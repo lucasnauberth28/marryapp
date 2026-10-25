@@ -17,7 +17,7 @@ import { formatarReais, formatarReaisInteiros } from "@/lib/formatacao/dinheiro"
 import { buildHref, oneOf, pageWindow, param, parsePage, type SearchParams } from "@/lib/platform/list-params";
 import { isStaticPix, paymentMethodOf, paymentStatusOf } from "@/lib/platform/payments";
 import { activePaidVendorWhere, getMonthRevenue, getPixToCheck, pixToCheckWhere } from "@/lib/platform/queries/receita";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { cn } from "@/lib/utils";
 import { PendingLink, PendingRegion } from "@/components/plataforma/pending";
 import { PlanosTabs } from "../_components/planos-tabs";
@@ -39,7 +39,7 @@ const PAGE_SIZE = 25;
 const BASE = "/admin/planos/assinaturas";
 
 export default async function AssinaturasPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requirePlatformAdminPage();
+  await exigirAdminDaPlataformaNaPagina();
   const query = await searchParams;
   const filter = oneOf(query, "status", FILTERS.map((f) => f.value)) ?? "todos";
   const idParam = param(query, "id", 40);

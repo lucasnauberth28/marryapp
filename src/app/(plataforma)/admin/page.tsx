@@ -10,7 +10,7 @@ import { EmptyState } from "@/components/plataforma/empty-state";
 import { RevenueChart } from "@/components/plataforma/revenue-chart";
 import { PlanChip, StatusChip } from "@/components/plataforma/status-chip";
 import { btn } from "@/components/landing/styles";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { type SearchParams, oneOf } from "@/lib/platform/list-params";
 import { formatDayMonth, formatInt, formatLongDate, formatMonthName, formatPercent, relativeDay, timeAgo, formatTime } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
@@ -37,7 +37,7 @@ const ICONS = { clock: Clock, alert: AlertTriangle, shield: ShieldCheck, globe: 
  * independente dos outros, com esqueleto do tamanho real.
  */
 export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  const admin = await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  const admin = await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
   const now = new Date();
   const hour = Number(new Intl.DateTimeFormat("en-GB", { hour: "2-digit", hour12: false, timeZone: "America/Sao_Paulo" }).format(now)) % 24;

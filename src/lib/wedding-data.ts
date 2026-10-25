@@ -1,6 +1,6 @@
 import "server-only";
 import prisma from "@/lib/prisma";
-import type { WeddingSummary } from "@/lib/security/wedding-context";
+import type { ResumoDoCasamento } from "@/lib/security/wedding-context";
 
 /**
  * Leitura/criação dos dados de um casamento já resolvido no servidor (pela sessão ou pelo slug).
@@ -19,7 +19,7 @@ async function criarOuAtualizarUmaVez<T>(create: () => Promise<T>, read: () => P
 }
 
 /** Site do casal (uma linha por casamento). Criado com os dados do onboarding no primeiro acesso. */
-export async function garantirPersonalizacaoDoSite(wedding: WeddingSummary) {
+export async function garantirPersonalizacaoDoSite(wedding: ResumoDoCasamento) {
   const where = { weddingId: wedding.id };
   const existing = await prisma.siteCustomization.findUnique({ where });
   if (existing) return existing;
@@ -134,7 +134,7 @@ function getApprovedGuestBookEntries(weddingId: string) {
 }
 
 /** Tudo o que o site público de um casamento mostra. */
-export async function obterDadosDoSitePublico(wedding: WeddingSummary) {
+export async function obterDadosDoSitePublico(wedding: ResumoDoCasamento) {
   const safe = <T,>(p: Promise<T>, fallback: T) =>
     p.catch((error) => {
       console.error("[getPublicSiteData]", error);

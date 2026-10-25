@@ -1,6 +1,6 @@
 import { getVendors } from "@/actions/vendor-actions";
 import { VendorsClient } from "./vendors-client";
-import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,7 @@ export const metadata = {
 };
 
 export default async function AdminVendorsPage() {
-  await requireWeddingPage("/meus-fornecedores");
+  await exigirCasamentoNaPagina("/meus-fornecedores");
   const vendors = await getVendors();
 
   return (

@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { PageHeader } from "@/components/admin/page-header";
 import { WhatsAppConfigClient } from "./whatsapp-config-client";
 
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function WhatsAppConfigPage() {
-  await requireWeddingPage("/configuracoes");
+  await exigirCasamentoNaPagina("/configuracoes");
 
   return (
     <div className="flex-1 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">

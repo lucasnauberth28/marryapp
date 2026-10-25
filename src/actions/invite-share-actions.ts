@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { requireWedding } from "@/lib/security/wedding-context";
+import { exigirCasamento } from "@/lib/security/wedding-context";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 const InputSchema = z.object({ guestId: z.string().uuid("Convidado não encontrado.") });
@@ -18,7 +18,7 @@ export async function markInviteShared(input: unknown): Promise<MarkInviteShared
   const parsed = InputSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: ERROS.convidadoNaoEncontrado };
 
-  const { weddingId } = await requireWedding("/convidados");
+  const { weddingId } = await exigirCasamento("/convidados");
   try {
     // updateMany com o casamento no filtro: um id de outro casamento não casa com nada
     const result = await prisma.guest.updateMany({

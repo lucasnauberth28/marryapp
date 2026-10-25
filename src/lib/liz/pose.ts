@@ -2,16 +2,16 @@
 // Puro (sem React nem Next): o componente LizIllustration e os testes usam as mesmas regras.
 
 /** Poses publicadas em public/brand/liz. "rosto" é o recorte de cabeça e ombros do busto, para o círculo. */
-export type LizPose = "rosto" | "boas-vindas" | "cumprimentando" | "sugerindo" | "atencao" | "tranquila";
+export type PoseDaLiz = "rosto" | "boas-vindas" | "cumprimentando" | "sugerindo" | "atencao" | "tranquila";
 
-interface LizAsset {
+interface ImagemDaLiz {
   /** Altura sobre largura do arquivo exportado. */
   ratio: number;
   /** Larguras exportadas (arquivo `{pose}-{largura}.webp`), em ordem crescente. */
   widths: readonly number[];
 }
 
-export const LIZ_ASSETS: Record<LizPose, LizAsset> = {
+export const IMAGENS_DA_LIZ: Record<PoseDaLiz, ImagemDaLiz> = {
   rosto: { ratio: 1, widths: [112, 168] },
   "boas-vindas": { ratio: 1.6518, widths: [128, 256] },
   cumprimentando: { ratio: 1.6667, widths: [128, 256] },
@@ -21,20 +21,20 @@ export const LIZ_ASSETS: Record<LizPose, LizAsset> = {
 };
 
 /** Arquivo para a largura pedida pelo next/image: o menor que cobre a largura, ou o maior que existe. */
-export function lizAssetSrc(pose: LizPose, width: number): string {
-  const { widths } = LIZ_ASSETS[pose];
+export function enderecoDaImagemDaLiz(pose: PoseDaLiz, width: number): string {
+  const { widths } = IMAGENS_DA_LIZ[pose];
   const chosen = widths.find((w) => w >= width) ?? widths[widths.length - 1];
   return `/brand/liz/${pose}-${chosen}.webp`;
 }
 
 /** Poses do cartão de sugestão. Não há "comemorando": as regras não têm um estado de conquista. */
-export type LizTipPose = Extract<LizPose, "sugerindo" | "atencao" | "tranquila">;
+export type PoseDaDicaDaLiz = Extract<PoseDaLiz, "sugerindo" | "atencao" | "tranquila">;
 
 /**
  * Pose conforme o estado real da sugestão: sem sugestão, tranquila; motivo de prazo
  * (vencido ou perto), atenção; qualquer outro próximo passo, sugerindo.
  */
-export function lizTipPose(tip: { urgent: boolean } | null): LizTipPose {
+export function poseDaDicaDaLiz(tip: { urgent: boolean } | null): PoseDaDicaDaLiz {
   if (!tip) return "tranquila";
   return tip.urgent ? "atencao" : "sugerindo";
 }

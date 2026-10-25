@@ -33,7 +33,7 @@ import {
   listRefunds,
 } from "@/lib/platform/queries/receita";
 import { getPlatformSetting } from "@/lib/platform/settings";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { ContadorSection } from "./_components/contador-section";
 import { PendingRegion } from "@/components/plataforma/pending";
 import { PlanosTabs } from "./_components/planos-tabs";
@@ -46,7 +46,7 @@ export const metadata = { title: "Planos e receita" };
 const ABAS = ["resumo", "reembolsos", "contador"] as const;
 
 export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
   const aba = oneOf(query, "aba", ABAS) ?? "resumo";
   const now = new Date();

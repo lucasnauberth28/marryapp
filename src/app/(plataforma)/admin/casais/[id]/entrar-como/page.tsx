@@ -2,13 +2,13 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { PageHeader } from "@/components/plataforma/page-header";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { EntrarComoForm } from "./entrar-como-form";
 
 export const metadata = { title: "Entrar como este casal" };
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-  await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const { id } = await params;
   // O id vem da URL: só serve para BUSCAR o casamento (nunca para decidir permissão). Formato inválido = 404.
   if (!z.string().uuid().safeParse(id).success) notFound();

@@ -6,7 +6,7 @@ import { PendingRegion } from "@/components/plataforma/pending";
 import { Pagination } from "@/components/plataforma/pagination";
 import { ResponsiveTable } from "@/components/plataforma/responsive-table";
 import { EmptyState } from "@/components/plataforma/empty-state";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { DEFAULT_PAGE_SIZE, type SearchParams, oneOf, pageWindow, param, parsePage } from "@/lib/platform/list-params";
 import { formatDateTime } from "@/lib/platform/format";
 import { ACTIVITY_GROUPS, ACTIVITY_GROUP_VALUES, actionLabel, parseTarget, summarizeDetails, targetHref, targetLabel } from "@/lib/platform/activity";
@@ -16,7 +16,7 @@ export const metadata = { title: "Registro de atividades" };
 export const dynamic = "force-dynamic";
 
 export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
-  await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const query = await searchParams;
   const group = oneOf(query, "tipo", ACTIVITY_GROUP_VALUES);
   const period = oneOf(query, "periodo", PERIODS);

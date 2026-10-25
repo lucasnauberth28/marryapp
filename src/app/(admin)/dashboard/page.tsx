@@ -5,14 +5,14 @@ import Link from "next/link";
 import { ChevronRight, ExternalLink, Gift, LayoutTemplate, QrCode, Upload, UserPlus } from "lucide-react";
 import { PaymentStatus, RsvpStatus, TaskStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 import { rotuloDosDiasRestantes } from "@/lib/wedding-format";
 import { urlDoSiteDoCasamento } from "@/lib/wedding-links";
 import { temAcessoAoCaminho } from "@/lib/permissions";
 import { filtroSemSoPresente } from "@/lib/guest-origin";
 import { obterPlanoDoCasamento, casamentoTemModulo } from "@/lib/wedding-plan";
-import { decideLizTip } from "@/lib/liz/tip";
+import { decidirDicaDaLiz } from "@/lib/liz/tip";
 import { textoDoConviteGeral, textoDoConvitePessoal, textoDoLembrete, linkDoWhatsapp } from "@/lib/invite-share";
 import {
   montarFila,
@@ -52,7 +52,7 @@ const seatsText = (n: number) => `${n} ${n === 1 ? "lugar" : "lugares"}`;
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export default async function DashboardPage() {
-  const ctx = await requireWeddingPage("/dashboard");
+  const ctx = await exigirCasamentoNaPagina("/dashboard");
   const { weddingId, session, wedding: weddingRow } = ctx;
   const [identity, plan] = await Promise.all([obterIdentidadeDoCasamentoPrincipal(), obterPlanoDoCasamento(weddingId)]);
   const now = new Date();
@@ -120,7 +120,7 @@ export default async function DashboardPage() {
   const firstAccess = counts.invites.total === 0 && giftCount === 0 && taskCount === 0 && expenseRows.length === 0 && statement.approvedCount === 0 && statement.toCheckCount === 0;
 
   // Sugestão da Liz, por regras e com dado real: situação + motivo + ação. A Liz só orienta; quem age é o casal.
-  const tip = decideLizTip({
+  const tip = decidirDicaDaLiz({
     pendingGuests: counts.invites.pending,
     pendingPeople: counts.people.pending,
     deadlineKey,

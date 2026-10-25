@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
+import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 import { garantirConfiguracoesDoSistema } from "@/lib/wedding-data";
 
 import prisma from "@/lib/prisma";
@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 
 /** Regras do casamento da sessão. As páginas públicas leem o prazo pelo endereço (lib/wedding-data). */
 export async function getSettings() {
-  const { weddingId } = await requireWeddingRead();
+  const { weddingId } = await exigirCasamentoParaLeitura();
   return garantirConfiguracoesDoSistema(weddingId);
 }
 
@@ -17,7 +17,7 @@ export async function getSettings() {
  * ficam em updateSiteCustomization (editor do site).
  */
 export async function updateSettings(data: { rsvpDeadline: Date | null }) {
-  const { weddingId } = await requireWedding("/configuracoes");
+  const { weddingId } = await exigirCasamento("/configuracoes");
 
   const rsvpDeadline = data?.rsvpDeadline ? new Date(data.rsvpDeadline) : null;
   if (rsvpDeadline && Number.isNaN(rsvpDeadline.getTime())) {

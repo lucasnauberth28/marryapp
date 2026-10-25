@@ -2,7 +2,7 @@ import "server-only";
 import prisma from "@/lib/prisma";
 import { brandedEmail, enviarEmail } from "@/lib/email";
 import { urlDoApp } from "@/lib/app-url";
-import { deferNotify } from "@/lib/notifications/service";
+import { avisarDepois } from "@/lib/notifications/service";
 
 export type MudancaNoRepasse = "created" | "updated" | "removed";
 
@@ -23,7 +23,7 @@ const FRASES_DO_REPASSE: Record<MudancaNoRepasse, string> = {
  * O texto NUNCA leva o dado: só quem fez a mudança e o que aconteceu. Roda depois da resposta e nunca lança erro.
  */
 export function avisarMudancaNoRepasse(params: { weddingId: string; actorName: string; change: MudancaNoRepasse; at: Date }) {
-  deferNotify(async () => {
+  avisarDepois(async () => {
     const members = await prisma.user.findMany({ where: { weddingId: params.weddingId }, select: { id: true, username: true } });
     if (members.length === 0) return;
 

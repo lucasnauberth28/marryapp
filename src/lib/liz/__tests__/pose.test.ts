@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
-import { LIZ_ASSETS, lizAssetSrc, lizTipPose, type LizPose } from "../pose.ts";
-import { decideLizTip, type LizTipInput } from "../tip.ts";
+import { IMAGENS_DA_LIZ, enderecoDaImagemDaLiz, poseDaDicaDaLiz, type PoseDaLiz } from "../pose.ts";
+import { decidirDicaDaLiz, type EntradaDaDicaDaLiz } from "../tip.ts";
 import { dicaDeConfirmacaoUrgente } from "../../liz-tips.ts";
 
-const base: LizTipInput = {
+const base: EntradaDaDicaDaLiz = {
   pendingGuests: 0,
   deadlineKey: null,
   todayKey: "2027-03-06",
@@ -16,7 +16,7 @@ const base: LizTipInput = {
   overdueTasks: 0,
   allowedPaths: ["*"],
 };
-const poseOf = (over: Partial<LizTipInput>) => lizTipPose(decideLizTip({ ...base, ...over }));
+const poseOf = (over: Partial<EntradaDaDicaDaLiz>) => poseDaDicaDaLiz(decidirDicaDaLiz({ ...base, ...over }));
 
 test("sem sugestão a Liz fica tranquila", () => {
   assert.equal(poseOf({}), "tranquila");
@@ -47,17 +47,17 @@ test("prazo do casal manda sobre a data do casamento, como no texto", () => {
 });
 
 test("arquivo pela largura pedida: o menor que cobre, senão o maior", () => {
-  assert.equal(lizAssetSrc("rosto", 64), "/brand/liz/rosto-112.webp");
-  assert.equal(lizAssetSrc("rosto", 128), "/brand/liz/rosto-168.webp");
-  assert.equal(lizAssetSrc("sugerindo", 96), "/brand/liz/sugerindo-128.webp");
-  assert.equal(lizAssetSrc("sugerindo", 640), "/brand/liz/sugerindo-256.webp");
+  assert.equal(enderecoDaImagemDaLiz("rosto", 64), "/brand/liz/rosto-112.webp");
+  assert.equal(enderecoDaImagemDaLiz("rosto", 128), "/brand/liz/rosto-168.webp");
+  assert.equal(enderecoDaImagemDaLiz("sugerindo", 96), "/brand/liz/sugerindo-128.webp");
+  assert.equal(enderecoDaImagemDaLiz("sugerindo", 640), "/brand/liz/sugerindo-256.webp");
 });
 
 test("todo arquivo listado existe em public/brand/liz", () => {
   const root = new URL("../../../../public", import.meta.url);
-  for (const pose of Object.keys(LIZ_ASSETS) as LizPose[]) {
-    for (const w of LIZ_ASSETS[pose].widths) {
-      const path = new URL(`.${lizAssetSrc(pose, w)}`, `${root.href}/`);
+  for (const pose of Object.keys(IMAGENS_DA_LIZ) as PoseDaLiz[]) {
+    for (const w of IMAGENS_DA_LIZ[pose].widths) {
+      const path = new URL(`.${enderecoDaImagemDaLiz(pose, w)}`, `${root.href}/`);
       assert.ok(existsSync(path), `falta ${path.pathname}`);
     }
   }

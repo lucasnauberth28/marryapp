@@ -6,7 +6,7 @@ import { Notice, NotActiveTag } from "@/components/plataforma/notices";
 import { EmptyState } from "@/components/plataforma/empty-state";
 import { btn } from "@/components/landing/styles";
 import { Input } from "@/components/ui/input";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { getPlatformSetting } from "@/lib/platform/settings";
 import { getMadrinhaSettingsMeta, listInstructionVersions, listKnowledgeArticles, listMadrinhaOverrides } from "@/lib/platform/queries/madrinha";
 import { InstructionsEditor } from "../_components/instructions-editor";
@@ -18,7 +18,7 @@ import { SettingBadge } from "../../_sistema/setting-badge";
 export const metadata = { title: "Comportamento e qualidade da Liz" };
 
 export default async function Page() {
-  await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const [versions, articles, capabilities, meta, overrides] = await Promise.all([
     listInstructionVersions(),
     listKnowledgeArticles(),

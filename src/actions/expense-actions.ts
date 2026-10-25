@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
+import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
@@ -33,7 +33,7 @@ const EXPENSE_STATUSES = new Set<string>(Object.values(ExpenseStatus));
 const EXPENSE_TYPES = new Set<string>(Object.values(ExpenseType));
 
 export async function getExpenses() {
-  const { weddingId } = await requireWeddingRead("/financas");
+  const { weddingId } = await exigirCasamentoParaLeitura("/financas");
   return prisma.expense.findMany({
     where: { weddingId },
     orderBy: { dueDate: "asc" },
@@ -42,7 +42,7 @@ export async function getExpenses() {
 }
 
 export async function createExpense(formData: FormData) {
-  const { weddingId } = await requireWedding("/financas");
+  const { weddingId } = await exigirCasamento("/financas");
   const raw = {
     description: formData.get("description"),
     amount: formData.get("amount"),
@@ -88,7 +88,7 @@ export async function createExpense(formData: FormData) {
 }
 
 export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
-  const { weddingId } = await requireWedding("/financas");
+  const { weddingId } = await exigirCasamento("/financas");
   try {
     if (typeof id !== "string" || !EXPENSE_STATUSES.has(status)) {
       return { success: false, error: "Não deu para salvar a despesa. Tente de novo." };
@@ -108,7 +108,7 @@ export async function updateExpenseStatus(id: string, status: ExpenseStatus) {
 }
 
 export async function deleteExpense(id: string) {
-  const { weddingId } = await requireWedding("/financas");
+  const { weddingId } = await exigirCasamento("/financas");
   try {
     if (typeof id !== "string") return { success: false, error: ERROS.despesaNaoEncontrada };
     const result = await prisma.expense.deleteMany({ where: { id, weddingId } });
@@ -133,7 +133,7 @@ export async function createBatchExpenses(items: Array<{
   imageUrl?: string | null;
   storeName?: string | null;
 }>) {
-  const { weddingId } = await requireWedding("/financas");
+  const { weddingId } = await exigirCasamento("/financas");
   if (!Array.isArray(items) || items.length === 0) {
     return { success: false, error: "Nenhuma parcela informada." };
   }

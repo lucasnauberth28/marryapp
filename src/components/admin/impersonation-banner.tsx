@@ -5,7 +5,7 @@ import { Eye, Pencil } from "lucide-react";
 import { endImpersonation } from "@/actions/admin-impersonation-actions";
 import { btn } from "@/components/landing/styles";
 import { LoadingButton } from "@/components/painel/loading-button";
-import { minutesLeft } from "@/lib/security/impersonation-rules";
+import { minutosRestantes } from "@/lib/security/impersonation-rules";
 import { cn } from "@/lib/utils";
 
 /**
@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
  */
 export function ImpersonationBanner({ coupleNames, canEdit, expiresAt }: { coupleNames: string; canEdit: boolean; expiresAt: string }) {
   const end = new Date(expiresAt);
-  const [left, setLeft] = useState(() => minutesLeft(end));
+  const [left, setLeft] = useState(() => minutosRestantes(end));
   const [pending, startTransition] = useTransition();
   const [failed, setFailed] = useState(false);
   const leaving = useRef(false);
@@ -41,7 +41,7 @@ export function ImpersonationBanner({ coupleNames, canEdit, expiresAt }: { coupl
   useEffect(() => {
     const tick = () => {
       const remaining = end.getTime() - Date.now();
-      setLeft(minutesLeft(end));
+      setLeft(minutosRestantes(end));
       if (remaining <= 0) leave();
     };
     tick();

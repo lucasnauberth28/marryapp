@@ -5,11 +5,11 @@ import { z } from "zod";
 
 import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { requireVendorSession } from "@/lib/security/vendor-guard";
-import { checkRateLimit, getClientIp } from "@/lib/security/rate-limiter";
+import { exigirSessaoDoFornecedor } from "@/lib/security/vendor-guard";
+import { conferirLimiteDeUso, obterIpDoCliente } from "@/lib/security/rate-limiter";
 import { PUBLIC_TOKEN_RE } from "@/app/(fornecedor)/_lib/vendor-panel";
-import { deferNotify } from "@/lib/notifications/service";
-import { notifyReviewNew } from "@/lib/notifications/events";
+import { avisarDepois } from "@/lib/notifications/service";
+import { avisarNovaAvaliacao } from "@/lib/notifications/events";
 
 // Painel do fornecedor > Avaliações: o fornecedor responde publicamente às avaliações que recebeu.
 const REVIEW_REPLY_LIMIT = { limit: 30, windowMs: 1000 * 60 }; // 30 respostas / minuto por conta
@@ -27,13 +27,13 @@ export type ReplyToReviewResult = { success: boolean; error?: string };
 
 /** Publica (ou edita) a resposta do fornecedor da sessão a uma avaliação dele. */
 export async function replyToReview(reviewId: string, reply: string): Promise<ReplyToReviewResult> {
-  const { session, vendor } = await requireVendorSession();
+  const { session, vendor } = await exigirSessaoDoFornecedor();
 
   const parsed = ReplySchema.safeParse({ reviewId, reply });
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
 
   try {
-    const rateLimit = await checkRateLimit({ key: `VENDOR_REVIEW_REPLY:${session.userId}`, ...REVIEW_REPLY_LIMIT });
+    const rateLimit = await conferirLimiteDeUso({ key: `VENDOR_REVIEW_REPLY:${session.userId}`, ...REVIEW_REPLY_LIMIT });
     if (!rateLimit.success) {
       return { success: false, error: "Muitas respostas em pouco tempo. Aguarde um instante e tente novamente." };
     }
@@ -83,8 +83,8 @@ export async function submitLeadReview(input: SubmitLeadReviewInput): Promise<Su
   const data = parsed.data;
 
   try {
-    const ip = await getClientIp();
-    const rateLimit = await checkRateLimit({ key: `LEAD_REVIEW:${ip}`, ...LEAD_REVIEW_LIMIT });
+    const ip = await obterIpDoCliente();
+    const rateLimit = await conferirLimiteDeUso({ key: `LEAD_REVIEW:${ip}`, ...LEAD_REVIEW_LIMIT });
     if (!rateLimit.success) {
       return { success: false, error: "Muitas tentativas em pouco tempo. Tente novamente daqui a alguns minutos." };
     }
@@ -129,7 +129,7 @@ export async function submitLeadReview(input: SubmitLeadReviewInput): Promise<Su
       });
     });
 
-    deferNotify(() => notifyReviewNew(lead.id));
+    avisarDepois(() => avisarNovaAvaliacao(lead.id));
 
     revalidatePath(`/fornecedores/${lead.vendorId}`);
     revalidatePath("/fornecedores");

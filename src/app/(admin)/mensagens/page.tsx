@@ -1,6 +1,6 @@
 // src/app/(admin)/mensagens/page.tsx
 import prisma from "@/lib/prisma";
-import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
 import { UpgradeCard } from "@/components/plan/upgrade-card";
 import { MensagensClient } from "./mensagens-client";
@@ -10,7 +10,7 @@ import { obterIdentidadeDoCasamentoPrincipal } from "@/lib/wedding";
 export const metadata = { title: "Mensagens" };
 
 export default async function MensagensPage() {
-  const { session, weddingId, wedding } = await requireWeddingPage("/mensagens");
+  const { session, weddingId, wedding } = await exigirCasamentoNaPagina("/mensagens");
   if (!(await casamentoTemModulo({ weddingId, session }, "whatsapp"))) return <UpgradeCard moduleId="whatsapp" />;
 
   // Casal novo começa com os modelos padrão (convite e lembrete); quem já tem modelos não muda

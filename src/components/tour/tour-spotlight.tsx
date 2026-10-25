@@ -5,8 +5,8 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, MousePointerClick } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LizIllustration } from "@/components/liz/liz-illustration";
-import { placeBalloon, type Box, type Placement } from "@/lib/tour/positioning";
-import { whereText, type StepPlace, type TourStep } from "@/lib/tour/steps";
+import { posicionarBalao, type Caixa, type Posicionamento } from "@/lib/tour/positioning";
+import { textoDoLugar, type LugarDoPasso, type PassoDoTour } from "@/lib/tour/steps";
 
 export interface TourDone {
   outcome: "completed" | "skipped";
@@ -40,18 +40,18 @@ function findAnchor(anchor: string): HTMLElement | null {
   return null;
 }
 
-function boxOf(el: Element): Box {
+function boxOf(el: Element): Caixa {
   const r = el.getBoundingClientRect();
   return { top: r.top - PAD, left: r.left - PAD, width: r.width + PAD * 2, height: r.height + PAD * 2 };
 }
 
-const sameBox = (a: Box, b: Box) => Math.abs(a.top - b.top) < 0.5 && Math.abs(a.left - b.left) < 0.5 && Math.abs(a.width - b.width) < 0.5 && Math.abs(a.height - b.height) < 0.5;
+const sameBox = (a: Caixa, b: Caixa) => Math.abs(a.top - b.top) < 0.5 && Math.abs(a.left - b.left) < 0.5 && Math.abs(a.width - b.width) < 0.5 && Math.abs(a.height - b.height) < 0.5;
 
 interface Resolved {
   key: string;
   /** Retângulo do item destacado; null quando o passo só explica (sem destaque). */
-  box: Box | null;
-  place: Placement;
+  box: Caixa | null;
+  place: Posicionamento;
 }
 
 /**
@@ -59,7 +59,7 @@ interface Resolved {
  * Não bloqueia o app: se o item não existe, o passo é pulado; "Esc" e "Pular" saem a qualquer momento.
  * Foco: vai para o balão a cada passo, Tab percorre só os botões dele, e ao sair o foco volta ao ponto de partida.
  */
-export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; places: Record<string, StepPlace>; onDone: (done: TourDone) => void }) {
+export function TourSpotlight({ steps, places, onDone }: { steps: PassoDoTour[]; places: Record<string, LugarDoPasso>; onDone: (done: TourDone) => void }) {
   const mobile = useSyncExternalStore(subscribeMobile, isMobileNow, () => false);
   const device = mobile ? "mobile" : "desktop";
 
@@ -69,7 +69,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
   const [resolved, setResolved] = useState<Resolved | null>(null);
 
   const list = steps.filter((s) => !hidden.has(s.id));
-  const step: TourStep | undefined = list[index];
+  const step: PassoDoTour | undefined = list[index];
   const isLast = index >= list.length - 1;
   const key = step ? `${step.id}:${device}` : "";
   const ready = resolved?.key === key;
@@ -100,7 +100,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
       const height = dialog?.offsetHeight ?? 320;
       const vw = { width: window.innerWidth, height: window.innerHeight };
       const prefer = mobile && box ? (box.top + box.height / 2 > vw.height * 0.55 ? "top" : "bottom") : "right";
-      setResolved({ key: forKey, box, place: placeBalloon({ target: box, viewport: vw, balloon: { width, height }, prefer }) });
+      setResolved({ key: forKey, box, place: posicionarBalao({ target: box, viewport: vw, balloon: { width, height }, prefer }) });
     },
     [mobile],
   );
@@ -110,7 +110,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
     if (!step) return;
     let stopped = false;
     let frame = 0;
-    let last: Box | null = null;
+    let last: Caixa | null = null;
     let stable = 0;
     let scrolled = false;
     const started = performance.now();
@@ -233,7 +233,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
 
   if (!step) return null;
   const placeInfo = step.href ? (places[step.href] ?? null) : null;
-  const where = whereText(step, placeInfo, device);
+  const where = textoDoLugar(step, placeInfo, device);
   // O destaque fica no item anterior até o novo chegar (e então desliza); o balão só aparece com o item pronto
   const shown = ready ? resolved : null;
   const hole = resolved?.box ? { ...resolved, box: resolved.box } : null;
@@ -332,7 +332,7 @@ export function TourSpotlight({ steps, places, onDone }: { steps: TourStep[]; pl
 }
 
 /** Seta do balão apontando para o item destacado. */
-function Arrow({ side, offset }: { side: Exclude<Placement["side"], "center">; offset: number }) {
+function Arrow({ side, offset }: { side: Exclude<Posicionamento["side"], "center">; offset: number }) {
   const common = "absolute size-3 rotate-45 border-linha bg-papel";
   if (side === "right") return <span aria-hidden="true" className={`${common} -left-1.5 border-b border-l`} style={{ top: offset - 6 }} />;
   if (side === "left") return <span aria-hidden="true" className={`${common} -right-1.5 border-r border-t`} style={{ top: offset - 6 }} />;

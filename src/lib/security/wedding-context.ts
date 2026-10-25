@@ -5,15 +5,15 @@ import { after } from "next/server";
 import prisma from "@/lib/prisma";
 import {
   AuthorizationError,
-  getSession,
-  redirectToLogin,
-  requireAuthSession,
-  requirePathPermission,
-  SUPER_ADMIN_USER_ID,
-  type SecureAuthContext,
+  obterSessao,
+  redirecionarParaOLogin,
+  exigirSessaoAutenticada,
+  exigirPermissaoDoCaminho,
+  ID_DO_SUPER_ADMIN,
+  type ContextoDeAutenticacaoSegura,
 } from "@/lib/security/auth-guard";
-import { resolveImpersonation, type ImpersonationContext } from "@/lib/security/impersonation";
-import { weddingWriteRefusal } from "@/lib/security/impersonation-rules";
+import { resolverPersonificacao, type ContextoDePersonificacao } from "@/lib/security/impersonation";
+import { recusaDeEscritaNoCasamento } from "@/lib/security/impersonation-rules";
 import { registrarAuditoria } from "@/lib/audit";
 import { maintenanceWriteRefusal } from "@/lib/platform/maintenance";
 
@@ -25,7 +25,7 @@ import { maintenanceWriteRefusal } from "@/lib/platform/maintenance";
  * alterar = `updateMany/deleteMany({ where: { id, weddingId } })` e conferir `count`.
  */
 
-const WEDDING_SELECT = {
+const SELECAO_DO_CASAMENTO = {
   id: true,
   slug: true,
   coupleNames: true,
@@ -37,7 +37,7 @@ const WEDDING_SELECT = {
   suspendedAt: true,
 } as const;
 
-export type WeddingSummary = {
+export type ResumoDoCasamento = {
   id: string;
   slug: string;
   coupleNames: string;
@@ -51,27 +51,27 @@ export type WeddingSummary = {
   suspendedAt?: Date | null;
 };
 
-export interface WeddingContext {
-  session: SecureAuthContext;
+export interface ContextoDoCasamento {
+  session: ContextoDeAutenticacaoSegura;
   weddingId: string;
-  wedding: WeddingSummary;
+  wedding: ResumoDoCasamento;
   /** Conta de administração sem casamento próprio: está vendo o casamento principal. */
   viaAdmin: boolean;
   /** "Entrar como este casal": sessão auditada da administração (ver security/impersonation.ts). */
-  impersonation?: ImpersonationContext | null;
+  impersonation?: ContextoDePersonificacao | null;
 }
 
 /** A visita ao painel só é gravada (Wedding.lastActiveAt) se a última tem mais que isto: 1 escrita a cada 30 min. */
-const ACTIVITY_TOUCH_MS = 30 * 60 * 1000;
+const INTERVALO_PARA_REGISTRAR_ATIVIDADE_EM_MS = 30 * 60 * 1000;
 
 /** Marca a "última atividade" do casamento depois da resposta, no máximo a cada 30 min. Nunca lança erro. */
-function touchWeddingActivity(weddingId: string, last: Date | null) {
+function registrarAtividadeDoCasamento(weddingId: string, last: Date | null) {
   const now = Date.now();
-  if (last && now - last.getTime() < ACTIVITY_TOUCH_MS) return;
+  if (last && now - last.getTime() < INTERVALO_PARA_REGISTRAR_ATIVIDADE_EM_MS) return;
   const run = async () => {
     try {
       await prisma.wedding.updateMany({
-        where: { id: weddingId, OR: [{ lastActiveAt: null }, { lastActiveAt: { lt: new Date(now - ACTIVITY_TOUCH_MS) } }] },
+        where: { id: weddingId, OR: [{ lastActiveAt: null }, { lastActiveAt: { lt: new Date(now - INTERVALO_PARA_REGISTRAR_ATIVIDADE_EM_MS) } }] },
         data: { lastActiveAt: new Date(now) },
       });
     } catch {
@@ -86,8 +86,8 @@ function touchWeddingActivity(weddingId: string, last: Date | null) {
 }
 
 /** Casamento mais antigo: usado pela administração da plataforma e pelos links antigos sem slug. */
-export const getPrincipalWedding = cache(async (): Promise<WeddingSummary | null> => {
-  return prisma.wedding.findFirst({ orderBy: { createdAt: "asc" }, select: WEDDING_SELECT });
+export const obterCasamentoPrincipal = cache(async (): Promise<ResumoDoCasamento | null> => {
+  return prisma.wedding.findFirst({ orderBy: { createdAt: "asc" }, select: SELECAO_DO_CASAMENTO });
 });
 
 /**
@@ -95,36 +95,36 @@ export const getPrincipalWedding = cache(async (): Promise<WeddingSummary | null
  * (cadastro recém-criado, antes do onboarding) ou não há sessão.
  * Perfis de administração da plataforma ("*") sem casamento próprio veem o casamento principal.
  */
-export const getWeddingContext = cache(async (): Promise<WeddingContext | null> => {
-  const session = await getSession();
+export const obterContextoDoCasamento = cache(async (): Promise<ContextoDoCasamento | null> => {
+  const session = await obterSessao();
   if (!session) return null;
 
   // "Entrar como este casal": com sessão válida (cookie assinado + linha no banco, 30 min) o painel do casal mostra
   // ESTE casamento e não grava atividade. Sem ela, a conta de administração sem casamento próprio ainda cai no
   // casamento principal (viaAdmin).
-  const impersonation = await resolveImpersonation(session);
+  const impersonation = await resolverPersonificacao(session);
   if (impersonation) {
-    const wedding = await prisma.wedding.findUnique({ where: { id: impersonation.weddingId }, select: WEDDING_SELECT });
+    const wedding = await prisma.wedding.findUnique({ where: { id: impersonation.weddingId }, select: SELECAO_DO_CASAMENTO });
     if (wedding) return { session, weddingId: wedding.id, wedding, viaAdmin: false, impersonation };
   }
 
-  if (session.userId === SUPER_ADMIN_USER_ID) {
-    const wedding = await getPrincipalWedding();
+  if (session.userId === ID_DO_SUPER_ADMIN) {
+    const wedding = await obterCasamentoPrincipal();
     return wedding ? { session, weddingId: wedding.id, wedding, viaAdmin: true } : null;
   }
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { wedding: { select: { ...WEDDING_SELECT, lastActiveAt: true } } },
+    select: { wedding: { select: { ...SELECAO_DO_CASAMENTO, lastActiveAt: true } } },
   });
   if (user?.wedding) {
     const { lastActiveAt, ...wedding } = user.wedding;
-    touchWeddingActivity(wedding.id, lastActiveAt);
+    registrarAtividadeDoCasamento(wedding.id, lastActiveAt);
     return { session, weddingId: wedding.id, wedding, viaAdmin: false };
   }
 
   if (session.allowedPaths.includes("*")) {
-    const wedding = await getPrincipalWedding();
+    const wedding = await obterCasamentoPrincipal();
     return wedding ? { session, weddingId: wedding.id, wedding, viaAdmin: true } : null;
   }
   return null;
@@ -135,10 +135,10 @@ export const getWeddingContext = cache(async (): Promise<WeddingContext | null> 
  * e um casamento. Lança AuthorizationError caso contrário. Vale também em "entrar como" somente leitura
  * e em casamento suspenso. Quem escreve usa requireWedding.
  */
-export async function requireWeddingRead(path?: string): Promise<WeddingContext> {
-  if (path) await requirePathPermission(path);
-  else await requireAuthSession();
-  const ctx = await getWeddingContext();
+export async function exigirCasamentoParaLeitura(path?: string): Promise<ContextoDoCasamento> {
+  if (path) await exigirPermissaoDoCaminho(path);
+  else await exigirSessaoAutenticada();
+  const ctx = await obterContextoDoCasamento();
   if (!ctx) throw new AuthorizationError("Esta conta ainda não tem um casamento. Conclua o cadastro do casamento.");
   return ctx;
 }
@@ -152,9 +152,9 @@ export async function requireWeddingRead(path?: string): Promise<WeddingContext>
  * Com "entrar como" editável, cada escrita fica no AuditLog (ator, casamento, sessão e área).
  * Por padrão recusa: uma action nova que esquecer de escolher entre as duas já nasce protegida.
  */
-export async function requireWedding(path?: string): Promise<WeddingContext> {
-  const ctx = await requireWeddingRead(path);
-  const refusal = weddingWriteRefusal({ impersonation: ctx.impersonation, suspendedAt: ctx.wedding.suspendedAt });
+export async function exigirCasamento(path?: string): Promise<ContextoDoCasamento> {
+  const ctx = await exigirCasamentoParaLeitura(path);
+  const refusal = recusaDeEscritaNoCasamento({ impersonation: ctx.impersonation, suspendedAt: ctx.wedding.suspendedAt });
   if (refusal) throw new AuthorizationError(refusal);
   // Modo de manutenção (administração > Configurações): painel só para leitura; a administração nunca é barrada
   const maintenance = await maintenanceWriteRefusal(ctx.session.allowedPaths);
@@ -173,23 +173,23 @@ export async function requireWedding(path?: string): Promise<WeddingContext> {
 /**
  * Para páginas do painel do casal: sem sessão vai ao login; sem casamento vai ao onboarding.
  */
-export async function requireWeddingPage(path?: string): Promise<WeddingContext> {
-  const session = await getSession();
-  if (!session) return redirectToLogin(path);
+export async function exigirCasamentoNaPagina(path?: string): Promise<ContextoDoCasamento> {
+  const session = await obterSessao();
+  if (!session) return redirecionarParaOLogin(path);
   if (path) {
     try {
-      await requirePathPermission(path);
+      await exigirPermissaoDoCaminho(path);
     } catch {
       redirect("/login");
     }
   }
-  const ctx = await getWeddingContext();
+  const ctx = await obterContextoDoCasamento();
   if (!ctx) redirect("/boas-vindas");
   return ctx;
 }
 
 /** Páginas públicas do casal (site, RSVP, presentes): resolve o casamento pelo endereço. */
-export const getWeddingBySlug = cache(async (slug: string): Promise<WeddingSummary | null> => {
+export const obterCasamentoPeloEndereco = cache(async (slug: string): Promise<ResumoDoCasamento | null> => {
   if (!/^[a-z0-9-]{1,100}$/.test(slug)) return null;
-  return prisma.wedding.findUnique({ where: { slug }, select: WEDDING_SELECT });
+  return prisma.wedding.findUnique({ where: { slug }, select: SELECAO_DO_CASAMENTO });
 });

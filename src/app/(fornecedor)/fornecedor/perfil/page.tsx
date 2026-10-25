@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Reveal } from "@/components/motion/reveal";
 import prisma from "@/lib/prisma";
-import { getVendorPageContext } from "@/lib/security/vendor-guard";
+import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 import { CurationChip } from "../../_components/status-chip";
 import { centsToBrlInput, MAX_GALLERY_IMAGES, parseGallery, parseRegions, VENDOR_CATEGORIES } from "../../_lib/vendor-panel";
 import { MediaForm } from "./media-form";
@@ -16,7 +16,7 @@ const CURATION_HINT: Record<string, string> = {
 };
 
 export default async function PerfilPage() {
-  const { vendor } = await getVendorPageContext();
+  const { vendor } = await obterContextoDaPaginaDoFornecedor();
   if (!vendor) return null; // o layout explica que a conta ainda não foi vinculada
 
   // Galeria não vem no contexto da sessão: lê só do fornecedor da sessão.

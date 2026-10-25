@@ -4,13 +4,13 @@ import { Settings2 } from "lucide-react";
 import { listNotificationHistory } from "@/actions/notification-actions";
 import { HistoryList } from "@/components/notifications/history-list";
 import { PushCard } from "@/components/notifications/push-card";
-import { vapidPublicKey } from "@/lib/notifications/push";
-import { getVendorPageContext } from "@/lib/security/vendor-guard";
+import { chavePublicaVapid } from "@/lib/notifications/push";
+import { obterContextoDaPaginaDoFornecedor } from "@/lib/security/vendor-guard";
 
 export const metadata: Metadata = { title: "Avisos" };
 
 export default async function FornecedorNotificacoesPage() {
-  const { vendor } = await getVendorPageContext();
+  const { vendor } = await obterContextoDaPaginaDoFornecedor();
   if (!vendor) return null; // o layout explica que a conta ainda não foi vinculada
 
   const { items } = await listNotificationHistory();
@@ -29,7 +29,7 @@ export default async function FornecedorNotificacoesPage() {
           Escolher quais avisos receber
         </Link>
       </div>
-      <PushCard publicKey={vapidPublicKey()} />
+      <PushCard publicKey={chavePublicaVapid()} />
       <HistoryList initialItems={items} nowIso={new Date().toISOString()} />
     </div>
   );

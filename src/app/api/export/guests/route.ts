@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { AuthorizationError } from "@/lib/security/auth-guard";
-import { requireWedding } from "@/lib/security/wedding-context";
+import { exigirCasamento } from "@/lib/security/wedding-context";
 
 /**
  * Escapa um valor para CSV e neutraliza injeção de fórmulas (=, +, -, @) ao abrir no Excel/Sheets.
@@ -16,7 +16,7 @@ function csvCell(value: string | number | null | undefined) {
 export async function GET() {
   let weddingId: string;
   try {
-    ({ weddingId } = await requireWedding("/convidados"));
+    ({ weddingId } = await exigirCasamento("/convidados"));
   } catch (error) {
     if (error instanceof AuthorizationError) {
       return new NextResponse("Unauthorized", { status: 401 });

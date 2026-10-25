@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { Mesas3DView } from "@/components/mesas3d/mesas-3d-view";
-import { isSceneId } from "@/lib/mesas3d/scenarios";
-import { seatsOfGuest } from "@/lib/mesas3d/seating";
+import { ehIdDeCenario } from "@/lib/mesas3d/scenarios";
+import { lugaresDoConvidado } from "@/lib/mesas3d/seating";
 
 export const dynamic = "force-dynamic";
 
@@ -41,9 +41,9 @@ export default async function MapaDasMesasPage({ params }: { params: Promise<{ t
       <Mesas3DView
         mode="view"
         coupleNames={wedding.coupleNames}
-        initialScene={isSceneId(wedding.tables3dScene) ? wedding.tables3dScene : "jardim"}
+        initialScene={ehIdDeCenario(wedding.tables3dScene) ? wedding.tables3dScene : "jardim"}
         tables={tables}
-        guests={guests.map((g) => ({ id: g.id, name: g.name, category: g.category, seats: seatsOfGuest(g.allowedCompanions), tableId: g.tableId }))}
+        guests={guests.map((g) => ({ id: g.id, name: g.name, category: g.category, seats: lugaresDoConvidado(g.allowedCompanions), tableId: g.tableId }))}
       />
     </div>
   );

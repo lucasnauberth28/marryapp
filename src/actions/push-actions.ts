@@ -3,10 +3,10 @@
 import { headers } from "next/headers";
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { checkRateLimit } from "@/lib/security/rate-limiter";
-import { isAllowedPushEndpoint, buildPushPayload } from "@/lib/notifications/push-payload";
-import { isPushConfigured, sendPushToUser } from "@/lib/notifications/push";
+import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
+import { ehEnderecoDePushPermitido, montarConteudoDoPush } from "@/lib/notifications/push-payload";
+import { pushEstaConfigurado, enviarPushParaAPessoa } from "@/lib/notifications/push";
 
 // Avisos no aparelho (Web Push). Tudo vale só para o usuário da sessão.
 
@@ -16,7 +16,7 @@ const TEST_LIMIT = { limit: 5, windowMs: 1000 * 60 * 10 }; // 5 testes / 10 min 
 const B64URL = /^[A-Za-z0-9_-]{10,200}$/;
 
 const SubscriptionSchema = z.object({
-  endpoint: z.string().refine(isAllowedPushEndpoint, "Aparelho não reconhecido."),
+  endpoint: z.string().refine(ehEnderecoDePushPermitido, "Aparelho não reconhecido."),
   keys: z.object({
     p256dh: z.string().regex(B64URL, "Chaves inválidas."),
     auth: z.string().regex(B64URL, "Chaves inválidas."),
@@ -26,8 +26,8 @@ const SubscriptionSchema = z.object({
 export type PushActionResult = { success: true } | { success: false; error: string };
 
 async function sessionUserId(): Promise<string | null> {
-  const session = await getSession();
-  if (!session || session.userId === SUPER_ADMIN_USER_ID) return null;
+  const session = await obterSessao();
+  if (!session || session.userId === ID_DO_SUPER_ADMIN) return null;
   return session.userId;
 }
 
@@ -35,7 +35,7 @@ async function sessionUserId(): Promise<string | null> {
 export async function saveSubscription(input: unknown): Promise<PushActionResult> {
   const userId = await sessionUserId();
   if (!userId) return { success: false, error: "Entre na sua conta para ativar os avisos." };
-  if (!isPushConfigured()) return { success: false, error: "Os avisos no aparelho ainda não estão disponíveis." };
+  if (!pushEstaConfigurado()) return { success: false, error: "Os avisos no aparelho ainda não estão disponíveis." };
 
   const parsed = SubscriptionSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Aparelho não reconhecido." };
@@ -101,16 +101,16 @@ export type TestPushResult =
 export async function sendTestPush(): Promise<TestPushResult> {
   const userId = await sessionUserId();
   if (!userId) return { success: false, error: "Entre na sua conta." };
-  if (!isPushConfigured()) return { success: false, error: "Os avisos no aparelho ainda não estão disponíveis." };
+  if (!pushEstaConfigurado()) return { success: false, error: "Os avisos no aparelho ainda não estão disponíveis." };
 
-  const limit = await checkRateLimit({ key: `PUSH_TEST:${userId}`, ...TEST_LIMIT });
+  const limit = await conferirLimiteDeUso({ key: `PUSH_TEST:${userId}`, ...TEST_LIMIT });
   if (!limit.success) {
     return { success: false, error: "Você já fez vários testes. Tente de novo daqui a alguns minutos." };
   }
 
-  const report = await sendPushToUser(
+  const report = await enviarPushParaAPessoa(
     userId,
-    buildPushPayload({
+    montarConteudoDoPush({
       title: "Aviso de teste",
       body: "Está funcionando! É assim que os avisos do Aceito vão chegar neste aparelho.",
       href: "/login", // abre o painel certo de quem tem sessão

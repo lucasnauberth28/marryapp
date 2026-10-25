@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { DEFAULT_PREFS } from "../../notifications/preferences.ts";
+import { PREFERENCIAS_PADRAO } from "../../notifications/preferences.ts";
 import {
   announcementInput,
   audienceLabel,
@@ -51,13 +51,13 @@ test("janela da data do casamento", () => {
 
 test("entrega: painel sempre, novidade respeita preferências, serviço ignora", () => {
   const now = new Date("2026-10-11T15:00:00Z"); // 12h em Brasília: fora do silêncio
-  const base = { service: false, username: "ana@exemplo.com", prefs: DEFAULT_PREFS, now };
+  const base = { service: false, username: "ana@exemplo.com", prefs: PREFERENCIAS_PADRAO, now };
   assert.deepEqual(decideDelivery({ ...base, channel: "PANEL" }), { status: "PENDING" });
   assert.deepEqual(decideDelivery({ ...base, channel: "EMAIL" }), { status: "PENDING" });
   assert.deepEqual(decideDelivery({ ...base, channel: "EMAIL", username: "ana-sem-email" }), { status: "SKIPPED", reason: "no_email" });
   assert.deepEqual(decideDelivery({ ...base, channel: "EMAIL", service: true, username: "ana-sem-email" }), { status: "SKIPPED", reason: "no_email" });
 
-  const noEmail = { ...DEFAULT_PREFS, channels: { ...DEFAULT_PREFS.channels, email: { ...DEFAULT_PREFS.channels.email, account: false } } };
+  const noEmail = { ...PREFERENCIAS_PADRAO, channels: { ...PREFERENCIAS_PADRAO.channels, email: { ...PREFERENCIAS_PADRAO.channels.email, account: false } } };
   assert.deepEqual(decideDelivery({ ...base, channel: "EMAIL", prefs: noEmail }), { status: "SKIPPED", reason: "opted_out" });
   assert.deepEqual(decideDelivery({ ...base, channel: "EMAIL", prefs: noEmail, service: true }), { status: "PENDING" });
 

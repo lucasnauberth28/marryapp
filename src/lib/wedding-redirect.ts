@@ -1,6 +1,6 @@
 import "server-only";
 import { notFound, redirect } from "next/navigation";
-import { getPrincipalWedding, getWeddingBySlug } from "@/lib/security/wedding-context";
+import { obterCasamentoPrincipal, obterCasamentoPeloEndereco } from "@/lib/security/wedding-context";
 import { caminhoDoSiteDoCasamento, type PaginaDoConvidadoNoCasamento } from "@/lib/wedding-links";
 
 type ParametrosDeBusca = Record<string, string | string[] | undefined>;
@@ -10,7 +10,7 @@ type ParametrosDeBusca = Record<string, string | string[] | undefined>;
  * funcionando: levam ao casamento principal, mantendo a query string.
  */
 export async function redirecionarParaOCasamentoPrincipal(page: PaginaDoConvidadoNoCasamento | undefined, searchParams: ParametrosDeBusca): Promise<never> {
-  const wedding = await getPrincipalWedding();
+  const wedding = await obterCasamentoPrincipal();
   if (!wedding) notFound();
 
   const query = new URLSearchParams();
@@ -24,7 +24,7 @@ export async function redirecionarParaOCasamentoPrincipal(page: PaginaDoConvidad
 
 /** Páginas /casamento/<slug>/...: o casamento do endereço, ou 404. */
 export async function exigirCasamentoPublico(slug: string) {
-  const wedding = await getWeddingBySlug(slug);
+  const wedding = await obterCasamentoPeloEndereco(slug);
   if (!wedding) notFound();
   return wedding;
 }

@@ -1,10 +1,10 @@
 import "server-only";
 import { PaymentStatus, VendorPlanTier } from "@prisma/client";
 import prisma from "@/lib/prisma";
-import { paidAmountMatches } from "@/lib/security/webhook-signature";
+import { valorPagoConfere } from "@/lib/security/webhook-signature";
 import { proximoFimDoPeriodoDoFornecedor, nivelDoFornecedorParaOPlano } from "@/lib/subscription-period";
-import { deferNotify } from "@/lib/notifications/service";
-import { notifyPlanActivated } from "@/lib/notifications/events";
+import { avisarDepois } from "@/lib/notifications/service";
+import { avisarPlanoAtivado } from "@/lib/notifications/events";
 
 export type ResultadoDaAtivacao = "activated" | "already" | "amount_mismatch" | "not_found";
 
@@ -25,7 +25,7 @@ export async function aplicarPagamentoAprovado(
   if (sub.status === PaymentStatus.APPROVED) return "already";
 
   // O valor pago precisa ser exatamente o gravado quando o Pix foi gerado (catálogo menos cupom e crédito).
-  if (!paidAmountMatches(payment.amountInReais, sub.amount)) {
+  if (!valorPagoConfere(payment.amountInReais, sub.amount)) {
     console.error(`[Assinatura] Valor divergente em ${sub.id}: pago ${payment.amountInReais}, esperado ${sub.amount / 100}.`);
     await prisma.subscription.updateMany({
       where: { id: sub.id, status: PaymentStatus.PENDING },
@@ -82,7 +82,7 @@ export async function aplicarPagamentoAprovado(
     return "activated";
   });
   // Aviso no sino de quem pagou, depois da resposta; só o primeiro processamento chega aqui.
-  if (result === "activated") deferNotify(() => notifyPlanActivated(sub.id));
+  if (result === "activated") avisarDepois(() => avisarPlanoAtivado(sub.id));
   return result;
 }
 

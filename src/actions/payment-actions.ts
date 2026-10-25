@@ -8,11 +8,11 @@ import { acharOuCriarConvidado } from "@/lib/guest-matching";
 import { MENSAGEM_DE_MUITAS_TENTATIVAS } from "@/lib/rate-limit-message";
 import { PaymentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { rateLimitByIp } from "@/lib/security/rate-limiter";
-import { normalizeText } from "@/lib/security/sanitize";
+import { limitarUsoPorIp } from "@/lib/security/rate-limiter";
+import { normalizarTexto } from "@/lib/security/sanitize";
 import { casamentoEstaSuspenso, MENSAGEM_DE_SITE_INDISPONIVEL } from "@/lib/wedding-suspension";
-import { deferNotify } from "@/lib/notifications/service";
-import { notifyGiftPaid, notifyPixToCheck } from "@/lib/notifications/events";
+import { avisarDepois } from "@/lib/notifications/service";
+import { avisarPresentePago, avisarPixParaConferir } from "@/lib/notifications/events";
 
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import { ERROS } from "@/lib/mensagens-de-erro";
@@ -54,10 +54,10 @@ export async function createPixTransactionAction(input: {
   const parsed = GuestIdentitySchema.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const { giftId, guestPhone, guestEmail } = parsed.data;
-  const guestName = normalizeText(parsed.data.guestName);
+  const guestName = normalizarTexto(parsed.data.guestName);
 
   try {
-    const rateLimit = await rateLimitByIp("CHECKOUT");
+    const rateLimit = await limitarUsoPorIp("CHECKOUT");
     if (!rateLimit.success) {
       return { success: false, error: MENSAGEM_DE_MUITAS_TENTATIVAS };
     }
@@ -133,7 +133,7 @@ export async function createPixTransactionAction(input: {
     }
 
     // Aviso ao casal: o Pix estático precisa de conferência no extrato
-    deferNotify(() => notifyPixToCheck(transaction.id));
+    avisarDepois(() => avisarPixParaConferir(transaction.id));
 
     const pixPayload = gerarCodigoPix({
       pixKey,
@@ -164,7 +164,7 @@ export async function checkTransactionStatusAction(transactionId: string) {
   try {
     if (!z.string().uuid().safeParse(transactionId).success) return { approved: false };
 
-    const rateLimit = await rateLimitByIp("PAYMENT_STATUS");
+    const rateLimit = await limitarUsoPorIp("PAYMENT_STATUS");
     if (!rateLimit.success) return { approved: false };
 
     const transaction = await prisma.transaction.findUnique({
@@ -199,7 +199,7 @@ export async function checkTransactionStatusAction(transactionId: string) {
           revalidatePath("/casamento", "layout");
           revalidatePath("/presentes-admin");
           revalidatePath("/financas");
-          deferNotify(() => notifyGiftPaid(transaction.id));
+          avisarDepois(() => avisarPresentePago(transaction.id));
 
           return { approved: true };
         }
@@ -230,12 +230,12 @@ export async function processCardPaymentAction(input: {
   const parsed = CardPaymentSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0].message };
   const { giftId, guestPhone, cardToken, paymentMethodId, installments } = parsed.data;
-  const guestName = normalizeText(parsed.data.guestName);
+  const guestName = normalizarTexto(parsed.data.guestName);
   const payerEmail = parsed.data.payerEmail.toLowerCase();
 
   try {
     // Proteção anti card-testing
-    const rateLimit = await rateLimitByIp("CHECKOUT");
+    const rateLimit = await limitarUsoPorIp("CHECKOUT");
     if (!rateLimit.success) {
       return { success: false, error: MENSAGEM_DE_MUITAS_TENTATIVAS };
     }
@@ -292,7 +292,7 @@ export async function processCardPaymentAction(input: {
 
       revalidatePath("/casamento", "layout");
       revalidatePath("/presentes-admin");
-      deferNotify(() => notifyGiftPaid(transaction.id));
+      avisarDepois(() => avisarPresentePago(transaction.id));
 
       return { success: true, status: "APPROVED", transactionId: transaction.id };
     }

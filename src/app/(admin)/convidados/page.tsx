@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { getGuests } from "@/actions/guest-actions";
 import { GuestsClient } from "./guests-client";
 import prisma from "@/lib/prisma";
-import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { casamentoTemModulo } from "@/lib/wedding-plan";
 
 import { formatarDataCivilLonga } from "@/lib/formatacao/data";
@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 const RESPOSTAS = { "sem-resposta": "PENDING", confirmados: "CONFIRMED", "nao-vao": "DECLINED" } as const;
 
 export default async function ConvidadosPage({ searchParams }: { searchParams: Promise<{ resposta?: string }> }) {
-  const { session, weddingId } = await requireWeddingPage("/convidados");
+  const { session, weddingId } = await exigirCasamentoNaPagina("/convidados");
   const { resposta } = await searchParams;
   const initialFilter = RESPOSTAS[resposta as keyof typeof RESPOSTAS] ?? "all";
 

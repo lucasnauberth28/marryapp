@@ -4,13 +4,13 @@ import { cookies } from "next/headers";
 import { after } from "next/server";
 import prisma from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/audit";
-import { SUPER_ADMIN_USER_ID, type SecureAuthContext } from "@/lib/security/auth-guard";
+import { ID_DO_SUPER_ADMIN, type ContextoDeAutenticacaoSegura } from "@/lib/security/auth-guard";
 import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
 import {
-  IMPERSONATION_COOKIE,
-  IMPERSONATION_MAX_MINUTES,
-  judgeImpersonation,
-  verifyImpersonationCookie,
+  COOKIE_DE_PERSONIFICACAO,
+  MAXIMO_DE_MINUTOS_DE_PERSONIFICACAO,
+  julgarPersonificacao,
+  verificarCookieDePersonificacao,
 } from "@/lib/security/impersonation-rules";
 
 /**
@@ -24,9 +24,9 @@ import {
  * As regras puras (validade, assinatura, recusa de escrita) ficam em impersonation-rules.ts, com testes.
  */
 
-export { IMPERSONATION_COOKIE, IMPERSONATION_MAX_MINUTES };
+export { COOKIE_DE_PERSONIFICACAO as IMPERSONATION_COOKIE, MAXIMO_DE_MINUTOS_DE_PERSONIFICACAO as IMPERSONATION_MAX_MINUTES };
 
-export interface ImpersonationContext {
+export interface ContextoDePersonificacao {
   /** ImpersonationSession.id */
   id: string;
   weddingId: string;
@@ -39,7 +39,7 @@ export interface ImpersonationContext {
 }
 
 /** Cookie da sessão de "entrar como": só o servidor lê e escreve (httpOnly), vale 30 minutos. */
-export function impersonationCookieOptions(expiresAt: Date) {
+export function opcoesDoCookieDePersonificacao(expiresAt: Date) {
   return {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -50,7 +50,7 @@ export function impersonationCookieOptions(expiresAt: Date) {
 }
 
 /** Fecha no banco uma sessão que passou do prazo (depois da resposta) e registra a saída automática. */
-function closeExpired(row: { id: string; adminUserId: string; adminName: string; weddingId: string | null; weddingNames: string }) {
+function encerrarExpiradas(row: { id: string; adminUserId: string; adminName: string; weddingId: string | null; weddingNames: string }) {
   const run = async () => {
     try {
       const { count } = await prisma.impersonationSession.updateMany({
@@ -78,19 +78,19 @@ function closeExpired(row: { id: string; adminUserId: string; adminName: string;
 }
 
 /** Sessão de "entrar como" válida para esta sessão logada, ou null (padrão, sem cookie ou sem acesso total). */
-export const resolveImpersonation = cache(async (session: SecureAuthContext): Promise<ImpersonationContext | null> => {
+export const resolverPersonificacao = cache(async (session: ContextoDeAutenticacaoSegura): Promise<ContextoDePersonificacao | null> => {
   // Só a administração tem sessão de "entrar como" (o perfil vem do banco, não do navegador)
   if (!ehAcessoDeAdminDaPlataforma(session.allowedPaths)) return null;
 
   const store = await cookies();
-  const signed = await verifyImpersonationCookie(store.get(IMPERSONATION_COOKIE)?.value);
+  const signed = await verificarCookieDePersonificacao(store.get(COOKIE_DE_PERSONIFICACAO)?.value);
   if (!signed || signed.adminUserId !== session.userId) return null;
 
   const row = await prisma.impersonationSession.findUnique({ where: { id: signed.sessionId } });
   if (!row) return null;
 
-  const verdict = judgeImpersonation(row, session.userId);
-  if (verdict === "expired") closeExpired(row);
+  const verdict = julgarPersonificacao(row, session.userId);
+  if (verdict === "expired") encerrarExpiradas(row);
   if (verdict !== "ok" || !row.weddingId) return null;
 
   return {
@@ -106,7 +106,7 @@ export const resolveImpersonation = cache(async (session: SecureAuthContext): Pr
 });
 
 /** Nome de quem entrou, para o registro (a conta de emergência não tem cadastro). */
-export function adminDisplayName(userId: string, name: string | null): string {
-  if (userId === SUPER_ADMIN_USER_ID) return "Super Admin";
+export function nomeDeExibicaoDoAdmin(userId: string, name: string | null): string {
+  if (userId === ID_DO_SUPER_ADMIN) return "Super Admin";
   return name?.trim() || "Administrador";
 }

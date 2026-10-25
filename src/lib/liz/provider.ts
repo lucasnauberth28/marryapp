@@ -1,6 +1,6 @@
 import "server-only";
 import { getPlatformSetting } from "@/lib/platform/settings";
-import { isLizChatEnabled, type LizAnswerer } from "./answerer";
+import { chatDaLizEstaAtivo, type RespondedoraDaLiz } from "./answerer";
 
 /**
  * Provedor de IA da Liz. HOJE NÃO EXISTE: nada chama a API, não há chave nem modelo configurados.
@@ -11,12 +11,12 @@ import { isLizChatEnabled, type LizAnswerer } from "./answerer";
  *   - respeitar os limites de /admin/madrinha (por dia, por mês, teto de custo, bloqueio por abuso);
  *   - devolver LizAnswer { kind: "text", ... } e nunca executar ação por conta própria: o casal aprova.
  */
-export function getLizProvider(): LizAnswerer | null {
+export function obterProvedorDaLiz(): RespondedoraDaLiz | null {
   return null;
 }
 
 /** Lê o interruptor geral e confere se há provedor. Fica falso enquanto a IA não estiver conectada. */
-export async function readLizChatEnabled(): Promise<boolean> {
+export async function lerSeOChatDaLizEstaAtivo(): Promise<boolean> {
   const master = await getPlatformSetting("madrinha.master");
-  return isLizChatEnabled(master, getLizProvider());
+  return chatDaLizEstaAtivo(master, obterProvedorDaLiz());
 }

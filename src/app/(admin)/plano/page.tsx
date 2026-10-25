@@ -5,8 +5,8 @@ import { PaymentStatus } from "@prisma/client";
 import prisma from "@/lib/prisma";
 import { ehChaveDePlano } from "@/lib/plans";
 import { obterCatalogo } from "@/lib/catalog-server";
-import { SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { requireWeddingPage } from "@/lib/security/wedding-context";
+import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 import { planOption, shortPlanName, type PlanOption } from "@/app/login/auth-config";
 import { PageHeader } from "@/components/admin/page-header";
 import { Reveal } from "@/components/motion/reveal";
@@ -32,7 +32,7 @@ const STATIC_PIX_REVIEW_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
 
 export default async function PlanoPage() {
   // Plano de casal vale para o casamento (os dois do casal), não para a conta
-  const { session, weddingId } = await requireWeddingPage("/plano");
+  const { session, weddingId } = await exigirCasamentoNaPagina("/plano");
 
   // O cabeçalho sai logo; planos, taxas e recibos (várias consultas) entram quando ficam prontos.
   return (
@@ -56,7 +56,7 @@ export default async function PlanoPage() {
 }
 
 async function PlanoBody({ userId, weddingId }: { userId: string; weddingId: string }) {
-  const isSuperAdmin = userId === SUPER_ADMIN_USER_ID;
+  const isSuperAdmin = userId === ID_DO_SUPER_ADMIN;
   const now = new Date();
   const catalog = await obterCatalogo();
 

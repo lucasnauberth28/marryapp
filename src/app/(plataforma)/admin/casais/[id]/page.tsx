@@ -13,7 +13,7 @@ import { EmptyState } from "@/components/plataforma/empty-state";
 import { Notice } from "@/components/plataforma/notices";
 import { btn } from "@/components/landing/styles";
 import { Switch } from "@/components/ui/switch";
-import { requirePlatformAdminPage } from "@/lib/security/platform-admin";
+import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { oneOf, type SearchParams } from "@/lib/platform/list-params";
 import { daysBetween, formatDate, formatDateTime, formatInt, formatLongDate, formatPercent, formatWeekday, timeAgo } from "@/lib/platform/format";
 import { pluralizar } from "@/lib/formatacao/plural";
@@ -71,7 +71,7 @@ function Rows({ items }: { items: { label: string; value: React.ReactNode }[] })
 }
 
 export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<SearchParams> }) {
-  await requirePlatformAdminPage(); // guard da página (o layout sozinho não basta)
+  await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
   const { id } = await params;
   // O id vem da URL: só serve para BUSCAR o casamento (nunca para decidir permissão). Formato inválido = 404.
   if (!z.string().uuid().safeParse(id).success) notFound();

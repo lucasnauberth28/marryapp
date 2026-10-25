@@ -1,6 +1,6 @@
 "use server";
 
-import { requireWedding, requireWeddingRead } from "@/lib/security/wedding-context";
+import { exigirCasamento, exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 
 import prisma from "@/lib/prisma";
 import { PaymentStatus, PaymentMethod, ExpenseStatus, Prisma } from "@prisma/client";
@@ -50,7 +50,7 @@ export type TransactionWithGift = Prisma.TransactionGetPayload<
  * Todos os valores estão em centavos (Int).
  */
 export async function getFinancialMetrics(): Promise<FinancialMetrics> {
-  const { weddingId } = await requireWeddingRead("/financas");
+  const { weddingId } = await exigirCasamentoParaLeitura("/financas");
   const [
     approved,
     pending,
@@ -132,7 +132,7 @@ export async function getFinancialMetrics(): Promise<FinancialMetrics> {
  * incluindo o presente (Gift) e convidado (Guest) associados.
  */
 export async function getTransactions(): Promise<TransactionWithGift[]> {
-  const { weddingId } = await requireWeddingRead("/financas");
+  const { weddingId } = await exigirCasamentoParaLeitura("/financas");
   return prisma.transaction.findMany({ ...transactionQueryArgs, where: { weddingId } });
 }
 
@@ -146,7 +146,7 @@ export async function approvePixTransaction(
   transactionId: string,
   giftId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const { weddingId } = await requireWedding("/financas");
+  const { weddingId } = await exigirCasamento("/financas");
   try {
     if (typeof transactionId !== "string") return { success: false, error: ERROS.pagamentoNaoEncontrado };
     // O presente é sempre o da própria transação (não confiar no giftId enviado pelo cliente)
@@ -197,7 +197,7 @@ export async function toggleThankYouSent(
   transactionId: string,
   currentStatus: boolean
 ): Promise<{ success: boolean; error?: string }> {
-  const { weddingId } = await requireWedding("/financas");
+  const { weddingId } = await exigirCasamento("/financas");
   try {
     if (typeof transactionId !== "string") return { success: false, error: ERROS.pagamentoNaoEncontrado };
     const result = await prisma.transaction.updateMany({

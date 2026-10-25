@@ -3,9 +3,9 @@
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { ExpenseStatus, PaymentMethod, PaymentStatus, RsvpStatus } from "@prisma/client";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { getWeddingContext } from "@/lib/security/wedding-context";
-import { unreadCountFor } from "@/lib/notifications/queries";
+import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { obterContextoDoCasamento } from "@/lib/security/wedding-context";
+import { quantidadeNaoLidaDe } from "@/lib/notifications/queries";
 import { filtroSemSoPresente } from "@/lib/guest-origin";
 
 import { pluralizar } from "@/lib/formatacao/plural";
@@ -47,15 +47,15 @@ function toItem(row: { id: string; type: string; title: string; body: string; hr
 
 /** Sessão ou null (sem lançar erro: o sino consulta sozinho e a sessão pode ter expirado). */
 async function sessionUserId(): Promise<string | null> {
-  const session = await getSession();
-  if (!session || session.userId === SUPER_ADMIN_USER_ID) return null;
+  const session = await obterSessao();
+  if (!session || session.userId === ID_DO_SUPER_ADMIN) return null;
   return session.userId;
 }
 
 /** Só o contador, para a consulta periódica. */
 export async function getUnreadNotificationCount(): Promise<number> {
   const userId = await sessionUserId();
-  return userId ? unreadCountFor(userId) : 0;
+  return userId ? quantidadeNaoLidaDe(userId) : 0;
 }
 
 /**
@@ -120,18 +120,18 @@ async function coupleReminders(weddingId: string): Promise<ReminderItem[]> {
 
 /** Últimos avisos (sino) e, no painel do casal, os lembretes. */
 export async function listNotifications(): Promise<NotificationList> {
-  const session = await getSession();
+  const session = await obterSessao();
   if (!session) return EMPTY;
 
   try {
-    const userId = session.userId === SUPER_ADMIN_USER_ID ? null : session.userId;
+    const userId = session.userId === ID_DO_SUPER_ADMIN ? null : session.userId;
     const [rows, unreadCount, ctx] = await Promise.all([
       userId
         ? prisma.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 20, select: SELECT })
         : Promise.resolve([]),
-      userId ? unreadCountFor(userId) : Promise.resolve(0),
+      userId ? quantidadeNaoLidaDe(userId) : Promise.resolve(0),
       // Conta sem casamento (fornecedor, cadastro sem onboarding): sem lembretes
-      getWeddingContext(),
+      obterContextoDoCasamento(),
     ]);
     const reminders = ctx ? await coupleReminders(ctx.weddingId) : [];
     return { items: rows.map(toItem), unreadCount, reminders };
@@ -148,7 +148,7 @@ export async function listNotificationHistory(): Promise<{ items: NotificationIt
   try {
     const [rows, unreadCount] = await Promise.all([
       prisma.notification.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, take: 100, select: SELECT }),
-      unreadCountFor(userId),
+      quantidadeNaoLidaDe(userId),
     ]);
     return { items: rows.map(toItem), unreadCount };
   } catch (error) {
@@ -166,13 +166,13 @@ export async function markNotificationRead(id: string): Promise<MarkReadResult> 
   const userId = await sessionUserId();
   if (!userId) return { success: false, unreadCount: 0 };
   const parsed = IdSchema.safeParse(id);
-  if (!parsed.success) return { success: false, unreadCount: await unreadCountFor(userId) };
+  if (!parsed.success) return { success: false, unreadCount: await quantidadeNaoLidaDe(userId) };
   try {
     await prisma.notification.updateMany({ where: { id: parsed.data, userId, readAt: null }, data: { readAt: new Date() } });
-    return { success: true, unreadCount: await unreadCountFor(userId) };
+    return { success: true, unreadCount: await quantidadeNaoLidaDe(userId) };
   } catch (error) {
     console.error("[markNotificationRead Error]:", error);
-    return { success: false, unreadCount: await unreadCountFor(userId) };
+    return { success: false, unreadCount: await quantidadeNaoLidaDe(userId) };
   }
 }
 
@@ -185,6 +185,6 @@ export async function markAllNotificationsRead(): Promise<MarkReadResult> {
     return { success: true, unreadCount: 0 };
   } catch (error) {
     console.error("[markAllNotificationsRead Error]:", error);
-    return { success: false, unreadCount: await unreadCountFor(userId) };
+    return { success: false, unreadCount: await quantidadeNaoLidaDe(userId) };
   }
 }

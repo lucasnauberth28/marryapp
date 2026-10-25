@@ -6,11 +6,11 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { NOME_DO_COOKIE_DE_SESSAO, NOME_DO_COOKIE_DE_SESSAO_VISTA } from "@/lib/auth";
-import { getSession, SUPER_ADMIN_USER_ID } from "@/lib/security/auth-guard";
-import { checkRateLimit } from "@/lib/security/rate-limiter";
-import { generateLinkToken } from "@/lib/account/tokens";
-import { classifyAccount } from "@/lib/account/wedding-provisioning";
-import { INVITE_TTL_MS, MAX_PENDING_INVITES } from "@/lib/account/invites";
+import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
+import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
+import { gerarTokenDeLink } from "@/lib/account/tokens";
+import { classificarConta } from "@/lib/account/wedding-provisioning";
+import { VALIDADE_DO_CONVITE_EM_MS, MAXIMO_DE_CONVITES_PENDENTES } from "@/lib/account/invites";
 import { brandedEmail, enviarEmail } from "@/lib/email";
 import { urlDoApp } from "@/lib/app-url";
 import { registrarAuditoria } from "@/lib/audit";
@@ -22,8 +22,8 @@ type Fail = { success: false; error: string };
 
 /** Conta logada (nunca a de emergência), com o necessário para as ações de "Minha conta". */
 async function currentAccount() {
-  const session = await getSession();
-  if (!session || session.userId === SUPER_ADMIN_USER_ID) return null;
+  const session = await obterSessao();
+  if (!session || session.userId === ID_DO_SUPER_ADMIN) return null;
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
     select: {
@@ -36,7 +36,7 @@ async function currentAccount() {
       wedding: { select: { id: true, coupleNames: true } },
     },
   });
-  return user ? { ...user, kind: classifyAccount(user) } : null;
+  return user ? { ...user, kind: classificarConta(user) } : null;
 }
 
 const NO_SESSION: Fail = { success: false, error: ERROS.sessaoExpirada };
@@ -61,7 +61,7 @@ export async function changePassword(input: { currentPassword: string; newPasswo
   const parsed = ChangePasswordSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira os dados." };
 
-  const limit = await checkRateLimit({ key: `ACCOUNT_PASSWORD:${user.id}`, limit: 5, windowMs: 15 * MINUTE });
+  const limit = await conferirLimiteDeUso({ key: `ACCOUNT_PASSWORD:${user.id}`, limit: 5, windowMs: 15 * MINUTE });
   if (!limit.success) return { success: false, error: ERROS.muitasTentativas };
 
   if (!(await bcrypt.compare(parsed.data.currentPassword, user.password))) {
@@ -116,18 +116,18 @@ export async function createPartnerInvite(input: { email?: string }): Promise<Cr
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira o e-mail." };
   const email = parsed.data.email || null;
 
-  const limit = await checkRateLimit({ key: `WEDDING_INVITE:${user.id}`, limit: 10, windowMs: 60 * MINUTE });
+  const limit = await conferirLimiteDeUso({ key: `WEDDING_INVITE:${user.id}`, limit: 10, windowMs: 60 * MINUTE });
   if (!limit.success) return { success: false, error: "Muitos convites em pouco tempo. Aguarde um pouco." };
 
   const now = new Date();
   const pending = await prisma.weddingInvite.count({ where: { weddingId: user.wedding.id, usedAt: null, expiresAt: { gt: now } } });
-  if (pending >= MAX_PENDING_INVITES) {
-    return { success: false, error: `Já há ${MAX_PENDING_INVITES} convites pendentes. Cancele algum antes de criar outro.` };
+  if (pending >= MAXIMO_DE_CONVITES_PENDENTES) {
+    return { success: false, error: `Já há ${MAXIMO_DE_CONVITES_PENDENTES} convites pendentes. Cancele algum antes de criar outro.` };
   }
 
-  const { token, tokenHash } = generateLinkToken();
+  const { token, tokenHash } = gerarTokenDeLink();
   const invite = await prisma.weddingInvite.create({
-    data: { weddingId: user.wedding.id, tokenHash, email, createdById: user.id, expiresAt: new Date(now.getTime() + INVITE_TTL_MS) },
+    data: { weddingId: user.wedding.id, tokenHash, email, createdById: user.id, expiresAt: new Date(now.getTime() + VALIDADE_DO_CONVITE_EM_MS) },
     select: { id: true, email: true, createdAt: true, expiresAt: true },
   });
   const path = `/convite/${token}`;
@@ -198,7 +198,7 @@ export async function deleteMyAccount(input: { confirmation: string; password: s
   const parsed = DeleteSchema.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira os dados." };
 
-  const limit = await checkRateLimit({ key: `ACCOUNT_DELETE:${user.id}`, limit: 5, windowMs: 15 * MINUTE });
+  const limit = await conferirLimiteDeUso({ key: `ACCOUNT_DELETE:${user.id}`, limit: 5, windowMs: 15 * MINUTE });
   if (!limit.success) return { success: false, error: ERROS.muitasTentativas };
 
   if (!(await bcrypt.compare(parsed.data.password, user.password))) return { success: false, error: "A senha não confere." };

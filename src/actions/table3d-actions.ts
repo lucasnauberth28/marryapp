@@ -3,9 +3,9 @@
 import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
-import { requireWedding } from "@/lib/security/wedding-context";
+import { exigirCasamento } from "@/lib/security/wedding-context";
 import { recusaDeModulo } from "@/lib/wedding-plan";
-import { isSceneId } from "@/lib/mesas3d/scenarios";
+import { ehIdDeCenario } from "@/lib/mesas3d/scenarios";
 
 // Mesas em 3D: cenário escolhido e link de visualização. Só o casal altera (requireWedding), e só com o módulo do plano.
 // Sentar convidados continua pela ação assignGuestToTable, a mesma da lista de mesas.
@@ -13,10 +13,10 @@ import { isSceneId } from "@/lib/mesas3d/scenarios";
 type Result<T = object> = ({ success: true } & T) | { success: false; error: string };
 
 export async function setTables3DScene(scene: string): Promise<Result> {
-  const ctx = await requireWedding("/mesas");
+  const ctx = await exigirCasamento("/mesas");
   const refusal = await recusaDeModulo(ctx, "tables3d");
   if (refusal) return { success: false, error: refusal };
-  if (!isSceneId(scene)) return { success: false, error: "Cenário não encontrado." };
+  if (!ehIdDeCenario(scene)) return { success: false, error: "Cenário não encontrado." };
   try {
     await prisma.wedding.update({ where: { id: ctx.weddingId }, data: { tables3dScene: scene } });
     return { success: true };
@@ -30,7 +30,7 @@ export async function setTables3DScene(scene: string): Promise<Result> {
  * O código tem 144 bits aleatórios: não dá para adivinhar nem listar.
  */
 export async function createTables3DShare(): Promise<Result<{ token: string }>> {
-  const ctx = await requireWedding("/mesas");
+  const ctx = await exigirCasamento("/mesas");
   const refusal = await recusaDeModulo(ctx, "tables3d");
   if (refusal) return { success: false, error: refusal };
   try {
@@ -44,7 +44,7 @@ export async function createTables3DShare(): Promise<Result<{ token: string }>> 
 }
 
 export async function disableTables3DShare(): Promise<Result> {
-  const ctx = await requireWedding("/mesas");
+  const ctx = await exigirCasamento("/mesas");
   const refusal = await recusaDeModulo(ctx, "tables3d");
   if (refusal) return { success: false, error: refusal };
   try {
