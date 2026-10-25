@@ -1,676 +1,99 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import Link from "next/link";
+import { ArrowLeft, Share2 } from "lucide-react";
+import { toast } from "sonner";
 import { CabecalhoDaLanding } from "@/components/landing/landing-header";
 import { RodapeDaLanding } from "@/components/landing/landing-footer";
 import { estiloDoBotao, estiloDoContainerDaLanding } from "@/components/landing/styles";
-import {
-  Building2,
-  Star,
-  MapPin,
-  Video,
-  CheckCircle2,
-  Check,
-  ExternalLink,
-  ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-  Share2,
-  Globe,
-  Sparkles,
-  Camera,
-  CalendarCheck,
-  CalendarX,
-} from "lucide-react";
-import { Botao } from "@/components/ui/button";
-import { Entrada } from "@/components/ui/input";
-import { SelecaoNativa } from "@/components/ui/select";
-import { SeletorDeData } from "@/components/ui/date-picker";
-import { Dialogo, ConteudoDoDialogo, DescricaoDoDialogo, TituloDoDialogo } from "@/components/ui/dialog";
-import { conferirDisponibilidadeDoFornecedor, criarPedidoDeOrcamento, type FornecedorPublico } from "@/actions/partner-vendor-actions";
-import { toast } from "sonner";
-import { OPCOES_DE_ORCAMENTO_DO_PEDIDO } from "@/app/(fornecedor)/_lib/pedidos";
+import type { FornecedorPublico } from "@/actions/partner-vendor-actions";
 import { interpretarGaleria, interpretarRegioes } from "@/app/(fornecedor)/_lib/perfil-do-fornecedor";
-import { ImagemDaPessoa } from "@/components/ui/user-image";
-import { cn } from "@/lib/utils";
-
 import { formatarReaisInteiros } from "@/lib/formatacao/dinheiro";
+import { cn } from "@/lib/utils";
+import { SecaoComoAtende, SecaoSobre, TituloDoFornecedor } from "./componentes/apresentacao";
+import { SecaoDeAvaliacoes } from "./componentes/avaliacoes";
+import { GaleriaDeFotos, JanelaDeFotos } from "./componentes/galeria";
+import { PedidoDeOrcamento } from "./componentes/pedido-de-orcamento";
+
 interface PropriedadesDoDetalheDoFornecedor {
   vendor: FornecedorPublico;
   /** Hoje em Brasília ("AAAA-MM-DD"), mínimo da consulta de disponibilidade. */
   todayIso: string;
 }
 
-
-// Campos do design: 44px, borda forte, raio de 12px, texto de 16px.
-const classeDoRotulo = "text-sm font-semibold leading-5 text-tinta";
-const estiloDoTituloDaSecao = "font-display text-2xl font-medium leading-8 text-tinta sm:text-[26px]";
-
-/** Com menos de 5 fotos, as pequenas crescem para o mosaico não ficar com buraco. */
-function celulaDoMosaico(index: number, total: number) {
-  if (index === 0) return "col-span-2 row-span-2 bg-salvia-suave";
-  if (total === 2) return "col-span-2 row-span-2";
-  if (total === 3) return "col-span-2";
-  if (total === 4 && index === 3) return "col-span-2";
-  return "";
+function compartilhar(titulo: string) {
+  if (navigator.share) {
+    navigator.share({ title: titulo, url: window.location.href }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success("Link copiado.");
+  }
 }
 
-/** "Ver disponibilidade": consulta só sim/não na agenda do fornecedor. */
-function ConferenciaDeDisponibilidade({ vendorId, todayIso }: { vendorId: string; todayIso: string }) {
-  const [date, setDate] = useState("");
-  const [result, setResult] = useState<{ date: string; available: boolean } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setResult(null);
-    if (!date) {
-      setError("Escolha a data do casamento.");
-      return;
-    }
-    startTransition(async () => {
-      const res = await conferirDisponibilidadeDoFornecedor(vendorId, date);
-      if (res.success) setResult({ date, available: res.available });
-      else setError(res.error);
-    });
-  };
-
-  const dateLabel = (iso: string) => {
-    const [y, m, d] = iso.split("-");
-    return `${d}/${m}/${y}`;
-  };
-
+/** Celular: preço e o botão principal sempre à mão (sticky: o pai tem transform, que quebraria o fixed). */
+function BarraDoCelular({ price }: { price: string | null }) {
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-2" aria-describedby="disponibilidade-resultado">
-      <div className="flex items-start gap-2">
-        <Entrada
-          id="disponibilidade-data"
-          type="date"
-          label="A data está livre?"
-          min={todayIso}
-          value={date}
-          onChange={(e) => {
-            setDate(e.target.value);
-            setResult(null);
-            setError(null);
-          }}
-          fieldClassName="flex-1"
-        />
-        <Botao type="submit" variant="outline" loading={isPending} className="h-12 rounded-[12px] px-4">
-          Consultar
-        </Botao>
-      </div>
-      <div id="disponibilidade-resultado" role="status" aria-live="polite">
-        {result ? (
-          result.available ? (
-            <p className="flex items-start gap-2 rounded-[12px] bg-sucesso-suave px-3 py-2 text-sm font-semibold text-sucesso">
-              <CalendarCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-              Data livre em {dateLabel(result.date)}. Peça seu orçamento.
-            </p>
-          ) : (
-            <p className="flex items-start gap-2 rounded-[12px] bg-perigo-suave px-3 py-2 text-sm font-semibold text-perigo">
-              <CalendarX className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-              Data ocupada em {dateLabel(result.date)}.
-            </p>
-          )
-        ) : null}
-        {error ? <p className="text-sm font-semibold text-perigo">{error}</p> : null}
-      </div>
-    </form>
+    <div className="sticky bottom-0 z-40 -mx-4 mt-auto flex items-center justify-between gap-4 border-t border-linha bg-papel px-4 py-3 sm:-mx-6 sm:px-6 lg:hidden">
+      <p className="flex flex-col leading-tight">
+        <span className="text-sm text-tinta-suave">{price ? "A partir de" : "Preço"}</span>
+        <span className="font-num text-xl text-tinta">{price ?? "Sob consulta"}</span>
+      </p>
+      <a href="#orcamento" className={cn(estiloDoBotao.primary, "flex-1 max-w-[240px]")}>
+        Pedir orçamento
+      </a>
+    </div>
   );
 }
 
-export function DetalheDoFornecedorCliente({ vendor, todayIso }: PropriedadesDoDetalheDoFornecedor) {
-  let galleryImages = interpretarGaleria(vendor.galleryImages);
-  if (galleryImages.length === 0 && vendor.coverUrl) {
-    galleryImages = [vendor.coverUrl];
-  }
+function fotosDoFornecedor(vendor: FornecedorPublico) {
+  const galeria = interpretarGaleria(vendor.galleryImages);
+  return galeria.length === 0 && vendor.coverUrl ? [vendor.coverUrl] : galeria;
+}
 
+export function DetalheDoFornecedorCliente({ vendor, todayIso }: PropriedadesDoDetalheDoFornecedor) {
+  const galleryImages = fotosDoFornecedor(vendor);
   const serviceRegions = interpretarRegioes(vendor.serviceRegions);
-  const isMaster = vendor.planTier === "MASTER";
+  const reviews = vendor.reviews;
   // WhatsApp direto é recurso do Pro/Master (o servidor nem envia o número dos demais).
   const directWhatsapp = vendor.planTier !== "FREE" ? vendor.whatsapp?.replace(/\D/g, "") || null : null;
-
   // Foto da galeria em destaque no celular e foto aberta na janela de fotos (-1 = fechada).
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightbox, setLightbox] = useState(-1);
-  const reviews = vendor.reviews;
-
-  // Formulário de Lead / Reunião
-  const [coupleName, setCoupleName] = useState("");
-  const [couplePhone, setCouplePhone] = useState("");
-  const [coupleEmail, setCoupleEmail] = useState("");
-  const [guestCount, setGuestCount] = useState("");
-  const [weddingDate, setWeddingDate] = useState("");
-  const [meetingType, setMeetingType] = useState<"ONLINE" | "PRESENTIAL">("ONLINE");
-  const [leadMessage, setLeadMessage] = useState("");
-  const [leadLocation, setLeadLocation] = useState("");
-  const [leadBudget, setLeadBudget] = useState("");
-  const [isPendingLead, startTransitionLead] = useTransition();
-  // Pedido enviado: a confirmação fica na tela (um aviso passageiro some antes de ser lido).
-  const [sentTo, setSentTo] = useState<{ coupleName: string } | null>(null);
-
-  const handleSendLead = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!coupleName || !couplePhone) {
-      toast.error("Preencha seu nome e WhatsApp para o fornecedor poder responder.");
-      return;
-    }
-
-    const toastId = toast.loading(`Enviando o pedido para ${vendor.companyName}...`);
-    startTransitionLead(async () => {
-      const res = await criarPedidoDeOrcamento({
-        vendorId: vendor.id,
-        coupleName,
-        couplePhone,
-        coupleEmail,
-        guestCount: guestCount ? parseInt(guestCount, 10) : undefined,
-        weddingDate: weddingDate ? new Date(weddingDate) : undefined,
-        message: leadMessage,
-        meetingType,
-        location: leadLocation,
-        budget: leadBudget,
-      });
-
-      if (res.success) {
-        toast.dismiss(toastId);
-        setSentTo({ coupleName });
-        setCoupleName("");
-        setCouplePhone("");
-        setCoupleEmail("");
-        setGuestCount("");
-        setLeadMessage("");
-        setLeadLocation("");
-        setLeadBudget("");
-      } else {
-        toast.error(res.error || "Não conseguimos enviar o pedido. Tente de novo.", { id: toastId });
-      }
-    });
-  };
-
-  const averageRating =
-    reviews.length > 0
-      ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
-      : vendor.rating.toFixed(1);
-
+  const averageRating = reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : vendor.rating.toFixed(1);
   const price = vendor.startingPrice && vendor.startingPrice > 0 ? formatarReaisInteiros(vendor.startingPrice) : null;
-  const mosaic = galleryImages.slice(0, 5);
-  const showWhere = serviceRegions.length > 0 ? serviceRegions.join(", ") : null;
-
-  const share = () => {
-    if (navigator.share) {
-      navigator.share({ title: vendor.companyName, url: window.location.href }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copiado.");
-    }
-  };
-
-  const step = (delta: number) => setLightbox((i) => (i < 0 ? i : (i + delta + galleryImages.length) % galleryImages.length));
 
   return (
     <div className="flex min-h-screen flex-col bg-linho font-sans text-tinta">
       <CabecalhoDaLanding />
 
       <div className={cn(estiloDoContainerDaLanding, "flex flex-1 flex-col gap-6 pb-0 pt-4 sm:pt-6 lg:pb-24")}>
-        {/* Voltar e compartilhar */}
         <div className="flex items-center justify-between gap-3">
           <Link href="/fornecedores" className={cn(estiloDoBotao.quiet, "-ml-3 shrink-0")}>
             <ArrowLeft className="size-4" aria-hidden="true" />
             Fornecedores
           </Link>
-          <button type="button" onClick={share} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)}>
+          <button type="button" onClick={() => compartilhar(vendor.companyName)} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)}>
             <Share2 className="size-4" aria-hidden="true" />
             Compartilhar
           </button>
         </div>
 
-        {/* Fotos: mosaico no computador, foto grande com miniaturas no celular */}
-        {galleryImages.length > 0 ? (
-          <section aria-label="Fotos do trabalho">
-            <div className="hidden md:grid md:auto-rows-[200px] md:grid-cols-4 md:gap-2 md:overflow-hidden md:rounded-[16px]">
-              {mosaic.map((img, i) => (
-                <div key={i} className={cn("relative bg-areia", celulaDoMosaico(i, mosaic.length))}>
-                  <button
-                    type="button"
-                    onClick={() => setLightbox(i)}
-                    aria-label={`Ampliar foto ${i + 1} de ${galleryImages.length}`}
-                    className="absolute inset-0 block cursor-zoom-in"
-                  >
-                    <ImagemDaPessoa
-                      src={img}
-                      alt=""
-                      sizes={i === 0 ? "(min-width: 1200px) 600px, 50vw" : "(min-width: 1200px) 300px, 25vw"}
-                      className="object-cover transition-transform duration-500 hover:scale-[1.02]"
-                      priority={i === 0}
-                    />
-                  </button>
-                  {i === mosaic.length - 1 && galleryImages.length > 1 ? (
-                    <button
-                      type="button"
-                      onClick={() => setLightbox(0)}
-                      className={cn(estiloDoBotao.secondary, estiloDoBotao.sm, "absolute bottom-3 right-3")}
-                    >
-                      Ver as {galleryImages.length} fotos
-                    </button>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col gap-3 md:hidden">
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[16px] bg-salvia-suave">
-                <ImagemDaPessoa
-                  src={galleryImages[activeIndex] ?? galleryImages[0]}
-                  alt={`Foto ${activeIndex + 1} de ${vendor.companyName}`}
-                  sizes="100vw"
-                  className="object-cover"
-                  priority
-                />
-                {galleryImages.length > 1 ? (
-                  <span className="absolute bottom-3 right-3 rounded-full bg-papel px-3 py-1 text-sm font-semibold text-tinta">
-                    {activeIndex + 1} / {galleryImages.length}
-                  </span>
-                ) : null}
-              </div>
-              {galleryImages.length > 1 ? (
-                <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  {galleryImages.map((img, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setActiveIndex(i)}
-                      aria-label={`Ver foto ${i + 1}`}
-                      aria-pressed={activeIndex === i}
-                      className={cn(
-                        "relative size-[60px] shrink-0 cursor-pointer overflow-hidden rounded-[12px] border-2 bg-areia",
-                        activeIndex === i ? "border-ameixa" : "border-transparent opacity-80",
-                      )}
-                    >
-                      <ImagemDaPessoa src={img} alt="" sizes="60px" className="object-cover" />
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </section>
-        ) : (
-          <div className="flex aspect-[16/6] w-full flex-col items-center justify-center gap-1 rounded-[16px] bg-salvia-suave text-sm text-tinta-suave">
-            <Camera className="size-8" aria-hidden="true" />
-            Este fornecedor ainda não enviou fotos.
-          </div>
-        )}
+        <GaleriaDeFotos images={galleryImages} companyName={vendor.companyName} ativa={activeIndex} aoEscolher={setActiveIndex} aoAmpliar={setLightbox} />
 
         <div className="flex flex-wrap items-start gap-x-12 gap-y-10 pt-4">
           <main className="flex min-w-0 flex-[999_1_560px] flex-col gap-10">
-            {/* Título */}
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-wrap gap-2">
-                <span className="inline-flex min-h-7 items-center rounded-[6px] bg-salvia-suave px-3 text-sm font-semibold text-salvia">
-                  {vendor.category}
-                </span>
-                {vendor.isVerified ? (
-                  <span className="inline-flex min-h-7 items-center gap-1 rounded-[6px] bg-sucesso-suave pl-2 pr-3 text-sm font-semibold text-sucesso">
-                    <Check className="size-4" aria-hidden="true" />
-                    Verificado pela curadoria
-                  </span>
-                ) : null}
-                {isMaster ? (
-                  <span className="inline-flex min-h-7 items-center gap-1 rounded-[6px] bg-ameixa-suave pl-2 pr-3 text-sm font-semibold text-ameixa">
-                    <Sparkles className="size-4" aria-hidden="true" />
-                    Destaque
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="flex items-center gap-4">
-                {vendor.logoUrl ? (
-                  <div className="relative size-14 shrink-0 overflow-hidden rounded-full border border-linha bg-papel sm:size-16">
-                    <ImagemDaPessoa src={vendor.logoUrl} alt="" sizes="64px" className="object-cover" />
-                  </div>
-                ) : null}
-                <h1 className="font-display text-[34px] font-medium leading-10 tracking-[-0.015em] text-tinta sm:text-5xl sm:leading-[54px]">
-                  {vendor.companyName}
-                </h1>
-              </div>
-
-              <p className="flex flex-wrap gap-x-4 gap-y-2 text-base text-tinta-suave">
-                {showWhere ? (
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="size-4 shrink-0" aria-hidden="true" />
-                    {showWhere}
-                  </span>
-                ) : null}
-                {reviews.length > 0 ? (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Star className="size-4 shrink-0 fill-champanhe text-champanhe" aria-hidden="true" />
-                    <strong className="font-semibold text-tinta">{averageRating}</strong>
-                    <span className="sr-only">de 5 estrelas,</span>({reviews.length} {reviews.length === 1 ? "avaliação" : "avaliações"})
-                  </span>
-                ) : null}
-                {vendor.documentNumber ? (
-                  <span className="tabular-nums">
-                    {vendor.documentType || "CNPJ"}: {vendor.documentNumber}
-                  </span>
-                ) : null}
-              </p>
-            </div>
-
-            {/* Sobre */}
-            {vendor.description ? (
-              <section className="flex flex-col gap-3">
-                <h2 className={estiloDoTituloDaSecao}>Sobre</h2>
-                <p className="max-w-[68ch] whitespace-pre-line text-[17px] leading-7 text-tinta-suave sm:text-lg">{vendor.description}</p>
-              </section>
-            ) : null}
-
-            {/* Atendimento */}
-            {serviceRegions.length > 0 || vendor.offersOnlineMeet || (vendor.hasPhysicalSpace && vendor.address) || vendor.instagram || vendor.website ? (
-              <section className="flex flex-col gap-4">
-                <h2 className={estiloDoTituloDaSecao}>Como atende</h2>
-                {serviceRegions.length > 0 ? (
-                  <ul className="flex flex-wrap gap-2" aria-label="Regiões atendidas">
-                    {serviceRegions.map((region) => (
-                      <li
-                        key={region}
-                        className="inline-flex min-h-8 items-center gap-1.5 rounded-[8px] bg-areia px-3 text-sm font-semibold text-tinta-suave"
-                      >
-                        <MapPin className="size-4" aria-hidden="true" />
-                        {region}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {vendor.offersOnlineMeet ? (
-                    <div className="flex items-center gap-3 rounded-[16px] border border-linha bg-papel p-4 shadow-aceito-1">
-                      <Video className="size-5 shrink-0 text-sucesso" aria-hidden="true" />
-                      <div>
-                        <p className="font-semibold">Reunião por vídeo</p>
-                        <p className="text-sm text-tinta-suave">Para quem mora longe ou tem pouco tempo.</p>
-                      </div>
-                    </div>
-                  ) : null}
-                  {vendor.hasPhysicalSpace && vendor.address ? (
-                    <div className="flex items-center gap-3 rounded-[16px] border border-linha bg-papel p-4 shadow-aceito-1">
-                      <Building2 className="size-5 shrink-0 text-tinta-suave" aria-hidden="true" />
-                      <div className="min-w-0">
-                        <p className="font-semibold">Atendimento no local</p>
-                        <p className="text-sm text-tinta-suave">{vendor.address}</p>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-
-                {vendor.instagram || vendor.website ? (
-                  <div className="flex flex-wrap gap-x-6 gap-y-1">
-                    {vendor.instagram ? (
-                      <a
-                        href={`https://instagram.com/${vendor.instagram.replace("@", "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex min-h-11 items-center gap-2 font-semibold text-ameixa hover:underline"
-                      >
-                        <Camera className="size-4" aria-hidden="true" />
-                        {vendor.instagram}
-                        <span className="sr-only"> (abre em nova aba)</span>
-                      </a>
-                    ) : null}
-                    {vendor.website ? (
-                      <a
-                        href={vendor.website.startsWith("http") ? vendor.website : `https://${vendor.website}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex min-h-11 items-center gap-2 font-semibold text-ameixa hover:underline"
-                      >
-                        <Globe className="size-4" aria-hidden="true" />
-                        Site do fornecedor
-                        <ExternalLink className="size-3.5" aria-hidden="true" />
-                        <span className="sr-only"> (abre em nova aba)</span>
-                      </a>
-                    ) : null}
-                  </div>
-                ) : null}
-              </section>
-            ) : null}
-
-            {/* Avaliações */}
-            <section className="flex flex-col gap-4" aria-labelledby="avaliacoes">
-              <div className="flex flex-col gap-1">
-                <h2 id="avaliacoes" className={estiloDoTituloDaSecao}>
-                  O que os casais dizem
-                </h2>
-                <p className="text-sm text-tinta-suave">Só quem fechou pelo Aceito recebe o link para avaliar.</p>
-              </div>
-
-              {reviews.length === 0 ? (
-                <p className="rounded-[16px] border border-linha bg-papel p-6 text-base text-tinta-suave shadow-aceito-1">
-                  Ainda não há avaliações de casais que fecharam por aqui.
-                </p>
-              ) : (
-                <div className="flex flex-col gap-4">
-                  {reviews.map((rev) => (
-                    <figure key={rev.id} className="m-0 flex flex-col gap-3 rounded-[16px] border border-linha bg-papel p-6 shadow-aceito-1">
-                      <div className="flex items-center gap-0.5" role="img" aria-label={`${rev.rating} de 5 estrelas`}>
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <Star
-                            key={i}
-                            aria-hidden="true"
-                            className={cn("size-4", i < rev.rating ? "fill-champanhe text-champanhe" : "text-linha-forte")}
-                          />
-                        ))}
-                      </div>
-                      <blockquote className="m-0 font-display text-xl leading-7 text-tinta">“{rev.comment}”</blockquote>
-                      <figcaption className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-tinta-suave">
-                        <span>
-                          {rev.coupleNames}
-                          {rev.weddingDate
-                            ? ` · casou em ${new Date(rev.weddingDate).toLocaleDateString("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" })}`
-                            : ""}
-                        </span>
-                        {rev.isVerified ? (
-                          <span className="inline-flex min-h-6 items-center gap-1 rounded-[6px] bg-sucesso-suave pl-1.5 pr-2 text-sm font-semibold text-sucesso">
-                            <CheckCircle2 className="size-4" aria-hidden="true" />
-                            Casamento confirmado
-                          </span>
-                        ) : null}
-                      </figcaption>
-
-                      {rev.reply ? (
-                        <div className="rounded-[12px] border-l-2 border-rosa bg-areia/60 px-4 py-3">
-                          <p className="text-sm font-semibold text-tinta-suave">Resposta de {vendor.companyName}</p>
-                          <p className="whitespace-pre-line break-words text-base leading-6 text-tinta">{rev.reply}</p>
-                        </div>
-                      ) : null}
-                    </figure>
-                  ))}
-                </div>
-              )}
-            </section>
+            <TituloDoFornecedor vendor={vendor} regioes={serviceRegions} averageRating={averageRating} />
+            <SecaoSobre description={vendor.description} />
+            <SecaoComoAtende vendor={vendor} regioes={serviceRegions} />
+            <SecaoDeAvaliacoes reviews={reviews} companyName={vendor.companyName} />
           </main>
-
-          {/* Pedido de orçamento */}
-          <aside className="min-w-0 max-w-[400px] flex-[1_1_320px] max-lg:max-w-none lg:sticky lg:top-24">
-            <div className="flex flex-col gap-5 rounded-[16px] border border-linha bg-papel p-6 shadow-aceito-2">
-              <p className="flex flex-col">
-                <span className="text-tinta-suave">{price ? "A partir de" : "Preço"}</span>
-                <span className="font-num text-[34px] leading-10 text-tinta">{price ?? "Sob consulta"}</span>
-                {vendor.averageTicket ? (
-                  <span className="mt-1 text-sm text-tinta-suave">Valor médio dos serviços: {formatarReaisInteiros(vendor.averageTicket)}</span>
-                ) : null}
-              </p>
-
-              <ConferenciaDeDisponibilidade vendorId={vendor.id} todayIso={todayIso} />
-
-              <div id="orcamento" className="scroll-mt-24 border-t border-linha pt-5">
-                <h2 className="font-display text-[22px] font-medium leading-7 text-tinta">Pedir orçamento</h2>
-                <p className="mb-4 mt-1 text-sm leading-5 text-tinta-suave">
-                  Envie seus dados e o fornecedor responde com a disponibilidade na sua data.
-                </p>
-
-                {sentTo ? (
-                  <div role="status" className="flex flex-col gap-3 rounded-[16px] border border-sucesso/30 bg-sucesso-suave p-4 text-base text-tinta">
-                    <p className="flex items-center gap-2 font-semibold">
-                      <CheckCircle2 className="size-5 shrink-0 text-sucesso" aria-hidden="true" />
-                      Pedido enviado para {vendor.companyName}
-                    </p>
-                    <p className="text-tinta-suave">
-                      Recebemos os seus dados, {sentTo.coupleName.split(" ")[0]}. O fornecedor vai entrar em contato pelo WhatsApp que você informou.
-                    </p>
-                    {directWhatsapp ? (
-                      <a
-                        href={`https://wa.me/${directWhatsapp}?text=${encodeURIComponent(`Olá! Sou ${sentTo.coupleName} e acabei de pedir um orçamento pelo Aceito.`)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={cn(estiloDoBotao.primary, estiloDoBotao.block)}
-                      >
-                        Conversar agora no WhatsApp
-                        <span className="sr-only"> (abre em nova aba)</span>
-                      </a>
-                    ) : null}
-                    <button type="button" onClick={() => setSentTo(null)} className={cn(estiloDoBotao.quiet, estiloDoBotao.block)}>
-                      Fazer outro pedido
-                    </button>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSendLead} className="flex flex-col gap-5">
-                    <Entrada
-                      id="lead-nome"
-                      name="name"
-                      label="Seu nome"
-                      autoComplete="name"
-                      value={coupleName}
-                      onChange={(e) => setCoupleName(e.target.value)}
-                      placeholder="Ex.: Giovanna"
-                      required
-                    />
-                    <Entrada
-                      id="lead-telefone"
-                      name="phone"
-                      label="Seu WhatsApp com DDD"
-                      type="tel"
-                      inputMode="tel"
-                      autoComplete="tel-national"
-                      value={couplePhone}
-                      onChange={(e) => setCouplePhone(e.target.value)}
-                      placeholder="(11) 99999-9999"
-                      required
-                    />
-                    <SeletorDeData
-                      id="lead-data"
-                      label="Data do casamento"
-                      value={weddingDate}
-                      onChange={(e) => setWeddingDate(e.target.value)}
-                      placeholder="Escolha a data"
-                    />
-                    <Entrada
-                      id="lead-cidade"
-                      label="Cidade do casamento"
-                      value={leadLocation}
-                      onChange={(e) => setLeadLocation(e.target.value)}
-                      placeholder="Ex.: Itu, SP"
-                      maxLength={80}
-                      autoComplete="address-level2"
-                    />
-                    <SelecaoNativa id="lead-orcamento" label="Orçamento previsto" optional value={leadBudget} onChange={(e) => setLeadBudget(e.target.value)}>
-                      <option value=""></option>
-                      {OPCOES_DE_ORCAMENTO_DO_PEDIDO.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </SelecaoNativa>
-
-                    <fieldset className="flex flex-col gap-2">
-                      <legend className={cn(classeDoRotulo, "mb-2")}>Como prefere conversar?</legend>
-                      <div className="grid grid-cols-2 gap-2">
-                        {(
-                          [
-                            ["ONLINE", "Por vídeo", Video],
-                            ["PRESENTIAL", "Presencial", Building2],
-                          ] as const
-                        ).map(([value, label, Icon]) => (
-                          <button
-                            key={value}
-                            type="button"
-                            aria-pressed={meetingType === value}
-                            onClick={() => setMeetingType(value)}
-                            className={cn(
-                              "flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-[12px] border px-3 text-base font-semibold transition-colors",
-                              meetingType === value
-                                ? "border-ameixa bg-ameixa-suave text-ameixa"
-                                : "border-linha-forte bg-papel text-tinta-suave hover:border-ameixa",
-                            )}
-                          >
-                            <Icon className="size-4" aria-hidden="true" />
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </fieldset>
-
-                    <Botao type="submit" loading={isPendingLead} className="w-full rounded-[12px] px-6">
-                      Pedir orçamento
-                    </Botao>
-                    {directWhatsapp ? (
-                      <a
-                        href={`https://wa.me/${directWhatsapp}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={cn(estiloDoBotao.secondary, estiloDoBotao.block)}
-                      >
-                        Conversar no WhatsApp
-                        <span className="sr-only"> (abre em nova aba)</span>
-                      </a>
-                    ) : null}
-                  </form>
-                )}
-              </div>
-            </div>
-          </aside>
+          <PedidoDeOrcamento vendor={vendor} todayIso={todayIso} price={price} whatsapp={directWhatsapp} />
         </div>
-        {/* Celular: preço e o botão principal sempre à mão (sticky: o pai tem transform, que quebraria o fixed) */}
-        <div className="sticky bottom-0 z-40 -mx-4 mt-auto flex items-center justify-between gap-4 border-t border-linha bg-papel px-4 py-3 sm:-mx-6 sm:px-6 lg:hidden">
-          <p className="flex flex-col leading-tight">
-            <span className="text-sm text-tinta-suave">{price ? "A partir de" : "Preço"}</span>
-            <span className="font-num text-xl text-tinta">{price ?? "Sob consulta"}</span>
-          </p>
-          <a href="#orcamento" className={cn(estiloDoBotao.primary, "flex-1 max-w-[240px]")}>
-            Pedir orçamento
-          </a>
-        </div>
+        <BarraDoCelular price={price} />
       </div>
 
-      {/* Fotos ampliadas */}
-      <Dialogo open={lightbox >= 0} onOpenChange={(open) => !open && setLightbox(-1)}>
-        <ConteudoDoDialogo className="max-w-[min(960px,calc(100%-1rem))] gap-3 rounded-[16px] bg-papel p-3 sm:max-w-[min(960px,calc(100%-2rem))]">
-          <TituloDoDialogo className="sr-only">Fotos de {vendor.companyName}</TituloDoDialogo>
-          <DescricaoDoDialogo className="sr-only">Use as setas para ver as outras fotos.</DescricaoDoDialogo>
-          {lightbox >= 0 ? (
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[12px] bg-areia">
-              <ImagemDaPessoa src={galleryImages[lightbox]} alt={`Foto ${lightbox + 1} de ${galleryImages.length}`} sizes="960px" className="object-contain" />
-            </div>
-          ) : null}
-          <div className="flex items-center justify-between gap-3">
-            <button type="button" onClick={() => step(-1)} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)} aria-label="Foto anterior">
-              <ChevronLeft className="size-4" aria-hidden="true" />
-              Anterior
-            </button>
-            <span className="text-sm font-semibold text-tinta-suave">
-              {lightbox + 1} / {galleryImages.length}
-            </span>
-            <button type="button" onClick={() => step(1)} className={cn(estiloDoBotao.secondary, estiloDoBotao.sm)} aria-label="Próxima foto">
-              Próxima
-              <ChevronRight className="size-4" aria-hidden="true" />
-            </button>
-          </div>
-        </ConteudoDoDialogo>
-      </Dialogo>
-
+      <JanelaDeFotos images={galleryImages} companyName={vendor.companyName} aberta={lightbox} aoMudar={setLightbox} />
       <RodapeDaLanding />
     </div>
   );
