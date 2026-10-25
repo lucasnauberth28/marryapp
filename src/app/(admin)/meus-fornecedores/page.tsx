@@ -1,5 +1,5 @@
 import { obterFornecedores } from "@/actions/vendor-actions";
-import { FornecedoresCliente } from "./vendors-client";
+import { FornecedoresCliente } from "./fornecedores-cliente";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
 
 export const dynamic = "force-dynamic";
