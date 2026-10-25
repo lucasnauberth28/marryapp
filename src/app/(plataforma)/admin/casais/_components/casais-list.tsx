@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Download, Flag, Megaphone } from "lucide-react";
-import { definirMarcaDosCasamentos } from "@/actions/admin-casais-actions";
+import { definirMarcaDosCasamentos } from "@/actions/casais-admin/acompanhar";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { Botao } from "@/components/ui/button";
 import { BotaoDeExportar } from "@/components/plataforma/export-button";

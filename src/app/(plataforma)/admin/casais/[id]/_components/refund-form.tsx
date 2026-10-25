@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { solicitarReembolsoDoCasamento } from "@/actions/admin-casais-actions";
+import { solicitarReembolsoDoCasamento } from "@/actions/casais-admin/plano";
 import { Botao } from "@/components/ui/button";
 import { Entrada } from "@/components/ui/input";
 import { SelecaoNativa } from "@/components/ui/select";

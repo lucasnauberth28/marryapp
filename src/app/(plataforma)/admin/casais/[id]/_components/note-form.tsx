@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { adicionarNotaAoCasamento } from "@/actions/admin-casais-actions";
+import { adicionarNotaAoCasamento } from "@/actions/casais-admin/acompanhar";
 import { Botao } from "@/components/ui/button";
 import { AreaDeTexto } from "@/components/ui/textarea";
 import { useAcaoDoCasal } from "../../_components/use-casal-action";

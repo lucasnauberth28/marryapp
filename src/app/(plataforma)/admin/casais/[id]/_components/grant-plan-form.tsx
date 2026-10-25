@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { History } from "lucide-react";
-import { concederPlanoAoCasamento } from "@/actions/admin-casais-actions";
+import { concederPlanoAoCasamento } from "@/actions/casais-admin/plano";
 import { Botao } from "@/components/ui/button";
 import { EtiquetaDeSituacao } from "@/components/plataforma/status-chip";
 import { CaixaDeSelecao } from "@/components/ui/checkbox";

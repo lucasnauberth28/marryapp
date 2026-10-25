@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Ban, KeyRound, RotateCcw, Trash2 } from "lucide-react";
-import { excluirCasamento, redefinirSenhaDoCasamento, suspenderCasamento, reativarCasamento } from "@/actions/admin-casais-actions";
+import { excluirCasamento, redefinirSenhaDoCasamento } from "@/actions/casais-admin/conta";
+import { suspenderCasamento, reativarCasamento } from "@/actions/casais-admin/acompanhar";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { Botao } from "@/components/ui/button";
 import { CaixaDeSelecao } from "@/components/ui/checkbox";

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import type { ResultadoDaAcaoDoCasal } from "@/actions/admin-casais-actions";
+import type { ResultadoDaAcaoDoCasal } from "@/actions/casais-admin/comum";
 
 /** Chama uma Server Action do casal: trava o botão, mostra o aviso de sucesso e guarda a mensagem de erro para o formulário. */
 export function useAcaoDoCasal() {
