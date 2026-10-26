@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 const PADRAO_DO_PLANO = /^[a-z]{3,10}$/;
 const PADRAO_DO_MODULO = /^[a-zA-Z0-9_-]{1,40}$/;
-const PADRAO_DO_CONVITE = /^[A-Za-z0-9_-]{16,128}$/;
+const PADRAO_DO_CONVITE = /^[A-Za-z0-9_-]{43}$/;
 
 /** O que a tela mandou: só o que passa na validação entra no cookie (nada do que vem da URL é usado como está). */
 function pedidoDaTela(params: URLSearchParams): Pick<FluxoDoGoogle, "modo" | "proxima" | "plano" | "tipo" | "modulos" | "convite"> {
@@ -21,7 +21,8 @@ function pedidoDaTela(params: URLSearchParams): Pick<FluxoDoGoogle, "modo" | "pr
   const modulos = (params.get("modulos") ?? "").split(",").filter((m) => PADRAO_DO_MODULO.test(m)).slice(0, 20);
   return {
     modo: params.get("modo") === "criar" ? "criar" : "entrar",
-    proxima: caminhoSeguroDeRetorno(params.get("proxima")) ?? undefined,
+    // Quem já tem conta volta ao convite para aceitá-lo; quem não tem entra direto no casamento (ver a volta do Google)
+    proxima: PADRAO_DO_CONVITE.test(convite) ? `/convite/${convite}` : (caminhoSeguroDeRetorno(params.get("proxima")) ?? undefined),
     plano: PADRAO_DO_PLANO.test(plano) ? plano : undefined,
     tipo: tipo === "casal" || tipo === "fornecedor" ? tipo : undefined,
     modulos: modulos.length > 0 ? modulos : undefined,

@@ -34,6 +34,10 @@ export const secoesDeColeta: SecaoLegal[] = [
         <ul>
           <li>Dados de cadastro: nome, e-mail, WhatsApp e senha (guardada apenas como hash, nunca em texto).</li>
           <li>
+            Entrada com o Google, se você escolher: recebemos do Google apenas o seu nome, o e-mail (já confirmado por ele) e um identificador da conta
+            Google. Não acessamos seus contatos, e-mails, agenda ou arquivos, e você pode desconectar o Google em Minha conta.
+          </li>
+          <li>
             Dados do casamento: nomes do casal, data, cidade, local, estimativa de convidados, textos, fotos e demais conteúdos publicados no
             site.
           </li>
@@ -63,7 +67,10 @@ export const secoesDeColeta: SecaoLegal[] = [
           <strong>Fornecedores:</strong>
         </p>
         <ul>
-          <li>Dados de cadastro: nome do responsável, e-mail, WhatsApp e senha (em hash).</li>
+          <li>
+            Dados de cadastro: nome do responsável, e-mail, WhatsApp e senha (em hash) ou, se entrar com o Google, o nome, o e-mail e o identificador da
+            conta Google.
+          </li>
           <li>Dados do negócio: nome, categoria, CPF ou CNPJ (usado só na curadoria, não aparece no perfil), regiões atendidas, preços, redes sociais, fotos e descrição.</li>
           <li>Pedidos de orçamento recebidos, propostas, agenda, avaliações e estatísticas de visitas ao perfil.</li>
         </ul>
@@ -134,6 +141,7 @@ export const secoesDeColeta: SecaoLegal[] = [
               <li>Supabase (banco de dados e armazenamento de imagens);</li>
               <li>Mercado Pago (processamento de pagamentos via Pix e cartão);</li>
               <li>provedor de WhatsApp (envio de convites, lembretes e mensagens de serviço);</li>
+              <li>Google (somente para quem escolhe entrar com a conta Google: confirma a identidade e informa nome e e-mail);</li>
               <li>provedor de e-mail transacional (envio de convites e de links para redefinir a senha).</li>
             </ul>
           </li>

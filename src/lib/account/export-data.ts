@@ -32,6 +32,7 @@ function buscarUsuario(userId: string) {
       partnerVendorId: true,
       role: { select: { name: true, allowedPaths: true } },
       subscriptions: { select: CAMPOS_DA_ASSINATURA, orderBy: { createdAt: "asc" } },
+      externalAccounts: { select: { provider: true, email: true, createdAt: true, lastLoginAt: true } },
     },
   });
 }
@@ -101,6 +102,7 @@ export async function montarExportacaoDaConta(userId: string): Promise<{ filenam
       updatedAt: user.updatedAt,
     },
     subscriptions: user.subscriptions,
+    connectedAccounts: user.externalAccounts,
     // Pedidos de domínio: o CPF/CNPJ do titular sai sempre escondido (o número completo é só para o registro)
     wedding: wedding && { ...wedding, domainOrders: wedding.domainOrders.map((o) => ({ ...o, holderDocument: esconderDocumento(o.holderDocument) })) },
     vendorProfile,

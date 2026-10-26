@@ -22,6 +22,8 @@ export async function trocarSenha(input: { currentPassword: string; newPassword:
   const user = await contaAtual();
   if (!user) return SEM_SESSAO;
 
+  if (!user.hasPassword) return { success: false, error: ERROS.contaSemSenha };
+
   const parsed = EsquemaDaTrocaDeSenha.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira os dados." };
 

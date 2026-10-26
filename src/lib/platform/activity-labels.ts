@@ -12,6 +12,8 @@ export const ROTULO_DA_ACAO: Record<string, string> = {
   "account.delete": "Conta excluída pelo próprio dono",
   "account.password_change": "Trocou a própria senha",
   "account.password_reset": "Redefiniu a senha pelo e-mail",
+  "account.google_link": "Vinculou o Google à conta",
+  "account.google_unlink": "Desconectou o Google da conta",
   // Casais
   "wedding.suspend": "Suspendeu um casamento",
   "wedding.unsuspend": "Reativou um casamento suspenso",

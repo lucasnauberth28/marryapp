@@ -18,5 +18,6 @@ export const ERROS = {
   despesaNaoEncontrada: "Despesa não encontrada.",
   camposInvalidos: "Confira os campos marcados.",
   muitasTentativas: "Muitas tentativas seguidas. Aguarde alguns minutos.",
+  contaSemSenha: "Sua conta entra com o Google e ainda não tem senha. Crie uma em Minha conta, na seção Senha, para confirmar esta ação.",
   sessaoExpirada: "Sua sessão expirou. Entre de novo.",
 } as const;

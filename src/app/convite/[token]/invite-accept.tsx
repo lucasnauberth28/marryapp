@@ -12,7 +12,7 @@ import type { Visitante } from "./componentes/tipos";
 
 export type { Visitante };
 
-export function AceiteDoConvite({ token, coupleNames, viewer }: { token: string; coupleNames: string; viewer: Visitante }) {
+export function AceiteDoConvite({ token, coupleNames, viewer, googleAtivo }: { token: string; coupleNames: string; viewer: Visitante; googleAtivo: boolean }) {
   return (
     <section aria-labelledby="titulo" className="step-in flex flex-col gap-6">
       <span className="grid size-14 place-items-center rounded-full bg-ameixa-suave text-ameixa">
@@ -24,7 +24,7 @@ export function AceiteDoConvite({ token, coupleNames, viewer }: { token: string;
       </div>
 
       {viewer.kind === "member" ? <AceiteDeQuemTemConta token={token} viewer={viewer} /> : null}
-      {viewer.kind === "anonymous" ? <AceiteDeQuemNaoTemConta token={token} /> : null}
+      {viewer.kind === "anonymous" ? <AceiteDeQuemNaoTemConta token={token} googleAtivo={googleAtivo} /> : null}
       {viewer.kind === "blocked" ? (
         <div className="flex flex-col gap-4">
           <AvisoDoFormulario>{viewer.reason}</AvisoDoFormulario>

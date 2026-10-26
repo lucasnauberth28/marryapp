@@ -7,6 +7,7 @@ import { MoldeDeAcesso, FOTOS_DO_MOLDE, TituloDoMolde } from "@/components/accou
 import { estiloDoBotao } from "@/components/landing/styles";
 import { MENSAGEM_DA_SITUACAO_DO_CONVITE, buscarConvite } from "@/lib/account/invites";
 import { classificarConta } from "@/lib/account/wedding-provisioning";
+import { configuracaoAtualDoGoogle } from "@/lib/google/servidor";
 import { cn } from "@/lib/utils";
 import { AceiteDoConvite, type Visitante } from "./invite-accept";
 
@@ -67,7 +68,7 @@ export default async function ConvitePage({ params }: { params: Promise<{ token:
 
   return (
     <MoldeDeAcesso photo={FOTOS_DO_MOLDE.convite} footnote="O convite vale por 7 dias e só pode ser usado uma vez.">
-      <AceiteDoConvite token={token} coupleNames={lookup.invite.coupleNames} viewer={viewer} />
+      <AceiteDoConvite token={token} coupleNames={lookup.invite.coupleNames} viewer={viewer} googleAtivo={configuracaoAtualDoGoogle() !== null} />
     </MoldeDeAcesso>
   );
 }

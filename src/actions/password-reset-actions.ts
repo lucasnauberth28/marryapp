@@ -99,7 +99,7 @@ export async function redefinirSenha(input: { token: string; password: string; c
         data: { usedAt: now },
       });
       if (claimed.count !== 1) throw new Error("TOKEN_USED");
-      await tx.user.update({ where: { id: record.userId }, data: { password: hashed } });
+      await tx.user.update({ where: { id: record.userId }, data: { password: hashed, hasPassword: true } });
       await tx.passwordResetToken.updateMany({ where: { userId: record.userId, usedAt: null }, data: { usedAt: now } });
     });
   } catch (error) {

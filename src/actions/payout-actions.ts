@@ -9,6 +9,7 @@ import { exigirCasamento, type ContextoDoCasamento } from "@/lib/security/weddin
 import { conferirLimiteDeUso } from "@/lib/security/rate-limiter";
 import { cifrarSegredoDoRepasse, cifraDoRepasseEstaConfigurada, versaoAtualDaChaveDoRepasse, ErroDeCifraDoRepasse } from "@/lib/security/payout-crypto";
 import { registrarAuditoria } from "@/lib/audit";
+import { ERROS } from "@/lib/mensagens-de-erro";
 import { contextoDaCifraDoRepasse, validarEntradaDeRepasse } from "@/lib/repasse/payout-input";
 import { obterVisaoDaContaDeRepasse, type VisaoDaContaDeRepasse } from "@/lib/repasse/payout-account-view";
 import { avisarMudancaNoRepasse } from "@/lib/repasse/payout-notify";
@@ -51,9 +52,11 @@ async function autorizarEscrita(password: unknown, action: string): Promise<{ ct
   // O weddingId da conta precisa ser o da sessão (defesa em profundidade contra IDOR).
   const user = await prisma.user.findFirst({
     where: { id: ctx.session.userId, weddingId: ctx.weddingId },
-    select: { id: true, name: true, password: true },
+    select: { id: true, name: true, password: true, hasPassword: true },
   });
   if (!user) return { success: false, error: SEM_PERMISSAO_DE_ESCRITA };
+
+  if (!user.hasPassword) return { success: false, error: ERROS.contaSemSenha };
 
   if (!(await bcrypt.compare(pw.data, user.password))) {
     await registrarAuditoria({ action: `${action}_denied`, targetType: "Wedding", targetId: ctx.weddingId, details: { reason: "wrong_password" } });

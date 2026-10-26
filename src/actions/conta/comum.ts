@@ -18,6 +18,7 @@ export async function contaAtual() {
       id: true,
       name: true,
       password: true,
+      hasPassword: true,
       weddingId: true,
       partnerVendorId: true,
       role: { select: { name: true, allowedPaths: true } },

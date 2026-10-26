@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { urlDoApp } from "@/lib/app-url";
+import { criarContaDoParComGoogle } from "@/lib/account/convite-com-google";
 import { trocarCodigoPeloIdToken } from "@/lib/google/cliente";
 import { assinarPerfilPendente, DURACAO_DO_PENDENTE_EM_SEGUNDOS, lerFluxo, type FluxoDoGoogle, type PerfilDoGoogle } from "@/lib/google/cookies";
 import { RecusaDoGoogle, chavesDoGoogle, validarIdToken } from "@/lib/google/id-token";
@@ -36,6 +37,12 @@ async function entrarNaConta(userId: string, fluxo: FluxoDoGoogle) {
   return NextResponse.redirect(urlDoApp(resolverCaminhoPosLogin(fluxo.proxima, sessao.destino, sessao.allowedPaths)));
 }
 
+/** Veio pelo convite do par e não tem conta: entra já no casamento. Se o convite não vale mais, a tela do convite explica. */
+async function entrarPeloConvite(perfil: PerfilDoGoogle, fluxo: FluxoDoGoogle, convite: string) {
+  const userId = await criarContaDoParComGoogle(perfil, convite);
+  return userId ? entrarNaConta(userId, { ...fluxo, proxima: undefined }) : NextResponse.redirect(urlDoApp(`/convite/${convite}`));
+}
+
 /** O que o Google devolveu, já conferido: o perfil, ou o código do erro para a tela. */
 async function perfilConferido(request: NextRequest, fluxo: FluxoDoGoogle): Promise<PerfilDoGoogle | { erro: string }> {
   const config = configuracaoAtualDoGoogle();
@@ -66,6 +73,7 @@ export async function GET(request: NextRequest) {
 
   const decisao = await decidirParaOPerfil(perfil);
   if (decisao.acao === "recusar") return encerrar(aoLoginComErro(decisao.motivo === "administracao" ? "google-administracao" : "google-outra-conta", fluxo.modo));
+  if (decisao.acao === "criar" && fluxo.convite) return encerrar(await entrarPeloConvite(perfil, fluxo, fluxo.convite));
   if (decisao.acao === "criar") return encerrar(await paraCompletarOCadastro(perfil, fluxo));
   if (decisao.acao === "vincular") await vincularGoogleAConta(decisao.userId, perfil);
   return encerrar(await entrarNaConta(decisao.userId, fluxo));

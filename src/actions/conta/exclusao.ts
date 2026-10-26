@@ -48,6 +48,8 @@ export async function excluirMinhaConta(input: { confirmation: string; password:
     return { success: false, error: "Contas da administração são removidas pela tela Usuários, por outra pessoa da equipe." };
   }
 
+  if (!user.hasPassword) return { success: false, error: ERROS.contaSemSenha };
+
   const parsed = EsquemaDaExclusao.safeParse(input);
   if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Confira os dados." };
 

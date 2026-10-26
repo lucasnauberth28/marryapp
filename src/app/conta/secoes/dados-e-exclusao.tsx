@@ -91,11 +91,13 @@ function FormularioDeExclusao({ aoCancelar }: { aoCancelar: () => void }) {
   );
 }
 
-export function SecaoDeExclusao({ kind, isLastMember }: { kind: TipoDeConta; isLastMember: boolean }) {
+export function SecaoDeExclusao({ kind, isLastMember, hasPassword }: { kind: TipoDeConta; isLastMember: boolean; hasPassword: boolean }) {
   const [open, setOpen] = useState(false);
   return (
     <Secao id="excluir" icon={Trash2} tone="danger" title="Excluir conta" description={`Apaga a sua conta de vez. ${consequenciaDaExclusao(kind, isLastMember)} Não dá para desfazer.`}>
-      {open ? (
+      {!hasPassword ? (
+        <p className="text-[15px] leading-6 text-tinta-suave">Para excluir a conta, crie antes uma senha na seção Senha, acima. Ela confirma que é você.</p>
+      ) : open ? (
         <FormularioDeExclusao aoCancelar={() => setOpen(false)} />
       ) : (
         <div>

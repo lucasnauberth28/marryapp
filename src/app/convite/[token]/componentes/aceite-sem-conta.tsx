@@ -2,6 +2,7 @@ import { useState, useTransition } from "react";
 import { ArrowRight, Lock, Mail, User } from "lucide-react";
 import { aceitarConviteComContaNova } from "@/actions/invite-actions";
 import { entrar } from "@/actions/auth-actions";
+import { BotaoDoGoogle, SeparadorOu } from "@/components/account/botao-do-google";
 import { AlternarVisibilidadeDaSenha } from "@/components/account/password-toggle";
 import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { Botao } from "@/components/ui/button";
@@ -114,15 +115,26 @@ function CamposDoAceite({ f, criando }: { f: ReturnType<typeof useAceiteSemConta
   );
 }
 
+function EntradaPeloGoogle({ token, criando }: { token: string; criando: boolean }) {
+  return (
+    <>
+      <BotaoDoGoogle modo={criando ? "criar" : "entrar"} parametros={{ convite: token }} />
+      <SeparadorOu />
+    </>
+  );
+}
+
 const LINK_DE_TEXTO = "font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4";
 
-export function AceiteDeQuemNaoTemConta({ token }: { token: string }) {
+export function AceiteDeQuemNaoTemConta({ token, googleAtivo }: { token: string; googleAtivo: boolean }) {
   const f = useAceiteSemConta(token);
   const criando = f.mode === "criar";
 
   return (
     <div className="flex flex-col gap-5">
       <EscolhaDoModo mode={f.mode} aoEscolher={f.switchMode} />
+
+      {googleAtivo ? <EntradaPeloGoogle token={token} criando={criando} /> : null}
 
       <form onSubmit={f.handleSubmit} noValidate className="flex flex-col gap-5">
         <CamposDoAceite f={f} criando={criando} />

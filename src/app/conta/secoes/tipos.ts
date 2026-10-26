@@ -21,7 +21,9 @@ export type CasamentoDaConta = { coupleNames: string; slug: string; members: Int
 
 export interface Propriedades {
   kind: TipoDeConta;
-  account: { name: string; email: string; createdAt: string; companyName: string | null };
+  account: { name: string; email: string; createdAt: string; companyName: string | null; hasPassword: boolean };
+  /** Google ligado à conta (null: não ligado). */
+  google: { email: string; since: string } | null;
   wedding: CasamentoDaConta | null;
   /** Chave pública do push (null com o push desligado no servidor). */
   pushPublicKey: string | null;
