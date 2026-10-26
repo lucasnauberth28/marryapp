@@ -1,14 +1,15 @@
 // O estado do cadastro: campos da conta, validação, envio ao servidor e para onde ir depois.
 import { useState, useTransition } from "react";
 import { cadastrarContaDoPlano } from "@/actions/assinatura/cadastro";
+import { cadastrarContaComGoogle } from "@/actions/assinatura/cadastro-google";
 import type { DadosDoCadastroDoPlano } from "@/actions/assinatura/cadastro-comum";
 import { CATEGORIAS_DE_FORNECEDOR } from "@/app/(fornecedor)/_lib/perfil-do-fornecedor";
 import type { EtapaDoCadastro, OpcaoDePlano } from "../auth-config";
 import { campoDoErroDoServidor, validarCadastro, type CamposDoCadastro, type Erros } from "./validacao";
 
-export function useCamposDoCadastro() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+export function useCamposDoCadastro(perfilDoGoogle: { name: string; email: string } | null = null) {
+  const [name, setName] = useState(perfilDoGoogle?.name ?? "");
+  const [email, setEmail] = useState(perfilDoGoogle?.email ?? "");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [companyName, setCompanyName] = useState("");
@@ -27,6 +28,8 @@ interface EntradaDoEnvio {
   plan: OpcaoDePlano | undefined;
   customModules: string[] | undefined;
   aoMudarEtapa: (etapa: EtapaDoCadastro) => void;
+  /** A conta nasce do Google: sem senha, e o e-mail vem do cookie assinado do retorno. */
+  comGoogle?: boolean;
 }
 
 function dadosParaEnviar({ campos: c, isVendor, plan, customModules }: EntradaDoEnvio): DadosDoCadastroDoPlano {
@@ -68,13 +71,14 @@ export function useEnvioDoCadastro(entrada: EntradaDoEnvio) {
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
-    const found = validarCadastro(campos as CamposDoCadastro, isVendor);
+    const found = validarCadastro(campos as CamposDoCadastro, isVendor, entrada.comGoogle);
     setErrors(found);
     const primeiro = Object.keys(found)[0];
     if (primeiro) return void document.getElementById(`cadastro-${primeiro}`)?.focus();
 
     startTransition(async () => {
-      const res = await cadastrarContaDoPlano(dadosParaEnviar(entrada));
+      const dados = dadosParaEnviar(entrada);
+      const res = entrada.comGoogle ? await cadastrarContaComGoogle(dados) : await cadastrarContaDoPlano(dados);
       if (!res.success) return mostrarErroDoServidor(res.error || "Não foi possível criar a conta agora. Tentem novamente.");
       const next = ("redirectTo" in res && res.redirectTo) || null;
       setRedirectTo(next);

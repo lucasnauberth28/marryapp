@@ -16,6 +16,7 @@ const CAMINHOS_PUBLICOS = [
   "/rsvp",
   "/dia-do-evento",
   "/api/webhooks",
+  "/api/auth", // entrada com o Google: cada rota confere state, nonce e PKCE
   "/api/cron", // autenticada pelo CRON_SECRET na própria rota
   "/api/manutencao", // aviso de manutenção para convidados (só mostra ligado, mensagem e hora de volta)
   "/convite", // aceitar o convite do par

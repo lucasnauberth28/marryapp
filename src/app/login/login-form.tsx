@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 import { entrar } from "@/actions/auth-actions";
+import { BotaoDoGoogle, SeparadorOu } from "@/components/account/botao-do-google";
 import { AlternarVisibilidadeDaSenha } from "@/components/account/password-toggle";
 import { estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { Botao } from "@/components/ui/button";
@@ -81,13 +82,23 @@ export function FormularioDeLogin({
   initialEmail = "",
   nextPath = null,
   onCreateAccount,
+  googleAtivo = false,
 }: {
   initialEmail?: string;
   nextPath?: string | null;
   onCreateAccount: () => void;
+  /** As credenciais do Google estão configuradas: mostra "Continuar com o Google". */
+  googleAtivo?: boolean;
 }) {
   const f = useEntrada(initialEmail, nextPath);
   return (
+    <div className="flex flex-col gap-5">
+      {googleAtivo ? (
+        <>
+          <BotaoDoGoogle modo="entrar" parametros={{ proxima: nextPath }} />
+          <SeparadorOu />
+        </>
+      ) : null}
     <form onSubmit={f.handleSubmit} noValidate={false} className="flex flex-col gap-5" aria-describedby={f.error ? "login-erro" : undefined}>
       <CamposDeLogin f={f} />
 
@@ -105,5 +116,6 @@ export function FormularioDeLogin({
         </button>
       </p>
     </form>
+    </div>
   );
 }

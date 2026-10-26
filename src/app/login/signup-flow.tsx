@@ -21,6 +21,10 @@ interface PropriedadesDoFluxoDeCadastro {
   catalog?: Catalogo;
   /** Conta já existente: leva para a aba Entrar com o e-mail preenchido. */
   onGoToLogin: (email: string) => void;
+  googleAtivo?: boolean;
+  erroDoGoogle?: string | null;
+  /** Veio do Google sem conta: nome e e-mail já confirmados, sem senha. */
+  perfilDoGoogle?: { name: string; email: string } | null;
 }
 
 /** Etapas reais do caminho: o tipo de conta só conta se a pessoa passou por ele, e o pagamento só existe em plano pago. */
@@ -51,11 +55,11 @@ function useEscolhaDoPlano(step: EtapaDoCadastro, type: TipoDeConta | null, init
   return { plans, plan, planId, setPlanId, flowSteps: etapasDoCaminho(startedAtType, plan) };
 }
 
-export function FluxoDeCadastro({ step, type, onStepChange, onTypeChange, initialPlanId, customModules, catalog, onGoToLogin }: PropriedadesDoFluxoDeCadastro) {
+export function FluxoDeCadastro({ step, type, onStepChange, onTypeChange, initialPlanId, customModules, catalog, onGoToLogin, googleAtivo = false, erroDoGoogle = null, perfilDoGoogle = null }: PropriedadesDoFluxoDeCadastro) {
   const { plans, plan, planId, setPlanId, flowSteps } = useEscolhaDoPlano(step, type, initialPlanId, customModules, catalog);
   const isVendor = type === "fornecedor";
-  const campos = useCamposDoCadastro();
-  const envio = useEnvioDoCadastro({ campos, isVendor, plan, customModules, aoMudarEtapa: onStepChange });
+  const campos = useCamposDoCadastro(perfilDoGoogle);
+  const envio = useEnvioDoCadastro({ campos, isVendor, plan, customModules, aoMudarEtapa: onStepChange, comGoogle: perfilDoGoogle !== null });
   const [paid, setPaid] = useState(false);
   const titulo = useRef<HTMLHeadingElement>(null);
   useFocoNoTitulo(titulo, step);
@@ -89,7 +93,7 @@ export function FluxoDeCadastro({ step, type, onStepChange, onTypeChange, initia
       ) : null}
 
       {step === "dados" && type && plan ? (
-        <EtapaDosDados titulo={titulo} isVendor={isVendor} plan={plan} campos={campos} envio={envio} aoVoltarAoPlano={() => onStepChange("plano")} aoIrParaOLogin={onGoToLogin} />
+        <EtapaDosDados titulo={titulo} isVendor={isVendor} plan={plan} campos={campos} envio={envio} aoVoltarAoPlano={() => onStepChange("plano")} aoIrParaOLogin={onGoToLogin} google={{ ativo: googleAtivo, erro: erroDoGoogle, perfil: perfilDoGoogle, tipo: type, modulos: customModules }} />
       ) : null}
 
       {step === "pagamento" && plan ? (

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import { PalcoDeAcesso } from "@/components/account/auth-stage";
+import { AvisoDoFormulario } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 import { FormularioDeLogin } from "./login-form";
 import { FluxoDeCadastro } from "./signup-flow";
@@ -20,34 +21,48 @@ interface PropriedadesDaExperienciaDeAcesso {
   nextPath?: string | null;
   /** A pessoa chegou aqui porque a sessão expirou. */
   sessionExpired?: boolean;
+  /** As credenciais do Google estão configuradas: o botão "Continuar com o Google" aparece. */
+  googleAtivo?: boolean;
+  /** Texto do erro da volta do Google (já escolhido no servidor). */
+  erroDoGoogle?: string | null;
+  /** Quem chegou do Google e ainda não tem conta: completa o cadastro com estes dados. */
+  perfilDoGoogle?: { name: string; email: string } | null;
+}
+
+/**
+ * Só o título acompanha a aba. A URL fica como chegou (/login ou /cadastro): trocar o caminho
+ * faria o router remontar a outra página no refresh que segue a criação da conta (cookie novo),
+ * e o cadastro perderia a etapa em que estava.
+ */
+function useTituloDaAba(mode: ModoDeAcesso) {
+  useEffect(() => {
+    document.title = mode === "entrar" ? "Entrar | Aceito" : "Criar conta | Aceito";
+  }, [mode]);
+}
+
+/** Com o tipo já conhecido (vindo de um plano da landing), o cadastro começa na escolha do plano; quem volta do Google já escolheu tipo e plano e segue para os dados. */
+function etapaInicial(tipoConhecido: boolean, voltouDoGoogleComPlano: boolean): EtapaDoCadastro {
+  if (!tipoConhecido) return "tipo";
+  return voltouDoGoogleComPlano ? "dados" : "plano";
 }
 
 /**
  * Tela única de acesso: entrar e criar conta lado a lado, sem recarregar a página.
  * /login abre na aba Entrar e /cadastro na aba Criar conta.
  */
-export function ExperienciaDeAcesso({ initialMode, initialType = null, initialPlanId, customModules, catalog, nextPath = null, sessionExpired = false }: PropriedadesDaExperienciaDeAcesso) {
+export function ExperienciaDeAcesso({ initialMode, initialType = null, initialPlanId, customModules, catalog, nextPath = null, sessionExpired = false, googleAtivo = false, erroDoGoogle = null, perfilDoGoogle = null }: PropriedadesDaExperienciaDeAcesso) {
   const planType = tipoDoPlano(initialPlanId);
   const [mode, setMode] = useState<ModoDeAcesso>(initialMode);
   const [type, setType] = useState<TipoDeConta | null>(initialType ?? planType);
-  // Com o tipo já conhecido (vindo de um plano da landing), o cadastro começa na escolha do plano.
-  const [step, setStep] = useState<EtapaDoCadastro>(initialType || planType ? "plano" : "tipo");
+  const [step, setStep] = useState<EtapaDoCadastro>(etapaInicial(Boolean(initialType || planType), Boolean(perfilDoGoogle && initialPlanId)));
   const [loginEmail, setLoginEmail] = useState("");
+  useTituloDaAba(mode);
 
   const accountCreated = step === "pagamento" || step === "pronto";
-
-  // Só o título acompanha a aba. A URL fica como chegou (/login ou /cadastro): trocar o caminho
-  // faria o router remontar a outra página no refresh que segue a criação da conta (cookie novo),
-  // e o cadastro perderia a etapa em que estava.
-  useEffect(() => {
-    document.title = mode === "entrar" ? "Entrar | Aceito" : "Criar conta | Aceito";
-  }, [mode]);
-
   const goToLogin = useCallback((email: string) => {
     setLoginEmail(email);
     setMode("entrar");
   }, []);
-
   const photo = fotoPara(mode, step, type);
 
   return (
@@ -59,7 +74,7 @@ export function ExperienciaDeAcesso({ initialMode, initialType = null, initialPl
 
       <div id="painel-acesso" role="tabpanel" aria-labelledby={mode === "entrar" ? "aba-entrar" : "aba-criar"}>
         {mode === "entrar" ? (
-          <PainelDeEntrar key="entrar" sessionExpired={sessionExpired} loginEmail={loginEmail} nextPath={nextPath} aoCriarConta={() => setMode("criar")} />
+          <PainelDeEntrar key="entrar" sessionExpired={sessionExpired} loginEmail={loginEmail} nextPath={nextPath} aoCriarConta={() => setMode("criar")} googleAtivo={googleAtivo} erroDoGoogle={erroDoGoogle} />
         ) : (
           <FluxoDeCadastro
             step={step}
@@ -70,6 +85,9 @@ export function ExperienciaDeAcesso({ initialMode, initialType = null, initialPl
             customModules={customModules}
             catalog={catalog}
             onGoToLogin={goToLogin}
+            googleAtivo={googleAtivo}
+            erroDoGoogle={erroDoGoogle}
+            perfilDoGoogle={perfilDoGoogle}
           />
         )}
       </div>
@@ -95,9 +113,11 @@ interface PropriedadesDoPainelDeEntrar {
   loginEmail: string;
   nextPath: string | null;
   aoCriarConta: () => void;
+  googleAtivo: boolean;
+  erroDoGoogle: string | null;
 }
 
-function PainelDeEntrar({ sessionExpired, loginEmail, nextPath, aoCriarConta }: PropriedadesDoPainelDeEntrar) {
+function PainelDeEntrar({ sessionExpired, loginEmail, nextPath, aoCriarConta, googleAtivo, erroDoGoogle }: PropriedadesDoPainelDeEntrar) {
   return (
     <div className="step-in flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -110,7 +130,8 @@ function PainelDeEntrar({ sessionExpired, loginEmail, nextPath, aoCriarConta }: 
           Sua sessão expirou. Entre de novo para continuar.
         </p>
       ) : null}
-      <FormularioDeLogin key={loginEmail} initialEmail={loginEmail} nextPath={nextPath} onCreateAccount={aoCriarConta} />
+      {erroDoGoogle ? <AvisoDoFormulario id="google-erro">{erroDoGoogle}</AvisoDoFormulario> : null}
+      <FormularioDeLogin key={loginEmail} initialEmail={loginEmail} nextPath={nextPath} onCreateAccount={aoCriarConta} googleAtivo={googleAtivo} />
     </div>
   );
 }

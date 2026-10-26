@@ -91,6 +91,9 @@ jobs:
       MERCADOPAGO_WEBHOOK_SECRET: ci-webhook-somente-para-testes
       PAYOUT_ENCRYPTION_KEY: YmkVrf9RTqlRvSKBMSJwbYaRbXQV2EaJ5+jTSgNdqiE=  # chave descartável, só para os testes
       NEXT_PUBLIC_BASE_URL: http://localhost:3000
+      GOOGLE_CLIENT_ID: simulado-aceito
+      GOOGLE_CLIENT_SECRET: simulado
+      GOOGLE_SIMULADO_URL: http://localhost:4010
       E2E_BASE_URL: http://localhost:3000
       NEXT_TELEMETRY_DISABLED: "1"
 

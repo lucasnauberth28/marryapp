@@ -24,13 +24,13 @@ export function campoDoErroDoServidor(message: string): keyof Erros | null {
   return null;
 }
 
-export function validarCadastro(c: CamposDoCadastro, isVendor: boolean): Erros {
+export function validarCadastro(c: CamposDoCadastro, isVendor: boolean, semSenha = false): Erros {
   const e: Erros = {};
   if (c.name.trim().length < 3) e.name = "Informe seu nome com pelo menos 3 letras.";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email.trim())) e.email = "Confira o e-mail. Ele deve ter um formato como nome@exemplo.com.";
   const digits = somenteDigitos(c.phone);
   if (digits.length < 10 || digits.length > 11) e.phone = "Informe o número com DDD, com 10 ou 11 dígitos.";
-  if (c.password.length < 8) e.password = "Use pelo menos 8 caracteres.";
+  if (!semSenha && c.password.length < 8) e.password = "Use pelo menos 8 caracteres.";
   if (isVendor) {
     if (c.companyName.trim().length < 2) e.companyName = "Informe o nome do negócio.";
     if (c.city.trim().length < 2) e.city = "Informe a cidade onde você atende.";

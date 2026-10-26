@@ -4,6 +4,8 @@ import { NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
 import { caminhoSeguroDeRetorno } from "@/lib/painel/login-redirect";
 import { obterSessao } from "@/lib/security/auth-guard";
 import { obterCatalogo } from "@/lib/pagamento/catalog-server";
+import { mensagemDoErroDoGoogle } from "@/lib/google/mensagens";
+import { configuracaoAtualDoGoogle } from "@/lib/google/servidor";
 import { ExperienciaDeAcesso } from "./auth-experience";
 
 export const metadata: Metadata = {
@@ -29,5 +31,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Parame
     expired = (await obterSessao()) === null;
   }
 
-  return <ExperienciaDeAcesso initialMode="entrar" nextPath={nextPath} sessionExpired={expired} catalog={await obterCatalogo()} />;
+  return (
+    <ExperienciaDeAcesso
+      initialMode="entrar"
+      nextPath={nextPath}
+      sessionExpired={expired}
+      catalog={await obterCatalogo()}
+      googleAtivo={configuracaoAtualDoGoogle() !== null}
+      erroDoGoogle={mensagemDoErroDoGoogle(primeiroValor(params.erro))}
+    />
+  );
 }

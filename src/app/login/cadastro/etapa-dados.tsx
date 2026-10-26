@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Lock, Mail, Phone, User } from "lucide-react";
+import { ArrowRight, Lock, Mail, Phone, ShieldCheck, User } from "lucide-react";
+import { BotaoDoGoogle, SeparadorOu } from "@/components/account/botao-do-google";
 import { AlternarVisibilidadeDaSenha } from "@/components/account/password-toggle";
 import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { Botao } from "@/components/ui/button";
@@ -29,19 +30,30 @@ function PlanoEscolhido({ plan, aoTrocar }: { plan: OpcaoDePlano; aoTrocar: () =
   );
 }
 
-function CamposDaConta({ campos, errors }: { campos: Campos; errors: ReturnType<typeof useEnvioDoCadastro>["errors"] }) {
+/** Tudo o que a etapa sabe sobre o Google: se o botão aparece, o erro da volta e quem chegou de lá. */
+export interface GoogleDaEtapa {
+  ativo: boolean;
+  erro: string | null;
+  perfil: { name: string; email: string } | null;
+  tipo: string | null;
+  modulos?: string[];
+}
+
+function CamposDaConta({ campos, errors, comGoogle }: { campos: Campos; errors: ReturnType<typeof useEnvioDoCadastro>["errors"]; comGoogle: boolean }) {
   const [showPassword, setShowPassword] = useState(false);
   return (
     <>
-      <Campo id="cadastro-email" label="E-mail" icon={Mail} error={errors.email} hint="Usaremos este e-mail para o acesso à conta.">
-        {(c) => <input {...c} id="cadastro-email" name="email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} placeholder="voce@email.com" value={campos.email} onChange={(e) => campos.setEmail(e.target.value)} />}
+      <Campo id="cadastro-email" label="E-mail" icon={Mail} error={errors.email} hint={comGoogle ? "Confirmado pelo Google. Você também vai poder entrar com ele." : "Usaremos este e-mail para o acesso à conta."}>
+        {(c) => <input {...c} id="cadastro-email" name="email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} placeholder="voce@email.com" value={campos.email} readOnly={comGoogle} onChange={(e) => campos.setEmail(e.target.value)} />}
       </Campo>
       <Campo id="cadastro-phone" label="WhatsApp" icon={Phone} error={errors.phone} hint="Informe com DDD, por exemplo (11) 98765-4321.">
         {(c) => <input {...c} id="cadastro-phone" name="tel" type="tel" autoComplete="tel-national" placeholder="(11) 98765-4321" value={campos.phone} onChange={(e) => campos.setPhone(mascararTelefone(e.target.value))} />}
       </Campo>
-      <Campo id="cadastro-password" label="Crie uma senha" icon={Lock} error={errors.password} hint="Pelo menos 8 caracteres." trailing={<AlternarVisibilidadeDaSenha show={showPassword} onToggle={() => setShowPassword((v) => !v)} />}>
-        {(c) => <input {...c} id="cadastro-password" name="new-password" type={showPassword ? "text" : "password"} autoComplete="new-password" value={campos.password} onChange={(e) => campos.setPassword(e.target.value)} />}
-      </Campo>
+      {comGoogle ? null : (
+        <Campo id="cadastro-password" label="Crie uma senha" icon={Lock} error={errors.password} hint="Pelo menos 8 caracteres." trailing={<AlternarVisibilidadeDaSenha show={showPassword} onToggle={() => setShowPassword((v) => !v)} />}>
+          {(c) => <input {...c} id="cadastro-password" name="new-password" type={showPassword ? "text" : "password"} autoComplete="new-password" value={campos.password} onChange={(e) => campos.setPassword(e.target.value)} />}
+        </Campo>
+      )}
     </>
   );
 }
@@ -72,9 +84,29 @@ interface Propriedades {
   envio: ReturnType<typeof useEnvioDoCadastro>;
   aoVoltarAoPlano: () => void;
   aoIrParaOLogin: (email: string) => void;
+  google: GoogleDaEtapa;
 }
 
-export function EtapaDosDados({ titulo, isVendor, plan, campos, envio, aoVoltarAoPlano, aoIrParaOLogin }: Propriedades) {
+/** No topo da etapa: o botão do Google (e o "ou") ou, para quem já voltou de lá, o aviso de que o Google confirmou o e-mail. */
+function EntradaPeloGoogle({ google, plan }: { google: GoogleDaEtapa; plan: OpcaoDePlano }) {
+  if (google.perfil) {
+    return (
+      <p role="status" className="flex items-start gap-2.5 rounded-[12px] border border-linha bg-areia px-4 py-3 text-[15px] leading-6 text-tinta">
+        <ShieldCheck aria-hidden="true" className="mt-0.5 size-[18px] shrink-0 text-sucesso" strokeWidth={1.6} />
+        Conta do Google confirmada. Falta só o que o Google não nos dá.
+      </p>
+    );
+  }
+  if (!google.ativo) return null;
+  return (
+    <>
+      <BotaoDoGoogle modo="criar" parametros={{ tipo: google.tipo, plano: plan.id, modulos: google.modulos }}>Criar conta com o Google</BotaoDoGoogle>
+      <SeparadorOu />
+    </>
+  );
+}
+
+export function EtapaDosDados({ titulo, isVendor, plan, campos, envio, aoVoltarAoPlano, aoIrParaOLogin, google }: Propriedades) {
   const { errors, formError } = envio;
   return (
     <section aria-labelledby="cadastro-titulo" className="step-in flex flex-col gap-6">
@@ -84,13 +116,15 @@ export function EtapaDosDados({ titulo, isVendor, plan, campos, envio, aoVoltarA
         text={isVendor ? "Seu perfil passa pela curadoria antes de aparecer na vitrine." : "Uma pessoa pode começar o cadastro. Depois, vocês podem convidar o par para participar."}
       />
       <PlanoEscolhido plan={plan} aoTrocar={aoVoltarAoPlano} />
+      {google.erro ? <AvisoDoFormulario id="google-erro">{google.erro}</AvisoDoFormulario> : null}
+      <EntradaPeloGoogle google={google} plan={plan} />
 
       <form onSubmit={envio.submit} noValidate className="flex flex-col gap-5">
         <Campo id="cadastro-name" label="Seu nome" icon={User} error={errors.name}>
           {(c) => <input {...c} id="cadastro-name" name="name" autoComplete="name" value={campos.name} onChange={(e) => campos.setName(e.target.value)} />}
         </Campo>
         {isVendor ? <CamposDeFornecedor campos={campos} errors={errors} /> : null}
-        <CamposDaConta campos={campos} errors={errors} />
+        <CamposDaConta campos={campos} errors={errors} comGoogle={google.perfil !== null} />
 
         {formError ? (
           <AvisoDoFormulario id="cadastro-erro">

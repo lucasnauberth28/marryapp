@@ -21,11 +21,10 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: process.env.CI
-    ? {
-        command: "npm run start",
-        url: `${baseURL}/login`,
-        reuseExistingServer: false,
-        timeout: 120_000,
-      }
+    ? [
+        { command: "npm run start", url: `${baseURL}/login`, reuseExistingServer: false, timeout: 120_000 },
+        // Google simulado: o app só fala com ele com GOOGLE_CLIENT_ID "simulado-*" (ver o job de e2e do CI)
+        { command: "node scripts/google-simulado.mjs", url: "http://localhost:4010/saude", reuseExistingServer: false, timeout: 30_000 },
+      ]
     : undefined,
 });

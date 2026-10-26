@@ -6,12 +6,11 @@ import { createHash, timingSafeEqual } from "node:crypto";
 
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { assinarToken, opcoesDoCookieDeSessao, temAcessoAoCaminho, NOME_DO_COOKIE_DE_SESSAO, NOME_DO_COOKIE_DE_SESSAO_VISTA } from "@/lib/auth";
-import { ehAcessoDeAdminDaPlataforma } from "@/lib/permissions";
+import { assinarToken, opcoesDoCookieDeSessao, NOME_DO_COOKIE_DE_SESSAO, NOME_DO_COOKIE_DE_SESSAO_VISTA } from "@/lib/auth";
 import { INICIO_DO_ADMIN_DA_PLATAFORMA, resolverCaminhoPosLogin } from "@/lib/painel/login-redirect";
 import { conferirLimiteDeUso, limitarUsoPorIp, LimitesDeSeguranca } from "@/lib/security/rate-limiter";
 import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
-import { classificarConta } from "@/lib/account/wedding-provisioning";
+import { caminhoDeChegadaPara } from "@/lib/account/destino-pos-login";
 
 // Hash válido usado quando o usuário não existe, para que o tempo de resposta
 // não revele quais logins estão cadastrados.
@@ -29,26 +28,6 @@ async function gravarCookieDeSessao(token: string) {
 }
 
 const ERRO_GENERICO_DE_LOGIN = "Usuário ou senha incorretos.";
-
-/**
- * Destino após o login: a administração (/admin) para a conta com acesso total ("*"); o painel do fornecedor
- * para contas de fornecedor; o onboarding (/boas-vindas) para contas de casal ainda sem casamento; senão o painel do casal.
- */
-function caminhoDeChegadaPara(user: {
-  id: string;
-  weddingId: string | null;
-  partnerVendorId: string | null;
-  role: { name: string; allowedPaths: unknown };
-}) {
-  const allowedPaths = Array.isArray(user.role.allowedPaths) ? (user.role.allowedPaths as string[]) : [];
-  if (ehAcessoDeAdminDaPlataforma(allowedPaths)) return INICIO_DO_ADMIN_DA_PLATAFORMA;
-  const kind = classificarConta(user);
-  if (kind === "vendor") return temAcessoAoCaminho(allowedPaths, "/fornecedor") ? "/fornecedor" : "/dashboard";
-  if (kind === "couple" && !user.weddingId) return "/boas-vindas";
-  if (temAcessoAoCaminho(allowedPaths, "/dashboard")) return "/dashboard";
-  if (temAcessoAoCaminho(allowedPaths, "/fornecedor")) return "/fornecedor";
-  return "/dashboard";
-}
 
 const ERRO_DE_MUITAS_TENTATIVAS_DE_LOGIN = "Muitas tentativas de login consecutivas. Por segurança, aguarde alguns minutos para tentar novamente.";
 

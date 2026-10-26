@@ -293,6 +293,22 @@ model SystemSettings {
   @@map("system_settings")
 }
 
+/// Entrada por provedor externo (Google). A chave de quem é quem é o identificador do provedor (sub), nunca o e-mail.
+model ExternalAccount {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          String   // "google"
+  providerAccountId String   // "sub" do Google
+  email             String   // e-mail do provedor no momento do vínculo
+  createdAt         DateTime @default(now())
+  lastLoginAt       DateTime?
+
+  @@unique([provider, providerAccountId])
+  @@unique([userId, provider])
+  @@map("external_accounts")
+}
+
 model Role {
   id           String   @id @default(uuid())
   name         String   @unique
@@ -310,6 +326,9 @@ model User {
   name      String
   username  String   @unique
   password  String
+  // false: conta criada só pelo Google. O campo password guarda um hash aleatório que ninguém conhece,
+  // então entrar com senha só passa a valer depois de "Criar senha" (Minha conta) ou "Esqueci a senha".
+  hasPassword Boolean @default(true)
   roleId    String
   role      Role     @relation(fields: [roleId], references: [id])
   createdAt DateTime @default(now())
@@ -329,6 +348,7 @@ model User {
   pushSubscriptions PushSubscription[]
   notificationPreference NotificationPreference?
   domainOrders    DomainOrder[]
+  externalAccounts ExternalAccount[]
 
   // Última entrada na conta (administração: "Última atividade" e filtros de casais sem atividade)
   lastLoginAt     DateTime?
