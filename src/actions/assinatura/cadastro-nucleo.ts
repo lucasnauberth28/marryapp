@@ -13,6 +13,8 @@ import { normalizarTexto, limparEndereco, limparUrl } from "@/lib/security/sanit
 import { CAMINHO_DO_PAINEL_DO_FORNECEDOR } from "@/lib/security/vendor-guard";
 import { VendorPlanTier } from "@prisma/client";
 import { ehViolacaoDeUnicidade } from "@/lib/prisma-erros";
+import { avisarDepois } from "@/lib/notifications/service";
+import { enviarLinkDeConfirmacaoDeEmail } from "@/lib/account/email-verification";
 import type { PerfilDoGoogle } from "@/lib/google/cookies";
 import { prepararCasamento, criarOuAtualizarPapelDoCasal, comNovaTentativaDeEndereco } from "@/lib/account/wedding-provisioning";
 import { EsquemaDoCadastro, NOME_DO_PAPEL_DE_FORNECEDOR, calcularFaixaDePreco, dataDeCasamentoValida, guardarImagem, type DadosDoCadastroDoPlano } from "@/actions/assinatura/cadastro-comum";
@@ -34,7 +36,7 @@ interface ResultadoDoCadastro {
 
 /** Como a conta entra: com senha própria, ou só pelo Google (a senha guarda um hash aleatório que ninguém conhece). */
 export type CredencialDoCadastro = { tipo: "senha" } | { tipo: "google"; perfil: PerfilDoGoogle };
-type AcessoDaConta = { password: string; hasPassword: boolean; externalAccounts?: { create: { provider: string; providerAccountId: string; email: string } } };
+type AcessoDaConta = { password: string; hasPassword: boolean; emailVerifiedAt?: Date; externalAccounts?: { create: { provider: string; providerAccountId: string; email: string } } };
 
 const ERRO_DE_EMAIL_JA_CADASTRADO = "Já existe uma conta com este e-mail. Faça login para continuar.";
 
@@ -135,6 +137,8 @@ async function acessoDaConta(senha: string, credencial: CredencialDoCadastro): P
   return {
     password: await bcrypt.hash(randomBytes(32).toString("base64url"), 12),
     hasPassword: false,
+    // O Google já confirmou o e-mail (só chega aqui com email_verified)
+    emailVerifiedAt: new Date(),
     externalAccounts: { create: { provider: "google", providerAccountId: perfil.sub, email: perfil.email } },
   };
 }
@@ -168,7 +172,13 @@ export async function registrarConta(data: DadosDoCadastroDoPlano, credencial: C
 
     const acesso = await acessoDaConta(input.password, credencial);
     const name = normalizarTexto(input.name);
-    return vendorData ? await criarContaDoFornecedor(input, name, acesso, plan, vendorData) : await criarContaDoCasal(input, name, acesso, plan);
+    const resultado = vendorData ? await criarContaDoFornecedor(input, name, acesso, plan, vendorData) : await criarContaDoCasal(input, name, acesso, plan);
+    // Cadastro por senha: o e-mail ainda não foi provado, então segue o link de confirmação (depois da resposta)
+    if (resultado.success && resultado.userId && credencial.tipo === "senha") {
+      const conta = { id: resultado.userId, name, username: input.email };
+      avisarDepois(() => enviarLinkDeConfirmacaoDeEmail(conta));
+    }
+    return resultado;
   } catch (error) {
     console.error("[registerPlanAccount Error]:", error);
     const message = error instanceof Error && /imagem|Imagem|Formato/.test(error.message) ? error.message : null;

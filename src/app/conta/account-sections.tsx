@@ -3,6 +3,7 @@
 import { SecaoDeAparencia, SecaoDeNotificacoes } from "./secoes/avisos-e-aparencia";
 import { SecaoDeDados, SecaoDeExclusao } from "./secoes/dados-e-exclusao";
 import { SecaoDaPessoaParceira } from "./secoes/par";
+import { SecaoDoEmail } from "./secoes/email";
 import { SecaoDoGoogle } from "./secoes/google";
 import { SecaoDeSenha } from "./secoes/senha";
 import type { Propriedades } from "./secoes/tipos";
@@ -13,6 +14,7 @@ export function SecoesDaConta({ kind, account, wedding, pushPublicKey, notificat
       {wedding ? <SecaoDaPessoaParceira wedding={wedding} /> : null}
       <SecaoDeNotificacoes pushPublicKey={pushPublicKey} notifications={notifications} />
       <SecaoDeAparencia />
+      {kind !== "admin" ? <SecaoDoEmail email={account.email} verified={account.emailVerified} /> : null}
       <SecaoDeSenha hasPassword={account.hasPassword} />
       {kind !== "admin" ? <SecaoDoGoogle google={google} hasPassword={account.hasPassword} email={account.email} /> : null}
       <SecaoDeDados kind={kind} createdAt={account.createdAt} companyName={account.companyName} coupleNames={wedding?.coupleNames ?? null} />

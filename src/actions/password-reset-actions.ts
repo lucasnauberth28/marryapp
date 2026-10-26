@@ -66,6 +66,18 @@ export type ResultadoDaRedefinicaoDeSenha = { success: true } | { success: false
 
 const MENSAGEM_DE_EXPIRADO = "Este link expirou ou já foi usado. Peça um novo para criar a senha.";
 
+/** Grava a senha, confirma o e-mail (o link chegou à caixa de entrada da pessoa) e invalida todos os links da conta. */
+async function gravarNovaSenha(record: { id: string; userId: string }, hashed: string, now: Date) {
+  await prisma.$transaction(async (tx) => {
+    // Marca o uso só se ninguém usou no meio do caminho (dois envios ao mesmo tempo).
+    const claimed = await tx.passwordResetToken.updateMany({ where: { id: record.id, usedAt: null, expiresAt: { gt: now } }, data: { usedAt: now } });
+    if (claimed.count !== 1) throw new Error("TOKEN_USED");
+    await tx.user.update({ where: { id: record.userId }, data: { password: hashed, hasPassword: true } });
+    await tx.user.updateMany({ where: { id: record.userId, emailVerifiedAt: null }, data: { emailVerifiedAt: now } });
+    await tx.passwordResetToken.updateMany({ where: { userId: record.userId, usedAt: null }, data: { usedAt: now } });
+  });
+}
+
 /** Troca a senha pelo link do e-mail e invalida este e todos os outros links da conta. */
 export async function redefinirSenha(input: { token: string; password: string; confirm: string }): Promise<ResultadoDaRedefinicaoDeSenha> {
   const parsed = EsquemaDaRedefinicao.safeParse(input);
@@ -92,16 +104,7 @@ export async function redefinirSenha(input: { token: string; password: string; c
   const hashed = await bcrypt.hash(password, 12);
   const now = new Date();
   try {
-    await prisma.$transaction(async (tx) => {
-      // Marca o uso só se ninguém usou no meio do caminho (dois envios ao mesmo tempo).
-      const claimed = await tx.passwordResetToken.updateMany({
-        where: { id: record.id, usedAt: null, expiresAt: { gt: now } },
-        data: { usedAt: now },
-      });
-      if (claimed.count !== 1) throw new Error("TOKEN_USED");
-      await tx.user.update({ where: { id: record.userId }, data: { password: hashed, hasPassword: true } });
-      await tx.passwordResetToken.updateMany({ where: { userId: record.userId, usedAt: null }, data: { usedAt: now } });
-    });
+    await gravarNovaSenha(record, hashed, now);
   } catch (error) {
     if (error instanceof Error && error.message === "TOKEN_USED") return { success: false, error: MENSAGEM_DE_EXPIRADO, expired: true };
     console.error("[resetPassword]", error);

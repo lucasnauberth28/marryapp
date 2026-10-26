@@ -10,6 +10,8 @@ import { MENSAGEM_DA_SITUACAO_DO_CONVITE, buscarConvite } from "@/lib/account/in
 import { ehViolacaoDeUnicidade } from "@/lib/prisma-erros";
 import { classificarConta, renovarCookieDeSessao, criarOuAtualizarPapelDoCasal } from "@/lib/account/wedding-provisioning";
 import { registrarAuditoria } from "@/lib/audit";
+import { avisarDepois } from "@/lib/notifications/service";
+import { enviarLinkDeConfirmacaoDeEmail } from "@/lib/account/email-verification";
 
 import { ERROS } from "@/lib/mensagens-de-erro";
 type Falha = { success: false; error: string };
@@ -169,6 +171,7 @@ export async function aceitarConviteComContaNova(input: {
   }
 
   await renovarCookieDeSessao(userId);
+  avisarDepois(() => enviarLinkDeConfirmacaoDeEmail({ id: userId, name: data.name, username: data.email }));
   await registrarAuditoria({
     action: "wedding.invite_accept",
     targetType: "Wedding",

@@ -39,10 +39,11 @@ export async function carregarDadosDoResumo({ weddingId, session }: Pick<Context
     // Pessoas confirmadas que ainda não têm mesa
     prisma.guest.findMany({ where: { weddingId, rsvpStatus: RsvpStatus.CONFIRMED, tableId: null, ...filtroSemSoPresente }, select: { confirmedCompanions: true } }),
     // Se esta pessoa já dispensou a lista "Primeiros passos" (a conta de emergência não tem registro)
-    prisma.user.findUnique({ where: { id: session.userId }, select: { panelChecklistDismissedAt: true } }),
+    prisma.user.findUnique({ where: { id: session.userId }, select: { panelChecklistDismissedAt: true, emailVerifiedAt: true } }),
   ]);
   const checklistDispensado = !quemEsta || quemEsta.panelChecklistDismissedAt !== null;
-  return { guestRows, recent, txRows, expenseRows, nextTask, taskCount, tableCount, settings, giftCount, canWhatsApp, canQr, site, unseated, checklistDispensado };
+  const emailNaoConfirmado = quemEsta !== null && quemEsta.emailVerifiedAt === null;
+  return { emailNaoConfirmado, guestRows, recent, txRows, expenseRows, nextTask, taskCount, tableCount, settings, giftCount, canWhatsApp, canQr, site, unseated, checklistDispensado };
 }
 
 export type DadosDoResumo = Awaited<ReturnType<typeof carregarDadosDoResumo>>;

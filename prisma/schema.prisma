@@ -329,6 +329,8 @@ model User {
   // false: conta criada só pelo Google. O campo password guarda um hash aleatório que ninguém conhece,
   // então entrar com senha só passa a valer depois de "Criar senha" (Minha conta) ou "Esqueci a senha".
   hasPassword Boolean @default(true)
+  // Quando a pessoa provou ter a caixa de e-mail (link de confirmação, Google ou nova senha por e-mail). Nulo: ainda não confirmou.
+  emailVerifiedAt DateTime?
   roleId    String
   role      Role     @relation(fields: [roleId], references: [id])
   createdAt DateTime @default(now())
@@ -349,6 +351,7 @@ model User {
   notificationPreference NotificationPreference?
   domainOrders    DomainOrder[]
   externalAccounts ExternalAccount[]
+  emailVerificationTokens EmailVerificationToken[]
 
   // Última entrada na conta (administração: "Última atividade" e filtros de casais sem atividade)
   lastLoginAt     DateTime?
@@ -1349,4 +1352,18 @@ model WeddingPayout {
 
   @@index([weddingId, paidAt])
   @@map("wedding_payouts")
+}
+
+// Link "Confirmar meu e-mail" (só o hash vai ao banco; vale 24 horas e só uma vez)
+model EmailVerificationToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("email_verification_tokens")
 }

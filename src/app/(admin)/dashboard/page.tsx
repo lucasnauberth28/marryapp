@@ -6,6 +6,7 @@ import { temAcessoAoCaminho } from "@/lib/permissions";
 import { obterPlanoDoCasamento } from "@/lib/casamento/wedding-plan";
 import { geradorDeLinksDoConvite } from "@/lib/convidados/convite-digital";
 import { AtalhoDoCredenciamento } from "./resumo/atalho-do-credenciamento";
+import { AvisoDeEmailNaoConfirmado } from "./resumo/aviso-de-email";
 import { CabecalhoDoResumo } from "./resumo/cabecalho";
 import { carregarDadosDoResumo } from "./resumo/carregar-dados";
 import { calcularContas } from "./resumo/contas";
@@ -47,6 +48,7 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-5 md:gap-6">
       <CabecalhoDoResumo now={now} identity={identity} wedding={wedding} contas={contas} siteUrl={convite.siteUrl} />
+      {dados.emailNaoConfirmado && !ctx.impersonation && !ctx.viaAdmin && <AvisoDeEmailNaoConfirmado />}
       {primeirosPassos && <PrimeirosPassos items={primeirosPassos.items} doneCount={primeirosPassos.doneCount} />}
       <GradeDoResumo dados={dados} contas={contas} convite={convite} fila={fila} identity={identity} can={can} />
       {dados.canQr && naSemanaDoCasamento && can("/credenciamento") && <AtalhoDoCredenciamento />}

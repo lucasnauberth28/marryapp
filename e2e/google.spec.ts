@@ -1,4 +1,4 @@
-import { SENHA, cadastrarCasal, cnpjValido, emailUnico, entrar, expect, novoContexto, test } from "./helpers";
+import { SENHA, cadastrarCasal, cnpjValido, confirmarEmailNoBanco, emailUnico, entrar, expect, novoContexto, test } from "./helpers";
 import type { BrowserContext, Page } from "@playwright/test";
 
 // Login e cadastro com o Google, contra o Google simulado (scripts/google-simulado.mjs): o fluxo OAuth inteiro
@@ -40,9 +40,10 @@ test("casal novo cria a conta com o Google e depois entra só com ele", async ({
   expect(new URL(page.url()).pathname).toMatch(/boas-vindas|dashboard/);
 });
 
-test("quem já tem conta com o mesmo e-mail entra nela, e a senha continua valendo", async ({ page, context }) => {
+test("conta com e-mail confirmado: o Google entra nela e a senha continua valendo", async ({ page, context }) => {
   const email = emailUnico("vinculo");
   await cadastrarCasal(page, email);
+  await confirmarEmailNoBanco(email);
   await context.clearCookies({ name: "marryapp_admin_session" });
 
   await logadoNoGoogle(context, { email });
@@ -53,6 +54,28 @@ test("quem já tem conta com o mesmo e-mail entra nela, e a senha continua valen
   await context.clearCookies({ name: "marryapp_admin_session" });
   await entrar(page, email, SENHA);
   await expect(page).toHaveURL(/boas-vindas|dashboard/);
+});
+
+test("conta com e-mail NÃO confirmado: o Google entra nela, mas a senha de quem criou deixa de valer", async ({ page, context }) => {
+  const email = emailUnico("prehijack");
+  await cadastrarCasal(page, email);
+  await context.clearCookies({ name: "marryapp_admin_session" });
+
+  await logadoNoGoogle(context, { email });
+  await page.goto("/login");
+  await page.getByRole("link", { name: "Continuar com o Google" }).click();
+  await page.waitForURL(/\/(boas-vindas|dashboard)/);
+
+  // A senha cadastrada antes de provar a caixa de entrada não vale mais; quem entrou pelo Google cria outra por e-mail
+  await page.goto("/conta");
+  await expect(page.getByRole("button", { name: "Enviar link para criar a senha" })).toBeVisible();
+  await expect(page.getByText(/está confirmado/)).toBeVisible();
+  await context.clearCookies({ name: "marryapp_admin_session" });
+  await page.goto("/login");
+  await page.getByLabel("E-mail").fill(email);
+  await page.getByLabel("Senha", { exact: true }).fill(SENHA);
+  await page.getByRole("button", { name: /^Entrar/ }).click();
+  await expect(page.getByText("Usuário ou senha incorretos.")).toBeVisible();
 });
 
 test("e-mail que o Google não confirmou não entra", async ({ page, context }) => {

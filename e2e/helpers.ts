@@ -29,6 +29,20 @@ export const test = base.extend({
   },
 });
 
+/** Roda uma consulta direto no banco do teste (semear o que a tela ainda não tem como criar). */
+export async function noBanco<T>(consulta: (db: Client) => Promise<T>): Promise<T> {
+  const db = new Client({ connectionString: process.env.DATABASE_URL });
+  await db.connect();
+  try {
+    return await consulta(db);
+  } finally {
+    await db.end();
+  }
+}
+
+/** Marca o e-mail da conta como confirmado, como se a pessoa tivesse aberto o link. */
+export const confirmarEmailNoBanco = (email: string) => noBanco((db) => db.query('UPDATE users SET "emailVerifiedAt" = now() WHERE username = $1', [email]));
+
 /** E-mail único por execução, para os testes não dependerem uns dos outros. */
 export function emailUnico(prefixo: string) {
   return `${prefixo}-${Date.now()}-${Math.floor(Math.random() * 1e6)}@e2e.aceito.test`;

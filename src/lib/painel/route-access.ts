@@ -22,6 +22,7 @@ const CAMINHOS_PUBLICOS = [
   "/convite", // aceitar o convite do par
   "/esqueci-a-senha",
   "/redefinir-senha",
+  "/confirmar-email",
   "/termos",
   "/privacidade",
   "/proposta", // casal aceita a proposta do fornecedor pelo link

@@ -35,6 +35,7 @@ export async function criarContaDoParComGoogle(perfil: PerfilDoGoogle, token: st
           username: perfil.email,
           password: senhaDescartavel,
           hasPassword: false,
+          emailVerifiedAt: agora,
           roleId: papel.id,
           weddingId: invite.weddingId,
           externalAccounts: { create: { provider: "google", providerAccountId: perfil.sub, email: perfil.email } },

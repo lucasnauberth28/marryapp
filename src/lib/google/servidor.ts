@@ -1,4 +1,6 @@
 import "server-only";
+import { randomBytes } from "node:crypto";
+import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
 import { assinarToken, opcoesDoCookieDeSessao, NOME_DO_COOKIE_DE_SESSAO } from "@/lib/auth";
@@ -49,16 +51,35 @@ export async function decidirParaOPerfil(perfil: PerfilDoGoogle): Promise<Decisa
   return decidirEntradaComGoogle(porSub, conta);
 }
 
-/** Vincula o Google à conta que já existe (e-mail confirmado pelo Google) e registra no histórico. Duas abas ao mesmo tempo: a segunda só entra. */
+/**
+ * Vincula o Google à conta que já existe (e-mail confirmado pelo Google) e registra no histórico. Duas abas ao mesmo tempo: a segunda só entra.
+ * Se a conta ainda não tinha o e-mail confirmado, quem a criou com senha pode não ser o dono da caixa de entrada: a senha é
+ * descartada (o dono de verdade, provado pelo Google, cria outra) e o e-mail passa a constar como confirmado.
+ */
 export async function vincularGoogleAConta(userId: string, perfil: PerfilDoGoogle): Promise<void> {
+  const agora = new Date();
+  let senhaDescartada = false;
   try {
-    await prisma.externalAccount.create({ data: { userId, provider: PROVEDOR_GOOGLE, providerAccountId: perfil.sub, email: perfil.email }, select: { id: true } });
+    await prisma.$transaction(async (tx) => {
+      await tx.externalAccount.create({ data: { userId, provider: PROVEDOR_GOOGLE, providerAccountId: perfil.sub, email: perfil.email }, select: { id: true } });
+      const conta = await tx.user.findUnique({ where: { id: userId }, select: { emailVerifiedAt: true, hasPassword: true } });
+      if (!conta || conta.emailVerifiedAt) return;
+      senhaDescartada = conta.hasPassword;
+      await tx.user.update({
+        where: { id: userId },
+        data: { emailVerifiedAt: agora, ...(conta.hasPassword ? { password: await hashDeSenhaDescartavel(), hasPassword: false } : {}) },
+        select: { id: true },
+      });
+    });
   } catch (error) {
     if (ehViolacaoDeUnicidade(error)) return;
     throw error;
   }
-  await registrarAuditoria({ action: "account.google_link", targetType: "User", targetId: userId, actor: { id: userId, name: perfil.name || perfil.email }, details: { email: perfil.email } });
+  await registrarAuditoria({ action: "account.google_link", targetType: "User", targetId: userId, actor: { id: userId, name: perfil.name || perfil.email }, details: { email: perfil.email, passwordCleared: senhaDescartada } });
 }
+
+/** Um hash que ninguém conhece: a conta fica sem senha até a pessoa criar uma pelo e-mail. */
+const hashDeSenhaDescartavel = async () => bcrypt.hash(randomBytes(32).toString("base64url"), 12);
 
 /** Abre a sessão da conta (o mesmo cookie do login por senha) e devolve o destino padrão do perfil. */
 export async function abrirSessaoDaConta(userId: string): Promise<{ destino: string; allowedPaths: string[] } | null> {
