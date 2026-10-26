@@ -1,5 +1,5 @@
 import type { Browser, Page } from "@playwright/test";
-import { criarCasalPronto, entrar, expect, novoContexto, test } from "./helpers";
+import { criarCasalPronto, entrarComoAdmin, expect, novoContexto, test } from "./helpers";
 
 // Liz, Comunicados, Suporte, Saúde e Configurações da administração: acesso negado para casal e visitante nas
 // Server Actions, e o modo de manutenção aplicado de verdade (casal só leitura, convidado avisado, admin livre).
@@ -13,7 +13,7 @@ const adminSenha = () => {
 async function comoAdmin(browser: Browser) {
   const context = await novoContexto(browser);
   const page = await context.newPage();
-  await entrar(page, "admin", adminSenha());
+  await entrarComoAdmin(page, adminSenha());
   return { context, page };
 }
 

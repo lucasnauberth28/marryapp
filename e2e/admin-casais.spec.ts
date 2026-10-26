@@ -1,4 +1,4 @@
-import { criarCasalPronto, entrar, expect, novoContexto, test } from "./helpers";
+import { criarCasalPronto, entrarComoAdmin, expect, novoContexto, test } from "./helpers";
 import type { Browser, Page } from "@playwright/test";
 
 // Administração, Casais: "Entrar como este casal" (somente leitura, edição com segunda confirmação, saída),
@@ -13,7 +13,7 @@ const adminSenha = () => {
 async function paginaAdmin(browser: Browser) {
   const contexto = await novoContexto(browser);
   const page = await contexto.newPage();
-  await entrar(page, "admin", adminSenha());
+  await entrarComoAdmin(page, adminSenha());
   await expect(page).toHaveURL(/\/admin$/);
   return { contexto, page };
 }

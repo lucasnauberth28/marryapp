@@ -1,4 +1,6 @@
 import { test as base, expect, type Browser, type BrowserContext, type Page } from "@playwright/test";
+import bcrypt from "bcryptjs";
+import { Client } from "pg";
 
 export { expect };
 
@@ -38,6 +40,34 @@ export async function entrar(page: Page, email: string, senha: string) {
   await page.getByLabel("Senha", { exact: true }).fill(senha);
   await page.getByRole("button", { name: /^Entrar/ }).click();
   await page.waitForURL((url) => !url.pathname.startsWith("/login"));
+}
+
+/**
+ * Cria uma conta de administração própria do teste (perfil com acesso total, e-mail único). Cada teste que entra na
+ * administração ganha a sua: a conta de emergência "admin" é uma só, e "entrar como o casal" guarda uma sessão por
+ * administrador, então testes em paralelo se atropelariam; além disso o login por conta é limitado (20 a cada 15 minutos).
+ */
+async function criarAdminDeTeste(): Promise<{ email: string; senha: string }> {
+  const email = emailUnico("admin-e2e");
+  const db = new Client({ connectionString: process.env.DATABASE_URL });
+  await db.connect();
+  try {
+    const papel = await db.query<{ id: string }>(
+      `INSERT INTO roles (id, name, "allowedPaths", "updatedAt") VALUES (gen_random_uuid(), 'Admin E2E', '["*"]'::jsonb, now())
+       ON CONFLICT (name) DO UPDATE SET "updatedAt" = now() RETURNING id`,
+    );
+    await db.query(`INSERT INTO users (id, name, username, password, "roleId", "updatedAt") VALUES (gen_random_uuid(), 'Admin E2E', $1, $2, $3, now())`, [email, await bcrypt.hash(SENHA, 4), papel.rows[0].id]);
+  } finally {
+    await db.end();
+  }
+  return { email, senha: SENHA };
+}
+
+/** Entra na administração com uma conta de administração criada só para este teste (ou, sem DATABASE_URL, com a conta de emergência). */
+export async function entrarComoAdmin(page: Page, senhaDeEmergencia: string) {
+  if (!process.env.DATABASE_URL) return entrar(page, "admin", senhaDeEmergencia);
+  const { email, senha } = await criarAdminDeTeste();
+  await entrar(page, email, senha);
 }
 
 /** Cria a conta de um casal no plano Básico (gratuito) e termina no onboarding. */

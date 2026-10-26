@@ -12,6 +12,8 @@ import { calcularContas } from "./resumo/contas";
 import { montarConviteDoResumo } from "./resumo/convite";
 import { montarFilaDoResumo } from "./resumo/fila";
 import { GradeDoResumo } from "./resumo/grade";
+import { PrimeirosPassos } from "@/components/tour/first-steps";
+import { visaoDosPrimeirosPassos } from "@/lib/tour/first-steps";
 
 export const dynamic = "force-dynamic";
 
@@ -29,12 +31,23 @@ export default async function DashboardPage() {
   const fila = montarFilaDoResumo(dados, contas, { session, can });
   const linkDoConvite = await geradorDeLinksDoConvite({ weddingId, session }, wedding);
   const convite = montarConviteDoResumo(contas, dados, { identity, wedding, linkDoConvite });
+  // "Primeiros passos": só depois do primeiro acesso (que já tem o próprio caminho) e nunca para a administração vendo o casal
+  const primeirosPassos = contas.firstAccess || ctx.impersonation || ctx.viaAdmin ? null : visaoDosPrimeirosPassos({
+    allowedPaths: session.allowedPaths,
+    site: dados.site,
+    guestCount: contas.counts.invites.total,
+    invitedByPanel: dados.guestRows.filter((g) => g.hasReceivedMessage).length,
+    giftCount: dados.giftCount,
+    canWhatsApp: dados.canWhatsApp,
+    dismissed: dados.checklistDispensado,
+  });
   const { weddingDays } = contas;
   const naSemanaDoCasamento = weddingDays !== null && weddingDays <= 7 && weddingDays >= 0;
 
   return (
     <div className="flex flex-col gap-5 md:gap-6">
       <CabecalhoDoResumo now={now} identity={identity} wedding={wedding} contas={contas} siteUrl={convite.siteUrl} />
+      {primeirosPassos && <PrimeirosPassos items={primeirosPassos.items} doneCount={primeirosPassos.doneCount} />}
       <GradeDoResumo dados={dados} contas={contas} convite={convite} fila={fila} identity={identity} can={can} />
       {dados.canQr && naSemanaDoCasamento && can("/credenciamento") && <AtalhoDoCredenciamento />}
     </div>

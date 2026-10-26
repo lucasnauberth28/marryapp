@@ -1,4 +1,4 @@
-import { cadastrarFornecedor, emailUnico, entrar, expect, novoContexto, test } from "./helpers";
+import { cadastrarFornecedor, emailUnico, entrarComoAdmin, expect, novoContexto, test } from "./helpers";
 
 test("fornecedor gera Pix do plano Pro e o admin confirma na mão: o plano fica ativo", async ({ page, browser }) => {
   const adminSenha = process.env.ADMIN_PASSWORD;
@@ -20,7 +20,7 @@ test("fornecedor gera Pix do plano Pro e o admin confirma na mão: o plano fica 
   // O admin confere o Pix no extrato e confirma
   const admin = await novoContexto(browser);
   const paginaAdmin = await admin.newPage();
-  await entrar(paginaAdmin, "admin", adminSenha);
+  await entrarComoAdmin(paginaAdmin, adminSenha);
   // A tela antiga redireciona para a administração
   await paginaAdmin.goto("/assinaturas?status=a-conferir");
   await expect(paginaAdmin).toHaveURL(/\/admin\/planos\/assinaturas\?status=a-conferir/);

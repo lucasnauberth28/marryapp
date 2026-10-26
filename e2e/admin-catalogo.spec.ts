@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import { cadastrarFornecedor, emailUnico, entrar, expect, novoContexto, test } from "./helpers";
+import { cadastrarFornecedor, emailUnico, entrarComoAdmin, expect, novoContexto, test } from "./helpers";
 
 // Catálogo e preços: o preço editado vale para compra nova (o servidor recalcula), a cobrança já feita mantém o valor
 // e a mudança fica no registro de atividades. O teste sempre devolve o preço ao do código no final.
@@ -34,7 +34,7 @@ test("administração muda o preço do Pro: a compra nova usa o valor novo e a a
 
   const admin = await novoContexto(browser);
   const painel = await admin.newPage();
-  await entrar(painel, "admin", senha);
+  await entrarComoAdmin(painel, senha);
 
   try {
     // Compra antiga, pelo preço do código (R$ 99,00)
@@ -84,7 +84,7 @@ test("plano gratuito não vira pago e preço inválido é recusado", async ({ br
   if (!senha) throw new Error("Defina ADMIN_PASSWORD (a mesma do servidor) para o teste entrar como admin.");
   const admin = await novoContexto(browser);
   const painel = await admin.newPage();
-  await entrar(painel, "admin", senha);
+  await entrarComoAdmin(painel, senha);
 
   // Básico: o campo de preço fica travado
   await painel.goto("/admin/planos/catalogo?editar=plan:basic");

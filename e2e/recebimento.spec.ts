@@ -1,4 +1,4 @@
-import { criarCasalPronto, entrar, expect, novoContexto, SENHA, test } from "./helpers";
+import { criarCasalPronto, entrarComoAdmin, expect, novoContexto, SENHA, test } from "./helpers";
 import type { Browser, Page } from "@playwright/test";
 
 // Onde receber os presentes: cadastro com senha, só máscara depois de salvo, troca exigindo a senha de novo,
@@ -22,7 +22,7 @@ async function abrirTela(page: Page) {
 async function paginaAdmin(browser: Browser) {
   const contexto = await novoContexto(browser);
   const page = await contexto.newPage();
-  await entrar(page, "admin", adminSenha());
+  await entrarComoAdmin(page, adminSenha());
   await expect(page).toHaveURL(/\/admin$/);
   return { contexto, page };
 }

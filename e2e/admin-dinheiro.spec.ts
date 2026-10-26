@@ -1,4 +1,4 @@
-import { cadastrarFornecedor, criarCasalPronto, emailUnico, entrar, expect, novoContexto, test } from "./helpers";
+import { cadastrarFornecedor, criarCasalPronto, emailUnico, entrarComoAdmin, expect, novoContexto, test } from "./helpers";
 
 // Acesso negado nas telas e rotas de dinheiro da administração (fornecedores, planos, catálogo, domínios).
 // As Server Actions dessas telas só existem dentro destas páginas e todas começam com requirePlatformAdmin;
@@ -55,7 +55,7 @@ test("administração aprova, destaca e suspende um fornecedor, com efeito na vi
 
   const admin = await novoContexto(browser);
   const painel = await admin.newPage();
-  await entrar(painel, "admin", senha);
+  await entrarComoAdmin(painel, senha);
 
   // Curadoria: aprova
   await painel.goto(`/admin/fornecedores/curadoria?q=${encodeURIComponent(empresa)}`);

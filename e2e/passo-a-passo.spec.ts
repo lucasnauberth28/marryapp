@@ -1,5 +1,5 @@
 import type { Browser, Page } from "@playwright/test";
-import { SENHA, criarCasalPronto, entrar, expect, novoContexto, test } from "./helpers";
+import { criarCasalPronto, entrarComoAdmin, expect, novoContexto, SENHA, test } from "./helpers";
 
 // Passo a passo do painel: por pessoa, uma vez, refeito quando a pessoa quiser; nunca para a administração
 // nem para quem "entra como" um casal.
@@ -215,7 +215,7 @@ test("no celular o passo a passo aponta a barra de baixo (5 áreas, sem aba Mais
 async function paginaAdmin(browser: Browser) {
   const contexto = await novoContexto(browser);
   const page = await contexto.newPage();
-  await entrar(page, "admin", adminSenha());
+  await entrarComoAdmin(page, adminSenha());
   await expect(page).toHaveURL(/\/admin$/);
   return { contexto, page };
 }

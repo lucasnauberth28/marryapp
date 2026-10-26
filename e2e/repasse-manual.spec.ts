@@ -1,5 +1,5 @@
 import { Client } from "pg";
-import { criarCasalPronto, entrar, expect, novoContexto, SENHA, test } from "./helpers";
+import { criarCasalPronto, entrarComoAdmin, expect, novoContexto, SENHA, test } from "./helpers";
 
 // Repasse manual dos presentes: a equipe transfere pelo banco e registra no detalhe do casal; o saldo do casal baixa,
 // o valor nunca passa do que falta e o casal é avisado. Precisa de DATABASE_URL (o presente pago é semeado direto no banco).
@@ -52,7 +52,7 @@ test("a equipe registra o repasse, o saldo baixa, nunca passa do devido e o casa
   // A administração abre o casal e registra um repasse parcial
   const contexto = await novoContexto(browser);
   const admin = await contexto.newPage();
-  await entrar(admin, "admin", adminSenha);
+  await entrarComoAdmin(admin, adminSenha);
   await admin.goto(`/admin/casais?q=${encodeURIComponent(email)}`);
   await admin.getByRole("link", { name: /Ana & Bia/ }).first().click();
   await expect(admin).toHaveURL(/\/admin\/casais\/[0-9a-f-]{36}$/);

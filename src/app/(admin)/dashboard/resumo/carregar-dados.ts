@@ -6,7 +6,7 @@ import type { ContextoDaPagina } from "./tipos";
 
 /** Tudo o que o Resumo lê do banco, numa só rodada. */
 export async function carregarDadosDoResumo({ weddingId, session }: Pick<ContextoDaPagina, "weddingId" | "session">) {
-  const [guestRows, recent, txRows, expenseRows, nextTask, taskCount, tableCount, settings, giftCount, canWhatsApp, canQr, site, unseated] = await Promise.all([
+  const [guestRows, recent, txRows, expenseRows, nextTask, taskCount, tableCount, settings, giftCount, canWhatsApp, canQr, site, unseated, quemEsta] = await Promise.all([
     prisma.guest.findMany({
       where: { weddingId },
       select: { id: true, name: true, phone: true, rsvpStatus: true, category: true, allowedCompanions: true, confirmedCompanions: true, hasReceivedMessage: true, inviteSharedAt: true },
@@ -35,11 +35,14 @@ export async function carregarDadosDoResumo({ weddingId, session }: Pick<Context
     // O registro de entrada por QR só é sugerido a quem tem o recurso no plano
     casamentoTemModulo({ weddingId, session }, "whatsapp"),
     casamentoTemModulo({ weddingId, session }, "qrcode"),
-    prisma.siteCustomization.findUnique({ where: { weddingId }, select: { heroImageUrl: true, couplePhotoUrl: true } }),
+    prisma.siteCustomization.findUnique({ where: { weddingId }, select: { heroImageUrl: true, couplePhotoUrl: true, locationName: true, locationAddress: true, ceremonyTime: true, receptionTime: true, welcomeMessage: true } }),
     // Pessoas confirmadas que ainda não têm mesa
     prisma.guest.findMany({ where: { weddingId, rsvpStatus: RsvpStatus.CONFIRMED, tableId: null, ...filtroSemSoPresente }, select: { confirmedCompanions: true } }),
+    // Se esta pessoa já dispensou a lista "Primeiros passos" (a conta de emergência não tem registro)
+    prisma.user.findUnique({ where: { id: session.userId }, select: { panelChecklistDismissedAt: true } }),
   ]);
-  return { guestRows, recent, txRows, expenseRows, nextTask, taskCount, tableCount, settings, giftCount, canWhatsApp, canQr, site, unseated };
+  const checklistDispensado = !quemEsta || quemEsta.panelChecklistDismissedAt !== null;
+  return { guestRows, recent, txRows, expenseRows, nextTask, taskCount, tableCount, settings, giftCount, canWhatsApp, canQr, site, unseated, checklistDispensado };
 }
 
 export type DadosDoResumo = Awaited<ReturnType<typeof carregarDadosDoResumo>>;
