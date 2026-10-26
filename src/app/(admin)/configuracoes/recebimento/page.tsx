@@ -6,7 +6,9 @@ import { ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { cifraDoRepasseEstaConfigurada } from "@/lib/security/payout-crypto";
 import { obterVisaoDaContaDeRepasse } from "@/lib/repasse/payout-account-view";
 import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/pagamento/gift-fee";
+import { obterLivroDeRepasses } from "@/lib/repasse/payout-ledger-server";
 import { RecebimentoCliente } from "./recebimento-cliente";
+import { RepassesRecebidos } from "./componentes/repasses-recebidos";
 
 export const metadata: Metadata = {
   title: "Onde receber os presentes",
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
 
 export default async function RecebimentoPage() {
   const ctx = await exigirCasamentoNaPagina("/configuracoes");
-  const account = await obterVisaoDaContaDeRepasse(ctx.weddingId);
+  const [account, livro] = await Promise.all([obterVisaoDaContaDeRepasse(ctx.weddingId), obterLivroDeRepasses(ctx.weddingId)]);
 
   // Quem pode mexer: só a própria pessoa do casal (a administração vendo o casal, mesmo editando, só lê).
   let blockedReason: string | null = null;
@@ -51,6 +53,7 @@ export default async function RecebimentoPage() {
           registrationAvailable={registrationAvailable}
           feeLabel={ROTULO_DA_TAXA_DO_PRESENTE}
         />
+        <RepassesRecebidos posicao={livro.posicao} payouts={livro.payouts} />
       </div>
     </div>
   );

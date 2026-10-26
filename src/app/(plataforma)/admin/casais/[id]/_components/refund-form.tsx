@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { solicitarReembolsoDoCasamento } from "@/actions/casais-admin/plano";
 import { Botao } from "@/components/ui/button";
+import { reaisParaCentavos } from "@/lib/formatacao/dinheiro";
 import { Entrada } from "@/components/ui/input";
 import { SelecaoNativa } from "@/components/ui/select";
 import { AreaDeTexto } from "@/components/ui/textarea";
@@ -13,13 +14,6 @@ export interface OpcaoDeReembolso {
   id: string;
   label: string;
   amountCents: number;
-}
-
-/** Converte "149,00" ou "149.5" em centavos (null se não for um valor). */
-function paraCentavos(text: string): number | null {
-  const clean = text.trim().replace(/\./g, "").replace(",", ".");
-  if (!/^\d+(\.\d{1,2})?$/.test(clean)) return null;
-  return Math.round(Number(clean) * 100);
 }
 
 const paraCampoDeValor = (cents: number) => (cents / 100).toFixed(2).replace(".", ",");
@@ -59,7 +53,7 @@ export function FormularioDeReembolso({ weddingId, options }: { weddingId: strin
   const [amount, setAmount] = useState(options[0] ? paraCampoDeValor(options[0].amountCents) : "");
   const [reason, setReason] = useState("");
   const { pending, error, run } = useAcaoDoCasal();
-  const cents = paraCentavos(amount);
+  const cents = reaisParaCentavos(amount);
 
   if (options.length === 0) return <p className="text-sm leading-5 text-tinta-suave">Não há pagamento recebido sem pedido de reembolso aberto.</p>;
 

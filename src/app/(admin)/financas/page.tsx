@@ -8,6 +8,7 @@ import { CabecalhoDaPagina } from "@/components/admin/page-header";
 import { estiloDoTituloDoCartao } from "@/components/casal/ui";
 import { RegiaoDeCarregamento } from "@/components/skeletons";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
+import { CartoesCliente } from "./cartoes/cartoes-cliente";
 import { DespesasCliente } from "./despesas/despesas-cliente";
 import { Indicadores } from "./indicadores";
 import { TabelaFinanceira } from "./pagamentos/tabela-financeira";
@@ -52,6 +53,12 @@ export default async function FinancasPage() {
           <Despesas expenses={expenses} vendors={vendors} walletData={walletData} />
         </Suspense>
       </section>
+      <section aria-labelledby="cartoes-titulo" className="flex flex-col gap-3 border-t border-linha pt-6">
+        <TituloDaSecao id="cartoes-titulo" titulo="Cartões" texto="Os cartões que vocês usam. Eles aparecem como forma de pagamento ao lançar uma despesa." />
+        <Suspense fallback={<RegiaoDeCarregamento label="os cartões"><EsqueletoDasDespesas /></RegiaoDeCarregamento>}>
+          <Cartoes walletData={walletData} />
+        </Suspense>
+      </section>
       <section aria-labelledby="pagamentos-titulo" className="flex flex-col gap-3 border-t border-linha pt-6">
         <TituloDaSecao id="pagamentos-titulo" titulo="Pagamentos dos presentes" texto="Confira no extrato do banco os Pix recebidos e confirme cada um aqui." />
         <Suspense fallback={<RegiaoDeCarregamento label="os pagamentos"><EsqueletoDosPagamentos /></RegiaoDeCarregamento>}>
@@ -65,6 +72,11 @@ export default async function FinancasPage() {
 async function Despesas({ expenses, vendors, walletData }: { expenses: ReturnType<typeof obterDespesas>; vendors: ReturnType<typeof obterFornecedores>; walletData: ReturnType<typeof obterDadosDaCarteira> }) {
   const [lista, fornecedores, carteira] = await Promise.all([expenses, vendors, walletData]);
   return <DespesasCliente initialExpenses={lista} vendors={fornecedores} userCards={carteira.cards} />;
+}
+
+async function Cartoes({ walletData }: { walletData: ReturnType<typeof obterDadosDaCarteira> }) {
+  const { cards } = await walletData;
+  return <CartoesCliente cartoes={cards.map(({ id, bank, brand, nickname, lastDigits, limit, color }) => ({ id, bank, brand, nickname, lastDigits, limit, color }))} />;
 }
 
 async function Pagamentos({ transactions }: { transactions: ReturnType<typeof obterTransacoes> }) {

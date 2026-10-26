@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { FormularioDeConcederPlano } from "../_components/grant-plan-form";
 import { FormularioDeReembolso } from "../_components/refund-form";
 import { LinhasDoDetalhe } from "./linhas-do-detalhe";
+import { PainelDeRepasses } from "./painel-de-repasses";
 
 type Pagamento = Awaited<ReturnType<typeof obterPagamentosDoCasal>>[number];
 
@@ -171,6 +172,7 @@ export async function AbaPagamentos({ header, sideColumn }: { header: CabecalhoD
           )}
         </Painel>
         <PainelDeRepasse weddingId={wedding.id} />
+        <PainelDeRepasses weddingId={wedding.id} />
         <Painel>
           <FormularioDeConcederPlano weddingId={wedding.id} currentPlanId={plan?.planId ?? null} />
         </Painel>

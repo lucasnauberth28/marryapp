@@ -1,6 +1,7 @@
 // Cálculo das parcelas que a pessoa configurou no cadastro (blocos de N parcelas com valor e primeiro vencimento).
 import { FORMAS_DE_PAGAMENTO, type BlocoDeParcelas, type CartaoDaCarteira, type FormaDePagamento, type ParcelaGerada, type TipoDeDespesa } from "./tipos.ts";
 import { CreditCard, FileCheck, QrCode } from "lucide-react";
+import { rotuloDoCartao } from "../../../../lib/financas/cartoes.ts";
 
 export interface DadosParaGerarParcelas {
   modo: "single" | "installment";
@@ -57,7 +58,7 @@ export function formasDePagamentoOferecidas(cartoes: CartaoDaCarteira[]): FormaD
   const lista: FormaDePagamento[] = [{ id: "pix_balance", label: "Saldo em Conta / Pix", icon: QrCode }];
   if (cartoes.length > 0) {
     for (const c of cartoes) {
-      lista.push({ id: `card_${c.id}`, label: `${c.bank}${c.nickname ? ` (${c.nickname})` : ""}${c.lastDigits ? ` ****${c.lastDigits}` : ""}`, icon: CreditCard });
+      lista.push({ id: `card_${c.id}`, label: rotuloDoCartao(c), icon: CreditCard });
     }
   } else {
     lista.push({ id: "credit_card_nubank", label: "Cartão Nubank", icon: CreditCard }, { id: "credit_card_itau", label: "Cartão Itaú", icon: CreditCard });

@@ -24,3 +24,10 @@ export function formatarReaisEnxuto(centavos: number): string {
 export function formatarValorSemSimbolo(centavos: number): string {
   return formatoSemSimbolo.format(centavos / 100);
 }
+
+/** O que a pessoa digitou ("10,50", "10.50", "R$ 1.250,00") em centavos; null se não for um valor. */
+export function reaisParaCentavos(value: string): number | null {
+  const clean = value.trim().replace(/\s|R\$/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".");
+  if (!/^\d+(\.\d{1,2})?$/.test(clean)) return null;
+  return Math.round(Number(clean) * 100);
+}

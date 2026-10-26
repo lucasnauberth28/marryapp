@@ -82,3 +82,19 @@ export function resumirSaldoDeRepasse(transactions: readonly TransacaoDoSaldo[],
 
   return out;
 }
+
+export interface PosicaoDeRepasse {
+  /** Líquido dos presentes aprovados (o que é do casal). */
+  netCents: number;
+  /** Soma dos repasses já registrados. */
+  paidOutCents: number;
+  /** O que ainda falta repassar (nunca negativo). */
+  dueCents: number;
+  /** Repassado a mais que o líquido (um presente estornado depois do repasse): a equipe precisa olhar. */
+  overpaidCents: number;
+}
+
+/** Líquido dos presentes menos o que a equipe já repassou. */
+export function posicaoDeRepasse(netCents: number, paidOutCents: number): PosicaoDeRepasse {
+  return { netCents, paidOutCents, dueCents: Math.max(0, netCents - paidOutCents), overpaidCents: Math.max(0, paidOutCents - netCents) };
+}

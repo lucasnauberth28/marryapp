@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { planoDaTaxaDoPresentePara, resumirSaldoDeRepasse, type TransacaoDoSaldo } from "../repasse/payout-balance.ts";
+import { planoDaTaxaDoPresentePara, posicaoDeRepasse, resumirSaldoDeRepasse, type TransacaoDoSaldo } from "../repasse/payout-balance.ts";
 
 const tx = (over: Partial<TransacaoDoSaldo>): TransacaoDoSaldo => ({
   amount: 10_000,
@@ -79,4 +79,10 @@ test("plano que decide a taxa", () => {
   assert.equal(planoDaTaxaDoPresentePara("vip"), "vip");
   assert.equal(planoDaTaxaDoPresentePara("custom", ["site"]), "basic");
   assert.equal(planoDaTaxaDoPresentePara("custom", ["pixZero", "site"]), "classic");
+});
+
+test("posição de repasse: líquido menos o já repassado, sem ficar negativo", () => {
+  assert.deepEqual(posicaoDeRepasse(10_000, 4_000), { netCents: 10_000, paidOutCents: 4_000, dueCents: 6_000, overpaidCents: 0 });
+  assert.deepEqual(posicaoDeRepasse(10_000, 10_000), { netCents: 10_000, paidOutCents: 10_000, dueCents: 0, overpaidCents: 0 });
+  assert.deepEqual(posicaoDeRepasse(8_000, 10_000), { netCents: 8_000, paidOutCents: 10_000, dueCents: 0, overpaidCents: 2_000 });
 });

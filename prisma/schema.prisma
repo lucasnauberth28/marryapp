@@ -832,6 +832,7 @@ model Wedding {
   supportTickets SupportTicket[]
   dataRequests  DataRequest[]
   payoutAccount WeddingPayoutAccount?
+  payouts       WeddingPayout[]
 
   @@index([createdAt])
   @@index([weddingDate])
@@ -1330,4 +1331,22 @@ model MadrinhaWeddingOverride {
   updatedAt     DateTime  @updatedAt
 
   @@map("madrinha_wedding_overrides")
+}
+
+// Repasse manual dos presentes ao casal: cada vez que a equipe transfere o líquido para o destino cadastrado, ela registra aqui.
+// O saldo a repassar é o líquido dos presentes aprovados menos a soma destes registros.
+model WeddingPayout {
+  id           String   @id @default(uuid())
+  weddingId    String
+  wedding      Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  amountCents  Int
+  // Referência do comprovante (ex.: identificador do Pix no banco)
+  reference    String?
+  // Nome de quem registrou (a conta pode deixar de existir depois)
+  registeredBy String
+  paidAt       DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  @@index([weddingId, paidAt])
+  @@map("wedding_payouts")
 }

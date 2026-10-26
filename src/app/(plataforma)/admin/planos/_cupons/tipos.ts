@@ -36,13 +36,6 @@ export const ESTILO_DO_BOTAO =
 
 export const RASCUNHO_VAZIO_DO_CUPOM: RascunhoDoCupom = { code: "", kind: "percent", value: "", planIds: [], maxRedemptions: "", expiresAt: "", active: true };
 
-/** "10,50" ou "10.50" -> 1050 centavos; null se não for um valor. */
-export function reaisParaCentavos(value: string): number | null {
-  const clean = value.trim().replace(/\s|R\$/g, "").replace(/\.(?=\d{3}(\D|$))/g, "").replace(",", ".");
-  if (!/^\d+(\.\d{1,2})?$/.test(clean)) return null;
-  return Math.round(Number(clean) * 100);
-}
-
 function centavosParaReais(cents: number) {
   return (cents / 100).toFixed(2).replace(".", ",");
 }

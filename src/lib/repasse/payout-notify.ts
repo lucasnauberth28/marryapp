@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { emailDaMarca, enviarEmail } from "@/lib/email/email";
 import { urlDoApp } from "@/lib/app-url";
 import { avisarDepois } from "@/lib/notifications/service";
+import { formatarReais } from "@/lib/formatacao/dinheiro";
 
 export type MudancaNoRepasse = "created" | "updated" | "removed";
 
@@ -59,5 +60,29 @@ export function avisarMudancaNoRepasse(params: { weddingId: string; actorName: s
         .filter((m) => m.username.includes("@"))
         .map((m) => enviarEmail({ to: m.username, subject: title, html, text }).catch(() => undefined)),
     );
+  });
+}
+
+/** Avisa as pessoas do casamento (sino e e-mail) que a equipe repassou um valor dos presentes. Roda depois da resposta e nunca lança erro. */
+export function avisarRepasseEnviado(params: { weddingId: string; payoutId: string; amountCents: number }) {
+  avisarDepois(async () => {
+    const members = await prisma.user.findMany({ where: { weddingId: params.weddingId }, select: { id: true, username: true } });
+    if (members.length === 0) return;
+
+    const valor = formatarReais(params.amountCents);
+    const title = `Repasse de ${valor} enviado`;
+    const body = `O Aceito repassou ${valor} dos presentes para o destino cadastrado. Dependendo do banco, ele aparece na conta em poucos minutos.`;
+    await prisma.notification.createMany({
+      data: members.map((m) => ({ userId: m.id, type: "payout_sent", title, body, href: "/configuracoes/recebimento", weddingId: params.weddingId, dedupeKey: `payout_sent:${params.payoutId}` })),
+      skipDuplicates: true,
+    });
+
+    const { html, text } = emailDaMarca({
+      heading: title,
+      paragraphs: [body, "O histórico dos repasses fica em Onde receber os presentes."],
+      cta: { label: "Ver os repasses", url: urlDoApp("/configuracoes/recebimento") },
+      preheader: body,
+    });
+    await Promise.all(members.filter((m) => m.username.includes("@")).map((m) => enviarEmail({ to: m.username, subject: title, html, text }).catch(() => undefined)));
   });
 }

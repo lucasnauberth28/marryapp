@@ -3,7 +3,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { criarCupom, excluirCupom, atualizarCupom, type CamposDoCupom } from "@/actions/coupon-actions";
-import { RASCUNHO_VAZIO_DO_CUPOM, rascunhoDe, reaisParaCentavos, type LinhaDeCupom, type RascunhoDoCupom } from "./tipos";
+import { reaisParaCentavos } from "@/lib/formatacao/dinheiro";
+import { RASCUNHO_VAZIO_DO_CUPOM, rascunhoDe, type LinhaDeCupom, type RascunhoDoCupom } from "./tipos";
 
 /** Os campos do formulário já no formato da ação, ou o texto do erro quando o valor não serve. */
 function camposDoCupom(draft: RascunhoDoCupom): CamposDoCupom | string {
