@@ -1,0 +1,23 @@
+{
+  "name": "aceito-criativos",
+  "private": true,
+  "description": "Motion design das campanhas do Aceito (Remotion). Fora do app: não entra no build nem no CI.",
+  "scripts": {
+    "estudio": "remotion studio src/index.ts",
+    "renderizar": "node renderizar.mjs"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.541",
+    "@remotion/cli": "4.0.541",
+    "@remotion/fonts": "4.0.541",
+    "@remotion/renderer": "4.0.541",
+    "lucide-react": "^1.11.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.541"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "typescript": "^5"
+  }
+}

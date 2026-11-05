@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Motion design das campanhas: projeto Remotion à parte, com o próprio tsconfig
+    "criativos/**",
   ]),
 ]);
 
