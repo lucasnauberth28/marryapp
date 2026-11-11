@@ -14,7 +14,6 @@ test("home mostra a oferta, os planos e os links de cadastro", async ({ page }) 
     await expect(page.locator(`main a[href="/cadastro?plano=${plano}"]`).first()).toBeVisible();
   }
   await expect(page.locator('main a[href="/fornecedores"]').first()).toBeVisible();
-  await expect(page.locator('main a[href="/monte-seu-plano"]')).toBeVisible();
 });
 
 test("o convite de exemplo responde e o painel de exemplo conta", async ({ page }) => {

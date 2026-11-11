@@ -133,7 +133,7 @@ export async function expirarPlanosDeFornecedor(now = new Date()) {
   });
   const vendors = due.map((v) => ({
     id: v.id,
-    planName: v.planTier === VendorPlanTier.MASTER ? "Master Elite" : "Pro",
+    planName: v.planTier === VendorPlanTier.MASTER ? "Master" : "Pro",
     expiredAt: v.planExpiresAt ?? now,
   }));
   return { count: result.count, vendors };

@@ -17,7 +17,7 @@ export const secoesDeResponsabilidades: SecaoLegal[] = [
           <li>Os pagamentos são processados pelo Mercado Pago. O Aceito não armazena dados completos de cartão.</li>
           <li>
             Presentes em dinheiro pagos por convidados passam pelo Aceito (o pagamento é processado pelo Mercado Pago). Quando o plano do
-            casal prevê, o Aceito retém {ROTULO_DA_TAXA_DO_PRESENTE} de cada presente, conforme informado na página de planos.
+            casal prevê, o Aceito retém uma taxa de cada presente ({ROTULO_DA_TAXA_DO_PRESENTE} no plano Básico; nos planos Classic e VIP, Pix sem taxa até R$ 10 mil e 0,99% acima disso), conforme informado na página de planos.
           </li>
           <li>
             O valor que sobra é repassado ao destino que o casal cadastrar em Configurações (chave Pix ou conta bancária em nome de uma

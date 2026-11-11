@@ -6,11 +6,11 @@ export const ARTIGOS_DO_DIA_A_DIA: readonly ArtigoDeAjuda[] = [
   {
     id: "receber-presentes",
     title: "Como acompanho os presentes que recebi por Pix e cartão?",
-    keywords: ["receber", "pix", "cartao", "pagamento", "a conferir", "confirmar pix", "extrato", "taxa", "recebidos", "dinheiro"],
-    answer: `Cada presente pago aparece em Recebidos, com o nome de quem enviou. Alguns pagamentos por Pix ficam A conferir até vocês confirmarem em Finanças. No plano Básico, há taxa de ${ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido.`,
+    keywords: ["receber", "pix", "cartao", "pagamento", "em confirmação", "confirmar pix", "extrato", "taxa", "recebidos", "dinheiro"],
+    answer: `Cada presente pago aparece em Recebidos, com o nome de quem enviou. Alguns pagamentos por Pix ficam Em confirmação até o Mercado Pago ou a equipe do Aceito confirmarem. No plano Básico, há taxa de ${ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido.`,
     steps: [
       "Abram Presentes em dinheiro e vejam o Total recebido e a lista Recebidos.",
-      "Se houver Pix A conferir, abram Finanças e vejam se o valor entrou no extrato de vocês.",
+      "Um Pix Em confirmação entra no Total recebido assim que o pagamento é confirmado; não precisam fazer nada.",
       "Tocando em Confirmar, o presente fica marcado como pago.",
       "As taxas e as condições de cada plano ficam em Plano e pagamentos.",
     ],

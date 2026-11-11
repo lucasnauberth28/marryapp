@@ -14,7 +14,7 @@ const CHAVES_DOS_PLANOS: ChaveDoPlanoDoCasal[] = ["basic", "classic", "vip"];
 const destaqueDoPlano = (key: ChaveDoPlanoDoCasal, classic: string) =>
   ({
     basic: <>Taxa de {ROTULO_DA_TAXA_DO_PRESENTE} por presente.</>,
-    classic: <>Pix sem a taxa do Aceito.</>,
+    classic: <>Pix sem taxa até R$ 10 mil.</>,
     vip: <>Tudo do {classic}.</>,
   })[key];
 
@@ -72,11 +72,7 @@ export function SecaoDePlanos({ catalog }: { catalog: Catalogo }) {
         O {classic} compensa a partir de <b>{formatarReais(aPartirDe)}</b> em presentes por Pix.
       </p>
       <p className="lp-compensa">
-        Precisam só de algumas partes?{" "}
-        <Link href="/monte-seu-plano" className="lp-link">
-          Montem o plano de vocês
-        </Link>
-        . Para ver taxas e condições,{" "}
+        Para ver taxas e condições,{" "}
         <Link href="/planos" className="lp-link">
           comparem os planos
         </Link>

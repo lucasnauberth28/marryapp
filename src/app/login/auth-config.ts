@@ -27,7 +27,7 @@ export interface OpcaoDePlano {
   popular?: boolean;
 }
 
-/** Nome sem o prefixo "Plano"/"Fornecedor": "Classic", "Pro", "Master Elite". */
+/** Nome sem o prefixo "Plano"/"Fornecedor": "Classic", "Pro", "Master". */
 export function nomeCurtoDoPlano(name: string) {
   return rotuloDoPlano(name);
 }

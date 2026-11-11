@@ -2,7 +2,7 @@
  * Catálogo de planos. Fonte única de preço: o servidor sempre recalcula o valor a partir daqui,
  * nunca confiando no valor enviado pelo navegador.
  */
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "./gift-fee.ts";
+import { ROTULO_DA_TAXA_ACIMA_DO_TETO, ROTULO_DA_TAXA_DO_PRESENTE, ROTULO_DO_TETO_DO_PIX_SEM_TAXA } from "./gift-fee.ts";
 import { calcularPrecoDoPlanoPersonalizado, pisosDosPlanosProntos } from "./pricing-modules.ts";
 
 export const CONFIGURACAO_DOS_PLANOS = {
@@ -28,14 +28,14 @@ export const CONFIGURACAO_DOS_PLANOS = {
     badge: "Convites e entrada",
     // Só entra aqui o que o plano diferencia de fato: WhatsApp pelo painel e código QR são travados em wedding-plan-modules.
     features: [
-      `Presentes por Pix sem a taxa de ${ROTULO_DA_TAXA_DO_PRESENTE} do Aceito`,
+      `Presentes por Pix sem taxa até ${ROTULO_DO_TETO_DO_PIX_SEM_TAXA} (acima disso, ${ROTULO_DA_TAXA_ACIMA_DO_TETO})`,
       "Convites e lembretes pelo WhatsApp, enviados pelo painel",
       "Registro de entrada dos convidados com código QR",
     ],
   },
   vip: {
     type: "COUPLE" as const,
-    name: "Plano VIP Premium",
+    name: "Plano VIP",
     price: 29900, // R$ 299,00
     period: "Pagamento único",
     badge: "Endereço próprio",
@@ -75,7 +75,7 @@ export const CONFIGURACAO_DOS_PLANOS = {
   },
   master: {
     type: "VENDOR" as const,
-    name: "Fornecedor Master Elite",
+    name: "Fornecedor Master",
     price: 24900, // R$ 249,00
     period: "/ mês",
     badge: "Alta performance",

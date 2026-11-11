@@ -84,7 +84,7 @@ export async function salvarPrecoDoCatalogo(input: unknown): Promise<ResultadoDa
       details: { before: { priceCents: anterior.price, name: anterior.name }, after: { priceCents: data.priceCents, name }, reason: data.reason },
     });
     // Páginas públicas com preço: refazem na hora
-    for (const path of ["/", "/planos", "/monte-seu-plano", "/cadastro", "/login"]) revalidatePath(path);
+    for (const path of ["/", "/planos", "/cadastro", "/login"]) revalidatePath(path);
     revalidatePath("/admin/planos", "layout");
     return { success: true, message: "Preço salvo. Vale só para compras novas: quem já pagou mantém o valor." };
   } catch (error) {

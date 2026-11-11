@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArrowRight, Heart, Store } from "lucide-react";
 import { estiloDoBotao, estiloDoBotaoComSeta } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
@@ -47,14 +46,6 @@ export function EtapaDoPlano({ titulo, isVendor, plans, plan, aoEscolher, aoVolt
           <ArrowRight aria-hidden="true" className={estiloDoBotaoComSeta} />
         </button>
       </div>
-      {!isVendor ? (
-        <p className="text-center text-[15px] text-tinta-suave">
-          Precisam só de algumas partes?{" "}
-          <Link href="/monte-seu-plano" className="font-semibold text-ameixa underline decoration-ameixa/30 underline-offset-4 hover:decoration-ameixa">
-            Montem o plano de vocês
-          </Link>
-        </p>
-      ) : null}
     </section>
   );
 }

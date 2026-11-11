@@ -12,7 +12,6 @@ const COLUNAS: { titulo: string; rotulo: string; links: LinkDoRodape[] }[] = [
     links: [
       { label: "Como funciona", href: "/#como", ancora: true },
       { label: "Planos", href: "/planos" },
-      { label: "Montar o plano de vocês", href: "/monte-seu-plano" },
       { label: "Perguntas", href: "/#duvidas", ancora: true },
       { label: "Criar conta grátis", href: "/cadastro?plano=basic" },
     ],

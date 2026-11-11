@@ -11,7 +11,7 @@ import { PREFERENCIAS_PADRAO, decidirCanais } from "@/lib/notifications/preferen
 import { carregarPreferenciasDe } from "@/lib/notifications/senders";
 
 import { formatarDataBrasiliaSemAno } from "../formatacao/data.ts";
-const NOME_DO_NIVEL: Record<string, string> = { PRO: "Pro", MASTER: "Master Elite" };
+const NOME_DO_NIVEL: Record<string, string> = { PRO: "Pro", MASTER: "Master" };
 const PADRAO_DE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const formatoDaHora = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
 

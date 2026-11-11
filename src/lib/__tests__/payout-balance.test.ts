@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { calcularValoresDoPresente } from "../pagamento/gift-fee.ts";
 import { planoDaTaxaDoPresentePara, posicaoDeRepasse, resumirSaldoDeRepasse, type TransacaoDoSaldo } from "../repasse/payout-balance.ts";
 
 const tx = (over: Partial<TransacaoDoSaldo>): TransacaoDoSaldo => ({
@@ -41,11 +42,34 @@ test("gravado que não fecha a conta é recalculado pelo plano", () => {
   assert.equal(r.calculatedCount, 1);
 });
 
-test("gravado com taxa diferente da regra atual vale, mas é contado como divergente", () => {
+test("o rascunho do checkout (líquido = valor, taxa 0) não vale quando a regra cobra taxa: o Básico paga os 3,99%", () => {
   const r = resumirSaldoDeRepasse([tx({ amount: 10_000, netAmount: 10_000, fee: 0 })], "basic");
-  assert.equal(r.feeCents, 0);
-  assert.equal(r.netCents, 10_000);
+  assert.equal(r.feeCents, 399);
+  assert.equal(r.netCents, 9_601);
+  assert.equal(r.calculatedCount, 1);
+});
+
+test("gravado com taxa diferente da regra atual vale, mas é contado como divergente", () => {
+  const r = resumirSaldoDeRepasse([tx({ amount: 10_000, netAmount: 9_800, fee: 200 })], "basic");
+  assert.equal(r.feeCents, 200);
+  assert.equal(r.netCents, 9_800);
   assert.equal(r.divergentCount, 1);
+});
+
+test("Classic: Pix sem taxa até R$ 10 mil; acima, 0,99% só sobre o que passa, na ordem de chegada", () => {
+  const d = (dia: number) => new Date(Date.UTC(2026, 10, dia));
+  const r = resumirSaldoDeRepasse(
+    [
+      tx({ amount: 600_000, createdAt: d(3) }),
+      tx({ amount: 300_000, createdAt: d(1) }),
+      tx({ amount: 200_000, createdAt: d(2) }),
+      tx({ amount: 50_000, paymentMethod: "CREDIT_CARD", createdAt: d(4) }),
+    ],
+    "classic",
+  );
+  // Pix: 3.000 + 2.000 (livres) + 6.000 (5.000 livres, 1.000 com 0,99% = R$ 9,90); cartão: 3,99% de R$ 500 = R$ 19,95
+  assert.equal(r.feeCents, 990 + 1_995);
+  assert.equal(r.grossCents, 1_150_000);
 });
 
 test("Pix pendente é 'a conferir' e fora do saldo; estornados, recusados e falhos não entram", () => {
@@ -85,4 +109,12 @@ test("posição de repasse: líquido menos o já repassado, sem ficar negativo",
   assert.deepEqual(posicaoDeRepasse(10_000, 4_000), { netCents: 10_000, paidOutCents: 4_000, dueCents: 6_000, overpaidCents: 0 });
   assert.deepEqual(posicaoDeRepasse(10_000, 10_000), { netCents: 10_000, paidOutCents: 10_000, dueCents: 0, overpaidCents: 0 });
   assert.deepEqual(posicaoDeRepasse(8_000, 10_000), { netCents: 8_000, paidOutCents: 10_000, dueCents: 0, overpaidCents: 2_000 });
+});
+
+test("taxa do presente: teto do Pix sem taxa nos planos pagos e cartão sempre com 3,99%", () => {
+  assert.equal(calcularValoresDoPresente(1_000_000, "vip", "PIX").feeCents, 0);
+  assert.equal(calcularValoresDoPresente(1_000_000, "vip", "PIX", 1).feeCents, 0, "1 centavo acima: 0,99% de 1 centavo arredonda para 0");
+  assert.equal(calcularValoresDoPresente(100_000, "classic", "PIX", 1_000_000).feeCents, 990);
+  assert.equal(calcularValoresDoPresente(100_000, "classic", "CREDIT_CARD").feeCents, 3_990);
+  assert.equal(calcularValoresDoPresente(100_000, "basic", "PIX", 5_000_000).feeCents, 3_990, "o Básico não tem teto: sempre 3,99%");
 });

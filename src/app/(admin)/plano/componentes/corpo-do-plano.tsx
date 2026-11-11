@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { PaymentStatus } from "@prisma/client";
 import { ehChaveDePlano } from "@/lib/pagamento/plans";
 import { obterCatalogo } from "@/lib/pagamento/catalog-server";
@@ -33,12 +32,6 @@ export async function CorpoDoPlano({ userId, weddingId }: { userId: string; wedd
           Mudar de plano
         </h2>
         <SecaoDeUpgrade plans={upgrades} canPay={!isSuperAdmin} />
-        <p className="text-[15px] text-tinta">
-          Precisam só de algumas partes?{" "}
-          <Link href="/monte-seu-plano" className="inline-flex min-h-11 items-center font-semibold text-ameixa underline-offset-4 hover:underline">
-            Montem o plano de vocês
-          </Link>
-        </p>
       </section>
       <Recibos subscriptions={subscriptions} nomeDoPlano={nomeDoPlano} />
     </>

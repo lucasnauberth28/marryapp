@@ -13,7 +13,7 @@ export async function obterSaldoDeRepasse(weddingId: string): Promise<SaldoDeRep
     obterPlanoDoCasamento(weddingId),
     prisma.transaction.findMany({
       where: { weddingId, status: { in: [PaymentStatus.APPROVED, PaymentStatus.PENDING] } },
-      select: { amount: true, netAmount: true, fee: true, paymentMethod: true, status: true },
+      select: { amount: true, netAmount: true, fee: true, paymentMethod: true, status: true, createdAt: true },
     }),
   ]);
   return resumirSaldoDeRepasse(rows, planoDaTaxaDoPresentePara(plan.planId, plan.modules));

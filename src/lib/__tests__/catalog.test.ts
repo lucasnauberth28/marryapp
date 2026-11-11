@@ -123,7 +123,8 @@ test("plano adaptado: soma dos módulos com os preços do catálogo", () => {
   assert.equal(calc.subtotal, 11000);
   assert.equal(calc.discountPercent, 0);
   assert.equal(calc.total, 11000);
-  assert.deepEqual(resolverPlanoNoCatalogo(catalog, "custom", ["site", "pixZero"]), { type: "COUPLE", name: "Plano Adaptado", price: 11000 });
+  // O plano montado por recurso saiu de venda: o servidor não cobra mais por ele
+  assert.equal(resolverPlanoNoCatalogo(catalog, "custom", ["site", "pixZero"]), null);
   // com o código, o mesmo conjunto custa o valor antigo
   assert.equal(calcularPrecoDoPlanoPersonalizado(["site", "pixZero"]).total, 4900 + 5900);
 });
@@ -180,7 +181,7 @@ test("plano adaptado nunca sai mais barato que o VIP quando leva todos os recurs
   const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, todos);
   assert.equal(calc.total, catalog.plans.vip.price);
   assert.equal(calc.planoEquivalente, "vip");
-  assert.deepEqual(resolverPlanoNoCatalogo(catalog, "custom", todos), { type: "COUPLE", name: "Plano Adaptado", price: catalog.plans.vip.price });
+  assert.equal(resolverPlanoNoCatalogo(catalog, "custom", todos), null);
 });
 
 test("plano adaptado com os recursos do Classic não custa menos que o Classic, mesmo com preços editados", () => {

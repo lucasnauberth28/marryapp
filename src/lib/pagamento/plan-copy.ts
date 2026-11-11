@@ -1,6 +1,6 @@
 // Textos de apresentação dos planos de casal, em um lugar só: a home, /planos e o cadastro leem daqui.
 // Preço, nome e lista de recursos continuam vindo do catálogo (lib/plans.ts + edições da administração).
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "./gift-fee.ts";
+import { ROTULO_DA_TAXA_ACIMA_DO_TETO, ROTULO_DA_TAXA_DO_PRESENTE, ROTULO_DO_TETO_DO_PIX_SEM_TAXA } from "./gift-fee.ts";
 import type { ChaveDoPlano } from "./plans.ts";
 
 /** "Plano Classic" -> "Classic"; "Fornecedor Pro" -> "Pro". O nome vem sempre do catálogo, para home, planos e cadastro dizerem o mesmo. */
@@ -33,7 +33,7 @@ export const RESUMO_DO_CADASTRO: Record<ChaveDoPlano, string> = {
 
 /** Condições dos presentes, na ordem em que aparecem em /planos e na pergunta sobre presentes. */
 export const CONDICOES_DO_PRESENTE = {
-  fee: `No Básico, o Aceito cobra ${ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido. No Classic e no VIP, essa taxa não vale para presentes pagos por Pix.`,
+  fee: `No Básico, o Aceito cobra ${ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido. No Classic e no VIP, os presentes por Pix não têm taxa até ${ROTULO_DO_TETO_DO_PIX_SEM_TAXA} somados; acima disso, ${ROTULO_DA_TAXA_ACIMA_DO_TETO} (o custo do Pix). No cartão vale ${ROTULO_DA_TAXA_DO_PRESENTE}.`,
   pix: "No Pix, quem presenteia paga o valor do presente, sem acréscimo.",
   card: "No cartão, quem presenteia vê o valor com a tarifa do cartão antes de pagar e pode parcelar em até 12 vezes.",
 } as const;

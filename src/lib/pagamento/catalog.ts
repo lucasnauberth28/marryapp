@@ -113,11 +113,8 @@ export function ehChaveDePlanoDoCatalogo(catalog: Catalogo, value: string): valu
  * soma só os módulos escolhidos que existem; sem nenhum módulo válido, devolve null.
  */
 export function resolverPlanoNoCatalogo(catalog: Catalogo, planId: string, modules?: readonly string[]): { type: "COUPLE" | "VENDOR"; name: string; price: number } | null {
-  if (planId === "custom") {
-    const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, modules ?? []);
-    if (calc.selectedModules.length === 0) return null;
-    return { type: "COUPLE", name: "Plano Adaptado", price: calc.total };
-  }
+  // O plano montado por recurso ("custom") saiu de venda: só os planos prontos. Assinaturas antigas continuam valendo.
+  void modules;
   if (!ehChaveDePlanoDoCatalogo(catalog, planId)) return null;
   const plan = catalog.plans[planId];
   return { type: plan.type, name: plan.name, price: plan.price };

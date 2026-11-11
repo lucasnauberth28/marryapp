@@ -30,7 +30,7 @@ function FilaVazia() {
       <IlustracaoDaLiz pose="tranquila" height={88} decorative className="h-[88px] w-auto" />
       <div className="grid gap-1">
         <p className="text-[14.5px] font-semibold text-tinta">Nada pedindo atenção agora</p>
-        <p className="text-[14.5px] leading-[1.45] text-tinta-suave">Quando surgir algo, como um convite sem resposta ou um Pix para conferir, aparece aqui.</p>
+        <p className="text-[14.5px] leading-[1.45] text-tinta-suave">Quando surgir algo, como um convite sem resposta ou uma despesa perto de vencer, aparece aqui.</p>
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export function SecaoDePresentes({ classic, vip }: { classic: string; vip: strin
           <SimuladorDePresentes classicLabel={classic} vipLabel={vip} />
         </Aparicao>
         <p className="lp-sim-nota">
-          No {classic} e no {vip}, o Pix não tem tarifa do Aceito. As condições de cada plano aparecem na hora de escolher.{" "}
+          No {classic} e no {vip}, o Pix não tem taxa do Aceito até R$ 10 mil em presentes. As condições de cada plano aparecem na hora de escolher.{" "}
           <Link href="/planos#presentes" className="lp-link-claro">
             Comparar os planos
           </Link>

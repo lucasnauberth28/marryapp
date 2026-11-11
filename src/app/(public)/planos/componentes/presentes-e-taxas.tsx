@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { estiloDoContainerDaLanding, estiloDoSobretituloDaLanding } from "@/components/landing/styles";
-import { ROTULO_DA_TAXA_DO_PRESENTE } from "@/lib/pagamento/gift-fee";
+import { ROTULO_DA_TAXA_ACIMA_DO_TETO, ROTULO_DA_TAXA_DO_PRESENTE, ROTULO_DO_TETO_DO_PIX_SEM_TAXA } from "@/lib/pagamento/gift-fee";
 import { CONDICOES_DO_PRESENTE, rotuloDoPlano } from "@/lib/pagamento/plan-copy";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +29,7 @@ export function SecaoDeTaxasDosPresentes({ catalog }: { catalog: Awaited<ReturnT
         </div>
         <dl className="divide-y divide-linha border-y border-linha text-base leading-6">
           <LinhaDeCondicao rotulo="Plano Básico">{ROTULO_DA_TAXA_DO_PRESENTE} por presente recebido, em presentes pagos por Pix ou cartão.</LinhaDeCondicao>
-          <LinhaDeCondicao rotulo={`${rotuloDoPlano(catalog.plans.classic.name)} e ${rotuloDoPlano(catalog.plans.vip.name)}`}>A taxa de {ROTULO_DA_TAXA_DO_PRESENTE} do Aceito não vale para presentes pagos por Pix.</LinhaDeCondicao>
+          <LinhaDeCondicao rotulo={`${rotuloDoPlano(catalog.plans.classic.name)} e ${rotuloDoPlano(catalog.plans.vip.name)}`}>Pix sem taxa até {ROTULO_DO_TETO_DO_PIX_SEM_TAXA} somados; acima disso, {ROTULO_DA_TAXA_ACIMA_DO_TETO}, só o custo do Pix. No cartão, {ROTULO_DA_TAXA_DO_PRESENTE}.</LinhaDeCondicao>
           <LinhaDeCondicao rotulo="Pix">{CONDICOES_DO_PRESENTE.pix}</LinhaDeCondicao>
           <LinhaDeCondicao rotulo="Cartão">{CONDICOES_DO_PRESENTE.card}</LinhaDeCondicao>
           <LinhaDeCondicao rotulo="Recebimento">

@@ -1,6 +1,6 @@
 // Saldo a repassar ao casal, SÓ CÁLCULO (sem banco nem Next): soma os presentes aprovados e separa bruto, taxa do
 // Aceito e líquido. Não cria repasse e não move dinheiro. A leitura do banco fica em payout-balance-server.ts.
-import { calcularValoresDoPresente, type FormaDaTaxaDoPresente, type PlanoDaTaxaDoPresente } from "../pagamento/gift-fee.ts";
+import { valoresEmOrdemDeChegada, type FormaDaTaxaDoPresente, type PlanoDaTaxaDoPresente } from "../pagamento/gift-fee.ts";
 
 export interface TransacaoDoSaldo {
   /** O que o convidado pagou, em centavos. */
@@ -9,6 +9,8 @@ export interface TransacaoDoSaldo {
   fee: number | null;
   paymentMethod: FormaDaTaxaDoPresente;
   status: "PENDING" | "APPROVED" | "FAILED" | "REFUNDED" | "REJECTED";
+  /** Ordem de chegada: decide quanto do teto do Pix sem taxa cada presente usa. */
+  createdAt?: Date;
 }
 
 export interface SaldoDeRepasse {
@@ -56,28 +58,20 @@ export function resumirSaldoDeRepasse(transactions: readonly TransacaoDoSaldo[],
     divergentCount: 0,
   };
 
+  const aprovados = transactions.filter((tx) => tx.status === "APPROVED" && ehCentavos(tx.amount)).map((tx) => ({ ...tx, method: tx.paymentMethod }));
   for (const tx of transactions) {
-    if (!ehCentavos(tx.amount)) continue;
-
-    if (tx.status === "PENDING") {
-      if (tx.paymentMethod === "PIX") {
-        out.toCheckCents += tx.amount;
-        out.toCheckCount += 1;
-      }
-      continue;
+    if (tx.status === "PENDING" && tx.paymentMethod === "PIX" && ehCentavos(tx.amount)) {
+      out.toCheckCents += tx.amount;
+      out.toCheckCount += 1;
     }
-    if (tx.status !== "APPROVED") continue;
-
-    const byPlan = calcularValoresDoPresente(tx.amount, plan, tx.paymentMethod);
-    const stored = ehCentavos(tx.netAmount) && ehCentavos(tx.fee) && tx.netAmount + tx.fee === tx.amount;
-    const feeCents = stored ? (tx.fee as number) : byPlan.feeCents;
-    if (!stored) out.calculatedCount += 1;
-    else if (feeCents !== byPlan.feeCents) out.divergentCount += 1;
-
+  }
+  for (const [tx, v] of valoresEmOrdemDeChegada(aprovados, plan)) {
+    if (v.calculado) out.calculatedCount += 1;
+    else if (v.divergente) out.divergentCount += 1;
     out.approvedCount += 1;
     out.grossCents += tx.amount;
-    out.feeCents += feeCents;
-    out.netCents += tx.amount - feeCents;
+    out.feeCents += v.feeCents;
+    out.netCents += v.netCents;
   }
 
   return out;

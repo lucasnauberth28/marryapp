@@ -11,7 +11,6 @@ const LINKS_DO_RODAPE: { title: string; items: { label: string; href: string }[]
     items: [
       { label: "Como funciona", href: "/#como" },
       { label: "Planos", href: "/planos" },
-      { label: "Montar o plano de vocês", href: "/monte-seu-plano" },
       { label: "Criar conta grátis", href: "/cadastro?plano=basic" },
     ],
   },

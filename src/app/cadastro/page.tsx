@@ -23,20 +23,13 @@ async function perfilDoGoogleDaVolta(params: Record<string, string | string[] | 
   return perfil ? { name: perfil.name, email: perfil.email } : null;
 }
 
-/** Aceita ?tipo=casal|fornecedor, ?plano=classic e o plano adaptado (?custom=true&modules=a,b). */
+/** Aceita ?tipo=casal|fornecedor e ?plano=classic. O plano montado por recurso saiu: ?custom=true cai na escolha dos planos prontos. */
 export default async function CadastroPage({ searchParams }: { searchParams: ParametrosDeBusca }) {
   const params = await searchParams;
   const tipo = primeiroValor(params.tipo);
   const type: TipoDeConta | null = tipo === "casal" || tipo === "fornecedor" ? tipo : null;
   const isCustom = primeiroValor(params.custom) === "true";
-  const modules = isCustom
-    ? (primeiroValor(params.modules) ?? "")
-        .split(",")
-        .map((m) => m.trim())
-        .filter((m) => /^[a-zA-Z0-9_-]{1,40}$/.test(m))
-        .slice(0, 20)
-    : undefined;
-  const plano = isCustom ? "custom" : primeiroValor(params.plano)?.toLowerCase();
+  const plano = isCustom ? undefined : primeiroValor(params.plano)?.toLowerCase();
   const perfilDoGoogle = await perfilDoGoogleDaVolta(params);
   // Voltou do Google mas o cookie venceu (mais de 30 minutos): pede para tentar de novo
   const erro = primeiroValor(params.erro) ?? (primeiroValor(params.google) === "1" && !perfilDoGoogle ? "google-invalido" : undefined);
@@ -45,8 +38,7 @@ export default async function CadastroPage({ searchParams }: { searchParams: Par
     <ExperienciaDeAcesso
       initialMode="criar"
       initialType={isCustom ? "casal" : type}
-      initialPlanId={plano}
-      customModules={modules}
+      initialPlanId={plano === "custom" ? undefined : plano}
       catalog={await obterCatalogo()}
       googleAtivo={configuracaoAtualDoGoogle() !== null}
       erroDoGoogle={mensagemDoErroDoGoogle(erro)}

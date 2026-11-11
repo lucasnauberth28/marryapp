@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { CartaoDoPlanoDoCasal } from "@/components/landing/couple-plan-card";
 import { RodapeDaLanding } from "@/components/landing/landing-footer";
 import { SecaoDePerguntasFrequentes } from "@/components/landing/faq-section";
@@ -9,7 +8,7 @@ import { compartilhamentoDaMarca } from "@/lib/brand-meta";
 import { obterCatalogo } from "@/lib/pagamento/catalog-server";
 import { cn } from "@/lib/utils";
 import { SecaoDePlanosDeFornecedor } from "./componentes/planos-de-fornecedor";
-import { SecaoDeTaxasDosPresentes, estiloDoLinkDeTexto } from "./componentes/presentes-e-taxas";
+import { SecaoDeTaxasDosPresentes } from "./componentes/presentes-e-taxas";
 
 // Os preços vêm do catálogo da administração: a página se refaz sozinha a cada 5 minutos e na hora que um preço muda.
 export const revalidate = 300;
@@ -55,13 +54,6 @@ export default async function PlanosPage() {
               </li>
             ))}
           </ul>
-          <p className="mt-8 text-[15px] leading-6 text-tinta-suave">
-            Precisam só de algumas partes?{" "}
-            <Link href="/monte-seu-plano" className={estiloDoLinkDeTexto}>
-              Montem o plano de vocês
-            </Link>
-            .
-          </p>
         </section>
 
         <SecaoDeTaxasDosPresentes catalog={catalog} />

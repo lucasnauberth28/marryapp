@@ -1,9 +1,9 @@
-import { ROTULO_DA_TAXA_DO_PRESENTE, type PlanoDaTaxaDoPresente } from "@/lib/pagamento/gift-fee";
+import { ROTULO_DA_TAXA_ACIMA_DO_TETO, ROTULO_DA_TAXA_DO_PRESENTE, ROTULO_DO_TETO_DO_PIX_SEM_TAXA, type PlanoDaTaxaDoPresente } from "@/lib/pagamento/gift-fee";
 
 /** Em que a taxa se aplica no plano, em uma frase. */
 export function notaDaTaxa(plan: PlanoDaTaxaDoPresente): string {
   if (plan === "basic") return `${ROTULO_DA_TAXA_DO_PRESENTE} por presente no plano Básico`;
-  return `Pix sem taxa no plano ${plan === "vip" ? "VIP" : "Classic"}; cartão ${ROTULO_DA_TAXA_DO_PRESENTE}`;
+  return `Pix sem taxa até ${ROTULO_DO_TETO_DO_PIX_SEM_TAXA} no plano ${plan === "vip" ? "VIP" : "Classic"} (acima, ${ROTULO_DA_TAXA_ACIMA_DO_TETO}); cartão ${ROTULO_DA_TAXA_DO_PRESENTE}`;
 }
 
 /** Linhas do extrato (a mesma conta para o extrato de verdade e para o exemplo). */

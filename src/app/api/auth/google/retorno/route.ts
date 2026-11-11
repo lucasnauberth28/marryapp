@@ -22,10 +22,7 @@ function aoLoginComErro(codigo: string, modo?: "entrar" | "criar") {
 async function paraCompletarOCadastro(perfil: PerfilDoGoogle, fluxo: FluxoDoGoogle) {
   const consulta = new URLSearchParams({ google: "1" });
   if (fluxo.tipo) consulta.set("tipo", fluxo.tipo);
-  if (fluxo.plano === "custom" && fluxo.modulos?.length) {
-    consulta.set("custom", "true");
-    consulta.set("modules", fluxo.modulos.join(","));
-  } else if (fluxo.plano) consulta.set("plano", fluxo.plano);
+  if (fluxo.plano && fluxo.plano !== "custom") consulta.set("plano", fluxo.plano);
   const resposta = NextResponse.redirect(urlDoApp(`/cadastro?${consulta}`));
   resposta.cookies.set(COOKIE_DO_PERFIL_PENDENTE, await assinarPerfilPendente(perfil, segredoDoFluxoDoGoogle()), opcoesDosCookiesDoGoogle(DURACAO_DO_PENDENTE_EM_SEGUNDOS));
   return resposta;
