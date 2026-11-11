@@ -22,6 +22,6 @@ export interface ResumoDosPresentes {
 export const SITUACAO: Record<PagamentoDoPresente["situation"], { tone: TomDaEtiqueta; icon: typeof Check; label: string }> = {
   pix: { tone: "sucesso", icon: Check, label: "Pix recebido" },
   card: { tone: "sucesso", icon: CreditCard, label: "Cartão recebido" },
-  toCheck: { tone: "aviso", icon: Clock, label: "A conferir" },
+  toCheck: { tone: "aviso", icon: Clock, label: "Em confirmação" },
   refunded: { tone: "neutro", icon: Undo2, label: "Estornado" },
 };

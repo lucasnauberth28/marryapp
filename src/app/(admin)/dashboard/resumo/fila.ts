@@ -7,7 +7,7 @@ import type { ContextoDaPagina, Permissao } from "./tipos";
 
 /** "O que fazer agora": a sugestão da Liz (por regras e com dado real) e os itens que pedem atenção. A Liz só orienta; quem age é o casal. */
 export function montarFilaDoResumo(dados: DadosDoResumo, contas: ContasDoResumo, { session, can }: { session: ContextoDaPagina["session"]; can: Permissao }) {
-  const { counts, budget, guests, deadlineKey, todayKey, weddingDays, weddingKey, statement } = contas;
+  const { counts, budget, guests, deadlineKey, todayKey, weddingDays, weddingKey } = contas;
   const tip = decidirDicaDaLiz({
     pendingGuests: counts.invites.pending,
     pendingPeople: counts.people.pending,
@@ -23,7 +23,6 @@ export function montarFilaDoResumo(dados: DadosDoResumo, contas: ContasDoResumo,
   return montarFila({
     todayKey,
     tip,
-    pendingPix: can("/financas") ? statement.toCheckCount : 0,
     budget,
     hasWeddingDate: Boolean(weddingKey),
     task: dados.nextTask?.dueDate ? { title: dados.nextTask.title, dueKey: chaveDoDiaDe(dados.nextTask.dueDate) } : null,

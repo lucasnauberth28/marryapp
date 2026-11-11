@@ -20,7 +20,7 @@ function Indicador({ titulo, valor, texto, extra = "", classeDoValor = estiloDoN
 }
 
 function textoDosPresentes(m: Metricas) {
-  if (m.totalPendente > 0) return `Mais ${formatarReaisEnxuto(m.totalPendente)} em Pix a conferir`;
+  if (m.totalPendente > 0) return `Mais ${formatarReaisEnxuto(m.totalPendente)} em Pix em confirmação`;
   return m.totalLiquido > 0 ? "Tudo conferido" : "Os presentes pagos entram aqui.";
 }
 

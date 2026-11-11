@@ -9,8 +9,6 @@ import { MENSAGEM_DE_MUITAS_TENTATIVAS } from "@/lib/rate-limit-message";
 import { PaymentStatus } from "@prisma/client";
 import { limitarUsoPorIp } from "@/lib/security/rate-limiter";
 import { normalizarTexto } from "@/lib/security/sanitize";
-import { avisarDepois } from "@/lib/notifications/service";
-import { avisarPixParaConferir } from "@/lib/notifications/events";
 import { EsquemaDaIdentidadeDoConvidado, presenteParaPagar, separarNome } from "@/actions/checkout/comum";
 
 /** O que a tela recebe: o Pix pronto (success) ou o motivo de não ter saído (error). */
@@ -49,16 +47,13 @@ async function pixDinamico(transactionId: string, gift: PresenteAPagar, guestNam
   }
 }
 
-/** 2. Pix estático: fica PENDENTE até o casal conferir o extrato e aprovar em /financas. */
+/** 2. Pix estático: fica PENDENTE até a equipe do Aceito conferir o extrato e confirmar (administração > casal > Pagamentos). */
 async function pixEstatico(transactionId: string, gift: PresenteAPagar): Promise<ResultadoDoPixDoPresente> {
   const pixKey = process.env.PIX_KEY?.trim();
   if (!pixKey) {
     await prisma.transaction.update({ where: { id: transactionId }, data: { status: PaymentStatus.FAILED } });
     return { success: false, error: "Pagamento via Pix indisponível no momento." };
   }
-
-  // Aviso ao casal: o Pix estático precisa de conferência no extrato
-  avisarDepois(() => avisarPixParaConferir(transactionId));
 
   const pixPayload = gerarCodigoPix({
     pixKey,

@@ -1,4 +1,4 @@
-// Presentes e dinheiro no Resumo: um extrato só (recebido bruto, taxa do Aceito, líquido e a conferir).
+// Presentes e dinheiro no Resumo: um extrato só (recebido bruto, taxa do Aceito, líquido e em confirmação).
 import { Check, Clock } from "lucide-react";
 import { formatarReaisDeSaida, formatarReaisSemSinal } from "@/lib/resumo/dinheiro";
 import type { ExtratoDePresentes, LinhaDePresente } from "@/lib/resumo/presentes";
@@ -18,13 +18,13 @@ function LinhaDoQueFalta({ statement }: { statement: ExtratoDePresentes }) {
         aConferir ? (
           <>
             <Etiqueta tone="aviso" icon={Clock}>
-              A conferir
+              Em confirmação
             </Etiqueta>
-            Pix que vocês ainda não conferiram
+            Pix que o Aceito ainda está confirmando
           </>
         ) : (
           <Etiqueta tone="ok" icon={Check}>
-            Tudo conferido
+            Tudo confirmado
           </Etiqueta>
         )
       }
@@ -59,11 +59,10 @@ interface PropriedadesDoBlocoDeDinheiro {
   /** O perfil abre as Configurações (onde fica "Onde receber"). */
   canReceive: boolean;
   /** O perfil confere Pix (mesma permissão de Finanças). */
-  canConfer: boolean;
   className?: string;
 }
 
-export function BlocoDeDinheiro({ statement, lines, plan, giftCount, canOpenGifts, canReceive, canConfer, className = "" }: PropriedadesDoBlocoDeDinheiro) {
+export function BlocoDeDinheiro({ statement, lines, plan, giftCount, canOpenGifts, canReceive, className = "" }: PropriedadesDoBlocoDeDinheiro) {
   const empty = statement.approvedCount === 0 && statement.toCheckCount === 0;
   const aside = (
     <>
@@ -87,8 +86,8 @@ export function BlocoDeDinheiro({ statement, lines, plan, giftCount, canOpenGift
             </span>
           </div>
           <ExtratoDosPresentes statement={statement} plan={plan} />
-          <p className={classeDaDica}>Um Pix a conferir entra no recebido quando vocês confirmam que ele caiu na conta.</p>
-          {lines.length > 0 && <TabelaDePresentes lines={lines} canConfer={canConfer} />}
+          <p className={classeDaDica}>Um Pix em confirmação entra no recebido assim que o pagamento é confirmado.</p>
+          {lines.length > 0 && <TabelaDePresentes lines={lines} />}
         </>
       )}
     </BlocoDoPainel>

@@ -22,6 +22,8 @@ export const ROTULO_DA_ACAO: Record<string, string> = {
   "wedding.note_add": "Escreveu uma nota interna sobre um casamento",
   "wedding.password_reset": "Enviou o link de nova senha ao casal",
   "wedding.payout_register": "Registrou um repasse dos presentes ao casal",
+  "wedding.gift_pix_confirm": "Confirmou um Pix de presente no extrato",
+  "wedding.gift_pix_reject": "Recusou um Pix de presente que não caiu",
   "wedding.delete": "Excluiu um casamento",
   "wedding.grant_plan": "Concedeu um plano a um casal",
   "wedding.invite_accept": "Convite do par aceito",

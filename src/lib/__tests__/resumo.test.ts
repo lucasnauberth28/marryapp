@@ -194,7 +194,6 @@ test("sem despesas: zeros e nenhuma próxima", () => {
 const queueBase = {
   todayKey: "2026-10-23",
   tip: null,
-  pendingPix: 0,
   budget: resumirOrcamento([], "2026-10-23"),
   hasWeddingDate: true,
   task: null,
@@ -207,15 +206,13 @@ test("fila: a sugestão da Liz é sempre a primeira e são no máximo 3 itens", 
   const items = montarFila({
     ...queueBase,
     tip: { id: "rsvp-sem-resposta", text: "42 convites ainda sem resposta (68 pessoas).", action: "Ver convidados sem resposta", href: "/convidados?resposta=sem-resposta", urgent: false },
-    pendingPix: 3,
     budget: resumirOrcamento([exp({ description: "Buffet (2/4)", dueDate: new Date("2026-10-26T00:00:00Z") })], "2026-10-23"),
     hasWeddingDate: false,
     task: { title: "Provar o menu", dueKey: "2026-10-30" },
   });
   assert.equal(items.length, 3);
-  assert.deepEqual(items.map((i) => i.kind), ["liz", "pix", "despesa"]);
-  assert.equal(items[1].text, "3 Pix de presente esperam a conferência de vocês.");
-  assert.match(items[2].text, /Buffet, 2ª parcela de 4 vence em 26 de outubro, daqui a 3 dias\./);
+  assert.deepEqual(items.map((i) => i.kind), ["liz", "despesa", "data"]);
+  assert.match(items[1].text, /Buffet, 2ª parcela de 4 vence em 26 de outubro, daqui a 3 dias\./);
 });
 
 test("fila: sem nada a fazer, fica vazia (a página diz que está tudo em dia)", () => {
@@ -226,7 +223,7 @@ test("fila: não repete a despesa vencida quando a Liz já sugeriu ela, e não m
   const budget = resumirOrcamento([exp({ dueDate: new Date("2026-10-01T00:00:00Z") })], "2026-10-23");
   const tip = { id: "despesa-vencida", text: "Uma despesa está com o vencimento atrasado.", action: "Ver despesas", href: "/financas", urgent: true };
   assert.deepEqual(montarFila({ ...queueBase, budget, tip }).map((i) => i.kind), ["liz"]);
-  const semAcesso = montarFila({ ...queueBase, budget, pendingPix: 1, can: (p) => p === "/dashboard" });
+  const semAcesso = montarFila({ ...queueBase, budget, hasWeddingDate: false, can: (p) => p === "/dashboard" });
   assert.ok(semAcesso.every((i) => !i.action));
 });
 

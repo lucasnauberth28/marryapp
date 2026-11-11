@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { ExpenseStatus, PaymentMethod, PaymentStatus, RsvpStatus } from "@prisma/client";
+import { ExpenseStatus, RsvpStatus } from "@prisma/client";
 import { obterSessao, ID_DO_SUPER_ADMIN } from "@/lib/security/auth-guard";
 import { obterContextoDoCasamento } from "@/lib/security/wedding-context";
 import { quantidadeNaoLidaDe } from "@/lib/notifications/queries";
@@ -59,23 +59,20 @@ export async function obterQuantidadeDeNotificacoesNaoLidas(): Promise<number> {
 }
 
 /**
- * Lembretes do painel do casal: o que ainda está de pé (Pix para conferir, despesas, RSVP, convites).
+ * Lembretes do painel do casal: o que ainda está de pé (despesas, RSVP, convites).
  * Não têm "lido": somem sozinhos quando a situação se resolve.
  */
 async function lembretesDoCasal(weddingId: string): Promise<ItemDeLembrete[]> {
   const soon = new Date();
   soon.setDate(soon.getDate() + 7);
 
-  const [pixToCheck, dueExpenses, pendingRsvp, uninvited] = await Promise.all([
-    // Pix estático (sem gatewayId): só o casal sabe se caiu na conta
-    prisma.transaction.count({ where: { weddingId, status: PaymentStatus.PENDING, paymentMethod: PaymentMethod.PIX, gatewayId: null } }),
+  const [dueExpenses, pendingRsvp, uninvited] = await Promise.all([
     prisma.expense.count({ where: { weddingId, status: { in: [ExpenseStatus.PENDING, ExpenseStatus.OVERDUE] }, dueDate: { lte: soon } } }),
     prisma.guest.count({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING, ...filtroSemSoPresente } }),
     prisma.guest.count({ where: { weddingId, hasReceivedMessage: false, phone: { not: null }, ...filtroSemSoPresente } }),
   ]);
 
   const candidatos: Array<[number, ItemDeLembrete]> = [
-    [pixToCheck, { id: "pix_pending", title: "Pix para conferir", description: `${pluralizar(pixToCheck, "pagamento aguarda", "pagamentos aguardam")} a conferência no extrato.`, href: "/financas", category: "finance" }],
     [dueExpenses, { id: "expenses_due", title: "Despesas para acompanhar", description: `${pluralizar(dueExpenses, "despesa vence", "despesas vencem")} nos próximos 7 dias ou já venceu.`, href: "/financas", category: "expense" }],
     [pendingRsvp, { id: "rsvp_pending", title: "Confirmações de presença pendentes", description: `${pluralizar(pendingRsvp, "convidado ainda não respondeu", "convidados ainda não responderam")} ao convite.`, href: "/convidados", category: "guest" }],
     [uninvited, { id: "whatsapp_uninvited", title: "Convites por enviar", description: `${pluralizar(uninvited, "convidado com telefone ainda não recebeu", "convidados com telefone ainda não receberam")} o convite por WhatsApp.`, href: "/mensagens", category: "whatsapp" }],

@@ -1,8 +1,8 @@
 import type { Page } from "@playwright/test";
-import { criarCasalPronto, expect, novoContexto, test } from "./helpers";
+import { criarCasalPronto, entrarComoAdmin, expect, novoContexto, test } from "./helpers";
 
 // Resumo do casamento e a casca nova do painel: 5 áreas, convite compartilhável em todos os planos,
-// confirmações com unidade, extrato único com conferência de Pix.
+// confirmações com unidade, extrato único com Pix em confirmação.
 
 async function abrirResumo(page: Page) {
   await page.goto("/dashboard");
@@ -99,8 +99,8 @@ test("enviar por convidado abre o WhatsApp da pessoa e anota o envio; o Resumo c
   await expect(page.getByRole("region", { name: "Convite" })).toContainText("0 por enviar");
 });
 
-test("extrato único: Pix a conferir no Resumo, com taxa em reais, e o botão Conferir confirma ali mesmo", async ({ page, browser }) => {
-  const { sitePath } = await criarCasalPronto(page, "resumo-pix");
+test("extrato único: Pix em confirmação no Resumo, com taxa em reais; só a equipe do Aceito confirma", async ({ page, browser }) => {
+  const { email, sitePath } = await criarCasalPronto(page, "resumo-pix");
   await page.goto("/presentes-admin");
   await page.getByRole("button", { name: /Novo presente/ }).click();
   await page.getByLabel("Nome do presente").fill("Cafeteira Resumo E2E");
@@ -121,18 +121,28 @@ test("extrato único: Pix a conferir no Resumo, com taxa em reais, e o botão Co
   await expect(pagina.getByRole("heading", { name: "Faça o Pix" })).toBeVisible();
   await convidado.close();
 
+  // O casal vê o Pix em confirmação, com a conta da taxa, mas não tem como confirmar sozinho
   await abrirResumo(page);
-  await expect(page.getByRole("region", { name: "O que fazer agora" })).toContainText("1 Pix de presente espera a conferência de vocês.");
   const dinheiro = page.getByRole("region", { name: "Presentes e dinheiro" });
-  await expect(dinheiro).toContainText("A conferir");
+  await expect(dinheiro).toContainText("Em confirmação");
   // Conta do Básico: 3,99% de R$ 150,00 = R$ 5,99 (arredondado) e R$ 144,01 para vocês
   await expect(dinheiro).toContainText(/taxa R\$\s*5,99/);
   await expect(dinheiro).toContainText(/R\$\s*144,01/);
+  await expect(dinheiro.getByRole("button", { name: /Conferir|Confirmar/ })).toHaveCount(0);
 
-  await dinheiro.getByRole("button", { name: "Conferir o Pix de Convidado Pix Resumo" }).click();
-  await expect(dinheiro.getByText("Tudo conferido")).toBeVisible();
-  await expect(dinheiro.getByText("Conferido", { exact: true })).toBeVisible();
+  // A equipe confere o extrato e confirma no detalhe do casal
+  const admin = await (await novoContexto(browser)).newPage();
+  await entrarComoAdmin(admin, process.env.ADMIN_PASSWORD ?? "");
+  await admin.goto(`/admin/casais?q=${encodeURIComponent(email)}`);
+  await admin.getByRole("link", { name: /Ana & Bia/ }).first().click();
+  await expect(admin).toHaveURL(/\/admin\/casais\/[0-9a-f-]{36}$/);
+  await admin.goto(`${admin.url()}?aba=pagamentos`);
+  await admin.getByRole("button", { name: "Confirmar o Pix de Convidado Pix Resumo" }).click();
+  await expect(admin.getByText("Pix confirmado. O presente entrou no saldo do casal.")).toBeVisible();
+
   // Agora o presente entrou no recebido: bruto R$ 150,00, taxa R$ 5,99 e líquido R$ 144,01
+  await abrirResumo(page);
+  await expect(dinheiro.getByText("Tudo confirmado")).toBeVisible();
   await expect(dinheiro.getByRole("term").filter({ hasText: "Recebido (bruto)" })).toBeVisible();
   await expect(dinheiro).toContainText(/R\$\s*150,00/);
   await expect(dinheiro).toContainText(/−R\$\s*5,99/);

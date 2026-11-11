@@ -98,7 +98,6 @@ export function GradeDoResumo(p: PropriedadesDaGrade) {
         giftCount={dados.giftCount}
         canOpenGifts={can("/presentes-admin")}
         canReceive={can("/configuracoes")}
-        canConfer={can("/financas")}
         className={semConvites ? "min-[1200px]:col-span-12" : "min-[1200px]:col-span-7"}
       />
       {!semConvites && orcamento}

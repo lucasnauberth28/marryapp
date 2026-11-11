@@ -1,13 +1,13 @@
 // "O que fazer agora": até 3 itens; o primeiro é a sugestão da Liz.
 import Link from "next/link";
-import { Armchair, CalendarHeart, Clock, Gift, ListChecks, Receipt, type LucideIcon } from "lucide-react";
+import { Armchair, CalendarHeart, Clock, ListChecks, Receipt, type LucideIcon } from "lucide-react";
 import { AvatarDaLiz, IlustracaoDaLiz } from "@/components/liz/liz-illustration";
 import type { ItemDaFila, TipoDeItemDaFila } from "@/lib/resumo/fila";
 import { BlocoDoPainel, Etiqueta, LinkDeTexto, estiloDoBotaoPrimario, estiloDoBotaoSecundario } from "../ui";
 
 const estiloDoBotaoDeTexto = "inline-flex min-h-11 items-center rounded-[8px] px-1 text-sm font-semibold text-ameixa underline-offset-4 hover:underline";
 
-const ICONE_POR_TIPO: Record<Exclude<TipoDeItemDaFila, "liz">, LucideIcon> = { pix: Gift, despesa: Receipt, data: CalendarHeart, tarefa: ListChecks, mesas: Armchair };
+const ICONE_POR_TIPO: Record<Exclude<TipoDeItemDaFila, "liz">, LucideIcon> = { despesa: Receipt, data: CalendarHeart, tarefa: ListChecks, mesas: Armchair };
 
 type PrazoDaFila = { chip: string; remindHref: string } | null;
 
@@ -40,7 +40,7 @@ function IconeDoItem({ item }: { item: ItemDaFila }) {
   if (item.kind === "liz") return <AvatarDaLiz size={40} decorative />;
   const Icon = ICONE_POR_TIPO[item.kind];
   return (
-    <span className={`grid size-10 place-items-center rounded-full ${item.kind === "pix" || item.kind === "despesa" ? "bg-aviso-suave text-aviso" : "bg-areia text-tinta-suave"}`}>
+    <span className={`grid size-10 place-items-center rounded-full ${item.kind === "despesa" ? "bg-aviso-suave text-aviso" : "bg-areia text-tinta-suave"}`}>
       <Icon className="size-[19px]" strokeWidth={1.6} aria-hidden="true" />
     </span>
   );

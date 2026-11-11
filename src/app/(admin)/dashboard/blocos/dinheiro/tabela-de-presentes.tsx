@@ -3,7 +3,7 @@ import { chaveDoDiaDe, rotuloCurtoDoDia } from "@/lib/resumo/datas";
 import { formatarReaisSemSinal } from "@/lib/resumo/dinheiro";
 import type { LinhaDePresente } from "@/lib/resumo/presentes";
 import { Etiqueta } from "../../ui";
-import { BotaoDeConferir, SeloDoPix } from "./botao-de-conferir";
+import { SeloDoPix } from "./selo-do-pix";
 
 const CABECALHOS = [
   ["Convidado", "text-left"],
@@ -12,20 +12,19 @@ const CABECALHOS = [
   ["Situação", "text-right"],
 ] as const;
 
-function SituacaoDoPresente({ l, canConfer }: { l: LinhaDePresente; canConfer: boolean }) {
+function SituacaoDoPresente({ l }: { l: LinhaDePresente }) {
   if (!l.toCheck) {
     return (
       <span className="inline-flex items-center gap-2 text-[13px] text-tinta-suave">
         <SeloDoPix />
-        Conferido
+        Confirmado
       </span>
     );
   }
-  if (canConfer) return <BotaoDeConferir transactionId={l.tx.id} giftId={l.tx.giftId} who={l.tx.who} />;
-  return <span className="text-[13px] text-tinta-suave">A conferir</span>;
+  return <span className="text-[13px] text-tinta-suave">Em confirmação</span>;
 }
 
-function LinhaDaTabela({ l, canConfer }: { l: LinhaDePresente; canConfer: boolean }) {
+function LinhaDaTabela({ l }: { l: LinhaDePresente }) {
   return (
     <tr className="border-t border-linha first:border-t-0 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-x-3 max-md:gap-y-0.5 max-md:px-3.5 max-md:py-3">
       <td className="h-14 px-3 align-middle max-md:col-start-1 max-md:row-start-1 max-md:h-auto max-md:p-0">
@@ -35,7 +34,7 @@ function LinhaDaTabela({ l, canConfer }: { l: LinhaDePresente; canConfer: boolea
             {rotuloCurtoDoDia(chaveDoDiaDe(l.tx.createdAt))} · {l.tx.method === "PIX" ? "Pix" : "Cartão"}
             {l.toCheck && (
               <Etiqueta tone="aviso" icon={Clock}>
-                A conferir
+                Em confirmação
               </Etiqueta>
             )}
           </small>
@@ -52,13 +51,13 @@ function LinhaDaTabela({ l, canConfer }: { l: LinhaDePresente; canConfer: boolea
         {formatarReaisSemSinal(l.netCents)}
       </td>
       <td className="whitespace-nowrap px-3 text-right align-middle max-md:col-start-1 max-md:row-start-2 max-md:p-0 max-md:text-left">
-        <SituacaoDoPresente l={l} canConfer={canConfer} />
+        <SituacaoDoPresente l={l} />
       </td>
     </tr>
   );
 }
 
-export function TabelaDePresentes({ lines, canConfer }: { lines: LinhaDePresente[]; canConfer: boolean }) {
+export function TabelaDePresentes({ lines }: { lines: LinhaDePresente[] }) {
   return (
     <div className="overflow-hidden rounded-[8px] border border-linha">
       <table className="w-full border-collapse text-sm max-md:block">
@@ -74,7 +73,7 @@ export function TabelaDePresentes({ lines, canConfer }: { lines: LinhaDePresente
         </thead>
         <tbody className="max-md:block">
           {lines.map((l) => (
-            <LinhaDaTabela key={l.tx.id} l={l} canConfer={canConfer} />
+            <LinhaDaTabela key={l.tx.id} l={l} />
           ))}
         </tbody>
       </table>

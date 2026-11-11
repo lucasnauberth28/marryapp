@@ -60,7 +60,7 @@ export default async function FinancasPage() {
         </Suspense>
       </section>
       <section aria-labelledby="pagamentos-titulo" className="flex flex-col gap-3 border-t border-linha pt-6">
-        <TituloDaSecao id="pagamentos-titulo" titulo="Pagamentos dos presentes" texto="Confira no extrato do banco os Pix recebidos e confirme cada um aqui." />
+        <TituloDaSecao id="pagamentos-titulo" titulo="Pagamentos dos presentes" texto="Os Pix são confirmados pelo Mercado Pago ou pela equipe do Aceito. Daqui vocês agradecem a quem presenteou." />
         <Suspense fallback={<RegiaoDeCarregamento label="os pagamentos"><EsqueletoDosPagamentos /></RegiaoDeCarregamento>}>
           <Pagamentos transactions={transactions} />
         </Suspense>

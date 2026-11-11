@@ -1,5 +1,5 @@
-// O botão de ação de cada pagamento: confirmar o Pix (a conferir) ou agradecer (recebido).
-import { CheckCircle2, Heart } from "lucide-react";
+// A ação de cada pagamento: agradecer (recebido). Pix em confirmação espera o Mercado Pago ou a equipe do Aceito.
+import { Heart } from "lucide-react";
 import type { TransacaoComPresente } from "@/actions/financas/transacoes";
 import { Botao } from "@/components/ui/button";
 import type { AcoesDosPagamentos } from "./use-acoes-dos-pagamentos";
@@ -24,10 +24,7 @@ export function AcaoDoPagamento({ tx, acoes }: { tx: TransacaoComPresente; acoes
   return (
     <div className="flex items-center justify-center gap-2">
       {tx.status === "PENDING" && tx.paymentMethod === "PIX" ? (
-        <Botao size="sm" onClick={() => acoes.confirmarPix(tx.id, tx.gift.id)} loading={acoes.pendente && acoes.aprovandoId === tx.id} disabled={acoes.pendente} className="h-11 rounded-xl bg-sucesso px-4 text-sm font-semibold text-white shadow-sm hover:bg-sucesso/90 disabled:opacity-50 sm:h-9">
-          <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-          Confirmar
-        </Botao>
+        <span className="text-xs text-tinta-suave">Em confirmação</span>
       ) : tx.status === "APPROVED" ? (
         <BotaoDeAgradecer tx={tx} acoes={acoes} />
       ) : (

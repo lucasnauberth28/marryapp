@@ -34,27 +34,6 @@ export async function avisarPresentePago(transactionId: string): Promise<void> {
   );
 }
 
-/** Pix estático gerado: só o casal sabe se caiu na conta, então o aviso pede a conferência. */
-export async function avisarPixParaConferir(transactionId: string): Promise<void> {
-  const tx = await prisma.transaction.findUnique({
-    where: { id: transactionId },
-    select: {
-      weddingId: true,
-      status: true,
-      amount: true,
-      guestName: true,
-      gift: { select: { title: true } },
-      guest: { select: { name: true } },
-    },
-  });
-  if (!tx || tx.status !== PaymentStatus.PENDING) return;
-  await avisarEvento(
-    { weddingId: tx.weddingId },
-    { type: "pix_to_check", guestName: tx.guest?.name ?? tx.guestName, giftTitle: tx.gift.title, amountCents: tx.amount },
-    removerRepetidos.pixToCheck(transactionId),
-  );
-}
-
 /** Convidado confirmou ou recusou pelo link público. Quem repete a mesma resposta no mesmo dia não gera outro aviso. */
 export async function avisarConfirmacao(params: {
   weddingId: string;

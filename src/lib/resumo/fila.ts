@@ -3,7 +3,7 @@ import { pluralizar } from "../formatacao/plural.ts";
 import { diasEntreChaves, rotuloDePessoas, rotuloDoDia } from "./datas.ts";
 import type { Orcamento } from "./orcamento.ts";
 
-export type TipoDeItemDaFila = "liz" | "pix" | "despesa" | "data" | "tarefa" | "mesas";
+export type TipoDeItemDaFila = "liz" | "despesa" | "data" | "tarefa" | "mesas";
 
 export interface ItemDaFila {
   id: string;
@@ -19,7 +19,6 @@ export interface EntradaDaFila {
   todayKey: string;
   /** Sugestão da Liz (lib/liz/tip), já decidida. */
   tip: { id: string; text: string; action: string; href: string; urgent: boolean } | null;
-  pendingPix: number;
   budget: Orcamento;
   hasWeddingDate: boolean;
   /** Tarefa aberta mais próxima (por prazo), ou null. */
@@ -63,21 +62,12 @@ function itemDaTarefa(input: EntradaDaFila, can: Podem): ItemDaFila | null {
   };
 }
 
-/** Até `max` itens, a sugestão da Liz primeiro; os outros por importância (Pix, despesa, data, tarefa, mesas). */
+/** Até `max` itens, a sugestão da Liz primeiro; os outros por importância (despesa, data, tarefa, mesas). */
 export function montarFila(input: EntradaDaFila, max = 3): ItemDaFila[] {
   const { can } = input;
   const items: ItemDaFila[] = [];
 
   if (input.tip) items.push({ id: input.tip.id, kind: "liz", text: input.tip.text, action: { label: input.tip.action, href: input.tip.href }, urgent: input.tip.urgent });
-
-  if (input.pendingPix > 0) {
-    items.push({
-      id: "pix",
-      kind: "pix",
-      text: `${input.pendingPix === 1 ? "1 Pix de presente espera" : `${input.pendingPix} Pix de presente esperam`} a conferência de vocês.`,
-      action: can("/financas") ? { label: "Conferir Pix", href: "#dinheiro" } : undefined,
-    });
-  }
 
   const despesa = itemDaDespesa(input, can);
   if (despesa) items.push(despesa);

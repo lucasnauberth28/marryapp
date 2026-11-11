@@ -1,10 +1,10 @@
-// Selos pequenos da tabela de pagamentos: situação (recebido, a conferir...) e forma (Pix ou cartão).
+// Selos pequenos da tabela de pagamentos: situação (recebido, em confirmação...) e forma (Pix ou cartão).
 import { Check, Clock, CreditCard, QrCode, Undo2, X } from "lucide-react";
 import { Etiqueta, type TomDaEtiqueta } from "@/components/casal/ui";
 
 const SITUACOES: Record<string, { label: string; tone: TomDaEtiqueta; icon: typeof Clock }> = {
   APPROVED: { label: "Recebido", tone: "sucesso", icon: Check },
-  PENDING: { label: "A conferir", tone: "aviso", icon: Clock },
+  PENDING: { label: "Em confirmação", tone: "aviso", icon: Clock },
   FAILED: { label: "Não passou", tone: "perigo", icon: X },
   REFUNDED: { label: "Estornado", tone: "neutro", icon: Undo2 },
   REJECTED: { label: "Recusado", tone: "perigo", icon: X },

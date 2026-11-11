@@ -1,6 +1,6 @@
-// Ações sobre um pagamento de presente: confirmar o Pix e marcar/desmarcar o agradecimento (abrindo o WhatsApp).
+// Ações sobre um pagamento de presente: marcar/desmarcar o agradecimento (abrindo o WhatsApp).
 import { useState, useTransition } from "react";
-import { alternarAgradecimentoEnviado, aprovarTransacaoPix } from "@/actions/financas/transacoes";
+import { alternarAgradecimentoEnviado } from "@/actions/financas/transacoes";
 import { somenteDigitos } from "@/lib/formatacao/telefone";
 import type { AvisoDaTabela } from "./aviso-temporario";
 
@@ -23,22 +23,12 @@ function abrirAgradecimentoNoWhatsapp(d: DadosDoAgradecimento) {
 
 export function useAcoesDosPagamentos() {
   const [pendente, iniciarTransicao] = useTransition();
-  const [aprovandoId, setAprovandoId] = useState<string | null>(null);
   const [agradecendoId, setAgradecendoId] = useState<string | null>(null);
   const [aviso, setAviso] = useState<AvisoDaTabela | null>(null);
 
   const mostrarAviso = (novo: AvisoDaTabela) => {
     setAviso(novo);
     setTimeout(() => setAviso(null), TEMPO_DO_AVISO_EM_MS);
-  };
-
-  const confirmarPix = (idDaTransacao: string, idDoPresente: string) => {
-    setAprovandoId(idDaTransacao);
-    iniciarTransicao(async () => {
-      const resultado = await aprovarTransacaoPix(idDaTransacao, idDoPresente);
-      mostrarAviso(resultado.success ? { message: "Pix confirmado. O presente foi marcado como pago.", type: "success" } : { message: resultado.error || "Não deu para confirmar o Pix. Tente de novo.", type: "error" });
-      setAprovandoId(null);
-    });
   };
 
   const alternarAgradecimento = (dados: DadosDoAgradecimento) => {
@@ -54,7 +44,7 @@ export function useAcoesDosPagamentos() {
     });
   };
 
-  return { pendente, aprovandoId, agradecendoId, aviso, fecharAviso: () => setAviso(null), confirmarPix, alternarAgradecimento };
+  return { pendente, agradecendoId, aviso, fecharAviso: () => setAviso(null), alternarAgradecimento };
 }
 
 export type AcoesDosPagamentos = ReturnType<typeof useAcoesDosPagamentos>;
