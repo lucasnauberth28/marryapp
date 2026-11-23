@@ -58,7 +58,6 @@ interface PropriedadesDoBlocoDeDinheiro {
   canOpenGifts: boolean;
   /** O perfil abre as Configurações (onde fica "Onde receber"). */
   canReceive: boolean;
-  /** O perfil confere Pix (mesma permissão de Finanças). */
   className?: string;
 }
 

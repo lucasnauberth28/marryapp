@@ -30,8 +30,9 @@ export async function carregarPagamentosDosPresentes(weddingId: string) {
       guestName: true,
       createdAt: true,
       guestId: true,
+      thankYouSent: true,
       gift: { select: { title: true } },
-      guest: { select: { name: true } },
+      guest: { select: { name: true, phone: true } },
     },
   });
 }
@@ -51,6 +52,8 @@ export function pagamentosParaATela(rows: LinhaDePagamento[], now: Date): Pagame
     giftTitle: t.gift.title,
     amount: t.amount,
     when: rotuloDeQuando(t.createdAt, now),
+    thankYouSent: t.thankYouSent,
+    phone: t.guest?.phone ?? null,
     situation: situacaoDoPagamento(t),
   }));
 }

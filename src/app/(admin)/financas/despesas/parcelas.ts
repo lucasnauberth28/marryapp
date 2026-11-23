@@ -1,7 +1,5 @@
 // Cálculo das parcelas que a pessoa configurou no cadastro (blocos de N parcelas com valor e primeiro vencimento).
-import { FORMAS_DE_PAGAMENTO, type BlocoDeParcelas, type CartaoDaCarteira, type FormaDePagamento, type ParcelaGerada, type TipoDeDespesa } from "./tipos.ts";
-import { CreditCard, FileCheck, QrCode } from "lucide-react";
-import { rotuloDoCartao } from "../../../../lib/financas/cartoes.ts";
+import { FORMAS_DE_PAGAMENTO, type BlocoDeParcelas, type FormaDePagamento, type ParcelaGerada, type TipoDeDespesa } from "./tipos.ts";
 
 export interface DadosParaGerarParcelas {
   modo: "single" | "installment";
@@ -53,16 +51,7 @@ export function gerarParcelas(d: DadosParaGerarParcelas): ParcelaGerada[] {
   return parcelas;
 }
 
-/** Formas de pagamento oferecidas: Pix, os cartões da carteira (ou dois cartões comuns) e boleto. */
-export function formasDePagamentoOferecidas(cartoes: CartaoDaCarteira[]): FormaDePagamento[] {
-  const lista: FormaDePagamento[] = [{ id: "pix_balance", label: "Saldo em Conta / Pix", icon: QrCode }];
-  if (cartoes.length > 0) {
-    for (const c of cartoes) {
-      lista.push({ id: `card_${c.id}`, label: rotuloDoCartao(c), icon: CreditCard });
-    }
-  } else {
-    lista.push({ id: "credit_card_nubank", label: "Cartão Nubank", icon: CreditCard }, { id: "credit_card_itau", label: "Cartão Itaú", icon: CreditCard });
-  }
-  lista.push({ id: "boleto", label: "Boleto Bancário", icon: FileCheck });
-  return lista;
+/** Formas de pagamento oferecidas ao lançar uma despesa. */
+export function formasDePagamentoOferecidas(): FormaDePagamento[] {
+  return FORMAS_DE_PAGAMENTO;
 }

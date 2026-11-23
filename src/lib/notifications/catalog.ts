@@ -34,7 +34,6 @@ export interface EspecificacaoDoTipoDeNotificacao {
 
 export const TIPOS_DE_NOTIFICACAO = {
   gift_paid: { audiences: ["couple"], group: "money", tone: "success", icon: "gift", whatsapp: false, email: true, ignoresQuietHours: true },
-  pix_to_check: { audiences: ["couple"], group: "money", tone: "warning", icon: "wallet", whatsapp: false, email: true, ignoresQuietHours: false },
   rsvp_confirmed: { audiences: ["couple"], group: "guests", tone: "success", icon: "check", whatsapp: false, email: true, ignoresQuietHours: false },
   rsvp_declined: { audiences: ["couple"], group: "guests", tone: "info", icon: "x", whatsapp: false, email: true, ignoresQuietHours: false },
   expense_due: { audiences: ["couple"], group: "reminders", tone: "warning", icon: "calendar", whatsapp: false, email: true, ignoresQuietHours: false },

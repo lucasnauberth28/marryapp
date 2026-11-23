@@ -18,21 +18,6 @@ export const ARTIGOS_DO_DIA_A_DIA: readonly ArtigoDeAjuda[] = [
     path: "/presentes-admin",
   },
   {
-    id: "carteira",
-    title: "Para que serve a Carteira?",
-    keywords: ["saldo", "cartao de credito", "limite", "quanto temos", "falta pagar", "para gastar", "banco"],
-    answer:
-      "A Carteira mostra quanto vocês têm para pagar o casamento: o saldo em conta e o limite dos cartões. Só vocês veem. Os presentes recebidos não entram aqui, eles ficam em Presentes em dinheiro e em Finanças.",
-    steps: [
-      "Abram a Carteira.",
-      "Toquem em Atualizar saldo e informem quanto vocês têm em conta.",
-      "Toquem em Adicionar cartão para informar banco, final do cartão e limite.",
-      "Em Falta pagar, vocês veem o total das despesas em aberto, cadastradas em Finanças.",
-    ],
-    action: { label: "Ir para a Carteira", href: "/carteira" },
-    path: "/carteira",
-  },
-  {
     id: "enviar-convites-whatsapp",
     title: "Como envio convites e lembretes pelo WhatsApp?",
     keywords: ["whatsapp", "mensagem", "modelo", "convite inicial", "lembrete de confirmacao", "enviar convite", "disparo", "texto"],
@@ -95,17 +80,16 @@ export const ARTIGOS_DO_DIA_A_DIA: readonly ArtigoDeAjuda[] = [
   },
   {
     id: "financas",
-    title: "Como controlo as despesas do casamento?",
+    title: "Como controlo o orçamento do casamento?",
     keywords: ["despesa", "orcamento", "financas", "parcela", "contrato", "compra", "vencimento", "pagar", "saldo previsto", "gastos"],
     answer:
-      "Em Finanças, vocês cadastram contratos com fornecedores e compras avulsas, com as parcelas de cada um. O saldo previsto é o que entrou em presentes menos as despesas.",
+      "Em Orçamento, vocês cadastram contratos com fornecedores e compras avulsas, com as parcelas de cada um. Os números do topo mostram quanto foi planejado, quanto já foi pago e quanto falta.",
     steps: [
-      "Abram Finanças e toquem em Nova despesa.",
+      "Abram Orçamento e toquem em Nova despesa.",
       "Escolham Contrato com fornecedor ou Compra avulsa ou mimos e informem o valor e o vencimento. Para pagar em parcelas, informem o número de parcelas.",
       "Quando uma parcela for paga, marquem como paga para manter o orçamento certo.",
-      "Em Presentes recebidos e Saldo previsto, vocês veem o que entrou e quanto sobra.",
     ],
-    action: { label: "Ir para Finanças", href: "/financas" },
+    action: { label: "Ir para o Orçamento", href: "/financas" },
     path: "/financas",
   },
   {
@@ -133,7 +117,7 @@ export const ARTIGOS_DO_DIA_A_DIA: readonly ArtigoDeAjuda[] = [
     steps: [
       "Abram Meus fornecedores e toquem em Adicionar fornecedor.",
       "Preencham a categoria, o nome e os dados de contato.",
-      "Em Finanças, cadastrem o contrato desse fornecedor para acompanhar as parcelas.",
+      "Em Orçamento, cadastrem o contrato desse fornecedor para acompanhar as parcelas.",
     ],
     action: { label: "Ir para Meus fornecedores", href: "/meus-fornecedores" },
     path: "/meus-fornecedores",

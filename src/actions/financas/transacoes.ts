@@ -42,7 +42,7 @@ export async function alternarAgradecimentoEnviado(
     });
     if (result.count === 0) return { success: false, error: ERROS.pagamentoNaoEncontrado };
 
-    revalidatePath("/financas");
+    revalidatePath("/presentes-admin");
     revalidatePath("/dashboard");
 
     return { success: true };

@@ -6,7 +6,7 @@ import { useEstadoSincronizado } from "@/hooks/use-synced-state";
 import { agruparDespesas, filtrarPorTipo } from "./agrupar-despesas";
 import { BarraDeFiltros, type FiltroDeTipo, type Visao } from "./barra-de-filtros";
 import { DialogoNovaDespesa } from "./dialogo-nova-despesa";
-import type { CartaoDaCarteira, ItemDeDespesa, OpcaoDeFornecedor } from "./tipos";
+import type { ItemDeDespesa, OpcaoDeFornecedor } from "./tipos";
 import { useAcoesDasDespesas } from "./use-acoes-das-despesas";
 import { useCadastroDeDespesa } from "./use-cadastro-de-despesa";
 import { useVisaoAgrupada } from "./use-visao-agrupada";
@@ -16,10 +16,9 @@ import { VisaoDetalhada } from "./visao-detalhada";
 interface DespesasClienteProps {
   initialExpenses: ItemDeDespesa[];
   vendors: OpcaoDeFornecedor[];
-  userCards?: CartaoDaCarteira[];
 }
 
-export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: DespesasClienteProps) {
+export function DespesasCliente({ initialExpenses, vendors }: DespesasClienteProps) {
   const [despesas, definirDespesas] = useEstadoSincronizado<ItemDeDespesa[]>(initialExpenses);
   const [visao, setVisao] = useState<Visao>("grouped");
   const [filtro, setFiltro] = useState<FiltroDeTipo>("ALL");
@@ -38,7 +37,7 @@ export function DespesasCliente({ initialExpenses, vendors, userCards = [] }: De
         aoMudarFiltro={setFiltro}
         visao={visao}
         aoMudarVisao={setVisao}
-        botaoDeCadastro={<DialogoNovaDespesa cadastro={cadastro} fornecedores={vendors} cartoes={userCards} />}
+        botaoDeCadastro={<DialogoNovaDespesa cadastro={cadastro} fornecedores={vendors} />}
       />
       {visao === "grouped" ? <VisaoAgrupada estado={visaoAgrupada} acoes={acoes} /> : <VisaoDetalhada despesas={doTipo} acoes={acoes} />}
       <ModalDeConfirmacao

@@ -6,7 +6,6 @@ import type { PublicoDaNotificacao } from "./catalog.ts";
 
 export type EventoDeNotificacao =
   | { type: "gift_paid"; guestName: string | null; giftTitle: string; amountCents: number }
-  | { type: "pix_to_check"; guestName: string | null; giftTitle: string; amountCents: number }
   | { type: "rsvp_confirmed"; guestName: string; companions: number }
   | { type: "rsvp_declined"; guestName: string }
   | { type: "expense_due"; description: string; amountCents: number; dueDate: Date; overdue: boolean }
@@ -41,7 +40,7 @@ const primeiroNome = (name: string) => limparTextoDaNotificacao(name.split(/[\s&
 type Evento<T extends EventoDeNotificacao["type"]> = Extract<EventoDeNotificacao, { type: T }>;
 
 /** Presentes, Pix e despesas (o dinheiro do casal). */
-function textoDoDinheiro(event: Evento<"gift_paid" | "pix_to_check" | "expense_due">): TextoDaNotificacao {
+function textoDoDinheiro(event: Evento<"gift_paid" | "expense_due">): TextoDaNotificacao {
   if (event.type === "expense_due") {
     const what = `"${limparTextoDaNotificacao(event.description, 60, "Despesa")}" (${formatarReais(event.amountCents)})`;
     return event.overdue
@@ -50,12 +49,7 @@ function textoDoDinheiro(event: Evento<"gift_paid" | "pix_to_check" | "expense_d
   }
   const who = limparTextoDaNotificacao(event.guestName, 60, "Um convidado");
   const gift = limparTextoDaNotificacao(event.giftTitle, 60, "um presente");
-  if (event.type === "gift_paid") return { title: "Presente recebido", body: `${who} deu "${gift}" para vocês (${formatarReais(event.amountCents)}).`, href: "/financas" };
-  return {
-    title: "Pix para conferir",
-    body: `${who} gerou um Pix de ${formatarReais(event.amountCents)} para "${gift}". Quando o valor aparecer no extrato de vocês, confirmem em Finanças.`,
-    href: "/financas",
-  };
+  return { title: "Presente recebido", body: `${who} deu "${gift}" para vocês (${formatarReais(event.amountCents)}).`, href: "/presentes-admin" };
 }
 
 function textoDaResposta(event: Evento<"rsvp_confirmed" | "rsvp_declined">): TextoDaNotificacao {
@@ -130,7 +124,6 @@ function textoDoVencimentoDoPlano(event: Evento<"plan_expiring" | "plan_expired"
 export function montarTexto(event: EventoDeNotificacao): TextoDaNotificacao {
   switch (event.type) {
     case "gift_paid":
-    case "pix_to_check":
     case "expense_due":
       return textoDoDinheiro(event);
     case "rsvp_confirmed":
@@ -156,7 +149,6 @@ export function montarTexto(event: EventoDeNotificacao): TextoDaNotificacao {
 /** Uma chave por fato: o mesmo fato nunca avisa duas vezes a mesma pessoa. */
 export const removerRepetidos = {
   giftPaid: (transactionId: string) => `gift_paid:${transactionId}`,
-  pixToCheck: (transactionId: string) => `pix_to_check:${transactionId}`,
   /** Uma resposta por convidado e dia: quem muda de ideia no mesmo dia não gera outro aviso. */
   rsvp: (status: "confirmed" | "declined", guestId: string, day: string) => `rsvp_${status}:${guestId}:${day}`,
   expense: (expenseId: string, kind: "soon" | "overdue") => `expense_due:${expenseId}:${kind}`,

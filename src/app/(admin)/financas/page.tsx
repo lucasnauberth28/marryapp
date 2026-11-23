@@ -1,84 +1,49 @@
 import { Suspense } from "react";
 import { obterDespesas } from "@/actions/expense-actions";
 import { obterMetricasFinanceiras } from "@/actions/financas/metricas";
-import { obterTransacoes } from "@/actions/financas/transacoes";
 import { obterFornecedores } from "@/actions/vendor-actions";
-import { obterDadosDaCarteira } from "@/actions/wallet-actions";
 import { CabecalhoDaPagina } from "@/components/admin/page-header";
-import { estiloDoTituloDoCartao } from "@/components/casal/ui";
 import { RegiaoDeCarregamento } from "@/components/skeletons";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { CartoesCliente } from "./cartoes/cartoes-cliente";
 import { DespesasCliente } from "./despesas/despesas-cliente";
 import { Indicadores } from "./indicadores";
-import { TabelaFinanceira } from "./pagamentos/tabela-financeira";
-import { EsqueletoDasDespesas, EsqueletoDosIndicadores, EsqueletoDosPagamentos } from "./skeletons";
+import { EsqueletoDasDespesas, EsqueletoDosIndicadores } from "./skeletons";
 
 export const metadata = {
-  title: "Finanças",
-  description: "Painel de conciliação financeira e controle de despesas do casamento.",
+  title: "Orçamento",
+  description: "O que vocês planejaram gastar no casamento, o que já foi pago e o que falta.",
 };
-
-function TituloDaSecao({ id, titulo, texto }: { id: string; titulo: string; texto: string }) {
-  return (
-    <div>
-      <h2 id={id} className={estiloDoTituloDoCartao}>{titulo}</h2>
-      <p className="mt-0.5 text-[15px] text-tinta-suave">{texto}</p>
-    </div>
-  );
-}
 
 export default async function FinancasPage() {
   await exigirCasamentoNaPagina("/financas");
 
-  // As consultas começam todas já, em paralelo; cada bloco da tela espera só pelo que usa (streaming)
-  // e aparece quando chega, sem segurar o cabeçalho nem os outros blocos.
+  // As consultas começam todas já, em paralelo; cada bloco da tela espera só pelo que usa (streaming).
   const metrics = obterMetricasFinanceiras();
-  const transactions = obterTransacoes();
   const expenses = obterDespesas();
   const vendors = obterFornecedores();
-  const walletData = obterDadosDaCarteira();
   // Falha de uma consulta que ainda ninguém aguarda não pode derrubar o processo: quem a usa é que mostra o erro.
-  for (const p of [metrics, transactions, expenses, vendors, walletData]) p.catch(() => {});
+  for (const p of [metrics, expenses, vendors]) p.catch(() => {});
 
   return (
     <div className="flex flex-col gap-6">
-      <CabecalhoDaPagina eyebrow="Organização" title="Finanças" description="Presentes que entraram, contas a pagar e quanto sobra no fim." />
-      <Suspense fallback={<RegiaoDeCarregamento label="os números das finanças"><EsqueletoDosIndicadores /></RegiaoDeCarregamento>}>
+      <CabecalhoDaPagina eyebrow="Organização" title="Orçamento" description="O que vocês planejaram gastar, o que já foi pago e o que falta." />
+      <Suspense fallback={<RegiaoDeCarregamento label="os números do orçamento"><EsqueletoDosIndicadores /></RegiaoDeCarregamento>}>
         <Indicadores metrics={metrics} expenses={expenses} />
       </Suspense>
       <section aria-labelledby="despesas-titulo" className="flex flex-col gap-3">
-        <TituloDaSecao id="despesas-titulo" titulo="Despesas" texto="Contratos com fornecedores e compras avulsas, com as parcelas de cada um." />
+        <div>
+          <h2 id="despesas-titulo" className="text-xl font-semibold leading-7 text-tinta">Despesas</h2>
+          <p className="mt-0.5 text-[15px] text-tinta-suave">Contratos com fornecedores e compras avulsas, com as parcelas de cada um.</p>
+        </div>
         <Suspense fallback={<RegiaoDeCarregamento label="as despesas"><EsqueletoDasDespesas /></RegiaoDeCarregamento>}>
-          <Despesas expenses={expenses} vendors={vendors} walletData={walletData} />
-        </Suspense>
-      </section>
-      <section aria-labelledby="cartoes-titulo" className="flex flex-col gap-3 border-t border-linha pt-6">
-        <TituloDaSecao id="cartoes-titulo" titulo="Cartões" texto="Os cartões que vocês usam. Eles aparecem como forma de pagamento ao lançar uma despesa." />
-        <Suspense fallback={<RegiaoDeCarregamento label="os cartões"><EsqueletoDasDespesas /></RegiaoDeCarregamento>}>
-          <Cartoes walletData={walletData} />
-        </Suspense>
-      </section>
-      <section aria-labelledby="pagamentos-titulo" className="flex flex-col gap-3 border-t border-linha pt-6">
-        <TituloDaSecao id="pagamentos-titulo" titulo="Pagamentos dos presentes" texto="Os Pix são confirmados pelo Mercado Pago ou pela equipe do Aceito. Daqui vocês agradecem a quem presenteou." />
-        <Suspense fallback={<RegiaoDeCarregamento label="os pagamentos"><EsqueletoDosPagamentos /></RegiaoDeCarregamento>}>
-          <Pagamentos transactions={transactions} />
+          <Despesas expenses={expenses} vendors={vendors} />
         </Suspense>
       </section>
     </div>
   );
 }
 
-async function Despesas({ expenses, vendors, walletData }: { expenses: ReturnType<typeof obterDespesas>; vendors: ReturnType<typeof obterFornecedores>; walletData: ReturnType<typeof obterDadosDaCarteira> }) {
-  const [lista, fornecedores, carteira] = await Promise.all([expenses, vendors, walletData]);
-  return <DespesasCliente initialExpenses={lista} vendors={fornecedores} userCards={carteira.cards} />;
-}
-
-async function Cartoes({ walletData }: { walletData: ReturnType<typeof obterDadosDaCarteira> }) {
-  const { cards } = await walletData;
-  return <CartoesCliente cartoes={cards.map(({ id, bank, brand, nickname, lastDigits, limit, color }) => ({ id, bank, brand, nickname, lastDigits, limit, color }))} />;
-}
-
-async function Pagamentos({ transactions }: { transactions: ReturnType<typeof obterTransacoes> }) {
-  return <TabelaFinanceira transactions={await transactions} />;
+async function Despesas({ expenses, vendors }: { expenses: ReturnType<typeof obterDespesas>; vendors: ReturnType<typeof obterFornecedores> }) {
+  const [lista, fornecedores] = await Promise.all([expenses, vendors]);
+  return <DespesasCliente initialExpenses={lista} vendors={fornecedores} />;
 }

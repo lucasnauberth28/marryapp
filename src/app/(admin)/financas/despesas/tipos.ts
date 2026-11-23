@@ -31,13 +31,6 @@ export interface OpcaoDeFornecedor {
   category: string;
 }
 
-export interface CartaoDaCarteira {
-  id: string;
-  bank: string;
-  nickname?: string | null;
-  lastDigits?: string | null;
-}
-
 export interface DespesaAgrupada {
   id: string;
   baseDescription: string;
@@ -79,11 +72,9 @@ export interface FormaDePagamento {
 }
 
 export const FORMAS_DE_PAGAMENTO: FormaDePagamento[] = [
-  { id: "credit_card_nubank", label: "Cartão de Crédito - Nubank", icon: CreditCard },
-  { id: "credit_card_itau", label: "Cartão de Crédito - Itaú", icon: CreditCard },
-  { id: "credit_card_other", label: "Cartão de Crédito (Outro)", icon: CreditCard },
-  { id: "pix_balance", label: "Saldo em Conta / Pix", icon: QrCode },
-  { id: "boleto", label: "Boleto Bancário", icon: FileCheck },
+  { id: "pix_balance", label: "Pix ou transferência", icon: QrCode },
+  { id: "credit_card", label: "Cartão de crédito", icon: CreditCard },
+  { id: "boleto", label: "Boleto", icon: FileCheck },
 ];
 
 export const TAMANHO_DA_PAGINA_DOS_GRUPOS = 6;

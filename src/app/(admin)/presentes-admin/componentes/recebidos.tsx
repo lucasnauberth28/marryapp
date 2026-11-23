@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Etiqueta, estiloDoCartao, estiloDoTituloDaColunaDoCasal, estiloDoTituloDoCartao } from "@/components/casal/ui";
 import { formatarReaisEnxuto } from "@/lib/formatacao/dinheiro";
+import { BotaoAgradecer } from "./botao-agradecer";
 import { SITUACAO, type PagamentoDoPresente } from "./tipos";
 
 function SemRecebidos({ temPresentes, siteGiftsHref, aoCadastrar }: { temPresentes: boolean; siteGiftsHref: string; aoCadastrar: () => void }) {
@@ -32,7 +33,7 @@ function TabelaDoComputador({ payments }: { payments: PagamentoDoPresente[] }) {
       <table className="w-full border-collapse text-[15px]">
         <thead>
           <tr className="border-b border-linha">
-            {["De", "Presente", "Valor", "Situação"].map((titulo) => (
+            {["De", "Presente", "Valor", "Situação", "Ação"].map((titulo) => (
               <th key={titulo} scope="col" className={estiloDoTituloDaColunaDoCasal}>{titulo}</th>
             ))}
           </tr>
@@ -49,9 +50,10 @@ function TabelaDoComputador({ payments }: { payments: PagamentoDoPresente[] }) {
                 </td>
                 <td className="px-3 py-3.5 text-tinta">{p.giftTitle}</td>
                 <td className="px-3 py-3.5 font-semibold tabular-nums text-tinta">{formatarReaisEnxuto(p.amount)}</td>
-                <td className="py-3.5 pl-3 pr-6">
+                <td className="px-3 py-3.5">
                   <Etiqueta tone={s.tone} icon={s.icon}>{s.label}</Etiqueta>
                 </td>
+                <td className="py-3.5 pl-3 pr-6 text-right">{p.situation === "pix" || p.situation === "card" ? <BotaoAgradecer pagamento={p} /> : null}</td>
               </tr>
             );
           })}
@@ -76,7 +78,10 @@ function ListaDoCelular({ payments }: { payments: PagamentoDoPresente[] }) {
               <span className="shrink-0 font-semibold tabular-nums text-tinta">{formatarReaisEnxuto(p.amount)}</span>
             </div>
             <p className="text-[15px] text-tinta">{p.giftTitle}</p>
-            <Etiqueta tone={s.tone} icon={s.icon}>{s.label}</Etiqueta>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Etiqueta tone={s.tone} icon={s.icon}>{s.label}</Etiqueta>
+              {p.situation === "pix" || p.situation === "card" ? <BotaoAgradecer pagamento={p} /> : null}
+            </div>
           </li>
         );
       })}

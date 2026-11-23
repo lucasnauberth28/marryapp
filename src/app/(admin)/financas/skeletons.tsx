@@ -1,11 +1,11 @@
 import { Esqueleto } from "@/components/ui/skeleton";
-import { EsqueletoDeIndicador, EsqueletoDeTabela } from "@/components/skeletons";
+import { EsqueletoDeIndicador } from "@/components/skeletons";
 import { EsqueletoDoPainel, EsqueletoDaBusca, EsqueletoDoTituloDaSecao } from "@/components/painel/skeleton-parts";
 
-/* Esqueletos dos blocos de Finanças. Usados no loading.tsx e nos fallbacks de Suspense da página,
+/* Esqueletos dos blocos do Orçamento. Usados no loading.tsx e nos fallbacks de Suspense da página,
    para que cada bloco apareça assim que os seus dados chegam. */
 
-/** Quatro números (presentes, despesas, saldo e próxima parcela). */
+/** Quatro números (planejado, pago, falta e próxima parcela). */
 export function EsqueletoDosIndicadores() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -43,16 +43,6 @@ export function EsqueletoDasDespesas() {
           </EsqueletoDoPainel>
         ))}
       </div>
-    </div>
-  );
-}
-
-/** Busca e tabela dos pagamentos de presentes (cartões no celular). */
-export function EsqueletoDosPagamentos() {
-  return (
-    <div className="space-y-4">
-      <EsqueletoDaBusca />
-      <EsqueletoDeTabela columns={6} rows={5} mobileFields={2} />
     </div>
   );
 }

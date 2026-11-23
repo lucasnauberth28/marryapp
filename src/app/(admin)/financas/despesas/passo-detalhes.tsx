@@ -1,5 +1,4 @@
 // Passo 2 do cadastro: descrição, fornecedor (ou loja e link), como foi pago e a foto da compra.
-import { useMemo } from "react";
 import { ArrowRight, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Botao } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Entrada } from "@/components/ui/input";
 import { Selecao, ConteudoDaSelecao, ItemDaSelecao, GatilhoDaSelecao, ValorDaSelecao } from "@/components/ui/select";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { formasDePagamentoOferecidas } from "./parcelas";
-import type { CartaoDaCarteira, OpcaoDeFornecedor } from "./tipos";
+import type { OpcaoDeFornecedor } from "./tipos";
 import type { DadosDaDespesa } from "./use-dados-da-despesa";
 
 function OrigemDaDespesa({ dados, fornecedores }: { dados: DadosDaDespesa; fornecedores: OpcaoDeFornecedor[] }) {
@@ -33,8 +32,8 @@ function OrigemDaDespesa({ dados, fornecedores }: { dados: DadosDaDespesa; forne
   );
 }
 
-function FormasDePagamentoEscolhaveis({ dados, cartoes }: { dados: DadosDaDespesa; cartoes: CartaoDaCarteira[] }) {
-  const formas = useMemo(() => formasDePagamentoOferecidas(cartoes), [cartoes]);
+function FormasDePagamentoEscolhaveis({ dados }: { dados: DadosDaDespesa }) {
+  const formas = formasDePagamentoOferecidas();
   return (
     <div role="group" aria-labelledby="despesa-forma-pagamento">
       <span id="despesa-forma-pagamento" className="text-xs font-semibold text-tinta-suave mb-1.5 block">Como foi ou será pago</span>
@@ -90,12 +89,11 @@ function FotoDaCompra({ dados }: { dados: DadosDaDespesa }) {
 interface PassoDosDetalhesProps {
   dados: DadosDaDespesa;
   fornecedores: OpcaoDeFornecedor[];
-  cartoes: CartaoDaCarteira[];
   aoVoltar: () => void;
   aoAvancar: () => void;
 }
 
-export function PassoDosDetalhes({ dados, fornecedores, cartoes, aoVoltar, aoAvancar }: PassoDosDetalhesProps) {
+export function PassoDosDetalhes({ dados, fornecedores, aoVoltar, aoAvancar }: PassoDosDetalhesProps) {
   const avancar = () => {
     const problema = !dados.descricao.trim() ? "Informe a descrição da despesa." : dados.tipo === "CONTRACT" && !dados.fornecedorId ? "Selecione um fornecedor." : null;
     if (problema) {
@@ -112,7 +110,7 @@ export function PassoDosDetalhes({ dados, fornecedores, cartoes, aoVoltar, aoAva
       </div>
       <Entrada label="Descrição da despesa" placeholder={dados.tipo === "CONTRACT" ? "Ex: Sinal do Buffet ou Contrato de Fotos" : "Ex: Lembrancinhas para Padrinhos"} value={dados.descricao} onChange={(e) => dados.setDescricao(e.target.value)} required />
       <OrigemDaDespesa dados={dados} fornecedores={fornecedores} />
-      <FormasDePagamentoEscolhaveis dados={dados} cartoes={cartoes} />
+      <FormasDePagamentoEscolhaveis dados={dados} />
       <FotoDaCompra dados={dados} />
       <div className="flex gap-2 pt-2">
         <Botao type="button" variant="outline" onClick={aoVoltar} className="w-1/3">Voltar</Botao>

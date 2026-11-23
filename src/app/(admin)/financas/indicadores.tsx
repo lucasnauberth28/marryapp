@@ -1,4 +1,4 @@
-// Os quatro números do topo das finanças: presentes recebidos, despesas, saldo previsto e próxima parcela.
+// Os quatro números do topo do orçamento: planejado, já pago, falta pagar e próxima parcela.
 import type { obterDespesas } from "@/actions/expense-actions";
 import type { obterMetricasFinanceiras } from "@/actions/financas/metricas";
 import { estiloDoCartao, estiloDoNumeroGrande, estiloDoSobretitulo } from "@/components/casal/ui";
@@ -19,15 +19,13 @@ function Indicador({ titulo, valor, texto, extra = "", classeDoValor = estiloDoN
   );
 }
 
-function textoDosPresentes(m: Metricas) {
-  if (m.totalPendente > 0) return `Mais ${formatarReaisEnxuto(m.totalPendente)} em Pix em confirmação`;
-  return m.totalLiquido > 0 ? "Tudo conferido" : "Os presentes pagos entram aqui.";
+function textoDoPlanejado(m: Metricas) {
+  return m.totalDespesas > 0 ? "Soma de todas as despesas lançadas" : "Cadastrem a primeira despesa.";
 }
 
-function textoDasDespesas(m: Metricas) {
-  if (m.totalDespesas <= 0) return "Cadastrem a primeira despesa.";
-  const percentualPago = Math.round((m.totalDespesasPagas / m.totalDespesas) * 100);
-  return `${percentualPago}% pago · já saíram ${formatarReaisEnxuto(m.totalDespesasPagas)}`;
+function textoDoPago(m: Metricas) {
+  if (m.totalDespesas <= 0) return "O que já foi pago aparece aqui.";
+  return `${Math.round((m.totalDespesasPagas / m.totalDespesas) * 100)}% do planejado`;
 }
 
 /** Próxima conta a pagar: a pendente (ou atrasada) com o vencimento mais perto (a lista já vem por data). */
@@ -49,12 +47,11 @@ function IndicadorDaProximaParcela({ metricas, despesas }: { metricas: Metricas;
 
 export async function Indicadores({ metrics, expenses }: { metrics: Promise<Metricas>; expenses: Promise<Despesas> }) {
   const [metricas, despesas] = await Promise.all([metrics, expenses]);
-  const saldoPositivo = metricas.saldoPrevisto >= 0;
   return (
     <Aparicao className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <Indicador titulo="Presentes recebidos" valor={formatarReaisEnxuto(metricas.totalLiquido)} texto={textoDosPresentes(metricas)} />
-      <Indicador titulo="Despesas" valor={formatarReaisEnxuto(metricas.totalDespesas)} texto={textoDasDespesas(metricas)} />
-      <Indicador titulo="Saldo previsto" valor={formatarReaisEnxuto(metricas.saldoPrevisto)} texto="Presentes recebidos menos as despesas" classeDoValor={saldoPositivo ? estiloDoNumeroGrande : estiloDoNumeroGrande.replace("text-tinta", "text-perigo")} />
+      <Indicador titulo="Planejado" valor={formatarReaisEnxuto(metricas.totalDespesas)} texto={textoDoPlanejado(metricas)} />
+      <Indicador titulo="Já pago" valor={formatarReaisEnxuto(metricas.totalDespesasPagas)} texto={textoDoPago(metricas)} />
+      <Indicador titulo="Falta pagar" valor={formatarReaisEnxuto(Math.max(0, metricas.totalDespesas - metricas.totalDespesasPagas))} texto={metricas.countDespesasPendentes > 0 ? `${metricas.countDespesasPendentes} parcelas em aberto` : "Nada em aberto."} />
       <IndicadorDaProximaParcela metricas={metricas} despesas={despesas} />
     </Aparicao>
   );

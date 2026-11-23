@@ -5,7 +5,7 @@ import { estiloDoBotao } from "@/components/landing/styles";
 import { PassoDosDetalhes } from "./passo-detalhes";
 import { PassoDoPagamento } from "./passo-pagamento";
 import { PassoDoTipo } from "./passo-tipo";
-import type { CartaoDaCarteira, OpcaoDeFornecedor } from "./tipos";
+import type { OpcaoDeFornecedor } from "./tipos";
 import type { CadastroDeDespesa } from "./use-cadastro-de-despesa";
 
 function ProgressoDosPassos({ passo }: { passo: number }) {
@@ -21,10 +21,9 @@ function ProgressoDosPassos({ passo }: { passo: number }) {
 interface DialogoNovaDespesaProps {
   cadastro: CadastroDeDespesa;
   fornecedores: OpcaoDeFornecedor[];
-  cartoes: CartaoDaCarteira[];
 }
 
-export function DialogoNovaDespesa({ cadastro, fornecedores, cartoes }: DialogoNovaDespesaProps) {
+export function DialogoNovaDespesa({ cadastro, fornecedores }: DialogoNovaDespesaProps) {
   const { dados, passo, setPasso } = cadastro;
   return (
     <Dialogo open={cadastro.aberto} onOpenChange={cadastro.aoMudarAberto}>
@@ -43,7 +42,7 @@ export function DialogoNovaDespesa({ cadastro, fornecedores, cartoes }: DialogoN
         </CabecalhoDoDialogo>
         <form key={cadastro.chaveDoFormulario} onSubmit={cadastro.enviar} className="space-y-4 mt-2">
           {passo === 1 && <PassoDoTipo tipo={dados.tipo} aoEscolher={dados.setTipo} aoAvancar={() => setPasso(2)} />}
-          {passo === 2 && <PassoDosDetalhes dados={dados} fornecedores={fornecedores} cartoes={cartoes} aoVoltar={() => setPasso(1)} aoAvancar={() => setPasso(3)} />}
+          {passo === 2 && <PassoDosDetalhes dados={dados} fornecedores={fornecedores} aoVoltar={() => setPasso(1)} aoAvancar={() => setPasso(3)} />}
           {passo === 3 && <PassoDoPagamento cadastro={cadastro} />}
         </form>
       </ConteudoDoDialogo>

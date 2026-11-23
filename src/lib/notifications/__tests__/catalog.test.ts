@@ -8,7 +8,6 @@ const DUE = new Date("2026-10-13T00:00:00Z");
 
 const EVENTS: EventoDeNotificacao[] = [
   { type: "gift_paid", guestName: "Ana Souza", giftTitle: "Jogo de panelas", amountCents: 35000 },
-  { type: "pix_to_check", guestName: "Bia", giftTitle: "Cafeteira", amountCents: 12050 },
   { type: "rsvp_confirmed", guestName: "Carlos", companions: 0 },
   { type: "rsvp_confirmed", guestName: "Carlos", companions: 2 },
   { type: "rsvp_declined", guestName: "Dora" },
@@ -50,24 +49,23 @@ test("textos: sem travessão, sem 'undefined', com destino interno e limites raz
   }
 });
 
-test("presente pago e Pix a conferir mostram o valor em reais", () => {
+test("presente pago mostra o valor em reais e leva a Presentes", () => {
   const paid = montarTexto(EVENTS[0]);
   assert.match(paid.body, /R\$\s?350,00/);
   assert.match(paid.body, /Ana Souza/);
-  assert.equal(paid.href, "/financas");
-  assert.match(montarTexto(EVENTS[1]).body, /R\$\s?120,50/);
+  assert.equal(paid.href, "/presentes-admin");
 });
 
 test("confirmação de presença diferencia sozinho e com acompanhantes", () => {
-  assert.equal(montarTexto(EVENTS[2]).body, "Carlos vai ao casamento.");
-  assert.equal(montarTexto(EVENTS[3]).body, "Carlos e mais 2 pessoas vão ao casamento.");
+  assert.equal(montarTexto(EVENTS[1]).body, "Carlos vai ao casamento.");
+  assert.equal(montarTexto(EVENTS[2]).body, "Carlos e mais 2 pessoas vão ao casamento.");
   assert.equal(montarTexto({ type: "rsvp_confirmed", guestName: "Eva", companions: 1 }).body, "Eva e mais 1 pessoa vão ao casamento.");
 });
 
 test("despesa: vencida ou perto de vencer, data sem voltar um dia", () => {
-  assert.equal(montarTexto(EVENTS[5]).title, "Despesa perto de vencer");
-  assert.match(montarTexto(EVENTS[5]).body, /13\/10/);
-  assert.equal(montarTexto(EVENTS[6]).title, "Despesa vencida");
+  assert.equal(montarTexto(EVENTS[4]).title, "Despesa perto de vencer");
+  assert.match(montarTexto(EVENTS[4]).body, /13\/10/);
+  assert.equal(montarTexto(EVENTS[5]).title, "Despesa vencida");
 });
 
 test("pedido bloqueado pelo limite do Start mostra só o primeiro nome", () => {
@@ -80,20 +78,20 @@ test("pedido bloqueado pelo limite do Start mostra só o primeiro nome", () => {
 });
 
 test("plano ativado leva ao plano certo de cada painel", () => {
-  assert.equal(montarTexto(EVENTS[7]).href, "/plano");
-  const vendor = montarTexto(EVENTS[8]);
+  assert.equal(montarTexto(EVENTS[6]).href, "/plano");
+  const vendor = montarTexto(EVENTS[7]);
   assert.equal(vendor.href, "/fornecedor/plano");
   assert.match(vendor.body, /12 de novembro/);
 });
 
 test("avaliação: singular e plural de estrela", () => {
-  assert.match(montarTexto(EVENTS[12]).body, /5 estrelas/);
-  assert.match(montarTexto(EVENTS[13]).body, /1 estrela /);
+  assert.match(montarTexto(EVENTS[11]).body, /5 estrelas/);
+  assert.match(montarTexto(EVENTS[12]).body, /1 estrela /);
 });
 
 test("aviso de vencimento: amanhã ou em N dias", () => {
-  assert.equal(montarTexto(EVENTS[14]).title, "Seu plano vence em 7 dias");
-  assert.equal(montarTexto(EVENTS[15]).title, "Seu plano vence amanhã");
+  assert.equal(montarTexto(EVENTS[13]).title, "Seu plano vence em 7 dias");
+  assert.equal(montarTexto(EVENTS[14]).title, "Seu plano vence amanhã");
 });
 
 test("nomes digitados por terceiros são limpos e cortados", () => {

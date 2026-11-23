@@ -9,6 +9,9 @@ export interface PagamentoDoPresente {
   amount: number;
   when: string;
   situation: "pix" | "card" | "toCheck" | "refunded";
+  /** O casal já agradeceu a quem presenteou. */
+  thankYouSent: boolean;
+  phone: string | null;
 }
 
 export interface ResumoDosPresentes {

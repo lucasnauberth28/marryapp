@@ -76,7 +76,7 @@ export const AREAS_DO_PAINEL: AreaDoPainel[] = [
     screens: [
       { name: "Tarefas", href: "/pendencias", icon: "tarefas", countKey: "tasks" },
       { name: "Cronograma do dia", href: "/cronograma", icon: "cronograma" },
-      { name: "Despesas", href: "/financas", icon: "despesas" },
+      { name: "Orçamento", href: "/financas", icon: "despesas" },
       { name: "Meus fornecedores", href: "/meus-fornecedores", icon: "meus-fornecedores" },
       { name: "Encontrar fornecedores", href: "/fornecedores", icon: "encontrar" },
     ],

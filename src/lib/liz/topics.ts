@@ -34,7 +34,7 @@ export const ASSUNTOS_DA_LIZ: readonly AssuntoDaLiz[] = [
     id: "presentes",
     label: "Presentes e dinheiro",
     intro: "Sobre presentes e dinheiro, qual é a dúvida?",
-    articleIds: ["criar-presentes", "receber-presentes", "carteira"],
+    articleIds: ["criar-presentes", "receber-presentes"],
   },
   {
     id: "site",
