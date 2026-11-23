@@ -9,15 +9,15 @@ test("básico e plano desconhecido não incluem nada", () => {
   assert.deepEqual(modulosDoPlano("start"), []);
 });
 
-test("classic inclui WhatsApp e QR Code, mas não o domínio próprio", () => {
+test("classic inclui o convite digital e o QR Code, mas não o domínio próprio", () => {
   const m = modulosDoPlano("classic");
-  assert.ok(planoInclui(m, "whatsapp") && planoInclui(m, "qrcode"));
+  assert.ok(planoInclui(m, "convite") && planoInclui(m, "qrcode"));
   assert.ok(!planoInclui(m, "liveAlbum") && !planoInclui(m, "customDomain"));
 });
 
 test("vip inclui todos os módulos", () => {
   const m = modulosDoPlano("vip");
-  for (const id of ["site", "pixZero", "whatsapp", "qrcode", "tables", "customDomain"]) assert.ok(planoInclui(m, id), id);
+  for (const id of ["site", "pixZero", "qrcode", "tables", "customDomain"]) assert.ok(planoInclui(m, id), id);
 });
 
 test("plano adaptado vale pelos módulos escolhidos, ignorando ids estranhos", () => {
@@ -37,7 +37,7 @@ test("domínio próprio é bloqueado no servidor e o aviso fala do VIP, não do 
   assert.match(msg, /VIP/);
   assert.ok(!/Classic/.test(msg));
   assert.equal(rotuloDoPlanoNecessario("customDomain"), "VIP");
-  assert.equal(rotuloDoPlanoNecessario("whatsapp"), "Classic");
+  assert.equal(rotuloDoPlanoNecessario("qrcode"), "Classic");
   assert.ok(!planoInclui(modulosDoPlano("classic"), "customDomain"));
   assert.ok(planoInclui(modulosDoPlano("custom", ["customDomain"]), "customDomain"));
 });

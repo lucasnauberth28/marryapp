@@ -56,7 +56,7 @@ export interface ConfiguracaoDoTourDoPainel {
   places: Record<string, LugarDoPasso>;
 }
 
-const MODULOS_DO_TOUR: ModuloDoTour[] = ["whatsapp", "qrcode", "customDomain"];
+const MODULOS_DO_TOUR: ModuloDoTour[] = ["qrcode", "customDomain"];
 
 function lugaresPara(steps: PassoDoTour[]): Record<string, LugarDoPasso> {
   // O item do menu de cada passo é a área a que a tela pertence (lib/panel-nav)

@@ -20,7 +20,7 @@ test("a lista acompanha o que o casal já fez e pode ser dispensada", async ({ p
   await page.goto("/dashboard");
   const lista = page.getByTestId("primeiros-passos");
   await expect(lista).toBeVisible();
-  await expect(lista).toContainText("1 de 3 feitos");
+  await expect(lista).toContainText("1 de 4 feitos");
   await expect(lista.getByRole("link", { name: "Editar o site" })).toBeVisible();
   await expect(lista.getByRole("link", { name: "Criar presente" })).toBeVisible();
   await expect(lista.getByRole("link", { name: "Adicionar convidado" })).toHaveCount(0);

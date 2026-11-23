@@ -39,7 +39,6 @@ export default async function DashboardPage() {
     guestCount: contas.counts.invites.total,
     invitedByPanel: dados.guestRows.filter((g) => g.hasReceivedMessage).length,
     giftCount: dados.giftCount,
-    canWhatsApp: dados.canWhatsApp,
     dismissed: dados.checklistDispensado,
   });
   const { weddingDays } = contas;

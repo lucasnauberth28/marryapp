@@ -3,7 +3,7 @@ import { MODULOS_DO_CASAL, MODULOS_DO_CLASSIC } from "../pagamento/pricing-modul
 
 /**
  * Módulos do catálogo (lib/pricing-modules) que cada plano fechado inclui, segundo a lista de
- * benefícios em lib/plans: Classic = site completo, Pix sem taxa, WhatsApp e QR Code;
+ * benefícios em lib/plans: Classic = site completo, Pix sem taxa, convite digital e QR Code;
  * VIP = tudo do Classic + domínio próprio (na prática, todos os módulos).
  * O plano adaptado (custom) vale pelos módulos escolhidos; o Básico não inclui nenhum.
  */
@@ -14,7 +14,7 @@ import { MODULOS_DO_CASAL, MODULOS_DO_CLASSIC } from "../pagamento/pricing-modul
  * O domínio próprio (.com.br, no nome do titular) é pedido em /dominio e só o plano VIP
  * (ou um plano adaptado com o módulo) libera o pedido.
  */
-export const MODULOS_COM_BLOQUEIO = ["whatsapp", "qrcode", "customDomain", "tables3d", "convite"] as const;
+export const MODULOS_COM_BLOQUEIO = ["qrcode", "customDomain", "tables3d", "convite"] as const;
 export type ModuloComBloqueio = (typeof MODULOS_COM_BLOQUEIO)[number];
 
 const TODOS_OS_IDS_DE_MODULO = MODULOS_DO_CASAL.map((m) => m.id);
@@ -37,12 +37,6 @@ export function planoInclui(modules: readonly string[], moduleId: string): boole
 }
 
 const RECURSOS: Record<ModuloComBloqueio, { sentence: string; title: string; plans: string; planLabel: string }> = {
-  whatsapp: {
-    sentence: "Os convites e lembretes pelo WhatsApp, enviados pelo painel, fazem parte",
-    title: "Convites e lembretes pelo WhatsApp são do plano",
-    plans: "do plano Classic, do VIP",
-    planLabel: "Classic",
-  },
   qrcode: {
     sentence: "O registro de entrada dos convidados com código QR faz parte",
     title: "O registro de entrada com código QR é do plano",

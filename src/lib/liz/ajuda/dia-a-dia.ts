@@ -22,16 +22,15 @@ export const ARTIGOS_DO_DIA_A_DIA: readonly ArtigoDeAjuda[] = [
     title: "Como envio convites e lembretes pelo WhatsApp?",
     keywords: ["whatsapp", "mensagem", "modelo", "convite inicial", "lembrete de confirmacao", "enviar convite", "disparo", "texto"],
     answer:
-      "Em Mensagens, vocês escrevem mensagens e enviam convites e lembretes pelo WhatsApp do painel. O envio só acontece quando vocês tocam no botão de enviar: o Aceito não manda nada sozinho.",
+      "Em Mensagens, vocês escrevem as mensagens e o Aceito monta uma fila: cada pessoa tem um botão que abre o WhatsApp de vocês com o texto pronto. O Aceito não manda nada sozinho, então a mensagem chega de um número que o convidado conhece.",
     steps: [
-      "Abram Mensagens. Os envios rápidos mandam o convite e o lembrete com um toque; as mensagens de convite e de lembrete já vêm prontas.",
+      "Abram Mensagens. Os envios rápidos montam a fila do convite e a do lembrete; as mensagens já vêm prontas.",
       "Para mudar o texto, toquem em Editar na mensagem. O {nome} vira o nome de cada convidado, e a prévia mostra como chega.",
       "Para enviar a quem quiserem, toquem em Enviar na mensagem e escolham quem recebe. Só entra quem tem telefone cadastrado.",
-      "Em Configurações, Conexão do WhatsApp mostra se o envio está disponível.",
+      "Na fila, toquem em Abrir no WhatsApp, enviem por lá e voltem para a próxima pessoa.",
     ],
     action: { label: "Ir para Mensagens", href: "/mensagens" },
     path: "/mensagens",
-    planModule: "whatsapp",
     common: 6,
   },
   {
@@ -43,11 +42,10 @@ export const ARTIGOS_DO_DIA_A_DIA: readonly ArtigoDeAjuda[] = [
     steps: [
       "Abram a Lista de convidados e escolham o filtro Sem resposta.",
       "Toquem em Abrir mensagens para os sem resposta.",
-      "Em Mensagens, toquem em Enviar lembrete nos envios rápidos, ou em Enviar na mensagem de lembrete para escolher quem recebe.",
+      "Em Mensagens, toquem em Montar a fila nos envios rápidos de lembrete, ou em Enviar na mensagem de lembrete para escolher quem recebe.",
     ],
     action: { label: "Ir para Mensagens", href: "/mensagens" },
     path: "/mensagens",
-    planModule: "whatsapp",
   },
   {
     id: "mesas",

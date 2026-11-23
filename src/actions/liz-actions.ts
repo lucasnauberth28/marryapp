@@ -24,7 +24,7 @@ export interface DadosDoPainelDaLiz {
   /** Sugestão para agora, ou null quando não há nada a sugerir. */
   tip: DicaDaLiz | null;
   /** O que o plano do casamento inclui, para o guia avisar "é do plano Classic". */
-  planModules: { whatsapp: boolean; qrcode: boolean; customDomain: boolean; tables3d: boolean };
+  planModules: { qrcode: boolean; customDomain: boolean; tables3d: boolean };
   /** As perguntas vão a um provedor de IA? Hoje é sempre false: a Liz responde pelo guia de ajuda. */
   chatEnabled: boolean;
 }
@@ -36,19 +36,18 @@ const ERRO_AO_CARREGAR = "Não deu para carregar a sugestão agora. Tente de nov
 interface EntradaDasContagens {
   weddingId: string;
   can: (path: string) => boolean;
-  whatsapp: boolean;
   now: Date;
   todayKey: string;
 }
 
 /** Só consulta o que o perfil pode abrir: a dica nunca aponta para uma tela sem acesso. */
-async function contagensParaADica({ weddingId, can, whatsapp, now, todayKey }: EntradaDasContagens) {
+async function contagensParaADica({ weddingId, can, now, todayKey }: EntradaDasContagens) {
   const [pending, notInvitedYet, settings, overdueExpenses, overdueTasks] = await Promise.all([
     // Convites sem resposta e os acompanhantes que eles trazem (a sugestão diz convites e pessoas)
     can("/convidados")
       ? prisma.guest.aggregate({ where: { weddingId, rsvpStatus: RsvpStatus.PENDING, ...filtroSemSoPresente }, _count: { _all: true }, _sum: { allowedCompanions: true } })
       : null,
-    can("/mensagens") && whatsapp
+    can("/mensagens")
       ? prisma.guest.count({ where: { weddingId, hasReceivedMessage: false, phone: { not: null }, NOT: { phone: "" }, ...filtroSemSoPresente } })
       : 0,
     can("/convidados") ? prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } }) : null,
@@ -67,15 +66,14 @@ export async function obterDadosDoPainelDaLiz(): Promise<ResultadoDoPainelDaLiz>
     const now = new Date();
     const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: FUSO_DE_BRASILIA }).format(now);
 
-    const [whatsapp, qrcode, customDomain, tables3d, chatEnabled] = await Promise.all([
-      casamentoTemModulo({ weddingId, session }, "whatsapp"),
+    const [qrcode, customDomain, tables3d, chatEnabled] = await Promise.all([
       casamentoTemModulo({ weddingId, session }, "qrcode"),
       casamentoTemModulo({ weddingId, session }, "customDomain"),
       casamentoTemModulo({ weddingId, session }, "tables3d"),
       lerSeOChatDaLizEstaAtivo(),
     ]);
 
-    const { pending, notInvitedYet, settings, overdueExpenses, overdueTasks } = await contagensParaADica({ weddingId, can, whatsapp, now, todayKey });
+    const { pending, notInvitedYet, settings, overdueExpenses, overdueTasks } = await contagensParaADica({ weddingId, can, now, todayKey });
 
     const pendingGuests = pending?._count._all ?? 0;
     const pendingPeople = pendingGuests + (pending?._sum.allowedCompanions ?? 0);
@@ -89,13 +87,12 @@ export async function obterDadosDoPainelDaLiz(): Promise<ResultadoDoPainelDaLiz>
       todayKey,
       weddingDays: days !== null && days >= 0 ? days : null,
       notInvitedYet,
-      canWhatsApp: whatsapp,
       overdueExpenses,
       overdueTasks,
       allowedPaths: session.allowedPaths,
     });
 
-    return { success: true, data: { tip, planModules: { whatsapp, qrcode, customDomain, tables3d }, chatEnabled } };
+    return { success: true, data: { tip, planModules: { qrcode, customDomain, tables3d }, chatEnabled } };
   } catch (error) {
     if (!(error instanceof ErroDeAutorizacao)) console.error("[getLizPanelData Error]:", error);
     return { success: false, error: ERRO_AO_CARREGAR };
@@ -123,7 +120,6 @@ export async function perguntarALiz(input: unknown): Promise<ResultadoDaPergunta
       allowedPaths: session.allowedPaths,
       pathname: parsed.data.pathname,
       planModules: {
-        whatsapp: await casamentoTemModulo({ weddingId, session }, "whatsapp"),
         qrcode: await casamentoTemModulo({ weddingId, session }, "qrcode"),
         customDomain: await casamentoTemModulo({ weddingId, session }, "customDomain"),
         tables3d: await casamentoTemModulo({ weddingId, session }, "tables3d"),

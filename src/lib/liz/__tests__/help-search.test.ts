@@ -54,10 +54,10 @@ test("módulo sem acesso some; tela de qualquer conta (Minha conta) não depende
 });
 
 test("recurso de outro plano continua visível, marcado como bloqueado só quando o plano não inclui", () => {
-  const articles = [make({ id: "wa", title: "Enviar WhatsApp", path: "/mensagens", planModule: "whatsapp" })];
-  const hit = (planModules?: { whatsapp: boolean }) => artigosVisiveis(articles, { allowedPaths: ["/mensagens"], planModules })[0];
-  assert.equal(hit({ whatsapp: false }).locked, true);
-  assert.equal(hit({ whatsapp: true }).locked, false);
+  const articles = [make({ id: "wa", title: "Enviar WhatsApp", path: "/mensagens", planModule: "qrcode" })];
+  const hit = (planModules?: { qrcode: boolean }) => artigosVisiveis(articles, { allowedPaths: ["/mensagens"], planModules })[0];
+  assert.equal(hit({ qrcode: false }).locked, true);
+  assert.equal(hit({ qrcode: true }).locked, false);
   assert.equal(hit().locked, false, "plano ainda não carregado não bloqueia");
 });
 

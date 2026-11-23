@@ -4,7 +4,7 @@ import { CAMINHOS_DO_ATALHO_DA_LIZ, deveMostrarOAtalhoDaLiz } from "../visibilit
 import { CAMINHOS_DO_CASAL } from "../../casamento/wedding-rules.ts";
 
 test("aparece nas telas do painel do casal e nas subpáginas delas", () => {
-  for (const p of ["/dashboard", "/convidados", "/presentes-admin", "/configuracoes/whatsapp", "/notificacoes"]) {
+  for (const p of ["/dashboard", "/convidados", "/presentes-admin", "/configuracoes/recebimento", "/notificacoes"]) {
     assert.equal(deveMostrarOAtalhoDaLiz(p), true, p);
   }
 });

@@ -19,12 +19,11 @@ interface PropriedadesDosConvidadosCliente {
   /** Prazo para confirmar já formatado (ex.: "15 de março de 2027"), quando o casal definiu. */
   deadlineLabel: string | null;
   /** O plano do casal inclui o WhatsApp: só então o atalho para lembrar quem não respondeu aparece. */
-  canRemind: boolean;
   /** Filtro de resposta que a lista abre já aplicado (padrão: todos). */
   initialFilter?: FiltroDaLista;
 }
 
-export function ConvidadosCliente({ initialGuests, deadlineLabel, canRemind, initialFilter = "all" }: PropriedadesDosConvidadosCliente) {
+export function ConvidadosCliente({ initialGuests, deadlineLabel, initialFilter = "all" }: PropriedadesDosConvidadosCliente) {
   const [cadastroAberto, setCadastroAberto] = useState(false);
   const [editando, setEditando] = useState<ConvidadoLocal | null>(null);
   const [importacaoAberta, setImportacaoAberta] = useState(false);
@@ -47,7 +46,7 @@ export function ConvidadosCliente({ initialGuests, deadlineLabel, canRemind, ini
       {initialGuests.length === 0 ? (
         <EstadoVazioDosConvidados aoAdicionar={() => abrirCadastro(null)} aoImportar={() => setImportacaoAberta(true)} />
       ) : (
-        <ListaDeConvidadosNaTela lista={lista} podeLembrar={canRemind} removendoId={remocao.removendoId} aoEditar={abrirCadastro} aoRemover={remocao.pedir} />
+        <ListaDeConvidadosNaTela lista={lista} removendoId={remocao.removendoId} aoEditar={abrirCadastro} aoRemover={remocao.pedir} />
       )}
 
       <BotaoFlutuanteDeAdicionar aoClicar={() => abrirCadastro(null)} />

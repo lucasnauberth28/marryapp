@@ -36,7 +36,6 @@ export function ConfiguracoesCliente({ initialSettings, summary, canSeePlan }: P
       <CartaoDoPrazo prazoInicial={initialSettings.rsvpDeadline} />
       <CartaoDaAparencia />
       <CartaoComLink titulo="Onde receber os presentes" descricao="A chave Pix ou a conta que vocês escolhem para receber o dinheiro dos presentes. Os dados ficam criptografados." href="/configuracoes/recebimento" rotulo="Cadastrar ou ver o destino" />
-      <CartaoComLink titulo="WhatsApp" descricao="Conexão do número que envia convites e lembretes aos convidados." href="/configuracoes/whatsapp" rotulo="Gerenciar conexão" />
       <CartaoComLink titulo="Quem pode editar" descricao="Convite para a outra pessoa do casal, senha, avisos e exclusão da conta ficam em Minha conta." href="/conta" rotulo="Abrir Minha conta" />
       <CartaoDeConfiguracaoDoTour />
       {canSeePlan && <CartaoComLink titulo="Plano" descricao="Veja o plano do casamento, o que está incluído e os pagamentos." href="/plano" rotulo="Ver plano e pagamentos" />}

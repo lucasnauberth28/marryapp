@@ -3,7 +3,7 @@ import { temAcessoAoCaminho } from "../permissions.ts";
 import { AREAS_DO_PAINEL, type IdDaArea } from "../painel/panel-nav.ts";
 
 /** Módulos de plano que fecham uma tela inteira (o resto do painel abre para todos os planos). */
-export type ModuloDoTour = "whatsapp" | "qrcode" | "customDomain";
+export type ModuloDoTour = "qrcode" | "customDomain";
 
 interface DefinicaoDoPasso {
   id: string;
@@ -47,7 +47,7 @@ const DEFINICOES: readonly DefinicaoDoPasso[] = [
     targets: telasDe("convidados"),
     title: "Convidados",
     what: (opens, has) => {
-      const extras = [opens("/mensagens") && has("whatsapp") ? "as Mensagens" : null, opens("/mesas") ? "as Mesas" : null, opens("/credenciamento") && has("qrcode") ? "o Registro de entrada" : null].filter(Boolean);
+      const extras = [opens("/mensagens") ? "as Mensagens" : null, opens("/mesas") ? "as Mesas" : null, opens("/credenciamento") && has("qrcode") ? "o Registro de entrada" : null].filter(Boolean);
       const more = extras.length ? ` Nesta área ficam também ${extras.join(", ").replace(/, ([^,]*)$/, " e $1")}.` : "";
       return `Adicionem convidados um a um ou importem uma planilha. Depois acompanhem quem confirmou presença e quem ainda não respondeu.${more}`;
     },

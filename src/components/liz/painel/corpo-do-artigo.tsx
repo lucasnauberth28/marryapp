@@ -9,7 +9,7 @@ export function CorpoDoArtigo({ hit, canOpenPlans, onNavigate }: { hit: Resultad
   return (
     <div className="flex flex-col gap-3">
       <p>{article.answer}</p>
-      {locked && article.planModule ? <p className="rounded-lg bg-aviso-suave px-3 py-2 text-sm leading-5 text-aviso">Este recurso é do plano {rotuloDoPlanoNecessario(article.planModule)} ou de um plano adaptado.</p> : null}
+      {locked && article.planModule ? <p className="rounded-lg bg-aviso-suave px-3 py-2 text-sm leading-5 text-aviso">Este recurso é do plano {rotuloDoPlanoNecessario(article.planModule)}.</p> : null}
       <ol className="flex list-decimal flex-col gap-1.5 pl-5 marker:font-semibold marker:text-tinta-suave">
         {article.steps.map((step) => (
           <li key={step} className="pl-1">

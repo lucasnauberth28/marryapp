@@ -15,22 +15,22 @@ const COUPLE = [
 const ids = (allowedPaths: string[], modules: string[] = []) => montarPassosDoTour({ allowedPaths, modules }).map((s) => s.id);
 
 test("casal com plano completo vê todos os passos, na ordem do menu de 5 áreas", () => {
-  assert.deepEqual(ids(COUPLE, ["whatsapp", "qrcode", "customDomain"]), [
+  assert.deepEqual(ids(COUPLE, ["qrcode", "customDomain"]), [
     "resumo", "convidados", "site", "presentes", "organizacao", "configuracoes", "liz",
   ]);
 });
 
-test("o texto de Convidados só cita Mensagens e Registro de entrada quando o plano e o perfil abrem", () => {
+test("o texto de Convidados cita Mensagens (de todos os planos) e só cita o Registro de entrada quando o plano abre", () => {
   const what = (modules: string[]) => montarPassosDoTour({ allowedPaths: COUPLE, modules }).find((s) => s.id === "convidados")!.what;
-  assert.doesNotMatch(what([]), /Mensagens|Registro de entrada/);
-  assert.match(what(["whatsapp"]), /as Mensagens e as Mesas/);
-  assert.match(what(["whatsapp", "qrcode"]), /as Mensagens, as Mesas e o Registro de entrada/);
+  assert.doesNotMatch(what([]), /Registro de entrada/);
+  assert.match(what([]), /as Mensagens e as Mesas/);
+  assert.match(what(["qrcode"]), /as Mensagens, as Mesas e o Registro de entrada/);
 });
 
 test("perfil restrito só ouve falar do que pode abrir", () => {
-  assert.deepEqual(ids(["/dashboard", "/convidados"], ["whatsapp"]), ["resumo", "convidados", "liz"]);
+  assert.deepEqual(ids(["/dashboard", "/convidados"]), ["resumo", "convidados", "liz"]);
   // Sem /dashboard nem nada do resto: nenhum passo
-  assert.deepEqual(ids(["/usuarios"], ["whatsapp"]), []);
+  assert.deepEqual(ids(["/usuarios"]), []);
   // Prefixo de caminho não vaza: "/fornecedores-admin" não libera "/fornecedores"
   assert.ok(!ids(["/dashboard", "/fornecedores-admin"]).includes("organizacao"));
 });
@@ -48,7 +48,7 @@ test("Organização: o passo aponta para a primeira tela que o perfil abre, e o 
 });
 
 test("acesso total ('*') abre tudo; o botão da Liz não aponta para o menu", () => {
-  const all = montarPassosDoTour({ allowedPaths: ["*"], modules: ["whatsapp"] });
+  const all = montarPassosDoTour({ allowedPaths: ["*"], modules: [] });
   assert.equal(all.length, 7);
   const liz = all.find((s) => s.id === "liz")!;
   assert.equal(liz.floating, true);
@@ -72,7 +72,7 @@ test("âncora do menu: caminho vira data-tour", () => {
 
 test("todo passo do menu aponta para uma tela que existe no menu (panel-nav) e o item da área leva para a mesma âncora", () => {
   const nav = readFileSync(new URL("../painel/panel-nav.ts", import.meta.url), "utf8");
-  for (const step of montarPassosDoTour({ allowedPaths: ["*"], modules: ["whatsapp"] })) {
+  for (const step of montarPassosDoTour({ allowedPaths: ["*"], modules: [] })) {
     if (step.href) assert.match(nav, new RegExp(`href: "${step.href}"`), `${step.id}: ${step.href} não está no menu`);
     if (step.href && !step.where) {
       // o item do menu (e da barra de baixo) usa data-tour="nav-<primeira tela da área que o perfil abre>"
@@ -179,29 +179,27 @@ const base: DadosDosPrimeirosPassos = {
   guestCount: 0,
   invitedByPanel: 0,
   giftCount: 0,
-  canWhatsApp: false,
   dismissed: false,
 };
 
-test("primeiros passos saem dos dados: site, convidado e presente começam pendentes", () => {
+test("primeiros passos saem dos dados: site, convidado, presente e convite começam pendentes", () => {
   const v = visaoDosPrimeirosPassos(base)!;
-  assert.deepEqual(v.items.map((i) => [i.id, i.done]), [["site", false], ["guest", false], ["gift", false]]);
+  assert.deepEqual(v.items.map((i) => [i.id, i.done]), [["site", false], ["guest", false], ["gift", false], ["invite", false]]);
   assert.equal(v.doneCount, 0);
 });
 
-test("cada dado real marca o seu item; o convite pelo WhatsApp só entra com o plano", () => {
+test("cada dado real marca o seu item; o convite pelo WhatsApp conta quando há envio anotado", () => {
   const v = visaoDosPrimeirosPassos({
     ...base,
     site: { ...base.site!, locationName: "Espaço Jardim" },
     guestCount: 2,
-    canWhatsApp: true,
   })!;
   assert.deepEqual(v.items.map((i) => [i.id, i.done]), [["site", true], ["guest", true], ["gift", false], ["invite", false]]);
   assert.equal(v.doneCount, 2);
 });
 
 test("a lista some quando tudo está feito ou quando a pessoa dispensa", () => {
-  const done = { ...base, site: { ...base.site!, ceremonyTime: "16:30" }, guestCount: 1, giftCount: 3 };
+  const done = { ...base, site: { ...base.site!, ceremonyTime: "16:30" }, guestCount: 1, giftCount: 3, invitedByPanel: 1 };
   assert.equal(visaoDosPrimeirosPassos(done), null);
   assert.equal(visaoDosPrimeirosPassos({ ...base, dismissed: true }), null);
 });

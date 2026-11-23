@@ -130,13 +130,13 @@ test("plano adaptado: soma dos módulos com os preços do catálogo", () => {
 });
 
 test("desconto de combinação: 3 módulos 15%, 5 ou mais 25%, arredondado ao centavo", () => {
-  const three = precoDoPlanoPersonalizadoNoCatalogo(catalogoPadrao(), ["site", "pixZero", "whatsapp"]);
-  assert.equal(three.subtotal, 4900 + 5900 + 6900);
+  const three = precoDoPlanoPersonalizadoNoCatalogo(catalogoPadrao(), ["site", "pixZero", "tables3d"]);
+  assert.equal(three.subtotal, 4900 + 5900 + 5900);
   assert.equal(three.discountPercent, 15);
-  assert.equal(three.discountAmount, Math.round((17700 * 15) / 100)); // 2655
-  assert.equal(three.total, 17700 - 2655);
+  assert.equal(three.discountAmount, Math.round((16700 * 15) / 100)); // 2505
+  assert.equal(three.total, 16700 - 2505);
 
-  const five = precoDoPlanoPersonalizadoNoCatalogo(catalogoPadrao(), ["site", "pixZero", "whatsapp", "qrcode", "tables"]);
+  const five = precoDoPlanoPersonalizadoNoCatalogo(catalogoPadrao(), ["site", "pixZero", "tables3d", "qrcode", "tables"]);
   assert.equal(five.discountPercent, 25);
   assert.equal(five.total, five.subtotal - Math.round((five.subtotal * 25) / 100));
 
@@ -147,14 +147,14 @@ test("desconto de combinação: 3 módulos 15%, 5 ou mais 25%, arredondado ao ce
 
 test("arredondamento com centavos ímpares", () => {
   // subtotal 3 x R$ 33,33 = 9999 centavos; 15% = 1499,85 -> 1500 (arredonda para o centavo mais próximo)
-  const catalog = mesclarCatalogo([ov(chaveDoModuloNoCatalogo("site"), 3333), ov(chaveDoModuloNoCatalogo("pixZero"), 3333), ov(chaveDoModuloNoCatalogo("whatsapp"), 3333)]);
-  const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, ["site", "pixZero", "whatsapp"]);
+  const catalog = mesclarCatalogo([ov(chaveDoModuloNoCatalogo("site"), 3333), ov(chaveDoModuloNoCatalogo("pixZero"), 3333), ov(chaveDoModuloNoCatalogo("tables3d"), 3333)]);
+  const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, ["site", "pixZero", "tables3d"]);
   assert.equal(calc.subtotal, 9999);
   assert.equal(calc.discountAmount, 1500);
   assert.equal(calc.total, 8499);
   assert.ok(Number.isInteger(calc.total) && Number.isInteger(calc.discountAmount));
   // 5 x 1,01 = 505 centavos; 25% = 126,25 -> 126
-  const cinco = ["pixZero", "whatsapp", "tables", "tables3d", "customDomain"];
+  const cinco = ["pixZero", "qrcode", "tables", "tables3d", "customDomain"];
   const cheap = mesclarCatalogo(cinco.map((id) => ov(chaveDoModuloNoCatalogo(id), 101)));
   const five = precoDoPlanoPersonalizadoNoCatalogo(cheap, cinco);
   assert.equal(five.subtotal, 505);
@@ -188,10 +188,9 @@ test("plano adaptado com os recursos do Classic não custa menos que o Classic, 
   const catalog = mesclarCatalogo([
     { key: "module:site", priceCents: 1000, name: null },
     { key: "module:pixZero", priceCents: 1000, name: null },
-    { key: "module:whatsapp", priceCents: 1000, name: null },
     { key: "module:qrcode", priceCents: 1000, name: null },
   ]);
-  const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, ["site", "pixZero", "whatsapp", "qrcode"]);
+  const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, ["site", "pixZero", "qrcode"]);
   assert.equal(calc.total, catalog.plans.classic.price);
   assert.equal(calc.planoEquivalente, "classic");
 });

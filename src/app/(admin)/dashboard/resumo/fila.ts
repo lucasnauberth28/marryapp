@@ -15,7 +15,6 @@ export function montarFilaDoResumo(dados: DadosDoResumo, contas: ContasDoResumo,
     todayKey,
     weddingDays: weddingDays !== null && weddingDays >= 0 ? weddingDays : null,
     notInvitedYet: guests.filter((g) => !(g.rsvpStatus === "PENDING" && g.category === "Só presenteou") && g.phone && !g.hasReceivedMessage).length,
-    canWhatsApp: dados.canWhatsApp,
     overdueExpenses: budget.overdueCount,
     overdueTasks: 0, // as tarefas atrasadas têm lugar próprio em Tarefas; aqui entram na fila só pelo prazo
     allowedPaths: session.allowedPaths,

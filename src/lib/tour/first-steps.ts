@@ -18,8 +18,6 @@ export interface DadosDosPrimeirosPassos {
   /** Convidados que já receberam mensagem enviada pelo painel. */
   invitedByPanel: number;
   giftCount: number;
-  /** O plano inclui os convites pelo WhatsApp. */
-  canWhatsApp: boolean;
   /** Esta pessoa já dispensou a lista. */
   dismissed: boolean;
 }
@@ -47,7 +45,7 @@ export function itensDosPrimeirosPassos(d: DadosDosPrimeirosPassos): ItemDosPrim
   if (opens("/site-builder")) items.push({ id: "site", label: "Preencher as informações do site", href: "/site-builder", action: "Editar o site", done: dadosDoSitePreenchidos(d.site) });
   if (opens("/convidados")) items.push({ id: "guest", label: "Adicionar o primeiro convidado", href: "/convidados", action: "Adicionar convidado", done: d.guestCount > 0 });
   if (opens("/presentes-admin")) items.push({ id: "gift", label: "Criar o primeiro presente em dinheiro", href: "/presentes-admin", action: "Criar presente", done: d.giftCount > 0 });
-  if (d.canWhatsApp && opens("/mensagens")) items.push({ id: "invite", label: "Enviar o primeiro convite pelo WhatsApp", href: "/mensagens", action: "Abrir Mensagens", done: d.invitedByPanel > 0 });
+  if (opens("/mensagens")) items.push({ id: "invite", label: "Enviar o primeiro convite pelo WhatsApp", href: "/mensagens", action: "Abrir Mensagens", done: d.invitedByPanel > 0 });
   return items;
 }
 

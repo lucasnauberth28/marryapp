@@ -5,7 +5,7 @@ import { respondedoraDoGuiaDeAjuda, chatDaLizEstaAtivo } from "../answerer.ts";
 
 const base: EntradaDaDicaDaLiz = {
   pendingGuests: 0, deadlineKey: null, todayKey: "2027-02-01", weddingDays: null,
-  notInvitedYet: 0, canWhatsApp: true, overdueExpenses: 0, overdueTasks: 0, allowedPaths: ["*"],
+  notInvitedYet: 0, overdueExpenses: 0, overdueTasks: 0, allowedPaths: ["*"],
 };
 
 test("sem nada pendente a Liz não inventa sugestão", () => {
@@ -24,9 +24,8 @@ test("com as pessoas, a sugestão diz convites e pessoas", () => {
   assert.equal(tip?.text, "42 convites ainda sem resposta (68 pessoas). O prazo definido por vocês termina em 15 de março.");
 });
 
-test("convite pelo WhatsApp só é sugerido a quem tem o recurso no plano", () => {
+test("convite pelo WhatsApp é sugerido a quem ainda tem convidado sem mensagem", () => {
   assert.equal(decidirDicaDaLiz({ ...base, notInvitedYet: 4 })?.id, "convites-por-enviar");
-  assert.equal(decidirDicaDaLiz({ ...base, notInvitedYet: 4, canWhatsApp: false }), null);
 });
 
 test("a sugestão nunca aponta para tela que o perfil não abre", () => {

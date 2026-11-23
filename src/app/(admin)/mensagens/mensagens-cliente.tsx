@@ -54,7 +54,7 @@ export function MensagensCliente({ initialTemplates, initialGuests, coupleNames,
           </button>
         }
       />
-      <EnviosRapidos convidados={initialGuests} />
+      <EnviosRapidos convidados={initialGuests} modelos={modelos} />
       <CartaoDoConvite {...convite} />
       <ListaDeMensagens modelos={modelos} nomeDeExemplo={nomeDeExemplo} aoCriar={() => setEditando("novo")} aoEnviar={setEnviando} aoEditar={setEditando} />
       <ModalPersonalizado isOpen={editando !== null} onClose={() => setEditando(null)} title={editando === "novo" ? "Nova mensagem" : "Editar mensagem"} description="Escrevam o texto e vejam, ao lado, como ele chega no WhatsApp." size="xl" className="max-h-[92dvh] overflow-y-auto">

@@ -25,11 +25,11 @@ export const CONFIGURACAO_DOS_PLANOS = {
     name: "Plano Classic",
     price: 14900, // R$ 149,00
     period: "Pagamento único",
-    badge: "Convites e entrada",
+    badge: "Convite e entrada",
     // Só entra aqui o que o plano diferencia de fato: WhatsApp pelo painel e código QR são travados em wedding-plan-modules.
     features: [
       `Presentes por Pix sem taxa até ${ROTULO_DO_TETO_DO_PIX_SEM_TAXA} (acima disso, ${ROTULO_DA_TAXA_ACIMA_DO_TETO})`,
-      "Convites e lembretes pelo WhatsApp, enviados pelo painel",
+      "Convite digital animado, com o nome de cada convidado",
       "Registro de entrada dos convidados com código QR",
     ],
   },

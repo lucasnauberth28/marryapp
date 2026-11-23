@@ -44,31 +44,3 @@ export async function enviarMensagemDeTextoBruta({ phone, text }: OpcoesDeEnvioD
   if ("falha" in pronto) return pronto.falha;
   return postarNaEvolution("/message/sendText", { number: pronto.number, text, delay: 1200, linkPreview: true }, { erro: "mensagem", excecao: "texto" }, "Falha ao enviar mensagem de texto.");
 }
-
-interface OpcoesDeEnvioDeMidia {
-  phone: string;
-  mediaUrl: string;
-  mediaType?: string | null;
-  caption?: string;
-  fileName?: string;
-}
-
-/** Normaliza o mediatype para os valores aceitos pela Evolution API v2: "image" | "video" | "document" | "audio". */
-function tipoDeMidiaDaEvolution(mediaType?: string | null): "image" | "video" | "document" | "audio" {
-  const lower = (mediaType ?? "").toLowerCase();
-  if (lower.includes("video")) return "video";
-  if (lower.includes("audio")) return "audio";
-  if (lower.includes("pdf") || lower.includes("doc") || lower.includes("document")) return "document";
-  return "image";
-}
-
-/** Envia imagem, PDF, áudio ou outro arquivo via WhatsApp. */
-export async function enviarMensagemDeMidiaBruta({ phone, mediaUrl, mediaType, caption, fileName }: OpcoesDeEnvioDeMidia): Promise<ResultadoDoEnvio> {
-  const pronto = await prepararEnvio(phone, "Mídia");
-  if ("falha" in pronto) return pronto.falha;
-
-  const mediatype = tipoDeMidiaDaEvolution(mediaType);
-  const ext = mediatype === "image" ? "png" : mediatype === "document" ? "pdf" : "file";
-  const corpo = { number: pronto.number, mediatype, media: mediaUrl, fileName: fileName || `arquivo.${ext}`, caption: caption || "" };
-  return postarNaEvolution("/message/sendMedia", corpo, { erro: "mídia", excecao: "mídia" }, "Erro de conexão ao enviar mídia.");
-}

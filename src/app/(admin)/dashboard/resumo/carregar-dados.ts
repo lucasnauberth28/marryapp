@@ -6,7 +6,7 @@ import type { ContextoDaPagina } from "./tipos";
 
 /** Tudo o que o Resumo lê do banco, numa só rodada. */
 export async function carregarDadosDoResumo({ weddingId, session }: Pick<ContextoDaPagina, "weddingId" | "session">) {
-  const [guestRows, recent, txRows, expenseRows, nextTask, taskCount, tableCount, settings, giftCount, canWhatsApp, canQr, site, unseated, quemEsta] = await Promise.all([
+  const [guestRows, recent, txRows, expenseRows, nextTask, taskCount, tableCount, settings, giftCount, canQr, site, unseated, quemEsta] = await Promise.all([
     prisma.guest.findMany({
       where: { weddingId },
       select: { id: true, name: true, phone: true, rsvpStatus: true, category: true, allowedCompanions: true, confirmedCompanions: true, hasReceivedMessage: true, inviteSharedAt: true },
@@ -33,7 +33,6 @@ export async function carregarDadosDoResumo({ weddingId, session }: Pick<Context
     prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } }),
     prisma.gift.count({ where: { weddingId } }),
     // O registro de entrada por QR só é sugerido a quem tem o recurso no plano
-    casamentoTemModulo({ weddingId, session }, "whatsapp"),
     casamentoTemModulo({ weddingId, session }, "qrcode"),
     prisma.siteCustomization.findUnique({ where: { weddingId }, select: { heroImageUrl: true, couplePhotoUrl: true, locationName: true, locationAddress: true, ceremonyTime: true, receptionTime: true, welcomeMessage: true } }),
     // Pessoas confirmadas que ainda não têm mesa
@@ -43,7 +42,7 @@ export async function carregarDadosDoResumo({ weddingId, session }: Pick<Context
   ]);
   const checklistDispensado = !quemEsta || quemEsta.panelChecklistDismissedAt !== null;
   const emailNaoConfirmado = quemEsta !== null && quemEsta.emailVerifiedAt === null;
-  return { emailNaoConfirmado, guestRows, recent, txRows, expenseRows, nextTask, taskCount, tableCount, settings, giftCount, canWhatsApp, canQr, site, unseated, checklistDispensado };
+  return { emailNaoConfirmado, guestRows, recent, txRows, expenseRows, nextTask, taskCount, tableCount, settings, giftCount, canQr, site, unseated, checklistDispensado };
 }
 
 export type DadosDoResumo = Awaited<ReturnType<typeof carregarDadosDoResumo>>;

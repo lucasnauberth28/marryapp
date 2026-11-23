@@ -30,8 +30,6 @@ export interface EntradaDaDicaDaLiz {
   weddingDays: number | null;
   /** Convidados com telefone que o painel ainda não enviou pelo WhatsApp. */
   notInvitedYet: number;
-  /** O plano inclui o envio pelo WhatsApp. */
-  canWhatsApp: boolean;
   overdueExpenses: number;
   overdueTasks: number;
   /** O que o perfil abre: a dica só aparece se a tela de destino for acessível. */
@@ -53,7 +51,7 @@ export function decidirDicaDaLiz(input: EntradaDaDicaDaLiz): DicaDaLiz | null {
     };
   }
 
-  if (input.notInvitedYet > 0 && input.canWhatsApp && can("/mensagens")) {
+  if (input.notInvitedYet > 0 && can("/mensagens")) {
     const n = input.notInvitedYet;
     return {
       id: "convites-por-enviar",

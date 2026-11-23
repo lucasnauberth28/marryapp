@@ -11,7 +11,6 @@ const base: EntradaDaDicaDaLiz = {
   todayKey: "2027-03-06",
   weddingDays: null,
   notInvitedYet: 0,
-  canWhatsApp: true,
   overdueExpenses: 0,
   overdueTasks: 0,
   allowedPaths: ["*"],

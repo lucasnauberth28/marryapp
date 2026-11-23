@@ -30,14 +30,6 @@ export const MODULOS_DO_CASAL: ModuloDePreco[] = [
     iconName: "Percent",
   },
   {
-    id: "whatsapp",
-    name: "WhatsApp para convites e lembretes",
-    category: "Comunicação",
-    description: "Enviem convites e lembretes de confirmação pelo painel, direto no WhatsApp dos convidados.",
-    price: 6900, // R$ 69,00
-    iconName: "MessageCircle",
-  },
-  {
     id: "qrcode",
     name: "Registro de entrada com código QR",
     category: "Dia do Evento",
@@ -74,7 +66,7 @@ export const MODULOS_DO_CASAL: ModuloDePreco[] = [
 ];
 
 /** Módulos que o plano Classic inclui; o VIP inclui todos. */
-export const MODULOS_DO_CLASSIC = ["site", "pixZero", "whatsapp", "qrcode"];
+export const MODULOS_DO_CLASSIC = ["site", "pixZero", "qrcode"];
 
 /** Preço mínimo de um plano pronto: quem escolhe todos os recursos dele não paga menos que o plano. */
 export interface PisoDoPlano {

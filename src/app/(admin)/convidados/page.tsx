@@ -3,7 +3,6 @@ import { obterConvidados } from "@/actions/convidados/lista";
 import { ConvidadosCliente } from "./convidados-cliente";
 import prisma from "@/lib/prisma";
 import { exigirCasamentoNaPagina } from "@/lib/security/wedding-context";
-import { casamentoTemModulo } from "@/lib/casamento/wedding-plan";
 
 import { formatarDataCivilLonga } from "@/lib/formatacao/data";
 export const metadata: Metadata = {
@@ -18,22 +17,20 @@ export const dynamic = "force-dynamic";
 const RESPOSTAS_POSSIVEIS = { "sem-resposta": "PENDING", confirmados: "CONFIRMED", "nao-vao": "DECLINED" } as const;
 
 export default async function ConvidadosPage({ searchParams }: { searchParams: Promise<{ resposta?: string }> }) {
-  const { session, weddingId } = await exigirCasamentoNaPagina("/convidados");
+  const { weddingId } = await exigirCasamentoNaPagina("/convidados");
   const { resposta } = await searchParams;
   const initialFilter = RESPOSTAS_POSSIVEIS[resposta as keyof typeof RESPOSTAS_POSSIVEIS] ?? "all";
 
   // Só leitura: o prazo de confirmação definido em Configurações, se houver
-  const [guests, settings, canRemind] = await Promise.all([
+  const [guests, settings] = await Promise.all([
     obterConvidados(),
     prisma.systemSettings.findUnique({ where: { weddingId }, select: { rsvpDeadline: true } }),
-    casamentoTemModulo({ weddingId, session }, "whatsapp"),
   ]);
 
   return (
     <ConvidadosCliente
       initialGuests={guests}
       deadlineLabel={settings?.rsvpDeadline ? formatarDataCivilLonga(settings.rsvpDeadline) : null}
-      canRemind={canRemind}
       initialFilter={initialFilter}
     />
   );

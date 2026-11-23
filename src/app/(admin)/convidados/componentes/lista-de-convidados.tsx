@@ -9,7 +9,6 @@ import type { ListaDeConvidados } from "./use-lista-de-convidados";
 
 interface PropriedadesDaListaDeConvidados {
   lista: ListaDeConvidados;
-  podeLembrar: boolean;
   removendoId: string | null;
   aoEditar: (g: ConvidadoLocal) => void;
   aoRemover: (g: ConvidadoLocal) => void;
@@ -34,11 +33,11 @@ function RodapeDaLista({ lista }: { lista: ListaDeConvidados }) {
 }
 
 /** Filtros, atalho para lembrar quem não respondeu e a lista (tabela no computador, cartões no celular). */
-export function ListaDeConvidadosNaTela({ lista, podeLembrar, removendoId, aoEditar, aoRemover }: PropriedadesDaListaDeConvidados) {
+export function ListaDeConvidadosNaTela({ lista, removendoId, aoEditar, aoRemover }: PropriedadesDaListaDeConvidados) {
   return (
     <>
       <FiltrosDaLista lista={lista} />
-      {podeLembrar && lista.filtro === "PENDING" && lista.contagens.PENDING > 0 && (
+      {lista.filtro === "PENDING" && lista.contagens.PENDING > 0 && (
         <Link href="/mensagens" className={`${estiloDoBotao.secondary} w-full md:w-fit`}>
           <MessageCircle className="size-4" aria-hidden="true" />
           Abrir mensagens para os {lista.contagens.PENDING} sem resposta
