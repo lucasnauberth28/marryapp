@@ -47,7 +47,7 @@ export function SecaoDosRecursosPorPlano() {
           </tbody>
         </table>
       </div>
-      <p className="mt-3 text-sm leading-5 text-tinta-suave">O plano adaptado vale pelos recursos que o casal escolhe. Hoje o servidor só bloqueia convite digital, check-in com QR Code, domínio próprio e mesas em 3D; os outros estão liberados para todos.</p>
+      <p className="mt-3 text-sm leading-5 text-tinta-suave">O plano adaptado vale pelos recursos que o casal escolhe. Hoje o servidor só bloqueia convite digital, check-in com QR Code e domínio próprio; os outros estão liberados para todos.</p>
     </SecaoDaConfiguracao>
   );
 }

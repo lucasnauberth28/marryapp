@@ -98,13 +98,13 @@ test("escrever a dúvida procura no guia; sem resultado a Liz diz que não sabe 
 test("dúvida de recurso de plano avisa do plano e mostra os passos", async ({ page }) => {
   await abrirResumo(page);
   await botao(page).click();
-  await painel(page).getByRole("button", { name: "Mesas", exact: true }).click();
-  await painel(page).getByRole("button", { name: "Como uso as mesas em 3D e compartilho com os convidados?" }).click();
-  await expect(painel(page).getByText(/Este recurso é do plano VIP/)).toBeVisible();
-  await expect(painel(page).getByRole("list").filter({ hasText: "Ver em 3D" }).first()).toBeVisible();
+  await painel(page).getByRole("button", { name: "Convidados", exact: true }).click();
+  await painel(page).getByRole("button", { name: "Como registro a entrada dos convidados com código QR?" }).click();
+  await expect(painel(page).getByText(/Este recurso é do plano Classic/)).toBeVisible();
+  await expect(painel(page).getByRole("list").filter({ hasText: "Ler código QR" }).first()).toBeVisible();
   // Recomeçar apaga a conversa
   await painel(page).getByRole("button", { name: "Recomeçar a conversa" }).click();
-  await expect(painel(page).getByText(/Este recurso é do plano VIP/)).toHaveCount(0);
+  await expect(painel(page).getByText(/Este recurso é do plano Classic/)).toHaveCount(0);
 });
 
 test("o botão fica acima da barra inferior no celular e some com uma janela aberta", async ({ browser }) => {

@@ -130,15 +130,16 @@ test("plano adaptado: soma dos módulos com os preços do catálogo", () => {
 });
 
 test("desconto de combinação: 3 módulos 15%, 5 ou mais 25%, arredondado ao centavo", () => {
-  const three = precoDoPlanoPersonalizadoNoCatalogo(catalogoPadrao(), ["site", "pixZero", "tables3d"]);
-  assert.equal(three.subtotal, 4900 + 5900 + 5900);
+  const three = precoDoPlanoPersonalizadoNoCatalogo(catalogoPadrao(), ["site", "pixZero", "tables"]);
+  assert.equal(three.subtotal, 4900 + 5900 + 3900);
   assert.equal(three.discountPercent, 15);
-  assert.equal(three.discountAmount, Math.round((16700 * 15) / 100)); // 2505
-  assert.equal(three.total, 16700 - 2505);
+  assert.equal(three.discountAmount, Math.round((14700 * 15) / 100)); // 2205
+  assert.equal(three.total, 14700 - 2205);
 
-  const five = precoDoPlanoPersonalizadoNoCatalogo(catalogoPadrao(), ["site", "pixZero", "tables3d", "qrcode", "tables"]);
+  // Com os 5 módulos que existem hoje o plano vira o VIP: a conta nunca fica abaixo do preço dele
+  const five = precoDoPlanoPersonalizadoNoCatalogo(catalogoPadrao(), ["site", "pixZero", "customDomain", "qrcode", "tables"]);
   assert.equal(five.discountPercent, 25);
-  assert.equal(five.total, five.subtotal - Math.round((five.subtotal * 25) / 100));
+  assert.equal(five.total, catalogoPadrao().plans.vip.price);
 
   const two = precoDoPlanoPersonalizadoNoCatalogo(catalogoPadrao(), ["site", "qrcode"]);
   assert.equal(two.discountPercent, 0);
@@ -147,19 +148,12 @@ test("desconto de combinação: 3 módulos 15%, 5 ou mais 25%, arredondado ao ce
 
 test("arredondamento com centavos ímpares", () => {
   // subtotal 3 x R$ 33,33 = 9999 centavos; 15% = 1499,85 -> 1500 (arredonda para o centavo mais próximo)
-  const catalog = mesclarCatalogo([ov(chaveDoModuloNoCatalogo("site"), 3333), ov(chaveDoModuloNoCatalogo("pixZero"), 3333), ov(chaveDoModuloNoCatalogo("tables3d"), 3333)]);
-  const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, ["site", "pixZero", "tables3d"]);
+  const catalog = mesclarCatalogo([ov(chaveDoModuloNoCatalogo("site"), 3333), ov(chaveDoModuloNoCatalogo("pixZero"), 3333), ov(chaveDoModuloNoCatalogo("tables"), 3333)]);
+  const calc = precoDoPlanoPersonalizadoNoCatalogo(catalog, ["site", "pixZero", "tables"]);
   assert.equal(calc.subtotal, 9999);
   assert.equal(calc.discountAmount, 1500);
   assert.equal(calc.total, 8499);
   assert.ok(Number.isInteger(calc.total) && Number.isInteger(calc.discountAmount));
-  // 5 x 1,01 = 505 centavos; 25% = 126,25 -> 126
-  const cinco = ["pixZero", "qrcode", "tables", "tables3d", "customDomain"];
-  const cheap = mesclarCatalogo(cinco.map((id) => ov(chaveDoModuloNoCatalogo(id), 101)));
-  const five = precoDoPlanoPersonalizadoNoCatalogo(cheap, cinco);
-  assert.equal(five.subtotal, 505);
-  assert.equal(five.discountAmount, 126);
-  assert.equal(five.total, 379);
 });
 
 test("módulo repetido ou inexistente não infla nem derruba o preço", () => {

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Copy, Link2, RefreshCw, Link2Off } from "lucide-react";
 import { toast } from "sonner";
-import { criarLinkDeCompartilhamentoDasMesas3D, desativarLinkDeCompartilhamentoDasMesas3D } from "@/actions/table3d-actions";
+import { criarLinkDeCompartilhamentoDasMesas, desativarLinkDeCompartilhamentoDasMesas } from "@/actions/mesas/compartilhar";
 import { ModalPersonalizado } from "@/components/ui/custom-modal";
 import { estiloDoBotao } from "@/components/landing/styles";
 import { cn } from "@/lib/utils";
@@ -33,8 +33,8 @@ function useCompartilhamento(onChange: (token: string | null) => void) {
 
   return {
     busy,
-    criar: (mensagem: string) => run(criarLinkDeCompartilhamentoDasMesas3D, (r) => onChange(r.token ?? null), mensagem),
-    desligar: () => run(desativarLinkDeCompartilhamentoDasMesas3D, () => onChange(null), "Link desligado."),
+    criar: (mensagem: string) => run(criarLinkDeCompartilhamentoDasMesas, (r) => onChange(r.token ?? null), mensagem),
+    desligar: () => run(desativarLinkDeCompartilhamentoDasMesas, () => onChange(null), "Link desligado."),
   };
 }
 
@@ -54,7 +54,7 @@ function LinkAtivo({ url, busy, aoGerarNovo, aoDesligar }: { url: string; busy: 
         Link de visualização
         <input readOnly value={url} onFocus={(e) => e.currentTarget.select()} className="min-h-11 w-full rounded-xl border border-linha-forte bg-papel px-4 font-mono text-sm font-normal text-tinta" />
       </label>
-      <p className="text-sm leading-5 text-tinta-suave">Quem recebe o link vê os nomes dos convidados e as mesas. Mandem só para quem vai ao casamento. Se o link vazar, gerem um novo: o antigo para de funcionar na hora.</p>
+      <p className="text-sm leading-5 text-tinta-suave">Quem recebe o link procura o próprio nome e vê a mesa e os lugares. Mandem só para quem vai ao casamento. Se o link vazar, gerem um novo: o antigo para de funcionar na hora.</p>
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={() => copiar(url)} className={cn(estiloDoBotao.primary, "min-h-11 gap-2")}>
           <Copy aria-hidden="true" className="size-4" /> Copiar link
@@ -73,7 +73,7 @@ function LinkAtivo({ url, busy, aoGerarNovo, aoDesligar }: { url: string; busy: 
 function SemLink({ busy, aoCriar }: { busy: boolean; aoCriar: () => void }) {
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-[15px] leading-6 text-tinta-suave">Criem um link para os convidados verem o mapa das mesas em 3D e acharem o próprio lugar. O link é só de leitura: ninguém além de vocês altera as mesas.</p>
+      <p className="text-[15px] leading-6 text-tinta-suave">Criem um link para os convidados acharem a própria mesa pelo nome. O link é só de leitura: ninguém além de vocês altera as mesas.</p>
       <div>
         <button type="button" disabled={busy} onClick={aoCriar} className={cn(estiloDoBotao.primary, "min-h-11 gap-2")}>
           <Link2 aria-hidden="true" className="size-4" /> Criar link
@@ -89,7 +89,7 @@ export function DialogoDeCompartilhamento({ open, onClose, token, onChange }: { 
   const url = token && typeof window !== "undefined" ? `${window.location.origin}${CAMINHO_DO_COMPARTILHAMENTO}${token}` : "";
 
   return (
-    <ModalPersonalizado isOpen={open} onClose={onClose} title="Compartilhar as mesas" description="Quem tiver o link vê o mapa e acha a própria mesa. Só vocês alteram as mesas." size="md">
+    <ModalPersonalizado isOpen={open} onClose={onClose} title="Compartilhar as mesas" description="Quem tiver o link acha a própria mesa pelo nome. Só vocês alteram as mesas." size="md">
       {token ? <LinkAtivo url={url} busy={c.busy} aoGerarNovo={() => c.criar("Link novo criado. O anterior não funciona mais.")} aoDesligar={c.desligar} /> : <SemLink busy={c.busy} aoCriar={() => c.criar("Link criado.")} />}
     </ModalPersonalizado>
   );

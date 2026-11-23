@@ -17,10 +17,10 @@ test("quem só abre convidados e mesas não vê assuntos de outras telas", () =>
   assert.ok(!topics.includes("presentes") && !topics.includes("site"));
 });
 
-test("as mesas em 3D aparecem no assunto Mesas, marcadas como do plano VIP quando o plano não inclui", () => {
-  const visible = artigosVisiveis(ARTIGOS_DE_AJUDA, { allowedPaths: ["*"], planModules: { tables3d: false } });
+test("o mapa do salão aparece no assunto Mesas, liberado em todos os planos", () => {
+  const visible = artigosVisiveis(ARTIGOS_DE_AJUDA, { allowedPaths: ["*"], planModules: {} });
   const mesas = assuntosPara(visible).find((t) => t.topic.id === "mesas")!;
-  const hit = mesas.hits.find((h) => h.article.id === "mesas-3d")!;
-  assert.equal(hit.locked, true);
-  assert.equal(assuntoDoArtigo("mesas-3d")?.id, "mesas");
+  const hit = mesas.hits.find((h) => h.article.id === "mapa-das-mesas")!;
+  assert.equal(hit.locked, false);
+  assert.equal(assuntoDoArtigo("mapa-das-mesas")?.id, "mesas");
 });

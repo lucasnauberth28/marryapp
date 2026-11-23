@@ -1,37 +1,29 @@
-import Image from "next/image";
+import { MapaDoSalao } from "@/components/mesas/mapa-do-salao";
 import { Link2, MousePointerClick, Search, Sparkles } from "lucide-react";
 import { Aparicao } from "@/components/motion/reveal";
 import { LinkEmFormaDeBotao, CabecalhoDaSecao } from "./home-ui";
 
-const CENARIOS = [
-  { id: "jardim", nome: "Jardim ao entardecer" },
-  { id: "classico", nome: "Salão clássico" },
-  { id: "rustico", nome: "Galpão rústico" },
-];
 const PASSOS = [
-  { icon: Sparkles, titulo: "Escolham o cenário", texto: "Jardim, salão clássico ou galpão rústico." },
-  { icon: MousePointerClick, titulo: "Sentem arrastando", texto: "Levem cada convidado até a mesa, vendo o salão." },
-  { icon: Link2, titulo: "Compartilhem o link", texto: "Só de leitura: cada um acha a própria mesa. Só vocês alteram." },
+  { icon: Sparkles, titulo: "Criem as mesas", texto: "Deem um nome e o número de lugares de cada uma." },
+  { icon: MousePointerClick, titulo: "Sentem arrastando", texto: "Levem cada convidado até a mesa e vejam o salão de cima." },
+  { icon: Link2, titulo: "Compartilhem o link", texto: "Só de leitura: cada um acha a própria mesa pelo nome. Só vocês alteram." },
+];
+
+// Mapa de exemplo, com mesas fictícias
+const MESAS_DE_EXEMPLO = [
+  { id: "1", name: "Família da noiva", capacity: 8, occupied: 8 },
+  { id: "2", name: "Família do noivo", capacity: 8, occupied: 7 },
+  { id: "3", name: "Amigos da faculdade", capacity: 8, occupied: 6 },
+  { id: "4", name: "Padrinhos", capacity: 6, occupied: 6 },
+  { id: "5", name: "Trabalho", capacity: 8, occupied: 4 },
+  { id: "6", name: "Primos", capacity: 8, occupied: 0 },
 ];
 
 function PalcoDoMapa() {
   return (
     <div className="lp-3d-palco">
-      <Image
-        src="/landing/mesas3d/jardim-cenario.webp"
-        alt="Mesas do casamento em 3D num jardim ao entardecer, com as cadeiras marcadas pela cor de cada grupo de convidados"
-        width={1600}
-        height={1000}
-        sizes="(min-width: 1200px) 1120px, 100vw"
-        className="lp-cobre"
-      />
-      <p className="lp-balao lp-3d-b1">
-        <Link2 aria-hidden="true" className="lp-ico" />
-        <span>
-          Link <b>só de leitura</b> para os convidados
-        </span>
-      </p>
-      <div className="lp-3d-busca" role="note" aria-label="Exemplo do mapa compartilhado">
+      <MapaDoSalao mesas={MESAS_DE_EXEMPLO} className="lp-mapa" />
+      <div className="lp-3d-busca" role="note" aria-label="Exemplo do link compartilhado">
         <p className="lp-3d-busca-t">Encontre a sua mesa</p>
         <p className="lp-3d-campo">
           <Search aria-hidden="true" className="lp-ico" />
@@ -46,27 +38,19 @@ function PalcoDoMapa() {
   );
 }
 
-/** Mesas em 3D (plano VIP): o salão do casamento, os convidados sentados e o link só de leitura para compartilhar. */
-export function SecaoDeMesas({ vip }: { vip: string }) {
+/** Mapa do salão: as mesas vistas de cima, os convidados sentados e o link só de leitura para compartilhar. */
+export function SecaoDeMesas() {
   return (
-    <section className="lp-sec lp-dentro" id="mesas-3d" aria-labelledby="lp-t-3d">
+    <section className="lp-sec lp-dentro" id="mesas" aria-labelledby="lp-t-mesas">
       <CabecalhoDaSecao
-        id="lp-t-3d"
-        chip={`Mesas em 3D · ${vip}`}
+        id="lp-t-mesas"
+        chip="Mapa do salão"
         title="Sentem os convidados"
-        accent="vendo o salão."
-        lead="Escolham o cenário do casamento e mandem o mapa das mesas por um link, para cada convidado achar o próprio lugar."
+        accent="vendo o salão de cima."
+        lead="Montem as mesas, imprimam o mapa para o buffet e mandem um link para cada convidado achar o próprio lugar."
       />
       <Aparicao variant="scale" className="lp-3d">
         <PalcoDoMapa />
-        <ul className="lp-3d-cenarios" aria-label="Cenários disponíveis">
-          {CENARIOS.map((c) => (
-            <li key={c.id}>
-              <Image src={`/mesas3d/${c.id}.webp`} alt="" width={640} height={400} sizes="(min-width: 900px) 360px, 33vw" />
-              <span>{c.nome}</span>
-            </li>
-          ))}
-        </ul>
       </Aparicao>
       <ul className="lp-3d-passos">
         {PASSOS.map(({ icon: Icon, titulo, texto }, i) => (
@@ -80,10 +64,10 @@ export function SecaoDeMesas({ vip }: { vip: string }) {
         ))}
       </ul>
       <Aparicao className="lp-3d-cta">
-        <LinkEmFormaDeBotao href="/cadastro?plano=vip" arrow>
-          Quero as mesas em 3D
+        <LinkEmFormaDeBotao href="/cadastro" arrow>
+          Montar as mesas
         </LinkEmFormaDeBotao>
-        <p className="lp-mudo lp-nota">Recurso do {vip}. Imagem ilustrativa, com convidados fictícios.</p>
+        <p className="lp-mudo lp-nota">Em todos os planos, inclusive o Básico. Mapa de exemplo, com convidados fictícios.</p>
       </Aparicao>
     </section>
   );

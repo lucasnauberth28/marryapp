@@ -37,8 +37,8 @@ function perguntasDaHome(catalog: Catalogo): Pergunta[] {
     },
     { q: "O que a Liz faz?", a: "Sugere o próximo passo e responde dúvidas por assuntos prontos, com base no painel. Ela não conversa livremente nem age sozinha." },
     {
-      q: "O que são as mesas em 3D?",
-      a: `Um recurso do ${vip}: vocês escolhem o cenário do casamento e sentam os convidados vendo o salão. Dá para compartilhar o mapa por um link só de leitura, e só vocês alteram as mesas.`,
+      q: "Como funciona o mapa das mesas?",
+      a: "Vocês criam as mesas, sentam os convidados e veem o salão de cima. Dá para imprimir o mapa para o buffet e compartilhar um link só de leitura: cada convidado digita o nome e acha a própria mesa. Está em todos os planos.",
     },
     {
       q: "Como funciona a entrada com código QR?",

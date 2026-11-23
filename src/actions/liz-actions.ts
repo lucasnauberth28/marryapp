@@ -24,7 +24,7 @@ export interface DadosDoPainelDaLiz {
   /** Sugestão para agora, ou null quando não há nada a sugerir. */
   tip: DicaDaLiz | null;
   /** O que o plano do casamento inclui, para o guia avisar "é do plano Classic". */
-  planModules: { qrcode: boolean; customDomain: boolean; tables3d: boolean };
+  planModules: { qrcode: boolean; customDomain: boolean };
   /** As perguntas vão ao modelo de IA? Só com a Liz ligada na administração e a chave do Gemini configurada. */
   chatEnabled: boolean;
 }
@@ -66,10 +66,9 @@ export async function obterDadosDoPainelDaLiz(): Promise<ResultadoDoPainelDaLiz>
     const now = new Date();
     const todayKey = new Intl.DateTimeFormat("en-CA", { timeZone: FUSO_DE_BRASILIA }).format(now);
 
-    const [qrcode, customDomain, tables3d, chatEnabled] = await Promise.all([
+    const [qrcode, customDomain, chatEnabled] = await Promise.all([
       casamentoTemModulo({ weddingId, session }, "qrcode"),
       casamentoTemModulo({ weddingId, session }, "customDomain"),
-      casamentoTemModulo({ weddingId, session }, "tables3d"),
       lerSeOChatDaLizEstaAtivo(),
     ]);
 
@@ -92,7 +91,7 @@ export async function obterDadosDoPainelDaLiz(): Promise<ResultadoDoPainelDaLiz>
       allowedPaths: session.allowedPaths,
     });
 
-    return { success: true, data: { tip, planModules: { qrcode, customDomain, tables3d }, chatEnabled } };
+    return { success: true, data: { tip, planModules: { qrcode, customDomain }, chatEnabled } };
   } catch (error) {
     if (!(error instanceof ErroDeAutorizacao)) console.error("[getLizPanelData Error]:", error);
     return { success: false, error: ERRO_AO_CARREGAR };
@@ -124,7 +123,6 @@ export async function perguntarALiz(input: unknown): Promise<ResultadoDaPergunta
       planModules: {
         qrcode: await casamentoTemModulo({ weddingId, session }, "qrcode"),
         customDomain: await casamentoTemModulo({ weddingId, session }, "customDomain"),
-        tables3d: await casamentoTemModulo({ weddingId, session }, "tables3d"),
       },
     };
     const provider = obterProvedorDaLiz();

@@ -27,7 +27,7 @@ const CAMINHOS_PUBLICOS = [
   "/privacidade",
   "/proposta", // casal aceita a proposta do fornecedor pelo link
   "/avaliar", // casal avalia o fornecedor pelo link do pedido fechado
-  "/mapa-das-mesas", // mesas em 3D só para ver, pelo link que o casal compartilha
+  "/mapa-das-mesas", // mapa das mesas só para ver ("Ache a sua mesa"), pelo link que o casal compartilha
 ];
 
 /**

@@ -50,13 +50,13 @@ for (const [largura, altura] of [
   });
 }
 
-test("a home mostra as mesas em 3D com o link de compartilhamento e não tem mais linhas-guia entre as seções", async ({ page }) => {
+test("a home mostra o mapa do salão com o link de compartilhamento e não tem mais linhas-guia entre as seções", async ({ page }) => {
   await page.goto("/");
-  const secao = page.locator("#mesas-3d");
+  const secao = page.locator("#mesas");
   await secao.scrollIntoViewIfNeeded();
   await expect(secao.getByRole("heading", { level: 2, name: /Sentem os convidados/ })).toBeVisible();
   await expect(secao.getByText(/só de leitura/i).first()).toBeVisible();
-  await expect(secao.getByRole("link", { name: /Quero as mesas em 3D/ })).toHaveAttribute("href", "/cadastro?plano=vip");
+  await expect(secao.getByRole("link", { name: /Montar as mesas/ })).toHaveAttribute("href", "/cadastro");
   // Sem hachura, divisórias, cruzes nem trilho tracejado
   await expect(page.locator(".lp-hachura, .lp-divisa, .lp-cruz")).toHaveCount(0);
   const trilho = await page.locator(".lp-trilho").first().evaluate((el) => getComputedStyle(el).borderLeftWidth);

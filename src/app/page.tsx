@@ -56,7 +56,7 @@ export default async function Home() {
         <SecaoDePresentes classic={classic} vip={vip} />
         <Moldura>
           <SecaoDaLiz />
-          <SecaoDeMesas vip={vip} />
+          <SecaoDeMesas />
           <SecaoDaFesta classic={classic} vip={vip} />
           <SecaoDeFornecedores />
           <SecaoDePlanos catalog={catalog} />

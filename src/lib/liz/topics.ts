@@ -28,7 +28,7 @@ export const ASSUNTOS_DA_LIZ: readonly AssuntoDaLiz[] = [
     id: "mesas",
     label: "Mesas",
     intro: "Sobre as mesas, qual é a dúvida?",
-    articleIds: ["mesas", "mesas-3d"],
+    articleIds: ["mesas", "mapa-das-mesas"],
   },
   {
     id: "presentes",

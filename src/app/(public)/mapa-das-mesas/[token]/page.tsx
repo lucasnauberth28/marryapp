@@ -1,50 +1,41 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { VisaoDasMesas3D } from "@/components/mesas3d/mesas-3d-view";
-import { ehIdDeCenario } from "@/lib/mesas3d/scenarios";
-import { lugaresDoConvidado } from "@/lib/mesas3d/seating";
+import { AcheSuaMesa } from "./ache-sua-mesa";
 
 export const dynamic = "force-dynamic";
 
 // O link é só de quem recebeu: fora dos buscadores
 export const metadata: Metadata = {
-  title: "Mapa das mesas",
+  title: "Ache a sua mesa",
   robots: { index: false, follow: false },
 };
 
 /**
- * Link de visualização das mesas em 3D. Só leitura: a página não grava nada e não expõe telefone nem e-mail,
- * só o nome, o grupo e a mesa de quem já foi sentado. O código vem do casal (Wedding.tables3dShareToken).
+ * "Ache a sua mesa". Só leitura: a página não grava nada e não expõe telefone nem e-mail. O código vem do casal
+ * (Wedding.tablesShareToken). A lista inteira não aparece: o convidado digita o nome e vê só quem combina.
  */
 export default async function MapaDasMesasPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   if (!/^[A-Za-z0-9_-]{20,40}$/.test(token)) notFound();
 
-  const wedding = await prisma.wedding.findUnique({
-    where: { tables3dShareToken: token },
-    select: { id: true, coupleNames: true, tables3dScene: true, suspendedAt: true },
-  });
+  const wedding = await prisma.wedding.findUnique({ where: { tablesShareToken: token }, select: { id: true, coupleNames: true, suspendedAt: true } });
   if (!wedding || wedding.suspendedAt) notFound();
 
   const [tables, guests] = await Promise.all([
     prisma.table.findMany({ where: { weddingId: wedding.id }, select: { id: true, name: true, capacity: true }, orderBy: { createdAt: "asc" } }),
-    prisma.guest.findMany({
-      where: { weddingId: wedding.id, tableId: { not: null } },
-      select: { id: true, name: true, category: true, allowedCompanions: true, tableId: true },
-      orderBy: { name: "asc" },
-    }),
+    prisma.guest.findMany({ where: { weddingId: wedding.id, tableId: { not: null } }, select: { id: true, name: true, allowedCompanions: true, tableId: true }, orderBy: { name: "asc" } }),
   ]);
+  const ocupados = new Map<string, number>();
+  for (const g of guests) ocupados.set(g.tableId!, (ocupados.get(g.tableId!) ?? 0) + 1 + (g.allowedCompanions || 0));
 
   return (
-    <div className="mx-auto w-full max-w-[1240px] px-4 py-6 md:px-8">
-      <VisaoDasMesas3D
-        mode="view"
+    <main className="mx-auto w-full max-w-3xl px-4 py-8 md:px-8">
+      <AcheSuaMesa
         coupleNames={wedding.coupleNames}
-        initialScene={ehIdDeCenario(wedding.tables3dScene) ? wedding.tables3dScene : "jardim"}
-        tables={tables}
-        guests={guests.map((g) => ({ id: g.id, name: g.name, category: g.category, seats: lugaresDoConvidado(g.allowedCompanions), tableId: g.tableId }))}
+        mesas={tables.map((t) => ({ id: t.id, name: t.name, capacity: t.capacity, occupied: ocupados.get(t.id) ?? 0 }))}
+        convidados={guests.map((g) => ({ id: g.id, name: g.name, tableId: g.tableId! }))}
       />
-    </div>
+    </main>
   );
 }

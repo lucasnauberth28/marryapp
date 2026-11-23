@@ -52,7 +52,7 @@ export const ARTIGOS_DO_DIA_A_DIA: readonly ArtigoDeAjuda[] = [
     title: "Como organizo os convidados nas mesas?",
     keywords: ["mesa", "lugares", "nova mesa", "sentar", "distribuir", "arrastar", "sem mesa"],
     answer:
-      "Em Mesas, vocês criam as mesas com nome e número de lugares e colocam nelas os convidados que confirmaram presença. Quem ainda não tem mesa fica na lista Sem mesa.",
+      "Em Mesas, vocês criam as mesas com nome e número de lugares e colocam nelas os convidados que confirmaram presença. Quem ainda não tem mesa fica na lista Sem mesa. O Mapa do salão mostra tudo visto de cima.",
     steps: [
       "Abram Mesas e toquem em Nova mesa. Escolham o nome e quantos lugares ela tem.",
       "Na lista Sem mesa estão os convidados confirmados que ainda não têm lugar.",
@@ -62,19 +62,19 @@ export const ARTIGOS_DO_DIA_A_DIA: readonly ArtigoDeAjuda[] = [
     path: "/mesas",
   },
   {
-    id: "mesas-3d",
-    title: "Como uso as mesas em 3D e compartilho com os convidados?",
-    keywords: ["3d", "tres d", "cenario", "mapa das mesas", "link", "compartilhar mesas", "visualizar", "salao", "jardim", "rustico"],
+    id: "mapa-das-mesas",
+    title: "Como vejo o salão de cima e mostro aos convidados onde sentar?",
+    keywords: ["mapa", "salao", "de cima", "compartilhar mesas", "link", "ache a sua mesa", "buffet", "imprimir", "pdf", "onde sentar"],
     answer:
-      "Nas mesas em 3D, vocês escolhem o cenário do casamento e sentam os convidados vendo o salão. O link de visualização é só para ver: os convidados acham a própria mesa, e só vocês alteram as mesas.",
+      "Em Mesas, o Mapa do salão mostra cada mesa vista de cima, com uma cadeira por lugar. Vocês criam um link para os convidados acharem a própria mesa pelo nome, e imprimem o mapa para o buffet e o cerimonial.",
     steps: [
-      "Em Mesas, toquem em Ver em 3D e escolham o cenário.",
-      "Arrastem o convidado até a mesa. No celular, toquem no nome e depois na mesa.",
-      "Toquem em Compartilhar para criar o link do mapa. Se ele vazar, gerem um novo: o antigo para de funcionar.",
+      "Abram Mesas e toquem em Mapa do salão.",
+      "Toquem em Compartilhar e em Criar link. Mandem o link para quem vai ao casamento: cada um procura o próprio nome e vê a mesa.",
+      "Para o buffet, toquem em Imprimir e salvem como PDF ou imprimam.",
+      "Se o link vazar, gerem um novo: o antigo para de funcionar.",
     ],
-    action: { label: "Ir para as mesas em 3D", href: "/mesas/3d" },
+    action: { label: "Ir para o Mapa do salão", href: "/mesas" },
     path: "/mesas",
-    planModule: "tables3d",
   },
   {
     id: "financas",

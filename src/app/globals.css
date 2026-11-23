@@ -476,3 +476,10 @@ html.lenis body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Impressão do mapa do salão (Mesas > Mapa do salão > Imprimir): só a área marcada sai no papel. */
+@media print {
+  body * { visibility: hidden; }
+  #area-de-impressao, #area-de-impressao * { visibility: visible; }
+  #area-de-impressao { position: absolute; inset: 0 auto auto 0; width: 100%; }
+}

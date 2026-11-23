@@ -14,7 +14,7 @@ import { MODULOS_DO_CASAL, MODULOS_DO_CLASSIC } from "../pagamento/pricing-modul
  * O domínio próprio (.com.br, no nome do titular) é pedido em /dominio e só o plano VIP
  * (ou um plano adaptado com o módulo) libera o pedido.
  */
-export const MODULOS_COM_BLOQUEIO = ["qrcode", "customDomain", "tables3d", "convite"] as const;
+export const MODULOS_COM_BLOQUEIO = ["qrcode", "customDomain", "convite"] as const;
 export type ModuloComBloqueio = (typeof MODULOS_COM_BLOQUEIO)[number];
 
 const TODOS_OS_IDS_DE_MODULO = MODULOS_DO_CASAL.map((m) => m.id);
@@ -42,12 +42,6 @@ const RECURSOS: Record<ModuloComBloqueio, { sentence: string; title: string; pla
     title: "O registro de entrada com código QR é do plano",
     plans: "do plano Classic, do VIP",
     planLabel: "Classic",
-  },
-  tables3d: {
-    sentence: "As mesas em 3D, com o link de visualização para os convidados, fazem parte",
-    title: "As mesas em 3D são do plano",
-    plans: "do plano VIP",
-    planLabel: "VIP",
   },
   convite: {
     sentence: "O convite digital animado e personalizado, com o nome de cada convidado, faz parte",
