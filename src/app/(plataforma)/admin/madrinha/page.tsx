@@ -1,6 +1,8 @@
 import { Painel } from "@/components/plataforma/panel";
 import { exigirAdminDaPlataformaNaPagina } from "@/lib/security/platform-admin";
 import { obterVisaoGeralDaMadrinha, listarExcecoesDaMadrinha } from "@/lib/platform/queries/madrinha";
+import { obterUsoDoMesDaLiz } from "@/lib/platform/queries/madrinha-uso";
+import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { FormularioContraAbuso, FormularioDoTetoGlobal, FormularioDeLimites } from "./_components/config-forms";
 import { AjusteDoCasamento } from "./_components/wedding-adjust";
 import { SeloDeConfiguracao } from "../_sistema/setting-badge";
@@ -12,16 +14,18 @@ export const metadata = { title: "Liz" };
 
 export default async function Page() {
   await exigirAdminDaPlataformaNaPagina(); // guard da página (o layout sozinho não basta)
-  const [overview, overrides] = await Promise.all([obterVisaoGeralDaMadrinha(), listarExcecoesDaMadrinha(20)]);
+  const [overview, overrides, master, uso] = await Promise.all([obterVisaoGeralDaMadrinha(), listarExcecoesDaMadrinha(20), obterConfiguracaoDaPlataforma("madrinha.master"), obterUsoDoMesDaLiz()]);
   const { limits, globalCap, abuse, meta } = overview;
+  const temChave = Boolean(process.env.GEMINI_API_KEY);
+  const pausada = master.pausedAt !== null;
 
   return (
     <>
-      <CabecalhoDaLiz />
+      <CabecalhoDaLiz ligada={master.enabled} pausada={pausada} temChave={temChave} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <PainelInterruptorGeral checklist={checklistDaLiz(overview)} />
-        <PainelDeUsoDoMes />
+        <PainelInterruptorGeral checklist={checklistDaLiz(overview, temChave, master.enabled)} ligada={master.enabled} pausada={pausada} temChave={temChave} />
+        <PainelDeUsoDoMes uso={uso} tetoEmCentavos={globalCap.monthlyCostCapCents} />
       </div>
 
       <PainelDeConsumo />

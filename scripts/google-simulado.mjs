@@ -1,4 +1,4 @@
-// Google simulado, só para os testes e2e: autorização, troca do código (confere o PKCE) e chaves públicas.
+// Google e Gemini simulados, só para os testes e2e: autorização, troca do código (confere o PKCE) e chaves públicas.
 // Quem "está logado no Google" vem do cookie `google_simulado` (JSON em base64url: { sub, email, name, verificado });
 // o cookie `google_simulado_cancelar` simula quem desiste na tela do Google. O app só fala com este servidor
 // quando o client id começa com "simulado-" e GOOGLE_SIMULADO_URL é localhost (ver src/lib/google/cliente.ts).
@@ -44,10 +44,21 @@ async function trocar(req, res) {
   responder(res, 200, { id_token: idToken, access_token: "simulado", token_type: "Bearer" });
 }
 
+// Gemini simulado: responde a uma pergunta como o modelo faria. "bolo" foge do assunto; o resto volta com um texto fixo.
+async function gemini(req, res) {
+  let corpo = "";
+  for await (const parte of req) corpo += parte;
+  const pedido = JSON.parse(corpo);
+  const pergunta = pedido.contents?.[0]?.parts?.[0]?.text ?? "";
+  const texto = /bolo/i.test(pergunta) ? "[FORA_DO_ASSUNTO]" : "Resposta simulada da Liz: toquem em Presentes e criem o primeiro.";
+  responder(res, 200, { candidates: [{ content: { parts: [{ text: texto }] } }], usageMetadata: { promptTokenCount: 1200, candidatesTokenCount: 40 } });
+}
+
 createServer((req, res) => {
   const url = new URL(req.url ?? "/", `http://localhost:${PORTA}`);
   if (url.pathname === "/auth") return autorizar(req, res, url);
   if (url.pathname === "/token" && req.method === "POST") return trocar(req, res).catch(() => responder(res, 500, { error: "erro" }));
+  if (url.pathname.startsWith("/v1beta/models/") && req.method === "POST") return gemini(req, res).catch(() => responder(res, 500, { error: "erro" }));
   if (url.pathname === "/certs") return responder(res, 200, { keys: [jwk] });
   responder(res, 200, "ok", "text/plain"); // verificação de saúde do Playwright
 }).listen(PORTA, () => console.log(`Google simulado em http://localhost:${PORTA}`));

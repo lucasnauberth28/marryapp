@@ -1,9 +1,8 @@
 // Ponto de extensão das respostas da Liz.
 //
-// Hoje a Liz NÃO usa IA: quem responde é o guia de ajuda (busca em artigos escritos à mão, ver help-articles.ts).
-// A interface abaixo é o que a tela de perguntas conhece. Quando a administração ativar a IA, basta:
-//   1. registrar um provedor em lib/liz/provider.ts (um LizAnswerer que roda no servidor);
-//   2. ligar o interruptor `madrinha.master` em platform_settings (hoje travado em desligado).
+// Quem responde é o guia de ajuda (busca em artigos escritos à mão, ver help-articles.ts) ou, quando a administração
+// liga a Liz e existe a chave do Gemini (GEMINI_API_KEY), o modelo de IA, ver provider.ts e conversa-com-ia.ts.
+// A interface abaixo é o que a tela de perguntas conhece.
 // A tela não muda: `isLizChatEnabled` decide se a pergunta vai ao provedor ou ao guia.
 import { ARTIGOS_DE_AJUDA, type ArtigoDeAjuda } from "./help-articles.ts";
 import { buscarAjuda, type PublicoDaAjuda, type ResultadoDaAjuda } from "./help-search.ts";
@@ -12,6 +11,9 @@ import { buscarAjuda, type PublicoDaAjuda, type ResultadoDaAjuda } from "./help-
 export interface ContextoDaPerguntaALiz extends PublicoDaAjuda {
   /** Tela em que a pessoa está (ex.: "/convidados"), para respostas mais certas. */
   pathname?: string;
+  /** Casamento da sessão e se tem plano pago: o provedor de IA usa para contar o consumo e aplicar os limites. */
+  weddingId?: string;
+  planoPago?: boolean;
 }
 
 /** Referência a um artigo do guia, com o aviso do plano quando o recurso não está incluído. */
@@ -42,7 +44,7 @@ export interface ChaveGeralDaLiz {
 
 /**
  * A pergunta vai ao provedor de IA só se TUDO for verdade: a administração ligou a Liz, não pausou
- * e existe um provedor registrado. Hoje não há provedor, então devolve sempre false.
+ * e existe um provedor (a chave do Gemini está configurada).
  */
 export function chatDaLizEstaAtivo(master: ChaveGeralDaLiz, provider: RespondedoraDaLiz | null): boolean {
   return master.enabled && master.pausedAt === null && provider !== null;

@@ -6,7 +6,7 @@ import { startOfDay } from "date-fns";
 import prisma from "@/lib/prisma";
 import { exigirCasamentoParaLeitura } from "@/lib/security/wedding-context";
 import { ErroDeAutorizacao } from "@/lib/security/authorization-error";
-import { casamentoTemModulo } from "@/lib/casamento/wedding-plan";
+import { casamentoTemModulo, obterPlanoDoCasamento } from "@/lib/casamento/wedding-plan";
 import { filtroSemSoPresente } from "@/lib/convidados/guest-origin";
 import { temAcessoAoCaminho } from "@/lib/permissions";
 import { diasAte } from "@/lib/casamento/wedding-format";
@@ -25,7 +25,7 @@ export interface DadosDoPainelDaLiz {
   tip: DicaDaLiz | null;
   /** O que o plano do casamento inclui, para o guia avisar "é do plano Classic". */
   planModules: { qrcode: boolean; customDomain: boolean; tables3d: boolean };
-  /** As perguntas vão a um provedor de IA? Hoje é sempre false: a Liz responde pelo guia de ajuda. */
+  /** As perguntas vão ao modelo de IA? Só com a Liz ligada na administração e a chave do Gemini configurada. */
   chatEnabled: boolean;
 }
 
@@ -108,7 +108,7 @@ export type ResultadoDaPerguntaALiz = { success: true; answer: RespostaDaLiz } |
 
 /**
  * Pergunta à Liz. Se a administração ligou a IA E existe um provedor, a pergunta passa a ele; caso contrário
- * (o caso de hoje) é respondida pelo guia de ajuda. A tela chama esta ação só quando `chatEnabled` é verdadeiro:
+ * é respondida pelo guia de ajuda. A tela chama esta ação só quando `chatEnabled` é verdadeiro:
  * com a IA desligada ela busca no guia direto no navegador.
  */
 export async function perguntarALiz(input: unknown): Promise<ResultadoDaPerguntaALiz> {
@@ -119,6 +119,8 @@ export async function perguntarALiz(input: unknown): Promise<ResultadoDaPergunta
     const context = {
       allowedPaths: session.allowedPaths,
       pathname: parsed.data.pathname,
+      weddingId,
+      planoPago: (await obterPlanoDoCasamento(weddingId)).planId !== null,
       planModules: {
         qrcode: await casamentoTemModulo({ weddingId, session }, "qrcode"),
         customDomain: await casamentoTemModulo({ weddingId, session }, "customDomain"),

@@ -71,38 +71,38 @@ enum TaskStatus {
 
 model Guest {
   // Casamento dono deste registro (multi-casamento)
-  weddingId   String
-  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-  id                 String        @id @default(uuid())
-  name               String
-  phone              String?       
-  email              String?
-  category           String?       // Padrinho/Madrinha, Participantes de cerimônia, Pais, Família, Amigo/Colega
-  rsvpStatus         RsvpStatus    @default(PENDING)
-  allowedCompanions  Int           @default(0)
-  confirmedCompanions Int          @default(0)
-  companionsNames    String?       @db.Text
-  hasReceivedMessage Boolean       @default(false) 
+  weddingId           String
+  wedding             Wedding    @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  id                  String     @id @default(uuid())
+  name                String
+  phone               String?
+  email               String?
+  category            String? // Padrinho/Madrinha, Participantes de cerimônia, Pais, Família, Amigo/Colega
+  rsvpStatus          RsvpStatus @default(PENDING)
+  allowedCompanions   Int        @default(0)
+  confirmedCompanions Int        @default(0)
+  companionsNames     String?    @db.Text
+  hasReceivedMessage  Boolean    @default(false)
   // Última vez que o casal enviou o convite a este convidado pelo WhatsApp do próprio aparelho (envio manual)
-  inviteSharedAt     DateTime?
-  
+  inviteSharedAt      DateTime?
+
   // Vínculo entre convidados (Titular / Familiar vinculado)
-  parentGuestId      String?
-  parentGuest        Guest?        @relation("GuestLink", fields: [parentGuestId], references: [id], onDelete: SetNull)
-  linkedGuests       Guest[]       @relation("GuestLink")
+  parentGuestId String?
+  parentGuest   Guest?  @relation("GuestLink", fields: [parentGuestId], references: [id], onDelete: SetNull)
+  linkedGuests  Guest[] @relation("GuestLink")
 
   // Credenciamento e Restrições
-  isPresent          Boolean       @default(false)
-  checkInTime        DateTime?
-  dietaryRestrictions String?      @db.Text
+  isPresent           Boolean   @default(false)
+  checkInTime         DateTime?
+  dietaryRestrictions String?   @db.Text
 
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  tableId            String?
-  table              Table?        @relation(fields: [tableId], references: [id])
+  tableId String?
+  table   Table?  @relation(fields: [tableId], references: [id])
 
-  transactions       Transaction[] 
+  transactions Transaction[]
 
   @@index([weddingId])
   @@map("guests")
@@ -114,7 +114,7 @@ model TimelineEvent {
   wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
   id          String   @id @default(uuid())
   title       String
-  time        String   // Ex: "18:00"
+  time        String // Ex: "18:00"
   description String?  @db.Text
   icon        String   @default("Clock") // Nome do ícone no Lucide
   position    Int      @default(0)
@@ -127,14 +127,14 @@ model TimelineEvent {
 
 model Table {
   // Casamento dono deste registro (multi-casamento)
-  weddingId   String
-  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-  id          String   @id @default(uuid())
-  name        String
-  capacity    Int      @default(10)
-  createdAt   DateTime @default(now())
+  weddingId String
+  wedding   Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  name      String
+  capacity  Int      @default(10)
+  createdAt DateTime @default(now())
 
-  guests      Guest[]
+  guests Guest[]
 
   @@index([weddingId])
   @@map("tables")
@@ -144,13 +144,13 @@ model Gift {
   // Casamento dono deste registro (multi-casamento)
   weddingId   String
   wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-  id          String        @id @default(uuid())
+  id          String   @id @default(uuid())
   title       String
   description String?
-  amount      Int           
+  amount      Int
   imageUrl    String?
-  isPurchased Boolean       @default(false)
-  createdAt   DateTime      @default(now())
+  isPurchased Boolean  @default(false)
+  createdAt   DateTime @default(now())
 
   transactions Transaction[]
 
@@ -160,25 +160,25 @@ model Gift {
 
 model Transaction {
   // Casamento dono deste registro (multi-casamento)
-  weddingId   String
-  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  weddingId         String
+  wedding           Wedding       @relation(fields: [weddingId], references: [id], onDelete: Cascade)
   id                String        @id @default(uuid())
-  gatewayId         String?       
+  gatewayId         String?
   guestName         String?
-  amount            Int           
-  netAmount         Int?          
+  amount            Int
+  netAmount         Int?
   fee               Int?          @default(0)
-  paymentMethod     PaymentMethod 
+  paymentMethod     PaymentMethod
   status            PaymentStatus @default(PENDING)
-  externalReference String?       
+  externalReference String?
   thankYouSent      Boolean       @default(false)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @default(now()) @updatedAt
 
-  giftId            String
-  gift              Gift          @relation(fields: [giftId], references: [id])
-  guestId           String?       
-  guest             Guest?        @relation(fields: [guestId], references: [id])
+  giftId  String
+  gift    Gift    @relation(fields: [giftId], references: [id])
+  guestId String?
+  guest   Guest?  @relation(fields: [guestId], references: [id])
 
   @@index([weddingId])
   @@map("transactions")
@@ -188,15 +188,15 @@ model Vendor {
   // Casamento dono deste registro (multi-casamento)
   weddingId   String
   wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
-  category    String    
+  category    String
   contact     String?
-  contractUrl String?   
-  notes       String?   @db.Text
-  createdAt   DateTime  @default(now())
+  contractUrl String?
+  notes       String?  @db.Text
+  createdAt   DateTime @default(now())
 
-  expenses    Expense[]
+  expenses Expense[]
 
   @@index([weddingId])
   @@map("vendors")
@@ -204,22 +204,22 @@ model Vendor {
 
 model Expense {
   // Casamento dono deste registro (multi-casamento)
-  weddingId   String
-  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  weddingId     String
+  wedding       Wedding       @relation(fields: [weddingId], references: [id], onDelete: Cascade)
   id            String        @id @default(uuid())
   description   String
-  amount        Int           
+  amount        Int
   dueDate       DateTime
   status        ExpenseStatus @default(PENDING)
   type          ExpenseType   @default(CONTRACT)
-  purchaseUrl   String?       
-  paymentMethod String?       
+  purchaseUrl   String?
+  paymentMethod String?
   imageUrl      String?       @db.Text
-  storeName     String?       
+  storeName     String?
   createdAt     DateTime      @default(now())
 
-  vendorId      String?       
-  vendor        Vendor?       @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  vendorId String?
+  vendor   Vendor? @relation(fields: [vendorId], references: [id], onDelete: SetNull)
 
   @@index([weddingId])
   @@map("expenses")
@@ -228,14 +228,14 @@ model Expense {
 model Task {
   // Casamento dono deste registro (multi-casamento)
   weddingId   String
-  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  wedding     Wedding    @relation(fields: [weddingId], references: [id], onDelete: Cascade)
   id          String     @id @default(uuid())
   title       String
   description String?    @db.Text
   dueDate     DateTime?
-  assignee    String?    
+  assignee    String?
   status      TaskStatus @default(TODO)
-  position    Int        
+  position    Int
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -246,14 +246,14 @@ model Task {
 model HoneymoonItem {
   // Casamento dono deste registro (multi-casamento)
   weddingId   String
-  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-  id          String   @id @default(uuid())
+  wedding     Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  id          String    @id @default(uuid())
   title       String
-  category    String   
-  amount      Int      
-  isPaid      Boolean  @default(false)
+  category    String
+  amount      Int
+  isPaid      Boolean   @default(false)
   plannedDate DateTime?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   @@index([weddingId])
   @@map("honeymoon_items")
@@ -261,14 +261,14 @@ model HoneymoonItem {
 
 model MessageTemplate {
   // Casamento dono deste registro (multi-casamento)
-  weddingId   String
-  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  weddingId String
+  wedding   Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
   id        String   @id @default(uuid())
   name      String
-  type      String?  // "INITIAL_INVITE", "RSVP_REMINDER", "CUSTOM"
+  type      String? // "INITIAL_INVITE", "RSVP_REMINDER", "CUSTOM"
   content   String   @db.Text
   mediaUrl  String?
-  mediaType String?  // Ex: image, document, audio
+  mediaType String? // Ex: image, document, audio
   buttons   String?  @db.Text // JSON string: [{ id: "confirm", text: "✅ Confirmar Presença" }]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -295,13 +295,13 @@ model SystemSettings {
 
 /// Entrada por provedor externo (Google). A chave de quem é quem é o identificador do provedor (sub), nunca o e-mail.
 model ExternalAccount {
-  id                String   @id @default(uuid())
+  id                String    @id @default(uuid())
   userId            String
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider          String   // "google"
-  providerAccountId String   // "sub" do Google
-  email             String   // e-mail do provedor no momento do vínculo
-  createdAt         DateTime @default(now())
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          String // "google"
+  providerAccountId String // "sub" do Google
+  email             String // e-mail do provedor no momento do vínculo
+  createdAt         DateTime  @default(now())
   lastLoginAt       DateTime?
 
   @@unique([provider, providerAccountId])
@@ -312,49 +312,49 @@ model ExternalAccount {
 model Role {
   id           String   @id @default(uuid())
   name         String   @unique
-  allowedPaths Json     // JSON string array de paths permitidos
+  allowedPaths Json // JSON string array de paths permitidos
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  users        User[]
+  users User[]
 
   @@map("roles")
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  username  String   @unique
-  password  String
+  id              String    @id @default(uuid())
+  name            String
+  username        String    @unique
+  password        String
   // false: conta criada só pelo Google. O campo password guarda um hash aleatório que ninguém conhece,
   // então entrar com senha só passa a valer depois de "Criar senha" (Minha conta) ou "Esqueci a senha".
-  hasPassword Boolean @default(true)
+  hasPassword     Boolean   @default(true)
   // Quando a pessoa provou ter a caixa de e-mail (link de confirmação, Google ou nova senha por e-mail). Nulo: ainda não confirmou.
   emailVerifiedAt DateTime?
-  roleId    String
-  role      Role     @relation(fields: [roleId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  roleId          String
+  role            Role      @relation(fields: [roleId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   // Conta de fornecedor: vincula o login ao perfil do marketplace (painel /fornecedor)
   partnerVendorId String?        @unique
   partnerVendor   PartnerVendor? @relation(fields: [partnerVendorId], references: [id], onDelete: SetNull)
 
   // Casamento do qual a conta faz parte (o casal e o par convidado)
-  weddingId       String?
-  wedding         Wedding?       @relation(fields: [weddingId], references: [id], onDelete: SetNull)
+  weddingId String?
+  wedding   Wedding? @relation(fields: [weddingId], references: [id], onDelete: SetNull)
 
-  subscriptions   Subscription[]
-  passwordResets  PasswordResetToken[]
-  notifications   Notification[]
-  pushSubscriptions PushSubscription[]
-  notificationPreference NotificationPreference?
-  domainOrders    DomainOrder[]
-  externalAccounts ExternalAccount[]
+  subscriptions           Subscription[]
+  passwordResets          PasswordResetToken[]
+  notifications           Notification[]
+  pushSubscriptions       PushSubscription[]
+  notificationPreference  NotificationPreference?
+  domainOrders            DomainOrder[]
+  externalAccounts        ExternalAccount[]
   emailVerificationTokens EmailVerificationToken[]
 
   // Última entrada na conta (administração: "Última atividade" e filtros de casais sem atividade)
-  lastLoginAt     DateTime?
+  lastLoginAt DateTime?
 
   // Passo a passo do painel (por pessoa, não por casamento): o par convidado tem o próprio.
   // panelTourVersion = última versão do passo a passo que a pessoa já resolveu (concluiu, pulou ou nasceu antes dele);
@@ -365,9 +365,9 @@ model User {
   // "Primeiros passos" do Resumo dispensado por esta pessoa
   panelChecklistDismissedAt DateTime?
 
-  announcementDeliveries AnnouncementRecipient[]
-  supportTickets         SupportTicket[]
-  dataRequests           DataRequest[]
+  announcementDeliveries   AnnouncementRecipient[]
+  supportTickets           SupportTicket[]
+  dataRequests             DataRequest[]
   payoutAccountsRegistered WeddingPayoutAccount[]
 
   @@map("users")
@@ -428,32 +428,32 @@ model PushSubscription {
 // Cobrança de um plano pago (Pix). O plano só é aplicado quando o pagamento é aprovado,
 // pelo webhook do Mercado Pago ou pela conferência na tela do Pix (o que chegar primeiro).
 model Subscription {
-  id          String        @id @default(uuid())
+  id              String        @id @default(uuid())
   // Conta que pagou. Fica nulo se a conta for excluída: o pagamento é guardado para fins fiscais.
-  userId      String?
-  user        User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  planId      String        // chave do catálogo (lib/plans): classic, vip, pro, master ou custom
-  planType    String        // "COUPLE" | "VENDOR"
-  planName    String
-  modules     Json?         // módulos do plano adaptado
-  weddingId   String?       // planos de casal valem para o casamento (os dois do casal)
-  wedding     Wedding?      @relation(fields: [weddingId], references: [id], onDelete: SetNull)
-  couponCode  String?
-  discount    Int?          // centavos abatidos por cupom
-  credit      Int?          // centavos abatidos pelo período não usado (troca de plano)
-  amount      Int           // centavos, sempre do catálogo
-  status      PaymentStatus @default(PENDING)
-  gatewayId   String?       @unique // id do pagamento no Mercado Pago (ou txid do Pix estático)
-  expiresAt   DateTime      // validade do código Pix
-  paidAt      DateTime?
-  periodEnd   DateTime?     // fim do período pago (planos mensais de fornecedor)
+  userId          String?
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  planId          String // chave do catálogo (lib/plans): classic, vip, pro, master ou custom
+  planType        String // "COUPLE" | "VENDOR"
+  planName        String
+  modules         Json? // módulos do plano adaptado
+  weddingId       String? // planos de casal valem para o casamento (os dois do casal)
+  wedding         Wedding?      @relation(fields: [weddingId], references: [id], onDelete: SetNull)
+  couponCode      String?
+  discount        Int? // centavos abatidos por cupom
+  credit          Int? // centavos abatidos pelo período não usado (troca de plano)
+  amount          Int // centavos, sempre do catálogo
+  status          PaymentStatus @default(PENDING)
+  gatewayId       String?       @unique // id do pagamento no Mercado Pago (ou txid do Pix estático)
+  expiresAt       DateTime // validade do código Pix
+  paidAt          DateTime?
+  periodEnd       DateTime? // fim do período pago (planos mensais de fornecedor)
   // Administração: nota fiscal deste pagamento (controle do contador; só pagamentos aprovados)
   invoiceIssuedAt DateTime?
   invoiceNumber   String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
-  domainOrders  DomainOrder[]
+  domainOrders   DomainOrder[]
   refundRequests RefundRequest[]
 
   @@index([userId, status])
@@ -473,15 +473,15 @@ model WalletBalance {
 
 model CreditCard {
   // Casamento dono deste registro (multi-casamento)
-  weddingId   String
-  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  weddingId  String
+  wedding    Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
   id         String   @id @default(uuid())
-  bank       String   
-  brand      String   
-  nickname   String?  
-  lastDigits String?  
+  bank       String
+  brand      String
+  nickname   String?
+  lastDigits String?
   limit      Int      @default(0) // Limite atual em centavos
-  color      String?  @default("#18181b") 
+  color      String?  @default("#18181b")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -494,55 +494,55 @@ model CreditCard {
 // ==========================================
 
 model SiteCustomization {
-  id                 String   @id @default(uuid())
-  weddingId          String   @unique
-  wedding            Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-  slug               String   @default("lucas-e-giovanna")
-  customDomain       String?  
-  title              String   @default("Lucas & Giovanna")
-  subtitle           String   @default("Vamos nos casar!")
+  id                 String    @id @default(uuid())
+  weddingId          String    @unique
+  wedding            Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  slug               String    @default("lucas-e-giovanna")
+  customDomain       String?
+  title              String    @default("Lucas & Giovanna")
+  subtitle           String    @default("Vamos nos casar!")
   weddingDate        DateTime?
-  ceremonyTime       String?  @default("16:30")
-  receptionTime      String?  @default("18:30")
-  locationName       String?  @default("Espaço Monte Castelo")
-  locationAddress    String?  @default("Rua das Flores, 1200 - São Paulo, SP")
-  locationMapUrl     String?  @db.Text
-  wazeUrl            String?  @db.Text
-  uberUrl            String?  @db.Text
-  themeColor         String   @default("#8C6D45")
-  fontFamily         String   @default("serif") // "serif", "sans", "playfair", "cormorant"
-  heroImageUrl       String?  @db.Text
-  couplePhotoUrl     String?  @db.Text
-  dressCodeTitle     String?  @default("Passeio Completo")
-  dressCodeDesc      String?  @db.Text
-  dressCodePalette   String?  // JSON array de cores hexadecimais
-  spotifyPlaylistUrl String?  @db.Text
-  welcomeMessage     String?  @db.Text
+  ceremonyTime       String?   @default("16:30")
+  receptionTime      String?   @default("18:30")
+  locationName       String?   @default("Espaço Monte Castelo")
+  locationAddress    String?   @default("Rua das Flores, 1200 - São Paulo, SP")
+  locationMapUrl     String?   @db.Text
+  wazeUrl            String?   @db.Text
+  uberUrl            String?   @db.Text
+  themeColor         String    @default("#8C6D45")
+  fontFamily         String    @default("serif") // "serif", "sans", "playfair", "cormorant"
+  heroImageUrl       String?   @db.Text
+  couplePhotoUrl     String?   @db.Text
+  dressCodeTitle     String?   @default("Passeio Completo")
+  dressCodeDesc      String?   @db.Text
+  dressCodePalette   String? // JSON array de cores hexadecimais
+  spotifyPlaylistUrl String?   @db.Text
+  welcomeMessage     String?   @db.Text
 
   // Liga / Desliga de Blocos Modulares
-  showStory          Boolean  @default(true)
-  showLocation       Boolean  @default(true)
-  showDressCode      Boolean  @default(true)
-  showTips           Boolean  @default(true)
-  showGifts          Boolean  @default(true)
-  showRsvp           Boolean  @default(true)
-  showGuestbook      Boolean  @default(true)
-  showMusic          Boolean  @default(true)
-  showGallery        Boolean  @default(true)
+  showStory     Boolean @default(true)
+  showLocation  Boolean @default(true)
+  showDressCode Boolean @default(true)
+  showTips      Boolean @default(true)
+  showGifts     Boolean @default(true)
+  showRsvp      Boolean @default(true)
+  showGuestbook Boolean @default(true)
+  showMusic     Boolean @default(true)
+  showGallery   Boolean @default(true)
 
   // Modelo do site (lib de modelos: classico, arco, floral, editorial, monocromo, noturno, campo, papel)
-  template           String   @default("classico")
+  template    String  @default("classico")
   // Galeria de fotos: JSON com até 8 endereços de imagem, na ordem em que aparecem
-  galleryUrls        String?  @db.Text
+  galleryUrls String? @db.Text
 
   // Convite digital animado (Classic e VIP): o nome do convidado vai no convite? e a frase do casal no convite
   // Programação do casamento: JSON com até 6 momentos ({ title, day, time, place }), na ordem em que aparecem
-  programJson        String?  @db.Text
+  programJson String? @db.Text
 
-  inviteGuestName    Boolean  @default(true)
-  inviteMessage      String?  @db.Text
+  inviteGuestName Boolean @default(true)
+  inviteMessage   String? @db.Text
 
-  updatedAt          DateTime @updatedAt
+  updatedAt DateTime @updatedAt
 
   @@map("site_customization")
 }
@@ -552,8 +552,8 @@ model WeddingStoryItem {
   weddingId   String
   wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
   id          String   @id @default(uuid())
-  title       String   // Ex: "O Primeiro Encontro", "O Pedido de Casamento"
-  dateLabel   String?  // Ex: "Outubro de 2021"
+  title       String // Ex: "O Primeiro Encontro", "O Pedido de Casamento"
+  dateLabel   String? // Ex: "Outubro de 2021"
   description String   @db.Text
   imageUrl    String?  @db.Text
   position    Int      @default(0)
@@ -566,18 +566,18 @@ model WeddingStoryItem {
 
 model WeddingTip {
   // Casamento dono deste registro (multi-casamento)
-  weddingId   String
-  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-  id          String   @id @default(uuid())
-  category    String   // "HOTEL", "SALON", "TRANSFER", "DRESS"
-  title       String   // Ex: "Hotel Blue Tree", "Salão Studio Beauty"
-  description String?  @db.Text
-  address     String?  
-  phone       String?  
-  linkUrl     String?  @db.Text
+  weddingId    String
+  wedding      Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  id           String   @id @default(uuid())
+  category     String // "HOTEL", "SALON", "TRANSFER", "DRESS"
+  title        String // Ex: "Hotel Blue Tree", "Salão Studio Beauty"
+  description  String?  @db.Text
+  address      String?
+  phone        String?
+  linkUrl      String?  @db.Text
   discountCode String? // Ex: "CASAMENTOLUCAS10"
-  position    Int      @default(0)
-  createdAt   DateTime @default(now())
+  position     Int      @default(0)
+  createdAt    DateTime @default(now())
 
   @@index([weddingId])
   @@map("wedding_tips")
@@ -585,14 +585,14 @@ model WeddingTip {
 
 model GuestBookEntry {
   // Casamento dono deste registro (multi-casamento)
-  weddingId   String
-  wedding     Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-  id          String   @id @default(uuid())
-  authorName  String
-  message     String   @db.Text
-  imageUrl    String?  @db.Text
-  isApproved  Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  weddingId  String
+  wedding    Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid())
+  authorName String
+  message    String   @db.Text
+  imageUrl   String?  @db.Text
+  isApproved Boolean  @default(true)
+  createdAt  DateTime @default(now())
 
   @@index([weddingId])
   @@map("guest_book_entries")
@@ -609,141 +609,142 @@ enum VendorPlanTier {
 }
 
 model PartnerVendor {
-  id               String         @id @default(uuid())
-  companyName      String
-  category         String         // "Espaço", "Buffet", "Fotografia", "Decoração", "DJ & Som", "Vestidos", "Doces & Bolo"
-  description      String?        @db.Text
-  logoUrl          String?        @db.Text
-  coverUrl         String?        @db.Text
-  galleryImages    String?        @db.Text // JSON string array de URLs
-  startingPrice    Int?           // Valor inicial em centavos (ex: 250000 = R$ 2.500)
-  averageTicket    Int?           // Ticket médio em centavos
-  priceRange       String?        @default("$$") // "$", "$$", "$$$", "$$$$"
-  
+  id            String  @id @default(uuid())
+  companyName   String
+  category      String // "Espaço", "Buffet", "Fotografia", "Decoração", "DJ & Som", "Vestidos", "Doces & Bolo"
+  description   String? @db.Text
+  logoUrl       String? @db.Text
+  coverUrl      String? @db.Text
+  galleryImages String? @db.Text // JSON string array de URLs
+  startingPrice Int? // Valor inicial em centavos (ex: 250000 = R$ 2.500)
+  averageTicket Int? // Ticket médio em centavos
+  priceRange    String? @default("$$") // "$", "$$", "$$$", "$$$$"
+
   // Documento e Curadoria de Segurança
-  documentType     String?        @default("CNPJ") // "CNPJ" ou "CPF"
-  documentNumber   String?        
-  curationStatus   CurationStatus @default(APPROVED)
-  curationNotes    String?        @db.Text
+  documentType   String?        @default("CNPJ") // "CNPJ" ou "CPF"
+  documentNumber String?
+  curationStatus CurationStatus @default(APPROVED)
+  curationNotes  String?        @db.Text
 
   // Regiões e Atendimento
-  serviceRegions   String?        @db.Text // JSON array: ["São Paulo - Capital", "Grande SP", "Litoral", "Campinas"]
-  hasPhysicalSpace Boolean        @default(false)
-  address          String?        @db.Text
-  offersOnlineMeet Boolean        @default(true)
-  
+  serviceRegions   String? @db.Text // JSON array: ["São Paulo - Capital", "Grande SP", "Litoral", "Campinas"]
+  hasPhysicalSpace Boolean @default(false)
+  address          String? @db.Text
+  offersOnlineMeet Boolean @default(true)
+
   // Contato & Redes Sociais
-  phone            String?
-  whatsapp         String?
-  instagram        String?
-  tiktok           String?
-  website          String?
+  phone     String?
+  whatsapp  String?
+  instagram String?
+  tiktok    String?
+  website   String?
 
   // Assinatura & Reputação
   planTier         VendorPlanTier @default(FREE)
-  planExpiresAt    DateTime?      // planos pagos são mensais: depois disso volta ao FREE
-  planReminderDays Int?           // último aviso de vencimento enviado (7 ou 1 dia antes)
+  planExpiresAt    DateTime? // planos pagos são mensais: depois disso volta ao FREE
+  planReminderDays Int? // último aviso de vencimento enviado (7 ou 1 dia antes)
   isVerified       Boolean        @default(false)
   rating           Float          @default(5.0)
   reviewCount      Int            @default(0)
 
   // Administração: suspenso some da vitrine (as consultas públicas filtram suspendedAt = null);
   // destaque coloca o perfil no topo da categoria e da região.
-  suspendedAt      DateTime?
-  suspendedReason  String?        @db.Text
-  isFeatured       Boolean        @default(false)
+  suspendedAt     DateTime?
+  suspendedReason String?   @db.Text
+  isFeatured      Boolean   @default(false)
 
-  leads            VendorLead[]
-  reviews          VendorReview[]
-  events           VendorEvent[]
-  profileViews     VendorProfileView[]
-  adminNotes       AdminNote[]
-  supportTickets   SupportTicket[]
-  user             User?          // Login do fornecedor (painel /fornecedor)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  leads          VendorLead[]
+  reviews        VendorReview[]
+  events         VendorEvent[]
+  profileViews   VendorProfileView[]
+  adminNotes     AdminNote[]
+  supportTickets SupportTicket[]
+  user           User? // Login do fornecedor (painel /fornecedor)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 
   @@map("partner_vendors")
 }
 
 model VendorReview {
-  id          String        @id @default(uuid())
-  vendorId    String
-  vendor      PartnerVendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  coupleNames String        // "Lucas & Giovanna"
-  weddingDate DateTime?     // Data do casamento
-  rating      Int           @default(5) // 1 a 5 estrelas
-  comment     String        @db.Text
-  isVerified  Boolean       @default(true)
+  id           String        @id @default(uuid())
+  vendorId     String
+  vendor       PartnerVendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  coupleNames  String // "Lucas & Giovanna"
+  weddingDate  DateTime? // Data do casamento
+  rating       Int           @default(5) // 1 a 5 estrelas
+  comment      String        @db.Text
+  isVerified   Boolean       @default(true)
   // Avaliação feita pelo link de um pedido fechado (verificada)
-  leadId      String?       @unique
-  lead        VendorLead?   @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  leadId       String?       @unique
+  lead         VendorLead?   @relation(fields: [leadId], references: [id], onDelete: SetNull)
   // Resposta pública do fornecedor (painel > Avaliações)
-  reply       String?       @db.Text
-  repliedAt   DateTime?
+  reply        String?       @db.Text
+  repliedAt    DateTime?
   // Moderação (administração): denúncia do fornecedor e avaliação ocultada (some do perfil público)
   reportedAt   DateTime?
   reportReason String?       @db.Text
   hiddenAt     DateTime?
   hiddenReason String?       @db.Text
-  moderatedAt  DateTime?     // a administração já analisou a denúncia (manter ou ocultar)
-  createdAt   DateTime      @default(now())
+  moderatedAt  DateTime? // a administração já analisou a denúncia (manter ou ocultar)
+  createdAt    DateTime      @default(now())
 
   @@index([reportedAt])
   @@map("vendor_reviews")
 }
 
 model VendorLead {
-  id              String         @id @default(uuid())
-  vendorId        String
-  vendor          PartnerVendor  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  coupleName      String
-  couplePhone     String
-  coupleEmail     String?
-  weddingDate     DateTime?
-  guestCount      Int?
-  message         String?        @db.Text
-  meetingType     String?        @default("ONLINE") // "ONLINE", "PRESENTIAL"
-  location        String?        // cidade do casamento
-  budget          String?        // faixa de orçamento informada pelo casal
-  status          LeadStatus     @default(NEW)
+  id                   String        @id @default(uuid())
+  vendorId             String
+  vendor               PartnerVendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  coupleName           String
+  couplePhone          String
+  coupleEmail          String?
+  weddingDate          DateTime?
+  guestCount           Int?
+  message              String?       @db.Text
+  meetingType          String?       @default("ONLINE") // "ONLINE", "PRESENTIAL"
+  location             String? // cidade do casamento
+  budget               String? // faixa de orçamento informada pelo casal
+  status               LeadStatus    @default(NEW)
   // Limite do Start: pedido além dos 3 do mês fica bloqueado até o fornecedor assinar o Pro
-  locked          Boolean        @default(false)
+  locked               Boolean       @default(false)
   // Proposta registrada pelo fornecedor
-  proposalAmount     Int?        // centavos
-  proposalDetails    String?     @db.Text
-  proposalValidUntil DateTime?
-  proposalSentAt     DateTime?
+  proposalAmount       Int? // centavos
+  proposalDetails      String?       @db.Text
+  proposalValidUntil   DateTime?
+  proposalSentAt       DateTime?
   // Andamento
-  respondedAt     DateTime?
-  closedAt        DateTime?
-  declinedAt      DateTime?
-  declineMessage  String?        @db.Text
+  respondedAt          DateTime?
+  closedAt             DateTime?
+  declinedAt           DateTime?
+  declineMessage       String?       @db.Text
   // Link público para o casal aceitar a proposta, e o registro do aceite
-  proposalToken        String?   @unique
+  proposalToken        String?       @unique
   proposalAcceptedAt   DateTime?
   proposalAcceptedName String?
-  proposalAcceptedIp   String?   // hash do IP, só para prova do aceite
+  proposalAcceptedIp   String? // hash do IP, só para prova do aceite
   // Link público para o casal avaliar depois do casamento (avaliação verificada)
-  reviewToken          String?   @unique
+  reviewToken          String?       @unique
   reviewRequestedAt    DateTime?
   review               VendorReview?
-  events          VendorEvent[]
-  createdAt       DateTime       @default(now())
+  events               VendorEvent[]
+  createdAt            DateTime      @default(now())
 
   @@index([vendorId, status])
   @@index([createdAt])
   @@map("vendor_leads")
 }
+
 // Agenda do fornecedor: reuniões com casais e datas bloqueadas.
 // Casamentos fechados vêm dos pedidos (status CLOSED + weddingDate), não daqui.
 model VendorEvent {
   id        String        @id @default(uuid())
   vendorId  String
   vendor    PartnerVendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  kind      String        // "MEETING" | "BLOCKED"
+  kind      String // "MEETING" | "BLOCKED"
   date      DateTime      @db.Date
-  time      String?       // "19:00" (reuniões)
+  time      String? // "19:00" (reuniões)
   title     String
   notes     String?       @db.Text
   leadId    String?
@@ -775,67 +776,68 @@ enum CurationStatus {
 // Um casamento: tudo do painel do casal pertence a um casamento.
 // Pedido de domínio próprio (.com.br) registrado no nome do cliente. Ativos: tudo menos REJECTED e CANCELED.
 enum DomainOrderStatus {
-  REQUESTED   // pedido recebido, aguardando o registro
+  REQUESTED // pedido recebido, aguardando o registro
   REGISTERING // o dono do Aceito começou o registro
-  REGISTERED  // registrado no nome do titular
-  CONNECTED   // apontado para o site e no ar
-  REJECTED    // recusado (com motivo)
-  CANCELED    // cancelado pelo casal antes de começar
+  REGISTERED // registrado no nome do titular
+  CONNECTED // apontado para o site e no ar
+  REJECTED // recusado (com motivo)
+  CANCELED // cancelado pelo casal antes de começar
 }
 
 model Wedding {
-  id            String    @id @default(uuid())
-  slug          String    @unique // endereço do site: /casamento/<slug>
-  coupleNames   String
-  weddingDate   DateTime?
-  city          String?
-  guestEstimate String?   // faixa informada no onboarding
-  themeColor    String    @default("#5E2B4E")
-  onboardedAt   DateTime?
+  id                 String    @id @default(uuid())
+  slug               String    @unique // endereço do site: /casamento/<slug>
+  coupleNames        String
+  weddingDate        DateTime?
+  city               String?
+  guestEstimate      String? // faixa informada no onboarding
+  themeColor         String    @default("#5E2B4E")
+  onboardedAt        DateTime?
   // Domínio próprio já conectado e no ar (sem "www."): só depois de um pedido CONNECTED
-  customDomain  String?   @unique
+  customDomain       String?   @unique
   // Administração: suspenso tira o site do ar e deixa o painel só para leitura
-  suspendedAt     DateTime?
-  suspendedReason String?   @db.Text
+  suspendedAt        DateTime?
+  suspendedReason    String?   @db.Text
   // "Marcar para acompanhar" na lista de casais
-  flaggedAt       DateTime?
+  flaggedAt          DateTime?
   // Última visita ao painel do casal (gravada no máximo a cada 30 min)
-  lastActiveAt    DateTime?
+  lastActiveAt       DateTime?
   // Mesas em 3D: cenário escolhido (id em lib/mesas3d/scenarios) e o código do link somente leitura que o casal compartilha
   // (nulo = sem link). Quem tem o código só vê as mesas; quem altera é só o casal, pelo painel.
   tables3dScene      String?
-  tables3dShareToken String?  @unique
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  tables3dShareToken String?   @unique
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  members       User[]
-  domainOrders  DomainOrder[]
-  invites       WeddingInvite[]
-  subscriptions Subscription[]
-  settings      SystemSettings?
-  site          SiteCustomization?
-  wallet        WalletBalance?
-  guests        Guest[]
-  timeline      TimelineEvent[]
-  tables        Table[]
-  gifts         Gift[]
-  transactions  Transaction[]
-  vendors       Vendor[]
-  expenses      Expense[]
-  tasks         Task[]
-  honeymoon     HoneymoonItem[]
-  templates     MessageTemplate[]
-  creditCards   CreditCard[]
-  story         WeddingStoryItem[]
-  tips          WeddingTip[]
-  guestbook     GuestBookEntry[]
-  adminNotes    AdminNote[]
-  impersonations ImpersonationSession[]
+  members          User[]
+  domainOrders     DomainOrder[]
+  invites          WeddingInvite[]
+  subscriptions    Subscription[]
+  settings         SystemSettings?
+  site             SiteCustomization?
+  wallet           WalletBalance?
+  guests           Guest[]
+  timeline         TimelineEvent[]
+  tables           Table[]
+  gifts            Gift[]
+  transactions     Transaction[]
+  vendors          Vendor[]
+  expenses         Expense[]
+  tasks            Task[]
+  honeymoon        HoneymoonItem[]
+  templates        MessageTemplate[]
+  creditCards      CreditCard[]
+  story            WeddingStoryItem[]
+  tips             WeddingTip[]
+  guestbook        GuestBookEntry[]
+  adminNotes       AdminNote[]
+  impersonations   ImpersonationSession[]
   madrinhaOverride MadrinhaWeddingOverride?
-  supportTickets SupportTicket[]
-  dataRequests  DataRequest[]
-  payoutAccount WeddingPayoutAccount?
-  payouts       WeddingPayout[]
+  madrinhaUsos     MadrinhaUso[]
+  supportTickets   SupportTicket[]
+  dataRequests     DataRequest[]
+  payoutAccount    WeddingPayoutAccount?
+  payouts          WeddingPayout[]
 
   @@index([createdAt])
   @@index([weddingDate])
@@ -877,30 +879,30 @@ model WeddingPayoutAccount {
 // Índices únicos parciais (só entre pedidos ativos) existem na migration 20261010160000_domain_orders:
 // o Prisma não os descreve aqui. Um domínio e um casamento têm no máximo um pedido ativo.
 model DomainOrder {
-  id                String            @id @default(uuid())
-  weddingId         String
-  wedding           Wedding           @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-  requestedByUserId String?
-  requestedBy       User?             @relation(fields: [requestedByUserId], references: [id], onDelete: SetNull)
-  subscriptionId    String?
-  subscription      Subscription?     @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
-  domain            String            // ex.: ana-e-rafael.com.br
-  status            DomainOrderStatus @default(REQUESTED)
-  holderName        String            // nome completo ou razão social do titular
+  id                  String            @id @default(uuid())
+  weddingId           String
+  wedding             Wedding           @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  requestedByUserId   String?
+  requestedBy         User?             @relation(fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  subscriptionId      String?
+  subscription        Subscription?     @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  domain              String // ex.: ana-e-rafael.com.br
+  status              DomainOrderStatus @default(REQUESTED)
+  holderName          String // nome completo ou razão social do titular
   // CPF/CNPJ completo só enquanto o pedido não é concluído; ao virar REGISTERED é trocado pela versão escondida
-  holderDocument    String
-  holderEmail       String
-  holderPhone       String
-  adminNote         String?
-  rejectionReason   String?
-  requestedAt       DateTime          @default(now())
-  registeredAt      DateTime?
-  expiresAt         DateTime?         // vencimento anual no Registro.br
-  connectedAt       DateTime?
-  vercelState       String?           // última situação lida da Vercel: pending, verified, misconfigured...
-  renewalReminderDays Int?            // último aviso de renovação enviado ao casal (60 ou 30 dias antes de vencer)
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  holderDocument      String
+  holderEmail         String
+  holderPhone         String
+  adminNote           String?
+  rejectionReason     String?
+  requestedAt         DateTime          @default(now())
+  registeredAt        DateTime?
+  expiresAt           DateTime? // vencimento anual no Registro.br
+  connectedAt         DateTime?
+  vercelState         String? // última situação lida da Vercel: pending, verified, misconfigured...
+  renewalReminderDays Int? // último aviso de renovação enviado ao casal (60 ou 30 dias antes de vencer)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 
   @@index([status, requestedAt])
   @@index([weddingId])
@@ -953,9 +955,9 @@ model VendorProfileView {
 model Coupon {
   id             String    @id @default(uuid())
   code           String    @unique // sempre em maiúsculas
-  percentOff     Int?      // 1 a 100
-  amountOff      Int?      // centavos
-  planIds        Json?     // planos aceitos; vazio = todos
+  percentOff     Int? // 1 a 100
+  amountOff      Int? // centavos
+  planIds        Json? // planos aceitos; vazio = todos
   maxRedemptions Int?
   redemptions    Int       @default(0)
   expiresAt      DateTime?
@@ -970,7 +972,7 @@ model AuditLog {
   id         String   @id @default(uuid())
   actorId    String?
   actorName  String?
-  action     String   // ex.: "subscription.confirm", "vendor.approve"
+  action     String // ex.: "subscription.confirm", "vendor.approve"
   targetType String?
   targetId   String?
   details    Json?
@@ -980,7 +982,6 @@ model AuditLog {
   @@index([targetType, targetId])
   @@map("audit_logs")
 }
-
 
 // ==========================================
 // ADMINISTRAÇÃO DA PLATAFORMA (/admin)
@@ -994,7 +995,7 @@ model AdminNote {
   wedding    Wedding?       @relation(fields: [weddingId], references: [id], onDelete: Cascade)
   vendorId   String?
   vendor     PartnerVendor? @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  authorId   String?        // "super-admin" para a conta de emergência
+  authorId   String? // "super-admin" para a conta de emergência
   authorName String
   body       String         @db.Text
   createdAt  DateTime       @default(now())
@@ -1008,18 +1009,18 @@ model AdminNote {
 // O navegador guarda só o id desta sessão em um cookie; a validade e o dono são sempre conferidos aqui.
 model ImpersonationSession {
   id           String    @id @default(uuid())
-  adminUserId  String    // "super-admin" para a conta de emergência
+  adminUserId  String // "super-admin" para a conta de emergência
   adminName    String
   weddingId    String?
   wedding      Wedding?  @relation(fields: [weddingId], references: [id], onDelete: SetNull)
-  weddingNames String    // nomes do casal na hora da entrada (o registro sobrevive à exclusão do casamento)
-  reason       String    // motivo escolhido na tela
-  ticketNumber Int?      // chamado relacionado (SupportTicket.number), opcional
+  weddingNames String // nomes do casal na hora da entrada (o registro sobrevive à exclusão do casamento)
+  reason       String // motivo escolhido na tela
+  ticketNumber Int? // chamado relacionado (SupportTicket.number), opcional
   canEdit      Boolean   @default(false) // false = painel só para leitura
   startedAt    DateTime  @default(now())
   expiresAt    DateTime
   endedAt      DateTime?
-  endedReason  String?   // "manual" | "expired"
+  endedReason  String? // "manual" | "expired"
 
   @@index([adminUserId, endedAt])
   @@index([weddingId, startedAt])
@@ -1069,7 +1070,7 @@ model Announcement {
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
 
-  recipients     AnnouncementRecipient[]
+  recipients AnnouncementRecipient[]
 
   @@index([status, scheduledFor])
   @@index([createdAt])
@@ -1229,20 +1230,20 @@ enum RefundStatus {
 }
 
 model RefundRequest {
-  id              String        @id @default(uuid())
+  id              String       @id @default(uuid())
   subscriptionId  String
-  subscription    Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
-  amount          Int           // centavos a devolver
-  reason          String        @db.Text
+  subscription    Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  amount          Int // centavos a devolver
+  reason          String       @db.Text
   requestedByName String?
-  status          RefundStatus  @default(REQUESTED)
-  dueAt           DateTime?     // responder até
+  status          RefundStatus @default(REQUESTED)
+  dueAt           DateTime? // responder até
   decidedAt       DateTime?
   decidedByName   String?
-  decisionNote    String?       @db.Text
+  decisionNote    String?      @db.Text
   gatewayRefundId String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   @@index([status, dueAt])
   @@index([subscriptionId])
@@ -1257,11 +1258,11 @@ enum CronRunStatus {
 // Registro de cada execução das rotinas diárias (Saúde do sistema). Rotina sem registro = "ainda não rodou".
 model CronRun {
   id         String        @id @default(uuid())
-  job        String        // "expirar-planos" | "avisos" | ...
+  job        String // "expirar-planos" | "avisos" | ...
   startedAt  DateTime      @default(now())
   finishedAt DateTime?
   status     CronRunStatus
-  summary    Json?         // contagens do resultado (ex.: { expired: 2, reminders: 5 })
+  summary    Json? // contagens do resultado (ex.: { expired: 2, reminders: 5 })
   error      String?       @db.Text
 
   @@index([job, startedAt])
@@ -1272,11 +1273,11 @@ model CronRun {
 // Guarda só o necessário: nunca corpo de mensagem, e-mail, telefone ou chave. Limpo depois de 30 dias.
 model ServiceEvent {
   id        String   @id @default(uuid())
-  service   String   // "mercadopago" | "email" | "whatsapp" | "push"
-  kind      String   // ex.: "webhook", "send"
+  service   String // "mercadopago" | "email" | "whatsapp" | "push"
+  kind      String // ex.: "webhook", "send"
   ok        Boolean
-  message   String?  // motivo curto da falha
-  refId     String?  // id interno relacionado (assinatura, transação)
+  message   String? // motivo curto da falha
+  refId     String? // id interno relacionado (assinatura, transação)
   createdAt DateTime @default(now())
 
   @@index([service, createdAt])
@@ -1326,7 +1327,7 @@ model MadrinhaWeddingOverride {
   id            String    @id @default(uuid())
   weddingId     String    @unique
   wedding       Wedding   @relation(fields: [weddingId], references: [id], onDelete: Cascade)
-  enabled       Boolean?  // null = segue o padrão do plano
+  enabled       Boolean? // null = segue o padrão do plano
   extraMessages Int       @default(0)
   blockedAt     DateTime?
   blockedReason String?   @db.Text
@@ -1366,4 +1367,27 @@ model EmailVerificationToken {
 
   @@index([userId])
   @@map("email_verification_tokens")
+}
+
+// Cada pergunta respondida pelo modelo de IA da Liz: base dos limites por dia e mês, do teto de custo e do bloqueio por abuso.
+// Não guarda a pergunta nem a resposta, só o consumo.
+model MadrinhaUso {
+  id                String   @id @default(uuid())
+  weddingId         String
+  wedding           Wedding  @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  inputTokens       Int      @default(0)
+  outputTokens      Int      @default(0)
+  /**
+   * Custo estimado em milionésimos de real (1 real = 1.000.000), para somar sem perder as frações de centavo.
+   */
+  custoEmMicroReais Int      @default(0)
+  /**
+   * A pergunta fugiu do assunto (a Liz recusou).
+   */
+  foraDoAssunto     Boolean  @default(false)
+
+  @@index([weddingId, createdAt])
+  @@index([createdAt])
+  @@map("madrinha_usos")
 }

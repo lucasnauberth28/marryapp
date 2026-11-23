@@ -10,13 +10,13 @@ function situacaoDasInstrucoes({ suggestedOnly, latestInstruction }: VisaoGeral)
 }
 
 /** O que falta para ativar a Liz, na ordem em que a equipe faz. */
-export function checklistDaLiz(overview: VisaoGeral) {
+export function checklistDaLiz(overview: VisaoGeral, temChave: boolean, ligada: boolean) {
   const instructionStatus = situacaoDasInstrucoes(overview);
   const tetoSalvo = overview.meta["madrinha.globalCap"].saved;
   return [
-    { label: "Conectar a chave da API", done: false, text: "Pendente" },
+    { label: "Conectar a chave do Gemini", done: temChave, text: temChave ? "Feito" : "Pendente" },
     { label: "Escrever as instruções", done: instructionStatus.done, text: instructionStatus.text },
     { label: "Definir tetos de custo", done: tetoSalvo, text: tetoSalvo ? "Feito" : "Pendente" },
-    { label: "Testar com a equipe", done: false, text: "Pendente" },
+    { label: "Ligar para os casais", done: ligada, text: ligada ? "Ligada" : "Pendente" },
   ];
 }

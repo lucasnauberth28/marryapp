@@ -19,7 +19,11 @@ export default defineConfig({
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] }, testIgnore: /liz-ia\.spec\.ts/ },
+    // Mexe no interruptor geral da Liz (vale para toda a plataforma): roda sozinho, depois dos outros
+    { name: "liz-ia", use: { ...devices["Desktop Chrome"] }, testMatch: /liz-ia\.spec\.ts/, dependencies: ["chromium"], fullyParallel: false },
+  ],
   webServer: process.env.CI
     ? [
         { command: "npm run start", url: `${baseURL}/login`, reuseExistingServer: false, timeout: 120_000 },

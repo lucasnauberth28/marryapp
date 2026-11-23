@@ -5,7 +5,7 @@ import { obterConfiguracaoDaPlataforma } from "@/lib/platform/settings";
 import { CHAVES_DE_CONFIGURACAO_DA_MADRINHA, INSTRUCOES_PADRAO_DA_MADRINHA } from "@/lib/platform/madrinha";
 
 /**
- * Consultas da Liz (configuração apenas: a IA não está conectada, então não há conversas, custos nem uso).
+ * Consultas da Liz: configuração, exceções e textos (o consumo do mês está em madrinha-uso.ts).
  * Cada função confere o acesso da administração por conta própria.
  */
 
